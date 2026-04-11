@@ -800,6 +800,232 @@ export default function SlideCanvas({
 }
 
 // ══════════════════════════════════════════════════
+// TableResizeHandles — reads actual DOM cell positions for accurate alignment
+// ══════════════════════════════════════════════════
+
+function TableResizeHandles({ containerRef, obj, startColResize, startRowResize, onUpdateTableRef }: {
+  containerRef: React.RefObject<HTMLDivElement | null>;
+  obj: TableObject;
+  startColResize: (e: React.MouseEvent, colIdx: number) => void;
+  startRowResize: (e: React.MouseEvent, rowIdx: number) => void;
+  onUpdateTableRef: React.RefObject<((updates: Partial<TableObject>) => void) | undefined>;
+}) {
+  const colLinesRef = useRef<number[]>([]);
+  const rowLinesRef = useRef<number[]>([]);
+  const [, forceUpdate] = useState(0);
+
+  // Read actual cell positions from the CSS Grid DOM
+  const readPositions = useCallback(() => {
+    const container = containerRef.current;
+    if (!container) return;
+    const containerRect = container.getBoundingClientRect();
+    const numCols = obj.cols;
+    const cells = container.querySelectorAll("[data-cell]");
+    if (cells.length === 0) return;
+
+    // Column lines: right edge of each cell in first row (except last column)
+    const cols: number[] = [];
+    for (let c = 0; c < numCols - 1; c++) {
+      const cell = cells[c]; // first row cells are indices 0..numCols-1
+      if (cell) {
+        const r = (cell as HTMLElement).getBoundingClientRect();
+        cols.push(r.right - containerRect.left);
+      }
+    }
+
+    // Row lines: bottom edge of first cell in each row (except last row)
+    const rLines: number[] = [];
+    for (let r = 0; r < obj.rows - 1; r++) {
+      const cell = cells[r * numCols]; // first cell of each row
+      if (cell) {
+        const rect = (cell as HTMLElement).getBoundingClientRect();
+        rLines.push(rect.bottom - containerRect.top);
+      }
+    }
+
+    colLinesRef.current = cols;
+    rowLinesRef.current = rLines;
+  }, [containerRef, obj.cols, obj.rows]);
+
+  // Read positions after DOM updates (using useLayoutEffect with obj dependencies)
+  useLayoutEffect(() => {
+    readPositions();
+    forceUpdate(n => n + 1);
+  }, [obj.colWidths, obj.rowHeights, obj.cols, obj.rows, obj.borderWidth, obj.cellPadding, obj.fontSize, readPositions]);
+
+  return (
+    <>
+      {/* Column resize handles */}
+      {colLinesRef.current.map((leftPx, ci) => (
+        <div
+          key={`col-${ci}`}
+          className="absolute top-0 bottom-0 z-[30] cursor-col-resize group"
+          style={{ left: leftPx, width: 12, marginLeft: -6, pointerEvents: "auto" }}
+          onMouseDown={(e) => { e.stopPropagation(); e.preventDefault(); startColResize(e, ci); }}
+        >
+          <div className="absolute left-[5px] top-0 bottom-0 w-[2px] bg-transparent group-hover:bg-blue-500 transition-colors" />
+        </div>
+      ))}
+
+      {/* Row resize handles */}
+      {rowLinesRef.current.map((topPx, ri) => (
+        <div
+          key={`row-${ri}`}
+          className="absolute left-0 right-0 z-[30] cursor-row-resize group"
+          style={{ top: topPx, height: 12, marginTop: -6, pointerEvents: "auto" }}
+          onMouseDown={(e) => { e.stopPropagation(); e.preventDefault(); startRowResize(e, ri); }}
+        >
+          <div className="absolute top-[5px] left-0 right-0 h-[2px] bg-transparent group-hover:bg-blue-500 transition-colors" />
+        </div>
+      ))}
+
+      {/* Bottom edge — resize last row only (grows/shrinks table height) */}
+      <div
+        className="absolute left-0 right-0 z-[30] cursor-row-resize group"
+        style={{ bottom: 0, height: 12, marginBottom: -6, pointerEvents: "auto" }}
+        onMouseDown={(e) => {
+          e.stopPropagation();
+          e.preventDefault();
+          const startY = e.clientY;
+          const containerEl = containerRef.current;
+          if (!containerEl) return;
+          const objEl = containerEl.closest("[data-slide-obj]") as HTMLElement;
+          const canvasEl = containerEl.closest(".relative.w-full.h-full") as HTMLElement;
+          if (!objEl || !canvasEl) return;
+          const canvasH = canvasEl.getBoundingClientRect().height;
+          const startObjH = parseFloat(objEl.style.height);
+          const startHeights = [...(obj.rowHeights || Array(obj.rows).fill(100 / obj.rows))];
+          const lastIdx = startHeights.length - 1;
+          const handleMove = (ev: MouseEvent) => {
+            const dy = ev.clientY - startY;
+            const objPctChange = (dy / canvasH) * 100;
+            const newObjH = Math.max(5, startObjH + objPctChange);
+            // Recalculate: grow table, keep other rows' pixel size constant → last row absorbs the change
+            const ratio = startObjH / newObjH;
+            const newHeights = startHeights.map((h, i) => i === lastIdx ? h : h * ratio);
+            const usedPct = newHeights.reduce((a, b, i) => i === lastIdx ? a : a + b, 0);
+            newHeights[lastIdx] = Math.max(3, 100 - usedPct);
+            onUpdateTableRef.current?.({ height: newObjH, rowHeights: newHeights } as any);
+          };
+          const handleUp = () => { document.removeEventListener("mousemove", handleMove); document.removeEventListener("mouseup", handleUp); };
+          document.addEventListener("mousemove", handleMove);
+          document.addEventListener("mouseup", handleUp);
+        }}
+      >
+        <div className="absolute top-[5px] left-0 right-0 h-[2px] bg-transparent group-hover:bg-blue-500 transition-colors" />
+      </div>
+
+      {/* Top edge — resize first row only */}
+      <div
+        className="absolute left-0 right-0 z-[30] cursor-row-resize group"
+        style={{ top: 0, height: 12, marginTop: -6, pointerEvents: "auto" }}
+        onMouseDown={(e) => {
+          e.stopPropagation();
+          e.preventDefault();
+          const startY = e.clientY;
+          const containerEl = containerRef.current;
+          if (!containerEl) return;
+          const objEl = containerEl.closest("[data-slide-obj]") as HTMLElement;
+          const canvasEl = containerEl.closest(".relative.w-full.h-full") as HTMLElement;
+          if (!objEl || !canvasEl) return;
+          const canvasH = canvasEl.getBoundingClientRect().height;
+          const startObjH = parseFloat(objEl.style.height);
+          const startObjY = parseFloat(objEl.style.top);
+          const startHeights = [...(obj.rowHeights || Array(obj.rows).fill(100 / obj.rows))];
+          const handleMove = (ev: MouseEvent) => {
+            const dy = ev.clientY - startY;
+            const objPctChange = (dy / canvasH) * 100;
+            const newObjH = Math.max(5, startObjH - objPctChange);
+            const newObjY = startObjY + objPctChange;
+            const ratio = startObjH / newObjH;
+            const newHeights = startHeights.map((h, i) => i === 0 ? h : h * ratio);
+            const usedPct = newHeights.reduce((a, b, i) => i === 0 ? a : a + b, 0);
+            newHeights[0] = Math.max(3, 100 - usedPct);
+            onUpdateTableRef.current?.({ height: newObjH, y: newObjY, rowHeights: newHeights } as any);
+          };
+          const handleUp = () => { document.removeEventListener("mousemove", handleMove); document.removeEventListener("mouseup", handleUp); };
+          document.addEventListener("mousemove", handleMove);
+          document.addEventListener("mouseup", handleUp);
+        }}
+      >
+        <div className="absolute top-[5px] left-0 right-0 h-[2px] bg-transparent group-hover:bg-blue-500 transition-colors" />
+      </div>
+
+      {/* Left edge — resize first column only */}
+      <div
+        className="absolute top-0 bottom-0 z-[30] cursor-col-resize group"
+        style={{ left: 0, width: 12, marginLeft: -6, pointerEvents: "auto" }}
+        onMouseDown={(e) => {
+          e.stopPropagation();
+          e.preventDefault();
+          const startX = e.clientX;
+          const containerEl = containerRef.current;
+          if (!containerEl) return;
+          const objEl = containerEl.closest("[data-slide-obj]") as HTMLElement;
+          const canvasEl = containerEl.closest(".relative.w-full.h-full") as HTMLElement;
+          if (!objEl || !canvasEl) return;
+          const canvasW = canvasEl.getBoundingClientRect().width;
+          const startObjW = parseFloat(objEl.style.width);
+          const startObjX = parseFloat(objEl.style.left);
+          const startWidths = [...(obj.colWidths || Array(obj.cols).fill(100 / obj.cols))];
+          const handleMove = (ev: MouseEvent) => {
+            const dx = ev.clientX - startX;
+            const objPctChange = (dx / canvasW) * 100;
+            const newObjW = Math.max(5, startObjW - objPctChange);
+            const newObjX = startObjX + objPctChange;
+            const ratio = startObjW / newObjW;
+            const newWidths = startWidths.map((w, i) => i === 0 ? w : w * ratio);
+            const usedPct = newWidths.reduce((a, b, i) => i === 0 ? a : a + b, 0);
+            newWidths[0] = Math.max(3, 100 - usedPct);
+            onUpdateTableRef.current?.({ width: newObjW, x: newObjX, colWidths: newWidths } as any);
+          };
+          const handleUp = () => { document.removeEventListener("mousemove", handleMove); document.removeEventListener("mouseup", handleUp); };
+          document.addEventListener("mousemove", handleMove);
+          document.addEventListener("mouseup", handleUp);
+        }}
+      >
+        <div className="absolute left-[5px] top-0 bottom-0 w-[2px] bg-transparent group-hover:bg-blue-500 transition-colors" />
+      </div>
+
+      {/* Right edge — resize last column only */}
+      <div
+        className="absolute top-0 bottom-0 z-[30] cursor-col-resize group"
+        style={{ right: 0, width: 12, marginRight: -6, pointerEvents: "auto" }}
+        onMouseDown={(e) => {
+          e.stopPropagation();
+          e.preventDefault();
+          const startX = e.clientX;
+          const containerEl = containerRef.current;
+          if (!containerEl) return;
+          const objEl = containerEl.closest("[data-slide-obj]") as HTMLElement;
+          const canvasEl = containerEl.closest(".relative.w-full.h-full") as HTMLElement;
+          if (!objEl || !canvasEl) return;
+          const canvasW = canvasEl.getBoundingClientRect().width;
+          const startObjW = parseFloat(objEl.style.width);
+          const startWidths = [...(obj.colWidths || Array(obj.cols).fill(100 / obj.cols))];
+          const lastIdx = startWidths.length - 1;
+          const handleMove = (ev: MouseEvent) => {
+            const dx = ev.clientX - startX;
+            const objPctChange = (dx / canvasW) * 100;
+            const newObjW = Math.max(5, startObjW + objPctChange);
+            const ratio = startObjW / newObjW;
+            const newWidths = startWidths.map((w, i) => i === lastIdx ? w : w * ratio);
+            const usedPct = newWidths.reduce((a, b, i) => i === lastIdx ? a : a + b, 0);
+            newWidths[lastIdx] = Math.max(3, 100 - usedPct);
+            onUpdateTableRef.current?.({ width: newObjW, colWidths: newWidths } as any);
+          };
+          const handleUp = () => { document.removeEventListener("mousemove", handleMove); document.removeEventListener("mouseup", handleUp); };
+          document.addEventListener("mousemove", handleMove);
+          document.addEventListener("mouseup", handleUp);
+        }}
+      >
+        <div className="absolute left-[5px] top-0 bottom-0 w-[2px] bg-transparent group-hover:bg-blue-500 transition-colors" />
+      </div>
+    </>
+  );
+}
+
+// ══════════════════════════════════════════════════
 // FontSizeCombo — Editable input with dropdown for font sizes
 // ══════════════════════════════════════════════════
 
@@ -954,22 +1180,33 @@ function SlideTableRenderer({ obj, isEditing, isSelected, canEdit, onCellChange,
     document.addEventListener("mouseup", handleUp);
   }, []);
 
-  // Drag row border to resize
+  // Drag row border to resize — uses actual pixel heights for smooth dragging
   const startRowResize = useCallback((e: React.MouseEvent, rowIdx: number) => {
     e.preventDefault();
     e.stopPropagation();
     const startY = e.clientY;
     const containerEl = containerRef.current;
     if (!containerEl) return;
-    const tableH = containerEl.getBoundingClientRect().height;
-    const startHeights = [...rowHeightsRef.current];
+    const containerH = containerEl.getBoundingClientRect().height;
+    // Read actual pixel heights of all rows from the grid cells
+    const numCols = obj.cols;
+    const cells = containerEl.querySelectorAll("[data-cell]");
+    const pixelHeights: number[] = [];
+    for (let r = 0; r < obj.rows; r++) {
+      const cell = cells[r * numCols];
+      if (cell) pixelHeights.push((cell as HTMLElement).getBoundingClientRect().height);
+      else pixelHeights.push(containerH / obj.rows);
+    }
+
     const handleMove = (ev: MouseEvent) => {
       const dy = ev.clientY - startY;
-      const pctChange = (dy / tableH) * 100;
-      const newHeights = [...startHeights];
-      const minH = 5;
-      newHeights[rowIdx] = Math.max(minH, startHeights[rowIdx] + pctChange);
-      newHeights[rowIdx + 1] = Math.max(minH, startHeights[rowIdx + 1] - pctChange);
+      const newPx = [...pixelHeights];
+      const minPx = 20;
+      newPx[rowIdx] = Math.max(minPx, pixelHeights[rowIdx] + dy);
+      newPx[rowIdx + 1] = Math.max(minPx, pixelHeights[rowIdx + 1] - dy);
+      // Convert pixel heights to percentages
+      const newTotal = newPx.reduce((a, b) => a + b, 0);
+      const newHeights = newPx.map(h => (h / newTotal) * 100);
       onUpdateTableRef.current?.({ rowHeights: newHeights });
     };
     const handleUp = () => { document.removeEventListener("mousemove", handleMove); document.removeEventListener("mouseup", handleUp); };
@@ -979,17 +1216,18 @@ function SlideTableRenderer({ obj, isEditing, isSelected, canEdit, onCellChange,
 
   return (
     <div ref={containerRef} className="w-full h-full overflow-hidden relative" onMouseDown={(e) => { if (isEditing) e.stopPropagation(); }}>
-      <table
+      <div
         className="w-full h-full"
-        style={{ borderCollapse: "collapse", fontSize: obj.fontSize, fontFamily: obj.fontFamily, tableLayout: "fixed" }}
+        style={{
+          display: "grid",
+          gridTemplateColumns: colWidths.map(w => `${w}%`).join(" "),
+          gridTemplateRows: rowHeights.map(h => `${h}%`).join(" "),
+          fontSize: obj.fontSize,
+          fontFamily: obj.fontFamily,
+        }}
       >
-        {/* Colgroup for column widths */}
-        <colgroup>
-          {colWidths.map((w, ci) => <col key={ci} style={{ width: `${w}%` }} />)}
-        </colgroup>
-        <tbody>
-          {obj.cells.map((row, ri) => (
-            <tr key={ri} style={{ height: `${rowHeights[ri]}%` }}>
+        {obj.cells.map((row, ri) => (
+          <React.Fragment key={ri}>
               {row.map((cell, ci) => {
                 const isHeader = obj.headerRow && ri === 0;
                 const bgColor = isHeader ? obj.headerColor : ri % 2 === 0 ? obj.evenRowColor : obj.oddRowColor;
@@ -998,8 +1236,9 @@ function SlideTableRenderer({ obj, isEditing, isSelected, canEdit, onCellChange,
                 const isCellEditing = isEditing && editingCell?.r === ri && editingCell?.c === ci;
 
                 return (
-                  <td
-                    key={ci}
+                  <div
+                    key={`${ri}-${ci}`}
+                    data-cell={`${ri}-${ci}`}
                     className={`relative ${isCellEditing ? "outline outline-2 outline-blue-500 outline-offset-[-1px] z-10" : ""}`}
                     style={{
                       border: `${obj.borderWidth}px solid ${obj.borderColor}`,
@@ -1009,8 +1248,9 @@ function SlideTableRenderer({ obj, isEditing, isSelected, canEdit, onCellChange,
                       fontWeight: isHeader || cell.bold ? 700 : 400,
                       fontStyle: cell.italic ? "italic" : "normal",
                       textAlign: cell.align || (isHeader ? "center" : "left"),
-                      verticalAlign: cell.verticalAlign || "middle",
-                      overflow: cell.noWrap ? "hidden" : "visible",
+                      display: "flex",
+                      alignItems: (cell.verticalAlign || "middle") === "top" ? "flex-start" : (cell.verticalAlign || "middle") === "bottom" ? "flex-end" : "center",
+                      overflow: "hidden",
                       wordBreak: cell.noWrap ? undefined : "break-word",
                       cursor: isEditing ? "text" : "default",
                       fontSize: cell.fontSize || obj.fontSize,
@@ -1058,83 +1298,21 @@ function SlideTableRenderer({ obj, isEditing, isSelected, canEdit, onCellChange,
                     ) : (
                       <span className={`block ${cell.noWrap ? "truncate whitespace-nowrap" : "whitespace-pre-wrap break-words"}`}>{cell.content || (isEditing ? "\u00A0" : "")}</span>
                     )}
-                  </td>
+                  </div>
                 );
               })}
-            </tr>
+          </React.Fragment>
           ))}
-        </tbody>
-      </table>
+      </div>
 
-      {/* Column resize handles — draggable borders between columns */}
-      {(isSelected || isEditing) && canEdit && onUpdateTable && (() => {
-        let accW = 0;
-        return colWidths.slice(0, -1).map((w, ci) => {
-          accW += w;
-          return (
-            <div
-              key={`col-${ci}`}
-              className="absolute top-0 bottom-0 z-[30] cursor-col-resize group"
-              style={{ left: `${accW}%`, width: 12, marginLeft: -6, pointerEvents: "auto" }}
-              onMouseDown={(e) => { e.stopPropagation(); e.preventDefault(); startColResize(e, ci); }}
-            >
-              <div className="absolute left-[5px] top-0 bottom-0 w-[2px] bg-blue-400/40 group-hover:bg-blue-500 transition-colors" />
-            </div>
-          );
-        });
-      })()}
-
-      {/* Row resize handles — draggable borders between rows AND bottom edge */}
-      {(isSelected || isEditing) && canEdit && onUpdateTable && (() => {
-        const handles: React.ReactNode[] = [];
-        let accH = 0;
-        // Between rows
-        rowHeights.slice(0, -1).forEach((h, ri) => {
-          accH += h;
-          handles.push(
-            <div
-              key={`row-${ri}`}
-              className="absolute left-0 right-0 z-[30] cursor-row-resize group"
-              style={{ top: `${accH}%`, height: 12, marginTop: -6, pointerEvents: "auto" }}
-              onMouseDown={(e) => { e.stopPropagation(); e.preventDefault(); startRowResize(e, ri); }}
-            >
-              <div className="absolute top-[5px] left-0 right-0 h-[2px] bg-blue-400/40 group-hover:bg-blue-500 transition-colors" />
-            </div>
-          );
-        });
-        // Bottom edge — resize last row by changing table height
-        handles.push(
-          <div
-            key="row-bottom"
-            className="absolute left-0 right-0 z-[30] cursor-row-resize group"
-            style={{ bottom: 0, height: 12, marginBottom: -6, pointerEvents: "auto" }}
-            onMouseDown={(e) => {
-              e.stopPropagation();
-              e.preventDefault();
-              const startY = e.clientY;
-              const containerEl = containerRef.current;
-              if (!containerEl) return;
-              const objEl = containerEl.closest("[data-slide-obj]") as HTMLElement;
-              const canvasEl = containerEl.closest(".relative.w-full.h-full") as HTMLElement;
-              if (!objEl || !canvasEl) return;
-              const canvasH = canvasEl.getBoundingClientRect().height;
-              const startObjH = parseFloat(objEl.style.height); // percentage
-              const handleMove = (ev: MouseEvent) => {
-                const dy = ev.clientY - startY;
-                const pctChange = (dy / canvasH) * 100;
-                const newH = Math.max(5, startObjH + pctChange);
-                onUpdateTableRef.current?.({ height: newH } as any);
-              };
-              const handleUp = () => { document.removeEventListener("mousemove", handleMove); document.removeEventListener("mouseup", handleUp); };
-              document.addEventListener("mousemove", handleMove);
-              document.addEventListener("mouseup", handleUp);
-            }}
-          >
-            <div className="absolute top-[5px] left-0 right-0 h-[2px] bg-blue-400/40 group-hover:bg-blue-500 transition-colors" />
-          </div>
-        );
-        return handles;
-      })()}
+      {/* Column + Row resize handles — positioned from actual DOM cell positions */}
+      {(isSelected || isEditing) && canEdit && onUpdateTable && <TableResizeHandles
+        containerRef={containerRef}
+        obj={obj}
+        startColResize={startColResize}
+        startRowResize={startRowResize}
+        onUpdateTableRef={onUpdateTableRef}
+      />}
 
       {/* Cell formatting toolbar — floating above the table, only when a cell is active */}
       {editingCell && activeCell && toolbarPos && onCellUpdate && typeof document !== "undefined" && createPortal(
