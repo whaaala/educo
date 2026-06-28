@@ -933,6 +933,8 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
   valueRef.current = value;
   const onChangeRef = useRef(onChange);
   onChangeRef.current = onChange;
+  const activeSlideIdxRef = useRef(activeSlideIdx);
+  activeSlideIdxRef.current = activeSlideIdx;
   const [toast, setToastRaw] = useState<string | null>(null);
   const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const setToast = useCallback((msg: string) => {
@@ -973,65 +975,112 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
     updateCurrentSlide({ objects: objs });
   }, [updateCurrentSlide]);
 
-  /** Find the content area bounds — below the title, avoiding existing objects */
+  /** Find the content area bounds — below the title, with margins so inserted
+   *  objects (diagrams, charts) always fit on the slide and aren't flush to the edge. */
   const getContentArea = useCallback((): { x: number; y: number; w: number; h: number } => {
     const objs = activeSlide?.objects || [];
-    if (objs.length === 0) return { x: 5, y: 5, w: 90, h: 90 };
-    // Find the title area (first large text box near top)
-    const titleObj = objs.find(o => o.type === "textbox" && o.y < 20 && o.height >= 8);
-    const titleBottom = titleObj ? titleObj.y + titleObj.height + 3 : 20;
-    // Content area starts below title
-    return { x: 5, y: titleBottom, w: 90, h: 95 - titleBottom };
+    const SIDE = 8;        // left/right margin
+    const TOP = 20;        // default top (leaves room for a title)
+    const BOTTOM = 92;     // bottom margin (8% breathing room)
+    // A real title is a SMALL textbox near the top — ignore the full-slide title
+    // placeholder (height ~90) which would otherwise leave no usable area.
+    const titleObj = objs.find(o => o.type === "textbox" && o.y < 20 && o.height >= 8 && o.height <= 35);
+    const top = titleObj ? titleObj.y + titleObj.height + 4 : TOP;
+    return { x: SIDE, y: top, w: 100 - SIDE * 2, h: Math.max(20, BOTTOM - top) };
   }, [activeSlide]);
 
-  /** Get position for a new object — places in content area, avoids overlap */
+  /** Layout/placeholder objects (empty title/subtitle/content boxes, decorative
+   *  lines) don't count as real content when deciding whether a slide is "full". */
+  const isLayoutPlaceholder = useCallback((o: SlideObject): boolean => {
+    if (o.type === "textbox") {
+      const c = (o.content || "").trim();
+      if (c === "" || c === "<br>") return true;          // empty title/subtitle/content box
+      if (o.y < 12 && o.height >= 45) return true;          // full-slide title placeholder
+      return false;
+    }
+    if (o.type === "shape" && (o.height ?? 0) < 2) return true; // thin decorative line
+    return false;
+  }, []);
+
+  /** Get position for a new object — stacks below existing real content (ignoring
+   *  placeholders). May return a y past the content area; the caller's fit check
+   *  then moves it to a fresh slide. */
   const getInsertPosition = useCallback((objWidth: number, objHeight: number): { x: number; y: number } => {
     const area = getContentArea();
-    const objs = currentObjects.filter(o => o.y >= area.y); // only objects in content area
-    // Find an open spot — offset down from last object
-    let y = area.y + 2;
-    if (objs.length > 0) {
-      const lastObj = objs.reduce((a, b) => (a.y + a.height > b.y + b.height) ? a : b);
-      y = Math.min(area.y + area.h - objHeight, lastObj.y + lastObj.height + 2);
+    const content = currentObjects.filter(o => !isLayoutPlaceholder(o) && o.y + o.height > area.y);
+    let y = area.y;
+    if (content.length > 0) {
+      const lowestBottom = Math.max(...content.map(o => o.y + o.height));
+      y = lowestBottom + 2;
     }
     const x = area.x + (area.w - objWidth) / 2; // centered horizontally
-    return { x: Math.max(2, x), y: Math.max(area.y, Math.min(95 - objHeight, y)) };
-  }, [getContentArea, currentObjects]);
+    return { x: Math.max(2, x), y: Math.max(area.y, y) };
+  }, [getContentArea, currentObjects, isLayoutPlaceholder]);
 
-  const addObjectToSlide = useCallback((obj: SlideObject) => {
-    // Auto-migrate legacy slide if needed
-    if (!activeSlide?.objects || activeSlide.objects.length === 0) {
-      const th = THEMES[theme] || THEMES.default;
-      const htmlContent = activeSlide?.content?.trim() || "";
-      const existingObjs: SlideObject[] = [];
-      if (htmlContent && htmlContent !== "<br>") {
-        existingObjs.push(createTextBox({ x: 5, y: 5, width: 90, height: 90, content: htmlContent, fontSize: 18, color: th.text, align: "left", verticalAlign: "top", zIndex: 1 }));
-      }
-      updateCurrentSlide({ objects: [...existingObjs, obj], content: "" });
-    } else {
-      updateCurrentSlide({ objects: [...currentObjects, obj] });
-    }
-    setSelectedObjectId(obj.id);
-  }, [activeSlide, currentObjects, updateCurrentSlide, theme]);
+  /** Does the given object group fit on the current slide — i.e. it neither
+   *  overflows the content area nor overlaps existing real content? */
+  const fitsOnCurrentSlide = useCallback((objs: SlideObject[]): boolean => {
+    const area = getContentArea();
+    const newBottom = Math.max(...objs.map(o => o.y + o.height));
+    if (newBottom > area.y + area.h + 1) return false; // would run off the slide
+    const content = currentObjects.filter(o => !isLayoutPlaceholder(o));
+    const overlaps = (a: SlideObject, b: SlideObject) =>
+      a.x < b.x + b.width && a.x + a.width > b.x && a.y < b.y + b.height && a.y + a.height > b.y;
+    return !content.some(c => objs.some(o => overlaps(o, c)));
+  }, [getContentArea, currentObjects, isLayoutPlaceholder]);
 
-  // Add MULTIPLE objects in a single update. Calling addObjectToSlide in a loop
-  // loses all but the last object because each call reads the same stale
-  // currentObjects snapshot (state isn't flushed between synchronous calls).
+  // Add object(s) to the slide. If they don't fit on the current slide (it's full),
+  // a new slide is created after it and the object(s) are placed there instead.
+  // A single update is used so multiple objects (e.g. a diagram) aren't lost to a
+  // stale currentObjects snapshot.
   const addObjectsToSlide = useCallback((objs: SlideObject[]) => {
     if (objs.length === 0) return;
-    if (!activeSlide?.objects || activeSlide.objects.length === 0) {
-      const th = THEMES[theme] || THEMES.default;
-      const htmlContent = activeSlide?.content?.trim() || "";
-      const existingObjs: SlideObject[] = [];
-      if (htmlContent && htmlContent !== "<br>") {
-        existingObjs.push(createTextBox({ x: 5, y: 5, width: 90, height: 90, content: htmlContent, fontSize: 18, color: th.text, align: "left", verticalAlign: "top", zIndex: 1 }));
+    if (fitsOnCurrentSlide(objs)) {
+      // Auto-migrate legacy slide if needed, then append
+      if (!activeSlide?.objects || activeSlide.objects.length === 0) {
+        const th = THEMES[theme] || THEMES.default;
+        const htmlContent = activeSlide?.content?.trim() || "";
+        const existingObjs: SlideObject[] = [];
+        if (htmlContent && htmlContent !== "<br>") {
+          existingObjs.push(createTextBox({ x: 5, y: 5, width: 90, height: 90, content: htmlContent, fontSize: 18, color: th.text, align: "left", verticalAlign: "top", zIndex: 1 }));
+        }
+        updateCurrentSlide({ objects: [...existingObjs, ...objs], content: "" });
+      } else {
+        updateCurrentSlide({ objects: [...currentObjects, ...objs] });
       }
-      updateCurrentSlide({ objects: [...existingObjs, ...objs], content: "" });
+      setSelectedObjectId(objs[objs.length - 1].id);
     } else {
-      updateCurrentSlide({ objects: [...currentObjects, ...objs] });
+      // Current slide is full → open a new slide and place the object(s) there,
+      // repositioned to the top of the new slide's content area.
+      const th = THEMES[theme] || THEMES.default;
+      const area = getContentArea();
+      const minY = Math.min(...objs.map(o => o.y));
+      const delta = area.y - minY;
+      const placed = delta !== 0 ? objs.map(o => ({ ...o, y: o.y + delta } as SlideObject)) : objs;
+      setToast("Slide was full — added to a new slide");
+      // Defer the whole new-slide creation out of the current event. Adding a slide
+      // (a structural change) while a menu is open orphans the menu's portal and
+      // swallows the next menu action, so we wait until the menu has closed. Read
+      // live state via refs at fire time so rapid back-to-back inserts don't race
+      // on a stale slide list.
+      requestAnimationFrame(() => {
+        const curSlides = slidesRef.current;
+        const curIdx = activeSlideIdxRef.current;
+        const newSlide = makeSlide("", th.bg);
+        newSlide.objects = placed;
+        const ns = [...curSlides];
+        ns.splice(curIdx + 1, 0, newSlide);
+        undoStackRef.current.push(JSON.stringify(curSlides));
+        onChangeRef.current({ ...valueRef.current, slides: ns });
+        setActiveSlideIdx(curIdx + 1);
+        setSelectedObjectId(placed[placed.length - 1].id);
+      });
     }
-    setSelectedObjectId(objs[objs.length - 1].id);
-  }, [activeSlide, currentObjects, updateCurrentSlide, theme]);
+  }, [activeSlide, currentObjects, updateCurrentSlide, theme, fitsOnCurrentSlide, getContentArea, slides, activeSlideIdx, updateSlides, setToast]);
+
+  const addObjectToSlide = useCallback((obj: SlideObject) => {
+    addObjectsToSlide([obj]);
+  }, [addObjectsToSlide]);
 
   const handleDrawingComplete = useCallback((paths: string) => {
     const obj = createDrawingObj(paths, { stroke: drawingColor, strokeWidth: drawingWidth, zIndex: currentObjects.length + 1 });
@@ -1983,15 +2032,87 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
             })));
             break;
           }
-          case "insert:diagramHierarchy": case "insert:diagramTimeline":
-          case "insert:diagramProcess": case "insert:diagramRelationship": case "insert:diagramCycle": {
+          case "insert:diagramHierarchy": {
             migrateSlideToObjects(); const th = THEMES[theme] || THEMES.default;
-            const ca = getContentArea();
+            const ca = getContentArea(); const z = currentObjects.length;
             addObjectsToSlide([
-              createShapeObj("rect", { x: ca.x + ca.w * 0.25, y: ca.y, width: ca.w * 0.5, height: ca.h * 0.25, fill: th.accent, text: "Main", textColor: "#fff", zIndex: currentObjects.length + 1 }),
-              createShapeObj("arrow-down", { x: ca.x + ca.w * 0.45, y: ca.y + ca.h * 0.27, width: ca.w * 0.1, height: ca.h * 0.12, fill: th.text, zIndex: currentObjects.length + 2 }),
-              createShapeObj("rect", { x: ca.x, y: ca.y + ca.h * 0.42, width: ca.w * 0.45, height: ca.h * 0.25, fill: th.accent, text: "Branch A", textColor: "#fff", zIndex: currentObjects.length + 3 }),
-              createShapeObj("rect", { x: ca.x + ca.w * 0.55, y: ca.y + ca.h * 0.42, width: ca.w * 0.45, height: ca.h * 0.25, fill: th.accent, text: "Branch B", textColor: "#fff", zIndex: currentObjects.length + 4 }),
+              createShapeObj("rect", { x: ca.x + ca.w * 0.25, y: ca.y, width: ca.w * 0.5, height: ca.h * 0.25, fill: th.accent, text: "Main", textColor: "#fff", zIndex: z + 1 }),
+              createShapeObj("arrow-down", { x: ca.x + ca.w * 0.45, y: ca.y + ca.h * 0.27, width: ca.w * 0.1, height: ca.h * 0.12, fill: th.text, zIndex: z + 2 }),
+              createShapeObj("rect", { x: ca.x, y: ca.y + ca.h * 0.42, width: ca.w * 0.45, height: ca.h * 0.25, fill: th.accent, text: "Branch A", textColor: "#fff", zIndex: z + 3 }),
+              createShapeObj("rect", { x: ca.x + ca.w * 0.55, y: ca.y + ca.h * 0.42, width: ca.w * 0.45, height: ca.h * 0.25, fill: th.accent, text: "Branch B", textColor: "#fff", zIndex: z + 4 }),
+            ]);
+            break;
+          }
+          case "insert:diagramTimeline": {
+            // Horizontal line with markers and alternating labels above/below
+            migrateSlideToObjects(); const th = THEMES[theme] || THEMES.default;
+            const ca = getContentArea(); const z = currentObjects.length;
+            const lineY = ca.y + ca.h * 0.5;
+            const objs: SlideObject[] = [
+              createShapeObj("line-h", { x: ca.x, y: lineY, width: ca.w, height: 0.5, fill: th.text, zIndex: z + 1 }),
+            ];
+            const n = 4;
+            for (let i = 0; i < n; i++) {
+              const cx = ca.x + ca.w * (0.1 + i * (0.8 / (n - 1)));
+              const above = i % 2 === 0;
+              objs.push(createShapeObj("circle", { x: cx - 1.4, y: lineY - 1.8, width: 2.8, height: 4, fill: th.accent, zIndex: z + 2 + i * 2 }));
+              objs.push(createShapeObj("rect", {
+                x: cx - ca.w * 0.09, y: above ? ca.y + ca.h * 0.16 : ca.y + ca.h * 0.62,
+                width: ca.w * 0.18, height: ca.h * 0.2,
+                fill: th.accent, text: `Step ${i + 1}`, textColor: "#fff", zIndex: z + 3 + i * 2,
+              }));
+            }
+            addObjectsToSlide(objs);
+            break;
+          }
+          case "insert:diagramProcess": {
+            // Left-to-right boxes connected by arrows
+            migrateSlideToObjects(); const th = THEMES[theme] || THEMES.default;
+            const ca = getContentArea(); const z = currentObjects.length;
+            const n = 3;
+            const boxW = ca.w * 0.26;
+            const gap = (ca.w - n * boxW) / (n - 1);
+            const boxY = ca.y + ca.h * 0.35;
+            const boxH = ca.h * 0.3;
+            const objs: SlideObject[] = [];
+            for (let i = 0; i < n; i++) {
+              const bx = ca.x + i * (boxW + gap);
+              objs.push(createShapeObj("rect", { x: bx, y: boxY, width: boxW, height: boxH, fill: th.accent, text: `Step ${i + 1}`, textColor: "#fff", zIndex: z + 1 + i * 2 }));
+              if (i < n - 1) objs.push(createShapeObj("arrow-right", { x: bx + boxW + gap * 0.15, y: boxY + boxH * 0.28, width: gap * 0.7, height: boxH * 0.44, fill: th.text, zIndex: z + 2 + i * 2 }));
+            }
+            addObjectsToSlide(objs);
+            break;
+          }
+          case "insert:diagramRelationship": {
+            // Two concepts linked by a double-headed arrow
+            migrateSlideToObjects(); const th = THEMES[theme] || THEMES.default;
+            const ca = getContentArea(); const z = currentObjects.length;
+            const boxW = ca.w * 0.34, boxH = ca.h * 0.3;
+            const y = ca.y + ca.h * 0.35;
+            addObjectsToSlide([
+              createShapeObj("rect", { x: ca.x, y, width: boxW, height: boxH, fill: th.accent, text: "Concept A", textColor: "#fff", zIndex: z + 1 }),
+              createShapeObj("arrow-double-h", { x: ca.x + boxW + ca.w * 0.02, y: y + boxH * 0.25, width: ca.w - 2 * boxW - ca.w * 0.04, height: boxH * 0.5, fill: th.text, zIndex: z + 2 }),
+              createShapeObj("rect", { x: ca.x + ca.w - boxW, y, width: boxW, height: boxH, fill: th.accent, text: "Concept B", textColor: "#fff", zIndex: z + 3 }),
+            ]);
+            break;
+          }
+          case "insert:diagramCycle": {
+            // Four stages in a loop with clockwise arrows
+            migrateSlideToObjects(); const th = THEMES[theme] || THEMES.default;
+            const ca = getContentArea(); const z = currentObjects.length;
+            const bw = ca.w * 0.3, bh = ca.h * 0.32;
+            const x0 = ca.x, x1 = ca.x + ca.w - bw;
+            const y0 = ca.y, y1 = ca.y + ca.h - bh;
+            const gapX = ca.w - 2 * bw, gapY = ca.h - 2 * bh;
+            addObjectsToSlide([
+              createShapeObj("rect", { x: x0, y: y0, width: bw, height: bh, fill: th.accent, text: "Stage 1", textColor: "#fff", zIndex: z + 1 }),
+              createShapeObj("rect", { x: x1, y: y0, width: bw, height: bh, fill: th.accent, text: "Stage 2", textColor: "#fff", zIndex: z + 2 }),
+              createShapeObj("rect", { x: x1, y: y1, width: bw, height: bh, fill: th.accent, text: "Stage 3", textColor: "#fff", zIndex: z + 3 }),
+              createShapeObj("rect", { x: x0, y: y1, width: bw, height: bh, fill: th.accent, text: "Stage 4", textColor: "#fff", zIndex: z + 4 }),
+              createShapeObj("arrow-right", { x: x0 + bw, y: y0 + bh * 0.3, width: gapX, height: bh * 0.4, fill: th.text, zIndex: z + 5 }),
+              createShapeObj("arrow-down", { x: x1 + bw * 0.3, y: y0 + bh, width: bw * 0.4, height: gapY, fill: th.text, zIndex: z + 6 }),
+              createShapeObj("arrow-left", { x: x0 + bw, y: y1 + bh * 0.3, width: gapX, height: bh * 0.4, fill: th.text, zIndex: z + 7 }),
+              createShapeObj("arrow-up", { x: x0 + bw * 0.3, y: y0 + bh, width: bw * 0.4, height: gapY, fill: th.text, zIndex: z + 8 }),
             ]);
             break;
           }

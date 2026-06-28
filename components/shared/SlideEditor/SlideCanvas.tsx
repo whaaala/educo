@@ -133,22 +133,26 @@ function getHandlePosition(dir: HandleDir): React.CSSProperties {
 // SubmenuItem — positions submenu left/right based on available space
 // ══════════════════════════════════════════════════
 
-function SubmenuItem({ item, menuBtnClass, menuPanelClass, arrowIcon, submenus, openSubmenu, setOpenSubmenu, menuLeft, onAction }: {
+function SubmenuItem({ item, menuBtnClass, menuPanelClass, arrowIcon, submenus, openSubmenu, onOpen, onScheduleClose, menuLeft, onAction }: {
   item: { label: string; icon?: React.ReactNode; submenu?: string };
   menuBtnClass: string; menuPanelClass: string; arrowIcon: React.ReactNode;
   submenus: Record<string, { label: string; icon?: React.ReactNode; action: () => void }[]>;
-  openSubmenu: string | null; setOpenSubmenu: (v: string | null) => void;
+  openSubmenu: string | null; onOpen: (id: string) => void; onScheduleClose: () => void;
   menuLeft: number; onAction: (action: () => void) => void;
 }) {
   const itemRef = useRef<HTMLDivElement>(null);
   const isOpen = openSubmenu === item.submenu;
+  // Position is measured AFTER the item is committed to the DOM (so its rect is
+  // valid) and stored in state. Rendering the submenu only once positioned avoids
+  // the old bug where a null ref made it flash in the top-left corner.
+  const [subStyle, setSubStyle] = useState<React.CSSProperties | null>(null);
 
-  // Calculate fixed submenu position from the item's bounding rect
-  const getSubmenuStyle = (): React.CSSProperties => {
-    const submenuW = 230;
+  useLayoutEffect(() => {
+    if (!isOpen) { setSubStyle(null); return; }
     const el = itemRef.current;
-    if (!el) return { top: 0, left: 0 };
+    if (!el) return;
     const rect = el.getBoundingClientRect();
+    const submenuW = 230;
     const fitsRight = rect.right + submenuW + 8 < window.innerWidth;
     const subItems = submenus[item.submenu!] || [];
     const submenuH = subItems.length * 34 + 16;
@@ -156,26 +160,27 @@ function SubmenuItem({ item, menuBtnClass, menuPanelClass, arrowIcon, submenus, 
     if (top + submenuH > window.innerHeight - 16) {
       top = Math.max(8, window.innerHeight - submenuH - 16);
     }
-    const left = fitsRight ? rect.right + 2 : rect.left - submenuW - 2;
-    return { top, left: Math.max(8, left), minWidth: 200 };
-  };
+    // Overlap the parent by 1px (no dead gap) so the mouse can cross onto the submenu.
+    const left = fitsRight ? rect.right - 1 : rect.left - submenuW + 1;
+    setSubStyle({ top, left: Math.max(8, left), minWidth: 200 });
+  }, [isOpen, item.submenu, submenus]);
 
   return (
     <div
       ref={itemRef}
-      onMouseEnter={() => setOpenSubmenu(item.submenu!)}
-      onMouseLeave={() => setOpenSubmenu(null)}
+      onMouseEnter={() => onOpen(item.submenu!)}
+      onMouseLeave={onScheduleClose}
     >
       <button className={menuBtnClass}>
         <span className="flex items-center gap-2">{item.icon}<span>{item.label}</span></span>
         {arrowIcon}
       </button>
-      {isOpen && typeof document !== "undefined" && createPortal(
+      {isOpen && subStyle && typeof document !== "undefined" && createPortal(
         <div
           className={`fixed z-[10002] ${menuPanelClass}`}
-          style={getSubmenuStyle()}
-          onMouseEnter={() => setOpenSubmenu(item.submenu!)}
-          onMouseLeave={() => setOpenSubmenu(null)}
+          style={subStyle}
+          onMouseEnter={() => onOpen(item.submenu!)}
+          onMouseLeave={onScheduleClose}
         >
           {submenus[item.submenu!].map((sub, j) => (
             <button
@@ -211,6 +216,17 @@ export default function SlideCanvas({
   const isDrawing = useRef(false);
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; objId: string } | null>(null);
   const [openSubmenu, setOpenSubmenu] = useState<string | null>(null);
+  // Submenu open/close with a small close delay so the mouse can travel across the
+  // gap between a parent item and its (portalled) submenu without it disappearing.
+  const submenuCloseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const openSubmenuNow = useCallback((id: string) => {
+    if (submenuCloseTimerRef.current) { clearTimeout(submenuCloseTimerRef.current); submenuCloseTimerRef.current = null; }
+    setOpenSubmenu(id);
+  }, []);
+  const scheduleSubmenuClose = useCallback(() => {
+    if (submenuCloseTimerRef.current) clearTimeout(submenuCloseTimerRef.current);
+    submenuCloseTimerRef.current = setTimeout(() => setOpenSubmenu(null), 220);
+  }, []);
   const rubberBandJustFinished = useRef(false);
 
   // ── Multi-select ──
@@ -288,6 +304,39 @@ export default function SlideCanvas({
     const multi = multiSelectedIdsRef.current;
     return multi.size > 1 ? multi : new Set([objId]);
   }, []);
+
+  // ── Clipboard: copy / cut / paste objects ──
+  const clipboardRef = useRef<SlideObject[] | null>(null);
+
+  const copyObjects = useCallback((id: string) => {
+    const ids = getTargetIds(id);
+    const copied = objects.filter(o => ids.has(o.id)).map(o => ({ ...o }));
+    if (copied.length) clipboardRef.current = copied as SlideObject[];
+  }, [objects, getTargetIds]);
+
+  const pasteObjects = useCallback(() => {
+    const clip = clipboardRef.current;
+    if (!clip || clip.length === 0) return;
+    const maxZ = Math.max(...objects.map(o => o.zIndex), 0);
+    const stamp = Date.now();
+    const clones = clip.map((o, i) => ({
+      ...o,
+      id: `obj-${stamp}-${i}-${Math.random().toString(36).slice(2, 6)}`,
+      x: Math.min(95, o.x + 3), y: Math.min(95, o.y + 3),
+      zIndex: maxZ + 1 + i,
+    })) as SlideObject[];
+    onChange([...objects, ...clones]);
+    onSelect(clones[0].id);
+    setMultiSelectedIds(new Set(clones.map(c => c.id)));
+  }, [objects, onChange, onSelect]);
+
+  const cutObjects = useCallback((id: string) => {
+    copyObjects(id);
+    const ids = getTargetIds(id);
+    onChange(objects.filter(o => !ids.has(o.id)));
+    onSelect(null);
+    setMultiSelectedIds(new Set());
+  }, [copyObjects, getTargetIds, objects, onChange, onSelect]);
 
   const rotateObj = useCallback((id: string, degrees: number) => {
     const ids = getTargetIds(id);
@@ -425,6 +474,8 @@ export default function SlideCanvas({
       if (e.key === "Escape" && croppingId) { applyCrop(croppingId); setCroppingId(null); e.preventDefault(); return; }
       if ((e.key === "Delete" || e.key === "Backspace") && (selectedId || multiSelectedIdsRef.current.size > 0)) { e.preventDefault(); deleteSelected(); }
       if (e.key === "Escape") { onSelect(null); setMultiSelectedIds(new Set()); setEditingTextId(null); setCroppingId(null); }
+      // Note: Ctrl+C/X/V/D for objects are handled at the SlideEditor level — do not
+      // duplicate them here or they fire twice.
       // Group: Ctrl+Alt+G
       if (e.key === "g" && (e.ctrlKey || e.metaKey) && e.altKey) {
         e.preventDefault();
@@ -1303,20 +1354,24 @@ export default function SlideCanvas({
         const selectedObjs = objects.filter(o => multiSelectedIds.has(o.id));
         const hasGroup = selectedObjs.some(o => getTopGroupId(o) !== null);
 
-        // Clamp menu position to viewport with margin
+        // Clamp menu position to viewport with margin. Reserve room on the RIGHT for a
+        // submenu so submenus open rightward (the expected direction) instead of flipping
+        // left over the slide when the menu lands near the right edge.
         const menuEstH = 520; // Estimated menu height (all items + padding)
+        const menuW = 220, submenuW = 234;
         let menuTop = contextMenu.y;
         let menuLeft = contextMenu.x;
-        if (menuLeft + 220 > window.innerWidth) menuLeft = window.innerWidth - 230;
+        if (menuLeft + menuW + submenuW > window.innerWidth - 8) menuLeft = window.innerWidth - menuW - submenuW - 8;
+        menuLeft = Math.max(8, menuLeft);
         if (menuTop + menuEstH > window.innerHeight - 16) menuTop = Math.max(8, window.innerHeight - menuEstH - 16);
 
         const arrowIcon = <svg viewBox="0 0 16 16" className="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polyline points="6,4 10,8 6,12" /></svg>;
 
         type MenuItem = { label: string; shortcut?: string; icon?: React.ReactNode; action?: () => void; submenu?: string; disabled?: boolean };
         const items: (MenuItem | "---")[] = [
-          { label: "Cut", shortcut: "Ctrl+X", icon: <svg viewBox="0 0 16 16" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><circle cx="5" cy="12" r="2.5"/><circle cx="11" cy="12" r="2.5"/><line x1="5" y1="9.5" x2="11" y2="3"/><line x1="11" y1="9.5" x2="5" y2="3"/></svg>, action: () => {} },
-          { label: "Copy", shortcut: "Ctrl+C", icon: <svg viewBox="0 0 16 16" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="5" y="5" width="9" height="9" rx="1"/><path d="M2 11V3a1 1 0 011-1h8"/></svg>, action: () => {} },
-          { label: "Paste", shortcut: "Ctrl+V", icon: <svg viewBox="0 0 16 16" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="2" width="10" height="12" rx="1"/><path d="M6 2V1h4v1"/><line x1="6" y1="7" x2="10" y2="7"/><line x1="6" y1="10" x2="10" y2="10"/></svg>, action: () => {} },
+          { label: "Cut", shortcut: "Ctrl+X", icon: <svg viewBox="0 0 16 16" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><circle cx="5" cy="12" r="2.5"/><circle cx="11" cy="12" r="2.5"/><line x1="5" y1="9.5" x2="11" y2="3"/><line x1="11" y1="9.5" x2="5" y2="3"/></svg>, action: () => cutObjects(objId) },
+          { label: "Copy", shortcut: "Ctrl+C", icon: <svg viewBox="0 0 16 16" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="5" y="5" width="9" height="9" rx="1"/><path d="M2 11V3a1 1 0 011-1h8"/></svg>, action: () => copyObjects(objId) },
+          { label: "Paste", shortcut: "Ctrl+V", icon: <svg viewBox="0 0 16 16" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="2" width="10" height="12" rx="1"/><path d="M6 2V1h4v1"/><line x1="6" y1="7" x2="10" y2="7"/><line x1="6" y1="10" x2="10" y2="10"/></svg>, action: () => pasteObjects(), disabled: !clipboardRef.current },
           "---",
           { label: "Delete", shortcut: "Del", icon: <svg viewBox="0 0 16 16" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 4h10M5 4V3a1 1 0 011-1h4a1 1 0 011 1v1M6 7v4M10 7v4M4 4l.5 9a1 1 0 001 1h5a1 1 0 001-1L12 4"/></svg>, action: () => { if (hasMultiSelect) { deleteSelected(); } else { onSelect(objId); setTimeout(deleteSelected, 0); } } },
           "---",
@@ -1391,7 +1446,8 @@ export default function SlideCanvas({
                     arrowIcon={arrowIcon}
                     submenus={submenus}
                     openSubmenu={openSubmenu}
-                    setOpenSubmenu={setOpenSubmenu}
+                    onOpen={openSubmenuNow}
+                    onScheduleClose={scheduleSubmenuClose}
                     menuLeft={menuLeft}
                     onAction={(action) => { action(); setContextMenu(null); setOpenSubmenu(null); }}
                   />

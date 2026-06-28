@@ -95,6 +95,74 @@ Feature: Presentation Slide Editor
     When the user chooses Insert > Diagram > Grid
     Then the slide should gain four cells labelled Item 1 through Item 4
 
+  Scenario Outline: Each diagram type inserts its own distinct layout
+    Given a slide is active
+    When the user chooses Insert > Diagram > <type>
+    Then the slide should show the <type> layout, not the Hierarchy layout
+    # Regression: Timeline, Process, Relationship and Cycle all shared the Hierarchy
+    # case and produced the identical Main / Branch A / Branch B boxes.
+
+    Examples:
+      | type         | layout                                            |
+      | Hierarchy    | Main with Branch A and Branch B below             |
+      | Timeline     | markers on a line with alternating step labels    |
+      | Process      | left-to-right steps connected by arrows           |
+      | Relationship | two concepts joined by a double-headed arrow      |
+      | Cycle        | four stages in a clockwise loop with arrows       |
+
+  # ──────────────────────────────────────────────────
+  # Object Right-Click Context Menu
+  # ──────────────────────────────────────────────────
+
+  Scenario: Right-click a shape exposes working Cut, Copy and Paste
+    Given a shape is selected on the slide
+    When the user right-clicks it and chooses Copy then Paste
+    Then a duplicate of the shape should be added to the slide
+    When the user chooses Cut
+    Then the shape should be removed and held on the clipboard
+    # Regression: Cut/Copy/Paste were empty no-op handlers.
+
+  Scenario: Context-menu submenus open next to their item
+    Given the object context menu is open
+    When the user hovers Rotate, Centre on page, Align horizontally or Align vertically
+    Then the submenu should appear directly beside that item
+    And never flash into the top-left corner of the screen
+    And it should stay open while the cursor moves onto it
+    And it should open to the right of the menu even when the menu is near the right edge
+    # Regressions: a null ref made the submenu jump to {top:0,left:0}; the hover gap
+    # closed it before it could be used; and a right-edge menu flipped it left over the
+    # slide. The position is measured in a layout effect, closing is delayed across the
+    # gap, and the menu reserves room on the right so submenus open rightward.
+
+  Scenario: Rotate and flip act on the selected shape
+    Given a shape is selected
+    When the user chooses Rotate > Rotate clockwise by 90°
+    Then the shape should rotate 90 degrees
+    And Flip horizontally / vertically should mirror it
+
+  Scenario: Inserted diagrams fit within the slide with margins
+    Given a slide is active
+    When the user inserts any diagram or chart
+    Then every shape should fit inside the slide bounds
+    And there should be a visible margin on all four sides — nothing flush to the edge
+    # Regression: getContentArea could return the full slide, so a 2-row grid reached
+    # ~93% and the bottom row overflowed off the page.
+
+  Scenario: Adding an item to a full slide opens a new slide automatically
+    Given the current slide is already full of items
+    When the user inserts another item
+    Then a new slide should be created right after the current one
+    And the new item should be placed on the new slide, not overlapping the full one
+    And the editor should switch to the new slide
+    And a toast should explain the slide was full
+    # The new slide is created after the menu closes so the menu's portal isn't
+    # orphaned — otherwise the next insert action would be swallowed.
+
+  Scenario: Items keep stacking and overflowing across multiple slides
+    Given items are inserted repeatedly
+    Then each slide should fill up before a new one is created
+    And no inserted item should be lost
+
   Scenario: Double-click a shape or diagram node to edit its text
     Given a shape with text exists on the slide and is not selected
     When the user double-clicks the shape

@@ -241,6 +241,41 @@ describe("SlideMenuBar — Complete Menu System", () => {
       expect(slideCanvasSource).toContain("key={`tb-view-${obj.id}`}");
     });
 
+    // The object right-click context menu: Cut/Copy/Paste must do something (they
+    // used to be `() => {}` no-ops), and the Rotate/Align/Centre submenus must be
+    // positioned next to their item, not flashed into the top-left corner.
+    it("wires context-menu Cut/Copy/Paste to real clipboard actions", () => {
+      expect(slideCanvasSource).toContain("const clipboardRef = useRef");
+      expect(slideCanvasSource).toContain("const copyObjects = useCallback");
+      expect(slideCanvasSource).toContain("const cutObjects = useCallback");
+      expect(slideCanvasSource).toContain("const pasteObjects = useCallback");
+      expect(slideCanvasSource).toContain("action: () => cutObjects(objId)");
+      expect(slideCanvasSource).toContain("action: () => copyObjects(objId)");
+      expect(slideCanvasSource).toContain("action: () => pasteObjects()");
+      // The old no-op placeholders must be gone
+      expect(slideCanvasSource).not.toContain('label: "Cut", shortcut: "Ctrl+X", icon: <svg viewBox="0 0 16 16" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><circle cx="5" cy="12" r="2.5"/><circle cx="11" cy="12" r="2.5"/><line x1="5" y1="9.5" x2="11" y2="3"/><line x1="11" y1="9.5" x2="5" y2="3"/></svg>, action: () => {} }');
+    });
+
+    it("positions context-menu submenus via measured state, not a null-ref top-left fallback", () => {
+      expect(slideCanvasSource).toContain("const [subStyle, setSubStyle]");
+      expect(slideCanvasSource).toMatch(/useLayoutEffect\(\(\) => \{[\s\S]*?setSubStyle\(/);
+      // Only render the submenu once it has been positioned
+      expect(slideCanvasSource).toContain("isOpen && subStyle && typeof document");
+      // The old fallback that put the submenu at (0,0) must be gone
+      expect(slideCanvasSource).not.toContain("if (!el) return { top: 0, left: 0 };");
+    });
+
+    it("keeps a submenu open across the hover gap and opens it rightward", () => {
+      // Close is delayed so the cursor can travel onto the (portalled) submenu
+      expect(slideCanvasSource).toContain("const scheduleSubmenuClose = useCallback");
+      expect(slideCanvasSource).toContain("const openSubmenuNow = useCallback");
+      expect(slideCanvasSource).toContain("onMouseLeave={onScheduleClose}");
+      expect(slideCanvasSource).toContain("onMouseEnter={() => onOpen(item.submenu!)}");
+      // The context menu reserves submenu width on the right so submenus open rightward
+      expect(slideCanvasSource).toContain("const menuW = 220, submenuW = 234;");
+      expect(slideCanvasSource).toMatch(/menuLeft = window\.innerWidth - menuW - submenuW - 8/);
+    });
+
     // Shape text uses grid + alignContent (matching textboxes) so vertical alignment
     // and the caret behave correctly — including a centered caret in an empty box.
     it("uses grid + alignContent for shape text vertical alignment", () => {
@@ -255,6 +290,48 @@ describe("SlideMenuBar — Complete Menu System", () => {
       expect(shapesSource).toContain('rect(2, 2, 96, 96, 10)');
       // The old clipped geometry must be gone
       expect(shapesSource).not.toContain('rect(5, 15, 90, 70, 0)');
+    });
+
+    // Inserted diagrams/charts must fit on the slide with margins. getContentArea
+    // previously could return the full slide (y:5, h:90), so a 2-row grid reached
+    // ~93% — flush against the bottom edge and overflowing visually.
+    it("getContentArea reserves side/top/bottom margins so diagrams fit on the slide", () => {
+      expect(slideEditorSource).toContain("const BOTTOM = 92;");
+      expect(slideEditorSource).toContain("const SIDE = 8;");
+      // The old full-slide default must be gone
+      expect(slideEditorSource).not.toContain("return { x: 5, y: 5, w: 90, h: 90 };");
+      expect(slideEditorSource).not.toContain("h: 95 - titleBottom");
+    });
+
+    // Each diagram type must produce its OWN distinct layout. Previously Timeline,
+    // Process, Relationship and Cycle all fell through to the Hierarchy case and
+    // rendered the identical Main/Branch A/Branch B layout.
+    it("gives each diagram type a distinct layout, not a shared Hierarchy fallthrough", () => {
+      // Five separate case bodies, no shared fallthrough
+      expect(slideEditorSource).toContain('case "insert:diagramHierarchy": {');
+      expect(slideEditorSource).toContain('case "insert:diagramTimeline": {');
+      expect(slideEditorSource).toContain('case "insert:diagramProcess": {');
+      expect(slideEditorSource).toContain('case "insert:diagramRelationship": {');
+      expect(slideEditorSource).toContain('case "insert:diagramCycle": {');
+      // Each builds its own labels
+      expect(slideEditorSource).toContain('text: "Main"');        // Hierarchy
+      expect(slideEditorSource).toContain('text: `Step ${i + 1}`'); // Timeline / Process
+      expect(slideEditorSource).toContain('text: "Concept A"');   // Relationship
+      expect(slideEditorSource).toMatch(/text: "Stage 1"/);       // Cycle
+      // The old combined fallthrough must be gone
+      expect(slideEditorSource).not.toMatch(/case "insert:diagramHierarchy": case "insert:diagramTimeline":/);
+    });
+
+    // When the current slide is full, inserting an object should create a new slide
+    // and place it there instead of overlapping/overflowing existing content.
+    it("auto-overflows inserted objects onto a new slide when the current one is full", () => {
+      expect(slideEditorSource).toContain("const fitsOnCurrentSlide = useCallback");
+      expect(slideEditorSource).toContain("const isLayoutPlaceholder = useCallback");
+      // addObjectsToSlide branches on fit and creates a new slide otherwise
+      expect(slideEditorSource).toMatch(/if \(fitsOnCurrentSlide\(objs\)\)/);
+      // The new-slide creation is deferred out of the menu click so it doesn't orphan
+      // the menu portal and swallow the next action.
+      expect(slideEditorSource).toMatch(/requestAnimationFrame\(\(\) => \{[\s\S]*?ns\.splice\(curIdx \+ 1, 0, newSlide\)/);
     });
   });
 
