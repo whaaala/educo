@@ -12,6 +12,7 @@ import type { SlideObject, TextBoxObject, ImageObject, ShapeObject, DrawingObjec
 import { SHAPE_DEFS } from "./shapes";
 import { ColorGrid, TabbedColorPalette, ColorPickerPopover, isNativeColorPickerOpen, SOLID_COLORS, GRADIENT_COLORS, GLOSSY_COLORS, BORDER_COLORS, TEXT_COLORS, colorToCSS } from "@/components/shared/ColorPalettePicker";
 import CustomDropdown from "@/components/shared/CustomDropdown";
+import TextFormatToolbar from "@/components/shared/TextFormatToolbar";
 import TableStylePanel from "@/components/shared/TableStylePanel";
 
 // ══════════════════════════════════════════════════
@@ -68,7 +69,11 @@ function getSnapTargets(snapToGrid: boolean, snapToGuides: boolean, guides: { or
 // Shape SVG renderer
 // ══════════════════════════════════════════════════
 
-function ShapeSVG({ shape, fill, stroke, strokeWidth, text, textColor, textSize }: {
+// Memoized so it does NOT re-render (and re-inject its dangerouslySetInnerHTML)
+// on unrelated parent re-renders such as selection changes. Re-injecting the
+// innerHTML remounts the inner shape node between mousedown/mouseup, which makes
+// the browser swallow click/dblclick events — breaking double-click-to-edit.
+const ShapeSVG = React.memo(function ShapeSVG({ shape, fill, stroke, strokeWidth, text, textColor, textSize }: {
   shape: string; fill: string; stroke: string; strokeWidth: number;
   text?: string; textColor?: string; textSize?: number;
 }) {
@@ -94,7 +99,7 @@ function ShapeSVG({ shape, fill, stroke, strokeWidth, text, textColor, textSize 
       {text && <text x="50" y="55" textAnchor="middle" dominantBaseline="middle" fill={textColor || "#fff"} fontSize={textSize || 14} fontWeight="600">{text}</text>}
     </svg>
   );
-}
+});
 
 // ══════════════════════════════════════════════════
 // Resize handles
@@ -125,6 +130,70 @@ function getHandlePosition(dir: HandleDir): React.CSSProperties {
 }
 
 // ══════════════════════════════════════════════════
+// SubmenuItem — positions submenu left/right based on available space
+// ══════════════════════════════════════════════════
+
+function SubmenuItem({ item, menuBtnClass, menuPanelClass, arrowIcon, submenus, openSubmenu, setOpenSubmenu, menuLeft, onAction }: {
+  item: { label: string; icon?: React.ReactNode; submenu?: string };
+  menuBtnClass: string; menuPanelClass: string; arrowIcon: React.ReactNode;
+  submenus: Record<string, { label: string; icon?: React.ReactNode; action: () => void }[]>;
+  openSubmenu: string | null; setOpenSubmenu: (v: string | null) => void;
+  menuLeft: number; onAction: (action: () => void) => void;
+}) {
+  const itemRef = useRef<HTMLDivElement>(null);
+  const isOpen = openSubmenu === item.submenu;
+
+  // Calculate fixed submenu position from the item's bounding rect
+  const getSubmenuStyle = (): React.CSSProperties => {
+    const submenuW = 230;
+    const el = itemRef.current;
+    if (!el) return { top: 0, left: 0 };
+    const rect = el.getBoundingClientRect();
+    const fitsRight = rect.right + submenuW + 8 < window.innerWidth;
+    const subItems = submenus[item.submenu!] || [];
+    const submenuH = subItems.length * 34 + 16;
+    let top = rect.top;
+    if (top + submenuH > window.innerHeight - 16) {
+      top = Math.max(8, window.innerHeight - submenuH - 16);
+    }
+    const left = fitsRight ? rect.right + 2 : rect.left - submenuW - 2;
+    return { top, left: Math.max(8, left), minWidth: 200 };
+  };
+
+  return (
+    <div
+      ref={itemRef}
+      onMouseEnter={() => setOpenSubmenu(item.submenu!)}
+      onMouseLeave={() => setOpenSubmenu(null)}
+    >
+      <button className={menuBtnClass}>
+        <span className="flex items-center gap-2">{item.icon}<span>{item.label}</span></span>
+        {arrowIcon}
+      </button>
+      {isOpen && typeof document !== "undefined" && createPortal(
+        <div
+          className={`fixed z-[10002] ${menuPanelClass}`}
+          style={getSubmenuStyle()}
+          onMouseEnter={() => setOpenSubmenu(item.submenu!)}
+          onMouseLeave={() => setOpenSubmenu(null)}
+        >
+          {submenus[item.submenu!].map((sub, j) => (
+            <button
+              key={j}
+              onClick={() => onAction(sub.action)}
+              className={menuBtnClass}
+            >
+              <span className="flex items-center gap-2">{sub.icon}<span>{sub.label}</span></span>
+            </button>
+          ))}
+        </div>,
+        document.body,
+      )}
+    </div>
+  );
+}
+
+// ══════════════════════════════════════════════════
 // SlideCanvas Component
 // ══════════════════════════════════════════════════
 
@@ -141,17 +210,50 @@ export default function SlideCanvas({
   const [drawingPath, setDrawingPath] = useState<string>("");
   const isDrawing = useRef(false);
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; objId: string } | null>(null);
+  const [openSubmenu, setOpenSubmenu] = useState<string | null>(null);
+  const rubberBandJustFinished = useRef(false);
+
+  // ── Multi-select ──
+  const [multiSelectedIds, setMultiSelectedIds] = useState<Set<string>>(new Set());
+  const multiSelectedIdsRef = useRef(multiSelectedIds);
+  multiSelectedIdsRef.current = multiSelectedIds;
+
+  // Keep multi-select in sync: if selectedId changes externally, reset multi-select
+  // BUT preserve multi-selection if it already contains the new selectedId
+  useEffect(() => {
+    if (selectedId) {
+      setMultiSelectedIds(prev => {
+        // If multi-selection already includes the new selectedId, keep it
+        if (prev.size > 1 && prev.has(selectedId)) return prev;
+        // If single-selection already matches, no change needed
+        if (prev.size === 1 && prev.has(selectedId)) return prev;
+        // Otherwise reset to single selection
+        return new Set([selectedId]);
+      });
+    } else {
+      setMultiSelectedIds(new Set());
+    }
+  }, [selectedId]);
+
+  // All IDs that should show selection ring
+  const allSelectedIds = multiSelectedIds.size > 1 ? multiSelectedIds : new Set(selectedId ? [selectedId] : []);
 
   // Update a single object
   const updateObj = useCallback((id: string, updates: Partial<SlideObject>) => {
     onChange(objects.map(o => o.id === id ? { ...o, ...updates } as SlideObject : o));
   }, [objects, onChange]);
 
-  // Delete selected
+  // Delete selected (supports multi-select)
   const deleteSelected = useCallback(() => {
-    if (!selectedId) return;
-    onChange(objects.filter(o => o.id !== selectedId));
-    onSelect(null);
+    const ids = multiSelectedIdsRef.current;
+    if (ids.size > 0) {
+      onChange(objects.filter(o => !ids.has(o.id)));
+      setMultiSelectedIds(new Set());
+      onSelect(null);
+    } else if (selectedId) {
+      onChange(objects.filter(o => o.id !== selectedId));
+      onSelect(null);
+    }
   }, [selectedId, objects, onChange, onSelect]);
 
   // Z-index helpers
@@ -181,20 +283,171 @@ export default function SlideCanvas({
     onSelect(clone.id);
   }, [objects, onChange, onSelect]);
 
+  // ── Rotate / Flip helpers — applies to all selected or single objId ──
+  const getTargetIds = useCallback((objId: string): Set<string> => {
+    const multi = multiSelectedIdsRef.current;
+    return multi.size > 1 ? multi : new Set([objId]);
+  }, []);
+
+  const rotateObj = useCallback((id: string, degrees: number) => {
+    const ids = getTargetIds(id);
+    onChange(objects.map(o => {
+      if (!ids.has(o.id)) return o;
+      // Normalize rotation to 0-359
+      let newRot = ((o.rotation || 0) + degrees) % 360;
+      if (newRot < 0) newRot += 360;
+      return { ...o, rotation: newRot } as SlideObject;
+    }));
+  }, [objects, onChange, getTargetIds]);
+
+  const flipObjH = useCallback((id: string) => {
+    const ids = getTargetIds(id);
+    onChange(objects.map(o => {
+      if (!ids.has(o.id)) return o;
+      return { ...o, scaleX: ((o as any).scaleX || 1) * -1 } as unknown as SlideObject;
+    }));
+  }, [objects, onChange, getTargetIds]);
+
+  const flipObjV = useCallback((id: string) => {
+    const ids = getTargetIds(id);
+    onChange(objects.map(o => {
+      if (!ids.has(o.id)) return o;
+      return { ...o, scaleY: ((o as any).scaleY || 1) * -1 } as unknown as SlideObject;
+    }));
+  }, [objects, onChange, getTargetIds]);
+
+  // ── Centre on page — applies to all selected or single objId ──
+  const centreOnPageH = useCallback((id: string) => {
+    const ids = getTargetIds(id);
+    onChange(objects.map(o => {
+      if (!ids.has(o.id)) return o;
+      return { ...o, x: (100 - o.width) / 2 } as SlideObject;
+    }));
+  }, [objects, onChange, getTargetIds]);
+
+  const centreOnPageV = useCallback((id: string) => {
+    const ids = getTargetIds(id);
+    onChange(objects.map(o => {
+      if (!ids.has(o.id)) return o;
+      return { ...o, y: (100 - o.height) / 2 } as SlideObject;
+    }));
+  }, [objects, onChange, getTargetIds]);
+
+  // ── Align objects — works for multi-select OR single object relative to slide ──
+  const alignObjects = useCallback((direction: "left" | "centre" | "right" | "top" | "middle" | "bottom", objId?: string) => {
+    const ids = multiSelectedIdsRef.current;
+    const hasMulti = ids.size > 1;
+    const selected = hasMulti ? objects.filter(o => ids.has(o.id)) : (objId ? objects.filter(o => o.id === objId) : []);
+    if (selected.length === 0) return;
+
+    let updated = [...objects];
+    if (hasMulti) {
+      // Align multiple objects relative to each other
+      switch (direction) {
+        case "left": { const v = Math.min(...selected.map(o => o.x)); updated = updated.map(o => ids.has(o.id) ? { ...o, x: v } as SlideObject : o); break; }
+        case "centre": { const avg = selected.reduce((s, o) => s + o.x + o.width / 2, 0) / selected.length; updated = updated.map(o => ids.has(o.id) ? { ...o, x: avg - o.width / 2 } as SlideObject : o); break; }
+        case "right": { const v = Math.max(...selected.map(o => o.x + o.width)); updated = updated.map(o => ids.has(o.id) ? { ...o, x: v - o.width } as SlideObject : o); break; }
+        case "top": { const v = Math.min(...selected.map(o => o.y)); updated = updated.map(o => ids.has(o.id) ? { ...o, y: v } as SlideObject : o); break; }
+        case "middle": { const avg = selected.reduce((s, o) => s + o.y + o.height / 2, 0) / selected.length; updated = updated.map(o => ids.has(o.id) ? { ...o, y: avg - o.height / 2 } as SlideObject : o); break; }
+        case "bottom": { const v = Math.max(...selected.map(o => o.y + o.height)); updated = updated.map(o => ids.has(o.id) ? { ...o, y: v - o.height } as SlideObject : o); break; }
+      }
+    } else {
+      // Single object — align relative to slide (0-100%)
+      const obj = selected[0];
+      switch (direction) {
+        case "left": updated = updated.map(o => o.id === obj.id ? { ...o, x: 0 } as SlideObject : o); break;
+        case "centre": updated = updated.map(o => o.id === obj.id ? { ...o, x: (100 - o.width) / 2 } as SlideObject : o); break;
+        case "right": updated = updated.map(o => o.id === obj.id ? { ...o, x: 100 - o.width } as SlideObject : o); break;
+        case "top": updated = updated.map(o => o.id === obj.id ? { ...o, y: 0 } as SlideObject : o); break;
+        case "middle": updated = updated.map(o => o.id === obj.id ? { ...o, y: (100 - o.height) / 2 } as SlideObject : o); break;
+        case "bottom": updated = updated.map(o => o.id === obj.id ? { ...o, y: 100 - o.height } as SlideObject : o); break;
+      }
+    }
+    onChange(updated);
+  }, [objects, onChange]);
+
+  // ── Group / Ungroup (supports nested groups) ──
+  // Each object can have groupIds: string[] — a stack of group memberships.
+  // The last entry is the most recent group. Ungrouping pops the latest group.
+  const getGroupIds = (o: SlideObject): string[] => (o as any).groupIds || ((o as any).groupId ? [(o as any).groupId] : []);
+  const getTopGroupId = (o: SlideObject): string | null => { const ids = getGroupIds(o); return ids.length > 0 ? ids[ids.length - 1] : null; };
+
+  const groupSelected = useCallback(() => {
+    const ids = multiSelectedIdsRef.current;
+    if (ids.size < 2) return;
+    const newGroupId = `group-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+    // Push new groupId onto each selected object's groupIds stack
+    const grouped = objects.map(o => {
+      if (!ids.has(o.id)) return o;
+      const existing = getGroupIds(o);
+      return { ...o, groupIds: [...existing, newGroupId] } as unknown as SlideObject;
+    });
+    onChange(grouped);
+    setMultiSelectedIds(ids);
+    onSelect([...ids][0]);
+  }, [objects, onChange, onSelect]);
+
+  const ungroupSelected = useCallback(() => {
+    const ids = multiSelectedIdsRef.current;
+    if (ids.size === 0) return;
+    // Find the most recent (top-level) groupId among selected objects
+    const selectedObjs = objects.filter(o => ids.has(o.id));
+    const topGroupIds = selectedObjs.map(o => getTopGroupId(o)).filter(Boolean) as string[];
+    if (topGroupIds.length === 0) return;
+    // Find the most recent groupId (the one that was created last)
+    // Group IDs contain timestamps, so sorting lexicographically gives chronological order
+    const latestGroupId = topGroupIds.sort().pop()!;
+    // Pop that groupId from all objects that have it as their top group
+    const ungrouped = objects.map(o => {
+      const gids = getGroupIds(o);
+      if (gids.length > 0 && gids[gids.length - 1] === latestGroupId) {
+        const newGids = gids.slice(0, -1);
+        const updated = { ...o, groupIds: newGids } as any;
+        // Clean up legacy groupId field
+        delete updated.groupId;
+        delete updated.groupOffsetX;
+        delete updated.groupOffsetY;
+        return updated as SlideObject;
+      }
+      return o;
+    });
+    onChange(ungrouped);
+    // After ungrouping, select all objects that were in the ungrouped group
+    const stillSelected = new Set(objects.filter(o => getTopGroupId(o) === latestGroupId).map(o => o.id));
+    setMultiSelectedIds(stillSelected);
+  }, [objects, onChange]);
+
   // Keyboard handler
   useEffect(() => {
     if (!canEdit) return;
     const handler = (e: KeyboardEvent) => {
       if (editingTextId) return; // Don't handle keys while editing text
       if (e.key === "Escape" && croppingId) { applyCrop(croppingId); setCroppingId(null); e.preventDefault(); return; }
-      if ((e.key === "Delete" || e.key === "Backspace") && selectedId) { e.preventDefault(); deleteSelected(); }
-      if (e.key === "Escape") { onSelect(null); setEditingTextId(null); setCroppingId(null); }
+      if ((e.key === "Delete" || e.key === "Backspace") && (selectedId || multiSelectedIdsRef.current.size > 0)) { e.preventDefault(); deleteSelected(); }
+      if (e.key === "Escape") { onSelect(null); setMultiSelectedIds(new Set()); setEditingTextId(null); setCroppingId(null); }
+      // Group: Ctrl+Alt+G
+      if (e.key === "g" && (e.ctrlKey || e.metaKey) && e.altKey) {
+        e.preventDefault();
+        const ids = multiSelectedIdsRef.current;
+        if (ids.size >= 2) {
+          // Check if selected objects share a common top-level group
+          const selectedObjs = objects.filter(o => ids.has(o.id));
+          const topGroups = selectedObjs.map(o => getTopGroupId(o)).filter(Boolean);
+          const hasGroup = topGroups.length > 0;
+          if (hasGroup) ungroupSelected();
+          else groupSelected();
+        } else if (ids.size === 1) {
+          // Single object selected — ungroup if it's in a group
+          const obj = objects.find(o => ids.has(o.id));
+          if (obj && getTopGroupId(obj)) ungroupSelected();
+        }
+      }
     };
     document.addEventListener("keydown", handler);
     return () => document.removeEventListener("keydown", handler);
-  }, [canEdit, selectedId, editingTextId, deleteSelected, onSelect]);
+  }, [canEdit, selectedId, editingTextId, deleteSelected, onSelect, objects, groupSelected, ungroupSelected]);
 
-  // ── Drag handler ──
+  // ── Drag handler (supports multi-select and grouped objects) ──
   const startDrag = useCallback((e: React.MouseEvent, objId: string) => {
     if (!canEdit || drawingMode || isResizingRef.current) return;
     e.preventDefault();
@@ -206,24 +459,58 @@ export default function SlideCanvas({
     const rect = canvas.getBoundingClientRect();
     const startX = e.clientX;
     const startY = e.clientY;
-    const origX = obj.x;
-    const origY = obj.y;
     const xTargets = getSnapTargets(snapToGrid, snapToGuides, guides, "x");
     const yTargets = getSnapTargets(snapToGrid, snapToGuides, guides, "y");
+
+    // Determine which objects to drag together
+    const dragIds = new Set<string>();
+    // 1) If this object is in multi-selection, drag all selected
+    const currentMulti = multiSelectedIdsRef.current;
+    if (currentMulti.has(objId) && currentMulti.size > 1) {
+      currentMulti.forEach(id => dragIds.add(id));
+    }
+    // 2) If this object is grouped, drag all in the top-level group
+    const topGid = getTopGroupId(obj);
+    if (topGid) {
+      objects.filter(o => getTopGroupId(o) === topGid).forEach(o => dragIds.add(o.id));
+    }
+    // 3) If neither, just drag the single object
+    if (dragIds.size === 0) dragIds.add(objId);
+
+    // Store original positions and compute group bounding box
+    const draggedObjs = objects.filter(o => dragIds.has(o.id));
+    const origPositions = new Map<string, { x: number; y: number }>();
+    draggedObjs.forEach(o => origPositions.set(o.id, { x: o.x, y: o.y }));
+
+    // Group bounding box (for clamping the entire group, not individual objects)
+    const groupMinX = Math.min(...draggedObjs.map(o => o.x));
+    const groupMinY = Math.min(...draggedObjs.map(o => o.y));
+    const groupMaxX = Math.max(...draggedObjs.map(o => o.x + o.width));
+    const groupMaxY = Math.max(...draggedObjs.map(o => o.y + o.height));
+
+    const origX = obj.x;
+    const origY = obj.y;
 
     const handleMove = (ev: MouseEvent) => {
       const dx = ((ev.clientX - startX) / rect.width) * 100;
       const dy = ((ev.clientY - startY) / rect.height) * 100;
-      let newX = Math.max(0, Math.min(100 - obj.width, origX + dx));
-      let newY = Math.max(0, Math.min(100 - obj.height, origY + dy));
+      let newX = origX + dx;
+      let newY = origY + dy;
       newX = snapValue(newX, xTargets);
       newY = snapValue(newY, yTargets);
-      // Also snap right edge and center
-      newX = snapValue(newX + obj.width, xTargets) - obj.width;
-      newX = snapValue(newX + obj.width / 2, xTargets) - obj.width / 2;
-      newY = snapValue(newY + obj.height, yTargets) - obj.height;
-      newY = snapValue(newY + obj.height / 2, yTargets) - obj.height / 2;
-      updateObj(objId, { x: newX, y: newY });
+      let deltaX = newX - origX;
+      let deltaY = newY - origY;
+      // Clamp delta so the entire group stays within the slide (0-100%)
+      if (groupMinX + deltaX < 0) deltaX = -groupMinX;
+      if (groupMaxX + deltaX > 100) deltaX = 100 - groupMaxX;
+      if (groupMinY + deltaY < 0) deltaY = -groupMinY;
+      if (groupMaxY + deltaY > 100) deltaY = 100 - groupMaxY;
+      // Move all dragged objects by the same clamped delta
+      onChange(objects.map(o => {
+        if (!dragIds.has(o.id)) return o;
+        const orig = origPositions.get(o.id)!;
+        return { ...o, x: orig.x + deltaX, y: orig.y + deltaY } as SlideObject;
+      }));
     };
     const handleUp = () => {
       document.removeEventListener("mousemove", handleMove);
@@ -231,7 +518,7 @@ export default function SlideCanvas({
     };
     document.addEventListener("mousemove", handleMove);
     document.addEventListener("mouseup", handleUp);
-  }, [canEdit, drawingMode, objects, snapToGrid, snapToGuides, guides, updateObj]);
+  }, [canEdit, drawingMode, objects, snapToGrid, snapToGuides, guides, onChange]);
 
   // ── Resize handler ──
   const startResize = useCallback((e: React.MouseEvent, objId: string, handle: HandleDir) => {
@@ -257,6 +544,13 @@ export default function SlideCanvas({
       if (handle.includes("w")) { w = Math.max(5, origW - dx); x = origX + origW - w; }
       if (handle.includes("s")) h = Math.max(3, origH + dy);
       if (handle.includes("n")) { h = Math.max(3, origH - dy); y = origY + origH - h; }
+      // Clamp to slide boundaries (0-100%)
+      if (x < 0) { w += x; x = 0; }
+      if (y < 0) { h += y; y = 0; }
+      if (x + w > 100) w = 100 - x;
+      if (y + h > 100) h = 100 - y;
+      w = Math.max(5, w);
+      h = Math.max(3, h);
       // Preserve rotation during resize
       updateObj(objId, { x, y, width: w, height: h, rotation: origRotation });
     };
@@ -349,6 +643,11 @@ export default function SlideCanvas({
   }, [updateObj]);
 
   const handleCanvasClick = useCallback((e: React.MouseEvent) => {
+    // Skip if rubber band selection just completed (click fires after mouseUp)
+    if (rubberBandJustFinished.current) {
+      rubberBandJustFinished.current = false;
+      return;
+    }
     const clickedObj = (e.target as HTMLElement).closest("[data-slide-obj]");
     // If clicked on the canvas background (not on any object) → deselect
     if (!clickedObj) {
@@ -356,22 +655,17 @@ export default function SlideCanvas({
       if (isNativeColorPickerOpen()) return;
       if (croppingId) { applyCrop(croppingId); setCroppingId(null); }
       onSelect(null);
+      setMultiSelectedIds(new Set());
       setEditingTextId(null);
       setShowColorPickerId(null);
       setContextMenu(null);
       return;
     }
-    // If clicked on the already-selected object and NOT in crop/edit mode → deselect
-    const clickedId = clickedObj.getAttribute("data-slide-obj");
-    if (clickedId === selectedId && !croppingId && !editingTextId) {
-      // Only deselect on single click (not double-click which enters edit/crop)
-      // Use a small delay to differentiate single vs double click
-    }
-  }, [onSelect, croppingId, applyCrop, selectedId, editingTextId]);
+  }, [onSelect, croppingId, applyCrop]);
 
   // ── Render single object ──
   const renderObject = (obj: SlideObject) => {
-    const isSelected = selectedId === obj.id;
+    const isSelected = allSelectedIds.has(obj.id);
     const isEditing = editingTextId === obj.id;
 
     // For images with crop, selection ring should wrap the visible area only
@@ -380,6 +674,12 @@ export default function SlideCanvas({
     const showRingOnOuter = isSelected && !hasCropInset;
 
     const rotation = obj.rotation || 0;
+    const scaleX = (obj as any).scaleX || 1;
+    const scaleY = (obj as any).scaleY || 1;
+    const transformParts: string[] = [];
+    if (rotation) transformParts.push(`rotate(${rotation}deg)`);
+    if (scaleX !== 1) transformParts.push(`scaleX(${scaleX})`);
+    if (scaleY !== 1) transformParts.push(`scaleY(${scaleY})`);
 
     return (
       <div
@@ -389,14 +689,17 @@ export default function SlideCanvas({
         style={{
           left: `${obj.x}%`, top: `${obj.y}%`, width: `${obj.width}%`, height: `${obj.height}%`,
           zIndex: obj.zIndex,
-          // Rotation applied via CSS transform but handles stay in screen-aligned space
-          transform: rotation ? `rotate(${rotation}deg)` : undefined,
+          transform: transformParts.length ? transformParts.join(" ") : undefined,
         }}
         onContextMenu={(e) => {
           if (!canEdit) return;
           e.preventDefault();
           e.stopPropagation();
-          onSelect(obj.id);
+          // If this object is already in the multi-selection, keep the multi-selection
+          if (!multiSelectedIdsRef.current.has(obj.id)) {
+            onSelect(obj.id);
+            setMultiSelectedIds(new Set([obj.id]));
+          }
           setContextMenu({ x: e.clientX, y: e.clientY, objId: obj.id });
         }}
         onMouseDown={(e) => {
@@ -406,7 +709,40 @@ export default function SlideCanvas({
           // Apply and exit crop/color mode if clicking a different object
           if (croppingId && croppingId !== obj.id) { applyCrop(croppingId); setCroppingId(null); }
           if (showColorPickerId && showColorPickerId !== obj.id) setShowColorPickerId(null);
+          // Multi-select with Shift or Ctrl — add/remove from selection
+          if (e.shiftKey || e.ctrlKey || e.metaKey) {
+            e.preventDefault();
+            e.stopPropagation();
+            setMultiSelectedIds(prev => {
+              const next = new Set(prev);
+              // If starting multi-select from single selection, ensure selectedId is included
+              if (next.size === 0 && selectedId) next.add(selectedId);
+              // Toggle clicked object
+              if (next.has(obj.id)) {
+                next.delete(obj.id);
+              } else {
+                next.add(obj.id);
+              }
+              // Update parent's selectedId to first remaining
+              if (next.size === 0) onSelect(null);
+              else if (!next.has(selectedId || "")) onSelect([...next][0]);
+              return next;
+            });
+            return;
+          }
+          // Normal click
           onSelect(obj.id);
+          const topGid = getTopGroupId(obj);
+          // If clicking an object already in multi-selection, keep the multi-selection (for dragging)
+          if (multiSelectedIdsRef.current.has(obj.id) && multiSelectedIdsRef.current.size > 1) {
+            // Keep current multi-selection
+          } else if (topGid) {
+            // Select all objects in the same top-level group
+            const groupMembers = new Set(objects.filter(o => getTopGroupId(o) === topGid).map(o => o.id));
+            setMultiSelectedIds(groupMembers);
+          } else {
+            setMultiSelectedIds(new Set([obj.id]));
+          }
           if (!isEditing && croppingId !== obj.id) startDrag(e, obj.id);
         }}
         onDoubleClick={() => {
@@ -435,6 +771,7 @@ export default function SlideCanvas({
           >
             {isEditing ? (
               <div
+                key={`tb-edit-${obj.id}`}
                 contentEditable
                 suppressContentEditableWarning
                 data-textbox-edit={obj.id}
@@ -484,7 +821,7 @@ export default function SlideCanvas({
                 }}
               />
             ) : (
-              <div className="w-full break-words overflow-hidden [&_img]:max-w-full [&_img]:h-auto" style={{ textAlign: obj.align }}>
+              <div key={`tb-view-${obj.id}`} className="w-full break-words overflow-hidden [&_img]:max-w-full [&_img]:h-auto" style={{ textAlign: obj.align }}>
                 {obj.content ? (
                   <div dangerouslySetInnerHTML={{ __html: obj.content }} />
                 ) : (
@@ -574,14 +911,14 @@ export default function SlideCanvas({
             {/* Editable text overlay for shapes */}
             {isEditing ? (
               <div
+                key={`shape-edit-${obj.id}`}
                 contentEditable
                 suppressContentEditableWarning
                 data-shape-text={obj.id}
-                className="absolute inset-0 flex outline-none cursor-text [&_img]:max-w-full [&_img]:h-auto"
+                className="absolute inset-0 grid outline-none cursor-text [&_img]:max-w-full [&_img]:h-auto"
                 style={{
                   color: obj.textColor || "#fff", fontSize: obj.textSize || 14, fontWeight: 600, padding: "5%", wordBreak: "break-word",
-                  justifyContent: (obj as ShapeObject).textAlign === "left" ? "flex-start" : (obj as ShapeObject).textAlign === "right" ? "flex-end" : "center",
-                  alignItems: (obj as ShapeObject).textVerticalAlign === "top" ? "flex-start" : (obj as ShapeObject).textVerticalAlign === "bottom" ? "flex-end" : "center",
+                  alignContent: (obj as ShapeObject).textVerticalAlign === "top" ? "start" : (obj as ShapeObject).textVerticalAlign === "bottom" ? "end" : "center",
                   textAlign: (obj as ShapeObject).textAlign || "center",
                 }}
                 onBlur={(e) => {
@@ -631,11 +968,11 @@ export default function SlideCanvas({
               />
             ) : obj.text ? (
               <div
-                className="absolute inset-0 flex pointer-events-none [&_img]:max-w-full [&_img]:h-auto"
+                key={`shape-view-${obj.id}`}
+                className="absolute inset-0 grid pointer-events-none [&_img]:max-w-full [&_img]:h-auto"
                 style={{
                   color: obj.textColor || "#fff", fontSize: obj.textSize || 14, fontWeight: 600, padding: "5%", wordBreak: "break-word",
-                  justifyContent: (obj as ShapeObject).textAlign === "left" ? "flex-start" : (obj as ShapeObject).textAlign === "right" ? "flex-end" : "center",
-                  alignItems: (obj as ShapeObject).textVerticalAlign === "top" ? "flex-start" : (obj as ShapeObject).textVerticalAlign === "bottom" ? "flex-end" : "center",
+                  alignContent: (obj as ShapeObject).textVerticalAlign === "top" ? "start" : (obj as ShapeObject).textVerticalAlign === "bottom" ? "end" : "center",
                   textAlign: (obj as ShapeObject).textAlign || "center",
                 }}
                 dangerouslySetInnerHTML={{ __html: obj.text }}
@@ -750,220 +1087,121 @@ export default function SlideCanvas({
           document.body,
         )}
 
-        {/* Shape text format toolbar — shows when editing text inside a shape */}
-        {isEditing && obj.type === "shape" && typeof document !== "undefined" && (() => {
+        {/* Shape text format toolbar — shared TextFormatToolbar */}
+        {isEditing && obj.type === "shape" && (() => {
           const shapeEl = canvasRef.current?.querySelector(`[data-slide-obj="${obj.id}"]`) as HTMLElement;
           if (!shapeEl) return null;
-          const rect = shapeEl.getBoundingClientRect();
-          const toolbarW = 320;
-          let top = rect.top - 44;
-          if (top < 8) top = rect.bottom + 8;
           const shapeObj = obj as ShapeObject;
-          const shapeUseRight = rect.left + rect.width / 2 > window.innerWidth / 2;
-          return createPortal(
-            <div
-              className="fixed z-[10002] rounded-xl bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] shadow-lg border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20"
-              style={{ top, ...(shapeUseRight ? { right: 8 } : { left: Math.max(8, rect.left) }), maxWidth: "calc(100vw - 16px)" }}
-              onClick={(e) => e.stopPropagation()}
-              onMouseDown={(e) => e.stopPropagation()}
-            >
-              <div className="flex items-center gap-1 px-2 py-1.5">
-                {/* Font size */}
-                <CustomDropdown
-                  value={shapeObj.textSize || 14}
-                  options={[8, 10, 12, 14, 16, 18, 20, 24, 28, 32, 36, 48].map(s => ({ label: `${s}`, value: s }))}
-                  onChange={(v) => updateObj(obj.id, { textSize: Number(v) } as Partial<ShapeObject>)}
-                  className="w-[56px]"
-                />
-
-                <div className="w-px h-6 bg-gray-200 dark:bg-[#22262e]" />
-
-                {/* Bold — uses execCommand on the contentEditable */}
-                <button onMouseDown={(e) => { e.preventDefault(); document.execCommand("bold"); }}
-                  className="w-8 h-8 flex items-center justify-center rounded-lg text-[13px] font-bold cursor-pointer text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-100 dark:hover:bg-[#22262e]"
-                  title="Bold (Ctrl+B)">B</button>
-
-                {/* Italic */}
-                <button onMouseDown={(e) => { e.preventDefault(); document.execCommand("italic"); }}
-                  className="w-8 h-8 flex items-center justify-center rounded-lg text-[13px] italic cursor-pointer text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-100 dark:hover:bg-[#22262e]"
-                  title="Italic (Ctrl+I)">I</button>
-
-                {/* Underline */}
-                <button onMouseDown={(e) => { e.preventDefault(); document.execCommand("underline"); }}
-                  className="w-8 h-8 flex items-center justify-center rounded-lg text-[13px] underline cursor-pointer text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-100 dark:hover:bg-[#22262e]"
-                  title="Underline (Ctrl+U)">U</button>
-
-                <div className="w-px h-6 bg-gray-200 dark:bg-[#22262e]" />
-
-                {/* Horizontal align */}
-                {(["left", "center", "right"] as const).map(a => (
-                  <button key={a} onMouseDown={(e) => { e.preventDefault(); updateObj(obj.id, { textAlign: a } as Partial<ShapeObject>); }}
-                    className={`w-7 h-7 flex items-center justify-center rounded-lg cursor-pointer transition-all ${(shapeObj.textAlign || "center") === a ? "bg-blue-100 text-blue-700 dark:bg-[#22262e] dark:text-gray-100 midnight:bg-cyan-500/15 midnight:text-cyan-400 purple:bg-pink-500/15 purple:text-pink-400" : "text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-[#22262e]"}`}
-                    title={`Align ${a}`}>
-                    <svg viewBox="0 0 16 16" className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
-                      {a === "left" && <><line x1="1" y1="4" x2="15" y2="4"/><line x1="1" y1="8" x2="10" y2="8"/><line x1="1" y1="12" x2="13" y2="12"/></>}
-                      {a === "center" && <><line x1="1" y1="4" x2="15" y2="4"/><line x1="3.5" y1="8" x2="12.5" y2="8"/><line x1="2" y1="12" x2="14" y2="12"/></>}
-                      {a === "right" && <><line x1="1" y1="4" x2="15" y2="4"/><line x1="6" y1="8" x2="15" y2="8"/><line x1="3" y1="12" x2="15" y2="12"/></>}
-                    </svg>
-                  </button>
-                ))}
-
-                {/* Vertical align */}
-                {(["top", "middle", "bottom"] as const).map(va => (
-                  <button key={va} onMouseDown={(e) => { e.preventDefault(); updateObj(obj.id, { textVerticalAlign: va } as Partial<ShapeObject>); }}
-                    className={`w-7 h-7 flex items-center justify-center rounded-lg cursor-pointer transition-all ${(shapeObj.textVerticalAlign || "middle") === va ? "bg-blue-100 text-blue-700 dark:bg-[#22262e] dark:text-gray-100 midnight:bg-cyan-500/15 midnight:text-cyan-400 purple:bg-pink-500/15 purple:text-pink-400" : "text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-[#22262e]"}`}
-                    title={`Vertical ${va}`}>
-                    <svg viewBox="0 0 16 16" className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
-                      {va === "top" && <><rect x="2" y="2" width="12" height="12" rx="1.5" strokeWidth="1" /><line x1="5" y1="5" x2="11" y2="5"/><line x1="5" y1="8" x2="9" y2="8"/></>}
-                      {va === "middle" && <><rect x="2" y="2" width="12" height="12" rx="1.5" strokeWidth="1" /><line x1="5" y1="6.5" x2="11" y2="6.5"/><line x1="5" y1="9.5" x2="9" y2="9.5"/></>}
-                      {va === "bottom" && <><rect x="2" y="2" width="12" height="12" rx="1.5" strokeWidth="1" /><line x1="5" y1="8" x2="9" y2="8"/><line x1="5" y1="11" x2="11" y2="11"/></>}
-                    </svg>
-                  </button>
-                ))}
-
-                <div className="w-px h-6 bg-gray-200 dark:bg-[#22262e]" />
-
-                {/* Text color */}
-                <ColorPickerPopover
-                  selectedColor={shapeObj.textColor || "#ffffff"}
-                  onSelect={(c) => updateObj(obj.id, { textColor: c } as Partial<ShapeObject>)}
-                  mode="matrix"
-                  label="Text Color"
-                  align="right"
-                  width={272}
-                >
-                  <button className="w-8 h-8 flex items-center justify-center rounded-lg cursor-pointer hover:bg-gray-100 dark:hover:bg-[#22262e] relative" title="Text color">
-                    <span className="text-[13px] font-bold" style={{ color: shapeObj.textColor || "#fff" }}>A</span>
-                    <div className="absolute bottom-1 left-2 right-2 h-[2.5px] rounded-full" style={{ backgroundColor: shapeObj.textColor || "#fff" }} />
-                  </button>
-                </ColorPickerPopover>
-
-                <div className="w-px h-6 bg-gray-200 dark:bg-[#22262e]" />
-
-                {/* Close */}
-                <button onMouseDown={(e) => { e.preventDefault(); setEditingTextId(null); }}
-                  className="w-8 h-8 flex items-center justify-center rounded-lg cursor-pointer text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all"
-                  title="Done editing">
-                  <svg viewBox="0 0 16 16" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="4" y1="4" x2="12" y2="12" /><line x1="12" y1="4" x2="4" y2="12" /></svg>
-                </button>
-              </div>
-            </div>,
-            document.body,
+          return (
+            <TextFormatToolbar
+              anchorRect={shapeEl.getBoundingClientRect()}
+              fontSize={shapeObj.textSize || 14}
+              align={shapeObj.textAlign}
+              verticalAlign={shapeObj.textVerticalAlign}
+              textColor={shapeObj.textColor || "#fff"}
+              showFontFamily={false}
+              showWrap={false}
+              showFillColor={false}
+              showUnderline
+              onFontSizeChange={(v) => updateObj(obj.id, { textSize: v } as Partial<ShapeObject>)}
+              onBold={() => document.execCommand("bold")}
+              onItalic={() => document.execCommand("italic")}
+              onUnderline={() => document.execCommand("underline")}
+              onAlignChange={(v) => updateObj(obj.id, { textAlign: v } as Partial<ShapeObject>)}
+              onVerticalAlignChange={(v) => updateObj(obj.id, { textVerticalAlign: v } as Partial<ShapeObject>)}
+              onTextColorChange={(c) => updateObj(obj.id, { textColor: c } as Partial<ShapeObject>)}
+              onClose={() => setEditingTextId(null)}
+            />
           );
         })()}
 
-        {/* Textbox format toolbar — identical to table cell toolbar */}
-        {isEditing && obj.type === "textbox" && typeof document !== "undefined" && (() => {
+        {/* Textbox format toolbar — shared TextFormatToolbar */}
+        {isEditing && obj.type === "textbox" && (() => {
           const tbEl = canvasRef.current?.querySelector(`[data-slide-obj="${obj.id}"]`) as HTMLElement;
           if (!tbEl) return null;
-          const rect = tbEl.getBoundingClientRect();
-          const toolbarH = 44;
-          let top = rect.top - toolbarH - 8;
-          if (top < 8) top = rect.bottom + 8;
-          // Anchor to right edge of viewport if textbox is on the right half
-          const useRight = rect.left > window.innerWidth / 2;
-          return createPortal(
-            <div
-              className="fixed z-[10002] rounded-xl bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] shadow-lg border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20"
-              style={{ top, ...(useRight ? { right: 8 } : { left: Math.max(8, rect.left) }), maxWidth: "calc(100vw - 16px)" }}
-              onClick={(e) => e.stopPropagation()}
-              onMouseDown={(e) => e.stopPropagation()}
-            >
-              <div className="flex items-center gap-1 px-2 py-1.5">
-                <CustomDropdown
-                  value={obj.fontFamily}
-                  options={[
-                    { label: "Inter", value: "Inter, sans-serif" },
-                    { label: "Arial", value: "Arial, sans-serif" },
-                    { label: "Arial Black", value: "Arial Black, sans-serif" },
-                    { label: "Calibri", value: "Calibri, sans-serif" },
-                    { label: "Cambria", value: "Cambria, serif" },
-                    { label: "Comic Sans MS", value: "Comic Sans MS, cursive" },
-                    { label: "Consolas", value: "Consolas, monospace" },
-                    { label: "Courier New", value: "Courier New, monospace" },
-                    { label: "Garamond", value: "Garamond, serif" },
-                    { label: "Georgia", value: "Georgia, serif" },
-                    { label: "Impact", value: "Impact, sans-serif" },
-                    { label: "Lucida Console", value: "Lucida Console, monospace" },
-                    { label: "Palatino", value: "Palatino Linotype, serif" },
-                    { label: "Segoe UI", value: "Segoe UI, sans-serif" },
-                    { label: "Tahoma", value: "Tahoma, sans-serif" },
-                    { label: "Times New Roman", value: "Times New Roman, serif" },
-                    { label: "Trebuchet MS", value: "Trebuchet MS, sans-serif" },
-                    { label: "Verdana", value: "Verdana, sans-serif" },
-                  ]}
-                  onChange={(v) => updateObj(obj.id, { fontFamily: String(v) })}
-                  className="w-[130px]"
-                />
-                <FontSizeCombo
-                  value={obj.fontSize}
-                  onChange={(v) => updateObj(obj.id, { fontSize: v })}
-                />
-                <div className="w-px h-6 bg-gray-200 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]" />
-                <button onMouseDown={(e) => { e.preventDefault(); document.execCommand("bold"); }}
-                  className={`w-8 h-8 flex items-center justify-center rounded-lg text-[13px] font-bold cursor-pointer transition-all ${obj.bold ? "bg-blue-100 text-blue-700 dark:bg-[#22262e] dark:text-gray-100 dark:border dark:border-gray-600 midnight:bg-cyan-500/15 midnight:text-cyan-400 midnight:border midnight:border-cyan-500/30 purple:bg-pink-500/15 purple:text-pink-400 purple:border purple:border-pink-500/30" : "text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5"}`}
-                  title="Bold">B</button>
-                <button onMouseDown={(e) => { e.preventDefault(); document.execCommand("italic"); }}
-                  className={`w-8 h-8 flex items-center justify-center rounded-lg text-[13px] italic cursor-pointer transition-all ${obj.italic ? "bg-blue-100 text-blue-700 dark:bg-[#22262e] dark:text-gray-100 dark:border dark:border-gray-600 midnight:bg-cyan-500/15 midnight:text-cyan-400 midnight:border midnight:border-cyan-500/30 purple:bg-pink-500/15 purple:text-pink-400 purple:border purple:border-pink-500/30" : "text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5"}`}
-                  title="Italic">I</button>
-                <div className="w-px h-6 bg-gray-200 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]" />
-                {(["left", "center", "right"] as const).map(a => (
-                  <button key={a} onMouseDown={(e) => { e.preventDefault(); updateObj(obj.id, { align: a }); }}
-                    className={`w-8 h-8 flex items-center justify-center rounded-lg cursor-pointer transition-all ${obj.align === a ? "bg-blue-100 text-blue-700 dark:bg-[#22262e] dark:text-gray-100 dark:border dark:border-gray-600 midnight:bg-cyan-500/15 midnight:text-cyan-400 midnight:border midnight:border-cyan-500/30 purple:bg-pink-500/15 purple:text-pink-400 purple:border purple:border-pink-500/30" : "text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5"}`}
-                    title={`Align ${a}`}>
-                    <svg viewBox="0 0 16 16" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
-                      {a === "left" && <><line x1="1" y1="4" x2="15" y2="4"/><line x1="1" y1="8" x2="10" y2="8"/><line x1="1" y1="12" x2="13" y2="12"/></>}
-                      {a === "center" && <><line x1="1" y1="4" x2="15" y2="4"/><line x1="3.5" y1="8" x2="12.5" y2="8"/><line x1="2" y1="12" x2="14" y2="12"/></>}
-                      {a === "right" && <><line x1="1" y1="4" x2="15" y2="4"/><line x1="6" y1="8" x2="15" y2="8"/><line x1="3" y1="12" x2="15" y2="12"/></>}
-                    </svg>
-                  </button>
-                ))}
-                <div className="w-px h-6 bg-gray-200 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]" />
-                <button onMouseDown={(e) => { e.preventDefault(); updateObj(obj.id, { noWrap: !obj.noWrap } as any); }}
-                  className={`w-8 h-8 flex items-center justify-center rounded-lg cursor-pointer transition-all ${!obj.noWrap ? "bg-blue-100 text-blue-700 dark:bg-[#22262e] dark:text-gray-100 dark:border dark:border-gray-600 midnight:bg-cyan-500/15 midnight:text-cyan-400 midnight:border midnight:border-cyan-500/30 purple:bg-pink-500/15 purple:text-pink-400 purple:border purple:border-pink-500/30" : "text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-100 dark:hover:bg-[#22262e]"}`}
-                  title="Text wrap">
-                  <svg viewBox="0 0 16 16" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
-                    <line x1="1" y1="4" x2="15" y2="4"/><line x1="1" y1="8" x2="11" y2="8"/><path d="M11 8 C14 8 14 12 11 12 L6 12" /><polyline points="8,10 6,12 8,14" />
-                  </svg>
-                </button>
-                <div className="w-px h-6 bg-gray-200 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]" />
-                {(["top", "middle", "bottom"] as const).map(va => (
-                  <button key={va} onMouseDown={(e) => { e.preventDefault(); updateObj(obj.id, { verticalAlign: va }); }}
-                    className={`w-8 h-8 flex items-center justify-center rounded-lg cursor-pointer transition-all ${obj.verticalAlign === va ? "bg-blue-100 text-blue-700 dark:bg-[#22262e] dark:text-gray-100 dark:border dark:border-gray-600 midnight:bg-cyan-500/15 midnight:text-cyan-400 midnight:border midnight:border-cyan-500/30 purple:bg-pink-500/15 purple:text-pink-400 purple:border purple:border-pink-500/30" : "text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-100 dark:hover:bg-[#22262e]"}`}
-                    title={`Vertical ${va}`}>
-                    <svg viewBox="0 0 16 16" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
-                      {va === "top" && <><rect x="2" y="2" width="12" height="12" rx="1.5" strokeWidth="1" /><line x1="5" y1="5" x2="11" y2="5"/><line x1="5" y1="8" x2="9" y2="8"/></>}
-                      {va === "middle" && <><rect x="2" y="2" width="12" height="12" rx="1.5" strokeWidth="1" /><line x1="5" y1="6.5" x2="11" y2="6.5"/><line x1="5" y1="9.5" x2="9" y2="9.5"/></>}
-                      {va === "bottom" && <><rect x="2" y="2" width="12" height="12" rx="1.5" strokeWidth="1" /><line x1="5" y1="8" x2="9" y2="8"/><line x1="5" y1="11" x2="11" y2="11"/></>}
-                    </svg>
-                  </button>
-                ))}
-                <div className="w-px h-6 bg-gray-200 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]" />
-                <ColorPickerPopover selectedColor={obj.color} onSelect={(c) => updateObj(obj.id, { color: c })} mode="matrix" label="Text Color" align="right" width={272}>
-                  <button className="w-8 h-8 flex items-center justify-center rounded-lg cursor-pointer hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 relative" title="Text color">
-                    <span className="text-[13px] font-bold" style={{ color: obj.color }}>A</span>
-                    <div className="absolute bottom-1 left-2 right-2 h-[2.5px] rounded-full" style={{ backgroundColor: obj.color }} />
-                  </button>
-                </ColorPickerPopover>
-                <ColorPickerPopover selectedColor={obj.backgroundColor || "transparent"} onSelect={(c) => updateObj(obj.id, { backgroundColor: c })} mode="matrix" label="Fill" align="right" width={272}>
-                  <button className="w-8 h-8 flex items-center justify-center rounded-lg cursor-pointer hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5" title="Fill color">
-                    <div className="w-5 h-5 rounded border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30" style={{ backgroundColor: obj.backgroundColor || "transparent" }} />
-                  </button>
-                </ColorPickerPopover>
-                <div className="w-px h-6 bg-gray-200 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]" />
-                <button onMouseDown={(e) => { e.preventDefault(); setEditingTextId(null); }}
-                  className="w-8 h-8 flex items-center justify-center rounded-lg cursor-pointer text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all"
-                  title="Close toolbar (Esc)">
-                  <svg viewBox="0 0 16 16" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="4" y1="4" x2="12" y2="12" /><line x1="12" y1="4" x2="4" y2="12" /></svg>
-                </button>
-              </div>
-            </div>,
-            document.body,
+          return (
+            <TextFormatToolbar
+              anchorRect={tbEl.getBoundingClientRect()}
+              fontFamily={obj.fontFamily}
+              fontSize={obj.fontSize}
+              bold={obj.bold}
+              italic={obj.italic}
+              align={obj.align}
+              verticalAlign={obj.verticalAlign}
+              textColor={obj.color}
+              fillColor={obj.backgroundColor || "transparent"}
+              wrap={!obj.noWrap}
+              onFontFamilyChange={(v) => updateObj(obj.id, { fontFamily: v })}
+              onFontSizeChange={(v) => updateObj(obj.id, { fontSize: v })}
+              onBold={() => document.execCommand("bold")}
+              onItalic={() => document.execCommand("italic")}
+              onAlignChange={(v) => updateObj(obj.id, { align: v })}
+              onVerticalAlignChange={(v) => updateObj(obj.id, { verticalAlign: v })}
+              onWrapToggle={() => updateObj(obj.id, { noWrap: !obj.noWrap } as any)}
+              onTextColorChange={(c) => updateObj(obj.id, { color: c })}
+              onFillColorChange={(c) => updateObj(obj.id, { backgroundColor: c })}
+              onClose={() => setEditingTextId(null)}
+            />
           );
         })()}
       </div>
     );
   };
+
+  // ── Rubber band (drag-to-select) ──
+  const [rubberBand, setRubberBand] = useState<{ startX: number; startY: number; curX: number; curY: number } | null>(null);
+  const rubberBandRef = useRef(rubberBand);
+  rubberBandRef.current = rubberBand;
+
+  const startRubberBand = useCallback((e: React.MouseEvent) => {
+    if (drawingMode) { startDrawing(e); return; }
+    if (!canEdit) return;
+    // Only start rubber band on canvas background (not on objects)
+    const clickedObj = (e.target as HTMLElement).closest("[data-slide-obj]");
+    if (clickedObj) return;
+    const rect = canvasRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    const x = ((e.clientX - rect.left) / rect.width) * 100;
+    const y = ((e.clientY - rect.top) / rect.height) * 100;
+    setRubberBand({ startX: x, startY: y, curX: x, curY: y });
+  }, [canEdit, drawingMode, startDrawing]);
+
+  const moveRubberBand = useCallback((e: React.MouseEvent) => {
+    if (drawingMode) { continueDrawing(e); return; }
+    if (!rubberBandRef.current || !canvasRef.current) return;
+    const rect = canvasRef.current.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * 100;
+    const y = ((e.clientY - rect.top) / rect.height) * 100;
+    setRubberBand(prev => prev ? { ...prev, curX: x, curY: y } : null);
+  }, [drawingMode, continueDrawing]);
+
+  const endRubberBand = useCallback(() => {
+    if (drawingMode) { endDrawing(); return; }
+    const rb = rubberBandRef.current;
+    if (!rb) return;
+    // Calculate selection rectangle
+    const left = Math.min(rb.startX, rb.curX);
+    const top = Math.min(rb.startY, rb.curY);
+    const right = Math.max(rb.startX, rb.curX);
+    const bottom = Math.max(rb.startY, rb.curY);
+    // Only select if drag was at least 2% in some direction (avoid click-select)
+    if (right - left > 2 || bottom - top > 2) {
+      const ids = new Set<string>();
+      for (const obj of objects) {
+        // Object is selected if it overlaps the rubber band rectangle
+        if (obj.x + obj.width > left && obj.x < right && obj.y + obj.height > top && obj.y < bottom) {
+          ids.add(obj.id);
+        }
+      }
+      if (ids.size > 0) {
+        setMultiSelectedIds(ids);
+        onSelect([...ids][0]);
+        // Prevent the subsequent click event from clearing the selection
+        rubberBandJustFinished.current = true;
+      }
+    }
+    setRubberBand(null);
+  }, [drawingMode, endDrawing, objects, onSelect]);
 
   return (
     <div
@@ -971,13 +1209,27 @@ export default function SlideCanvas({
       className="relative w-full h-full overflow-hidden"
       style={{ background }}
       onClick={handleCanvasClick}
-      onMouseDown={startDrawing}
-      onMouseMove={continueDrawing}
-      onMouseUp={endDrawing}
-      onMouseLeave={endDrawing}
+      onMouseDown={startRubberBand}
+      onMouseMove={moveRubberBand}
+      onMouseUp={endRubberBand}
+      onMouseLeave={endRubberBand}
     >
       {/* Objects */}
       {objects.sort((a, b) => a.zIndex - b.zIndex).map(renderObject)}
+
+      {/* Rubber band selection rectangle */}
+      {rubberBand && (() => {
+        const left = Math.min(rubberBand.startX, rubberBand.curX);
+        const top = Math.min(rubberBand.startY, rubberBand.curY);
+        const w = Math.abs(rubberBand.curX - rubberBand.startX);
+        const h = Math.abs(rubberBand.curY - rubberBand.startY);
+        return (
+          <div
+            className="absolute border-2 border-blue-500 bg-blue-500/10 pointer-events-none z-[100]"
+            style={{ left: `${left}%`, top: `${top}%`, width: `${w}%`, height: `${h}%` }}
+          />
+        );
+      })()}
 
       {/* Guides */}
       {showGuides && guides.map(g => (
@@ -1040,56 +1292,125 @@ export default function SlideCanvas({
         </div>
       )}
 
-      {/* Right-click context menu */}
-      {contextMenu && typeof document !== "undefined" && createPortal(
-        <>
-          <div className="fixed inset-0 z-[10000]" onClick={() => setContextMenu(null)} onContextMenu={(e) => { e.preventDefault(); setContextMenu(null); }} />
-          <div
-            className="fixed z-[10001] bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-lg shadow-2xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 py-1 min-w-[180px]"
-            style={{ top: contextMenu.y, left: contextMenu.x }}
-          >
-            {[
-              { label: "Cut", shortcut: "Ctrl+X", action: () => { /* handled by keyboard */ } },
-              { label: "Copy", shortcut: "Ctrl+C", action: () => { /* handled by keyboard */ } },
-              { label: "Paste", shortcut: "Ctrl+V", action: () => { /* handled by keyboard */ } },
-              { label: "---" },
-              { label: "Duplicate", shortcut: "Ctrl+D", action: () => duplicateObj(contextMenu.objId) },
-              { label: "Delete", shortcut: "Del", action: () => { onSelect(contextMenu.objId); setTimeout(deleteSelected, 0); } },
-              { label: "---" },
-              { label: "Bring to Front", action: () => bringToFront(contextMenu.objId) },
-              { label: "Bring Forward", action: () => bringForward(contextMenu.objId) },
-              { label: "Send Backward", action: () => sendBackward(contextMenu.objId) },
-              { label: "Send to Back", action: () => sendToBack(contextMenu.objId) },
-              { label: "---" },
-              ...(objects.find(o => o.id === contextMenu.objId)?.type === "shape" ? [
-                { label: "Edit Text", action: () => setEditingTextId(contextMenu.objId) },
-                { label: "Change Colors", action: () => setShowColorPickerId(contextMenu.objId) },
-              ] : []),
-              ...(objects.find(o => o.id === contextMenu.objId)?.type === "image" ? [
-                { label: "Crop Image", action: () => setCroppingId(contextMenu.objId) },
-              ] : []),
-              ...(objects.find(o => o.id === contextMenu.objId)?.type === "table" ? [
-                { label: "Edit Cells", action: () => setEditingTextId(contextMenu.objId) },
-                { label: "Table Style", action: () => setShowColorPickerId(contextMenu.objId) },
-              ] : []),
-            ].map((item, i) =>
-              item.label === "---" ? (
-                <div key={i} className="border-t border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 my-1" />
-              ) : (
-                <button
-                  key={i}
-                  onClick={() => { item.action?.(); setContextMenu(null); }}
-                  className="w-full text-left px-3 py-1.5 text-[12px] text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-blue-50 dark:hover:bg-blue-900/20 midnight:hover:bg-cyan-900/20 purple:hover:bg-pink-900/20 flex items-center justify-between cursor-pointer"
-                >
-                  <span>{item.label}</span>
-                  {item.shortcut && <span className="text-[10px] text-gray-400 ml-4">{item.shortcut}</span>}
-                </button>
-              )
-            )}
-          </div>
-        </>,
-        document.body,
-      )}
+      {/* Right-click context menu with submenus */}
+      {contextMenu && typeof document !== "undefined" && (() => {
+        const menuBtnClass = "w-full text-left px-3 py-1.5 text-[12px] text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-blue-50 dark:hover:bg-blue-900/20 midnight:hover:bg-cyan-900/20 purple:hover:bg-pink-900/20 flex items-center justify-between cursor-pointer";
+        const dividerClass = "border-t border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 my-1";
+        const menuPanelClass = "bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-lg shadow-2xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 py-1 min-w-[200px]";
+        const objId = contextMenu.objId;
+        const ctxObj = objects.find(o => o.id === objId);
+        const hasMultiSelect = multiSelectedIds.size > 1;
+        const selectedObjs = objects.filter(o => multiSelectedIds.has(o.id));
+        const hasGroup = selectedObjs.some(o => getTopGroupId(o) !== null);
+
+        // Clamp menu position to viewport with margin
+        const menuEstH = 520; // Estimated menu height (all items + padding)
+        let menuTop = contextMenu.y;
+        let menuLeft = contextMenu.x;
+        if (menuLeft + 220 > window.innerWidth) menuLeft = window.innerWidth - 230;
+        if (menuTop + menuEstH > window.innerHeight - 16) menuTop = Math.max(8, window.innerHeight - menuEstH - 16);
+
+        const arrowIcon = <svg viewBox="0 0 16 16" className="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polyline points="6,4 10,8 6,12" /></svg>;
+
+        type MenuItem = { label: string; shortcut?: string; icon?: React.ReactNode; action?: () => void; submenu?: string; disabled?: boolean };
+        const items: (MenuItem | "---")[] = [
+          { label: "Cut", shortcut: "Ctrl+X", icon: <svg viewBox="0 0 16 16" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><circle cx="5" cy="12" r="2.5"/><circle cx="11" cy="12" r="2.5"/><line x1="5" y1="9.5" x2="11" y2="3"/><line x1="11" y1="9.5" x2="5" y2="3"/></svg>, action: () => {} },
+          { label: "Copy", shortcut: "Ctrl+C", icon: <svg viewBox="0 0 16 16" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="5" y="5" width="9" height="9" rx="1"/><path d="M2 11V3a1 1 0 011-1h8"/></svg>, action: () => {} },
+          { label: "Paste", shortcut: "Ctrl+V", icon: <svg viewBox="0 0 16 16" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="2" width="10" height="12" rx="1"/><path d="M6 2V1h4v1"/><line x1="6" y1="7" x2="10" y2="7"/><line x1="6" y1="10" x2="10" y2="10"/></svg>, action: () => {} },
+          "---",
+          { label: "Delete", shortcut: "Del", icon: <svg viewBox="0 0 16 16" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 4h10M5 4V3a1 1 0 011-1h4a1 1 0 011 1v1M6 7v4M10 7v4M4 4l.5 9a1 1 0 001 1h5a1 1 0 001-1L12 4"/></svg>, action: () => { if (hasMultiSelect) { deleteSelected(); } else { onSelect(objId); setTimeout(deleteSelected, 0); } } },
+          "---",
+          { label: "Rotate", icon: <svg viewBox="0 0 16 16" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M1 4s2-3 7-3 7 3 7 3"/><polyline points="12,1 15,4 12,7"/><path d="M15 12s-2 3-7 3-7-3-7-3"/><polyline points="4,15 1,12 4,9"/></svg>, submenu: "rotate" },
+          { label: "Centre on page", icon: <svg viewBox="0 0 16 16" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><rect x="1" y="1" width="14" height="14" rx="1" strokeDasharray="2 2"/><rect x="5" y="5" width="6" height="6" rx="0.5"/></svg>, submenu: "centre" },
+          "---",
+          { label: "Align horizontally", icon: <svg viewBox="0 0 16 16" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><line x1="8" y1="1" x2="8" y2="15" strokeDasharray="2 2"/><rect x="3" y="4" width="10" height="3" rx="0.5"/><rect x="5" y="9" width="6" height="3" rx="0.5"/></svg>, submenu: "alignH" },
+          { label: "Align vertically", icon: <svg viewBox="0 0 16 16" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><line x1="1" y1="8" x2="15" y2="8" strokeDasharray="2 2"/><rect x="2" y="3" width="3" height="10" rx="0.5"/><rect x="7" y="5" width="3" height="6" rx="0.5"/></svg>, submenu: "alignV" },
+          "---",
+          { label: "Group", shortcut: "Ctrl+Alt+G", icon: <svg viewBox="0 0 16 16" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="9" width="6" height="6" rx="1"/><path d="M10 4h2a1 1 0 011 1v2M6 12H4a1 1 0 01-1-1v-2" strokeDasharray="2 1"/></svg>, action: () => groupSelected(), disabled: !hasMultiSelect },
+          { label: "Ungroup", shortcut: "Ctrl+Alt+G", icon: <svg viewBox="0 0 16 16" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="9" width="6" height="6" rx="1"/></svg>, action: () => ungroupSelected(), disabled: !hasGroup },
+          "---",
+          { label: "Bring to Front", action: () => bringToFront(objId) },
+          { label: "Bring Forward", action: () => bringForward(objId) },
+          { label: "Send Backward", action: () => sendBackward(objId) },
+          { label: "Send to Back", action: () => sendToBack(objId) },
+          "---",
+          { label: "Duplicate", shortcut: "Ctrl+D", action: () => duplicateObj(objId) },
+          ...(ctxObj?.type === "shape" ? [
+            { label: "Edit Text", action: () => setEditingTextId(objId) },
+            { label: "Change Colors", action: () => setShowColorPickerId(objId) },
+          ] as MenuItem[] : []),
+          ...(ctxObj?.type === "image" ? [
+            { label: "Crop Image", action: () => setCroppingId(objId) },
+          ] as MenuItem[] : []),
+          ...(ctxObj?.type === "table" ? [
+            { label: "Edit Cells", action: () => setEditingTextId(objId) },
+            { label: "Table Style", action: () => setShowColorPickerId(objId) },
+          ] as MenuItem[] : []),
+        ];
+
+        // Submenu definitions
+        const submenus: Record<string, { label: string; icon?: React.ReactNode; action: () => void }[]> = {
+          rotate: [
+            { label: "Rotate clockwise by 90°", icon: <svg viewBox="0 0 16 16" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><path d="M12 2v4h-4"/><path d="M12 6A6 6 0 103 8"/></svg>, action: () => rotateObj(objId, 90) },
+            { label: "Rotate anticlockwise by 90°", icon: <svg viewBox="0 0 16 16" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><path d="M4 2v4h4"/><path d="M4 6A6 6 0 1113 8"/></svg>, action: () => rotateObj(objId, -90) },
+            { label: "Flip horizontally", icon: <svg viewBox="0 0 16 16" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><line x1="8" y1="1" x2="8" y2="15"/><polyline points="3,5 1,8 3,11"/><polyline points="13,5 15,8 13,11"/></svg>, action: () => flipObjH(objId) },
+            { label: "Flip vertically", icon: <svg viewBox="0 0 16 16" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><line x1="1" y1="8" x2="15" y2="8"/><polyline points="5,3 8,1 11,3"/><polyline points="5,13 8,15 11,13"/></svg>, action: () => flipObjV(objId) },
+          ],
+          centre: [
+            { label: "Horizontally", icon: <svg viewBox="0 0 16 16" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><line x1="8" y1="1" x2="8" y2="15" strokeDasharray="2 2"/><rect x="4" y="5" width="8" height="6" rx="0.5"/></svg>, action: () => centreOnPageH(objId) },
+            { label: "Vertically", icon: <svg viewBox="0 0 16 16" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><line x1="1" y1="8" x2="15" y2="8" strokeDasharray="2 2"/><rect x="5" y="3" width="6" height="10" rx="0.5"/></svg>, action: () => centreOnPageV(objId) },
+          ],
+          alignH: [
+            { label: "Left", icon: <svg viewBox="0 0 16 16" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><line x1="2" y1="1" x2="2" y2="15"/><rect x="2" y="3" width="10" height="3" rx="0.5"/><rect x="2" y="9" width="7" height="3" rx="0.5"/></svg>, action: () => alignObjects("left", objId) },
+            { label: "Centre", icon: <svg viewBox="0 0 16 16" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><line x1="8" y1="1" x2="8" y2="15" strokeDasharray="2 2"/><rect x="3" y="3" width="10" height="3" rx="0.5"/><rect x="4.5" y="9" width="7" height="3" rx="0.5"/></svg>, action: () => alignObjects("centre", objId) },
+            { label: "Right", icon: <svg viewBox="0 0 16 16" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><line x1="14" y1="1" x2="14" y2="15"/><rect x="4" y="3" width="10" height="3" rx="0.5"/><rect x="7" y="9" width="7" height="3" rx="0.5"/></svg>, action: () => alignObjects("right", objId) },
+          ],
+          alignV: [
+            { label: "Top", icon: <svg viewBox="0 0 16 16" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><line x1="1" y1="2" x2="15" y2="2"/><rect x="3" y="2" width="3" height="10" rx="0.5"/><rect x="9" y="2" width="3" height="7" rx="0.5"/></svg>, action: () => alignObjects("top", objId) },
+            { label: "Middle", icon: <svg viewBox="0 0 16 16" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><line x1="1" y1="8" x2="15" y2="8" strokeDasharray="2 2"/><rect x="3" y="3" width="3" height="10" rx="0.5"/><rect x="9" y="4.5" width="3" height="7" rx="0.5"/></svg>, action: () => alignObjects("middle", objId) },
+            { label: "Bottom", icon: <svg viewBox="0 0 16 16" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><line x1="1" y1="14" x2="15" y2="14"/><rect x="3" y="4" width="3" height="10" rx="0.5"/><rect x="9" y="7" width="3" height="7" rx="0.5"/></svg>, action: () => alignObjects("bottom", objId) },
+          ],
+        };
+
+        return createPortal(
+          <>
+            <div className="fixed inset-0 z-[10000]" onClick={() => { setContextMenu(null); setOpenSubmenu(null); }} onContextMenu={(e) => { e.preventDefault(); setContextMenu(null); setOpenSubmenu(null); }} />
+            <div
+              className={`fixed z-[10001] ${menuPanelClass}`}
+              style={{ top: menuTop, left: menuLeft, maxHeight: `calc(100vh - ${menuTop + 16}px)`, overflowY: "auto" }}
+            >
+              {items.map((item, i) =>
+                item === "---" ? (
+                  <div key={i} className={dividerClass} />
+                ) : item.submenu ? (
+                  <SubmenuItem
+                    key={i}
+                    item={item}
+                    menuBtnClass={menuBtnClass}
+                    menuPanelClass={menuPanelClass}
+                    arrowIcon={arrowIcon}
+                    submenus={submenus}
+                    openSubmenu={openSubmenu}
+                    setOpenSubmenu={setOpenSubmenu}
+                    menuLeft={menuLeft}
+                    onAction={(action) => { action(); setContextMenu(null); setOpenSubmenu(null); }}
+                  />
+                ) : (
+                  <button
+                    key={i}
+                    onClick={() => { if (!item.disabled) { item.action?.(); setContextMenu(null); setOpenSubmenu(null); } }}
+                    className={`${menuBtnClass} ${item.disabled ? "opacity-40 cursor-not-allowed" : ""}`}
+                  >
+                    <span className="flex items-center gap-2">{item.icon}<span>{item.label}</span></span>
+                    {item.shortcut && <span className="text-[10px] text-gray-400 ml-4">{item.shortcut}</span>}
+                  </button>
+                )
+              )}
+            </div>
+          </>,
+          document.body,
+        );
+      })()}
     </div>
   );
 }
@@ -1676,148 +1997,34 @@ function SlideTableRenderer({ obj, isEditing, isSelected, canEdit, onCellChange,
       )}
 
       {/* Cell formatting toolbar — only shown when user explicitly opens it */}
-      {showCellToolbar && editingCell && toolbarPos && onCellUpdate && typeof document !== "undefined" && createPortal(
-        <div
-          data-cell-toolbar
-          className="fixed z-[10002] rounded-xl bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] shadow-lg border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20"
-          style={{ top: toolbarPos.top, left: toolbarPos.left }}
-          onClick={(e) => e.stopPropagation()}
-          onMouseDown={(e) => e.stopPropagation()}
-        >
-          <div className="flex items-center gap-1 px-2 py-1.5">
-            {/* Font family */}
-            <CustomDropdown
-              value={activeCell.fontFamily || obj.fontFamily}
-              options={[
-                { label: "Inter", value: "Inter, sans-serif" },
-                { label: "Arial", value: "Arial, sans-serif" },
-                { label: "Arial Black", value: "Arial Black, sans-serif" },
-                { label: "Calibri", value: "Calibri, sans-serif" },
-                { label: "Cambria", value: "Cambria, serif" },
-                { label: "Comic Sans MS", value: "Comic Sans MS, cursive" },
-                { label: "Consolas", value: "Consolas, monospace" },
-                { label: "Courier New", value: "Courier New, monospace" },
-                { label: "Garamond", value: "Garamond, serif" },
-                { label: "Georgia", value: "Georgia, serif" },
-                { label: "Impact", value: "Impact, sans-serif" },
-                { label: "Lucida Console", value: "Lucida Console, monospace" },
-                { label: "Palatino", value: "Palatino Linotype, serif" },
-                { label: "Segoe UI", value: "Segoe UI, sans-serif" },
-                { label: "Tahoma", value: "Tahoma, sans-serif" },
-                { label: "Times New Roman", value: "Times New Roman, serif" },
-                { label: "Trebuchet MS", value: "Trebuchet MS, sans-serif" },
-                { label: "Verdana", value: "Verdana, sans-serif" },
-              ]}
-              onChange={(v) => onCellUpdate(editingCell.r, editingCell.c, { fontFamily: String(v) })}
-              className="w-[130px]"
-            />
-
-            {/* Font size — typeable + dropdown */}
-            <FontSizeCombo
-              value={activeCell.fontSize || obj.fontSize}
-              onChange={(v) => onCellUpdate(editingCell.r, editingCell.c, { fontSize: v })}
-            />
-
-            <div className="w-px h-6 bg-gray-200 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]" />
-
-            {/* Bold */}
-            <button onClick={() => onCellUpdate(editingCell.r, editingCell.c, { bold: !activeCell.bold })}
-              className={`w-8 h-8 flex items-center justify-center rounded-lg text-[13px] font-bold cursor-pointer transition-all ${activeCell.bold ? "bg-blue-100 text-blue-700 dark:bg-[#22262e] dark:text-gray-100 dark:border dark:border-gray-600 midnight:bg-cyan-500/15 midnight:text-cyan-400 midnight:border midnight:border-cyan-500/30 purple:bg-pink-500/15 purple:text-pink-400 purple:border purple:border-pink-500/30" : "text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5"}`}
-              title="Bold">B</button>
-
-            {/* Italic */}
-            <button onClick={() => onCellUpdate(editingCell.r, editingCell.c, { italic: !activeCell.italic })}
-              className={`w-8 h-8 flex items-center justify-center rounded-lg text-[13px] italic cursor-pointer transition-all ${activeCell.italic ? "bg-blue-100 text-blue-700 dark:bg-[#22262e] dark:text-gray-100 dark:border dark:border-gray-600 midnight:bg-cyan-500/15 midnight:text-cyan-400 midnight:border midnight:border-cyan-500/30 purple:bg-pink-500/15 purple:text-pink-400 purple:border purple:border-pink-500/30" : "text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5"}`}
-              title="Italic">I</button>
-
-            <div className="w-px h-6 bg-gray-200 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]" />
-
-            {/* Alignment */}
-            {(["left", "center", "right"] as const).map(a => (
-              <button key={a} onClick={() => onCellUpdate(editingCell.r, editingCell.c, { align: a })}
-                className={`w-8 h-8 flex items-center justify-center rounded-lg cursor-pointer transition-all ${(activeCell.align || "left") === a ? "bg-blue-100 text-blue-700 dark:bg-[#22262e] dark:text-gray-100 dark:border dark:border-gray-600 midnight:bg-cyan-500/15 midnight:text-cyan-400 midnight:border midnight:border-cyan-500/30 purple:bg-pink-500/15 purple:text-pink-400 purple:border purple:border-pink-500/30" : "text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5"}`}
-                title={`Align ${a}`}>
-                <svg viewBox="0 0 16 16" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
-                  {a === "left" && <><line x1="1" y1="4" x2="15" y2="4"/><line x1="1" y1="8" x2="10" y2="8"/><line x1="1" y1="12" x2="13" y2="12"/></>}
-                  {a === "center" && <><line x1="1" y1="4" x2="15" y2="4"/><line x1="3.5" y1="8" x2="12.5" y2="8"/><line x1="2" y1="12" x2="14" y2="12"/></>}
-                  {a === "right" && <><line x1="1" y1="4" x2="15" y2="4"/><line x1="6" y1="8" x2="15" y2="8"/><line x1="3" y1="12" x2="15" y2="12"/></>}
-                </svg>
-              </button>
-            ))}
-
-            <div className="w-px h-6 bg-gray-200 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]" />
-
-            {/* Wrap toggle */}
-            <button onClick={() => onCellUpdate(editingCell.r, editingCell.c, { noWrap: !activeCell.noWrap })}
-              className={`w-8 h-8 flex items-center justify-center rounded-lg cursor-pointer transition-all ${!activeCell.noWrap ? "bg-blue-100 text-blue-700 dark:bg-[#22262e] dark:text-gray-100 dark:border dark:border-gray-600 midnight:bg-cyan-500/15 midnight:text-cyan-400 midnight:border midnight:border-cyan-500/30 purple:bg-pink-500/15 purple:text-pink-400 purple:border purple:border-pink-500/30" : "text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5"}`}
-              title={activeCell.noWrap ? "Enable wrap" : "Wrap on"}>
-              <svg viewBox="0 0 16 16" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
-                <line x1="1" y1="4" x2="15" y2="4"/><line x1="1" y1="8" x2="11" y2="8"/><path d="M11 8 C14 8 14 12 11 12 L6 12" /><polyline points="8,10 6,12 8,14" />
-              </svg>
-            </button>
-
-            <div className="w-px h-6 bg-gray-200 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]" />
-
-            {/* Vertical alignment — top, middle, bottom */}
-            {(["top", "middle", "bottom"] as const).map(va => (
-              <button key={va} onClick={() => onCellUpdate(editingCell.r, editingCell.c, { verticalAlign: va })}
-                className={`w-8 h-8 flex items-center justify-center rounded-lg cursor-pointer transition-all ${(activeCell.verticalAlign || "middle") === va ? "bg-blue-100 text-blue-700 dark:bg-[#22262e] dark:text-gray-100 dark:border dark:border-gray-600 midnight:bg-cyan-500/15 midnight:text-cyan-400 midnight:border midnight:border-cyan-500/30 purple:bg-pink-500/15 purple:text-pink-400 purple:border purple:border-pink-500/30" : "text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5"}`}
-                title={`Align ${va}`}>
-                <svg viewBox="0 0 16 16" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
-                  {va === "top" && <><rect x="2" y="2" width="12" height="12" rx="1.5" strokeWidth="1" /><line x1="5" y1="5" x2="11" y2="5"/><line x1="5" y1="8" x2="9" y2="8"/><path d="M8 12 L8 10 M6 12 L8 10 L10 12" strokeWidth="1.2" /></>}
-                  {va === "middle" && <><rect x="2" y="2" width="12" height="12" rx="1.5" strokeWidth="1" /><line x1="5" y1="6.5" x2="11" y2="6.5"/><line x1="5" y1="9.5" x2="9" y2="9.5"/></>}
-                  {va === "bottom" && <><rect x="2" y="2" width="12" height="12" rx="1.5" strokeWidth="1" /><line x1="5" y1="8" x2="9" y2="8"/><line x1="5" y1="11" x2="11" y2="11"/><path d="M8 4 L8 6 M6 4 L8 6 L10 4" strokeWidth="1.2" /></>}
-                </svg>
-              </button>
-            ))}
-
-            <div className="w-px h-6 bg-gray-200 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]" />
-
-            {/* Text color — full matrix picker like Google Slides */}
-            <ColorPickerPopover
-              selectedColor={activeCell.color || "#1f2937"}
-              onSelect={(c) => onCellUpdate(editingCell.r, editingCell.c, { color: c })}
-              mode="matrix"
-              label="Text Color"
-              align="right"
-              width={272}
-            >
-              <button className="w-8 h-8 flex items-center justify-center rounded-lg cursor-pointer hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 relative" title="Text color">
-                <span className="text-[13px] font-bold" style={{ color: activeCell.color || "#1f2937" }}>A</span>
-                <div className="absolute bottom-1 left-2 right-2 h-[2.5px] rounded-full" style={{ backgroundColor: activeCell.color || "#1f2937" }} />
-              </button>
-            </ColorPickerPopover>
-
-            {/* Cell fill — full matrix picker like Google Slides */}
-            <ColorPickerPopover
-              selectedColor={activeCell.backgroundColor || "#ffffff"}
-              onSelect={(c) => onCellUpdate(editingCell.r, editingCell.c, { backgroundColor: c })}
-              mode="matrix"
-              label="Cell Fill"
-              align="right"
-              width={272}
-            >
-              <button className="w-8 h-8 flex items-center justify-center rounded-lg cursor-pointer hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5" title="Cell fill">
-                <div className="w-5 h-5 rounded border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30" style={{ backgroundColor: activeCell.backgroundColor || "#fff" }} />
-              </button>
-            </ColorPickerPopover>
-
-            <div className="w-px h-6 bg-gray-200 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]" />
-
-            {/* Close button */}
-            <button
-              onClick={() => setShowCellToolbar(false)}
-              className="w-8 h-8 flex items-center justify-center rounded-lg cursor-pointer text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 midnight:hover:bg-red-900/20 purple:hover:bg-red-900/20 transition-all"
-              title="Close toolbar"
-            >
-              <svg viewBox="0 0 16 16" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                <line x1="4" y1="4" x2="12" y2="12" /><line x1="12" y1="4" x2="4" y2="12" />
-              </svg>
-            </button>
-          </div>
-        </div>,
-        document.body,
-      )}
+      {showCellToolbar && editingCell && activeCell && onCellUpdate && canvasRef?.current && (() => {
+        const objEl = canvasRef.current?.querySelector(`[data-slide-obj="${objId}"]`) as HTMLElement;
+        if (!objEl) return null;
+        return (
+          <TextFormatToolbar
+            anchorRect={objEl.getBoundingClientRect()}
+            fontFamily={activeCell.fontFamily || obj.fontFamily}
+            fontSize={activeCell.fontSize || obj.fontSize}
+            bold={activeCell.bold}
+            italic={activeCell.italic}
+            align={activeCell.align || "left"}
+            verticalAlign={activeCell.verticalAlign || "middle"}
+            textColor={activeCell.color || "#1f2937"}
+            fillColor={activeCell.backgroundColor || "#ffffff"}
+            wrap={!activeCell.noWrap}
+            onFontFamilyChange={(v) => onCellUpdate(editingCell.r, editingCell.c, { fontFamily: v })}
+            onFontSizeChange={(v) => onCellUpdate(editingCell.r, editingCell.c, { fontSize: v })}
+            onBold={() => onCellUpdate(editingCell.r, editingCell.c, { bold: !activeCell.bold })}
+            onItalic={() => onCellUpdate(editingCell.r, editingCell.c, { italic: !activeCell.italic })}
+            onAlignChange={(v) => onCellUpdate(editingCell.r, editingCell.c, { align: v })}
+            onVerticalAlignChange={(v) => onCellUpdate(editingCell.r, editingCell.c, { verticalAlign: v })}
+            onWrapToggle={() => onCellUpdate(editingCell.r, editingCell.c, { noWrap: !activeCell.noWrap })}
+            onTextColorChange={(c) => onCellUpdate(editingCell.r, editingCell.c, { color: c })}
+            onFillColorChange={(c) => onCellUpdate(editingCell.r, editingCell.c, { backgroundColor: c })}
+            onClose={() => setShowCellToolbar(false)}
+          />
+        );
+      })()}
     </div>
   );
 }

@@ -1014,6 +1014,25 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
     setSelectedObjectId(obj.id);
   }, [activeSlide, currentObjects, updateCurrentSlide, theme]);
 
+  // Add MULTIPLE objects in a single update. Calling addObjectToSlide in a loop
+  // loses all but the last object because each call reads the same stale
+  // currentObjects snapshot (state isn't flushed between synchronous calls).
+  const addObjectsToSlide = useCallback((objs: SlideObject[]) => {
+    if (objs.length === 0) return;
+    if (!activeSlide?.objects || activeSlide.objects.length === 0) {
+      const th = THEMES[theme] || THEMES.default;
+      const htmlContent = activeSlide?.content?.trim() || "";
+      const existingObjs: SlideObject[] = [];
+      if (htmlContent && htmlContent !== "<br>") {
+        existingObjs.push(createTextBox({ x: 5, y: 5, width: 90, height: 90, content: htmlContent, fontSize: 18, color: th.text, align: "left", verticalAlign: "top", zIndex: 1 }));
+      }
+      updateCurrentSlide({ objects: [...existingObjs, ...objs], content: "" });
+    } else {
+      updateCurrentSlide({ objects: [...currentObjects, ...objs] });
+    }
+    setSelectedObjectId(objs[objs.length - 1].id);
+  }, [activeSlide, currentObjects, updateCurrentSlide, theme]);
+
   const handleDrawingComplete = useCallback((paths: string) => {
     const obj = createDrawingObj(paths, { stroke: drawingColor, strokeWidth: drawingWidth, zIndex: currentObjects.length + 1 });
     addObjectToSlide(obj);
@@ -1957,7 +1976,7 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
           case "insert:diagramGrid": {
             migrateSlideToObjects(); const th = THEMES[theme] || THEMES.default;
             const ca = getContentArea();
-            [0,1,2,3].forEach((i) => addObjectToSlide(createShapeObj("rect", {
+            addObjectsToSlide([0,1,2,3].map((i) => createShapeObj("rect", {
               x: ca.x + (i % 2) * (ca.w / 2 + 1), y: ca.y + Math.floor(i / 2) * (ca.h / 2 + 1),
               width: ca.w / 2 - 2, height: ca.h / 2 - 3,
               fill: th.accent, text: `Item ${i + 1}`, textColor: "#fff", zIndex: currentObjects.length + i + 1,
@@ -1968,10 +1987,12 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
           case "insert:diagramProcess": case "insert:diagramRelationship": case "insert:diagramCycle": {
             migrateSlideToObjects(); const th = THEMES[theme] || THEMES.default;
             const ca = getContentArea();
-            addObjectToSlide(createShapeObj("rect", { x: ca.x + ca.w * 0.25, y: ca.y, width: ca.w * 0.5, height: ca.h * 0.25, fill: th.accent, text: "Main", textColor: "#fff", zIndex: currentObjects.length + 1 }));
-            addObjectToSlide(createShapeObj("arrow-down", { x: ca.x + ca.w * 0.45, y: ca.y + ca.h * 0.27, width: ca.w * 0.1, height: ca.h * 0.12, fill: th.text, zIndex: currentObjects.length + 2 }));
-            addObjectToSlide(createShapeObj("rect", { x: ca.x, y: ca.y + ca.h * 0.42, width: ca.w * 0.45, height: ca.h * 0.25, fill: th.accent, text: "Branch A", textColor: "#fff", zIndex: currentObjects.length + 3 }));
-            addObjectToSlide(createShapeObj("rect", { x: ca.x + ca.w * 0.55, y: ca.y + ca.h * 0.42, width: ca.w * 0.45, height: ca.h * 0.25, fill: th.accent, text: "Branch B", textColor: "#fff", zIndex: currentObjects.length + 4 }));
+            addObjectsToSlide([
+              createShapeObj("rect", { x: ca.x + ca.w * 0.25, y: ca.y, width: ca.w * 0.5, height: ca.h * 0.25, fill: th.accent, text: "Main", textColor: "#fff", zIndex: currentObjects.length + 1 }),
+              createShapeObj("arrow-down", { x: ca.x + ca.w * 0.45, y: ca.y + ca.h * 0.27, width: ca.w * 0.1, height: ca.h * 0.12, fill: th.text, zIndex: currentObjects.length + 2 }),
+              createShapeObj("rect", { x: ca.x, y: ca.y + ca.h * 0.42, width: ca.w * 0.45, height: ca.h * 0.25, fill: th.accent, text: "Branch A", textColor: "#fff", zIndex: currentObjects.length + 3 }),
+              createShapeObj("rect", { x: ca.x + ca.w * 0.55, y: ca.y + ca.h * 0.42, width: ca.w * 0.45, height: ca.h * 0.25, fill: th.accent, text: "Branch B", textColor: "#fff", zIndex: currentObjects.length + 4 }),
+            ]);
             break;
           }
           case "insert:chartBar": case "insert:chartColumn": case "insert:chartLine": case "insert:chartPie": {
@@ -1980,12 +2001,13 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
             const barW = ca.w * 0.12;
             const gap = ca.w * 0.03;
             const barHeights = [0.5, 0.7, 0.4, 0.85, 0.55];
-            barHeights.forEach((h, i) => addObjectToSlide(createShapeObj("rect", {
+            const chartObjs = barHeights.map((h, i) => createShapeObj("rect", {
               x: ca.x + 5 + i * (barW + gap), y: ca.y + ca.h * (1 - h) * 0.85,
               width: barW, height: ca.h * h * 0.8,
               fill: i === 3 ? th.accent : `${th.accent}88`, zIndex: currentObjects.length + i + 1,
-            })));
-            addObjectToSlide(createShapeObj("line-h", { x: ca.x, y: ca.y + ca.h * 0.88, width: ca.w, height: 0.3, fill: th.text, zIndex: currentObjects.length + 6 }));
+            }));
+            chartObjs.push(createShapeObj("line-h", { x: ca.x, y: ca.y + ca.h * 0.88, width: ca.w, height: 0.3, fill: th.text, zIndex: currentObjects.length + 6 }));
+            addObjectsToSlide(chartObjs);
             break;
           }
 
@@ -2506,7 +2528,7 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
                   redoStackRef.current = [];
                   onChangeRef.current({ ...valueRef.current, slides: currentSlides });
                   setSelectedObjectId(tbObj.id);
-                  setEditingTextId(tbObj.id); // Auto-enter edit mode
+                  // Textbox is selected — user can double-click to edit
                 };
 
                 document.addEventListener("mousemove", onMove);

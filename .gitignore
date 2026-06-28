@@ -47,3 +47,13 @@ con
 
 # Android APKs (downloaded/generated)
 *.apk
+
+# Playwright MCP debug artifacts (screenshots, snapshots, console logs)
+.playwright-mcp/
+
+# Playwright test output (regenerated on each run)
+playwright-report/
+test-results/
+
+# Stray debug screenshots at the repo root (e2e snapshot baselines live in subdirs)
+/*.png

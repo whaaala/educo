@@ -80,6 +80,54 @@ Feature: Presentation Slide Editor
     And the same for Italic, Underline, and alignment buttons
 
   # ──────────────────────────────────────────────────
+  # Inserting Objects — Diagrams & Shape Text
+  # ──────────────────────────────────────────────────
+
+  Scenario: Inserting a multi-node diagram adds every node
+    Given a slide is active
+    When the user chooses Insert > Diagram > Hierarchy
+    Then the slide should gain all four nodes: Main, the connecting arrow, Branch A, and Branch B
+    # Regression: previously only the last node survived because each node was added
+    # with a separate state update that read the same stale objects snapshot.
+
+  Scenario: Inserting a Grid diagram adds four cells
+    Given a slide is active
+    When the user chooses Insert > Diagram > Grid
+    Then the slide should gain four cells labelled Item 1 through Item 4
+
+  Scenario: Double-click a shape or diagram node to edit its text
+    Given a shape with text exists on the slide and is not selected
+    When the user double-clicks the shape
+    Then the shape should enter text-edit mode with a visible cursor
+    And the user should be able to type and replace the text
+    # Regression: ShapeSVG must be memoized so a selection re-render does not remount
+    # the shape's injected SVG node between mousedown and mouseup; otherwise the
+    # browser never fires the dblclick and edit mode is never entered.
+
+  Scenario: Shape text survives repeated edit sessions
+    Given a shape that already contains text
+    When the user edits it, clicks away, and double-clicks to edit it again
+    Then the existing text should still be shown in the editor every time
+    # Regression: the edit and view elements need distinct React keys, otherwise the
+    # node is reused and the text fails to reload on the second edit (box looks empty).
+
+  Scenario: Shape text can be aligned vertically and horizontally
+    Given a shape is being edited
+    When the user clicks the vertical-align top, middle, or bottom button
+    Then the text should move to the top, middle, or bottom of the shape
+    And the text should stay fully inside the visible shape with a margin from the edge
+    When the user clicks the horizontal-align left, center, or right button
+    Then the text should move to the left, center, or right of the shape
+    And typing in an empty shape should place the caret at the chosen alignment, not the top
+
+  Scenario: Rectangle shapes fill their bounding box
+    Given a rectangle or diagram node is on the slide
+    Then the visible blue rectangle should fill the object's bounds
+    And top- or bottom-aligned text should not be clipped at the shape edge
+    # Regression: the rect shape used a 15% vertical inset, so the visible box was
+    # shorter than the text overlay and aligned text spilled outside and got cut off.
+
+  # ──────────────────────────────────────────────────
   # Themes
   # ──────────────────────────────────────────────────
 

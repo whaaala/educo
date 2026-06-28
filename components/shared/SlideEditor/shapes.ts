@@ -22,8 +22,10 @@ export const SHAPE_DEFS: Record<string, ShapeDef> = {
   // ══════════════════════════════════════
   // SHAPES (Basic geometric shapes)
   // ══════════════════════════════════════
-  "rect":              { label: "Rectangle", category: "shapes", svg: rect(5, 15, 90, 70, 0) },
-  "rect-round":        { label: "Rounded Rectangle", category: "shapes", svg: rect(5, 15, 90, 70, 12) },
+  // Fill (nearly) the whole bounding box so the visible rectangle matches the text
+  // overlay area — otherwise top/bottom-aligned text spills outside the blue box.
+  "rect":              { label: "Rectangle", category: "shapes", svg: rect(2, 2, 96, 96, 0) },
+  "rect-round":        { label: "Rounded Rectangle", category: "shapes", svg: rect(2, 2, 96, 96, 10) },
   "rect-snip":         { label: "Snip Rectangle", category: "shapes", svg: path("M5 15 L80 15 L95 30 L95 85 L5 85 Z") },
   "square":            { label: "Square", category: "shapes", svg: rect(15, 15, 70, 70, 0) },
   "square-round":      { label: "Rounded Square", category: "shapes", svg: rect(15, 15, 70, 70, 12) },

@@ -1,261 +1,282 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
-import {
-  Bold,
-  Italic,
-  Underline,
-  AlignLeft,
-  AlignCenter,
-  AlignRight,
-  ChevronDown,
-  Minus,
-  Plus,
-} from "lucide-react";
-import type { FontFamily, TextAlign } from "../shared/Whiteboard/whiteboard-types";
-import { FONT_FAMILIES, FONT_SIZES } from "../shared/Whiteboard/whiteboard-types";
-
-// ─── Toolbar Toggle Button ─────────────────────────────────────────────
-
-export function ToolbarButton({
-  active,
-  onClick,
-  title,
-  children,
-  size = "md",
-}: {
-  active: boolean;
-  onClick: () => void;
-  title: string;
-  children: React.ReactNode;
-  size?: "sm" | "md";
-}) {
-  const sizeClass = size === "sm" ? "w-6 h-6" : "w-8 h-8";
-  const iconSize = size === "sm" ? "w-3.5 h-3.5" : "w-4 h-4";
-
-  return (
-    <button
-      onClick={onClick}
-      className={`flex items-center justify-center ${sizeClass} rounded-lg transition-all duration-100 cursor-pointer ${
-        active
-          ? "bg-blue-100 text-blue-600 dark:bg-blue-500/25 dark:text-blue-400 midnight:bg-cyan-500/25 midnight:text-cyan-400 purple:bg-pink-500/25 purple:text-pink-400 ring-1 ring-blue-400/30 dark:ring-blue-500/30 midnight:ring-cyan-500/30 purple:ring-pink-500/30"
-          : "text-gray-600 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"
-      }`}
-      title={title}
-    >
-      {children}
-    </button>
-  );
-}
-
-// ─── Text Format Controls ───────────────────────────────────────────────
-
-export interface TextFormatState {
-  fontFamily: FontFamily;
-  fontSize: number;
-  fontWeight: "normal" | "bold";
-  fontStyle: "normal" | "italic";
-  textDecoration: "none" | "underline";
-  textAlign: TextAlign;
-}
-
-interface TextFormatToolbarProps {
-  /** Current formatting state */
-  format: TextFormatState;
-  /** Called when any formatting changes */
-  onChange: (updates: Partial<TextFormatState>) => void;
-  /** Compact mode for embedding inside panels */
-  compact?: boolean;
-  /** Available font sizes (defaults to FONT_SIZES from types) */
-  fontSizes?: number[];
-  /** Show +/- buttons around font size */
-  showSizeButtons?: boolean;
-}
-
 /**
- * Shared text formatting toolbar with font family, size, B/I/U, and alignment controls.
- * Can be used standalone or embedded inside other panels.
+ * TextFormatToolbar — Shared floating toolbar for text formatting.
+ * Used by textbox, table cell, and shape text editing in the slide editor.
+ * Respects all available themes.
  */
+
+import React from "react";
+import { createPortal } from "react-dom";
+import CustomDropdown from "@/components/shared/CustomDropdown";
+import { ColorPickerPopover } from "@/components/shared/ColorPalettePicker";
+
+// ── Font options ──
+
+export const FONT_OPTIONS = [
+  { label: "Inter", value: "Inter, sans-serif" },
+  { label: "Arial", value: "Arial, sans-serif" },
+  { label: "Arial Black", value: "Arial Black, sans-serif" },
+  { label: "Calibri", value: "Calibri, sans-serif" },
+  { label: "Cambria", value: "Cambria, serif" },
+  { label: "Comic Sans MS", value: "Comic Sans MS, cursive" },
+  { label: "Consolas", value: "Consolas, monospace" },
+  { label: "Courier New", value: "Courier New, monospace" },
+  { label: "Garamond", value: "Garamond, serif" },
+  { label: "Georgia", value: "Georgia, serif" },
+  { label: "Impact", value: "Impact, sans-serif" },
+  { label: "Lucida Console", value: "Lucida Console, monospace" },
+  { label: "Palatino", value: "Palatino Linotype, serif" },
+  { label: "Segoe UI", value: "Segoe UI, sans-serif" },
+  { label: "Tahoma", value: "Tahoma, sans-serif" },
+  { label: "Times New Roman", value: "Times New Roman, serif" },
+  { label: "Trebuchet MS", value: "Trebuchet MS, sans-serif" },
+  { label: "Verdana", value: "Verdana, sans-serif" },
+];
+
+export const FONT_SIZES = [8, 9, 10, 11, 12, 14, 16, 18, 20, 24, 28, 32, 36, 48, 60, 72];
+
+// ── Shared style constants ──
+
+const activeBtn = "bg-blue-100 text-blue-700 dark:bg-[#22262e] dark:text-gray-100 dark:border dark:border-gray-600 midnight:bg-cyan-500/15 midnight:text-cyan-400 midnight:border midnight:border-cyan-500/30 purple:bg-pink-500/15 purple:text-pink-400 purple:border purple:border-pink-500/30";
+const inactiveBtn = "text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5";
+const divider = "w-px h-6 bg-gray-200 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]";
+
+// ── Props ──
+
+export interface TextFormatToolbarProps {
+  /** Anchor element rect — toolbar positions above this */
+  anchorRect: DOMRect;
+  /** Current values */
+  fontFamily?: string;
+  fontSize?: number;
+  bold?: boolean;
+  italic?: boolean;
+  align?: "left" | "center" | "right";
+  verticalAlign?: "top" | "middle" | "bottom";
+  textColor?: string;
+  fillColor?: string;
+  wrap?: boolean;
+  /** Which controls to show */
+  showFontFamily?: boolean;
+  showFontSize?: boolean;
+  showBold?: boolean;
+  showItalic?: boolean;
+  showUnderline?: boolean;
+  showAlign?: boolean;
+  showVerticalAlign?: boolean;
+  showWrap?: boolean;
+  showTextColor?: boolean;
+  showFillColor?: boolean;
+  showClose?: boolean;
+  /** Callbacks */
+  onFontFamilyChange?: (v: string) => void;
+  onFontSizeChange?: (v: number) => void;
+  onBold?: () => void;
+  onItalic?: () => void;
+  onUnderline?: () => void;
+  onAlignChange?: (v: "left" | "center" | "right") => void;
+  onVerticalAlignChange?: (v: "top" | "middle" | "bottom") => void;
+  onWrapToggle?: () => void;
+  onTextColorChange?: (c: string) => void;
+  onFillColorChange?: (c: string) => void;
+  onClose?: () => void;
+}
+
 export default function TextFormatToolbar({
-  format,
-  onChange,
-  compact = false,
-  fontSizes = FONT_SIZES,
-  showSizeButtons = true,
+  anchorRect,
+  fontFamily = "Inter, sans-serif",
+  fontSize = 18,
+  bold = false,
+  italic = false,
+  align = "left",
+  verticalAlign = "top",
+  textColor = "#1a1a2e",
+  fillColor = "transparent",
+  wrap = true,
+  showFontFamily = true,
+  showFontSize = true,
+  showBold = true,
+  showItalic = true,
+  showUnderline = false,
+  showAlign = true,
+  showVerticalAlign = true,
+  showWrap = true,
+  showTextColor = true,
+  showFillColor = true,
+  showClose = true,
+  onFontFamilyChange,
+  onFontSizeChange,
+  onBold,
+  onItalic,
+  onUnderline,
+  onAlignChange,
+  onVerticalAlignChange,
+  onWrapToggle,
+  onTextColorChange,
+  onFillColorChange,
+  onClose,
 }: TextFormatToolbarProps) {
-  const [showFontDropdown, setShowFontDropdown] = useState(false);
-  const [showSizeDropdown, setShowSizeDropdown] = useState(false);
-  const fontRef = useRef<HTMLDivElement>(null);
-  const sizeRef = useRef<HTMLDivElement>(null);
+  const toolbarRef = React.useRef<HTMLDivElement>(null);
+  const [pos, setPos] = React.useState<{ top: number; left?: number; right?: number } | null>(null);
 
-  // Close dropdowns on outside click
-  useEffect(() => {
-    if (!showFontDropdown && !showSizeDropdown) return;
-    const handler = (e: MouseEvent) => {
-      if (showFontDropdown && fontRef.current && !fontRef.current.contains(e.target as Node)) {
-        setShowFontDropdown(false);
-      }
-      if (showSizeDropdown && sizeRef.current && !sizeRef.current.contains(e.target as Node)) {
-        setShowSizeDropdown(false);
-      }
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, [showFontDropdown, showSizeDropdown]);
+  // Measure toolbar after render and position above the anchor
+  React.useEffect(() => {
+    const el = toolbarRef.current;
+    if (!el) return;
+    const toolbarW = el.offsetWidth;
+    const toolbarH = el.offsetHeight;
+    // Always above the anchor's top edge, clamped to viewport top (never below)
+    const top = Math.max(4, anchorRect.top - toolbarH - 8);
+    // Horizontal: clamp so toolbar stays within viewport
+    let left = anchorRect.left;
+    if (left + toolbarW > window.innerWidth - 8) left = window.innerWidth - toolbarW - 8;
+    if (left < 8) left = 8;
+    setPos({ top, left });
+  }, [anchorRect.top, anchorRect.left, anchorRect.bottom, anchorRect.right]);
 
-  const decrease = () => {
-    const idx = fontSizes.findIndex((s) => s >= format.fontSize);
-    const prev = idx > 0 ? fontSizes[idx - 1] : fontSizes[0];
-    onChange({ fontSize: prev });
-  };
+  if (typeof document === "undefined") return null;
 
-  const increase = () => {
-    const idx = fontSizes.findIndex((s) => s > format.fontSize);
-    const next = idx >= 0 ? fontSizes[idx] : fontSizes[fontSizes.length - 1];
-    onChange({ fontSize: next });
-  };
+  return createPortal(
+    <div
+      ref={toolbarRef}
+      className="fixed z-[10002] rounded-xl bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] shadow-lg border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20"
+      style={{
+        top: pos?.top ?? -9999,
+        left: pos?.left ?? 0,
+        maxWidth: "calc(100vw - 16px)",
+        visibility: pos ? "visible" : "hidden",
+      }}
+      onClick={(e) => e.stopPropagation()}
+      onMouseDown={(e) => e.stopPropagation()}
+    >
+      <div className="flex items-center gap-1 px-2 py-1.5">
+        {/* Font family */}
+        {showFontFamily && onFontFamilyChange && (
+          <CustomDropdown
+            value={fontFamily}
+            options={FONT_OPTIONS}
+            onChange={(v) => onFontFamilyChange(String(v))}
+            className="w-[130px]"
+          />
+        )}
 
-  const btnSize = compact ? "sm" : "md";
-  const iconClass = compact ? "w-3.5 h-3.5" : "w-4 h-4";
-  const dividerClass = compact
-    ? "w-px h-5 bg-gray-200 dark:bg-[#2a2d35] midnight:bg-cyan-500/20 purple:bg-pink-500/20"
-    : "w-px h-6 bg-gray-300 dark:bg-[#2a2d35] midnight:bg-cyan-500/20 purple:bg-pink-500/20 mx-0.5";
+        {/* Font size */}
+        {showFontSize && onFontSizeChange && (
+          <CustomDropdown
+            value={fontSize}
+            options={FONT_SIZES.map(s => ({ label: `${s}`, value: s }))}
+            onChange={(v) => onFontSizeChange(Number(v))}
+            className="w-[64px]"
+          />
+        )}
 
-  return (
-    <div className={`flex ${compact ? "flex-wrap" : ""} items-center gap-1`}>
-      {/* Font family dropdown */}
-      <div ref={fontRef} className="relative">
-        <button
-          onClick={() => { setShowFontDropdown(!showFontDropdown); setShowSizeDropdown(false); }}
-          className={`flex items-center gap-0.5 rounded-${compact ? "md" : "lg"} text-${compact ? "[10px]" : "xs"} ${compact ? "font-medium" : "font-semibold"} text-gray-${compact ? "600" : "700"} dark:text-gray-${compact ? "300" : "200"} midnight:text-cyan-${compact ? "200" : "100"} purple:text-pink-${compact ? "200" : "100"} bg-gray-50 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] border border-gray-200 dark:border-gray-600 midnight:border-cyan-500/20 purple:border-pink-500/20 hover:bg-gray-100 dark:hover:bg-[#2a2d35] transition-colors cursor-pointer ${compact ? "px-1.5 py-1 max-w-[90px]" : "px-2.5 h-8 min-w-[100px]"} truncate`}
-          style={{ fontFamily: `${format.fontFamily}, system-ui, sans-serif` }}
-          title="Font family"
-        >
-          <span className="truncate">{format.fontFamily}</span>
-          <ChevronDown className={`${compact ? "w-2.5 h-2.5" : "w-3.5 h-3.5"} flex-shrink-0 opacity-60 transition-transform ${showFontDropdown ? "rotate-180" : ""}`} />
-        </button>
-        {showFontDropdown && (
-          <div className={`absolute left-0 top-full mt-1 z-[80] ${compact ? "w-[160px]" : "w-[180px]"} max-h-[200px] overflow-y-auto scrollbar-thin bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/25 purple:border-pink-500/25 rounded-lg shadow-xl`}>
-            {FONT_FAMILIES.map((font) => (
-              <button
-                key={font}
-                onClick={() => { onChange({ fontFamily: font }); setShowFontDropdown(false); }}
-                className={`w-full text-left px-2.5 py-1.5 text-[11px] transition-colors cursor-pointer ${
-                  format.fontFamily === font
-                    ? "bg-blue-50 dark:bg-blue-500/15 text-blue-600 dark:text-blue-400 midnight:bg-cyan-500/15 midnight:text-cyan-400 purple:bg-pink-500/15 purple:text-pink-400 font-semibold"
-                    : "text-gray-700 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-50 dark:hover:bg-[#22262e]"
-                }`}
-                style={{ fontFamily: `${font}, system-ui, sans-serif` }}
-              >
-                {font}
+        {(showFontFamily || showFontSize) && <div className={divider} />}
+
+        {/* Bold */}
+        {showBold && onBold && (
+          <button onMouseDown={(e) => { e.preventDefault(); onBold(); }}
+            className={`w-8 h-8 flex items-center justify-center rounded-lg text-[13px] font-bold cursor-pointer transition-all ${bold ? activeBtn : inactiveBtn}`}
+            title="Bold (Ctrl+B)">B</button>
+        )}
+
+        {/* Italic */}
+        {showItalic && onItalic && (
+          <button onMouseDown={(e) => { e.preventDefault(); onItalic(); }}
+            className={`w-8 h-8 flex items-center justify-center rounded-lg text-[13px] italic cursor-pointer transition-all ${italic ? activeBtn : inactiveBtn}`}
+            title="Italic (Ctrl+I)">I</button>
+        )}
+
+        {/* Underline */}
+        {showUnderline && onUnderline && (
+          <button onMouseDown={(e) => { e.preventDefault(); onUnderline(); }}
+            className={`w-8 h-8 flex items-center justify-center rounded-lg text-[13px] underline cursor-pointer transition-all ${inactiveBtn}`}
+            title="Underline (Ctrl+U)">U</button>
+        )}
+
+        {(showBold || showItalic || showUnderline) && <div className={divider} />}
+
+        {/* Horizontal alignment */}
+        {showAlign && onAlignChange && (["left", "center", "right"] as const).map(a => (
+          <button key={a} onMouseDown={(e) => { e.preventDefault(); onAlignChange(a); }}
+            className={`w-8 h-8 flex items-center justify-center rounded-lg cursor-pointer transition-all ${align === a ? activeBtn : inactiveBtn}`}
+            title={`Align ${a}`}>
+            <svg viewBox="0 0 16 16" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+              {a === "left" && <><line x1="1" y1="4" x2="15" y2="4"/><line x1="1" y1="8" x2="10" y2="8"/><line x1="1" y1="12" x2="13" y2="12"/></>}
+              {a === "center" && <><line x1="1" y1="4" x2="15" y2="4"/><line x1="3.5" y1="8" x2="12.5" y2="8"/><line x1="2" y1="12" x2="14" y2="12"/></>}
+              {a === "right" && <><line x1="1" y1="4" x2="15" y2="4"/><line x1="6" y1="8" x2="15" y2="8"/><line x1="3" y1="12" x2="15" y2="12"/></>}
+            </svg>
+          </button>
+        ))}
+
+        {/* Wrap toggle */}
+        {showWrap && onWrapToggle && (
+          <>
+            <div className={divider} />
+            <button onMouseDown={(e) => { e.preventDefault(); onWrapToggle(); }}
+              className={`w-8 h-8 flex items-center justify-center rounded-lg cursor-pointer transition-all ${wrap ? activeBtn : inactiveBtn}`}
+              title="Text wrap">
+              <svg viewBox="0 0 16 16" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+                <line x1="1" y1="4" x2="15" y2="4"/><line x1="1" y1="8" x2="11" y2="8"/><path d="M11 8 C14 8 14 12 11 12 L6 12" /><polyline points="8,10 6,12 8,14" />
+              </svg>
+            </button>
+          </>
+        )}
+
+        {/* Vertical alignment */}
+        {showVerticalAlign && onVerticalAlignChange && (
+          <>
+            <div className={divider} />
+            {(["top", "middle", "bottom"] as const).map(va => (
+              <button key={va} onMouseDown={(e) => { e.preventDefault(); onVerticalAlignChange(va); }}
+                className={`w-8 h-8 flex items-center justify-center rounded-lg cursor-pointer transition-all ${verticalAlign === va ? activeBtn : inactiveBtn}`}
+                title={`Vertical ${va}`}>
+                <svg viewBox="0 0 16 16" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+                  {va === "top" && <><rect x="2" y="2" width="12" height="12" rx="1.5" strokeWidth="1" /><line x1="5" y1="5" x2="11" y2="5"/><line x1="5" y1="8" x2="9" y2="8"/></>}
+                  {va === "middle" && <><rect x="2" y="2" width="12" height="12" rx="1.5" strokeWidth="1" /><line x1="5" y1="6.5" x2="11" y2="6.5"/><line x1="5" y1="9.5" x2="9" y2="9.5"/></>}
+                  {va === "bottom" && <><rect x="2" y="2" width="12" height="12" rx="1.5" strokeWidth="1" /><line x1="5" y1="8" x2="9" y2="8"/><line x1="5" y1="11" x2="11" y2="11"/></>}
+                </svg>
               </button>
             ))}
-          </div>
+          </>
+        )}
+
+        {(showTextColor || showFillColor) && <div className={divider} />}
+
+        {/* Text color */}
+        {showTextColor && onTextColorChange && (
+          <ColorPickerPopover selectedColor={textColor} onSelect={onTextColorChange} mode="matrix" label="Text Color" align="right" width={272}>
+            <button className={`w-8 h-8 flex items-center justify-center rounded-lg cursor-pointer ${inactiveBtn} relative`} title="Text color">
+              <span className="text-[13px] font-bold" style={{ color: textColor }}>A</span>
+              <div className="absolute bottom-1 left-2 right-2 h-[2.5px] rounded-full" style={{ backgroundColor: textColor }} />
+            </button>
+          </ColorPickerPopover>
+        )}
+
+        {/* Fill color */}
+        {showFillColor && onFillColorChange && (
+          <ColorPickerPopover selectedColor={fillColor} onSelect={onFillColorChange} mode="matrix" label="Fill" align="right" width={272}>
+            <button className={`w-8 h-8 flex items-center justify-center rounded-lg cursor-pointer ${inactiveBtn}`} title="Fill color">
+              <div className="w-5 h-5 rounded border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30" style={{ backgroundColor: fillColor }} />
+            </button>
+          </ColorPickerPopover>
+        )}
+
+        {/* Close */}
+        {showClose && onClose && (
+          <>
+            <div className={divider} />
+            <button onMouseDown={(e) => { e.preventDefault(); onClose(); }}
+              className="w-8 h-8 flex items-center justify-center rounded-lg cursor-pointer text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all"
+              title="Close (Esc)">
+              <svg viewBox="0 0 16 16" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                <line x1="4" y1="4" x2="12" y2="12" /><line x1="12" y1="4" x2="4" y2="12" />
+              </svg>
+            </button>
+          </>
         )}
       </div>
-
-      {/* Font size */}
-      <div ref={sizeRef} className="relative flex items-center gap-0.5">
-        {showSizeButtons && (
-          <button
-            onClick={decrease}
-            className={`flex items-center justify-center ${compact ? "w-5 h-5" : "w-7 h-8"} rounded-lg text-gray-600 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-100 dark:hover:bg-[#22262e] transition-colors cursor-pointer`}
-            title="Decrease font size"
-          >
-            <Minus className={compact ? "w-2.5 h-2.5" : "w-3.5 h-3.5"} />
-          </button>
-        )}
-        <button
-          onClick={() => { setShowSizeDropdown(!showSizeDropdown); setShowFontDropdown(false); }}
-          className={`flex items-center justify-center ${compact ? "px-1 py-1 w-[36px] text-[10px]" : "min-w-[38px] h-8 px-1.5 text-xs"} font-bold text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 bg-gray-50 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] border border-gray-200 dark:border-gray-600 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-${compact ? "md" : "lg"} cursor-pointer hover:bg-gray-100 dark:hover:bg-[#2a2d35] transition-colors`}
-        >
-          {format.fontSize}
-        </button>
-        {showSizeButtons && (
-          <button
-            onClick={increase}
-            className={`flex items-center justify-center ${compact ? "w-5 h-5" : "w-7 h-8"} rounded-lg text-gray-600 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-100 dark:hover:bg-[#22262e] transition-colors cursor-pointer`}
-            title="Increase font size"
-          >
-            <Plus className={compact ? "w-2.5 h-2.5" : "w-3.5 h-3.5"} />
-          </button>
-        )}
-        {showSizeDropdown && (
-          <div className={`absolute left-0 top-full mt-1 z-[80] w-[60px] max-h-[200px] overflow-y-auto scrollbar-thin bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-300 dark:border-gray-600 rounded-lg shadow-xl`}>
-            {fontSizes.map((size) => (
-              <button
-                key={size}
-                onClick={() => { onChange({ fontSize: size }); setShowSizeDropdown(false); }}
-                className={`w-full text-center px-2 py-1.5 text-[11px] transition-colors cursor-pointer ${
-                  format.fontSize === size
-                    ? "bg-blue-50 dark:bg-blue-500/15 text-blue-600 dark:text-blue-400 font-bold"
-                    : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#22262e]"
-                }`}
-              >
-                {size}
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Divider */}
-      <div className={dividerClass} />
-
-      {/* B / I / U */}
-      <ToolbarButton
-        active={format.fontWeight === "bold"}
-        onClick={() => onChange({ fontWeight: format.fontWeight === "bold" ? "normal" : "bold" })}
-        title="Bold"
-        size={btnSize}
-      >
-        <Bold className={iconClass} />
-      </ToolbarButton>
-      <ToolbarButton
-        active={format.fontStyle === "italic"}
-        onClick={() => onChange({ fontStyle: format.fontStyle === "italic" ? "normal" : "italic" })}
-        title="Italic"
-        size={btnSize}
-      >
-        <Italic className={iconClass} />
-      </ToolbarButton>
-      <ToolbarButton
-        active={format.textDecoration === "underline"}
-        onClick={() => onChange({ textDecoration: format.textDecoration === "underline" ? "none" : "underline" })}
-        title="Underline"
-        size={btnSize}
-      >
-        <Underline className={iconClass} />
-      </ToolbarButton>
-
-      {/* Divider */}
-      <div className={dividerClass} />
-
-      {/* Alignment */}
-      <ToolbarButton
-        active={format.textAlign === "left"}
-        onClick={() => onChange({ textAlign: "left" })}
-        title="Align left"
-        size={btnSize}
-      >
-        <AlignLeft className={iconClass} />
-      </ToolbarButton>
-      <ToolbarButton
-        active={format.textAlign === "center"}
-        onClick={() => onChange({ textAlign: "center" })}
-        title="Align center"
-        size={btnSize}
-      >
-        <AlignCenter className={iconClass} />
-      </ToolbarButton>
-      <ToolbarButton
-        active={format.textAlign === "right"}
-        onClick={() => onChange({ textAlign: "right" })}
-        title="Align right"
-        size={btnSize}
-      >
-        <AlignRight className={iconClass} />
-      </ToolbarButton>
-    </div>
+    </div>,
+    document.body,
   );
 }

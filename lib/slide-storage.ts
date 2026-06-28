@@ -34,6 +34,7 @@ export interface TextBoxObject extends SlideObjectBase {
   borderRadius?: number;
   padding?: number;
   placeholder?: string;
+  noWrap?: boolean;
 }
 
 export interface ImageObject extends SlideObjectBase {
@@ -166,7 +167,7 @@ export function createTableObj(rows: number, cols: number, overrides?: Partial<T
   const rowH = 100 / rows;
   return {
     id: objId(), type: "table",
-    x: 10, y: 20, width: 80, height: Math.min(60, 8 + rows * 8), rotation: 0, zIndex: 1,
+    x: 10, y: 20, width: 80, height: Math.min(50, 5 + rows * 5), rotation: 0, zIndex: 1,
     rows, cols, cells,
     colWidths: Array(cols).fill(colW),
     rowHeights: Array(rows).fill(rowH),

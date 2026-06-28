@@ -46,6 +46,16 @@ const slideEditorSource = fs.readFileSync(
   "utf-8"
 );
 
+const slideCanvasSource = fs.readFileSync(
+  path.resolve(__dirname, "../../../../components/shared/SlideEditor/SlideCanvas.tsx"),
+  "utf-8"
+);
+
+const shapesSource = fs.readFileSync(
+  path.resolve(__dirname, "../../../../components/shared/SlideEditor/shapes.ts"),
+  "utf-8"
+);
+
 describe("SlideMenuBar — Complete Menu System", () => {
   describe("Menu structure", () => {
     it("has all 9 top-level menus", () => {
@@ -180,6 +190,71 @@ describe("SlideMenuBar — Complete Menu System", () => {
       expect(combinedInsertMenuSource).toContain('"Word art"');
       expect(combinedInsertMenuSource).toContain('"Comment"');
       expect(combinedInsertMenuSource).toContain('"New slide"');
+    });
+  });
+
+  // Regression: double-click-to-edit shape text + multi-node diagram insert
+  describe("Diagram & shape-text editing regressions", () => {
+    // ShapeSVG injects its shape via dangerouslySetInnerHTML. If it re-renders on
+    // every selection change, the injected node is remounted between mousedown and
+    // mouseup, so the browser never fires click/dblclick and double-click-to-edit
+    // silently fails. Memoizing ShapeSVG prevents the remount.
+    it("memoizes ShapeSVG so selection re-renders don't remount its injected node", () => {
+      expect(slideCanvasSource).toMatch(/const ShapeSVG = React\.memo\(/);
+    });
+
+    it("still enters shape text edit mode on double-click", () => {
+      expect(slideCanvasSource).toContain('obj.type === "shape" && canEdit) setEditingTextId(obj.id)');
+    });
+
+    // Inserting a multi-node diagram by calling addObjectToSlide in a loop loses all
+    // but the last node (each call reads the same stale objects snapshot). The batch
+    // helper appends every node in a single state update.
+    it("provides a batch addObjectsToSlide helper for multi-node inserts", () => {
+      expect(slideEditorSource).toContain("const addObjectsToSlide = useCallback");
+      expect(slideEditorSource).toMatch(/objects: \[\.\.\.currentObjects, \.\.\.objs\]/);
+    });
+
+    it("inserts Grid / Hierarchy / Chart diagrams via the batch helper, not a loop", () => {
+      // Grid uses .map(...) passed to addObjectsToSlide
+      expect(slideEditorSource).toMatch(/addObjectsToSlide\(\[0,1,2,3\]\.map/);
+      // Hierarchy builds an array of all four nodes
+      expect(slideEditorSource).toContain('text: "Main"');
+      expect(slideEditorSource).toContain('text: "Branch A"');
+      expect(slideEditorSource).toContain('text: "Branch B"');
+      // None of the diagram/chart handlers should add nodes via a forEach loop anymore
+      expect(slideEditorSource).not.toMatch(/forEach\(\(i\) => addObjectToSlide/);
+      expect(slideEditorSource).not.toMatch(/forEach\(\(h, i\) => addObjectToSlide/);
+    });
+
+    // The editing contentEditable and the non-editing view element are both <div>
+    // at the same JSX position. Without distinct keys, React reuses the DOM node, so
+    // the one-time `__shapeInit`/`__tbInit` flag persists and the text fails to reload
+    // on the second edit session (the box appears empty).
+    it("gives shape edit/view nodes distinct keys so text reloads on re-edit", () => {
+      expect(slideCanvasSource).toContain("key={`shape-edit-${obj.id}`}");
+      expect(slideCanvasSource).toContain("key={`shape-view-${obj.id}`}");
+    });
+
+    it("gives textbox edit/view nodes distinct keys so content reloads on re-edit", () => {
+      expect(slideCanvasSource).toContain("key={`tb-edit-${obj.id}`}");
+      expect(slideCanvasSource).toContain("key={`tb-view-${obj.id}`}");
+    });
+
+    // Shape text uses grid + alignContent (matching textboxes) so vertical alignment
+    // and the caret behave correctly — including a centered caret in an empty box.
+    it("uses grid + alignContent for shape text vertical alignment", () => {
+      expect(slideCanvasSource).toMatch(/alignContent: \(obj as ShapeObject\)\.textVerticalAlign/);
+    });
+
+    // The rectangle shapes must (nearly) fill their bounding box. With a large vertical
+    // inset (the old 5,15,90,70) the visible box is shorter than the text overlay, so
+    // top/bottom-aligned text spilled outside the box and got clipped.
+    it("rectangle shapes fill their bounding box so aligned text stays inside", () => {
+      expect(shapesSource).toContain('"rect":              { label: "Rectangle", category: "shapes", svg: rect(2, 2, 96, 96, 0) }');
+      expect(shapesSource).toContain('rect(2, 2, 96, 96, 10)');
+      // The old clipped geometry must be gone
+      expect(shapesSource).not.toContain('rect(5, 15, 90, 70, 0)');
     });
   });
 
