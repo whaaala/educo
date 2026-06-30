@@ -14,7 +14,7 @@ import { ColorGrid, TabbedColorPalette, ColorPickerPopover, isNativeColorPickerO
 import CustomDropdown from "@/components/shared/CustomDropdown";
 import TextFormatToolbar from "@/components/shared/TextFormatToolbar";
 import SlideChart, { SlideChartEditor } from "./SlideChart";
-import { setSlideClipboard, getSlideClipboard, hasSlideClipboard, packIntoFreeSpace } from "./slide-clipboard";
+import { setSlideClipboard, getSlideClipboard, hasSlideClipboard, packIntoFreeSpace, fitRotatedToPage } from "./slide-clipboard";
 import TableStylePanel from "@/components/shared/TableStylePanel";
 
 // ══════════════════════════════════════════════════
@@ -348,7 +348,9 @@ export default function SlideCanvas({
       // Normalize rotation to 0-359
       let newRot = ((o.rotation || 0) + degrees) % 360;
       if (newRot < 0) newRot += 360;
-      return { ...o, rotation: newRot } as SlideObject;
+      // Keep the rotated object on the page — shrink + reposition so its rotated bounding
+      // box fits within the slide (a wide chart turned upright must fit the page height).
+      return fitRotatedToPage({ ...o, rotation: newRot }) as SlideObject;
     }));
   }, [objects, onChange, getTargetIds]);
 

@@ -245,6 +245,20 @@ describe("SlideMenuBar — Complete Menu System", () => {
       expect(slideEditorSource).toMatch(/objects: \[\.\.\.currentObjects, \.\.\.fitted\]/);
     });
 
+    // A long submenu (e.g. the 19 chart types) must fit the viewport — height-capped,
+    // scrollable, with a top/bottom margin — not run off the bottom of the screen.
+    it("keeps a long submenu inside the viewport (scrollable, with margins)", () => {
+      const viewMenusSource = fs.readFileSync(
+        path.resolve(__dirname, "../../../../components/shared/EditorViewMenus.tsx"), "utf-8");
+      // The inner scroller's height is capped to the viewport directly (robust, not a Tailwind calc no-op)
+      expect(viewMenusSource).toContain("data-submenu-scroll");
+      expect(viewMenusSource).toMatch(/scroller\.style\.maxHeight = `\$\{Math\.max\(120, window\.innerHeight - MARGIN \* 2\)\}px`/);
+      // A clearly visible top & bottom margin; never runs off-screen
+      expect(viewMenusSource).toContain("const MARGIN = 24");
+      expect(viewMenusSource).toMatch(/top = window\.innerHeight - ph - MARGIN/);
+      expect(viewMenusSource).toMatch(/if \(top < MARGIN\) top = MARGIN/);
+    });
+
     it("inserts Grid / Hierarchy / Chart diagrams via the batch helper, not a loop", () => {
       // Grid uses .map(...) passed to addObjectsToSlide
       expect(slideEditorSource).toMatch(/addObjectsToSlide\(\[0,1,2,3\]\.map/);

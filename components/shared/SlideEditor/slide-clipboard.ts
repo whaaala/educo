@@ -28,6 +28,28 @@ interface Box { x: number; y: number; width: number; height: number }
 interface Area { x: number; y: number; w: number; h: number }
 
 /**
+ * Keep a ROTATED object inside the slide. When a box is rotated its axis-aligned bounding
+ * box grows (and at 90°/270° its width/height swap), so a wide chart rotated upright can
+ * hang off the page. This scales the box down (preserving its width:height ratio) until the
+ * rotated bounding box fits, then clamps the centre so nothing spills past the edges.
+ * `aspect` = slide width / height (16:9 by default). Coordinates are slide percentages.
+ */
+export function fitRotatedToPage<T extends Box & { rotation?: number }>(o: T, aspect = 16 / 9): T {
+  const SW = 100 * aspect, SH = 100;            // height-normalised pixel space
+  const pw = (o.width / 100) * SW, ph = (o.height / 100) * SH;
+  const t = ((o.rotation || 0) * Math.PI) / 180;
+  const c = Math.abs(Math.cos(t)), s = Math.abs(Math.sin(t));
+  let bw = pw * c + ph * s, bh = pw * s + ph * c;
+  const f = Math.min(1, SW / bw, SH / bh);      // shrink-to-fit factor (≤ 1)
+  bw *= f; bh *= f;
+  let cx = ((o.x + o.width / 2) / 100) * SW, cy = ((o.y + o.height / 2) / 100) * SH;
+  cx = Math.min(Math.max(cx, bw / 2), SW - bw / 2);
+  cy = Math.min(Math.max(cy, bh / 2), SH - bh / 2);
+  const nW = o.width * f, nH = o.height * f;
+  return { ...o, width: nW, height: nH, x: (cx / SW) * 100 - nW / 2, y: (cy / SH) * 100 - nH / 2 };
+}
+
+/**
  * Pack a group of objects into the free space of `area`, avoiding `content`. Returns the
  * group repositioned (and uniformly shrunk if needed) so it fits without overlapping, or
  * `null` if there's no room. Shared by inserts AND paste so both behave identically.

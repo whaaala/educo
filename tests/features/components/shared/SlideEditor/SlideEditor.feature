@@ -424,6 +424,14 @@ Feature: Presentation Slide Editor
     And only when the slide is genuinely full does it overflow onto a new slide
     And the same rule applies to every insertable object type
 
+  Scenario: A rotated object always fits within the page
+    Given any object (chart, diagram, shape, image, text) on a slide
+    When the user rotates it (e.g. 90°)
+    Then its rotated bounding box must stay inside the slide
+    And if the rotated box would overflow, the object shrinks (keeping its width:height ratio) to fit
+    And it is repositioned so no part hangs off the top, bottom, left or right
+    # A wide chart turned upright must fit the page's height; a tall one turned sideways must fit its width.
+
   Scenario: Copy / cut / paste works everywhere via one shared clipboard
     Given an object (chart, diagram, shape, text) is selected
     When the user copies it with Ctrl+C, the Edit menu, or right-click Copy

@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import {
-  setSlideClipboard, getSlideClipboard, hasSlideClipboard, packIntoFreeSpace,
+  setSlideClipboard, getSlideClipboard, hasSlideClipboard, packIntoFreeSpace, fitRotatedToPage,
 } from "@/components/shared/SlideEditor/slide-clipboard";
 import type { SlideObject } from "@/lib/slide-storage";
 
@@ -54,6 +54,47 @@ describe("packIntoFreeSpace", () => {
     const dx0 = placed![1].x - placed![0].x;
     const scale = placed![0].width / 20;
     expect(dx0).toBeCloseTo(25 * scale, 5);
+  });
+});
+
+describe("fitRotatedToPage", () => {
+  const within = (o: { x: number; y: number; width: number; height: number; rotation?: number }, aspect = 16 / 9) => {
+    // compute the rotated bbox in % and assert it's inside [0,100]
+    const SW = 100 * aspect, SH = 100;
+    const pw = (o.width / 100) * SW, ph = (o.height / 100) * SH;
+    const t = ((o.rotation || 0) * Math.PI) / 180, c = Math.abs(Math.cos(t)), s = Math.abs(Math.sin(t));
+    const bw = pw * c + ph * s, bh = pw * s + ph * c;
+    const cx = ((o.x + o.width / 2) / 100) * SW, cy = ((o.y + o.height / 2) / 100) * SH;
+    return cx - bw / 2 >= -0.5 && cx + bw / 2 <= SW + 0.5 && cy - bh / 2 >= -0.5 && cy + bh / 2 <= SH + 0.5;
+  };
+
+  it("leaves an unrotated object that already fits unchanged", () => {
+    const o = { x: 10, y: 10, width: 50, height: 40, rotation: 0 };
+    const r = fitRotatedToPage(o);
+    expect(r.width).toBeCloseTo(50, 5);
+    expect(r.height).toBeCloseTo(40, 5);
+  });
+
+  it("shrinks a wide chart rotated 90° so it fits the page height", () => {
+    const o = { x: 12, y: 18, width: 76, height: 64, rotation: 90 };
+    const r = fitRotatedToPage(o);
+    expect(r.height).toBeLessThan(64);            // shrunk
+    expect(r.width / r.height).toBeCloseTo(76 / 64, 3); // ratio preserved
+    expect(within(r)).toBe(true);                 // rotated box now on-page
+  });
+
+  it("keeps the rotated box inside the page for any 90° multiple", () => {
+    for (const rot of [0, 90, 180, 270]) {
+      const r = fitRotatedToPage({ x: 5, y: 5, width: 90, height: 80, rotation: rot });
+      expect(within({ ...r, rotation: rot })).toBe(true);
+    }
+  });
+
+  it("does not shrink further on repeated rotation (no cumulative shrink)", () => {
+    const once = fitRotatedToPage({ x: 12, y: 18, width: 76, height: 64, rotation: 90 });
+    const twice = fitRotatedToPage({ ...once, rotation: 180 });
+    expect(twice.width).toBeCloseTo(once.width, 3);
+    expect(twice.height).toBeCloseTo(once.height, 3);
   });
 });
 

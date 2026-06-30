@@ -44,10 +44,20 @@ export function SubmenuPanel({ children, className = "" }: { children: React.Rea
     if (left + pw > window.innerWidth) {
       left = (panelRect ? panelRect.left : itemRect.left) - pw;
     }
-    const ph = el.offsetHeight;
-    if (top + ph > window.innerHeight) {
-      top = Math.max(4, window.innerHeight - ph);
+    // Keep the WHOLE submenu on-screen with a clear top/bottom margin. We cap the inner
+    // scroller's height directly (not via a Tailwind calc class, which can be a no-op) so a
+    // long submenu (e.g. 19 chart types) shrinks to the viewport and scrolls instead of
+    // running off the bottom.
+    const MARGIN = 24;
+    const scroller = el.querySelector<HTMLElement>("[data-submenu-scroll]");
+    if (scroller) {
+      scroller.style.maxHeight = `${Math.max(120, window.innerHeight - MARGIN * 2)}px`;
     }
+    const ph = el.offsetHeight;                       // measured AFTER the cap above
+    if (top + ph > window.innerHeight - MARGIN) {
+      top = window.innerHeight - ph - MARGIN;
+    }
+    if (top < MARGIN) top = MARGIN;
 
     el.style.top = `${top}px`;
     el.style.left = `${left}px`;
@@ -74,7 +84,9 @@ export function SubmenuPanel({ children, className = "" }: { children: React.Rea
         onMouseLeave={() => timerCtx?.scheduleClose()}
       >
         <div className="absolute -left-4 top-0 w-4 h-full" />
-        <div className="py-1">{children}</div>
+        {/* Height is capped to the viewport in the positioning effect (data-submenu-scroll),
+            so a long submenu always fits with a top/bottom margin and scrolls. */}
+        <div data-submenu-scroll className="py-1 overflow-y-auto overflow-x-hidden">{children}</div>
       </div>
     </SubmenuCloseContext.Provider>,
     document.body,
