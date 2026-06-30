@@ -13,6 +13,8 @@ import { SHAPE_DEFS } from "./shapes";
 import { ColorGrid, TabbedColorPalette, ColorPickerPopover, isNativeColorPickerOpen, SOLID_COLORS, GRADIENT_COLORS, GLOSSY_COLORS, BORDER_COLORS, TEXT_COLORS, colorToCSS } from "@/components/shared/ColorPalettePicker";
 import CustomDropdown from "@/components/shared/CustomDropdown";
 import TextFormatToolbar from "@/components/shared/TextFormatToolbar";
+import SlideChart, { SlideChartEditor } from "./SlideChart";
+import { setSlideClipboard, getSlideClipboard, hasSlideClipboard, packIntoFreeSpace } from "./slide-clipboard";
 import TableStylePanel from "@/components/shared/TableStylePanel";
 
 // ══════════════════════════════════════════════════
@@ -306,25 +308,26 @@ export default function SlideCanvas({
   }, []);
 
   // ── Clipboard: copy / cut / paste objects ──
-  const clipboardRef = useRef<SlideObject[] | null>(null);
-
+  // Uses the SHARED module-level clipboard so right-click copy, the Edit menu and Ctrl+C/X/V
+  // all read/write the same thing — and it survives slide navigation (paste on another page).
   const copyObjects = useCallback((id: string) => {
     const ids = getTargetIds(id);
-    const copied = objects.filter(o => ids.has(o.id)).map(o => ({ ...o }));
-    if (copied.length) clipboardRef.current = copied as SlideObject[];
+    const copied = objects.filter(o => ids.has(o.id));
+    if (copied.length) setSlideClipboard(copied as SlideObject[]);
   }, [objects, getTargetIds]);
 
   const pasteObjects = useCallback(() => {
-    const clip = clipboardRef.current;
+    const clip = getSlideClipboard();
     if (!clip || clip.length === 0) return;
     const maxZ = Math.max(...objects.map(o => o.zIndex), 0);
     const stamp = Date.now();
-    const clones = clip.map((o, i) => ({
-      ...o,
-      id: `obj-${stamp}-${i}-${Math.random().toString(36).slice(2, 6)}`,
-      x: Math.min(95, o.x + 3), y: Math.min(95, o.y + 3),
-      zIndex: maxZ + 1 + i,
+    const fresh = clip.map((o, i) => ({
+      ...o, id: `obj-${stamp}-${i}-${Math.random().toString(36).slice(2, 6)}`, zIndex: maxZ + 1 + i,
     })) as SlideObject[];
+    // Drop into free space (so it sits next to existing content); fall back to a small offset.
+    const content = objects.map(o => ({ x: o.x, y: o.y, width: o.width, height: o.height }));
+    const packed = packIntoFreeSpace(fresh, content, { x: 4, y: 4, w: 92, h: 92 });
+    const clones = packed || fresh.map(o => ({ ...o, x: Math.min(95, o.x + 3), y: Math.min(95, o.y + 3) }));
     onChange([...objects, ...clones]);
     onSelect(clones[0].id);
     setMultiSelectedIds(new Set(clones.map(c => c.id)));
@@ -614,6 +617,64 @@ export default function SlideCanvas({
     document.addEventListener("mouseup", handleUp);
   }, [canEdit, objects, updateObj]);
 
+  // ── Group resize — scales every selected object around the group's fixed edge ──
+  const startGroupResize = useCallback((e: React.MouseEvent, handle: HandleDir) => {
+    if (!canEdit) return;
+    e.preventDefault();
+    e.stopPropagation();
+    isResizingRef.current = true;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ids = multiSelectedIdsRef.current;
+    const sel = objects.filter(o => ids.has(o.id));
+    if (sel.length < 2) { isResizingRef.current = false; return; }
+    const rect = canvas.getBoundingClientRect();
+    const startX = e.clientX, startY = e.clientY;
+    const minX = Math.min(...sel.map(o => o.x));
+    const minY = Math.min(...sel.map(o => o.y));
+    const maxX = Math.max(...sel.map(o => o.x + o.width));
+    const maxY = Math.max(...sel.map(o => o.y + o.height));
+    const bw = maxX - minX, bh = maxY - minY;
+    const orig = new Map(sel.map(o => [o.id, { x: o.x, y: o.y, w: o.width, h: o.height }]));
+    const hasE = handle.includes("e"), hasW = handle.includes("w"), hasS = handle.includes("s"), hasN = handle.includes("n");
+
+    const handleMove = (ev: MouseEvent) => {
+      const dx = ((ev.clientX - startX) / rect.width) * 100;
+      const dy = ((ev.clientY - startY) / rect.height) * 100;
+      let newW = bw, newH = bh;
+      if (hasE) newW = bw + dx;
+      if (hasW) newW = bw - dx;
+      if (hasS) newH = bh + dy;
+      if (hasN) newH = bh - dy;
+      newW = Math.max(4, newW);
+      newH = Math.max(4, newH);
+      // Scale factors (1 on an axis with no active handle so edge handles don't squash)
+      const sx = (hasE || hasW) ? newW / bw : 1;
+      const sy = (hasS || hasN) ? newH / bh : 1;
+      // Anchor = the fixed (non-dragged) edge of the group box
+      const ax = hasW ? maxX : minX;
+      const ay = hasN ? maxY : minY;
+      onChange(objects.map(o => {
+        const og = orig.get(o.id);
+        if (!og) return o;
+        return {
+          ...o,
+          x: ax + (og.x - ax) * sx,
+          y: ay + (og.y - ay) * sy,
+          width: Math.max(2, og.w * sx),
+          height: Math.max(2, og.h * sy),
+        } as SlideObject;
+      }));
+    };
+    const handleUp = () => {
+      isResizingRef.current = false;
+      document.removeEventListener("mousemove", handleMove);
+      document.removeEventListener("mouseup", handleUp);
+    };
+    document.addEventListener("mousemove", handleMove);
+    document.addEventListener("mouseup", handleUp);
+  }, [canEdit, objects, onChange]);
+
   // ── Crop handler ──
   const startCrop = useCallback((e: React.MouseEvent, objId: string, edge: "top" | "right" | "bottom" | "left") => {
     e.preventDefault();
@@ -801,6 +862,7 @@ export default function SlideCanvas({
           if (obj.type === "image" && canEdit) setCroppingId(croppingId === obj.id ? null : obj.id);
           if (obj.type === "shape" && canEdit) setEditingTextId(obj.id); // Edit text inside shape
           if (obj.type === "table" && canEdit) setEditingTextId(obj.id); // Edit table cells
+          if (obj.type === "chart" && canEdit) setEditingTextId(obj.id); // Open chart data editor
         }}
       >
         {/* Object content */}
@@ -1040,6 +1102,19 @@ export default function SlideCanvas({
           </svg>
         )}
 
+        {obj.type === "chart" && (
+          // pointer-events none on the wrapper so dragging the chart body / selecting works;
+          // individual labels re-enable pointer events when the chart is selected so they can
+          // be dragged and styled. Double-click opens the data/font/axis editor.
+          <div className="w-full h-full" style={{ pointerEvents: "none" }}>
+            <SlideChart
+              obj={obj}
+              editing={isSelected && canEdit && !drawingMode && allSelectedIds.size <= 1}
+              onUpdate={(patch) => updateObj(obj.id, patch as Partial<SlideObject>)}
+            />
+          </div>
+        )}
+
         {obj.type === "table" && (
           <SlideTableRenderer
             obj={obj}
@@ -1061,8 +1136,8 @@ export default function SlideCanvas({
           />
         )}
 
-        {/* Resize handles — always at container edges */}
-        {isSelected && canEdit && !isEditing && HANDLES.map(dir => (
+        {/* Resize handles — per-object only for single selection; multi-select uses the group box */}
+        {isSelected && canEdit && !isEditing && allSelectedIds.size <= 1 && HANDLES.map(dir => (
           <div
             key={dir}
             style={{ ...getHandlePosition(dir), zIndex: 20, pointerEvents: "auto" as const }}
@@ -1075,7 +1150,7 @@ export default function SlideCanvas({
         ))}
 
         {/* Rotation handle — above or below depending on position */}
-        {isSelected && canEdit && !isEditing && (obj.type === "shape" || obj.type === "image") && (
+        {isSelected && canEdit && !isEditing && allSelectedIds.size <= 1 && (obj.type === "shape" || obj.type === "image") && (
           <div
             className={`absolute left-1/2 -translate-x-1/2 z-[25] cursor-grab active:cursor-grabbing ${obj.y < 15 ? "top-full mt-1" : "-top-8"}`}
             onMouseDown={(e) => {
@@ -1113,7 +1188,7 @@ export default function SlideCanvas({
         {/* Connection points removed — use Insert > Line for connectors */}
 
         {/* Color button — small paint icon to open color picker */}
-        {isSelected && canEdit && !isEditing && (obj.type === "shape" || obj.type === "table") && (
+        {isSelected && canEdit && !isEditing && allSelectedIds.size <= 1 && (obj.type === "shape" || obj.type === "table") && (
           <button
             className={`absolute z-[25] w-6 h-6 rounded-full shadow-md border-2 cursor-pointer transition-all hover:scale-110 ${showColorPickerId === obj.id ? "border-blue-500 ring-2 ring-blue-300" : "border-white"}`}
             style={{ top: -4, right: -4, backgroundColor: obj.type === "shape" ? (obj as ShapeObject).fill || "#3b82f6" : (obj as TableObject).headerColor || "#3b82f6" }}
@@ -1195,6 +1270,20 @@ export default function SlideCanvas({
             />
           );
         })()}
+
+        {/* Chart data editor */}
+        {isEditing && obj.type === "chart" && (() => {
+          const chEl = canvasRef.current?.querySelector(`[data-slide-obj="${obj.id}"]`) as HTMLElement;
+          if (!chEl) return null;
+          return (
+            <SlideChartEditor
+              obj={obj}
+              anchorRect={chEl.getBoundingClientRect()}
+              onUpdate={(patch) => updateObj(obj.id, patch as Partial<SlideObject>)}
+              onClose={() => setEditingTextId(null)}
+            />
+          );
+        })()}
       </div>
     );
   };
@@ -1267,6 +1356,31 @@ export default function SlideCanvas({
     >
       {/* Objects */}
       {objects.sort((a, b) => a.zIndex - b.zIndex).map(renderObject)}
+
+      {/* Group selection box — one bounding box with handles that resizes all selected objects together */}
+      {canEdit && !drawingMode && allSelectedIds.size > 1 && (() => {
+        const sel = objects.filter(o => multiSelectedIds.has(o.id));
+        if (sel.length < 2) return null;
+        const minX = Math.min(...sel.map(o => o.x));
+        const minY = Math.min(...sel.map(o => o.y));
+        const maxX = Math.max(...sel.map(o => o.x + o.width));
+        const maxY = Math.max(...sel.map(o => o.y + o.height));
+        return (
+          <div
+            className="absolute z-[40]"
+            style={{ left: `${minX}%`, top: `${minY}%`, width: `${maxX - minX}%`, height: `${maxY - minY}%`, pointerEvents: "none" }}
+          >
+            <div className="absolute inset-0 border border-blue-400 border-dashed rounded-sm" />
+            {HANDLES.map(dir => (
+              <div
+                key={dir}
+                style={{ ...getHandlePosition(dir), zIndex: 41, pointerEvents: "auto" as const }}
+                onMouseDown={(e) => { e.stopPropagation(); e.preventDefault(); startGroupResize(e, dir); }}
+              />
+            ))}
+          </div>
+        );
+      })()}
 
       {/* Rubber band selection rectangle */}
       {rubberBand && (() => {
@@ -1371,7 +1485,7 @@ export default function SlideCanvas({
         const items: (MenuItem | "---")[] = [
           { label: "Cut", shortcut: "Ctrl+X", icon: <svg viewBox="0 0 16 16" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><circle cx="5" cy="12" r="2.5"/><circle cx="11" cy="12" r="2.5"/><line x1="5" y1="9.5" x2="11" y2="3"/><line x1="11" y1="9.5" x2="5" y2="3"/></svg>, action: () => cutObjects(objId) },
           { label: "Copy", shortcut: "Ctrl+C", icon: <svg viewBox="0 0 16 16" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="5" y="5" width="9" height="9" rx="1"/><path d="M2 11V3a1 1 0 011-1h8"/></svg>, action: () => copyObjects(objId) },
-          { label: "Paste", shortcut: "Ctrl+V", icon: <svg viewBox="0 0 16 16" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="2" width="10" height="12" rx="1"/><path d="M6 2V1h4v1"/><line x1="6" y1="7" x2="10" y2="7"/><line x1="6" y1="10" x2="10" y2="10"/></svg>, action: () => pasteObjects(), disabled: !clipboardRef.current },
+          { label: "Paste", shortcut: "Ctrl+V", icon: <svg viewBox="0 0 16 16" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="2" width="10" height="12" rx="1"/><path d="M6 2V1h4v1"/><line x1="6" y1="7" x2="10" y2="7"/><line x1="6" y1="10" x2="10" y2="10"/></svg>, action: () => pasteObjects(), disabled: !hasSlideClipboard() },
           "---",
           { label: "Delete", shortcut: "Del", icon: <svg viewBox="0 0 16 16" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 4h10M5 4V3a1 1 0 011-1h4a1 1 0 011 1v1M6 7v4M10 7v4M4 4l.5 9a1 1 0 001 1h5a1 1 0 001-1L12 4"/></svg>, action: () => { if (hasMultiSelect) { deleteSelected(); } else { onSelect(objId); setTimeout(deleteSelected, 0); } } },
           "---",

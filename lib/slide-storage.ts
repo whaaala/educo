@@ -2,9 +2,16 @@
  * Slide presentation storage layer — persists presentations to localStorage.
  */
 
+import {
+  type ChartSpec, type ChartType, type ChartDatum, type ChartTextStyle, type ChartLabelOverride,
+  defaultChartData, defaultChartOptions,
+} from "./chart-types";
+
+export type { ChartSpec, ChartType, ChartDatum, ChartTextStyle, ChartLabelOverride } from "./chart-types";
+
 // ── Slide Object System ──
 
-export type SlideObjectType = "textbox" | "image" | "shape" | "drawing" | "table";
+export type SlideObjectType = "textbox" | "image" | "shape" | "drawing" | "table" | "chart";
 
 export interface SlideObjectBase {
   id: string;
@@ -109,7 +116,16 @@ export interface TableObject extends SlideObjectBase {
   cellPadding: number;
 }
 
-export type SlideObject = TextBoxObject | ImageObject | ShapeObject | DrawingObject | TableObject;
+/**
+ * A positioned chart on a slide. Composes the reusable, surface-agnostic `ChartSpec`
+ * (the WHAT/HOW — type, data, styling) with slide positioning (the WHERE). The same
+ * ChartSpec renders identically in the work document or any other surface.
+ */
+export interface ChartObject extends SlideObjectBase, ChartSpec {
+  type: "chart";
+}
+
+export type SlideObject = TextBoxObject | ImageObject | ShapeObject | DrawingObject | TableObject | ChartObject;
 
 // ── Slide Object Factories ──
 
@@ -150,6 +166,23 @@ export function createDrawingObj(paths: string, overrides?: Partial<DrawingObjec
     id: objId(), type: "drawing",
     x: 0, y: 0, width: 100, height: 100, rotation: 0, zIndex: 1,
     paths, stroke: "#1a1a2e", strokeWidth: 2,
+    ...overrides,
+  };
+}
+
+export function createChartObj(chartType: ChartType, overrides?: Partial<ChartObject>): ChartObject {
+  const seed = defaultChartData(chartType);   // data / series / categories / scatter per type
+  const opts = defaultChartOptions(chartType); // axes / grid / legend / values per type
+  return {
+    id: objId(), type: "chart",
+    x: 12, y: 18, width: 76, height: 64, rotation: 0, zIndex: 1,
+    chartType,
+    data: [],
+    accent: "#3b82f6",
+    threeD: false,
+    title: "",
+    ...opts,
+    ...seed,
     ...overrides,
   };
 }

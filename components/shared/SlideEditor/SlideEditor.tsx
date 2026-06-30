@@ -10,12 +10,14 @@ import {
   Share2, Undo2, Redo2, ZoomIn, ZoomOut, Minimize2, Minus, ChevronLeft, ChevronRight, ChevronUp, ChevronDown, Check, Upload, Eye, PenLine,
   Bookmark, ShieldCheck, Globe, Tag, FolderPlus, Lock, AlertTriangle, Send, Mail,
 } from "lucide-react";
-import { slideStorage, type SlideData, type SlideObject, type TableObject, type PresentationPermissions, DEFAULT_PERMISSIONS, createTextBox, createImageObj, createShapeObj, createDrawingObj, createTableObj, makeDefaultTitleObjects, makeDefaultContentObjects, makeDefaultClosingObjects } from "@/lib/slide-storage";
+import { slideStorage, type SlideData, type SlideObject, type TableObject, type ChartType, type PresentationPermissions, DEFAULT_PERMISSIONS, createTextBox, createImageObj, createShapeObj, createDrawingObj, createTableObj, createChartObj, makeDefaultTitleObjects, makeDefaultContentObjects, makeDefaultClosingObjects } from "@/lib/slide-storage";
 import { driveStorage, type DriveItem } from "@/lib/drive-storage";
 import { permissionRequests } from "@/lib/permission-requests";
 import { useNotifications } from "@/contexts/NotificationContext";
 import SlideMenuBar from "./SlideMenuBar";
 import SlideCanvasComponent from "./SlideCanvas";
+import SlideChart from "./SlideChart";
+import { setSlideClipboard, getSlideClipboard, packIntoFreeSpace } from "./slide-clipboard";
 import ShapePickerDialogFull from "@/components/shared/ShapePickerDialog";
 import { SHAPE_DEFS } from "./shapes";
 
@@ -237,6 +239,7 @@ function SlideContentPreview({ slide, themeTextColor, scale = 1 }: { slide: Slid
                 <path d={obj.paths} fill="none" stroke={obj.stroke} strokeWidth={obj.strokeWidth} strokeLinecap="round" vectorEffect="non-scaling-stroke" />
               </svg>
             )}
+            {obj.type === "chart" && <SlideChart obj={obj} />}
             {obj.type === "table" && (() => {
               const cw = obj.colWidths || Array(obj.cols).fill(100 / obj.cols);
               const rh = obj.rowHeights || Array(obj.rows).fill(100 / obj.rows);
@@ -924,7 +927,6 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
   const [showCameraCapture, setShowCameraCapture] = useState(false);
   const cameraVideoRef = useRef<HTMLVideoElement>(null);
   const cameraStreamRef = useRef<MediaStream | null>(null);
-  const objectClipboardRef = useRef<SlideObject | null>(null);
   const undoStackRef = useRef<string[]>([]); // JSON strings for deep clone
   const redoStackRef = useRef<string[]>([]);
   const slidesRef = useRef(slides);
@@ -1002,6 +1004,21 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
     return false;
   }, []);
 
+  /** Is the current slide the presentation TITLE page — i.e. only a title/subtitle and no
+   *  real content? Inserting content onto it should instead start a new slide so the title
+   *  page keeps to itself. */
+  const isBareTitleSlide = useCallback((): boolean => {
+    const objs = currentObjects;
+    const titleish = (o: SlideObject) => o.type === "textbox" && (
+      (o.y < 12 && o.height >= 45) ||                                   // full-slide title placeholder
+      (o.align === "center" && o.y < 60 && (o.fontSize ?? 18) >= 26)    // centered large title / subtitle
+    );
+    const real = objs.filter(o => !isLayoutPlaceholder(o) && !titleish(o));
+    if (real.length > 0) return false;
+    const hasLegacyTitle = !!(activeSlide?.content && activeSlide.content.trim() && activeSlide.content.trim() !== "<br>");
+    return objs.some(titleish) || hasLegacyTitle;
+  }, [currentObjects, activeSlide, isLayoutPlaceholder]);
+
   /** Get position for a new object — stacks below existing real content (ignoring
    *  placeholders). May return a y past the content area; the caller's fit check
    *  then moves it to a fresh slide. */
@@ -1029,14 +1046,34 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
     return !content.some(c => objs.some(o => overlaps(o, c)));
   }, [getContentArea, currentObjects, isLayoutPlaceholder]);
 
+  /**
+   * Try to PACK a new object group into the free space on the current slide. Returns the
+   * group repositioned (and uniformly shrunk if needed) into an empty region that doesn't
+   * overlap existing content, or `null` if the slide is genuinely full.
+   *
+   * This is what lets a small chart sit next to / below another instead of jumping to a new
+   * slide. We only overflow to a new slide when no free region (even shrunk) can hold it.
+   */
+  const placeInFreeSpace = useCallback((objs: SlideObject[]): SlideObject[] | null => {
+    const area = getContentArea();
+    const content = currentObjects.filter(o => !isLayoutPlaceholder(o));
+    return packIntoFreeSpace(objs, content, area);
+  }, [getContentArea, currentObjects, isLayoutPlaceholder]);
+
   // Add object(s) to the slide. If they don't fit on the current slide (it's full),
   // a new slide is created after it and the object(s) are placed there instead.
   // A single update is used so multiple objects (e.g. a diagram) aren't lost to a
   // stale currentObjects snapshot.
   const addObjectsToSlide = useCallback((objs: SlideObject[]) => {
     if (objs.length === 0) return;
-    if (fitsOnCurrentSlide(objs)) {
-      // Auto-migrate legacy slide if needed, then append
+    // The presentation title page keeps to itself: inserting content while on it starts a
+    // new slide instead of dropping the content on top of the title.
+    const onTitleSlide = isBareTitleSlide();
+    // Pack the object(s) into free space on the current slide. Only when none exists
+    // (the page is genuinely full) do we fall through to a new slide.
+    const fitted = onTitleSlide ? null : placeInFreeSpace(objs);
+    if (fitted) {
+      // Auto-migrate legacy slide if needed, then append the fitted object(s)
       if (!activeSlide?.objects || activeSlide.objects.length === 0) {
         const th = THEMES[theme] || THEMES.default;
         const htmlContent = activeSlide?.content?.trim() || "";
@@ -1044,11 +1081,11 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
         if (htmlContent && htmlContent !== "<br>") {
           existingObjs.push(createTextBox({ x: 5, y: 5, width: 90, height: 90, content: htmlContent, fontSize: 18, color: th.text, align: "left", verticalAlign: "top", zIndex: 1 }));
         }
-        updateCurrentSlide({ objects: [...existingObjs, ...objs], content: "" });
+        updateCurrentSlide({ objects: [...existingObjs, ...fitted], content: "" });
       } else {
-        updateCurrentSlide({ objects: [...currentObjects, ...objs] });
+        updateCurrentSlide({ objects: [...currentObjects, ...fitted] });
       }
-      setSelectedObjectId(objs[objs.length - 1].id);
+      setSelectedObjectId(fitted[fitted.length - 1].id);
     } else {
       // Current slide is full → open a new slide and place the object(s) there,
       // repositioned to the top of the new slide's content area.
@@ -1057,7 +1094,7 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
       const minY = Math.min(...objs.map(o => o.y));
       const delta = area.y - minY;
       const placed = delta !== 0 ? objs.map(o => ({ ...o, y: o.y + delta } as SlideObject)) : objs;
-      setToast("Slide was full — added to a new slide");
+      setToast(onTitleSlide ? "Added to a new slide — the title page stays on its own" : "Slide was full — added to a new slide");
       // Defer the whole new-slide creation out of the current event. Adding a slide
       // (a structural change) while a menu is open orphans the menu's portal and
       // swallows the next menu action, so we wait until the menu has closed. Read
@@ -1076,7 +1113,7 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
         setSelectedObjectId(placed[placed.length - 1].id);
       });
     }
-  }, [activeSlide, currentObjects, updateCurrentSlide, theme, fitsOnCurrentSlide, getContentArea, slides, activeSlideIdx, updateSlides, setToast]);
+  }, [activeSlide, currentObjects, updateCurrentSlide, theme, placeInFreeSpace, isBareTitleSlide, getContentArea, slides, activeSlideIdx, updateSlides, setToast]);
 
   const addObjectToSlide = useCallback((obj: SlideObject) => {
     addObjectsToSlide([obj]);
@@ -1362,6 +1399,9 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
   activeSlideRef.current = activeSlide;
   const updateCurrentSlideRef = useRef(updateCurrentSlide);
   updateCurrentSlideRef.current = updateCurrentSlide;
+  // Paste routes through addObjectsToSlide so it lands in free space (or a new slide if full).
+  const addObjectsToSlideRef = useRef(addObjectsToSlide);
+  addObjectsToSlideRef.current = addObjectsToSlide;
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -1385,28 +1425,38 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
           if (n) { undoStackRef.current.push(JSON.stringify(slidesRef.current)); onChangeRef.current({ ...valueRef.current, slides: JSON.parse(n) }); }
         }
         else if (e.key === "c" && selectedObjRef.current) {
-          const objs = activeSlideRef.current?.objects;
-          const obj = objs?.find(o => o.id === selectedObjRef.current);
-          if (obj) objectClipboardRef.current = JSON.parse(JSON.stringify(obj));
+          // Copy the selected object (expanding to its whole group) to the SHARED clipboard,
+          // which works across slides, the keyboard, the Edit menu and the right-click menu.
+          const objs = activeSlideRef.current?.objects || [];
+          const obj = objs.find(o => o.id === selectedObjRef.current);
+          if (obj) {
+            const gid = (obj as { groupId?: string }).groupId;
+            const sel = gid ? objs.filter(o => (o as { groupId?: string }).groupId === gid) : [obj];
+            setSlideClipboard(sel);
+          }
         }
         else if (e.key === "x" && selectedObjRef.current) {
-          const objs = activeSlideRef.current?.objects;
-          const obj = objs?.find(o => o.id === selectedObjRef.current);
+          const objs = activeSlideRef.current?.objects || [];
+          const obj = objs.find(o => o.id === selectedObjRef.current);
           if (obj) {
-            objectClipboardRef.current = JSON.parse(JSON.stringify(obj));
-            updateCurrentSlideRef.current({ objects: objs!.filter(o => o.id !== selectedObjRef.current) });
+            const gid = (obj as { groupId?: string }).groupId;
+            const sel = gid ? objs.filter(o => (o as { groupId?: string }).groupId === gid) : [obj];
+            const ids = new Set(sel.map(o => o.id));
+            setSlideClipboard(sel);
+            updateCurrentSlideRef.current({ objects: objs.filter(o => !ids.has(o.id)) });
             setSelectedObjectId(null);
           }
         }
-        else if (e.key === "v" && objectClipboardRef.current) {
-          e.preventDefault();
-          const clip = objectClipboardRef.current;
-          const newId = `obj-${Date.now()}-${Math.random().toString(36).slice(2,6)}`;
-          const pasted = { ...JSON.parse(JSON.stringify(clip)), id: newId, x: Math.min(90, clip.x + 3), y: Math.min(90, clip.y + 3) } as SlideObject;
-          objectClipboardRef.current = { ...clip, x: pasted.x, y: pasted.y };
-          const objs = activeSlideRef.current?.objects || [];
-          updateCurrentSlideRef.current({ objects: [...objs, pasted] });
-          setSelectedObjectId(newId);
+        else if (e.key === "v") {
+          const clip = getSlideClipboard();
+          if (clip && clip.length) {
+            e.preventDefault();
+            // Re-id so we don't duplicate ids, then route through addObjectsToSlide → lands in
+            // free space (or a new slide if full).
+            const stamp = Date.now();
+            const fresh = clip.map((o, i) => ({ ...o, id: `obj-${stamp}-${i}-${Math.random().toString(36).slice(2, 6)}` } as SlideObject));
+            addObjectsToSlideRef.current(fresh);
+          }
         }
         else if (e.key === "d" && selectedObjRef.current) {
           e.preventDefault();
@@ -1734,6 +1784,19 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
         if (action.startsWith("edit:") || action.startsWith("format:")) {
           restoreSlideSelection();
         }
+        // Generic chart insert covering all 19 types: "insert:chart:<type>".
+        const insertChart = (chartType: ChartType) => {
+          migrateSlideToObjects(); const th = THEMES[theme] || THEMES.default;
+          const ca = getContentArea();
+          addObjectsToSlide([createChartObj(chartType, {
+            x: ca.x, y: ca.y, width: ca.w, height: ca.h,
+            accent: th.accent, zIndex: currentObjects.length + 1,
+          })]);
+        };
+        if (action.startsWith("insert:chart:")) {
+          insertChart(action.slice("insert:chart:".length) as ChartType);
+          return;
+        }
         switch (action) {
           case "slide:new": case "insert:newSlide": addSlide(); break;
           case "edit:duplicate": {
@@ -1793,8 +1856,11 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
             if (selectedObjectId && activeSlide?.objects) {
               const obj = activeSlide.objects.find(o => o.id === selectedObjectId);
               if (obj) {
-                objectClipboardRef.current = JSON.parse(JSON.stringify(obj));
-                updateCurrentSlide({ objects: activeSlide.objects.filter(o => o.id !== selectedObjectId) });
+                const gid = (obj as { groupId?: string }).groupId;
+                const sel = gid ? activeSlide.objects.filter(o => (o as { groupId?: string }).groupId === gid) : [obj];
+                const ids = new Set(sel.map(o => o.id));
+                setSlideClipboard(sel);
+                updateCurrentSlide({ objects: activeSlide.objects.filter(o => !ids.has(o.id)) });
                 setSelectedObjectId(null);
                 setToast("Cut");
               }
@@ -1806,22 +1872,21 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
             if (selectedObjectId && activeSlide?.objects) {
               const obj = activeSlide.objects.find(o => o.id === selectedObjectId);
               if (obj) {
-                objectClipboardRef.current = JSON.parse(JSON.stringify(obj));
+                const gid = (obj as { groupId?: string }).groupId;
+                const sel = gid ? activeSlide.objects.filter(o => (o as { groupId?: string }).groupId === gid) : [obj];
+                setSlideClipboard(sel);
                 setToast("Copied");
               }
             }
             break;
           }
           case "edit:paste": case "edit:pasteNoFormat": {
-            if (objectClipboardRef.current) {
-              const clip = objectClipboardRef.current;
-              const newId = `obj-${Date.now()}-${Math.random().toString(36).slice(2,6)}`;
-              const pasted = { ...JSON.parse(JSON.stringify(clip)), id: newId, x: Math.min(90, clip.x + 3), y: Math.min(90, clip.y + 3) } as SlideObject;
-              // Update clipboard position so next paste offsets further
-              objectClipboardRef.current = { ...clip, x: pasted.x, y: pasted.y };
-              const objs = activeSlide?.objects || [];
-              updateCurrentSlide({ objects: [...objs, pasted] });
-              setSelectedObjectId(newId);
+            const clip = getSlideClipboard();
+            if (clip && clip.length) {
+              // Re-id the pasted objects and drop them into free space (or a new slide if full).
+              const stamp = Date.now();
+              const fresh = clip.map((o, i) => ({ ...o, id: `obj-${stamp}-${i}-${Math.random().toString(36).slice(2, 6)}` } as SlideObject));
+              addObjectsToSlide(fresh);
               setToast("Pasted");
             }
             break;
@@ -2116,19 +2181,14 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
             ]);
             break;
           }
-          case "insert:chartBar": case "insert:chartColumn": case "insert:chartLine": case "insert:chartPie": {
-            migrateSlideToObjects(); const th = THEMES[theme] || THEMES.default;
-            const ca = getContentArea();
-            const barW = ca.w * 0.12;
-            const gap = ca.w * 0.03;
-            const barHeights = [0.5, 0.7, 0.4, 0.85, 0.55];
-            const chartObjs = barHeights.map((h, i) => createShapeObj("rect", {
-              x: ca.x + 5 + i * (barW + gap), y: ca.y + ca.h * (1 - h) * 0.85,
-              width: barW, height: ca.h * h * 0.8,
-              fill: i === 3 ? th.accent : `${th.accent}88`, zIndex: currentObjects.length + i + 1,
-            }));
-            chartObjs.push(createShapeObj("line-h", { x: ca.x, y: ca.y + ca.h * 0.88, width: ca.w, height: 0.3, fill: th.text, zIndex: currentObjects.length + 6 }));
-            addObjectsToSlide(chartObjs);
+          case "insert:chartColumn": case "insert:chartBar": case "insert:chartLine": case "insert:chartPie": case "insert:chartDonut": {
+            // Legacy fixed-type chart inserts. Generic "insert:chart:<type>" is handled
+            // by the early intercept above the switch (covers all 19 types).
+            const legacy: Record<string, ChartType> = {
+              "insert:chartColumn": "column", "insert:chartBar": "bar", "insert:chartLine": "line",
+              "insert:chartPie": "pie", "insert:chartDonut": "donut",
+            };
+            insertChart(legacy[action] || "column");
             break;
           }
 

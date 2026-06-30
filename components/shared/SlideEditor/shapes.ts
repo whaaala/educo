@@ -55,6 +55,14 @@ export const SHAPE_DEFS: Record<string, ShapeDef> = {
   "ring":              { label: "Ring", category: "shapes", svg: path("M50,5 A45,45 0 1,1 49.99,5 Z M50,25 A25,25 0 1,0 50.01,25 Z") },
 
   // ══════════════════════════════════════
+  // CHART PIE SLICES (category "chart" — used to compose a pie chart, hidden from the picker)
+  // ══════════════════════════════════════
+  "pie-slice-1":       { label: "Pie Slice 1", category: "chart", svg: path("M50,50 L50,8 A42,42 0 0 1 89.9,63 Z") },
+  "pie-slice-2":       { label: "Pie Slice 2", category: "chart", svg: path("M50,50 L89.9,63 A42,42 0 0 1 37,89.9 Z") },
+  "pie-slice-3":       { label: "Pie Slice 3", category: "chart", svg: path("M50,50 L37,89.9 A42,42 0 0 1 10.1,37 Z") },
+  "pie-slice-4":       { label: "Pie Slice 4", category: "chart", svg: path("M50,50 L10.1,37 A42,42 0 0 1 50,8 Z") },
+
+  // ══════════════════════════════════════
   // ARROWS
   // ══════════════════════════════════════
   "arrow-right":       { label: "Arrow Right", category: "arrows", svg: poly("5,30 60,30 60,10 95,50 60,90 60,70 5,70") },

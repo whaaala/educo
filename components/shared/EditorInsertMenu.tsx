@@ -113,11 +113,31 @@ export function defaultDiagramItems(act: (a: string) => () => void): EditorMenuI
 }
 
 export function defaultChartItems(act: (a: string) => () => void): EditorMenuItem[] {
+  // The 19 chart types, grouped by dividers. Any inserted chart can also be switched
+  // to any other type from the in-chart editor's type picker.
   return [
-    { label: "Bar", icon: BarChart3, onClick: act("insert:chartBar") },
-    { label: "Column", icon: BarChart3, onClick: act("insert:chartColumn") },
-    { label: "Line", icon: Minus, onClick: act("insert:chartLine") },
-    { label: "Pie", icon: CircleDot, onClick: act("insert:chartPie") },
+    { label: "Column", icon: BarChart3, onClick: act("insert:chart:column") },
+    { label: "Bar", icon: BarChart3, onClick: act("insert:chart:bar") },
+    { label: "Grouped bar", icon: BarChart3, onClick: act("insert:chart:groupedBar") },
+    { label: "Stacked bar", icon: BarChart3, onClick: act("insert:chart:stackedBar") },
+    { label: "Histogram", icon: BarChart3, onClick: act("insert:chart:histogram") },
+    D,
+    { label: "Line", icon: Minus, onClick: act("insert:chart:line") },
+    { label: "Multi-line", icon: Minus, onClick: act("insert:chart:multiLine") },
+    { label: "Area", icon: Minus, onClick: act("insert:chart:area") },
+    { label: "Stacked area", icon: Minus, onClick: act("insert:chart:stackedArea") },
+    { label: "Combo", icon: BarChart3, onClick: act("insert:chart:combo") },
+    D,
+    { label: "Pie", icon: CircleDot, onClick: act("insert:chart:pie") },
+    { label: "Donut", icon: CircleDot, onClick: act("insert:chart:donut") },
+    { label: "Radial", icon: CircleDot, onClick: act("insert:chart:radialBar") },
+    { label: "Gauge", icon: CircleDot, onClick: act("insert:chart:gauge") },
+    D,
+    { label: "Waffle", icon: Square, onClick: act("insert:chart:waffle") },
+    { label: "Funnel", icon: Hexagon, onClick: act("insert:chart:funnel") },
+    { label: "Radar", icon: Hexagon, onClick: act("insert:chart:radar") },
+    { label: "Scatter", icon: CircleDot, onClick: act("insert:chart:scatter") },
+    { label: "Bubble", icon: CircleDot, onClick: act("insert:chart:bubble") },
   ];
 }
 

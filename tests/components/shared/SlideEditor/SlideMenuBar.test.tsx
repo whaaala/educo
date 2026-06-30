@@ -56,6 +56,35 @@ const shapesSource = fs.readFileSync(
   "utf-8"
 );
 
+const slideChartSource = fs.readFileSync(
+  path.resolve(__dirname, "../../../../components/shared/SlideEditor/SlideChart.tsx"),
+  "utf-8"
+);
+
+const slideStorageSource = fs.readFileSync(
+  path.resolve(__dirname, "../../../../lib/slide-storage.ts"),
+  "utf-8"
+);
+
+// The reusable Chart now lives in components/shared/Chart and is consumed by the
+// slide editor AND the work document. SlideChart.tsx is just a thin slide adapter.
+const chartSource = fs.readFileSync(
+  path.resolve(__dirname, "../../../../components/shared/Chart/Chart.tsx"),
+  "utf-8"
+);
+const chartEditorSource = fs.readFileSync(
+  path.resolve(__dirname, "../../../../components/shared/Chart/ChartEditor.tsx"),
+  "utf-8"
+);
+const chartTypesSource = fs.readFileSync(
+  path.resolve(__dirname, "../../../../lib/chart-types.ts"),
+  "utf-8"
+);
+const paletteSource = fs.readFileSync(
+  path.resolve(__dirname, "../../../../components/shared/Chart/palette.ts"),
+  "utf-8"
+);
+
 describe("SlideMenuBar — Complete Menu System", () => {
   describe("Menu structure", () => {
     it("has all 9 top-level menus", () => {
@@ -212,7 +241,8 @@ describe("SlideMenuBar — Complete Menu System", () => {
     // helper appends every node in a single state update.
     it("provides a batch addObjectsToSlide helper for multi-node inserts", () => {
       expect(slideEditorSource).toContain("const addObjectsToSlide = useCallback");
-      expect(slideEditorSource).toMatch(/objects: \[\.\.\.currentObjects, \.\.\.objs\]/);
+      // Objects are packed into free space, then appended in a single update
+      expect(slideEditorSource).toMatch(/objects: \[\.\.\.currentObjects, \.\.\.fitted\]/);
     });
 
     it("inserts Grid / Hierarchy / Chart diagrams via the batch helper, not a loop", () => {
@@ -244,16 +274,25 @@ describe("SlideMenuBar — Complete Menu System", () => {
     // The object right-click context menu: Cut/Copy/Paste must do something (they
     // used to be `() => {}` no-ops), and the Rotate/Align/Centre submenus must be
     // positioned next to their item, not flashed into the top-left corner.
-    it("wires context-menu Cut/Copy/Paste to real clipboard actions", () => {
-      expect(slideCanvasSource).toContain("const clipboardRef = useRef");
+    it("wires context-menu Cut/Copy/Paste to a SHARED clipboard usable everywhere", () => {
       expect(slideCanvasSource).toContain("const copyObjects = useCallback");
       expect(slideCanvasSource).toContain("const cutObjects = useCallback");
       expect(slideCanvasSource).toContain("const pasteObjects = useCallback");
       expect(slideCanvasSource).toContain("action: () => cutObjects(objId)");
       expect(slideCanvasSource).toContain("action: () => copyObjects(objId)");
       expect(slideCanvasSource).toContain("action: () => pasteObjects()");
-      // The old no-op placeholders must be gone
-      expect(slideCanvasSource).not.toContain('label: "Cut", shortcut: "Ctrl+X", icon: <svg viewBox="0 0 16 16" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><circle cx="5" cy="12" r="2.5"/><circle cx="11" cy="12" r="2.5"/><line x1="5" y1="9.5" x2="11" y2="3"/><line x1="11" y1="9.5" x2="5" y2="3"/></svg>, action: () => {} }');
+      // One module-level clipboard shared by the canvas, the keyboard and the Edit menu
+      const clipSource = fs.readFileSync(
+        path.resolve(__dirname, "../../../../components/shared/SlideEditor/slide-clipboard.ts"), "utf-8");
+      expect(clipSource).toContain("export function setSlideClipboard");
+      expect(clipSource).toContain("export function getSlideClipboard");
+      expect(clipSource).toContain("export function packIntoFreeSpace");
+      expect(slideCanvasSource).toContain("setSlideClipboard(copied");
+      expect(slideCanvasSource).toContain("getSlideClipboard()");
+      // The keyboard handler and the Edit menu use the SAME shared clipboard (not a private ref)
+      expect(slideEditorSource).toContain("getSlideClipboard()");
+      expect(slideEditorSource).toContain("setSlideClipboard(sel)");
+      expect(slideEditorSource).not.toContain("objectClipboardRef");
     });
 
     it("positions context-menu submenus via measured state, not a null-ref top-left fallback", () => {
@@ -274,6 +313,17 @@ describe("SlideMenuBar — Complete Menu System", () => {
       // The context menu reserves submenu width on the right so submenus open rightward
       expect(slideCanvasSource).toContain("const menuW = 220, submenuW = 234;");
       expect(slideCanvasSource).toMatch(/menuLeft = window\.innerWidth - menuW - submenuW - 8/);
+    });
+
+    // Selecting multiple objects shows ONE group bounding box whose handles scale every
+    // selected object together (enlarge/shrink), instead of per-object handles.
+    it("supports resizing all multi-selected objects together via a group box", () => {
+      expect(slideCanvasSource).toContain("const startGroupResize = useCallback");
+      // A single group box with handles is rendered for multi-select
+      expect(slideCanvasSource).toMatch(/allSelectedIds\.size > 1 && \(\(\) => \{/);
+      expect(slideCanvasSource).toContain("startGroupResize(e, dir)");
+      // Per-object resize handles are suppressed during multi-select
+      expect(slideCanvasSource).toContain("allSelectedIds.size <= 1 && HANDLES.map");
     });
 
     // Shape text uses grid + alignContent (matching textboxes) so vertical alignment
@@ -322,16 +372,205 @@ describe("SlideMenuBar — Complete Menu System", () => {
       expect(slideEditorSource).not.toMatch(/case "insert:diagramHierarchy": case "insert:diagramTimeline":/);
     });
 
-    // When the current slide is full, inserting an object should create a new slide
-    // and place it there instead of overlapping/overflowing existing content.
-    it("auto-overflows inserted objects onto a new slide when the current one is full", () => {
-      expect(slideEditorSource).toContain("const fitsOnCurrentSlide = useCallback");
+    // Insert > Chart creates ONE editable chart object via the generic "insert:chart:<type>"
+    // action covering all 19 types (plus the legacy fixed-type actions), so it moves/resizes
+    // as a unit and its data/labels/percentages can be edited.
+    it("inserts a single editable chart object per chart type", () => {
+      // Generic intercept + helper handles every type
+      expect(slideEditorSource).toMatch(/action\.startsWith\("insert:chart:"\)/);
+      expect(slideEditorSource).toContain("insertChart(action.slice");
+      expect(slideEditorSource).toContain("createChartObj(chartType");
+      // Legacy fixed-type actions still map
+      expect(slideEditorSource).toMatch(/"insert:chartBar": "bar"/);
+      expect(slideEditorSource).toMatch(/"insert:chartPie": "pie"/);
+      // The old shape-collection chart code must be gone
+      expect(slideEditorSource).not.toMatch(/createShapeObj\("rect", \{ x: axisX/);
+      expect(slideEditorSource).not.toContain('"pie-slice-1", "pie-slice-2", "pie-slice-3", "pie-slice-4"');
+    });
+
+    // The insert menu offers the full catalogue of chart types.
+    it("offers all 19 chart types in the insert menu", () => {
+      const insertMenuSource = fs.readFileSync(
+        path.resolve(__dirname, "../../../../components/shared/EditorInsertMenu.tsx"), "utf-8");
+      for (const t of ["column", "bar", "groupedBar", "stackedBar", "histogram", "line",
+        "multiLine", "area", "stackedArea", "combo", "pie", "donut", "radialBar", "gauge",
+        "waffle", "funnel", "radar", "scatter", "bubble"]) {
+        expect(insertMenuSource).toContain(`insert:chart:${t}`);
+      }
+    });
+
+    it("defines an editable ChartSpec / ChartObject data model with all 19 types", () => {
+      // Single source of truth for the reusable chart model
+      expect(chartTypesSource).toContain("export interface ChartSpec");
+      expect(chartTypesSource).toContain("export type ChartType");
+      for (const t of ['"groupedBar"', '"stackedBar"', '"multiLine"', '"stackedArea"',
+        '"combo"', '"radialBar"', '"waffle"', '"scatter"', '"bubble"', '"funnel"', '"radar"', '"gauge"', '"histogram"']) {
+        expect(chartTypesSource).toContain(t);
+      }
+      expect(chartTypesSource).toContain("export function defaultChartData");
+      expect(chartTypesSource).toContain("export function defaultChartOptions");
+      // Slide ChartObject composes the spec + positioning, and seeds per-type defaults
+      expect(slideStorageSource).toContain("export interface ChartObject extends SlideObjectBase, ChartSpec");
+      expect(slideStorageSource).toMatch(/createChartObj\(chartType: ChartType/);
+      expect(slideStorageSource).toContain("defaultChartData(chartType)");
+      expect(slideStorageSource).toMatch(/\| ChartObject;/);
+      expect(slideStorageSource).toMatch(/"table" \| "chart"/);
+    });
+
+    it("renders the chart object and opens its data editor on double-click", () => {
+      // The reusable Chart + ChartEditor do the work; SlideChart is a thin adapter
+      expect(chartSource).toContain("export default function Chart");
+      expect(chartEditorSource).toContain("export default function ChartEditor");
+      expect(chartEditorSource).toMatch(/\+ Add /);
+      expect(chartSource).toMatch(/threeD/);
+      expect(slideChartSource).toContain("export default function SlideChart");
+      expect(slideChartSource).toContain("export function SlideChartEditor");
+      expect(slideChartSource).toContain("<Chart");
+      expect(slideChartSource).toContain("<ChartEditor");
+      // Wired into the canvas: rendered as one object, double-click opens the editor
+      expect(slideCanvasSource).toContain("<SlideChart");
+      expect(slideCanvasSource).toContain('obj.type === "chart" && canEdit) setEditingTextId(obj.id)');
+      expect(slideCanvasSource).toContain("<SlideChartEditor");
+      // Also rendered in the thumbnail / presentation preview, not just the editor
+      expect(slideEditorSource).toContain('obj.type === "chart" && <SlideChart obj={obj} />');
+    });
+
+    it("makes chart text fully editable — content, free-drag, font (whole + per-label) and axes", () => {
+      // Data model: per-label overrides, whole-chart font, Y-axis override, custom labels
+      expect(chartTypesSource).toContain("export interface ChartLabelOverride");
+      expect(chartTypesSource).toContain("export interface ChartTextStyle");
+      expect(chartTypesSource).toMatch(/font\?: ChartTextStyle/);
+      expect(chartTypesSource).toMatch(/labels\?: Record<string, ChartLabelOverride>/);
+      expect(chartTypesSource).toMatch(/yMin\?: number/);
+      expect(chartTypesSource).toMatch(/customLabel\?: string/);
+      // Free-drag of any label + per-label format toolbar (in the reusable renderer)
+      expect(chartSource).toContain("const startLabelDrag");
+      expect(chartSource).toContain("data-chart-label");
+      expect(chartSource).toContain("<TextFormatToolbar");
+      // Whole-chart font + Y-axis controls in the panel, plus token-based custom labels
+      expect(chartEditorSource).toContain("Font (all labels)");
+      expect(chartEditorSource).toContain("Y-axis (blank = auto)");
+      expect(chartEditorSource).toMatch(/\{percent\}/);
+      // Chart is interactive only when selected (single object)
+      expect(slideCanvasSource).toMatch(/editing=\{isSelected && canEdit && !drawingMode && allSelectedIds\.size <= 1\}/);
+    });
+
+    it("renders charts with a logical viewBox so they scale uniformly (editor + thumbnails)", () => {
+      // One SVG with an aspect-matched viewBox. The chart surface is transparent so it
+      // blends with the slide/document; grid/label colours come from the theme tokens.
+      expect(slideChartSource).toMatch(/const chartAspect = .*obj\.width.*SLIDE_ASPECT/);
+      expect(chartSource).toContain('viewBox={`0 0 ${VW} ${VH}`}');
+      expect(chartSource).toContain('background: "transparent"');
+      expect(chartSource).toContain("chartTheme(theme)");
+      // No measured-pixel ResizeObserver approach
+      expect(chartSource).not.toContain("new ResizeObserver");
+    });
+
+    it("respects the app theme — grid/axis/label colours come from theme tokens", () => {
+      // Palette exposes per-surface token sets; the renderer takes a `theme` prop.
+      expect(paletteSource).toContain("export function chartTheme");
+      for (const k of ['"dark"', '"midnight"', '"purple"']) expect(paletteSource).toContain(k);
+      expect(chartSource).toMatch(/theme\?: ChartThemeName/);
+      // Single-accent palette (tints/shades), not a rainbow
+      expect(paletteSource).toContain("export function categorical");
+      expect(paletteSource).toContain("export function mono");
+    });
+
+    it("keeps the editor panel open when its fields are clicked (portal event bubbling)", () => {
+      // The panel portals to <body>; React bubbles its events to the canvas click-to-deselect
+      // handler, so it must stop click/mousedown/pointerdown from escaping.
+      expect(chartEditorSource).toContain("onClick={(e) => e.stopPropagation()}");
+      expect(chartEditorSource).toContain("onMouseDown={(e) => e.stopPropagation()}");
+      expect(chartEditorSource).toContain("onPointerDown={(e) => e.stopPropagation()}");
+    });
+
+    it("keeps the editor panel inside the viewport on every screen size", () => {
+      // width clamps to the viewport and left/top are clamped into view
+      expect(chartEditorSource).toMatch(/panelW = Math\.min\(300, vw - 16\)/);
+      expect(chartEditorSource).toMatch(/left = Math\.max\(8, Math\.min\(left, vw - panelW - 8\)\)/);
+      expect(chartEditorSource).toMatch(/maxHeight: maxH/);
+    });
+
+    it("labels axes by orientation — horizontal bars put categories on the Y axis", () => {
+      // Editor data header is orientation-aware
+      expect(chartEditorSource).toContain('type === "bar" ? "Data (Y axis)" : "Data (X axis)"');
+      // The horizontal bar renderer draws a real bottom X axis + value gridlines that honour the toggles
+      expect(chartSource).toMatch(/spec\.showGrid && vTicks\.map/);
+      expect(chartSource).toMatch(/spec\.showAxes && <line x1=\{x0\} y1=\{y1\} x2=\{x1\} y2=\{y1\}/);
+      expect(chartSource).toContain("const scaleX = (v: number) => x0");
+    });
+
+    it("lets the title/subtitle be positioned anywhere and uses the shared font picker", () => {
+      // Title/subtitle block placement (h + v) is part of the model and honoured by the renderer
+      expect(chartTypesSource).toMatch(/titleAlign\?: "left" \| "center" \| "right"/);
+      expect(chartTypesSource).toMatch(/titleVAlign\?: "top" \| "middle" \| "bottom"/);
+      expect(chartSource).toContain("spec.titleAlign");
+      expect(chartSource).toContain("spec.titleVAlign");
+      // Editor exposes 3 horizontal + 3 vertical position buttons
+      expect(chartEditorSource).toContain("titleAlign: a");
+      expect(chartEditorSource).toContain("titleVAlign: v");
+      expect(chartEditorSource).toMatch(/\["left", "center", "right"\]/);
+      expect(chartEditorSource).toMatch(/\["top", "middle", "bottom"\]/);
+      // Font family/size use the SAME shared CustomDropdown + FONT_OPTIONS as the rest of the app
+      expect(chartEditorSource).toContain("import CustomDropdown from");
+      expect(chartEditorSource).toContain('import { FONT_OPTIONS } from "@/components/shared/TextFormatToolbar"');
+      expect(chartEditorSource).toContain("options={FONT_OPTIONS}");
+      expect(chartEditorSource).not.toContain("<select aria-label=\"Chart font family\"");
+      // Any label can also be aligned/sized/coloured via the shared TextFormatToolbar
+      expect(chartSource).toContain("showAlign showVerticalAlign");
+      expect(chartSource).toContain("onAlignChange={(v) => setLabelMeta(selected, { align: v })}");
+    });
+
+    it("applies an optional 3D mode to EVERY chart type", () => {
+      // One depth system (extrudes for bars, tilt for pie, spheres/shadow for line/scatter)
+      // shared by all renderers via D3 / dep3 / sphere / shadow3D.
+      expect(chartSource).toContain("const D3 = !!spec.threeD");
+      expect(chartSource).toContain("const dep3 =");
+      expect(chartSource).toContain("const sphere =");
+      expect(chartSource).toContain("shadow3D");
+      // The extruded-bar helper is reused across the bar-family renderers
+      expect(chartSource).toContain("const vBar3D =");
+      // Every renderer references the 3D depth/shadow/sphere (not just a few)
+      const threeDHits = (chartSource.match(/\b(dep3|D3|shadow3D|sphere\()\b/g) || []).length;
+      expect(threeDHits).toBeGreaterThan(20);
+      // Legend for circular charts is a vertical list to the side (not dumped at the bottom)
+      expect(chartSource).toContain('legendSide: "right" | "bottom" | null');
+    });
+
+    // Inserting fits the object into FREE SPACE on the current slide (shrinking if needed);
+    // only when the page is genuinely full does it overflow onto a new slide.
+    it("packs inserts into free space, overflowing to a new slide only when full", () => {
+      expect(slideEditorSource).toContain("const placeInFreeSpace = useCallback");
       expect(slideEditorSource).toContain("const isLayoutPlaceholder = useCallback");
-      // addObjectsToSlide branches on fit and creates a new slide otherwise
-      expect(slideEditorSource).toMatch(/if \(fitsOnCurrentSlide\(objs\)\)/);
+      // addObjectsToSlide tries to pack into free space; null result → new slide
+      expect(slideEditorSource).toMatch(/const fitted = onTitleSlide \? null : placeInFreeSpace\(objs\)/);
+      expect(slideEditorSource).toMatch(/if \(fitted\)/);
+      // The packing helper shrinks-to-fit and is shared with paste
+      expect(slideEditorSource).toContain("packIntoFreeSpace(objs, content, area)");
       // The new-slide creation is deferred out of the menu click so it doesn't orphan
       // the menu portal and swallow the next action.
       expect(slideEditorSource).toMatch(/requestAnimationFrame\(\(\) => \{[\s\S]*?ns\.splice\(curIdx \+ 1, 0, newSlide\)/);
+    });
+
+    // The presentation title page keeps to itself — inserting content while on it starts a
+    // new slide instead of dropping the content on top of the title.
+    it("redirects inserts off the bare title slide onto a new slide", () => {
+      expect(slideEditorSource).toContain("const isBareTitleSlide = useCallback");
+      expect(slideEditorSource).toContain("const onTitleSlide = isBareTitleSlide();");
+      expect(slideEditorSource).toMatch(/onTitleSlide \? null : placeInFreeSpace/);
+      expect(slideEditorSource).toMatch(/the title page stays on its own/);
+    });
+
+    // Copy/paste works across slides and entry points (keyboard, Edit menu, right-click),
+    // and pasted objects land in free space.
+    it("pastes via a shared clipboard into free space, across slides", () => {
+      // Keyboard Ctrl+C/X/V use the shared clipboard and route paste through addObjectsToSlide
+      expect(slideEditorSource).toMatch(/e\.key === "v"/);
+      expect(slideEditorSource).toContain("addObjectsToSlideRef.current(fresh)");
+      // Edit menu paste re-ids and packs into free space
+      expect(slideEditorSource).toMatch(/case "edit:paste":[\s\S]*?addObjectsToSlide\(fresh\)/);
+      // Context-menu paste packs into free space too (offset fallback)
+      expect(slideCanvasSource).toContain("packIntoFreeSpace(fresh, content");
     });
   });
 
