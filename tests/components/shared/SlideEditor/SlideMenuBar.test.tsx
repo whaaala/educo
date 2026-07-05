@@ -247,6 +247,30 @@ describe("SlideMenuBar — Complete Menu System", () => {
 
     // A long submenu (e.g. the 19 chart types) must fit the viewport — height-capped,
     // scrollable, with a top/bottom margin — not run off the bottom of the screen.
+    it("supports inserting audio & video that play in the editor and slideshow", () => {
+      const insertMenuSource = fs.readFileSync(
+        path.resolve(__dirname, "../../../../components/shared/EditorInsertMenu.tsx"), "utf-8");
+      // Insert menu offers Audio + Video (upload / by URL)
+      expect(insertMenuSource).toContain('label: "Audio"');
+      expect(insertMenuSource).toContain('label: "Video"');
+      expect(insertMenuSource).toContain("insert:audioUpload");
+      expect(insertMenuSource).toContain("insert:videoUrl");
+      // Presentation enables it
+      const menuBarSource = fs.readFileSync(
+        path.resolve(__dirname, "../../../../components/shared/SlideEditor/SlideMenuBar.tsx"), "utf-8");
+      expect(menuBarSource).toContain("showAudioVideo: true");
+      // Handlers wired (upload + url)
+      expect(slideEditorSource).toMatch(/insert:audioUpload|insert:videoUpload/);
+      expect(slideEditorSource).toContain("createMediaObj(");
+      // Rendered as real media elements in the canvas + preview
+      expect(slideCanvasSource).toMatch(/obj\.type === "media"/);
+      expect(slideCanvasSource).toMatch(/<audio|<video/);
+      expect(slideEditorSource).toMatch(/obj\.type === "media"/);
+      // Model has the media object type
+      expect(slideStorageSource).toContain("export interface MediaObject");
+      expect(slideStorageSource).toContain("export function createMediaObj");
+    });
+
     it("keeps a long submenu inside the viewport (scrollable, with margins)", () => {
       const viewMenusSource = fs.readFileSync(
         path.resolve(__dirname, "../../../../components/shared/EditorViewMenus.tsx"), "utf-8");
@@ -427,7 +451,7 @@ describe("SlideMenuBar — Complete Menu System", () => {
       expect(slideStorageSource).toContain("export interface ChartObject extends SlideObjectBase, ChartSpec");
       expect(slideStorageSource).toMatch(/createChartObj\(chartType: ChartType/);
       expect(slideStorageSource).toContain("defaultChartData(chartType)");
-      expect(slideStorageSource).toMatch(/\| ChartObject;/);
+      expect(slideStorageSource).toMatch(/\| ChartObject\b/);
       expect(slideStorageSource).toMatch(/"table" \| "chart"/);
     });
 
@@ -744,6 +768,105 @@ describe("SlideMenuBar — Complete Menu System", () => {
       // Both the main dropdown and submenus should have blur in EditorMenus
       const blurCount = (editorMenusSource.match(/backdrop-blur-xl/g) || []).length;
       expect(blurCount).toBeGreaterThanOrEqual(2);
+    });
+  });
+
+  describe("Draw tool — pen controls & stroke persistence", () => {
+    it("Draw toolbar button migrates the slide to canvas mode when activated", () => {
+      // On a legacy/blank slide SlideCanvas is not mounted, so drawing has nothing to
+      // capture the drag. Entering draw mode must migrate first.
+      expect(slideEditorSource).toMatch(/if \(!drawingMode\) migrateSlideToObjects\(\); setDrawingMode/);
+    });
+
+    it("renders a drawing controls bar (colour + width + Done) while drawing", () => {
+      expect(slideEditorSource).toContain("{drawingMode && (");
+      expect(slideEditorSource).toContain("Pen colour ${c}");
+      expect(slideEditorSource).toContain("Pen width ${w}");
+    });
+
+    it("offers preset colours and a custom colour picker", () => {
+      expect(slideEditorSource).toContain('"#ef4444"');
+      expect(slideEditorSource).toContain("setDrawingColor(c)");
+      expect(slideEditorSource).toMatch(/type="color"[^>]*onChange=\{e => setDrawingColor/);
+    });
+
+    it("offers multiple pen widths", () => {
+      expect(slideEditorSource).toContain("[2, 4, 8].map");
+      expect(slideEditorSource).toContain("setDrawingWidth(w)");
+    });
+
+    it("keeps a completed stroke on the CURRENT slide (never overflows to a new one)", () => {
+      // A freeform drawing spans the whole page; routing it through free-space packing
+      // would push it to a new slide. handleDrawingComplete must append directly.
+      // Scope precisely to the function body (from its declaration to the useCallback deps close).
+      const start = slideEditorSource.indexOf("const handleDrawingComplete");
+      const fn = slideEditorSource.slice(start, slideEditorSource.indexOf("}, [", start));
+      expect(fn).toContain("updateCurrentSlide({ objects: [...currentObjects, obj]");
+      // It must NOT use the packing/overflow path (addObjectToSlide) for drawings.
+      expect(fn).not.toContain("addObjectToSlide");
+      // ...and must NOT auto-exit draw mode (so multiple strokes can be drawn).
+      expect(fn).not.toContain("setDrawingMode(false)");
+    });
+
+    it("SlideCanvas captures the completed path via a ref (not stale state)", () => {
+      // Reading the live path from state in endDrawing loses fast/batched strokes.
+      expect(slideCanvasSource).toContain("drawPathRef");
+      expect(slideCanvasSource).toMatch(/if \(drawPathRef\.current\.length > 10\) onDrawingComplete/);
+    });
+  });
+
+  describe("Toolbar dropdowns are not clipped by the collapsible wrapper", () => {
+    it("the collapsible menu+toolbar wrapper uses overflow-visible when expanded", () => {
+      // Regression: an unconditional overflow-hidden clipped the Insert image / shape
+      // dropdown panels (they hang below the toolbar), so they opened but stayed invisible
+      // behind the slide — reading as 'clicking the icon does nothing'.
+      expect(slideEditorSource).toContain('headerCollapsed ? "overflow-hidden" : "overflow-visible"');
+      // It must NOT unconditionally clip the wrapper.
+      expect(slideEditorSource).not.toContain('className="overflow-hidden transition-all duration-300 ease-in-out flex-shrink-0"');
+    });
+
+    it("the Insert image toolbar control is a dropdown (upload / by URL), not a bare picker", () => {
+      expect(slideEditorSource).toContain('title="Insert image" Icon={ImageIcon} isOpen={showImageDropdown}');
+      expect(slideEditorSource).toContain("Upload from computer");
+      expect(slideEditorSource).toContain("By URL");
+    });
+
+    it("image upload uses a PERSISTENT hidden input opened via a native <label htmlFor>", () => {
+      // A dynamically-created input clicked while the dropdown unmounts loses its user gesture in
+      // some browsers, so the native picker silently never opens ('clicking does nothing'). A
+      // <label htmlFor> opens the picker as the click's DEFAULT action — bulletproof.
+      expect(slideEditorSource).toContain("imageInputRef = useRef");
+      expect(slideEditorSource).toContain('<input id="educo-image-upload-input" ref={imageInputRef} type="file" accept="image/*"');
+      expect(slideEditorSource).toContain('htmlFor="educo-image-upload-input"');
+    });
+
+    it("uploaded images are sized to their natural aspect ratio", () => {
+      expect(slideEditorSource).toContain("const insertImageFile = useCallback");
+      expect(slideEditorSource).toContain("probe.naturalWidth");
+    });
+  });
+
+  describe("Shapes — full picker, visible lines, undistorted, tidy", () => {
+    it("the toolbar Shape button opens the SAME full ShapePickerDialog as the Insert menu", () => {
+      // Previously a hardcoded 6-shape mini-grid; now the full categorised picker.
+      expect(slideEditorSource).toContain('title="Insert shape" Icon={Shapes} onClick={() => setShowShapePickerDialog("shapes")}');
+      expect(slideEditorSource).not.toContain('["rect", "Rectangle"], ["circle", "Circle"]');
+    });
+
+    it("inserted shapes are aspect-corrected so squares/circles are not squashed", () => {
+      // On a 16:9 slide, equal width/height % makes a wide box that distorts round shapes.
+      expect(slideEditorSource).toContain("const W = 20, H = Math.round(W * 16 / 9)");
+    });
+
+    it("line/stroke shapes render in the fill colour (the Line shape is no longer invisible)", () => {
+      // ShapeSVG must map stroke=currentColor to the fill, not to 'none'.
+      expect(slideCanvasSource).toContain('.replace(/stroke="currentColor"/g, `stroke="${fill}"`)');
+      expect(slideCanvasSource).not.toContain('stroke="${hasStroke ? stroke : "none"}"');
+    });
+
+    it("images default to objectFit 'contain' so nothing is cropped on resize", () => {
+      expect(slideCanvasSource).toContain('(obj.objectFit || "contain")');
+      expect(slideStorageSource).toContain('objectFit: "contain"');
     });
   });
 });

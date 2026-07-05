@@ -17,7 +17,7 @@ import {
   Image as ImageIcon, Upload, Search, HardDrive, Camera, Link2,
   Table2, Shapes, Type, Sparkles, Minus, MessageCircle, PlusSquare,
   GitBranch, BarChart3, PenLine, LayoutTemplate, Bookmark, Sigma,
-  ArrowRight, CircleDot, Hexagon, Square,
+  ArrowRight, CircleDot, Hexagon, Square, Music, Film,
 } from "lucide-react";
 
 // ══════════════════════════════════════════════════
@@ -48,6 +48,8 @@ export interface InsertMenuConfig {
   /** Line/connector submenu — slide-only */
   lineItems?: EditorMenuItem[];
   /** Show text box insert */
+  /** Show Audio + Video insert (slide-only) */
+  showAudioVideo?: boolean;
   showTextBox?: boolean;
   /** Show word art */
   showWordArt?: boolean;
@@ -186,6 +188,18 @@ export function buildInsertMenu(config: InsertMenuConfig): EditorMenuItem[] {
   // Chart
   if (config.chartItems) {
     items.push({ label: "Chart", icon: BarChart3, submenu: config.chartItems });
+  }
+
+  // Audio & Video (slide-only)
+  if (config.showAudioVideo) {
+    items.push({ label: "Audio", icon: Music, submenu: [
+      { label: "Upload from computer", icon: Upload, onClick: act("insert:audioUpload") },
+      { label: "By URL", icon: Link2, onClick: act("insert:audioUrl") },
+    ] });
+    items.push({ label: "Video", icon: Film, submenu: [
+      { label: "Upload from computer", icon: Upload, onClick: act("insert:videoUpload") },
+      { label: "By URL", icon: Link2, onClick: act("insert:videoUrl") },
+    ] });
   }
 
   items.push(D);

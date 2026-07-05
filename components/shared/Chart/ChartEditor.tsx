@@ -22,6 +22,7 @@ import {
 import { categorical, hslToHex } from "./palette";
 import CustomDropdown from "@/components/shared/CustomDropdown";
 import { FONT_OPTIONS } from "@/components/shared/TextFormatToolbar";
+import Tooltip from "@/components/shared/Tooltip";
 import {
   AlignLeft, AlignCenter, AlignRight,
   AlignVerticalJustifyStart, AlignVerticalJustifyCenter, AlignVerticalJustifyEnd,
@@ -142,13 +143,17 @@ export default function ChartEditor({ spec, anchorRect, onUpdate, onClose }: {
         <div className="flex items-center gap-2 mb-3">
           <div className="flex gap-0.5" role="group" aria-label="Title horizontal position">
             {(["left", "center", "right"] as const).map(a => (
-              <button key={a} className={chip((spec.titleAlign || "left") === a)} aria-label={`Title ${a}`} aria-pressed={(spec.titleAlign || "left") === a} onClick={() => onUpdate({ titleAlign: a })}>{TITLE_ALIGN_ICON[a]}</button>
+              <Tooltip key={a} content={`Title: align ${a}`} delay={350}>
+                <button className={chip((spec.titleAlign || "left") === a)} aria-label={`Title ${a}`} aria-pressed={(spec.titleAlign || "left") === a} onClick={() => onUpdate({ titleAlign: a })}>{TITLE_ALIGN_ICON[a]}</button>
+              </Tooltip>
             ))}
           </div>
           <span className="w-px h-5 bg-gray-200 dark:bg-gray-700" />
           <div className="flex gap-0.5" role="group" aria-label="Title vertical position">
             {(["top", "middle", "bottom"] as const).map(v => (
-              <button key={v} className={chip((spec.titleVAlign || "top") === v)} aria-label={`Title ${v}`} aria-pressed={(spec.titleVAlign || "top") === v} onClick={() => onUpdate({ titleVAlign: v })}>{TITLE_VALIGN_ICON[v]}</button>
+              <Tooltip key={v} content={`Title: ${v}`} delay={350}>
+                <button className={chip((spec.titleVAlign || "top") === v)} aria-label={`Title ${v}`} aria-pressed={(spec.titleVAlign || "top") === v} onClick={() => onUpdate({ titleVAlign: v })}>{TITLE_VALIGN_ICON[v]}</button>
+              </Tooltip>
             ))}
           </div>
         </div>

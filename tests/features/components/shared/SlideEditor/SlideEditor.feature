@@ -453,3 +453,37 @@ Feature: Presentation Slide Editor
     When the user inserts an object that fits the current slide
     Then the object is added to the current slide
     And when the slide is full the object overflows onto a new slide
+
+  # ──────────────────────────────────────────────────
+  # Draw tool (freeform pen)
+  # ──────────────────────────────────────────────────
+
+  Scenario: Activating the Draw tool prepares the slide for freeform drawing
+    Given the active slide is a blank or legacy (content-only) slide
+    When the user clicks the Draw toolbar button
+    Then the slide is migrated to object/canvas mode so strokes can be captured
+    And a drawing controls bar appears with pen colours, pen widths, and a Done button
+
+  Scenario: Choosing a pen colour and width
+    Given the Draw tool is active
+    Then preset colour swatches and a custom colour picker are available
+    And multiple pen widths (thin, medium, thick) can be selected
+    And the chosen colour and width apply to the next stroke
+
+  Scenario: A drawn stroke stays on the slide it was drawn on
+    Given the Draw tool is active on the current slide
+    When the user drags across the canvas to draw a stroke
+    Then the stroke is rendered on the CURRENT slide at the exact spot it was drawn
+    And it is never pushed onto a new slide by free-space packing
+    # Regression: a drawing spans the whole page, so the packer treated it as
+    # "doesn't fit" and jumped the stroke to a brand-new slide.
+
+  Scenario: Multiple strokes without re-entering the tool
+    Given the user has just completed a stroke
+    Then the Draw tool remains active so further strokes can be drawn
+    And the user exits drawing by clicking Done or the Draw toggle
+
+  Scenario: A completed stroke is never lost to batched state updates
+    Given the user finishes a stroke
+    Then the completed path is read from a ref (not React state)
+    And the drawing object is created reliably even for very fast strokes

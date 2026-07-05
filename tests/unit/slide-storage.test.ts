@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import { slideStorage, DEFAULT_PERMISSIONS } from "@/lib/slide-storage";
+import { slideStorage, DEFAULT_PERMISSIONS, createMediaObj, fitDrawingToStroke, createImageObj, createShapeObj } from "@/lib/slide-storage";
 
 const store: Record<string, string> = {};
 const localStorageMock = {
@@ -194,5 +194,87 @@ describe("slide-storage — Presentation Persistence Layer", () => {
       const after = slideStorage.get(id)!.updatedAt;
       expect(new Date(after).getTime()).toBeGreaterThanOrEqual(new Date(before).getTime());
     });
+  });
+});
+
+describe("createMediaObj (audio/video)", () => {
+  it("creates an audio object", () => {
+    const m = createMediaObj("audio", "https://x/a.mp3");
+    expect(m.type).toBe("media");
+    expect(m.mediaKind).toBe("audio");
+    expect(m.src).toBe("https://x/a.mp3");
+    expect(m.height).toBeLessThan(20); // audio is a short bar
+  });
+  it("creates a video object with overrides", () => {
+    const m = createMediaObj("video", "https://x/v.mp4", { loop: true, x: 5 });
+    expect(m.mediaKind).toBe("video");
+    expect(m.loop).toBe(true);
+    expect(m.x).toBe(5);
+  });
+});
+
+describe("fitDrawingToStroke — tight bounding box for freeform strokes", () => {
+  it("shrinks a mid-slide stroke to a tight box instead of the whole page", () => {
+    // A small stroke in the 40–60 region should NOT produce a 0,0,100,100 box.
+    const { x, y, width, height } = fitDrawingToStroke("M 40 40 L 60 50 L 50 60");
+    expect(x).toBeGreaterThan(30);
+    expect(y).toBeGreaterThan(30);
+    expect(width).toBeLessThan(40);
+    expect(height).toBeLessThan(40);
+  });
+
+  it("keeps the box within the slide (0–100) even with padding", () => {
+    const box = fitDrawingToStroke("M 0 0 L 100 100");
+    expect(box.x).toBeGreaterThanOrEqual(0);
+    expect(box.y).toBeGreaterThanOrEqual(0);
+    expect(box.x + box.width).toBeLessThanOrEqual(100);
+    expect(box.y + box.height).toBeLessThanOrEqual(100);
+  });
+
+  it("rewrites path coordinates into the box's local 0–100 space", () => {
+    const { paths } = fitDrawingToStroke("M 40 40 L 60 60", 0);
+    // With pad 0 the box is exactly 40–60; endpoints map to 0 and 100 locally.
+    const nums = (paths.match(/-?\d+(?:\.\d+)?/g) || []).map(Number);
+    expect(Math.min(...nums)).toBeCloseTo(0, 1);
+    expect(Math.max(...nums)).toBeCloseTo(100, 1);
+  });
+
+  it("preserves visual position (local coords map back to the original point)", () => {
+    const src = "M 30 20 L 70 80";
+    const { x, y, width, height, paths } = fitDrawingToStroke(src, 0);
+    const [lx, ly] = (paths.match(/-?\d+(?:\.\d+)?/g) || []).slice(0, 2).map(Number);
+    // First point back-projected: x + (local/100)*width should equal the original 30.
+    expect(x + (lx / 100) * width).toBeCloseTo(30, 1);
+    expect(y + (ly / 100) * height).toBeCloseTo(20, 1);
+  });
+
+  it("handles a degenerate (single-point / straight) stroke without zero size", () => {
+    const box = fitDrawingToStroke("M 50 50");
+    expect(box.width).toBeGreaterThan(0);
+    expect(box.height).toBeGreaterThan(0);
+  });
+
+  it("returns a full-page box when there is no coordinate data", () => {
+    expect(fitDrawingToStroke("")).toEqual({ paths: "", x: 0, y: 0, width: 100, height: 100 });
+  });
+});
+
+describe("createImageObj — full image never cropped by default", () => {
+  it("defaults objectFit to 'contain' so the whole image stays visible when resized", () => {
+    const img = createImageObj("https://x/pic.png");
+    expect(img.objectFit).toBe("contain");
+  });
+  it("still lets callers opt into 'cover'", () => {
+    const img = createImageObj("https://x/pic.png", { objectFit: "cover" });
+    expect(img.objectFit).toBe("cover");
+  });
+});
+
+describe("createShapeObj", () => {
+  it("creates a shape with the given key and a fill", () => {
+    const s = createShapeObj("line-h", { fill: "#ff0000" });
+    expect(s.type).toBe("shape");
+    expect(s.shape).toBe("line-h");
+    expect(s.fill).toBe("#ff0000");
   });
 });

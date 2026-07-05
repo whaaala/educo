@@ -6,11 +6,11 @@ import {
   Plus, Play, Trash2, Copy, Palette, LayoutGrid, X, ArrowLeft,
   Bold, Italic, Underline, AlignLeft, AlignCenter, AlignRight,
   Strikethrough, Superscript as SuperscriptIcon, Subscript as SubscriptIcon,
-  Image as ImageIcon, Type, Table2, Paintbrush, MessageCircle,
+  Image as ImageIcon, Type, Table2, Paintbrush, MessageCircle, Shapes,
   Share2, Undo2, Redo2, ZoomIn, ZoomOut, Minimize2, Minus, ChevronLeft, ChevronRight, ChevronUp, ChevronDown, Check, Upload, Eye, PenLine,
   Bookmark, ShieldCheck, Globe, Tag, FolderPlus, Lock, AlertTriangle, Send, Mail,
 } from "lucide-react";
-import { slideStorage, type SlideData, type SlideObject, type TableObject, type ChartType, type PresentationPermissions, DEFAULT_PERMISSIONS, createTextBox, createImageObj, createShapeObj, createDrawingObj, createTableObj, createChartObj, makeDefaultTitleObjects, makeDefaultContentObjects, makeDefaultClosingObjects } from "@/lib/slide-storage";
+import { slideStorage, type SlideData, type SlideObject, type TableObject, type ChartType, type PresentationPermissions, DEFAULT_PERMISSIONS, createTextBox, createImageObj, createShapeObj, createDrawingObj, fitDrawingToStroke, createTableObj, createChartObj, createMediaObj, makeDefaultTitleObjects, makeDefaultContentObjects, makeDefaultClosingObjects } from "@/lib/slide-storage";
 import { driveStorage, type DriveItem } from "@/lib/drive-storage";
 import { permissionRequests } from "@/lib/permission-requests";
 import { useNotifications } from "@/contexts/NotificationContext";
@@ -24,6 +24,7 @@ import { SHAPE_DEFS } from "./shapes";
 // Shared components
 import { ToolbarButton, ToolbarDivider, ToolbarDropdown } from "@/components/shared/EditorToolbar";
 import { EditorDialog, EditorDialogButton, TableGridPicker, EditingModeButton, type EditingMode } from "@/components/shared/EditorDialogs";
+import { ShortcutsDialog, UpdatesDialog, TrainingDialog, AccessibilityDialog, DictionaryDialog, LinkedObjectsDialog, ExploreDialog, MenuSearchDialog, FormatOptionsDialog, MediaUrlDialog, applyA11y, loadA11y } from "./SlideToolsDialogs";
 import { CommentAvatar, CommentCard, FloatingCommentPill, useMention, type DocComment, type CommentAuthor } from "@/components/shared/EditorComments";
 import Button from "@/components/shared/Button";
 import ShareDialog from "@/components/shared/ShareDialog";
@@ -240,6 +241,9 @@ function SlideContentPreview({ slide, themeTextColor, scale = 1 }: { slide: Slid
               </svg>
             )}
             {obj.type === "chart" && <SlideChart obj={obj} />}
+            {obj.type === "media" && (obj.mediaKind === "audio"
+              ? <audio className="w-full h-full" controls src={obj.src} loop={obj.loop} style={{ display: "block" }} />
+              : <video className="w-full h-full rounded-lg bg-black" controls src={obj.src} poster={obj.poster} loop={obj.loop} muted={obj.muted} autoPlay={obj.autoplay} playsInline style={{ objectFit: "contain" }} />)}
             {obj.type === "table" && (() => {
               const cw = obj.colWidths || Array(obj.cols).fill(100 / obj.cols);
               const rh = obj.rowHeights || Array(obj.rows).fill(100 / obj.rows);
@@ -301,7 +305,7 @@ function ShapeSVGPreview({ shape }: { shape: string }) {
 }
 
 // ── Slide Canvas with rulers and proper fit ──
-function SlideCanvasArea({ zoom, activeSlide, canEdit, editorRef, contentRef, onInput, slideRatio = { w: 16, h: 9 }, showRuler = true, showGuides = false, guides = [], snapToGrid = false, snapToGuides = false, onClick, isSuggesting = false, themeTextColor, themeAccent, onGuideMove, onGuideDelete, selectedObjectId, onSelectObject, onObjectsChange, drawingMode, drawingColor, drawingWidth, onDrawingComplete }: {
+function SlideCanvasArea({ zoom, activeSlide, canEdit, editorRef, contentRef, onInput, slideRatio = { w: 16, h: 9 }, showRuler = true, showGuides = false, guides = [], snapToGrid = false, snapToGuides = false, onClick, isSuggesting = false, themeTextColor, themeAccent, onGuideMove, onGuideDelete, selectedObjectId, onSelectObject, onObjectsChange, drawingMode, drawingColor, drawingWidth, onDrawingComplete, onAddComment }: {
   zoom: number;
   activeSlide: SlideData | undefined;
   canEdit: boolean;
@@ -327,6 +331,7 @@ function SlideCanvasArea({ zoom, activeSlide, canEdit, editorRef, contentRef, on
   drawingColor?: string;
   drawingWidth?: number;
   onDrawingComplete?: (paths: string) => void;
+  onAddComment?: (objId: string) => void;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState({ w: 800, h: 450 });
@@ -413,6 +418,7 @@ function SlideCanvasArea({ zoom, activeSlide, canEdit, editorRef, contentRef, on
                   drawingColor={drawingColor}
                   drawingWidth={drawingWidth}
                   onDrawingComplete={onDrawingComplete}
+                  onAddComment={onAddComment}
                 />
               ) : (
                 /* Legacy: single contentEditable fallback */
@@ -820,14 +826,25 @@ function ImportSlidesModal({ currentPresId, onImport, onClose }: {
   );
 }
 
+// Minimal typings for the Web Speech API (voice typing), which lacks TS lib types.
+interface SpeechRecEvent { resultIndex: number; results: { length: number; [i: number]: { [j: number]: { transcript: string } } } }
+interface SpeechRec { continuous: boolean; interimResults: boolean; lang: string; onresult: (e: SpeechRecEvent) => void; onend: () => void; start(): void; stop(): void }
+
 // ── Component ──
 export default function SlideEditor({ value, onChange }: SlideEditorProps) {
   const { title, slides, theme } = value;
   const { addNotification } = useNotifications();
   const [activeSlideIdx, setActiveSlideIdx] = useState(0);
   const [isPresenting, setIsPresenting] = useState(false);
+  // Live-slideshow tools: blank screen (B/W), laser pointer (L), speaker-notes panel (S)
+  const [blankScreen, setBlankScreen] = useState<null | "black" | "white">(null);
+  const [laserPointer, setLaserPointer] = useState(false);
+  const [laserPos, setLaserPos] = useState<{ x: number; y: number } | null>(null);
+  const [presenterNotes, setPresenterNotes] = useState(false);
   const [showThemes, setShowThemes] = useState(false);
   const [showTransitions, setShowTransitions] = useState(false);
+  const [showShapeDropdown, setShowShapeDropdown] = useState(false);
+  const [showImageDropdown, setShowImageDropdown] = useState(false);
   const [editingMode, setEditingMode] = useState<EditingMode>("editing");
   const [showShareDialog, setShowShareDialog] = useState(false);
   const [showTablePicker, setShowTablePicker] = useState(false);
@@ -906,6 +923,20 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
   const [notesHeight, setNotesHeight] = useState(0);
   const [headerCollapsed, setHeaderCollapsed] = useState(false);
   const [filmstripCollapsed, setFilmstripCollapsed] = useState(false);
+  // Tools/Help utility dialog (shortcuts, updates, accessibility, dictionary, explore, …)
+  const [utilDialog, setUtilDialog] = useState<{ title: string; content: React.ReactNode } | null>(null);
+  const [spellCheckOn, setSpellCheckOn] = useState(true);
+  const [voiceListening, setVoiceListening] = useState(false);
+  const voiceRecogRef = useRef<{ stop: () => void } | null>(null);
+  // Audio/Video insert: a hidden file input reused for both kinds
+  const mediaInputRef = useRef<HTMLInputElement>(null);
+  const mediaKindRef = useRef<"audio" | "video">("video");
+  // Image upload: a PERSISTENT hidden file input. A dynamically-created input that is clicked
+  // while the dropdown unmounts in the same event gets its user-gesture dropped in some browsers
+  // (the picker silently never opens). A stable input in the DOM always opens reliably.
+  const imageInputRef = useRef<HTMLInputElement>(null);
+  // Apply saved accessibility preferences on mount.
+  useEffect(() => { applyA11y(loadA11y()); }, []);
   const [showRuler, setShowRuler] = useState(true);
   const [showGuides, setShowGuides] = useState(false);
   const [guides, setGuides] = useState<{ id: string; orientation: "h" | "v"; position: number }[]>([]);
@@ -1120,10 +1151,17 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
   }, [addObjectsToSlide]);
 
   const handleDrawingComplete = useCallback((paths: string) => {
-    const obj = createDrawingObj(paths, { stroke: drawingColor, strokeWidth: drawingWidth, zIndex: currentObjects.length + 1 });
-    addObjectToSlide(obj);
-    setDrawingMode(false);
-  }, [drawingColor, drawingWidth, currentObjects.length, addObjectToSlide]);
+    // Shrink the object to a tight box around the actual stroke (not the whole slide),
+    // so each drawing is independently selectable/movable instead of overlapping.
+    const fit = fitDrawingToStroke(paths);
+    const obj = createDrawingObj(fit.paths, { x: fit.x, y: fit.y, width: fit.width, height: fit.height, stroke: drawingColor, strokeWidth: drawingWidth, zIndex: currentObjects.length + 1 });
+    // A freeform drawing is an annotation at the exact spot the user drew — keep it on THIS
+    // slide. Never route it through free-space packing/overflow (that would jump the stroke to
+    // a new slide, since a drawing spans the whole page). Append directly to the current slide.
+    updateCurrentSlide({ objects: [...currentObjects, obj], content: "" });
+    setSelectedObjectId(obj.id);
+    // Stay in drawing mode so the user can keep sketching multiple strokes.
+  }, [drawingColor, drawingWidth, currentObjects, updateCurrentSlide]);
 
   // Auto-migrate legacy slide (HTML content) to objects
   const migrateSlideToObjects = useCallback(() => {
@@ -1147,23 +1185,34 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
     setToast("Slide upgraded to canvas mode");
   }, [activeSlide, theme, updateCurrentSlide, setToast]);
 
+  // Opens the native file picker via the persistent hidden <input> below (reliable across browsers).
   const handleImageUpload = useCallback(() => {
-    const input = document.createElement("input");
-    input.type = "file";
-    input.accept = "image/*";
-    input.onchange = () => {
-      const file = input.files?.[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = () => {
-        const src = reader.result as string;
-        migrateSlideToObjects();
-        const pos = getInsertPosition(50, 40);
-        addObjectToSlide(createImageObj(src, { ...pos, width: 50, height: 40, zIndex: currentObjects.length + 1 }));
+    imageInputRef.current?.click();
+  }, []);
+
+  // Insert an uploaded/selected image file, sizing the box to the image's natural aspect ratio
+  // (on a 16:9 slide) so it isn't letterboxed or stretched.
+  const insertImageFile = useCallback((file: File) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const src = reader.result as string;
+      migrateSlideToObjects();
+      const probe = new window.Image();
+      const place = (w: number, h: number) => {
+        const pos = getInsertPosition(w, h);
+        addObjectToSlide(createImageObj(src, { ...pos, width: w, height: h, zIndex: currentObjects.length + 1 }));
       };
-      reader.readAsDataURL(file);
+      probe.onload = () => {
+        const nat = (probe.naturalWidth || 1) / (probe.naturalHeight || 1);
+        const w = 45;
+        // heightPct so on-screen aspect (accounting for 16:9 slide) matches the image's natural aspect
+        const h = Math.max(8, Math.min(80, Math.round((w * 16 / 9) / nat)));
+        place(w, h);
+      };
+      probe.onerror = () => place(45, 34);
+      probe.src = src;
     };
-    input.click();
+    reader.readAsDataURL(file);
   }, [currentObjects.length, addObjectToSlide, migrateSlideToObjects, getInsertPosition]);
 
   const slideTranslations: Record<string, { title: string; subtitle: string }> = {
@@ -1368,17 +1417,38 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
     }
   }, [activeSlideIdx]);
 
-  // Keyboard navigation in slideshow
+  // Keyboard navigation + tools in slideshow (matches common presenter shortcuts)
   useEffect(() => {
     if (!isPresenting) return;
+    let numBuf = "";
+    let numTimer: ReturnType<typeof setTimeout> | null = null;
+    const go = (idx: number) => setActiveSlideIdx(Math.max(0, Math.min(idx, slides.length - 1)));
     const handler = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setIsPresenting(false);
-      if (e.key === "ArrowRight" || e.key === " ") setActiveSlideIdx(i => Math.min(i + 1, slides.length - 1));
-      if (e.key === "ArrowLeft") setActiveSlideIdx(i => Math.max(i - 1, 0));
+      const k = e.key;
+      // Type a slide number then Enter to jump to it
+      if (/^[0-9]$/.test(k)) { numBuf += k; if (numTimer) clearTimeout(numTimer); numTimer = setTimeout(() => { numBuf = ""; }, 1200); return; }
+      if (k === "Enter" && numBuf) { go(parseInt(numBuf, 10) - 1); numBuf = ""; return; }
+      if (k === "Escape") { setIsPresenting(false); setBlankScreen(null); setLaserPointer(false); setPresenterNotes(false); return; }
+      if (k === "ArrowRight" || k === "PageDown" || k === " " || k === "n" || k === "N") { e.preventDefault(); setActiveSlideIdx(i => Math.min(i + 1, slides.length - 1)); }
+      else if (k === "ArrowLeft" || k === "PageUp" || k === "Backspace" || k === "p" || k === "P") { e.preventDefault(); setActiveSlideIdx(i => Math.max(i - 1, 0)); }
+      else if (k === "Home") { e.preventDefault(); go(0); }
+      else if (k === "End") { e.preventDefault(); go(slides.length - 1); }
+      else if (k === "b" || k === "B") { setBlankScreen(s => s === "black" ? null : "black"); }
+      else if (k === "w" || k === "W") { setBlankScreen(s => s === "white" ? null : "white"); }
+      else if (k === "l" || k === "L") { setLaserPointer(v => !v); }
+      else if (k === "s" || k === "S") { setPresenterNotes(v => !v); }
     };
     document.addEventListener("keydown", handler);
-    return () => document.removeEventListener("keydown", handler);
+    return () => { document.removeEventListener("keydown", handler); if (numTimer) clearTimeout(numTimer); };
   }, [isPresenting, slides.length]);
+
+  // Track the cursor for the laser pointer while presenting.
+  useEffect(() => {
+    if (!isPresenting || !laserPointer) { setLaserPos(null); return; }
+    const move = (e: MouseEvent) => setLaserPos({ x: e.clientX, y: e.clientY });
+    window.addEventListener("mousemove", move);
+    return () => window.removeEventListener("mousemove", move);
+  }, [isPresenting, laserPointer]);
 
   // Keyboard navigation in editor — PageUp/PageDown always work globally
   useEffect(() => {
@@ -1608,14 +1678,46 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
   // ── Slideshow Mode — portaled to body to escape sidebar stacking context ──
   if (isPresenting) {
     return createPortal(
-      <SlideshowPresenter
-        slides={slides}
-        activeSlideIdx={activeSlideIdx}
-        setActiveSlideIdx={setActiveSlideIdx}
-        slideRatio={slideRatio}
-        onExit={() => setIsPresenting(false)}
-        theme={theme}
-      />,
+      <>
+        <SlideshowPresenter
+          slides={slides}
+          activeSlideIdx={activeSlideIdx}
+          setActiveSlideIdx={setActiveSlideIdx}
+          slideRatio={slideRatio}
+          onExit={() => setIsPresenting(false)}
+          theme={theme}
+        />
+
+        {/* Blank screen (B = black, W = white) — click or press the key again to resume */}
+        {blankScreen && (
+          <div onClick={() => setBlankScreen(null)} className="fixed inset-0 z-[2147483000] cursor-pointer"
+            style={{ background: blankScreen === "black" ? "#000" : "#fff" }} />
+        )}
+
+        {/* Speaker-notes panel (S) */}
+        {presenterNotes && (
+          <div className="fixed bottom-0 left-0 right-0 z-[2147483001] max-h-[35vh] overflow-y-auto bg-black/85 text-white p-5 backdrop-blur-md">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs uppercase tracking-wide text-white/50">Speaker notes · Slide {activeSlideIdx + 1}</span>
+              <button onClick={() => setPresenterNotes(false)} className="text-white/60 hover:text-white text-sm">✕</button>
+            </div>
+            <div className="text-[15px] leading-relaxed whitespace-pre-wrap">
+              {slides[activeSlideIdx]?.notes?.trim() || <span className="text-white/40">No notes for this slide.</span>}
+            </div>
+          </div>
+        )}
+
+        {/* Laser pointer (L) */}
+        {laserPointer && laserPos && (
+          <div className="fixed z-[2147483002] pointer-events-none rounded-full"
+            style={{ left: laserPos.x, top: laserPos.y, width: 18, height: 18, transform: "translate(-50%, -50%)", background: "radial-gradient(circle, rgba(255,60,60,0.95) 0%, rgba(255,0,0,0.55) 45%, rgba(255,0,0,0) 70%)", boxShadow: "0 0 14px 5px rgba(255,0,0,0.5)" }} />
+        )}
+
+        {/* Shortcut hint (fades — informational) */}
+        <div className="fixed top-3 left-1/2 -translate-x-1/2 z-[2147483001] px-3 py-1 rounded-full bg-black/40 text-white/70 text-[11px] pointer-events-none">
+          B/W blank · L laser · S notes · type number+Enter to jump · Esc to exit
+        </div>
+      </>,
       document.body,
     );
   }
@@ -1752,8 +1854,11 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
       </div>
 
       {/* ── Collapsible Menu + Toolbar ── */}
+      {/* overflow must be VISIBLE when expanded, otherwise it clips toolbar dropdown panels
+          (Insert image / shape) that hang below the toolbar — they open but stay invisible.
+          Only clip while collapsed so the max-height collapse animation still works. */}
       <div
-        className="overflow-hidden transition-all duration-300 ease-in-out flex-shrink-0"
+        className={`transition-all duration-300 ease-in-out flex-shrink-0 ${headerCollapsed ? "overflow-hidden" : "overflow-visible"}`}
         style={{ maxHeight: headerCollapsed ? 0 : 300, opacity: headerCollapsed ? 0 : 1 }}
       >
       {/* ── Menu Bar (shared component) ── */}
@@ -1795,6 +1900,23 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
         };
         if (action.startsWith("insert:chart:")) {
           insertChart(action.slice("insert:chart:".length) as ChartType);
+          return;
+        }
+        // Audio / video insert (upload or by URL)
+        const insertMedia = (kind: "audio" | "video", src: string) => {
+          migrateSlideToObjects();
+          addObjectsToSlide([createMediaObj(kind, src, { zIndex: currentObjects.length + 1 })]);
+        };
+        if (action === "insert:audioUpload" || action === "insert:videoUpload") {
+          mediaKindRef.current = action === "insert:audioUpload" ? "audio" : "video";
+          mediaInputRef.current?.click();
+          return;
+        }
+        if (action === "insert:audioUrl" || action === "insert:videoUrl") {
+          const kind = action === "insert:audioUrl" ? "audio" : "video";
+          setUtilDialog({ title: kind === "audio" ? "Insert audio" : "Insert video", content: (
+            <MediaUrlDialog kind={kind} onInsert={(url) => { setUtilDialog(null); insertMedia(kind, url); }} />
+          ) });
           return;
         }
         switch (action) {
@@ -2215,8 +2337,18 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
             document.execCommand("insertHTML", false, '<div style="margin:4px 0;"><span style="margin-right:8px;">☐</span>Checklist item</div>');
             break;
           case "format:borderWeight": case "format:borderDash": case "format:borderColor":
-          case "format:options":
-            alert("Format options — coming soon"); break;
+          case "format:options": {
+            const obj = activeSlide?.objects?.find(o => o.id === selectedObjectId);
+            if (!obj) { setToast("Select an object first to change its format options"); break; }
+            setUtilDialog({
+              title: "Format options",
+              content: <FormatOptionsDialog obj={obj} onUpdate={(patch) => {
+                const objs = (activeSlideRef.current?.objects || []).map(o => o.id === selectedObjectId ? { ...o, ...patch } as SlideObject : o);
+                updateCurrentSlideRef.current({ objects: objs });
+              }} />,
+            });
+            break;
+          }
 
           // ── Slide menu ──
           case "slide:skip": {
@@ -2288,24 +2420,62 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
             break;
 
           // ── Tools menu ──
-          case "tools:spellCheck": alert("Spell check — coming soon"); break;
-          case "tools:dictionary": alert("Personal dictionary — coming soon"); break;
-          case "tools:explore": alert("Explore — coming soon"); break;
-          case "tools:linkedObjects": alert("Linked objects — none found"); break;
+          case "tools:spellCheck": {
+            const on = !spellCheckOn;
+            setSpellCheckOn(on);
+            document.querySelectorAll<HTMLElement>("[contenteditable]").forEach(el => el.setAttribute("spellcheck", String(on)));
+            setToast(on ? "Spell check enabled" : "Spell check disabled");
+            break;
+          }
+          case "tools:dictionary": setUtilDialog({ title: "Personal dictionary", content: <DictionaryDialog /> }); break;
+          case "tools:explore": setUtilDialog({ title: "Explore", content: <ExploreDialog slides={slides} onGoToSlide={(i: number) => { setActiveSlideIdx(i); setUtilDialog(null); }} /> }); break;
+          case "tools:linkedObjects": setUtilDialog({ title: "Linked objects", content: <LinkedObjectsDialog objects={currentObjects} /> }); break;
           case "tools:dictionaryLookup": {
             const word = window.getSelection()?.toString()?.trim();
             if (word) window.open(`https://www.google.com/search?q=define+${encodeURIComponent(word)}`, "_blank");
-            else alert("Select a word first, then use Dictionary");
+            else setToast("Select a word first, then use Dictionary lookup");
             break;
           }
-          case "tools:voiceType": alert("Voice typing for speaker notes — coming soon"); break;
-          case "tools:accessibility": alert("Accessibility settings — coming soon"); break;
+          case "tools:voiceType": {
+            const w = window as unknown as { SpeechRecognition?: new () => SpeechRec; webkitSpeechRecognition?: new () => SpeechRec };
+            const SR = w.SpeechRecognition || w.webkitSpeechRecognition;
+            if (!SR) { setToast("Voice typing isn't supported in this browser"); break; }
+            if (voiceRecogRef.current) { voiceRecogRef.current.stop(); voiceRecogRef.current = null; setVoiceListening(false); setToast("Voice typing stopped"); break; }
+            const rec = new SR();
+            rec.continuous = true; rec.interimResults = false; rec.lang = "en-US";
+            rec.onresult = (e: SpeechRecEvent) => {
+              const text = Array.from({ length: e.results.length - e.resultIndex }, (_, k) => e.results[e.resultIndex + k][0].transcript).join(" ").trim();
+              const el = document.activeElement as HTMLElement | null;
+              if (el && (el.isContentEditable || el.tagName === "TEXTAREA" || el.tagName === "INPUT")) document.execCommand("insertText", false, text + " ");
+              else setToast("Click into a text box or the notes, then speak");
+            };
+            rec.onend = () => { setVoiceListening(false); voiceRecogRef.current = null; };
+            rec.start(); voiceRecogRef.current = rec; setVoiceListening(true);
+            setToast("Listening… choose Voice typing again to stop");
+            break;
+          }
+          case "tools:accessibility": setUtilDialog({ title: "Accessibility", content: <AccessibilityDialog /> }); break;
 
           // ── Help menu ──
-          case "help:search": alert("Search the menus — coming soon"); break;
-          case "help:shortcuts": alert("Keyboard shortcuts:\n\nCtrl+M — New slide\nCtrl+D — Duplicate slide\nCtrl+Z — Undo\nCtrl+Y — Redo\nCtrl+B — Bold\nCtrl+I — Italic\nCtrl+U — Underline\nCtrl+P — Print\nCtrl+F5 — Slideshow\nPageUp/Down — Navigate slides\nArrow Up/Down — Navigate slides (in filmstrip)"); break;
-          case "help:training": window.open("https://support.google.com/docs/answer/2763168", "_blank"); break;
-          case "help:updates": alert("You are using the latest version"); break;
+          case "help:search": setUtilDialog({ title: "Search the menus", content: (
+            <MenuSearchDialog onClose={() => setUtilDialog(null)} commands={[
+              { label: "New slide", run: () => addSlide() },
+              { label: "Present slideshow", run: () => { setActiveSlideIdx(0); setIsPresenting(true); } },
+              { label: "Themes", run: () => setShowThemes(true) },
+              { label: "Transitions", run: () => setShowTransitions(true) },
+              { label: "Grid view", run: () => setShowGridView(v => !v) },
+              { label: "Find & replace", run: () => setShowFindReplace(true) },
+              { label: "Insert text box", run: () => addObjectToSlide(createTextBox({ x: 15, y: 30, width: 70, height: 15, color: (THEMES[theme] || THEMES.default).text, zIndex: currentObjects.length + 1 })) },
+              { label: "Insert table", run: () => setShowTablePicker(true) },
+              { label: "Keyboard shortcuts", run: () => setUtilDialog({ title: "Keyboard shortcuts", content: <ShortcutsDialog /> }) },
+              { label: "Accessibility", run: () => setUtilDialog({ title: "Accessibility", content: <AccessibilityDialog /> }) },
+              { label: "Personal dictionary", run: () => setUtilDialog({ title: "Personal dictionary", content: <DictionaryDialog /> }) },
+              { label: "What's new", run: () => setUtilDialog({ title: "What's new", content: <UpdatesDialog /> }) },
+            ]} />
+          ) }); break;
+          case "help:shortcuts": setUtilDialog({ title: "Keyboard shortcuts", content: <ShortcutsDialog /> }); break;
+          case "help:training": setUtilDialog({ title: "Training & help", content: <TrainingDialog /> }); break;
+          case "help:updates": setUtilDialog({ title: "What's new", content: <UpdatesDialog /> }); break;
 
           default: break;
         }
@@ -2317,8 +2487,20 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
         <ToolbarButton title="Duplicate slide" Icon={Copy} onClick={duplicateSlide} disabled={!canDirectEdit} />
         <ToolbarButton title="Delete slide" Icon={Trash2} onClick={deleteSlide} disabled={!canDirectEdit || slides.length <= 1} />
         <ToolbarDivider />
-        <ToolbarButton title="Undo (Ctrl+Z)" Icon={Undo2} onClick={() => document.execCommand("undo")} disabled={!canDirectEdit} />
-        <ToolbarButton title="Redo (Ctrl+Y)" Icon={Redo2} onClick={() => document.execCommand("redo")} disabled={!canDirectEdit} />
+        <ToolbarButton title="Undo (Ctrl+Z)" Icon={Undo2} onClick={() => {
+          const el = document.activeElement as HTMLElement | null;
+          if (el && el.isContentEditable) { document.execCommand("undo"); return; }
+          const p = undoStackRef.current.pop();
+          if (p) { redoStackRef.current.push(JSON.stringify(slidesRef.current)); onChangeRef.current({ ...valueRef.current, slides: JSON.parse(p) }); }
+          else setToast("Nothing to undo");
+        }} disabled={!canDirectEdit} />
+        <ToolbarButton title="Redo (Ctrl+Y)" Icon={Redo2} onClick={() => {
+          const el = document.activeElement as HTMLElement | null;
+          if (el && el.isContentEditable) { document.execCommand("redo"); return; }
+          const n = redoStackRef.current.pop();
+          if (n) { undoStackRef.current.push(JSON.stringify(slidesRef.current)); onChangeRef.current({ ...valueRef.current, slides: JSON.parse(n) }); }
+          else setToast("Nothing to redo");
+        }} disabled={!canDirectEdit} />
         <ToolbarDivider />
         <ToolbarButton title="Themes" Icon={Palette} onClick={() => { setShowThemes(!showThemes); setShowTransitions(false); }} active={showThemes} />
         <ToolbarButton title="Transitions" Icon={LayoutGrid} onClick={() => { setShowTransitions(!showTransitions); setShowThemes(false); }} active={showTransitions} />
@@ -2336,25 +2518,32 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
         <ToolbarDivider />
         {/* Insert */}
         <ToolbarButton title="Insert table" Icon={Table2} onClick={() => setShowTablePicker(!showTablePicker)} />
-        <ToolbarButton title="Insert image" Icon={ImageIcon} onClick={handleImageUpload} disabled={!canDirectEdit} />
+        <ToolbarDropdown title="Insert image" Icon={ImageIcon} isOpen={showImageDropdown} onToggle={() => setShowImageDropdown(v => !v)} disabled={!canDirectEdit}>
+          <div className="p-1.5 min-w-[180px]">
+            {/* A <label> tied to the persistent file input opens the native picker as the click's
+                DEFAULT action — no JS .click() (which real Chrome drops when the dropdown unmounts
+                in the same event). Closing the dropdown is deferred so it can't cancel the picker. */}
+            <label htmlFor="educo-image-upload-input"
+              onMouseDown={(e) => e.stopPropagation()}
+              onClick={() => { setTimeout(() => setShowImageDropdown(false), 0); }}
+              className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors cursor-pointer text-left">
+              <Upload className="w-4 h-4 text-gray-500 dark:text-gray-400 flex-shrink-0" />
+              <span className="text-[13px] text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100">Upload from computer</span>
+            </label>
+            <button onClick={() => { setShowImageDropdown(false); setShowImageUrlDialog(true); }}
+              className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors cursor-pointer text-left">
+              <Globe className="w-4 h-4 text-gray-500 dark:text-gray-400 flex-shrink-0" />
+              <span className="text-[13px] text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100">By URL</span>
+            </button>
+          </div>
+        </ToolbarDropdown>
         <ToolbarButton title="Insert text box" Icon={Type} onClick={() => {
           const th = THEMES[theme] || THEMES.default;
           addObjectToSlide(createTextBox({ x: 15, y: 30, width: 70, height: 15, color: th.text, zIndex: currentObjects.length + 1 }));
         }} disabled={!canDirectEdit} />
-        <ToolbarDropdown title="Insert shape" Icon={Palette} isOpen={false} onToggle={() => {}} disabled={!canDirectEdit}>
-          <div className="p-2 grid grid-cols-3 gap-1.5">
-            {([["rect", "Rectangle"], ["circle", "Circle"], ["triangle", "Triangle"], ["arrow-right", "Arrow"], ["star", "Star"], ["line-h", "Line"]] as const).map(([shape, label]) => (
-              <button key={shape} onClick={() => {
-                const th = THEMES[theme] || THEMES.default;
-                addObjectToSlide(createShapeObj(shape, { fill: th.accent, zIndex: currentObjects.length + 1 }));
-              }} className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors cursor-pointer text-center">
-                <div className="w-8 h-8 mx-auto"><ShapeSVGPreview shape={shape} /></div>
-                <span className="text-[9px] text-gray-500 mt-0.5 block">{label}</span>
-              </button>
-            ))}
-          </div>
-        </ToolbarDropdown>
-        <ToolbarButton title={drawingMode ? "Exit drawing" : "Draw"} Icon={drawingMode ? X : PenLine} onClick={() => setDrawingMode(v => !v)} active={drawingMode} disabled={!canDirectEdit} />
+        {/* Open the SAME full shape picker as the Insert menu (all shapes, categorised, tidy grid) */}
+        <ToolbarButton title="Insert shape" Icon={Shapes} onClick={() => setShowShapePickerDialog("shapes")} disabled={!canDirectEdit} />
+        <ToolbarButton title={drawingMode ? "Exit drawing" : "Draw"} Icon={drawingMode ? X : PenLine} onClick={() => { if (!drawingMode) migrateSlideToObjects(); setDrawingMode(v => !v); }} active={drawingMode} disabled={!canDirectEdit} />
         <div className="flex-1" />
         {/* Zoom controls */}
         <ToolbarButton title="Zoom out" Icon={ZoomOut} onClick={() => setZoom(z => Math.max(50, z - 25))} />
@@ -2365,6 +2554,31 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
         <EditingModeButton editingMode={editingMode} onModeChange={setEditingMode} />
       </div>
       </div>{/* end collapsible menu+toolbar wrapper */}
+
+      {/* Drawing controls — shown while Draw mode is active (pick colour + brush size) */}
+      {drawingMode && (
+        <div className="absolute left-1/2 -translate-x-1/2 top-[112px] z-[160] flex items-center gap-3 px-3 py-1.5 rounded-full bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] shadow-lg border border-gray-200 dark:border-gray-700">
+          <span className="text-[11px] font-semibold text-gray-500 dark:text-gray-400">✎ Draw</span>
+          <div className="flex items-center gap-1">
+            {["#1a1a2e", "#ef4444", "#3b82f6", "#22c55e", "#f59e0b", "#a855f7"].map(c => (
+              <button key={c} onClick={() => setDrawingColor(c)} aria-label={`Pen colour ${c}`}
+                className={`w-5 h-5 rounded-full border-2 ${drawingColor === c ? "border-gray-800 dark:border-white" : "border-transparent"}`} style={{ background: c }} />
+            ))}
+            <input type="color" value={drawingColor} onChange={e => setDrawingColor(e.target.value)} className="w-5 h-5 p-0 border-0 rounded cursor-pointer bg-transparent" aria-label="Custom pen colour" title="Custom colour" />
+          </div>
+          <span className="w-px h-5 bg-gray-200 dark:bg-gray-700" />
+          <div className="flex items-center gap-1">
+            {[2, 4, 8].map(w => (
+              <button key={w} onClick={() => setDrawingWidth(w)} aria-label={`Pen width ${w}`}
+                className={`w-7 h-7 rounded-lg flex items-center justify-center ${drawingWidth === w ? "bg-blue-100 dark:bg-blue-900/40 ring-1 ring-blue-400" : "hover:bg-gray-100 dark:hover:bg-[#22262e]"}`}>
+                <span className="rounded-full bg-gray-700 dark:bg-gray-200" style={{ width: w + 2, height: w + 2 }} />
+              </button>
+            ))}
+          </div>
+          <span className="w-px h-5 bg-gray-200 dark:bg-gray-700" />
+          <button onClick={() => setDrawingMode(false)} className="px-3 py-1 rounded-full bg-blue-600 text-white text-[12px] font-medium">Done</button>
+        </div>
+      )}
 
       {/* Find and Replace panel */}
       {showFindReplace && (
@@ -2638,6 +2852,7 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
             drawingColor={drawingColor}
             drawingWidth={drawingWidth}
             onDrawingComplete={handleDrawingComplete}
+            onAddComment={(objId) => { setSelectedObjectId(objId); setShowCommentSidebar(true); }}
           />
 
           {/* Textbox draw mode overlay — click and drag to create a textbox */}
@@ -3070,6 +3285,40 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
           }}
           onClose={() => setShowImportSlides(false)}
         />
+      )}
+
+      {/* Hidden file input for audio/video upload */}
+      <input ref={mediaInputRef} type="file" accept="audio/*,video/*" className="hidden"
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (file) {
+            const reader = new FileReader();
+            reader.onload = () => { migrateSlideToObjects(); addObjectsToSlide([createMediaObj(mediaKindRef.current, reader.result as string, { zIndex: currentObjects.length + 1 })]); };
+            reader.readAsDataURL(file);
+          }
+          e.target.value = "";
+        }} />
+
+      {/* Persistent hidden input for image upload. Triggered by the toolbar's <label htmlFor> (native,
+          reliable) and by handleImageUpload() for the Insert → Image → Upload menu path. */}
+      <input id="educo-image-upload-input" ref={imageInputRef} type="file" accept="image/*" className="hidden"
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (file) insertImageFile(file);
+          e.target.value = "";
+        }} />
+
+      {/* Tools / Help utility dialog (shortcuts, updates, accessibility, dictionary, explore, menu search) */}
+      {utilDialog && (
+        <EditorDialog title={utilDialog.title} onClose={() => setUtilDialog(null)}>
+          {utilDialog.content}
+        </EditorDialog>
+      )}
+      {/* Voice-typing indicator */}
+      {voiceListening && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100000] flex items-center gap-2 px-4 py-2 rounded-full bg-red-600 text-white text-[13px] font-medium shadow-lg">
+          <span className="w-2 h-2 rounded-full bg-white animate-pulse" /> Listening… (choose Tools → Voice typing to stop)
+        </div>
       )}
 
       {/* Details Dialog */}
@@ -3527,8 +3776,12 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
           onInsert={(shapeKey) => {
             migrateSlideToObjects();
             const th = THEMES[theme] || THEMES.default;
-            const p = getInsertPosition(20, 20);
-            addObjectToSlide(createShapeObj(shapeKey, { ...p, width: 20, height: 20, fill: th.accent, zIndex: currentObjects.length + 1 }));
+            // The shape's viewBox is square (100×100). On a 16:9 slide, equal width/height %
+            // yields a WIDE box that squashes circles/stars into ellipses. Scale the height by
+            // the slide aspect so a square shape reads as square on screen (undistorted).
+            const W = 20, H = Math.round(W * 16 / 9); // ≈ 36
+            const p = getInsertPosition(W, H);
+            addObjectToSlide(createShapeObj(shapeKey, { ...p, width: W, height: H, fill: th.accent, zIndex: currentObjects.length + 1 }));
             setShowShapePickerDialog(null);
           }}
           onClose={() => setShowShapePickerDialog(null)}

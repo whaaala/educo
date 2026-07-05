@@ -140,6 +140,7 @@ export default function SlideMenuBar({
     showTable: true,
     diagramItems: defaultDiagramItems(act),
     chartItems: defaultChartItems(act),
+    showAudioVideo: true,
     showTextBox: true,
     showWordArt: true,
     lineItems: defaultLineItems(act),

@@ -11,7 +11,7 @@ export type { ChartSpec, ChartType, ChartDatum, ChartTextStyle, ChartLabelOverri
 
 // ── Slide Object System ──
 
-export type SlideObjectType = "textbox" | "image" | "shape" | "drawing" | "table" | "chart";
+export type SlideObjectType = "textbox" | "image" | "shape" | "drawing" | "table" | "chart" | "media";
 
 export interface SlideObjectBase {
   id: string;
@@ -23,6 +23,8 @@ export interface SlideObjectBase {
   rotation: number; // degrees
   zIndex: number;
   locked?: boolean;
+  link?: string;    // optional hyperlink — opens in the slideshow / on click
+  altText?: string; // optional accessibility description
 }
 
 export interface TextBoxObject extends SlideObjectBase {
@@ -125,7 +127,18 @@ export interface ChartObject extends SlideObjectBase, ChartSpec {
   type: "chart";
 }
 
-export type SlideObject = TextBoxObject | ImageObject | ShapeObject | DrawingObject | TableObject | ChartObject;
+/** Audio or video embedded on a slide — plays in the editor and the slideshow. */
+export interface MediaObject extends SlideObjectBase {
+  type: "media";
+  mediaKind: "audio" | "video";
+  src: string;          // data URL or remote URL
+  poster?: string;      // optional video poster image
+  autoplay?: boolean;
+  loop?: boolean;
+  muted?: boolean;
+}
+
+export type SlideObject = TextBoxObject | ImageObject | ShapeObject | DrawingObject | TableObject | ChartObject | MediaObject;
 
 // ── Slide Object Factories ──
 
@@ -147,7 +160,9 @@ export function createImageObj(src: string, overrides?: Partial<ImageObject>): I
   return {
     id: objId(), type: "image",
     x: 25, y: 20, width: 50, height: 50, rotation: 0, zIndex: 1,
-    src, alt: "Image", objectFit: "cover",
+    // 'contain' keeps the WHOLE image visible when the box is resized to any aspect ratio
+    // (never crops the edges). Users can switch to 'cover' via image formatting if they want fill.
+    src, alt: "Image", objectFit: "contain",
     ...overrides,
   };
 }
@@ -170,6 +185,40 @@ export function createDrawingObj(paths: string, overrides?: Partial<DrawingObjec
   };
 }
 
+/**
+ * A freeform pen path arrives in slide space (0–100 on both axes). If we drop it into a
+ * full-page (0,0,100,100) drawing object, that object's selection box spans the whole slide
+ * and every stroke overlaps every other — impossible to pick or move one.
+ *
+ * This computes a TIGHT bounding box around the stroke and rewrites the path into that box's
+ * own 0–100 viewBox, so each drawing's box hugs just its own ink. A small pad keeps the
+ * (non-scaling) stroke from being clipped at the box edge. Visual position is unchanged.
+ */
+export function fitDrawingToStroke(
+  paths: string,
+  pad = 1.5,
+): { paths: string; x: number; y: number; width: number; height: number } {
+  const nums = (paths.match(/-?\d+(?:\.\d+)?/g) || []).map(Number);
+  const xs: number[] = [], ys: number[] = [];
+  for (let i = 0; i + 1 < nums.length; i += 2) { xs.push(nums[i]); ys.push(nums[i + 1]); }
+  if (xs.length === 0) return { paths, x: 0, y: 0, width: 100, height: 100 };
+  let minX = Math.max(0, Math.min(...xs) - pad);
+  let minY = Math.max(0, Math.min(...ys) - pad);
+  const maxX = Math.min(100, Math.max(...xs) + pad);
+  const maxY = Math.min(100, Math.max(...ys) + pad);
+  const width = Math.max(0.5, maxX - minX);
+  const height = Math.max(0.5, maxY - minY);
+  // Rewrite every coordinate (x,y alternating) into the box's local 0–100 space.
+  let idx = 0;
+  const rescaled = paths.replace(/-?\d+(?:\.\d+)?/g, (m) => {
+    const v = Number(m);
+    const local = idx % 2 === 0 ? ((v - minX) / width) * 100 : ((v - minY) / height) * 100;
+    idx++;
+    return local.toFixed(2);
+  });
+  return { paths: rescaled, x: minX, y: minY, width, height };
+}
+
 export function createChartObj(chartType: ChartType, overrides?: Partial<ChartObject>): ChartObject {
   const seed = defaultChartData(chartType);   // data / series / categories / scatter per type
   const opts = defaultChartOptions(chartType); // axes / grid / legend / values per type
@@ -183,6 +232,16 @@ export function createChartObj(chartType: ChartType, overrides?: Partial<ChartOb
     title: "",
     ...opts,
     ...seed,
+    ...overrides,
+  };
+}
+
+export function createMediaObj(mediaKind: "audio" | "video", src: string, overrides?: Partial<MediaObject>): MediaObject {
+  return {
+    id: objId(), type: "media",
+    x: 20, y: 25, width: mediaKind === "audio" ? 60 : 56, height: mediaKind === "audio" ? 10 : 42,
+    rotation: 0, zIndex: 1,
+    mediaKind, src, autoplay: false, loop: false, muted: false,
     ...overrides,
   };
 }

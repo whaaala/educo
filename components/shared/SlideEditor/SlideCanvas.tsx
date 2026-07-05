@@ -8,13 +8,15 @@
 
 import React, { useState, useRef, useCallback, useEffect, useLayoutEffect } from "react";
 import { createPortal } from "react-dom";
-import type { SlideObject, TextBoxObject, ImageObject, ShapeObject, DrawingObject, TableObject, TableCell } from "@/lib/slide-storage";
+import type { SlideObject, TextBoxObject, ImageObject, ShapeObject, DrawingObject, TableObject, TableCell, MediaObject } from "@/lib/slide-storage";
 import { SHAPE_DEFS } from "./shapes";
 import { ColorGrid, TabbedColorPalette, ColorPickerPopover, isNativeColorPickerOpen, SOLID_COLORS, GRADIENT_COLORS, GLOSSY_COLORS, BORDER_COLORS, TEXT_COLORS, colorToCSS } from "@/components/shared/ColorPalettePicker";
 import CustomDropdown from "@/components/shared/CustomDropdown";
 import TextFormatToolbar from "@/components/shared/TextFormatToolbar";
 import SlideChart, { SlideChartEditor } from "./SlideChart";
 import { setSlideClipboard, getSlideClipboard, hasSlideClipboard, packIntoFreeSpace, fitRotatedToPage } from "./slide-clipboard";
+import { insertRow, insertCol, deleteRow, deleteCol, distributeRows, distributeCols } from "./table-ops";
+import Tooltip from "@/components/shared/Tooltip";
 import TableStylePanel from "@/components/shared/TableStylePanel";
 
 // ══════════════════════════════════════════════════
@@ -40,6 +42,8 @@ interface SlideCanvasProps {
   drawingColor?: string;
   drawingWidth?: number;
   onDrawingComplete?: (paths: string) => void;
+  /** Open the comment sidebar anchored to an object (right-click → Add comment). */
+  onAddComment?: (objId: string) => void;
 }
 
 // ══════════════════════════════════════════════════
@@ -87,7 +91,10 @@ const ShapeSVG = React.memo(function ShapeSVG({ shape, fill, stroke, strokeWidth
   const hasStroke = stroke && stroke !== "transparent" && strokeWidth > 0;
   let svgContent = def.svg
     .replace(/fill="currentColor"/g, `fill="${fill}"`)
-    .replace(/stroke="currentColor"/g, `stroke="${hasStroke ? stroke : "none"}" stroke-width="${hasStroke ? strokeWidth : 0}"`);
+    // Line/stroke-drawn shapes (line-h, line-v, line-diag, cylinder edges, …) use currentColor as
+    // their MAIN colour — map it to the shape's fill so they actually render. (Previously this was
+    // set to "none" unless an outline was configured, which made the Line shape invisible.)
+    .replace(/stroke="currentColor"/g, `stroke="${fill}"`);
   // Also add stroke to elements that only have fill (no existing stroke attr)
   if (hasStroke) {
     svgContent = svgContent
@@ -208,14 +215,20 @@ export default function SlideCanvas({
   objects, onChange, selectedId, onSelect, background, themeTextColor, themeAccent,
   canEdit, showGuides = false, guides = [], snapToGrid = false, snapToGuides = false,
   onGuideMove, onGuideDelete, drawingMode = false, drawingColor = "#1a1a2e", drawingWidth = 2, onDrawingComplete,
+  onAddComment,
 }: SlideCanvasProps) {
   const canvasRef = useRef<HTMLDivElement>(null);
   const [editingTextId, setEditingTextId] = useState<string | null>(null);
   const [croppingId, setCroppingId] = useState<string | null>(null);
   const [showColorPickerId, setShowColorPickerId] = useState<string | null>(null);
+  // Link / alt-text mini dialog + image-replace file input (right-click menu extras)
+  const [metaDialog, setMetaDialog] = useState<{ id: string; kind: "link" | "alt"; value: string } | null>(null);
+  const replaceInputRef = useRef<HTMLInputElement>(null);
+  const replaceTargetRef = useRef<string | null>(null);
   const isResizingRef = useRef(false);
   const [drawingPath, setDrawingPath] = useState<string>("");
   const isDrawing = useRef(false);
+  const drawPathRef = useRef<string>("");
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; objId: string } | null>(null);
   const [openSubmenu, setOpenSubmenu] = useState<string | null>(null);
   // Submenu open/close with a small close delay so the mouse can travel across the
@@ -260,6 +273,29 @@ export default function SlideCanvas({
   const updateObj = useCallback((id: string, updates: Partial<SlideObject>) => {
     onChange(objects.map(o => o.id === id ? { ...o, ...updates } as SlideObject : o));
   }, [objects, onChange]);
+
+  // Save the link / alt-text mini dialog
+  const saveMeta = useCallback(() => {
+    setMetaDialog(m => {
+      if (m) {
+        const v = m.value.trim();
+        if (m.kind === "link") updateObj(m.id, { link: v || undefined });
+        else updateObj(m.id, { altText: v || undefined });
+      }
+      return null;
+    });
+  }, [updateObj]);
+
+  // Replace an image's source from a chosen file (right-click → Replace image)
+  const handleReplaceImage = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]; const id = replaceTargetRef.current;
+    if (file && id) {
+      const reader = new FileReader();
+      reader.onload = () => updateObj(id, { src: reader.result as string } as Partial<SlideObject>);
+      reader.readAsDataURL(file);
+    }
+    e.target.value = "";
+  }, [updateObj]);
 
   // Delete selected (supports multi-select)
   const deleteSelected = useCallback(() => {
@@ -722,7 +758,8 @@ export default function SlideCanvas({
     const x = ((e.clientX - rect.left) / rect.width) * 100;
     const y = ((e.clientY - rect.top) / rect.height) * 100;
     isDrawing.current = true;
-    setDrawingPath(`M ${x} ${y}`);
+    drawPathRef.current = `M ${x} ${y}`;
+    setDrawingPath(drawPathRef.current);
   }, [drawingMode]);
 
   const continueDrawing = useCallback((e: React.MouseEvent) => {
@@ -730,15 +767,18 @@ export default function SlideCanvas({
     const rect = canvasRef.current.getBoundingClientRect();
     const x = ((e.clientX - rect.left) / rect.width) * 100;
     const y = ((e.clientY - rect.top) / rect.height) * 100;
-    setDrawingPath(prev => prev + ` L ${x} ${y}`);
+    drawPathRef.current += ` L ${x} ${y}`;
+    setDrawingPath(drawPathRef.current);
   }, []);
 
   const endDrawing = useCallback(() => {
     if (!isDrawing.current) return;
     isDrawing.current = false;
-    if (drawingPath.length > 10) onDrawingComplete?.(drawingPath);
+    // Read from the ref (not state) so the completed path is never lost to a stale closure
+    if (drawPathRef.current.length > 10) onDrawingComplete?.(drawPathRef.current);
+    drawPathRef.current = "";
     setDrawingPath("");
-  }, [drawingPath, onDrawingComplete]);
+  }, [onDrawingComplete]);
 
   // ── Click to deselect ──
   // Apply crop: shrink container to visible area when exiting crop mode
@@ -957,8 +997,10 @@ export default function SlideCanvas({
                 className="pointer-events-none block"
                 style={{
                   width: "100%", height: "100%",
-                  // Use 'fill' when cropped so crop percentages are exact; 'cover' when uncropped for best appearance
-                  objectFit: (ct > 0 || cr > 0 || cb > 0 || cl > 0) ? "fill" : (obj.objectFit || "cover"),
+                  // Use 'fill' when cropped (crop percentages must be exact); otherwise default to
+                  // 'contain' so the WHOLE image is always visible when the box is resized to any
+                  // aspect ratio (never silently crop the edges). 'cover' only if explicitly set.
+                  objectFit: (ct > 0 || cr > 0 || cb > 0 || cl > 0) ? "fill" : (obj.objectFit || "contain"),
                   opacity: obj.opacity ?? 1,
                   border: obj.borderColor ? `${obj.borderWidth || 1}px solid ${obj.borderColor}` : "none",
                   clipPath: (ct > 0 || cr > 0 || cb > 0 || cl > 0) ? `inset(${ct}% ${cr}% ${cb}% ${cl}%)` : undefined,
@@ -1116,6 +1158,13 @@ export default function SlideCanvas({
             />
           </div>
         )}
+
+        {obj.type === "media" && (() => {
+          const m = obj as MediaObject;
+          return m.mediaKind === "audio"
+            ? <audio className="w-full h-full" controls src={m.src} loop={m.loop} style={{ display: "block" }} onMouseDown={(e) => e.stopPropagation()} />
+            : <video className="w-full h-full rounded-lg bg-black" controls src={m.src} poster={m.poster} loop={m.loop} muted={m.muted} playsInline style={{ objectFit: "contain" }} onMouseDown={(e) => e.stopPropagation()} />;
+        })()}
 
         {obj.type === "table" && (
           <SlideTableRenderer
@@ -1506,11 +1555,16 @@ export default function SlideCanvas({
           { label: "Send to Back", action: () => sendToBack(objId) },
           "---",
           { label: "Duplicate", shortcut: "Ctrl+D", action: () => duplicateObj(objId) },
+          "---",
+          { label: ctxObj?.link ? "Edit link" : "Link", shortcut: "Ctrl+K", action: () => setMetaDialog({ id: objId, kind: "link", value: ctxObj?.link || "" }) },
+          { label: "Alt text", action: () => setMetaDialog({ id: objId, kind: "alt", value: ctxObj?.altText || (ctxObj?.type === "image" ? (ctxObj as ImageObject).alt : "") || "" }) },
+          ...(onAddComment ? [{ label: "Add comment", action: () => onAddComment(objId) }] as MenuItem[] : []),
           ...(ctxObj?.type === "shape" ? [
             { label: "Edit Text", action: () => setEditingTextId(objId) },
             { label: "Change Colors", action: () => setShowColorPickerId(objId) },
           ] as MenuItem[] : []),
           ...(ctxObj?.type === "image" ? [
+            { label: "Replace image", action: () => { replaceTargetRef.current = objId; replaceInputRef.current?.click(); } },
             { label: "Crop Image", action: () => setCroppingId(objId) },
           ] as MenuItem[] : []),
           ...(ctxObj?.type === "table" ? [
@@ -1583,6 +1637,29 @@ export default function SlideCanvas({
           document.body,
         );
       })()}
+
+      {/* Hidden file input for "Replace image" */}
+      <input ref={replaceInputRef} type="file" accept="image/*" className="hidden" onChange={handleReplaceImage} />
+
+      {/* Link / Alt-text mini dialog (right-click → Link / Alt text) */}
+      {metaDialog && createPortal(
+        <div className="fixed inset-0 z-[10002] flex items-center justify-center bg-black/30" onMouseDown={() => setMetaDialog(null)}>
+          <div className="w-[380px] rounded-2xl bg-white dark:bg-[#0f1115] shadow-2xl border border-gray-200 dark:border-gray-700 p-4" onMouseDown={e => e.stopPropagation()}>
+            <div className="text-[13px] font-bold text-gray-800 dark:text-gray-100 mb-2">{metaDialog.kind === "link" ? "Link" : "Alt text"}</div>
+            <input autoFocus value={metaDialog.value}
+              onChange={e => setMetaDialog(m => m && { ...m, value: e.target.value })}
+              onKeyDown={e => { if (e.key === "Enter") saveMeta(); if (e.key === "Escape") setMetaDialog(null); }}
+              placeholder={metaDialog.kind === "link" ? "https://…" : "Describe this object for screen readers"}
+              className="w-full px-3 py-2 text-[13px] rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-[#1a1d24] dark:text-gray-100 outline-none focus:ring-2 focus:ring-blue-400" />
+            <div className="flex justify-end gap-2 mt-3">
+              {metaDialog.kind === "link" && objects.find(o => o.id === metaDialog.id)?.link && (
+                <button onClick={() => { updateObj(metaDialog.id, { link: undefined }); setMetaDialog(null); }} className="mr-auto px-3 py-1.5 text-[12px] text-red-500 hover:underline">Remove link</button>
+              )}
+              <button onClick={() => setMetaDialog(null)} className="px-3 py-1.5 text-[12px] rounded-lg border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300">Cancel</button>
+              <button onClick={saveMeta} className="px-3 py-1.5 text-[12px] rounded-lg bg-blue-600 text-white font-medium">Save</button>
+            </div>
+          </div>
+        </div>, document.body)}
     </div>
   );
 }
@@ -1943,6 +2020,18 @@ function SlideTableRenderer({ obj, isEditing, isSelected, canEdit, onCellChange,
 
   const activeCell = editingCell ? obj.cells[editingCell.r]?.[editingCell.c] : null;
 
+  // Position for the portalled Table Tools bar (the table container has overflow:hidden,
+  // so an in-flow bar above the table would be clipped).
+  const [tblBarPos, setTblBarPos] = useState<{ top: number; left: number } | null>(null);
+  useEffect(() => {
+    if (!isSelected || !canEdit) { setTblBarPos(null); return; }
+    const update = () => { const el = containerRef.current; if (el) { const r = el.getBoundingClientRect(); setTblBarPos({ top: r.top - 36, left: r.left }); } };
+    update();
+    window.addEventListener("scroll", update, true); window.addEventListener("resize", update);
+    const t = setInterval(update, 300); // keep in sync while dragging/resizing the table
+    return () => { window.removeEventListener("scroll", update, true); window.removeEventListener("resize", update); clearInterval(t); };
+  }, [isSelected, canEdit]);
+
   // Column widths and row heights (default to equal)
   const colWidths = obj.colWidths || Array(obj.cols).fill(100 / obj.cols);
   const rowHeights = obj.rowHeights || Array(obj.rows).fill(100 / obj.rows);
@@ -2012,8 +2101,29 @@ function SlideTableRenderer({ obj, isEditing, isSelected, canEdit, onCellChange,
     document.addEventListener("mouseup", handleUp);
   }, []);
 
+  // Table Tools bar (insert/delete rows & columns, distribute) — shown when the table is
+  // selected. Operations act relative to the cell being edited, or the last row/col.
+  const tblR = editingCell?.r ?? obj.rows - 1;
+  const tblC = editingCell?.c ?? obj.cols - 1;
+  const applyTbl = (patch: Partial<TableObject>) => { if (Object.keys(patch).length) onUpdateTable?.(patch); };
+  const tblBtn = "px-1.5 h-6 inline-flex items-center gap-0.5 rounded text-[11px] text-gray-600 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-[#22262e] cursor-pointer";
+
   return (
     <div ref={containerRef} className="w-full h-full overflow-hidden relative" onMouseDown={(e) => { if (isEditing) e.stopPropagation(); }}>
+      {tblBarPos && typeof document !== "undefined" && createPortal(
+        <div className="fixed z-[10001] flex items-center gap-0.5 px-1 py-0.5 rounded-lg bg-white dark:bg-[#0f1115] shadow-lg border border-gray-200 dark:border-gray-700"
+          style={{ top: tblBarPos.top, left: tblBarPos.left }} onMouseDown={(e) => e.stopPropagation()}>
+          <Tooltip content="Insert row above" delay={300}><button className={tblBtn} onClick={() => applyTbl(insertRow(obj, tblR))}>+↑Row</button></Tooltip>
+          <Tooltip content="Insert row below" delay={300}><button className={tblBtn} onClick={() => applyTbl(insertRow(obj, tblR + 1))}>+↓Row</button></Tooltip>
+          <Tooltip content="Delete row" delay={300}><button className={tblBtn} onClick={() => applyTbl(deleteRow(obj, tblR))}>−Row</button></Tooltip>
+          <span className="w-px h-4 bg-gray-200 dark:bg-gray-700 mx-0.5" />
+          <Tooltip content="Insert column left" delay={300}><button className={tblBtn} onClick={() => applyTbl(insertCol(obj, tblC))}>+←Col</button></Tooltip>
+          <Tooltip content="Insert column right" delay={300}><button className={tblBtn} onClick={() => applyTbl(insertCol(obj, tblC + 1))}>+→Col</button></Tooltip>
+          <Tooltip content="Delete column" delay={300}><button className={tblBtn} onClick={() => applyTbl(deleteCol(obj, tblC))}>−Col</button></Tooltip>
+          <span className="w-px h-4 bg-gray-200 dark:bg-gray-700 mx-0.5" />
+          <Tooltip content="Distribute rows evenly" delay={300}><button className={tblBtn} onClick={() => applyTbl(distributeRows(obj))}>≡Rows</button></Tooltip>
+          <Tooltip content="Distribute columns evenly" delay={300}><button className={tblBtn} onClick={() => applyTbl(distributeCols(obj))}>≡Cols</button></Tooltip>
+        </div>, document.body)}
       <div
         className="w-full h-full"
         style={{
