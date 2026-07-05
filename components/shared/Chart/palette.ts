@@ -82,25 +82,27 @@ export interface ChartTheme {
 
 export type ChartThemeName = "light" | "dark" | "midnight" | "purple";
 
+// Gridlines are kept subtle but clearly VISIBLE — the old #eef1f5 was almost invisible
+// on a white slide, so toggling Grid looked like it did nothing.
 const LIGHT: ChartTheme = {
-  grid: "#eef1f5", axis: "#cbd5e1",
+  grid: "#d7dde5", axis: "#94a3b8",
   labelStrong: "#334155", label: "#64748b", labelSoft: "#94a3b8",
-  track: "#eef2f7", onAccent: "#ffffff",
+  track: "#e9edf3", onAccent: "#ffffff",
 };
 const DARK: ChartTheme = {
-  grid: "rgba(148,163,184,0.16)", axis: "rgba(148,163,184,0.4)",
+  grid: "rgba(148,163,184,0.32)", axis: "rgba(148,163,184,0.6)",
   labelStrong: "#e2e8f0", label: "#94a3b8", labelSoft: "#64748b",
-  track: "rgba(148,163,184,0.18)", onAccent: "#ffffff",
+  track: "rgba(148,163,184,0.2)", onAccent: "#ffffff",
 };
 const MIDNIGHT: ChartTheme = {
-  grid: "rgba(120,140,170,0.16)", axis: "rgba(120,140,170,0.4)",
+  grid: "rgba(120,140,170,0.32)", axis: "rgba(120,140,170,0.6)",
   labelStrong: "#dbe4f0", label: "#8aa0bd", labelSoft: "#5b6f8c",
-  track: "rgba(120,140,170,0.18)", onAccent: "#ffffff",
+  track: "rgba(120,140,170,0.2)", onAccent: "#ffffff",
 };
 const PURPLE: ChartTheme = {
-  grid: "rgba(196,170,235,0.16)", axis: "rgba(196,170,235,0.42)",
+  grid: "rgba(196,170,235,0.32)", axis: "rgba(196,170,235,0.62)",
   labelStrong: "#ece4fb", label: "#b9a6dd", labelSoft: "#8b78b3",
-  track: "rgba(196,170,235,0.2)", onAccent: "#ffffff",
+  track: "rgba(196,170,235,0.22)", onAccent: "#ffffff",
 };
 
 export function chartTheme(name?: ChartThemeName): ChartTheme {

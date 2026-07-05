@@ -122,6 +122,12 @@ export default function Chart({
       <rect x={x} y={yb} width={w} height={y1 - yb} rx={Math.min(F * 0.3, w * 0.1)} fill={grad(c, gradKey)} />
     </g>
   );
+  // Reusable extruded ribbon under a line — gives the stroke a solid 3D thickness.
+  const lineRibbon = (pts: { x: number; y: number }[], c: HSL, rkey: string) => {
+    if (dep3 <= 0 || pts.length < 2) return null;
+    const back = [...pts].reverse().map(pt => `L${pt.x},${pt.y + dep3}`).join(" ");
+    return <path key={rkey} d={`${smoothPath(pts)} L${pts[pts.length - 1].x},${pts[pts.length - 1].y + dep3} ${back} Z`} fill={css(darken(c, 15))} opacity={0.92} />;
+  };
 
   // ── header (title + subtitle), placed together by titleAlign / titleVAlign ──
   const hasTitle = !!(spec.title && spec.title.trim());
@@ -527,14 +533,13 @@ export default function Chart({
       labels.push({ id: `x:${i}`, text: d.label, x: pts[i].x, y: p.y1 + F * 1.3, anchor: "middle", size: F * 0.88, color: T.label });
       if (spec.showValues) labels.push({ id: `v:${i}`, text: String(Number(d.value) || 0), x: pts[i].x, y: pts[i].y - F * 0.75, anchor: "middle", size: F * 0.85, color: T.labelStrong, weight: 700 });
     });
-    const lowerPath = D3 ? smoothPath(pts.map(pt => ({ x: pt.x, y: pt.y + dep3 }))) : "";
     return (
       <>
         {gridAndAxes(p, ticks, scaleY)}
         {pushYTicks(p, ticks, scaleY)}
         {isArea && <path d={`${path} L${pts[n - 1].x},${p.y1} L${pts[0].x},${p.y1} Z`} fill={`url(#${fillId})`} />}
-        {/* 3D: a darker offset line below gives the stroke visible thickness */}
-        {D3 && <path d={lowerPath} fill="none" stroke={css(darken(c, 16))} strokeWidth={lineW * 2.6} strokeLinejoin="round" strokeLinecap="round" />}
+        {/* 3D: an extruded ribbon under the line gives it a solid depth */}
+        {lineRibbon(pts, c, "lr")}
         <path d={path} fill="none" stroke={css(c)} strokeWidth={lineW * 2.6} strokeLinejoin="round" strokeLinecap="round" filter={shadow3D} />
         {pts.map((pt, i) => D3
           ? <circle key={i} cx={pt.x} cy={pt.y} r={F * 0.52} fill={sphere(c, "lmk")} />
@@ -574,7 +579,7 @@ export default function Chart({
           const pts = cats.map((_, ci) => ({ x: xAt(ci), y: scaleY(Number(s.values[ci]) || 0) }));
           return (
             <g key={si}>
-              {D3 && <path d={smoothPath(pts.map(pt => ({ x: pt.x, y: pt.y + dep3 })))} fill="none" stroke={css(darken(c, 16))} strokeWidth={lineW * 2.4} strokeLinejoin="round" strokeLinecap="round" />}
+              {lineRibbon(pts, c, `mlr${si}`)}
               <path d={smoothPath(pts)} fill="none" stroke={css(c)} strokeWidth={lineW * 2.4} strokeLinejoin="round" strokeLinecap="round" filter={shadow3D} />
               {pts.map((pt, i) => D3
                 ? <circle key={i} cx={pt.x} cy={pt.y} r={F * 0.46} fill={sphere(c, `mmk${si}`)} />
@@ -616,7 +621,7 @@ export default function Chart({
           const pts = cats.map((_, ci) => ({ x: p.x0 + ci * slot + slot / 2, y: scaleY(Number(s.values[ci]) || 0) }));
           return (
             <g key={si}>
-              {D3 && <path d={smoothPath(pts.map(pt => ({ x: pt.x, y: pt.y + dep3 })))} fill="none" stroke={css(darken(c, 16))} strokeWidth={lineW * 2.6} strokeLinejoin="round" strokeLinecap="round" />}
+              {lineRibbon(pts, c, `clr${si}`)}
               <path d={smoothPath(pts)} fill="none" stroke={css(c)} strokeWidth={lineW * 2.6} strokeLinejoin="round" strokeLinecap="round" filter={shadow3D} />
               {pts.map((pt, i) => D3
                 ? <circle key={i} cx={pt.x} cy={pt.y} r={F * 0.5} fill={sphere(c, `cmk${si}`)} />
