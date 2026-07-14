@@ -232,7 +232,7 @@ export default function ComposeMessagePage() {
                         <button
                           type="button"
                           onClick={handleSelectAll}
-                          className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10/50 border-b border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 cursor-pointer"
+                          className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 border-b border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 cursor-pointer"
                         >
                           <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 flex items-center justify-center">
                             <Users className="w-4 h-4 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
@@ -252,7 +252,7 @@ export default function ComposeMessagePage() {
                               type="button"
                               onClick={() => handleSelectRecipient(parent)}
                               disabled={!!isSelected}
-                              className={`w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10/50 cursor-pointer ${
+                              className={`w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 cursor-pointer ${
                                 isSelected ? "opacity-50 cursor-not-allowed" : ""
                               }`}
                             >
@@ -333,7 +333,7 @@ export default function ComposeMessagePage() {
                             setCategory(cat);
                             setShowCategoryDropdown(false);
                           }}
-                          className={`w-full px-4 py-2.5 text-left text-sm hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10/50 cursor-pointer ${
+                          className={`w-full px-4 py-2.5 text-left text-sm hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 cursor-pointer ${
                             category === cat ? "text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 font-medium" : "text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200"
                           }`}
                         >
@@ -419,7 +419,7 @@ export default function ComposeMessagePage() {
             </div>
 
             {/* Footer Actions */}
-            <div className="p-4 lg:p-6 border-t border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-gray-50/50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50">
+            <div className="p-4 lg:p-6 border-t border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-gray-50/50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 {/* Left Actions */}
                 <div className="flex items-center gap-2">

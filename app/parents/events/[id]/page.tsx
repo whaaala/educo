@@ -529,8 +529,8 @@ export default function EventDetailPage() {
               </div>
 
               {/* Quick Info Strip */}
-              <div className="relative flex flex-wrap bg-gradient-to-r from-gray-50/80 to-white dark:from-gray-800/80 dark:to-gray-800 border-t border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/50">
-                <div className="p-3 sm:p-4 flex items-center gap-2 sm:gap-3 border-r border-b sm:border-b-0 border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/50">
+              <div className="relative flex flex-wrap bg-gradient-to-r from-gray-50/80 to-white dark:from-gray-800/80 dark:to-gray-800 border-t border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+                <div className="p-3 sm:p-4 flex items-center gap-2 sm:gap-3 border-r border-b sm:border-b-0 border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
                   <div className={`p-2 sm:p-2.5 rounded-xl ${typeInfo.bgClass} flex-shrink-0`}>
                     <Calendar className={`w-3.5 sm:w-4 h-3.5 sm:h-4 ${typeInfo.textClass}`} />
                   </div>
@@ -544,7 +544,7 @@ export default function EventDetailPage() {
                 </div>
 
                 {event.time && (
-                  <div className="p-3 sm:p-4 flex items-center gap-2 sm:gap-3 border-r border-b sm:border-b-0 border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/50">
+                  <div className="p-3 sm:p-4 flex items-center gap-2 sm:gap-3 border-r border-b sm:border-b-0 border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
                     <div className="p-2 sm:p-2.5 rounded-xl bg-purple-50 dark:bg-purple-900/20 flex-shrink-0">
                       <Clock className="w-3.5 sm:w-4 h-3.5 sm:h-4 text-purple-600 dark:text-purple-400" />
                     </div>
@@ -556,7 +556,7 @@ export default function EventDetailPage() {
                 )}
 
                 {event.location && (
-                  <div className="p-3 sm:p-4 flex items-center gap-2 sm:gap-3 border-r border-b sm:border-b-0 border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/50">
+                  <div className="p-3 sm:p-4 flex items-center gap-2 sm:gap-3 border-r border-b sm:border-b-0 border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
                     <div className="p-2 sm:p-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 flex-shrink-0">
                       <MapPin className="w-3.5 sm:w-4 h-3.5 sm:h-4 text-emerald-600 dark:text-emerald-400" />
                     </div>
@@ -603,7 +603,7 @@ export default function EventDetailPage() {
             {/* About This Event */}
             {event.fullDescription && (
               <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-2xl border border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm overflow-hidden">
-                <div className="p-5 border-b border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/50">
+                <div className="p-5 border-b border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
                   <h3 className="text-base font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 flex items-center gap-2.5">
                     <div className="p-2 rounded-lg bg-blue-50 dark:bg-blue-900/20 midnight:bg-cyan-900/20 purple:bg-pink-900/20">
                       <Info className="w-4 h-4 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
@@ -626,7 +626,7 @@ export default function EventDetailPage() {
             {/* Schedule/Agenda */}
             {event.agenda && event.agenda.length > 0 && (
               <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-2xl border border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm overflow-hidden">
-                <div className="p-5 border-b border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/50">
+                <div className="p-5 border-b border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
                   <h3 className="text-base font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 flex items-center gap-2.5">
                     <div className="p-2 rounded-lg bg-purple-50 dark:bg-purple-900/20">
                       <Clock className="w-4 h-4 text-purple-600 dark:text-purple-400" />
@@ -643,7 +643,7 @@ export default function EventDetailPage() {
                       {event.agenda.map((item, idx) => (
                         <div
                           key={idx}
-                          className="group relative flex items-center gap-4 p-3 pl-0 rounded-xl hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10/30 transition-colors"
+                          className="group relative flex items-center gap-4 p-3 pl-0 rounded-xl hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors"
                         >
                           {/* Time badge */}
                           <div className="relative z-10 flex-shrink-0 w-[88px]">
@@ -707,7 +707,7 @@ export default function EventDetailPage() {
                 )}
                 {/* Share button - only show for public events (no childId) */}
                 {event.childId ? (
-                  <div className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/30 border border-gray-100 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30/30">
+                  <div className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/30 border border-gray-100 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30">
                     <div className="w-9 h-9 rounded-lg bg-gray-100 dark:bg-[#2a2d35] midnight:bg-gray-700 purple:bg-gray-700/50 flex items-center justify-center">
                       <Lock className="w-4 h-4 text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400" />
                     </div>
@@ -732,7 +732,7 @@ export default function EventDetailPage() {
             {/* Requirements Card */}
             {event.requirements && event.requirements.length > 0 && (
               <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-2xl border border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm overflow-hidden">
-                <div className="p-4 border-b border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/50 bg-gradient-to-r from-emerald-50/50 to-white dark:from-emerald-900/10 dark:to-gray-800">
+                <div className="p-4 border-b border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-gradient-to-r from-emerald-50/50 to-white dark:from-emerald-900/10 dark:to-gray-800">
                   <h3 className="text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 text-emerald-500" />
                     Requirements
@@ -756,7 +756,7 @@ export default function EventDetailPage() {
             {/* Contact Information Card */}
             {(event.contactPerson || event.contactPhone) && (
               <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-2xl border border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm overflow-hidden">
-                <div className="p-4 border-b border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/50 bg-gradient-to-r from-blue-50/50 to-white dark:from-blue-900/10 dark:to-gray-800">
+                <div className="p-4 border-b border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-gradient-to-r from-blue-50/50 to-white dark:from-blue-900/10 dark:to-gray-800">
                   <h3 className="text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 flex items-center gap-2">
                     <Phone className="w-4 h-4 text-blue-500" />
                     Contact Information

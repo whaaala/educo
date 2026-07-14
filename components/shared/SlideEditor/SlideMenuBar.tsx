@@ -146,6 +146,7 @@ export default function SlideMenuBar({
     lineItems: defaultLineItems(act),
     showComment: true,
     showNewSlide: true,
+    showLink: true, // Insert → Link (Ctrl+K), same as Google Slides
   };
 
   const formatMenu: EditorMenuItem[] = [

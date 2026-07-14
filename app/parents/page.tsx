@@ -63,25 +63,25 @@ interface MobileStatCardProps {
 
 const colorConfig: Record<StatColor, { bg: string; iconBg: string; iconColor: string; valueColor: string }> = {
   blue: {
-    bg: "bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/90 midnight:bg-[#0a0e27]/90 purple:bg-[#1a0b2e]/90",
+    bg: "bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/90 purple:bg-[#1a0b2e]/90",
     iconBg: "bg-blue-50 dark:bg-blue-500/10",
     iconColor: "text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400",
     valueColor: "text-blue-700 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300",
   },
   green: {
-    bg: "bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/90 midnight:bg-[#0a0e27]/90 purple:bg-[#1a0b2e]/90",
+    bg: "bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/90 purple:bg-[#1a0b2e]/90",
     iconBg: "bg-emerald-50 dark:bg-emerald-500/10",
     iconColor: "text-emerald-600 dark:text-emerald-400",
     valueColor: "text-emerald-700 dark:text-emerald-300",
   },
   purple: {
-    bg: "bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/90 midnight:bg-[#0a0e27]/90 purple:bg-[#1a0b2e]/90",
+    bg: "bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/90 purple:bg-[#1a0b2e]/90",
     iconBg: "bg-purple-50 dark:bg-purple-500/10",
     iconColor: "text-purple-600 dark:text-purple-400",
     valueColor: "text-purple-700 dark:text-purple-300",
   },
   amber: {
-    bg: "bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/90 midnight:bg-[#0a0e27]/90 purple:bg-[#1a0b2e]/90",
+    bg: "bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/90 purple:bg-[#1a0b2e]/90",
     iconBg: "bg-amber-50 dark:bg-amber-500/10",
     iconColor: "text-amber-600 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400",
     valueColor: "text-amber-700 dark:text-amber-300",
@@ -92,7 +92,7 @@ function MobileStatCard({ icon: Icon, label, value, subtitle, color }: MobileSta
   const config = colorConfig[color];
 
   return (
-    <div className={`${config.bg} rounded-2xl border border-gray-100/80 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/30 p-4 min-w-[140px] snap-start flex-shrink-0 shadow-sm hover:shadow-md transition-all duration-200`}>
+    <div className={`${config.bg} rounded-2xl border border-gray-100/80 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 p-4 min-w-[140px] snap-start flex-shrink-0 shadow-sm hover:shadow-md transition-all duration-200`}>
       {/* Icon */}
       <div className={`${config.iconBg} w-10 h-10 rounded-xl flex items-center justify-center mb-3`}>
         <Icon className={`w-5 h-5 ${config.iconColor}`} />
@@ -120,7 +120,7 @@ function TabletStatCard({ icon: Icon, label, value, subtitle, color }: MobileSta
   const config = colorConfig[color];
 
   return (
-    <div className={`group relative ${config.bg} rounded-2xl border border-gray-100/80 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/30 p-4 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 overflow-hidden`}>
+    <div className={`group relative ${config.bg} rounded-2xl border border-gray-100/80 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 p-4 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 overflow-hidden`}>
       {/* Subtle gradient accent */}
       <div className="absolute inset-0 bg-gradient-to-br from-gray-500/[0.01] to-transparent pointer-events-none" />
 
@@ -574,7 +574,7 @@ export default function ParentDashboardPage() {
             {/* Background accent */}
             <div className="absolute inset-0 bg-gradient-to-br from-blue-500/[0.02] via-transparent to-cyan-500/[0.02] rounded-2xl pointer-events-none" />
 
-            <div className="relative bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/90 midnight:bg-[#0a0e27]/90 purple:bg-[#1a0b2e]/90 rounded-2xl border border-gray-100/80 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/30 p-4 shadow-sm">
+            <div className="relative bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/90 purple:bg-[#1a0b2e]/90 rounded-2xl border border-gray-100/80 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 p-4 shadow-sm">
               {/* Top Row: Date & Actions */}
               <div className="flex items-center justify-between mb-3">
                 <span className="text-xs font-medium text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
@@ -614,14 +614,14 @@ export default function ParentDashboardPage() {
                   <GraduationCap className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
                   <span className="text-[11px] font-medium text-blue-700 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400">Parent Portal</span>
                 </div>
-                <div className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-gray-50/80 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/50 border border-gray-100/50 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/30">
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-gray-50/80 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/50 border border-gray-100/50 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
                   <Calendar className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300" />
                   <span className="text-[11px] font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">2nd Term 2024</span>
                 </div>
               </div>
 
               {/* My Children Section */}
-              <div className="bg-gray-50/80 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/40 midnight:bg-[#0f1330]/40 purple:bg-[#251340]/40 rounded-xl p-3 border border-gray-100/80 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/30">
+              <div className="bg-gray-50/80 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/40 midnight:bg-[#0f1330]/40 purple:bg-[#251340]/40 rounded-xl p-3 border border-gray-100/80 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
                 <div className="flex items-center justify-between mb-2.5">
                   <div className="flex items-center gap-2">
                     <Users className="w-4 h-4 text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300" />
@@ -643,7 +643,7 @@ export default function ParentDashboardPage() {
                         className={`flex items-center gap-2 px-3 py-2 rounded-xl transition-all duration-200 flex-shrink-0 ${
                           isSelected
                             ? "bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] shadow-sm border-2 border-blue-500/50 dark:border-blue-400/50"
-                            : "bg-white/60 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/60 border border-gray-200/50 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/30 hover:bg-white dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5"
+                            : "bg-white/60 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/60 border border-gray-200/50 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 hover:bg-white dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5"
                         }`}
                       >
                         <div className={`relative w-8 h-8 rounded-lg overflow-hidden ${isSelected ? "ring-2 ring-blue-400/50 ring-offset-1 ring-offset-white dark:ring-offset-gray-800 midnight:ring-offset-[#111827] purple:ring-offset-[#2a1447]" : ""}`}>
@@ -662,7 +662,7 @@ export default function ParentDashboardPage() {
               </div>
 
               {/* Current Child Info & Message Button */}
-              <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-100/80 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/30">
+              <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-100/80 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl overflow-hidden shadow-sm ring-2 ring-white dark:ring-gray-700 midnight:ring-cyan-500/20 purple:ring-pink-500/20">
                     <Image src={selectedChild.profilePhoto} alt={selectedChild.fullName} width={40} height={40} className="object-cover" unoptimized />
@@ -684,7 +684,7 @@ export default function ParentDashboardPage() {
               <input
                 type="text"
                 placeholder={`Search ${selectedChild.firstName}'s fees, messages, results...`}
-                className="w-full pl-10 pr-4 py-3 rounded-xl bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/90 border border-gray-100/80 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/30 text-sm text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all"
+                className="w-full pl-10 pr-4 py-3 rounded-xl bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/90 border border-gray-100/80 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 text-sm text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all"
               />
             </div>
           </div>
@@ -761,7 +761,7 @@ export default function ParentDashboardPage() {
         {/* ============================================ */}
         <div className="hidden md:block lg:hidden space-y-5">
           {/* Tablet Header - Two Column */}
-          <div className="relative bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/90 midnight:bg-[#0a0e27]/90 purple:bg-[#1a0b2e]/90 rounded-2xl border border-gray-100/80 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/30 p-5 shadow-sm overflow-hidden">
+          <div className="relative bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/90 purple:bg-[#1a0b2e]/90 rounded-2xl border border-gray-100/80 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 p-5 shadow-sm overflow-hidden">
             {/* Background accent */}
             <div className="absolute inset-0 bg-gradient-to-br from-blue-500/[0.02] via-transparent to-cyan-500/[0.02] pointer-events-none" />
 
@@ -782,7 +782,7 @@ export default function ParentDashboardPage() {
                     <GraduationCap className="w-4 h-4 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
                     <span className="text-xs font-medium text-blue-700 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400">Parent Portal</span>
                   </div>
-                  <div className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-gray-50/80 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/50 border border-gray-100/50 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/30">
+                  <div className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-gray-50/80 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/50 border border-gray-100/50 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
                     <Calendar className="w-4 h-4 text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300" />
                     <span className="text-xs font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">2nd Term 2024</span>
                   </div>
@@ -802,7 +802,7 @@ export default function ParentDashboardPage() {
                         className={`flex items-center gap-2.5 px-3 py-2 rounded-xl transition-all duration-200 ${
                           isSelected
                             ? "bg-blue-50 dark:bg-blue-500/10 border-2 border-blue-400/50 shadow-sm"
-                            : "bg-gray-50 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/50 border border-gray-200/50 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/30 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"
+                            : "bg-gray-50 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/50 border border-gray-200/50 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"
                         }`}
                       >
                         <div className={`w-9 h-9 rounded-lg overflow-hidden ${isSelected ? "ring-2 ring-blue-400/50 ring-offset-1" : ""}`}>
@@ -823,7 +823,7 @@ export default function ParentDashboardPage() {
                 <button
                   type="button"
                   onClick={reset}
-                  className="flex items-center gap-2 px-4 py-2 rounded-xl border border-gray-200/70 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/60 bg-white/90 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/80 midnight:bg-[#0a0e27]/80 purple:bg-[#1a0b2e]/80 text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-all text-sm font-medium"
+                  className="flex items-center gap-2 px-4 py-2 rounded-xl border border-gray-200/70 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-white/90 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/80 purple:bg-[#1a0b2e]/80 text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-all text-sm font-medium"
                   title={customized ? "Reset widgets to default" : "Widgets are already on the default layout"}
                 >
                   <RotateCcw className="w-4 h-4" />

@@ -115,7 +115,7 @@ export default function TransferHistoryCard({ studentId }: TransferHistoryCardPr
             </div>
 
             {/* Transfer Card */}
-            <div className="bg-gray-50/50 dark:bg-[#1a1d24]/30 midnight:bg-[#0f1330]/30 purple:bg-[#251340]/30 rounded-lg sm:rounded-xl p-3 sm:p-4 hover:shadow-sm transition-all duration-200 hover:bg-gray-50 dark:hover:bg-[#22262e]/50 midnight:hover:bg-cyan-500/5/50 purple:hover:bg-pink-500/5/50">
+            <div className="bg-gray-50/50 dark:bg-[#1a1d24]/30 midnight:bg-[#0f1330]/30 purple:bg-[#251340]/30 rounded-lg sm:rounded-xl p-3 sm:p-4 hover:shadow-sm transition-all duration-200 hover:bg-gray-50 dark:hover:bg-[#22262e]/50 midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5">
               <div className="flex items-start justify-between gap-2 mb-2 sm:mb-3">
                 <div className="flex-1 min-w-0">
                   <h4 className="text-sm sm:text-base font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate">

@@ -32,8 +32,9 @@ export interface EditorMenuItem {
 }
 
 // ── Divider ──
+// role="separator" so screen readers announce the grouping (WCAG) — and so it's queryable.
 export function EditorMenuDivider() {
-  return <div className="my-1 h-px bg-gray-100 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]" />;
+  return <div role="separator" className="my-1 h-px bg-gray-100 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]" />;
 }
 
 // ── SubmenuPanel (portalled, positioned relative to parent — exact DocEditor code) ──
@@ -84,7 +85,7 @@ function SubmenuPanel({ children, className = "" }: { children: React.ReactNode;
       <div
         ref={panelRef}
         data-editor-menu-panel
-        className={`fixed z-[10000] rounded-2xl border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/60 bg-white/95 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/95 backdrop-blur-xl shadow-xl shadow-black/8 dark:shadow-black/30 overflow-visible ${className}`}
+        className={`fixed z-[10000] rounded-2xl border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-white/95 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/95 backdrop-blur-xl shadow-xl shadow-black/8 dark:shadow-black/30 overflow-visible ${className}`}
         onMouseEnter={() => timerCtx?.cancelClose()}
         onMouseLeave={() => timerCtx?.scheduleClose()}
       >
@@ -159,7 +160,7 @@ function EditorMenuItem_Internal({
           "w-full flex items-center gap-2.5 px-3 py-1.5 text-left text-[13px] transition-colors",
           disabled
             ? "text-gray-300 dark:text-gray-600 midnight:text-cyan-500 purple:text-pink-500 cursor-not-allowed"
-            : "text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-50/80 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5/70 cursor-pointer",
+            : "text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-50/80 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 cursor-pointer",
         ].join(" ")}
       >
         <span className="w-5 flex-shrink-0 flex items-center justify-center">
@@ -248,7 +249,7 @@ export function EditorMenuRoot({
         className={`px-2.5 py-1 rounded-md transition-colors cursor-pointer text-[13px] font-[440] ${
           isOpen
             ? "bg-gray-100 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] text-gray-900 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50"
-            : "text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100/70 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5/60 hover:text-gray-900 dark:hover:text-gray-100"
+            : "text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100/70 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 hover:text-gray-900 dark:hover:text-gray-100"
         }`}
         onClick={() => (isOpen ? onClose() : onOpen(id))}
         onMouseEnter={() => openMenu && openMenu !== id && onOpen(id)}
@@ -258,7 +259,7 @@ export function EditorMenuRoot({
       {isOpen && typeof document !== "undefined" && createPortal(
         <div
           data-editor-menu-panel
-          className="fixed z-[10000] w-[280px] rounded-2xl border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/60 bg-white/95 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/95 backdrop-blur-xl shadow-xl shadow-black/8 dark:shadow-black/30 overflow-visible"
+          className="fixed z-[10000] w-[280px] rounded-2xl border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-white/95 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/95 backdrop-blur-xl shadow-xl shadow-black/8 dark:shadow-black/30 overflow-visible"
           style={{ top: pos.top, left: pos.left }}
         >
           <SubmenuCloseContext.Provider value={() => {}}>
@@ -370,7 +371,7 @@ function FileMenuRoot({ isOpen, onOpen, onClose, openMenu, fileMenuConfig, FileM
         className={`px-2.5 py-1 rounded-md transition-colors cursor-pointer text-[13px] font-[440] ${
           isOpen
             ? "bg-gray-100 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] text-gray-900 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50"
-            : "text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100/70 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5/60 hover:text-gray-900 dark:hover:text-gray-100"
+            : "text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100/70 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 hover:text-gray-900 dark:hover:text-gray-100"
         }`}
         onClick={() => (isOpen ? onClose() : onOpen())}
         onMouseEnter={() => openMenu && !isOpen && onOpen()}
@@ -396,7 +397,7 @@ function EditMenuRoot({ isOpen, onOpen, onClose, openMenu, editMenuConfig, EditM
         className={`px-2.5 py-1 rounded-md transition-colors cursor-pointer text-[13px] font-[440] ${
           isOpen
             ? "bg-gray-100 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] text-gray-900 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50"
-            : "text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100/70 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5/60 hover:text-gray-900 dark:hover:text-gray-100"
+            : "text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100/70 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 hover:text-gray-900 dark:hover:text-gray-100"
         }`}
         onClick={() => (isOpen ? onClose() : onOpen())}
         onMouseEnter={() => openMenu && !isOpen && onOpen()}
@@ -422,7 +423,7 @@ function ViewMenuRoot({ isOpen, onOpen, onClose, openMenu, viewMenuConfig, ViewM
         className={`px-2.5 py-1 rounded-md transition-colors cursor-pointer text-[13px] font-[440] ${
           isOpen
             ? "bg-gray-100 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] text-gray-900 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50"
-            : "text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100/70 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5/60 hover:text-gray-900 dark:hover:text-gray-100"
+            : "text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100/70 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 hover:text-gray-900 dark:hover:text-gray-100"
         }`}
         onClick={() => (isOpen ? onClose() : onOpen())}
         onMouseEnter={() => openMenu && !isOpen && onOpen()}
@@ -448,7 +449,7 @@ function InsertMenuRoot({ isOpen, onOpen, onClose, openMenu, insertMenuConfig, I
         className={`px-2.5 py-1 rounded-md transition-colors cursor-pointer text-[13px] font-[440] ${
           isOpen
             ? "bg-gray-100 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] text-gray-900 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50"
-            : "text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100/70 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5/60 hover:text-gray-900 dark:hover:text-gray-100"
+            : "text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100/70 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 hover:text-gray-900 dark:hover:text-gray-100"
         }`}
         onClick={() => (isOpen ? onClose() : onOpen())}
         onMouseEnter={() => openMenu && !isOpen && onOpen()}

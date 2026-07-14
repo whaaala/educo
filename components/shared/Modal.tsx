@@ -121,7 +121,7 @@ export default function Modal({
                     <button
                       type="button"
                       onClick={onClose}
-                      className="relative group p-2 sm:p-2.5 hover:bg-white/60 dark:hover:bg-[#22262e]/60 midnight:hover:bg-cyan-500/5/60 purple:hover:bg-pink-500/5/60 rounded-xl transition-all flex-shrink-0 cursor-pointer animate-in slide-in-from-right-4 duration-500"
+                      className="relative group p-2 sm:p-2.5 hover:bg-white/60 dark:hover:bg-[#22262e]/60 midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 rounded-xl transition-all flex-shrink-0 cursor-pointer animate-in slide-in-from-right-4 duration-500"
                       aria-label="Close"
                     >
                       <X className="w-4 h-4 sm:w-5 sm:h-5 text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-200 transition-colors" />

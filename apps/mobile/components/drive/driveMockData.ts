@@ -17,7 +17,10 @@ export interface DriveItem {
   starred?: boolean;
 }
 
-export type DriveSection = "home" | "myDrive" | "shared" | "recent" | "starred" | "bin";
+// "home" was a dead union member: no sidebar entry, no DriveScreen case, no caller ever set it.
+// Keeping it meant `activeSection` could hold a value the nav couldn't highlight and the screen
+// silently fell through to My Drive. The sections below are the ones that actually exist.
+export type DriveSection = "myDrive" | "shared" | "recent" | "starred" | "bin";
 
 export interface SidebarSection {
   id: DriveSection;

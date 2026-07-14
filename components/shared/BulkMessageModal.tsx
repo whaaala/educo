@@ -436,7 +436,7 @@ export default function BulkMessageModal({
                   return (
                     <div
                       key={channel.id}
-                      className="flex items-center gap-3 p-3 rounded-xl border-2 border-dashed border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 opacity-60"
+                      className="flex items-center gap-3 p-3 rounded-xl border-2 border-dashed border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 opacity-60"
                     >
                       <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400">
                         <Icon className="w-5 h-5" />
@@ -480,7 +480,7 @@ export default function BulkMessageModal({
 
           {/* Message Editor Section */}
           {selectedChannels.size > 0 && (
-            <div className="mb-5 p-4 bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+            <div className="mb-5 p-4 bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
               {/* Channel tabs */}
               <div className="flex items-center gap-2 mb-4 pb-3 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 overflow-x-auto">
                 {Array.from(selectedChannels).map((channelId) => {

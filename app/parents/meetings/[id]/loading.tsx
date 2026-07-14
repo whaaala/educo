@@ -99,7 +99,7 @@ export default function MeetingDetailLoading() {
 
             {/* Notes Card Skeleton */}
             <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-2xl border border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 overflow-hidden">
-              <div className="px-5 sm:px-6 py-4 border-b border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/50 flex items-center gap-3">
+              <div className="px-5 sm:px-6 py-4 border-b border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-primary-50 dark:bg-primary-900/30" />
                 <div className="h-5 w-28 bg-gray-200 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] rounded" />
               </div>
@@ -117,7 +117,7 @@ export default function MeetingDetailLoading() {
           <div className="space-y-6">
             {/* Host Card Skeleton */}
             <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-2xl border border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 overflow-hidden">
-              <div className="px-5 sm:px-6 py-4 border-b border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/50 flex items-center gap-3">
+              <div className="px-5 sm:px-6 py-4 border-b border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-primary-50 dark:bg-primary-900/30" />
                 <div className="h-5 w-24 bg-gray-200 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] rounded" />
               </div>
@@ -135,7 +135,7 @@ export default function MeetingDetailLoading() {
 
             {/* Student Card Skeleton */}
             <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-2xl border border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 overflow-hidden">
-              <div className="px-5 sm:px-6 py-4 border-b border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/50 flex items-center gap-3">
+              <div className="px-5 sm:px-6 py-4 border-b border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-primary-50 dark:bg-primary-900/30" />
                 <div className="h-5 w-32 bg-gray-200 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] rounded" />
               </div>

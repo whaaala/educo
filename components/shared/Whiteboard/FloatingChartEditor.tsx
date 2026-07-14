@@ -212,28 +212,30 @@ export default function FloatingChartEditor({
 
           {/* Title Formatting Toolbar */}
           <div className="mt-1.5">
+            {/* Inline mode — this panel positions the toolbar itself (no portal / anchorRect). */}
             <TextFormatToolbar
-              format={{
-                fontFamily: titleFontFamily as FontFamily,
-                fontSize: titleFontSize,
-                fontWeight: titleFontWeight,
-                fontStyle: titleFontStyle,
-                textDecoration: titleTextDecoration,
-                textAlign: titleTextAlign,
-              }}
-              onChange={(updates) => {
-                const mapped: Partial<WhiteboardElement> = {};
-                if (updates.fontFamily) mapped.chartTitleFontFamily = updates.fontFamily;
-                if (updates.fontSize !== undefined) mapped.chartTitleFontSize = updates.fontSize;
-                if (updates.fontWeight) mapped.chartTitleFontWeight = updates.fontWeight;
-                if (updates.fontStyle) mapped.chartTitleFontStyle = updates.fontStyle;
-                if (updates.textDecoration) mapped.chartTitleTextDecoration = updates.textDecoration;
-                if (updates.textAlign) mapped.chartTitleTextAlign = updates.textAlign;
-                update(mapped);
-              }}
-              compact
-              fontSizes={TITLE_FONT_SIZES}
-              showSizeButtons={false}
+              inline
+              fontFamily={titleFontFamily}
+              fontSize={titleFontSize}
+              bold={titleFontWeight === "bold"}
+              italic={titleFontStyle === "italic"}
+              align={titleTextAlign}
+              showFontFamily
+              showFontSize
+              showBold
+              showItalic
+              showUnderline
+              showAlign
+              showVerticalAlign={false}
+              showWrap={false}
+              showTextColor={false}
+              showFillColor={false}
+              onFontFamilyChange={(v) => update({ chartTitleFontFamily: v as FontFamily })}
+              onFontSizeChange={(v) => update({ chartTitleFontSize: v })}
+              onBold={() => update({ chartTitleFontWeight: titleFontWeight === "bold" ? "normal" : "bold" })}
+              onItalic={() => update({ chartTitleFontStyle: titleFontStyle === "italic" ? "normal" : "italic" })}
+              onUnderline={() => update({ chartTitleTextDecoration: titleTextDecoration === "underline" ? "none" : "underline" })}
+              onAlignChange={(v) => update({ chartTitleTextAlign: v })}
             />
           </div>
         </div>

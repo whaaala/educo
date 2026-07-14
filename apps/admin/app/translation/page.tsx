@@ -22,7 +22,9 @@ function buildTranslationConfig(state: {
   defaultProvider: TranslationProvider;
 }): TenantTranslationConfig {
   const allowed = normalizeAllowedProviders(state.allowedProviders);
-  const fallbackAllowed = allowed.length ? allowed : ["google"];
+  // Annotate explicitly: the bare ["google"] literal widened to string[], so the config was
+  // typed as string[] / string instead of TranslationProvider[] / TranslationProvider.
+  const fallbackAllowed: TranslationProvider[] = allowed.length ? allowed : ["google"];
   const defaultProvider = fallbackAllowed.includes(state.defaultProvider)
     ? state.defaultProvider
     : fallbackAllowed[0];
@@ -120,13 +122,16 @@ export default function TranslationSettingsPage() {
       }
     >
       <div className="pb-20 space-y-6">
+        {/* Was passing description/actionText/onAction — none of which ActionModal accepts, so
+            the message and the OK button never rendered. These are the real props. */}
         <ActionModal
           isOpen={isSavedModalOpen}
           onClose={() => setIsSavedModalOpen(false)}
+          variant="success"
           title="Translation settings saved"
-          description="These settings apply to tenant translation requests immediately."
-          actionText="OK"
-          onAction={() => setIsSavedModalOpen(false)}
+          message="These settings apply to tenant translation requests immediately."
+          confirmLabel="OK"
+          onConfirm={() => setIsSavedModalOpen(false)}
         />
 
         {!tenant ? (

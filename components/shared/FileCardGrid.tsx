@@ -136,7 +136,7 @@ function renderPreview(item: FileCardItem) {
   );
   if (isImage) return (
     <div className="w-full h-full bg-gradient-to-br from-sky-50 to-blue-50 dark:from-sky-900/20 dark:to-blue-900/20 flex items-center justify-center">
-      <div className="relative w-14 h-10 rounded-md bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] shadow-sm overflow-hidden border border-gray-200/50 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/50">
+      <div className="relative w-14 h-10 rounded-md bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] shadow-sm overflow-hidden border border-gray-200/50 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
         <div className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-amber-300" />
         <div className="absolute bottom-0 left-0 right-0 h-5"><svg viewBox="0 0 48 16" className="w-full h-full text-green-400/40"><path d="M0 16 L16 6 L28 12 L48 2 L48 16 Z" fill="currentColor"/></svg></div>
       </div>
@@ -220,7 +220,7 @@ export default function FileCardGrid({
             onClick={() => onItemClick?.(item)}
           >
             <div
-              className="rounded-xl border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/50 overflow-hidden shadow-[0_1px_3px_rgba(0,0,0,0.04)] transition-all duration-300 group-hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)] group-hover:border-blue-300 dark:group-hover:border-blue-500/30"
+              className="rounded-xl border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 overflow-hidden shadow-[0_1px_3px_rgba(0,0,0,0.04)] transition-all duration-300 group-hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)] group-hover:border-blue-300 dark:group-hover:border-blue-500/30"
               style={{ borderTop: `3px solid ${getTypeColor(item)}` }}
             >
               {/* Title bar */}
@@ -263,7 +263,7 @@ export default function FileCardGrid({
               </div>
 
               {/* Footer */}
-              <div className="flex items-center justify-between px-3 py-2 bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border-t border-gray-100/80 dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10/60">
+              <div className="flex items-center justify-between px-3 py-2 bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border-t border-gray-100/80 dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10">
                 <span className="text-[10px] text-gray-400">{timeAgo(item.updatedAt)}</span>
                 {item.owner && (
                   <AvatarHover src={item.ownerAvatar} name={item.owner} size="w-5 h-5" initialSize="text-[8px]" />

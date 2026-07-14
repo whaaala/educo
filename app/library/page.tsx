@@ -489,13 +489,13 @@ export default function LibraryPage() {
                 alt={book.title}
                 width={40}
                 height={56}
-                className="absolute inset-0 w-10 h-14 rounded-md object-cover ring-2 ring-white/80 dark:ring-gray-700 midnight:ring-cyan-500/20 purple:ring-pink-500/20/50 midnight:ring-cyan-500/30 purple:ring-pink-500/30 shadow-lg transition-all duration-300 ease-out group-hover/cover:scale-[2.5] group-hover/cover:shadow-2xl group-hover/cover:ring-blue-500/90 dark:group-hover/cover:ring-blue-400/90"
+                className="absolute inset-0 w-10 h-14 rounded-md object-cover ring-2 ring-white/80 dark:ring-gray-700 midnight:ring-cyan-500/30 purple:ring-pink-500/30 shadow-lg transition-all duration-300 ease-out group-hover/cover:scale-[2.5] group-hover/cover:shadow-2xl group-hover/cover:ring-blue-500/90 dark:group-hover/cover:ring-blue-400/90"
                 style={{ transformOrigin: 'left center' }}
                 unoptimized
               />
             ) : (
               <div
-                className="absolute inset-0 w-10 h-14 rounded-md bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] ring-2 ring-white/80 dark:ring-gray-700 midnight:ring-cyan-500/20 purple:ring-pink-500/20/50 shadow-lg flex items-center justify-center transition-all duration-300 ease-out group-hover/cover:scale-[2.5] group-hover/cover:shadow-2xl group-hover/cover:ring-blue-500/90"
+                className="absolute inset-0 w-10 h-14 rounded-md bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] ring-2 ring-white/80 dark:ring-gray-700 midnight:ring-cyan-500/20 purple:ring-pink-500/20 shadow-lg flex items-center justify-center transition-all duration-300 ease-out group-hover/cover:scale-[2.5] group-hover/cover:shadow-2xl group-hover/cover:ring-blue-500/90"
                 style={{ transformOrigin: 'left center' }}
               >
                 <BookOpen className="w-5 h-5 text-gray-400" />
@@ -606,7 +606,7 @@ export default function LibraryPage() {
               className={`group relative p-2 rounded-lg transition-all duration-200 border ${
                 book.availableCopies > 0
                   ? "bg-gradient-to-br from-purple-50/50 to-purple-100/30 dark:from-purple-950/30 dark:to-purple-900/20 midnight:from-purple-950/30 midnight:to-purple-900/20 purple:from-purple-950/30 purple:to-purple-900/20 hover:from-purple-100 hover:to-purple-100 dark:hover:from-purple-900/40 dark:hover:to-purple-800/30 cursor-pointer border-purple-200/40 dark:border-purple-800/30 hover:border-purple-400/60 dark:hover:border-purple-600/50 active:scale-95"
-                  : "bg-gray-100/50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/30 cursor-not-allowed opacity-50 border-gray-200/40 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/30"
+                  : "bg-gray-100/50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/30 cursor-not-allowed opacity-50 border-gray-200/40 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20"
               }`}
             >
               <BookMarked className={`w-4 h-4 transition-colors ${
@@ -684,7 +684,7 @@ export default function LibraryPage() {
           size="3xl"
           header={{
             image: (
-              <div className="relative w-20 h-28 rounded-xl overflow-hidden ring-2 ring-white/80 dark:ring-gray-700 midnight:ring-cyan-500/20 purple:ring-pink-500/20/50 shadow-lg">
+              <div className="relative w-20 h-28 rounded-xl overflow-hidden ring-2 ring-white/80 dark:ring-gray-700 midnight:ring-cyan-500/20 purple:ring-pink-500/20 shadow-lg">
                 {viewingBook.coverImage ? (
                   <Image
                     src={viewingBook.coverImage}

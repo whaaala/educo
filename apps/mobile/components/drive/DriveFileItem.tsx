@@ -283,6 +283,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
+  // The starred badge that sits next to the filename in list view. This was referenced as
+  // styles.listStar but never defined, so the icon rendered with no spacing at all.
+  listStar: {
+    marginLeft: 6,
+  },
 
   // ── Mobile List ──
   listRowMobile: {

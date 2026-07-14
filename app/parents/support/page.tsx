@@ -387,7 +387,7 @@ export default function ParentSupportPage() {
       beforeContent={
         <div className="mb-4 bg-gradient-to-br from-cyan-50/80 via-blue-50/80 to-indigo-50/80 dark:from-cyan-950/30 dark:via-blue-950/30 dark:to-indigo-950/30 backdrop-blur-xl rounded-2xl border border-cyan-200/50 dark:border-cyan-800/30 p-4 sm:p-6">
           <div className="flex items-start gap-3 sm:gap-4">
-            <div className="p-2 sm:p-3 rounded-xl bg-white/80 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/80 midnight:bg-[#0a0e27]/80 purple:bg-[#1a0b2e]/80 shadow-sm shrink-0">
+            <div className="p-2 sm:p-3 rounded-xl bg-white/80 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/80 purple:bg-[#1a0b2e]/80 shadow-sm shrink-0">
               <Info className="w-5 h-5 sm:w-6 sm:h-6 text-cyan-600 dark:text-cyan-400" />
             </div>
             <div>
@@ -438,25 +438,25 @@ function TicketCard({ ticket, onClick }: { ticket: CommunicationRecord; onClick:
   // Status-based subtle styling
   const statusStyles = {
     open: {
-      card: "bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/90 midnight:bg-[#0a0e27]/90 purple:bg-[#1a0b2e]/90 border-gray-100/80 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/30 hover:border-amber-200/60 dark:hover:border-amber-500/20",
+      card: "bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/90 purple:bg-[#1a0b2e]/90 border-gray-100/80 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 hover:border-amber-200/60 dark:hover:border-amber-500/20",
       accent: "from-amber-500/[0.03] to-transparent",
       indicator: "bg-amber-500",
       glow: "group-hover:shadow-amber-500/5",
     },
     in_progress: {
-      card: "bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/90 midnight:bg-[#0a0e27]/90 purple:bg-[#1a0b2e]/90 border-gray-100/80 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/30 hover:border-blue-200/60 dark:hover:border-blue-500/20",
+      card: "bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/90 purple:bg-[#1a0b2e]/90 border-gray-100/80 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 hover:border-blue-200/60 dark:hover:border-blue-500/20",
       accent: "from-blue-500/[0.03] to-transparent",
       indicator: "bg-blue-500",
       glow: "group-hover:shadow-blue-500/5",
     },
     resolved: {
-      card: "bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/90 midnight:bg-[#0a0e27]/90 purple:bg-[#1a0b2e]/90 border-gray-100/80 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/30 hover:border-emerald-200/60 dark:hover:border-emerald-500/20",
+      card: "bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/90 purple:bg-[#1a0b2e]/90 border-gray-100/80 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 hover:border-emerald-200/60 dark:hover:border-emerald-500/20",
       accent: "from-emerald-500/[0.03] to-transparent",
       indicator: "bg-emerald-500",
       glow: "group-hover:shadow-emerald-500/5",
     },
     closed: {
-      card: "bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/90 midnight:bg-[#0a0e27]/90 purple:bg-[#1a0b2e]/90 border-gray-100/80 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/30 hover:border-slate-200/60 dark:hover:border-slate-500/20",
+      card: "bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/90 purple:bg-[#1a0b2e]/90 border-gray-100/80 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 hover:border-slate-200/60 dark:hover:border-slate-500/20",
       accent: "from-slate-500/[0.03] to-transparent",
       indicator: "bg-slate-500",
       glow: "group-hover:shadow-slate-500/5",
@@ -636,12 +636,12 @@ function ViewTicketModal({
 
           {/* Meta Information */}
           <div className="grid grid-cols-2 gap-3">
-            <div className="p-3 rounded-xl bg-gray-50 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/40 midnight:bg-[#0a0e27]/40 purple:bg-[#1a0b2e]/40">
+            <div className="p-3 rounded-xl bg-gray-50 dark:bg-[#0f1115] midnight:bg-[#0a0e27]/40 purple:bg-[#1a0b2e]/40">
               <p className="text-[10px] text-gray-400 uppercase tracking-wider font-medium mb-1">Created</p>
               <p className="text-sm font-semibold text-gray-800 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100">{formatDate(ticket.createdAt)}</p>
             </div>
             {ticket.assignedTo && (
-              <div className="p-3 rounded-xl bg-gray-50 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/40 midnight:bg-[#0a0e27]/40 purple:bg-[#1a0b2e]/40">
+              <div className="p-3 rounded-xl bg-gray-50 dark:bg-[#0f1115] midnight:bg-[#0a0e27]/40 purple:bg-[#1a0b2e]/40">
                 <p className="text-[10px] text-gray-400 uppercase tracking-wider font-medium mb-1">Assigned To</p>
                 <p className="text-sm font-semibold text-gray-800 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100">{ticket.assignedTo}</p>
               </div>
@@ -668,7 +668,7 @@ function ViewTicketModal({
                     className={`p-4 rounded-xl ${
                       response.from === "admin"
                         ? "bg-blue-50 dark:bg-blue-900/20 midnight:bg-cyan-900/20 purple:bg-pink-900/20 border border-blue-100 dark:border-blue-800/30"
-                        : "bg-gray-50 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/40 midnight:bg-[#0a0e27]/40 purple:bg-[#1a0b2e]/40 border border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/30"
+                        : "bg-gray-50 dark:bg-[#0f1115] midnight:bg-[#0a0e27]/40 purple:bg-[#1a0b2e]/40 border border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20"
                     }`}
                   >
                     <div className="flex items-center gap-2 mb-2">
@@ -693,7 +693,7 @@ function ViewTicketModal({
         </div>
 
         {/* Footer */}
-        <div className="px-4 sm:px-6 py-4 bg-gray-50 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border-t border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/50">
+        <div className="px-4 sm:px-6 py-4 bg-gray-50 dark:bg-[#0f1115] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border-t border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
           <button
             onClick={onClose}
             className="w-full py-2.5 rounded-xl bg-gray-200 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] hover:bg-gray-300 dark:hover:bg-[#2a2d35] midnight:hover:bg-cyan-500/15 purple:hover:bg-pink-500/15 text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 text-sm font-semibold transition-colors"
@@ -854,7 +854,7 @@ function CreateTicketModal({
 
               {/* Preview Card */}
               {(subject.trim() || message.trim()) && (
-                <div className="p-4 rounded-xl bg-gray-50 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/40 midnight:bg-[#0a0e27]/40 purple:bg-[#1a0b2e]/40 border border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/30">
+                <div className="p-4 rounded-xl bg-gray-50 dark:bg-[#0f1115] midnight:bg-[#0a0e27]/40 purple:bg-[#1a0b2e]/40 border border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
                   <p className="text-[10px] text-gray-400 uppercase tracking-wider font-medium mb-2">Preview</p>
                   <div className="flex flex-wrap items-center gap-2 mb-2">
                     <div className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg ${getTypeConfig(ticketType).bg}`}>
@@ -883,7 +883,7 @@ function CreateTicketModal({
 
         {/* Footer */}
         {!isSuccess && (
-          <div className="px-4 sm:px-6 py-4 bg-gray-50 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border-t border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/50 flex gap-3">
+          <div className="px-4 sm:px-6 py-4 bg-gray-50 dark:bg-[#0f1115] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border-t border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 flex gap-3">
             <button
               onClick={onClose}
               disabled={isSubmitting}

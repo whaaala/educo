@@ -651,7 +651,7 @@ export default function PaymentHistoryModal({
     >
       <div className="space-y-5">
         {/* Summary Card - Subtle Design */}
-        <div className="rounded-xl bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 p-4">
+        <div className="rounded-xl bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 p-4">
           {/* Top Section: Student Info + Amount */}
           <div className="flex items-start justify-between gap-4 mb-4">
             <div className="flex items-center gap-3 min-w-0">
@@ -749,7 +749,7 @@ export default function PaymentHistoryModal({
               return (
                 <div
                   key={payment.id}
-                  className="rounded-xl bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 overflow-hidden transition-all duration-200 hover:shadow-md hover:border-emerald-300 dark:hover:border-emerald-700"
+                  className="rounded-xl bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 overflow-hidden transition-all duration-200 hover:shadow-md hover:border-emerald-300 dark:hover:border-emerald-700"
                 >
                   {/* Main Row - Always Visible */}
                   <div className="p-3.5">
@@ -912,7 +912,7 @@ export default function PaymentHistoryModal({
 
                       {/* Expanded Reference */}
                       {isExpanded && (
-                        <div className="mt-3 p-2.5 rounded-lg bg-gray-50 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+                        <div className="mt-3 p-2.5 rounded-lg bg-gray-50 dark:bg-[#0f1115] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
                           <div className="flex items-start justify-between gap-2">
                             <div className="min-w-0 flex-1">
                               <span className="text-[10px] uppercase tracking-wider text-gray-400 font-medium">

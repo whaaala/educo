@@ -203,7 +203,7 @@ export default function EntityCard<T>({
               ${
                 showMenu
                   ? "bg-gray-200 dark:bg-[#2a2d35] midnight:bg-gray-700 purple:bg-gray-700"
-                  : "hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 bg-white/80 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/80 midnight:bg-[#0a0e27]/80 purple:bg-[#1a0b2e]/80"
+                  : "hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 bg-white/80 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/80 purple:bg-[#1a0b2e]/80"
               }
             `}
           >

@@ -523,7 +523,7 @@ export default function WhiteboardToolbar({
   return (
     <div
       ref={sidebarRef}
-      className="absolute left-3 top-3 z-[50] flex flex-col w-[220px] max-h-[calc(100%-24px)] bg-white/95 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/95 midnight:bg-[#0a0e27]/95 purple:bg-[#1a0b2e]/95 backdrop-blur-sm border border-gray-200/80 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/80 midnight:border-cyan-500/15 purple:border-pink-500/15 rounded-xl shadow-lg shadow-black/5 dark:shadow-black/20 select-none overflow-hidden"
+      className="absolute left-3 top-3 z-[50] flex flex-col w-[220px] max-h-[calc(100%-24px)] bg-white/95 dark:bg-[#0f1115] midnight:bg-[#0a0e27]/95 purple:bg-[#1a0b2e]/95 backdrop-blur-sm border border-gray-200/80 dark:border-gray-700 midnight:border-cyan-500/15 purple:border-pink-500/15 rounded-xl shadow-lg shadow-black/5 dark:shadow-black/20 select-none overflow-hidden"
     >
       {/* Header */}
       <div className="flex items-center justify-between px-3 py-2 border-b border-gray-100 dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10">
@@ -859,7 +859,7 @@ function AccordionHeader({
           ? "bg-blue-50/60 dark:bg-blue-500/8 midnight:bg-cyan-500/8 purple:bg-pink-500/8"
           : isActive
           ? "bg-gray-50/80 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/40 midnight:bg-cyan-500/5 purple:bg-pink-500/5"
-          : "hover:bg-gray-50/80 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5/40 midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5"
+          : "hover:bg-gray-50/80 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5"
       }`}
     >
       <Icon
@@ -907,7 +907,7 @@ function AccordionHeaderSimple({
       className={`flex items-center gap-2.5 w-full px-3 py-2 text-left transition-all duration-150 cursor-pointer ${
         isExpanded
           ? "bg-blue-50/60 dark:bg-blue-500/8 midnight:bg-cyan-500/8 purple:bg-pink-500/8"
-          : "hover:bg-gray-50/80 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5/40 midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5"
+          : "hover:bg-gray-50/80 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5"
       }`}
     >
       <Icon className="w-4 h-4 flex-shrink-0 text-gray-400 dark:text-gray-500 midnight:text-cyan-500/50 purple:text-pink-500/50" />
@@ -1025,9 +1025,9 @@ function ColorPickerFlyout({
       onPointerDown={(e) => e.stopPropagation()}
     >
       {/* Arrow pointer */}
-      <div className="absolute left-0 top-1/2 -translate-x-[5px] -translate-y-1/2 w-2.5 h-2.5 rotate-45 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border-l border-b border-gray-200/80 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/60 midnight:border-cyan-500/15 purple:border-pink-500/15" />
+      <div className="absolute left-0 top-1/2 -translate-x-[5px] -translate-y-1/2 w-2.5 h-2.5 rotate-45 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border-l border-b border-gray-200/80 dark:border-gray-700 midnight:border-cyan-500/15 purple:border-pink-500/15" />
 
-      <div className="relative bg-white/95 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/95 midnight:bg-[#0a0e27]/95 purple:bg-[#1a0b2e]/95 backdrop-blur-md border border-gray-200/80 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/60 midnight:border-cyan-500/15 purple:border-pink-500/15 rounded-2xl shadow-xl shadow-black/8 dark:shadow-black/30 p-3 min-w-[200px]">
+      <div className="relative bg-white/95 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/95 purple:bg-[#1a0b2e]/95 backdrop-blur-md border border-gray-200/80 dark:border-gray-700 midnight:border-cyan-500/15 purple:border-pink-500/15 rounded-2xl shadow-xl shadow-black/8 dark:shadow-black/30 p-3 min-w-[200px]">
         {/* Stroke Colors */}
         <div className="mb-3">
           <span className="text-[9px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 midnight:text-cyan-500/50 purple:text-pink-500/50 mb-2 block">

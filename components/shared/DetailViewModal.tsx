@@ -255,7 +255,7 @@ export default function DetailViewModal({
                   {header.chips.map((chip, idx) => (
                     <span
                       key={idx}
-                      className="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-semibold bg-gradient-to-r from-gray-50 to-slate-50 dark:from-gray-800 dark:to-slate-800 text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 border border-gray-200/50 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30/50 shadow-sm capitalize"
+                      className="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-semibold bg-gradient-to-r from-gray-50 to-slate-50 dark:from-gray-800 dark:to-slate-800 text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 border border-gray-200/50 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 shadow-sm capitalize"
                     >
                       {chip.label}
                     </span>
@@ -277,7 +277,7 @@ export default function DetailViewModal({
 
             {/* Description */}
             {section.type === "description" && section.content && (
-              <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-50 via-gray-50 to-zinc-50 dark:from-gray-800/80 dark:via-gray-800/60 dark:to-gray-900/80 p-5 border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/60 shadow-sm">
+              <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-50 via-gray-50 to-zinc-50 dark:from-gray-800/80 dark:via-gray-800/60 dark:to-gray-900/80 p-5 border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-500/5 to-purple-500/5 rounded-full blur-2xl" />
                 <div className="text-sm text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 leading-relaxed relative z-10">
                   {section.content}
@@ -289,7 +289,7 @@ export default function DetailViewModal({
             {section.type === "grid" && section.fields && (
               <div className={`grid grid-cols-2 ${section.columns === 3 ? "md:grid-cols-3" : ""} gap-3`}>
                 {section.fields.map((field, idx) => {
-                  const hl = field.highlight ? highlightStyles[field.highlight] : "from-white to-gray-50 dark:from-gray-800 dark:to-gray-850 border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/60";
+                  const hl = field.highlight ? highlightStyles[field.highlight] : "from-white to-gray-50 dark:from-gray-800 dark:to-gray-850 border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20";
                   return (
                     <div
                       key={idx}
@@ -313,7 +313,7 @@ export default function DetailViewModal({
                 {section.tags.map((tag, idx) => (
                   <span
                     key={idx}
-                    className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold bg-gradient-to-r from-gray-100 to-slate-100 dark:from-gray-700 dark:to-slate-700 text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 border border-gray-200/50 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30/50 shadow-sm"
+                    className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold bg-gradient-to-r from-gray-100 to-slate-100 dark:from-gray-700 dark:to-slate-700 text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 border border-gray-200/50 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 shadow-sm"
                   >
                     #{tag.label}
                   </span>
@@ -340,7 +340,7 @@ export default function DetailViewModal({
 
         {/* Footer info */}
         {footerInfo && (
-          <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 border-t border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/60 pt-4">
+          <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 border-t border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 pt-4">
             {footerInfo.items.map((item, idx) => (
               <p key={idx} className="flex items-center gap-1.5">
                 <span className="font-semibold text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200">{item.label}:</span>

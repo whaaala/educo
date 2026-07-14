@@ -189,7 +189,7 @@ export default function SetReminderModal({
                         className={`w-full flex items-center gap-3 p-3 rounded-xl border-2 transition-all duration-200 group ${
                           isSelected
                             ? "border-amber-400 dark:border-amber-500 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 shadow-sm"
-                            : "border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 hover:border-amber-200 dark:hover:border-amber-700/50 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10/30"
+                            : "border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 hover:border-amber-200 dark:hover:border-amber-700/50 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"
                         }`}
                       >
                         <div

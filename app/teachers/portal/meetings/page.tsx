@@ -177,7 +177,7 @@ function getPlatformInfo(platform: MeetingPlatform) {
         icon: <Users />,
         bgClass: "bg-gray-50 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/30",
         textClass: "text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300",
-        borderClass: "border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/30",
+        borderClass: "border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20",
       };
     default:
       return {
@@ -185,7 +185,7 @@ function getPlatformInfo(platform: MeetingPlatform) {
         icon: <Video />,
         bgClass: "bg-gray-50 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/30",
         textClass: "text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300",
-        borderClass: "border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/30",
+        borderClass: "border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20",
       };
   }
 }

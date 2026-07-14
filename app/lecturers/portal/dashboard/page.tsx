@@ -251,7 +251,7 @@ export default function LecturerDashboardPage() {
             {lecturerData.todaySchedule.map((session, index) => (
               <div
                 key={index}
-                className="flex items-center gap-4 p-4 bg-gray-50 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/50 midnight:bg-[#0f1330]/50 purple:bg-[#251340]/50 rounded-lg border border-gray-200 dark:border-gray-600 midnight:border-cyan-500/20 purple:border-pink-500/20"
+                className="flex items-center gap-4 p-4 bg-gray-50 dark:bg-[#22262e] midnight:bg-[#0f1330]/50 purple:bg-[#251340]/50 rounded-lg border border-gray-200 dark:border-gray-600 midnight:border-cyan-500/20 purple:border-pink-500/20"
               >
                 <div className="flex-shrink-0">
                   <Clock className="w-5 h-5 text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400" />
@@ -280,7 +280,7 @@ export default function LecturerDashboardPage() {
               <Link
                 key={course.id}
                 href={`/lecturers/portal/my-courses/${course.id}`}
-                className="block p-4 bg-gray-50 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/50 midnight:bg-[#0f1330]/50 purple:bg-[#251340]/50 rounded-lg border border-gray-200 dark:border-gray-600 midnight:border-cyan-500/20 purple:border-pink-500/20 hover:border-blue-500 dark:hover:border-blue-500 midnight:hover:border-cyan-400 purple:hover:border-pink-400 transition-colors"
+                className="block p-4 bg-gray-50 dark:bg-[#22262e] midnight:bg-[#0f1330]/50 purple:bg-[#251340]/50 rounded-lg border border-gray-200 dark:border-gray-600 midnight:border-cyan-500/20 purple:border-pink-500/20 hover:border-blue-500 dark:hover:border-blue-500 midnight:hover:border-cyan-400 purple:hover:border-pink-400 transition-colors"
               >
                 <div className="flex items-start justify-between">
                   <div>

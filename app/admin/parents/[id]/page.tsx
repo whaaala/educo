@@ -639,7 +639,7 @@ export default function AdminParentDetailPage() {
           {parent.children.length > 0 ? (
             <>
               {/* Select All Header */}
-              <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+              <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
                 <label className="flex items-center gap-3 cursor-pointer">
                   <input
                     type="checkbox"
@@ -881,7 +881,7 @@ function ParentSidebar({
     <div className="flex flex-col">
       {/* Parent Profile Card */}
       <div className="mb-3 sm:mb-4">
-        <div className="group bg-gradient-to-br from-white to-gray-50/30 dark:from-gray-800 dark:to-gray-800/50 midnight:from-gray-800 midnight:to-gray-900/50 purple:from-gray-800 purple:to-gray-900/50 rounded-xl sm:rounded-2xl shadow-sm border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/60 midnight:border-cyan-500/30 purple:border-pink-500/30 overflow-hidden transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/10 dark:hover:shadow-blue-500/20 midnight:hover:shadow-cyan-500/20 purple:hover:shadow-pink-500/20 hover:border-blue-300/60 dark:hover:border-blue-600/60 midnight:hover:border-cyan-400/60 purple:hover:border-pink-400/60 hover:-translate-y-0.5">
+        <div className="group bg-gradient-to-br from-white to-gray-50/30 dark:from-gray-800 dark:to-gray-800/50 midnight:from-gray-800 midnight:to-gray-900/50 purple:from-gray-800 purple:to-gray-900/50 rounded-xl sm:rounded-2xl shadow-sm border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/30 purple:border-pink-500/30 overflow-hidden transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/10 dark:hover:shadow-blue-500/20 midnight:hover:shadow-cyan-500/20 purple:hover:shadow-pink-500/20 hover:border-blue-300/60 dark:hover:border-blue-600/60 midnight:hover:border-cyan-400/60 purple:hover:border-pink-400/60 hover:-translate-y-0.5">
           {/* Profile Header with gradient background */}
           <div className="relative bg-gradient-to-br from-blue-50 to-indigo-50/30 dark:from-gray-800/40 dark:to-gray-900/40 midnight:from-cyan-900/20 midnight:to-blue-900/20 purple:from-pink-900/20 purple:to-purple-900/20 p-3 sm:p-6 pb-4 sm:pb-8">
             {/* Decorative circles */}
@@ -892,7 +892,7 @@ function ParentSidebar({
               {/* Profile Picture */}
               <div className="relative flex-shrink-0">
                 {parent.profilePhoto ? (
-                  <div className="relative w-14 h-14 sm:w-20 sm:h-20 rounded-xl overflow-hidden ring-2 ring-white/50 dark:ring-gray-700 midnight:ring-cyan-500/20 purple:ring-pink-500/20/50 midnight:ring-cyan-500/30 purple:ring-pink-500/30 shadow-lg">
+                  <div className="relative w-14 h-14 sm:w-20 sm:h-20 rounded-xl overflow-hidden ring-2 ring-white/50 dark:ring-gray-700 midnight:ring-cyan-500/30 purple:ring-pink-500/30 shadow-lg">
                     <Image
                       src={parent.profilePhoto}
                       alt={fullName}
@@ -903,7 +903,7 @@ function ParentSidebar({
                     />
                   </div>
                 ) : (
-                  <div className="relative w-14 h-14 sm:w-20 sm:h-20 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 dark:from-blue-400 dark:to-indigo-500 midnight:from-cyan-500 midnight:to-blue-600 purple:from-pink-500 purple:to-purple-600 flex items-center justify-center ring-2 ring-white/50 dark:ring-gray-700 midnight:ring-cyan-500/20 purple:ring-pink-500/20/50 midnight:ring-cyan-500/30 purple:ring-pink-500/30 shadow-lg">
+                  <div className="relative w-14 h-14 sm:w-20 sm:h-20 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 dark:from-blue-400 dark:to-indigo-500 midnight:from-cyan-500 midnight:to-blue-600 purple:from-pink-500 purple:to-purple-600 flex items-center justify-center ring-2 ring-white/50 dark:ring-gray-700 midnight:ring-cyan-500/30 purple:ring-pink-500/30 shadow-lg">
                     <span className="text-lg sm:text-2xl font-bold text-white">
                       {parent.firstName.charAt(0)}{parent.lastName.charAt(0)}
                     </span>
@@ -919,7 +919,7 @@ function ParentSidebar({
                   <div className={`inline-flex items-center gap-1 w-fit px-1.5 sm:px-2 py-0.5 rounded-md border shadow-sm ${
                     parent.status === "Active"
                       ? "bg-green-100 dark:bg-green-900/30 midnight:bg-green-900/30 purple:bg-green-900/30 border-green-300/60 dark:border-green-700/50 midnight:border-green-600/50 purple:border-green-600/50"
-                      : "bg-gray-100 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/30 border-gray-300/60 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30/50"
+                      : "bg-gray-100 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/30 border-gray-300/60 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30"
                   }`}>
                     <div className={`w-1.5 h-1.5 rounded-full ${parent.status === "Active" ? "bg-green-500 dark:bg-green-400 animate-pulse" : "bg-gray-400"}`}></div>
                     <span className={`text-[9px] sm:text-[10px] font-semibold uppercase tracking-wide ${
@@ -960,21 +960,21 @@ function ParentSidebar({
             </h3>
             <div className="space-y-1.5 sm:space-y-3">
               {/* Children Count */}
-              <div className="flex justify-between items-center py-1.5 sm:py-2 px-2 sm:px-3 rounded-lg hover:bg-gray-50/50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5/30 midnight:hover:bg-cyan-500/5/20 purple:hover:bg-pink-500/5/20 transition-colors">
+              <div className="flex justify-between items-center py-1.5 sm:py-2 px-2 sm:px-3 rounded-lg hover:bg-gray-50/50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors">
                 <span className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70">Children</span>
                 <span className="text-xs sm:text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{parent.children.length}</span>
               </div>
 
               {/* Occupation */}
               {parent.occupation && (
-                <div className="flex justify-between items-center py-1.5 sm:py-2 px-2 sm:px-3 rounded-lg hover:bg-gray-50/50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5/30 midnight:hover:bg-cyan-500/5/20 purple:hover:bg-pink-500/5/20 transition-colors">
+                <div className="flex justify-between items-center py-1.5 sm:py-2 px-2 sm:px-3 rounded-lg hover:bg-gray-50/50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors">
                   <span className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70">Occupation</span>
                   <span className="text-xs sm:text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{parent.occupation}</span>
                 </div>
               )}
 
               {/* Joined Date */}
-              <div className="flex justify-between items-center py-1.5 sm:py-2 px-2 sm:px-3 rounded-lg hover:bg-gray-50/50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5/30 midnight:hover:bg-cyan-500/5/20 purple:hover:bg-pink-500/5/20 transition-colors">
+              <div className="flex justify-between items-center py-1.5 sm:py-2 px-2 sm:px-3 rounded-lg hover:bg-gray-50/50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors">
                 <span className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70">Joined</span>
                 <span className="text-xs sm:text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
                   {new Date(parent.createdAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
@@ -982,7 +982,7 @@ function ParentSidebar({
               </div>
 
               {/* Outstanding Fees */}
-              <div className="flex justify-between items-center py-1.5 sm:py-2 px-2 sm:px-3 rounded-lg hover:bg-gray-50/50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5/30 midnight:hover:bg-cyan-500/5/20 purple:hover:bg-pink-500/5/20 transition-colors">
+              <div className="flex justify-between items-center py-1.5 sm:py-2 px-2 sm:px-3 rounded-lg hover:bg-gray-50/50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors">
                 <span className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70">Outstanding</span>
                 <span className={`text-xs sm:text-sm font-bold ${feeStats.outstanding > 0 ? "text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400" : "text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400"}`}>
                   {money(feeStats.outstanding)}
@@ -1005,7 +1005,7 @@ function ParentSidebar({
 
       {/* Primary Contact Info */}
       <div className="mb-3 sm:mb-4">
-        <div className="group bg-gradient-to-br from-white to-gray-50/30 dark:from-gray-800 dark:to-gray-800/50 midnight:from-gray-800 midnight:to-gray-900/50 purple:from-gray-800 purple:to-gray-900/50 rounded-xl sm:rounded-2xl shadow-sm border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/60 midnight:border-cyan-500/30 purple:border-pink-500/30 p-2.5 sm:p-4 transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/10 dark:hover:shadow-blue-500/20 midnight:hover:shadow-cyan-500/20 purple:hover:shadow-pink-500/20 hover:border-blue-300/60 dark:hover:border-blue-600/60 midnight:hover:border-cyan-400/60 purple:hover:border-pink-400/60 hover:-translate-y-0.5">
+        <div className="group bg-gradient-to-br from-white to-gray-50/30 dark:from-gray-800 dark:to-gray-800/50 midnight:from-gray-800 midnight:to-gray-900/50 purple:from-gray-800 purple:to-gray-900/50 rounded-xl sm:rounded-2xl shadow-sm border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/30 purple:border-pink-500/30 p-2.5 sm:p-4 transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/10 dark:hover:shadow-blue-500/20 midnight:hover:shadow-cyan-500/20 purple:hover:shadow-pink-500/20 hover:border-blue-300/60 dark:hover:border-blue-600/60 midnight:hover:border-cyan-400/60 purple:hover:border-pink-400/60 hover:-translate-y-0.5">
           <h3 className="text-xs sm:text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-2 sm:mb-3 uppercase tracking-wider">
             Primary Contact Info
           </h3>
@@ -1048,7 +1048,7 @@ function ParentSidebar({
             </a>
 
             {/* Quick Communication Buttons */}
-            <div className="pt-2 sm:pt-3 mt-2 sm:mt-3 border-t border-gray-200/50 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/50">
+            <div className="pt-2 sm:pt-3 mt-2 sm:mt-3 border-t border-gray-200/50 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
               <div className="text-[10px] sm:text-xs font-semibold text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mb-2 uppercase tracking-wide">
                 Quick Communication
               </div>
@@ -1097,7 +1097,7 @@ function ParentSidebar({
 
       {/* Fee Summary Card */}
       <div className="mb-3 sm:mb-4">
-        <div className="group bg-gradient-to-br from-white to-gray-50/30 dark:from-gray-800 dark:to-gray-800/50 midnight:from-gray-800 midnight:to-gray-900/50 purple:from-gray-800 purple:to-gray-900/50 rounded-xl sm:rounded-2xl shadow-sm border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/60 midnight:border-cyan-500/30 purple:border-pink-500/30 p-2.5 sm:p-4 transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/10 dark:hover:shadow-blue-500/20 midnight:hover:shadow-cyan-500/20 purple:hover:shadow-pink-500/20 hover:border-blue-300/60 dark:hover:border-blue-600/60 midnight:hover:border-cyan-400/60 purple:hover:border-pink-400/60 hover:-translate-y-0.5">
+        <div className="group bg-gradient-to-br from-white to-gray-50/30 dark:from-gray-800 dark:to-gray-800/50 midnight:from-gray-800 midnight:to-gray-900/50 purple:from-gray-800 purple:to-gray-900/50 rounded-xl sm:rounded-2xl shadow-sm border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/30 purple:border-pink-500/30 p-2.5 sm:p-4 transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/10 dark:hover:shadow-blue-500/20 midnight:hover:shadow-cyan-500/20 purple:hover:shadow-pink-500/20 hover:border-blue-300/60 dark:hover:border-blue-600/60 midnight:hover:border-cyan-400/60 purple:hover:border-pink-400/60 hover:-translate-y-0.5">
           <h3 className="text-xs sm:text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-2 sm:mb-3 uppercase tracking-wider">
             Fee Summary
           </h3>
@@ -1155,7 +1155,7 @@ function ParentTabs({
       </div>
 
       {/* Desktop Horizontal Tabs */}
-      <div className="hidden md:block relative bg-gradient-to-br from-gray-50/50 to-gray-100/30 dark:from-[#1a1d23]/30 dark:to-[#14161b]/50 midnight:from-[#0f1729]/30 midnight:to-[#0a0f1c]/50 purple:from-[#2a1a3e]/30 purple:to-[#1f1330]/50 backdrop-blur-sm rounded-2xl shadow-sm border border-gray-200/30 dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10/30 midnight:border-cyan-500/10 purple:border-pink-500/10 p-1.5 overflow-x-auto overflow-y-hidden scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-700 scrollbar-track-transparent">
+      <div className="hidden md:block relative bg-gradient-to-br from-gray-50/50 to-gray-100/30 dark:from-[#1a1d23]/30 dark:to-[#14161b]/50 midnight:from-[#0f1729]/30 midnight:to-[#0a0f1c]/50 purple:from-[#2a1a3e]/30 purple:to-[#1f1330]/50 backdrop-blur-sm rounded-2xl shadow-sm border border-gray-200/30 dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10 p-1.5 overflow-x-auto overflow-y-hidden scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-700 scrollbar-track-transparent">
         {/* Animated background gradient */}
         <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 via-purple-500/5 to-pink-500/5 dark:from-blue-400/5 dark:via-purple-400/5 dark:to-pink-400/5 midnight:from-cyan-400/5 midnight:via-blue-400/5 midnight:to-cyan-400/5 purple:from-pink-400/5 purple:via-purple-400/5 purple:to-pink-400/5 opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
 
@@ -1173,7 +1173,7 @@ function ParentTabs({
                 className={`relative flex items-center justify-center gap-1.5 px-3 sm:px-4 py-2 rounded-xl transition-all duration-300 ease-out whitespace-nowrap group overflow-hidden ${
                   isActive
                     ? "bg-blue-50/80 dark:bg-blue-950/20 midnight:bg-cyan-950/20 purple:bg-pink-950/20 text-blue-700 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300 shadow-sm border border-blue-100/50 dark:border-blue-900/30 midnight:border-cyan-900/30 purple:border-pink-900/30"
-                    : "text-gray-700 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70 hover:bg-white/40 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5/30 midnight:hover:bg-cyan-500/5/30 purple:hover:bg-pink-500/5/30 hover:text-gray-900 dark:hover:text-gray-200 midnight:hover:text-cyan-200 purple:hover:text-pink-200 hover:shadow-sm"
+                    : "text-gray-700 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70 hover:bg-white/40 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 hover:text-gray-900 dark:hover:text-gray-200 midnight:hover:text-cyan-200 purple:hover:text-pink-200 hover:shadow-sm"
                 } cursor-pointer active:scale-95 animate-fadeIn`}
               >
                 {/* Shine effect on active tab */}
@@ -1228,7 +1228,7 @@ function ChildrenSection({
         href={`/students/${child.id}?from=parent&parentId=${parent.id}&parentName=${encodeURIComponent(`${parent.firstName} ${parent.lastName}`)}`}
         className="group block"
       >
-        <div className="relative rounded-xl border border-gray-200/40 dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10/40 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/40 midnight:bg-[#0a0e27]/40 purple:bg-[#1a0b2e]/40 transition-all duration-200 hover:shadow-md hover:border-gray-300/60 dark:hover:border-gray-700/60 midnight:hover:border-cyan-500/30 purple:hover:border-pink-500/30 p-4">
+        <div className="relative rounded-xl border border-gray-200/40 dark:border-[#1a1d24] midnight:border-cyan-500/20 purple:border-pink-500/20 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/40 purple:bg-[#1a0b2e]/40 transition-all duration-200 hover:shadow-md hover:border-gray-300/60 dark:hover:border-gray-700/60 midnight:hover:border-cyan-500/30 purple:hover:border-pink-500/30 p-4">
           {/* Avatar with status indicator */}
           <div className="flex justify-center mb-3">
             <div className="relative">
@@ -1283,7 +1283,7 @@ function ChildrenSection({
       href={`/students/${child.id}?from=parent&parentId=${parent.id}&parentName=${encodeURIComponent(`${parent.firstName} ${parent.lastName}`)}`}
       className="group block"
     >
-      <div className="relative rounded-xl border border-gray-200/40 dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10/40 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/40 midnight:bg-[#0a0e27]/40 purple:bg-[#1a0b2e]/40 transition-all duration-200 hover:shadow-md hover:border-gray-300/60 dark:hover:border-gray-700/60 midnight:hover:border-cyan-500/30 purple:hover:border-pink-500/30 p-4 h-full">
+      <div className="relative rounded-xl border border-gray-200/40 dark:border-[#1a1d24] midnight:border-cyan-500/20 purple:border-pink-500/20 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/40 purple:bg-[#1a0b2e]/40 transition-all duration-200 hover:shadow-md hover:border-gray-300/60 dark:hover:border-gray-700/60 midnight:hover:border-cyan-500/30 purple:hover:border-pink-500/30 p-4 h-full">
         {/* Avatar with status indicator */}
         <div className="flex justify-center mb-3">
           <div className="relative">
@@ -1335,7 +1335,7 @@ function ChildrenSection({
   const CompactChildCard = ({ child }: { child: AdminParent["children"][0] }) => (
     <Link
       href={`/students/${child.id}?from=parent&parentId=${parent.id}&parentName=${encodeURIComponent(`${parent.firstName} ${parent.lastName}`)}`}
-      className="group flex items-center gap-3 p-3 rounded-lg border border-gray-200/40 dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10/40 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-white/60 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/20 midnight:bg-[#0a0e27]/20 purple:bg-[#1a0b2e]/20 hover:bg-gray-50/80 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5/40 midnight:hover:bg-cyan-500/5/30 purple:hover:bg-pink-500/5/30 transition-all duration-200 hover:shadow-md hover:border-gray-300/60 dark:hover:border-gray-700/60 midnight:hover:border-cyan-500/30 purple:hover:border-pink-500/30"
+      className="group flex items-center gap-3 p-3 rounded-lg border border-gray-200/40 dark:border-[#1a1d24] midnight:border-cyan-500/20 purple:border-pink-500/20 bg-white/60 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/20 purple:bg-[#1a0b2e]/20 hover:bg-gray-50/80 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-all duration-200 hover:shadow-md hover:border-gray-300/60 dark:hover:border-gray-700/60 midnight:hover:border-cyan-500/30 purple:hover:border-pink-500/30"
     >
       {/* Profile Image */}
       <div className="relative flex-shrink-0">
@@ -1371,7 +1371,7 @@ function ChildrenSection({
   );
 
   return (
-    <div className="group bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-2xl shadow-sm border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/60 midnight:border-cyan-500/30 purple:border-pink-500/30 overflow-hidden transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/10 dark:hover:shadow-blue-500/20 midnight:hover:shadow-cyan-500/20 purple:hover:shadow-pink-500/20 hover:border-blue-300/60 dark:hover:border-blue-600/60 midnight:hover:border-cyan-400/60 purple:hover:border-pink-400/60 hover:-translate-y-0.5">
+    <div className="group bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-2xl shadow-sm border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/30 purple:border-pink-500/30 overflow-hidden transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/10 dark:hover:shadow-blue-500/20 midnight:hover:shadow-cyan-500/20 purple:hover:shadow-pink-500/20 hover:border-blue-300/60 dark:hover:border-blue-600/60 midnight:hover:border-cyan-400/60 purple:hover:border-pink-400/60 hover:-translate-y-0.5">
       <div className="p-4 sm:p-5">
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
@@ -1400,8 +1400,8 @@ function ChildrenSection({
         {/* Children Display - Adaptive Layout */}
         {childCount === 0 ? (
           // Empty State - Subtle Design
-          <div className="text-center py-8 bg-gray-50/50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/20 rounded-xl border border-dashed border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/50">
-            <div className="w-14 h-14 mx-auto rounded-xl bg-gray-100 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 flex items-center justify-center mb-3">
+          <div className="text-center py-8 bg-gray-50/50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/20 rounded-xl border border-dashed border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+            <div className="w-14 h-14 mx-auto rounded-xl bg-gray-100 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 flex items-center justify-center mb-3">
               <GraduationCap className="w-7 h-7 text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400" />
             </div>
             <p className="text-sm font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">No children linked yet</p>
@@ -1437,7 +1437,7 @@ function ChildrenSection({
             {childCount > 4 && (
               <button
                 onClick={() => setShowAllChildren(!showAllChildren)}
-                className="w-full py-2 text-xs font-medium text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:text-gray-700 dark:hover:text-gray-300 midnight:hover:text-cyan-200 purple:hover:text-pink-200 bg-gray-50/50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/30 hover:bg-gray-100/50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5/50 rounded-lg border border-gray-100 dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10/50 transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                className="w-full py-2 text-xs font-medium text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:text-gray-700 dark:hover:text-gray-300 midnight:hover:text-cyan-200 purple:hover:text-pink-200 bg-gray-50/50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/30 hover:bg-gray-100/50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 rounded-lg border border-gray-100 dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10 transition-all cursor-pointer flex items-center justify-center gap-1.5"
               >
                 {showAllChildren ? (
                   <>
@@ -1661,7 +1661,7 @@ function FeesSection({
         )}
 
         {/* Status Filter */}
-        <div className="flex items-center gap-1.5 bg-gray-100/80 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/80 midnight:bg-[#0a0e27]/80 purple:bg-[#1a0b2e]/80 rounded-lg p-1">
+        <div className="flex items-center gap-1.5 bg-gray-100/80 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/80 purple:bg-[#1a0b2e]/80 rounded-lg p-1">
           {[
             { value: "all", label: "All" },
             { value: "pending", label: "Pending" },
@@ -1806,7 +1806,7 @@ function FeesSection({
                 onViewDetails?.(activeRecord);
                 closeActionMenu();
               }}
-              className="w-full px-3 py-2 text-left text-xs font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10/50 flex items-center gap-2 transition-colors cursor-pointer"
+              className="w-full px-3 py-2 text-left text-xs font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 flex items-center gap-2 transition-colors cursor-pointer"
             >
               <Eye className="w-3.5 h-3.5 text-blue-500" />
               View Details
@@ -1818,7 +1818,7 @@ function FeesSection({
                     onApprovePayment?.(activeRecord);
                     closeActionMenu();
                   }}
-                  className="w-full px-3 py-2 text-left text-xs font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10/50 flex items-center gap-2 transition-colors cursor-pointer"
+                  className="w-full px-3 py-2 text-left text-xs font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 flex items-center gap-2 transition-colors cursor-pointer"
                 >
                   <BadgeCheck className="w-3.5 h-3.5 text-green-500" />
                   Record Payment
@@ -1828,7 +1828,7 @@ function FeesSection({
                     onGiveDiscount?.(activeRecord);
                     closeActionMenu();
                   }}
-                  className="w-full px-3 py-2 text-left text-xs font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10/50 flex items-center gap-2 transition-colors cursor-pointer"
+                  className="w-full px-3 py-2 text-left text-xs font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 flex items-center gap-2 transition-colors cursor-pointer"
                 >
                   <Percent className="w-3.5 h-3.5 text-rose-500" />
                   Give Discount
@@ -1838,7 +1838,7 @@ function FeesSection({
                     onExtendDueDate?.(activeRecord);
                     closeActionMenu();
                   }}
-                  className="w-full px-3 py-2 text-left text-xs font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10/50 flex items-center gap-2 transition-colors cursor-pointer"
+                  className="w-full px-3 py-2 text-left text-xs font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 flex items-center gap-2 transition-colors cursor-pointer"
                 >
                   <CalendarPlus className="w-3.5 h-3.5 text-indigo-500" />
                   Extend Due Date
@@ -1855,14 +1855,14 @@ function FeesSection({
 // Address Card
 function AddressCard({ parent }: { parent: AdminParent }) {
   return (
-    <div className="group bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-2xl shadow-sm border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/60 midnight:border-cyan-500/30 purple:border-pink-500/30 overflow-hidden transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/10 dark:hover:shadow-blue-500/20 midnight:hover:shadow-cyan-500/20 purple:hover:shadow-pink-500/20 hover:border-blue-300/60 dark:hover:border-blue-600/60 midnight:hover:border-cyan-400/60 purple:hover:border-pink-400/60 hover:-translate-y-0.5">
+    <div className="group bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-2xl shadow-sm border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/30 purple:border-pink-500/30 overflow-hidden transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/10 dark:hover:shadow-blue-500/20 midnight:hover:shadow-cyan-500/20 purple:hover:shadow-pink-500/20 hover:border-blue-300/60 dark:hover:border-blue-600/60 midnight:hover:border-cyan-400/60 purple:hover:border-pink-400/60 hover:-translate-y-0.5">
       <div className="p-4">
         <h3 className="text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-3 flex items-center gap-2">
           <MapPin className="w-4 h-4 text-purple-600 dark:text-purple-400" />
           Address
         </h3>
         <div className="space-y-2">
-          <div className="p-3 rounded-xl bg-gradient-to-br from-gray-50 to-gray-100/30 dark:from-gray-800/40 dark:to-gray-900/40 border border-gray-200/40 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/40">
+          <div className="p-3 rounded-xl bg-gradient-to-br from-gray-50 to-gray-100/30 dark:from-gray-800/40 dark:to-gray-900/40 border border-gray-200/40 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
             <div className="flex items-center gap-2 mb-1">
               <Home className="w-3 h-3 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
               <span className="text-[10px] font-bold text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 uppercase">Home</span>
@@ -1873,7 +1873,7 @@ function AddressCard({ parent }: { parent: AdminParent }) {
               {parent.address.city}, {parent.address.state}{parent.address.postalCode && ` ${parent.address.postalCode}`}
             </p>
           </div>
-          <div className="p-3 rounded-xl bg-gradient-to-br from-gray-50 to-gray-100/30 dark:from-gray-800/40 dark:to-gray-900/40 border border-gray-200/40 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/40">
+          <div className="p-3 rounded-xl bg-gradient-to-br from-gray-50 to-gray-100/30 dark:from-gray-800/40 dark:to-gray-900/40 border border-gray-200/40 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
             <div className="flex items-center gap-2 mb-1">
               <Building2 className="w-3 h-3 text-purple-600 dark:text-purple-400" />
               <span className="text-[10px] font-bold text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 uppercase">Work</span>
@@ -1895,7 +1895,7 @@ function FeeActionsCard({
   onExtendDueDate: () => void;
 }) {
   return (
-    <div className="group bg-gradient-to-br from-white to-gray-50/50 dark:from-[#1a1d23] dark:to-[#1a1d23]/80 midnight:from-[#0f1729] midnight:to-[#0f1729]/80 purple:from-[#2a1a3e] purple:to-[#2a1a3e]/80 rounded-2xl shadow-sm border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/60 midnight:border-cyan-500/30 purple:border-pink-500/30 overflow-hidden transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/10 dark:hover:shadow-blue-500/20 midnight:hover:shadow-cyan-500/20 purple:hover:shadow-pink-500/20 hover:border-blue-300/60 dark:hover:border-blue-600/60 midnight:hover:border-cyan-400/60 purple:hover:border-pink-400/60 hover:-translate-y-0.5">
+    <div className="group bg-gradient-to-br from-white to-gray-50/50 dark:from-[#1a1d23] dark:to-[#1a1d23]/80 midnight:from-[#0f1729] midnight:to-[#0f1729]/80 purple:from-[#2a1a3e] purple:to-[#2a1a3e]/80 rounded-2xl shadow-sm border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/30 purple:border-pink-500/30 overflow-hidden transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/10 dark:hover:shadow-blue-500/20 midnight:hover:shadow-cyan-500/20 purple:hover:shadow-pink-500/20 hover:border-blue-300/60 dark:hover:border-blue-600/60 midnight:hover:border-cyan-400/60 purple:hover:border-pink-400/60 hover:-translate-y-0.5">
       <div className="p-4">
         {/* Header with gradient icon */}
         <div className="flex items-center gap-3 mb-4">
@@ -2112,7 +2112,7 @@ function MeetingsSection({ meetings, onScheduleMeeting }: { meetings: ParentTeac
   };
 
   return (
-    <div className="group bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-2xl shadow-sm border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/60 midnight:border-cyan-500/30 purple:border-pink-500/30 overflow-hidden transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/10 dark:hover:shadow-blue-500/20 midnight:hover:shadow-cyan-500/20 purple:hover:shadow-pink-500/20 hover:border-blue-300/60 dark:hover:border-blue-600/60 midnight:hover:border-cyan-400/60 purple:hover:border-pink-400/60 hover:-translate-y-0.5">
+    <div className="group bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-2xl shadow-sm border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/30 purple:border-pink-500/30 overflow-hidden transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/10 dark:hover:shadow-blue-500/20 midnight:hover:shadow-cyan-500/20 purple:hover:shadow-pink-500/20 hover:border-blue-300/60 dark:hover:border-blue-600/60 midnight:hover:border-cyan-400/60 purple:hover:border-pink-400/60 hover:-translate-y-0.5">
       <div className="p-4">
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 flex items-center gap-2">
@@ -2140,7 +2140,7 @@ function MeetingsSection({ meetings, onScheduleMeeting }: { meetings: ParentTeac
                 className={`p-3 rounded-xl border transition-all duration-200 cursor-pointer hover:shadow-md hover:-translate-y-0.5 ${
                   meeting.status === "upcoming"
                     ? "bg-blue-50/50 dark:bg-blue-900/10 midnight:bg-cyan-900/10 purple:bg-pink-900/10 border-blue-200/50 dark:border-blue-800/30 midnight:border-cyan-800/30 purple:border-pink-800/30 hover:border-blue-300 dark:hover:border-blue-700 midnight:hover:border-cyan-600 purple:hover:border-pink-600 hover:shadow-blue-500/10 dark:hover:shadow-blue-500/20 midnight:hover:shadow-cyan-500/20 purple:hover:shadow-pink-500/20"
-                    : "bg-gray-50/50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/20 midnight:bg-[#0f1330]/20 purple:bg-[#251340]/20 border-gray-200/40 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/40 midnight:border-gray-700/40 purple:border-gray-700/40 hover:border-gray-300 dark:hover:border-gray-600 midnight:hover:border-gray-500 purple:hover:border-gray-500 hover:shadow-gray-500/10"
+                    : "bg-gray-50/50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/20 midnight:bg-[#0f1330]/20 purple:bg-[#251340]/20 border-gray-200/40 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 midnight:border-gray-700/40 purple:border-gray-700/40 hover:border-gray-300 dark:hover:border-gray-600 midnight:hover:border-gray-500 purple:hover:border-gray-500 hover:shadow-gray-500/10"
                 }`}
               >
                 <div className="flex items-start justify-between gap-2">
@@ -2317,7 +2317,7 @@ function LeaveRequestsSection({
 
   return (
     <>
-      <div className="group bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-2xl shadow-sm border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/60 midnight:border-cyan-500/30 purple:border-pink-500/30 overflow-hidden transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/10 dark:hover:shadow-blue-500/20 midnight:hover:shadow-cyan-500/20 purple:hover:shadow-pink-500/20 hover:border-blue-300/60 dark:hover:border-blue-600/60 midnight:hover:border-cyan-400/60 purple:hover:border-pink-400/60 hover:-translate-y-0.5">
+      <div className="group bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-2xl shadow-sm border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/30 purple:border-pink-500/30 overflow-hidden transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/10 dark:hover:shadow-blue-500/20 midnight:hover:shadow-cyan-500/20 purple:hover:shadow-pink-500/20 hover:border-blue-300/60 dark:hover:border-blue-600/60 midnight:hover:border-cyan-400/60 purple:hover:border-pink-400/60 hover:-translate-y-0.5">
         <div className="p-4">
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 flex items-center gap-2">
@@ -2342,7 +2342,7 @@ function LeaveRequestsSection({
                   className={`p-3 rounded-xl border transition-all duration-200 cursor-pointer hover:shadow-md hover:-translate-y-0.5 ${
                     request.status === "pending"
                       ? "bg-yellow-50/50 dark:bg-yellow-900/10 midnight:bg-yellow-900/10 purple:bg-yellow-900/10 border-yellow-200/50 dark:border-yellow-800/30 midnight:border-yellow-800/30 purple:border-yellow-800/30 hover:border-yellow-300 dark:hover:border-yellow-700 midnight:hover:border-yellow-600 purple:hover:border-yellow-600 hover:shadow-yellow-500/10 dark:hover:shadow-yellow-500/20 midnight:hover:shadow-yellow-500/20 purple:hover:shadow-yellow-500/20"
-                      : "bg-gray-50/50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/20 midnight:bg-[#0f1330]/20 purple:bg-[#251340]/20 border-gray-200/40 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/40 midnight:border-gray-700/40 purple:border-gray-700/40 hover:border-gray-300 dark:hover:border-gray-600 midnight:hover:border-gray-500 purple:hover:border-gray-500 hover:shadow-gray-500/10"
+                      : "bg-gray-50/50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/20 midnight:bg-[#0f1330]/20 purple:bg-[#251340]/20 border-gray-200/40 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 midnight:border-gray-700/40 purple:border-gray-700/40 hover:border-gray-300 dark:hover:border-gray-600 midnight:hover:border-gray-500 purple:hover:border-gray-500 hover:shadow-gray-500/10"
                   }`}
                 >
                   <div className="flex items-start justify-between gap-2">
@@ -2812,7 +2812,7 @@ function PaymentHistorySection({
         )}
 
         {/* Status Filter */}
-        <div className="flex items-center gap-1.5 bg-gray-100/80 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/80 midnight:bg-[#0a0e27]/80 purple:bg-[#1a0b2e]/80 rounded-lg p-1">
+        <div className="flex items-center gap-1.5 bg-gray-100/80 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/80 purple:bg-[#1a0b2e]/80 rounded-lg p-1">
           {[
             { value: "all", label: "All" },
             { value: "completed", label: "Completed" },
@@ -2835,7 +2835,7 @@ function PaymentHistorySection({
       </div>
 
       {/* Payment List */}
-      <div className="bg-white dark:bg-[#1a1d23] rounded-2xl shadow-sm border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/60 overflow-hidden">
+      <div className="bg-white dark:bg-[#1a1d23] rounded-2xl shadow-sm border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 overflow-hidden">
         {/* Header */}
         <div className="px-4 py-3 border-b border-gray-100 dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10 flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -3314,7 +3314,7 @@ function SupportTicketsSection({ communications, setCommunications, parentName }
                       ? "bg-blue-50/50 dark:bg-blue-900/10 midnight:bg-blue-900/10 purple:bg-blue-900/10 border-blue-200/50 dark:border-blue-800/30 midnight:border-blue-800/30 purple:border-blue-800/30 hover:border-blue-300 dark:hover:border-blue-700 midnight:hover:border-blue-600 purple:hover:border-blue-600 hover:shadow-blue-500/10 dark:hover:shadow-blue-500/20 midnight:hover:shadow-blue-500/20 purple:hover:shadow-blue-500/20"
                       : ticket.status === "resolved"
                       ? "bg-emerald-50/50 dark:bg-emerald-900/10 midnight:bg-emerald-900/10 purple:bg-emerald-900/10 border-emerald-200/50 dark:border-emerald-800/30 midnight:border-emerald-800/30 purple:border-emerald-800/30 hover:border-emerald-300 dark:hover:border-emerald-700 midnight:hover:border-emerald-600 purple:hover:border-emerald-600 hover:shadow-emerald-500/10 dark:hover:shadow-emerald-500/20 midnight:hover:shadow-emerald-500/20 purple:hover:shadow-emerald-500/20"
-                      : "bg-gray-50/50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/20 midnight:bg-[#0f1330]/20 purple:bg-[#251340]/20 border-gray-200/40 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/40 midnight:border-gray-700/40 purple:border-gray-700/40 hover:border-gray-300 dark:hover:border-gray-600 midnight:hover:border-gray-500 purple:hover:border-gray-500 hover:shadow-gray-500/10"
+                      : "bg-gray-50/50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/20 midnight:bg-[#0f1330]/20 purple:bg-[#251340]/20 border-gray-200/40 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 midnight:border-gray-700/40 purple:border-gray-700/40 hover:border-gray-300 dark:hover:border-gray-600 midnight:hover:border-gray-500 purple:hover:border-gray-500 hover:shadow-gray-500/10"
                   }`}
                 >
                   <div className="flex items-start justify-between gap-3">
@@ -3455,7 +3455,7 @@ function SupportTicketsSection({ communications, setCommunications, parentName }
             </div>
 
             {/* Meta Info */}
-            <div className="grid grid-cols-2 gap-3 p-3 rounded-xl bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+            <div className="grid grid-cols-2 gap-3 p-3 rounded-xl bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
               <div>
                 <p className="text-[10px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 uppercase">Submitted</p>
                 <p className="text-xs font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
@@ -3515,7 +3515,7 @@ function SupportTicketsSection({ communications, setCommunications, parentName }
                     className={`p-4 rounded-xl border ${
                       response.from === "admin"
                         ? "bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-700/30"
-                        : "bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20"
+                        : "bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20"
                     }`}
                   >
                     <div className="flex items-center gap-2 mb-2">
@@ -3650,7 +3650,7 @@ function SupportTicketsSection({ communications, setCommunications, parentName }
 
           {/* Preview Card */}
           {newTicket.subject && (
-            <div className="p-3 rounded-xl bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+            <div className="p-3 rounded-xl bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
               <p className="text-[10px] font-semibold text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 uppercase mb-2">Preview</p>
               <div className="flex items-center gap-2 flex-wrap mb-2">
                 <span className="text-xs font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{newTicket.subject || "No subject"}</span>
@@ -3745,7 +3745,7 @@ function EventAttendanceSection({ eventAttendance }: { eventAttendance: ParentEv
 
   return (
     <>
-      <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/90 midnight:bg-[#0a0e27]/90 purple:bg-[#1a0b2e]/90 rounded-2xl border border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/50 midnight:border-cyan-500/20 purple:border-pink-500/20 overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300">
+      <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/90 purple:bg-[#1a0b2e]/90 rounded-2xl border border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300">
         {/* Header with gradient */}
         <div className="relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 via-teal-500/5 to-cyan-500/10 dark:from-emerald-500/20 dark:via-teal-500/10 dark:to-cyan-500/20" />
@@ -3789,12 +3789,12 @@ function EventAttendanceSection({ eventAttendance }: { eventAttendance: ParentEv
         </div>
 
         {/* Stats Row */}
-        <div className="px-5 py-3 grid grid-cols-3 gap-3 border-b border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/50">
+        <div className="px-5 py-3 grid grid-cols-3 gap-3 border-b border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
           <div className="text-center">
             <p className="text-lg font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{eventAttendance.length}</p>
             <p className="text-[10px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 uppercase tracking-wide">Total</p>
           </div>
-          <div className="text-center border-x border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/50">
+          <div className="text-center border-x border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
             <p className="text-lg font-bold text-emerald-600 dark:text-emerald-400">{attendedCount}</p>
             <p className="text-[10px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 uppercase tracking-wide">Attended</p>
           </div>
@@ -3987,14 +3987,14 @@ function EventAttendanceModal({
 
           {/* Event Details */}
           <div className="grid grid-cols-2 gap-3">
-            <div className="p-4 rounded-xl bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50">
+            <div className="p-4 rounded-xl bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50">
               <div className="flex items-center gap-2 mb-2">
                 <User className="w-4 h-4 text-gray-400" />
                 <p className="text-[10px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 uppercase tracking-wider font-medium">Child</p>
               </div>
               <p className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{selectedEvent.childName}</p>
             </div>
-            <div className="p-4 rounded-xl bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50">
+            <div className="p-4 rounded-xl bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50">
               <div className="flex items-center gap-2 mb-2">
                 <Calendar className="w-4 h-4 text-gray-400" />
                 <p className="text-[10px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 uppercase tracking-wider font-medium">Date</p>
@@ -4096,7 +4096,7 @@ function EventAttendanceModal({
               return (
                 <div
                   key={event.id}
-                  className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/50 hover:border-emerald-200 dark:hover:border-emerald-500/30 transition-all cursor-pointer hover:shadow-md"
+                  className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 hover:border-emerald-200 dark:hover:border-emerald-500/30 transition-all cursor-pointer hover:shadow-md"
                 >
                   <div className={`w-11 h-11 rounded-xl ${config.lightBg} flex items-center justify-center flex-shrink-0`}>
                     <EventIcon className={`w-5 h-5 ${config.text}`} />
@@ -4165,7 +4165,7 @@ function LibraryPaymentsSection({
 
   return (
     <>
-      <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/90 midnight:bg-[#0a0e27]/90 purple:bg-[#1a0b2e]/90 rounded-2xl border border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/50 midnight:border-cyan-500/20 purple:border-pink-500/20 overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300">
+      <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/90 purple:bg-[#1a0b2e]/90 rounded-2xl border border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300">
         {/* Header with gradient */}
         <div className="relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/10 via-purple-500/5 to-violet-500/10 dark:from-indigo-500/20 dark:via-purple-500/10 dark:to-violet-500/20" />
@@ -4196,12 +4196,12 @@ function LibraryPaymentsSection({
         </div>
 
         {/* Stats Row */}
-        <div className="px-5 py-3 grid grid-cols-3 gap-3 border-b border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/50">
+        <div className="px-5 py-3 grid grid-cols-3 gap-3 border-b border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
           <div className="text-center">
             <p className="text-lg font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{libraryPayments.length}</p>
             <p className="text-[10px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 uppercase tracking-wide">Total</p>
           </div>
-          <div className="text-center border-x border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/50">
+          <div className="text-center border-x border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
             <p className="text-lg font-bold text-emerald-600 dark:text-emerald-400">{money(totalPaid)}</p>
             <p className="text-[10px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 uppercase tracking-wide">Paid</p>
           </div>
@@ -4393,14 +4393,14 @@ function LibraryPaymentModal({
 
           {/* Payment Details */}
           <div className="grid grid-cols-2 gap-3">
-            <div className="p-4 rounded-xl bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50">
+            <div className="p-4 rounded-xl bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50">
               <div className="flex items-center gap-2 mb-2">
                 <User className="w-4 h-4 text-gray-400" />
                 <p className="text-[10px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 uppercase tracking-wider font-medium">Child</p>
               </div>
               <p className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{selectedPayment.childName}</p>
             </div>
-            <div className="p-4 rounded-xl bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50">
+            <div className="p-4 rounded-xl bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50">
               <div className="flex items-center gap-2 mb-2">
                 <Calendar className="w-4 h-4 text-gray-400" />
                 <p className="text-[10px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 uppercase tracking-wider font-medium">Date</p>
@@ -4409,14 +4409,14 @@ function LibraryPaymentModal({
                 {new Date(selectedPayment.date).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
               </p>
             </div>
-            <div className="p-4 rounded-xl bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50">
+            <div className="p-4 rounded-xl bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50">
               <div className="flex items-center gap-2 mb-2">
                 <BookOpen className="w-4 h-4 text-gray-400" />
                 <p className="text-[10px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 uppercase tracking-wider font-medium">Book ID</p>
               </div>
               <p className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{selectedPayment.bookId}</p>
             </div>
-            <div className="p-4 rounded-xl bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50">
+            <div className="p-4 rounded-xl bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50">
               <div className="flex items-center gap-2 mb-2">
                 <FileText className="w-4 h-4 text-gray-400" />
                 <p className="text-[10px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 uppercase tracking-wider font-medium">Type</p>
@@ -4506,7 +4506,7 @@ function LibraryPaymentModal({
               return (
                 <div
                   key={payment.id}
-                  className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/50 hover:border-indigo-200 dark:hover:border-indigo-500/30 transition-all cursor-pointer hover:shadow-md"
+                  className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 hover:border-indigo-200 dark:hover:border-indigo-500/30 transition-all cursor-pointer hover:shadow-md"
                 >
                   <div className={`w-11 h-11 rounded-xl ${config.lightBg} flex items-center justify-center flex-shrink-0`}>
                     <PaymentIcon className={`w-5 h-5 ${config.text}`} />
@@ -4601,7 +4601,7 @@ function ReminderHistorySection({
 
   return (
     <>
-      <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/90 midnight:bg-[#0a0e27]/90 purple:bg-[#1a0b2e]/90 rounded-2xl border border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/50 midnight:border-cyan-500/20 purple:border-pink-500/20 overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300">
+      <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/90 purple:bg-[#1a0b2e]/90 rounded-2xl border border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300">
         {/* Header with gradient */}
         <div className="relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-orange-500/10 via-amber-500/5 to-yellow-500/10 dark:from-orange-500/20 dark:via-amber-500/10 dark:to-yellow-500/20" />
@@ -4884,7 +4884,7 @@ function ReminderDetailModal({
               if (!msg) return null;
 
               return (
-                <div key={channel} className="p-4 rounded-xl bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+                <div key={channel} className="p-4 rounded-xl bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
                   <div className="flex items-center gap-2 mb-2">
                     <div className={`w-6 h-6 rounded-lg ${config.lightBg} flex items-center justify-center`}>
                       <ChannelIcon className={`w-3.5 h-3.5 ${config.text}`} />
@@ -4962,7 +4962,7 @@ function ReminderDetailModal({
           {filteredReminders.map((reminder) => (
             <div
               key={reminder.id}
-              className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors"
+              className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors"
             >
               <div className="flex -space-x-1">
                 {reminder.channels.slice(0, 2).map((channel, idx) => {
@@ -5271,7 +5271,7 @@ function LinkChildModal({
             </p>
           )}
 
-          <div className="space-y-2 max-h-56 overflow-y-auto rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 p-2 bg-gray-50/50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/30 midnight:bg-[#0a0e27]/30 purple:bg-[#1a0b2e]/30">
+          <div className="space-y-2 max-h-56 overflow-y-auto rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 p-2 bg-gray-50/50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/30 purple:bg-[#1a0b2e]/30">
             {!selectedClass ? (
               <div className="text-center py-8">
                 <GraduationCap className="w-10 h-10 mx-auto text-gray-300 dark:text-gray-600 midnight:text-cyan-700 purple:text-pink-700 mb-2" />
@@ -5438,11 +5438,11 @@ function ResetPasswordModal({
           </div>
 
           <div className="space-y-3">
-            <div className="flex justify-between items-center py-2 px-3 rounded-lg bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50">
+            <div className="flex justify-between items-center py-2 px-3 rounded-lg bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50">
               <span className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Parent Name</span>
               <span className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{parentName}</span>
             </div>
-            <div className="flex justify-between items-center py-2 px-3 rounded-lg bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50">
+            <div className="flex justify-between items-center py-2 px-3 rounded-lg bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50">
               <span className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Email</span>
               <span className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{parentEmail}</span>
             </div>
@@ -5534,7 +5534,7 @@ function FeeRecordDetailsModal({
     >
       <div className="space-y-6">
         {/* Top Section: Student Info + Status */}
-        <div className="flex items-center justify-between gap-4 p-4 rounded-2xl bg-gradient-to-r from-gray-50 to-gray-100/50 dark:from-gray-800/50 dark:to-gray-800/30 border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/50">
+        <div className="flex items-center justify-between gap-4 p-4 rounded-2xl bg-gradient-to-r from-gray-50 to-gray-100/50 dark:from-gray-800/50 dark:to-gray-800/30 border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
           <div className="flex items-center gap-4">
             <div className="relative w-14 h-14 rounded-2xl overflow-hidden bg-gray-200 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] ring-2 ring-white dark:ring-gray-700 midnight:ring-cyan-500/20 purple:ring-pink-500/20 shadow-lg">
               <Image
@@ -5573,7 +5573,7 @@ function FeeRecordDetailsModal({
             <p className="text-xs font-semibold text-amber-600 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400 uppercase tracking-wider mb-2">Balance Due</p>
             <p className="text-2xl font-bold text-amber-700 dark:text-amber-300">{money(feeRecord.balance)}</p>
           </div>
-          <div className="p-4 rounded-2xl bg-gradient-to-br from-gray-50 to-gray-100/50 dark:from-gray-800/50 dark:to-gray-800/20 border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/40">
+          <div className="p-4 rounded-2xl bg-gradient-to-br from-gray-50 to-gray-100/50 dark:from-gray-800/50 dark:to-gray-800/20 border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
             <p className="text-xs font-semibold text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 uppercase tracking-wider mb-2">Due Date</p>
             <p className={`text-lg font-bold ${feeRecord.status === "overdue" ? "text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400" : "text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50"}`}>
               {new Date(feeRecord.dueDate).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
@@ -5583,7 +5583,7 @@ function FeeRecordDetailsModal({
 
         {/* Progress Bar - Only show if not fully paid */}
         {feeRecord.status !== "paid" && (
-          <div className="p-4 rounded-2xl bg-gradient-to-r from-gray-50 to-gray-100/50 dark:from-gray-800/50 dark:to-gray-800/30 border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/50">
+          <div className="p-4 rounded-2xl bg-gradient-to-r from-gray-50 to-gray-100/50 dark:from-gray-800/50 dark:to-gray-800/30 border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
             <div className="flex items-center justify-between mb-3">
               <p className="text-sm font-semibold text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200">Payment Progress</p>
               <p className="text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{progressPercentage}%</p>
@@ -5599,11 +5599,11 @@ function FeeRecordDetailsModal({
 
         {/* Payment History */}
         {feeRecord.paymentHistory && feeRecord.paymentHistory.length > 0 && (
-          <div className="p-4 rounded-2xl bg-gradient-to-r from-gray-50 to-gray-100/50 dark:from-gray-800/50 dark:to-gray-800/30 border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/50">
+          <div className="p-4 rounded-2xl bg-gradient-to-r from-gray-50 to-gray-100/50 dark:from-gray-800/50 dark:to-gray-800/30 border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
             <p className="text-sm font-semibold text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 mb-4">Payment History</p>
             <div className="space-y-3 max-h-48 overflow-y-auto pr-2">
               {feeRecord.paymentHistory.map((payment) => (
-                <div key={payment.id} className="flex items-center justify-between p-3 rounded-xl bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/60 border border-gray-200/50 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/40 hover:border-gray-300 dark:hover:border-gray-600 midnight:hover:border-cyan-500/30 purple:hover:border-pink-500/30 transition-colors">
+                <div key={payment.id} className="flex items-center justify-between p-3 rounded-xl bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/60 border border-gray-200/50 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 hover:border-gray-300 dark:hover:border-gray-600 midnight:hover:border-cyan-500/30 purple:hover:border-pink-500/30 transition-colors">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-xl bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
                       <BadgeCheck className="w-5 h-5 text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400" />
@@ -5708,7 +5708,7 @@ function RecordPaymentModal({
     >
       <div className="space-y-5">
         {/* Fee Summary */}
-        <div className="p-3 rounded-xl bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/30 border border-gray-200/50 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/30">
+        <div className="p-3 rounded-xl bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/30 border border-gray-200/50 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
           <div className="grid grid-cols-3 gap-3">
             <div>
               <p className="text-[10px] font-medium text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 uppercase">Total Fee</p>
@@ -6085,7 +6085,7 @@ function PaymentDetailsModal({
 
         {/* Details Grid */}
         <div className="space-y-3">
-          <div className="flex items-center justify-between p-3 rounded-xl bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/30 border border-gray-200/50 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/30">
+          <div className="flex items-center justify-between p-3 rounded-xl bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/30 border border-gray-200/50 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
             <div className="flex items-center gap-2">
               <GraduationCap className="w-4 h-4 text-gray-400" />
               <span className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Student</span>
@@ -6093,7 +6093,7 @@ function PaymentDetailsModal({
             <span className="text-xs font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{payment.childName}</span>
           </div>
 
-          <div className="flex items-center justify-between p-3 rounded-xl bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/30 border border-gray-200/50 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/30">
+          <div className="flex items-center justify-between p-3 rounded-xl bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/30 border border-gray-200/50 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
             <div className="flex items-center gap-2">
               <Calendar className="w-4 h-4 text-gray-400" />
               <span className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Date</span>
@@ -6103,7 +6103,7 @@ function PaymentDetailsModal({
             </span>
           </div>
 
-          <div className="flex items-center justify-between p-3 rounded-xl bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/30 border border-gray-200/50 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/30">
+          <div className="flex items-center justify-between p-3 rounded-xl bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/30 border border-gray-200/50 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
             <div className="flex items-center gap-2">
               <CreditCard className="w-4 h-4 text-gray-400" />
               <span className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Payment Method</span>
@@ -6113,7 +6113,7 @@ function PaymentDetailsModal({
             </span>
           </div>
 
-          <div className="flex items-center justify-between p-3 rounded-xl bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/30 border border-gray-200/50 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/30">
+          <div className="flex items-center justify-between p-3 rounded-xl bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/30 border border-gray-200/50 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
             <div className="flex items-center gap-2">
               <FileText className="w-4 h-4 text-gray-400" />
               <span className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Reference</span>
@@ -6121,7 +6121,7 @@ function PaymentDetailsModal({
             <span className="text-xs font-mono font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{payment.reference}</span>
           </div>
 
-          <div className="flex items-center justify-between p-3 rounded-xl bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/30 border border-gray-200/50 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/30">
+          <div className="flex items-center justify-between p-3 rounded-xl bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/30 border border-gray-200/50 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
             <div className="flex items-center gap-2">
               <Receipt className="w-4 h-4 text-gray-400" />
               <span className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Receipt Number</span>
@@ -6154,7 +6154,7 @@ function PaymentDetailsModal({
           </button>
           <button
             onClick={handlePrint}
-            className="flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 bg-gray-100 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 hover:bg-gray-200 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10/50 rounded-xl transition-all cursor-pointer"
+            className="flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 bg-gray-100 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 hover:bg-gray-200 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 rounded-xl transition-all cursor-pointer"
           >
             <ExternalLink className="w-4 h-4" />
             Print
@@ -7156,7 +7156,7 @@ function SendMessageModal({
           </div>
 
           {/* Tab Navigation */}
-          <div className="flex gap-2 p-1.5 rounded-2xl bg-gray-100/80 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 mb-4">
+          <div className="flex gap-2 p-1.5 rounded-2xl bg-gray-100/80 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 mb-4">
             {tabs.map((tab) => {
               const Icon = tab.icon;
               const isActive = activeTab === tab.id;
@@ -7442,7 +7442,7 @@ function SendMessageModal({
                         value={subject}
                         onChange={(e) => setSubject(e.target.value)}
                         placeholder="What's this email about?"
-                        className="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/60 border border-gray-200/80 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/60 focus:border-blue-400 dark:focus:border-blue-500 midnight:focus:border-cyan-500 purple:focus:border-pink-500 focus:ring-2 focus:ring-blue-500/10 text-sm text-gray-800 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 placeholder-gray-400 dark:placeholder-gray-500 midnight:placeholder-cyan-400 purple:placeholder-pink-400 transition-all outline-none"
+                        className="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/60 border border-gray-200/80 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 focus:border-blue-400 dark:focus:border-blue-500 midnight:focus:border-cyan-500 purple:focus:border-pink-500 focus:ring-2 focus:ring-blue-500/10 text-sm text-gray-800 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 placeholder-gray-400 dark:placeholder-gray-500 midnight:placeholder-cyan-400 purple:placeholder-pink-400 transition-all outline-none"
                       />
                     </div>
 
@@ -7458,7 +7458,7 @@ function SendMessageModal({
                           onChange={(e) => setMessage(e.target.value)}
                           placeholder="Write your message here..."
                           rows={5}
-                          className="w-full px-3.5 py-3 pb-10 rounded-xl bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/60 border border-gray-200/80 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/60 focus:border-blue-400 dark:focus:border-blue-500 midnight:focus:border-cyan-500 purple:focus:border-pink-500 focus:ring-2 focus:ring-blue-500/10 resize-none text-sm text-gray-800 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 placeholder-gray-400 dark:placeholder-gray-500 midnight:placeholder-cyan-400 purple:placeholder-pink-400 transition-all outline-none leading-relaxed"
+                          className="w-full px-3.5 py-3 pb-10 rounded-xl bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/60 border border-gray-200/80 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 focus:border-blue-400 dark:focus:border-blue-500 midnight:focus:border-cyan-500 purple:focus:border-pink-500 focus:ring-2 focus:ring-blue-500/10 resize-none text-sm text-gray-800 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 placeholder-gray-400 dark:placeholder-gray-500 midnight:placeholder-cyan-400 purple:placeholder-pink-400 transition-all outline-none leading-relaxed"
                         />
                         {/* Message toolbar */}
                         <div className="absolute bottom-2 left-2 right-2 flex items-center justify-between">
@@ -7505,7 +7505,7 @@ function SendMessageModal({
                           {emailAttachments.map((file, index) => (
                             <div
                               key={index}
-                              className="group flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/60 border border-gray-200/80 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/60"
+                              className="group flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/60 border border-gray-200/80 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20"
                             >
                               <span className="text-base">{getFileIcon(file)}</span>
                               <div className="flex-1 min-w-0 max-w-[120px]">
@@ -7670,7 +7670,7 @@ function SendMessageModal({
                           placeholder="Type your SMS message here..."
                           rows={4}
                           maxLength={480}
-                          className="w-full px-3.5 py-3 pb-10 rounded-xl bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/60 border border-gray-200/80 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/60 focus:border-purple-400 dark:focus:border-purple-500 focus:ring-2 focus:ring-purple-500/10 resize-none text-sm text-gray-800 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 placeholder-gray-400 dark:placeholder-gray-500 midnight:placeholder-cyan-400 purple:placeholder-pink-400 transition-all outline-none leading-relaxed"
+                          className="w-full px-3.5 py-3 pb-10 rounded-xl bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/60 border border-gray-200/80 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 focus:border-purple-400 dark:focus:border-purple-500 focus:ring-2 focus:ring-purple-500/10 resize-none text-sm text-gray-800 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 placeholder-gray-400 dark:placeholder-gray-500 midnight:placeholder-cyan-400 purple:placeholder-pink-400 transition-all outline-none leading-relaxed"
                         />
                         {/* Message toolbar */}
                         <div className="absolute bottom-2 left-2 right-2 flex items-center justify-between">
@@ -7741,7 +7741,7 @@ function SendMessageModal({
                                   />
                                 </div>
                               ) : (
-                                <div className="w-16 h-16 rounded-xl bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/60 border border-gray-200/80 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/60 flex flex-col items-center justify-center p-1">
+                                <div className="w-16 h-16 rounded-xl bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/60 border border-gray-200/80 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 flex flex-col items-center justify-center p-1">
                                   <span className="text-lg">{getFileIcon(file)}</span>
                                   <span className="text-[8px] text-gray-500 truncate w-full text-center mt-0.5">{file.name.slice(0, 8)}...</span>
                                 </div>
@@ -7762,7 +7762,7 @@ function SendMessageModal({
                     {/* Live Preview */}
                     <div>
                       <p className="text-xs font-medium text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 mb-2.5">Preview</p>
-                      <div className="relative bg-gradient-to-br from-gray-100 to-gray-50 dark:from-gray-800 dark:to-gray-800/50 rounded-2xl p-4 border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/40">
+                      <div className="relative bg-gradient-to-br from-gray-100 to-gray-50 dark:from-gray-800 dark:to-gray-800/50 rounded-2xl p-4 border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
                         {/* Mini phone frame */}
                         <div className="flex items-start gap-3">
                           {parent.profilePhoto ? (
@@ -7780,13 +7780,13 @@ function SendMessageModal({
                               <span className="text-[10px] text-gray-400">now</span>
                             </div>
                             {message ? (
-                              <div className="bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl rounded-tl-sm px-3 py-2 shadow-sm border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/40 max-w-[90%]">
+                              <div className="bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl rounded-tl-sm px-3 py-2 shadow-sm border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 max-w-[90%]">
                                 <p className="text-xs text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 whitespace-pre-wrap break-words">
                                   {message.length > 150 ? message.substring(0, 150) + "..." : message}
                                 </p>
                               </div>
                             ) : (
-                              <div className="bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl rounded-tl-sm px-3 py-2 shadow-sm border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/40 border-dashed">
+                              <div className="bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl rounded-tl-sm px-3 py-2 shadow-sm border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 border-dashed">
                                 <p className="text-xs text-gray-400 italic">Your message will appear here...</p>
                               </div>
                             )}
@@ -7963,7 +7963,7 @@ function LoginDetailsModal({
         {/* Login Credentials */}
         <div className="space-y-3">
           {/* Username/Email */}
-          <div className="p-4 rounded-xl bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+          <div className="p-4 rounded-xl bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 flex items-center justify-center">
@@ -7990,7 +7990,7 @@ function LoginDetailsModal({
           </div>
 
           {/* Portal URL */}
-          <div className="p-4 rounded-xl bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+          <div className="p-4 rounded-xl bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-lg bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
@@ -8017,7 +8017,7 @@ function LoginDetailsModal({
           </div>
 
           {/* Last Login */}
-          <div className="p-4 rounded-xl bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+          <div className="p-4 rounded-xl bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-lg bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
                 <Clock className="w-5 h-5 text-amber-600 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400" />

@@ -182,27 +182,25 @@ describe("DocEditor — Visual / CSS", () => {
       ]);
     });
 
-    // Scenario: doc icon has blue background with rounded-xl
-    it("doc icon has blue background with rounded-xl", () => {
+    // Scenario: the doc chip is a tinted, rounded, themed control
+    // (The icon was redesigned from a solid bg-blue-600 rounded-xl square into a soft tinted
+    //  chip; these assertions track the current design.)
+    it("doc chip has a tinted blue background and is rounded in every theme", () => {
       // Given a DocEditor rendered with default content
       const { container } = render(
         <DocEditor value={defaultValue} onChange={onChange} />
       );
-      // Then the doc icon should have correct size, color, and layout classes
-      const iconDiv = container.querySelector(".bg-blue-600.rounded-xl");
-      expect(iconDiv).not.toBeNull();
-      expectClasses(iconDiv, [
-        "w-7",
-        "h-7",
-        "sm:w-9",
-        "sm:h-9",
-        "rounded-xl",
-        "bg-blue-600",
+      // Then the chip should carry the tinted blue background with per-theme variants
+      const chip = container.querySelector(".bg-blue-50\\/80");
+      expect(chip).not.toBeNull();
+      expectClasses(chip, [
         "flex",
         "items-center",
-        "justify-center",
-        "text-white",
-        "shadow-sm",
+        "rounded-lg",
+        "bg-blue-50/80",
+        "dark:bg-blue-900/20",
+        "midnight:bg-cyan-500/10",
+        "purple:bg-pink-500/10",
       ]);
     });
 
@@ -424,45 +422,47 @@ describe("DocEditor — Visual / CSS", () => {
   // ────────────────────────────────────────────────
   // Context: page surface (editor area) styling and theming
   describe("page surface", () => {
-    // Scenario: editor area has print layout background
-    it("editor area has print layout background (default showPrintLayout=true)", () => {
+    // Scenario: the editor root is the themed surface
+    // (The print layout no longer paints a grey canvas behind the page — the root itself is the
+    //  themed surface, and the page carries its own elevation. Assertions track that design.)
+    it("editor root is the themed surface (default showPrintLayout=true)", () => {
       // Given a DocEditor rendered with default content (showPrintLayout defaults to true)
       const { container } = render(
         <DocEditor value={defaultValue} onChange={onChange} />
       );
-      // Then the editor root should have print-layout background classes
-      const editorRoot = container.querySelector(".bg-gray-50");
+      // Then the root should carry the themed background in every theme
+      const editorRoot = container.querySelector("[data-doc-editor-root]");
       expect(editorRoot).not.toBeNull();
       expectClasses(editorRoot, [
-        "min-h-full",
-        "py-3",
-        "sm:py-6",
-        "bg-gray-50",
-        "dark:bg-gray-950",
-        "midnight:bg-[#06101f]",
-        "purple:bg-[#12061f]",
+        "flex",
+        "flex-col",
+        "bg-white",
+        "dark:bg-[#0f1115]",
+        "midnight:bg-[#0a0e27]",
+        "purple:bg-[#1a0b2e]",
       ]);
     });
 
-    // Scenario: page wrapper has theme backgrounds and borders with rounded shadow
-    it("page wrapper has theme backgrounds and borders with rounded shadow", () => {
+    // Scenario: page wrapper has theme backgrounds and borders with rounded elevation
+    it("page wrapper has theme backgrounds, borders and elevation", () => {
       // Given a DocEditor rendered with default content
       const { container } = render(
         <DocEditor value={defaultValue} onChange={onChange} />
       );
-      // Then the page wrapper should have correct theme backgrounds, borders, and shadow
-      const pageWrapper = container.querySelector(".rounded-sm.shadow-md");
-      expect(pageWrapper).not.toBeNull();
-      expectClasses(pageWrapper, [
+      // Then the page wrapper should have themed background, border and its own shadow.
+      // It uses an arbitrary shadow (a soft two-layer page lift), not the old `shadow-md`.
+      const pageWrapper = [...container.querySelectorAll("div")].find(
+        (d) => /(^|\s)rounded(\s|$)/.test(d.className) && /shadow-\[/.test(d.className)
+      );
+      expect(pageWrapper).toBeTruthy();
+      expectClasses(pageWrapper!, [
         "w-full",
-        "rounded-sm",
-        "shadow-md",
+        "rounded",
         "bg-white",
         "dark:bg-gray-950",
         "midnight:bg-[#0a0e27]",
         "purple:bg-[#1a0b2e]",
         "border",
-        "border-gray-200/80",
         "dark:border-[#1a1d24]",
         "midnight:border-cyan-500/10",
         "purple:border-pink-500/10",

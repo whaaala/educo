@@ -302,7 +302,7 @@ export default function EmailDialog({
             <div className="flex-1 flex flex-col overflow-hidden">
               {/* Search */}
               <div className="px-4 py-3">
-                <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border border-gray-200/80 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/50 focus-within:border-blue-400 focus-within:ring-2 focus-within:ring-blue-500/10 transition-all">
+                <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border border-gray-200/80 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 focus-within:border-blue-400 focus-within:ring-2 focus-within:ring-blue-500/10 transition-all">
                   <Search className="w-4 h-4 text-gray-400 flex-shrink-0" />
                   <input value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
                     placeholder="Search people or enter email..."
@@ -366,7 +366,7 @@ export default function EmailDialog({
                         <input value={manualInput} onChange={e => setManualInput(e.target.value)}
                           onKeyDown={e => { if (e.key === "Enter") addManual(); }}
                           placeholder="Add email manually..."
-                          className="flex-1 px-3 py-2 rounded-lg bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border border-gray-200/80 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/50 text-[12px] outline-none focus:border-blue-400" />
+                          className="flex-1 px-3 py-2 rounded-lg bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border border-gray-200/80 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 text-[12px] outline-none focus:border-blue-400" />
                         <button onClick={addManual} className="px-3 py-2 rounded-lg bg-blue-600 text-white text-[11px] font-semibold hover:bg-blue-700 transition-colors cursor-pointer">Add</button>
                       </div>
                     </div>
@@ -422,14 +422,14 @@ export default function EmailDialog({
                 <div>
                   <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5 block">Subject</label>
                   <input value={subject} onChange={e => setSubject(e.target.value)}
-                    className="w-full px-3 py-2.5 rounded-xl bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/30 border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/40 text-[13px] text-gray-800 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-500/10 transition-all" />
+                    className="w-full px-3 py-2.5 rounded-xl bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/30 border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 text-[13px] text-gray-800 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-500/10 transition-all" />
                 </div>
 
                 {/* Message */}
                 <div className="flex-1">
                   <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5 block">Message</label>
                   <textarea value={message} onChange={e => setMessage(e.target.value)} rows={6}
-                    className="w-full px-3 py-2.5 rounded-xl bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/30 border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/40 text-[13px] text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 outline-none resize-none focus:border-blue-400 focus:ring-2 focus:ring-blue-500/10 transition-all leading-relaxed" />
+                    className="w-full px-3 py-2.5 rounded-xl bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/30 border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 text-[13px] text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 outline-none resize-none focus:border-blue-400 focus:ring-2 focus:ring-blue-500/10 transition-all leading-relaxed" />
                 </div>
 
                 {/* Attachments */}
@@ -510,7 +510,7 @@ function PersonRow({ person, selected, onToggle }: { person: EmailRecipient; sel
 
   return (
     <button onClick={onToggle}
-      className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left transition-all cursor-pointer ${selected ? "bg-blue-50 dark:bg-blue-900/15" : "hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5/30"}`}>
+      className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left transition-all cursor-pointer ${selected ? "bg-blue-50 dark:bg-blue-900/15" : "hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5"}`}>
       {person.avatar ? (
         <img src={person.avatar} alt={person.name} className="w-8 h-8 rounded-full object-cover flex-shrink-0" />
       ) : (
@@ -542,7 +542,7 @@ function GroupRow({ group, selectedEmails, expandedGroups, onToggleExpand, onTog
 
   return (
     <div style={{ paddingLeft: depth * 12 }}>
-      <div className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5/30 transition-colors">
+      <div className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors">
         {(hasSubgroups || hasMembersDirectly) && (
           <button onClick={() => onToggleExpand(group.id)} className="p-0.5 cursor-pointer">
             <ChevronRight className={`w-3.5 h-3.5 text-gray-400 transition-transform duration-200 ${isExpanded ? "rotate-90" : ""}`} />

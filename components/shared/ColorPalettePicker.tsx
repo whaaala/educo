@@ -221,7 +221,7 @@ function CustomHexRow({ color, onSelect }: { color: string; onSelect: (c: string
   }, [color, isFocused]);
 
   return (
-    <div className="flex items-center gap-2 mt-2 pt-2 border-t border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/50" onMouseDown={(e) => e.stopPropagation()}>
+    <div className="flex items-center gap-2 mt-2 pt-2 border-t border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20" onMouseDown={(e) => e.stopPropagation()}>
       <label className="relative cursor-pointer">
         <input
           type="color"
@@ -229,7 +229,11 @@ function CustomHexRow({ color, onSelect }: { color: string; onSelect: (c: string
           onMouseDown={() => { _nativeColorPickerOpen = true; }}
           onFocus={() => { _nativeColorPickerOpen = true; }}
           onChange={(e) => { _nativeColorPickerOpen = true; onSelect(e.target.value); }}
-          onBlur={() => { setTimeout(() => { _nativeColorPickerOpen = false; }, 1000); }}
+          // Clear on the NEXT tick, not after a full second. Deferring by one task is enough to
+          // survive the trailing click that dismisses the native OS picker (which would otherwise
+          // close the parent dropdown), while a 1000ms hold left click-outside dead for a whole
+          // second after picking any colour.
+          onBlur={() => { setTimeout(() => { _nativeColorPickerOpen = false; }, 0); }}
           onClick={() => { _nativeColorPickerOpen = true; }}
           className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
         />

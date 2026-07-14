@@ -5,27 +5,27 @@ import Button from "@/components/shared/Button";
 describe("Button — Visual / CSS", () => {
   // ─── Variant colors ──────────────────────────
   describe("variant styling", () => {
-    it("primary variant has purple background", () => {
+    it("primary variant has the blue brand background", () => {
       render(<Button variant="primary">Click</Button>);
       const btn = screen.getByText("Click");
-      expect(btn.className).toContain("bg-purple-600");
-      expect(btn.className).toContain("hover:bg-purple-700");
+      expect(btn.className).toContain("bg-blue-600");
+      expect(btn.className).toContain("hover:bg-blue-700");
       expect(btn.className).toContain("text-white");
     });
 
     it("primary variant has dark theme class", () => {
       render(<Button variant="primary">Click</Button>);
       const btn = screen.getByText("Click");
-      expect(btn.className).toContain("dark:bg-purple-500");
-      expect(btn.className).toContain("dark:hover:bg-purple-600");
+      expect(btn.className).toContain("dark:bg-[#1a1d24]");
+      expect(btn.className).toContain("dark:hover:bg-[#22262e]");
     });
 
     it("secondary variant has neutral background", () => {
       render(<Button variant="secondary">Click</Button>);
       const btn = screen.getByText("Click");
-      expect(btn.className).toContain("bg-neutral-600");
-      expect(btn.className).toContain("hover:bg-neutral-700");
-      expect(btn.className).toContain("text-white");
+      expect(btn.className).toContain("bg-gray-200");
+      expect(btn.className).toContain("hover:bg-gray-300");
+      expect(btn.className).toContain("text-gray-700");
     });
 
     it("danger variant has red background", () => {

@@ -160,7 +160,7 @@ export default function LoginDetailsModal({
                   return (
                     <tr
                       key={index}
-                      className="hover:bg-gray-50 dark:hover:bg-[#22262e]/30 midnight:hover:bg-cyan-500/5/30 purple:hover:bg-pink-500/5/30 transition-colors duration-150"
+                      className="hover:bg-gray-50 dark:hover:bg-[#22262e]/30 midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors duration-150"
                     >
                       <td className="py-3.5 px-4 text-sm font-medium text-gray-800 dark:text-gray-200 midnight:text-cyan-200 purple:text-pink-200">
                         {detail.userType}

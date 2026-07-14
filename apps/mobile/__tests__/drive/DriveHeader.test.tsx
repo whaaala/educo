@@ -57,12 +57,13 @@ describe('DriveHeader', () => {
         {...defaultProps}
         isTablet={false}
         sections={SIDEBAR_SECTIONS}
-        activeSection="home"
+        activeSection="myDrive"
         onSectionChange={jest.fn()}
       />
     );
-    expect(getByText('Home')).toBeTruthy();
+    // There is no "Home" pill — it was a dead DriveSection with no sidebar entry or behaviour.
     expect(getByText('My Drive')).toBeTruthy();
+    expect(getByText('Shared with me')).toBeTruthy();
     expect(getByText('Starred')).toBeTruthy();
   });
 
@@ -73,7 +74,7 @@ describe('DriveHeader', () => {
         {...defaultProps}
         isTablet={false}
         sections={SIDEBAR_SECTIONS}
-        activeSection="home"
+        activeSection="myDrive"
         onSectionChange={onSectionChange}
       />
     );

@@ -268,7 +268,7 @@ export default function ActionsDropdown<T>({
                     ? "text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/20"
                     : isSuccess
                     ? "text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400 hover:bg-green-50 dark:hover:bg-green-900/20"
-                    : "text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10/50"
+                    : "text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"
                 }
               `}
             >

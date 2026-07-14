@@ -31,14 +31,14 @@ describe('DriveSidebar (Tablet)', () => {
 
   it('renders the Drive title', () => {
     const { getByText } = render(
-      <DriveSidebar activeSection="home" onSectionChange={mockOnSectionChange} />
+      <DriveSidebar activeSection="myDrive" onSectionChange={mockOnSectionChange} />
     );
     expect(getByText('Drive')).toBeTruthy();
   });
 
   it('renders all sidebar sections', () => {
     const { getByText } = render(
-      <DriveSidebar activeSection="home" onSectionChange={mockOnSectionChange} />
+      <DriveSidebar activeSection="myDrive" onSectionChange={mockOnSectionChange} />
     );
     SIDEBAR_SECTIONS.forEach((section) => {
       expect(getByText(section.label)).toBeTruthy();
@@ -47,7 +47,7 @@ describe('DriveSidebar (Tablet)', () => {
 
   it('calls onSectionChange when a section is tapped', () => {
     const { getByText } = render(
-      <DriveSidebar activeSection="home" onSectionChange={mockOnSectionChange} />
+      <DriveSidebar activeSection="myDrive" onSectionChange={mockOnSectionChange} />
     );
     fireEvent.press(getByText('My Drive'));
     expect(mockOnSectionChange).toHaveBeenCalledWith('myDrive');
@@ -55,7 +55,7 @@ describe('DriveSidebar (Tablet)', () => {
 
   it('calls onSectionChange with correct section IDs', () => {
     const { getByText } = render(
-      <DriveSidebar activeSection="home" onSectionChange={mockOnSectionChange} />
+      <DriveSidebar activeSection="myDrive" onSectionChange={mockOnSectionChange} />
     );
     fireEvent.press(getByText('Starred'));
     expect(mockOnSectionChange).toHaveBeenCalledWith('starred');
@@ -69,15 +69,16 @@ describe('DriveSidebar (Tablet)', () => {
 
   it('renders storage indicator', () => {
     const { getByText } = render(
-      <DriveSidebar activeSection="home" onSectionChange={mockOnSectionChange} />
+      <DriveSidebar activeSection="myDrive" onSectionChange={mockOnSectionChange} />
     );
     expect(getByText('Storage')).toBeTruthy();
     expect(getByText('58.4 MB of 200 MB used')).toBeTruthy();
   });
 
   it('renders all section labels for each section ID', () => {
+    // NB: there is no "Home" section — it was a dead member of the DriveSection union with no
+    // sidebar entry and no screen behaviour, and has been removed.
     const sectionLabels = SIDEBAR_SECTIONS.map(s => s.label);
-    expect(sectionLabels).toContain('Home');
     expect(sectionLabels).toContain('My Drive');
     expect(sectionLabels).toContain('Shared with me');
     expect(sectionLabels).toContain('Recent');

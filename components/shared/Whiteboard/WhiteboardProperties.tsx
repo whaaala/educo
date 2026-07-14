@@ -114,7 +114,7 @@ export default function WhiteboardProperties({
                 onClick={() => onFontSizeChange(size)}
                 className={`w-7 h-7 rounded-lg flex items-center justify-center text-[10px] font-bold transition-all duration-150 cursor-pointer ${
                   activeFontSize === size
-                    ? "bg-blue-100 text-blue-600 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 dark:text-blue-400 midnight:bg-cyan-900/30 midnight:text-cyan-400 purple:bg-pink-900/30 purple:text-pink-400"
+                    ? "bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 midnight:bg-cyan-900/30 midnight:text-cyan-400 purple:bg-pink-900/30 purple:text-pink-400"
                     : "text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"
                 }`}
                 title={`${size}px`}

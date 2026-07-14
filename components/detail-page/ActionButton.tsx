@@ -51,7 +51,7 @@ export function ActionButton({
     ),
     ghost: cn(
       "bg-transparent",
-      "hover:bg-gray-100 dark:hover:bg-[#22262e]/50 midnight:hover:bg-cyan-500/5/50 purple:hover:bg-pink-500/5/50",
+      "hover:bg-gray-100 dark:hover:bg-[#22262e]/50 midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5",
       "text-gray-700 dark:text-gray-300 midnight:text-gray-300 purple:text-gray-300"
     ),
     danger: cn(

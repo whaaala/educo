@@ -255,7 +255,7 @@ export default function PublishDialog({
                       className={`flex items-center gap-3 px-4 py-3 cursor-pointer transition-colors ${
                         isSelected
                           ? "bg-blue-50 dark:bg-blue-500/10 midnight:bg-cyan-500/10 purple:bg-pink-500/10"
-                          : "hover:bg-gray-50 dark:hover:bg-[#22262e]/50 midnight:hover:bg-cyan-500/5/50 purple:hover:bg-pink-500/5/50"
+                          : "hover:bg-gray-50 dark:hover:bg-[#22262e]/50 midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5"
                       }`}
                     >
                       <input

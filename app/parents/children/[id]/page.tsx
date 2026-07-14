@@ -1005,7 +1005,7 @@ export default function ChildDetailPage() {
       afterStats={
         <div className="mt-6 space-y-6">
           {/* Profile Card - Hero Section */}
-        <div className="relative overflow-hidden rounded-2xl bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/50 shadow-sm">
+        <div className="relative overflow-hidden rounded-2xl bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm">
           <div className="relative p-4 sm:p-5">
             {/* Main Content Row */}
             <div className="flex flex-col sm:flex-row sm:items-start gap-4">
@@ -1108,7 +1108,7 @@ export default function ChildDetailPage() {
 
             {/* Stats Row - Compact Card Design */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3 mt-5">
-              <div className="group relative flex items-center gap-3 p-3 rounded-xl bg-gradient-to-br from-blue-50/80 to-white dark:from-blue-900/20 dark:to-gray-800/50 border border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/50 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
+              <div className="group relative flex items-center gap-3 p-3 rounded-xl bg-gradient-to-br from-blue-50/80 to-white dark:from-blue-900/20 dark:to-gray-800/50 border border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
                 <div className="flex-shrink-0 p-2.5 rounded-xl bg-blue-100 dark:bg-blue-900/50">
                   <TrendingUp className="w-5 h-5 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
                 </div>
@@ -1120,7 +1120,7 @@ export default function ChildDetailPage() {
                 </div>
               </div>
 
-              <div className="group relative flex items-center gap-3 p-3 rounded-xl bg-gradient-to-br from-green-50/80 to-white dark:from-green-900/20 dark:to-gray-800/50 border border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/50 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
+              <div className="group relative flex items-center gap-3 p-3 rounded-xl bg-gradient-to-br from-green-50/80 to-white dark:from-green-900/20 dark:to-gray-800/50 border border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
                 <div className="flex-shrink-0 p-2.5 rounded-xl bg-green-100 dark:bg-green-900/50">
                   <CheckCircle2 className="w-5 h-5 text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400" />
                 </div>
@@ -1132,7 +1132,7 @@ export default function ChildDetailPage() {
                 </div>
               </div>
 
-              <div className="group relative flex items-center gap-3 p-3 rounded-xl bg-gradient-to-br from-amber-50/80 to-amber-100/30 dark:from-amber-900/20 dark:to-gray-800/50 border border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/50 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
+              <div className="group relative flex items-center gap-3 p-3 rounded-xl bg-gradient-to-br from-amber-50/80 to-amber-100/30 dark:from-amber-900/20 dark:to-gray-800/50 border border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
                 <div className="flex-shrink-0 p-2.5 rounded-xl bg-amber-100 dark:bg-amber-900/50">
                   <TrendingUp className="w-5 h-5 text-amber-600 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400" />
                 </div>
@@ -1144,7 +1144,7 @@ export default function ChildDetailPage() {
                 </div>
               </div>
 
-              <div className="group relative flex items-center gap-3 p-3 rounded-xl bg-gradient-to-br from-orange-50/80 to-orange-100/30 dark:from-orange-900/20 dark:to-gray-800/50 border border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/50 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
+              <div className="group relative flex items-center gap-3 p-3 rounded-xl bg-gradient-to-br from-orange-50/80 to-orange-100/30 dark:from-orange-900/20 dark:to-gray-800/50 border border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
                 <div className="flex-shrink-0 p-2.5 rounded-xl bg-orange-100 dark:bg-orange-900/50">
                   <Award className="w-5 h-5 text-orange-600 dark:text-orange-400" />
                 </div>
@@ -1160,7 +1160,7 @@ export default function ChildDetailPage() {
         </div>
 
         {/* Tabs - Modern Navigation */}
-        <div className="relative bg-gradient-to-br from-gray-50/50 to-gray-100/30 dark:from-[#1a1d23]/30 dark:to-[#14161b]/50 midnight:from-[#0f1729]/30 midnight:to-[#0a0f1c]/50 purple:from-[#2a1a3e]/30 purple:to-[#1f1330]/50 backdrop-blur-sm rounded-2xl shadow-sm border border-gray-200/30 dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10/30 midnight:border-cyan-500/10 purple:border-pink-500/10 p-1.5 overflow-x-auto overflow-y-hidden scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-700 scrollbar-track-transparent">
+        <div className="relative bg-gradient-to-br from-gray-50/50 to-gray-100/30 dark:from-[#1a1d23]/30 dark:to-[#14161b]/50 midnight:from-[#0f1729]/30 midnight:to-[#0a0f1c]/50 purple:from-[#2a1a3e]/30 purple:to-[#1f1330]/50 backdrop-blur-sm rounded-2xl shadow-sm border border-gray-200/30 dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10 p-1.5 overflow-x-auto overflow-y-hidden scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-700 scrollbar-track-transparent">
           {/* Animated background gradient */}
           <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 via-purple-500/5 to-pink-500/5 dark:from-blue-400/5 dark:via-purple-400/5 dark:to-pink-400/5 midnight:from-cyan-400/5 midnight:via-blue-400/5 midnight:to-cyan-400/5 purple:from-pink-400/5 purple:via-purple-400/5 purple:to-pink-400/5 opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
 
@@ -1178,7 +1178,7 @@ export default function ChildDetailPage() {
                   className={`relative flex items-center justify-center gap-1.5 px-3 sm:px-4 py-2 rounded-xl transition-all duration-300 ease-out whitespace-nowrap group overflow-hidden ${
                     isActive
                       ? "bg-blue-50/80 dark:bg-blue-950/20 midnight:bg-cyan-950/20 purple:bg-pink-950/20 text-blue-700 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300 shadow-sm border border-blue-100/50 dark:border-blue-900/30 midnight:border-cyan-900/30 purple:border-pink-900/30"
-                      : "text-gray-700 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70 hover:bg-white/40 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5/30 midnight:hover:bg-cyan-500/5/30 purple:hover:bg-pink-500/5/30 hover:text-gray-900 dark:hover:text-gray-200 midnight:hover:text-cyan-200 purple:hover:text-pink-200 hover:shadow-sm"
+                      : "text-gray-700 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70 hover:bg-white/40 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 hover:text-gray-900 dark:hover:text-gray-200 midnight:hover:text-cyan-200 purple:hover:text-pink-200 hover:shadow-sm"
                   } cursor-pointer active:scale-95`}
                 >
                   {/* Shine effect on active tab */}
@@ -1213,7 +1213,7 @@ export default function ChildDetailPage() {
         </div>
 
         {/* Tab Content */}
-        <div className="relative bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-2xl shadow-sm ring-1 ring-gray-200/80 dark:ring-gray-700 midnight:ring-cyan-500/20 purple:ring-pink-500/20/50 p-4 sm:p-6 overflow-hidden">
+        <div className="relative bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-2xl shadow-sm ring-1 ring-gray-200/80 dark:ring-gray-700 midnight:ring-cyan-500/20 purple:ring-pink-500/20 p-4 sm:p-6 overflow-hidden">
           {/* Decorative background */}
           <div className="absolute top-0 right-0 w-40 h-40 sm:w-64 sm:h-64 lg:w-96 lg:h-96 bg-gradient-to-bl from-blue-500/5 via-purple-500/3 to-transparent pointer-events-none" />
           <div className="absolute bottom-0 left-0 w-32 h-32 sm:w-48 sm:h-48 lg:w-64 lg:h-64 bg-gradient-to-tr from-indigo-500/5 to-transparent pointer-events-none" />
@@ -1238,7 +1238,7 @@ export default function ChildDetailPage() {
                     return (
                       <div
                         key={subject.subject}
-                        className="group relative p-4 rounded-2xl bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/60 border border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/50 hover:border-gray-200 dark:hover:border-gray-600 midnight:hover:border-cyan-500/30 purple:hover:border-pink-500/30 shadow-sm hover:shadow-lg transition-all duration-300"
+                        className="group relative p-4 rounded-2xl bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/60 border border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 hover:border-gray-200 dark:hover:border-gray-600 midnight:hover:border-cyan-500/30 purple:hover:border-pink-500/30 shadow-sm hover:shadow-lg transition-all duration-300"
                         style={{ animationDelay: `${index * 50}ms` }}
                       >
                         {/* Subtle gradient overlay on hover */}
@@ -1445,7 +1445,7 @@ export default function ChildDetailPage() {
                   return (
                     <div
                       key={subject.subject}
-                      className="group relative flex items-center gap-4 p-5 rounded-2xl bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/80 midnight:bg-[#0a0e27]/80 purple:bg-[#1a0b2e]/80 hover:bg-gradient-to-r hover:from-white hover:to-gray-50/80 dark:hover:from-gray-800 dark:hover:to-gray-750/80 shadow-sm hover:shadow-xl transition-all duration-300 ring-1 ring-gray-200/80 dark:ring-gray-700 midnight:ring-cyan-500/20 purple:ring-pink-500/20/60 midnight:ring-cyan-500/20 purple:ring-pink-500/20 hover:ring-gray-300/80 dark:hover:ring-gray-600/80 overflow-hidden hover:-translate-y-0.5"
+                      className="group relative flex items-center gap-4 p-5 rounded-2xl bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/80 purple:bg-[#1a0b2e]/80 hover:bg-gradient-to-r hover:from-white hover:to-gray-50/80 dark:hover:from-gray-800 dark:hover:to-gray-750/80 shadow-sm hover:shadow-xl transition-all duration-300 ring-1 ring-gray-200/80 dark:ring-gray-700 midnight:ring-cyan-500/20 purple:ring-pink-500/20 hover:ring-gray-300/80 dark:hover:ring-gray-600/80 overflow-hidden hover:-translate-y-0.5"
                       style={{ animationDelay: `${index * 30}ms` }}
                     >
                       {/* Decorative accent bar */}
@@ -1455,7 +1455,7 @@ export default function ChildDetailPage() {
                       <div className={`absolute inset-0 bg-gradient-to-r ${scoreColor.bg} to-transparent opacity-0 group-hover:opacity-40 transition-opacity duration-300 rounded-2xl`} />
 
                       {/* Subject Icon */}
-                      <div className={`relative p-3.5 rounded-xl ${subjectStyle.bg} ${subjectStyle.iconColor} ring-1 ring-gray-200/60 dark:ring-gray-700 midnight:ring-cyan-500/20 purple:ring-pink-500/20/40 shadow-sm group-hover:scale-110 group-hover:shadow-md transition-all duration-300`}>
+                      <div className={`relative p-3.5 rounded-xl ${subjectStyle.bg} ${subjectStyle.iconColor} ring-1 ring-gray-200/60 dark:ring-gray-700 midnight:ring-cyan-500/20 purple:ring-pink-500/20 shadow-sm group-hover:scale-110 group-hover:shadow-md transition-all duration-300`}>
                         {subjectStyle.icon}
                       </div>
 
@@ -1478,7 +1478,7 @@ export default function ChildDetailPage() {
                             <span className="text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 font-medium">Score</span>
                             <span className={`font-bold ${scoreColor.text}`}>{subject.score}%</span>
                           </div>
-                          <div className="w-full h-2.5 bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/60 rounded-full overflow-hidden ring-1 ring-gray-200/50 dark:ring-gray-700 midnight:ring-cyan-500/20 purple:ring-pink-500/20/30">
+                          <div className="w-full h-2.5 bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/60 rounded-full overflow-hidden ring-1 ring-gray-200/50 dark:ring-gray-700 midnight:ring-cyan-500/20 purple:ring-pink-500/20">
                             <div
                               className={`h-full rounded-full bg-gradient-to-r ${scoreColor.gradient} transition-all duration-700 ease-out shadow-sm`}
                               style={{ width: `${subject.score}%` }}
@@ -1547,7 +1547,7 @@ export default function ChildDetailPage() {
               {/* Stat Cards */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {/* Days Present */}
-                <div className="group relative p-5 rounded-2xl bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/80 midnight:bg-[#0a0e27]/80 purple:bg-[#1a0b2e]/80 shadow-sm hover:shadow-xl ring-1 ring-gray-200/80 dark:ring-gray-700 midnight:ring-cyan-500/20 purple:ring-pink-500/20/60 midnight:ring-cyan-500/20 purple:ring-pink-500/20 hover:ring-emerald-200 dark:hover:ring-emerald-700/50 overflow-hidden transition-all duration-300 hover:-translate-y-0.5">
+                <div className="group relative p-5 rounded-2xl bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/80 purple:bg-[#1a0b2e]/80 shadow-sm hover:shadow-xl ring-1 ring-gray-200/80 dark:ring-gray-700 midnight:ring-cyan-500/20 purple:ring-pink-500/20 hover:ring-emerald-200 dark:hover:ring-emerald-700/50 overflow-hidden transition-all duration-300 hover:-translate-y-0.5">
                   <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-emerald-400 to-green-500 rounded-l-2xl" />
                   <div className="absolute -top-6 -right-6 w-24 h-24 bg-gradient-to-bl from-emerald-100/60 dark:from-emerald-900/30 to-transparent rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
                   <div className="relative">
@@ -1564,7 +1564,7 @@ export default function ChildDetailPage() {
                 </div>
 
                 {/* Days Absent */}
-                <div className="group relative p-5 rounded-2xl bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/80 midnight:bg-[#0a0e27]/80 purple:bg-[#1a0b2e]/80 shadow-sm hover:shadow-xl ring-1 ring-gray-200/80 dark:ring-gray-700 midnight:ring-cyan-500/20 purple:ring-pink-500/20/60 midnight:ring-cyan-500/20 purple:ring-pink-500/20 hover:ring-rose-200 dark:hover:ring-rose-700/50 overflow-hidden transition-all duration-300 hover:-translate-y-0.5">
+                <div className="group relative p-5 rounded-2xl bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/80 purple:bg-[#1a0b2e]/80 shadow-sm hover:shadow-xl ring-1 ring-gray-200/80 dark:ring-gray-700 midnight:ring-cyan-500/20 purple:ring-pink-500/20 hover:ring-rose-200 dark:hover:ring-rose-700/50 overflow-hidden transition-all duration-300 hover:-translate-y-0.5">
                   <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-rose-400 to-red-500 rounded-l-2xl" />
                   <div className="absolute -top-6 -right-6 w-24 h-24 bg-gradient-to-bl from-rose-100/60 dark:from-rose-900/30 to-transparent rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
                   <div className="relative">
@@ -1581,7 +1581,7 @@ export default function ChildDetailPage() {
                 </div>
 
                 {/* Times Late */}
-                <div className="group relative p-5 rounded-2xl bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/80 midnight:bg-[#0a0e27]/80 purple:bg-[#1a0b2e]/80 shadow-sm hover:shadow-xl ring-1 ring-gray-200/80 dark:ring-gray-700 midnight:ring-cyan-500/20 purple:ring-pink-500/20/60 midnight:ring-cyan-500/20 purple:ring-pink-500/20 hover:ring-amber-200 dark:hover:ring-amber-700/50 overflow-hidden transition-all duration-300 hover:-translate-y-0.5">
+                <div className="group relative p-5 rounded-2xl bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/80 purple:bg-[#1a0b2e]/80 shadow-sm hover:shadow-xl ring-1 ring-gray-200/80 dark:ring-gray-700 midnight:ring-cyan-500/20 purple:ring-pink-500/20 hover:ring-amber-200 dark:hover:ring-amber-700/50 overflow-hidden transition-all duration-300 hover:-translate-y-0.5">
                   <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-amber-400 to-orange-500 rounded-l-2xl" />
                   <div className="absolute -top-6 -right-6 w-24 h-24 bg-gradient-to-bl from-amber-100/60 dark:from-amber-900/30 to-transparent rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
                   <div className="relative">
@@ -1598,7 +1598,7 @@ export default function ChildDetailPage() {
                 </div>
 
                 {/* Attendance Rate */}
-                <div className="group relative p-5 rounded-2xl bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/80 midnight:bg-[#0a0e27]/80 purple:bg-[#1a0b2e]/80 shadow-sm hover:shadow-xl ring-1 ring-gray-200/80 dark:ring-gray-700 midnight:ring-cyan-500/20 purple:ring-pink-500/20/60 midnight:ring-cyan-500/20 purple:ring-pink-500/20 hover:ring-blue-200 dark:hover:ring-blue-700/50 overflow-hidden transition-all duration-300 hover:-translate-y-0.5">
+                <div className="group relative p-5 rounded-2xl bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/80 purple:bg-[#1a0b2e]/80 shadow-sm hover:shadow-xl ring-1 ring-gray-200/80 dark:ring-gray-700 midnight:ring-cyan-500/20 purple:ring-pink-500/20 hover:ring-blue-200 dark:hover:ring-blue-700/50 overflow-hidden transition-all duration-300 hover:-translate-y-0.5">
                   <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-blue-400 to-indigo-500 rounded-l-2xl" />
                   <div className="absolute -top-6 -right-6 w-24 h-24 bg-gradient-to-bl from-blue-100/60 dark:from-blue-900/30 to-transparent rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
                   <div className="relative">
@@ -1616,7 +1616,7 @@ export default function ChildDetailPage() {
               </div>
 
               {/* Progress Visualization */}
-              <div className="relative p-6 rounded-2xl bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/80 midnight:bg-[#0a0e27]/80 purple:bg-[#1a0b2e]/80 shadow-sm ring-1 ring-gray-200/80 dark:ring-gray-700 midnight:ring-cyan-500/20 purple:ring-pink-500/20/60 midnight:ring-cyan-500/20 purple:ring-pink-500/20 overflow-hidden">
+              <div className="relative p-6 rounded-2xl bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/80 purple:bg-[#1a0b2e]/80 shadow-sm ring-1 ring-gray-200/80 dark:ring-gray-700 midnight:ring-cyan-500/20 purple:ring-pink-500/20 overflow-hidden">
                 <div className="absolute -top-10 -right-10 w-32 h-32 bg-gradient-to-bl from-emerald-100/40 dark:from-emerald-900/20 to-transparent rounded-full blur-2xl" />
                 <div className="relative">
                   <div className="flex items-center justify-between mb-5">
@@ -1649,7 +1649,7 @@ export default function ChildDetailPage() {
               </div>
 
               {/* Subject/Lecture Attendance */}
-              <div className="relative p-6 rounded-2xl bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/80 midnight:bg-[#0a0e27]/80 purple:bg-[#1a0b2e]/80 shadow-sm ring-1 ring-gray-200/80 dark:ring-gray-700 midnight:ring-cyan-500/20 purple:ring-pink-500/20/60 midnight:ring-cyan-500/20 purple:ring-pink-500/20 overflow-hidden">
+              <div className="relative p-6 rounded-2xl bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/80 purple:bg-[#1a0b2e]/80 shadow-sm ring-1 ring-gray-200/80 dark:ring-gray-700 midnight:ring-cyan-500/20 purple:ring-pink-500/20 overflow-hidden">
                 <div className="absolute -top-10 -right-10 w-32 h-32 bg-gradient-to-bl from-blue-100/40 dark:from-blue-900/20 to-transparent rounded-full blur-2xl" />
 
                 {/* Section Header */}
@@ -1691,7 +1691,7 @@ export default function ChildDetailPage() {
                     return (
                       <div
                         key={subject.subject}
-                        className="group relative p-4 rounded-xl bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/50 hover:border-gray-200 dark:hover:border-gray-600 midnight:hover:border-cyan-500/30 purple:hover:border-pink-500/30 hover:shadow-md transition-all duration-300"
+                        className="group relative p-4 rounded-xl bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 hover:border-gray-200 dark:hover:border-gray-600 midnight:hover:border-cyan-500/30 purple:hover:border-pink-500/30 hover:shadow-md transition-all duration-300"
                         style={{ animationDelay: `${index * 50}ms` }}
                       >
                         {/* Subject Header */}
@@ -1801,7 +1801,7 @@ export default function ChildDetailPage() {
               </div>
 
               {/* Attendance Calendar */}
-              <div className="relative p-6 rounded-2xl bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/80 midnight:bg-[#0a0e27]/80 purple:bg-[#1a0b2e]/80 shadow-sm ring-1 ring-gray-200/80 dark:ring-gray-700 midnight:ring-cyan-500/20 purple:ring-pink-500/20/60 midnight:ring-cyan-500/20 purple:ring-pink-500/20 overflow-hidden">
+              <div className="relative p-6 rounded-2xl bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/80 purple:bg-[#1a0b2e]/80 shadow-sm ring-1 ring-gray-200/80 dark:ring-gray-700 midnight:ring-cyan-500/20 purple:ring-pink-500/20 overflow-hidden">
                 <div className="absolute -top-10 -right-10 w-32 h-32 bg-gradient-to-bl from-indigo-100/40 dark:from-indigo-900/20 to-transparent rounded-full blur-2xl" />
 
                 {/* Calendar Header */}
@@ -1863,7 +1863,7 @@ export default function ChildDetailPage() {
                       holiday:
                         "bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-400 ring-1 ring-purple-200 dark:ring-purple-800",
                       weekend:
-                        "bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400",
+                        "bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400",
                     };
 
                     return (
@@ -1875,7 +1875,7 @@ export default function ChildDetailPage() {
                           ${
                             day.status
                               ? statusColors[day.status]
-                              : "text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10/50"
+                              : "text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"
                           }
                           ${isToday ? "ring-2 ring-blue-500 dark:ring-blue-400 ring-offset-2 dark:ring-offset-gray-800 midnight:ring-offset-[#111827] purple:ring-offset-[#2a1447]" : ""}
                         `}
@@ -1955,7 +1955,7 @@ export default function ChildDetailPage() {
               {/* Fee Cards */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {/* Total Fees */}
-                <div className="group relative p-5 rounded-2xl bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/80 midnight:bg-[#0a0e27]/80 purple:bg-[#1a0b2e]/80 shadow-sm hover:shadow-xl ring-1 ring-gray-200/80 dark:ring-gray-700 midnight:ring-cyan-500/20 purple:ring-pink-500/20/60 midnight:ring-cyan-500/20 purple:ring-pink-500/20 hover:ring-blue-200 dark:hover:ring-blue-700/50 overflow-hidden transition-all duration-300 hover:-translate-y-0.5">
+                <div className="group relative p-5 rounded-2xl bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/80 purple:bg-[#1a0b2e]/80 shadow-sm hover:shadow-xl ring-1 ring-gray-200/80 dark:ring-gray-700 midnight:ring-cyan-500/20 purple:ring-pink-500/20 hover:ring-blue-200 dark:hover:ring-blue-700/50 overflow-hidden transition-all duration-300 hover:-translate-y-0.5">
                   <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-blue-400 to-indigo-500 rounded-l-2xl" />
                   <div className="absolute -top-6 -right-6 w-24 h-24 bg-gradient-to-bl from-blue-100/60 dark:from-blue-900/30 to-transparent rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
                   <div className="relative">
@@ -1972,7 +1972,7 @@ export default function ChildDetailPage() {
                 </div>
 
                 {/* Amount Paid */}
-                <div className="group relative p-5 rounded-2xl bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/80 midnight:bg-[#0a0e27]/80 purple:bg-[#1a0b2e]/80 shadow-sm hover:shadow-xl ring-1 ring-gray-200/80 dark:ring-gray-700 midnight:ring-cyan-500/20 purple:ring-pink-500/20/60 midnight:ring-cyan-500/20 purple:ring-pink-500/20 hover:ring-emerald-200 dark:hover:ring-emerald-700/50 overflow-hidden transition-all duration-300 hover:-translate-y-0.5">
+                <div className="group relative p-5 rounded-2xl bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/80 purple:bg-[#1a0b2e]/80 shadow-sm hover:shadow-xl ring-1 ring-gray-200/80 dark:ring-gray-700 midnight:ring-cyan-500/20 purple:ring-pink-500/20 hover:ring-emerald-200 dark:hover:ring-emerald-700/50 overflow-hidden transition-all duration-300 hover:-translate-y-0.5">
                   <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-emerald-400 to-green-500 rounded-l-2xl" />
                   <div className="absolute -top-6 -right-6 w-24 h-24 bg-gradient-to-bl from-emerald-100/60 dark:from-emerald-900/30 to-transparent rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
                   <div className="relative">
@@ -1989,7 +1989,7 @@ export default function ChildDetailPage() {
                 </div>
 
                 {/* Balance Due */}
-                <div className={`group relative p-5 rounded-2xl bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/80 midnight:bg-[#0a0e27]/80 purple:bg-[#1a0b2e]/80 shadow-sm hover:shadow-xl ring-1 ring-gray-200/80 dark:ring-gray-700 midnight:ring-cyan-500/20 purple:ring-pink-500/20/60 midnight:ring-cyan-500/20 purple:ring-pink-500/20 overflow-hidden transition-all duration-300 hover:-translate-y-0.5 ${
+                <div className={`group relative p-5 rounded-2xl bg-white dark:bg-[#1a1d24]/80 midnight:bg-[#0a0e27]/80 purple:bg-[#1a0b2e]/80 shadow-sm hover:shadow-xl ring-1 ring-gray-200/80 dark:ring-gray-700 midnight:ring-cyan-500/20 purple:ring-pink-500/20 midnight:ring-cyan-500/20 purple:ring-pink-500/20 overflow-hidden transition-all duration-300 hover:-translate-y-0.5 ${
                   (feeData?.balance || 0) > 0
                     ? "hover:ring-rose-200 dark:hover:ring-rose-700/50"
                     : "hover:ring-emerald-200 dark:hover:ring-emerald-700/50"
@@ -2037,7 +2037,7 @@ export default function ChildDetailPage() {
               </div>
 
               {/* Payment Progress */}
-              <div className="relative p-6 rounded-2xl bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/80 midnight:bg-[#0a0e27]/80 purple:bg-[#1a0b2e]/80 shadow-sm ring-1 ring-gray-200/80 dark:ring-gray-700 midnight:ring-cyan-500/20 purple:ring-pink-500/20/60 midnight:ring-cyan-500/20 purple:ring-pink-500/20 overflow-hidden">
+              <div className="relative p-6 rounded-2xl bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/80 purple:bg-[#1a0b2e]/80 shadow-sm ring-1 ring-gray-200/80 dark:ring-gray-700 midnight:ring-cyan-500/20 purple:ring-pink-500/20 overflow-hidden">
                 <div className="absolute -top-10 -right-10 w-32 h-32 bg-gradient-to-bl from-emerald-100/40 dark:from-emerald-900/20 to-transparent rounded-full blur-2xl" />
                 <div className="relative">
                   <div className="flex items-center justify-between mb-5">
@@ -2103,7 +2103,7 @@ export default function ChildDetailPage() {
               <div className="space-y-4">
                 {/* Summary Stats */}
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                  <div className="group relative p-4 rounded-xl bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] shadow-sm border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/60 midnight:border-cyan-500/20 purple:border-pink-500/20 overflow-hidden hover:shadow-md transition-all duration-300">
+                  <div className="group relative p-4 rounded-xl bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] shadow-sm border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 overflow-hidden hover:shadow-md transition-all duration-300">
                     <div className="absolute -top-4 -right-4 w-16 h-16 bg-emerald-100/50 dark:bg-emerald-900/20 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
                     <div className="relative flex items-center gap-3">
                       <div className="p-2 rounded-lg bg-emerald-50 dark:bg-emerald-900/30 midnight:bg-emerald-900/30 purple:bg-emerald-900/30">
@@ -2115,7 +2115,7 @@ export default function ChildDetailPage() {
                       </div>
                     </div>
                   </div>
-                  <div className="group relative p-4 rounded-xl bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] shadow-sm border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/60 midnight:border-cyan-500/20 purple:border-pink-500/20 overflow-hidden hover:shadow-md transition-all duration-300">
+                  <div className="group relative p-4 rounded-xl bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] shadow-sm border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 overflow-hidden hover:shadow-md transition-all duration-300">
                     <div className="absolute -top-4 -right-4 w-16 h-16 bg-amber-100/50 dark:bg-amber-900/20 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
                     <div className="relative flex items-center gap-3">
                       <div className="p-2 rounded-lg bg-amber-50 dark:bg-amber-900/30 midnight:bg-amber-900/30 purple:bg-amber-900/30">
@@ -2127,7 +2127,7 @@ export default function ChildDetailPage() {
                       </div>
                     </div>
                   </div>
-                  <div className="group relative p-4 rounded-xl bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] shadow-sm border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/60 midnight:border-cyan-500/20 purple:border-pink-500/20 overflow-hidden hover:shadow-md transition-all duration-300">
+                  <div className="group relative p-4 rounded-xl bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] shadow-sm border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 overflow-hidden hover:shadow-md transition-all duration-300">
                     <div className="absolute -top-4 -right-4 w-16 h-16 bg-rose-100/50 dark:bg-rose-900/20 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
                     <div className="relative flex items-center gap-3">
                       <div className="p-2 rounded-lg bg-rose-50 dark:bg-rose-900/30 midnight:bg-rose-900/30 purple:bg-rose-900/30">
@@ -2139,7 +2139,7 @@ export default function ChildDetailPage() {
                       </div>
                     </div>
                   </div>
-                  <div className="group relative p-4 rounded-xl bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] shadow-sm border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/60 midnight:border-cyan-500/20 purple:border-pink-500/20 overflow-hidden hover:shadow-md transition-all duration-300">
+                  <div className="group relative p-4 rounded-xl bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] shadow-sm border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 overflow-hidden hover:shadow-md transition-all duration-300">
                     <div className="absolute -top-4 -right-4 w-16 h-16 bg-blue-100/50 dark:bg-blue-900/20 midnight:bg-cyan-900/20 purple:bg-pink-900/20 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
                     <div className="relative flex items-center gap-3">
                       <div className="p-2 rounded-lg bg-blue-50 dark:bg-blue-900/30 midnight:bg-blue-900/30 purple:bg-blue-900/30">
@@ -2154,7 +2154,7 @@ export default function ChildDetailPage() {
                 </div>
 
                 {/* Filter Bar */}
-                <div className="flex flex-wrap items-center justify-between gap-3 p-4 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/60 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm">
+                <div className="flex flex-wrap items-center justify-between gap-3 p-4 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm">
                   <div className="flex flex-wrap items-center gap-3">
                     {/* Year Filter */}
                     <div className="relative">
@@ -2165,7 +2165,7 @@ export default function ChildDetailPage() {
                           setShowStatusDropdown(false);
                           setShowExportDropdown(false);
                         }}
-                        className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-xl bg-gray-50 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/50 midnight:bg-[#0f1330] purple:bg-[#251340] border border-gray-200 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-all duration-200 min-w-[140px] justify-between"
+                        className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-xl bg-gray-50 dark:bg-[#22262e] purple:bg-[#251340]/50 midnight:bg-[#0f1330] border border-gray-200 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-all duration-200 min-w-[140px] justify-between"
                       >
                         <span className="text-gray-700 dark:text-gray-200 midnight:text-cyan-200 purple:text-pink-200">{paymentYearFilter}</span>
                         <ChevronDown className={`w-4 h-4 text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 transition-transform duration-200 ${showYearDropdown ? "rotate-180" : ""}`} />
@@ -2179,7 +2179,7 @@ export default function ChildDetailPage() {
                                 setPaymentYearFilter(year);
                                 setShowYearDropdown(false);
                               }}
-                              className={`w-full px-4 py-2.5 text-left text-sm hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10/50 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors ${
+                              className={`w-full px-4 py-2.5 text-left text-sm hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors ${
                                 paymentYearFilter === year
                                   ? "text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 font-semibold bg-blue-50/50 dark:bg-blue-900/20 midnight:bg-cyan-900/20 purple:bg-pink-900/20"
                                   : "text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300"
@@ -2201,7 +2201,7 @@ export default function ChildDetailPage() {
                           setShowStatusDropdown(false);
                           setShowExportDropdown(false);
                         }}
-                        className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-xl bg-gray-50 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/50 midnight:bg-[#0f1330] purple:bg-[#251340] border border-gray-200 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-all duration-200 min-w-[160px] justify-between"
+                        className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-xl bg-gray-50 dark:bg-[#22262e] purple:bg-[#251340]/50 midnight:bg-[#0f1330] border border-gray-200 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-all duration-200 min-w-[160px] justify-between"
                       >
                         <span className="text-gray-700 dark:text-gray-200 midnight:text-cyan-200 purple:text-pink-200 truncate max-w-[120px]">{paymentCategoryFilter}</span>
                         <ChevronDown className={`w-4 h-4 text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 transition-transform duration-200 ${showCategoryDropdown ? "rotate-180" : ""}`} />
@@ -2215,7 +2215,7 @@ export default function ChildDetailPage() {
                                 setPaymentCategoryFilter(category);
                                 setShowCategoryDropdown(false);
                               }}
-                              className={`w-full px-4 py-2.5 text-left text-sm hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10/50 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors ${
+                              className={`w-full px-4 py-2.5 text-left text-sm hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors ${
                                 paymentCategoryFilter === category
                                   ? "text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 font-semibold bg-blue-50/50 dark:bg-blue-900/20 midnight:bg-cyan-900/20 purple:bg-pink-900/20"
                                   : "text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300"
@@ -2237,7 +2237,7 @@ export default function ChildDetailPage() {
                           setShowCategoryDropdown(false);
                           setShowExportDropdown(false);
                         }}
-                        className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-xl bg-gray-50 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/50 midnight:bg-[#0f1330] purple:bg-[#251340] border border-gray-200 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-all duration-200 min-w-[130px] justify-between"
+                        className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-xl bg-gray-50 dark:bg-[#22262e] purple:bg-[#251340]/50 midnight:bg-[#0f1330] border border-gray-200 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-all duration-200 min-w-[130px] justify-between"
                       >
                         <span className="text-gray-700 dark:text-gray-200 midnight:text-cyan-200 purple:text-pink-200">{paymentStatusFilter}</span>
                         <ChevronDown className={`w-4 h-4 text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 transition-transform duration-200 ${showStatusDropdown ? "rotate-180" : ""}`} />
@@ -2251,7 +2251,7 @@ export default function ChildDetailPage() {
                                 setPaymentStatusFilter(status);
                                 setShowStatusDropdown(false);
                               }}
-                              className={`w-full px-4 py-2.5 text-left text-sm hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10/50 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors ${
+                              className={`w-full px-4 py-2.5 text-left text-sm hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors ${
                                 paymentStatusFilter === status
                                   ? "text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 font-semibold bg-blue-50/50 dark:bg-blue-900/20 midnight:bg-cyan-900/20 purple:bg-pink-900/20"
                                   : "text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300"
@@ -2274,7 +2274,7 @@ export default function ChildDetailPage() {
                         setShowCategoryDropdown(false);
                         setShowStatusDropdown(false);
                       }}
-                      className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-xl bg-white dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/50 midnight:bg-[#0f1330] purple:bg-[#251340] border border-gray-200 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 hover:border-blue-300 dark:hover:border-blue-500 midnight:hover:border-cyan-400 purple:hover:border-pink-400 transition-all duration-200 text-gray-700 dark:text-gray-200 midnight:text-cyan-200 purple:text-pink-200"
+                      className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-xl bg-white dark:bg-[#22262e] purple:bg-[#251340]/50 midnight:bg-[#0f1330] border border-gray-200 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 hover:border-blue-300 dark:hover:border-blue-500 midnight:hover:border-cyan-400 purple:hover:border-pink-400 transition-all duration-200 text-gray-700 dark:text-gray-200 midnight:text-cyan-200 purple:text-pink-200"
                     >
                       <Download className="w-4 h-4" />
                       <span>Export</span>
@@ -2315,7 +2315,7 @@ export default function ChildDetailPage() {
                             doc.save(`Payment-History-${child.fullName.replace(/\s/g, "-")}.pdf`);
                             setShowExportDropdown(false);
                           }}
-                          className="w-full px-4 py-2.5 text-left text-sm hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10/50 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 flex items-center gap-2"
+                          className="w-full px-4 py-2.5 text-left text-sm hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 flex items-center gap-2"
                         >
                           <FileText className="w-4 h-4 text-red-500" />
                           Export as PDF
@@ -2349,7 +2349,7 @@ export default function ChildDetailPage() {
                             link.click();
                             setShowExportDropdown(false);
                           }}
-                          className="w-full px-4 py-2.5 text-left text-sm hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10/50 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 flex items-center gap-2"
+                          className="w-full px-4 py-2.5 text-left text-sm hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 flex items-center gap-2"
                         >
                           <FileText className="w-4 h-4 text-green-500" />
                           Export as CSV
@@ -2499,7 +2499,7 @@ export default function ChildDetailPage() {
                               e.stopPropagation();
                               // View receipt details
                             }}
-                            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10/50 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 text-gray-500 hover:text-gray-700 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 dark:hover:text-gray-200 midnight:text-cyan-400 midnight:hover:text-cyan-300 purple:text-pink-400 purple:hover:text-pink-300 transition-colors cursor-pointer"
+                            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 text-gray-500 hover:text-gray-700 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 dark:hover:text-gray-200 midnight:text-cyan-400 midnight:hover:text-cyan-300 purple:text-pink-400 purple:hover:text-pink-300 transition-colors cursor-pointer"
                             title="View Details"
                           >
                             <Eye className="w-4 h-4" />
@@ -2596,7 +2596,7 @@ export default function ChildDetailPage() {
 
                                 doc.save(`Receipt-${item.receiptNumber}.pdf`);
                               }}
-                              className="p-2 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/30 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 text-blue-500 hover:text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 dark:hover:text-blue-300 midnight:text-cyan-400 midnight:hover:text-cyan-300 purple:text-pink-400 purple:hover:text-pink-300 transition-colors cursor-pointer"
+                              className="p-2 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/30 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 midnight:text-cyan-400 midnight:hover:text-cyan-300 purple:text-pink-400 purple:hover:text-pink-300 transition-colors cursor-pointer"
                               title="Download Receipt"
                             >
                               <Download className="w-4 h-4" />

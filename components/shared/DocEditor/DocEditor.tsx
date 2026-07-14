@@ -1,7 +1,12 @@
 "use client";
 
-import { createContext, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { createContext, Fragment, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { EditorEditMenuPanel } from "@/components/shared/EditorEditMenu";
+// Reusable chart system — the SAME core + <Chart> the presentation editor uses.
+import { createChartSpec, CHART_TYPE_GROUPS, CHART_TYPE_LABELS, type ChartType, type ChartThemeName } from "@/lib/chart";
+import { chartToEmbedHtml } from "@/components/shared/Chart/chart-embed";
+import { useTheme } from "@/contexts/ThemeContext";
 import {
   ChevronRight,
   Plus,
@@ -1226,6 +1231,10 @@ export default function DocEditor({
   const fontSizeDropdownRef = useRef<HTMLDivElement | null>(null);
 
   const [toast, setToast] = useState<string | null>(null);
+  // Charts embedded in the document follow the app theme, exactly like slide charts do.
+  const { theme: appTheme } = useTheme();
+  const chartSurfaceTheme: ChartThemeName =
+    appTheme === "dark" || appTheme === "midnight" || appTheme === "purple" ? appTheme : "light";
   const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const translateRequestIdRef = useRef(0);
   const [tenantTranslationEnabled, setTenantTranslationEnabled] = useState(true);
@@ -4550,6 +4559,19 @@ export default function DocEditor({
     emitChange();
   };
 
+  /**
+   * Insert a REAL chart using the shared <Chart> component (the same one the presentation
+   * editor renders). The ChartSpec is embedded in the HTML so the chart stays live data —
+   * re-openable and editable — rather than a dead picture.
+   */
+  const insertChart = (type: ChartType) => {
+    if (!canEdit) return;
+    focusEditor();
+    const spec = createChartSpec(type);
+    exec("insertHTML", chartToEmbedHtml(spec, { theme: chartSurfaceTheme, width: 560 }));
+    emitChange();
+  };
+
   const insertBookmark = () => {
     const name = window.prompt("Bookmark name (letters/numbers/-) e.g. intro");
     if (!name) return;
@@ -5086,7 +5108,7 @@ export default function DocEditor({
           onMouseDown={(e) => e.stopPropagation()}
         >
           {/* Panel toolbar */}
-          <div className="flex items-center gap-0.5 px-2 py-1.5 border-b border-gray-100 dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10 bg-gray-50/80 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/60 purple:bg-[#1a0b2e]/60 flex-wrap">
+          <div className="flex items-center gap-0.5 px-2 py-1.5 border-b border-gray-100 dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10 bg-gray-50/80 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/60 purple:bg-[#1a0b2e]/60 flex-wrap">
             {/* Drag handle to reorder table */}
             <Tooltip content="Drag to reorder table" delay={400}>
               <button
@@ -5213,7 +5235,7 @@ export default function DocEditor({
                 const effColor = eff.color ?? "#1f2937";
                 return (
                 <div
-                  className="absolute top-full right-0 mt-2 w-[290px] bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-200/80 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/80 rounded-2xl shadow-2xl z-[300] backdrop-blur-sm"
+                  className="absolute top-full right-0 mt-2 w-[290px] bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-200/80 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-2xl shadow-2xl z-[300] backdrop-blur-sm"
                   onClick={(e) => e.stopPropagation()}
                 >
                   <div className="p-4 space-y-3">
@@ -5289,7 +5311,7 @@ export default function DocEditor({
                     </div>
 
                     {/* B / I / U + Alignment */}
-                    <div className="flex items-center gap-1 pt-1 border-t border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/50">
+                    <div className="flex items-center gap-1 pt-1 border-t border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
                       <Tooltip content="Bold" delay={400}><button type="button" className={`w-7 h-7 flex items-center justify-center rounded-lg cursor-pointer transition-all ${effBold ? "bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" : "text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"}`}
                         onClick={() => setWidgetTextFmt({ bold: !effBold })}><Bold size={13} /></button></Tooltip>
                       <Tooltip content="Italic" delay={400}><button type="button" className={`w-7 h-7 flex items-center justify-center rounded-lg cursor-pointer transition-all ${effItalic ? "bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" : "text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"}`}
@@ -5306,7 +5328,7 @@ export default function DocEditor({
                     </div>
 
                     {/* Font color — tabbed: Solid / Gradient / Glossy */}
-                    <div className="pt-1 border-t border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/50">
+                    <div className="pt-1 border-t border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
                       <div className="text-[11px] font-medium text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mb-1.5">Color</div>
                       <TabbedColorPalette
                         solidColors={TEXT_COLORS_MATRIX.flat()}
@@ -5349,7 +5371,7 @@ export default function DocEditor({
                 const effectiveBorderColor = borderScope === "cell" && activeCell?.border?.color != null ? activeCell.border.color : tableWidgetEditor.model.border.color;
                 return (
                 <div
-                  className="absolute top-full right-0 mt-2 w-[280px] bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-200/80 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/80 rounded-2xl shadow-2xl z-[300] backdrop-blur-sm"
+                  className="absolute top-full right-0 mt-2 w-[280px] bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-200/80 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-2xl shadow-2xl z-[300] backdrop-blur-sm"
                   onClick={(e) => e.stopPropagation()}
                 >
                   <div className="p-4 space-y-4">
@@ -5463,7 +5485,7 @@ export default function DocEditor({
                 const isNoFill = !effectiveCellBg || effectiveCellBg === "transparent";
                 return (
                 <div
-                  className="absolute top-full right-0 mt-2 w-[280px] bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-200/80 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/80 rounded-2xl shadow-2xl z-[300] backdrop-blur-sm"
+                  className="absolute top-full right-0 mt-2 w-[280px] bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-200/80 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-2xl shadow-2xl z-[300] backdrop-blur-sm"
                   onClick={(e) => e.stopPropagation()}
                 >
                   <div className="p-4 space-y-3">
@@ -6047,7 +6069,7 @@ export default function DocEditor({
 
       {/* Header row: doc icon + title (rename) */}
       {!isFullscreen && (
-      <div data-doc-header className="relative z-[50] px-2 sm:px-4 pt-2 sm:pt-3 pb-1.5 sm:pb-2 border-b border-gray-100 dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10 bg-white/70 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/40 midnight:bg-[#0a0e27]/60 purple:bg-[#1a0b2e]/60 backdrop-blur">
+      <div data-doc-header className="relative z-[50] px-2 sm:px-4 pt-2 sm:pt-3 pb-1.5 sm:pb-2 border-b border-gray-100 dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10 bg-white/70 dark:bg-[#0f1115]/40 midnight:bg-[#0a0e27]/60 purple:bg-[#1a0b2e]/60 backdrop-blur">
         <div className="flex items-center gap-2 sm:gap-3">
           {/* Back to documents */}
           <Tooltip content="Back to Documents" delay={400}>
@@ -6465,11 +6487,18 @@ export default function DocEditor({
               onLeave={() => setOpenSubmenu(null)}
               isSubmenuOpen={openSubmenu === "insert-chart"}
               submenu={
-                <SubmenuPanel className="w-[220px]">
-                  <ViewMenuItem label="Bar" onClick={() => insertSvg(`<svg width="520" height="220" viewBox="0 0 520 220" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="1" width="518" height="218" rx="14" fill="#ffffff" stroke="#e5e7eb"/><rect x="80" y="120" width="50" height="60" rx="8" fill="#3b82f6"/><rect x="160" y="90" width="50" height="90" rx="8" fill="#22c55e"/><rect x="240" y="140" width="50" height="40" rx="8" fill="#eab308"/><rect x="320" y="70" width="50" height="110" rx="8" fill="#ef4444"/><line x1="60" y1="180" x2="460" y2="180" stroke="#e5e7eb"/></svg>`)} />
-                  <ViewMenuItem label="Column" onClick={() => insertSvg(`<svg width="520" height="220" viewBox="0 0 520 220" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="1" width="518" height="218" rx="14" fill="#ffffff" stroke="#e5e7eb"/><rect x="80" y="120" width="50" height="60" rx="8" fill="#3b82f6"/><rect x="160" y="90" width="50" height="90" rx="8" fill="#22c55e"/><rect x="240" y="140" width="50" height="40" rx="8" fill="#eab308"/><rect x="320" y="70" width="50" height="110" rx="8" fill="#8b5cf6"/><line x1="60" y1="180" x2="460" y2="180" stroke="#e5e7eb"/></svg>`)} />
-                  <ViewMenuItem label="Line" onClick={() => insertSvg(`<svg width="520" height="220" viewBox="0 0 520 220" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="1" width="518" height="218" rx="14" fill="#ffffff" stroke="#e5e7eb"/><polyline points="70,160 160,120 250,150 340,90 430,110" fill="none" stroke="#3b82f6" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><circle cx="70" cy="160" r="5" fill="#3b82f6"/><circle cx="160" cy="120" r="5" fill="#3b82f6"/><circle cx="250" cy="150" r="5" fill="#3b82f6"/><circle cx="340" cy="90" r="5" fill="#3b82f6"/><circle cx="430" cy="110" r="5" fill="#3b82f6"/></svg>`)} />
-                  <ViewMenuItem label="Pie" onClick={() => insertSvg(`<svg width="520" height="220" viewBox="0 0 520 220" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="1" width="518" height="218" rx="14" fill="#ffffff" stroke="#e5e7eb"/><g transform="translate(160,110)"><circle r="70" fill="#f3f4f6"/><path d="M0 0 L70 0 A70 70 0 0 1 -22 66 Z" fill="#3b82f6"/><path d="M0 0 L-22 66 A70 70 0 0 1 -70 0 Z" fill="#22c55e"/><path d="M0 0 L-70 0 A70 70 0 0 1 0 -70 Z" fill="#eab308"/><path d="M0 0 L0 -70 A70 70 0 0 1 70 0 Z" fill="#ef4444"/></g></svg>`)} />
+                /* The SAME reusable <Chart> the presentation editor uses — all 19 types, real
+                   seed data, theme-aware, and re-editable (the ChartSpec rides along in the
+                   embedded HTML). No more hardcoded decorative SVGs. */
+                <SubmenuPanel className="w-[220px] max-h-[70vh] overflow-y-auto">
+                  {CHART_TYPE_GROUPS.map((g) => (
+                    <Fragment key={g.group}>
+                      <div className="px-3 pt-2 pb-1 text-[10px] font-semibold uppercase tracking-wide text-gray-400">{g.group}</div>
+                      {g.types.map((t) => (
+                        <ViewMenuItem key={t} label={CHART_TYPE_LABELS[t]} onClick={() => insertChart(t)} />
+                      ))}
+                    </Fragment>
+                  ))}
                   <ViewMenuDivider />
                   <ViewMenuItem label="From Sheets" onClick={() => showToast("Sheets: add Google integration to enable")} />
                 </SubmenuPanel>
@@ -6880,6 +6909,10 @@ export default function DocEditor({
                 <input
                   type="text"
                   inputMode="numeric"
+                  // Neither this input nor its chevron carried an accessible name — a screen
+                  // reader announced them as unlabelled. (The other toolbar dropdowns get theirs
+                  // from the shared ToolbarDropdown; this bespoke control was missed.)
+                  aria-label="Font size"
                   disabled={!canEdit}
                   value={fontSizeInputVal}
                   onChange={(e) => setFontSizeInputVal(e.target.value)}
@@ -6905,11 +6938,14 @@ export default function DocEditor({
                   className="w-8 h-7 text-center text-[12px] bg-transparent border border-transparent focus:border-blue-400 dark:focus:border-blue-500 midnight:focus:border-cyan-500 purple:focus:border-pink-500 rounded outline-none text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 cursor-pointer disabled:opacity-50"
                 />
                 <button type="button" disabled={!canEdit}
+                  aria-label="Font size"
+                  aria-expanded={fontSizeOpen}
+                  aria-haspopup="listbox"
                   onMouseDown={(e) => { e.preventDefault(); }}
                   onClick={() => { closeAllToolbarDropdowns(); setFontSizeOpen(!fontSizeOpen); }}
                   className="w-4 h-7 inline-flex items-center justify-center cursor-pointer disabled:opacity-50"
                 >
-                  <ChevronDown className="w-3 h-3 text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300" />
+                  <ChevronDown className="w-3 h-3 text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300" aria-hidden="true" />
                 </button>
               </div>
             </Tooltip>
@@ -7216,7 +7252,7 @@ export default function DocEditor({
             {moreToolbarOpen && (
               <div
                 data-doc-menu-panel
-                className="absolute right-0 top-full mt-1 z-[120] w-[220px] rounded-2xl overflow-hidden bg-white/80 dark:bg-[#0f1115]/95 midnight:bg-[#0a0e27]/80 purple:bg-[#1a0b2e]/80 backdrop-blur-[20px] backdrop-saturate-[180%] border border-gray-300/60 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30/50 midnight:border-cyan-400/20 purple:border-pink-400/20 shadow-[0_4px_6px_-1px_rgba(0,0,0,0.1),0_12px_24px_-4px_rgba(0,0,0,0.08)] dark:shadow-[0_4px_6px_-1px_rgba(0,0,0,0.3),0_12px_24px_-4px_rgba(0,0,0,0.4)] py-1.5"
+                className="absolute right-0 top-full mt-1 z-[120] w-[220px] rounded-2xl overflow-hidden bg-white/80 dark:bg-[#0f1115]/95 midnight:bg-[#0a0e27]/80 purple:bg-[#1a0b2e]/80 backdrop-blur-[20px] backdrop-saturate-[180%] border border-gray-300/60 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 midnight:border-cyan-400/20 purple:border-pink-400/20 shadow-[0_4px_6px_-1px_rgba(0,0,0,0.1),0_12px_24px_-4px_rgba(0,0,0,0.08)] dark:shadow-[0_4px_6px_-1px_rgba(0,0,0,0.3),0_12px_24px_-4px_rgba(0,0,0,0.4)] py-1.5"
               >
                 {/* Alignment */}
                 <div className="px-2 py-1 text-[10px] font-semibold text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 uppercase tracking-wider">Alignment</div>
@@ -7461,7 +7497,7 @@ export default function DocEditor({
           )}
           {!isFullscreen && showEquationToolbar && (
             <div data-doc-equation-toolbar className="mx-auto w-full max-w-[860px] mb-2 px-2">
-              <div className="flex items-center gap-2 p-2 rounded-xl border border-gray-200 dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10 bg-white/70 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/60 midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] backdrop-blur-sm">
+              <div className="flex items-center gap-2 p-2 rounded-xl border border-gray-200 dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10 bg-white/70 dark:bg-[#0f1115] purple:bg-[#1a0b2e]/60 midnight:bg-[#0a0e27] backdrop-blur-sm">
                 <Sigma className="w-4 h-4 text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300" />
                 <input
                   placeholder="Insert equation (LaTeX/plain)…"
@@ -7482,7 +7518,7 @@ export default function DocEditor({
           )}
           {/* Drawing annotation overlay + toolbar */}
           {drawingMode && (
-            <div className="sticky top-0 z-[60] flex items-center justify-center py-1.5 bg-white/95 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/95 backdrop-blur-xl border-b border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/60 shadow-sm">
+            <div className="sticky top-0 z-[60] flex items-center justify-center py-1.5 bg-white/95 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/95 backdrop-blur-xl border-b border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm">
               <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
                 {/* Tool buttons */}
                 {([
@@ -7584,7 +7620,7 @@ export default function DocEditor({
                               }}
                             >
                               {/* Ruler bar */}
-                              <div className="h-[22px] relative rounded-sm bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/40 overflow-hidden">
+                              <div className="h-[22px] relative rounded-sm bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 overflow-hidden">
                                 {/* Margin zone shading — gray areas for margins */}
                                 <div className="absolute top-0 bottom-0 bg-gradient-to-r from-gray-100 to-gray-50 dark:from-gray-800 dark:to-gray-850" style={{ left: 0, width: dims.marginLeftPx }} />
                                 <div className="absolute top-0 bottom-0 bg-gradient-to-l from-gray-100 to-gray-50 dark:from-gray-800 dark:to-gray-850" style={{ right: 0, width: dims.marginRightPx }} />
@@ -7645,7 +7681,7 @@ export default function DocEditor({
                                 ? "bg-white dark:bg-gray-950 midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]"
                                 : "",
                               "shadow-[0_1px_3px_rgba(0,0,0,0.08),0_1px_2px_rgba(0,0,0,0.06)] dark:shadow-[0_1px_3px_rgba(0,0,0,0.3)]",
-                              "border border-gray-200/50 dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10/50 midnight:border-cyan-500/10 purple:border-pink-500/10",
+                              "border border-gray-200/50 dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10",
                             ].join(" ")}
                             style={{
                               maxWidth: isFullscreen ? "min(1200px, calc(100vw - 64px))" : dims.pageWidthPx,
@@ -7699,7 +7735,7 @@ export default function DocEditor({
                                     <button key={tpl.id}
                                       onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); }}
                                       onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleTemplateInsert(tpl); }}
-                                      className="pointer-events-auto inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[12px] font-semibold border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-white/90 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/80 midnight:bg-[#0a0e27]/80 purple:bg-[#1a0b2e]/80 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors cursor-pointer" title={tpl.label}>
+                                      className="pointer-events-auto inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[12px] font-semibold border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-white/90 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/80 purple:bg-[#1a0b2e]/80 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors cursor-pointer" title={tpl.label}>
                                       <TplIcon className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300" />
                                       <span className="text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100">{tpl.label}</span>
                                     </button>
@@ -7709,7 +7745,7 @@ export default function DocEditor({
                                   <button
                                     onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); }}
                                     onClick={(e) => { e.preventDefault(); e.stopPropagation(); setMoreOpen((v) => !v); }}
-                                    className="pointer-events-auto inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[12px] font-semibold border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-white/90 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/80 midnight:bg-[#0a0e27]/80 purple:bg-[#1a0b2e]/80 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors cursor-pointer" title="More templates">
+                                    className="pointer-events-auto inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[12px] font-semibold border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-white/90 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/80 purple:bg-[#1a0b2e]/80 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors cursor-pointer" title="More templates">
                                     <Package className="w-4 h-4 text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300" />
                                     <span className="text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100">More</span>
                                   </button>
@@ -7786,7 +7822,7 @@ export default function DocEditor({
                         <button key={tpl.id}
                           onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); }}
                           onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleTemplateInsert(tpl); }}
-                          className="pointer-events-auto inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[12px] font-semibold border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-white/90 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/80 midnight:bg-[#0a0e27]/80 purple:bg-[#1a0b2e]/80 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors cursor-pointer" title={tpl.label}>
+                          className="pointer-events-auto inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[12px] font-semibold border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-white/90 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/80 purple:bg-[#1a0b2e]/80 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors cursor-pointer" title={tpl.label}>
                           <TplIcon className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300" />
                           <span className="text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100">{tpl.label}</span>
                         </button>
@@ -7796,7 +7832,7 @@ export default function DocEditor({
                       <button
                         onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); }}
                         onClick={(e) => { e.preventDefault(); e.stopPropagation(); setMoreOpen((v) => !v); }}
-                        className="pointer-events-auto inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[12px] font-semibold border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-white/90 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/80 midnight:bg-[#0a0e27]/80 purple:bg-[#1a0b2e]/80 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors cursor-pointer" title="More templates">
+                        className="pointer-events-auto inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[12px] font-semibold border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-white/90 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/80 purple:bg-[#1a0b2e]/80 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors cursor-pointer" title="More templates">
                         <Package className="w-4 h-4 text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300" />
                         <span className="text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100">More</span>
                       </button>
@@ -7937,7 +7973,7 @@ export default function DocEditor({
       {/* ── Image Loading Overlay ── */}
       {imageLoading && (
         <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/20 backdrop-blur-sm">
-          <div className="flex flex-col items-center gap-3 p-6 rounded-2xl bg-white/90 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/90 midnight:bg-[#0a0e27]/90 purple:bg-[#1a0b2e]/90 backdrop-blur-xl shadow-2xl border border-gray-200/50 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/50">
+          <div className="flex flex-col items-center gap-3 p-6 rounded-2xl bg-white/90 dark:bg-[#0f1115] midnight:bg-[#0a0e27]/90 purple:bg-[#1a0b2e]/90 backdrop-blur-xl shadow-2xl border border-gray-200/50 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
             <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
             <span className="text-[13px] font-medium text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100">Inserting image…</span>
           </div>
@@ -7949,7 +7985,7 @@ export default function DocEditor({
         <div className="fixed inset-0 z-[250] flex items-center justify-center bg-black/30 backdrop-blur-sm" onClick={() => { setShowImageUrlModal(false); setImageUrlInput(""); setImageUrlError(""); }}>
           <div
             data-doc-image-url-modal
-            className="w-full max-w-[480px] mx-4 rounded-2xl bg-white/95 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/95 midnight:bg-[#0a0e27]/95 purple:bg-[#1a0b2e]/95 backdrop-blur-xl shadow-2xl border border-gray-200/50 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/50 midnight:border-cyan-500/20 purple:border-pink-500/20 p-6"
+            className="w-full max-w-[480px] mx-4 rounded-2xl bg-white/95 dark:bg-[#0f1115] midnight:bg-[#0a0e27]/95 purple:bg-[#1a0b2e]/95 backdrop-blur-xl shadow-2xl border border-gray-200/50 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 p-6"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between mb-4">
@@ -8024,7 +8060,7 @@ export default function DocEditor({
       {!isFullscreen && showImageSearchSidebar && (
         <div
           data-doc-image-search-panel
-          className="absolute right-0 top-0 bottom-0 z-[150] w-[340px] max-md:hidden border-l border-gray-200/80 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/80 midnight:border-cyan-500/10 purple:border-pink-500/10 bg-white/95 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/95 midnight:bg-[#0a0e27]/95 purple:bg-[#1a0b2e]/95 backdrop-blur-xl shadow-[-4px_0_24px_-4px_rgba(0,0,0,0.08)] flex flex-col overflow-hidden"
+          className="absolute right-0 top-0 bottom-0 z-[150] w-[340px] max-md:hidden border-l border-gray-200/80 dark:border-gray-700 midnight:border-cyan-500/10 purple:border-pink-500/10 bg-white/95 dark:bg-[#0f1115] midnight:bg-[#0a0e27]/95 purple:bg-[#1a0b2e]/95 backdrop-blur-xl shadow-[-4px_0_24px_-4px_rgba(0,0,0,0.08)] flex flex-col overflow-hidden"
         >
           <div className="flex items-center justify-between px-3 py-3 border-b border-gray-100 dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10">
             <div className="flex items-center gap-2">
@@ -8325,7 +8361,7 @@ export default function DocEditor({
         return (
           <div
             data-doc-image-toolbar
-            className="fixed z-[160] flex items-center gap-1 px-2 py-1.5 rounded-full bg-white/95 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/95 midnight:bg-[#0a0e27]/95 purple:bg-[#1a0b2e]/95 backdrop-blur-2xl shadow-2xl border border-indigo-200/60 dark:border-indigo-500/30 midnight:border-cyan-500/20 purple:border-pink-500/20"
+            className="fixed z-[160] flex items-center gap-1 px-2 py-1.5 rounded-full bg-white/95 dark:bg-[#0f1115] midnight:bg-[#0a0e27]/95 purple:bg-[#1a0b2e]/95 backdrop-blur-2xl shadow-2xl border border-indigo-200/60 dark:border-indigo-500/30 midnight:border-cyan-500/20 purple:border-pink-500/20"
             style={{
               top: Math.max(4, top),
               left: Math.max(8, left),
@@ -8911,7 +8947,7 @@ export default function DocEditor({
       {showImageOptions && selectedImage && (
         <div
           data-doc-image-options-panel
-          className="absolute right-0 top-0 bottom-0 z-[155] w-[300px] max-md:hidden border-l border-gray-200/80 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/80 midnight:border-cyan-500/10 purple:border-pink-500/10 bg-white/95 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/95 midnight:bg-[#0a0e27]/95 purple:bg-[#1a0b2e]/95 backdrop-blur-xl shadow-[-4px_0_24px_-4px_rgba(0,0,0,0.08)] flex flex-col overflow-hidden"
+          className="absolute right-0 top-0 bottom-0 z-[155] w-[300px] max-md:hidden border-l border-gray-200/80 dark:border-gray-700 midnight:border-cyan-500/10 purple:border-pink-500/10 bg-white/95 dark:bg-[#0f1115] midnight:bg-[#0a0e27]/95 purple:bg-[#1a0b2e]/95 backdrop-blur-xl shadow-[-4px_0_24px_-4px_rgba(0,0,0,0.08)] flex flex-col overflow-hidden"
           onClick={(e) => e.stopPropagation()}
           onMouseDown={(e) => e.stopPropagation()}
         >
@@ -9136,7 +9172,7 @@ export default function DocEditor({
       {!isFullscreen && showComments && (
         <div
           data-doc-comments-panel
-          className="absolute right-0 top-0 bottom-0 z-[150] w-[340px] max-md:hidden border-l border-gray-200/80 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/80 bg-white/95 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/95 backdrop-blur-xl shadow-[-4px_0_24px_-4px_rgba(0,0,0,0.08)] flex flex-col overflow-hidden"
+          className="absolute right-0 top-0 bottom-0 z-[150] w-[340px] max-md:hidden border-l border-gray-200/80 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-white/95 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/95 backdrop-blur-xl shadow-[-4px_0_24px_-4px_rgba(0,0,0,0.08)] flex flex-col overflow-hidden"
         >
           {/* Header with tabs */}
           <div className="border-b border-gray-100 dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10">
@@ -9189,7 +9225,7 @@ export default function DocEditor({
           </div>
 
           {/* Filter controls */}
-          <div className="flex items-center gap-2 px-3 py-2 border-b border-gray-50 dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10/50">
+          <div className="flex items-center gap-2 px-3 py-2 border-b border-gray-50 dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10">
             <div className="flex items-center gap-1 bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/60 rounded-lg p-0.5">
               {(["open", "resolved", "rejected", "all"] as const).map((f) => (
                 <button
@@ -9320,7 +9356,7 @@ export default function DocEditor({
         return (
         <div
           data-doc-comment-popover
-          className="absolute z-[200] w-[300px] rounded-2xl border border-gray-200/80 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/80 bg-white/95 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/95 backdrop-blur-xl shadow-2xl"
+          className="absolute z-[200] w-[300px] rounded-2xl border border-gray-200/80 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-white/95 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/95 backdrop-blur-xl shadow-2xl"
           style={{ left: clampedLeft, top: clampedTop }}
         >
           <div className="p-3">
@@ -9337,7 +9373,7 @@ export default function DocEditor({
                 autoFocus
                 value={commentText}
                 placeholder="Add a comment... (use @ to mention)"
-                className="w-full text-[12px] text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 bg-gray-50/80 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/80 midnight:bg-[#0a0e27]/80 purple:bg-[#1a0b2e]/80 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-xl px-3 py-2 resize-none outline-none focus:ring-2 focus:ring-blue-400/40 placeholder-gray-400 dark:placeholder-gray-500 midnight:placeholder-cyan-400 purple:placeholder-pink-400"
+                className="w-full text-[12px] text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 bg-gray-50/80 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/80 purple:bg-[#1a0b2e]/80 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-xl px-3 py-2 resize-none outline-none focus:ring-2 focus:ring-blue-400/40 placeholder-gray-400 dark:placeholder-gray-500 midnight:placeholder-cyan-400 purple:placeholder-pink-400"
                 rows={3}
                 onKeyDown={(e) => {
                   popoverMention.handleKeyDown(e);
@@ -9393,7 +9429,7 @@ export default function DocEditor({
       {!isFullscreen && (showComments || (showFloatingComments && openComments.length > 0)) && (
         <div
           data-doc-comments-mobile-sheet
-          className="md:hidden fixed inset-x-0 bottom-0 z-[200] max-h-[70vh] rounded-t-2xl border-t border-gray-200/80 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/80 bg-white/98 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/98 backdrop-blur-xl shadow-[0_-8px_32px_-4px_rgba(0,0,0,0.12)] flex flex-col overflow-hidden"
+          className="md:hidden fixed inset-x-0 bottom-0 z-[200] max-h-[70vh] rounded-t-2xl border-t border-gray-200/80 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-white/98 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/98 backdrop-blur-xl shadow-[0_-8px_32px_-4px_rgba(0,0,0,0.12)] flex flex-col overflow-hidden"
         >
           {/* Drag handle */}
           <div className="flex justify-center pt-2 pb-1">
@@ -9716,7 +9752,7 @@ export default function DocEditor({
       {dialog === "findReplace" && (
         <div
           data-doc-find-replace-panel
-          className="absolute right-3 top-[92px] z-[150] w-[300px] rounded-2xl border border-gray-200/80 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/80 midnight:border-gray-600/60 purple:border-purple-700/60 bg-white/95 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/95 midnight:bg-[#0d1829]/95 purple:bg-[#1a0b2e]/95 backdrop-blur-md shadow-xl p-3"
+          className="absolute right-3 top-[92px] z-[150] w-[300px] rounded-2xl border border-gray-200/80 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 midnight:border-gray-600/60 purple:border-purple-700/60 bg-white/95 dark:bg-[#0f1115] midnight:bg-[#0a0e27] midnight:bg-[#0d1829]/95 purple:bg-[#1a0b2e]/95 backdrop-blur-md shadow-xl p-3"
         >
           <div className="flex items-center justify-between mb-3">
             <span className="text-[12px] font-bold text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100">
@@ -9768,7 +9804,7 @@ export default function DocEditor({
           </div>
 
           {/* Divider */}
-          <div className="my-2.5 border-t border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/60 midnight:border-gray-600/40 purple:border-purple-700/40" />
+          <div className="my-2.5 border-t border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 midnight:border-gray-600/40 purple:border-purple-700/40" />
 
           {/* Replace section */}
           <div data-doc-replace-section className="space-y-1.5">
@@ -10232,7 +10268,7 @@ function ToolbarDropdown({
         </button>
       </Tooltip>
       {isOpen && (
-        <div className={`absolute z-[120] top-full mt-1 ${align === "right" ? "right-0" : "left-0"} ${width} rounded-xl border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/60 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-white/95 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/95 midnight:bg-[#0a0e27]/95 purple:bg-[#1a0b2e]/95 backdrop-blur-xl shadow-xl shadow-black/8 dark:shadow-black/30 max-h-[80vh] overflow-y-auto overflow-x-hidden`}>
+        <div className={`absolute z-[120] top-full mt-1 ${align === "right" ? "right-0" : "left-0"} ${width} rounded-xl border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-white/95 dark:bg-[#0f1115]/95 midnight:bg-[#0a0e27]/95 purple:bg-[#1a0b2e]/95 backdrop-blur-xl shadow-xl shadow-black/8 dark:shadow-black/30 max-h-[80vh] overflow-y-auto overflow-x-hidden`}>
           {children}
         </div>
       )}
@@ -10424,7 +10460,7 @@ function PageSetupDialog({
                 </div>
               </div>
               {showColorPicker && (
-                <div ref={colorGridRef} className="p-3 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50">
+                <div ref={colorGridRef} className="p-3 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50">
                   <div className="text-[11px] font-semibold text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mb-2">Default</div>
                   <ColorGrid
                     colors={PAGE_COLORS}
@@ -10487,7 +10523,7 @@ function PageSetupDialog({
                 </button>
               </div>
               {showColorPicker && (
-                <div ref={colorGridRef} className="p-3 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50">
+                <div ref={colorGridRef} className="p-3 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50">
                   <div className="text-[11px] font-semibold text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mb-2">Default</div>
                   <ColorGrid
                     colors={PAGE_COLORS}
@@ -10540,7 +10576,8 @@ function PageSetupDialog({
 
 /** Thin wrapper that renders EditorEditMenuPanel inside DocEditor's MenuRoot pattern */
 function DocEditMenuPanel({ onAction, onClose }: { onAction: (action: string) => void; onClose: () => void }) {
-  const { EditorEditMenuPanel } = require("@/components/shared/EditorEditMenu");
+  // Was a CommonJS require() with a path alias inside an ESM client component — it only resolved
+  // under Next's webpack and threw "Cannot find module" anywhere else (tests, any ESM runtime).
   return (
     <EditorEditMenuPanel
       config={{ onAction, showDuplicate: true }}
@@ -10549,6 +10586,8 @@ function DocEditMenuPanel({ onAction, onClose }: { onAction: (action: string) =>
   );
 }
 
+type DocMenuId = "file" | "edit" | "view" | "insert" | "format" | "tools" | "extensions" | "help";
+
 function MenuRoot({
   id,
   label,
@@ -10556,23 +10595,31 @@ function MenuRoot({
   onOpen,
   onClose,
   children,
+  buttonRef,
 }: {
-  id: "file" | "edit" | "view" | "insert" | "format" | "tools" | "extensions" | "help";
+  id: DocMenuId;
   label: string;
-  openMenu: "file" | "edit" | "view" | "insert" | "format" | "tools" | "extensions" | "help" | null;
-  onOpen: (id: "file" | "edit" | "view" | "insert" | "format" | "tools" | "extensions" | "help") => void;
+  openMenu: DocMenuId | null;
+  onOpen: (id: DocMenuId) => void;
   onClose: () => void;
   children: React.ReactNode;
+  /** The menu button element — panels anchor their position to it. Was being passed by call
+      sites but never declared, so the ref stayed null and panels lost their anchor. */
+  buttonRef?: React.RefObject<HTMLButtonElement | null>;
 }) {
   const isOpen = openMenu === id;
   return (
     <div className="relative z-[100]" data-doc-menu-root>
       <button
+        ref={buttonRef}
         type="button"
         className={`px-2 py-1 rounded-md transition-colors cursor-pointer ${
           isOpen
             ? "bg-gray-100 dark:bg-[#1a1d24] midnight:bg-cyan-500/10 purple:bg-pink-500/10"
-            : "hover:bg-gray-100/70 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5/60 midnight:hover:bg-cyan-500/8 purple:hover:bg-pink-500/8"
+            // Was: dark had no opacity, midnight was declared twice (/5 and /8), and purple was
+            // literally malformed — `purple:hover:bg-pink-500/5` (two opacity suffixes), which
+            // Tailwind emits nothing for, so purple had no hover state at all.
+            : "hover:bg-gray-100/70 dark:hover:bg-[#22262e]/60 midnight:hover:bg-cyan-500/8 purple:hover:bg-pink-500/8"
         }`}
         onClick={() => (isOpen ? onClose() : onOpen(id))}
         onMouseEnter={() => openMenu && onOpen(id)}
@@ -10588,7 +10635,7 @@ function MenuPanel({ children }: { children: React.ReactNode }) {
   return (
     <div
       data-doc-menu-panel
-      className="absolute z-[120] mt-2 left-0 w-[260px] rounded-2xl border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/60 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-white/95 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/95 midnight:bg-[#0a0e27]/95 purple:bg-[#1a0b2e]/95 backdrop-blur-xl shadow-xl shadow-black/8 dark:shadow-black/30 overflow-visible"
+      className="absolute z-[120] mt-2 left-0 w-[260px] rounded-2xl border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-white/95 dark:bg-[#0f1115] midnight:bg-[#0a0e27]/95 purple:bg-[#1a0b2e]/95 backdrop-blur-xl shadow-xl shadow-black/8 dark:shadow-black/30 overflow-visible"
     >
       <div className="py-1 max-h-[calc(100vh-120px)] overflow-y-auto">{children}</div>
     </div>
@@ -10654,7 +10701,7 @@ function SubmenuPanel({
       <div
         ref={panelRef}
         data-doc-menu-panel
-        className={`fixed z-[10000] rounded-2xl border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/60 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-white/95 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/95 midnight:bg-[#0a0e27]/95 purple:bg-[#1a0b2e]/95 backdrop-blur-xl shadow-xl shadow-black/8 dark:shadow-black/30 overflow-visible ${className}`}
+        className={`fixed z-[10000] rounded-2xl border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-white/95 dark:bg-[#0f1115] midnight:bg-[#0a0e27]/95 purple:bg-[#1a0b2e]/95 backdrop-blur-xl shadow-xl shadow-black/8 dark:shadow-black/30 overflow-visible ${className}`}
         onMouseEnter={() => timerCtx?.cancelClose()}
         onMouseLeave={() => timerCtx?.scheduleClose()}
       >
@@ -10762,7 +10809,7 @@ function MenuItem({
         className={`w-full flex items-center gap-2 px-3 py-1.5 text-left text-[12px] transition-colors ${
           disabled
             ? "text-gray-300 dark:text-gray-600 midnight:text-cyan-500 purple:text-pink-500 cursor-not-allowed"
-            : "text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-50/80 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5/70 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 cursor-pointer"
+            : "text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-50/80 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 cursor-pointer"
         }`}
       >
         <span className="w-4 flex-shrink-0 flex items-center justify-center">
@@ -10809,7 +10856,7 @@ function ViewMenuPanel({ children }: { children: React.ReactNode }) {
   const glassClasses = [
     "bg-white/80 dark:bg-[#0f1115]/95 midnight:bg-[#0a0e27]/80 purple:bg-[#1a0b2e]/80",
     "backdrop-blur-[20px] backdrop-saturate-[180%]",
-    "border border-gray-300/60 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30/50 midnight:border-cyan-400/20 purple:border-pink-400/20",
+    "border border-gray-300/60 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 midnight:border-cyan-400/20 purple:border-pink-400/20",
   ].join(" ");
 
   // Mobile: full-screen overlay bottom sheet with large touch targets
@@ -10942,7 +10989,7 @@ function ViewMenuItem({
           "font-[420] hover:font-[520]",
           disabled
             ? "text-gray-300 dark:text-gray-600 midnight:text-cyan-500 purple:text-pink-500 cursor-not-allowed"
-            : "text-gray-700 dark:text-gray-200 midnight:text-cyan-50 purple:text-pink-50 hover:bg-gray-100/60 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 midnight:hover:bg-cyan-500/8 purple:hover:bg-pink-500/8 cursor-pointer",
+            : "text-gray-700 dark:text-gray-200 midnight:text-cyan-50 purple:text-pink-50 hover:bg-gray-100/60 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/8 purple:hover:bg-pink-500/8 cursor-pointer",
           // Active mode glow for "Suggesting" style context-aware feedback
           isChecked && !hasSubmenu
             ? "bg-blue-50/50 dark:bg-blue-500/10 midnight:bg-cyan-500/10 purple:bg-pink-500/10"
@@ -11015,7 +11062,7 @@ function ViewMenuToggle({
         "w-full flex items-center gap-2.5 px-3 text-left transition-all duration-150 min-h-[44px] cursor-pointer",
         "font-[420] hover:font-[520]",
         "text-gray-700 dark:text-gray-200 midnight:text-cyan-50 purple:text-pink-50",
-        "hover:bg-gray-100/60 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 midnight:hover:bg-cyan-500/8 purple:hover:bg-pink-500/8",
+        "hover:bg-gray-100/60 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/8 purple:hover:bg-pink-500/8",
       ].join(" ")}
       role="switch"
       aria-checked={isOn}
@@ -11107,7 +11154,7 @@ function FullscreenFloatingPill({
         "fixed top-3 left-1/2 -translate-x-1/2 z-[10000]",
         "flex items-center rounded-full",
         // Glassmorphism pill
-        "bg-gray-900/70 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/80 midnight:bg-[#0a0e27]/80 purple:bg-[#1a0b2e]/80",
+        "bg-gray-900/70 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/80 purple:bg-[#1a0b2e]/80",
         "backdrop-blur-[20px] backdrop-saturate-[180%]",
         "border border-white/10",
         "shadow-[0_8px_32px_rgba(0,0,0,0.3)]",
@@ -11269,7 +11316,7 @@ function EditingModeButton({
         </button>
       </Tooltip>
       {open && (
-        <div className="absolute z-[120] top-full mt-1 right-0 w-[180px] rounded-xl border border-gray-200/80 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/80 bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] shadow-xl py-1">
+        <div className="absolute z-[120] top-full mt-1 right-0 w-[180px] rounded-xl border border-gray-200/80 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] shadow-xl py-1">
           {([
             { mode: "editing" as const, icon: PenLine, desc: "Edit directly" },
             { mode: "suggesting" as const, icon: MessageSquarePlus, desc: "Edits become suggestions" },
@@ -11427,7 +11474,7 @@ function MentionPopover({
       data-mention-popover
       className={[
         "absolute left-0 w-full max-h-[180px] overflow-y-auto z-[250]",
-        "rounded-xl border border-white/20 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30/40",
+        "rounded-xl border border-white/20 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30",
         "bg-white/80 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/80 backdrop-blur-xl",
         "shadow-2xl shadow-black/10 dark:shadow-black/30",
         position === "above" ? "bottom-full mb-1.5" : "top-full mt-1.5",
@@ -11448,7 +11495,7 @@ function MentionPopover({
               "w-full flex items-center gap-2.5 px-3 py-2 text-left transition-colors cursor-pointer",
               i === highlightIdx
                 ? "bg-blue-50/80 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30"
-                : "hover:bg-gray-50/80 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5/50",
+                : "hover:bg-gray-50/80 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5",
             ].join(" ")}
             onMouseDown={(e) => e.preventDefault()}
             onClick={() => onSelect(user)}
@@ -11551,7 +11598,7 @@ function FloatingCommentPill({
         "pointer-events-auto rounded-lg border transition-all duration-200 cursor-pointer",
         isActive
           ? "border-blue-300/80 dark:border-blue-600/60 bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] shadow-lg ring-1 ring-blue-200/40"
-          : "border-gray-200/80 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/60 bg-white/95 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/95 hover:border-blue-200/60 hover:shadow-md",
+          : "border-gray-200/80 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-white/95 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/95 hover:border-blue-200/60 hover:shadow-md",
       ].join(" ")}
       onClick={() => { onSelect(); onScrollTo(); }}
     >
@@ -11983,7 +12030,7 @@ function CommentCard({
                     if (e.key === "Escape" && !mention.active) { setShowReplyInput(false); setReplyText(""); }
                   }}
                   placeholder="Reply... (@ to mention)"
-                  className="w-full text-[11px] text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 bg-gray-50/80 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/80 midnight:bg-[#0a0e27]/80 purple:bg-[#1a0b2e]/80 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-lg px-2.5 py-1.5 resize-none outline-none focus:ring-2 focus:ring-blue-400/40 placeholder-gray-400"
+                  className="w-full text-[11px] text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 bg-gray-50/80 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/80 purple:bg-[#1a0b2e]/80 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-lg px-2.5 py-1.5 resize-none outline-none focus:ring-2 focus:ring-blue-400/40 placeholder-gray-400"
                   rows={2}
                 />
                 {mention.active && (
@@ -12065,7 +12112,7 @@ function DocUserMenu({ user }: { user: { firstName?: string; lastName?: string; 
         </button>
       </Tooltip>
       {open && (
-        <div className="absolute z-[200] top-full mt-2 right-0 w-[220px] rounded-xl bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] shadow-2xl border border-gray-200/80 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/60 overflow-hidden">
+        <div className="absolute z-[200] top-full mt-2 right-0 w-[220px] rounded-xl bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] shadow-2xl border border-gray-200/80 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 overflow-hidden">
           {/* Profile card */}
           <div className="px-3 py-3 border-b border-gray-100 dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10 bg-gradient-to-br from-gray-50 to-white dark:from-gray-800/40 dark:to-gray-900">
             <div className="flex items-center gap-2.5">

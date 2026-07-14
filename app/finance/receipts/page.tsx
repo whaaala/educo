@@ -628,7 +628,7 @@ export default function ReceiptsPage() {
               alt={receipt.studentName}
               width={36}
               height={36}
-              className="w-9 h-9 rounded-full object-cover ring-2 ring-white/80 dark:ring-gray-700 midnight:ring-cyan-500/20 purple:ring-pink-500/20/50 midnight:ring-cyan-500/30 purple:ring-pink-500/30 shadow-lg transition-all duration-500 ease-out group-hover/avatar:scale-150 group-hover/avatar:shadow-2xl group-hover/avatar:ring-2 group-hover/avatar:ring-blue-500/90 dark:group-hover/avatar:ring-blue-400/90 midnight:group-hover/avatar:ring-cyan-400/90 purple:group-hover/avatar:ring-pink-400/90 group-hover/avatar:z-[100]"
+              className="w-9 h-9 rounded-full object-cover ring-2 ring-white/80 dark:ring-gray-700 midnight:ring-cyan-500/30 purple:ring-pink-500/30 shadow-lg transition-all duration-500 ease-out group-hover/avatar:scale-150 group-hover/avatar:shadow-2xl group-hover/avatar:ring-2 group-hover/avatar:ring-blue-500/90 dark:group-hover/avatar:ring-blue-400/90 midnight:group-hover/avatar:ring-cyan-400/90 purple:group-hover/avatar:ring-pink-400/90 group-hover/avatar:z-[100]"
               style={{ position: 'relative', transformOrigin: 'center center' }}
               unoptimized
             />
@@ -727,7 +727,7 @@ export default function ReceiptsPage() {
               e.stopPropagation();
               handlePrint(receipt);
             }}
-            className="group relative p-2 rounded-lg bg-gradient-to-br from-gray-50/50 to-gray-100/30 dark:from-gray-950/30 dark:to-gray-900/20 midnight:from-gray-950/30 midnight:to-gray-900/20 purple:from-gray-950/30 purple:to-gray-900/20 hover:from-gray-100 hover:to-gray-100 dark:hover:from-gray-900/40 dark:hover:to-gray-800/30 transition-all duration-200 cursor-pointer border border-gray-200/40 dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10/30 hover:border-gray-400/60 dark:hover:border-gray-600 midnight:hover:border-cyan-500/30 purple:hover:border-pink-500/30/50 active:scale-95"
+            className="group relative p-2 rounded-lg bg-gradient-to-br from-gray-50/50 to-gray-100/30 dark:from-gray-950/30 dark:to-gray-900/20 midnight:from-gray-950/30 midnight:to-gray-900/20 purple:from-gray-950/30 purple:to-gray-900/20 hover:from-gray-100 hover:to-gray-100 dark:hover:from-gray-900/40 dark:hover:to-gray-800/30 transition-all duration-200 cursor-pointer border border-gray-200/40 dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10 hover:border-gray-400/60 dark:hover:border-gray-600 midnight:hover:border-cyan-500/30 purple:hover:border-pink-500/30 active:scale-95"
             title="Print"
           >
             <Printer className="w-4 h-4 text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 group-hover:text-gray-700 dark:group-hover:text-gray-300 transition-colors" />

@@ -14,16 +14,14 @@
 
 import React from "react";
 import TextFormatToolbar from "@/components/shared/TextFormatToolbar";
+// Everything below comes from the ONE platform-agnostic chart core (lib/chart), which the
+// React Native renderer imports too — so both surfaces share identical types, palette and maths.
 import {
   type ChartSpec, type ChartTextStyle, type ChartLabelOverride, isCircular, isMultiSeries,
-} from "@/lib/chart-types";
-import {
   type HSL, type ChartThemeName, hexToHsl, css, lighten, darken, categorical, mono, chartTheme, gradId,
-} from "./palette";
-import {
   polar, sectorPath, arcPath, roundedTopRect, roundedRightRect, smoothPath,
   niceCeil, axisTicks, tokenize,
-} from "./geometry";
+} from "@/lib/chart";
 
 export type { ChartSpec } from "@/lib/chart-types";
 

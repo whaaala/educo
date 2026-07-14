@@ -331,7 +331,7 @@ export default function ChildLeaveRequestDetailsModal({
               </div>
 
               {/* Child Info */}
-              <div className="flex items-center gap-4 p-4 rounded-xl bg-gray-50 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/50">
+              <div className="flex items-center gap-4 p-4 rounded-xl bg-gray-50 dark:bg-[#0f1115] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
                 <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center text-white font-bold text-lg shadow-lg">
                   {leave.childPhoto ? (
                     <img src={leave.childPhoto} alt={leave.childName} className="w-full h-full rounded-full object-cover" />
@@ -353,7 +353,7 @@ export default function ChildLeaveRequestDetailsModal({
               </div>
 
               {/* Reason */}
-              <div className="p-4 rounded-xl bg-gray-50 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/50">
+              <div className="p-4 rounded-xl bg-gray-50 dark:bg-[#0f1115] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
                 <div className="flex items-center gap-2 mb-2">
                   <MessageSquare className="w-4 h-4 text-gray-400" />
                   <label className="text-xs font-medium text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 uppercase tracking-wider">Reason for Leave</label>
@@ -363,14 +363,14 @@ export default function ChildLeaveRequestDetailsModal({
 
               {/* Date Range */}
               <div className="grid grid-cols-2 gap-3">
-                <div className="p-4 rounded-xl bg-gray-50 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/50">
+                <div className="p-4 rounded-xl bg-gray-50 dark:bg-[#0f1115] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
                   <div className="flex items-center gap-2 mb-1">
                     <Calendar className="w-3.5 h-3.5 text-gray-400" />
                     <p className="text-[10px] font-medium text-gray-400 uppercase tracking-wider">From</p>
                   </div>
                   <p className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{startDate ? formatDate(startDate) : "N/A"}</p>
                 </div>
-                <div className="p-4 rounded-xl bg-gray-50 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/50">
+                <div className="p-4 rounded-xl bg-gray-50 dark:bg-[#0f1115] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
                   <div className="flex items-center gap-2 mb-1">
                     <Calendar className="w-3.5 h-3.5 text-gray-400" />
                     <p className="text-[10px] font-medium text-gray-400 uppercase tracking-wider">To</p>
@@ -424,7 +424,7 @@ export default function ChildLeaveRequestDetailsModal({
 
               {/* Documents */}
               {leave.documents && leave.documents.length > 0 && (
-                <div className="p-4 rounded-xl bg-gray-50 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/50">
+                <div className="p-4 rounded-xl bg-gray-50 dark:bg-[#0f1115] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
                   <div className="flex items-center gap-2 mb-3">
                     <FileText className="w-4 h-4 text-gray-400" />
                     <p className="text-xs font-medium text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 uppercase tracking-wider">Attached Documents</p>
@@ -547,7 +547,7 @@ export default function ChildLeaveRequestDetailsModal({
                         <ActionIcon className="w-2.5 h-2.5 text-white" />
                       </div>
 
-                      <div className="p-4 rounded-xl bg-gray-50 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/50 ml-2">
+                      <div className="p-4 rounded-xl bg-gray-50 dark:bg-[#0f1115] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 ml-2">
                         <div className="flex items-center justify-between mb-2">
                           <span className={`text-sm font-semibold ${config.text} capitalize`}>{entry.action}</span>
                           <span className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">{formatDateTime(entry.timestamp)}</span>
@@ -583,7 +583,7 @@ export default function ChildLeaveRequestDetailsModal({
         </div>
 
         {/* Footer */}
-        <div className="px-4 sm:px-6 py-4 bg-gray-50 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border-t border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/50">
+        <div className="px-4 sm:px-6 py-4 bg-gray-50 dark:bg-[#0f1115] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border-t border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
           {isAdmin && leave.status === "pending" && !showRejectForm ? (
             <div className="flex gap-3">
               <button

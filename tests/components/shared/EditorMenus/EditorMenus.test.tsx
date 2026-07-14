@@ -134,7 +134,7 @@ describe("EditorMenuItemRow", () => {
     const { container } = render(<EditorMenuItemRow item={item} onClose={noop} />);
 
     // Should render the divider element (border-t)
-    const divider = container.querySelector(".border-t");
+    const divider = container.querySelector('[role="separator"]');
     expect(divider).toBeInTheDocument();
   });
 
@@ -168,9 +168,18 @@ describe("EditorMenuItemRow", () => {
     expect(onClick).not.toHaveBeenCalled();
   });
 
-  it("disabled item has grayed-out styling", () => {
-    // Structural check that disabled styling is applied
-    expect(SOURCE_CODE).toContain("text-gray-300 dark:text-gray-600 cursor-not-allowed");
+  it("disabled item has grayed-out styling in every theme", () => {
+    // Assert the classes individually — a contiguous-string match breaks whenever a theme
+    // variant is (correctly) inserted between them.
+    for (const cls of [
+      "text-gray-300",
+      "dark:text-gray-600",
+      "midnight:text-cyan-500",
+      "purple:text-pink-500",
+      "cursor-not-allowed",
+    ]) {
+      expect(SOURCE_CODE).toContain(cls);
+    }
   });
 });
 
@@ -287,10 +296,19 @@ describe("ViewMenuItem", () => {
     expect(screen.getByText("Edit directly")).toBeInTheDocument();
   });
 
-  it("description has smaller, lighter font styling (source check)", () => {
-    expect(SOURCE_CODE).toContain(
-      'text-[11px] leading-tight text-gray-400 dark:text-gray-500 mt-0.5 truncate'
-    );
+  it("description has smaller, lighter font styling in every theme (source check)", () => {
+    // Assert individually — theme variants sit between these classes in the real className.
+    for (const cls of [
+      "text-[11px]",
+      "leading-tight",
+      "text-gray-400",
+      "dark:text-gray-500",
+      "midnight:text-cyan-400",
+      "purple:text-pink-400",
+      "truncate",
+    ]) {
+      expect(SOURCE_CODE).toContain(cls);
+    }
   });
 
   it("font weight increases on hover (source check)", () => {
@@ -409,7 +427,7 @@ describe("MENU_DIVIDER", () => {
     const { container } = render(
       <EditorMenuItemRow item={MENU_DIVIDER} onClose={vi.fn()} />
     );
-    const divider = container.querySelector(".border-t");
+    const divider = container.querySelector('[role="separator"]');
     expect(divider).toBeInTheDocument();
   });
 });

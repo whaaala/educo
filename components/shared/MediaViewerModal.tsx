@@ -251,7 +251,7 @@ function ImageViewer({ src, fileName }: { src: string; fileName: string }) {
 
   return (
     <div className="flex flex-col items-center gap-4 w-full">
-      <div className="relative w-full flex items-center justify-center bg-gray-50 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 rounded-2xl overflow-hidden" style={{ minHeight: "300px", maxHeight: "78vh" }}>
+      <div className="relative w-full flex items-center justify-center bg-gray-50 dark:bg-[#0f1115] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 rounded-2xl overflow-hidden" style={{ minHeight: "300px", maxHeight: "78vh" }}>
         {!loaded && (
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="w-10 h-10 border-3 border-blue-500 border-t-transparent rounded-full animate-spin" />

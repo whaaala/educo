@@ -195,7 +195,7 @@ export default function LeaveNotificationDropdown({
 
             <div
               style={dropdownStyle}
-              className="w-[380px] bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/50 z-[9999] transition-colors duration-300 overflow-hidden flex flex-col"
+              className="w-[380px] bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 z-[9999] transition-colors duration-300 overflow-hidden flex flex-col"
               role="menu"
               aria-orientation="vertical"
             >
@@ -266,7 +266,7 @@ export default function LeaveNotificationDropdown({
                           onClick={() => handleNotificationClick(notification)}
                           className={`w-full text-left p-4 rounded-xl border transition-all duration-200 cursor-pointer group ${
                             notification.read
-                              ? "bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/30 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5"
+                              ? "bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5"
                               : `${colors.bg} border-transparent hover:shadow-md`
                           }`}
                         >

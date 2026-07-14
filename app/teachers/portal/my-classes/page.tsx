@@ -213,7 +213,7 @@ export default function MyClassesPage() {
                 </div>
 
                 {/* Schedule */}
-                <div className="bg-gray-50 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/50 midnight:bg-[#0f1330]/50 purple:bg-[#251340]/50 rounded-lg p-3 mb-4">
+                <div className="bg-gray-50 dark:bg-[#22262e] midnight:bg-[#0f1330]/50 purple:bg-[#251340]/50 rounded-lg p-3 mb-4">
                   <div className="flex items-center gap-2 mb-2">
                     <Calendar className="w-4 h-4 text-gray-500" />
                     <span className="text-sm text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200">

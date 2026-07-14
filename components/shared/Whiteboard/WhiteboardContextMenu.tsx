@@ -148,7 +148,7 @@ function MenuItem({
           ? "text-gray-300 dark:text-gray-600 midnight:text-cyan-500 purple:text-pink-500 cursor-not-allowed"
           : action.danger
           ? "text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 midnight:hover:bg-red-900/20 purple:hover:bg-red-900/20"
-          : "text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10/60 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"
+          : "text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"
       }`}
     >
       {action.icon && (
@@ -186,7 +186,7 @@ function SubmenuItem({
           e.stopPropagation();
           setIsOpen((prev) => !prev);
         }}
-        className="flex items-center gap-2.5 w-full px-3 py-1.5 text-left text-[13px] transition-colors cursor-pointer text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10/60 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"
+        className="flex items-center gap-2.5 w-full px-3 py-1.5 text-left text-[13px] transition-colors cursor-pointer text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"
       >
         {action.icon && (
           <span className="w-4 h-4 flex items-center justify-center flex-shrink-0 opacity-70">

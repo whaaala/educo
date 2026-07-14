@@ -7,7 +7,10 @@ export interface ShapeDef {
   label: string;
   /** SVG content inside a 100x100 viewBox — can be path, rect, ellipse, polygon, etc. */
   svg: string;
-  category: "shapes" | "arrows" | "callouts" | "equation";
+  /** "chart" holds the pie-slice primitives used to compose a pie — deliberately hidden from
+      the shape picker (getShapesByCategory is never called with it), but it IS a real category
+      and was missing from this union, so every pie-slice def was a type error. */
+  category: "shapes" | "arrows" | "callouts" | "equation" | "chart";
 }
 
 // Helper to create a polygon SVG from points

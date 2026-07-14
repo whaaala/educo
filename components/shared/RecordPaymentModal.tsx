@@ -664,7 +664,7 @@ export default function RecordPaymentModal({
 
         {/* Summary */}
         {showSummary && paymentAmount && parseFloat(paymentAmount) > 0 && (
-          <div className="bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 rounded-xl p-4 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+          <div className="bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 rounded-xl p-4 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
             <div className="flex items-center gap-2 mb-3">
               <Receipt className="w-5 h-5 text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300" />
               <span className="font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{summaryLabel}</span>

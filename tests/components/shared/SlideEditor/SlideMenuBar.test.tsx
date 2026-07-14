@@ -77,11 +77,11 @@ const chartEditorSource = fs.readFileSync(
   "utf-8"
 );
 const chartTypesSource = fs.readFileSync(
-  path.resolve(__dirname, "../../../../lib/chart-types.ts"),
+  path.resolve(__dirname, "../../../../lib/chart/types.ts"),
   "utf-8"
 );
 const paletteSource = fs.readFileSync(
-  path.resolve(__dirname, "../../../../components/shared/Chart/palette.ts"),
+  path.resolve(__dirname, "../../../../lib/chart/palette.ts"),
   "utf-8"
 );
 

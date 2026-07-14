@@ -218,7 +218,7 @@ function ReminderItem({ reminder }: { reminder: FeeReminderRecord }) {
       <button
         type="button"
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full flex items-center justify-between p-4 bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors cursor-pointer"
+        className="w-full flex items-center justify-between p-4 bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors cursor-pointer"
       >
         <div className="flex items-center gap-3">
           {/* Channel Icons */}
@@ -323,7 +323,7 @@ function ReminderItem({ reminder }: { reminder: FeeReminderRecord }) {
                 return (
                   <div
                     key={channel}
-                    className="p-3 rounded-lg bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20"
+                    className="p-3 rounded-lg bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20"
                   >
                     <div className="flex items-center gap-2 mb-2">
                       <div className={`w-6 h-6 rounded-lg ${config.bg} flex items-center justify-center`}>

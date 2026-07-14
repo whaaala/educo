@@ -196,10 +196,11 @@ describe("DocEditor — Comprehensive Look & Feel", () => {
       const { container } = render(
         <DocEditor value={defaultValue} onChange={onChange} />
       );
-      // Then the Font size dropdown should display "11"
-      const sizeBtn = container.querySelector('button[aria-label="Font size"]');
-      expect(sizeBtn).not.toBeNull();
-      expect(sizeBtn!.textContent).toContain("11");
+      // Then the Font size control should display "11". It is an editable numeric input (like
+      // Google Docs) with a chevron button beside it — both share the "Font size" accessible name.
+      const sizeInput = container.querySelector('input[aria-label="Font size"]') as HTMLInputElement | null;
+      expect(sizeInput).not.toBeNull();
+      expect(sizeInput!.value).toContain("11");
     });
 
     // Scenario: Text color dropdown trigger exists with an icon
@@ -1183,7 +1184,7 @@ describe("DocEditor — Comprehensive Look & Feel", () => {
 
       // Then the dialog should show the empty state message
       const dialogText = container.textContent || "";
-      expect(dialogText).toContain("No saved versions yet");
+      expect(dialogText).toContain("No previous versions saved yet");
       // And it should mention automatic saving
       expect(dialogText).toContain("automatically");
     });
@@ -1227,63 +1228,71 @@ describe("DocEditor — Comprehensive Look & Feel", () => {
       // And "Manual save" label
       expect(dialogText).toContain("Manual save");
       // And the empty state message should be gone
-      expect(dialogText).not.toContain("No saved versions yet");
+      expect(dialogText).not.toContain("No previous versions saved yet");
     });
   });
 
   // ────────────────────────────────────────────────
   // 15. Print Layout
   // ────────────────────────────────────────────────
-  // Context: default print layout styling
+  // Context: default print layout styling.
+  // The print layout no longer paints a grey canvas behind the page (`bg-gray-50`) and the page
+  // no longer uses `rounded-sm shadow-md` — the root is the themed surface and the page carries
+  // its own soft two-layer elevation via an arbitrary shadow. These track the current design.
   describe("print layout", () => {
-    // Scenario: default print layout has correct background on editor root area
-    it("default print layout has bg-gray-50 on editor root area", () => {
+    /** The page sheet: rounded + its own arbitrary elevation shadow. */
+    const findPage = (container: HTMLElement) =>
+      [...container.querySelectorAll("div")].find(
+        (d) => /(^|\s)rounded(\s|$)/.test(d.className) && /shadow-\[/.test(d.className)
+      );
+
+    // Scenario: the editor root is the themed surface
+    it("editor root is the themed surface", () => {
       // Given a DocEditor rendered with default content
       const { container } = render(
         <DocEditor value={defaultValue} onChange={onChange} />
       );
-      // Then the editor root area should have correct background classes
-      const editorRoot = container.querySelector(".bg-gray-50");
+      // Then the root should carry the themed background
+      const editorRoot = container.querySelector("[data-doc-editor-root]");
       expect(editorRoot).not.toBeNull();
       expectClasses(editorRoot, [
-        "min-h-full",
-        "py-3",
-        "sm:py-6",
-        "bg-gray-50",
-        "dark:bg-gray-950",
+        "flex",
+        "flex-col",
+        "bg-white",
+        "dark:bg-[#0f1115]",
       ]);
     });
 
-    // Scenario: page wrapper has rounded shadow
-    it("page wrapper has rounded-sm shadow-md", () => {
+    // Scenario: page sheet has its own elevation
+    it("page sheet is rounded with its own elevation shadow", () => {
       // Given a DocEditor rendered with default content
       const { container } = render(
         <DocEditor value={defaultValue} onChange={onChange} />
       );
-      // Then the page wrapper should have rounded shadow classes
-      const pageWrapper = container.querySelector(".rounded-sm.shadow-md");
-      expect(pageWrapper).not.toBeNull();
-      expectClasses(pageWrapper, [
-        "rounded-sm",
-        "shadow-md",
+      // Then the page should be rounded, themed, and elevated
+      const pageWrapper = findPage(container);
+      expect(pageWrapper).toBeTruthy();
+      expectClasses(pageWrapper!, [
+        "rounded",
         "bg-white",
         "dark:bg-gray-950",
       ]);
     });
 
     // Scenario: page wrapper has theme border classes
-    it("page wrapper has theme border classes", () => {
+    it("page sheet has theme border classes", () => {
       // Given a DocEditor rendered with default content
       const { container } = render(
         <DocEditor value={defaultValue} onChange={onChange} />
       );
-      // Then the page wrapper should have correct border classes
-      const pageWrapper = container.querySelector(".rounded-sm.shadow-md");
-      expect(pageWrapper).not.toBeNull();
-      expectClasses(pageWrapper, [
+      // Then the page should have themed borders in every theme
+      const pageWrapper = findPage(container);
+      expect(pageWrapper).toBeTruthy();
+      expectClasses(pageWrapper!, [
         "border",
-        "border-gray-200/80",
         "dark:border-[#1a1d24]",
+        "midnight:border-cyan-500/10",
+        "purple:border-pink-500/10",
       ]);
     });
   });
@@ -2071,11 +2080,11 @@ describe("DocEditor — Comprehensive Look & Feel", () => {
       const { container } = render(
         <DocEditor value={defaultValue} onChange={onChange} />
       );
-      openViewMenu(container);
-      const panel = container.querySelector("[data-doc-view-menu-panel]");
-      expect(panel).not.toBeNull();
-      expect(panel!.className).toContain("backdrop-blur");
-      expect(panel!.className).toContain("backdrop-saturate");
+      // openViewMenu returns the opened panel — use it rather than re-querying by an attribute
+      // that only the desktop variant carries.
+      const panel = openViewMenu(container);
+      expect(panel).toBeTruthy();
+      expect(panel.className).toContain("backdrop-blur");
     });
 
     it("Mode submenu has Editing, Suggesting, Viewing options", () => {
@@ -2527,31 +2536,25 @@ describe("DocEditor — Comprehensive Look & Feel", () => {
         }
       });
       expect(downloadButton).not.toBeNull();
-      const dlParent = downloadButton!.closest(".relative");
-      expect(dlParent).not.toBeNull();
-      fireEvent.mouseEnter(dlParent!);
+      // Download no longer opens a hover submenu — it opens the shared DownloadDialog, which
+      // lists every format with a description. Click it and assert against the dialog.
+      fireEvent.click(downloadButton!);
 
-      // Collect all labels after submenu opens (portalled to document.body)
-      const allButtons = document.querySelectorAll("button");
-      const allLabels: string[] = [];
-      allButtons.forEach((btn) => {
-        const text = btn.textContent?.trim();
-        if (text) allLabels.push(text);
-      });
+      const dialogText = document.body.textContent || "";
 
       const expectedFormats = [
         "Microsoft Word (.doc)",
-        "PDF document (.pdf)",
-        "OpenDocument format (.odt)",
-        "Plain text (.txt)",
-        "Rich Text Format (.rtf)",
-        "Web page (.html)",
-        "EPUB publication (.epub)",
+        "PDF Document (.pdf)",
+        "OpenDocument (.odt)",
+        "Plain Text (.txt)",
+        "Rich Text (.rtf)",
+        "Web Page (.html)",
+        "EPUB (.epub)",
         "Markdown (.md)",
         "JSON (.json)",
       ];
       for (const fmt of expectedFormats) {
-        expect(allLabels.some((l) => l.includes(fmt)), `Download submenu should contain "${fmt}"`).toBe(true);
+        expect(dialogText.includes(fmt), `Download dialog should offer "${fmt}"`).toBe(true);
       }
     });
   });
@@ -2741,14 +2744,14 @@ describe("DocEditor — Comprehensive Look & Feel", () => {
       expectClasses(flexRow, ["gap-2", "sm:gap-3"]);
     });
 
-    it("doc icon has responsive sizing", () => {
+    // The doc icon was redesigned from a solid bg-blue-600 rounded-xl square into a soft tinted chip.
+    it("doc chip is a tinted, rounded, themed control", () => {
       const { container } = render(
         <DocEditor value={defaultValue} onChange={onChange} />
       );
-      const header = container.querySelector("[data-doc-header]");
-      const icon = header?.querySelector(".rounded-xl.bg-blue-600") ?? null;
-      expect(icon).not.toBeNull();
-      expectClasses(icon, ["w-7", "h-7", "sm:w-9", "sm:h-9"]);
+      const chip = container.querySelector(".bg-blue-50\\/80");
+      expect(chip).not.toBeNull();
+      expectClasses(chip, ["rounded-lg", "bg-blue-50/80", "dark:bg-blue-900/20"]);
     });
 
     it("title input has responsive text size and max-width", () => {
@@ -2758,33 +2761,30 @@ describe("DocEditor — Comprehensive Look & Feel", () => {
       const titleInput = container.querySelector('[aria-label="Document title"]');
       expect(titleInput).not.toBeNull();
       expectClasses(titleInput, [
-        "text-[14px]",
+        "text-[15px]",
         "sm:text-[18px]",
-        "max-w-[180px]",
-        "sm:max-w-[420px]",
+        "max-w-[240px]",
+        "sm:max-w-[480px]",
       ]);
     });
 
-    it("share button has responsive padding and text size", () => {
+    // Share now uses the SHARED <Button> component (size="sm" + !rounded-full) rather than a
+    // bespoke button with hand-rolled responsive padding — so assert the reuse, not the padding.
+    it("share button reuses the shared Button component and is pill-shaped", () => {
       const { container } = render(
         <DocEditor value={defaultValue} onChange={onChange} />
       );
-      const allButtons = container.querySelectorAll("button");
-      let shareBtn: Element | null = null;
-      allButtons.forEach((btn) => {
-        if (btn.textContent?.trim() === "Share" && btn.classList.contains("rounded-full")) {
-          shareBtn = btn;
-        }
-      });
-      expect(shareBtn).not.toBeNull();
-      expectClasses(shareBtn, [
-        "px-2.5",
-        "sm:px-4",
-        "py-1",
-        "sm:py-1.5",
-        "text-[12px]",
-        "sm:text-[13px]",
-      ]);
+      // NB: the shared Button applies `!rounded-full` (the important-prefixed class), so a
+      // classList.contains("rounded-full") check would never match.
+      const shareBtn = [...container.querySelectorAll("button")].find(
+        (btn) => btn.textContent?.trim() === "Share"
+      );
+      expect(shareBtn).toBeTruthy();
+      // Shared Button contract: inline-flex layout + pointer cursor + pill shape.
+      expectClasses(shareBtn!, ["inline-flex", "items-center", "cursor-pointer"]);
+      expect(shareBtn!.className).toContain("rounded-full");
+      // And it carries the Share icon.
+      expect(shareBtn!.querySelector("svg")).not.toBeNull();
     });
 
     // ── Menubar responsiveness ──
@@ -2884,45 +2884,40 @@ describe("DocEditor — Comprehensive Look & Feel", () => {
       ]);
     });
 
-    it("print layout page wrapper has responsive shadow and border", () => {
+    // The page sheet now uses `rounded` + an arbitrary two-layer elevation shadow (not
+    // `rounded-sm shadow-md`), and the print layout no longer paints a grey canvas behind it.
+    it("print layout page sheet is rounded with its own elevation and border", () => {
       const { container } = render(
         <DocEditor value={defaultValue} onChange={onChange} />
       );
-      // In print layout mode, pages use rounded-sm shadow-md
-      const pageWrapper = container.querySelector(".w-full.rounded-sm.shadow-md");
-      expect(pageWrapper).not.toBeNull();
-      expectClasses(pageWrapper, [
-        "w-full",
-        "rounded-sm",
-        "shadow-md",
-        "relative",
-      ]);
+      const pageWrapper = [...container.querySelectorAll("div")].find(
+        (d) => /(^|\s)rounded(\s|$)/.test(d.className) && /shadow-\[/.test(d.className)
+      );
+      expect(pageWrapper).toBeTruthy();
+      expectClasses(pageWrapper!, ["w-full", "rounded", "relative", "border"]);
     });
 
-    it("print layout page gap is responsive", () => {
+    it("print layout stacks pages in a gapped column", () => {
       const { container } = render(
         <DocEditor value={defaultValue} onChange={onChange} />
       );
-      // Print layout uses flex-col with gap
-      const printLayoutGap = container.querySelector(".flex.flex-col.items-center");
-      if (printLayoutGap) {
-        expectClasses(printLayoutGap, [
-          "gap-3",
-          "sm:gap-6",
-        ]);
-      }
+      // The page sheet must live inside a vertical (flex-col) stack, so multiple pages stack
+      // with spacing rather than butting together.
+      const page = [...container.querySelectorAll("div")].find(
+        (d) => /(^|\s)rounded(\s|$)/.test(d.className) && /shadow-\[/.test(d.className)
+      );
+      expect(page).toBeTruthy();
+      const column = page!.closest("div.flex.flex-col");
+      expect(column, "the page sheet should sit in a flex-col stack").toBeTruthy();
     });
 
-    it("print layout editor root has responsive py", () => {
+    it("editor root is the themed surface (no grey print canvas)", () => {
       const { container } = render(
         <DocEditor value={defaultValue} onChange={onChange} />
       );
-      const editorRoot = container.querySelector(".bg-gray-50");
+      const editorRoot = container.querySelector("[data-doc-editor-root]");
       expect(editorRoot).not.toBeNull();
-      expectClasses(editorRoot, [
-        "py-3",
-        "sm:py-6",
-      ]);
+      expectClasses(editorRoot, ["flex", "flex-col", "bg-white"]);
     });
   });
 

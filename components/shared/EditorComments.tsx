@@ -193,7 +193,7 @@ export function MentionPopover({
       data-mention-popover
       className={[
         "absolute left-0 w-full max-h-[180px] overflow-y-auto z-[250]",
-        "rounded-xl border border-white/20 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30/40",
+        "rounded-xl border border-white/20 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30",
         "bg-white/80 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/80 backdrop-blur-xl",
         "shadow-2xl shadow-black/10 dark:shadow-black/30",
         position === "above" ? "bottom-full mb-1.5" : "top-full mt-1.5",
@@ -214,7 +214,7 @@ export function MentionPopover({
               "w-full flex items-center gap-2.5 px-3 py-2 text-left transition-colors cursor-pointer",
               i === highlightIdx
                 ? "bg-blue-50/80 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30"
-                : "hover:bg-gray-50/80 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5/50",
+                : "hover:bg-gray-50/80 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5",
             ].join(" ")}
             onMouseDown={(e) => e.preventDefault()}
             onClick={() => onSelect(user)}
@@ -549,7 +549,7 @@ export function CommentCard({
                     if (e.key === "Escape" && !mention.active) { setShowReplyInput(false); setReplyText(""); }
                   }}
                   placeholder="Reply... (@ to mention)"
-                  className="w-full text-[11px] text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 bg-gray-50/80 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/80 midnight:bg-[#0a0e27]/80 purple:bg-[#1a0b2e]/80 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-lg px-2.5 py-1.5 resize-none outline-none focus:ring-2 focus:ring-blue-400/40 placeholder-gray-400"
+                  className="w-full text-[11px] text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 bg-gray-50/80 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/80 purple:bg-[#1a0b2e]/80 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-lg px-2.5 py-1.5 resize-none outline-none focus:ring-2 focus:ring-blue-400/40 placeholder-gray-400"
                   rows={2}
                 />
                 {mention.active && (
@@ -650,7 +650,7 @@ export function FloatingCommentPill({
         "pointer-events-auto rounded-lg border transition-all duration-200 cursor-pointer",
         isActive
           ? "border-blue-300/80 dark:border-blue-600/60 bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] shadow-lg ring-1 ring-blue-200/40"
-          : "border-gray-200/80 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/60 bg-white/95 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/95 hover:border-blue-200/60 hover:shadow-md",
+          : "border-gray-200/80 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-white/95 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/95 hover:border-blue-200/60 hover:shadow-md",
       ].join(" ")}
       onClick={() => { onSelect(); onScrollTo(); }}
     >

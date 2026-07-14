@@ -412,7 +412,7 @@ export default function ParentLeavesPage() {
       {/* Guidelines */}
       <div className="mt-6 bg-gradient-to-br from-cyan-50/80 via-blue-50/80 to-indigo-50/80 dark:from-cyan-950/30 dark:via-blue-950/30 dark:to-indigo-950/30 backdrop-blur-xl rounded-2xl border border-cyan-200/50 dark:border-cyan-800/30 p-4 sm:p-6">
         <div className="flex items-start gap-3 sm:gap-4">
-          <div className="p-2 sm:p-3 rounded-xl bg-white/80 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/80 midnight:bg-[#0a0e27]/80 purple:bg-[#1a0b2e]/80 shadow-sm shrink-0">
+          <div className="p-2 sm:p-3 rounded-xl bg-white/80 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/80 purple:bg-[#1a0b2e]/80 shadow-sm shrink-0">
             <Info className="w-5 h-5 sm:w-6 sm:h-6 text-cyan-600 dark:text-cyan-400" />
           </div>
           <div>
@@ -692,7 +692,7 @@ function ApplyLeaveModal({
 
         {/* Footer */}
         {!isSuccess && (
-          <div className="px-4 sm:px-6 py-4 bg-gray-50 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border-t border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/50 flex gap-3">
+          <div className="px-4 sm:px-6 py-4 bg-gray-50 dark:bg-[#0f1115] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border-t border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 flex gap-3">
             <button
               onClick={onClose}
               disabled={isSubmitting}

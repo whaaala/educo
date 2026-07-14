@@ -320,13 +320,13 @@ export default function ConvertToVideoDialog({
               <div className="flex-1">
                 <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1 block">From</label>
                 <input type="number" min={1} max={totalSlides} value={rangeStart} onChange={e => setRangeStart(Math.max(1, parseInt(e.target.value) || 1))}
-                  className="w-full px-3 py-2 rounded-lg bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 text-[13px] text-center outline-none focus:border-purple-400" />
+                  className="w-full px-3 py-2 rounded-lg bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 text-[13px] text-center outline-none focus:border-purple-400" />
               </div>
               <span className="text-gray-300 mt-4">→</span>
               <div className="flex-1">
                 <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1 block">To</label>
                 <input type="number" min={1} max={totalSlides} value={rangeEnd} onChange={e => setRangeEnd(Math.min(totalSlides, parseInt(e.target.value) || totalSlides))}
-                  className="w-full px-3 py-2 rounded-lg bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 text-[13px] text-center outline-none focus:border-purple-400" />
+                  className="w-full px-3 py-2 rounded-lg bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 text-[13px] text-center outline-none focus:border-purple-400" />
               </div>
             </div>
           )}

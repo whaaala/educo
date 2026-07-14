@@ -158,7 +158,7 @@ function ItemContextMenu({ item, onRename, onMove, onDelete, onDownload, onCopy,
   }, []);
 
   return (
-    <div ref={menuRef} className={`absolute right-0 w-[180px] bg-white/95 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/95 backdrop-blur-xl rounded-xl shadow-xl border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/60 z-50 py-1 ${openUpward ? "bottom-full mb-1" : "top-full mt-1"}`} onClick={e => e.stopPropagation()}>
+    <div ref={menuRef} className={`absolute right-0 w-[180px] bg-white/95 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/95 backdrop-blur-xl rounded-xl shadow-xl border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 z-50 py-1 ${openUpward ? "bottom-full mb-1" : "top-full mt-1"}`} onClick={e => e.stopPropagation()}>
       <button className="w-full px-3 py-2 text-left text-[12px] text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 flex items-center gap-2.5 cursor-pointer transition-colors" onClick={onRename}>
         <Pencil className="w-3.5 h-3.5 text-gray-400" /> Rename
       </button>
@@ -351,7 +351,7 @@ export default function FileBrowser({
                 className={`flex items-center gap-1.5 px-3 py-[7px] rounded-full text-[12px] font-medium transition-all cursor-pointer border ${
                   mobileNavOpen
                     ? "bg-blue-50 dark:bg-blue-500/10 border-blue-200 dark:border-blue-500 midnight:border-cyan-500 purple:border-pink-500/30 text-blue-700 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300"
-                    : "border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/40 text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-50 dark:hover:bg-white/5"
+                    : "border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-50 dark:hover:bg-white/5"
                 }`}
               >
                 <Menu className="w-3.5 h-3.5" />
@@ -361,7 +361,7 @@ export default function FileBrowser({
               {mobileNavOpen && (
                 <>
                   <div className="fixed inset-0 z-40" onClick={() => setMobileNavOpen(false)} />
-                  <div className="absolute left-0 top-full mt-1.5 z-50 w-[220px] bg-white dark:bg-[#1e2028] rounded-xl shadow-xl border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/40 py-1.5 animate-in fade-in slide-in-from-top-2 duration-150">
+                  <div className="absolute left-0 top-full mt-1.5 z-50 w-[220px] bg-white dark:bg-[#1e2028] rounded-xl shadow-xl border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 py-1.5 animate-in fade-in slide-in-from-top-2 duration-150">
                     {headerActions && (
                       <div className="px-3 pb-2 mb-1 border-b border-gray-100 dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10">
                         {headerActions}
@@ -531,7 +531,7 @@ export default function FileBrowser({
             {/* Divider between Suggested and Files — only in grid view */}
             {sortedItems.length > 0 && viewMode === "grid" && (
               <div className="relative my-6">
-                <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/40" /></div>
+                <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20" /></div>
                 <div className="relative flex justify-center">
                   <span className="bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#1e1030] px-4 text-[11px] font-semibold text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 uppercase tracking-widest flex items-center gap-2">
                     <Folder className="w-3 h-3" />

@@ -96,7 +96,7 @@ export default function ConfirmationModal({
               <button
                 type="button"
                 onClick={onClose}
-                className="flex-shrink-0 p-2 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5/50 purple:hover:bg-pink-500/5/50 rounded-lg transition-all duration-200 cursor-pointer"
+                className="flex-shrink-0 p-2 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 rounded-lg transition-all duration-200 cursor-pointer"
                 aria-label="Close"
               >
                 <X className="w-5 h-5 text-gray-500 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400" />

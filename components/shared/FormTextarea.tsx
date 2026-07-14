@@ -41,7 +41,7 @@ export interface FormTextareaProps {
 export default function FormTextarea({
   label,
   icon,
-  iconBgColor = "bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/50 midnight:bg-[#0f1330]/50 purple:bg-[#251340]/50",
+  iconBgColor = "bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330]/50 purple:bg-[#251340]/50",
   iconColor = "text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400",
   value,
   onChange,

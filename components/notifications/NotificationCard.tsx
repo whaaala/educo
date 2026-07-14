@@ -4,29 +4,10 @@ import { useState, useEffect } from "react";
 import { CheckCheck, Trash2, Clock, ChevronRight, FileText, CheckCircle2, XCircle, Bell, Calendar, Users, AlertTriangle } from "lucide-react";
 import Image from "next/image";
 
-type NotificationType =
-  | "general"
-  | "performance"
-  | "appointment"
-  | "record"
-  | "leave_submitted"
-  | "leave_approved"
-  | "leave_rejected"
-  | "meeting_scheduled"
-  | "meeting_cancelled"
-  | "payment"
-  | "message"
-  | "alert"
-  | "success"
-  | "warning"
-  | "info"
-  | "document_shared"
-  | "document_published"
-  | "document_comment"
-  | "document_comment_reply"
-  | "document_comment_resolved"
-  | "document_comment_rejected"
-  | "document_comment_mention";
+// Single source of truth. This file used to redeclare its own NotificationType union, which
+// drifted from the context's (it was missing permission_request/granted/denied) — so those
+// notifications were a type error at every call site.
+import type { NotificationType } from "@/contexts/NotificationContext";
 
 interface NotificationCardProps {
   id: string;

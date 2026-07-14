@@ -173,7 +173,7 @@ export function EditorViewMenuPanel({ config, onClose, anchorRef }: EditorViewMe
   const glassClasses = [
     "bg-white/80 dark:bg-[#0f1115]/95 midnight:bg-[#0a0e27]/80 purple:bg-[#1a0b2e]/80",
     "backdrop-blur-[20px] backdrop-saturate-[180%]",
-    "border border-gray-300/60 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30/50 midnight:border-cyan-400/20 purple:border-pink-400/20",
+    "border border-gray-300/60 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 midnight:border-cyan-400/20 purple:border-pink-400/20",
   ].join(" ");
 
   if (typeof document === "undefined") return null;

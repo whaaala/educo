@@ -412,7 +412,7 @@ export default function ShareDialog({
 
             {/* Shared users, classes & groups */}
             {sharedUsers.map((su) => (
-              <div key={su.email} className="flex items-center gap-3 py-2 px-1 rounded-lg hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5/50 group">
+              <div key={su.email} className="flex items-center gap-3 py-2 px-1 rounded-lg hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 group">
                 <div
                   className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-[13px] font-semibold flex-shrink-0 overflow-hidden ${su.isClass ? "bg-indigo-500" : su.isGroup ? "bg-teal-500" : ""}`}
                   style={(su.isClass || su.isGroup) ? undefined : { background: `hsl(${su.email.length * 37 % 360}, 50%, 45%)` }}
@@ -456,7 +456,7 @@ export default function ShareDialog({
         </div>
 
         {/* General access */}
-        <div className="px-6 pb-5 border-t border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/50 pt-4">
+        <div className="px-6 pb-5 border-t border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 pt-4">
           <h3 className="text-[13px] font-medium text-gray-800 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 mb-3">General access</h3>
           <div className="flex items-center gap-3">
             <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${shareAccess === "restricted" ? "bg-gray-200 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]" : "bg-green-100 dark:bg-green-900/40"}`}>

@@ -440,7 +440,7 @@ function Sidebar({ isCollapsed, setIsCollapsed, isMobileSidebarOpen, setIsMobile
                 "border",
                 hasActiveChild(item)
                   ? "bg-blue-50/40 dark:bg-blue-900/10 midnight:bg-cyan-900/10 purple:bg-pink-900/10 text-blue-600 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300 border-blue-200/30 dark:border-blue-700 midnight:border-cyan-500 purple:border-pink-500/20 midnight:border-cyan-700/20 purple:border-pink-700/20"
-                  : "text-gray-600 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-100/50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5/50 midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 border-transparent",
+                  : "text-gray-600 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-100/50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 border-transparent",
                 level > 0 && "pl-3"
               )}
             >
@@ -488,7 +488,7 @@ function Sidebar({ isCollapsed, setIsCollapsed, isMobileSidebarOpen, setIsMobile
             {/* Popover menu for collapsed sidebar */}
             {isCollapsedDesktop && level === 0 && hoveredItem === item.id && (
               <div
-                className="absolute left-full top-0 w-56 bg-white dark:bg-[#1e2128] midnight:bg-[#0d1220] purple:bg-[#1f0d33] rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/50 midnight:border-cyan-500/20 purple:border-pink-500/20 py-2 backdrop-blur-sm animate-in fade-in slide-in-from-left-2 duration-200"
+                className="absolute left-full top-0 w-56 bg-white dark:bg-[#1e2128] midnight:bg-[#0d1220] purple:bg-[#1f0d33] rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 py-2 backdrop-blur-sm animate-in fade-in slide-in-from-left-2 duration-200"
                 style={{
                   zIndex: 9999,
                   marginLeft: '8px',
@@ -517,7 +517,7 @@ function Sidebar({ isCollapsed, setIsCollapsed, isMobileSidebarOpen, setIsMobile
                             "flex items-center justify-between gap-3 px-4 py-2.5 text-sm transition-all duration-200 rounded-xl cursor-pointer",
                             childIsActive
                               ? "bg-blue-50/40 dark:bg-blue-900/10 midnight:bg-cyan-900/10 purple:bg-pink-900/10 text-blue-600 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300 border border-blue-200/30 dark:border-blue-700 midnight:border-cyan-500 purple:border-pink-500/20 midnight:border-cyan-700/20 purple:border-pink-700/20"
-                              : "text-gray-700 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10/50 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 hover:text-blue-600 dark:hover:text-blue-300 midnight:hover:text-cyan-300 purple:hover:text-pink-300"
+                              : "text-gray-700 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 hover:text-blue-600 dark:hover:text-blue-300 midnight:hover:text-cyan-300 purple:hover:text-pink-300"
                           )}>
                             <div className="flex items-center gap-3">
                               <div className={cn(
@@ -536,7 +536,7 @@ function Sidebar({ isCollapsed, setIsCollapsed, isMobileSidebarOpen, setIsMobile
                           {/* Nested submenu popup */}
                           {hoveredSubmenuItem === child.id && (
                             <div
-                              className="absolute left-full top-0 w-52 bg-white dark:bg-[#1e2128] midnight:bg-[#0d1220] purple:bg-[#1f0d33] rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/50 midnight:border-cyan-500/20 purple:border-pink-500/20 py-2 backdrop-blur-sm animate-in fade-in slide-in-from-left-2 duration-200"
+                              className="absolute left-full top-0 w-52 bg-white dark:bg-[#1e2128] midnight:bg-[#0d1220] purple:bg-[#1f0d33] rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 py-2 backdrop-blur-sm animate-in fade-in slide-in-from-left-2 duration-200"
                               style={{
                                 zIndex: 10000,
                                 marginLeft: '8px',
@@ -558,7 +558,7 @@ function Sidebar({ isCollapsed, setIsCollapsed, isMobileSidebarOpen, setIsMobile
                                         "flex items-center gap-3 px-4 py-2.5 text-sm transition-all duration-200 rounded-xl mx-2 cursor-pointer",
                                         isActive
                                           ? "bg-blue-50/40 dark:bg-blue-900/10 midnight:bg-cyan-900/10 purple:bg-pink-900/10 text-blue-600 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300 border border-blue-200/30 dark:border-blue-700 midnight:border-cyan-500 purple:border-pink-500/20 midnight:border-cyan-700/20 purple:border-pink-700/20"
-                                          : "text-gray-700 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-100/80 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10/50 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 hover:text-blue-600 dark:hover:text-blue-300 midnight:hover:text-cyan-300 purple:hover:text-pink-300"
+                                          : "text-gray-700 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-100/80 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 hover:text-blue-600 dark:hover:text-blue-300 midnight:hover:text-cyan-300 purple:hover:text-pink-300"
                                       )}
                                     >
                                       <div className={cn(
@@ -700,7 +700,7 @@ function Sidebar({ isCollapsed, setIsCollapsed, isMobileSidebarOpen, setIsMobile
                     "transition-all duration-200",
                     childIsActive
                       ? "bg-blue-50/40 dark:bg-blue-900/10 midnight:bg-cyan-900/10 purple:bg-pink-900/10 text-blue-600 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300 border border-blue-200/30 dark:border-blue-700 midnight:border-cyan-500 purple:border-pink-500/20 midnight:border-cyan-700/20 purple:border-pink-700/20"
-                      : "text-gray-600 dark:text-gray-400 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100/50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5/50 midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 hover:text-blue-600 dark:hover:text-blue-300 midnight:hover:text-cyan-300 purple:hover:text-pink-300"
+                      : "text-gray-600 dark:text-gray-400 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100/50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 hover:text-blue-600 dark:hover:text-blue-300 midnight:hover:text-cyan-300 purple:hover:text-pink-300"
                   )}
                 >
                   <div className="flex items-center gap-3 flex-1 min-w-0">
@@ -745,7 +745,7 @@ function Sidebar({ isCollapsed, setIsCollapsed, isMobileSidebarOpen, setIsMobile
           "dark:from-[#1a1d23] dark:via-[#1e2128] dark:to-[#1a1d23]",
           "midnight:from-[#0f1729] midnight:via-[#0d1220] midnight:to-[#0f1729]",
           "purple:from-[#2a1a3e] purple:via-[#1f0d33] purple:to-[#2a1a3e]",
-          "border-r border-gray-200/80 dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10/50 midnight:border-cyan-500/20 purple:border-pink-500/20",
+          "border-r border-gray-200/80 dark:border-[#1a1d24] midnight:border-cyan-500/20 purple:border-pink-500/20",
           "shadow-xl shadow-gray-200/50 dark:shadow-black/20",
           "backdrop-blur-xl",
           "transition-all duration-500 ease-in-out z-40",
@@ -765,7 +765,7 @@ function Sidebar({ isCollapsed, setIsCollapsed, isMobileSidebarOpen, setIsMobile
         <div className="flex flex-col h-full" style={isCollapsed && isMobile === false ? { overflow: 'visible' } : undefined}>
           {/* Logo Section */}
           <div className={cn(
-            "flex items-center px-4 py-5 border-b border-gray-200/80 dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10/50 midnight:border-cyan-500/20 purple:border-pink-500/20",
+            "flex items-center px-4 py-5 border-b border-gray-200/80 dark:border-[#1a1d24] midnight:border-cyan-500/20 purple:border-pink-500/20",
             "bg-gradient-to-r from-blue-50/50 to-indigo-50/50 dark:from-blue-500/5 dark:to-indigo-500/5",
             "midnight:from-cyan-500/5 midnight:to-blue-500/5 purple:from-pink-500/5 purple:to-purple-500/5",
             "transition-all duration-500 ease-in-out",
@@ -841,12 +841,12 @@ function Sidebar({ isCollapsed, setIsCollapsed, isMobileSidebarOpen, setIsMobile
 
           {/* Footer - Show based on mobile/collapsed state */}
           {(isMobile === true || (isMobile === false && !isCollapsed)) && (
-            <div className="flex-shrink-0 p-4 border-t border-gray-200/80 dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10/50 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-gradient-to-r from-blue-50/30 to-indigo-50/30 dark:from-blue-500/5 dark:to-indigo-500/5 midnight:from-cyan-500/5 midnight:to-blue-500/5 purple:from-pink-500/5 purple:to-purple-500/5 space-y-3">
+            <div className="flex-shrink-0 p-4 border-t border-gray-200/80 dark:border-[#1a1d24] midnight:border-cyan-500/20 purple:border-pink-500/20 bg-gradient-to-r from-blue-50/30 to-indigo-50/30 dark:from-blue-500/5 dark:to-indigo-500/5 midnight:from-cyan-500/5 midnight:to-blue-500/5 purple:from-pink-500/5 purple:to-purple-500/5 space-y-3">
               {/* Tenant Switcher */}
               {showTenantSwitcher && !isParent && <TenantSwitcher />}
 
               {/* Help Section */}
-              <div className="px-4 py-3.5 bg-gradient-to-br from-blue-50 via-indigo-50 to-blue-100 dark:from-blue-500/10 dark:via-indigo-500/10 dark:to-blue-600/10 midnight:from-cyan-500/10 midnight:via-blue-500/10 midnight:to-cyan-600/10 purple:from-pink-500/10 purple:via-purple-500/10 purple:to-pink-600/10 rounded-xl border border-blue-200/50 dark:border-blue-500 midnight:border-cyan-500 purple:border-pink-500/20 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm hover:shadow-md transition-all duration-200">
+              <div className="px-4 py-3.5 bg-gradient-to-br from-blue-50 via-indigo-50 to-blue-100 dark:from-blue-500/10 dark:via-indigo-500/10 dark:to-blue-600/10 midnight:from-cyan-500/10 midnight:via-blue-500/10 midnight:to-cyan-600/10 purple:from-pink-500/10 purple:via-purple-500/10 purple:to-pink-600/10 rounded-xl border border-blue-200/50 dark:border-blue-500 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm hover:shadow-md transition-all duration-200">
                 <p className="text-sm font-bold text-blue-900 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300 flex items-center gap-2">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />

@@ -334,7 +334,7 @@ ${event.description}`;
                   className={`w-full flex items-center gap-3 p-3 rounded-xl border-2 transition-all duration-200 group ${
                     copiedLink
                       ? "border-green-400 dark:border-green-500 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20"
-                      : "border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 hover:border-blue-200 dark:hover:border-blue-700/50 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10/30"
+                      : "border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 hover:border-blue-200 dark:hover:border-blue-700/50 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"
                   }`}
                 >
                   <div
@@ -375,7 +375,7 @@ ${event.description}`;
                   className={`w-full flex items-center gap-3 p-3 rounded-xl border-2 transition-all duration-200 group ${
                     copiedDetails
                       ? "border-green-400 dark:border-green-500 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20"
-                      : "border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 hover:border-blue-200 dark:hover:border-blue-700/50 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10/30"
+                      : "border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 hover:border-blue-200 dark:hover:border-blue-700/50 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"
                   }`}
                 >
                   <div

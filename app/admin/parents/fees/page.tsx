@@ -1720,7 +1720,7 @@ function FeeRecordCard({
       </div>
 
       {/* Actions */}
-      <div className="px-4 py-3 border-t border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 flex items-center justify-end gap-2">
+      <div className="px-4 py-3 border-t border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 flex items-center justify-end gap-2">
         <Tooltip content={reminderCount > 0 ? `Send Reminder (${reminderCount} sent)` : "Send Reminder"}>
           <button
             type="button"

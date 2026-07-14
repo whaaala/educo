@@ -314,7 +314,7 @@ export default function ParentChatPage() {
                   <button
                     key={conv.contact.id}
                     onClick={() => handleSelectContact(conv.contact)}
-                    className={`w-full flex items-center gap-3 p-4 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10/50 transition-colors cursor-pointer text-left border-b border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/50 ${
+                    className={`w-full flex items-center gap-3 p-4 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer text-left border-b border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 ${
                       selectedContact?.id === conv.contact.id ? "bg-blue-50 dark:bg-blue-900/20 midnight:bg-cyan-900/20 purple:bg-pink-900/20" : ""
                     }`}
                   >

@@ -256,11 +256,11 @@ export default function DataTable<T>({
  <div className={`w-full transition-all duration-300 overflow-hidden ${
  hideColumnHeaders
  ? 'bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]'
- : 'bg-gradient-to-b from-white via-white to-gray-50/80 dark:from-gray-800 dark:via-gray-800 dark:to-gray-850/90 midnight:from-gray-900 midnight:via-gray-900 midnight:to-gray-950/90 purple:from-gray-900 purple:via-gray-900 purple:to-gray-950/90 shadow-[0_8px_32px_rgba(0,0,0,0.08),0_2px_8px_rgba(0,0,0,0.06),inset_0_1px_0_rgba(255,255,255,0.8)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.06)] rounded-2xl sm:rounded-3xl border border-gray-200/80 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/50 purple:border-pink-500/20'
+ : 'bg-gradient-to-b from-white via-white to-gray-50/80 dark:from-gray-800 dark:via-gray-800 dark:to-gray-850/90 midnight:from-gray-900 midnight:via-gray-900 midnight:to-gray-950/90 purple:from-gray-900 purple:via-gray-900 purple:to-gray-950/90 shadow-[0_8px_32px_rgba(0,0,0,0.08),0_2px_8px_rgba(0,0,0,0.06),inset_0_1px_0_rgba(255,255,255,0.8)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.06)] rounded-2xl sm:rounded-3xl border border-gray-200/80 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20'
  }`}>
  {/* Table Header */}
  {(title || showSearch) && (
- <div className="bg-gray-50/80 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/90 purple:bg-[#1a0b2e]/90 backdrop-blur-sm px-4 sm:px-5 md:px-6 py-2.5 sm:py-3 flex flex-row items-center justify-between gap-2 sm:gap-3 border-b border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/40 purple:border-pink-500/20 rounded-t-2xl sm:rounded-t-3xl">
+ <div className="bg-gray-50/80 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/90 backdrop-blur-sm px-4 sm:px-5 md:px-6 py-2.5 sm:py-3 flex flex-row items-center justify-between gap-2 sm:gap-3 border-b border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-t-2xl sm:rounded-t-3xl">
  <h2 className="text-xs sm:text-sm font-bold text-gray-800 dark:text-gray-100 midnight:text-cyan-300 purple:text-pink-300 tracking-tight whitespace-nowrap">
  {title} {searchQuery && `(${sortedData.length})`}
  </h2>
@@ -286,11 +286,11 @@ export default function DataTable<T>({
  className={`-mx-px smooth-scroll pb-16 ${disableHorizontalScroll ? '' : 'overflow-x-auto snap-x snap-mandatory'}`}
  style={disableHorizontalScroll ? { overflowX: 'hidden', overflowY: 'visible' } : { overflowY: 'visible', overflowX: 'auto' }}
  >
- <table className="w-full border-collapse bg-white/0 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/0 purple:bg-[#1a0b2e]/0" style={{ overflow: 'visible', tableLayout: 'auto' }}>
+ <table className="w-full border-collapse bg-white/0 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/0" style={{ overflow: 'visible', tableLayout: 'auto' }}>
  {/* Table Header */}
  {!hideColumnHeaders && (
  <thead>
- <tr className="bg-gray-50/80 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/60 purple:bg-[#251340]/60 border-b border-gray-200/60 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30/40 purple:border-pink-500/20">
+ <tr className="bg-gray-50/80 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/60 border-b border-gray-200/60 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/20">
  {columns.map((column, index) => {
  // Determine alignment from className
  const isLeftAligned = column.className?.includes('text-left');
@@ -312,7 +312,7 @@ export default function DataTable<T>({
  className={`px-2 sm:px-2 md:px-2 lg:px-3 py-2.5 sm:py-2 md:py-2.5 text-[10px] md:text-[9px] lg:text-[10px] font-extrabold uppercase tracking-wide whitespace-nowrap align-middle transition-all duration-300 ease-in-out ${stickyClass} ${
  sortedData.length === 0
  ? 'cursor-not-allowed opacity-50'
- : column.sortable !== false && !column.renderHeader ? 'cursor-pointer group/header select-none hover:bg-gray-100/50 dark:hover:bg-[#2a2d35] midnight:hover:bg-cyan-500/15 purple:hover:bg-pink-500/15/30 :bg-cyan-500/10 purple:hover:bg-pink-500/10' : ''
+ : column.sortable !== false && !column.renderHeader ? 'cursor-pointer group/header select-none hover:bg-gray-100/50 dark:hover:bg-[#2a2d35] midnight:hover:bg-cyan-500/15 :bg-cyan-500/10 purple:hover:bg-pink-500/10' : ''
  } ${
  sortedData.length === 0
  ? 'text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400'
@@ -397,7 +397,7 @@ export default function DataTable<T>({
  style={{
  animation: isSearching ? `fadeSlideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) ${index / 80}s both` : undefined,
  } as React.CSSProperties}
- className={`group/row border-b border-gray-100/70 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/50 purple:border-pink-500/15 hover:bg-blue-50/40 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10/30 :bg-cyan-500/10 purple:hover:bg-pink-500/10 ${!isSorting ? 'transition-all duration-200' : ''} ${animationClass} ${onRowClick ? 'cursor-pointer' : ''}`}
+ className={`group/row border-b border-gray-100/70 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 purple:border-pink-500/15 hover:bg-blue-50/40 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 :bg-cyan-500/10 purple:hover:bg-pink-500/10 ${!isSorting ? 'transition-all duration-200' : ''} ${animationClass} ${onRowClick ? 'cursor-pointer' : ''}`}
  onClick={() => onRowClick?.(item)}
  >
  {columns.map((column, colIndex) => {
@@ -405,9 +405,9 @@ export default function DataTable<T>({
  // First column needs higher z-index than second to prevent overlap when scrolling
  const stickyClass =
  stickyColumnCount >= 1 && colIndex === 0
- ? 'md:relative md:left-auto sticky left-0 z-30 bg-white group-hover/row:bg-blue-50/40 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] dark:group-hover/row:bg-gray-700/30 midnight:group-hover/row:bg-cyan-500/10 purple:bg-[#1a0b2e] purple:group-hover/row:bg-pink-500/10 after:md:hidden after:absolute after:right-0 after:top-0 after:bottom-0 after:w-[1px] after:shadow-[2px_0_4px_rgba(0,0,0,0.1)] after:pointer-events-none transition-colors duration-200'
+ ? 'md:relative md:left-auto sticky left-0 z-30 bg-white group-hover/row:bg-blue-50/40 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] dark:group-hover/row:bg-gray-700/30 midnight:group-hover/row:bg-cyan-500/10 purple:bg-[#1a0b2e] purple:group-hover/row:bg-pink-500/10 after:md:hidden after:absolute after:right-0 after:top-0 after:bottom-0 after:w-[1px] after:shadow-[2px_0_4px_rgba(0,0,0,0.1)] after:pointer-events-none transition-colors duration-200'
  : stickyColumnCount >= 2 && colIndex === 1
- ? 'md:relative md:left-auto sticky left-[40px] sm:left-[48px] z-20 bg-white group-hover/row:bg-blue-50/40 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] dark:group-hover/row:bg-gray-700/30 midnight:group-hover/row:bg-cyan-500/10 purple:bg-[#1a0b2e] purple:group-hover/row:bg-pink-500/10 after:md:hidden after:absolute after:right-0 after:top-0 after:bottom-0 after:w-[1px] after:shadow-[2px_0_4px_rgba(0,0,0,0.1)] after:pointer-events-none transition-colors duration-200'
+ ? 'md:relative md:left-auto sticky left-[40px] sm:left-[48px] z-20 bg-white group-hover/row:bg-blue-50/40 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] dark:group-hover/row:bg-gray-700/30 midnight:group-hover/row:bg-cyan-500/10 purple:bg-[#1a0b2e] purple:group-hover/row:bg-pink-500/10 after:md:hidden after:absolute after:right-0 after:top-0 after:bottom-0 after:w-[1px] after:shadow-[2px_0_4px_rgba(0,0,0,0.1)] after:pointer-events-none transition-colors duration-200'
  : '';
 
  // Determine alignment from className - check if explicitly set, otherwise use center as default
@@ -476,7 +476,7 @@ export default function DataTable<T>({
 
  {/* Pagination Controls */}
  {enablePagination && (totalDataCount ? totalDataCount > 0 : data.length > 0) && (
- <div className={`relative z-10 -mt-16 bg-gray-50/80 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/90 purple:bg-[#1a0b2e]/90 backdrop-blur-sm px-4 sm:px-5 md:px-6 py-3 sm:py-3.5 flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-3 border-t border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/40 purple:border-pink-500/20 rounded-b-2xl sm:rounded-b-3xl transition-opacity duration-200 ${
+ <div className={`relative z-10 -mt-16 bg-gray-50/80 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/90 purple:bg-[#1a0b2e]/90 backdrop-blur-sm px-4 sm:px-5 md:px-6 py-3 sm:py-3.5 flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-3 border-t border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 purple:border-pink-500/20 rounded-b-2xl sm:rounded-b-3xl transition-opacity duration-200 ${
  isLoading ? 'opacity-50 pointer-events-none' : 'opacity-100'
  }`}>
  {/* Left - Showing info */}

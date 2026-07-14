@@ -29,14 +29,23 @@ export const LoadMoreButton = memo(function LoadMoreButton({
 }: LoadMoreButtonProps) {
   const { colors } = useTheme();
 
+  // Nulling onPress alone left the Pressable still "pressable": it wasn't actually disabled, so
+  // a press could still be dispatched to it, and screen readers never announced the disabled /
+  // busy state. Mark it disabled properly and expose the a11y state.
+  const isDisabled = isLoading || disabled;
+
   return (
     <View style={styles.container}>
       <Pressable
-        onPress={isLoading || disabled ? undefined : onPress}
+        onPress={isDisabled ? undefined : onPress}
+        disabled={isDisabled}
+        accessibilityRole="button"
+        accessibilityState={{ disabled: isDisabled, busy: isLoading }}
+        accessibilityLabel={isLoading ? loadingText : text}
         style={[
           styles.button,
           { backgroundColor: colors.primary },
-          (isLoading || disabled) && styles.buttonDisabled,
+          isDisabled && styles.buttonDisabled,
         ]}
       >
         <View style={styles.buttonInner}>

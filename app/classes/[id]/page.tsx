@@ -545,7 +545,7 @@ export default function ClassDetailsPage() {
                 </thead>
                 <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                   {classData.students.slice(0, 10).map((student) => (
-                    <tr key={student.id} className="hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10/30">
+                    <tr key={student.id} className="hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center gap-3">
                           <img

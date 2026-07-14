@@ -332,7 +332,7 @@ function FormatRow({ format, filename, estimatedSize, isDownloading, isCompleted
           ? "bg-green-50 dark:bg-green-900/15 border border-green-200 dark:border-green-800"
           : isDownloading
             ? "bg-blue-50 dark:bg-blue-900/15 border border-blue-200 dark:border-blue-800"
-            : "border border-gray-100 dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10 hover:border-gray-200 dark:hover:border-gray-700 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5/30 hover:shadow-sm"
+            : "border border-gray-100 dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10 hover:border-gray-200 dark:hover:border-gray-700 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 hover:shadow-sm"
       }`}
     >
       {/* Icon */}

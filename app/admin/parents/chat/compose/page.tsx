@@ -184,7 +184,7 @@ export default function ComposeNewChatPage() {
                         <button
                           key={parent.id}
                           onClick={() => handleSelectParent(parent)}
-                          className="w-full flex items-center gap-4 p-4 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10/50 transition-colors cursor-pointer text-left"
+                          className="w-full flex items-center gap-4 p-4 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer text-left"
                         >
                           <div className="relative flex-shrink-0">
                             <div className="relative w-12 h-12 rounded-full overflow-hidden bg-gray-200 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]">
@@ -231,7 +231,7 @@ export default function ComposeNewChatPage() {
             /* Chat View */
             <div className="flex-1 flex flex-col">
               {/* Chat Header */}
-              <div className="flex items-center gap-4 p-4 border-b border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-gray-50/50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50">
+              <div className="flex items-center gap-4 p-4 border-b border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-gray-50/50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50">
                 <button
                   onClick={() => setSelectedParent(null)}
                   className="p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer"

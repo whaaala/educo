@@ -289,7 +289,7 @@ export default function StaffAttendancePage() {
                 {dateFilteredRecords.map((record) => (
                   <tr
                     key={record.id}
-                    className="hover:bg-gray-50 dark:hover:bg-[#22262e]/50 midnight:hover:bg-cyan-500/5/50 purple:hover:bg-pink-500/5/50 transition-colors"
+                    className="hover:bg-gray-50 dark:hover:bg-[#22262e]/50 midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors"
                   >
                     <td className="px-4 py-3">
                       <input

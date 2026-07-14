@@ -504,7 +504,7 @@ export default function MessagesPageContent({
       render: (msg) => (
         <div className="flex items-center gap-2">
           <div className="relative cursor-pointer group/avatar flex-shrink-0">
-            <div className="relative w-7 h-7 rounded-full overflow-hidden bg-gray-200 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] ring-1 ring-white/80 dark:ring-gray-700 midnight:ring-cyan-500/20 purple:ring-pink-500/20/50 shadow-sm transition-all duration-300 ease-out group-hover/avatar:scale-150 group-hover/avatar:shadow-lg group-hover/avatar:ring-2 group-hover/avatar:ring-blue-500/90 group-hover/avatar:z-[100]">
+            <div className="relative w-7 h-7 rounded-full overflow-hidden bg-gray-200 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] ring-1 ring-white/80 dark:ring-gray-700 midnight:ring-cyan-500/20 purple:ring-pink-500/20 shadow-sm transition-all duration-300 ease-out group-hover/avatar:scale-150 group-hover/avatar:shadow-lg group-hover/avatar:ring-2 group-hover/avatar:ring-blue-500/90 group-hover/avatar:z-[100]">
               {msg.senderAvatar ? (
                 <Image
                   src={msg.senderAvatar}

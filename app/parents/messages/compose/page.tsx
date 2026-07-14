@@ -390,7 +390,7 @@ export default function ComposeMessagePage() {
                                   className={`w-full flex items-center gap-3 p-2.5 rounded-lg transition-all cursor-pointer ${
                                     selectedTeacherId === teacher.id
                                       ? "bg-blue-50 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30"
-                                      : "hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10/50"
+                                      : "hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"
                                   }`}
                                 >
                                   <div className="relative">
@@ -481,7 +481,7 @@ export default function ComposeMessagePage() {
                                 className={`w-full flex items-center gap-3 p-2.5 rounded-lg transition-all cursor-pointer ${
                                   selectedChildId === child.id
                                     ? "bg-purple-50 dark:bg-purple-900/30"
-                                    : "hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10/50"
+                                    : "hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"
                                 }`}
                               >
                                 <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-purple-500 to-indigo-500 flex items-center justify-center text-white font-bold text-sm">
@@ -504,7 +504,7 @@ export default function ComposeMessagePage() {
                                   setSelectedChildId("");
                                   setShowChildDropdown(false);
                                 }}
-                                className="w-full mt-1 p-2 text-sm text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 midnight:hover:text-cyan-200 purple:hover:text-pink-200 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10/50 rounded-lg transition-colors cursor-pointer"
+                                className="w-full mt-1 p-2 text-sm text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 midnight:hover:text-cyan-200 purple:hover:text-pink-200 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 rounded-lg transition-colors cursor-pointer"
                               >
                                 Clear selection
                               </button>
@@ -663,7 +663,7 @@ export default function ComposeMessagePage() {
                 </div>
 
                 {/* Footer Actions */}
-                <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-gray-50/50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50">
+                <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-gray-50/50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50">
                   <div className="flex items-center justify-between gap-4">
                     <Link href="/parents/messages">
                       <button className="px-5 py-2.5 rounded-xl text-sm font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:text-gray-900 dark:hover:text-white midnight:hover:text-cyan-50 purple:hover:text-pink-50 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-all cursor-pointer">

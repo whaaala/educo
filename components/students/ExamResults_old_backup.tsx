@@ -321,7 +321,7 @@ export default function ExamResults({
               {/* Exam Header - Clickable */}
               <button
                 onClick={() => toggleExam(exam.id)}
-                className="w-full flex items-center justify-between p-4 bg-gray-50 dark:bg-[#1a1d24]/50 midnight:bg-[#0f1330]/50 purple:bg-[#251340]/50 hover:bg-gray-100 dark:hover:bg-[#22262e]/50 midnight:hover:bg-cyan-500/10/50 purple:hover:bg-pink-500/10/50 transition-colors cursor-pointer"
+                className="w-full flex items-center justify-between p-4 bg-gray-50 dark:bg-[#1a1d24]/50 midnight:bg-[#0f1330]/50 purple:bg-[#251340]/50 hover:bg-gray-100 dark:hover:bg-[#22262e]/50 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer"
               >
                 <div className="flex items-center gap-3">
                   <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-green-100 dark:bg-green-900/30 midnight:bg-green-900/30 purple:bg-green-900/30">

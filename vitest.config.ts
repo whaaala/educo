@@ -10,7 +10,10 @@ export default defineConfig({
     globals: true,
     setupFiles: [path.resolve(__dirname, "test/setup.ts")],
     css: true,
-    exclude: ["**/node_modules/**", "**/e2e/**", "**/*.spec.ts"],
+    // apps/mobile is a React Native package whose tests run under JEST
+    // (`cd apps/mobile && npx jest`), not Vitest. Without this exclude, Vitest collects them and
+    // reports 7 phantom "Failed Suites" (jest globals / RN transforms it cannot resolve).
+    exclude: ["**/node_modules/**", "**/e2e/**", "**/*.spec.ts", "apps/mobile/**"],
     clearMocks: true,
     mockReset: true,
     restoreMocks: true,

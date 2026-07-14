@@ -459,7 +459,7 @@ export default function LibraryFinesPage() {
               alt={fine.memberName}
               width={32}
               height={32}
-              className="absolute inset-0 w-8 h-8 rounded-full object-cover ring-2 ring-white/80 dark:ring-gray-700 midnight:ring-cyan-500/20 purple:ring-pink-500/20/50 midnight:ring-cyan-500/30 purple:ring-pink-500/30 shadow-lg transition-all duration-300 ease-out group-hover/avatar:scale-[2.5] group-hover/avatar:shadow-2xl group-hover/avatar:ring-blue-500/90 dark:group-hover/avatar:ring-blue-400/90"
+              className="absolute inset-0 w-8 h-8 rounded-full object-cover ring-2 ring-white/80 dark:ring-gray-700 midnight:ring-cyan-500/30 purple:ring-pink-500/30 shadow-lg transition-all duration-300 ease-out group-hover/avatar:scale-[2.5] group-hover/avatar:shadow-2xl group-hover/avatar:ring-blue-500/90 dark:group-hover/avatar:ring-blue-400/90"
               style={{ transformOrigin: "left center" }}
               unoptimized
             />
@@ -918,7 +918,7 @@ export default function LibraryFinesPage() {
             />
 
             {/* Info Notice */}
-            <div className="p-3 rounded-xl bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/30">
+            <div className="p-3 rounded-xl bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
               <div className="flex items-start gap-2">
                 <CheckCircle2 className="w-4 h-4 text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 flex-shrink-0 mt-0.5" />
                 <p className="text-xs text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
@@ -1080,7 +1080,7 @@ function FineViewModal({
             {getPaymentBadge(fine)}
           </div>
 
-          <div className="mt-6 pt-4 border-t border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/40">
+          <div className="mt-6 pt-4 border-t border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
             <p className="text-sm font-medium text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mb-1">Total Amount</p>
             <div className="flex items-baseline gap-1">
               <span className={`text-sm font-semibold ${typeConfig.amountColor}`}>{currencySymbol}</span>
@@ -1101,7 +1101,7 @@ function FineViewModal({
         {/* Member & Book Info */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Member Card */}
-          <div className="p-4 rounded-xl bg-gradient-to-br from-gray-50 to-gray-100/50 dark:from-gray-800/80 dark:to-gray-800/40 border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/40 shadow-sm">
+          <div className="p-4 rounded-xl bg-gradient-to-br from-gray-50 to-gray-100/50 dark:from-gray-800/80 dark:to-gray-800/40 border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm">
             <div className="flex items-center gap-2 mb-3">
               <div className="p-1.5 rounded-lg bg-purple-100 dark:bg-purple-900/30">
                 <Receipt className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
@@ -1149,7 +1149,7 @@ function FineViewModal({
           </div>
 
           {/* Amount */}
-          <div className="p-3 rounded-xl bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/40">
+          <div className="p-3 rounded-xl bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
             <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mb-1.5">Amount</p>
             <p className={`text-lg font-bold ${!fine.isPaid ? "text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400" : "text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50"}`}>
               {formatCurrency(fine.amount)}
@@ -1157,7 +1157,7 @@ function FineViewModal({
           </div>
 
           {/* Created Date */}
-          <div className="p-3 rounded-xl bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/40">
+          <div className="p-3 rounded-xl bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
             <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mb-1.5">Created</p>
             <p className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
               {new Date(fine.createdAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
@@ -1165,7 +1165,7 @@ function FineViewModal({
           </div>
 
           {/* Status */}
-          <div className="p-3 rounded-xl bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/40">
+          <div className="p-3 rounded-xl bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
             <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mb-1.5">Status</p>
             {getPaymentBadge(fine)}
           </div>

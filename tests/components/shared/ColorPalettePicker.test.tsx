@@ -372,7 +372,7 @@ describe("ColorPalettePicker", () => {
     });
 
     // Scenario: becomes false only on blur
-    it("becomes false only on blur (native picker fully closed)", () => {
+    it("becomes false only on blur (native picker fully closed)", async () => {
       // Given a ColorGrid rendered with showCustomHex
       const { container } = render(
         <ColorGrid colors={["#000000"]} selectedColor="#000000" onSelect={() => {}} showCustomHex />
@@ -383,12 +383,14 @@ describe("ColorPalettePicker", () => {
       expect(isNativeColorPickerOpen()).toBe(true);
       // When blur fires on the native color input
       fireEvent.blur(colorInput);
-      // Then isNativeColorPickerOpen should return false
+      // Then isNativeColorPickerOpen should return false — cleared on the next tick, which lets
+      // the trailing click that dismissed the native picker pass without closing the parent.
+      await new Promise((r) => setTimeout(r, 0));
       expect(isNativeColorPickerOpen()).toBe(false);
     });
 
     // Scenario: onSelect is called during native picker drag without closing
-    it("onSelect is called during native picker drag without closing", () => {
+    it("onSelect is called during native picker drag without closing", async () => {
       // Given a ColorGrid rendered with showCustomHex and a tracking onSelect
       const selectCalls: string[] = [];
       const { container } = render(
@@ -412,7 +414,8 @@ describe("ColorPalettePicker", () => {
       expect(isNativeColorPickerOpen()).toBe(true);
       // When the picker closes via blur
       fireEvent.blur(colorInput);
-      // Then the flag should become false
+      // Then the flag should become false (cleared on the next tick)
+      await new Promise((r) => setTimeout(r, 0));
       expect(isNativeColorPickerOpen()).toBe(false);
     });
   });

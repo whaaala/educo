@@ -386,7 +386,7 @@ export default function SubjectsManagementPage() {
               </div>
 
               {/* Teacher Info */}
-              <div className="p-6 bg-gray-50 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/30 midnight:bg-[#0f1330]/50 purple:bg-[#251340]/50">
+              <div className="p-6 bg-gray-50 dark:bg-[#22262e] midnight:bg-[#0f1330]/50 purple:bg-[#251340]/50">
                 <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mb-3">
                   {isTertiary ? "Lecturer" : "Teacher"}
                 </p>

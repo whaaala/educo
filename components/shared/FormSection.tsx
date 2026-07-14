@@ -229,7 +229,7 @@ export default function FormSection({
         disabled={!collapsible}
         className={`
           w-full flex items-center gap-3 px-4 sm:px-6 py-4
-          ${collapsible ? "cursor-pointer hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10/50" : "cursor-default"}
+          ${collapsible ? "cursor-pointer hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10" : "cursor-default"}
           transition-colors
         `}
         aria-expanded={isExpanded}

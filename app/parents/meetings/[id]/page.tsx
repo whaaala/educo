@@ -595,7 +595,7 @@ export default function MeetingDetailsPage() {
                                 "bg-white dark:bg-[#1a1d24]/50 midnight:bg-[#0f1330]/50 purple:bg-[#251340]/50",
                                 "border border-gray-200 dark:border-gray-700/50 midnight:border-gray-700/50 purple:border-gray-700/50",
                                 "hover:border-gray-300 dark:hover:border-gray-600 midnight:hover:border-gray-600 purple:hover:border-gray-600",
-                                "hover:bg-gray-50 dark:hover:bg-[#22262e]/50 midnight:hover:bg-cyan-500/10/50 purple:hover:bg-pink-500/10/50",
+                                "hover:bg-gray-50 dark:hover:bg-[#22262e]/50 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10",
                                 "transition-all duration-200"
                               )}
                               onClick={() => navigator.clipboard.writeText(meeting.meetingId || "")}
@@ -632,7 +632,7 @@ export default function MeetingDetailsPage() {
                                 "bg-white dark:bg-[#1a1d24]/50 midnight:bg-[#0f1330]/50 purple:bg-[#251340]/50",
                                 "border border-gray-200 dark:border-gray-700/50 midnight:border-gray-700/50 purple:border-gray-700/50",
                                 "hover:border-gray-300 dark:hover:border-gray-600 midnight:hover:border-gray-600 purple:hover:border-gray-600",
-                                "hover:bg-gray-50 dark:hover:bg-[#22262e]/50 midnight:hover:bg-cyan-500/10/50 purple:hover:bg-pink-500/10/50",
+                                "hover:bg-gray-50 dark:hover:bg-[#22262e]/50 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10",
                                 "transition-all duration-200"
                               )}
                               onClick={() => navigator.clipboard.writeText(meeting.passcode || "")}

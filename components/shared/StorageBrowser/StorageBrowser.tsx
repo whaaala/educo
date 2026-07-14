@@ -416,7 +416,7 @@ export default function StorageBrowser({
 
       {/* Toolbar */}
       {showToolbar && (
-        <div className="flex items-center gap-2 px-3 py-2 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50">
+        <div className="flex items-center gap-2 px-3 py-2 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50">
           {/* Back button */}
           <button
             onClick={navigateUp}
@@ -589,7 +589,7 @@ export default function StorageBrowser({
             {items.map((item) => (
               <div
                 key={item.id}
-                className="flex items-center gap-3 px-3 py-2 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10/50 transition-colors cursor-pointer group"
+                className="flex items-center gap-3 px-3 py-2 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer group"
                 onClick={() => handleItemClick(item)}
               >
                 {getFileIcon(item.name, item.type)}
@@ -633,7 +633,7 @@ export default function StorageBrowser({
             {items.map((item) => (
               <div
                 key={item.id}
-                className="flex flex-col items-center gap-1 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10/50 transition-colors cursor-pointer group relative"
+                className="flex flex-col items-center gap-1 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer group relative"
                 onClick={() => handleItemClick(item)}
               >
                 <div className="w-10 h-10 flex items-center justify-center">
@@ -685,7 +685,7 @@ export default function StorageBrowser({
       </div>
 
       {/* Footer with quota bar */}
-      <div className="px-3 py-1.5 border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50">
+      <div className="px-3 py-1.5 border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50">
         <div className="flex items-center justify-between">
           <p className="text-[10px] text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400">
             {items.length} {items.length === 1 ? "item" : "items"}

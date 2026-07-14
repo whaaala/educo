@@ -220,7 +220,7 @@ export default function SendChatModal({
       <div className="flex flex-col h-[450px]">
         {/* Header with recipient info */}
         <div className="flex-shrink-0 mb-4">
-          <div className="flex items-center gap-4 p-3 rounded-xl bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+          <div className="flex items-center gap-4 p-3 rounded-xl bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
             <div className="relative">
               {recipient.profilePhoto ? (
                 <div className="w-12 h-12 rounded-full overflow-hidden">

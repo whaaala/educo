@@ -119,7 +119,7 @@ export default function NotificationsPage() {
       afterStats={
         <div className="mt-6 space-y-6">
         {/* Header Section */}
-        <div className="bg-white/80 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/80 midnight:bg-[#0a0e27]/80 purple:bg-[#1a0b2e]/80 backdrop-blur-xl rounded-2xl border border-gray-100/80 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/30 shadow-sm p-6">
+        <div className="bg-white/80 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/80 purple:bg-[#1a0b2e]/80 backdrop-blur-xl rounded-2xl border border-gray-100/80 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm p-6">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div className="flex items-center gap-4">
               <div className="p-3 rounded-2xl bg-gradient-to-br from-blue-500/10 to-indigo-500/10 dark:from-blue-500/20 dark:to-indigo-500/20">
@@ -153,7 +153,7 @@ export default function NotificationsPage() {
         </div>
 
         {/* Filter Tabs & Actions */}
-        <div className="bg-white/80 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/80 midnight:bg-[#0a0e27]/80 purple:bg-[#1a0b2e]/80 backdrop-blur-xl rounded-2xl border border-gray-100/80 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/30 shadow-sm p-4">
+        <div className="bg-white/80 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/80 purple:bg-[#1a0b2e]/80 backdrop-blur-xl rounded-2xl border border-gray-100/80 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm p-4">
           <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
             {/* Filter Tabs */}
             <div className="flex items-center gap-2 flex-wrap">
@@ -161,7 +161,7 @@ export default function NotificationsPage() {
                 <Filter className="w-4 h-4 text-gray-400" />
                 <span className="text-xs font-medium text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Filter:</span>
               </div>
-              <div className="flex items-center gap-1.5 p-1 bg-gray-100/80 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 rounded-xl flex-wrap">
+              <div className="flex items-center gap-1.5 p-1 bg-gray-100/80 dark:bg-[#0f1115] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 rounded-xl flex-wrap">
                 {FILTER_OPTIONS.slice(0, 4).map((option) => (
                   <button
                     key={option.value}
@@ -197,7 +197,7 @@ export default function NotificationsPage() {
               <button
                 onClick={handleDeleteAll}
                 disabled={notifications.length === 0}
-                className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-100/80 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10/50 rounded-xl transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-100/80 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 rounded-xl transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
               >
                 <Trash2 className="w-4 h-4" />
                 Clear all
@@ -207,7 +207,7 @@ export default function NotificationsPage() {
         </div>
 
         {/* Notifications List */}
-        <div className="bg-white/80 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/80 midnight:bg-[#0a0e27]/80 purple:bg-[#1a0b2e]/80 backdrop-blur-xl rounded-2xl border border-gray-100/80 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/30 shadow-sm overflow-hidden">
+        <div className="bg-white/80 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/80 purple:bg-[#1a0b2e]/80 backdrop-blur-xl rounded-2xl border border-gray-100/80 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm overflow-hidden">
           {filteredNotifications.length === 0 ? (
             <div className="p-12 text-center">
               <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-gray-100 to-gray-50 dark:from-gray-700 dark:to-gray-800 flex items-center justify-center mx-auto mb-4">

@@ -242,7 +242,7 @@ describe("TableGridPicker", () => {
     expect(source).toContain("maxRows = 8");
     expect(source).toContain("maxCols = 10");
     // Grid uses CSS grid layout
-    expect(source).toContain("grid gap-0.5");
+    expect(source).toContain("inline-grid gap-[3px]");
     expect(source).toContain("gridTemplateColumns");
     // Total cells = maxRows * maxCols
     expect(source).toContain("maxRows * maxCols");
@@ -259,7 +259,7 @@ describe("TableGridPicker", () => {
     expect(source).toContain("r <= hoverRow && c <= hoverCol");
 
     // Active cells get highlighted styling
-    expect(source).toContain("bg-blue-500/25 border-blue-400");
+    expect(source).toContain("bg-blue-500/30 border-blue-400");
   });
 
   it("shows the dimension label (Scenario: TableGridPicker highlights cells on hover)", () => {
@@ -280,9 +280,9 @@ describe("TableGridPicker", () => {
 
   it("has theme variants for highlighted cells", () => {
     // Dark, midnight, and purple theme highlights
-    expect(source).toContain("dark:bg-blue-500/25");
-    expect(source).toContain("midnight:bg-cyan-500/25");
-    expect(source).toContain("purple:bg-pink-500/25");
+    expect(source).toContain("dark:bg-blue-500/30");
+    expect(source).toContain("midnight:bg-cyan-500/30");
+    expect(source).toContain("purple:bg-pink-500/30");
     expect(source).toContain("midnight:border-cyan-400");
     expect(source).toContain("purple:border-pink-400");
   });

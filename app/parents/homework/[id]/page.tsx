@@ -620,9 +620,9 @@ export default function HomeworkDetailPage() {
           {/* Left Column - Assignment Details */}
           <div className="lg:col-span-2 space-y-4 sm:space-y-5">
             {/* Assignment Info Card */}
-            <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/95 rounded-xl border border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/60 shadow-sm overflow-hidden">
+            <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/95 rounded-xl border border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm overflow-hidden">
               {/* Header Section */}
-              <div className="p-4 sm:p-5 border-b border-gray-50 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/40">
+              <div className="p-4 sm:p-5 border-b border-gray-50 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
                 <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-3">
                   <div className="flex-1">
                     <div className="flex flex-wrap items-center gap-2 mb-2.5">
@@ -646,7 +646,7 @@ export default function HomeworkDetailPage() {
               </div>
 
               {/* Instructions */}
-              <div className="p-4 sm:p-5 border-b border-gray-50 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/40">
+              <div className="p-4 sm:p-5 border-b border-gray-50 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
                 <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 mb-3 flex items-center gap-2">
                   <FileText className="w-4 h-4 text-gray-400" />
                   Instructions
@@ -658,7 +658,7 @@ export default function HomeworkDetailPage() {
 
               {/* Homework Questions/Content */}
               {homework.questions && homework.questions.length > 0 && (
-                <div className="p-4 sm:p-5 border-b border-gray-50 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/40">
+                <div className="p-4 sm:p-5 border-b border-gray-50 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
                   <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 mb-4 flex items-center gap-2">
                     <BookOpen className="w-4 h-4 text-indigo-500" />
                     Homework Questions
@@ -715,7 +715,7 @@ export default function HomeworkDetailPage() {
 
               {/* Project Description */}
               {homework.projectDescription && (
-                <div className="p-4 sm:p-5 border-b border-gray-50 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/40">
+                <div className="p-4 sm:p-5 border-b border-gray-50 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
                   <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 mb-3 flex items-center gap-2">
                     <BookOpen className="w-4 h-4 text-indigo-500" />
                     Project Brief
@@ -736,7 +736,7 @@ export default function HomeworkDetailPage() {
 
               {/* Attachments */}
               {homework.attachments && homework.attachments.length > 0 && (
-                <div className="p-4 sm:p-5 border-b border-gray-50 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/40">
+                <div className="p-4 sm:p-5 border-b border-gray-50 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
                   <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 mb-3 flex items-center gap-2">
                     <Download className="w-4 h-4 text-gray-400" />
                     Attachments
@@ -763,7 +763,7 @@ export default function HomeworkDetailPage() {
 
               {/* Submission Info (if submitted or graded) */}
               {(homework.status === "submitted" || homework.status === "graded") && (
-                <div className="p-4 sm:p-5 border-b border-gray-50 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/40">
+                <div className="p-4 sm:p-5 border-b border-gray-50 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
                   <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 mb-3 flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 text-emerald-500" />
                     Submission
@@ -788,7 +788,7 @@ export default function HomeworkDetailPage() {
 
               {/* Student Submitted Files */}
               {homework.submittedFiles && homework.submittedFiles.length > 0 && (
-                <div className="p-4 sm:p-5 border-b border-gray-50 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/40">
+                <div className="p-4 sm:p-5 border-b border-gray-50 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
                   <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 mb-3 flex items-center gap-2">
                     <FileText className="w-4 h-4 text-blue-500" />
                     Student&apos;s Submitted Work
@@ -868,7 +868,7 @@ export default function HomeworkDetailPage() {
 
               {/* Teacher Graded Files */}
               {homework.gradedFiles && homework.gradedFiles.length > 0 && (
-                <div className="p-4 sm:p-5 border-b border-gray-50 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/40">
+                <div className="p-4 sm:p-5 border-b border-gray-50 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
                   <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 mb-3 flex items-center gap-2">
                     <GraduationCap className="w-4 h-4 text-emerald-500" />
                     Teacher&apos;s Graded Work
@@ -1011,7 +1011,7 @@ export default function HomeworkDetailPage() {
           {/* Right Column - Sidebar */}
           <div className="space-y-4 sm:space-y-5">
             {/* Student Card */}
-            <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/95 rounded-xl border border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/60 shadow-sm p-4">
+            <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/95 rounded-xl border border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm p-4">
               <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 uppercase tracking-wide mb-3">
                 Student
               </h3>
@@ -1037,7 +1037,7 @@ export default function HomeworkDetailPage() {
             </div>
 
             {/* Teacher Card */}
-            <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/95 rounded-xl border border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/60 shadow-sm p-4">
+            <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/95 rounded-xl border border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm p-4">
               <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 uppercase tracking-wide mb-3">
                 Teacher
               </h3>
@@ -1063,7 +1063,7 @@ export default function HomeworkDetailPage() {
             </div>
 
             {/* Dates Card */}
-            <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/95 rounded-xl border border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/60 shadow-sm p-4">
+            <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/95 rounded-xl border border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm p-4">
               <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 uppercase tracking-wide mb-3">
                 Timeline
               </h3>

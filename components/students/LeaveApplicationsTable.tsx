@@ -172,7 +172,7 @@ export default function LeaveApplicationsTable({
             {paginatedApplications.map((app) => (
               <tr
                 key={app.id}
-                className="hover:bg-gray-50/50 dark:hover:bg-[#22262e]/30 midnight:hover:bg-cyan-500/5/30 purple:hover:bg-pink-500/5/30 transition-colors"
+                className="hover:bg-gray-50/50 dark:hover:bg-[#22262e]/30 midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors"
               >
                 <td className="py-3 px-4 text-sm text-gray-700 dark:text-gray-300 midnight:text-cyan-300/90 purple:text-pink-300/90">
                   {app.leaveType}

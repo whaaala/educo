@@ -4,7 +4,6 @@ import { useRef } from "react";
 import type { FontFamily, TextAlign, WhiteboardElement, Viewport } from "./whiteboard-types";
 import { getBoundingBox } from "./whiteboard-utils";
 import TextFormatToolbar from "../TextFormatToolbar";
-import type { TextFormatState } from "../TextFormatToolbar";
 
 interface FloatingTextToolbarProps {
   element: WhiteboardElement;
@@ -57,24 +56,6 @@ export default function FloatingTextToolbar({
   // If there's not enough room above, render below the element.
   const topY = preferredTopY < TOOLBAR_MARGIN ? fallbackBelowY : preferredTopY;
 
-  const format: TextFormatState = {
-    fontFamily: activeFontFamily,
-    fontSize: activeFontSize,
-    fontWeight: activeFontWeight,
-    fontStyle: activeFontStyle,
-    textDecoration: activeTextDecoration,
-    textAlign: activeTextAlign,
-  };
-
-  const handleChange = (updates: Partial<TextFormatState>) => {
-    if (updates.fontFamily) onFontFamilyChange(updates.fontFamily);
-    if (updates.fontSize !== undefined) onFontSizeChange(updates.fontSize);
-    if (updates.fontWeight) onFontWeightToggle();
-    if (updates.fontStyle) onFontStyleToggle();
-    if (updates.textDecoration) onTextDecorationToggle();
-    if (updates.textAlign) onTextAlignChange(updates.textAlign);
-  };
-
   return (
     <div
       ref={toolbarRef}
@@ -87,9 +68,31 @@ export default function FloatingTextToolbar({
       onPointerDown={(e) => e.stopPropagation()}
       onMouseDown={(e) => e.stopPropagation()}
     >
+      {/* Inline mode: this wrapper already positions the toolbar over the canvas element,
+          so the shared toolbar must not portal or self-position. */}
       <TextFormatToolbar
-        format={format}
-        onChange={handleChange}
+        inline
+        fontFamily={activeFontFamily}
+        fontSize={activeFontSize}
+        bold={activeFontWeight === "bold"}
+        italic={activeFontStyle === "italic"}
+        align={activeTextAlign}
+        showFontFamily
+        showFontSize
+        showBold
+        showItalic
+        showUnderline
+        showAlign
+        showVerticalAlign={false}
+        showWrap={false}
+        showTextColor={false}
+        showFillColor={false}
+        onFontFamilyChange={(v) => onFontFamilyChange(v as FontFamily)}
+        onFontSizeChange={onFontSizeChange}
+        onBold={onFontWeightToggle}
+        onItalic={onFontStyleToggle}
+        onUnderline={onTextDecorationToggle}
+        onAlignChange={onTextAlignChange}
       />
     </div>
   );

@@ -48,7 +48,7 @@ export default function StatCard({
   }> = {
     blue: {
       bg: "bg-blue-50/80 dark:bg-blue-950/30 midnight:bg-blue-950/30 purple:bg-blue-950/30",
-      iconBg: "bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50",
+      iconBg: "bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50",
       iconColor: "text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400",
       labelColor: "text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400",
       valueColor: "text-blue-900 dark:text-blue-100 midnight:text-cyan-100 purple:text-pink-100",
@@ -57,7 +57,7 @@ export default function StatCard({
     },
     green: {
       bg: "bg-green-50/80 dark:bg-green-950/30 midnight:bg-green-950/30 purple:bg-green-950/30",
-      iconBg: "bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50",
+      iconBg: "bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50",
       iconColor: "text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400",
       labelColor: "text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400",
       valueColor: "text-green-900 dark:text-green-100",
@@ -66,7 +66,7 @@ export default function StatCard({
     },
     red: {
       bg: "bg-red-50/80 dark:bg-red-950/30 midnight:bg-red-950/30 purple:bg-red-950/30",
-      iconBg: "bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50",
+      iconBg: "bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50",
       iconColor: "text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400",
       labelColor: "text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400",
       valueColor: "text-red-900 dark:text-red-100",
@@ -75,7 +75,7 @@ export default function StatCard({
     },
     purple: {
       bg: "bg-purple-50/80 dark:bg-purple-950/30 midnight:bg-purple-950/30 purple:bg-pink-950/30",
-      iconBg: "bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50",
+      iconBg: "bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50",
       iconColor: "text-purple-600 dark:text-purple-400 midnight:text-purple-400 purple:text-pink-400",
       labelColor: "text-purple-600 dark:text-purple-400 midnight:text-purple-400 purple:text-pink-400",
       valueColor: "text-purple-900 dark:text-purple-100 midnight:text-purple-100 purple:text-pink-100",
@@ -84,7 +84,7 @@ export default function StatCard({
     },
     orange: {
       bg: "bg-orange-50/80 dark:bg-orange-950/30 midnight:bg-orange-950/30 purple:bg-orange-950/30",
-      iconBg: "bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50",
+      iconBg: "bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50",
       iconColor: "text-orange-600 dark:text-orange-400",
       labelColor: "text-orange-600 dark:text-orange-400",
       valueColor: "text-orange-900 dark:text-orange-100",
@@ -93,7 +93,7 @@ export default function StatCard({
     },
     cyan: {
       bg: "bg-cyan-50/80 dark:bg-cyan-950/30 midnight:bg-cyan-950/30 purple:bg-cyan-950/30",
-      iconBg: "bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50",
+      iconBg: "bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50",
       iconColor: "text-cyan-600 dark:text-cyan-400",
       labelColor: "text-cyan-600 dark:text-cyan-400",
       valueColor: "text-cyan-900 dark:text-cyan-100",
@@ -102,7 +102,7 @@ export default function StatCard({
     },
     amber: {
       bg: "bg-amber-50/80 dark:bg-amber-950/30 midnight:bg-amber-950/30 purple:bg-amber-950/30",
-      iconBg: "bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50",
+      iconBg: "bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50",
       iconColor: "text-amber-600 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400",
       labelColor: "text-amber-600 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400",
       valueColor: "text-amber-900 dark:text-amber-100",
@@ -111,7 +111,7 @@ export default function StatCard({
     },
     indigo: {
       bg: "bg-indigo-50/80 dark:bg-indigo-950/30 midnight:bg-indigo-950/30 purple:bg-indigo-950/30",
-      iconBg: "bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50",
+      iconBg: "bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50",
       iconColor: "text-indigo-600 dark:text-indigo-400",
       labelColor: "text-indigo-600 dark:text-indigo-400",
       valueColor: "text-indigo-900 dark:text-indigo-100",
@@ -120,7 +120,7 @@ export default function StatCard({
     },
     emerald: {
       bg: "bg-emerald-50/80 dark:bg-emerald-950/30 midnight:bg-emerald-950/30 purple:bg-emerald-950/30",
-      iconBg: "bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50",
+      iconBg: "bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50",
       iconColor: "text-emerald-600 dark:text-emerald-400",
       labelColor: "text-emerald-600 dark:text-emerald-400",
       valueColor: "text-emerald-900 dark:text-emerald-100",
@@ -129,7 +129,7 @@ export default function StatCard({
     },
     gray: {
       bg: "bg-gray-50/80 dark:bg-gray-950 midnight:bg-[#070d1a] purple:bg-[#150a28]/30 midnight:bg-gray-950/30 purple:bg-gray-950/30",
-      iconBg: "bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50",
+      iconBg: "bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50",
       iconColor: "text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300",
       labelColor: "text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300",
       valueColor: "text-gray-900 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50",
@@ -138,7 +138,7 @@ export default function StatCard({
     },
     teal: {
       bg: "bg-teal-50/80 dark:bg-teal-950/30 midnight:bg-teal-950/30 purple:bg-teal-950/30",
-      iconBg: "bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50",
+      iconBg: "bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50",
       iconColor: "text-teal-600 dark:text-teal-400",
       labelColor: "text-teal-600 dark:text-teal-400",
       valueColor: "text-teal-900 dark:text-teal-100",
@@ -147,7 +147,7 @@ export default function StatCard({
     },
     pink: {
       bg: "bg-pink-50/80 dark:bg-pink-950/30 midnight:bg-pink-950/30 purple:bg-pink-950/30",
-      iconBg: "bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50",
+      iconBg: "bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50",
       iconColor: "text-pink-600 dark:text-pink-400",
       labelColor: "text-pink-600 dark:text-pink-400",
       valueColor: "text-pink-900 dark:text-pink-100",
@@ -167,7 +167,7 @@ export default function StatCard({
         p-3 sm:p-4
         transition-all duration-300
         hover:shadow-xl hover:-translate-y-0.5
-        border border-white/20 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/30
+        border border-white/20 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20
         backdrop-blur-sm
         overflow-hidden
         group

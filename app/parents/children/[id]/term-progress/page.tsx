@@ -273,7 +273,7 @@ export default function TermProgressPage() {
           </div>
 
           {/* Student Info Card */}
-          <div className="p-4 rounded-xl bg-gradient-to-br from-slate-50 via-white to-blue-50/30 dark:from-gray-800/60 dark:via-gray-800/40 dark:to-blue-900/20 border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/50 shadow-sm">
+          <div className="p-4 rounded-xl bg-gradient-to-br from-slate-50 via-white to-blue-50/30 dark:from-gray-800/60 dark:via-gray-800/40 dark:to-blue-900/20 border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm">
           <div className="flex items-center gap-4">
             {/* Profile Photo */}
             <div className="relative flex-shrink-0 group/avatar">
@@ -320,7 +320,7 @@ export default function TermProgressPage() {
           </div>
 
           {/* Term Completion Progress */}
-          <div className="mt-4 pt-4 border-t border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/50">
+          <div className="mt-4 pt-4 border-t border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
                 <div className="p-1.5 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 shadow-sm">
@@ -382,7 +382,7 @@ export default function TermProgressPage() {
               return (
                 <div
                   key={subject.name}
-                  className="group p-5 rounded-xl bg-gradient-to-br from-slate-50 via-white to-gray-50/50 dark:from-gray-800/60 dark:via-gray-800/40 dark:to-gray-900/30 border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/50 shadow-sm hover:shadow-md transition-all duration-300"
+                  className="group p-5 rounded-xl bg-gradient-to-br from-slate-50 via-white to-gray-50/50 dark:from-gray-800/60 dark:via-gray-800/40 dark:to-gray-900/30 border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm hover:shadow-md transition-all duration-300"
                 >
                   {/* Card Header */}
                   <div className="flex items-center justify-between mb-4">
@@ -465,7 +465,7 @@ export default function TermProgressPage() {
                         ? "bg-red-50/40 dark:bg-red-900/20 midnight:bg-red-900/20 purple:bg-red-900/20 border border-red-100/60 dark:border-red-800/30"
                         : subject.trend === "stable"
                         ? "bg-amber-50/40 dark:bg-amber-900/20 border border-amber-100/60 dark:border-amber-800/30"
-                        : "bg-gray-50/40 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/20 border border-gray-100/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/30"
+                        : "bg-gray-50/40 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/20 border border-gray-100/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20"
                     }`}>
                       <div className={`absolute inset-0 pointer-events-none ${
                         subject.trend === "up"
@@ -486,7 +486,7 @@ export default function TermProgressPage() {
                   </div>
 
                   {/* Progress Bar Row */}
-                  <div className="flex items-center gap-2 pt-4 border-t border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/50">
+                  <div className="flex items-center gap-2 pt-4 border-t border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
                     <span className="text-[10px] font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
                       {progressPercent}%
                     </span>

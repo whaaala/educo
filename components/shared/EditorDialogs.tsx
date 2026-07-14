@@ -52,17 +52,36 @@ export function EditorDialog({
  *  EditorDialogButton — Standardized button for dialog actions
  * ═══════════════════════════════════════════════════════════════════════════ */
 
+/**
+ * Shared dialog button.
+ *
+ * `variant` was being passed by 7 call sites but never declared — so it was silently dropped
+ * and every "Cancel"/"Delete" button rendered with the default (secondary) styling.
+ * Declaring it fixes those call sites and makes the button genuinely reusable.
+ */
 export function EditorDialogButton({
   children,
   onClick,
+  variant = "secondary",
+  disabled = false,
 }: {
   children: React.ReactNode;
   onClick: () => void;
+  /** secondary (default outline) · primary (filled blue) · danger (filled red) */
+  variant?: "primary" | "secondary" | "danger";
+  disabled?: boolean;
 }) {
+  const styles: Record<string, string> = {
+    secondary:
+      "border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5",
+    primary: "bg-blue-600 text-white hover:bg-blue-700 border border-transparent",
+    danger: "bg-red-600 text-white hover:bg-red-700 border border-transparent",
+  };
   return (
     <button
       onClick={onClick}
-      className="px-3 py-2 rounded-xl text-[12px] font-semibold border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors cursor-pointer"
+      disabled={disabled}
+      className={`px-3 py-2 rounded-xl text-[12px] font-semibold transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed ${styles[variant]}`}
     >
       {children}
     </button>
@@ -128,8 +147,9 @@ export function FullscreenFloatingPill({
       className={[
         "fixed top-3 left-1/2 -translate-x-1/2 z-[250]",
         "flex items-center rounded-full",
-        // Glassmorphism pill
-        "bg-gray-900/70 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/80 midnight:bg-[#0a0e27]/80 purple:bg-[#1a0b2e]/80",
+        // Glassmorphism pill — every theme translucent at /80 so the blur reads through.
+        // (dark was opaque, and midnight/purple were each declared twice with conflicting values.)
+        "bg-gray-900/70 dark:bg-[#1a1d24]/80 midnight:bg-[#0a0e27]/80 purple:bg-[#1a0b2e]/80",
         "backdrop-blur-[20px] backdrop-saturate-[180%]",
         "border border-white/10",
         "shadow-[0_8px_32px_rgba(0,0,0,0.3)]",
@@ -279,7 +299,7 @@ export function EditingModeButton({
         </button>
       </Tooltip>
       {open && (
-        <div className="absolute z-[120] top-full mt-1 right-0 w-[180px] rounded-xl border border-gray-200/80 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/80 bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] shadow-xl py-1">
+        <div className="absolute z-[120] top-full mt-1 right-0 w-[180px] rounded-xl border border-gray-200/80 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] shadow-xl py-1">
           {(
             [
               {

@@ -259,12 +259,12 @@ export default function ActionModal({
 
         {/* Detail items */}
         {details && details.length > 0 && (
-          <div className="rounded-xl bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-850 border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/60 overflow-hidden">
+          <div className="rounded-xl bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-850 border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 overflow-hidden">
             {details.map((item, idx) => (
               <div
                 key={idx}
                 className={`flex items-center justify-between px-4 py-3 ${
-                  idx < details.length - 1 ? "border-b border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/50" : ""
+                  idx < details.length - 1 ? "border-b border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20" : ""
                 }`}
               >
                 <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 uppercase tracking-wider">

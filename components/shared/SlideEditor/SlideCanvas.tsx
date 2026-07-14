@@ -14,6 +14,8 @@ import { ColorGrid, TabbedColorPalette, ColorPickerPopover, isNativeColorPickerO
 import CustomDropdown from "@/components/shared/CustomDropdown";
 import TextFormatToolbar from "@/components/shared/TextFormatToolbar";
 import SlideChart, { SlideChartEditor } from "./SlideChart";
+import { Link2 as LinkIcon } from "lucide-react";
+import { linkDisplayLabel } from "@/lib/link-utils";
 import { setSlideClipboard, getSlideClipboard, hasSlideClipboard, packIntoFreeSpace, fitRotatedToPage } from "./slide-clipboard";
 import { insertRow, insertCol, deleteRow, deleteCol, distributeRows, distributeCols } from "./table-ops";
 import Tooltip from "@/components/shared/Tooltip";
@@ -44,6 +46,8 @@ interface SlideCanvasProps {
   onDrawingComplete?: (paths: string) => void;
   /** Open the comment sidebar anchored to an object (right-click → Add comment). */
   onAddComment?: (objId: string) => void;
+  /** Activate an object's link (open URL / jump to slide). Provided by the host editor. */
+  onActivateLink?: (href: string) => void;
 }
 
 // ══════════════════════════════════════════════════
@@ -216,6 +220,7 @@ export default function SlideCanvas({
   canEdit, showGuides = false, guides = [], snapToGrid = false, snapToGuides = false,
   onGuideMove, onGuideDelete, drawingMode = false, drawingColor = "#1a1a2e", drawingWidth = 2, onDrawingComplete,
   onAddComment,
+  onActivateLink,
 }: SlideCanvasProps) {
   const canvasRef = useRef<HTMLDivElement>(null);
   const [editingTextId, setEditingTextId] = useState<string | null>(null);
@@ -1199,6 +1204,26 @@ export default function SlideCanvas({
             }}
           />
         ))}
+
+        {/* Link chip — a linked object is otherwise invisible as a link. Shows where it points
+            and opens it on click (URL in a new tab, or jumps to the slide). */}
+        {obj.link && isSelected && allSelectedIds.size <= 1 && (
+          <div
+            className="absolute left-0 -bottom-8 z-[26] flex items-center gap-1 max-w-full px-2 py-1 rounded-lg bg-gray-900/90 text-white shadow-lg"
+            onMouseDown={(e) => e.stopPropagation()}
+            onClick={(e) => { e.stopPropagation(); onActivateLink?.(obj.link!); }}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onActivateLink?.(obj.link!); } }}
+            aria-label={`Open link ${obj.link}`}
+            title={obj.link}
+          >
+            <LinkIcon className="w-3 h-3 flex-shrink-0 opacity-70" aria-hidden="true" />
+            <span className="text-[11px] truncate max-w-[180px] underline decoration-white/40">
+              {obj.link.startsWith("slide://") ? "Go to slide" : linkDisplayLabel(obj.link)}
+            </span>
+          </div>
+        )}
 
         {/* Rotation handle — above or below depending on position */}
         {isSelected && canEdit && !isEditing && allSelectedIds.size <= 1 && (obj.type === "shape" || obj.type === "image") && (
@@ -2352,7 +2377,7 @@ function ShapeColorToolbar({ obj, updateObj, canvasRef }: {
   return (
     <div
       ref={toolbarRef}
-      className="fixed z-[10001] rounded-2xl bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] shadow-2xl border border-gray-200/80 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/80 overflow-hidden"
+      className="fixed z-[10001] rounded-2xl bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] shadow-2xl border border-gray-200/80 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 overflow-hidden"
       style={{ top: pos.top, left: pos.left, width: 280, backdropFilter: "blur(20px)" }}
       onClick={(e) => e.stopPropagation()}
       onMouseDown={(e) => e.stopPropagation()}

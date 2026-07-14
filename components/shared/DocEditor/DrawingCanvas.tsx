@@ -357,7 +357,7 @@ export default function DrawingCanvas({ onSave, onCancel }: { onSave: (dataUrl: 
         onClick={e => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-4 py-2.5 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-gray-50/50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50">
+        <div className="flex items-center justify-between px-4 py-2.5 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-gray-50/50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50">
           <span className="text-sm font-semibold text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100">Drawing</span>
           <div className="flex items-center gap-2">
             <button onClick={onCancel} className="px-3 py-1.5 text-xs font-medium text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 rounded-lg transition-colors cursor-pointer">

@@ -19,6 +19,8 @@ import SlideCanvasComponent from "./SlideCanvas";
 import SlideChart from "./SlideChart";
 import { setSlideClipboard, getSlideClipboard, packIntoFreeSpace } from "./slide-clipboard";
 import ShapePickerDialogFull from "@/components/shared/ShapePickerDialog";
+import LinkDialog from "@/components/shared/LinkDialog";
+import { normalizeUrl, isDangerousUrl } from "@/lib/link-utils";
 import { SHAPE_DEFS } from "./shapes";
 
 // Shared components
@@ -305,7 +307,7 @@ function ShapeSVGPreview({ shape }: { shape: string }) {
 }
 
 // ── Slide Canvas with rulers and proper fit ──
-function SlideCanvasArea({ zoom, activeSlide, canEdit, editorRef, contentRef, onInput, slideRatio = { w: 16, h: 9 }, showRuler = true, showGuides = false, guides = [], snapToGrid = false, snapToGuides = false, onClick, isSuggesting = false, themeTextColor, themeAccent, onGuideMove, onGuideDelete, selectedObjectId, onSelectObject, onObjectsChange, drawingMode, drawingColor, drawingWidth, onDrawingComplete, onAddComment }: {
+function SlideCanvasArea({ zoom, activeSlide, canEdit, editorRef, contentRef, onInput, slideRatio = { w: 16, h: 9 }, showRuler = true, showGuides = false, guides = [], snapToGrid = false, snapToGuides = false, onClick, isSuggesting = false, themeTextColor, themeAccent, onGuideMove, onGuideDelete, selectedObjectId, onSelectObject, onObjectsChange, drawingMode, drawingColor, drawingWidth, onDrawingComplete, onAddComment, onActivateLink }: {
   zoom: number;
   activeSlide: SlideData | undefined;
   canEdit: boolean;
@@ -332,6 +334,7 @@ function SlideCanvasArea({ zoom, activeSlide, canEdit, editorRef, contentRef, on
   drawingWidth?: number;
   onDrawingComplete?: (paths: string) => void;
   onAddComment?: (objId: string) => void;
+  onActivateLink?: (href: string) => void;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState({ w: 800, h: 450 });
@@ -419,6 +422,7 @@ function SlideCanvasArea({ zoom, activeSlide, canEdit, editorRef, contentRef, on
                   drawingWidth={drawingWidth}
                   onDrawingComplete={onDrawingComplete}
                   onAddComment={onAddComment}
+                  onActivateLink={onActivateLink}
                 />
               ) : (
                 /* Legacy: single contentEditable fallback */
@@ -503,7 +507,7 @@ function SlideCanvasArea({ zoom, activeSlide, canEdit, editorRef, contentRef, on
 }
 
 // ── Reusable Slide Picker Modal ──
-function SlidePickerModal({ title: modalTitle, subtitle, slides: slideList, defaultSelected, onConfirm, onClose, confirmLabel = "Confirm" }: {
+function SlidePickerModal({ title: modalTitle, subtitle, slides: slideList, defaultSelected, onConfirm, onClose, confirmLabel = "Confirm", theme = "default" }: {
   title: string;
   subtitle?: string;
   slides: SlideData[];
@@ -511,6 +515,9 @@ function SlidePickerModal({ title: modalTitle, subtitle, slides: slideList, defa
   onConfirm: (selectedSlides: SlideData[]) => void;
   onClose: () => void;
   confirmLabel?: string;
+  /** Slide theme id — the body reads THEMES[theme] for thumbnail text colour. It was referencing
+      an out-of-scope `theme`, which threw a ReferenceError and crashed this modal on open. */
+  theme?: string;
 }) {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(() => defaultSelected || new Set(slideList.map(s => s.id)));
 
@@ -570,7 +577,7 @@ function SlidePickerModal({ title: modalTitle, subtitle, slides: slideList, defa
                   </div>
                   <div className="absolute top-2 right-2">
                     <div className={`w-6 h-6 rounded-lg flex items-center justify-center transition-all duration-200 ${
-                      isSelected ? "bg-blue-500 shadow-md shadow-blue-500/30" : "bg-white/80 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/80 midnight:bg-[#0a0e27]/80 purple:bg-[#1a0b2e]/80 border-2 border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 group-hover:border-blue-400"
+                      isSelected ? "bg-blue-500 shadow-md shadow-blue-500/30" : "bg-white/80 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/80 purple:bg-[#1a0b2e]/80 border-2 border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 group-hover:border-blue-400"
                     }`}>
                       {isSelected && <Check className="w-3.5 h-3.5 text-white" />}
                     </div>
@@ -583,7 +590,7 @@ function SlidePickerModal({ title: modalTitle, subtitle, slides: slideList, defa
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between px-6 py-3.5 border-t border-gray-100 dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10 bg-gray-50/50 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50">
+        <div className="flex items-center justify-between px-6 py-3.5 border-t border-gray-100 dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10 bg-gray-50/50 dark:bg-[#0f1115] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50">
           <span className="text-[13px] text-gray-400">{selectedIds.size} of {slideList.length} selected</span>
           <div className="flex gap-2.5">
             <button onClick={onClose} className="px-5 py-2 rounded-xl text-[13px] font-medium text-gray-600 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors cursor-pointer">Cancel</button>
@@ -607,6 +614,7 @@ function CopySelectedModal({ slides, title, theme, activeSlideIdx, onClose }: {
       title="Make a copy"
       subtitle="Select the slides to include in the copy"
       slides={slides}
+      theme={theme}
       defaultSelected={new Set(slides.map(s => s.id))}
       confirmLabel="Copy slides"
       onClose={onClose}
@@ -624,10 +632,12 @@ function CopySelectedModal({ slides, title, theme, activeSlideIdx, onClose }: {
 }
 
 // ── Import Slides Modal ──
-function ImportSlidesModal({ currentPresId, onImport, onClose }: {
+function ImportSlidesModal({ currentPresId, onImport, onClose, theme = "default" }: {
   currentPresId: string;
   onImport: (slides: SlideData[]) => void;
   onClose: () => void;
+  /** Slide theme id — see SlidePickerModal: `theme` was out of scope here too. */
+  theme?: string;
 }) {
   const [presentations] = useState(() =>
     slideStorage.list().filter(p => p.id !== currentPresId)
@@ -786,7 +796,7 @@ function ImportSlidesModal({ currentPresId, onImport, onClose }: {
                       <div className={`w-6 h-6 rounded-lg flex items-center justify-center transition-all duration-200 ${
                         isSelected
                           ? "bg-blue-500 shadow-md shadow-blue-500/30"
-                          : "bg-white/80 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/80 midnight:bg-[#0a0e27]/80 purple:bg-[#1a0b2e]/80 border-2 border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 group-hover:border-blue-400"
+                          : "bg-white/80 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/80 purple:bg-[#1a0b2e]/80 border-2 border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 group-hover:border-blue-400"
                       }`}>
                         {isSelected && <Check className="w-3.5 h-3.5 text-white" />}
                       </div>
@@ -805,7 +815,7 @@ function ImportSlidesModal({ currentPresId, onImport, onClose }: {
 
         {/* Footer — only on step 2 */}
         {selectedPresId && (
-          <div className="flex items-center justify-between px-6 py-3.5 border-t border-gray-100 dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10 bg-gray-50/50 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50">
+          <div className="flex items-center justify-between px-6 py-3.5 border-t border-gray-100 dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10 bg-gray-50/50 dark:bg-[#0f1115] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50">
             <span className="text-[13px] text-gray-400">
               {selectedSlideIds.size} of {selectedPres?.slides.length} selected
             </span>
@@ -951,6 +961,10 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
   const [textBoxDrawMode, setTextBoxDrawMode] = useState(false);
   const [showImageUrlDialog, setShowImageUrlDialog] = useState(false);
   const [imageUrlInput, setImageUrlInput] = useState("");
+  // Link (Insert → Link / Ctrl+K / right-click → Link). `mode` records whether we're linking a
+  // run of selected TEXT or the selected OBJECT, so Apply knows which to write to.
+  const [linkDialog, setLinkDialog] = useState<{ mode: "text" | "object"; objId?: string; url: string; targetId?: string } | null>(null);
+  const savedRangeRef = useRef<Range | null>(null);
   const [showImageSearchDialog, setShowImageSearchDialog] = useState(false);
   const [imageSearchQuery, setImageSearchQuery] = useState("");
   const [showDrivePickerDialog, setShowDrivePickerDialog] = useState(false);
@@ -1184,6 +1198,79 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
     updateCurrentSlide({ objects, content: "" });
     setToast("Slide upgraded to canvas mode");
   }, [activeSlide, theme, updateCurrentSlide, setToast]);
+
+  // ── Link (Insert → Link, Ctrl+K, right-click → Link) ──────────────────────────────
+  // Links a selected run of TEXT if there is one, otherwise the selected OBJECT.
+  const openLinkDialog = useCallback(() => {
+    const sel = typeof window !== "undefined" ? window.getSelection() : null;
+    const range = sel && sel.rangeCount > 0 && !sel.isCollapsed ? sel.getRangeAt(0) : null;
+    const inEditable = !!range && !!(range.commonAncestorContainer as HTMLElement | null)
+      ?.parentElement?.closest?.('[contenteditable="true"]');
+
+    if (range && inEditable) {
+      // Remember the selection — opening the dialog blurs it, and execCommand needs it back.
+      savedRangeRef.current = range.cloneRange();
+      const existing = (range.commonAncestorContainer as HTMLElement).parentElement?.closest("a");
+      setLinkDialog({ mode: "text", url: existing?.getAttribute("href") || "" });
+      return;
+    }
+
+    const objId = selectedObjectId;
+    if (!objId) { setToast("Select text or an object to link"); return; }
+    const obj = currentObjects.find(o => o.id === objId);
+    const existing = obj?.link || "";
+    const slideTarget = existing.startsWith("slide://") ? existing.slice("slide://".length) : undefined;
+    setLinkDialog({ mode: "object", objId, url: slideTarget ? "" : existing, targetId: slideTarget });
+  }, [selectedObjectId, currentObjects, setToast]);
+
+  const openLinkDialogRef = useRef(openLinkDialog);
+  useEffect(() => { openLinkDialogRef.current = openLinkDialog; }, [openLinkDialog]);
+
+  const applyLink = useCallback((href: string) => {
+    const d = linkDialog;
+    if (!d) return;
+    if (d.mode === "text") {
+      // Restore the selection we captured, then let execCommand wrap it in an <a>.
+      const sel = window.getSelection();
+      if (sel && savedRangeRef.current) {
+        sel.removeAllRanges();
+        sel.addRange(savedRangeRef.current);
+      }
+      document.execCommand("createLink", false, href);
+      savedRangeRef.current = null;
+    } else if (d.objId) {
+      updateCurrentSlide({ objects: currentObjects.map(o => (o.id === d.objId ? { ...o, link: href } : o)) });
+    }
+    setLinkDialog(null);
+    setToast("Link applied");
+  }, [linkDialog, currentObjects, updateCurrentSlide, setToast]);
+
+  const removeLink = useCallback(() => {
+    const d = linkDialog;
+    if (!d) return;
+    if (d.mode === "text") {
+      const sel = window.getSelection();
+      if (sel && savedRangeRef.current) { sel.removeAllRanges(); sel.addRange(savedRangeRef.current); }
+      document.execCommand("unlink");
+      savedRangeRef.current = null;
+    } else if (d.objId) {
+      updateCurrentSlide({ objects: currentObjects.map(o => (o.id === d.objId ? { ...o, link: undefined } : o)) });
+    }
+    setLinkDialog(null);
+    setToast("Link removed");
+  }, [linkDialog, currentObjects, updateCurrentSlide, setToast]);
+
+  /** Activate a link: navigate to a slide (slide://<id>) or open the URL in a new tab. */
+  const activateLink = useCallback((href: string) => {
+    if (href.startsWith("slide://")) {
+      const id = href.slice("slide://".length);
+      const idx = slidesRef.current.findIndex(s => s.id === id);
+      if (idx >= 0) setActiveSlideIdx(idx);
+      return;
+    }
+    if (isDangerousUrl(href)) return; // never open javascript:/data: hrefs
+    window.open(normalizeUrl(href), "_blank", "noopener,noreferrer");
+  }, []);
 
   // Opens the native file picker via the persistent hidden <input> below (reliable across browsers).
   const handleImageUpload = useCallback(() => {
@@ -1483,6 +1570,12 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
       else if (e.key === "F5" && e.ctrlKey) { e.preventDefault(); setActiveSlideIdx(0); setIsPresenting(true); }
       else if (e.key === "F5") { e.preventDefault(); setIsPresenting(true); }
       else if (e.key === "1" && e.ctrlKey && e.altKey) { e.preventDefault(); setShowGridView(v => !v); }
+      // Ctrl+K — link. Deliberately handled BEFORE the !isEditingText guard: it must work both
+      // while editing text (link the selected run) and with an object selected.
+      else if ((e.key === "k" || e.key === "K") && (e.ctrlKey || e.metaKey)) {
+        e.preventDefault();
+        openLinkDialogRef.current();
+      }
       else if (!isEditingText && (e.ctrlKey || e.metaKey)) {
         if (e.key === "z") {
           e.preventDefault();
@@ -2111,6 +2204,7 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
             setShowDownloadDialog(true);
             break;
           case "insert:comment": addComment(); break;
+          case "insert:link": openLinkDialog(); break;
           case "insert:table": setShowTablePicker(true); break;
 
           // ── Edit menu ──
@@ -2582,7 +2676,7 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
 
       {/* Find and Replace panel */}
       {showFindReplace && (
-        <div className="absolute right-3 top-[120px] z-[150] w-[280px] rounded-2xl border border-gray-200/80 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/80 bg-white/95 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/95 backdrop-blur-md shadow-xl p-3">
+        <div className="absolute right-3 top-[120px] z-[150] w-[280px] rounded-2xl border border-gray-200/80 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-white/95 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/95 backdrop-blur-md shadow-xl p-3">
           <div className="flex items-center justify-between mb-3">
             <span className="text-[12px] font-bold text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100">Find and replace</span>
             <button onClick={() => setShowFindReplace(false)} className="p-0.5 rounded-md hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 text-gray-400 transition-colors cursor-pointer" aria-label="Close">
@@ -2599,7 +2693,7 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
               Find next
             </button>
           </div>
-          <div className="my-2.5 border-t border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/60" />
+          <div className="my-2.5 border-t border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20" />
           <div className="space-y-1.5">
             <input value={replaceQuery} onChange={(e) => setReplaceQuery(e.target.value)}
               onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); slideReplace(); } }}
@@ -2703,7 +2797,7 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
         {/* Filmstrip — collapsible */}
         {filmstripCollapsed ? (
           /* Collapsed: thin strip with expand button */
-          <div className="flex-shrink-0 w-[24px] bg-[#f1f3f4] dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border-r border-gray-200/80 dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10 flex items-start justify-center pt-3">
+          <div className="flex-shrink-0 w-[24px] bg-[#f1f3f4] dark:bg-[#0f1115] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border-r border-gray-200/80 dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10 flex items-start justify-center pt-3">
             <button
               onClick={() => setFilmstripCollapsed(false)}
               className="p-1 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-200/60 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-all duration-200 cursor-pointer"
@@ -2715,7 +2809,7 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
         ) : (
           /* Expanded: full filmstrip with slides */
           <div
-            className="flex-shrink-0 w-[200px] lg:w-[220px] bg-[#f1f3f4] dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border-r border-gray-200/80 dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10 flex flex-col outline-none"
+            className="flex-shrink-0 w-[200px] lg:w-[220px] bg-[#f1f3f4] dark:bg-[#0f1115] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border-r border-gray-200/80 dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10 flex flex-col outline-none"
             tabIndex={0}
             onKeyDown={(e) => {
               if (e.key === "ArrowDown" || e.key === "ArrowRight") {
@@ -2791,7 +2885,7 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
                     className={`flex-1 rounded-lg overflow-hidden transition-all duration-200 cursor-grab active:cursor-grabbing ${
                       idx === activeSlideIdx
                         ? "ring-2 ring-blue-500 ring-offset-2 ring-offset-[#f1f3f4] dark:ring-offset-gray-900 midnight:ring-offset-[#0d1526] purple:ring-offset-[#1f1035] shadow-lg shadow-blue-500/10"
-                        : "ring-1 ring-gray-300/60 dark:ring-gray-700 midnight:ring-cyan-500/20 purple:ring-pink-500/20/60 midnight:ring-cyan-500/20 purple:ring-pink-500/20 hover:ring-gray-400 dark:hover:ring-gray-600 hover:shadow-md"
+                        : "ring-1 ring-gray-300/60 dark:ring-gray-700 midnight:ring-cyan-500/20 purple:ring-pink-500/20 hover:ring-gray-400 dark:hover:ring-gray-600 hover:shadow-md"
                     }`}
                   >
                     <div className="w-full overflow-hidden" style={{ aspectRatio: `${slideRatio.w}/${slideRatio.h}`, background: slide.background || "#fff" }}>
@@ -2853,6 +2947,7 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
             drawingWidth={drawingWidth}
             onDrawingComplete={handleDrawingComplete}
             onAddComment={(objId) => { setSelectedObjectId(objId); setShowCommentSidebar(true); }}
+            onActivateLink={activateLink}
           />
 
           {/* Textbox draw mode overlay — click and drag to create a textbox */}
@@ -3069,7 +3164,7 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
                             className={`rounded-xl overflow-hidden transition-all duration-200 cursor-pointer group ${
                               theme === key
                                 ? "ring-2 ring-blue-500 ring-offset-2 dark:ring-offset-gray-900 midnight:ring-offset-[#0d1526] purple:ring-offset-[#1f1035] shadow-lg scale-[1.02]"
-                                : "ring-1 ring-gray-200/80 dark:ring-gray-700 midnight:ring-cyan-500/20 purple:ring-pink-500/20/60 midnight:ring-cyan-500/20 purple:ring-pink-500/20 hover:ring-gray-300 hover:shadow-md hover:scale-[1.01]"
+                                : "ring-1 ring-gray-200/80 dark:ring-gray-700 midnight:ring-cyan-500/20 purple:ring-pink-500/20 hover:ring-gray-300 hover:shadow-md hover:scale-[1.01]"
                             }`}
                           >
                             <div className="aspect-video relative overflow-hidden" style={{ background: t.bg }}>
@@ -3108,7 +3203,7 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
                       className={`w-full px-3.5 py-2.5 rounded-xl text-left text-[13px] transition-all duration-200 cursor-pointer flex items-center gap-3 ${
                         activeSlide?.transition === t
                           ? "bg-blue-50 dark:bg-blue-900/20 midnight:bg-cyan-900/20 purple:bg-pink-900/20 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 font-medium ring-1 ring-blue-200 dark:ring-blue-800"
-                          : "text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5/50"
+                          : "text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5"
                       }`}
                     >
                       <span className={`w-6 h-6 rounded-md flex items-center justify-center text-[10px] font-bold ${
@@ -3273,6 +3368,7 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
       {/* Import Slides Modal */}
       {showImportSlides && (
         <ImportSlidesModal
+          theme={theme}
           currentPresId={(() => { const p = new URLSearchParams(window.location.search); return p.get("id") || ""; })()}
           onImport={(importedSlides) => {
             const newSlides = [...slides, ...importedSlides.map(s => ({
@@ -3788,6 +3884,26 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
         />
       )}
 
+      {/* ── Link Dialog (shared component — also used by the doc editor / whiteboard) ── */}
+      {linkDialog && (
+        <LinkDialog
+          initialUrl={linkDialog.url}
+          initialTargetId={linkDialog.targetId}
+          // Offer every OTHER slide as an in-deck destination (Google Slides "Slides in this presentation")
+          targets={slides
+            .map((s, i) => ({ id: s.id, label: `Slide ${i + 1}` }))
+            .filter(t => !(linkDialog.mode === "object" && t.id === activeSlide?.id))}
+          targetsLabel="Slides in this presentation"
+          onSave={({ url, targetId }) => applyLink(targetId ? `slide://${targetId}` : (url || ""))}
+          onRemove={
+            linkDialog.mode === "text" || currentObjects.find(o => o.id === linkDialog.objId)?.link
+              ? removeLink
+              : undefined
+          }
+          onClose={() => { savedRangeRef.current = null; setLinkDialog(null); }}
+        />
+      )}
+
       {/* ── Table Picker Dialog ── */}
       {showTablePicker && (
         <div className="absolute inset-0 z-[210] flex items-center justify-center bg-black/25 backdrop-blur-[2px]" onClick={() => setShowTablePicker(false)}>
@@ -3919,7 +4035,7 @@ function SlideFullscreenPill({ onExit, zoom, onZoomChange }: {
   const btnClass = "px-3 py-2 text-[12px] font-medium transition-colors hover:bg-white/20 cursor-pointer min-h-[44px] flex items-center";
 
   return (
-    <div className="fixed top-3 left-1/2 -translate-x-1/2 z-[10000] flex items-center rounded-full bg-gray-900/70 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/80 midnight:bg-[#0a0e27]/80 purple:bg-[#1a0b2e]/80 backdrop-blur-[20px] backdrop-saturate-[180%] border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.3)] text-white">
+    <div className="fixed top-3 left-1/2 -translate-x-1/2 z-[10000] flex items-center rounded-full bg-gray-900/70 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/80 purple:bg-[#1a0b2e]/80 backdrop-blur-[20px] backdrop-saturate-[180%] border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.3)] text-white">
       {zoomExpanded ? (
         <div className="flex items-center">
           {[50, 75, 100, 150, 200].map((z) => (

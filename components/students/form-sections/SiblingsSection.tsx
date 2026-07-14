@@ -288,7 +288,7 @@ export default function SiblingsSection({
                           {siblingsAtSchool.map((sibling) => (
                             <tr
                               key={sibling.id}
-                              className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] hover:bg-gray-50 dark:hover:bg-[#22262e]/50 midnight:hover:bg-cyan-500/5/50 purple:hover:bg-pink-500/5/50 transition-colors"
+                              className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] hover:bg-gray-50 dark:hover:bg-[#22262e]/50 midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors"
                             >
                               <td className="text-sm text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 px-4 py-3">
                                 {sibling.firstName}

@@ -324,7 +324,7 @@ export default function ParentChatPage() {
             </div>
 
             {/* Messages */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50">
+            <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50 dark:bg-[#0f1115] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50">
               {messages.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-16 text-gray-500">
                   <div className="w-20 h-20 rounded-full bg-gray-200 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] flex items-center justify-center mb-4">
@@ -544,7 +544,7 @@ export default function ParentChatPage() {
 
                 {/* Contact Info */}
                 <div className="space-y-4">
-                  <div className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50">
+                  <div className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 dark:bg-[#0f1115] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50">
                     <div className="w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 flex items-center justify-center">
                       <Mail className="w-5 h-5 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
                     </div>
@@ -556,7 +556,7 @@ export default function ParentChatPage() {
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50">
+                  <div className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 dark:bg-[#0f1115] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50">
                     <div className="w-10 h-10 rounded-lg bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
                       <Phone className="w-5 h-5 text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400" />
                     </div>
@@ -568,7 +568,7 @@ export default function ParentChatPage() {
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50">
+                  <div className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 dark:bg-[#0f1115] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50">
                     <div className="w-10 h-10 rounded-lg bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
                       <User className="w-5 h-5 text-purple-600 dark:text-purple-400" />
                     </div>

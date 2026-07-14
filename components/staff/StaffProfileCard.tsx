@@ -171,7 +171,7 @@ export default function StaffProfileCard({ staffData, fullName }: StaffProfileCa
         <div className="space-y-1.5 sm:space-y-3">
           {/* Employee Number */}
           {staffData.staffId && (
-            <div className="flex justify-between items-center py-1.5 sm:py-2 px-2 sm:px-3 rounded-lg hover:bg-gray-50/50 dark:hover:bg-[#22262e]/30 midnight:hover:bg-cyan-500/5/20 purple:hover:bg-pink-500/5/20 transition-colors">
+            <div className="flex justify-between items-center py-1.5 sm:py-2 px-2 sm:px-3 rounded-lg hover:bg-gray-50/50 dark:hover:bg-[#22262e]/30 midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors">
               <span className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70">Employee ID</span>
               <span className="text-xs sm:text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{staffData.staffId}</span>
             </div>
@@ -179,7 +179,7 @@ export default function StaffProfileCard({ staffData, fullName }: StaffProfileCa
 
           {/* Gender */}
           {staffData.gender && (
-            <div className="flex justify-between items-center py-1.5 sm:py-2 px-2 sm:px-3 rounded-lg hover:bg-gray-50/50 dark:hover:bg-[#22262e]/30 midnight:hover:bg-cyan-500/5/20 purple:hover:bg-pink-500/5/20 transition-colors">
+            <div className="flex justify-between items-center py-1.5 sm:py-2 px-2 sm:px-3 rounded-lg hover:bg-gray-50/50 dark:hover:bg-[#22262e]/30 midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors">
               <span className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70">Gender</span>
               <span className="text-xs sm:text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{staffData.gender}</span>
             </div>
@@ -187,7 +187,7 @@ export default function StaffProfileCard({ staffData, fullName }: StaffProfileCa
 
           {/* Date Of Birth */}
           {staffData.dateOfBirth && (
-            <div className="flex justify-between items-center py-1.5 sm:py-2 px-2 sm:px-3 rounded-lg hover:bg-gray-50/50 dark:hover:bg-[#22262e]/30 midnight:hover:bg-cyan-500/5/20 purple:hover:bg-pink-500/5/20 transition-colors">
+            <div className="flex justify-between items-center py-1.5 sm:py-2 px-2 sm:px-3 rounded-lg hover:bg-gray-50/50 dark:hover:bg-[#22262e]/30 midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors">
               <span className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70">Date Of Birth</span>
               <span className="text-xs sm:text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
                 {formatDate(staffData.dateOfBirth)}
@@ -197,7 +197,7 @@ export default function StaffProfileCard({ staffData, fullName }: StaffProfileCa
 
           {/* Department */}
           {staffData.department && (
-            <div className="flex justify-between items-center py-1.5 sm:py-2 px-2 sm:px-3 rounded-lg hover:bg-gray-50/50 dark:hover:bg-[#22262e]/30 midnight:hover:bg-cyan-500/5/20 purple:hover:bg-pink-500/5/20 transition-colors">
+            <div className="flex justify-between items-center py-1.5 sm:py-2 px-2 sm:px-3 rounded-lg hover:bg-gray-50/50 dark:hover:bg-[#22262e]/30 midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors">
               <span className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70">Department</span>
               <span className="text-xs sm:text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{staffData.department}</span>
             </div>
@@ -205,7 +205,7 @@ export default function StaffProfileCard({ staffData, fullName }: StaffProfileCa
 
           {/* Employment Type */}
           {staffData.employmentType && (
-            <div className="flex justify-between items-center py-1.5 sm:py-2 px-2 sm:px-3 rounded-lg hover:bg-gray-50/50 dark:hover:bg-[#22262e]/30 midnight:hover:bg-cyan-500/5/20 purple:hover:bg-pink-500/5/20 transition-colors">
+            <div className="flex justify-between items-center py-1.5 sm:py-2 px-2 sm:px-3 rounded-lg hover:bg-gray-50/50 dark:hover:bg-[#22262e]/30 midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors">
               <span className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70">Employment Type</span>
               <span className="text-xs sm:text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{staffData.employmentType}</span>
             </div>
@@ -213,7 +213,7 @@ export default function StaffProfileCard({ staffData, fullName }: StaffProfileCa
 
           {/* Join Date */}
           {staffData.joinDate && (
-            <div className="flex justify-between items-center py-1.5 sm:py-2 px-2 sm:px-3 rounded-lg hover:bg-gray-50/50 dark:hover:bg-[#22262e]/30 midnight:hover:bg-cyan-500/5/20 purple:hover:bg-pink-500/5/20 transition-colors">
+            <div className="flex justify-between items-center py-1.5 sm:py-2 px-2 sm:px-3 rounded-lg hover:bg-gray-50/50 dark:hover:bg-[#22262e]/30 midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors">
               <span className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70">Join Date</span>
               <span className="text-xs sm:text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
                 {formatDate(staffData.joinDate)}
@@ -223,7 +223,7 @@ export default function StaffProfileCard({ staffData, fullName }: StaffProfileCa
 
           {/* Experience */}
           {staffData.experience !== undefined && (
-            <div className="flex justify-between items-center py-1.5 sm:py-2 px-2 sm:px-3 rounded-lg hover:bg-gray-50/50 dark:hover:bg-[#22262e]/30 midnight:hover:bg-cyan-500/5/20 purple:hover:bg-pink-500/5/20 transition-colors">
+            <div className="flex justify-between items-center py-1.5 sm:py-2 px-2 sm:px-3 rounded-lg hover:bg-gray-50/50 dark:hover:bg-[#22262e]/30 midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors">
               <span className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70">Experience</span>
               <span className="text-xs sm:text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{staffData.experience} years</span>
             </div>

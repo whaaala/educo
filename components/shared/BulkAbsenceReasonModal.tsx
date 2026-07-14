@@ -227,7 +227,7 @@ export default function BulkAbsenceReasonModal({
                 {students.map((student) => (
                   <div
                     key={student.id}
-                    className="flex items-center justify-between p-3 border-b last:border-b-0 border-gray-100 dark:border-gray-700/50 midnight:border-gray-700/50 purple:border-gray-700/50 hover:bg-gray-50 dark:hover:bg-[#22262e]/30 midnight:hover:bg-cyan-500/5/30 purple:hover:bg-pink-500/5/30 transition-colors"
+                    className="flex items-center justify-between p-3 border-b last:border-b-0 border-gray-100 dark:border-gray-700/50 midnight:border-gray-700/50 purple:border-gray-700/50 hover:bg-gray-50 dark:hover:bg-[#22262e]/30 midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors"
                   >
                     <div className="flex items-center gap-3">
                       {student.avatar ? (

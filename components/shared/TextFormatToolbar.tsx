@@ -45,8 +45,14 @@ const divider = "w-px h-6 bg-gray-200 dark:bg-[#22262e] midnight:bg-[#0f1330] pu
 // ── Props ──
 
 export interface TextFormatToolbarProps {
-  /** Anchor element rect — toolbar positions above this */
-  anchorRect: DOMRect;
+  /**
+   * Render the control row only, with no portal and no self-positioning — for hosts that
+   * position the toolbar themselves (e.g. the whiteboard's floating toolbar, which anchors
+   * to a canvas element in its own coordinate space). `anchorRect` is not needed in this mode.
+   */
+  inline?: boolean;
+  /** Anchor element rect — toolbar positions above this. Required unless `inline`. */
+  anchorRect?: DOMRect;
   /** Current values */
   fontFamily?: string;
   fontSize?: number;
@@ -84,6 +90,7 @@ export interface TextFormatToolbarProps {
 }
 
 export default function TextFormatToolbar({
+  inline = false,
   anchorRect,
   fontFamily = "Inter, sans-serif",
   fontSize = 18,
@@ -120,36 +127,29 @@ export default function TextFormatToolbar({
   const toolbarRef = React.useRef<HTMLDivElement>(null);
   const [pos, setPos] = React.useState<{ top: number; left?: number; right?: number } | null>(null);
 
-  // Measure toolbar after render and position above the anchor
+  // Measure toolbar after render and position above the anchor.
+  // Guard against a missing anchorRect: a caller that forgets it should get an unpositioned
+  // toolbar, never a crash ("Cannot read properties of undefined (reading 'top')").
+  const anchorTop = anchorRect?.top ?? 0;
+  const anchorLeft = anchorRect?.left ?? 0;
   React.useEffect(() => {
     const el = toolbarRef.current;
     if (!el) return;
     const toolbarW = el.offsetWidth;
     const toolbarH = el.offsetHeight;
     // Always above the anchor's top edge, clamped to viewport top (never below)
-    const top = Math.max(4, anchorRect.top - toolbarH - 8);
+    const top = Math.max(4, anchorTop - toolbarH - 8);
     // Horizontal: clamp so toolbar stays within viewport
-    let left = anchorRect.left;
+    let left = anchorLeft;
     if (left + toolbarW > window.innerWidth - 8) left = window.innerWidth - toolbarW - 8;
     if (left < 8) left = 8;
     setPos({ top, left });
-  }, [anchorRect.top, anchorRect.left, anchorRect.bottom, anchorRect.right]);
+  }, [anchorTop, anchorLeft]);
 
   if (typeof document === "undefined") return null;
 
-  return createPortal(
-    <div
-      ref={toolbarRef}
-      className="fixed z-[10002] rounded-xl bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] shadow-lg border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20"
-      style={{
-        top: pos?.top ?? -9999,
-        left: pos?.left ?? 0,
-        maxWidth: "calc(100vw - 16px)",
-        visibility: pos ? "visible" : "hidden",
-      }}
-      onClick={(e) => e.stopPropagation()}
-      onMouseDown={(e) => e.stopPropagation()}
-    >
+  // The control row is identical in both modes — only the shell differs.
+  const controls = (
       <div className="flex items-center gap-1 px-2 py-1.5">
         {/* Font family */}
         {showFontFamily && onFontFamilyChange && (
@@ -276,6 +276,27 @@ export default function TextFormatToolbar({
           </>
         )}
       </div>
+  );
+
+  // INLINE mode — the host positions the toolbar itself (e.g. the whiteboard's floating
+  // toolbar, which anchors to a canvas element). No portal, no anchorRect needed.
+  if (inline) return controls;
+
+  // PORTAL mode (default) — the toolbar positions itself above `anchorRect`, above everything.
+  return createPortal(
+    <div
+      ref={toolbarRef}
+      className="fixed z-[10002] rounded-xl bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] shadow-lg border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20"
+      style={{
+        top: pos?.top ?? -9999,
+        left: pos?.left ?? 0,
+        maxWidth: "calc(100vw - 16px)",
+        visibility: pos ? "visible" : "hidden",
+      }}
+      onClick={(e) => e.stopPropagation()}
+      onMouseDown={(e) => e.stopPropagation()}
+    >
+      {controls}
     </div>,
     document.body,
   );

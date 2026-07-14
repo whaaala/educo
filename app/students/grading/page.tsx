@@ -454,7 +454,7 @@ export default function GradingPage() {
         <div className="flex items-center justify-center gap-2">
           <button
             onClick={() => handleEditGrade(item)}
-            className="p-1.5 text-blue-600 hover:text-blue-700 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 dark:hover:text-blue-300 midnight:text-cyan-400 midnight:hover:text-cyan-300 purple:text-pink-400 purple:hover:text-pink-300 hover:bg-blue-50 dark:hover:bg-blue-950/30 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 rounded transition-colors"
+            className="p-1.5 text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 midnight:text-cyan-400 midnight:hover:text-cyan-300 purple:text-pink-400 purple:hover:text-pink-300 hover:bg-blue-50 dark:hover:bg-blue-950/30 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 rounded transition-colors"
             title="Edit"
           >
             <Edit className="w-4 h-4" />

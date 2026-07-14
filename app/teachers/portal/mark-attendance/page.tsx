@@ -311,7 +311,7 @@ export default function MarkAttendancePage() {
         <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/30 purple:border-pink-500/30 mt-6 overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-[900ms] delay-300 ease-out">
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-gray-50 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/50 midnight:bg-[#0f1330]/50 purple:bg-[#251340]/50 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+              <thead className="bg-gray-50 dark:bg-[#22262e] midnight:bg-[#0f1330]/50 purple:bg-[#251340]/50 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 uppercase tracking-wider">
                     Student
@@ -328,7 +328,7 @@ export default function MarkAttendancePage() {
                 {filteredStudents.map((student) => (
                   <tr
                     key={student.id}
-                    className="hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10/30 transition-colors"
+                    className="hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors"
                   >
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center gap-3">
