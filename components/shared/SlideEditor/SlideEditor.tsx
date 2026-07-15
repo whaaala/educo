@@ -24,6 +24,7 @@ import { normalizeUrl, isDangerousUrl } from "@/lib/link-utils";
 import { applyArrange } from "@/lib/editor-ops/arrange";
 import { moveItem, reorderItem } from "@/lib/editor-ops/reorder";
 import PresenterView from "@/components/shared/PresenterView";
+import { useScreenRecorder } from "@/components/shared/useScreenRecorder";
 import { SHAPE_DEFS } from "./shapes";
 
 // Shared components
@@ -857,6 +858,7 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
   const [laserPos, setLaserPos] = useState<{ x: number; y: number } | null>(null);
   const [presenterNotes, setPresenterNotes] = useState(false);
   const [presenterView, setPresenterView] = useState(false); // rich presenter screen (P)
+  const recorder = useScreenRecorder({ title }); // shared screen recorder
   const [showThemes, setShowThemes] = useState(false);
   const [showTransitions, setShowTransitions] = useState(false);
   const [showShapeDropdown, setShowShapeDropdown] = useState(false);
@@ -1968,6 +1970,22 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
         >
           Share
         </Button>
+        {/* Screen recording (shared hook). Only shown where the browser supports it. */}
+        {recorder.supported && (
+          <button
+            onClick={() => (recorder.recording ? recorder.stop() : recorder.start())}
+            title={recorder.recording ? "Stop recording" : "Record screen"}
+            aria-label={recorder.recording ? "Stop recording" : "Record screen"}
+            className={`inline-flex items-center gap-1.5 h-8 px-3 rounded-full text-[12px] font-medium transition-colors cursor-pointer ${
+              recorder.recording
+                ? "bg-red-600 text-white hover:bg-red-700"
+                : "bg-gray-100 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-200 dark:hover:bg-[#22262e]"
+            }`}
+          >
+            <span className={`w-2 h-2 rounded-full ${recorder.recording ? "bg-white animate-pulse" : "bg-red-500"}`} />
+            {recorder.recording ? `Stop · ${Math.floor(recorder.elapsed / 60)}:${String(recorder.elapsed % 60).padStart(2, "0")}` : "Record"}
+          </button>
+        )}
         <Button
           size="sm"
           icon={<Play className="w-3.5 h-3.5 fill-current" />}

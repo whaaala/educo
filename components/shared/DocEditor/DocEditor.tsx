@@ -7,6 +7,7 @@ import { EditorEditMenuPanel } from "@/components/shared/EditorEditMenu";
 import { createChartSpec, CHART_TYPE_GROUPS, CHART_TYPE_LABELS, type ChartType, type ChartThemeName } from "@/lib/chart";
 import { chartToEmbedHtml } from "@/components/shared/Chart/chart-embed";
 import { useTheme } from "@/contexts/ThemeContext";
+import { buildChipHtml, formatChipDate, statusChip, nextDropdownValue, CHIP_CLASS, type SmartChip } from "@/lib/smartchip/chips";
 import {
   ChevronRight,
   Plus,
@@ -2766,6 +2767,28 @@ export default function DocEditor({
     schedulePaginate();
   }, [flushDomToState, schedulePaginate]);
 
+  // Interactive smart-chip dropdowns: clicking one cycles to its next option in place.
+  useEffect(() => {
+    const root = editorRootRef.current;
+    if (!root) return;
+    const onClick = (e: MouseEvent) => {
+      if (!canEdit) return;
+      const chip = (e.target as HTMLElement).closest?.(`.${CHIP_CLASS}[data-chip="dropdown"]`) as HTMLElement | null;
+      if (!chip) return;
+      e.preventDefault();
+      const options = (chip.getAttribute("data-options") || "").split("|").filter(Boolean);
+      const next = nextDropdownValue(chip.getAttribute("data-value") || "", options);
+      chip.setAttribute("data-value", next);
+      chip.textContent = next; // replace the value text…
+      const caret = document.createElement("span"); // …then re-append the ▾ caret
+      caret.style.opacity = "0.6"; caret.textContent = "▾";
+      chip.appendChild(document.createTextNode(" ")); chip.appendChild(caret);
+      emitChange();
+    };
+    root.addEventListener("click", onClick);
+    return () => root.removeEventListener("click", onClick);
+  }, [canEdit, emitChange]);
+
   const closeMenus = useCallback(() => {
     setOpenMenu(null);
     setOpenSubmenu(null);
@@ -4542,14 +4565,17 @@ export default function DocEditor({
     }
   };
 
-  const insertChip = (label: string, valueText: string) => {
+  // Smart chips (Smart canvas) — built by the shared, pure `lib/smartchip` module so any editable
+  // surface renders identical chips.
+  const insertSmartChip = (chip: SmartChip) => {
     if (!canEdit) return;
     focusEditor();
-    exec(
-      "insertHTML",
-      `<span contenteditable="false" style="display:inline-flex;align-items:center;gap:6px;padding:2px 10px;border-radius:999px;background:#eef2ff;border:1px solid #c7d2fe;color:#1e40af;font-size:12px;margin:0 2px;">${label}: ${valueText}</span>&nbsp;`
-    );
+    exec("insertHTML", buildChipHtml(chip) + "&nbsp;");
     emitChange();
+  };
+  const insertChip = (label: string, valueText: string) => {
+    const kind: SmartChip["kind"] = label === "Person" ? "person" : label === "File" ? "file" : label === "Place" ? "place" : "variable";
+    insertSmartChip({ kind, value: valueText, label: kind === "variable" ? label : undefined });
   };
 
   const insertSvg = (svg: string) => {
@@ -6416,11 +6442,12 @@ export default function DocEditor({
                   <ViewMenuItem
                     label="Date"
                     icon={Calendar}
-                    onClick={() => {
-                      const d = new Date().toISOString().slice(0, 10);
-                      exec("insertHTML", `<span style="padding:2px 8px;border-radius:999px;background:#eff6ff;border:1px solid #bfdbfe;">${d}</span>`);
-                      emitChange();
-                    }}
+                    onClick={() => insertSmartChip({ kind: "date", value: formatChipDate(new Date()) })}
+                  />
+                  <ViewMenuItem
+                    label="Dropdown"
+                    icon={ChevronDown}
+                    onClick={() => insertSmartChip(statusChip())}
                   />
                   <ViewMenuItem label="People" icon={User} onClick={() => { const name = window.prompt("Person name"); if (!name) return; insertChip("Person", name); }} />
                   <ViewMenuItem label="File" icon={FileIcon} onClick={() => { const name = window.prompt("File name"); if (!name) return; insertChip("File", name); }} />
