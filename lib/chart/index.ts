@@ -17,3 +17,4 @@
 export * from "./types";
 export * from "./palette";
 export * from "./geometry";
+export * from "./render-svg";

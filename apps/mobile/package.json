@@ -18,7 +18,10 @@
       "node_modules/(?!((jest-)?react-native|@react-native(-community)?)|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@sentry/react-native|native-base|react-native-svg)"
     ],
     "setupFilesAfterSetup": ["@testing-library/jest-native/extend-expect"],
-    "moduleFileExtensions": ["ts", "tsx", "js", "jsx"]
+    "moduleFileExtensions": ["ts", "tsx", "js", "jsx"],
+    "moduleNameMapper": {
+      "^@core/(.*)$": "<rootDir>/../../lib/$1"
+    }
   },
   "dependencies": {
     "@expo-google-fonts/inter": "^0.4.2",

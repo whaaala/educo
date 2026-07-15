@@ -1,12 +1,11 @@
-"use client";
-
 /**
- * chart-embed — bridge that lets NON-React surfaces embed the SAME <Chart> component.
+ * chart-embed — bridge that lets NON-React surfaces embed a chart from a ChartSpec.
  *
- * The presentation editor renders <Chart> directly (it has a React object model). But the
- * work-document editor is a contentEditable that stores HTML, and exports (PDF/pptx/email)
- * need static markup. Rather than re-implementing charts for those surfaces, we render the
- * one real <Chart> to static SVG markup and embed that.
+ * The presentation editor renders the interactive <Chart> directly (it has a React object model).
+ * But the work-document editor is a contentEditable that stores HTML, and exports (PDF/pptx/email)
+ * need static markup. Both use `chartToSvgString` — the ONE pure, platform-agnostic static
+ * renderer in the core — so there is no react-dom/server dependency and the mobile app, doc
+ * embeds, and exports all produce identical SVG from the same code.
  *
  * The ChartSpec is round-tripped in a `data-chart-spec` attribute, so an embedded chart stays
  * a real chart — it can be re-opened, edited, and re-rendered — not a dead picture.
@@ -14,10 +13,7 @@
  * Reusable by: work-documents, whiteboard, exports, reports, emails, and future surfaces.
  */
 
-import React from "react";
-import { renderToStaticMarkup } from "react-dom/server";
-import Chart from "./Chart";
-import type { ChartSpec, ChartThemeName } from "@/lib/chart";
+import { chartToSvgString, type ChartSpec, type ChartThemeName } from "@/lib/chart";
 
 /** Attribute + class used to mark an embedded chart in document HTML. */
 export const CHART_EMBED_CLASS = "educo-chart-embed";
@@ -53,9 +49,7 @@ export function chartToEmbedHtml(
   const { theme = "light", width = 560, aspect = 1.6 } = opts || {};
   const height = Math.round(width / aspect);
 
-  const svg = renderToStaticMarkup(
-    <Chart spec={spec} theme={theme} aspect={aspect} uid={`embed-${spec.chartType}`} />,
-  );
+  const svg = chartToSvgString(spec, { theme, aspect, uid: `embed-${spec.chartType}` });
 
   return (
     `<div class="${CHART_EMBED_CLASS}" ${CHART_SPEC_ATTR}="${encodeChartSpec(spec)}" ` +
