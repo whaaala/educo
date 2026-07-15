@@ -3286,6 +3286,7 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
           onClose={() => setShowDownloadDialog(false)}
           title={title}
           content={slides.map(s => s.content)}
+          slides={slides}
           activeIndex={activeSlideIdx}
           backgrounds={slides.map(s => s.background)}
         />

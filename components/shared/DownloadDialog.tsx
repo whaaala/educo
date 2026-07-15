@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
+import type { SlideData } from "@/lib/slide-storage";
+import { slidesToPptxBlob } from "@/lib/export/pptx";
 import {
   X, Download, FileText, Image as ImageIcon, File, Check, Loader2,
   FileType, FileImage, FileCode,
@@ -28,6 +30,9 @@ export interface DownloadDialogProps {
   activeIndex?: number;
   /** Background colors per slide */
   backgrounds?: string[];
+  /** The slide model. When provided, "pptx" exports a REAL .pptx (native shapes/charts/tables)
+   *  instead of the PDF fallback. */
+  slides?: SlideData[];
   /** Available formats (defaults to presentation formats) */
   formats?: DownloadFormat[];
   /** Called after download completes */
@@ -36,7 +41,7 @@ export interface DownloadDialogProps {
 
 // ── Default presentation formats ──
 const PRESENTATION_FORMATS: DownloadFormat[] = [
-  { id: "pptx", label: "Presentation (PDF)", extension: ".pdf", description: "Slide-formatted PDF — compatible with all viewers", icon: "pptx", category: "document" },
+  { id: "pptx", label: "PowerPoint (.pptx)", extension: ".pptx", description: "Editable PowerPoint — native text, shapes, charts & tables", icon: "pptx", category: "document" },
   { id: "odp", label: "Presentation (PDF)", extension: ".pdf", description: "Slide-formatted PDF — print or share", icon: "odp", category: "document" },
   { id: "pdf", label: "PDF Document", extension: ".pdf", description: "Best for sharing and printing", icon: "pdf", category: "document" },
   { id: "txt", label: "Plain Text", extension: ".txt", description: "Text content only, no formatting", icon: "txt", category: "document" },
@@ -166,7 +171,7 @@ async function exportSlideAsImage(content: string, bg: string, format: "png" | "
 
 // ── Main Component ──
 export default function DownloadDialog({
-  isOpen, onClose, title, content, activeIndex = 0, backgrounds = [],
+  isOpen, onClose, title, content, activeIndex = 0, backgrounds = [], slides,
   formats = PRESENTATION_FORMATS, onDownload,
 }: DownloadDialogProps) {
   const [downloading, setDownloading] = useState<string | null>(null);
@@ -196,14 +201,15 @@ export default function DownloadDialog({
           break;
         }
         case "pptx": {
-          // Export as presentation-style PDF via print dialog
-          // User can save as PDF and then convert to PPTX using online tools
-          const pptxHtml = exportAsHtml(title, content, bgs);
-          const pptxWin = window.open("", "_blank");
-          if (pptxWin) {
-            pptxWin.document.write(pptxHtml);
-            pptxWin.document.close();
-            setTimeout(() => { pptxWin.print(); }, 500);
+          if (slides && slides.length) {
+            // REAL .pptx — native editable text, shapes, charts and tables.
+            const blob = await slidesToPptxBlob(slides, { title });
+            downloadBlob(blob, `${filename}.pptx`);
+          } else {
+            // Fallback (legacy HTML-only content): presentation-style PDF via print dialog.
+            const pptxHtml = exportAsHtml(title, content, bgs);
+            const pptxWin = window.open("", "_blank");
+            if (pptxWin) { pptxWin.document.write(pptxHtml); pptxWin.document.close(); setTimeout(() => pptxWin.print(), 500); }
           }
           break;
         }
