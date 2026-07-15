@@ -3,7 +3,7 @@
 import React, { useState, useRef, useCallback, useEffect } from "react";
 import { createPortal } from "react-dom";
 import {
-  Plus, Play, Trash2, Copy, Palette, LayoutGrid, X, ArrowLeft,
+  Plus, Play, Trash2, Copy, Palette, LayoutGrid, X, ArrowLeft, Presentation,
   Bold, Italic, Underline, AlignLeft, AlignCenter, AlignRight,
   Strikethrough, Superscript as SuperscriptIcon, Subscript as SubscriptIcon,
   Image as ImageIcon, Type, Table2, Paintbrush, MessageCircle, Shapes,
@@ -23,6 +23,7 @@ import LinkDialog from "@/components/shared/LinkDialog";
 import { normalizeUrl, isDangerousUrl } from "@/lib/link-utils";
 import { applyArrange } from "@/lib/editor-ops/arrange";
 import { moveItem, reorderItem } from "@/lib/editor-ops/reorder";
+import PresenterView from "@/components/shared/PresenterView";
 import { SHAPE_DEFS } from "./shapes";
 
 // Shared components
@@ -855,6 +856,7 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
   const [laserPointer, setLaserPointer] = useState(false);
   const [laserPos, setLaserPos] = useState<{ x: number; y: number } | null>(null);
   const [presenterNotes, setPresenterNotes] = useState(false);
+  const [presenterView, setPresenterView] = useState(false); // rich presenter screen (P)
   const [showThemes, setShowThemes] = useState(false);
   const [showTransitions, setShowTransitions] = useState(false);
   const [showShapeDropdown, setShowShapeDropdown] = useState(false);
@@ -1777,6 +1779,22 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
   }, []);
 
   // ── Slideshow Mode — portaled to body to escape sidebar stacking context ──
+  if (isPresenting && presenterView) {
+    // Rich presenter screen (shared component): current + next + notes + timer.
+    return createPortal(
+      <PresenterView
+        slides={slides}
+        currentIndex={activeSlideIdx}
+        onNavigate={setActiveSlideIdx}
+        onEnd={() => { setPresenterView(false); setIsPresenting(false); }}
+        renderSlide={(i) => slides[i] ? <SlideContentPreview slide={slides[i]} themeTextColor={THEMES[theme]?.text} /> : null}
+        aspect={slideRatio}
+        title={title}
+      />,
+      document.body,
+    );
+  }
+
   if (isPresenting) {
     return createPortal(
       <>
@@ -1818,6 +1836,12 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
         <div className="fixed top-3 left-1/2 -translate-x-1/2 z-[2147483001] px-3 py-1 rounded-full bg-black/40 text-white/70 text-[11px] pointer-events-none">
           B/W blank · L laser · S notes · type number+Enter to jump · Esc to exit
         </div>
+
+        {/* Enter the rich presenter screen (current + next + notes + timer) */}
+        <button onClick={() => setPresenterView(true)}
+          className="fixed top-3 right-4 z-[2147483001] inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/15 hover:bg-white/25 text-white text-[12px] font-medium transition-colors cursor-pointer">
+          <Presentation className="w-3.5 h-3.5" /> Presenter view
+        </button>
       </>,
       document.body,
     );
