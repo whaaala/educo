@@ -771,6 +771,23 @@ describe("SlideMenuBar — Complete Menu System", () => {
     });
   });
 
+  describe("Arrange & slide-move run the SHARED editor-ops (not dead no-ops)", () => {
+    it("the Arrange menu dispatches through the shared applyArrange op on the lifted selection", () => {
+      // Regression: every arrange:* case used to be a `break;` "future feature" no-op.
+      expect(slideEditorSource).toContain('from "@/lib/editor-ops/arrange"');
+      expect(slideEditorSource).toContain("applyArrange(action, currentObjects, ids)");
+      // Selection is lifted from the canvas so multi-select alignment works.
+      expect(slideEditorSource).toContain("onSelectionChange={setSelectedObjectIds}");
+      expect(slideCanvasSource).toContain("onSelectionChange?: (ids: string[]) => void");
+    });
+
+    it("slide move + drag-reorder use the shared reorder op", () => {
+      expect(slideEditorSource).toContain('from "@/lib/editor-ops/reorder"');
+      expect(slideEditorSource).toContain("moveItem(slides, activeSlideIdx, mode)");
+      expect(slideEditorSource).toContain("reorderItem(slides, fromIdx, idx)");
+    });
+  });
+
   describe("Draw tool — pen controls & stroke persistence", () => {
     it("Draw toolbar button migrates the slide to canvas mode when activated", () => {
       // On a legacy/blank slide SlideCanvas is not mounted, so drawing has nothing to

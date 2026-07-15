@@ -30,6 +30,8 @@ interface SlideCanvasProps {
   onChange: (objects: SlideObject[]) => void;
   selectedId: string | null;
   onSelect: (id: string | null) => void;
+  /** The full selection set (single OR multi), lifted up so the host's Arrange menu can act on it. */
+  onSelectionChange?: (ids: string[]) => void;
   background: string;
   themeTextColor?: string;
   themeAccent?: string;
@@ -216,7 +218,7 @@ function SubmenuItem({ item, menuBtnClass, menuPanelClass, arrowIcon, submenus, 
 // ══════════════════════════════════════════════════
 
 export default function SlideCanvas({
-  objects, onChange, selectedId, onSelect, background, themeTextColor, themeAccent,
+  objects, onChange, selectedId, onSelect, onSelectionChange, background, themeTextColor, themeAccent,
   canEdit, showGuides = false, guides = [], snapToGrid = false, snapToGuides = false,
   onGuideMove, onGuideDelete, drawingMode = false, drawingColor = "#1a1a2e", drawingWidth = 2, onDrawingComplete,
   onAddComment,
@@ -273,6 +275,13 @@ export default function SlideCanvas({
 
   // All IDs that should show selection ring
   const allSelectedIds = multiSelectedIds.size > 1 ? multiSelectedIds : new Set(selectedId ? [selectedId] : []);
+
+  // Lift the true selection set up to the host (for the Arrange menu). Emit only when the
+  // membership actually changes, keyed by the sorted id list.
+  const selKey = [...allSelectedIds].sort().join(",");
+  useEffect(() => {
+    onSelectionChange?.(selKey ? selKey.split(",") : []);
+  }, [selKey, onSelectionChange]);
 
   // Update a single object
   const updateObj = useCallback((id: string, updates: Partial<SlideObject>) => {
@@ -397,18 +406,12 @@ export default function SlideCanvas({
 
   const flipObjH = useCallback((id: string) => {
     const ids = getTargetIds(id);
-    onChange(objects.map(o => {
-      if (!ids.has(o.id)) return o;
-      return { ...o, scaleX: ((o as any).scaleX || 1) * -1 } as unknown as SlideObject;
-    }));
+    onChange(objects.map(o => (ids.has(o.id) ? { ...o, scaleX: (o.scaleX || 1) * -1 } : o)));
   }, [objects, onChange, getTargetIds]);
 
   const flipObjV = useCallback((id: string) => {
     const ids = getTargetIds(id);
-    onChange(objects.map(o => {
-      if (!ids.has(o.id)) return o;
-      return { ...o, scaleY: ((o as any).scaleY || 1) * -1 } as unknown as SlideObject;
-    }));
+    onChange(objects.map(o => (ids.has(o.id) ? { ...o, scaleY: (o.scaleY || 1) * -1 } : o)));
   }, [objects, onChange, getTargetIds]);
 
   // ── Centre on page — applies to all selected or single objId ──
@@ -833,8 +836,8 @@ export default function SlideCanvas({
     const showRingOnOuter = isSelected && !hasCropInset;
 
     const rotation = obj.rotation || 0;
-    const scaleX = (obj as any).scaleX || 1;
-    const scaleY = (obj as any).scaleY || 1;
+    const scaleX = obj.scaleX || 1;
+    const scaleY = obj.scaleY || 1;
     const transformParts: string[] = [];
     if (rotation) transformParts.push(`rotate(${rotation}deg)`);
     if (scaleX !== 1) transformParts.push(`scaleX(${scaleX})`);

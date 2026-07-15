@@ -22,6 +22,8 @@ export interface SlideObjectBase {
   height: number; // % of slide height
   rotation: number; // degrees
   zIndex: number;
+  scaleX?: number;  // horizontal flip when negative (Arrange → Flip horizontally)
+  scaleY?: number;  // vertical flip when negative (Arrange → Flip vertically)
   locked?: boolean;
   link?: string;    // optional hyperlink — opens in the slideshow / on click
   altText?: string; // optional accessibility description

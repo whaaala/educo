@@ -21,6 +21,8 @@ import { setSlideClipboard, getSlideClipboard, packIntoFreeSpace } from "./slide
 import ShapePickerDialogFull from "@/components/shared/ShapePickerDialog";
 import LinkDialog from "@/components/shared/LinkDialog";
 import { normalizeUrl, isDangerousUrl } from "@/lib/link-utils";
+import { applyArrange } from "@/lib/editor-ops/arrange";
+import { moveItem, reorderItem } from "@/lib/editor-ops/reorder";
 import { SHAPE_DEFS } from "./shapes";
 
 // Shared components
@@ -307,7 +309,7 @@ function ShapeSVGPreview({ shape }: { shape: string }) {
 }
 
 // ── Slide Canvas with rulers and proper fit ──
-function SlideCanvasArea({ zoom, activeSlide, canEdit, editorRef, contentRef, onInput, slideRatio = { w: 16, h: 9 }, showRuler = true, showGuides = false, guides = [], snapToGrid = false, snapToGuides = false, onClick, isSuggesting = false, themeTextColor, themeAccent, onGuideMove, onGuideDelete, selectedObjectId, onSelectObject, onObjectsChange, drawingMode, drawingColor, drawingWidth, onDrawingComplete, onAddComment, onActivateLink }: {
+function SlideCanvasArea({ zoom, activeSlide, canEdit, editorRef, contentRef, onInput, slideRatio = { w: 16, h: 9 }, showRuler = true, showGuides = false, guides = [], snapToGrid = false, snapToGuides = false, onClick, isSuggesting = false, themeTextColor, themeAccent, onGuideMove, onGuideDelete, selectedObjectId, onSelectObject, onObjectsChange, drawingMode, drawingColor, drawingWidth, onDrawingComplete, onAddComment, onActivateLink, onSelectionChange }: {
   zoom: number;
   activeSlide: SlideData | undefined;
   canEdit: boolean;
@@ -335,6 +337,7 @@ function SlideCanvasArea({ zoom, activeSlide, canEdit, editorRef, contentRef, on
   onDrawingComplete?: (paths: string) => void;
   onAddComment?: (objId: string) => void;
   onActivateLink?: (href: string) => void;
+  onSelectionChange?: (ids: string[]) => void;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState({ w: 800, h: 450 });
@@ -423,6 +426,7 @@ function SlideCanvasArea({ zoom, activeSlide, canEdit, editorRef, contentRef, on
                   onDrawingComplete={onDrawingComplete}
                   onAddComment={onAddComment}
                   onActivateLink={onActivateLink}
+                  onSelectionChange={onSelectionChange}
                 />
               ) : (
                 /* Legacy: single contentEditable fallback */
@@ -955,6 +959,10 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showGridView, setShowGridView] = useState(false);
   const [selectedObjectId, setSelectedObjectId] = useState<string | null>(null);
+  // The full selection set (single OR multi), lifted from the canvas so the Arrange menu can act.
+  const [selectedObjectIds, setSelectedObjectIds] = useState<string[]>([]);
+  const selectedObjectIdsRef = useRef<string[]>([]);
+  selectedObjectIdsRef.current = selectedObjectIds;
   const [drawingMode, setDrawingMode] = useState(false);
   const [drawingColor, setDrawingColor] = useState("#1a1a2e");
   const [drawingWidth, setDrawingWidth] = useState(2);
@@ -2451,32 +2459,12 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
             if (el) { el.style.opacity = el.style.opacity === "0.3" ? "1" : "0.3"; }
             break;
           }
-          case "slide:moveStart": {
-            if (activeSlideIdx > 0) {
-              const ns = [...slides]; const [s] = ns.splice(activeSlideIdx, 1); ns.unshift(s);
-              updateSlides(ns); setActiveSlideIdx(0);
-            }
-            break;
-          }
-          case "slide:moveUp": {
-            if (activeSlideIdx > 0) {
-              const ns = [...slides]; [ns[activeSlideIdx - 1], ns[activeSlideIdx]] = [ns[activeSlideIdx], ns[activeSlideIdx - 1]];
-              updateSlides(ns); setActiveSlideIdx(activeSlideIdx - 1);
-            }
-            break;
-          }
-          case "slide:moveDown": {
-            if (activeSlideIdx < slides.length - 1) {
-              const ns = [...slides]; [ns[activeSlideIdx], ns[activeSlideIdx + 1]] = [ns[activeSlideIdx + 1], ns[activeSlideIdx]];
-              updateSlides(ns); setActiveSlideIdx(activeSlideIdx + 1);
-            }
-            break;
-          }
-          case "slide:moveEnd": {
-            if (activeSlideIdx < slides.length - 1) {
-              const ns = [...slides]; const [s] = ns.splice(activeSlideIdx, 1); ns.push(s);
-              updateSlides(ns); setActiveSlideIdx(ns.length - 1);
-            }
+          case "slide:moveStart": case "slide:moveUp": case "slide:moveDown": case "slide:moveEnd": {
+            // Uses the SHARED, pure reorder op (lib/editor-ops/reorder) — same logic the filmstrip
+            // drag-reorder and a future mobile filmstrip reuse.
+            const mode = ({ "slide:moveStart": "start", "slide:moveUp": "up", "slide:moveDown": "down", "slide:moveEnd": "end" } as const)[action];
+            const { items, index } = moveItem(slides, activeSlideIdx, mode);
+            if (items !== slides) { updateSlides(items); setActiveSlideIdx(index); }
             break;
           }
           case "slide:background": {
@@ -2508,9 +2496,18 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
           case "arrange:distributeH": case "arrange:distributeV":
           case "arrange:centerH": case "arrange:centerV":
           case "arrange:rotateCW": case "arrange:rotateCCW":
-          case "arrange:flipH": case "arrange:flipV":
+          case "arrange:flipH": case "arrange:flipV": {
+            // Arrange runs the SHARED, pure ops (lib/editor-ops/arrange) on the current selection.
+            const ids = selectedObjectIdsRef.current.length
+              ? selectedObjectIdsRef.current
+              : (selectedObjectId ? [selectedObjectId] : []);
+            if (!ids.length) { setToast("Select an object first"); break; }
+            const next = applyArrange(action, currentObjects, ids);
+            if (next !== currentObjects) updateCurrentSlide({ objects: next });
+            break;
+          }
           case "arrange:group": case "arrange:ungroup":
-            // Arrange operations work on selected objects (future feature)
+            setToast("Grouping is coming soon");
             break;
 
           // ── Tools menu ──
@@ -2754,11 +2751,11 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
                   (e.currentTarget as HTMLElement).style.outline = "";
                   const fromIdx = parseInt(e.dataTransfer.getData("text/plain"), 10);
                   if (isNaN(fromIdx) || fromIdx === idx) return;
-                  const newSlides = [...slides];
-                  const [moved] = newSlides.splice(fromIdx, 1);
-                  newSlides.splice(idx, 0, moved);
-                  updateSlides(newSlides);
-                  setActiveSlideIdx(idx);
+                  // Shared reorder op — returns the moved slide's TRUE final index (dragging
+                  // downward shifts it, so the old setActiveSlideIdx(idx) was off by one).
+                  const { items, index } = reorderItem(slides, fromIdx, idx);
+                  updateSlides(items);
+                  setActiveSlideIdx(index);
                 }}
                 className={`rounded-xl overflow-hidden transition-all duration-200 cursor-pointer group ${
                   idx === activeSlideIdx
@@ -2948,6 +2945,7 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
             onDrawingComplete={handleDrawingComplete}
             onAddComment={(objId) => { setSelectedObjectId(objId); setShowCommentSidebar(true); }}
             onActivateLink={activateLink}
+            onSelectionChange={setSelectedObjectIds}
           />
 
           {/* Textbox draw mode overlay — click and drag to create a textbox */}
