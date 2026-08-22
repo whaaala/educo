@@ -113,6 +113,28 @@ export interface SectionContent {
   align?: "left" | "center";
 }
 
+/** A block a user drops INTO a section. Blocks flow (stack) and never overlap — Lego-style. */
+export type SectionBlockType = "heading" | "text" | "button" | "image";
+export interface SectionBlock {
+  id: string;
+  type: SectionBlockType;
+  text?: string;
+  href?: string;
+  src?: string;
+  align?: "left" | "center" | "right";
+}
+
+/** Create a new flowing block for a section. */
+export function createSectionBlock(type: SectionBlockType): SectionBlock {
+  const id = uid("blk");
+  switch (type) {
+    case "heading": return { id, type, text: "New heading", align: "left" };
+    case "button": return { id, type, text: "Button", href: "#", align: "left" };
+    case "image": return { id, type, src: "", align: "center" };
+    default: return { id, type: "text", text: "New text block — click to edit.", align: "left" };
+  }
+}
+
 export interface Section {
   id: string;
   type: SectionType;
@@ -125,6 +147,8 @@ export interface Section {
   hidden?: boolean;
   /** Optional freeform overlay (reserved for the "custom" section type). */
   elements?: SlideObject[];
+  /** User-added flowing blocks (text/button/image) that stack inside the section. */
+  blocks?: SectionBlock[];
 }
 
 export interface Page {
@@ -135,9 +159,78 @@ export interface Page {
   isHome?: boolean;
 }
 
+export type NavItemType = "page" | "link" | "dropdown";
+
+/** A navigation menu item — a tree node. `page` links to a page, `link` is a custom URL,
+ *  `dropdown` is a parent that reveals its `children` (page/link items). */
 export interface NavItem {
-  pageId: string;
+  id: string;
+  type: NavItemType;
   label: string;
+  pageId?: string;   // for type "page"
+  href?: string;     // for type "link"
+  newTab?: boolean;
+  children?: NavItem[]; // for type "dropdown"
+}
+
+export function makeNavItem(patch: Partial<NavItem> & { type: NavItemType; label: string }): NavItem {
+  return { id: uid("nav"), ...patch };
+}
+export function pageNavItem(pageId: string, label: string): NavItem {
+  return { id: uid("nav"), type: "page", label, pageId };
+}
+
+/** A freeform header element, positioned in 0–100 % of the header band. */
+export type HeaderElType = "logo" | "text" | "nav" | "button";
+export interface HeaderEl {
+  id: string;
+  type: HeaderElType;
+  x: number; // % from left
+  y: number; // % from top
+  text?: string;
+  href?: string;       // link target (custom URL) or "page:<id>" for a page
+  newTab?: boolean;
+  fontSize?: number;
+  fontFamily?: string;
+  bold?: boolean;
+  color?: string;      // text colour (text/nav) or label colour (button)
+  bg?: string;         // background — button fill or logo background ("transparent" allowed)
+  width?: number;      // logo width (px)
+  height?: number;     // logo height (px)
+  gap?: number;        // nav: spacing between items (px)
+  src?: string;        // logo image (data URL)
+}
+
+/** Header configuration. `layout` is the freeform, draggable header (logo, nav, text, buttons). */
+export interface SiteHeader {
+  logoUrl?: string;
+  showCta?: boolean;
+  ctaLabel?: string;
+  ctaHref?: string;
+  elements?: SlideObject[];
+  layout?: HeaderEl[];
+  height?: number; // header band height in px (default 78)
+}
+
+/** Web-safe font stacks offered across the builder (theme + per-element font pickers). */
+export const FONT_CHOICES = [
+  "Poppins, sans-serif",
+  "'DM Sans', sans-serif",
+  "Manrope, sans-serif",
+  "Lexend, sans-serif",
+  "Montserrat, sans-serif",
+  "'Playfair Display', serif",
+  "Inter, sans-serif",
+];
+
+/** The default header layout: logo (left), site name, nav (centre), CTA button (right). */
+export function defaultHeaderLayout(site: Site): HeaderEl[] {
+  return [
+    { id: uid("hel"), type: "logo", x: 3, y: 28 },
+    { id: uid("hel"), type: "text", x: 9.5, y: 32, text: site.name || "My School", fontSize: 19, bold: true, color: site.theme.text },
+    { id: uid("hel"), type: "nav", x: 42, y: 34 },
+    { id: uid("hel"), type: "button", x: 84, y: 26, text: site.header?.ctaLabel ?? "Apply now" },
+  ];
 }
 
 export interface Site {
@@ -146,6 +239,7 @@ export interface Site {
   pages: Page[];
   theme: SiteTheme;
   nav: NavItem[];
+  header?: SiteHeader;
   createdAt: string;
   updatedAt: string;
   publishedUrl?: string;
@@ -280,6 +374,40 @@ export function createSection(type: SectionType): Section {
   return { id: uid("sec"), ...TEMPLATES[type]() };
 }
 
+/** Turn a page name into a URL slug/path, e.g. "About Us" → "/about-us". */
+export function slugify(name: string): string {
+  const s = name.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+  return s ? `/${s}` : "/page";
+}
+
+/** Page templates offered in the "Add page" flow — each a ready arrangement of sections, with a
+ *  DISTINCT hero so different pages look clearly different. */
+export const PAGE_TEMPLATES: { key: string; name: string; description: string; icon: string; sections: SectionType[]; heroVariant?: string; hero?: Partial<SectionContent> }[] = [
+  { key: "landing", name: "Landing", description: "Hero, programs, stats & CTA", icon: "Sparkles", sections: ["hero", "features", "stats", "cta"], heroVariant: "split",
+    hero: { eyebrow: "Welcome to our school", heading: "Where curious minds become confident leaders" } },
+  { key: "about", name: "About", description: "Intro, story & testimonials", icon: "BookOpen", sections: ["hero", "about", "stats", "testimonials"], heroVariant: "banner",
+    hero: { eyebrow: "About us", heading: "An education built on care, curiosity & character", subheading: "Get to know our story, our people and what we stand for." } },
+  { key: "programs", name: "Programs", description: "Programs grid & gallery", icon: "LayoutGrid", sections: ["hero", "features", "gallery", "cta"], heroVariant: "centered",
+    hero: { eyebrow: "What we offer", heading: "Programs designed for every learner", subheading: "From early years to graduation — academics, arts, sports and more." } },
+  { key: "gallery", name: "Gallery", description: "Photo gallery & call-to-action", icon: "Images", sections: ["hero", "gallery", "cta"], heroVariant: "centered",
+    hero: { eyebrow: "Campus life", heading: "A glimpse of life at our school", subheading: "Moments from classrooms, events and everything in between." } },
+  { key: "contact", name: "Contact", description: "Contact details & a form", icon: "Mail", sections: ["hero", "contact"], heroVariant: "image-left",
+    hero: { eyebrow: "Get in touch", heading: "We'd love to hear from you", subheading: "Questions about admissions, programs or a tour? Reach out." } },
+  { key: "blank", name: "Blank", description: "Start from scratch", icon: "Square", sections: [] },
+];
+
+export function createPageFromTemplate(name: string, path: string, templateKey: string, opts: { isHome?: boolean } = {}): Page {
+  const tpl = PAGE_TEMPLATES.find((t) => t.key === templateKey) ?? PAGE_TEMPLATES[0];
+  const page = createPage(name, path, { isHome: opts.isHome });
+  page.sections = tpl.sections.map((t) => createSection(t));
+  const hero = page.sections.find((s) => s.type === "hero");
+  if (hero) {
+    if (tpl.heroVariant) hero.variant = tpl.heroVariant;
+    if (tpl.hero) hero.content = { ...hero.content, ...tpl.hero };
+  }
+  return page;
+}
+
 export function createPage(name: string, path: string, opts: { isHome?: boolean; withHero?: boolean } = {}): Page {
   return {
     id: uid("page"),
@@ -312,7 +440,7 @@ export function createSiteFromTemplate(name: string, templateKey: string, themeO
     name,
     pages: [home],
     theme: { ...DEFAULT_THEME, ...themeOverride },
-    nav: [{ pageId: home.id, label: "Home" }],
+    nav: [pageNavItem(home.id, "Home")],
     createdAt: now,
     updatedAt: now,
   };
@@ -321,6 +449,7 @@ export function createSiteFromTemplate(name: string, templateKey: string, themeO
 export function createSite(name: string, themeOverride?: Partial<SiteTheme>): Site {
   return createSiteFromTemplate(name, "classic", themeOverride);
 }
+
 
 // ── Persistence (localStorage) ──
 
@@ -342,12 +471,24 @@ function migrateSection(s: Partial<Section> & { type?: string }): Section {
   return { ...fresh, id: s?.id || fresh.id, name: s?.name || fresh.name, hidden: s?.hidden };
 }
 
+// Old nav entries were flat { pageId, label }; upgrade them to typed NavItem tree nodes.
+function migrateNavItem(n: Partial<NavItem> & { pageId?: string; label?: string }): NavItem {
+  if (n && n.type) return { ...(n as NavItem), children: n.children?.map(migrateNavItem) };
+  return { id: n?.id || uid("nav"), type: "page", label: n?.label ?? "", pageId: n?.pageId };
+}
+
 function migrateSite(site: Site): Site {
-  return {
+  const migrated: Site = {
     ...site,
     theme: { ...DEFAULT_THEME, ...(site.theme || {}) },
+    nav: (site.nav || []).map(migrateNavItem),
+    header: site.header ?? {},
     pages: (site.pages || []).map((p) => ({ ...p, sections: (p.sections || []).map(migrateSection) })),
   };
+  if (!migrated.header!.layout || migrated.header!.layout.length === 0) {
+    migrated.header = { ...migrated.header, layout: defaultHeaderLayout(migrated) };
+  }
+  return migrated;
 }
 
 function readAll(): Site[] {

@@ -6,9 +6,54 @@
  * sections. These primitives give every section a consistent, modern look.
  */
 
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import { ArrowRight } from "lucide-react";
 import type { SiteTheme, SectionCta } from "@/lib/site-storage";
+
+/**
+ * Inline-editable text. In the builder (editable=true) it renders a caret-safe contentEditable
+ * span you edit directly on the canvas; on the published site (editable=false) it renders the
+ * given semantic tag with plain text. Editing updates live via onChange without caret jumps.
+ */
+export function EditableText({
+  value, editable, onChange, as: Tag = "span", className = "", style, placeholder = "",
+}: {
+  value?: string;
+  editable?: boolean;
+  onChange?: (v: string) => void;
+  as?: React.ElementType;
+  className?: string;
+  style?: React.CSSProperties;
+  placeholder?: string;
+}) {
+  const ref = useRef<HTMLSpanElement>(null);
+
+  // Sync DOM text with `value` ONLY when not focused, so typing never resets the caret.
+  useEffect(() => {
+    const el = ref.current;
+    if (el && document.activeElement !== el && el.textContent !== (value ?? "")) {
+      el.textContent = value ?? "";
+    }
+  });
+
+  if (!editable) {
+    return <Tag className={className} style={style}>{value || placeholder}</Tag>;
+  }
+  return (
+    <span
+      ref={ref}
+      contentEditable
+      suppressContentEditableWarning
+      title="Click to edit"
+      data-placeholder={placeholder}
+      onInput={(e) => onChange?.((e.currentTarget.textContent || ""))}
+      onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); (e.currentTarget as HTMLElement).blur(); } }}
+      onClick={(e) => e.stopPropagation()}
+      className={`${className} inline-block outline-none rounded px-1 -mx-1 cursor-text transition-shadow hover:shadow-[0_0_0_2px_rgba(129,140,248,0.55)] focus:shadow-[0_0_0_2px_rgba(99,102,241,0.95)] empty:before:content-[attr(data-placeholder)] empty:before:opacity-40`}
+      style={style}
+    />
+  );
+}
 
 /** Slightly translucent version of a hex colour (for tints/overlays). */
 export function tint(hex: string, alpha: number): string {
@@ -24,43 +69,42 @@ export function Container({ children, className = "" }: { children: React.ReactN
   return <div className={`w-full max-w-6xl mx-auto px-6 sm:px-8 ${className}`}>{children}</div>;
 }
 
-export function Eyebrow({ theme, children }: { theme: SiteTheme; children: React.ReactNode }) {
-  if (!children) return null;
+interface EditableProps { value?: string; editable?: boolean; onChange?: (v: string) => void; }
+
+export function Eyebrow({ theme, value, editable, onChange }: { theme: SiteTheme } & EditableProps) {
+  if (!value && !editable) return null;
   return (
     <span
       className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wide"
       style={{ background: tint(theme.primary, 0.1), color: theme.primary }}
     >
-      {children}
+      <EditableText value={value} editable={editable} onChange={onChange} placeholder="Eyebrow" />
     </span>
   );
 }
 
-export function Heading({ theme, children, className = "" }: { theme: SiteTheme; children: React.ReactNode; className?: string }) {
+export function Heading({ theme, value, editable, onChange, className = "", placeholder = "Heading" }: { theme: SiteTheme; className?: string; placeholder?: string } & EditableProps) {
   return (
-    <h2
-      className={`font-extrabold tracking-tight leading-[1.1] ${className}`}
-      style={{ color: theme.text, fontFamily: theme.headingFont }}
-    >
-      {children}
+    <h2 className={`font-extrabold tracking-tight leading-[1.1] ${className}`} style={{ color: theme.text, fontFamily: theme.headingFont }}>
+      <EditableText value={value} editable={editable} onChange={onChange} placeholder={placeholder} />
     </h2>
   );
 }
 
-export function Lead({ theme, children, className = "" }: { theme: SiteTheme; children: React.ReactNode; className?: string }) {
-  if (!children) return null;
+export function Lead({ theme, value, editable, onChange, className = "" }: { theme: SiteTheme; className?: string } & EditableProps) {
+  if (!value && !editable) return null;
   return (
     <p className={`text-base sm:text-lg leading-relaxed ${className}`} style={{ color: theme.textMuted }}>
-      {children}
+      <EditableText value={value} editable={editable} onChange={onChange} placeholder="Add text" />
     </p>
   );
 }
 
-/** A brand-coloured button. `kind`: solid (primary), ghost (outline), light (on dark bg). */
+/** A brand-coloured button. `kind`: solid (primary), ghost (outline). Label is inline-editable. */
 export function BrandButton({
-  theme, cta, kind = "solid", onDark = false,
-}: { theme: SiteTheme; cta?: SectionCta; kind?: "solid" | "ghost"; onDark?: boolean }) {
-  if (!cta?.label) return null;
+  theme, cta, kind = "solid", onDark = false, editable, onChange,
+}: { theme: SiteTheme; cta?: SectionCta; kind?: "solid" | "ghost"; onDark?: boolean; editable?: boolean; onChange?: (v: string) => void }) {
+  if (!cta?.label && !editable) return null;
   const base = "inline-flex items-center gap-2 px-6 py-3 rounded-full font-semibold text-sm transition-transform hover:-translate-y-0.5";
   let style: React.CSSProperties;
   if (kind === "solid") {
@@ -73,8 +117,8 @@ export function BrandButton({
       : { background: "transparent", color: theme.primary, border: `1.5px solid ${tint(theme.primary, 0.4)}` };
   }
   return (
-    <a href={cta.href || "#"} className={base} style={style}>
-      {cta.label}
+    <a href={cta?.href || "#"} className={base} style={style} onClick={(e) => { if (editable) e.preventDefault(); }}>
+      <EditableText value={cta?.label} editable={editable} onChange={onChange} placeholder="Button" />
       {kind === "solid" && <ArrowRight className="w-4 h-4" />}
     </a>
   );

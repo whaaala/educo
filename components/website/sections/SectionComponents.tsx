@@ -3,23 +3,38 @@
 /**
  * The website section library — modern, responsive, fully brand-driven blocks. Each reads its
  * colours/fonts/radius from the site `theme` (never hardcoded) and its copy from `content`.
- * Reusable in the builder canvas AND the published site via SectionRenderer / SiteRenderer.
+ * Text is INLINE-EDITABLE in the builder (editable=true → contentEditable on the canvas); on the
+ * published site (editable=false) it renders plain. Reusable via SectionRenderer / SiteRenderer.
  */
 
 import React from "react";
-import type { SectionContent, SiteTheme } from "@/lib/site-storage";
+import type { SectionContent, SectionItem, SiteTheme } from "@/lib/site-storage";
 import { resolveIcon } from "./icons";
 import {
-  Container, Eyebrow, Heading, Lead, BrandButton, ImageBox, SectionShell, tint,
+  Container, Eyebrow, Heading, Lead, BrandButton, ImageBox, SectionShell, EditableText, tint,
 } from "./SectionKit";
 
 export interface SectionViewProps {
   content: SectionContent;
   theme: SiteTheme;
   variant?: string;
+  /** When true, text is editable inline on the canvas. */
+  editable?: boolean;
+  /** Patch the section's content (merged). */
+  onChange?: (patch: Partial<SectionContent>) => void;
 }
 
-/* ── Hero ── (3 layouts: split | image-left | centered) */
+/** Helpers to patch content + a specific item. */
+function editors(content: SectionContent, onChange?: (p: Partial<SectionContent>) => void) {
+  const edit = (patch: Partial<SectionContent>) => onChange?.(patch);
+  const editItem = (i: number, patch: Partial<SectionItem>) =>
+    onChange?.({ items: (content.items ?? []).map((it, idx) => (idx === i ? { ...it, ...patch } : it)) });
+  const editCta = (which: "ctaPrimary" | "ctaSecondary", label: string) =>
+    onChange?.({ [which]: { ...(content[which] ?? {}), label } });
+  return { edit, editItem, editCta };
+}
+
+/* ── Hero ── (4 layouts: split | image-left | centered | banner) */
 function TrustRow({ theme }: { theme: SiteTheme }) {
   return (
     <div className="mt-8 flex items-center gap-3">
@@ -56,24 +71,30 @@ function HeroImage({ theme, src, className = "" }: { theme: SiteTheme; src?: str
   );
 }
 
-export function HeroSection({ content, theme, variant = "split" }: SectionViewProps) {
+export function HeroSection({ content, theme, variant = "split", editable, onChange }: SectionViewProps) {
+  const { edit, editCta } = editors(content, onChange);
   const shellStyle = { background: `linear-gradient(160deg, ${tint(theme.primary, 0.08)}, ${theme.background} 60%)` };
 
-  // Banner variant — a bold full-width brand-gradient band with centered white text, no image.
   if (variant === "banner") {
     return (
       <SectionShell style={{ background: `linear-gradient(135deg, ${theme.primary}, ${theme.accent})` }} className="relative overflow-hidden">
         <div className="absolute -top-16 -right-10 w-80 h-80 rounded-full blur-3xl" style={{ background: tint("#ffffff", 0.12) }} aria-hidden="true" />
         <Container className="relative text-center">
           <div className="max-w-3xl mx-auto">
-            {content.eyebrow && (
-              <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold" style={{ background: tint("#ffffff", 0.18), color: "#ffffff" }}>{content.eyebrow}</span>
+            {(content.eyebrow || editable) && (
+              <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold" style={{ background: tint("#ffffff", 0.18), color: "#ffffff" }}>
+                <EditableText value={content.eyebrow} editable={editable} onChange={(v) => edit({ eyebrow: v })} placeholder="Eyebrow" />
+              </span>
             )}
-            <h2 className="mt-4 text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-[1.05] text-white" style={{ fontFamily: theme.headingFont }}>{content.heading}</h2>
-            <p className="mt-5 mx-auto max-w-xl text-base sm:text-lg" style={{ color: tint("#ffffff", 0.9) }}>{content.subheading}</p>
+            <h2 className="mt-4 text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-[1.05] text-white" style={{ fontFamily: theme.headingFont }}>
+              <EditableText value={content.heading} editable={editable} onChange={(v) => edit({ heading: v })} placeholder="Heading" />
+            </h2>
+            <p className="mt-5 mx-auto max-w-xl text-base sm:text-lg" style={{ color: tint("#ffffff", 0.9) }}>
+              <EditableText value={content.subheading} editable={editable} onChange={(v) => edit({ subheading: v })} placeholder="Add text" />
+            </p>
             <div className="mt-8 flex flex-wrap gap-3 justify-center">
-              <BrandButton theme={theme} cta={content.ctaPrimary} kind="solid" onDark />
-              <BrandButton theme={theme} cta={content.ctaSecondary} kind="ghost" onDark />
+              <BrandButton theme={theme} cta={content.ctaPrimary} kind="solid" onDark editable={editable} onChange={(v) => editCta("ctaPrimary", v)} />
+              <BrandButton theme={theme} cta={content.ctaSecondary} kind="ghost" onDark editable={editable} onChange={(v) => editCta("ctaSecondary", v)} />
             </div>
           </div>
         </Container>
@@ -81,18 +102,17 @@ export function HeroSection({ content, theme, variant = "split" }: SectionViewPr
     );
   }
 
-  // Centered variant — big centered headline over a wide image band.
   if (variant === "centered") {
     return (
       <SectionShell style={shellStyle}>
         <Container className="text-center">
           <div className="max-w-3xl mx-auto">
-            <Eyebrow theme={theme}>{content.eyebrow}</Eyebrow>
-            <Heading theme={theme} className="mt-4 text-4xl sm:text-5xl lg:text-6xl">{content.heading}</Heading>
-            <Lead theme={theme} className="mt-5 mx-auto max-w-xl">{content.subheading}</Lead>
+            <Eyebrow theme={theme} value={content.eyebrow} editable={editable} onChange={(v) => edit({ eyebrow: v })} />
+            <Heading theme={theme} value={content.heading} editable={editable} onChange={(v) => edit({ heading: v })} className="mt-4 text-4xl sm:text-5xl lg:text-6xl" />
+            <Lead theme={theme} value={content.subheading} editable={editable} onChange={(v) => edit({ subheading: v })} className="mt-5 mx-auto max-w-xl" />
             <div className="mt-8 flex flex-wrap gap-3 justify-center">
-              <BrandButton theme={theme} cta={content.ctaPrimary} kind="solid" />
-              <BrandButton theme={theme} cta={content.ctaSecondary} kind="ghost" />
+              <BrandButton theme={theme} cta={content.ctaPrimary} kind="solid" editable={editable} onChange={(v) => editCta("ctaPrimary", v)} />
+              <BrandButton theme={theme} cta={content.ctaSecondary} kind="ghost" editable={editable} onChange={(v) => editCta("ctaSecondary", v)} />
             </div>
           </div>
           <div className="mt-12 relative aspect-[16/7] w-full shadow-2xl overflow-hidden" style={{ borderRadius: theme.radius * 1.5 }}>
@@ -103,19 +123,17 @@ export function HeroSection({ content, theme, variant = "split" }: SectionViewPr
     );
   }
 
-  // Split & image-left share the two-column layout; image-left puts the image on the left (desktop),
-  // while keeping the text first on mobile for readability.
   const imageFirst = variant === "image-left";
   return (
     <SectionShell style={shellStyle}>
       <Container className="grid lg:grid-cols-2 gap-10 lg:gap-14 items-center">
         <div className={imageFirst ? "lg:order-2" : ""}>
-          <Eyebrow theme={theme}>{content.eyebrow}</Eyebrow>
-          <Heading theme={theme} className="mt-4 text-4xl sm:text-5xl lg:text-6xl">{content.heading}</Heading>
-          <Lead theme={theme} className="mt-5 max-w-xl">{content.subheading}</Lead>
+          <Eyebrow theme={theme} value={content.eyebrow} editable={editable} onChange={(v) => edit({ eyebrow: v })} />
+          <Heading theme={theme} value={content.heading} editable={editable} onChange={(v) => edit({ heading: v })} className="mt-4 text-4xl sm:text-5xl lg:text-6xl" />
+          <Lead theme={theme} value={content.subheading} editable={editable} onChange={(v) => edit({ subheading: v })} className="mt-5 max-w-xl" />
           <div className="mt-8 flex flex-wrap gap-3">
-            <BrandButton theme={theme} cta={content.ctaPrimary} kind="solid" />
-            <BrandButton theme={theme} cta={content.ctaSecondary} kind="ghost" />
+            <BrandButton theme={theme} cta={content.ctaPrimary} kind="solid" editable={editable} onChange={(v) => editCta("ctaPrimary", v)} />
+            <BrandButton theme={theme} cta={content.ctaSecondary} kind="ghost" editable={editable} onChange={(v) => editCta("ctaSecondary", v)} />
           </div>
           <TrustRow theme={theme} />
         </div>
@@ -128,7 +146,8 @@ export function HeroSection({ content, theme, variant = "split" }: SectionViewPr
 }
 
 /* ── About ── */
-export function AboutSection({ content, theme }: SectionViewProps) {
+export function AboutSection({ content, theme, editable, onChange }: SectionViewProps) {
+  const { edit, editCta } = editors(content, onChange);
   return (
     <SectionShell style={{ background: theme.background }}>
       <Container className="grid lg:grid-cols-2 gap-10 lg:gap-14 items-center">
@@ -138,10 +157,10 @@ export function AboutSection({ content, theme }: SectionViewProps) {
           </div>
         </div>
         <div>
-          <Eyebrow theme={theme}>{content.eyebrow}</Eyebrow>
-          <Heading theme={theme} className="mt-4 text-3xl sm:text-4xl">{content.heading}</Heading>
-          <Lead theme={theme} className="mt-5">{content.body}</Lead>
-          <div className="mt-7"><BrandButton theme={theme} cta={content.ctaPrimary} kind="solid" /></div>
+          <Eyebrow theme={theme} value={content.eyebrow} editable={editable} onChange={(v) => edit({ eyebrow: v })} />
+          <Heading theme={theme} value={content.heading} editable={editable} onChange={(v) => edit({ heading: v })} className="mt-4 text-3xl sm:text-4xl" />
+          <Lead theme={theme} value={content.body} editable={editable} onChange={(v) => edit({ body: v })} className="mt-5" />
+          <div className="mt-7"><BrandButton theme={theme} cta={content.ctaPrimary} kind="solid" editable={editable} onChange={(v) => editCta("ctaPrimary", v)} /></div>
         </div>
       </Container>
     </SectionShell>
@@ -149,30 +168,31 @@ export function AboutSection({ content, theme }: SectionViewProps) {
 }
 
 /* ── Features / Programs ── */
-export function FeaturesSection({ content, theme }: SectionViewProps) {
+export function FeaturesSection({ content, theme, editable, onChange }: SectionViewProps) {
+  const { edit, editItem } = editors(content, onChange);
   const items = content.items ?? [];
   return (
     <SectionShell style={{ background: theme.surface }}>
       <Container>
         <div className="text-center max-w-2xl mx-auto">
-          <Eyebrow theme={theme}>{content.eyebrow}</Eyebrow>
-          <Heading theme={theme} className="mt-4 text-3xl sm:text-4xl">{content.heading}</Heading>
-          <Lead theme={theme} className="mt-4">{content.subheading}</Lead>
+          <Eyebrow theme={theme} value={content.eyebrow} editable={editable} onChange={(v) => edit({ eyebrow: v })} />
+          <Heading theme={theme} value={content.heading} editable={editable} onChange={(v) => edit({ heading: v })} className="mt-4 text-3xl sm:text-4xl" />
+          <Lead theme={theme} value={content.subheading} editable={editable} onChange={(v) => edit({ subheading: v })} className="mt-4" />
         </div>
         <div className="mt-12 grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {items.map((it, i) => {
             const Icon = resolveIcon(it.icon);
             return (
-              <div
-                key={i}
-                className="p-6 transition-transform hover:-translate-y-1"
-                style={{ background: theme.background, borderRadius: theme.radius, boxShadow: `0 10px 30px -18px ${tint(theme.text, 0.35)}`, border: `1px solid ${tint(theme.text, 0.06)}` }}
-              >
+              <div key={i} className="p-6 transition-transform hover:-translate-y-1" style={{ background: theme.background, borderRadius: theme.radius, boxShadow: `0 10px 30px -18px ${tint(theme.text, 0.35)}`, border: `1px solid ${tint(theme.text, 0.06)}` }}>
                 <span className="inline-flex w-12 h-12 rounded-2xl items-center justify-center" style={{ background: tint(theme.primary, 0.12), color: theme.primary }}>
                   <Icon className="w-6 h-6" />
                 </span>
-                <h3 className="mt-4 text-lg font-bold" style={{ color: theme.text, fontFamily: theme.headingFont }}>{it.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed" style={{ color: theme.textMuted }}>{it.body}</p>
+                <h3 className="mt-4 text-lg font-bold" style={{ color: theme.text, fontFamily: theme.headingFont }}>
+                  <EditableText value={it.title} editable={editable} onChange={(v) => editItem(i, { title: v })} placeholder="Title" />
+                </h3>
+                <p className="mt-2 text-sm leading-relaxed" style={{ color: theme.textMuted }}>
+                  <EditableText value={it.body} editable={editable} onChange={(v) => editItem(i, { body: v })} placeholder="Description" />
+                </p>
               </div>
             );
           })}
@@ -183,19 +203,21 @@ export function FeaturesSection({ content, theme }: SectionViewProps) {
 }
 
 /* ── Stats ── */
-export function StatsSection({ content, theme }: SectionViewProps) {
+export function StatsSection({ content, theme, editable, onChange }: SectionViewProps) {
+  const { editItem } = editors(content, onChange);
   const items = content.items ?? [];
   return (
     <SectionShell className="!py-14" style={{ background: theme.background }}>
       <Container>
-        <div
-          className="grid grid-cols-2 lg:grid-cols-4 gap-8 p-10 text-center"
-          style={{ background: `linear-gradient(135deg, ${theme.primary}, ${theme.accent})`, borderRadius: theme.radius * 1.5 }}
-        >
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 p-10 text-center" style={{ background: `linear-gradient(135deg, ${theme.primary}, ${theme.accent})`, borderRadius: theme.radius * 1.5 }}>
           {items.map((it, i) => (
             <div key={i}>
-              <div className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white" style={{ fontFamily: theme.headingFont }}>{it.value}</div>
-              <div className="mt-1 text-sm font-medium" style={{ color: tint("#ffffff", 0.8) }}>{it.title}</div>
+              <div className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white" style={{ fontFamily: theme.headingFont }}>
+                <EditableText value={it.value} editable={editable} onChange={(v) => editItem(i, { value: v })} placeholder="0" />
+              </div>
+              <div className="mt-1 text-sm font-medium" style={{ color: tint("#ffffff", 0.8) }}>
+                <EditableText value={it.title} editable={editable} onChange={(v) => editItem(i, { title: v })} placeholder="Label" />
+              </div>
             </div>
           ))}
         </div>
@@ -205,14 +227,15 @@ export function StatsSection({ content, theme }: SectionViewProps) {
 }
 
 /* ── Gallery ── */
-export function GallerySection({ content, theme }: SectionViewProps) {
+export function GallerySection({ content, theme, editable, onChange }: SectionViewProps) {
+  const { edit } = editors(content, onChange);
   const items = content.items ?? [];
   return (
     <SectionShell style={{ background: theme.background }}>
       <Container>
         <div className="text-center max-w-2xl mx-auto">
-          <Eyebrow theme={theme}>{content.eyebrow}</Eyebrow>
-          <Heading theme={theme} className="mt-4 text-3xl sm:text-4xl">{content.heading}</Heading>
+          <Eyebrow theme={theme} value={content.eyebrow} editable={editable} onChange={(v) => edit({ eyebrow: v })} />
+          <Heading theme={theme} value={content.heading} editable={editable} onChange={(v) => edit({ heading: v })} className="mt-4 text-3xl sm:text-4xl" />
         </div>
         <div className="mt-10 grid grid-cols-2 lg:grid-cols-3 gap-4">
           {items.map((it, i) => (
@@ -227,28 +250,35 @@ export function GallerySection({ content, theme }: SectionViewProps) {
 }
 
 /* ── Testimonials ── */
-export function TestimonialsSection({ content, theme }: SectionViewProps) {
+export function TestimonialsSection({ content, theme, editable, onChange }: SectionViewProps) {
+  const { edit, editItem } = editors(content, onChange);
   const items = content.items ?? [];
   const QuoteIcon = resolveIcon("Quote");
   return (
     <SectionShell style={{ background: theme.surface }}>
       <Container>
         <div className="text-center max-w-2xl mx-auto">
-          <Eyebrow theme={theme}>{content.eyebrow}</Eyebrow>
-          <Heading theme={theme} className="mt-4 text-3xl sm:text-4xl">{content.heading}</Heading>
+          <Eyebrow theme={theme} value={content.eyebrow} editable={editable} onChange={(v) => edit({ eyebrow: v })} />
+          <Heading theme={theme} value={content.heading} editable={editable} onChange={(v) => edit({ heading: v })} className="mt-4 text-3xl sm:text-4xl" />
         </div>
         <div className="mt-12 grid md:grid-cols-3 gap-5">
           {items.map((it, i) => (
             <div key={i} className="p-6 flex flex-col" style={{ background: theme.background, borderRadius: theme.radius, boxShadow: `0 10px 30px -18px ${tint(theme.text, 0.35)}` }}>
               <QuoteIcon className="w-8 h-8" style={{ color: tint(theme.primary, 0.5) }} />
-              <p className="mt-3 flex-1 text-[15px] leading-relaxed" style={{ color: theme.text }}>{it.body}</p>
+              <p className="mt-3 flex-1 text-[15px] leading-relaxed" style={{ color: theme.text }}>
+                <EditableText value={it.body} editable={editable} onChange={(v) => editItem(i, { body: v })} placeholder="Quote" />
+              </p>
               <div className="mt-5 flex items-center gap-3">
                 <span className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold" style={{ background: `linear-gradient(135deg, ${theme.primary}, ${theme.accent})` }}>
                   {(it.title || "?").charAt(0)}
                 </span>
                 <div>
-                  <div className="text-sm font-semibold" style={{ color: theme.text }}>{it.title}</div>
-                  <div className="text-xs" style={{ color: theme.textMuted }}>{it.subtitle}</div>
+                  <div className="text-sm font-semibold" style={{ color: theme.text }}>
+                    <EditableText value={it.title} editable={editable} onChange={(v) => editItem(i, { title: v })} placeholder="Name" />
+                  </div>
+                  <div className="text-xs" style={{ color: theme.textMuted }}>
+                    <EditableText value={it.subtitle} editable={editable} onChange={(v) => editItem(i, { subtitle: v })} placeholder="Role" />
+                  </div>
                 </div>
               </div>
             </div>
@@ -260,17 +290,22 @@ export function TestimonialsSection({ content, theme }: SectionViewProps) {
 }
 
 /* ── CTA ── */
-export function CtaSection({ content, theme }: SectionViewProps) {
+export function CtaSection({ content, theme, editable, onChange }: SectionViewProps) {
+  const { edit, editCta } = editors(content, onChange);
   return (
     <SectionShell style={{ background: theme.background }}>
       <Container>
         <div className="relative overflow-hidden text-center px-6 py-14 sm:py-16" style={{ background: `linear-gradient(135deg, ${theme.primary}, ${theme.accent})`, borderRadius: theme.radius * 1.5 }}>
           <div className="absolute -top-10 -right-8 w-48 h-48 rounded-full blur-3xl" style={{ background: tint("#ffffff", 0.15) }} aria-hidden="true" />
-          <h2 className="relative text-3xl sm:text-4xl font-extrabold text-white" style={{ fontFamily: theme.headingFont }}>{content.heading}</h2>
-          <p className="relative mt-3 max-w-xl mx-auto" style={{ color: tint("#ffffff", 0.85) }}>{content.subheading}</p>
+          <h2 className="relative text-3xl sm:text-4xl font-extrabold text-white" style={{ fontFamily: theme.headingFont }}>
+            <EditableText value={content.heading} editable={editable} onChange={(v) => edit({ heading: v })} placeholder="Heading" />
+          </h2>
+          <p className="relative mt-3 max-w-xl mx-auto" style={{ color: tint("#ffffff", 0.85) }}>
+            <EditableText value={content.subheading} editable={editable} onChange={(v) => edit({ subheading: v })} placeholder="Add text" />
+          </p>
           <div className="relative mt-8 flex flex-wrap gap-3 justify-center">
-            <BrandButton theme={theme} cta={content.ctaPrimary} kind="solid" onDark />
-            <BrandButton theme={theme} cta={content.ctaSecondary} kind="ghost" onDark />
+            <BrandButton theme={theme} cta={content.ctaPrimary} kind="solid" onDark editable={editable} onChange={(v) => editCta("ctaPrimary", v)} />
+            <BrandButton theme={theme} cta={content.ctaSecondary} kind="ghost" onDark editable={editable} onChange={(v) => editCta("ctaSecondary", v)} />
           </div>
         </div>
       </Container>
@@ -279,15 +314,16 @@ export function CtaSection({ content, theme }: SectionViewProps) {
 }
 
 /* ── Contact ── */
-export function ContactSection({ content, theme }: SectionViewProps) {
+export function ContactSection({ content, theme, editable, onChange }: SectionViewProps) {
+  const { edit, editItem } = editors(content, onChange);
   const items = content.items ?? [];
   return (
     <SectionShell style={{ background: theme.surface }}>
       <Container className="grid lg:grid-cols-2 gap-10 lg:gap-14">
         <div>
-          <Eyebrow theme={theme}>{content.eyebrow}</Eyebrow>
-          <Heading theme={theme} className="mt-4 text-3xl sm:text-4xl">{content.heading}</Heading>
-          <Lead theme={theme} className="mt-4">{content.body}</Lead>
+          <Eyebrow theme={theme} value={content.eyebrow} editable={editable} onChange={(v) => edit({ eyebrow: v })} />
+          <Heading theme={theme} value={content.heading} editable={editable} onChange={(v) => edit({ heading: v })} className="mt-4 text-3xl sm:text-4xl" />
+          <Lead theme={theme} value={content.body} editable={editable} onChange={(v) => edit({ body: v })} className="mt-4" />
           <div className="mt-8 space-y-4">
             {items.map((it, i) => {
               const Icon = resolveIcon(it.icon);
@@ -297,8 +333,12 @@ export function ContactSection({ content, theme }: SectionViewProps) {
                     <Icon className="w-5 h-5" />
                   </span>
                   <div>
-                    <div className="text-sm font-semibold" style={{ color: theme.text }}>{it.title}</div>
-                    <div className="text-sm" style={{ color: theme.textMuted }}>{it.body}</div>
+                    <div className="text-sm font-semibold" style={{ color: theme.text }}>
+                      <EditableText value={it.title} editable={editable} onChange={(v) => editItem(i, { title: v })} placeholder="Label" />
+                    </div>
+                    <div className="text-sm" style={{ color: theme.textMuted }}>
+                      <EditableText value={it.body} editable={editable} onChange={(v) => editItem(i, { body: v })} placeholder="Detail" />
+                    </div>
                   </div>
                 </div>
               );
@@ -326,12 +366,13 @@ export function ContactSection({ content, theme }: SectionViewProps) {
 }
 
 /* ── Custom / blank ── */
-export function CustomSection({ content, theme }: SectionViewProps) {
+export function CustomSection({ content, theme, editable, onChange }: SectionViewProps) {
+  const { edit } = editors(content, onChange);
   return (
     <SectionShell style={{ background: theme.background }}>
       <Container className="text-center">
-        <Heading theme={theme} className="text-2xl sm:text-3xl">{content.heading}</Heading>
-        <Lead theme={theme} className="mt-3 max-w-xl mx-auto">{content.body}</Lead>
+        <Heading theme={theme} value={content.heading} editable={editable} onChange={(v) => edit({ heading: v })} className="text-2xl sm:text-3xl" />
+        <Lead theme={theme} value={content.body} editable={editable} onChange={(v) => edit({ body: v })} className="mt-3 max-w-xl mx-auto" />
       </Container>
     </SectionShell>
   );

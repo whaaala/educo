@@ -7,12 +7,17 @@
  */
 
 import React from "react";
-import { Menu } from "lucide-react";
 import type { Site, Page, SiteTheme } from "@/lib/site-storage";
 import SectionRenderer from "./SectionRenderer";
-import { Container, tint } from "./SectionKit";
+import { Container, tint, EditableText } from "./SectionKit";
+import { HeaderMenu, MobileMenu, navItemHref } from "./Menu";
 
-export function SiteNav({ site, theme }: { site: Site; theme: SiteTheme }) {
+export function SiteNav({ site, theme, editable, onEditName, onEditCta }: {
+  site: Site; theme: SiteTheme; editable?: boolean; onEditName?: (v: string) => void; onEditCta?: (v: string) => void;
+}) {
+  const header = site.header ?? {};
+  const ctaLabel = header.ctaLabel ?? "Apply now";
+  const showCta = header.showCta !== false;
   return (
     <header
       className="sticky top-0 z-20 backdrop-blur-md"
@@ -20,19 +25,26 @@ export function SiteNav({ site, theme }: { site: Site; theme: SiteTheme }) {
     >
       <Container className="h-16 flex items-center">
         <div className="flex items-center gap-2">
-          <span className="w-9 h-9 rounded-xl flex items-center justify-center text-white font-bold" style={{ background: `linear-gradient(135deg, ${theme.primary}, ${theme.accent})` }}>
-            {(site.name || "S").charAt(0)}
+          {header.logoUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={header.logoUrl} alt={`${site.name} logo`} className="w-9 h-9 rounded-xl object-contain bg-white" />
+          ) : (
+            <span className="w-9 h-9 rounded-xl flex items-center justify-center text-white font-bold" style={{ background: `linear-gradient(135deg, ${theme.primary}, ${theme.accent})` }}>
+              {(site.name || "S").charAt(0)}
+            </span>
+          )}
+          <span className="font-bold" style={{ color: theme.text, fontFamily: theme.headingFont }}>
+            <EditableText value={site.name} editable={editable} onChange={onEditName} placeholder="Site name" />
           </span>
-          <span className="font-bold" style={{ color: theme.text, fontFamily: theme.headingFont }}>{site.name}</span>
         </div>
-        <nav className="hidden md:flex items-center gap-7 mx-auto">
-          {site.nav.map((n) => (
-            <a key={n.pageId} href="#" className="text-sm font-medium transition-colors hover:opacity-70" style={{ color: theme.textMuted }}>{n.label}</a>
-          ))}
-        </nav>
+        <HeaderMenu items={site.nav} theme={theme} />
         <div className="ml-auto md:ml-0 flex items-center gap-3">
-          <a href="#" className="hidden sm:inline-flex px-5 py-2 rounded-full text-sm font-semibold text-white" style={{ background: theme.primary }}>Apply now</a>
-          <button className="md:hidden p-2 rounded-lg" style={{ color: theme.text }} aria-label="Menu"><Menu className="w-5 h-5" /></button>
+          {showCta && (
+            <a href={header.ctaHref || "#"} onClick={(e) => { if (editable) e.preventDefault(); }} className="hidden sm:inline-flex px-5 py-2 rounded-full text-sm font-semibold text-white" style={{ background: theme.primary }}>
+              <EditableText value={ctaLabel} editable={editable} onChange={onEditCta} placeholder="Button" />
+            </a>
+          )}
+          <MobileMenu items={site.nav} theme={theme} />
         </div>
       </Container>
     </header>
@@ -59,7 +71,7 @@ export function SiteFooter({ site, theme }: { site: Site; theme: SiteTheme }) {
           <div>
             <div className="font-semibold text-sm mb-3" style={{ color: theme.text }}>Pages</div>
             <ul className="space-y-2 text-sm">
-              {site.nav.map((n) => <li key={n.pageId}><a href="#" className="transition-opacity hover:opacity-70">{n.label}</a></li>)}
+              {site.nav.map((n) => <li key={n.id}><a href={navItemHref(n)} className="transition-opacity hover:opacity-70">{n.label}</a></li>)}
             </ul>
           </div>
           <div>

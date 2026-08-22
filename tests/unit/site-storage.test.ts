@@ -5,6 +5,9 @@ import {
   createSection,
   createPage,
   createSiteFromTemplate,
+  createPageFromTemplate,
+  PAGE_TEMPLATES,
+  slugify,
   SITE_TEMPLATES,
   resolveSiteTheme,
   APP_THEME_BASE,
@@ -81,7 +84,8 @@ describe("site-storage — site factory", () => {
     expect(home.isHome).toBe(true);
     expect(home.sections.map((s) => s.type)).toEqual(["hero", "features", "stats", "cta"]);
     expect(site.theme).toEqual(DEFAULT_THEME);
-    expect(site.nav).toEqual([{ pageId: home.id, label: "Home" }]);
+    expect(site.nav).toHaveLength(1);
+    expect(site.nav[0]).toMatchObject({ type: "page", pageId: home.id, label: "Home" });
     expect(new Date(site.createdAt).toISOString()).toBe(site.createdAt);
   });
 
@@ -115,6 +119,27 @@ describe("site-storage — templates", () => {
   it("siteStorage.createFromTemplate persists", () => {
     const site = siteStorage.createFromTemplate("Persisted", "showcase");
     expect(siteStorage.get(site.id)?.pages[0].sections.map((s) => s.type)).toEqual(["hero", "gallery", "testimonials", "cta"]);
+  });
+});
+
+describe("site-storage — page templates + slug", () => {
+  it("slugify turns a name into a path", () => {
+    expect(slugify("About Us")).toBe("/about-us");
+    expect(slugify("  Programs & Fees! ")).toBe("/programs-fees");
+    expect(slugify("")).toBe("/page");
+  });
+
+  it("each page template builds a page with its declared sections + hero variant", () => {
+    for (const tpl of PAGE_TEMPLATES) {
+      const page = createPageFromTemplate(tpl.name, slugify(tpl.name), tpl.key);
+      expect(page.sections.map((s) => s.type)).toEqual(tpl.sections);
+      const hero = page.sections.find((s) => s.type === "hero");
+      if (hero && tpl.heroVariant) expect(hero.variant).toBe(tpl.heroVariant);
+    }
+  });
+
+  it("blank page template has no sections", () => {
+    expect(createPageFromTemplate("Blank", "/blank", "blank").sections).toEqual([]);
   });
 });
 
@@ -215,6 +240,22 @@ describe("site-storage — persistence (localStorage CRUD)", () => {
     // Missing theme tokens are backfilled from defaults.
     expect(site.theme.headingFont).toBe(DEFAULT_THEME.headingFont);
     expect(site.theme.primary).toBe("#111111");
+  });
+
+  it("migrates legacy flat nav items to typed NavItems", () => {
+    const legacy = {
+      id: "s-nav", name: "L", theme: { primary: "#111" }, nav: [{ pageId: "p1", label: "Home" }],
+      createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
+      pages: [{ id: "p1", name: "Home", path: "/", isHome: true, sections: [] }],
+    };
+    localStorage.setItem("educo_sites", JSON.stringify([legacy]));
+    const site = siteStorage.get("s-nav")!;
+    expect(site.nav[0].type).toBe("page");
+    expect(site.nav[0].id).toBeTruthy();
+    expect(site.nav[0].pageId).toBe("p1");
+    expect(site.nav[0].label).toBe("Home");
+    // header gets a default freeform layout (logo, name, nav, button) on load
+    expect(site.header?.layout?.map((e) => e.type)).toEqual(["logo", "text", "nav", "button"]);
   });
 
   it("list() sorts most-recently-updated first", async () => {

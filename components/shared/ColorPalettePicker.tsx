@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { Check } from "lucide-react";
 
 // ─── Shared Color Palettes ──────────────────────────────────────────────
@@ -546,6 +547,9 @@ interface ColorPickerPopoverProps {
   label?: string;
   /** Popover width */
   width?: number;
+  /** Render the dropdown in a portal (position: fixed) so it never clips inside a scrolling
+   *  container. Opt-in — existing usages keep the default absolute positioning. */
+  portal?: boolean;
 }
 
 /**
@@ -564,10 +568,12 @@ export function ColorPickerPopover({
   align = "left",
   label,
   width = 200,
+  portal = false,
 }: ColorPickerPopoverProps) {
   const [isOpen, setIsOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const idRef = useRef(`cpicker-${Math.random().toString(36).slice(2)}`);
+  const [portalPos, setPortalPos] = useState<{ top: number; left: number } | null>(null);
 
   // Close when another dropdown/popover opens (shared event with CustomDropdown)
   useEffect(() => {
@@ -587,8 +593,10 @@ export function ColorPickerPopover({
       // Don't close if any input[type=color] in the document is focused
       const activeEl = document.activeElement as HTMLInputElement | null;
       if (activeEl?.type === "color") return;
-      // Don't close if click target is inside the popover
-      if (ref.current && !ref.current.contains(e.target as Node)) {
+      // Don't close if click target is inside the trigger wrapper or the (possibly portalled) popover
+      const inTrigger = ref.current?.contains(e.target as Node);
+      const inPopover = popoverRef.current?.contains(e.target as Node);
+      if (!inTrigger && !inPopover) {
         setIsOpen(false);
       }
     };
@@ -609,14 +617,79 @@ export function ColorPickerPopover({
   const popoverRef = useRef<HTMLDivElement>(null);
   const [openAbove, setOpenAbove] = useState(false);
 
-  // Check if popover would overflow viewport bottom, flip above if needed
+  // Check if popover would overflow viewport bottom, flip above if needed. When portalled, also
+  // compute fixed viewport coordinates from the trigger rect.
   useEffect(() => {
     if (!isOpen || !ref.current) return;
     const triggerRect = ref.current.getBoundingClientRect();
     const spaceBelow = window.innerHeight - triggerRect.bottom - 16; // 16px margin
     const estimatedHeight = mode === "matrix" ? 380 : 300;
-    setOpenAbove(spaceBelow < estimatedHeight && triggerRect.top > estimatedHeight);
-  }, [isOpen, mode]);
+    const above = spaceBelow < estimatedHeight && triggerRect.top > estimatedHeight;
+    setOpenAbove(above);
+    if (portal) {
+      const left = align === "right"
+        ? Math.max(8, triggerRect.right - width)
+        : Math.min(triggerRect.left, window.innerWidth - width - 8);
+      const top = above ? Math.max(8, triggerRect.top - estimatedHeight - 4) : triggerRect.bottom + 4;
+      setPortalPos({ top, left });
+    }
+  }, [isOpen, mode, portal, align, width]);
+
+  const popoverInner = (
+    <>
+      {label && (
+        <div className="text-[9px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-600 midnight:text-cyan-500/40 purple:text-pink-500/40 mb-1.5">
+          {label}
+        </div>
+      )}
+      {mode === "both" ? (
+        <TabbedColorPalette
+          selectedColor={selectedColor}
+          onSelect={handleSelect}
+          solidColors={solidColors}
+          gradientColors={gradientColors}
+          columns={columns}
+        />
+      ) : mode === "text" ? (
+        <ColorGrid
+          colors={textColors}
+          selectedColor={selectedColor}
+          onSelect={handleSelect}
+          columns={5}
+        />
+      ) : mode === "matrix" ? (
+        <FullColorPicker
+          selectedColor={selectedColor}
+          onSelect={handleSelect}
+          onCustomSelect={handleCustomSelect}
+          showGradients
+          gradientColors={gradientColors}
+          glossyColors={GLOSSY_COLORS}
+        />
+      ) : (
+        <ColorGrid
+          colors={mode === "solid" ? solidColors : gradientColors}
+          selectedColor={selectedColor}
+          onSelect={handleSelect}
+          columns={columns}
+        />
+      )}
+    </>
+  );
+
+  const popoverBody = (
+    <div
+      ref={popoverRef}
+      className={
+        portal
+          ? "fixed z-[10003] p-2.5 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/25 purple:border-pink-500/25 rounded-xl shadow-2xl max-h-[min(420px,calc(100vh-100px))] overflow-y-auto"
+          : `absolute ${align === "right" ? "right-0" : "left-0"} ${openAbove ? "bottom-full mb-1" : "top-full mt-1"} z-[10003] p-2.5 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/25 purple:border-pink-500/25 rounded-xl shadow-2xl max-h-[min(420px,calc(100vh-100px))] overflow-y-auto`
+      }
+      style={portal ? { width, top: portalPos?.top ?? -9999, left: portalPos?.left ?? -9999 } : { width }}
+    >
+      {popoverInner}
+    </div>
+  );
 
   return (
     <div className="relative" ref={ref}>
@@ -625,51 +698,7 @@ export function ColorPickerPopover({
         if (opening) window.dispatchEvent(new CustomEvent("dropdown-open", { detail: idRef.current }));
         setIsOpen(opening);
       }}>{children}</div>
-      {isOpen && (
-        <div
-          ref={popoverRef}
-          className={`absolute ${align === "right" ? "right-0" : "left-0"} ${openAbove ? "bottom-full mb-1" : "top-full mt-1"} z-[10003] p-2.5 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/25 purple:border-pink-500/25 rounded-xl shadow-2xl max-h-[min(420px,calc(100vh-100px))] overflow-y-auto`}
-          style={{ width }}
-        >
-          {label && (
-            <div className="text-[9px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-600 midnight:text-cyan-500/40 purple:text-pink-500/40 mb-1.5">
-              {label}
-            </div>
-          )}
-          {mode === "both" ? (
-            <TabbedColorPalette
-              selectedColor={selectedColor}
-              onSelect={handleSelect}
-              solidColors={solidColors}
-              gradientColors={gradientColors}
-              columns={columns}
-            />
-          ) : mode === "text" ? (
-            <ColorGrid
-              colors={textColors}
-              selectedColor={selectedColor}
-              onSelect={handleSelect}
-              columns={5}
-            />
-          ) : mode === "matrix" ? (
-            <FullColorPicker
-              selectedColor={selectedColor}
-              onSelect={handleSelect}
-              onCustomSelect={handleCustomSelect}
-              showGradients
-              gradientColors={gradientColors}
-              glossyColors={GLOSSY_COLORS}
-            />
-          ) : (
-            <ColorGrid
-              colors={mode === "solid" ? solidColors : gradientColors}
-              selectedColor={selectedColor}
-              onSelect={handleSelect}
-              columns={columns}
-            />
-          )}
-        </div>
-      )}
+      {isOpen && (portal ? createPortal(popoverBody, document.body) : popoverBody)}
     </div>
   );
 }
