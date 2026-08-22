@@ -62,7 +62,7 @@ export default function PresentationEditorPage() {
 
   if (!pres || !ready) {
     return (
-      <MainLayout>
+      <MainLayout immersive>
         <div className="-mt-4 -mx-4 lg:-mt-6 lg:-mx-8 -mb-4 lg:-mb-6 h-[calc(100vh-64px)] flex items-center justify-center">
           <div className="text-gray-400 text-[13px]">Loading presentation...</div>
         </div>
@@ -71,7 +71,7 @@ export default function PresentationEditorPage() {
   }
 
   return (
-    <MainLayout>
+    <MainLayout immersive>
       <div className="-mt-4 -mx-4 lg:-mt-6 lg:-mx-8 -mb-4 lg:-mb-6 h-[calc(100vh-64px)] print:!m-0 print:!h-auto print:!overflow-visible">
         <SlideEditor value={pres} onChange={handleChange} />
       </div>

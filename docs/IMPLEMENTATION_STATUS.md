@@ -4,7 +4,13 @@
 
 This document tracks the implementation progress of Educo v7.0 features aligned with the PRD.
 
-**Last Updated:** February 2026
+**Last Updated:** 2026-07-15
+
+> **What changed since Feb 2026:** The presentation/LMS editing surface was deepened into a
+> reusable, well-tested system, and automated testing went from **0 → ~2,048 tests** — but ONLY
+> for the shared/editor/LMS/communication layer. The **ERP business-module pages** (student, staff,
+> teacher, finance, class, discipline, leave, payroll) still have **0 tests**, and **backend, auth,
+> database, payments, and CI/CD remain 0%**. Numbers below reflect a 2026-07-15 codebase scan.
 
 ---
 
@@ -18,43 +24,53 @@ This document tracks the implementation progress of Educo v7.0 features aligned 
 | Staff & HR Management | 80% | 0% | 0% |
 | Teacher Management | 75% | 0% | 0% |
 | Class/Course Management | 70% | 0% | 0% |
-| Attendance Management | 60% | 0% | 0% |
-| Academics & LMS | 45% | 0% | 0% |
+| Attendance Management | 60% | 0% | ~10% |
+| Academics & LMS (editors) | 70% | 0% | **Strong** |
 | Finance & Accounts | 30% | 0% | 0% |
-| Communication Suite | 15% | 0% | 0% |
+| Communication Suite | 15% | 0% | Partial |
 | Library/Hostel/Transport | 5% | 0% | 0% |
 | Reports & Analytics | 20% | 0% | 0% |
 | Transcripts & Certification | 70% | 0% | 0% |
 | Admissions | 0% | 0% | 0% |
 | Inventory Management | 0% | 0% | 0% |
 | Authentication & RBAC | 0% | 0% | 0% |
-| Device Support (Mobile App) | 40% | N/A | 0% |
+| Device Support (Mobile App) | 40% | N/A | Partial |
 | Device Support (Tablet) | 0% | N/A | 0% |
 | CI/CD Pipeline | 0% | N/A | N/A |
 | Security Testing | 0% | N/A | 0% |
 | Cross-Tenant Isolation | 0% | 0% | 0% |
 
-**Overall Progress: ~35% (UI) | 0% (Backend) | 0% (Tests) | 0% (CI/CD)**
+**Overall Progress: ~40% (UI) | 0% (Backend) | Tests: strong on shared/editor/LMS layer, 0% on ERP business modules | 0% (CI/CD)**
+
+> **Tests are NOT evenly distributed.** ~2,048 automated tests exist (web 1,955 across 121 files +
+> mobile 93 across 9 files), concentrated on: the shared editors (presentation/doc/whiteboard),
+> chart system, editor dialogs/menus/toolbars, communication call-ui/chat/messages, and pure logic
+> modules (chart, arrange, reorder, pptx-map, link-utils, smartchip, recorder, presenter timer,
+> storage). The business-module pages (student/staff/teacher/finance/class/discipline/leave/payroll)
+> have **0 test files** each.
 
 ---
 
 ## Project Statistics
 
-| Metric | Count |
+| Metric | Count (2026-07-15) |
 |--------|-------|
-| Total Pages/Routes (Root App) | 93 |
-| Total Pages/Routes (Admin App) | 7 |
-| Total Shared Components | 357 |
+| Total Pages/Routes (Root App) | 102 |
+| Total Pages/Routes (Admin App) | 8 |
+| Shared Components (`components/shared/*.tsx`) | 154 |
 | Context Providers | 18 |
-| Custom Hooks | 5 |
 | Type Definition Files | 13 |
 | Feature Flags | 40+ |
-| API Routes | 4 (placeholders) |
+| API Routes | 9 (placeholders) |
 | Communication Services | 4 (Agora, WebRTC, WhatsApp, Zoom) |
-| Export Utilities | 20+ |
+| Export Utilities | 20+ (incl. real `.pptx` via `lib/export/pptx`) |
+| **Automated tests (web)** | **1,955 across 121 files** |
+| **Automated tests (mobile)** | **93 across 9 files** |
+| **Type errors (web/admin/mobile)** | **0** |
 | Mobile Screens | 12+ |
 | Mobile Modals | 11 |
 | Supported Countries | 50+ |
+| Shared reusable libs added (chart/editor-ops/export/presenter/recording/smartchip) | 12 files |
 
 ---
 
@@ -279,15 +295,28 @@ ThemeContext, UserContext, AcademicYearContext, SidebarContext, CountryContext, 
 
 ---
 
-### 17. LMS Tools
+### 17. LMS Tools & Editors
 
-**Status:** 45% UI Complete
+**Status:** Editors ~70% UI Complete · **well-tested & reusable** · rest of LMS 0%
 
-**Implemented:**
-- Document editor (DocEditor) — rich text editing
-- Interactive whiteboard with templates, drawing tools, toolbar, properties panel
-- Color palette picker
-- Timetable configuration
+**Implemented (editors — deepened + tested 2026-07):**
+- **Presentation editor** (`SlideEditor`, 4,668 lines) — objects (text/shape/image/table/chart/
+  media/drawing), 9 menus with 177 wired actions, right-click, keyboard shortcuts, slideshow.
+- **Document editor** (`DocEditor`, 12,186 lines) — rich text, pages, tables, comments, @mentions.
+- **Interactive whiteboard** — templates, drawing tools, toolbar, properties panel.
+- **Shared reusable system** built this cycle (usable by web, mobile, docs, whiteboard, exports):
+  - **Chart core** `lib/chart/*` (pure types/geometry/palette + `chartToSvgString`) → one renderer
+    for web `<Chart>`, mobile `apps/mobile/components/Chart` (react-native-svg), and doc/export embeds.
+  - **Links** — `lib/link-utils` + shared `LinkDialog` (Insert → Link, Ctrl+K, link-to-slide).
+  - **Arrange/reorder ops** — `lib/editor-ops/{arrange,reorder}` (align/order/distribute/rotate/flip,
+    slide move/drag). Revived the previously-dead Arrange menu.
+  - **Real `.pptx` export** — `lib/export/{pptx,pptx-map}` (pptxgenjs) with native editable
+    shapes/tables/charts.
+  - **Presenter view** — `PresenterView` + `lib/presenter/timer` (current/next/notes/timer/clock).
+  - **Screen recording** — `useScreenRecorder` + `lib/recording/recorder` (getDisplayMedia/MediaRecorder).
+  - **Smart chips (Smart canvas)** — `lib/smartchip/chips` (date + interactive dropdown chips).
+  - **Immersive editor mode** — `MainLayout immersive` auto-collapses sidebar + hides top bar.
+- New dependency: `pptxgenjs@3.12.0`.
 
 **Pending:**
 - Zoom live class integration
@@ -295,6 +324,7 @@ ThemeContext, UserContext, AcademicYearContext, SidebarContext, CountryContext, 
 - Assignment management
 - Multimedia CMS
 - CBT Exam engine
+- Port the editors' features into the mobile app (only the chart renderer is ported so far)
 
 ---
 
@@ -374,9 +404,15 @@ New module — not started.
 
 No tablet-specific layouts, collapsible sidebars, or orientation handling implemented.
 
-### 8. Testing — 0%
+### 8. Testing — Partial (strong on editors/LMS, 0% on ERP modules)
 
-No unit tests, no integration tests, no E2E tests, no visual regression baselines.
+- **Done:** ~2,048 automated tests (web 1,955 / mobile 93). Unit + component coverage for the
+  shared editors (presentation/doc/whiteboard), the chart system, editor dialogs/menus/toolbars,
+  communication call-ui/chat/messages, and pure logic (chart, arrange, reorder, pptx-map,
+  link-utils, smartchip, recorder, presenter, storage). 0 type errors across web/admin/mobile.
+- **Not done:** business-module pages (student/staff/teacher/finance/class/discipline/leave/payroll)
+  have **0 tests**; no E2E/Playwright specs committed; no visual-regression baselines in CI; no
+  coverage gate. The PRD's "100% logic coverage / 95% overall / CI-enforced" bar is not yet met.
 
 ### 9. CI/CD Pipeline — 0%
 

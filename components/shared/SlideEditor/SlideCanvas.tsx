@@ -14,7 +14,7 @@ import { ColorGrid, TabbedColorPalette, ColorPickerPopover, isNativeColorPickerO
 import CustomDropdown from "@/components/shared/CustomDropdown";
 import TextFormatToolbar from "@/components/shared/TextFormatToolbar";
 import SlideChart, { SlideChartEditor } from "./SlideChart";
-import { Link2 as LinkIcon } from "lucide-react";
+import { Link2 as LinkIcon, ImagePlus } from "lucide-react";
 import { linkDisplayLabel } from "@/lib/link-utils";
 import { setSlideClipboard, getSlideClipboard, hasSlideClipboard, packIntoFreeSpace, fitRotatedToPage } from "./slide-clipboard";
 import { insertRow, insertCol, deleteRow, deleteCol, distributeRows, distributeCols } from "./table-ops";
@@ -1000,21 +1000,35 @@ export default function SlideCanvas({
           const isCropping = croppingId === obj.id;
           return (
             <div className="w-full h-full relative" style={{ borderRadius: obj.borderRadius ?? 0 }}>
-              <img
-                src={obj.src} alt={obj.alt}
-                className="pointer-events-none block"
-                style={{
-                  width: "100%", height: "100%",
-                  // Use 'fill' when cropped (crop percentages must be exact); otherwise default to
-                  // 'contain' so the WHOLE image is always visible when the box is resized to any
-                  // aspect ratio (never silently crop the edges). 'cover' only if explicitly set.
-                  objectFit: (ct > 0 || cr > 0 || cb > 0 || cl > 0) ? "fill" : (obj.objectFit || "contain"),
-                  opacity: obj.opacity ?? 1,
-                  border: obj.borderColor ? `${obj.borderWidth || 1}px solid ${obj.borderColor}` : "none",
-                  clipPath: (ct > 0 || cr > 0 || cb > 0 || cl > 0) ? `inset(${ct}% ${cr}% ${cb}% ${cl}%)` : undefined,
-                }}
-                draggable={false}
-              />
+              {obj.src ? (
+                <img
+                  src={obj.src} alt={obj.alt}
+                  className="pointer-events-none block"
+                  style={{
+                    width: "100%", height: "100%",
+                    // Use 'fill' when cropped (crop percentages must be exact); otherwise default to
+                    // 'contain' so the WHOLE image is always visible when the box is resized to any
+                    // aspect ratio (never silently crop the edges). 'cover' only if explicitly set.
+                    objectFit: (ct > 0 || cr > 0 || cb > 0 || cl > 0) ? "fill" : (obj.objectFit || "contain"),
+                    opacity: obj.opacity ?? 1,
+                    border: obj.borderColor ? `${obj.borderWidth || 1}px solid ${obj.borderColor}` : "none",
+                    clipPath: (ct > 0 || cr > 0 || cb > 0 || cl > 0) ? `inset(${ct}% ${cr}% ${cb}% ${cl}%)` : undefined,
+                  }}
+                  draggable={false}
+                />
+              ) : (
+                // No image yet — render a clean placeholder instead of an empty <img src="">, which
+                // the browser rejects (and which showed broken-image alt text). Double-click still
+                // opens the image picker via the object's normal edit flow.
+                <div
+                  className="w-full h-full flex flex-col items-center justify-center gap-1 bg-gray-100 text-gray-400 border border-dashed border-gray-300 select-none"
+                  style={{ borderRadius: obj.borderRadius ?? 0 }}
+                  aria-label={obj.alt || "Image placeholder"}
+                >
+                  <ImagePlus className="w-6 h-6" aria-hidden="true" />
+                  <span className="text-[11px] font-medium px-2 text-center leading-tight">{obj.alt || "Add image"}</span>
+                </div>
+              )}
               {/* Selection border around visible (cropped) area */}
               {isSelected && hasCropInset && !isCropping && (
                 <div className="absolute pointer-events-none border-2 border-blue-500 z-[4]" style={{

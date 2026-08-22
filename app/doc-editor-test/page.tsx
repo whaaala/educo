@@ -104,7 +104,7 @@ export default function DocEditorTestPage() {
   // from initializing with empty content and overwriting the saved document
   if (!doc) {
     return (
-      <MainLayout>
+      <MainLayout immersive>
         <div className="-mt-4 -mx-4 lg:-mt-6 lg:-mx-8 -mb-4 lg:-mb-6 h-[calc(100vh-64px)] flex items-center justify-center">
           <div className="text-gray-400 text-[13px]">Loading document...</div>
         </div>
@@ -113,7 +113,7 @@ export default function DocEditorTestPage() {
   }
 
   return (
-    <MainLayout>
+    <MainLayout immersive>
       <div className="-mt-4 -mx-4 lg:-mt-6 lg:-mx-8 -mb-4 lg:-mb-6 h-[calc(100vh-64px)] overflow-hidden print:!m-0 print:!h-auto print:!overflow-visible">
         <DocEditor
           value={doc}

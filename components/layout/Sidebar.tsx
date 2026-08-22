@@ -37,6 +37,7 @@ import {
   ExternalLink,
   Presentation,
   HardDrive,
+  Globe,
 } from "lucide-react";
 import TenantSwitcher from "@/components/admin/TenantSwitcher";
 import { useUser } from "@/contexts/UserContext";
@@ -179,6 +180,7 @@ const menuItems: MenuItem[] = [
       { id: "drive", label: "My Drive", icon: <HardDrive className="w-4 h-4" />, href: "/drive" },
       { id: "documents", label: "Documents", icon: <FileText className="w-4 h-4" />, href: "/documents" },
       { id: "presentations", label: "Presentations", icon: <Presentation className="w-4 h-4" />, href: "/presentations" },
+      { id: "website-builder", label: "Website Builder", icon: <Globe className="w-4 h-4" />, href: "/website" },
     ],
   },
   {
