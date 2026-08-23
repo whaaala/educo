@@ -39,16 +39,35 @@ function backgroundStyle(node: BoxNode): React.CSSProperties {
   return s;
 }
 
+/**
+ * Resolve the LIVE pixel value of the fluid base unit (--box-u = clamp(minRem, cqw, maxRem)), replicating
+ * baseUnit(), so we can convert a measured pixel offset into the stored (u-scaled) margin unit — u(stored)
+ * renders back to that exact pixel value. Custom properties aren't resolved by getComputedStyle, so we
+ * recompute the clamp from the live container-query width + root font-size (which honours browser zoom /
+ * user font settings — WCAG). Used by edge-anchored resize to pin a box in place without any jump.
+ */
+function measureBoxU(el: HTMLElement, baseFont: number): number {
+  const doc = el.ownerDocument;
+  const rem = parseFloat(getComputedStyle(doc.documentElement).fontSize) || 16;
+  let cq: HTMLElement | null = el.parentElement;
+  while (cq && getComputedStyle(cq).containerType === "normal") cq = cq.parentElement;
+  const cqw = (cq?.clientWidth ?? doc.defaultView?.innerWidth ?? 1000) / 100;
+  const lo = ((baseFont * 0.7) / 16) * rem;
+  const hi = ((baseFont * 1.4) / 16) * rem;
+  const mid = (baseFont / 10) * cqw;
+  return Math.min(hi, Math.max(lo, mid)) || 10;
+}
+
 type Edge = "n" | "s" | "e" | "w" | "ne" | "nw" | "se" | "sw";
 const HANDLES: { edge: Edge; pos: string; cursor: string; label: string; title: string }[] = [
-  { edge: "n", pos: "left-1/2 -top-1 -translate-x-1/2 h-2.5 w-9 rounded-full", cursor: "cursor-ns-resize", label: "top edge", title: "Drag for space above (margin-top)" },
-  { edge: "s", pos: "left-1/2 -bottom-1 -translate-x-1/2 h-2.5 w-9 rounded-full", cursor: "cursor-ns-resize", label: "bottom edge", title: "Drag to resize height" },
-  { edge: "e", pos: "top-1/2 -right-1 -translate-y-1/2 w-2.5 h-9 rounded-full", cursor: "cursor-ew-resize", label: "right edge", title: "Drag to resize width" },
-  { edge: "w", pos: "top-1/2 -left-1 -translate-y-1/2 w-2.5 h-9 rounded-full", cursor: "cursor-ew-resize", label: "left edge", title: "Drag for space on the left (margin-left)" },
-  { edge: "ne", pos: "-top-1 -right-1 w-3 h-3 rounded-full", cursor: "cursor-nesw-resize", label: "top-right corner", title: "Drag: width + space above" },
-  { edge: "nw", pos: "-top-1 -left-1 w-3 h-3 rounded-full", cursor: "cursor-nwse-resize", label: "top-left corner", title: "Drag: space above + left" },
-  { edge: "se", pos: "-bottom-1 -right-1 w-3 h-3 rounded-full", cursor: "cursor-nwse-resize", label: "bottom-right corner", title: "Drag: width + height" },
-  { edge: "sw", pos: "-bottom-1 -left-1 w-3 h-3 rounded-full", cursor: "cursor-nesw-resize", label: "bottom-left corner", title: "Drag: height + space left" },
+  { edge: "n", pos: "left-1/2 -top-1 -translate-x-1/2 h-2.5 w-9 rounded-full", cursor: "cursor-ns-resize", label: "top edge", title: "Drag the top edge (bottom stays put)" },
+  { edge: "s", pos: "left-1/2 -bottom-1 -translate-x-1/2 h-2.5 w-9 rounded-full", cursor: "cursor-ns-resize", label: "bottom edge", title: "Drag the bottom edge (top stays put)" },
+  { edge: "e", pos: "top-1/2 -right-1 -translate-y-1/2 w-2.5 h-9 rounded-full", cursor: "cursor-ew-resize", label: "right edge", title: "Drag the right edge (left stays put)" },
+  { edge: "w", pos: "top-1/2 -left-1 -translate-y-1/2 w-2.5 h-9 rounded-full", cursor: "cursor-ew-resize", label: "left edge", title: "Drag the left edge (right stays put)" },
+  { edge: "ne", pos: "-top-1 -right-1 w-3 h-3 rounded-full", cursor: "cursor-nesw-resize", label: "top-right corner", title: "Drag the top-right corner" },
+  { edge: "nw", pos: "-top-1 -left-1 w-3 h-3 rounded-full", cursor: "cursor-nwse-resize", label: "top-left corner", title: "Drag the top-left corner" },
+  { edge: "se", pos: "-bottom-1 -right-1 w-3 h-3 rounded-full", cursor: "cursor-nwse-resize", label: "bottom-right corner", title: "Drag the bottom-right corner" },
+  { edge: "sw", pos: "-bottom-1 -left-1 w-3 h-3 rounded-full", cursor: "cursor-nesw-resize", label: "bottom-left corner", title: "Drag the bottom-left corner" },
 ];
 
 const ADD_ITEMS: { type: BoxType | "row" | "grid"; label: string; Icon: typeof Type }[] = [
@@ -78,8 +97,15 @@ export default function BoxCanvas({
   const menuRef = useRef<HTMLDivElement>(null);
   const closeMenu = () => { setMenuFor(null); setMenuPos(null); };
   const [resizing, setResizing] = useState(false);
-  const [dragId, setDragId] = useState<string | null>(null); // box being dragged
-  const [dropTarget, setDropTarget] = useState<{ parentId: string; index: number } | null>(null);
+  const [resizeCursor, setResizeCursor] = useState<string | null>(null); // cursor shown by the full-screen overlay while resizing (so it never disappears)
+  const [dragId, setDragId] = useState<string | null>(null); // box being dragged (after the move threshold)
+  const [dragGhost, setDragGhost] = useState<{ x: number; y: number; w: number; label: string } | null>(null); // floating preview that follows the cursor
+  const [dropRect, setDropRect] = useState<{ left: number; top: number; width: number; height: number; inside: boolean } | null>(null); // insertion line / drop-inside highlight (viewport coords)
+  const dragArm = useRef<{ id: string; startX: number; startY: number; w: number; h: number; label: string } | null>(null); // armed on grip mousedown; upgrades to a real drag past the threshold
+  const dragIdRef = useRef<string | null>(null);       // mirror of dragId for the document listeners
+  const dropRef = useRef<{ parentId: string; index: number } | null>(null); // where a release would drop
+  const dropWidthRef = useRef<string | null>(null); // width the dropped block should take (fill the line's leftover space)
+  const rootRef = useRef(root); rootRef.current = root; // always-fresh tree for the drag listeners
   const [clip, setClip] = useState<BoxNode | null>(null); // copy/cut clipboard (a cloned subtree)
   const select = (id: string | null) => onSelectId?.(id);
 
@@ -131,73 +157,271 @@ export default function BoxCanvas({
     return () => { document.removeEventListener("mousedown", onDown); window.removeEventListener("scroll", onGone, true); window.removeEventListener("resize", onGone); };
   }, [menuFor]);
 
-  const endDrag = () => { setDragId(null); setDropTarget(null); };
+  // ── Pointer-based drag & drop ────────────────────────────────────────────────────────────────
+  // Replaces the janky native HTML5 drag. Grab a block's grip and a floating PREVIEW follows the
+  // cursor while a bright INSERTION LINE (or drop-inside highlight) shows exactly where it will land.
+  // Any block can move to any slot in any container — reorder among siblings AND reparent (nested).
+  const dragLabel = (n: BoxNode): string => {
+    if (isContainer(n)) return n.layout === "grid" ? "Grid" : (n.direction ?? "column") === "row" ? "Row" : "Section";
+    const t = n.text?.trim();
+    if (n.type === "heading") return t ? `Heading: ${t.slice(0, 18)}` : "Heading";
+    if (n.type === "button") return t ? `Button: ${t.slice(0, 14)}` : "Button";
+    if (n.type === "image") return "Image";
+    return t ? `Text: ${t.slice(0, 18)}` : "Text";
+  };
+  const directKids = (el: HTMLElement) => Array.from(el.querySelectorAll<HTMLElement>(":scope > [data-box-id]"));
+  type Drop = { target: { parentId: string; index: number }; rect: { left: number; top: number; width: number; height: number; inside: boolean }; moveWidth?: string };
 
-  // While dragging, decide where a drop would land: BEFORE/AFTER this box (among its siblings) when
-  // near an edge, or INSIDE it (as a child) when hovering the middle of a container.
-  const onBoxDragOver = (e: React.DragEvent, node: BoxNode, parent: BoxNode | null) => {
-    if (!dragId || dragId === node.id || isAncestor(root, dragId, node.id)) return;
-    e.preventDefault(); e.stopPropagation();
-    const rect = e.currentTarget.getBoundingClientRect();
-    const isRowParent = (parent?.direction ?? "column") === "row";
-    const frac = isRowParent ? (e.clientX - rect.left) / rect.width : (e.clientY - rect.top) / rect.height;
-    const EDGE = 0.3;
-    if (isContainer(node) && frac >= EDGE && frac <= 1 - EDGE) {
-      setDropTarget({ parentId: node.id, index: node.children?.length ?? 0 }); // drop inside
-    } else if (parent) {
-      const idx = parent.children!.indexOf(node) + (frac < 0.5 ? 0 : 1);
-      setDropTarget({ parentId: parent.id, index: idx });
+  // Pick the drop SLOT among a container's children from the ACTUAL laid-out geometry — not the nominal
+  // flex-direction. This is what makes drops land where the line shows even when a "row" wraps: full-width
+  // sections stack (we compare vertically, draw a horizontal line); side-by-side blocks share a row (we
+  // compare horizontally, draw a vertical line). We find the child nearest the cursor, detect whether it
+  // sits BESIDE a sibling (same row) or is stacked, then decide before/after on that local axis.
+  const slotFromKids = (parentEl: HTMLElement, kidEls: HTMLElement[], x: number, y: number): { index: number; rect: Drop["rect"]; moveWidth?: string } => {
+    const pr = parentEl.getBoundingClientRect();
+    const T = 3;
+    if (!kidEls.length) return { index: 0, rect: { left: pr.left, top: pr.top, width: pr.width, height: pr.height, inside: true } };
+    const rects = kidEls.map((k) => k.getBoundingClientRect());
+    const cx = (r: DOMRect) => r.left + r.width / 2, cy = (r: DOMRect) => r.top + r.height / 2;
+    const sameRow = (a: DOMRect, b: DOMRect) => a.top < b.bottom && b.top < a.bottom; // vertical overlap → same visual row
+    let k = 0, best = Infinity;
+    rects.forEach((r, i) => { const d = Math.hypot(cx(r) - x, cy(r) - y); if (d < best) { best = d; k = i; } });
+    const kr = rects[k];
+    // "Side-by-side" drop when either: the nearest block already sits beside a sibling, OR the pointer is
+    // on that block's LINE but in the empty gap to its side (so you can drop into the space you opened up
+    // by narrowing a section). Otherwise it's a stacked drop onto its own new line.
+    const onKrLine = y >= kr.top && y <= kr.bottom;
+    const rowFlow = rects.some((r, i) => i !== k && sameRow(r, kr)) || (onKrLine && (x < kr.left || x > kr.right));
+    const before = rowFlow ? x < cx(kr) : y < cy(kr);
+    const index = k + (before ? 0 : 1);
+    const rect: Drop["rect"] = rowFlow
+      ? { left: (before ? kr.left : kr.right) - T / 2, top: kr.top, width: T, height: kr.height, inside: false }        // vertical line
+      : { left: pr.left + 4, top: (before ? kr.top : kr.bottom) - T / 2, width: Math.max(8, pr.width - 8), height: T, inside: false }; // horizontal line
+    // Width the dropped block should take: dropping BESIDE blocks on a line → FILL the line's leftover
+    // space so it fits next to them; if the line is essentially full (or it's a stacked drop) → 100% on its own line.
+    let moveWidth = "100%";
+    if (rowFlow) {
+      const lineSumPct = rects.filter((r) => sameRow(r, kr)).reduce((s, r) => s + (r.width / Math.max(1, pr.width)) * 100, 0);
+      const remaining = Math.round((100 - lineSumPct) * 10) / 10;
+      moveWidth = remaining >= 8 ? `${remaining}%` : "100%"; // no real room left → give it its own line instead of overflowing
     }
+    return { index, rect, moveWidth };
   };
-  const onBoxDrop = (e: React.DragEvent) => {
-    if (dragId && dropTarget) { e.preventDefault(); e.stopPropagation(); onChange(moveBox(root, dragId, dropTarget.parentId, dropTarget.index)); }
-    endDrag();
+  // Hit-test the deepest box under the cursor that ISN'T the dragged block (or inside it). If it's a
+  // container, drop INSIDE it (among its children); if it's a leaf, drop BESIDE it (among its parent's).
+  const computeDrop = (x: number, y: number, draggingId: string): Drop | null => {
+    const stack = typeof document.elementsFromPoint === "function" ? document.elementsFromPoint(x, y) : [];
+    let hitEl: HTMLElement | null = null, hitId: string | null = null;
+    for (const el of stack) {
+      const boxEl = (el as HTMLElement).closest?.("[data-box-id]") as HTMLElement | null;
+      if (!boxEl) continue;
+      const id = boxEl.getAttribute("data-box-id");
+      if (!id || id === draggingId || isAncestor(rootRef.current, draggingId, id)) continue;
+      hitEl = boxEl; hitId = id; break;
+    }
+    if (!hitEl || !hitId) return null;
+    const node = findByIdLocal(rootRef.current, hitId);
+    if (!node) return null;
+    const info = findParent(rootRef.current, hitId);
+    // Near a block's OUTER EDGE (along its PARENT's MAIN axis) → drop BESIDE it (reorder among the
+    // parent's children); over its MIDDLE → (for a container) drop INSIDE it. Checking only the parent's
+    // main axis means: hover the TOP/BOTTOM of a ROW to make a NEW row above/below; hover the LEFT/RIGHT
+    // of a SECTION to place another section alongside it — and the row's own empty space drops inside.
+    const r = hitEl.getBoundingClientRect();
+    const parentIsRow = !!info && (info.parent.direction ?? "column") === "row";
+    const bx = Math.min(r.width * 0.22, 22), by = Math.min(r.height * 0.22, 22);
+    const nearEdge = parentIsRow ? (x < r.left + bx || x > r.right - bx) : (y < r.top + by || y > r.bottom - by);
+    const dropBeside = !isContainer(node) || (nearEdge && !!info);
+    if (dropBeside && info) {
+      const pEl = document.querySelector<HTMLElement>(`[data-box-id="${info.parent.id}"]`);
+      if (pEl) { const s = slotFromKids(pEl, directKids(pEl), x, y); return { target: { parentId: info.parent.id, index: s.index }, rect: s.rect, moveWidth: s.moveWidth }; }
+    }
+    const s = slotFromKids(hitEl, directKids(hitEl), x, y); // drop INSIDE this container
+    return { target: { parentId: node.id, index: s.index }, rect: s.rect, moveWidth: s.moveWidth };
   };
-  // A thin insertion line between children (horizontal for a column, vertical for a row).
-  const dropLine = (parentId: string, index: number, isRow: boolean) =>
-    dragId && dropTarget && dropTarget.parentId === parentId && dropTarget.index === index ? (
-      <div key={`dl-${index}`} aria-hidden="true" className={`${isRow ? "w-1 self-stretch min-h-[24px]" : "h-1 w-full"} rounded-full bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.7)]`} />
-    ) : null;
 
-  // Drag-to-resize: grab an edge handle and change the box's width/height in px; flexible siblings
-  // reflow live. On release we notify (onResized) so the page can offer to reflow the rest.
+  const onDragMove = (ev: MouseEvent) => {
+    const arm = dragArm.current;
+    if (!arm) return;
+    if (dragIdRef.current == null) { // upgrade "armed" → real drag only past a small threshold (click vs drag)
+      if (Math.hypot(ev.clientX - arm.startX, ev.clientY - arm.startY) < 4) return;
+      dragIdRef.current = arm.id; setDragId(arm.id); document.body.style.userSelect = "none";
+    }
+    setDragGhost({ x: ev.clientX, y: ev.clientY, w: Math.min(arm.w, 260), label: arm.label });
+    const hit = computeDrop(ev.clientX, ev.clientY, arm.id);
+    dropRef.current = hit?.target ?? null;
+    dropWidthRef.current = hit?.moveWidth ?? null;
+    setDropRect(hit?.rect ?? null);
+  };
+  const onDragUp = () => {
+    document.removeEventListener("mousemove", onDragMove);
+    document.removeEventListener("mouseup", onDragUp);
+    document.body.style.userSelect = "";
+    const id = dragIdRef.current, target = dropRef.current, w = dropWidthRef.current;
+    if (id && target) {
+      let next = moveBox(rootRef.current, id, target.parentId, target.index);
+      if (w) next = updateBox(next, id, { width: w }); // take the line's leftover space so it fills, never wraps to a new row
+      onChange(next);
+    }
+    dragArm.current = null; dragIdRef.current = null; dropRef.current = null; dropWidthRef.current = null;
+    setDragId(null); setDragGhost(null); setDropRect(null);
+  };
+  const startDrag = (e: React.MouseEvent, node: BoxNode) => {
+    if (!editable) return;
+    e.preventDefault(); e.stopPropagation();
+    const el = document.querySelector<HTMLElement>(`[data-box-id="${node.id}"]`);
+    const r = el?.getBoundingClientRect();
+    dragArm.current = { id: node.id, startX: e.clientX, startY: e.clientY, w: r?.width ?? 160, h: r?.height ?? 40, label: dragLabel(node) };
+    document.addEventListener("mousemove", onDragMove);
+    document.addEventListener("mouseup", onDragUp);
+  };
+
+  // ── Drag-to-resize ───────────────────────────────────────────────────────────────────────────
+  // ONE consistent model: the box is TOP-LEFT anchored (alignSelf: flex-start) so resizing is fully
+  // deterministic — the edge you grab moves and the OPPOSITE edge stays put, on every side, in any
+  // parent (centred, stretched, hugging). We keep the box's margin-box size constant for the anchored
+  // edge, working entirely in PIXELS and converting to the stored unit exactly (via measureBoxU), so a
+  // centred box never jumps on grab and the far edge holds at any screen size. rAF-batched + a cursor
+  // overlay keep it smooth (the cursor never disappears while dragging).
+  const cursorFor = (edge: Edge): string =>
+    edge === "n" || edge === "s" ? "ns-resize" : edge === "e" || edge === "w" ? "ew-resize" : edge === "nw" || edge === "se" ? "nwse-resize" : "nesw-resize";
+
   const startResize = (e: React.MouseEvent, id: string, edge: Edge) => {
     if (!editable) return;
     e.preventDefault(); e.stopPropagation();
     const el = document.querySelector<HTMLElement>(`[data-box-id="${id}"]`);
     const node = findByIdLocal(root, id);
+    const pEl = el?.parentElement ?? null;
     if (!el || !node) return;
     const rect = el.getBoundingClientRect();
-    const maxW = el.parentElement?.clientWidth || 1;
-    const vhPx = window.innerHeight || 800;
-    // Which side is being dragged. Bottom(s)/Right(e) = SIZE (grow down/right). Top(n)/Left(w) = SPACE
-    // on that side (margin-top / margin-left), so you can add space wherever you grab.
     const hasE = edge.includes("e"), hasW = edge.includes("w"), hasS = edge.includes("s"), hasN = edge.includes("n");
-    const startX = e.clientX, startY = e.clientY, startW = rect.width, startH = rect.height;
-    const startMT = node.marginTop ?? node.margin ?? 0;
-    const startML = node.marginLeft ?? node.margin ?? 0;
+    const startX = e.clientX, startY = e.clientY, W0 = rect.width, H0 = rect.height;
 
-    // Issue 1: resizing WIDTH inside a row → its row-mates fill the leftover space automatically.
-    let base = root;
-    if (hasE) {
-      const info = findParent(root, id);
-      if (info && (info.parent.direction ?? "column") === "row") {
-        for (const c of info.parent.children!) if (c.id !== id) base = updateBox(base, c.id, { width: "fill" });
-        if (base !== root) onChange(base);
+    const info = findParent(root, id);
+    const parentGrid = info?.parent.layout === "grid";
+    const parentRow = !parentGrid && !!info && (info.parent.direction ?? "column") === "row";
+
+    // Units: width as % of the PARENT CONTENT box, height as vh, margins in the fluid base unit (px→u
+    // exact so the pixel maths holds — keeping marginX_px + size_px constant fixes the opposite edge).
+    const boxU = measureBoxU(el, rootRef.current.baseFont ?? 10);
+    const pxU = (px: number) => Math.round((px * 10) / boxU); // SIGNED px → stored unit (must keep sign so dragging an edge outward can shrink the margin back to 0 / the page edge)
+    let maxW = 1, padL = 0, padT = 0;
+    if (pEl) {
+      const cs = getComputedStyle(pEl);
+      padL = parseFloat(cs.paddingLeft) || 0; padT = parseFloat(cs.paddingTop) || 0;
+      const padR = parseFloat(cs.paddingRight) || 0;
+      maxW = (pEl.clientWidth - padL - padR) || 1;
+    }
+    const vhPx = window.innerHeight || 800;
+    const pct = (px: number) => `${Math.max(3, Math.min(100, (px / maxW) * 100)).toFixed(2)}%`;
+    const vh = (px: number) => `${Math.max(0.1, (px / vhPx) * 100).toFixed(2)}vh`;
+
+    // Parent content-box origin — for measuring the section's edges and clamping every drag to the page.
+    const prRect = pEl ? pEl.getBoundingClientRect() : null;
+    const contentLeftPx = prRect ? prRect.left + padL : 0;
+    const contentTopPx = prRect ? prRect.top + padT : 0;
+
+    // Cross-axis anchor: pin alignment + current position/size so a centred/stretched box doesn't jump.
+    let base = root, changed = false;
+    const anchor: Partial<BoxNode> = {};
+    if (prRect) {
+      if ((hasE || hasW) && !parentRow) { anchor.alignSelf = "flex-start"; anchor.width = pct(W0); anchor.marginLeft = pxU(rect.left - contentLeftPx); } // width is CROSS (column) → pin horizontal
+      if ((hasN || hasS) && parentRow) { anchor.alignSelf = "flex-start"; anchor.height = vh(H0); anchor.marginTop = pxU(rect.top - contentTopPx); }        // height is CROSS (row) → pin vertical
+    }
+    if (Object.keys(anchor).length) { base = updateBox(base, id, anchor); changed = true; }
+    if (changed) onChange(base);
+
+    const bn = findByIdLocal(base, id) ?? node;
+    const ML0 = bn.marginLeft ?? bn.margin ?? 0; // stored (u) units after anchoring
+    const MT0 = bn.marginTop ?? bn.margin ?? 0;
+    const ML0px = (boxU * ML0) / 10, MT0px = (boxU * MT0) / 10;
+
+    // Measured edges (relative to the parent content box) + the fixed FLOW origin (the section's position
+    // from previous siblings, independent of its margin). Every drag is clamped to [flow origin … page
+    // edge] so a section can NEVER be dragged off the page, while the opposite edge stays anchored.
+    const startLeftPx = rect.left - contentLeftPx, startRightPx = rect.right - contentLeftPx;
+    const startTopPx = rect.top - contentTopPx, startBotPx = rect.bottom - contentTopPx;
+    const flowX = startLeftPx - ML0px, flowY = startTopPx - MT0px;
+    const minWpx = Math.max(8, 0.03 * maxW), minHpx = 8;
+    let sameLineAfterPx = 0; // width of same-line neighbours to the RIGHT — can't grow past them (no wrap/off-page)
+    if (parentRow && info) {
+      for (const c of info.parent.children!) {
+        if (c.id === id) continue;
+        const e2 = document.querySelector<HTMLElement>(`[data-box-id="${c.id}"]`);
+        if (!e2) continue;
+        const r2 = e2.getBoundingClientRect();
+        if (r2.top < rect.bottom && rect.top < r2.bottom && (r2.left - contentLeftPx) >= startRightPx - 1) sameLineAfterPx += r2.width;
       }
     }
+    const maxRightPx = Math.max(startLeftPx + minWpx, maxW - sameLineAfterPx);
 
+    // Same-line neighbours for the ROW DIVIDER: the sections directly before/after this one, and the
+    // total width of the others on the line. Sections in a row PACK (no margins), so grabbing a shared
+    // edge is a divider — the neighbour gives/takes the width and there is NEVER a mid-row gap.
+    let prevSib: { id: string; w0: number } | null = null, nextSib: { id: string; w0: number } | null = null, othersSumPct = 0;
+    if (parentRow && info) {
+      const sibs = info.parent.children!;
+      const myIdx = sibs.findIndex((c) => c.id === id);
+      sibs.forEach((c, i) => {
+        if (i === myIdx) return;
+        const e2 = document.querySelector<HTMLElement>(`[data-box-id="${c.id}"]`);
+        if (!e2) return;
+        const r2 = e2.getBoundingClientRect();
+        if (!(r2.top < rect.bottom && rect.top < r2.bottom)) return; // same line only
+        const w = (r2.width / maxW) * 100;
+        othersSumPct += w;
+        if (i === myIdx - 1) prevSib = { id: c.id, w0: w };
+        if (i === myIdx + 1) nextSib = { id: c.id, w0: w };
+      });
+    }
+    const W0pct = (W0 / maxW) * 100, minPct = 3;
+    const fmt = (p: number) => `${Math.max(minPct, p).toFixed(2)}%`;
+
+    setResizeCursor(cursorFor(edge));
     setResizing(true);
+    let raf = 0; let pending: BoxNode | null = null;
+    const flush = () => { raf = 0; if (pending) { onChange(pending); pending = null; } };
     const onMove = (ev: MouseEvent) => {
       const dx = ev.clientX - startX, dy = ev.clientY - startY;
-      const patch: Partial<BoxNode> = {};
-      if (hasE) patch.width = `${Math.max(3, Math.min(100, ((startW + dx) / maxW) * 100)).toFixed(1)}%`; // % of parent, capped to the page
-      if (hasS) patch.height = `${Math.max(0.1, ((startH + dy) / vhPx) * 100).toFixed(1)}vh`;             // screen-relative height
-      if (hasN) patch.marginTop = Math.max(0, Math.round(startMT - dy));   // drag up → more space ABOVE
-      if (hasW) patch.marginLeft = Math.max(0, Math.round(startML - dx));  // drag left → more space to the LEFT
-      onChange(updateBox(base, id, patch));
+      let tree = base;
+      // ── WIDTH ──
+      if (hasE || hasW) {
+        if (parentRow) {
+          // Row → DIVIDER: this section grows, the neighbour on the grabbed side gives up the width (no gap).
+          const grow = ((hasE ? dx : -dx) / maxW) * 100; // % this section grows
+          const neighbor = hasE ? nextSib : prevSib;
+          if (neighbor) {
+            const T = W0pct + neighbor.w0;
+            const aw = Math.min(T - minPct, Math.max(minPct, W0pct + grow));
+            tree = updateBox(updateBox(tree, id, { width: fmt(aw), marginLeft: 0 }), neighbor.id, { width: fmt(T - aw), marginLeft: 0 });
+          } else if (hasW) {
+            // LEFTMOST section's LEFT edge → open LEADING space (margin-left), keeping the right edge fixed
+            // (edge-anchored). This is the "reduce width from the left without moving the right" behaviour.
+            const left = Math.min(startRightPx - minWpx, Math.max(flowX, startLeftPx + dx));
+            tree = updateBox(tree, id, { width: pct(startRightPx - left), marginLeft: Math.max(0, pxU(left - flowX)) });
+          } else {
+            // RIGHTMOST section's RIGHT edge → grow/shrink into the row's LEFTOVER space (line total ≤ 100%)
+            const maxA = Math.max(minPct, 100 - othersSumPct);
+            tree = updateBox(tree, id, { width: fmt(Math.min(maxA, Math.max(minPct, W0pct + grow))), marginLeft: 0 });
+          }
+        } else {
+          // Column → width is the CROSS axis: bounded width + margin, page-anchored (edge-anchored, no jump).
+          if (hasE) { const right = Math.min(maxRightPx, Math.max(startLeftPx + minWpx, startRightPx + dx)); tree = updateBox(tree, id, { width: pct(right - startLeftPx) }); }
+          if (hasW) { const left = Math.min(startRightPx - minWpx, Math.max(flowX, startLeftPx + dx)); tree = updateBox(tree, id, { width: pct(startRightPx - left), marginLeft: Math.max(0, pxU(left - flowX)) }); }
+        }
+      }
+      // ── HEIGHT ── (both parents; BOTTOM keeps top, TOP keeps bottom)
+      if (hasS) { const bot = Math.max(startTopPx + minHpx, startBotPx + dy); tree = updateBox(tree, id, { height: vh(bot - startTopPx) }); }
+      if (hasN) { const top = Math.min(startBotPx - minHpx, Math.max(flowY, startTopPx + dy)); tree = updateBox(tree, id, { height: vh(startBotPx - top), marginTop: Math.max(0, pxU(top - flowY)) }); }
+      pending = tree;
+      if (!raf) raf = requestAnimationFrame(flush);
     };
-    const onUp = () => { setResizing(false); document.removeEventListener("mousemove", onMove); document.removeEventListener("mouseup", onUp); onResized?.(id, hasS && !hasE ? "height" : "width"); };
+    const onUp = () => {
+      if (raf) { cancelAnimationFrame(raf); flush(); }
+      setResizing(false); setResizeCursor(null);
+      document.removeEventListener("mousemove", onMove); document.removeEventListener("mouseup", onUp);
+      onResized?.(id, (hasS || hasN) && !hasE && !hasW ? "height" : "width");
+    };
     document.addEventListener("mousemove", onMove);
     document.addEventListener("mouseup", onUp);
   };
@@ -244,32 +468,26 @@ export default function BoxCanvas({
     // DEEPEST box under the pointer wins and the canvas-background deselect doesn't also fire.
     const onSelectDown = (e: React.MouseEvent) => { if (editable) { e.stopPropagation(); select(node.id); closeMenu(); } };
 
-    const isDropInside = !!dragId && dropTarget?.parentId === node.id;
     const isDragging = dragId === node.id;
 
     // ── container ──
     if (isContainer(node)) {
-      const childIsRow = (node.direction ?? "column") === "row";
       const kids = node.children ?? [];
       return (
         <div
           key={node.id}
           data-box-id={node.id}
           onMouseDown={onSelectDown}
-          onDragOver={editable ? (e) => onBoxDragOver(e, node, parent) : undefined}
-          onDrop={editable ? onBoxDrop : undefined}
           style={{ ...containerStyle(node), ...wrapStyle, ...(isDragging ? { opacity: 0.4 } : {}) }}
-          className={`${editable ? "transition-shadow" : ""} ${isSel ? "outline outline-2 outline-indigo-500 outline-offset-[-2px]" : isDropInside ? "outline outline-2 outline-dashed outline-indigo-400" : editable ? "hover:outline hover:outline-1 hover:outline-indigo-300/70 hover:outline-offset-[-1px]" : ""}`}
+          className={`${editable ? "transition-shadow" : ""} ${isSel ? "outline outline-2 outline-indigo-500 outline-offset-[-2px]" : editable ? "hover:outline hover:outline-1 hover:outline-indigo-300/70 hover:outline-offset-[-1px]" : ""}`}
         >
-          {kids.map((c, i) => (
-            <Fragment key={c.id}>
-              {dropLine(node.id, i, childIsRow)}
-              {renderNode(c, node)}
-            </Fragment>
+          {kids.map((c) => (
+            <Fragment key={c.id}>{renderNode(c, node)}</Fragment>
           ))}
-          {dropLine(node.id, kids.length, childIsRow)}
           {editable && kids.length === 0 && (
-            <div className="w-full flex items-center justify-center gap-1 py-3 text-gray-400 border border-dashed border-gray-300 rounded-lg pointer-events-none" style={{ fontSize: u(11) }}><Plus className="w-3 h-3 shrink-0" /> Add</div>
+            // An empty block shows a non-interactive hint — select it, then use the ⋯ menu (or drag a block
+            // in) to fill it. It's a hint only; it does NOT add anything by itself.
+            <div className="w-full flex items-center justify-center gap-1 py-3 text-gray-400 border border-dashed border-gray-300 rounded-lg pointer-events-none" style={{ fontSize: u(11) }}><Plus className="w-3 h-3 shrink-0" /> Empty block</div>
           )}
           {isSel && <NodeToolbar node={node} isRoot={isRoot} />}
           {resizeHandles}
@@ -283,8 +501,6 @@ export default function BoxCanvas({
         key={node.id}
         data-box-id={node.id}
         onMouseDown={onSelectDown}
-        onDragOver={editable ? (e) => onBoxDragOver(e, node, parent) : undefined}
-        onDrop={editable ? onBoxDrop : undefined}
         style={{ ...wrapStyle, ...(isDragging ? { opacity: 0.4 } : {}) }}
         className={`${isSel ? "outline outline-2 outline-indigo-500 outline-offset-[-2px]" : editable ? "hover:outline hover:outline-1 hover:outline-indigo-300/70 hover:outline-offset-[-1px]" : ""}`}
       >
@@ -312,10 +528,8 @@ export default function BoxCanvas({
       <div className="absolute top-1.5 left-1.5 z-40 flex items-center gap-0.5 rounded-lg bg-indigo-600 px-1 py-1 shadow-xl ring-1 ring-white/20" onClick={(e) => e.stopPropagation()} onMouseDown={(e) => e.stopPropagation()}>
         {!isRoot && (
           <span
-            draggable
-            onDragStart={(e) => { setDragId(node.id); e.dataTransfer.effectAllowed = "move"; e.dataTransfer.setData("text/plain", node.id); }}
-            onDragEnd={endDrag}
-            title="Drag to move this block"
+            onMouseDown={(e) => startDrag(e, node)}
+            title="Drag to move this block anywhere"
             aria-label="Drag to move"
             className="cursor-grab active:cursor-grabbing text-white/80 hover:text-white px-0.5"
           ><GripVertical className="w-3.5 h-3.5" /></span>
@@ -364,6 +578,31 @@ export default function BoxCanvas({
   return (
     <div onMouseDown={() => editable && select(null)} className="w-full">
       {renderNode(root, null)}
+      {/* While resizing, a transparent full-viewport overlay holds the resize cursor so it stays crisp and
+          never disappears as the box reflows under the pointer. */}
+      {resizing && resizeCursor && createPortal(
+        <div aria-hidden="true" style={{ position: "fixed", inset: 0, zIndex: 10001, cursor: resizeCursor }} />,
+        document.body,
+      )}
+      {/* Drop indicator: a bright insertion line between siblings, or a dashed highlight over an empty
+          container you're dropping into. Portaled to <body> so it's never clipped. */}
+      {dropRect && createPortal(
+        <div
+          aria-hidden="true"
+          style={{ position: "fixed", left: dropRect.left, top: dropRect.top, width: dropRect.width, height: dropRect.height, pointerEvents: "none", zIndex: 9998 }}
+          className={dropRect.inside ? "rounded-lg outline outline-2 outline-dashed outline-indigo-500 bg-indigo-500/10" : "rounded-full bg-indigo-500 shadow-[0_0_10px_rgba(99,102,241,0.9)]"}
+        />,
+        document.body,
+      )}
+      {/* Floating preview that follows the cursor while dragging. */}
+      {dragGhost && createPortal(
+        <div
+          aria-hidden="true"
+          style={{ position: "fixed", left: dragGhost.x + 14, top: dragGhost.y + 14, width: dragGhost.w, pointerEvents: "none", zIndex: 10000 }}
+          className="flex items-center gap-1.5 rounded-lg bg-indigo-600 px-2.5 py-1.5 text-xs font-medium text-white opacity-90 shadow-2xl ring-1 ring-white/30"
+        ><GripVertical className="w-3 h-3 shrink-0 opacity-80" /><span className="truncate">{dragGhost.label}</span></div>,
+        document.body,
+      )}
     </div>
   );
 }

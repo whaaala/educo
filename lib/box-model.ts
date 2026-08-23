@@ -27,6 +27,7 @@ export interface BoxNode {
   direction?: FlexDir;      // flex-direction (default column) — flex only
   gap?: number;             // px between children (both engines)
   align?: FlexAlign;        // align-items (cross axis)
+  alignSelf?: "flex-start" | "flex-end" | "center" | "stretch"; // this box's OWN cross-axis alignment (overrides parent align) — set by edge-anchored resize to pin the far edge
   justify?: FlexJustify;    // justify-content (main axis) — flex only
   wrap?: boolean;           // flex-wrap — flex only
   columns?: number;         // grid: number of equal columns
@@ -50,6 +51,7 @@ export interface BoxNode {
   rowSpan?: number;         // grid child: rows to span
   clip?: boolean;           // allow sizing SMALLER than content (min:0) and hide overflow; default off = hug content
   baseFont?: number;        // page root only: the global base unit in px (default 10); rendered as rem so it scales with the browser font size (WCAG)
+  rowBand?: boolean;        // structural ROW band: a direct child of the page root that lays its sections out side-by-side (the page is a vertical stack of these)
 
   // ── element content ──
   text?: string;
@@ -218,6 +220,63 @@ export function moveBox(root: BoxNode, id: string, newParentId: string, index: n
 }
 
 /**
+ * Drag-and-drop geometry: given the midpoints of a container's children along the drag axis
+ * (x for a row/grid, y for a column) and the pointer position on that axis, return the slot index
+ * (0..mids.length) where a dropped block should be inserted — i.e. before the first child the pointer
+ * hasn't passed yet, else at the end.
+ */
+export function dropIndexAmong(mids: number[], pointer: number): number {
+  for (let i = 0; i < mids.length; i++) if (pointer < mids[i]) return i;
+  return mids.length;
+}
+
+/** A structural ROW band: a full-width horizontal container that lays its sections out side-by-side.
+ *  The page is a vertical stack of these. `gap` is the spacing between sections within the row. */
+export function makeRowBand(children: BoxNode[] = [], gap = 0): BoxNode {
+  const r = createContainer("row", { rowBand: true, width: "fill", padding: 0, gap, wrap: false, align: "stretch", justify: "start" });
+  r.children = children;
+  return r;
+}
+
+/** Percentage a section's width token represents (for "how full is this row" maths). fill/auto = 100. */
+export function widthPct(token?: string): number {
+  if (!token || token === "fill" || token === "auto") return 100;
+  const n = parseFloat(token);
+  return token.endsWith("%") && !Number.isNaN(n) ? n : 100;
+}
+
+/** Scale a row band's section widths DOWN so they never sum past 100% (which would overflow the row and
+ *  run off the page). Only touches over-full rows — valid rows are returned unchanged. */
+export function clampRowWidths(row: BoxNode): BoxNode {
+  const kids = row.children ?? [];
+  if (!kids.length) return row;
+  const sum = kids.reduce((s, k) => s + widthPct(k.width), 0);
+  if (sum <= 100) return row;
+  const f = 100 / sum;
+  return { ...row, children: kids.map((k) => ({ ...k, width: `${Math.max(3, Math.round(widthPct(k.width) * f))}%`, marginLeft: 0, alignSelf: undefined })) };
+}
+
+/** Keep the page canonical: the root is a vertical STACK whose direct children are ALL row bands. Any
+ *  bare section that lands directly under the root (e.g. dropped between rows) is wrapped in its own
+ *  full-width row; sections keep their id. Each row's section widths are clamped to ≤100% so nothing ever
+ *  overflows off the page. Empty rows are KEPT — they are the visible "space" you can drop into. Idempotent. */
+export function normalizeRowBands(root: BoxNode, gap = 0): BoxNode {
+  if (!root.children) return root;
+  const children: BoxNode[] = [];
+  for (const c of root.children) {
+    const clamped = clampRowWidths(c.rowBand ? c : makeRowBand([{ ...c, width: "100%", marginLeft: 0, marginTop: 0, alignSelf: undefined }], gap));
+    const kids = clamped.children ?? [];
+    if (!kids.length) continue; // PRUNE empty rows — no stray "+ Add" bands left behind after a delete/move
+    // Strip mid-row left margins (sections AFTER the first) so packed sections never leave a gap. The
+    // FIRST section MAY keep a left margin — resizing its left edge opens intentional LEADING space.
+    const needStrip = kids.some((k, i) => i > 0 && k.marginLeft);
+    children.push(needStrip ? { ...clamped, children: kids.map((k, i) => (i > 0 && k.marginLeft ? { ...k, marginLeft: 0 } : k)) } : clamped);
+  }
+  const changed = children.length !== root.children.length || children.some((c, i) => c !== root.children![i]);
+  return changed ? { ...root, children } : root;
+}
+
+/**
  * Make a container's children divide the main axis equally by setting each one's main-axis size to
  * "fill". Pass `exceptId` to leave one child at its current (e.g. just-resized) size and let the rest
  * share the remaining space — the "resize others to fill the page" action.
@@ -244,11 +303,14 @@ export function sizeToCSS(token?: string): string | undefined {
   return token; // already "<n>%" or "<n>px"
 }
 
-/** flex-basis behaviour for a child inside a flex parent, derived from its width token. */
+/** flex behaviour for a child inside a flex parent, derived from its main-size token.
+ *  An explicit size is a FIXED share (no grow/shrink) so a section keeps exactly the width you give it —
+ *  you can resize it narrower to open space, and drop another section into that space. `fill` grows to
+ *  take whatever is left. Dropping a section beside another sets its width to the leftover so it fits. */
 export function flexForWidth(token?: string): string | undefined {
   if (token === "fill") return "1 1 0%";
   if (!token || token === "auto") return "0 0 auto";
-  return `0 0 ${token}`; // fixed % / px
+  return `0 1 ${token}`; // fixed share, but MAY SHRINK to fit — so a row's sections can never overflow / run off the page
 }
 
 /**
@@ -342,6 +404,9 @@ export function childStyle(child: BoxNode, parent: BoxNode): CSSProperties {
   const mainToken = isRow ? child.width : child.height;   // grows/divides along the main axis
   const crossToken = isRow ? child.height : child.width;  // fixed size across the main axis
   s.flex = flexForWidth(mainToken);
+  // A box can pin its OWN cross-axis alignment (used by edge-anchored resize to keep the far edge fixed
+  // even when the parent centres/stretches its children).
+  if (child.alignSelf) s.alignSelf = child.alignSelf;
   // By default a box HUGS its content (flex auto-minimum = content) — it can't be sized smaller than
   // what's inside it. When `clip` is on, OR the box is EMPTY (nothing inside), we drop the minimum so
   // it can be shrunk all the way down to ~1px (padding is clipped along with it).

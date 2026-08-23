@@ -6,19 +6,20 @@
  * we prompt whether to reflow the others so the page stays filled. Persists to localStorage.
  */
 
-import { useEffect, useMemo, useState } from "react";
-import { Plus, Smartphone, Tablet, Laptop, Monitor, Tv, Maximize2 } from "lucide-react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { Plus, Smartphone, Tablet, Laptop, Monitor, Tv, Maximize2, Undo2, Redo2 } from "lucide-react";
 import { useTheme } from "@/contexts/ThemeContext";
 import { DEFAULT_THEME, resolveSiteTheme } from "@/lib/site-storage";
 import {
-  type BoxNode, createContainer, findBox, findParent, updateBox, insertBox,
+  type BoxNode, createContainer, findBox, updateBox, insertBox, makeRowBand, normalizeRowBands,
 } from "@/lib/box-model";
 import BoxCanvas from "@/components/website/box/BoxCanvas";
 import BoxInspector from "@/components/website/box/BoxInspector";
 import PageLoader from "@/components/shared/PageLoader";
 
-const KEY = "educo_box_demo_v5"; // v5: sections start EMPTY (placeholder), nothing pre-filled
+const KEY = "educo_box_demo_v7"; // v7: page = vertical STACK of ROW bands; each row holds sections side-by-side
 const PAGE_MIN_H = 160; // small floor only; the page FITS its content (no leftover empty band) and grows/scrolls
+const ROW_GAP = 0;      // gap between sections inside a row (0 = flush)
 const SECTION_TINTS = ["#eef2ff", "#faf5ff", "#ecfeff", "#fef2f2", "#f0fdf4", "#fffbeb"];
 
 // Responsive preview widths — narrow the canvas to check how the design reflows at each screen size.
@@ -32,55 +33,92 @@ const DEVICES: { id: Device; label: string; w: number | null; Icon: typeof Smart
   { id: "full", label: "Full width", w: null, Icon: Maximize2 },
 ];
 
-/** The page: a wrapping ROW. A full-width (100%) section fills its own line (they stack); shrink two
- *  and they PACK onto the same line, filling the freed space — like a real flex/grid website. */
-function pageRoot(children: BoxNode[] = []): BoxNode {
-  const r = createContainer("row", { layout: "flex", wrap: true, padding: 0, gap: 0, width: "fill", align: "stretch", baseFont: 10 });
-  r.children = children;
+/** The page: a vertical STACK of ROW bands. Each row lays its sections out side-by-side; add another row
+ *  below to grow the page. Sections move freely between rows and into a row's empty space (drag-and-drop). */
+function pageRoot(rows: BoxNode[] = []): BoxNode {
+  const r = createContainer("column", { layout: "flex", direction: "column", wrap: false, padding: 0, gap: 0, width: "fill", align: "stretch", justify: "start", baseFont: 10 });
+  r.children = rows;
   return r;
 }
 
-/** An EMPTY section: fills its line (width 100%), fits its content, and shows the placeholder hint
+/** A row band holding sections side-by-side. */
+function makeRow(sections: BoxNode[] = []): BoxNode {
+  return makeRowBand(sections, ROW_GAP);
+}
+
+/** An EMPTY section (a column stack): fills its row until you narrow it, and shows a placeholder hint
  *  until YOU add content. Nothing is pre-filled — the hint is a non-editable placeholder. */
 function makeSection(bg: string): BoxNode {
   return createContainer("column", { width: "100%", padding: 48, gap: 12, align: "center", justify: "center", background: bg });
 }
 
 function starter(): BoxNode {
-  return pageRoot([makeSection(SECTION_TINTS[0]), makeSection(SECTION_TINTS[1])]);
+  return pageRoot([makeRow([makeSection(SECTION_TINTS[0])]), makeRow([makeSection(SECTION_TINTS[1])])]);
 }
+
+/** Count sections across all rows (for cycling background tints). */
+function countSections(root: BoxNode): number {
+  return (root.children ?? []).reduce((n, row) => n + (row.children?.length ?? 0), 0);
+}
+
+// Undo/redo history: present tree + past/future stacks.
+type Hist = { present: BoxNode; past: BoxNode[]; future: BoxNode[] };
+const HIST_CAP = 100;
 
 export default function BoxDemoPage() {
   const { theme: appTheme } = useTheme();
-  const [root, setRoot] = useState<BoxNode | null>(null);
+  const [hist, setHist] = useState<Hist | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [device, setDevice] = useState<Device>("full");
+  const root = hist?.present ?? null;
 
   useEffect(() => {
-    try { const raw = localStorage.getItem(KEY); setRoot(raw ? JSON.parse(raw) : starter()); }
-    catch { setRoot(starter()); }
+    // Normalize on load too, so any previously-saved over-full rows are repaired (clamped ≤100%, no overflow).
+    try { const raw = localStorage.getItem(KEY); setHist({ present: normalizeRowBands(raw ? JSON.parse(raw) : starter(), ROW_GAP), past: [], future: [] }); }
+    catch { setHist({ present: starter(), past: [], future: [] }); }
   }, []);
   useEffect(() => { if (root) { try { localStorage.setItem(KEY, JSON.stringify(root)); } catch { /* ignore */ } } }, [root]);
+
+  // A brand-new document (load / reset / blank): no history to undo into.
+  const reset = (next: BoxNode) => setHist({ present: normalizeRowBands(next, ROW_GAP), past: [], future: [] });
+  // An edit: normalize, push the previous state onto the undo stack, clear redo. Every mutation goes here.
+  const commit = (next: BoxNode) => setHist((h) => (h ? { present: normalizeRowBands(next, ROW_GAP), past: [...h.past, h.present].slice(-HIST_CAP), future: [] } : h));
+
+  const undo = useCallback(() => setHist((h) => (h && h.past.length ? { present: h.past[h.past.length - 1], past: h.past.slice(0, -1), future: [h.present, ...h.future].slice(0, HIST_CAP) } : h)), []);
+  const redo = useCallback(() => setHist((h) => (h && h.future.length ? { present: h.future[0], past: [...h.past, h.present].slice(-HIST_CAP), future: h.future.slice(1) } : h)), []);
+  const canUndo = !!hist?.past.length, canRedo = !!hist?.future.length;
+
+  // Keyboard undo/redo (Ctrl/Cmd+Z, Ctrl/Cmd+Y or Ctrl/Cmd+Shift+Z), ignored while typing in a field.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const ae = document.activeElement as HTMLElement | null;
+      if (ae && (ae.tagName === "INPUT" || ae.tagName === "TEXTAREA" || ae.isContentEditable)) return;
+      const mod = e.ctrlKey || e.metaKey; const k = e.key.toLowerCase();
+      if (mod && k === "z" && !e.shiftKey) { e.preventDefault(); undo(); }
+      else if (mod && (k === "y" || (k === "z" && e.shiftKey))) { e.preventDefault(); redo(); }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [undo, redo]);
 
   const renderTheme = useMemo(() => resolveSiteTheme(DEFAULT_THEME, appTheme), [appTheme]);
 
   if (!root) return <PageLoader isLoading loadingText="Box Builder" subText="Preparing your canvas…" />;
   const selected = selectedId ? findBox(root, selectedId) : null;
 
+  // "Add section" ALWAYS creates a NEW full-width row. Multiple sections side-by-side in ONE row come only
+  // from resizing a section to open space, then dragging another section into the gap. Keeps the selection.
   const addSection = () => {
-    const n = (root.children?.length ?? 0);
-    const sec = makeSection(SECTION_TINTS[n % SECTION_TINTS.length]);
-    setRoot((r) => (r ? insertBox(r, r.id, n, sec) : r)); // keep the current selection — don't jump to the new one
+    const sec = makeSection(SECTION_TINTS[countSections(root) % SECTION_TINTS.length]); sec.width = "100%";
+    commit(insertBox(root, root.id, root.children?.length ?? 0, makeRow([sec])));
   };
 
-  const onPatch = (patch: Partial<BoxNode>) => { if (selected) setRoot((r) => (r ? updateBox(r, selected.id, patch) : r)); };
+  const onPatch = (patch: Partial<BoxNode>) => { if (selected) commit(updateBox(root, selected.id, patch)); };
 
-  // Add a nested section inside the selected container (a section within a section).
-  // The PARENT stays selected (we don't select the new child) so you can keep adding into it.
+  // Add a nested section inside the selected container. The PARENT stays selected so you can keep adding.
   const addChildSection = () => {
     if (!selected) return;
-    const child = makeSection(SECTION_TINTS[(selected.children?.length ?? 0) % SECTION_TINTS.length]);
-    setRoot((r) => (r ? insertBox(r, selected.id, selected.children?.length ?? 0, child) : r));
+    commit(insertBox(root, selected.id, selected.children?.length ?? 0, makeSection(SECTION_TINTS[(selected.children?.length ?? 0) % SECTION_TINTS.length])));
   };
 
   return (
@@ -91,8 +129,11 @@ export default function BoxDemoPage() {
         <div className="mb-3 flex items-center gap-3 self-stretch">
           <h1 className="text-sm font-bold text-gray-700 dark:text-gray-200">Box Builder (preview)</h1>
           <button onClick={addSection} className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700"><Plus className="w-3.5 h-3.5" /> Add section</button>
-          <button onClick={() => { setRoot(starter()); setSelectedId(null); }} className="text-xs px-2.5 py-1 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-white dark:hover:bg-gray-800">Reset</button>
-          <button onClick={() => { setRoot(pageRoot()); setSelectedId(null); }} className="text-xs px-2.5 py-1 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-white dark:hover:bg-gray-800">Blank</button>
+          {/* Undo / redo (also Ctrl/Cmd+Z and Ctrl/Cmd+Y / Ctrl/Cmd+Shift+Z) */}
+          <button onClick={undo} disabled={!canUndo} title="Undo (Ctrl+Z)" aria-label="Undo" className="p-1.5 rounded-lg border border-gray-300 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-800 disabled:opacity-40 disabled:cursor-not-allowed"><Undo2 className="w-4 h-4" /></button>
+          <button onClick={redo} disabled={!canRedo} title="Redo (Ctrl+Y)" aria-label="Redo" className="p-1.5 rounded-lg border border-gray-300 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-800 disabled:opacity-40 disabled:cursor-not-allowed"><Redo2 className="w-4 h-4" /></button>
+          <button onClick={() => { reset(starter()); setSelectedId(null); }} className="text-xs px-2.5 py-1 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-white dark:hover:bg-gray-800">Reset</button>
+          <button onClick={() => { reset(pageRoot([makeRow([makeSection(SECTION_TINTS[0])])])); setSelectedId(null); }} className="text-xs px-2.5 py-1 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-white dark:hover:bg-gray-800">Blank</button>
 
           {/* Responsive preview — narrow the canvas to test each screen size */}
           <div className="flex items-center rounded-lg border border-gray-300 dark:border-gray-700 p-0.5 ml-1" role="group" aria-label="Preview screen size">
@@ -112,12 +153,12 @@ export default function BoxDemoPage() {
           {/* Global base unit (px → rem). Everything scales off this; rem keeps it browser-relative (WCAG). */}
           <label className="ml-1 flex items-center gap-1 text-[11px] text-gray-500" title="Base unit in px — rendered as rem, so it scales with the browser font size (WCAG)">
             Base
-            <input type="number" min={6} max={24} value={root.baseFont ?? 10} onChange={(e) => setRoot((r) => (r ? updateBox(r, r.id, { baseFont: Number(e.target.value) || 10 }) : r))} aria-label="Base font size (px)" className="w-12 text-xs px-1.5 py-1 rounded border border-gray-300 dark:border-gray-700 bg-transparent" />
+            <input type="number" min={6} max={24} value={root.baseFont ?? 10} onChange={(e) => commit(updateBox(root, root.id, { baseFont: Number(e.target.value) || 10 }))} aria-label="Base font size (px)" className="w-12 text-xs px-1.5 py-1 rounded border border-gray-300 dark:border-gray-700 bg-transparent" />
             px
           </label>
         </div>
         <div className={`bg-white shadow-2xl rounded-xl ring-1 ring-black/10 shrink-0 mx-auto transition-[width] duration-300 ${device === "full" ? "w-full max-w-5xl" : ""}`} style={{ width: DEVICES.find((d) => d.id === device)!.w ?? undefined, fontFamily: renderTheme.bodyFont, containerType: "inline-size" }}>
-          <BoxCanvas root={root} theme={renderTheme} minHeight={PAGE_MIN_H} selectedId={selectedId} onSelectId={setSelectedId} onChange={setRoot} />
+          <BoxCanvas root={root} theme={renderTheme} minHeight={PAGE_MIN_H} selectedId={selectedId} onSelectId={setSelectedId} onChange={commit} />
         </div>
         </div>
       </div>

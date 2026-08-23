@@ -4,7 +4,7 @@ import { render, screen, fireEvent } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import BoxCanvas from "@/components/website/box/BoxCanvas";
 import { DEFAULT_THEME } from "@/lib/site-storage";
-import { createContainer, createGrid, createElement, findBox, type BoxNode } from "@/lib/box-model";
+import { createContainer, createGrid, createElement, findBox, makeRowBand, normalizeRowBands, type BoxNode } from "@/lib/box-model";
 
 function Harness({ initial, initialSel = null as string | null }: { initial: BoxNode; initialSel?: string | null }) {
   const [root, setRoot] = useState(initial);
@@ -16,6 +16,19 @@ const tree = () => createContainer("column", {
   id: "root",
   children: [createElement("text", { id: "t1", text: "Hello world" } as Partial<BoxNode>)],
 } as Partial<BoxNode>);
+
+// jsdom has no layout engine, so getBoundingClientRect returns zeros. Stub a rect on an element so the
+// pointer drag-and-drop hit-testing (which reads element geometry) has something meaningful to work with.
+function stubRect(el: HTMLElement, r: { top: number; left: number; width: number; height: number }) {
+  el.getBoundingClientRect = () => ({
+    top: r.top, left: r.left, width: r.width, height: r.height,
+    right: r.left + r.width, bottom: r.top + r.height, x: r.left, y: r.top, toJSON: () => ({}),
+  } as DOMRect);
+}
+// The pixel-based resize maths reads the parent's clientWidth (0 in jsdom) — stub it so the geometry is real.
+function stubClientWidth(el: HTMLElement, w: number) {
+  Object.defineProperty(el, "clientWidth", { value: w, configurable: true });
+}
 
 describe("BoxCanvas (box-model editor)", () => {
   it("renders element content from the tree", () => {
@@ -74,7 +87,7 @@ describe("BoxCanvas (box-model editor)", () => {
     expect(el.style.gridTemplateColumns).toBe("repeat(4, minmax(0, 1fr))");
   });
 
-  it("drag-and-drop reorders boxes (drag A's grip onto B → A moves after B)", () => {
+  it("pointer drag-and-drop reorders boxes (drag A's grip over B's lower half → A moves after B)", () => {
     const initial = createContainer("column", {
       id: "root",
       children: [createElement("text", { id: "a", text: "AAA" } as Partial<BoxNode>), createElement("text", { id: "b", text: "BBB" } as Partial<BoxNode>)],
@@ -85,14 +98,123 @@ describe("BoxCanvas (box-model editor)", () => {
       return <BoxCanvas root={root} theme={DEFAULT_THEME} selectedId={sel} onSelectId={setSel} onChange={setRoot} />;
     }
     const { container } = render(<DragHarness />);
-    const dt = { setData: () => {}, getData: () => "", effectAllowed: "" };
-    fireEvent.dragStart(screen.getByLabelText("Drag to move"), { dataTransfer: dt }); // grab A
+    const aEl = container.querySelector<HTMLElement>('[data-box-id="a"]')!;
     const bEl = container.querySelector<HTMLElement>('[data-box-id="b"]')!;
-    fireEvent.dragOver(bEl, { dataTransfer: dt, clientX: 0, clientY: 0 });
-    fireEvent.drop(bEl, { dataTransfer: dt });
+    const rootEl = container.querySelector<HTMLElement>('[data-box-id="root"]')!;
+    // jsdom has no layout — stub the geometry: a column with A at y0–20 and B at y20–40.
+    stubRect(aEl, { top: 0, left: 0, width: 100, height: 20 });
+    stubRect(bEl, { top: 20, left: 0, width: 100, height: 20 });
+    stubRect(rootEl, { top: 0, left: 0, width: 100, height: 40 });
+    document.elementsFromPoint = () => [bEl]; // cursor sits over B
+
+    const grip = screen.getByLabelText("Drag to move");
+    fireEvent.mouseDown(grip, { clientX: 0, clientY: 5 });   // grab A
+    fireEvent.mouseMove(document, { clientX: 0, clientY: 35 }); // past threshold, over B's lower half → after B
+    fireEvent.mouseUp(document, { clientX: 0, clientY: 35 });
     // DOM order now reflects [root, b, a]
     const ids = Array.from(container.querySelectorAll<HTMLElement>("[data-box-id]")).map((e) => e.getAttribute("data-box-id"));
     expect(ids).toEqual(["root", "b", "a"]);
+  });
+
+  it("pointer drag REPARENTS a block into another container (drop A inside empty container C)", () => {
+    const initial = createContainer("column", {
+      id: "root",
+      children: [
+        createElement("text", { id: "a", text: "AAA" } as Partial<BoxNode>),
+        createContainer("column", { id: "c" } as Partial<BoxNode>), // empty container to receive A
+      ],
+    } as Partial<BoxNode>);
+    function DragHarness() {
+      const [root, setRoot] = useState(initial);
+      const [sel, setSel] = useState<string | null>("a");
+      return <BoxCanvas root={root} theme={DEFAULT_THEME} selectedId={sel} onSelectId={setSel} onChange={setRoot} />;
+    }
+    const { container } = render(<DragHarness />);
+    const cEl = container.querySelector<HTMLElement>('[data-box-id="c"]')!;
+    stubRect(cEl, { top: 20, left: 0, width: 100, height: 40 });
+    document.elementsFromPoint = () => [cEl]; // cursor over the empty container C
+
+    fireEvent.mouseDown(screen.getByLabelText("Drag to move"), { clientX: 0, clientY: 5 });
+    fireEvent.mouseMove(document, { clientX: 40, clientY: 40 }); // inside C
+    fireEvent.mouseUp(document, { clientX: 40, clientY: 40 });
+    // A is now a child of C
+    const cAfter = container.querySelector<HTMLElement>('[data-box-id="c"]')!;
+    expect(cAfter.querySelector('[data-box-id="a"]')).not.toBeNull();
+  });
+
+  it("deleting a section via the ⋯ menu works through the page's NORMALIZING onChange (not re-created)", async () => {
+    const user = userEvent.setup();
+    const initial = createContainer("column", {
+      id: "root",
+      children: [makeRowBand([
+        createContainer("column", { id: "s1", width: "50%" } as Partial<BoxNode>),
+        createContainer("column", { id: "s2", width: "50%" } as Partial<BoxNode>),
+      ], 0)],
+    } as Partial<BoxNode>);
+    function Harn() {
+      const [root, setRoot] = useState(initial);
+      const [sel, setSel] = useState<string | null>(null);
+      // Mirror the real page: every change is normalized.
+      return <BoxCanvas root={root} theme={DEFAULT_THEME} selectedId={sel} onSelectId={setSel} onChange={(r) => setRoot(normalizeRowBands(r, 0))} />;
+    }
+    const { container } = render(<Harn />);
+    await user.click(container.querySelector<HTMLElement>('[data-box-id="s1"]')!);
+    await user.click(screen.getByLabelText("Block actions"));
+    await user.click(screen.getByRole("menuitem", { name: "Delete" }));
+    expect(container.querySelector('[data-box-id="s1"]')).toBeNull();     // stays deleted (normalize doesn't resurrect it)
+    expect(container.querySelector('[data-box-id="s2"]')).not.toBeNull();
+  });
+
+  it("a SECTION in a row selects on a SINGLE click and can be deleted via the ⋯ menu (row shrinks)", async () => {
+    const user = userEvent.setup();
+    const initial = createContainer("column", {
+      id: "root",
+      children: [makeRowBand([
+        createContainer("column", { id: "s1", width: "50%" } as Partial<BoxNode>),
+        createContainer("column", { id: "s2", width: "50%" } as Partial<BoxNode>),
+      ], 0)],
+    } as Partial<BoxNode>);
+    function Harn() {
+      const [root, setRoot] = useState(initial);
+      const [sel, setSel] = useState<string | null>(null);
+      return <BoxCanvas root={root} theme={DEFAULT_THEME} selectedId={sel} onSelectId={setSel} onChange={setRoot} />;
+    }
+    const { container } = render(<Harn />);
+    await user.click(container.querySelector<HTMLElement>('[data-box-id="s1"]')!); // ONE click selects the section
+    await user.click(screen.getByLabelText("Block actions"));                      // its toolbar is present → open ⋯
+    await user.click(screen.getByRole("menuitem", { name: "Delete" }));
+    expect(container.querySelector('[data-box-id="s1"]')).toBeNull();      // deleted
+    expect(container.querySelector('[data-box-id="s2"]')).not.toBeNull();  // the other section remains
+  });
+
+  it("dropping a section BESIDE another fills the row's leftover space (stays a sibling, no wrap/gap)", () => {
+    const initial = createContainer("row", {
+      id: "root", direction: "row",
+      children: [
+        createContainer("column", { id: "a", width: "40%" } as Partial<BoxNode>),
+        createContainer("column", { id: "b", width: "40%" } as Partial<BoxNode>),
+        createContainer("column", { id: "d", width: "100%" } as Partial<BoxNode>), // the section we drag
+      ],
+    } as Partial<BoxNode>);
+    const onChange = vi.fn();
+    const { container } = render(<BoxCanvas root={initial} theme={DEFAULT_THEME} selectedId="d" onChange={onChange} />);
+    const rootEl = container.querySelector<HTMLElement>('[data-box-id="root"]')!;
+    const aEl = container.querySelector<HTMLElement>('[data-box-id="a"]')!;
+    const bEl = container.querySelector<HTMLElement>('[data-box-id="b"]')!;
+    const dEl = container.querySelector<HTMLElement>('[data-box-id="d"]')!;
+    // a and b share the top line (40% each → 80% used); d sits on its own line below.
+    stubRect(rootEl, { top: 0, left: 0, width: 100, height: 50 });
+    stubRect(aEl, { top: 0, left: 0, width: 40, height: 50 });
+    stubRect(bEl, { top: 0, left: 40, width: 40, height: 50 });
+    stubRect(dEl, { top: 50, left: 0, width: 100, height: 50 });
+    document.elementsFromPoint = () => [bEl];
+
+    fireEvent.mouseDown(screen.getByLabelText("Drag to move"), { clientX: 0, clientY: 55 }); // grab d
+    fireEvent.mouseMove(document, { clientX: 78, clientY: 25 }); // near b's RIGHT edge (b spans 40..80)
+    fireEvent.mouseUp(document, { clientX: 78, clientY: 25 });
+    const last = onChange.mock.calls.at(-1)![0];
+    expect(findBox(last, "d")?.width).toBe("20%");                                   // filled the leftover 100−40−40
+    expect(findBox(last, "root")?.children?.some((c) => c.id === "d")).toBe(true);   // still a direct sibling (dropped beside, not nested)
   });
 
   it("keyboard: Delete removes the selected box; Ctrl+D duplicates it (WCAG)", () => {
@@ -179,39 +301,104 @@ describe("BoxCanvas (box-model editor)", () => {
     expect(onResized).toHaveBeenCalledWith("t1", "height");
   });
 
-  it("dragging the LEFT edge adds left margin (space), not width", () => {
+  it("dragging the RIGHT edge moves only that edge — width changes and the LEFT edge stays put (alignSelf pins it, so a centred box can't grow from the middle)", () => {
     const onChange = vi.fn();
     render(<BoxCanvas root={tree()} theme={DEFAULT_THEME} selectedId="t1" onChange={onChange} />);
-    fireEvent.mouseDown(screen.getByLabelText("Resize left edge"), { clientX: 100, clientY: 0 });
-    fireEvent.mouseMove(document, { clientX: 40, clientY: 0 }); // dragged left by 60
+    fireEvent.mouseDown(screen.getByLabelText("Resize right edge"), { clientX: 0, clientY: 0 });
+    fireEvent.mouseMove(document, { clientX: 60, clientY: 0 }); // right edge dragged outward by 60
     fireEvent.mouseUp(document);
     const n = findBox(onChange.mock.calls.at(-1)![0], "t1");
-    expect(n?.marginLeft).toBeGreaterThan(0); // space added on the LEFT
-    expect(n?.width).toBe("auto");            // width untouched (still its default)
+    expect(n?.width).toMatch(/%$/);              // the edge itself resized the WIDTH
+    expect(n?.alignSelf).toBe("flex-start");     // pinned to the LEFT so the left edge stays fixed
   });
 
-  it("dragging the TOP edge adds top margin (space above), not height", () => {
+  it("dragging the LEFT edge (cross-axis child) moves only that edge — width changes and the RIGHT edge stays put (margin-left grows as width shrinks)", () => {
     const onChange = vi.fn();
-    render(<BoxCanvas root={tree()} theme={DEFAULT_THEME} selectedId="t1" onChange={onChange} />);
-    fireEvent.mouseDown(screen.getByLabelText("Resize top edge"), { clientX: 0, clientY: 100 });
-    fireEvent.mouseMove(document, { clientX: 0, clientY: 40 }); // dragged up by 60
+    const { container } = render(<BoxCanvas root={tree()} theme={DEFAULT_THEME} selectedId="t1" onChange={onChange} />);
+    const rootEl = container.querySelector<HTMLElement>('[data-box-id="root"]')!;
+    const t1El = container.querySelector<HTMLElement>('[data-box-id="t1"]')!;
+    stubRect(rootEl, { top: 0, left: 0, width: 600, height: 100 }); stubClientWidth(rootEl, 600);
+    stubRect(t1El, { top: 0, left: 0, width: 300, height: 100 }); // starts at page-left, 300px wide
+    fireEvent.mouseDown(screen.getByLabelText("Resize left edge"), { clientX: 0, clientY: 0 });
+    fireEvent.mouseMove(document, { clientX: 60, clientY: 0 }); // left edge dragged inward (right) by 60
     fireEvent.mouseUp(document);
     const n = findBox(onChange.mock.calls.at(-1)![0], "t1");
-    expect(n?.marginTop).toBeGreaterThan(0); // space added ABOVE
-    expect(n?.height).toBeUndefined();       // height untouched
+    expect(n?.width).toMatch(/%$/);            // the edge itself resized the WIDTH
+    expect(n?.alignSelf).toBe("flex-start");   // top-left anchored (one consistent model)
+    expect(n?.marginLeft).toBeGreaterThan(0);  // box shifts right so the RIGHT edge stays fixed
   });
 
-  it("resizing a section's WIDTH makes its row-siblings fill the remaining space", () => {
+  it("resizing a ROW section's shared edge is a DIVIDER — this section grows, the neighbour gives up the width (packed, no margin gap)", () => {
     const initial = createContainer("row", {
       id: "root", direction: "row",
-      children: [createContainer("column", { id: "a", width: "100%" } as Partial<BoxNode>), createContainer("column", { id: "b", width: "100%" } as Partial<BoxNode>)],
+      children: [createContainer("column", { id: "a", width: "50%" } as Partial<BoxNode>), createContainer("column", { id: "b", width: "50%" } as Partial<BoxNode>)],
     } as Partial<BoxNode>);
     const onChange = vi.fn();
-    render(<BoxCanvas root={initial} theme={DEFAULT_THEME} selectedId="a" onChange={onChange} />);
+    const { container } = render(<BoxCanvas root={initial} theme={DEFAULT_THEME} selectedId="a" onChange={onChange} />);
+    const rootEl = container.querySelector<HTMLElement>('[data-box-id="root"]')!;
+    stubRect(rootEl, { top: 0, left: 0, width: 600, height: 100 }); stubClientWidth(rootEl, 600);
+    stubRect(container.querySelector<HTMLElement>('[data-box-id="a"]')!, { top: 0, left: 0, width: 300, height: 100 });
+    stubRect(container.querySelector<HTMLElement>('[data-box-id="b"]')!, { top: 0, left: 300, width: 300, height: 100 });
     fireEvent.mouseDown(screen.getByLabelText("Resize right edge"), { clientX: 0, clientY: 0 });
-    // the sibling-fill is applied at drag start
-    expect(findBox(onChange.mock.calls[0][0], "b")?.width).toBe("fill");
+    fireEvent.mouseMove(document, { clientX: 60, clientY: 0 }); // a's right edge (the divider with b) → +10%
     fireEvent.mouseUp(document);
+    const last = onChange.mock.calls.at(-1)![0];
+    expect(parseFloat(findBox(last, "a")!.width!)).toBeGreaterThan(50); // this section grew
+    expect(parseFloat(findBox(last, "b")!.width!)).toBeLessThan(50);    // the neighbour gave up the width
+    expect(findBox(last, "a")?.marginLeft ?? 0).toBe(0);               // packed — no margin gap
+  });
+
+  it("dragging the TOP edge moves only that edge — height changes and the BOTTOM edge stays put (margin-top compensates)", () => {
+    const onChange = vi.fn();
+    const { container } = render(<BoxCanvas root={tree()} theme={DEFAULT_THEME} selectedId="t1" onChange={onChange} />);
+    const rootEl = container.querySelector<HTMLElement>('[data-box-id="root"]')!;
+    const t1El = container.querySelector<HTMLElement>('[data-box-id="t1"]')!;
+    stubRect(rootEl, { top: 0, left: 0, width: 600, height: 400 }); stubClientWidth(rootEl, 600);
+    stubRect(t1El, { top: 0, left: 0, width: 600, height: 200 }); // starts at the top, 200px tall
+    fireEvent.mouseDown(screen.getByLabelText("Resize top edge"), { clientX: 0, clientY: 0 });
+    fireEvent.mouseMove(document, { clientX: 0, clientY: 60 }); // top edge dragged inward (down) by 60
+    fireEvent.mouseUp(document);
+    const n = findBox(onChange.mock.calls.at(-1)![0], "t1");
+    expect(n?.height).toMatch(/vh$/);          // the edge itself resized the HEIGHT
+    expect(n?.marginTop).toBeGreaterThan(0);   // pushed down so the BOTTOM edge stays fixed
+  });
+
+  it("resizing the FIRST section's LEFT edge opens LEADING space (margin-left), keeping the right edge fixed", () => {
+    const initial = createContainer("row", {
+      id: "root", direction: "row",
+      children: [createContainer("column", { id: "a", width: "60%" } as Partial<BoxNode>), createContainer("column", { id: "b", width: "40%" } as Partial<BoxNode>)],
+    } as Partial<BoxNode>);
+    const onChange = vi.fn();
+    const { container } = render(<BoxCanvas root={initial} theme={DEFAULT_THEME} selectedId="a" onChange={onChange} />);
+    const rootEl = container.querySelector<HTMLElement>('[data-box-id="root"]')!;
+    stubRect(rootEl, { top: 0, left: 0, width: 600, height: 100 }); stubClientWidth(rootEl, 600);
+    stubRect(container.querySelector<HTMLElement>('[data-box-id="a"]')!, { top: 0, left: 0, width: 360, height: 100 }); // leftmost
+    stubRect(container.querySelector<HTMLElement>('[data-box-id="b"]')!, { top: 0, left: 360, width: 240, height: 100 });
+    fireEvent.mouseDown(screen.getByLabelText("Resize left edge"), { clientX: 0, clientY: 0 });
+    fireEvent.mouseMove(document, { clientX: 60, clientY: 0 }); // left edge dragged inward (right)
+    fireEvent.mouseUp(document);
+    const n = findBox(onChange.mock.calls.at(-1)![0], "a");
+    expect(n?.width).toMatch(/%$/);
+    expect(n?.marginLeft).toBeGreaterThan(0); // leading space opened; the right edge stayed put
+  });
+
+  it("resizing the LAST section's right edge grows into the row's LEFTOVER space (the other section is untouched)", () => {
+    const initial = createContainer("row", {
+      id: "root", direction: "row",
+      children: [createContainer("column", { id: "a", width: "30%" } as Partial<BoxNode>), createContainer("column", { id: "b", width: "30%" } as Partial<BoxNode>)],
+    } as Partial<BoxNode>);
+    const onChange = vi.fn();
+    const { container } = render(<BoxCanvas root={initial} theme={DEFAULT_THEME} selectedId="b" onChange={onChange} />);
+    const rootEl = container.querySelector<HTMLElement>('[data-box-id="root"]')!;
+    stubRect(rootEl, { top: 0, left: 0, width: 600, height: 100 }); stubClientWidth(rootEl, 600);
+    stubRect(container.querySelector<HTMLElement>('[data-box-id="a"]')!, { top: 0, left: 0, width: 180, height: 100 });
+    stubRect(container.querySelector<HTMLElement>('[data-box-id="b"]')!, { top: 0, left: 180, width: 180, height: 100 }); // rightmost; leftover after it
+    fireEvent.mouseDown(screen.getByLabelText("Resize right edge"), { clientX: 0, clientY: 0 });
+    fireEvent.mouseMove(document, { clientX: 60, clientY: 0 }); // b (last) → +10% into the leftover
+    fireEvent.mouseUp(document);
+    const last = onChange.mock.calls.at(-1)![0];
+    expect(parseFloat(findBox(last, "b")!.width!)).toBeGreaterThan(30); // grew into the leftover space
+    expect(findBox(last, "a")?.width).toBe("30%");                      // the non-adjacent section is untouched
   });
 
   it("the page root defines a FLUID base unit (--box-u) that scales with the canvas width + browser (WCAG)", () => {

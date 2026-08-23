@@ -2,7 +2,8 @@ import { describe, it, expect } from "vitest";
 import {
   createContainer, createGrid, createElement, createRoot,
   findBox, findParent, isAncestor, updateBox, insertBox, removeBox, moveBoxStep, moveBox,
-  containerStyle, childStyle, paddingCSS, marginCSS, sizeToCSS, flexForWidth, fillMainAxis, u, newBoxId,
+  containerStyle, childStyle, paddingCSS, marginCSS, sizeToCSS, flexForWidth, fillMainAxis, u, newBoxId, dropIndexAmong,
+  makeRowBand, normalizeRowBands, clampRowWidths, widthPct,
   type BoxNode,
 } from "@/lib/box-model";
 
@@ -106,6 +107,82 @@ describe("box-model — mutations are immutable and correct", () => {
     } as Partial<BoxNode>);
     expect(moveBox(box, "outer", "innr", 0)).toBe(box); // invalid → original tree returned
   });
+
+  it("makeRowBand builds a full-width side-by-side row band", () => {
+    const row = makeRowBand([createContainer("column", { id: "s1" } as Partial<BoxNode>)], 0);
+    expect(row.rowBand).toBe(true);
+    expect(row.direction).toBe("row");
+    expect(row.width).toBe("fill");
+    expect(row.wrap).toBe(false);
+    expect(row.children!.map((c) => c.id)).toEqual(["s1"]);
+  });
+
+  it("normalizeRowBands wraps a bare section in its own row but leaves existing rows alone; idempotent", () => {
+    const existing = makeRowBand([createContainer("column", { id: "a" } as Partial<BoxNode>)], 0);
+    const root = createContainer("column", {
+      id: "root",
+      children: [createContainer("column", { id: "bare", width: "40%" } as Partial<BoxNode>), existing],
+    } as Partial<BoxNode>);
+    const norm = normalizeRowBands(root, 0);
+    expect(norm.children!.length).toBe(2);
+    expect(norm.children![0].rowBand).toBe(true);              // bare section got wrapped in a row
+    expect(norm.children![0].children![0].id).toBe("bare");    // section keeps its identity
+    expect(norm.children![0].children![0].width).toBe("100%"); // and fills its new solo row
+    expect(norm.children![1].id).toBe(existing.id);            // existing row untouched
+    expect(normalizeRowBands(norm, 0)).toEqual(norm);          // idempotent
+  });
+
+  it("clampRowWidths scales an over-full row's sections down so they never exceed 100% (no off-page overflow)", () => {
+    const row = makeRowBand([
+      createContainer("column", { id: "a", width: "100%" } as Partial<BoxNode>),
+      createContainer("column", { id: "b", width: "100%" } as Partial<BoxNode>),
+    ], 0);
+    const clamped = clampRowWidths(row);
+    expect(clamped.children!.map((c) => c.width)).toEqual(["50%", "50%"]); // 200% → scaled to 50/50
+    // a valid row (≤100%) is returned untouched
+    const ok = makeRowBand([createContainer("column", { id: "c", width: "40%" } as Partial<BoxNode>)], 0);
+    expect(clampRowWidths(ok)).toBe(ok);
+    // normalizeRowBands applies the clamp across all rows
+    const root = createContainer("column", { id: "root", children: [row] } as Partial<BoxNode>);
+    const norm = normalizeRowBands(root, 0);
+    expect(norm.children![0].children!.map((c) => c.width)).toEqual(["50%", "50%"]);
+  });
+
+  it("normalizeRowBands strips MID-row left margins (non-first) so they pack; the FIRST may keep leading space", () => {
+    const row = makeRowBand([
+      createContainer("column", { id: "a", width: "40%", marginLeft: 200 } as Partial<BoxNode>), // first → leading space kept
+      createContainer("column", { id: "b", width: "40%", marginLeft: 300 } as Partial<BoxNode>), // mid-row → stripped
+    ], 0);
+    const root = createContainer("column", { id: "root", children: [row] } as Partial<BoxNode>);
+    const norm = normalizeRowBands(root, 0);
+    expect(norm.children![0].children![0].marginLeft).toBe(200); // first section keeps its leading margin
+    expect(norm.children![0].children![1].marginLeft).toBe(0);   // mid-row gap margin removed
+  });
+
+  it("normalizeRowBands PRUNES empty rows (no stray '+ Add' band left behind after a delete)", () => {
+    const full = makeRowBand([createContainer("column", { id: "s", width: "100%" } as Partial<BoxNode>)], 0);
+    const empty = makeRowBand([], 0);
+    const root = createContainer("column", { id: "root", children: [full, empty] } as Partial<BoxNode>);
+    const norm = normalizeRowBands(root, 0);
+    expect(norm.children!.length).toBe(1);          // the empty row is gone
+    expect(norm.children![0].id).toBe(full.id);     // the real row remains
+  });
+
+  it("widthPct reads a section's share for row-fullness maths", () => {
+    expect(widthPct("40%")).toBe(40);
+    expect(widthPct("fill")).toBe(100);
+    expect(widthPct(undefined)).toBe(100);
+    expect(widthPct("120px")).toBe(100); // non-% → treated as full
+  });
+
+  it("dropIndexAmong picks the slot before the first child the pointer hasn't passed", () => {
+    const mids = [10, 30, 50]; // three children centred at 10, 30, 50 along the drag axis
+    expect(dropIndexAmong(mids, 0)).toBe(0);   // before the first
+    expect(dropIndexAmong(mids, 20)).toBe(1);  // between 1st and 2nd
+    expect(dropIndexAmong(mids, 40)).toBe(2);  // between 2nd and 3rd
+    expect(dropIndexAmong(mids, 999)).toBe(3); // past the last → append
+    expect(dropIndexAmong([], 5)).toBe(0);     // empty container → first slot
+  });
 });
 
 describe("box-model — layout CSS mapping", () => {
@@ -129,7 +206,7 @@ describe("box-model — layout CSS mapping", () => {
   it("childStyle carries flex width via flex-basis for a flex parent", () => {
     const parent = createContainer("row");
     expect(childStyle(createElement("text", { width: "fill" } as Partial<BoxNode>), parent).flex).toBe("1 1 0%");
-    expect(childStyle(createElement("text", { width: "50%" } as Partial<BoxNode>), parent).flex).toBe("0 0 50%");
+    expect(childStyle(createElement("text", { width: "50%" } as Partial<BoxNode>), parent).flex).toBe("0 1 50%"); // fixed share, may shrink to fit
     expect(childStyle(createElement("text", { width: "auto" } as Partial<BoxNode>), parent).flex).toBe("0 0 auto");
   });
 
@@ -167,6 +244,9 @@ describe("box-model — layout CSS mapping", () => {
     expect(sizeToCSS("fill")).toBe("100%");
     expect(sizeToCSS("240px")).toBe("240px");
     expect(flexForWidth("fill")).toBe("1 1 0%");
+    expect(flexForWidth("40%")).toBe("0 1 40%"); // fixed share but may SHRINK to fit (never overflows off the page)
+    expect(flexForWidth("auto")).toBe("0 0 auto");
+    expect(flexForWidth(undefined)).toBe("0 0 auto");
   });
 });
 
