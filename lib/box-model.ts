@@ -48,6 +48,8 @@ export interface BoxNode {
   minHeight?: number;       // px
   colSpan?: number;         // grid child: columns to span
   rowSpan?: number;         // grid child: rows to span
+  clip?: boolean;           // allow sizing SMALLER than content (min:0) and hide overflow; default off = hug content
+  baseFont?: number;        // page root only: the global base unit in px (default 10); rendered as rem so it scales with the browser font size (WCAG)
 
   // ── element content ──
   text?: string;
@@ -71,6 +73,11 @@ export function newBoxId(): string {
 
 export function isContainer(node: BoxNode): boolean {
   return node.type === "container";
+}
+
+/** A box with nothing inside — no children, no text, no image. It can shrink to ~1px. */
+export function isEmptyBox(node: BoxNode): boolean {
+  return (node.children?.length ?? 0) === 0 && !node.text && !node.src;
 }
 
 // ── Factories ───────────────────────────────────────────────────────────────
@@ -244,24 +251,48 @@ export function flexForWidth(token?: string): string | undefined {
   return `0 0 ${token}`; // fixed % / px
 }
 
-/** Per-side padding CSS: a side override falls back to the general `padding`, then 0. */
+/**
+ * Render a px-at-base-10 size as a browser-RELATIVE length off the page base unit (`--box-u`, ≈0.625rem
+ * = 10px at the browser default). Because it's rem-based, sizes scale with the user's browser font size
+ * — WCAG 1.4.4 (resize text) compliant. We never set an absolute px root font-size.
+ */
+export function u(px: number): string {
+  return `calc(var(--box-u, 0.625rem) * ${+(px / 10).toFixed(4)})`;
+}
+
+/**
+ * The page base unit as a FLUID length: `clamp(minRem, cqw, maxRem)`.
+ *  - the `cqw` middle scales with the container (canvas/screen) WIDTH — so text/spacing shrink on mobile
+ *    and grow on desktop automatically;
+ *  - the rem min/max keep it browser-relative (respects the user's font size) and bounded — WCAG-friendly.
+ * At a ~1000px container, the unit ≈ baseFontPx (default 10px); it clamps to ~0.7×/1.4× at the extremes.
+ */
+export function baseUnit(baseFontPx = 10): string {
+  const lo = +((baseFontPx * 0.7) / 16).toFixed(4);   // rem floor (≈0.7× base)
+  const hi = +((baseFontPx * 1.4) / 16).toFixed(4);   // rem ceiling (≈1.4× base)
+  const cqw = +(baseFontPx / 10).toFixed(4);          // 1cqw ≈ base at a 1000px-wide container
+  return `clamp(${lo}rem, ${cqw}cqw, ${hi}rem)`;
+}
+
+/** Per-side padding CSS (responsive rem): a side override falls back to the general `padding`, then 0. */
 export function paddingCSS(node: BoxNode): CSSProperties {
   const p = node.padding ?? 0;
   return {
-    paddingTop: node.paddingTop ?? p,
-    paddingRight: node.paddingRight ?? p,
-    paddingBottom: node.paddingBottom ?? p,
-    paddingLeft: node.paddingLeft ?? p,
+    paddingTop: u(node.paddingTop ?? p),
+    paddingRight: u(node.paddingRight ?? p),
+    paddingBottom: u(node.paddingBottom ?? p),
+    paddingLeft: u(node.paddingLeft ?? p),
   };
 }
 
-/** Per-side margin CSS: a side override falls back to the general `margin` (undefined = 0). */
+/** Per-side margin CSS (responsive rem): a side override falls back to the general `margin` (undefined = none). */
 export function marginCSS(node: BoxNode): CSSProperties {
+  const m = (side?: number) => { const v = side ?? node.margin; return v === undefined ? undefined : u(v); };
   return {
-    marginTop: node.marginTop ?? node.margin,
-    marginRight: node.marginRight ?? node.margin,
-    marginBottom: node.marginBottom ?? node.margin,
-    marginLeft: node.marginLeft ?? node.margin,
+    marginTop: m(node.marginTop),
+    marginRight: m(node.marginRight),
+    marginBottom: m(node.marginBottom),
+    marginLeft: m(node.marginLeft),
   };
 }
 
@@ -271,7 +302,7 @@ export function containerStyle(node: BoxNode): CSSProperties {
     return {
       display: "grid",
       gridTemplateColumns: `repeat(${Math.max(1, node.columns ?? 3)}, minmax(0, 1fr))`,
-      gap: node.gap ?? 16,
+      gap: u(node.gap ?? 16),
       alignItems: ALIGN_CSS[node.align ?? "stretch"],
       ...paddingCSS(node),
       minHeight: node.minHeight,
@@ -280,7 +311,7 @@ export function containerStyle(node: BoxNode): CSSProperties {
   return {
     display: "flex",
     flexDirection: node.direction ?? "column",
-    gap: node.gap ?? 16,
+    gap: u(node.gap ?? 16),
     alignItems: ALIGN_CSS[node.align ?? "stretch"],
     justifyContent: JUSTIFY_CSS[node.justify ?? "start"],
     flexWrap: node.wrap ? "wrap" : "nowrap",
@@ -311,9 +342,10 @@ export function childStyle(child: BoxNode, parent: BoxNode): CSSProperties {
   const mainToken = isRow ? child.width : child.height;   // grows/divides along the main axis
   const crossToken = isRow ? child.height : child.width;  // fixed size across the main axis
   s.flex = flexForWidth(mainToken);
-  // Override the flex auto-minimum so a box can be resized SMALLER than its content (down to 1px).
-  s.minWidth = 0;
-  s.minHeight = 0;
+  // By default a box HUGS its content (flex auto-minimum = content) — it can't be sized smaller than
+  // what's inside it. When `clip` is on, OR the box is EMPTY (nothing inside), we drop the minimum so
+  // it can be shrunk all the way down to ~1px (padding is clipped along with it).
+  if (child.clip || isEmptyBox(child)) { s.minWidth = 0; s.minHeight = 0; }
   const crossCss = sizeToCSS(crossToken);
   if (crossCss) { if (isRow) s.height = crossCss; else s.width = crossCss; }
   return s;

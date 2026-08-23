@@ -7,7 +7,7 @@
  */
 
 import { useRef } from "react";
-import { Rows3, Columns3, Grid3x3, Upload, Trash2, AlignLeft, AlignCenter, AlignRight } from "lucide-react";
+import { Plus, Rows3, Columns3, Grid3x3, Upload, Trash2, AlignLeft, AlignCenter, AlignRight } from "lucide-react";
 import type { SiteTheme } from "@/lib/site-storage";
 import type { BoxNode, FlexAlign, FlexJustify } from "@/lib/box-model";
 import { isContainer } from "@/lib/box-model";
@@ -18,9 +18,14 @@ const label = "text-[11px] font-medium text-gray-500 dark:text-gray-400 midnight
 const section = "text-[11px] font-semibold uppercase tracking-wide text-gray-400 pt-1";
 const seg = "flex-1 flex items-center justify-center gap-1 py-1.5 text-xs rounded-md";
 
+// Stored sizes are in "px at base 10"; the base unit ≈ 10px, so REM (relative to the base) = value / 10.
+const toRem = (px: number) => +(px / 10).toFixed(2);
+const fromRem = (rem: number) => Math.round(rem * 10);
+
 function Range({ title, value, min, max, fallback, onChange, unit = "px" }: { title: string; value?: number; min: number; max: number; fallback: number; onChange: (n: number) => void; unit?: string }) {
   const v = value ?? fallback;
-  return <label className="block"><span className={label}>{title}: {v}{unit}</span><input type="range" min={min} max={max} value={v} onChange={(e) => onChange(Number(e.target.value))} aria-label={title} className="w-full mt-1" /></label>;
+  const disp = unit === "rem" ? `${toRem(v)}rem` : `${v}${unit}`; // rem = relative to the root base (responsive)
+  return <label className="block"><span className={label}>{title}: {disp}</span><input type="range" min={min} max={max} value={v} onChange={(e) => onChange(Number(e.target.value))} aria-label={title} className="w-full mt-1" /></label>;
 }
 
 function ColorRow({ title, value, fallback, onSelect, mode = "matrix" }: { title: string; value?: string; fallback: string; onSelect: (c: string) => void; mode?: "matrix" | "both" }) {
@@ -58,29 +63,32 @@ function SideSpacing({ title, node, base, sides, onPatch, max = 96 }: {
   title: string; node: BoxNode; base: keyof BoxNode; sides: [keyof BoxNode, keyof BoxNode, keyof BoxNode, keyof BoxNode]; onPatch: (p: Partial<BoxNode>) => void; max?: number;
 }) {
   const g = (node[base] as number | undefined) ?? 0;
-  const set = (k: keyof BoxNode, v: string) => onPatch({ [k]: v === "" ? undefined : Number(v) } as Partial<BoxNode>);
+  const setPx = (k: keyof BoxNode, px: number) => onPatch({ [k]: px } as Partial<BoxNode>);
+  const setRem = (k: keyof BoxNode, v: string) => onPatch({ [k]: v === "" ? undefined : fromRem(Number(v)) } as Partial<BoxNode>);
   const [t, r, b, l] = sides;
   return (
     <div className="space-y-1.5">
-      <label className="block"><span className={label}>{title}: {g}px (all sides)</span>
-        <input type="range" min={0} max={max} value={g} onChange={(e) => set(base, e.target.value)} aria-label={`${title} all sides`} className="w-full mt-1" />
+      <label className="block"><span className={label}>{title}: {toRem(g)}rem (all sides)</span>
+        <input type="range" min={0} max={max} value={g} onChange={(e) => setPx(base, Number(e.target.value))} aria-label={`${title} all sides`} className="w-full mt-1" />
       </label>
       <div className="grid grid-cols-4 gap-1">
         {([["Top", t], ["Right", r], ["Bottom", b], ["Left", l]] as const).map(([lab, key]) => (
           <label key={lab} className="flex flex-col items-center gap-0.5">
             <span className="text-[9px] uppercase tracking-wide text-gray-400">{lab}</span>
-            <input type="number" min={0} value={(node[key] as number | undefined) ?? ""} placeholder={String(g)} onChange={(e) => set(key, e.target.value)} aria-label={`${title} ${lab.toLowerCase()}`} className="w-full text-xs px-1 py-1 rounded border border-gray-200 dark:border-gray-700 bg-transparent text-center outline-none focus:ring-1 focus:ring-indigo-400" />
+            <input type="number" step={0.1} min={0} value={node[key] !== undefined ? toRem(node[key] as number) : ""} placeholder={String(toRem(g))} onChange={(e) => setRem(key, e.target.value)} aria-label={`${title} ${lab.toLowerCase()} (rem)`} className="w-full text-xs px-1 py-1 rounded border border-gray-200 dark:border-gray-700 bg-transparent text-center outline-none focus:ring-1 focus:ring-indigo-400" />
           </label>
         ))}
       </div>
+      <p className="text-[9px] text-gray-400 text-right -mt-0.5">values in rem (relative to the base)</p>
     </div>
   );
 }
 
-export default function BoxInspector({ node, theme, onPatch }: {
+export default function BoxInspector({ node, theme, onPatch, onAddChild }: {
   node: BoxNode;
   theme: SiteTheme;
   onPatch: (patch: Partial<BoxNode>) => void;
+  onAddChild?: () => void;
 }) {
   const fileRef = useRef<HTMLInputElement>(null);
   const container = isContainer(node);
@@ -88,7 +96,13 @@ export default function BoxInspector({ node, theme, onPatch }: {
 
   return (
     <div className="p-4 space-y-3">
-      <div className="text-[11px] text-gray-400">Editing a <b>{container ? (isGrid ? "Grid" : node.direction === "row" ? "Row" : "Stack") : node.type}</b> block.</div>
+      <div className="text-[11px] text-gray-400">Editing a <b>{container ? (isGrid ? "Grid" : node.direction === "row" ? "Row" : "Section") : node.type}</b> block.</div>
+
+      {container && onAddChild && (
+        <button onClick={onAddChild} className="w-full flex items-center justify-center gap-1.5 py-2 rounded-lg text-sm font-semibold bg-indigo-600 text-white hover:bg-indigo-700">
+          <Plus className="w-4 h-4" /> Add section inside
+        </button>
+      )}
 
       {/* ── Layout (containers) ── */}
       {container && (
@@ -120,7 +134,7 @@ export default function BoxInspector({ node, theme, onPatch }: {
               {["stretch", "start", "center", "end"].map((o) => <option key={o} value={o}>{o}</option>)}
             </select>
           </label>
-          <Range title="Gap (between children)" value={node.gap} min={0} max={64} fallback={16} onChange={(n) => onPatch({ gap: n })} />
+          <Range title="Gap (between children)" value={node.gap} min={0} max={64} fallback={16} onChange={(n) => onPatch({ gap: n })} unit="rem" />
           <SideSpacing title="Padding (inside)" node={node} base="padding" sides={["paddingTop", "paddingRight", "paddingBottom", "paddingLeft"]} onPatch={onPatch} />
         </>
       )}
@@ -130,7 +144,12 @@ export default function BoxInspector({ node, theme, onPatch }: {
       <div className={section}>Size</div>
       <WidthControl node={node} onPatch={onPatch} />
       <label className="block"><span className={label}>Height</span>
-        <input value={node.height ?? ""} onChange={(e) => onPatch({ height: e.target.value || undefined })} placeholder="auto, 320px or fill" aria-label="Height" className={inputCls} />
+        <input value={node.height ?? ""} onChange={(e) => onPatch({ height: e.target.value || undefined })} placeholder="auto, 40vh or fill" aria-label="Height" className={inputCls} />
+        <span className="text-[9px] text-gray-400">use vh (screen-relative) or auto/fill for responsive height</span>
+      </label>
+      <label className="flex items-start gap-2 text-xs text-gray-600 dark:text-gray-300">
+        <input type="checkbox" checked={!!node.clip} onChange={(e) => onPatch({ clip: e.target.checked })} className="mt-0.5" />
+        <span>Clip to size <span className="text-gray-400">— by default a box hugs its content and can't be smaller; tick this to force a smaller size and hide the overflow.</span></span>
       </label>
       <Range title="Corner radius" value={node.radius} min={0} max={40} fallback={0} onChange={(n) => onPatch({ radius: n })} />
       <Range title="Opacity" value={node.opacity} min={0} max={100} fallback={100} onChange={(n) => onPatch({ opacity: n })} unit="%" />
@@ -166,7 +185,7 @@ export default function BoxInspector({ node, theme, onPatch }: {
           )}
           {node.type !== "image" && (
             <>
-              <Range title="Font size" value={node.fontSize} min={10} max={72} fallback={node.type === "heading" ? 32 : 16} onChange={(n) => onPatch({ fontSize: n })} />
+              <Range title="Font size" value={node.fontSize} min={10} max={72} fallback={node.type === "heading" ? 32 : 16} onChange={(n) => onPatch({ fontSize: n })} unit="rem" />
               <ColorRow title="Text colour" value={node.color} fallback={theme.text} onSelect={(c) => onPatch({ color: c })} />
               <div className="flex items-center justify-between">
                 <span className={label}>Align</span>
