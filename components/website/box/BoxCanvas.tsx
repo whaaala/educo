@@ -15,7 +15,7 @@ import type { SiteTheme } from "@/lib/site-storage";
 import {
   type BoxNode, type BoxType,
   containerStyle, childStyle, marginCSS, sizeToCSS, u, baseUnit, createContainer, createGrid, createElement,
-  updateBox, removeBox, insertBox, moveBoxStep, duplicateBox, moveBox, cloneBox, findParent, isAncestor, isContainer, isEmptyBox,
+  updateBox, removeBox, insertBox, moveBoxStep, duplicateBox, moveBox, cloneBox, findParent, isAncestor, isContainer, isEmptyBox, widthPct,
 } from "@/lib/box-model";
 import { colorToCSS } from "@/components/shared/ColorPalettePicker";
 import { EditableText, ImageBox } from "@/components/website/sections/SectionKit";
@@ -105,6 +105,8 @@ export default function BoxCanvas({
   const dragIdRef = useRef<string | null>(null);       // mirror of dragId for the document listeners
   const dropRef = useRef<{ parentId: string; index: number } | null>(null); // where a release would drop
   const dropWidthRef = useRef<string | null>(null); // width the dropped block should take (fill the line's leftover space)
+  const dragPtRef = useRef<{ x: number; y: number } | null>(null); // latest cursor pos (rAF-batched during drag)
+  const dragRaf = useRef(0);
   const rootRef = useRef(root); rootRef.current = root; // always-fresh tree for the drag listeners
   const [clip, setClip] = useState<BoxNode | null>(null); // copy/cut clipboard (a cloned subtree)
   const select = (id: string | null) => onSelectId?.(id);
@@ -210,6 +212,23 @@ export default function BoxCanvas({
   // Hit-test the deepest box under the cursor that ISN'T the dragged block (or inside it). If it's a
   // container, drop INSIDE it (among its children); if it's a leaf, drop BESIDE it (among its parent's).
   const computeDrop = (x: number, y: number, draggingId: string): Drop | null => {
+    // NEAREST-SLOT while ARRANGING within the current parent: as long as the cursor is anywhere inside the
+    // dragged block's own parent, snap to the nearest slot among its siblings (you don't have to aim at an
+    // edge). The block floats with the cursor and lands packed next to its siblings — moving it OUT of the
+    // parent (below) reparents it. This is what makes moving blocks around inside a section feel smooth.
+    const dragInfo = findParent(rootRef.current, draggingId);
+    if (dragInfo) {
+      const pEl = document.querySelector<HTMLElement>(`[data-box-id="${dragInfo.parent.id}"]`);
+      if (pEl) {
+        const pr = pEl.getBoundingClientRect();
+        if (x >= pr.left && x <= pr.right && y >= pr.top && y <= pr.bottom) {
+          const s = slotFromKids(pEl, directKids(pEl), x, y);
+          // No moveWidth here — arranging within the same parent KEEPS the block's own (resized) width;
+          // the siblings just pack/shrink to fit. moveWidth only applies when REPARENTing (below).
+          return { target: { parentId: dragInfo.parent.id, index: s.index }, rect: s.rect };
+        }
+      }
+    }
     const stack = typeof document.elementsFromPoint === "function" ? document.elementsFromPoint(x, y) : [];
     let hitEl: HTMLElement | null = null, hitId: string | null = null;
     for (const el of stack) {
@@ -247,23 +266,36 @@ export default function BoxCanvas({
       if (Math.hypot(ev.clientX - arm.startX, ev.clientY - arm.startY) < 4) return;
       dragIdRef.current = arm.id; setDragId(arm.id); document.body.style.userSelect = "none";
     }
-    setDragGhost({ x: ev.clientX, y: ev.clientY, w: Math.min(arm.w, 260), label: arm.label });
-    const hit = computeDrop(ev.clientX, ev.clientY, arm.id);
-    dropRef.current = hit?.target ?? null;
-    dropWidthRef.current = hit?.moveWidth ?? null;
-    setDropRect(hit?.rect ?? null);
+    // rAF-batch so the floating ghost + insertion indicator track the cursor at frame rate (smooth), and
+    // heavy hit-testing runs at most once per frame no matter how many mousemove events fire.
+    dragPtRef.current = { x: ev.clientX, y: ev.clientY };
+    if (dragRaf.current) return;
+    dragRaf.current = requestAnimationFrame(() => {
+      dragRaf.current = 0;
+      const p = dragPtRef.current, id = dragIdRef.current;
+      if (!p || !id) return;
+      setDragGhost({ x: p.x, y: p.y, w: Math.min(arm.w, 260), label: arm.label });
+      const hit = computeDrop(p.x, p.y, id);
+      dropRef.current = hit?.target ?? null;
+      dropWidthRef.current = hit?.moveWidth ?? null;
+      setDropRect(hit?.rect ?? null);
+    });
   };
   const onDragUp = () => {
     document.removeEventListener("mousemove", onDragMove);
     document.removeEventListener("mouseup", onDragUp);
     document.body.style.userSelect = "";
-    const id = dragIdRef.current, target = dropRef.current, w = dropWidthRef.current;
+    if (dragRaf.current) { cancelAnimationFrame(dragRaf.current); dragRaf.current = 0; }
+    const id = dragIdRef.current, p = dragPtRef.current;
+    // Resolve the FINAL drop from the latest cursor position (a pending rAF may not have run yet).
+    let target = dropRef.current, w = dropWidthRef.current;
+    if (id && p) { const hit = computeDrop(p.x, p.y, id); target = hit?.target ?? target; w = hit ? (hit.moveWidth ?? null) : w; }
     if (id && target) {
       let next = moveBox(rootRef.current, id, target.parentId, target.index);
       if (w) next = updateBox(next, id, { width: w }); // take the line's leftover space so it fills, never wraps to a new row
       onChange(next);
     }
-    dragArm.current = null; dragIdRef.current = null; dropRef.current = null; dropWidthRef.current = null;
+    dragArm.current = null; dragIdRef.current = null; dropRef.current = null; dropWidthRef.current = null; dragPtRef.current = null;
     setDragId(null); setDragGhost(null); setDropRect(null);
   };
   const startDrag = (e: React.MouseEvent, node: BoxNode) => {
@@ -427,14 +459,20 @@ export default function BoxCanvas({
   };
 
   const addChild = (parentId: string, kind: BoxType | "row" | "grid") => {
+    const parent = findByIdLocal(root, parentId);
     const node =
       kind === "row" ? createContainer("row")
       : kind === "grid" ? createGrid(3)
-      : kind === "container" ? createContainer("column")
+      : kind === "container" ? createContainer("row", { direction: "row", wrap: true, align: "stretch", clip: true, padding: 24 })
       : createElement(kind as Exclude<BoxType, "container">);
-    // append at end of the container's children. NOTE: we intentionally do NOT select the new box —
-    // the current selection (usually the parent you're adding into) stays put, so you can keep adding.
-    const parent = findByIdLocal(root, parentId);
+    // If the parent lays its blocks out horizontally (a section / wrapping row), the new block fills the
+    // row's leftover width and WRAPS when full — so blocks sit BESIDE each other, never overflowing.
+    if (parent && (parent.direction ?? "column") === "row") {
+      const used = (parent.children ?? []).reduce((s, c) => s + widthPct(c.width), 0);
+      node.width = used <= 88 ? `${Math.max(15, Math.round(100 - used))}%` : "100%";
+    }
+    // Append at end. We intentionally do NOT select the new box — the current selection (the parent you're
+    // adding into) stays put, so you can keep adding.
     const index = parent?.children?.length ?? 0;
     onChange(insertBox(root, parentId, index, node));
     closeMenu();

@@ -11,13 +11,13 @@ import { Plus, Smartphone, Tablet, Laptop, Monitor, Tv, Maximize2, Undo2, Redo2 
 import { useTheme } from "@/contexts/ThemeContext";
 import { DEFAULT_THEME, resolveSiteTheme } from "@/lib/site-storage";
 import {
-  type BoxNode, createContainer, findBox, updateBox, insertBox, makeRowBand, normalizeRowBands,
+  type BoxNode, createContainer, findBox, updateBox, insertBox, makeRowBand, normalizeRowBands, widthPct,
 } from "@/lib/box-model";
 import BoxCanvas from "@/components/website/box/BoxCanvas";
 import BoxInspector from "@/components/website/box/BoxInspector";
 import PageLoader from "@/components/shared/PageLoader";
 
-const KEY = "educo_box_demo_v7"; // v7: page = vertical STACK of ROW bands; each row holds sections side-by-side
+const KEY = "educo_box_demo_v8"; // v8: sections are wrapping ROWS of blocks (add beside → wrap); children fit the section height
 const PAGE_MIN_H = 160; // small floor only; the page FITS its content (no leftover empty band) and grows/scrolls
 const ROW_GAP = 0;      // gap between sections inside a row (0 = flush)
 const SECTION_TINTS = ["#eef2ff", "#faf5ff", "#ecfeff", "#fef2f2", "#f0fdf4", "#fffbeb"];
@@ -46,10 +46,17 @@ function makeRow(sections: BoxNode[] = []): BoxNode {
   return makeRowBand(sections, ROW_GAP);
 }
 
-/** An EMPTY section (a column stack): fills its row until you narrow it, and shows a placeholder hint
- *  until YOU add content. Nothing is pre-filled — the hint is a non-editable placeholder. */
+/** A SECTION: a wrapping ROW of blocks. Blocks you add sit BESIDE each other (columns) and wrap to a new
+ *  row inside the section when the row is full; each block STRETCHES to the section's height and is clipped
+ *  so it can never grow taller than the section. Give it a background, then build any layout inside it. */
 function makeSection(bg: string): BoxNode {
-  return createContainer("column", { width: "100%", padding: 48, gap: 12, align: "center", justify: "center", background: bg });
+  return createContainer("row", { direction: "row", wrap: true, width: "100%", padding: 48, gap: 12, align: "stretch", justify: "start", background: bg, clip: true });
+}
+
+/** A block placed INSIDE a section: fills the section's height (no fixed height — stretches), width = its
+ *  share of the row. Reuses the section styling so any block can itself hold more blocks (recursive). */
+function makeBlock(bg: string, width: string): BoxNode {
+  return createContainer("row", { direction: "row", wrap: true, width, padding: 24, gap: 12, align: "stretch", justify: "start", background: bg, clip: true });
 }
 
 function starter(): BoxNode {
@@ -115,10 +122,15 @@ export default function BoxDemoPage() {
 
   const onPatch = (patch: Partial<BoxNode>) => { if (selected) commit(updateBox(root, selected.id, patch)); };
 
-  // Add a nested section inside the selected container. The PARENT stays selected so you can keep adding.
+  // Add a block INSIDE the selected section: it sits BESIDE the existing blocks (a column), filling the
+  // row's leftover width; when the row is full it takes 100% and WRAPS to a new row inside the section.
+  // The PARENT stays selected so you can keep adding. Blocks stretch to the section's height.
   const addChildSection = () => {
     if (!selected) return;
-    commit(insertBox(root, selected.id, selected.children?.length ?? 0, makeSection(SECTION_TINTS[(selected.children?.length ?? 0) % SECTION_TINTS.length])));
+    const used = (selected.children ?? []).reduce((s, c) => s + widthPct(c.width), 0);
+    const width = used <= 88 ? `${Math.max(15, Math.round(100 - used))}%` : "100%"; // fill leftover, else new row
+    const block = makeBlock(SECTION_TINTS[(selected.children?.length ?? 0) % SECTION_TINTS.length], width);
+    commit(insertBox(root, selected.id, selected.children?.length ?? 0, block));
   };
 
   return (

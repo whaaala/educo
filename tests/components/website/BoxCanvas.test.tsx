@@ -53,6 +53,21 @@ describe("BoxCanvas (box-model editor)", () => {
     expect(screen.getByText("New text — click to edit.")).toBeInTheDocument();
   });
 
+  it("adding a block inside a ROW-direction section places it BESIDE, filling the leftover width", async () => {
+    const user = userEvent.setup();
+    const section = createContainer("row", {
+      id: "sec", direction: "row", wrap: true,
+      children: [createContainer("row", { id: "c1", width: "60%" } as Partial<BoxNode>)],
+    } as Partial<BoxNode>);
+    const onChange = vi.fn();
+    render(<BoxCanvas root={section} theme={DEFAULT_THEME} selectedId="sec" onChange={onChange} />);
+    await user.click(screen.getByLabelText("Block actions"));
+    await user.click(screen.getByRole("menuitem", { name: "Text" }));
+    const sec = findBox(onChange.mock.calls.at(-1)![0], "sec")!;
+    const added = sec.children![sec.children!.length - 1];
+    expect(added.width).toBe("40%"); // fills the row's leftover (100 − 60) → sits beside c1
+  });
+
   it("adding a section does NOT steal the selection (the parent stays selected)", async () => {
     const user = userEvent.setup();
     const onSelectId = vi.fn();
@@ -187,34 +202,48 @@ describe("BoxCanvas (box-model editor)", () => {
     expect(container.querySelector('[data-box-id="s2"]')).not.toBeNull();  // the other section remains
   });
 
-  it("dropping a section BESIDE another fills the row's leftover space (stays a sibling, no wrap/gap)", () => {
-    const initial = createContainer("row", {
-      id: "root", direction: "row",
-      children: [
-        createContainer("column", { id: "a", width: "40%" } as Partial<BoxNode>),
-        createContainer("column", { id: "b", width: "40%" } as Partial<BoxNode>),
-        createContainer("column", { id: "d", width: "100%" } as Partial<BoxNode>), // the section we drag
-      ],
-    } as Partial<BoxNode>);
+  it("REPARENTING a section into another row fills that row's leftover space", () => {
+    const rb1 = makeRowBand([
+      createContainer("column", { id: "a", width: "40%" } as Partial<BoxNode>),
+      createContainer("column", { id: "b", width: "40%" } as Partial<BoxNode>),
+    ], 0);
+    const rb2 = makeRowBand([createContainer("column", { id: "d", width: "100%" } as Partial<BoxNode>)], 0);
+    const initial = createContainer("column", { id: "root", children: [rb1, rb2] } as Partial<BoxNode>);
     const onChange = vi.fn();
     const { container } = render(<BoxCanvas root={initial} theme={DEFAULT_THEME} selectedId="d" onChange={onChange} />);
-    const rootEl = container.querySelector<HTMLElement>('[data-box-id="root"]')!;
-    const aEl = container.querySelector<HTMLElement>('[data-box-id="a"]')!;
+    stubRect(container.querySelector<HTMLElement>('[data-box-id="root"]')!, { top: 0, left: 0, width: 100, height: 100 });
+    stubRect(container.querySelector<HTMLElement>(`[data-box-id="${rb1.id}"]`)!, { top: 0, left: 0, width: 100, height: 50 });
+    stubRect(container.querySelector<HTMLElement>(`[data-box-id="${rb2.id}"]`)!, { top: 50, left: 0, width: 100, height: 50 }); // d lives here
     const bEl = container.querySelector<HTMLElement>('[data-box-id="b"]')!;
-    const dEl = container.querySelector<HTMLElement>('[data-box-id="d"]')!;
-    // a and b share the top line (40% each → 80% used); d sits on its own line below.
-    stubRect(rootEl, { top: 0, left: 0, width: 100, height: 50 });
-    stubRect(aEl, { top: 0, left: 0, width: 40, height: 50 });
+    stubRect(container.querySelector<HTMLElement>('[data-box-id="a"]')!, { top: 0, left: 0, width: 40, height: 50 });
     stubRect(bEl, { top: 0, left: 40, width: 40, height: 50 });
-    stubRect(dEl, { top: 50, left: 0, width: 100, height: 50 });
+    stubRect(container.querySelector<HTMLElement>('[data-box-id="d"]')!, { top: 50, left: 0, width: 100, height: 50 });
     document.elementsFromPoint = () => [bEl];
 
-    fireEvent.mouseDown(screen.getByLabelText("Drag to move"), { clientX: 0, clientY: 55 }); // grab d
-    fireEvent.mouseMove(document, { clientX: 78, clientY: 25 }); // near b's RIGHT edge (b spans 40..80)
+    fireEvent.mouseDown(screen.getByLabelText("Drag to move"), { clientX: 0, clientY: 75 }); // grab d (in rb2)
+    fireEvent.mouseMove(document, { clientX: 78, clientY: 25 }); // over b's right edge in rb1 (a DIFFERENT row → reparent)
     fireEvent.mouseUp(document, { clientX: 78, clientY: 25 });
     const last = onChange.mock.calls.at(-1)![0];
-    expect(findBox(last, "d")?.width).toBe("20%");                                   // filled the leftover 100−40−40
-    expect(findBox(last, "root")?.children?.some((c) => c.id === "d")).toBe(true);   // still a direct sibling (dropped beside, not nested)
+    expect(findBox(last, "d")?.width).toBe("20%");                               // filled rb1's leftover 100−40−40
+    expect(findBox(last, rb1.id)?.children?.some((c) => c.id === "d")).toBe(true); // moved into rb1
+  });
+
+  it("dragging a child WITHIN its parent snaps to the nearest slot and KEEPS its width (arrange, no resize)", () => {
+    const initial = createContainer("row", {
+      id: "sec", direction: "row",
+      children: [createContainer("row", { id: "a", width: "50%" } as Partial<BoxNode>), createContainer("row", { id: "b", width: "50%" } as Partial<BoxNode>)],
+    } as Partial<BoxNode>);
+    const onChange = vi.fn();
+    const { container } = render(<BoxCanvas root={initial} theme={DEFAULT_THEME} selectedId="a" onChange={onChange} />);
+    stubRect(container.querySelector<HTMLElement>('[data-box-id="sec"]')!, { top: 0, left: 0, width: 600, height: 100 });
+    stubRect(container.querySelector<HTMLElement>('[data-box-id="a"]')!, { top: 0, left: 0, width: 300, height: 100 });
+    stubRect(container.querySelector<HTMLElement>('[data-box-id="b"]')!, { top: 0, left: 300, width: 300, height: 100 });
+    fireEvent.mouseDown(screen.getByLabelText("Drag to move"), { clientX: 10, clientY: 50 }); // grab a
+    fireEvent.mouseMove(document, { clientX: 520, clientY: 50 }); // deep in b's area, still INSIDE the section
+    fireEvent.mouseUp(document, { clientX: 520, clientY: 50 });
+    const sec = findBox(onChange.mock.calls.at(-1)![0], "sec")!;
+    expect(sec.children!.map((c) => c.id)).toEqual(["b", "a"]); // a snapped to the nearest slot (after b)
+    expect(findBox(onChange.mock.calls.at(-1)![0], "a")?.width).toBe("50%"); // width KEPT (arranged, not resized)
   });
 
   it("keyboard: Delete removes the selected box; Ctrl+D duplicates it (WCAG)", () => {
