@@ -10,12 +10,13 @@
 
 import { Fragment, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { Plus, ChevronUp, ChevronDown, Copy, Scissors, ClipboardPaste, Trash2, Upload, GripVertical, MoreVertical, Rows3, Columns3, Grid3x3, Type, Heading as HeadingIcon, MousePointerClick, Image as ImageIcon } from "lucide-react";
+import { Plus, ChevronUp, ChevronDown, Copy, Scissors, ClipboardPaste, Trash2, Upload, GripVertical, MoreVertical, Rows3, Columns3, Grid3x3, Type, Heading as HeadingIcon, MousePointerClick, Image as ImageIcon, Layers, BringToFront, SendToBack } from "lucide-react";
 import type { SiteTheme } from "@/lib/site-storage";
 import {
   type BoxNode, type BoxType,
   containerStyle, childStyle, marginCSS, sizeToCSS, u, baseUnit, createContainer, createGrid, createElement,
   updateBox, removeBox, insertBox, moveBoxStep, duplicateBox, moveBox, cloneBox, findParent, isAncestor, isContainer, isEmptyBox, widthPct,
+  isFloating, floatBox, unfloatBox, bringToFront, sendToBack,
 } from "@/lib/box-model";
 import { colorToCSS } from "@/components/shared/ColorPalettePicker";
 import { EditableText, ImageBox } from "@/components/website/sections/SectionKit";
@@ -56,6 +57,42 @@ function measureBoxU(el: HTMLElement, baseFont: number): number {
   const hi = ((baseFont * 1.4) / 16) * rem;
   const mid = (baseFont / 10) * cqw;
   return Math.min(hi, Math.max(lo, mid)) || 10;
+}
+
+const round1 = (n: number) => Math.round(n * 10) / 10;
+
+/** Measure the geometry needed to lift a box onto a free-floating layer: its POSITIONING PARENT (the
+ *  nearest real content container — never a structural row band) and the box's current left/top (% of
+ *  that parent's content box), width (% of it) and height (px). Reads live DOM rects, so it captures the
+ *  box exactly where it sits → floating it causes NO jump. Exported so both the canvas (⋯ menu / Alt-drag)
+ *  and the page (inspector toggle) lift from the same measurement. Returns null if the DOM isn't ready. */
+export function measureFloatGeom(root: BoxNode, id: string): { parentId: string; left: number; top: number; width: string; height: number } | null {
+  if (typeof document === "undefined") return null;
+  const el = document.querySelector<HTMLElement>(`[data-box-id="${id}"]`);
+  const node = findByIdLocal(root, id);
+  const info = findParent(root, id);
+  if (!el || !node || !info) return null;
+  // Positioning parent: if already floating, its parent IS the content container; if in flow, skip the
+  // structural row band it lives in and use the content container above that (its grandparent).
+  let parentId = info.parent.id;
+  if (!isFloating(node) && info.parent.rowBand) {
+    const gp = findParent(root, info.parent.id);
+    parentId = gp ? gp.parent.id : info.parent.id;
+  }
+  const pEl = document.querySelector<HTMLElement>(`[data-box-id="${parentId}"]`);
+  if (!pEl) return null;
+  const r = el.getBoundingClientRect(), pr = pEl.getBoundingClientRect();
+  const cs = getComputedStyle(pEl);
+  const padL = parseFloat(cs.paddingLeft) || 0, padT = parseFloat(cs.paddingTop) || 0;
+  const padR = parseFloat(cs.paddingRight) || 0, padB = parseFloat(cs.paddingBottom) || 0;
+  const cw = Math.max(1, pr.width - padL - padR), ch = Math.max(1, pr.height - padT - padB);
+  return {
+    parentId,
+    left: ((r.left - (pr.left + padL)) / cw) * 100,
+    top: ((r.top - (pr.top + padT)) / ch) * 100,
+    width: `${round1((r.width / cw) * 100)}%`,
+    height: r.height,
+  };
 }
 
 type Edge = "n" | "s" | "e" | "w" | "ne" | "nw" | "se" | "sw";
@@ -101,6 +138,7 @@ export default function BoxCanvas({
   const [dragId, setDragId] = useState<string | null>(null); // box being dragged (after the move threshold)
   const [dragGhost, setDragGhost] = useState<{ x: number; y: number; w: number; label: string } | null>(null); // floating preview that follows the cursor
   const [dropRect, setDropRect] = useState<{ left: number; top: number; width: number; height: number; inside: boolean } | null>(null); // insertion line / drop-inside highlight (viewport coords)
+  const [snapLines, setSnapLines] = useState<{ left: number; top: number; width: number; height: number }[]>([]); // alignment guides shown while free-dragging a floating box (viewport coords)
   const dragArm = useRef<{ id: string; startX: number; startY: number; w: number; h: number; label: string } | null>(null); // armed on grip mousedown; upgrades to a real drag past the threshold
   const dragIdRef = useRef<string | null>(null);       // mirror of dragId for the document listeners
   const dropRef = useRef<{ parentId: string; index: number } | null>(null); // where a release would drop
@@ -110,6 +148,12 @@ export default function BoxCanvas({
   const rootRef = useRef(root); rootRef.current = root; // always-fresh tree for the drag listeners
   const [clip, setClip] = useState<BoxNode | null>(null); // copy/cut clipboard (a cloned subtree)
   const select = (id: string | null) => onSelectId?.(id);
+
+  // ── Floating layers (lift a section out of the flow to OVERLAP others) ──
+  const floatNode = (id: string) => { const g = measureFloatGeom(rootRef.current, id); if (g) onChange(floatBox(rootRef.current, id, g.parentId, g.left, g.top, g.width, g.height)); };
+  const unfloatNode = (id: string) => onChange(unfloatBox(rootRef.current, id));
+  const toggleFloat = (id: string) => { const n = findByIdLocal(rootRef.current, id); if (n && isFloating(n)) unfloatNode(id); else floatNode(id); };
+  const layer = (id: string, dir: "front" | "back") => onChange((dir === "front" ? bringToFront : sendToBack)(rootRef.current, id));
 
   // ── Copy / cut / paste (mouse buttons + keyboard). Paste drops INSIDE a selected container, else
   // right AFTER the selected box; with nothing selected it appends to the page. ──
@@ -134,13 +178,28 @@ export default function BoxCanvas({
       const id = selectedId ?? null;
       const mod = e.ctrlKey || e.metaKey;
       const k = e.key.toLowerCase();
+      const n = id ? findByIdLocal(root, id) : null;
+      const floating = !!n && isFloating(n);
+      // Nudge step for a floating box, in % of its parent (2px, or 12px with Shift) — measured so it's an
+      // even visual step at any parent size.
+      const stepPct = (axis: "x" | "y") => {
+        const info = id ? findParent(root, id) : null;
+        const pe = info ? document.querySelector<HTMLElement>(`[data-box-id="${info.parent.id}"]`) : null;
+        const size = pe ? (axis === "x" ? pe.getBoundingClientRect().width : pe.getBoundingClientRect().height) : 1000;
+        return ((e.shiftKey ? 12 : 2) / Math.max(1, size)) * 100;
+      };
       if (mod && k === "c") { if (id) { copyBox(id); e.preventDefault(); } }
       else if (mod && k === "x") { if (id) { cutBox(id); e.preventDefault(); } }
       else if (mod && k === "v") { if (clip) { pasteBox(id); e.preventDefault(); } }
       else if (mod && k === "d") { if (id) { onChange(duplicateBox(root, id)); e.preventDefault(); } }
+      else if (mod && k === "]" && id) { onChange(bringToFront(root, id)); e.preventDefault(); }         // layer up
+      else if (mod && k === "[" && id) { onChange(sendToBack(root, id)); e.preventDefault(); }            // layer down
+      else if (e.altKey && k === "f" && id) { toggleFloat(id); e.preventDefault(); }                      // float ⇄ flow
       else if ((e.key === "Delete" || e.key === "Backspace") && id && id !== root.id) { onChange(removeBox(root, id)); select(null); e.preventDefault(); }
-      else if (e.key === "ArrowUp" && id) { onChange(moveBoxStep(root, id, -1)); e.preventDefault(); }
-      else if (e.key === "ArrowDown" && id) { onChange(moveBoxStep(root, id, 1)); e.preventDefault(); }
+      else if (e.key === "ArrowUp" && id) { if (floating) onChange(updateBox(root, id, { top: round1((n!.top ?? 0) - stepPct("y")) })); else onChange(moveBoxStep(root, id, -1)); e.preventDefault(); }
+      else if (e.key === "ArrowDown" && id) { if (floating) onChange(updateBox(root, id, { top: round1((n!.top ?? 0) + stepPct("y")) })); else onChange(moveBoxStep(root, id, 1)); e.preventDefault(); }
+      else if (e.key === "ArrowLeft" && id && floating) { onChange(updateBox(root, id, { left: round1((n!.left ?? 0) - stepPct("x")) })); e.preventDefault(); }
+      else if (e.key === "ArrowRight" && id && floating) { onChange(updateBox(root, id, { left: round1((n!.left ?? 0) + stepPct("x")) })); e.preventDefault(); }
       else if (e.key === "Escape") { select(null); }
     };
     document.addEventListener("keydown", onKey);
@@ -298,8 +357,64 @@ export default function BoxCanvas({
     dragArm.current = null; dragIdRef.current = null; dropRef.current = null; dropWidthRef.current = null; dragPtRef.current = null;
     setDragId(null); setDragGhost(null); setDropRect(null);
   };
+  // ── Free-drag a FLOATING box (or Alt-drag a flow box to LIFT it into one) ──────────────────────────
+  // Moves the box by rewriting its left/top (% of its positioning parent) so it floats smoothly on top of
+  // everything and OVERLAPS its siblings. As it moves, its edges + centre SNAP to the edges/centres of
+  // sibling boxes and the parent's centre, and bright guide lines show the alignment. rAF-batched.
+  const startFreeDrag = (e: React.MouseEvent, node: BoxNode, lift: boolean) => {
+    e.preventDefault(); e.stopPropagation();
+    const id = node.id;
+    const el = document.querySelector<HTMLElement>(`[data-box-id="${id}"]`);
+    if (!el) return;
+    const g = measureFloatGeom(rootRef.current, id);
+    if (!g) return;
+    if (lift && !isFloating(node)) onChange(floatBox(rootRef.current, id, g.parentId, g.left, g.top, g.width, g.height)); // lift the flow box onto its own layer, exactly where it sits
+    const pEl = document.querySelector<HTMLElement>(`[data-box-id="${g.parentId}"]`);
+    if (!pEl) return;
+    const pr = pEl.getBoundingClientRect(), cs = getComputedStyle(pEl);
+    const padL = parseFloat(cs.paddingLeft) || 0, padT = parseFloat(cs.paddingTop) || 0, padR = parseFloat(cs.paddingRight) || 0, padB = parseFloat(cs.paddingBottom) || 0;
+    const ox = pr.left + padL, oy = pr.top + padT;                       // parent content-box origin (viewport)
+    const cw = Math.max(1, pr.width - padL - padR), ch = Math.max(1, pr.height - padT - padB);
+    const r0 = el.getBoundingClientRect(), bw = r0.width, bh = r0.height;
+    const startPxX = (g.left / 100) * cw, startPxY = (g.top / 100) * ch; // current position in content px
+    const startX = e.clientX, startY = e.clientY;
+    // Snap targets in content-px: the parent's left/centre/right + top/middle/bottom, plus every sibling's.
+    const sibs = directKids(pEl).filter((k) => k.getAttribute("data-box-id") !== id);
+    const vt = [0, cw / 2, cw], ht = [0, ch / 2, ch];
+    sibs.forEach((k) => { const kr = k.getBoundingClientRect(); const l = kr.left - ox, t = kr.top - oy; vt.push(l, l + kr.width / 2, l + kr.width); ht.push(t, t + kr.height / 2, t + kr.height); });
+    const TH = 6; // snap threshold (px)
+    setResizing(true); setResizeCursor("grabbing"); document.body.style.userSelect = "none";
+    let raf = 0, pending: BoxNode | null = null;
+    const flush = () => { raf = 0; if (pending) { onChange(pending); pending = null; } };
+    const onMove = (ev: MouseEvent) => {
+      let nx = startPxX + (ev.clientX - startX), ny = startPxY + (ev.clientY - startY);
+      const guides: { left: number; top: number; width: number; height: number }[] = [];
+      // Snap X: the box's left / centre / right against every vertical target; keep the closest within TH.
+      let bestX = TH + 1, gx: number | null = null, snapX = nx;
+      for (const t of vt) for (const off of [0, bw / 2, bw]) { const d = Math.abs((nx + off) - t); if (d < bestX) { bestX = d; snapX = t - off; gx = t; } }
+      if (gx !== null) { nx = snapX; guides.push({ left: ox + gx, top: oy, width: 1, height: ch }); }
+      let bestY = TH + 1, gy: number | null = null, snapY = ny;
+      for (const t of ht) for (const off of [0, bh / 2, bh]) { const d = Math.abs((ny + off) - t); if (d < bestY) { bestY = d; snapY = t - off; gy = t; } }
+      if (gy !== null) { ny = snapY; guides.push({ left: ox, top: oy + gy, width: cw, height: 1 }); }
+      // Keep at least half the box within the parent so it's always grabbable (overhang is allowed for overlap).
+      nx = Math.max(-bw / 2, Math.min(cw - bw / 2, nx));
+      ny = Math.max(-bh / 2, Math.min(ch - bh / 2, ny));
+      pending = updateBox(rootRef.current, id, { left: round1((nx / cw) * 100), top: round1((ny / ch) * 100) });
+      setSnapLines(guides);
+      if (!raf) raf = requestAnimationFrame(flush);
+    };
+    const onUp = () => {
+      if (raf) { cancelAnimationFrame(raf); flush(); }
+      setResizing(false); setResizeCursor(null); setSnapLines([]); document.body.style.userSelect = "";
+      document.removeEventListener("mousemove", onMove); document.removeEventListener("mouseup", onUp);
+    };
+    document.addEventListener("mousemove", onMove); document.addEventListener("mouseup", onUp);
+  };
+
   const startDrag = (e: React.MouseEvent, node: BoxNode) => {
     if (!editable) return;
+    // A floating box (or an Alt-drag on a flow box) moves FREELY on its own layer; a plain drag arranges in the flow.
+    if (isFloating(node) || e.altKey) { startFreeDrag(e, node, !isFloating(node)); return; }
     e.preventDefault(); e.stopPropagation();
     const el = document.querySelector<HTMLElement>(`[data-box-id="${node.id}"]`);
     const r = el?.getBoundingClientRect();
@@ -318,11 +433,52 @@ export default function BoxCanvas({
   const cursorFor = (edge: Edge): string =>
     edge === "n" || edge === "s" ? "ns-resize" : edge === "e" || edge === "w" ? "ew-resize" : edge === "nw" || edge === "se" ? "nwse-resize" : "nesw-resize";
 
-  const startResize = (e: React.MouseEvent, id: string, edge: Edge) => {
-    if (!editable) return;
+  // Resize a FLOATING box: plain edge-anchored size in its parent's %/px space (no flow neighbours to
+  // respect). Right/bottom grow keeping the top-left fixed; left/top grow keeping the far edge fixed
+  // (left/top compensate). Height is a min-height floor so the box still grows with content.
+  const startResizeAbsolute = (e: React.MouseEvent, id: string, edge: Edge) => {
     e.preventDefault(); e.stopPropagation();
     const el = document.querySelector<HTMLElement>(`[data-box-id="${id}"]`);
+    const info = findParent(rootRef.current, id);
+    const node = findByIdLocal(rootRef.current, id);
+    if (!el || !info || !node) return;
+    const pEl = document.querySelector<HTMLElement>(`[data-box-id="${info.parent.id}"]`);
+    if (!pEl) return;
+    const hasE = edge.includes("e"), hasW = edge.includes("w"), hasS = edge.includes("s"), hasN = edge.includes("n");
+    const pr = pEl.getBoundingClientRect(), cs = getComputedStyle(pEl);
+    const padL = parseFloat(cs.paddingLeft) || 0, padT = parseFloat(cs.paddingTop) || 0, padR = parseFloat(cs.paddingRight) || 0, padB = parseFloat(cs.paddingBottom) || 0;
+    const cw = Math.max(1, pr.width - padL - padR), ch = Math.max(1, pr.height - padT - padB);
+    const r = el.getBoundingClientRect();
+    const x0 = r.left - (pr.left + padL), y0 = r.top - (pr.top + padT), bw = r.width, bh = r.height;
+    const startX = e.clientX, startY = e.clientY;
+    setResizeCursor(cursorFor(edge)); setResizing(true);
+    let raf = 0, pending: BoxNode | null = null;
+    const flush = () => { raf = 0; if (pending) { onChange(pending); pending = null; } };
+    const onMove = (ev: MouseEvent) => {
+      const dx = ev.clientX - startX, dy = ev.clientY - startY;
+      const patch: Partial<BoxNode> = {};
+      if (hasE) { const w = Math.max(16, bw + dx); patch.width = `${round1((w / cw) * 100)}%`; }
+      if (hasW) { const w = Math.max(16, bw - dx); patch.width = `${round1((w / cw) * 100)}%`; patch.left = round1(((x0 + (bw - w)) / cw) * 100); }
+      if (hasS) { const h = Math.max(16, bh + dy); patch.minHeight = Math.round(h); patch.height = undefined; }
+      if (hasN) { const h = Math.max(16, bh - dy); patch.minHeight = Math.round(h); patch.height = undefined; patch.top = round1(((y0 + (bh - h)) / ch) * 100); }
+      pending = updateBox(rootRef.current, id, patch);
+      if (!raf) raf = requestAnimationFrame(flush);
+    };
+    const onUp = () => {
+      if (raf) { cancelAnimationFrame(raf); flush(); }
+      setResizing(false); setResizeCursor(null);
+      document.removeEventListener("mousemove", onMove); document.removeEventListener("mouseup", onUp);
+      onResized?.(id, (hasS || hasN) && !hasE && !hasW ? "height" : "width");
+    };
+    document.addEventListener("mousemove", onMove); document.addEventListener("mouseup", onUp);
+  };
+
+  const startResize = (e: React.MouseEvent, id: string, edge: Edge) => {
+    if (!editable) return;
     const node = findByIdLocal(root, id);
+    if (node && isFloating(node)) { startResizeAbsolute(e, id, edge); return; } // floating boxes resize freely (no flow walls)
+    e.preventDefault(); e.stopPropagation();
+    const el = document.querySelector<HTMLElement>(`[data-box-id="${id}"]`);
     const pEl = el?.parentElement ?? null;
     if (!el || !node) return;
     const rect = el.getBoundingClientRect();
@@ -448,15 +604,18 @@ export default function BoxCanvas({
   const renderNode = (node: BoxNode, parent: BoxNode | null): React.ReactNode => {
     const isSel = editable && selectedId === node.id;
     const isRoot = parent === null;
+    const floating = isFloating(node) && !isRoot;
     const wrapStyle: React.CSSProperties = {
-      position: "relative",
+      position: floating ? "absolute" : "relative", // floating boxes are positioned inside their (relative) parent → they overlap the flow
       borderRadius: node.radius,
-      ...marginCSS(node),
+      ...(floating ? {} : marginCSS(node)), // margins are a FLOW concept; a floating box uses left/top instead
       opacity: node.opacity !== undefined ? node.opacity / 100 : undefined,
       overflow: node.clip || node.radius ? "hidden" : undefined, // clip only when opted-in or rounded (never clip the selection chrome)
-      // Root fills at least one viewport but GROWS with content (page height = total section heights).
-      // The root also defines the global base unit (--box-u, rem-based) that every size scales off.
-      ...(parent ? childStyle(node, parent) : { width: "100%", minHeight, ["--box-u" as string]: baseUnit(node.baseFont ?? 10) }),
+      // Floating: free-position on its own layer. Flow: fill+divide per childStyle. Root: fill the canvas +
+      // define the global base unit (--box-u, rem-based) that every size scales off.
+      ...(floating
+        ? { left: `${node.left ?? 0}%`, top: `${node.top ?? 0}%`, width: sizeToCSS(node.width) ?? "40%", height: node.height ? sizeToCSS(node.height) : undefined, minHeight: node.minHeight, zIndex: node.zIndex ?? 1 }
+        : parent ? childStyle(node, parent) : { width: "100%", minHeight, ["--box-u" as string]: baseUnit(node.baseFont ?? 10) }),
       ...backgroundStyle(node),
     };
 
@@ -534,7 +693,7 @@ export default function BoxCanvas({
         {!isRoot && (
           <span
             onMouseDown={(e) => startDrag(e, node)}
-            title="Drag to move this block anywhere"
+            title={isFloating(node) ? "Drag to move this floating block freely" : "Drag to move (hold Alt to float it on top)"}
             aria-label="Drag to move"
             className="cursor-grab active:cursor-grabbing text-white/80 hover:text-white px-0.5"
           ><GripVertical className="w-3.5 h-3.5" /></span>
@@ -564,6 +723,15 @@ export default function BoxCanvas({
               {ADD_ITEMS.map(({ type, label, Icon }) => <MenuItem key={type} onClick={() => addChild(node.id, type)} Icon={Icon} label={label} />)}
               {!isRoot && <div className="h-px bg-gray-100 dark:bg-gray-800 my-1" />}
             </>)}
+            {!isRoot && (isFloating(node) ? (<>
+              <MenuItem onClick={() => unfloatNode(node.id)} Icon={Layers} label="Return to flow" />
+              <MenuItem onClick={() => layer(node.id, "front")} Icon={BringToFront} label="Bring to front" />
+              <MenuItem onClick={() => layer(node.id, "back")} Icon={SendToBack} label="Send to back" />
+              <div className="h-px bg-gray-100 dark:bg-gray-800 my-1" />
+            </>) : (<>
+              <MenuItem onClick={() => floatNode(node.id)} Icon={Layers} label="Float on top" />
+              <div className="h-px bg-gray-100 dark:bg-gray-800 my-1" />
+            </>))}
             {!isRoot && (<>
               <MenuItem onClick={() => onChange(moveBoxStep(root, node.id, -1))} Icon={ChevronUp} label="Move up" />
               <MenuItem onClick={() => onChange(moveBoxStep(root, node.id, 1))} Icon={ChevronDown} label="Move down" />
@@ -597,6 +765,15 @@ export default function BoxCanvas({
           style={{ position: "fixed", left: dropRect.left, top: dropRect.top, width: dropRect.width, height: dropRect.height, pointerEvents: "none", zIndex: 9998 }}
           className={dropRect.inside ? "rounded-lg outline outline-2 outline-dashed outline-indigo-500 bg-indigo-500/10" : "rounded-full bg-indigo-500 shadow-[0_0_10px_rgba(99,102,241,0.9)]"}
         />,
+        document.body,
+      )}
+      {/* Alignment guides while free-dragging a floating box (snap to sibling / parent edges + centres). */}
+      {snapLines.length > 0 && createPortal(
+        <div aria-hidden="true" style={{ position: "fixed", inset: 0, pointerEvents: "none", zIndex: 9997 }}>
+          {snapLines.map((g, i) => (
+            <div key={i} style={{ position: "absolute", left: g.left, top: g.top, width: g.width, height: g.height, background: "#ec4899", boxShadow: "0 0 4px rgba(236,72,153,0.8)" }} />
+          ))}
+        </div>,
         document.body,
       )}
       {/* Floating preview that follows the cursor while dragging. */}

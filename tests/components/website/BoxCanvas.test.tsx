@@ -462,4 +462,94 @@ describe("BoxCanvas (box-model editor)", () => {
     // clamp(minRem, cqw, maxRem): rem bounds keep it browser-relative; cqw scales with the container width
     expect(el.style.getPropertyValue("--box-u")).toBe("clamp(0.4375rem, 1cqw, 0.875rem)");
   });
+
+  // ── Floating layers (free overlap) ───────────────────────────────────────────────────────────────
+  const floatingTree = () => createContainer("column", {
+    id: "root",
+    children: [
+      createContainer("column", { id: "base", width: "100%" } as Partial<BoxNode>),
+      createContainer("column", { id: "f1", position: "absolute", left: 10, top: 20, width: "50%", minHeight: 120, zIndex: 3 } as Partial<BoxNode>),
+    ],
+  } as Partial<BoxNode>);
+
+  it("renders a floating box as an absolutely-positioned layer (left/top/zIndex from the tree)", () => {
+    const { container } = render(<Harness initial={floatingTree()} />);
+    const el = container.querySelector<HTMLElement>('[data-box-id="f1"]')!;
+    expect(el.style.position).toBe("absolute");
+    expect(el.style.left).toBe("10%");
+    expect(el.style.top).toBe("20%");
+    expect(el.style.zIndex).toBe("3");
+  });
+
+  it("the ⋯ menu offers 'Float on top' for an in-flow block", async () => {
+    const user = userEvent.setup();
+    render(<Harness initial={tree()} initialSel="t1" />);
+    await user.click(screen.getByLabelText("Block actions"));
+    expect(screen.getByRole("menuitem", { name: "Float on top" })).toBeInTheDocument();
+  });
+
+  it("a floating block's ⋯ menu swaps to Return-to-flow + layer controls", async () => {
+    const user = userEvent.setup();
+    render(<Harness initial={floatingTree()} initialSel="f1" />);
+    await user.click(screen.getByLabelText("Block actions"));
+    expect(screen.getByRole("menuitem", { name: "Return to flow" })).toBeInTheDocument();
+    expect(screen.getByRole("menuitem", { name: "Bring to front" })).toBeInTheDocument();
+    expect(screen.getByRole("menuitem", { name: "Send to back" })).toBeInTheDocument();
+    expect(screen.queryByRole("menuitem", { name: "Float on top" })).not.toBeInTheDocument();
+  });
+
+  it("'Return to flow' docks a floating block back into the flow", async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    render(<BoxCanvas root={floatingTree()} theme={DEFAULT_THEME} selectedId="f1" onChange={onChange} />);
+    await user.click(screen.getByLabelText("Block actions"));
+    await user.click(screen.getByRole("menuitem", { name: "Return to flow" }));
+    const f1 = findBox(onChange.mock.calls.at(-1)![0], "f1")!;
+    expect(f1.position).toBeUndefined();
+    expect(f1.left).toBeUndefined();
+  });
+
+  it("arrow keys nudge a selected floating block's position (in-flow blocks reorder instead)", () => {
+    const onChange = vi.fn();
+    const { container } = render(<BoxCanvas root={floatingTree()} theme={DEFAULT_THEME} selectedId="f1" onChange={onChange} />);
+    stubRect(container.querySelector<HTMLElement>('[data-box-id="root"]')!, { top: 0, left: 0, width: 400, height: 400 });
+    fireEvent.keyDown(document, { key: "ArrowRight" });
+    expect(findBox(onChange.mock.calls.at(-1)![0], "f1")!.left!).toBeGreaterThan(10); // moved right from left:10
+  });
+
+  it("resizing a floating block's RIGHT edge changes its width freely (no flow walls)", () => {
+    const onChange = vi.fn();
+    const { container } = render(<BoxCanvas root={floatingTree()} theme={DEFAULT_THEME} selectedId="f1" onChange={onChange} />);
+    stubRect(container.querySelector<HTMLElement>('[data-box-id="root"]')!, { top: 0, left: 0, width: 400, height: 400 });
+    stubRect(container.querySelector<HTMLElement>('[data-box-id="f1"]')!, { top: 0, left: 0, width: 200, height: 120 });
+    fireEvent.mouseDown(screen.getByLabelText("Resize right edge"), { clientX: 0, clientY: 0 });
+    fireEvent.mouseMove(document, { clientX: 100, clientY: 0 }); // +100px of 400 → 50% → 75%
+    fireEvent.mouseUp(document);
+    expect(parseFloat(findBox(onChange.mock.calls.at(-1)![0], "f1")!.width!)).toBeGreaterThan(50);
+  });
+
+  it("dragging a floating block's grip moves it freely (rewrites left/top)", () => {
+    const onChange = vi.fn();
+    const { container } = render(<BoxCanvas root={floatingTree()} theme={DEFAULT_THEME} selectedId="f1" onChange={onChange} />);
+    stubRect(container.querySelector<HTMLElement>('[data-box-id="root"]')!, { top: 0, left: 0, width: 400, height: 400 });
+    stubRect(container.querySelector<HTMLElement>('[data-box-id="f1"]')!, { top: 80, left: 40, width: 120, height: 120 });
+    fireEvent.mouseDown(screen.getByLabelText("Drag to move"), { clientX: 0, clientY: 0 });
+    fireEvent.mouseMove(document, { clientX: 40, clientY: 40 }); // +10% x, +10% y
+    fireEvent.mouseUp(document);
+    const f1 = findBox(onChange.mock.calls.at(-1)![0], "f1")!;
+    expect(f1.left!).toBeGreaterThan(10);
+    expect(f1.top!).toBeGreaterThan(20);
+  });
+
+  it("Alt-dragging an in-flow block's grip LIFTS it onto a floating layer", () => {
+    const onChange = vi.fn();
+    const { container } = render(<BoxCanvas root={floatingTree()} theme={DEFAULT_THEME} selectedId="base" onChange={onChange} />);
+    stubRect(container.querySelector<HTMLElement>('[data-box-id="root"]')!, { top: 0, left: 0, width: 400, height: 400 });
+    stubRect(container.querySelector<HTMLElement>('[data-box-id="base"]')!, { top: 0, left: 0, width: 400, height: 100 });
+    fireEvent.mouseDown(screen.getByLabelText("Drag to move"), { clientX: 0, clientY: 0, altKey: true });
+    fireEvent.mouseUp(document);
+    // The very first commit floats it (position absolute), before any move.
+    const base = findBox(onChange.mock.calls[0]![0], "base")!;
+    expect(base.position).toBe("absolute");
+  });
 });

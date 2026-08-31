@@ -12,8 +12,9 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { DEFAULT_THEME, resolveSiteTheme } from "@/lib/site-storage";
 import {
   type BoxNode, createContainer, findBox, updateBox, insertBox, makeRowBand, normalizeRowBands,
+  floatBox, unfloatBox, bringToFront, sendToBack,
 } from "@/lib/box-model";
-import BoxCanvas from "@/components/website/box/BoxCanvas";
+import BoxCanvas, { measureFloatGeom } from "@/components/website/box/BoxCanvas";
 import BoxInspector from "@/components/website/box/BoxInspector";
 import PageLoader from "@/components/shared/PageLoader";
 
@@ -131,6 +132,12 @@ export default function BoxDemoPage() {
     commit(insertBox(root, selected.id, selected.children?.length ?? 0, block));
   };
 
+  // ── Floating layers: lift the selected box onto its own layer (measured in the DOM so it doesn't jump),
+  // dock it back into the flow, or restack it among floating siblings. ──
+  const floatSelected = () => { if (!selected) return; const g = measureFloatGeom(root, selected.id); if (g) commit(floatBox(root, selected.id, g.parentId, g.left, g.top, g.width, g.height)); };
+  const unfloatSelected = () => { if (selected) commit(unfloatBox(root, selected.id)); };
+  const layerSelected = (dir: "front" | "back") => { if (selected) commit((dir === "front" ? bringToFront : sendToBack)(root, selected.id)); };
+
   return (
     <div className="flex h-screen bg-gray-100 dark:bg-gray-950">
       {/* Definite-height scroll region: h-screen + overflow guarantees scrolling as the page grows / when a wide preview overflows */}
@@ -176,7 +183,7 @@ export default function BoxDemoPage() {
       <aside className="w-72 shrink-0 border-l border-gray-200 dark:border-gray-800 bg-white dark:bg-[#161922] overflow-y-auto">
         <div className="h-11 flex items-center px-3 border-b border-gray-200 dark:border-gray-800 text-xs font-bold uppercase tracking-wide text-gray-500">Inspector</div>
         {selected ? (
-          <BoxInspector node={selected} theme={renderTheme} onPatch={onPatch} onAddChild={addChildSection} />
+          <BoxInspector node={selected} theme={renderTheme} onPatch={onPatch} onAddChild={addChildSection} onFloat={floatSelected} onUnfloat={unfloatSelected} onLayer={layerSelected} canFloat={selected.id !== root.id} />
         ) : (
           <div className="p-6 text-xs text-gray-400 text-center mt-6">Click a block on the canvas to edit its layout, size and background.</div>
         )}

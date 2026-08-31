@@ -7,10 +7,10 @@
  */
 
 import { useRef } from "react";
-import { Plus, Rows3, Columns3, Grid3x3, Upload, Trash2, AlignLeft, AlignCenter, AlignRight } from "lucide-react";
+import { Plus, Rows3, Columns3, Grid3x3, Upload, Trash2, AlignLeft, AlignCenter, AlignRight, Layers, Move, BringToFront, SendToBack } from "lucide-react";
 import type { SiteTheme } from "@/lib/site-storage";
 import type { BoxNode, FlexAlign, FlexJustify } from "@/lib/box-model";
-import { isContainer } from "@/lib/box-model";
+import { isContainer, isFloating } from "@/lib/box-model";
 import { ColorPickerPopover, colorToCSS } from "@/components/shared/ColorPalettePicker";
 
 const inputCls = "w-full text-sm px-2.5 py-2 rounded-lg border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-transparent text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-indigo-500 outline-none";
@@ -84,15 +84,20 @@ function SideSpacing({ title, node, base, sides, onPatch, max = 96 }: {
   );
 }
 
-export default function BoxInspector({ node, theme, onPatch, onAddChild }: {
+export default function BoxInspector({ node, theme, onPatch, onAddChild, onFloat, onUnfloat, onLayer, canFloat = true }: {
   node: BoxNode;
   theme: SiteTheme;
   onPatch: (patch: Partial<BoxNode>) => void;
   onAddChild?: () => void;
+  onFloat?: () => void;          // lift this box out of the flow onto a free-floating layer
+  onUnfloat?: () => void;        // dock it back into the flow
+  onLayer?: (dir: "front" | "back") => void; // change stacking order among floating siblings
+  canFloat?: boolean;            // false for the page root (nothing to float within)
 }) {
   const fileRef = useRef<HTMLInputElement>(null);
   const container = isContainer(node);
   const isGrid = node.layout === "grid";
+  const floating = isFloating(node);
 
   return (
     <div className="p-4 space-y-3">
@@ -102,6 +107,36 @@ export default function BoxInspector({ node, theme, onPatch, onAddChild }: {
         <button onClick={onAddChild} className="w-full flex items-center justify-center gap-1.5 py-2 rounded-lg text-sm font-semibold bg-indigo-600 text-white hover:bg-indigo-700">
           <Plus className="w-4 h-4" /> Add section inside
         </button>
+      )}
+
+      {/* ── Position: in-flow (stacks, never overlaps) vs floating (its own layer, free to overlap) ── */}
+      {canFloat && (
+        <>
+          <div className={section}>Position</div>
+          <div className="flex gap-1 p-0.5 rounded-lg border border-gray-200 dark:border-gray-700" role="group" aria-label="Position mode">
+            <button onClick={() => onUnfloat?.()} aria-pressed={!floating} className={`${seg} ${!floating ? "bg-indigo-600 text-white" : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"}`}><Rows3 className="w-3.5 h-3.5" /> In-flow</button>
+            <button onClick={() => onFloat?.()} aria-pressed={floating} className={`${seg} ${floating ? "bg-indigo-600 text-white" : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"}`}><Layers className="w-3.5 h-3.5" /> Floating</button>
+          </div>
+          {floating && (
+            <>
+              <p className="text-[10px] text-gray-400 flex items-start gap-1"><Move className="w-3 h-3 mt-0.5 shrink-0" /> Drag it anywhere to overlap other sections. Arrow keys nudge (Shift = bigger); Ctrl+] / Ctrl+[ change layer.</p>
+              <div className="grid grid-cols-2 gap-2">
+                {([["X", "left"], ["Y", "top"]] as const).map(([lab, key]) => (
+                  <label key={key} className="flex flex-col gap-0.5"><span className={label}>{lab} (%)</span>
+                    <input type="number" step={0.5} value={node[key] !== undefined ? Math.round((node[key] as number) * 10) / 10 : 0} onChange={(e) => onPatch({ [key]: Number(e.target.value) })} aria-label={`${lab} position (percent)`} className={inputCls} />
+                  </label>
+                ))}
+              </div>
+              <div className="flex items-center justify-between gap-2">
+                <span className={label}>Layer <span className="text-gray-400 tabular-nums">({node.zIndex ?? 1})</span></span>
+                <div className="flex gap-1">
+                  <button onClick={() => onLayer?.("back")} aria-label="Send to back" title="Send to back" className="p-1.5 rounded-md text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800"><SendToBack className="w-4 h-4" /></button>
+                  <button onClick={() => onLayer?.("front")} aria-label="Bring to front" title="Bring to front" className="p-1.5 rounded-md text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800"><BringToFront className="w-4 h-4" /></button>
+                </div>
+              </div>
+            </>
+          )}
+        </>
       )}
 
       {/* ── Layout (containers) ── */}

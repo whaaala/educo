@@ -53,6 +53,12 @@ export interface BoxNode {
   baseFont?: number;        // page root only: the global base unit in px (default 10); rendered as rem so it scales with the browser font size (WCAG)
   rowBand?: boolean;        // structural ROW band: a direct child of the page root that lays its sections out side-by-side (the page is a vertical stack of these)
 
+  // ── free / floating position (escape the flow: lift a section onto its OWN layer to OVERLAP others) ──
+  position?: "flow" | "absolute"; // default "flow" (in the row-band stack); "absolute" = free-floating layer
+  left?: number;            // absolute only: X offset as % of the positioning parent's content box (responsive)
+  top?: number;             // absolute only: Y offset as % of the positioning parent's content box
+  zIndex?: number;          // absolute only: stacking order among floating siblings (higher = on top)
+
   // ── element content ──
   text?: string;
   href?: string;
@@ -76,6 +82,13 @@ export function newBoxId(): string {
 export function isContainer(node: BoxNode): boolean {
   return node.type === "container";
 }
+
+/** Lifted out of the flow onto its own free-floating layer (can overlap siblings)? */
+export function isFloating(node: BoxNode): boolean {
+  return node.position === "absolute";
+}
+
+const round1 = (n: number) => Math.round(n * 10) / 10;
 
 /** A box with nothing inside — no children, no text, no image. It can shrink to ~1px. */
 export function isEmptyBox(node: BoxNode): boolean {
@@ -273,6 +286,7 @@ export function normalizeRowBands(node: BoxNode, gap = 0): BoxNode {
   // A CONTENT container: its direct children must all be row bands.
   const rows: BoxNode[] = [];
   for (const c of node.children) {
+    if (isFloating(c)) { rows.push(normalizeRowBands(c, gap)); continue; } // floating: keep as a direct child, OUT of the flow (never wrapped, clamped, or pruned)
     if (c.rowBand) {
       const row = clampRowWidths(normalizeRowBands(c, gap));
       if (row.children?.length) rows.push(row); // prune empty rows
@@ -295,6 +309,53 @@ export function fillMainAxis(root: BoxNode, parentId: string, exceptId?: string)
   const key: "width" | "height" = (parent.direction ?? "column") === "row" ? "width" : "height";
   const children = parent.children.map((c) => (c.id === exceptId ? c : { ...c, [key]: "fill" }));
   return updateBox(root, parentId, { children });
+}
+
+// ── Free / floating layers (overlap) ─────────────────────────────────────────
+// A floating box is lifted OUT of the row-band flow onto its own layer, positioned absolutely inside a
+// "positioning parent" (a real content container, never a structural row band) so it can sit ON TOP of
+// that parent's flow content and overlap its siblings. Geometry (left/top/width/height) is measured in
+// the DOM by the canvas and passed in here; these ops stay pure so they're testable + undo-safe.
+
+/** Highest / lowest zIndex among a parent's FLOATING children (0 when there are none). */
+export function floatingZRange(parent: BoxNode | null): { min: number; max: number } {
+  const zs = (parent?.children ?? []).filter(isFloating).map((c) => c.zIndex ?? 1);
+  return { min: zs.length ? Math.min(...zs) : 0, max: zs.length ? Math.max(...zs) : 0 };
+}
+
+/** Lift `id` onto a free-floating layer inside `targetParentId` at (left,top) % of that parent, with the
+ *  given width token (% of parent) and height floor (px). It becomes a DIRECT child of the positioning
+ *  parent (above its flow content), gets a zIndex over any floating siblings, and sheds its flow-only
+ *  styling (alignSelf + margins). Pure. */
+export function floatBox(root: BoxNode, id: string, targetParentId: string, left: number, top: number, width: string, height: number): BoxNode {
+  if (id === targetParentId || isAncestor(root, id, targetParentId)) return root;
+  const tp = findBox(root, targetParentId);
+  const z = floatingZRange(tp).max + 1;
+  let next = moveBox(root, id, targetParentId, tp?.children?.length ?? 0);
+  next = updateBox(next, id, {
+    position: "absolute", left: round1(left), top: round1(top), width, minHeight: Math.max(8, Math.round(height)), zIndex: z,
+    alignSelf: undefined, margin: undefined, marginTop: undefined, marginRight: undefined, marginBottom: undefined, marginLeft: undefined,
+  });
+  return next;
+}
+
+/** Return `id` to the normal flow (drop its floating position); normalizeRowBands re-docks it as a row. */
+export function unfloatBox(root: BoxNode, id: string): BoxNode {
+  return updateBox(root, id, { position: undefined, left: undefined, top: undefined, zIndex: undefined });
+}
+
+/** Raise a floating box above all its floating siblings. */
+export function bringToFront(root: BoxNode, id: string): BoxNode {
+  const info = findParent(root, id);
+  if (!info) return root;
+  return updateBox(root, id, { zIndex: floatingZRange(info.parent).max + 1 });
+}
+
+/** Lower a floating box beneath all its floating siblings. */
+export function sendToBack(root: BoxNode, id: string): BoxNode {
+  const info = findParent(root, id);
+  if (!info) return root;
+  return updateBox(root, id, { zIndex: floatingZRange(info.parent).min - 1 });
 }
 
 // ── Flexbox style mapping ────────────────────────────────────────────────────

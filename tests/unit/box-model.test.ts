@@ -4,6 +4,7 @@ import {
   findBox, findParent, isAncestor, updateBox, insertBox, removeBox, moveBoxStep, moveBox,
   containerStyle, childStyle, paddingCSS, marginCSS, sizeToCSS, flexForWidth, fillMainAxis, u, newBoxId, dropIndexAmong,
   makeRowBand, normalizeRowBands, clampRowWidths, widthPct,
+  isFloating, floatBox, unfloatBox, bringToFront, sendToBack, floatingZRange,
   type BoxNode,
 } from "@/lib/box-model";
 
@@ -321,5 +322,81 @@ describe("box-model — equal division (fillMainAxis)", () => {
   it("uses the width token when the container is a row", () => {
     const rowPage = createContainer("row", { id: "r", children: [createElement("text", { id: "x", width: "200px" } as Partial<BoxNode>), createElement("text", { id: "y", width: "fill" } as Partial<BoxNode>)] } as Partial<BoxNode>);
     expect(fillMainAxis(rowPage, "r").children!.map((c) => c.width)).toEqual(["fill", "fill"]);
+  });
+});
+
+describe("box-model — floating layers (free overlap)", () => {
+  // A section with two child blocks (each already wrapped in its own row band).
+  const tree = () => createContainer("column", {
+    id: "sec",
+    children: [
+      makeRowBand([createContainer("column", { id: "a", width: "100%" } as Partial<BoxNode>)]),
+      makeRowBand([createContainer("column", { id: "b", width: "100%" } as Partial<BoxNode>)]),
+    ],
+  } as Partial<BoxNode>);
+
+  it("floatBox lifts a box onto its own layer: absolute, positioned, sheds flow styling, z above siblings", () => {
+    const next = floatBox(tree(), "a", "sec", 12, 8, "60%", 200);
+    const a = findBox(next, "a")!;
+    expect(isFloating(a)).toBe(true);
+    expect(a.position).toBe("absolute");
+    expect(a.left).toBe(12); expect(a.top).toBe(8);
+    expect(a.width).toBe("60%");
+    expect(a.minHeight).toBe(200);
+    expect(a.zIndex).toBe(1); // first floating child → z 1
+    expect(a.marginLeft).toBeUndefined(); expect(a.alignSelf).toBeUndefined(); // flow-only styling cleared
+    // It became a DIRECT child of the positioning parent (out of its row band).
+    expect(findParent(next, "a")!.parent.id).toBe("sec");
+  });
+
+  it("a second float stacks ABOVE the first (zIndex increments)", () => {
+    let next = floatBox(tree(), "a", "sec", 0, 0, "50%", 100);
+    next = floatBox(next, "b", "sec", 20, 20, "50%", 100);
+    expect(findBox(next, "a")!.zIndex).toBe(1);
+    expect(findBox(next, "b")!.zIndex).toBe(2);
+  });
+
+  it("floatBox refuses to drop a box into itself / a descendant", () => {
+    const t = createContainer("column", { id: "outer", children: [createContainer("column", { id: "inner" } as Partial<BoxNode>)] } as Partial<BoxNode>);
+    expect(floatBox(t, "outer", "inner", 0, 0, "50%", 50)).toBe(t); // no-op
+  });
+
+  it("bringToFront / sendToBack restack among floating siblings only", () => {
+    let next = floatBox(tree(), "a", "sec", 0, 0, "50%", 100);   // z1
+    next = floatBox(next, "b", "sec", 10, 10, "50%", 100);       // z2
+    next = sendToBack(next, "b");
+    expect(findBox(next, "b")!.zIndex!).toBeLessThan(findBox(next, "a")!.zIndex!);
+    next = bringToFront(next, "b");
+    expect(findBox(next, "b")!.zIndex!).toBeGreaterThan(findBox(next, "a")!.zIndex!);
+  });
+
+  it("unfloatBox returns the box to the flow (drops position/left/top/z)", () => {
+    const floated = floatBox(tree(), "a", "sec", 12, 8, "60%", 200);
+    const back = unfloatBox(floated, "a");
+    const a = findBox(back, "a")!;
+    expect(isFloating(a)).toBe(false);
+    expect(a.position).toBeUndefined(); expect(a.left).toBeUndefined(); expect(a.top).toBeUndefined(); expect(a.zIndex).toBeUndefined();
+  });
+
+  it("normalizeRowBands keeps a floating child OUT of the flow — not wrapped in a row band, not pruned", () => {
+    const floated = floatBox(tree(), "a", "sec", 12, 8, "60%", 200);
+    const norm = normalizeRowBands(floated, 0);
+    // 'a' stays a DIRECT child of the section (absolute), never re-wrapped into a row band.
+    const aParent = findParent(norm, "a")!.parent;
+    expect(aParent.id).toBe("sec");
+    expect(aParent.rowBand).toBeFalsy();
+    expect(findBox(norm, "a")!.position).toBe("absolute");
+    // 'b' is still a flow section inside a (kept) row band.
+    expect(findParent(norm, "b")!.parent.rowBand).toBe(true);
+  });
+
+  it("floatingZRange reports the min/max z among floating children (0 when none)", () => {
+    expect(floatingZRange(createContainer("column"))).toEqual({ min: 0, max: 0 });
+    const p = createContainer("column", { children: [
+      createContainer("column", { position: "absolute", zIndex: 3 } as Partial<BoxNode>),
+      createContainer("column", { position: "absolute", zIndex: 7 } as Partial<BoxNode>),
+      createContainer("column", {}), // flow child ignored
+    ] } as Partial<BoxNode>);
+    expect(floatingZRange(p)).toEqual({ min: 3, max: 7 });
   });
 });
