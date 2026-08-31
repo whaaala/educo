@@ -10,14 +10,17 @@
 
 import { Fragment, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { Plus, ChevronUp, ChevronDown, Copy, Scissors, ClipboardPaste, Trash2, Upload, GripVertical, MoreVertical, Rows3, Columns3, Grid3x3, Type, Heading as HeadingIcon, MousePointerClick, Image as ImageIcon, Layers, BringToFront, SendToBack } from "lucide-react";
+import { Plus, ChevronUp, ChevronDown, Copy, Scissors, ClipboardPaste, Trash2, Upload, GripVertical, MoreVertical, Rows3, Columns3, Grid3x3, Type, Heading as HeadingIcon, MousePointerClick, Image as ImageIcon, Layers, BringToFront, SendToBack, Video as VideoIcon, Sparkles, Minus as MinusIcon, List as ListIcon, Code2, Star } from "lucide-react";
 import type { SiteTheme } from "@/lib/site-storage";
 import {
   type BoxNode, type BoxType,
   containerStyle, childStyle, marginCSS, sizeToCSS, u, baseUnit, createContainer, createGrid, createElement,
   updateBox, removeBox, insertBox, moveBoxStep, duplicateBox, moveBox, cloneBox, findParent, isAncestor, isContainer, isEmptyBox, widthPct,
   isFloating, floatBox, unfloatBox, bringToFront, sendToBack, bringForward, sendBackward,
+  radiusCSS, isClipped, SHADOW_CSS, videoEmbedSrc,
+  type Breakpoint, resolveResponsive, updateBoxResponsive,
 } from "@/lib/box-model";
+import { ICON_SET } from "./icons";
 import { colorToCSS } from "@/components/shared/ColorPalettePicker";
 import { EditableText, ImageBox } from "@/components/website/sections/SectionKit";
 
@@ -38,6 +41,29 @@ function backgroundStyle(node: BoxNode): React.CSSProperties {
   }
   if (node.background && !baseGrad) s.backgroundColor = node.background;
   return s;
+}
+
+/** Border, drop shadow, per-corner radius and rotation for any box. */
+function decorStyle(node: BoxNode): React.CSSProperties {
+  const s: React.CSSProperties = {};
+  const br = radiusCSS(node); if (br) s.borderRadius = br;
+  if (node.borderWidth && node.type !== "divider") s.border = `${node.borderWidth}px ${node.borderStyle ?? "solid"} ${node.borderColor ? colorToCSS(node.borderColor) : "rgba(0,0,0,0.15)"}`; // divider uses borderWidth as its line thickness
+  if (node.shadow) s.boxShadow = SHADOW_CSS[node.shadow];
+  if (node.rotate) s.transform = `rotate(${node.rotate}deg)`;
+  return s;
+}
+
+/** Typography for a text/heading/button element (falls back to the theme font + type defaults). */
+function typoStyle(node: BoxNode, fallbackFamily: string, defaultWeight: number): React.CSSProperties {
+  return {
+    fontFamily: node.fontFamily || fallbackFamily,
+    fontWeight: node.fontWeight ?? (node.bold ? 800 : defaultWeight),
+    lineHeight: node.lineHeight,
+    letterSpacing: node.letterSpacing != null ? `${node.letterSpacing}px` : undefined,
+    fontStyle: node.italic ? "italic" : undefined,
+    textDecoration: node.underline ? "underline" : undefined,
+    textTransform: node.textTransform && node.textTransform !== "none" ? node.textTransform : undefined,
+  };
 }
 
 /**
@@ -115,10 +141,15 @@ const ADD_ITEMS: { type: BoxType | "row" | "grid"; label: string; Icon: typeof T
   { type: "text", label: "Text", Icon: Type },
   { type: "button", label: "Button", Icon: MousePointerClick },
   { type: "image", label: "Image", Icon: ImageIcon },
+  { type: "video", label: "Video", Icon: VideoIcon },
+  { type: "icon", label: "Icon", Icon: Sparkles },
+  { type: "list", label: "List", Icon: ListIcon },
+  { type: "divider", label: "Divider", Icon: MinusIcon },
+  { type: "embed", label: "Embed / HTML", Icon: Code2 },
 ];
 
 export default function BoxCanvas({
-  root, theme, editable = true, selectedId, onSelectId, selectedIds, onSelectIds, onChange, onResized, minHeight = 600,
+  root, theme, editable = true, selectedId, onSelectId, selectedIds, onSelectIds, onChange, onResized, minHeight = 600, breakpoint = "base",
 }: {
   root: BoxNode;
   theme: SiteTheme;
@@ -130,6 +161,7 @@ export default function BoxCanvas({
   onChange: (root: BoxNode) => void;
   onResized?: (id: string, axis: "width" | "height") => void;
   minHeight?: number; // the page's minimum height (≈ a viewport); the page GROWS past this with content
+  breakpoint?: Breakpoint; // active responsive breakpoint — edits at tablet/mobile write per-breakpoint overrides
 }) {
   const [menuFor, setMenuFor] = useState<string | null>(null); // which box's actions dropdown is open
   const [menuPos, setMenuPos] = useState<{ top: number; left: number } | null>(null); // fixed pos of the ⋯ menu (portaled to body so it never gets clipped by the box)
@@ -156,6 +188,11 @@ export default function BoxCanvas({
   const selSet = new Set(selectedIds ?? (selectedId != null ? [selectedId] : []));
   const emitSelection = (ids: string[]) => { onSelectIds?.(ids); onSelectId?.(ids[0] ?? null); };
   const select = (id: string | null) => emitSelection(id ? [id] : []);
+
+  // Style/geometry writes (resize, drag, nudge) go to the active breakpoint's override when not on base,
+  // so tuning mobile/tablet never disturbs the desktop base. Structural ops (add/move/float/z) stay base.
+  const writeBox = (tree: BoxNode, id: string, patch: Partial<BoxNode>): BoxNode =>
+    breakpoint !== "base" ? updateBoxResponsive(tree, id, patch, breakpoint) : updateBox(tree, id, patch);
 
   // ── Floating layers (lift a section out of the flow to OVERLAP others) ──
   const floatNode = (id: string) => { const g = measureFloatGeom(rootRef.current, id); if (g) onChange(floatBox(rootRef.current, id, g.parentId, g.left, g.top, g.width, g.height)); };
@@ -223,6 +260,7 @@ export default function BoxCanvas({
       const mod = e.ctrlKey || e.metaKey;
       const k = e.key.toLowerCase();
       const n = id ? findByIdLocal(root, id) : null;
+      const rn = n ? resolveResponsive(n, breakpoint) : ({} as BoxNode); // effective (breakpoint-resolved) values
       const floating = !!n && isFloating(n);
       // Nudge step for a floating box, in % of its parent (2px, or 12px with Shift) — measured so it's an
       // even visual step at any parent size.
@@ -236,19 +274,19 @@ export default function BoxCanvas({
       else if (mod && k === "x") { if (id) { cutBox(id); e.preventDefault(); } }
       else if (mod && k === "v") { if (clip) { pasteBox(id); e.preventDefault(); } }
       else if (mod && k === "d") { if (ids.length) { let next = root; for (const d of ids) next = duplicateBox(next, d); onChange(next); e.preventDefault(); } } // duplicate ALL selected
-      else if (mod && k === "]" && id) { onChange((e.shiftKey ? bringToFront : bringForward)(root, id)); e.preventDefault(); } // ]=forward, Shift+]=to front
-      else if (mod && k === "[" && id) { onChange((e.shiftKey ? sendToBack : sendBackward)(root, id)); e.preventDefault(); }    // [=backward, Shift+[=to back
+      else if (mod && k === "]" && id && floating) { onChange((e.shiftKey ? bringToFront : bringForward)(root, id)); e.preventDefault(); } // ]=forward, Shift+]=to front (floating only)
+      else if (mod && k === "[" && id && floating) { onChange((e.shiftKey ? sendToBack : sendBackward)(root, id)); e.preventDefault(); }    // [=backward, Shift+[=to back (floating only)
       else if (e.altKey && k === "f" && id) { toggleFloat(id); e.preventDefault(); }                      // float ⇄ flow
       else if ((e.key === "Delete" || e.key === "Backspace") && ids.length) { let next = root; for (const d of ids) if (d !== root.id) next = removeBox(next, d); onChange(next); select(null); e.preventDefault(); } // delete ALL selected
-      else if (e.key === "ArrowUp" && id) { if (floating) onChange(updateBox(root, id, { top: round1((n!.top ?? 0) - stepPct("y")) })); else onChange(moveBoxStep(root, id, -1)); e.preventDefault(); }
-      else if (e.key === "ArrowDown" && id) { if (floating) onChange(updateBox(root, id, { top: round1((n!.top ?? 0) + stepPct("y")) })); else onChange(moveBoxStep(root, id, 1)); e.preventDefault(); }
-      else if (e.key === "ArrowLeft" && id && floating) { onChange(updateBox(root, id, { left: round1((n!.left ?? 0) - stepPct("x")) })); e.preventDefault(); }
-      else if (e.key === "ArrowRight" && id && floating) { onChange(updateBox(root, id, { left: round1((n!.left ?? 0) + stepPct("x")) })); e.preventDefault(); }
+      else if (e.key === "ArrowUp" && id) { if (floating) onChange(writeBox(root, id, { top: round1((rn.top ?? 0) - stepPct("y")) })); else onChange(moveBoxStep(root, id, -1)); e.preventDefault(); }
+      else if (e.key === "ArrowDown" && id) { if (floating) onChange(writeBox(root, id, { top: round1((rn.top ?? 0) + stepPct("y")) })); else onChange(moveBoxStep(root, id, 1)); e.preventDefault(); }
+      else if (e.key === "ArrowLeft" && id && floating) { onChange(writeBox(root, id, { left: round1((rn.left ?? 0) - stepPct("x")) })); e.preventDefault(); }
+      else if (e.key === "ArrowRight" && id && floating) { onChange(writeBox(root, id, { left: round1((rn.left ?? 0) + stepPct("x")) })); e.preventDefault(); }
       else if (e.key === "Escape") { select(null); }
     };
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
-  }, [editable, selectedId, selectedIds, root, clip, onChange]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [editable, selectedId, selectedIds, root, clip, onChange, breakpoint]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // The ⋯ actions menu is portaled to <body> at a fixed position so it's never clipped by a small box.
   // Close it on outside-click, and dismiss on scroll/resize (its anchored position would go stale).
@@ -272,6 +310,11 @@ export default function BoxCanvas({
     if (n.type === "heading") return t ? `Heading: ${t.slice(0, 18)}` : "Heading";
     if (n.type === "button") return t ? `Button: ${t.slice(0, 14)}` : "Button";
     if (n.type === "image") return "Image";
+    if (n.type === "video") return "Video";
+    if (n.type === "icon") return `Icon: ${n.icon ?? "Star"}`;
+    if (n.type === "divider") return "Divider";
+    if (n.type === "list") return "List";
+    if (n.type === "embed") return "Embed";
     return t ? `Text: ${t.slice(0, 18)}` : "Text";
   };
   const directKids = (el: HTMLElement) => Array.from(el.querySelectorAll<HTMLElement>(":scope > [data-box-id]"));
@@ -443,7 +486,7 @@ export default function BoxCanvas({
       // Keep at least half the box within the parent so it's always grabbable (overhang is allowed for overlap).
       nx = Math.max(-bw / 2, Math.min(cw - bw / 2, nx));
       ny = Math.max(-bh / 2, Math.min(ch - bh / 2, ny));
-      pending = updateBox(rootRef.current, id, { left: round1((nx / cw) * 100), top: round1((ny / ch) * 100) });
+      pending = writeBox(rootRef.current, id, { left: round1((nx / cw) * 100), top: round1((ny / ch) * 100) });
       setSnapLines(guides);
       if (!raf) raf = requestAnimationFrame(flush);
     };
@@ -505,7 +548,7 @@ export default function BoxCanvas({
       if (hasW) { const w = Math.max(16, bw - dx); patch.width = `${round1((w / cw) * 100)}%`; patch.left = round1(((x0 + (bw - w)) / cw) * 100); }
       if (hasS) { const h = Math.max(16, bh + dy); patch.minHeight = Math.round(h); patch.height = undefined; }
       if (hasN) { const h = Math.max(16, bh - dy); patch.minHeight = Math.round(h); patch.height = undefined; patch.top = round1(((y0 + (bh - h)) / ch) * 100); }
-      pending = updateBox(rootRef.current, id, patch);
+      pending = writeBox(rootRef.current, id, patch);
       if (!raf) raf = requestAnimationFrame(flush);
     };
     const onUp = () => {
@@ -544,9 +587,7 @@ export default function BoxCanvas({
       const padR = parseFloat(cs.paddingRight) || 0;
       maxW = (pEl.clientWidth - padL - padR) || 1;
     }
-    const vhPx = window.innerHeight || 800;
     const pct = (px: number) => `${Math.max(3, Math.min(100, (px / maxW) * 100)).toFixed(2)}%`;
-    const vh = (px: number) => `${Math.max(0.1, (px / vhPx) * 100).toFixed(2)}vh`;
 
     // Parent content-box origin — for measuring the section's edges and clamping every drag to the page.
     const prRect = pEl ? pEl.getBoundingClientRect() : null;
@@ -560,10 +601,10 @@ export default function BoxCanvas({
       if ((hasE || hasW) && !parentRow) { anchor.alignSelf = "flex-start"; anchor.width = pct(W0); anchor.marginLeft = pxU(rect.left - contentLeftPx); } // width is CROSS (column) → pin horizontal
       if ((hasN || hasS) && parentRow) { anchor.alignSelf = "flex-start"; anchor.minHeight = Math.round(H0); anchor.marginTop = pxU(rect.top - contentTopPx); } // height is CROSS (row) → un-stretch so the floor governs + pin vertical
     }
-    if (Object.keys(anchor).length) { base = updateBox(base, id, anchor); changed = true; }
+    if (Object.keys(anchor).length) { base = writeBox(base, id, anchor); changed = true; }
     if (changed) onChange(base);
 
-    const bn = findByIdLocal(base, id) ?? node;
+    const bn = resolveResponsive(findByIdLocal(base, id) ?? node, breakpoint); // effective margins at this breakpoint
     const ML0 = bn.marginLeft ?? bn.margin ?? 0; // stored (u) units after anchoring
     const MT0 = bn.marginTop ?? bn.margin ?? 0;
     const ML0px = (boxU * ML0) / 10, MT0px = (boxU * MT0) / 10;
@@ -603,15 +644,15 @@ export default function BoxCanvas({
       // shifts right with margin-left, keeping this section's right edge fixed (a gap opens on the left).
       if (hasE) {
         const right = Math.min(nextLeftPx, Math.max(startLeftPx + minWpx, startRightPx + dx));
-        tree = updateBox(tree, id, { width: pct(right - startLeftPx) });
-        if (nextSibId) tree = updateBox(tree, nextSibId, { marginLeft: Math.max(0, pxU(nextLeftPx - right)) }); // pin the neighbour in place
+        tree = writeBox(tree, id, { width: pct(right - startLeftPx) });
+        if (nextSibId) tree = writeBox(tree, nextSibId, { marginLeft: Math.max(0, pxU(nextLeftPx - right)) }); // pin the neighbour in place
       }
-      if (hasW) { const left = Math.min(startRightPx - minWpx, Math.max(flowX, startLeftPx + dx)); tree = updateBox(tree, id, { width: pct(startRightPx - left), marginLeft: Math.max(0, pxU(left - flowX)) }); }
+      if (hasW) { const left = Math.min(startRightPx - minWpx, Math.max(flowX, startLeftPx + dx)); tree = writeBox(tree, id, { width: pct(startRightPx - left), marginLeft: Math.max(0, pxU(left - flowX)) }); }
       // ── HEIGHT ── the height you drag sets a MIN-HEIGHT (a floor), not a fixed height. The section HUGS
       // its content, so growing a child grows the section; shrinking below the content does nothing (the
       // content holds it up); and when children are empty, dragging the floor up/down grows/shrinks them.
-      if (hasS) { const bot = Math.max(startTopPx + minHpx, startBotPx + dy); tree = updateBox(tree, id, { minHeight: Math.round(bot - startTopPx), height: undefined }); } // top fixed (margin-top unchanged), bottom moves
-      if (hasN) { const top = Math.max(flowY, Math.min(startBotPx - minHpx, startTopPx + dy)); tree = updateBox(tree, id, { minHeight: Math.round(startBotPx - top), height: undefined, marginTop: Math.max(0, pxU(top - flowY)) }); } // bottom fixed, top moves (margin-top compensates)
+      if (hasS) { const bot = Math.max(startTopPx + minHpx, startBotPx + dy); tree = writeBox(tree, id, { minHeight: Math.round(bot - startTopPx), height: undefined }); } // top fixed (margin-top unchanged), bottom moves
+      if (hasN) { const top = Math.max(flowY, Math.min(startBotPx - minHpx, startTopPx + dy)); tree = writeBox(tree, id, { minHeight: Math.round(startBotPx - top), height: undefined, marginTop: Math.max(0, pxU(top - flowY)) }); } // bottom fixed, top moves (margin-top compensates)
       pending = tree;
       if (!raf) raf = requestAnimationFrame(flush);
     };
@@ -645,17 +686,23 @@ export default function BoxCanvas({
     closeMenu();
   };
 
-  const renderNode = (node: BoxNode, parent: BoxNode | null): React.ReactNode => {
+  const renderNode = (rawNode: BoxNode, parent: BoxNode | null): React.ReactNode => {
+    // Resolve the box for the active breakpoint (base merged with tablet/mobile overrides). Same id/type/
+    // children as the base, so selection + structure are unaffected — only style/geometry differ.
+    const node = resolveResponsive(rawNode, breakpoint);
     const isSel = editable && selSet.has(node.id);
     const isSolo = isSel && selSet.size === 1; // per-box toolbar + resize handles only when EXACTLY one is selected
     const isRoot = parent === null;
+    // Hidden on this breakpoint: skip entirely on the live site; in the editor keep it faintly visible so
+    // it can still be selected and un-hidden.
+    if (node.hidden && !editable) return null;
     const floating = isFloating(node) && !isRoot;
     const wrapStyle: React.CSSProperties = {
       position: floating ? "absolute" : "relative", // floating boxes are positioned inside their (relative) parent → they overlap the flow
-      borderRadius: node.radius,
+      ...decorStyle(node), // border, shadow, per-corner radius, rotation
       ...(floating ? {} : marginCSS(node)), // margins are a FLOW concept; a floating box uses left/top instead
-      opacity: node.opacity !== undefined ? node.opacity / 100 : undefined,
-      overflow: node.clip || node.radius ? "hidden" : undefined, // clip only when opted-in or rounded (never clip the selection chrome)
+      opacity: node.hidden ? 0.35 : node.opacity !== undefined ? node.opacity / 100 : undefined, // hidden-on-this-device shows faint in the editor
+      overflow: isClipped(node) ? "hidden" : undefined, // clip only when opted-in or rounded (never clip the selection chrome)
       // Floating: free-position on its own layer. Flow: fill+divide per childStyle. Root: fill the canvas +
       // define the global base unit (--box-u, rem-based) that every size scales off.
       ...(floating
@@ -687,6 +734,7 @@ export default function BoxCanvas({
         <div
           key={node.id}
           data-box-id={node.id}
+          id={node.anchor || undefined}
           onMouseDown={onSelectDown}
           style={{ ...containerStyle(node), ...wrapStyle, ...(isDragging ? { opacity: 0.4 } : {}) }}
           className={`${editable ? "transition-shadow" : ""} ${isSel ? "outline outline-2 outline-indigo-500 outline-offset-[-2px]" : editable ? "hover:outline hover:outline-1 hover:outline-indigo-300/70 hover:outline-offset-[-1px]" : ""}`}
@@ -710,6 +758,7 @@ export default function BoxCanvas({
       <div
         key={node.id}
         data-box-id={node.id}
+        id={node.anchor || undefined}
         onMouseDown={onSelectDown}
         style={{ ...wrapStyle, ...(isDragging ? { opacity: 0.4 } : {}) }}
         className={`${isSel ? "outline outline-2 outline-indigo-500 outline-offset-[-2px]" : editable ? "hover:outline hover:outline-1 hover:outline-indigo-300/70 hover:outline-offset-[-1px]" : ""}`}
@@ -856,9 +905,9 @@ function ElementView({ node, theme, editable, onText, onSrc }: {
   const align = node.textAlign ?? "left";
   switch (node.type) {
     case "heading":
-      return <h2 style={{ color: node.color || theme.text, fontFamily: theme.headingFont, fontSize: u(node.fontSize ?? 32), fontWeight: node.bold ? 800 : 600, textAlign: align, width: "100%" }}><EditableText value={node.text} editable={editable} onChange={onText} placeholder="Heading" /></h2>;
+      return <h2 style={{ color: node.color || theme.text, fontSize: u(node.fontSize ?? 32), textAlign: align, width: "100%", ...typoStyle(node, theme.headingFont, 600) }}><EditableText value={node.text} editable={editable} onChange={onText} placeholder="Heading" /></h2>;
     case "button":
-      return <a href={node.href || "#"} onClick={(e) => editable && e.preventDefault()} className="inline-flex items-center gap-2 rounded-full font-semibold" style={{ background: node.background ? colorToCSS(node.background) : theme.primary, color: node.color || "#fff", fontSize: u(node.fontSize ?? 14), padding: `${u(12)} ${u(24)}` }}><EditableText value={node.text} editable={editable} onChange={onText} placeholder="Button" /></a>;
+      return <a href={node.href || "#"} target={node.newTab ? "_blank" : undefined} rel={node.newTab ? "noopener noreferrer" : undefined} onClick={(e) => editable && e.preventDefault()} className="inline-flex items-center gap-2 rounded-full" style={{ background: node.background ? colorToCSS(node.background) : theme.primary, color: node.color || "#fff", fontSize: u(node.fontSize ?? 14), padding: `${u(12)} ${u(24)}`, ...typoStyle(node, theme.bodyFont, 600) }}><EditableText value={node.text} editable={editable} onChange={onText} placeholder="Button" /></a>;
     case "image":
       return (
         <div className="relative w-full" style={{ height: sizeToCSS(node.height) ?? 260 }}>
@@ -869,7 +918,39 @@ function ElementView({ node, theme, editable, onText, onSrc }: {
           </>)}
         </div>
       );
+    case "video": {
+      const embed = videoEmbedSrc(node.src);
+      return (
+        <div className="relative w-full overflow-hidden rounded-lg bg-black/5" style={{ height: sizeToCSS(node.height) ?? 315 }}>
+          {embed ? (
+            <iframe src={embed} title="Video" className="w-full h-full" style={{ border: 0, pointerEvents: editable ? "none" : "auto" }} allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
+          ) : node.src ? (
+            <video src={node.src} controls className="w-full h-full object-cover" style={{ pointerEvents: editable ? "none" : "auto" }} />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center gap-1.5 text-gray-400" style={{ fontSize: u(12) }}><VideoIcon className="w-4 h-4" /> Add a video URL (YouTube, Vimeo or .mp4) in the inspector</div>
+          )}
+        </div>
+      );
+    }
+    case "icon": {
+      const Ico = ICON_SET[node.icon ?? "Star"] ?? Star;
+      return <div style={{ textAlign: align, color: node.color || theme.primary, width: "100%", lineHeight: 0 }}><Ico style={{ width: u(node.fontSize ?? 32), height: u(node.fontSize ?? 32), display: "inline-block" }} /></div>;
+    }
+    case "divider":
+      return <div aria-hidden="true" style={{ width: "100%", height: node.borderWidth || 2, background: node.color ? colorToCSS(node.color) : node.borderColor ? colorToCSS(node.borderColor) : theme.textMuted, borderRadius: 999 }} />;
+    case "list": {
+      const items = node.listItems ?? [];
+      const numbered = node.listStyle === "number";
+      const style: React.CSSProperties = { color: node.color || theme.text, fontSize: u(node.fontSize ?? 16), textAlign: align, width: "100%", paddingLeft: u(22), listStyleType: numbered ? "decimal" : "disc", ...typoStyle(node, theme.bodyFont, 400) };
+      return numbered
+        ? <ol style={style}>{items.map((it, i) => <li key={i} style={{ marginBottom: u(4) }}>{it}</li>)}</ol>
+        : <ul style={style}>{items.map((it, i) => <li key={i} style={{ marginBottom: u(4) }}>{it}</li>)}</ul>;
+    }
+    case "embed":
+      return node.html
+        ? <div className="w-full" style={{ height: sizeToCSS(node.height) ?? 260, pointerEvents: editable ? "none" : "auto" }} dangerouslySetInnerHTML={{ __html: node.html }} />
+        : <div className="w-full flex items-center justify-center gap-1.5 text-gray-400 border border-dashed border-gray-300 dark:border-gray-600 rounded-lg" style={{ height: sizeToCSS(node.height) ?? 120, fontSize: u(12) }}><Code2 className="w-4 h-4" /> Paste HTML / embed code in the inspector</div>;
     default:
-      return <p style={{ color: node.color || theme.textMuted, fontSize: u(node.fontSize ?? 16), textAlign: align, width: "100%" }}><EditableText value={node.text} editable={editable} onChange={onText} placeholder="Add text" /></p>;
+      return <p style={{ color: node.color || theme.textMuted, fontSize: u(node.fontSize ?? 16), textAlign: align, width: "100%", ...typoStyle(node, theme.bodyFont, 400) }}><EditableText value={node.text} editable={editable} onChange={onText} placeholder="Add text" /></p>;
   }
 }

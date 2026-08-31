@@ -7,10 +7,15 @@
  */
 
 import { useRef } from "react";
-import { Plus, Rows3, Columns3, Grid3x3, Upload, Trash2, AlignLeft, AlignCenter, AlignRight, Layers, Move, BringToFront, SendToBack, ChevronUp, ChevronDown } from "lucide-react";
+import { Plus, Rows3, Columns3, Grid3x3, Upload, Trash2, AlignLeft, AlignCenter, AlignRight, Layers, Move, BringToFront, SendToBack, ChevronUp, ChevronDown, Italic, Underline } from "lucide-react";
 import type { SiteTheme } from "@/lib/site-storage";
+import { FONT_CHOICES } from "@/lib/site-storage";
 import type { BoxNode, FlexAlign, FlexJustify } from "@/lib/box-model";
 import { isContainer, isFloating } from "@/lib/box-model";
+import { ICON_SET, ICON_NAMES } from "./icons";
+
+const SHADOWS = ["none", "sm", "md", "lg", "xl"] as const;
+const FONT_LABEL = (f: string) => f.replace(/['"]/g, "").split(",")[0];
 import { ColorPickerPopover, colorToCSS } from "@/components/shared/ColorPalettePicker";
 
 const inputCls = "w-full text-sm px-2.5 py-2 rounded-lg border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-transparent text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-indigo-500 outline-none";
@@ -84,7 +89,7 @@ function SideSpacing({ title, node, base, sides, onPatch, max = 96 }: {
   );
 }
 
-export default function BoxInspector({ node, theme, onPatch, onAddChild, onFloat, onUnfloat, onLayer, canFloat = true }: {
+export default function BoxInspector({ node, theme, onPatch, onAddChild, onFloat, onUnfloat, onLayer, canFloat = true, inGrid = false, breakpoint = "base", overridden = false, onResetOverride, pages, currentPageId }: {
   node: BoxNode;
   theme: SiteTheme;
   onPatch: (patch: Partial<BoxNode>) => void;
@@ -93,15 +98,33 @@ export default function BoxInspector({ node, theme, onPatch, onAddChild, onFloat
   onUnfloat?: () => void;        // dock it back into the flow
   onLayer?: (dir: "front" | "forward" | "backward" | "back") => void; // change stacking order among floating siblings
   canFloat?: boolean;            // false for the page root (nothing to float within)
+  inGrid?: boolean;              // this box sits inside a GRID parent → expose column/row span
+  breakpoint?: "base" | "tablet" | "mobile"; // which responsive breakpoint is being edited
+  overridden?: boolean;          // does this box have an override at the current (non-base) breakpoint?
+  onResetOverride?: () => void;  // clear this box's overrides at the current breakpoint
+  pages?: { id: string; name: string }[]; // other pages, for link-to-page
+  currentPageId?: string;        // the page being edited (excluded from the link-to-page list)
 }) {
   const fileRef = useRef<HTMLInputElement>(null);
   const container = isContainer(node);
   const isGrid = node.layout === "grid";
   const floating = isFloating(node);
+  const textual = node.type === "text" || node.type === "heading" || node.type === "button" || node.type === "list";
 
   return (
     <div className="p-4 space-y-3">
       <div className="text-[11px] text-gray-400">Editing a <b>{container ? (isGrid ? "Grid" : node.direction === "row" ? "Row" : "Section") : node.type}</b> block.</div>
+
+      {/* Responsive banner: at tablet/mobile, edits create overrides for THAT size only (content stays shared). */}
+      {breakpoint !== "base" && (
+        <div className="rounded-lg border border-amber-300 dark:border-amber-500/40 bg-amber-50 dark:bg-amber-500/10 p-2 space-y-1.5">
+          <div className="text-[11px] font-semibold text-amber-700 dark:text-amber-300">Editing {breakpoint === "mobile" ? "Mobile" : "Tablet"} — size &amp; layout changes here apply only to this screen.</div>
+          {overridden && onResetOverride && (
+            <button onClick={onResetOverride} className="text-[11px] text-amber-700 dark:text-amber-300 underline hover:no-underline">Reset {breakpoint} overrides to base</button>
+          )}
+        </div>
+      )}
+      <label className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300"><input type="checkbox" checked={!!node.hidden} onChange={(e) => onPatch({ hidden: e.target.checked || undefined })} /> Hidden {breakpoint === "base" ? "everywhere" : `on ${breakpoint}`}</label>
 
       {container && onAddChild && (
         <button onClick={onAddChild} className="w-full flex items-center justify-center gap-1.5 py-2 rounded-lg text-sm font-semibold bg-indigo-600 text-white hover:bg-indigo-700">
@@ -177,6 +200,21 @@ export default function BoxInspector({ node, theme, onPatch, onAddChild, onFloat
       )}
       <SideSpacing title="Margin (outside)" node={node} base="margin" sides={["marginTop", "marginRight", "marginBottom", "marginLeft"]} onPatch={onPatch} />
 
+      {/* ── Grid cell (when the parent is a grid) ── */}
+      {inGrid && (
+        <>
+          <div className={section}>Grid cell</div>
+          <div className="grid grid-cols-2 gap-2">
+            <label className="block"><span className={label}>Column span</span>
+              <input type="number" min={1} max={12} value={node.colSpan ?? 1} onChange={(e) => onPatch({ colSpan: Math.max(1, Number(e.target.value) || 1) })} aria-label="Column span" className={inputCls} />
+            </label>
+            <label className="block"><span className={label}>Row span</span>
+              <input type="number" min={1} max={12} value={node.rowSpan ?? 1} onChange={(e) => onPatch({ rowSpan: Math.max(1, Number(e.target.value) || 1) })} aria-label="Row span" className={inputCls} />
+            </label>
+          </div>
+        </>
+      )}
+
       {/* ── Size ── */}
       <div className={section}>Size</div>
       <WidthControl node={node} onPatch={onPatch} />
@@ -188,8 +226,35 @@ export default function BoxInspector({ node, theme, onPatch, onAddChild, onFloat
         <input type="checkbox" checked={!!node.clip} onChange={(e) => onPatch({ clip: e.target.checked })} className="mt-0.5" />
         <span>Clip to size <span className="text-gray-400">— by default a box hugs its content and can't be smaller; tick this to force a smaller size and hide the overflow.</span></span>
       </label>
-      <Range title="Corner radius" value={node.radius} min={0} max={40} fallback={0} onChange={(n) => onPatch({ radius: n })} />
+      <Range title="Corner radius (all)" value={node.radius} min={0} max={64} fallback={0} onChange={(n) => onPatch({ radius: n })} />
+      <div className="grid grid-cols-4 gap-1">
+        {([["TL", "radiusTopLeft"], ["TR", "radiusTopRight"], ["BR", "radiusBottomRight"], ["BL", "radiusBottomLeft"]] as const).map(([lab, key]) => (
+          <label key={key} className="flex flex-col items-center gap-0.5">
+            <span className="text-[9px] uppercase tracking-wide text-gray-400">{lab}</span>
+            <input type="number" min={0} value={node[key] !== undefined ? (node[key] as number) : ""} placeholder={String(node.radius ?? 0)} onChange={(e) => onPatch({ [key]: e.target.value === "" ? undefined : Number(e.target.value) } as Partial<BoxNode>)} aria-label={`Corner radius ${lab}`} className="w-full text-xs px-1 py-1 rounded border border-gray-200 dark:border-gray-700 bg-transparent text-center outline-none focus:ring-1 focus:ring-indigo-400" />
+          </label>
+        ))}
+      </div>
       <Range title="Opacity" value={node.opacity} min={0} max={100} fallback={100} onChange={(n) => onPatch({ opacity: n })} unit="%" />
+
+      {/* ── Border & effects ── */}
+      <div className={section}>Border &amp; effects</div>
+      <div className="grid grid-cols-2 gap-2">
+        <Range title="Border" value={node.borderWidth} min={0} max={16} fallback={0} onChange={(n) => onPatch({ borderWidth: n })} />
+        <label className="block"><span className={label}>Style</span>
+          <select value={node.borderStyle ?? "solid"} onChange={(e) => onPatch({ borderStyle: e.target.value as BoxNode["borderStyle"] })} className={inputCls}>
+            {["solid", "dashed", "dotted"].map((o) => <option key={o} value={o}>{o}</option>)}
+          </select>
+        </label>
+      </div>
+      {!!node.borderWidth && <ColorRow title="Border colour" value={node.borderColor} fallback={theme.text} onSelect={(c) => onPatch({ borderColor: c })} />}
+      <div className="space-y-1">
+        <span className={label}>Shadow</span>
+        <div className="flex gap-1 p-0.5 rounded-lg border border-gray-200 dark:border-gray-700">
+          {SHADOWS.map((s) => <button key={s} onClick={() => onPatch({ shadow: s === "none" ? undefined : s })} className={`${seg} uppercase ${(node.shadow ?? "none") === s ? "bg-indigo-600 text-white" : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"}`}>{s}</button>)}
+        </div>
+      </div>
+      <Range title="Rotation" value={node.rotate} min={-180} max={180} fallback={0} onChange={(n) => onPatch({ rotate: n })} unit="°" />
 
       {/* ── Background ── */}
       <div className={section}>Background</div>
@@ -206,24 +271,60 @@ export default function BoxInspector({ node, theme, onPatch, onAddChild, onFloat
         </>
       )}
 
+      {/* ── Anchor (a named scroll target ANY box can be linked to) ── */}
+      <label className="block"><span className={label}>Anchor name (link target)</span>
+        <input value={node.anchor ?? ""} onChange={(e) => onPatch({ anchor: e.target.value.replace(/\s+/g, "-").toLowerCase() || undefined })} placeholder="e.g. pricing → link with #pricing" aria-label="Anchor name" className={inputCls} />
+      </label>
+
       {/* ── Element content ── */}
       {!container && (
         <>
           <div className={section}>Content</div>
-          {node.type !== "image" && (
+          {(node.type === "text" || node.type === "heading" || node.type === "button") && (
             <label className="block"><span className={label}>Text</span>
               <textarea value={node.text ?? ""} onChange={(e) => onPatch({ text: e.target.value })} rows={2} className={inputCls} />
             </label>
           )}
           {node.type === "button" && (
-            <label className="block"><span className={label}>Link (URL)</span>
-              <input value={node.href ?? ""} onChange={(e) => onPatch({ href: e.target.value })} placeholder="https://…" className={inputCls} />
+            <>
+              <label className="block"><span className={label}>Link (URL or #anchor)</span>
+                <input value={node.href ?? ""} onChange={(e) => onPatch({ href: e.target.value })} placeholder="https://… or #pricing" className={inputCls} />
+              </label>
+              {pages && pages.filter((p) => p.id !== currentPageId).length > 0 && (
+                <label className="block"><span className={label}>…or link to a page</span>
+                  <select value={node.href?.startsWith("page:") ? node.href : ""} onChange={(e) => onPatch({ href: e.target.value })} aria-label="Link to page" className={inputCls}>
+                    <option value="">— choose a page —</option>
+                    {pages.filter((p) => p.id !== currentPageId).map((p) => <option key={p.id} value={`page:${p.id}`}>{p.name}</option>)}
+                  </select>
+                </label>
+              )}
+              <label className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300"><input type="checkbox" checked={!!node.newTab} onChange={(e) => onPatch({ newTab: e.target.checked })} /> Open in a new tab</label>
+            </>
+          )}
+          {node.type === "video" && (
+            <label className="block"><span className={label}>Video URL</span>
+              <input value={node.src ?? ""} onChange={(e) => onPatch({ src: e.target.value })} placeholder="YouTube, Vimeo or .mp4 URL" aria-label="Video URL" className={inputCls} />
+              <span className="text-[9px] text-gray-400">YouTube/Vimeo links embed automatically; a direct .mp4 plays inline.</span>
             </label>
           )}
-          {node.type !== "image" && (
+          {node.type === "embed" && (
+            <label className="block"><span className={label}>HTML / embed code</span>
+              <textarea value={node.html ?? ""} onChange={(e) => onPatch({ html: e.target.value })} rows={4} placeholder="<iframe …> or any HTML" aria-label="HTML embed code" className={`${inputCls} font-mono text-[11px]`} />
+            </label>
+          )}
+          {node.type === "icon" && (
             <>
-              <Range title="Font size" value={node.fontSize} min={10} max={72} fallback={node.type === "heading" ? 32 : 16} onChange={(n) => onPatch({ fontSize: n })} unit="rem" />
-              <ColorRow title="Text colour" value={node.color} fallback={theme.text} onSelect={(c) => onPatch({ color: c })} />
+              <div className="space-y-1">
+                <span className={label}>Icon</span>
+                <div className="grid grid-cols-6 gap-1 max-h-40 overflow-y-auto p-1 rounded-lg border border-gray-200 dark:border-gray-700">
+                  {ICON_NAMES.map((name) => {
+                    const Ico = ICON_SET[name];
+                    return <button key={name} onClick={() => onPatch({ icon: name })} aria-label={`Icon ${name}`} title={name} className={`aspect-square flex items-center justify-center rounded-md ${(node.icon ?? "Star") === name ? "bg-indigo-600 text-white" : "text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800"}`}><Ico className="w-4 h-4" /></button>;
+                  })}
+                </div>
+              </div>
+              <Range title="Icon size" value={node.fontSize} min={12} max={120} fallback={32} onChange={(n) => onPatch({ fontSize: n })} unit="rem" />
+              <ColorRow title="Icon colour" value={node.color} fallback={theme.primary} onSelect={(c) => onPatch({ color: c })} />
               <div className="flex items-center justify-between">
                 <span className={label}>Align</span>
                 <div className="flex gap-1">
@@ -232,7 +333,68 @@ export default function BoxInspector({ node, theme, onPatch, onAddChild, onFloat
                   ))}
                 </div>
               </div>
-              {node.type === "heading" && <label className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300"><input type="checkbox" checked={node.bold ?? true} onChange={(e) => onPatch({ bold: e.target.checked })} /> Bold</label>}
+            </>
+          )}
+          {node.type === "divider" && (
+            <>
+              <ColorRow title="Line colour" value={node.color} fallback={theme.textMuted} onSelect={(c) => onPatch({ color: c })} />
+              <Range title="Thickness" value={node.borderWidth} min={1} max={20} fallback={2} onChange={(n) => onPatch({ borderWidth: n })} />
+            </>
+          )}
+          {node.type === "list" && (
+            <>
+              <div className="flex gap-1 p-0.5 rounded-lg border border-gray-200 dark:border-gray-700">
+                {(["bullet", "number"] as const).map((s) => <button key={s} onClick={() => onPatch({ listStyle: s })} className={`${seg} ${(node.listStyle ?? "bullet") === s ? "bg-indigo-600 text-white" : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"}`}>{s === "bullet" ? "Bulleted" : "Numbered"}</button>)}
+              </div>
+              <label className="block"><span className={label}>Items (one per line)</span>
+                <textarea value={(node.listItems ?? []).join("\n")} onChange={(e) => onPatch({ listItems: e.target.value.split("\n") })} rows={4} aria-label="List items" className={inputCls} />
+              </label>
+            </>
+          )}
+          {textual && (
+            <>
+              <Range title="Font size" value={node.fontSize} min={10} max={72} fallback={node.type === "heading" ? 32 : 16} onChange={(n) => onPatch({ fontSize: n })} unit="rem" />
+              <ColorRow title="Text colour" value={node.color} fallback={theme.text} onSelect={(c) => onPatch({ color: c })} />
+              <label className="block"><span className={label}>Font family</span>
+                <select value={node.fontFamily ?? ""} onChange={(e) => onPatch({ fontFamily: e.target.value || undefined })} className={inputCls}>
+                  <option value="">Theme default</option>
+                  {FONT_CHOICES.map((f) => <option key={f} value={f}>{FONT_LABEL(f)}</option>)}
+                </select>
+              </label>
+              <div className="grid grid-cols-2 gap-2">
+                <label className="block"><span className={label}>Weight</span>
+                  <select value={node.fontWeight ?? ""} onChange={(e) => onPatch({ fontWeight: e.target.value === "" ? undefined : Number(e.target.value) })} className={inputCls}>
+                    <option value="">Auto</option>
+                    {[300, 400, 500, 600, 700, 800, 900].map((w) => <option key={w} value={w}>{w}</option>)}
+                  </select>
+                </label>
+                <label className="block"><span className={label}>Transform</span>
+                  <select value={node.textTransform ?? "none"} onChange={(e) => onPatch({ textTransform: e.target.value as BoxNode["textTransform"] })} className={inputCls}>
+                    {["none", "uppercase", "lowercase", "capitalize"].map((o) => <option key={o} value={o}>{o}</option>)}
+                  </select>
+                </label>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <label className="block"><span className={label}>Line height</span>
+                  <input type="number" step={0.05} min={0.8} max={3} value={node.lineHeight ?? ""} placeholder="auto" onChange={(e) => onPatch({ lineHeight: e.target.value === "" ? undefined : Number(e.target.value) })} aria-label="Line height" className={inputCls} />
+                </label>
+                <label className="block"><span className={label}>Letter spacing</span>
+                  <input type="number" step={0.5} value={node.letterSpacing ?? ""} placeholder="0px" onChange={(e) => onPatch({ letterSpacing: e.target.value === "" ? undefined : Number(e.target.value) })} aria-label="Letter spacing (px)" className={inputCls} />
+                </label>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className={label}>Align</span>
+                <div className="flex gap-1">
+                  {([["left", AlignLeft], ["center", AlignCenter], ["right", AlignRight]] as const).map(([a, Icon]) => (
+                    <button key={a} onClick={() => onPatch({ textAlign: a })} aria-label={`Align ${a}`} className={`p-1.5 rounded-md ${(node.textAlign ?? "left") === a ? "bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300" : "text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800"}`}><Icon className="w-4 h-4" /></button>
+                  ))}
+                </div>
+              </div>
+              <div className="flex items-center gap-1">
+                <button onClick={() => onPatch({ bold: !(node.bold ?? (node.type === "heading")) })} aria-label="Bold" aria-pressed={node.bold ?? (node.type === "heading")} className={`px-2 py-1 rounded-md font-bold text-sm ${(node.bold ?? (node.type === "heading")) ? "bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300" : "text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800"}`}>B</button>
+                <button onClick={() => onPatch({ italic: !node.italic })} aria-label="Italic" aria-pressed={!!node.italic} className={`p-1.5 rounded-md ${node.italic ? "bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300" : "text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800"}`}><Italic className="w-4 h-4" /></button>
+                <button onClick={() => onPatch({ underline: !node.underline })} aria-label="Underline" aria-pressed={!!node.underline} className={`p-1.5 rounded-md ${node.underline ? "bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300" : "text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800"}`}><Underline className="w-4 h-4" /></button>
+              </div>
             </>
           )}
         </>

@@ -30,9 +30,10 @@ function Stepper({ title, onStep }: { title: string; onStep: (dir: -1 | 1) => vo
   );
 }
 
-export default function BulkInspector({ count, theme, onStepWidth, onStepHeight, onPatch, onDuplicate, onDelete, onFloatAll }: {
+export default function BulkInspector({ count, theme, sample, onStepWidth, onStepHeight, onPatch, onDuplicate, onDelete, onFloatAll }: {
   count: number;
   theme: SiteTheme;
+  sample?: BoxNode | null;                      // a representative selected box (first) — seeds the sliders' shown values
   onStepWidth: (dir: -1 | 1) => void;
   onStepHeight: (dir: -1 | 1) => void;
   onPatch: (patch: Partial<BoxNode>) => void;   // applied to ALL selected
@@ -40,6 +41,7 @@ export default function BulkInspector({ count, theme, onStepWidth, onStepHeight,
   onDelete: () => void;
   onFloatAll: () => void;
 }) {
+  const s = sample ?? undefined;
   return (
     <div className="p-4 space-y-3">
       <div className="flex items-center gap-1.5 text-[11px] font-semibold text-indigo-600 dark:text-indigo-300"><Layers className="w-3.5 h-3.5" /> {count} sections selected</div>
@@ -50,31 +52,40 @@ export default function BulkInspector({ count, theme, onStepWidth, onStepHeight,
       <Stepper title="Width" onStep={onStepWidth} />
       <Stepper title="Height" onStep={onStepHeight} />
 
-      {/* ── Shared spacing ── */}
+      {/* ── Shared spacing (seeded from the first selected box) ── */}
       <div className={section}>Spacing</div>
-      <label className="block"><span className={label}>Margin (all sides): {toRem(0)}rem+</span>
-        <input type="range" min={0} max={96} defaultValue={0} onChange={(e) => onPatch({ margin: Number(e.target.value) })} aria-label="Margin all sides" className="w-full mt-1" />
+      <label className="block"><span className={label}>Margin (all sides): {toRem(s?.margin ?? 0)}rem</span>
+        <input type="range" min={0} max={96} value={s?.margin ?? 0} onChange={(e) => onPatch({ margin: Number(e.target.value) })} aria-label="Margin all sides" className="w-full mt-1" />
       </label>
-      <label className="block"><span className={label}>Padding (all sides)</span>
-        <input type="range" min={0} max={96} defaultValue={24} onChange={(e) => onPatch({ padding: Number(e.target.value) })} aria-label="Padding all sides" className="w-full mt-1" />
+      <label className="block"><span className={label}>Padding (all sides): {toRem(s?.padding ?? 24)}rem</span>
+        <input type="range" min={0} max={96} value={s?.padding ?? 24} onChange={(e) => onPatch({ padding: Number(e.target.value) })} aria-label="Padding all sides" className="w-full mt-1" />
       </label>
 
       {/* ── Shared look ── */}
       <div className={section}>Look</div>
       <div className="flex items-center justify-between gap-2">
         <span className={label}>Background</span>
-        <ColorPickerPopover selectedColor={theme.surface} onSelect={(c) => onPatch({ background: c })} mode="both" label="Background" align="right" width={272} portal>
-          <button aria-label="Background" className="w-8 h-8 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm" style={{ background: colorToCSS(theme.surface) }} />
+        <ColorPickerPopover selectedColor={s?.background || theme.surface} onSelect={(c) => onPatch({ background: c })} mode="both" label="Background" align="right" width={272} portal>
+          <button aria-label="Background" className="w-8 h-8 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm" style={{ background: colorToCSS(s?.background || theme.surface) }} />
         </ColorPickerPopover>
       </div>
-      <label className="block"><span className={label}>Corner radius</span>
-        <input type="range" min={0} max={40} defaultValue={0} onChange={(e) => onPatch({ radius: Number(e.target.value) })} aria-label="Corner radius" className="w-full mt-1" />
+      <label className="block"><span className={label}>Border: {s?.borderWidth ?? 0}px</span>
+        <input type="range" min={0} max={16} value={s?.borderWidth ?? 0} onChange={(e) => onPatch({ borderWidth: Number(e.target.value) })} aria-label="Border width" className="w-full mt-1" />
       </label>
-      <label className="block"><span className={label}>Opacity</span>
-        <input type="range" min={0} max={100} defaultValue={100} onChange={(e) => onPatch({ opacity: Number(e.target.value) })} aria-label="Opacity" className="w-full mt-1" />
+      <div className="space-y-1">
+        <span className={label}>Shadow</span>
+        <div className="flex gap-1 p-0.5 rounded-lg border border-gray-200 dark:border-gray-700">
+          {(["none", "sm", "md", "lg", "xl"] as const).map((sh) => <button key={sh} onClick={() => onPatch({ shadow: sh === "none" ? undefined : sh })} className={`flex-1 py-1 text-[11px] uppercase rounded-md ${(s?.shadow ?? "none") === sh ? "bg-indigo-600 text-white" : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"}`}>{sh}</button>)}
+        </div>
+      </div>
+      <label className="block"><span className={label}>Corner radius: {s?.radius ?? 0}px</span>
+        <input type="range" min={0} max={64} value={s?.radius ?? 0} onChange={(e) => onPatch({ radius: Number(e.target.value) })} aria-label="Corner radius" className="w-full mt-1" />
+      </label>
+      <label className="block"><span className={label}>Opacity: {s?.opacity ?? 100}%</span>
+        <input type="range" min={0} max={100} value={s?.opacity ?? 100} onChange={(e) => onPatch({ opacity: Number(e.target.value) })} aria-label="Opacity" className="w-full mt-1" />
       </label>
       <label className="block"><span className={label}>Align (cross axis)</span>
-        <select defaultValue="stretch" onChange={(e) => onPatch({ align: e.target.value as FlexAlign })} className={inputCls}>
+        <select value={s?.align ?? "stretch"} onChange={(e) => onPatch({ align: e.target.value as FlexAlign })} className={inputCls}>
           {["stretch", "start", "center", "end"].map((o) => <option key={o} value={o}>{o}</option>)}
         </select>
       </label>

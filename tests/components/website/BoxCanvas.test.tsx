@@ -616,4 +616,102 @@ describe("BoxCanvas (box-model editor)", () => {
     render(<BoxCanvas root={twoSiblings()} theme={DEFAULT_THEME} selectedIds={["a", "b"]} onChange={() => {}} />);
     expect(screen.queryByLabelText("Block actions")).not.toBeInTheDocument(); // toolbar only when exactly one is selected
   });
+
+  // ── Styling primitives (border / shadow / radius / rotation / typography) ─────────────────────────
+  it("renders border, drop shadow, per-corner radius and rotation on a box", () => {
+    const t = createContainer("column", {
+      id: "root",
+      children: [createContainer("column", { id: "d", borderWidth: 3, borderStyle: "dashed", borderColor: "#ff0000", shadow: "lg", radius: 10, radiusTopLeft: 0, rotate: 15 } as Partial<BoxNode>)],
+    } as Partial<BoxNode>);
+    const { container } = render(<BoxCanvas root={t} theme={DEFAULT_THEME} onChange={() => {}} />);
+    const el = container.querySelector<HTMLElement>('[data-box-id="d"]')!;
+    expect(el.style.border).toContain("3px");
+    expect(el.style.border).toContain("dashed");
+    expect(el.style.boxShadow).not.toBe("");
+    expect(el.style.borderRadius).toBe("0px 10px 10px 10px"); // TL overridden to 0
+    expect(el.style.transform).toBe("rotate(15deg)");
+  });
+
+  it("renders the new content types (video embed, icon, divider, list, embed HTML) + anchor id + newTab", () => {
+    const t = createContainer("column", {
+      id: "root",
+      children: [
+        createElement("video", { id: "v", src: "https://youtu.be/dQw4w9WgXcQ" } as Partial<BoxNode>),
+        createElement("icon", { id: "ic", icon: "Heart" } as Partial<BoxNode>),
+        createElement("divider", { id: "dv", borderWidth: 4, color: "#123456" } as Partial<BoxNode>),
+        createElement("list", { id: "ls", listStyle: "number", listItems: ["one", "two"] } as Partial<BoxNode>),
+        createElement("embed", { id: "em", html: "<b data-x>hi</b>" } as Partial<BoxNode>),
+        createElement("button", { id: "bt", text: "Go", href: "https://x.com", newTab: true, anchor: "cta" } as Partial<BoxNode>),
+      ],
+    } as Partial<BoxNode>);
+    const { container } = render(<BoxCanvas root={t} theme={DEFAULT_THEME} editable={false} onChange={() => {}} />);
+    expect(container.querySelector('[data-box-id="v"] iframe')?.getAttribute("src")).toBe("https://www.youtube.com/embed/dQw4w9WgXcQ");
+    expect(container.querySelector('[data-box-id="ic"] svg')).toBeTruthy();       // an icon svg rendered
+    expect(container.querySelector('[data-box-id="ls"] ol')?.querySelectorAll("li").length).toBe(2);
+    expect(container.querySelector('[data-box-id="em"]')?.innerHTML).toContain("hi"); // embedded HTML injected
+    const btn = container.querySelector<HTMLAnchorElement>('[data-box-id="bt"] a')!;
+    expect(btn.target).toBe("_blank");
+    expect(container.querySelector('#cta')).toBeTruthy(); // anchor id rendered on the box
+  });
+
+  // ── Responsive per-breakpoint overrides ──────────────────────────────────────────────────────────
+  it("renders the breakpoint-resolved style (mobile override wins over the base)", () => {
+    const t = createContainer("column", {
+      id: "root",
+      children: [createContainer("column", { id: "s", background: "#111111", responsive: { mobile: { background: "#ff0000" } } } as Partial<BoxNode>)],
+    } as Partial<BoxNode>);
+    const base = render(<BoxCanvas root={t} theme={DEFAULT_THEME} breakpoint="base" onChange={() => {}} />);
+    expect(base.container.querySelector<HTMLElement>('[data-box-id="s"]')!.style.backgroundColor).toBe("rgb(17, 17, 17)");
+    base.unmount();
+    const mob = render(<BoxCanvas root={t} theme={DEFAULT_THEME} breakpoint="mobile" onChange={() => {}} />);
+    expect(mob.container.querySelector<HTMLElement>('[data-box-id="s"]')!.style.backgroundColor).toBe("rgb(255, 0, 0)");
+  });
+
+  it("a box hidden on a breakpoint is dropped on the live site but kept (faint) in the editor", () => {
+    const t = createContainer("column", {
+      id: "root",
+      children: [createContainer("column", { id: "h", responsive: { mobile: { hidden: true } } } as Partial<BoxNode>)],
+    } as Partial<BoxNode>);
+    const live = render(<BoxCanvas root={t} theme={DEFAULT_THEME} breakpoint="mobile" editable={false} onChange={() => {}} />);
+    expect(live.container.querySelector('[data-box-id="h"]')).toBeNull(); // not rendered live
+    live.unmount();
+    const edit = render(<BoxCanvas root={t} theme={DEFAULT_THEME} breakpoint="mobile" editable onChange={() => {}} />);
+    const el = edit.container.querySelector<HTMLElement>('[data-box-id="h"]')!;
+    expect(el).toBeTruthy();
+    expect(el.style.opacity).toBe("0.35"); // faint in the editor so you can still select + un-hide it
+  });
+
+  it("resizing at a breakpoint writes an OVERRIDE, leaving the base width untouched", () => {
+    const onChange = vi.fn();
+    const initial = createContainer("column", {
+      id: "root",
+      children: [createContainer("column", { id: "a", width: "100%" } as Partial<BoxNode>)],
+    } as Partial<BoxNode>);
+    const { container } = render(<BoxCanvas root={initial} theme={DEFAULT_THEME} selectedId="a" breakpoint="mobile" onChange={onChange} />);
+    const rootEl = container.querySelector<HTMLElement>('[data-box-id="root"]')!;
+    stubRect(rootEl, { top: 0, left: 0, width: 600, height: 200 }); stubClientWidth(rootEl, 600);
+    stubRect(container.querySelector<HTMLElement>('[data-box-id="a"]')!, { top: 0, left: 0, width: 600, height: 100 });
+    fireEvent.mouseDown(screen.getByLabelText("Resize right edge"), { clientX: 0, clientY: 0 });
+    fireEvent.mouseMove(document, { clientX: -180, clientY: 0 }); // shrink at mobile
+    fireEvent.mouseUp(document);
+    const a = findBox(onChange.mock.calls.at(-1)![0], "a")!;
+    expect(a.width).toBe("100%");                    // base preserved
+    expect(a.responsive?.mobile?.width).toMatch(/%$/); // override written for mobile
+  });
+
+  it("applies per-element typography (font family, weight, line-height, letter-spacing, italic, underline, transform)", () => {
+    const t = createContainer("column", {
+      id: "root",
+      children: [createElement("heading", { id: "h", text: "Hi", fontFamily: "Georgia, serif", fontWeight: 300, lineHeight: 1.8, letterSpacing: 2, italic: true, underline: true, textTransform: "uppercase" } as Partial<BoxNode>)],
+    } as Partial<BoxNode>);
+    const { container } = render(<BoxCanvas root={t} theme={DEFAULT_THEME} onChange={() => {}} />);
+    const h = container.querySelector<HTMLElement>('[data-box-id="h"] h2')!;
+    expect(h.style.fontFamily).toContain("Georgia");
+    expect(h.style.fontWeight).toBe("300");
+    expect(h.style.lineHeight).toBe("1.8");
+    expect(h.style.letterSpacing).toBe("2px");
+    expect(h.style.fontStyle).toBe("italic");
+    expect(h.style.textDecoration).toBe("underline");
+    expect(h.style.textTransform).toBe("uppercase");
+  });
 });

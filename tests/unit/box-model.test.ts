@@ -5,6 +5,8 @@ import {
   containerStyle, childStyle, paddingCSS, marginCSS, sizeToCSS, flexForWidth, fillMainAxis, u, newBoxId, dropIndexAmong,
   makeRowBand, normalizeRowBands, clampRowWidths, widthPct,
   isFloating, floatBox, unfloatBox, bringToFront, sendToBack, bringForward, sendBackward, floatingZRange,
+  radiusCSS, isClipped, SHADOW_CSS, videoEmbedSrc,
+  resolveResponsive, updateBoxResponsive, hasOverride, clearOverride,
   type BoxNode,
 } from "@/lib/box-model";
 
@@ -322,6 +324,86 @@ describe("box-model — equal division (fillMainAxis)", () => {
   it("uses the width token when the container is a row", () => {
     const rowPage = createContainer("row", { id: "r", children: [createElement("text", { id: "x", width: "200px" } as Partial<BoxNode>), createElement("text", { id: "y", width: "fill" } as Partial<BoxNode>)] } as Partial<BoxNode>);
     expect(fillMainAxis(rowPage, "r").children!.map((c) => c.width)).toEqual(["fill", "fill"]);
+  });
+});
+
+describe("box-model — responsive per-breakpoint overrides", () => {
+  const node = () => createContainer("column", {
+    id: "n", width: "100%", direction: "row",
+    responsive: { tablet: { width: "80%" }, mobile: { width: "100%", direction: "column" } },
+  } as Partial<BoxNode>);
+
+  it("resolveResponsive returns the base at 'base', and cascades tablet→mobile otherwise", () => {
+    expect(resolveResponsive(node(), "base").width).toBe("100%");
+    expect(resolveResponsive(node(), "base").direction).toBe("row");
+    expect(resolveResponsive(node(), "tablet").width).toBe("80%");
+    expect(resolveResponsive(node(), "tablet").direction).toBe("row"); // tablet didn't override direction → base
+    expect(resolveResponsive(node(), "mobile").width).toBe("100%");
+    expect(resolveResponsive(node(), "mobile").direction).toBe("column"); // mobile override wins
+  });
+
+  it("mobile inherits tablet where mobile doesn't override", () => {
+    const n = createContainer("column", { id: "n", gap: 10, responsive: { tablet: { gap: 20 }, mobile: {} } } as Partial<BoxNode>);
+    expect(resolveResponsive(n, "mobile").gap).toBe(20); // from tablet
+  });
+
+  it("updateBoxResponsive writes to the base at 'base', else into that breakpoint's override (base untouched)", () => {
+    let t = createContainer("column", { id: "n", width: "100%" } as Partial<BoxNode>);
+    t = updateBoxResponsive(t, "n", { width: "50%" }, "base");
+    expect(findBox(t, "n")!.width).toBe("50%");
+    t = updateBoxResponsive(t, "n", { width: "30%" }, "mobile");
+    expect(findBox(t, "n")!.width).toBe("50%");                        // base unchanged
+    expect(findBox(t, "n")!.responsive!.mobile!.width).toBe("30%");    // override stored
+    expect(resolveResponsive(findBox(t, "n")!, "mobile").width).toBe("30%");
+  });
+
+  it("hasOverride + clearOverride manage a breakpoint's overrides", () => {
+    const n = node();
+    expect(hasOverride(n, "base")).toBe(false);
+    expect(hasOverride(n, "tablet")).toBe(true);
+    const cleared = clearOverride({ ...createContainer("column", { id: "root" } as Partial<BoxNode>), children: [n] }, "n", "tablet");
+    expect(hasOverride(findBox(cleared, "n")!, "tablet")).toBe(false);
+    expect(hasOverride(findBox(cleared, "n")!, "mobile")).toBe(true); // mobile kept
+  });
+});
+
+describe("box-model — content types", () => {
+  it("createElement builds the new element types with sensible defaults", () => {
+    expect(createElement("video").height).toBe("315px");
+    expect(createElement("icon").icon).toBe("Star");
+    expect(createElement("list").listStyle).toBe("bullet");
+    expect(createElement("list").listItems?.length).toBe(3);
+    expect(createElement("embed").html).toBe("");
+    expect(createElement("divider").width).toBe("fill");
+  });
+
+  it("videoEmbedSrc turns YouTube/Vimeo links into embeds, null for a direct file", () => {
+    expect(videoEmbedSrc("https://www.youtube.com/watch?v=dQw4w9WgXcQ")).toBe("https://www.youtube.com/embed/dQw4w9WgXcQ");
+    expect(videoEmbedSrc("https://youtu.be/dQw4w9WgXcQ")).toBe("https://www.youtube.com/embed/dQw4w9WgXcQ");
+    expect(videoEmbedSrc("https://vimeo.com/123456789")).toBe("https://player.vimeo.com/video/123456789");
+    expect(videoEmbedSrc("https://cdn.example.com/clip.mp4")).toBeNull();
+    expect(videoEmbedSrc(undefined)).toBeNull();
+  });
+});
+
+describe("box-model — decoration (border / shadow / corners)", () => {
+  it("radiusCSS falls back to the all-corners radius, then honours per-corner overrides", () => {
+    expect(radiusCSS(createContainer("column", {} as Partial<BoxNode>))).toBeUndefined(); // nothing set
+    expect(radiusCSS(createContainer("column", { radius: 12 } as Partial<BoxNode>))).toBe("12px 12px 12px 12px");
+    const s = radiusCSS(createContainer("column", { radius: 12, radiusTopLeft: 0, radiusBottomRight: 40 } as Partial<BoxNode>));
+    expect(s).toBe("0px 12px 40px 12px"); // TL, TR(=radius), BR, BL(=radius)
+  });
+
+  it("isClipped is true when clipped OR rounded (so overflow is hidden)", () => {
+    expect(isClipped(createContainer("column", {} as Partial<BoxNode>))).toBe(false);
+    expect(isClipped(createContainer("column", { clip: true } as Partial<BoxNode>))).toBe(true);
+    expect(isClipped(createContainer("column", { radius: 8 } as Partial<BoxNode>))).toBe(true);
+    expect(isClipped(createContainer("column", { radiusTopLeft: 8 } as Partial<BoxNode>))).toBe(true);
+  });
+
+  it("SHADOW_CSS exposes the four elevation presets", () => {
+    expect(Object.keys(SHADOW_CSS)).toEqual(["sm", "md", "lg", "xl"]);
+    expect(SHADOW_CSS.lg).toContain("rgba");
   });
 });
 

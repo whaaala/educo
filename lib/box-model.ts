@@ -12,11 +12,17 @@
 
 import type { CSSProperties } from "react";
 
-export type BoxType = "container" | "text" | "heading" | "button" | "image";
+export type BoxType = "container" | "text" | "heading" | "button" | "image" | "video" | "icon" | "divider" | "list" | "embed";
 
 export type FlexDir = "row" | "column";
 export type FlexAlign = "start" | "center" | "end" | "stretch";
 export type FlexJustify = "start" | "center" | "end" | "between" | "around";
+
+/** Responsive breakpoints. "base" = desktop (the default the tree stores); tablet + mobile hold OVERRIDES
+ *  that cascade down (mobile inherits tablet inherits base). */
+export type Breakpoint = "base" | "tablet" | "mobile";
+/** A per-breakpoint style/geometry override — a shallow patch of style props (never structure/children). */
+export type ResponsiveOverride = Partial<Omit<BoxNode, "id" | "type" | "children" | "responsive">>;
 
 export interface BoxNode {
   id: string;
@@ -35,8 +41,15 @@ export interface BoxNode {
   paddingTop?: number; paddingRight?: number; paddingBottom?: number; paddingLeft?: number; // per-side overrides
   margin?: number;          // px outer margin (all sides)
   marginTop?: number; marginRight?: number; marginBottom?: number; marginLeft?: number;     // per-side overrides
-  radius?: number;          // px corner radius
+  radius?: number;          // px corner radius (all corners)
+  radiusTopLeft?: number; radiusTopRight?: number; radiusBottomRight?: number; radiusBottomLeft?: number; // per-corner overrides
   opacity?: number;         // 0–100 (%), default 100 (fully opaque)
+  rotate?: number;          // rotation in degrees (visual only; doesn't affect flow)
+  // ── border + shadow ──
+  borderWidth?: number;     // px; 0/undefined = no border
+  borderColor?: string;     // hex/gradient token (solid colour used for the border)
+  borderStyle?: "solid" | "dashed" | "dotted";
+  shadow?: "sm" | "md" | "lg" | "xl"; // preset drop shadow (undefined = none)
   // ── background (layered: base fill → image → overlay, content renders on top) ──
   background?: string;      // base fill: colour hex or "gradient:#a:#b"
   bgImage?: string;         // background image (data URL)
@@ -59,14 +72,32 @@ export interface BoxNode {
   top?: number;             // absolute only: Y offset as % of the positioning parent's content box
   zIndex?: number;          // absolute only: stacking order among floating siblings (higher = on top)
 
+  // ── responsive ──
+  hidden?: boolean;         // hide this box (per breakpoint via `responsive`, or everywhere at the base)
+  responsive?: { tablet?: ResponsiveOverride; mobile?: ResponsiveOverride }; // per-breakpoint style overrides
+
   // ── element content ──
   text?: string;
-  href?: string;
-  src?: string;
+  href?: string;          // button/link target: external URL, "#anchor", or "page:<id>"
+  newTab?: boolean;       // open the link in a new tab
+  anchor?: string;        // a named anchor on ANY box — rendered as its id so links can scroll to it
+  src?: string;           // image / video URL (data URL for uploads)
+  icon?: string;          // lucide icon name (icon element)
+  html?: string;          // raw HTML/iframe (embed element)
+  listItems?: string[];   // list element items
+  listStyle?: "bullet" | "number"; // list element marker
   color?: string;
   fontSize?: number;
   bold?: boolean;
   textAlign?: "left" | "center" | "right";
+  // ── typography (text / heading / button) ──
+  fontFamily?: string;      // CSS font-family stack; falls back to the theme font
+  fontWeight?: number;      // 100–900; overrides the bold boolean when set
+  lineHeight?: number;      // unitless multiplier (e.g. 1.5)
+  letterSpacing?: number;   // px (can be negative)
+  italic?: boolean;
+  underline?: boolean;
+  textTransform?: "none" | "uppercase" | "lowercase" | "capitalize";
 
   // ── children (containers only) ──
   children?: BoxNode[];
@@ -125,8 +156,23 @@ export function createElement(type: Exclude<BoxType, "container">, overrides: Pa
     case "heading": return { ...base, text: "New heading", fontSize: 32, bold: true, ...overrides };
     case "button": return { ...base, text: "Button", href: "#", ...overrides };
     case "image": return { ...base, src: "", width: "100%", height: "260px", ...overrides };
+    case "video": return { ...base, src: "", width: "100%", height: "315px", ...overrides };
+    case "icon": return { ...base, icon: "Star", fontSize: 32, ...overrides };
+    case "divider": return { ...base, width: "fill", ...overrides };
+    case "list": return { ...base, width: "100%", listStyle: "bullet", listItems: ["First item", "Second item", "Third item"], fontSize: 16, ...overrides };
+    case "embed": return { ...base, width: "100%", height: "260px", html: "", ...overrides };
     default: return { ...base, type: "text", text: "New text — click to edit.", ...overrides };
   }
+}
+
+/** Turn a YouTube/Vimeo URL into an embeddable iframe src; null for a direct video file (use <video>). */
+export function videoEmbedSrc(url?: string): string | null {
+  if (!url) return null;
+  const yt = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([\w-]{11})/);
+  if (yt) return `https://www.youtube.com/embed/${yt[1]}`;
+  const vm = url.match(/vimeo\.com\/(?:video\/)?(\d+)/);
+  if (vm) return `https://player.vimeo.com/video/${vm[1]}`;
+  return null;
 }
 
 /** A blank page root: a single column container filling the canvas. */
@@ -376,6 +422,66 @@ export function bringForward(root: BoxNode, id: string): BoxNode { return reorde
 
 /** Lower a floating box one layer (below the next floating sibling down). */
 export function sendBackward(root: BoxNode, id: string): BoxNode { return reorderFloat(root, id, -1); }
+
+// ── Responsive (per-breakpoint overrides) ────────────────────────────────────
+// The tree stores BASE (desktop) values; `responsive.tablet` / `responsive.mobile` hold shallow style
+// overrides that CASCADE down (mobile inherits tablet inherits base). Rendering resolves the effective
+// node for the active breakpoint; editing at a breakpoint writes into that breakpoint's override so the
+// base is never disturbed. Structure (children, id, type, position-mode, z) is shared across breakpoints.
+
+/** The effective node at a breakpoint: base merged with tablet (then mobile) overrides. Children unchanged. */
+export function resolveResponsive(node: BoxNode, bp: Breakpoint): BoxNode {
+  if (bp === "base" || !node.responsive) return node;
+  const t = node.responsive.tablet ?? {};
+  const ov = bp === "mobile" ? { ...t, ...(node.responsive.mobile ?? {}) } : t;
+  return Object.keys(ov).length ? { ...node, ...ov } : node;
+}
+
+/** Merge `patch` into node `id` — at the BASE, or into the given breakpoint's override when not base. */
+export function updateBoxResponsive(root: BoxNode, id: string, patch: Partial<BoxNode>, bp: Breakpoint): BoxNode {
+  if (bp === "base") return updateBox(root, id, patch);
+  const node = findBox(root, id);
+  if (!node) return root;
+  const prev = node.responsive?.[bp] ?? {};
+  return updateBox(root, id, { responsive: { ...node.responsive, [bp]: { ...prev, ...patch } } });
+}
+
+/** Does this box carry any override for the given breakpoint? */
+export function hasOverride(node: BoxNode, bp: Breakpoint): boolean {
+  return bp !== "base" && !!node.responsive?.[bp] && Object.keys(node.responsive[bp]!).length > 0;
+}
+
+/** Drop a breakpoint's overrides (revert this box to the base at that breakpoint). */
+export function clearOverride(root: BoxNode, id: string, bp: Breakpoint): BoxNode {
+  if (bp === "base") return root;
+  const node = findBox(root, id);
+  if (!node?.responsive) return root;
+  const next = { ...node.responsive }; delete next[bp];
+  return updateBox(root, id, { responsive: Object.keys(next).length ? next : undefined });
+}
+
+// ── Decoration (border / shadow / corners / rotation) ────────────────────────
+
+/** Preset drop shadows (elevation scale). Kept subtle + theme-neutral (soft black). */
+export const SHADOW_CSS: Record<NonNullable<BoxNode["shadow"]>, string> = {
+  sm: "0 1px 2px rgba(0,0,0,0.08), 0 1px 1px rgba(0,0,0,0.06)",
+  md: "0 4px 8px rgba(0,0,0,0.10), 0 2px 4px rgba(0,0,0,0.06)",
+  lg: "0 12px 24px rgba(0,0,0,0.12), 0 4px 8px rgba(0,0,0,0.08)",
+  xl: "0 24px 48px rgba(0,0,0,0.18), 0 8px 16px rgba(0,0,0,0.10)",
+};
+
+/** Per-corner border-radius (px) → CSS, falling back to the all-corners `radius`. Undefined when none set. */
+export function radiusCSS(node: BoxNode): string | undefined {
+  const r = node.radius;
+  const tl = node.radiusTopLeft ?? r, tr = node.radiusTopRight ?? r, br = node.radiusBottomRight ?? r, bl = node.radiusBottomLeft ?? r;
+  if (tl == null && tr == null && br == null && bl == null) return undefined;
+  return `${tl ?? 0}px ${tr ?? 0}px ${br ?? 0}px ${bl ?? 0}px`;
+}
+
+/** Does this box round or clip its content (so overflow must be hidden)? */
+export function isClipped(node: BoxNode): boolean {
+  return !!node.clip || radiusCSS(node) != null;
+}
 
 // ── Flexbox style mapping ────────────────────────────────────────────────────
 
