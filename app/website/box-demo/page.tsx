@@ -25,6 +25,7 @@ import BoxCanvas, { measureFloatGeom } from "@/components/website/box/BoxCanvas"
 import BoxInspector from "@/components/website/box/BoxInspector";
 import BulkInspector from "@/components/website/box/BulkInspector";
 import PageLoader from "@/components/shared/PageLoader";
+import DeleteConfirmationModal from "@/components/shared/DeleteConfirmationModal";
 
 const KEY = "educo_box_site_v1"; // multi-page site
 const LEGACY_KEY = "educo_box_demo_v9"; // old single-tree document (migrated on load)
@@ -64,6 +65,7 @@ export default function BoxDemoPage() {
   const [device, setDevice] = useState<Device>("full");
   const [preview, setPreview] = useState(false);
   const [pageMenu, setPageMenu] = useState(false); // page-settings popover open
+  const [confirmDeletePage, setConfirmDeletePage] = useState(false); // delete-page confirmation modal
 
   const site = hist?.present ?? null;
   const activePage = site ? (site.pages.find((p) => p.id === activePageId) ?? site.pages[0]) : null;
@@ -123,7 +125,7 @@ export default function BoxDemoPage() {
   const onAddPage = () => { const { site: s, id } = addPage(site, `Page ${site.pages.length + 1}`, emptyPageRoot(makeSection(SECTION_TINTS[site.pages.length % SECTION_TINTS.length]))); pushSite(s); setActivePageId(id); setSelectedIds([]); };
   const onDuplicatePage = () => { const { site: s, id } = duplicatePage(site, activePage.id); pushSite(s); setActivePageId(id); setPageMenu(false); };
   const onRenamePage = (name: string) => pushSite(renamePage(site, activePage.id, name));
-  const onDeletePage = () => { if (site.pages.length <= 1) return; const s = deletePage(site, activePage.id); pushSite(s); setActivePageId(s.homeId); setSelectedIds([]); setPageMenu(false); };
+  const onDeletePage = () => { if (site.pages.length <= 1) return; const s = deletePage(site, activePage.id); pushSite(s); setActivePageId(s.homeId); setSelectedIds([]); setPageMenu(false); setConfirmDeletePage(false); };
   const onSetHome = () => { pushSite(setHomePage(site, activePage.id)); setPageMenu(false); };
 
   const addSection = () => { const sec = makeSection(SECTION_TINTS[countSections(root) % SECTION_TINTS.length]); sec.width = "100%"; commit(insertBox(root, root.id, root.children?.length ?? 0, makeRow([sec]))); };
@@ -210,7 +212,7 @@ export default function BoxDemoPage() {
                   <button onClick={onSetHome} disabled={activePage.id === site.homeId} className="flex items-center justify-center gap-1 text-xs px-2 py-1.5 rounded-md border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-40"><Home className="w-3.5 h-3.5" /> Home</button>
                   <button onClick={onDuplicatePage} className="flex items-center justify-center gap-1 text-xs px-2 py-1.5 rounded-md border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"><Files className="w-3.5 h-3.5" /> Duplicate</button>
                 </div>
-                <button onClick={onDeletePage} disabled={site.pages.length <= 1} className="w-full flex items-center justify-center gap-1 text-xs px-2 py-1.5 rounded-md border border-red-200 dark:border-red-900/50 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 disabled:opacity-40"><Trash2 className="w-3.5 h-3.5" /> Delete page</button>
+                <button onClick={() => { setPageMenu(false); setConfirmDeletePage(true); }} disabled={site.pages.length <= 1} title={site.pages.length <= 1 ? "A site needs at least one page" : "Delete this page"} className="w-full flex items-center justify-center gap-1 text-xs px-2 py-1.5 rounded-md border border-red-200 dark:border-red-900/50 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 disabled:opacity-40"><Trash2 className="w-3.5 h-3.5" /> Delete page</button>
               </div>
             )}
           </div>
@@ -249,6 +251,17 @@ export default function BoxDemoPage() {
           <div className="p-6 text-xs text-gray-400 text-center mt-6">Click a block to edit it — or drag a box on empty canvas to select several at once.</div>
         )}
       </aside>
+
+      <DeleteConfirmationModal
+        isOpen={confirmDeletePage}
+        onClose={() => setConfirmDeletePage(false)}
+        onConfirm={onDeletePage}
+        title="Delete this page?"
+        itemName={activePage.name}
+        itemId={`/${activePage.path}`}
+        confirmButtonText="Delete page"
+        warningMessage={`Deleting “${activePage.name}” permanently removes the page and everything on it. You'll need to rebuild it from scratch — though you can still Undo (Ctrl+Z) right after.`}
+      />
     </div>
   );
 }
