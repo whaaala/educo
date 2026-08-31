@@ -12,6 +12,13 @@ function Harness({ initial, initialSel = null as string | null }: { initial: Box
   return <BoxCanvas root={root} theme={DEFAULT_THEME} selectedId={sel} onSelectId={setSel} onChange={setRoot} />;
 }
 
+// Multi-select harness: exposes the selected ids for marquee tests.
+function MultiHarness({ initial }: { initial: BoxNode }) {
+  const [root, setRoot] = useState(initial);
+  const [ids, setIds] = useState<string[]>([]);
+  return (<><BoxCanvas root={root} theme={DEFAULT_THEME} selectedIds={ids} onSelectIds={setIds} onChange={setRoot} /><div data-testid="sel">{ids.join(",")}</div></>);
+}
+
 const tree = () => createContainer("column", {
   id: "root",
   children: [createElement("text", { id: "t1", text: "Hello world" } as Partial<BoxNode>)],
@@ -551,5 +558,62 @@ describe("BoxCanvas (box-model editor)", () => {
     // The very first commit floats it (position absolute), before any move.
     const base = findBox(onChange.mock.calls[0]![0], "base")!;
     expect(base.position).toBe("absolute");
+  });
+
+  it("a floating block's ⋯ menu offers the full 4-way ordering (front / forward / backward / back)", async () => {
+    const user = userEvent.setup();
+    render(<Harness initial={floatingTree()} initialSel="f1" />);
+    await user.click(screen.getByLabelText("Block actions"));
+    for (const l of ["Bring to front", "Bring forward", "Send backward", "Send to back"]) {
+      expect(screen.getByRole("menuitem", { name: l })).toBeInTheDocument();
+    }
+  });
+
+  // ── Marquee multi-select ─────────────────────────────────────────────────────────────────────────
+  const twoSiblings = () => createContainer("column", {
+    id: "root",
+    children: [createContainer("column", { id: "a" } as Partial<BoxNode>), createContainer("column", { id: "b" } as Partial<BoxNode>), createContainer("column", { id: "c" } as Partial<BoxNode>)],
+  } as Partial<BoxNode>);
+
+  it("marquee-dragging the canvas selects every ENCLOSED section", () => {
+    const { container, getByTestId } = render(<MultiHarness initial={twoSiblings()} />);
+    stubRect(container.querySelector<HTMLElement>('[data-box-id="root"]')!, { top: 0, left: 0, width: 400, height: 400 });
+    stubRect(container.querySelector<HTMLElement>('[data-box-id="a"]')!, { top: 10, left: 10, width: 120, height: 80 });   // 10–90
+    stubRect(container.querySelector<HTMLElement>('[data-box-id="b"]')!, { top: 110, left: 10, width: 120, height: 80 });  // 110–190
+    stubRect(container.querySelector<HTMLElement>('[data-box-id="c"]')!, { top: 320, left: 10, width: 120, height: 80 });  // 320–400 (outside the marquee)
+    fireEvent.mouseDown(container.querySelector<HTMLElement>('[data-box-id="root"]')!, { clientX: 5, clientY: 5 });
+    fireEvent.mouseMove(document, { clientX: 300, clientY: 300 }); // encloses a & b, not c
+    fireEvent.mouseUp(document, { clientX: 300, clientY: 300 });
+    expect(getByTestId("sel").textContent).toBe("a,b");
+  });
+
+  it("marquee keeps only the OUTERMOST of a nested pair (a whole section, not its child)", () => {
+    const nested = createContainer("column", {
+      id: "root",
+      children: [createContainer("column", { id: "sec", children: [createContainer("column", { id: "child" } as Partial<BoxNode>)] } as Partial<BoxNode>)],
+    } as Partial<BoxNode>);
+    const { container, getByTestId } = render(<MultiHarness initial={nested} />);
+    stubRect(container.querySelector<HTMLElement>('[data-box-id="root"]')!, { top: 0, left: 0, width: 400, height: 400 });
+    stubRect(container.querySelector<HTMLElement>('[data-box-id="sec"]')!, { top: 20, left: 20, width: 200, height: 200 });
+    stubRect(container.querySelector<HTMLElement>('[data-box-id="child"]')!, { top: 40, left: 40, width: 100, height: 100 });
+    fireEvent.mouseDown(container.querySelector<HTMLElement>('[data-box-id="root"]')!, { clientX: 0, clientY: 0 });
+    fireEvent.mouseMove(document, { clientX: 380, clientY: 380 }); // encloses BOTH sec and child
+    fireEvent.mouseUp(document, { clientX: 380, clientY: 380 });
+    expect(getByTestId("sel").textContent).toBe("sec"); // child dropped (descendant of sec)
+  });
+
+  it("Delete removes ALL selected boxes at once", () => {
+    const onChange = vi.fn();
+    render(<BoxCanvas root={twoSiblings()} theme={DEFAULT_THEME} selectedIds={["a", "b"]} onChange={onChange} />);
+    fireEvent.keyDown(document, { key: "Delete" });
+    const last = onChange.mock.calls.at(-1)![0];
+    expect(findBox(last, "a")).toBeNull();
+    expect(findBox(last, "b")).toBeNull();
+    expect(findBox(last, "c")).not.toBeNull();
+  });
+
+  it("multi-selected boxes all show the selection outline, but no per-box toolbar (bulk edits instead)", () => {
+    render(<BoxCanvas root={twoSiblings()} theme={DEFAULT_THEME} selectedIds={["a", "b"]} onChange={() => {}} />);
+    expect(screen.queryByLabelText("Block actions")).not.toBeInTheDocument(); // toolbar only when exactly one is selected
   });
 });

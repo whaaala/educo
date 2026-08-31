@@ -11,11 +11,12 @@ import { Plus, Smartphone, Tablet, Laptop, Monitor, Tv, Maximize2, Undo2, Redo2 
 import { useTheme } from "@/contexts/ThemeContext";
 import { DEFAULT_THEME, resolveSiteTheme } from "@/lib/site-storage";
 import {
-  type BoxNode, createContainer, findBox, updateBox, insertBox, makeRowBand, normalizeRowBands,
-  floatBox, unfloatBox, bringToFront, sendToBack,
+  type BoxNode, createContainer, findBox, updateBox, insertBox, removeBox, duplicateBox, widthPct, makeRowBand, normalizeRowBands,
+  floatBox, unfloatBox, bringToFront, bringForward, sendBackward, sendToBack,
 } from "@/lib/box-model";
 import BoxCanvas, { measureFloatGeom } from "@/components/website/box/BoxCanvas";
 import BoxInspector from "@/components/website/box/BoxInspector";
+import BulkInspector from "@/components/website/box/BulkInspector";
 import PageLoader from "@/components/shared/PageLoader";
 
 const KEY = "educo_box_demo_v9"; // v9: recursive STACK-of-ROWS everywhere; sections shrink to fit (no auto-wrap); margins respected
@@ -75,7 +76,7 @@ const HIST_CAP = 100;
 export default function BoxDemoPage() {
   const { theme: appTheme } = useTheme();
   const [hist, setHist] = useState<Hist | null>(null);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]); // marquee can select many
   const [device, setDevice] = useState<Device>("full");
   const root = hist?.present ?? null;
 
@@ -111,7 +112,8 @@ export default function BoxDemoPage() {
   const renderTheme = useMemo(() => resolveSiteTheme(DEFAULT_THEME, appTheme), [appTheme]);
 
   if (!root) return <PageLoader isLoading loadingText="Box Builder" subText="Preparing your canvas…" />;
-  const selected = selectedId ? findBox(root, selectedId) : null;
+  const selected = selectedIds.length === 1 ? findBox(root, selectedIds[0]) : null;
+  const bulk = selectedIds.length > 1;
 
   // "Add section" ALWAYS creates a NEW full-width row. Multiple sections side-by-side in ONE row come only
   // from resizing a section to open space, then dragging another section into the gap. Keeps the selection.
@@ -136,7 +138,25 @@ export default function BoxDemoPage() {
   // dock it back into the flow, or restack it among floating siblings. ──
   const floatSelected = () => { if (!selected) return; const g = measureFloatGeom(root, selected.id); if (g) commit(floatBox(root, selected.id, g.parentId, g.left, g.top, g.width, g.height)); };
   const unfloatSelected = () => { if (selected) commit(unfloatBox(root, selected.id)); };
-  const layerSelected = (dir: "front" | "back") => { if (selected) commit((dir === "front" ? bringToFront : sendToBack)(root, selected.id)); };
+  const LAYER_OPS = { front: bringToFront, forward: bringForward, backward: sendBackward, back: sendToBack };
+  const layerSelected = (dir: keyof typeof LAYER_OPS) => { if (selected) commit(LAYER_OPS[dir](root, selected.id)); };
+
+  // ── Bulk edits: apply one change to EVERY selected box at once (marquee multi-select). ──
+  const bulkPatch = (patch: Partial<BoxNode>) => { commit(selectedIds.reduce((next, id) => updateBox(next, id, patch), root)); };
+  const bulkStepWidth = (dir: -1 | 1) => {
+    commit(selectedIds.reduce((next, id) => { const n = findBox(next, id); if (!n) return next; const w = Math.max(5, Math.min(100, Math.round(widthPct(n.width) + dir * 5))); return updateBox(next, id, { width: `${w}%` }); }, root));
+  };
+  const bulkStepHeight = (dir: -1 | 1) => {
+    commit(selectedIds.reduce((next, id) => {
+      const n = findBox(next, id); if (!n) return next;
+      let base = n.minHeight;
+      if (base == null && typeof document !== "undefined") { const el = document.querySelector<HTMLElement>(`[data-box-id="${id}"]`); base = el ? el.getBoundingClientRect().height : 120; }
+      return updateBox(next, id, { minHeight: Math.max(16, Math.round((base ?? 120) + dir * 24)), height: undefined });
+    }, root));
+  };
+  const bulkDuplicate = () => { commit(selectedIds.reduce((next, id) => duplicateBox(next, id), root)); };
+  const bulkDelete = () => { commit(selectedIds.reduce((next, id) => (id !== root.id ? removeBox(next, id) : next), root)); setSelectedIds([]); };
+  const bulkFloat = () => { commit(selectedIds.reduce((next, id) => { const g = measureFloatGeom(next, id); return g ? floatBox(next, id, g.parentId, g.left, g.top, g.width, g.height) : next; }, root)); };
 
   return (
     <div className="flex h-screen bg-gray-100 dark:bg-gray-950">
@@ -149,8 +169,8 @@ export default function BoxDemoPage() {
           {/* Undo / redo (also Ctrl/Cmd+Z and Ctrl/Cmd+Y / Ctrl/Cmd+Shift+Z) */}
           <button onClick={undo} disabled={!canUndo} title="Undo (Ctrl+Z)" aria-label="Undo" className="p-1.5 rounded-lg border border-gray-300 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-800 disabled:opacity-40 disabled:cursor-not-allowed"><Undo2 className="w-4 h-4" /></button>
           <button onClick={redo} disabled={!canRedo} title="Redo (Ctrl+Y)" aria-label="Redo" className="p-1.5 rounded-lg border border-gray-300 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-800 disabled:opacity-40 disabled:cursor-not-allowed"><Redo2 className="w-4 h-4" /></button>
-          <button onClick={() => { reset(starter()); setSelectedId(null); }} className="text-xs px-2.5 py-1 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-white dark:hover:bg-gray-800">Reset</button>
-          <button onClick={() => { reset(pageRoot([makeRow([makeSection(SECTION_TINTS[0])])])); setSelectedId(null); }} className="text-xs px-2.5 py-1 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-white dark:hover:bg-gray-800">Blank</button>
+          <button onClick={() => { reset(starter()); setSelectedIds([]); }} className="text-xs px-2.5 py-1 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-white dark:hover:bg-gray-800">Reset</button>
+          <button onClick={() => { reset(pageRoot([makeRow([makeSection(SECTION_TINTS[0])])])); setSelectedIds([]); }} className="text-xs px-2.5 py-1 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-white dark:hover:bg-gray-800">Blank</button>
 
           {/* Responsive preview — narrow the canvas to test each screen size */}
           <div className="flex items-center rounded-lg border border-gray-300 dark:border-gray-700 p-0.5 ml-1" role="group" aria-label="Preview screen size">
@@ -175,17 +195,19 @@ export default function BoxDemoPage() {
           </label>
         </div>
         <div className={`bg-white shadow-2xl rounded-xl ring-1 ring-black/10 shrink-0 mx-auto transition-[width] duration-300 ${device === "full" ? "w-full max-w-5xl" : ""}`} style={{ width: DEVICES.find((d) => d.id === device)!.w ?? undefined, fontFamily: renderTheme.bodyFont, containerType: "inline-size" }}>
-          <BoxCanvas root={root} theme={renderTheme} minHeight={PAGE_MIN_H} selectedId={selectedId} onSelectId={setSelectedId} onChange={commit} />
+          <BoxCanvas root={root} theme={renderTheme} minHeight={PAGE_MIN_H} selectedIds={selectedIds} onSelectIds={setSelectedIds} onChange={commit} />
         </div>
         </div>
       </div>
 
       <aside className="w-72 shrink-0 border-l border-gray-200 dark:border-gray-800 bg-white dark:bg-[#161922] overflow-y-auto">
         <div className="h-11 flex items-center px-3 border-b border-gray-200 dark:border-gray-800 text-xs font-bold uppercase tracking-wide text-gray-500">Inspector</div>
-        {selected ? (
+        {bulk ? (
+          <BulkInspector count={selectedIds.length} theme={renderTheme} onStepWidth={bulkStepWidth} onStepHeight={bulkStepHeight} onPatch={bulkPatch} onDuplicate={bulkDuplicate} onDelete={bulkDelete} onFloatAll={bulkFloat} />
+        ) : selected ? (
           <BoxInspector node={selected} theme={renderTheme} onPatch={onPatch} onAddChild={addChildSection} onFloat={floatSelected} onUnfloat={unfloatSelected} onLayer={layerSelected} canFloat={selected.id !== root.id} />
         ) : (
-          <div className="p-6 text-xs text-gray-400 text-center mt-6">Click a block on the canvas to edit its layout, size and background.</div>
+          <div className="p-6 text-xs text-gray-400 text-center mt-6">Click a block to edit it — or drag a box on empty canvas to select several at once.</div>
         )}
       </aside>
     </div>

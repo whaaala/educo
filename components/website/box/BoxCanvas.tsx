@@ -16,7 +16,7 @@ import {
   type BoxNode, type BoxType,
   containerStyle, childStyle, marginCSS, sizeToCSS, u, baseUnit, createContainer, createGrid, createElement,
   updateBox, removeBox, insertBox, moveBoxStep, duplicateBox, moveBox, cloneBox, findParent, isAncestor, isContainer, isEmptyBox, widthPct,
-  isFloating, floatBox, unfloatBox, bringToFront, sendToBack,
+  isFloating, floatBox, unfloatBox, bringToFront, sendToBack, bringForward, sendBackward,
 } from "@/lib/box-model";
 import { colorToCSS } from "@/components/shared/ColorPalettePicker";
 import { EditableText, ImageBox } from "@/components/website/sections/SectionKit";
@@ -118,13 +118,15 @@ const ADD_ITEMS: { type: BoxType | "row" | "grid"; label: string; Icon: typeof T
 ];
 
 export default function BoxCanvas({
-  root, theme, editable = true, selectedId, onSelectId, onChange, onResized, minHeight = 600,
+  root, theme, editable = true, selectedId, onSelectId, selectedIds, onSelectIds, onChange, onResized, minHeight = 600,
 }: {
   root: BoxNode;
   theme: SiteTheme;
   editable?: boolean;
-  selectedId?: string | null;
+  selectedId?: string | null;                     // single selection (kept for back-compat / simple callers)
   onSelectId?: (id: string | null) => void;
+  selectedIds?: string[];                          // MULTI selection (marquee): takes precedence when provided
+  onSelectIds?: (ids: string[]) => void;
   onChange: (root: BoxNode) => void;
   onResized?: (id: string, axis: "width" | "height") => void;
   minHeight?: number; // the page's minimum height (≈ a viewport); the page GROWS past this with content
@@ -147,13 +149,54 @@ export default function BoxCanvas({
   const dragRaf = useRef(0);
   const rootRef = useRef(root); rootRef.current = root; // always-fresh tree for the drag listeners
   const [clip, setClip] = useState<BoxNode | null>(null); // copy/cut clipboard (a cloned subtree)
-  const select = (id: string | null) => onSelectId?.(id);
+  const [marquee, setMarquee] = useState<{ x0: number; y0: number; x: number; y: number } | null>(null); // rubber-band rectangle (viewport coords) while marquee-selecting
+
+  // Selection is a SET (marquee can pick many). selectedIds wins when provided; otherwise fall back to the
+  // single selectedId. emitSelection keeps BOTH callbacks in sync so simple + multi callers both work.
+  const selSet = new Set(selectedIds ?? (selectedId != null ? [selectedId] : []));
+  const emitSelection = (ids: string[]) => { onSelectIds?.(ids); onSelectId?.(ids[0] ?? null); };
+  const select = (id: string | null) => emitSelection(id ? [id] : []);
 
   // ── Floating layers (lift a section out of the flow to OVERLAP others) ──
   const floatNode = (id: string) => { const g = measureFloatGeom(rootRef.current, id); if (g) onChange(floatBox(rootRef.current, id, g.parentId, g.left, g.top, g.width, g.height)); };
   const unfloatNode = (id: string) => onChange(unfloatBox(rootRef.current, id));
   const toggleFloat = (id: string) => { const n = findByIdLocal(rootRef.current, id); if (n && isFloating(n)) unfloatNode(id); else floatNode(id); };
-  const layer = (id: string, dir: "front" | "back") => onChange((dir === "front" ? bringToFront : sendToBack)(rootRef.current, id));
+  const LAYER_OPS = { front: bringToFront, forward: bringForward, backward: sendBackward, back: sendToBack };
+  const layer = (id: string, dir: keyof typeof LAYER_OPS) => onChange(LAYER_OPS[dir](rootRef.current, id));
+
+  // ── Marquee (rubber-band) multi-select ──────────────────────────────────────────────────────────
+  // Armed on any box-BODY / canvas mousedown; upgrades to a marquee only past a small drag threshold (so a
+  // plain click still single-selects). On release, every box FULLY ENCLOSED by the rectangle is selected,
+  // keeping only the OUTERMOST of any nested pair — so a big drag grabs whole sections, a tight drag inside
+  // one section grabs its blocks. Structural row bands + the page root are never selectable.
+  const startMarqueeArm = (e: React.MouseEvent) => {
+    if (!editable) return;
+    const x0 = e.clientX, y0 = e.clientY;
+    let active = false;
+    const onMove = (ev: MouseEvent) => {
+      if (!active) { if (Math.hypot(ev.clientX - x0, ev.clientY - y0) < 5) return; active = true; document.body.style.userSelect = "none"; }
+      setMarquee({ x0, y0, x: ev.clientX, y: ev.clientY });
+    };
+    const onUp = (ev: MouseEvent) => {
+      document.removeEventListener("mousemove", onMove); document.removeEventListener("mouseup", onUp);
+      document.body.style.userSelect = ""; setMarquee(null);
+      if (!active) return; // never dragged → the single-select from mousedown stands
+      const L = Math.min(x0, ev.clientX), R = Math.max(x0, ev.clientX), T = Math.min(y0, ev.clientY), B = Math.max(y0, ev.clientY);
+      if (R - L < 6 && B - T < 6) return;
+      const enclosed: string[] = [];
+      for (const el of Array.from(document.querySelectorAll<HTMLElement>("[data-box-id]"))) {
+        const id = el.getAttribute("data-box-id");
+        if (!id || id === rootRef.current.id) continue;
+        const n = findByIdLocal(rootRef.current, id);
+        if (!n || n.rowBand) continue; // never select structural bands
+        const r = el.getBoundingClientRect();
+        if (r.left >= L && r.right <= R && r.top >= T && r.bottom <= B) enclosed.push(id);
+      }
+      const outer = enclosed.filter((id) => !enclosed.some((o) => o !== id && isAncestor(rootRef.current, o, id)));
+      emitSelection(outer);
+    };
+    document.addEventListener("mousemove", onMove); document.addEventListener("mouseup", onUp);
+  };
 
   // ── Copy / cut / paste (mouse buttons + keyboard). Paste drops INSIDE a selected container, else
   // right AFTER the selected box; with nothing selected it appends to the page. ──
@@ -175,7 +218,8 @@ export default function BoxCanvas({
     const onKey = (e: KeyboardEvent) => {
       const ae = document.activeElement as HTMLElement | null;
       if (ae && (ae.tagName === "INPUT" || ae.tagName === "TEXTAREA" || ae.isContentEditable)) return; // never hijack text editing
-      const id = selectedId ?? null;
+      const ids = selectedIds ?? (selectedId != null ? [selectedId] : []);
+      const id = ids[0] ?? null; // the primary (for single-target ops: nudge, reorder, layer, float)
       const mod = e.ctrlKey || e.metaKey;
       const k = e.key.toLowerCase();
       const n = id ? findByIdLocal(root, id) : null;
@@ -191,11 +235,11 @@ export default function BoxCanvas({
       if (mod && k === "c") { if (id) { copyBox(id); e.preventDefault(); } }
       else if (mod && k === "x") { if (id) { cutBox(id); e.preventDefault(); } }
       else if (mod && k === "v") { if (clip) { pasteBox(id); e.preventDefault(); } }
-      else if (mod && k === "d") { if (id) { onChange(duplicateBox(root, id)); e.preventDefault(); } }
-      else if (mod && k === "]" && id) { onChange(bringToFront(root, id)); e.preventDefault(); }         // layer up
-      else if (mod && k === "[" && id) { onChange(sendToBack(root, id)); e.preventDefault(); }            // layer down
+      else if (mod && k === "d") { if (ids.length) { let next = root; for (const d of ids) next = duplicateBox(next, d); onChange(next); e.preventDefault(); } } // duplicate ALL selected
+      else if (mod && k === "]" && id) { onChange((e.shiftKey ? bringToFront : bringForward)(root, id)); e.preventDefault(); } // ]=forward, Shift+]=to front
+      else if (mod && k === "[" && id) { onChange((e.shiftKey ? sendToBack : sendBackward)(root, id)); e.preventDefault(); }    // [=backward, Shift+[=to back
       else if (e.altKey && k === "f" && id) { toggleFloat(id); e.preventDefault(); }                      // float ⇄ flow
-      else if ((e.key === "Delete" || e.key === "Backspace") && id && id !== root.id) { onChange(removeBox(root, id)); select(null); e.preventDefault(); }
+      else if ((e.key === "Delete" || e.key === "Backspace") && ids.length) { let next = root; for (const d of ids) if (d !== root.id) next = removeBox(next, d); onChange(next); select(null); e.preventDefault(); } // delete ALL selected
       else if (e.key === "ArrowUp" && id) { if (floating) onChange(updateBox(root, id, { top: round1((n!.top ?? 0) - stepPct("y")) })); else onChange(moveBoxStep(root, id, -1)); e.preventDefault(); }
       else if (e.key === "ArrowDown" && id) { if (floating) onChange(updateBox(root, id, { top: round1((n!.top ?? 0) + stepPct("y")) })); else onChange(moveBoxStep(root, id, 1)); e.preventDefault(); }
       else if (e.key === "ArrowLeft" && id && floating) { onChange(updateBox(root, id, { left: round1((n!.left ?? 0) - stepPct("x")) })); e.preventDefault(); }
@@ -204,7 +248,7 @@ export default function BoxCanvas({
     };
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
-  }, [editable, selectedId, root, clip, onChange]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [editable, selectedId, selectedIds, root, clip, onChange]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // The ⋯ actions menu is portaled to <body> at a fixed position so it's never clipped by a small box.
   // Close it on outside-click, and dismiss on scroll/resize (its anchored position would go stale).
@@ -602,7 +646,8 @@ export default function BoxCanvas({
   };
 
   const renderNode = (node: BoxNode, parent: BoxNode | null): React.ReactNode => {
-    const isSel = editable && selectedId === node.id;
+    const isSel = editable && selSet.has(node.id);
+    const isSolo = isSel && selSet.size === 1; // per-box toolbar + resize handles only when EXACTLY one is selected
     const isRoot = parent === null;
     const floating = isFloating(node) && !isRoot;
     const wrapStyle: React.CSSProperties = {
@@ -620,7 +665,7 @@ export default function BoxCanvas({
     };
 
     // Visible drag-to-resize handles on every edge + corner, so you can resize from any side.
-    const resizeHandles = isSel && editable && !isRoot ? (
+    const resizeHandles = isSolo && editable && !isRoot ? (
       <>
         {HANDLES.map((h) => (
           <div key={h.edge} onMouseDown={(e) => startResize(e, node.id, h.edge)} aria-label={`Resize ${h.label}`} title={h.title} className={`absolute ${h.pos} ${h.cursor} bg-indigo-500 border-2 border-white shadow z-30`} />
@@ -629,8 +674,9 @@ export default function BoxCanvas({
     ) : null;
 
     // Select on mousedown (fires before the inline editor's click-guard) and stop propagation so the
-    // DEEPEST box under the pointer wins and the canvas-background deselect doesn't also fire.
-    const onSelectDown = (e: React.MouseEvent) => { if (editable) { e.stopPropagation(); select(node.id); closeMenu(); } };
+    // DEEPEST box under the pointer wins and the canvas-background deselect doesn't also fire. Also arm a
+    // marquee from here — a drag on the box BODY rubber-band-selects instead of doing nothing.
+    const onSelectDown = (e: React.MouseEvent) => { if (editable) { e.stopPropagation(); select(node.id); closeMenu(); startMarqueeArm(e); } };
 
     const isDragging = dragId === node.id;
 
@@ -653,7 +699,7 @@ export default function BoxCanvas({
             // in) to fill it. It's a hint only; it does NOT add anything by itself.
             <div data-ph className="w-full flex items-center justify-center gap-1 py-3 text-gray-400 border border-dashed border-gray-300 rounded-lg pointer-events-none" style={{ fontSize: u(11) }}><Plus className="w-3 h-3 shrink-0" /> Empty block</div>
           )}
-          {isSel && <NodeToolbar node={node} isRoot={isRoot} />}
+          {isSolo && <NodeToolbar node={node} isRoot={isRoot} />}
           {resizeHandles}
         </div>
       );
@@ -669,7 +715,7 @@ export default function BoxCanvas({
         className={`${isSel ? "outline outline-2 outline-indigo-500 outline-offset-[-2px]" : editable ? "hover:outline hover:outline-1 hover:outline-indigo-300/70 hover:outline-offset-[-1px]" : ""}`}
       >
         <ElementView node={node} theme={theme} editable={editable} onText={(v) => onChange(updateBox(root, node.id, { text: v }))} onSrc={(v) => onChange(updateBox(root, node.id, { src: v }))} />
-        {isSel && <NodeToolbar node={node} isRoot={isRoot} />}
+        {isSolo && <NodeToolbar node={node} isRoot={isRoot} />}
         {resizeHandles}
       </div>
     );
@@ -726,6 +772,8 @@ export default function BoxCanvas({
             {!isRoot && (isFloating(node) ? (<>
               <MenuItem onClick={() => unfloatNode(node.id)} Icon={Layers} label="Return to flow" />
               <MenuItem onClick={() => layer(node.id, "front")} Icon={BringToFront} label="Bring to front" />
+              <MenuItem onClick={() => layer(node.id, "forward")} Icon={ChevronUp} label="Bring forward" />
+              <MenuItem onClick={() => layer(node.id, "backward")} Icon={ChevronDown} label="Send backward" />
               <MenuItem onClick={() => layer(node.id, "back")} Icon={SendToBack} label="Send to back" />
               <div className="h-px bg-gray-100 dark:bg-gray-800 my-1" />
             </>) : (<>
@@ -749,8 +797,13 @@ export default function BoxCanvas({
   }
 
   return (
-    <div onMouseDown={() => editable && select(null)} className="w-full">
+    <div onMouseDown={(e) => { if (editable) { select(null); startMarqueeArm(e); } }} className="w-full">
       {renderNode(root, null)}
+      {/* Marquee (rubber-band) selection rectangle. Portaled so it's never clipped. */}
+      {marquee && createPortal(
+        <div aria-hidden="true" style={{ position: "fixed", left: Math.min(marquee.x0, marquee.x), top: Math.min(marquee.y0, marquee.y), width: Math.abs(marquee.x - marquee.x0), height: Math.abs(marquee.y - marquee.y0), pointerEvents: "none", zIndex: 9996 }} className="border-2 border-dashed border-indigo-500 bg-indigo-500/10 rounded" />,
+        document.body,
+      )}
       {/* While resizing, a transparent full-viewport overlay holds the resize cursor so it stays crisp and
           never disappears as the box reflows under the pointer. */}
       {resizing && resizeCursor && createPortal(

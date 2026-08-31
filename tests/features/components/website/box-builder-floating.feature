@@ -71,10 +71,23 @@ Feature: Box Builder — floating layers (free overlap)
       | top    |
       | bottom |
 
-  Scenario: Layer floating sections front-to-back
-    Given two overlapping floating sections
-    When I choose "Bring to front" or "Send to back" (menu, inspector, or Ctrl+] / Ctrl+[)
-    Then the chosen section is restacked above or below its floating siblings only
+  Scenario Outline: Presentation-style layering — full four-level order
+    Given several overlapping floating sections
+    When I choose "<action>" (⋯ menu, inspector, or keyboard)
+    Then the chosen section is restacked <result> among its floating siblings only
+    And the floating siblings keep a clean sequential stacking order
+
+    Examples:
+      | action        | result                       | keyboard      |
+      | Bring to Front | all the way to the top       | Ctrl+Shift+]  |
+      | Bring Forward  | up exactly one layer         | Ctrl+]        |
+      | Send Backward  | down exactly one layer       | Ctrl+[        |
+      | Send to Back   | all the way to the bottom    | Ctrl+Shift+[  |
+
+  Scenario: Bring Forward / Send Backward stop at the ends
+    Given a floating section already on top (or at the bottom)
+    When I choose "Bring Forward" (or "Send Backward")
+    Then nothing changes — it is already at that end
 
   # ── The flow is untouched ───────────────────────────────────────────────────
   Scenario: Floating a section does not disturb the remaining flow

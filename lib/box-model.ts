@@ -358,6 +358,25 @@ export function sendToBack(root: BoxNode, id: string): BoxNode {
   return updateBox(root, id, { zIndex: floatingZRange(info.parent).min - 1 });
 }
 
+/** Swap a floating box ONE step up/down its floating siblings' stack (presentation "bring forward" /
+ *  "send backward"). Sorts the floating siblings by z, swaps the target with its neighbour, then reassigns
+ *  clean sequential z (1..n) so the order never drifts. No-op at the top (forward) / bottom (backward). */
+function reorderFloat(root: BoxNode, id: string, dir: 1 | -1): BoxNode {
+  const info = findParent(root, id);
+  if (!info) return root;
+  const order = (info.parent.children ?? []).filter(isFloating).slice().sort((a, b) => (a.zIndex ?? 1) - (b.zIndex ?? 1)).map((c) => c.id);
+  const i = order.indexOf(id), j = i + dir;
+  if (i < 0 || j < 0 || j >= order.length) return root;
+  [order[i], order[j]] = [order[j], order[i]];
+  return order.reduce((r, cid, k) => updateBox(r, cid, { zIndex: k + 1 }), root);
+}
+
+/** Raise a floating box one layer (above the next floating sibling up). */
+export function bringForward(root: BoxNode, id: string): BoxNode { return reorderFloat(root, id, 1); }
+
+/** Lower a floating box one layer (below the next floating sibling down). */
+export function sendBackward(root: BoxNode, id: string): BoxNode { return reorderFloat(root, id, -1); }
+
 // ── Flexbox style mapping ────────────────────────────────────────────────────
 
 const ALIGN_CSS: Record<FlexAlign, string> = { start: "flex-start", center: "center", end: "flex-end", stretch: "stretch" };

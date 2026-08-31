@@ -4,7 +4,7 @@ import {
   findBox, findParent, isAncestor, updateBox, insertBox, removeBox, moveBoxStep, moveBox,
   containerStyle, childStyle, paddingCSS, marginCSS, sizeToCSS, flexForWidth, fillMainAxis, u, newBoxId, dropIndexAmong,
   makeRowBand, normalizeRowBands, clampRowWidths, widthPct,
-  isFloating, floatBox, unfloatBox, bringToFront, sendToBack, floatingZRange,
+  isFloating, floatBox, unfloatBox, bringToFront, sendToBack, bringForward, sendBackward, floatingZRange,
   type BoxNode,
 } from "@/lib/box-model";
 
@@ -388,6 +388,33 @@ describe("box-model — floating layers (free overlap)", () => {
     expect(findBox(norm, "a")!.position).toBe("absolute");
     // 'b' is still a flow section inside a (kept) row band.
     expect(findParent(norm, "b")!.parent.rowBand).toBe(true);
+  });
+
+  it("bringForward / sendBackward move a floating box ONE layer and keep z sequential (presentation ordering)", () => {
+    // three floating siblings a<b<c by z
+    const p = createContainer("column", { id: "p", children: [
+      createContainer("column", { id: "a", position: "absolute", zIndex: 1 } as Partial<BoxNode>),
+      createContainer("column", { id: "b", position: "absolute", zIndex: 2 } as Partial<BoxNode>),
+      createContainer("column", { id: "c", position: "absolute", zIndex: 3 } as Partial<BoxNode>),
+    ] } as Partial<BoxNode>);
+    // bring 'a' forward one → order becomes b,a,c → z 1,2,3
+    let next = bringForward(p, "a");
+    expect(findBox(next, "b")!.zIndex).toBe(1);
+    expect(findBox(next, "a")!.zIndex).toBe(2);
+    expect(findBox(next, "c")!.zIndex).toBe(3);
+    // send 'c' backward one → order b,c,a → but starting from the ORIGINAL p: c(3)→ swaps with b(2)
+    next = sendBackward(p, "c");
+    expect(findBox(next, "c")!.zIndex).toBe(2);
+    expect(findBox(next, "b")!.zIndex).toBe(3);
+  });
+
+  it("bringForward is a no-op at the TOP and sendBackward a no-op at the BOTTOM", () => {
+    const p = createContainer("column", { id: "p", children: [
+      createContainer("column", { id: "a", position: "absolute", zIndex: 1 } as Partial<BoxNode>),
+      createContainer("column", { id: "b", position: "absolute", zIndex: 2 } as Partial<BoxNode>),
+    ] } as Partial<BoxNode>);
+    expect(bringForward(p, "b")).toBe(p); // b already on top
+    expect(sendBackward(p, "a")).toBe(p); // a already at bottom
   });
 
   it("floatingZRange reports the min/max z among floating children (0 when none)", () => {

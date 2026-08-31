@@ -7,7 +7,7 @@
  */
 
 import { useRef } from "react";
-import { Plus, Rows3, Columns3, Grid3x3, Upload, Trash2, AlignLeft, AlignCenter, AlignRight, Layers, Move, BringToFront, SendToBack } from "lucide-react";
+import { Plus, Rows3, Columns3, Grid3x3, Upload, Trash2, AlignLeft, AlignCenter, AlignRight, Layers, Move, BringToFront, SendToBack, ChevronUp, ChevronDown } from "lucide-react";
 import type { SiteTheme } from "@/lib/site-storage";
 import type { BoxNode, FlexAlign, FlexJustify } from "@/lib/box-model";
 import { isContainer, isFloating } from "@/lib/box-model";
@@ -91,7 +91,7 @@ export default function BoxInspector({ node, theme, onPatch, onAddChild, onFloat
   onAddChild?: () => void;
   onFloat?: () => void;          // lift this box out of the flow onto a free-floating layer
   onUnfloat?: () => void;        // dock it back into the flow
-  onLayer?: (dir: "front" | "back") => void; // change stacking order among floating siblings
+  onLayer?: (dir: "front" | "forward" | "backward" | "back") => void; // change stacking order among floating siblings
   canFloat?: boolean;            // false for the page root (nothing to float within)
 }) {
   const fileRef = useRef<HTMLInputElement>(null);
@@ -131,6 +131,8 @@ export default function BoxInspector({ node, theme, onPatch, onAddChild, onFloat
                 <span className={label}>Layer <span className="text-gray-400 tabular-nums">({node.zIndex ?? 1})</span></span>
                 <div className="flex gap-1">
                   <button onClick={() => onLayer?.("back")} aria-label="Send to back" title="Send to back" className="p-1.5 rounded-md text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800"><SendToBack className="w-4 h-4" /></button>
+                  <button onClick={() => onLayer?.("backward")} aria-label="Send backward" title="Send backward (one layer)" className="p-1.5 rounded-md text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800"><ChevronDown className="w-4 h-4" /></button>
+                  <button onClick={() => onLayer?.("forward")} aria-label="Bring forward" title="Bring forward (one layer)" className="p-1.5 rounded-md text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800"><ChevronUp className="w-4 h-4" /></button>
                   <button onClick={() => onLayer?.("front")} aria-label="Bring to front" title="Bring to front" className="p-1.5 rounded-md text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800"><BringToFront className="w-4 h-4" /></button>
                 </div>
               </div>
