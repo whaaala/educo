@@ -318,7 +318,7 @@ describe("BoxCanvas (box-model editor)", () => {
     }
   });
 
-  it("dragging the bottom edge resizes height as vh (responsive) and fires onResized", () => {
+  it("dragging the bottom edge sets a MIN-HEIGHT (a floor; the box still hugs content) and fires onResized", () => {
     const onChange = vi.fn();
     const onResized = vi.fn();
     render(<BoxCanvas root={tree()} theme={DEFAULT_THEME} selectedId="t1" onChange={onChange} onResized={onResized} />);
@@ -326,7 +326,8 @@ describe("BoxCanvas (box-model editor)", () => {
     fireEvent.mouseMove(document, { clientX: 0, clientY: 60 });
     fireEvent.mouseUp(document);
     const last = onChange.mock.calls.at(-1)![0];
-    expect(findBox(last, "t1")?.height).toMatch(/vh$/); // responsive viewport-height unit
+    expect(findBox(last, "t1")?.minHeight).toBeGreaterThan(0); // a floor, not a fixed height
+    expect(findBox(last, "t1")?.height).toBeUndefined();       // no fixed height → the section grows with content
     expect(onResized).toHaveBeenCalledWith("t1", "height");
   });
 
@@ -357,7 +358,7 @@ describe("BoxCanvas (box-model editor)", () => {
     expect(n?.marginLeft).toBeGreaterThan(0);  // box shifts right so the RIGHT edge stays fixed
   });
 
-  it("resizing a ROW section's shared edge is a DIVIDER — this section grows, the neighbour gives up the width (packed, no margin gap)", () => {
+  it("resizing a ROW section is EDGE-ANCHORED — the grabbed edge moves, the opposite stays; the neighbour is a WALL (never moves)", () => {
     const initial = createContainer("row", {
       id: "root", direction: "row",
       children: [createContainer("column", { id: "a", width: "50%" } as Partial<BoxNode>), createContainer("column", { id: "b", width: "50%" } as Partial<BoxNode>)],
@@ -369,30 +370,53 @@ describe("BoxCanvas (box-model editor)", () => {
     stubRect(container.querySelector<HTMLElement>('[data-box-id="a"]')!, { top: 0, left: 0, width: 300, height: 100 });
     stubRect(container.querySelector<HTMLElement>('[data-box-id="b"]')!, { top: 0, left: 300, width: 300, height: 100 });
     fireEvent.mouseDown(screen.getByLabelText("Resize right edge"), { clientX: 0, clientY: 0 });
-    fireEvent.mouseMove(document, { clientX: 60, clientY: 0 }); // a's right edge (the divider with b) → +10%
+    fireEvent.mouseMove(document, { clientX: -60, clientY: 0 }); // shrink a from its RIGHT edge (right moves in)
     fireEvent.mouseUp(document);
     const last = onChange.mock.calls.at(-1)![0];
-    expect(parseFloat(findBox(last, "a")!.width!)).toBeGreaterThan(50); // this section grew
-    expect(parseFloat(findBox(last, "b")!.width!)).toBeLessThan(50);    // the neighbour gave up the width
-    expect(findBox(last, "a")?.marginLeft ?? 0).toBe(0);               // packed — no margin gap
+    expect(parseFloat(findBox(last, "a")!.width!)).toBeLessThan(50);  // a shrank from the right (left edge stayed)
+    expect(findBox(last, "b")?.width).toBe("50%");                    // the neighbour did NOT move (wall)
+    expect(findBox(last, "a")?.marginLeft ?? 0).toBe(0);             // right edge → no margin touched
   });
 
-  it("dragging the TOP edge moves only that edge — height changes and the BOTTOM edge stays put (margin-top compensates)", () => {
+  it("dragging the TOP edge sets a MIN-HEIGHT (floor), keeping the box a hug-content box (no fixed height)", () => {
     const onChange = vi.fn();
     const { container } = render(<BoxCanvas root={tree()} theme={DEFAULT_THEME} selectedId="t1" onChange={onChange} />);
     const rootEl = container.querySelector<HTMLElement>('[data-box-id="root"]')!;
     const t1El = container.querySelector<HTMLElement>('[data-box-id="t1"]')!;
     stubRect(rootEl, { top: 0, left: 0, width: 600, height: 400 }); stubClientWidth(rootEl, 600);
-    stubRect(t1El, { top: 0, left: 0, width: 600, height: 200 }); // starts at the top, 200px tall
+    stubRect(t1El, { top: 0, left: 0, width: 600, height: 200 }); // 200px tall
     fireEvent.mouseDown(screen.getByLabelText("Resize top edge"), { clientX: 0, clientY: 0 });
     fireEvent.mouseMove(document, { clientX: 0, clientY: 60 }); // top edge dragged inward (down) by 60
     fireEvent.mouseUp(document);
     const n = findBox(onChange.mock.calls.at(-1)![0], "t1");
-    expect(n?.height).toMatch(/vh$/);          // the edge itself resized the HEIGHT
-    expect(n?.marginTop).toBeGreaterThan(0);   // pushed down so the BOTTOM edge stays fixed
+    expect(n?.minHeight).toBeGreaterThan(0);   // a floor was set
+    expect(n?.height).toBeUndefined();         // no fixed height — the section still hugs / grows with content
   });
 
-  it("resizing the FIRST section's LEFT edge opens LEADING space (margin-left), keeping the right edge fixed", () => {
+  it("resizing a section's RIGHT edge FILLS the gap to the next section, holding that neighbour EXACTLY in place", () => {
+    const initial = createContainer("row", {
+      id: "root", direction: "row",
+      children: [
+        createContainer("column", { id: "a", width: "30%" } as Partial<BoxNode>),
+        createContainer("column", { id: "b", width: "40%", marginLeft: 300 } as Partial<BoxNode>), // a gap sits before b
+      ],
+    } as Partial<BoxNode>);
+    const onChange = vi.fn();
+    const { container } = render(<BoxCanvas root={initial} theme={DEFAULT_THEME} selectedId="a" onChange={onChange} />);
+    const rootEl = container.querySelector<HTMLElement>('[data-box-id="root"]')!;
+    stubRect(rootEl, { top: 0, left: 0, width: 600, height: 100 }); stubClientWidth(rootEl, 600);
+    stubRect(container.querySelector<HTMLElement>('[data-box-id="a"]')!, { top: 0, left: 0, width: 180, height: 100 });   // a: 0–180
+    stubRect(container.querySelector<HTMLElement>('[data-box-id="b"]')!, { top: 0, left: 360, width: 240, height: 100 }); // b at 360 (gap 180–360)
+    fireEvent.mouseDown(screen.getByLabelText("Resize right edge"), { clientX: 0, clientY: 0 });
+    fireEvent.mouseMove(document, { clientX: 180, clientY: 0 }); // grow a's right edge up to b's left (fill the gap)
+    fireEvent.mouseUp(document);
+    const last = onChange.mock.calls.at(-1)![0];
+    expect(parseFloat(findBox(last, "a")!.width!)).toBeGreaterThan(30); // a grew into the gap
+    expect(findBox(last, "b")?.width).toBe("40%");                      // the neighbour's WIDTH is untouched
+    expect(findBox(last, "b")?.marginLeft).toBe(0);                     // its margin absorbed the fill → it stayed put, gap closed
+  });
+
+  it("resizing a ROW section's LEFT edge moves the left edge and HOLDS the right edge (margin-left); neighbour untouched", () => {
     const initial = createContainer("row", {
       id: "root", direction: "row",
       children: [createContainer("column", { id: "a", width: "60%" } as Partial<BoxNode>), createContainer("column", { id: "b", width: "40%" } as Partial<BoxNode>)],
@@ -401,14 +425,15 @@ describe("BoxCanvas (box-model editor)", () => {
     const { container } = render(<BoxCanvas root={initial} theme={DEFAULT_THEME} selectedId="a" onChange={onChange} />);
     const rootEl = container.querySelector<HTMLElement>('[data-box-id="root"]')!;
     stubRect(rootEl, { top: 0, left: 0, width: 600, height: 100 }); stubClientWidth(rootEl, 600);
-    stubRect(container.querySelector<HTMLElement>('[data-box-id="a"]')!, { top: 0, left: 0, width: 360, height: 100 }); // leftmost
+    stubRect(container.querySelector<HTMLElement>('[data-box-id="a"]')!, { top: 0, left: 0, width: 360, height: 100 });
     stubRect(container.querySelector<HTMLElement>('[data-box-id="b"]')!, { top: 0, left: 360, width: 240, height: 100 });
     fireEvent.mouseDown(screen.getByLabelText("Resize left edge"), { clientX: 0, clientY: 0 });
     fireEvent.mouseMove(document, { clientX: 60, clientY: 0 }); // left edge dragged inward (right)
     fireEvent.mouseUp(document);
-    const n = findBox(onChange.mock.calls.at(-1)![0], "a");
-    expect(n?.width).toMatch(/%$/);
-    expect(n?.marginLeft).toBeGreaterThan(0); // leading space opened; the right edge stayed put
+    const last = onChange.mock.calls.at(-1)![0];
+    expect(findBox(last, "a")?.width).toMatch(/%$/);
+    expect(findBox(last, "a")?.marginLeft).toBeGreaterThan(0); // shifted right so the RIGHT edge stays put
+    expect(findBox(last, "b")?.width).toBe("40%");             // the neighbour is untouched
   });
 
   it("resizing the LAST section's right edge grows into the row's LEFTOVER space (the other section is untouched)", () => {

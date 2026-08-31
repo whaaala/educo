@@ -148,15 +148,15 @@ describe("box-model — mutations are immutable and correct", () => {
     expect(norm.children![0].children!.map((c) => c.width)).toEqual(["50%", "50%"]);
   });
 
-  it("normalizeRowBands strips MID-row left margins (non-first) so they pack; the FIRST may keep leading space", () => {
+  it("normalizeRowBands RESPECTS the user's margins on every section (never strips them)", () => {
     const row = makeRowBand([
-      createContainer("column", { id: "a", width: "40%", marginLeft: 200 } as Partial<BoxNode>), // first → leading space kept
-      createContainer("column", { id: "b", width: "40%", marginLeft: 300 } as Partial<BoxNode>), // mid-row → stripped
+      createContainer("column", { id: "a", width: "40%", marginLeft: 200 } as Partial<BoxNode>),
+      createContainer("column", { id: "b", width: "40%", marginLeft: 300 } as Partial<BoxNode>),
     ], 0);
     const root = createContainer("column", { id: "root", children: [row] } as Partial<BoxNode>);
     const norm = normalizeRowBands(root, 0);
-    expect(norm.children![0].children![0].marginLeft).toBe(200); // first section keeps its leading margin
-    expect(norm.children![0].children![1].marginLeft).toBe(0);   // mid-row gap margin removed
+    expect(norm.children![0].children![0].marginLeft).toBe(200); // kept
+    expect(norm.children![0].children![1].marginLeft).toBe(300); // kept (not stripped)
   });
 
   it("normalizeRowBands PRUNES empty rows (no stray '+ Add' band left behind after a delete)", () => {
@@ -223,6 +223,14 @@ describe("box-model — layout CSS mapping", () => {
     expect(childStyle(createElement("text", { height: "120px" } as Partial<BoxNode>), row).height).toBe("120px");
   });
 
+  it("a child with no main-size FILLS a DEFINITE-height parent (follows it), but HUGS a hug-content parent", () => {
+    const noHeight = createElement("text", {} as Partial<BoxNode>); // no explicit height
+    // column parent WITH a set height → the child fills + follows it (shrinks when the parent shrinks)
+    expect(childStyle(noHeight, createContainer("column", { height: "40vh" } as Partial<BoxNode>)).flex).toBe("1 1 auto");
+    // column parent that HUGS (no set height, e.g. the page) → the child hugs, so the parent grows with content
+    expect(childStyle(noHeight, createContainer("column", {} as Partial<BoxNode>)).flex).toBe("0 0 auto");
+  });
+
   it("hugs content by default; `clip` drops the flex minimum so a box can be forced smaller", () => {
     const parent = createContainer("column");
     const hug = childStyle(createElement("text", {} as Partial<BoxNode>), parent);
@@ -230,6 +238,17 @@ describe("box-model — layout CSS mapping", () => {
     const clipped = childStyle(createElement("text", { clip: true } as Partial<BoxNode>), parent);
     expect(clipped.minHeight).toBe(0);
     expect(clipped.minWidth).toBe(0);
+  });
+
+  it("an EMPTY box with an EXPLICIT resize floor keeps that floor (childStyle must NOT zero it) — the height-resize regression", () => {
+    const parent = createContainer("row"); // sections live inside a row band
+    // An empty section (no children) that the user resized taller → minHeight set. isEmptyBox is true, but
+    // the explicit floor must survive so the height edit is actually visible (the bug: it got zeroed).
+    const resized = childStyle(createContainer("column", { minHeight: 180 } as Partial<BoxNode>), parent);
+    expect(resized.minHeight).not.toBe(0);   // the floor is preserved (comes from containerStyle, not zeroed here)
+    // An empty section with NO explicit floor still drops its content-min so it can shrink with the parent.
+    const bare = childStyle(createContainer("column", {} as Partial<BoxNode>), parent);
+    expect(bare.minHeight).toBe(0);
   });
 
   it("childStyle uses grid-column span for a grid parent", () => {

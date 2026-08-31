@@ -245,35 +245,43 @@ export function widthPct(token?: string): number {
   return token.endsWith("%") && !Number.isNaN(n) ? n : 100;
 }
 
-/** Scale a row band's section widths DOWN so they never sum past 100% (which would overflow the row and
- *  run off the page). Only touches over-full rows — valid rows are returned unchanged. */
+/** Scale a row band's section WIDTHS down so their shares never sum past 100% — this is how a row shrinks
+ *  its sections to fit as you add more (never wrapping). Only WIDTH is scaled: the user's margins / other
+ *  styling are preserved. Rows already ≤100% are returned unchanged. */
 export function clampRowWidths(row: BoxNode): BoxNode {
   const kids = row.children ?? [];
   if (!kids.length) return row;
   const sum = kids.reduce((s, k) => s + widthPct(k.width), 0);
   if (sum <= 100) return row;
   const f = 100 / sum;
-  return { ...row, children: kids.map((k) => ({ ...k, width: `${Math.max(3, Math.round(widthPct(k.width) * f))}%`, marginLeft: 0, alignSelf: undefined })) };
+  return { ...row, children: kids.map((k) => ({ ...k, width: `${Math.max(3, Math.round(widthPct(k.width) * f))}%` })) };
 }
 
-/** Keep the page canonical: the root is a vertical STACK whose direct children are ALL row bands. Any
- *  bare section that lands directly under the root (e.g. dropped between rows) is wrapped in its own
- *  full-width row; sections keep their id. Each row's section widths are clamped to ≤100% so nothing ever
- *  overflows off the page. Empty rows are KEPT — they are the visible "space" you can drop into. Idempotent. */
-export function normalizeRowBands(root: BoxNode, gap = 0): BoxNode {
-  if (!root.children) return root;
-  const children: BoxNode[] = [];
-  for (const c of root.children) {
-    const clamped = clampRowWidths(c.rowBand ? c : makeRowBand([{ ...c, width: "100%", marginLeft: 0, marginTop: 0, alignSelf: undefined }], gap));
-    const kids = clamped.children ?? [];
-    if (!kids.length) continue; // PRUNE empty rows — no stray "+ Add" bands left behind after a delete/move
-    // Strip mid-row left margins (sections AFTER the first) so packed sections never leave a gap. The
-    // FIRST section MAY keep a left margin — resizing its left edge opens intentional LEADING space.
-    const needStrip = kids.some((k, i) => i > 0 && k.marginLeft);
-    children.push(needStrip ? { ...clamped, children: kids.map((k, i) => (i > 0 && k.marginLeft ? { ...k, marginLeft: 0 } : k)) } : clamped);
+/** Canonicalize a container tree RECURSIVELY: every CONTENT container (the page root, a section, a block)
+ *  is a vertical STACK whose direct children are all ROW BANDS; each row band is a nowrap row of items that
+ *  shrink to fit. A bare item that lands directly under a content container (e.g. dropped between rows) is
+ *  wrapped in its OWN full-width row → so dragging an item down makes a NEW row. Empty rows are pruned.
+ *  Widths are clamped ≤100% (shrink-to-fit). The user's MARGINS are respected (never stripped). Items keep
+ *  their id. Recurses into every item so a child-of-a-child behaves exactly the same. Idempotent in shape. */
+export function normalizeRowBands(node: BoxNode, gap = 0): BoxNode {
+  if (!isContainer(node)) return node; // leaf — nothing to organize
+  if (node.rowBand) {
+    // A ROW: recurse into its items (each may itself be a content container / leaf).
+    return { ...node, children: (node.children ?? []).map((c) => normalizeRowBands(c, gap)) };
   }
-  const changed = children.length !== root.children.length || children.some((c, i) => c !== root.children![i]);
-  return changed ? { ...root, children } : root;
+  if (!node.children) return node;
+  // A CONTENT container: its direct children must all be row bands.
+  const rows: BoxNode[] = [];
+  for (const c of node.children) {
+    if (c.rowBand) {
+      const row = clampRowWidths(normalizeRowBands(c, gap));
+      if (row.children?.length) rows.push(row); // prune empty rows
+    } else {
+      // Bare item → wrap in its own full-width row (a new row of its own): it fills the fresh row.
+      rows.push(makeRowBand([normalizeRowBands({ ...c, width: "100%" }, gap)], gap));
+    }
+  }
+  return { ...node, children: rows };
 }
 
 /**
@@ -403,14 +411,22 @@ export function childStyle(child: BoxNode, parent: BoxNode): CSSProperties {
   const isRow = (parent.direction ?? "column") === "row";
   const mainToken = isRow ? child.width : child.height;   // grows/divides along the main axis
   const crossToken = isRow ? child.height : child.width;  // fixed size across the main axis
-  s.flex = flexForWidth(mainToken);
+  const parentMain = isRow ? parent.width : parent.height;
+  // "Definite" main size means the child should fill+follow it. For a column, an explicit height OR a
+  // min-height (set by resizing the section's height) both count — so children fill/shrink with the floor.
+  const parentDefinite = (!!parentMain && parentMain !== "auto" && parentMain !== "fill") || (!isRow && !!parent.minHeight);
+  // When the child has no explicit MAIN size and the parent's main axis is DEFINITE (e.g. a section with a
+  // set height), the child FILLS + follows the parent (`1 1 auto`: grow to fill, shrink to fit, content
+  // basis) — so shrinking the parent's height shrinks its children. Otherwise it hugs / uses its token
+  // (keeps a hug-content parent, like the page, growing with content instead of stretching empty children).
+  s.flex = (!mainToken || mainToken === "auto") && parentDefinite ? "1 1 auto" : flexForWidth(mainToken);
   // A box can pin its OWN cross-axis alignment (used by edge-anchored resize to keep the far edge fixed
   // even when the parent centres/stretches its children).
   if (child.alignSelf) s.alignSelf = child.alignSelf;
   // By default a box HUGS its content (flex auto-minimum = content) — it can't be sized smaller than
   // what's inside it. When `clip` is on, OR the box is EMPTY (nothing inside), we drop the minimum so
   // it can be shrunk all the way down to ~1px (padding is clipped along with it).
-  if (child.clip || isEmptyBox(child)) { s.minWidth = 0; s.minHeight = 0; }
+  if (child.clip || isEmptyBox(child)) { s.minWidth = 0; if (child.minHeight == null) s.minHeight = 0; } // keep an EXPLICIT resize floor; only drop the content-min when there's none
   const crossCss = sizeToCSS(crossToken);
   if (crossCss) { if (isRow) s.height = crossCss; else s.width = crossCss; }
   return s;

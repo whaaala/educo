@@ -358,7 +358,7 @@ export default function BoxCanvas({
     const anchor: Partial<BoxNode> = {};
     if (prRect) {
       if ((hasE || hasW) && !parentRow) { anchor.alignSelf = "flex-start"; anchor.width = pct(W0); anchor.marginLeft = pxU(rect.left - contentLeftPx); } // width is CROSS (column) → pin horizontal
-      if ((hasN || hasS) && parentRow) { anchor.alignSelf = "flex-start"; anchor.height = vh(H0); anchor.marginTop = pxU(rect.top - contentTopPx); }        // height is CROSS (row) → pin vertical
+      if ((hasN || hasS) && parentRow) { anchor.alignSelf = "flex-start"; anchor.minHeight = Math.round(H0); anchor.marginTop = pxU(rect.top - contentTopPx); } // height is CROSS (row) → un-stretch so the floor governs + pin vertical
     }
     if (Object.keys(anchor).length) { base = updateBox(base, id, anchor); changed = true; }
     if (changed) onChange(base);
@@ -375,39 +375,20 @@ export default function BoxCanvas({
     const startTopPx = rect.top - contentTopPx, startBotPx = rect.bottom - contentTopPx;
     const flowX = startLeftPx - ML0px, flowY = startTopPx - MT0px;
     const minWpx = Math.max(8, 0.03 * maxW), minHpx = 8;
-    let sameLineAfterPx = 0; // width of same-line neighbours to the RIGHT — can't grow past them (no wrap/off-page)
+    // The IMMEDIATE next section on this line (the closest sibling to the right) and its FIXED absolute
+    // left. Resizing this section's right edge holds that neighbour EXACTLY in place — its margin-left
+    // absorbs the change — so this section fills / opens the gap and the neighbour never moves.
+    let nextSibId: string | null = null, nextLeftPx = maxW;
     if (parentRow && info) {
       for (const c of info.parent.children!) {
         if (c.id === id) continue;
         const e2 = document.querySelector<HTMLElement>(`[data-box-id="${c.id}"]`);
         if (!e2) continue;
         const r2 = e2.getBoundingClientRect();
-        if (r2.top < rect.bottom && rect.top < r2.bottom && (r2.left - contentLeftPx) >= startRightPx - 1) sameLineAfterPx += r2.width;
+        const cl = r2.left - contentLeftPx;
+        if (r2.top < rect.bottom && rect.top < r2.bottom && cl >= startRightPx - 1 && cl < nextLeftPx) { nextLeftPx = cl; nextSibId = c.id; }
       }
     }
-    const maxRightPx = Math.max(startLeftPx + minWpx, maxW - sameLineAfterPx);
-
-    // Same-line neighbours for the ROW DIVIDER: the sections directly before/after this one, and the
-    // total width of the others on the line. Sections in a row PACK (no margins), so grabbing a shared
-    // edge is a divider — the neighbour gives/takes the width and there is NEVER a mid-row gap.
-    let prevSib: { id: string; w0: number } | null = null, nextSib: { id: string; w0: number } | null = null, othersSumPct = 0;
-    if (parentRow && info) {
-      const sibs = info.parent.children!;
-      const myIdx = sibs.findIndex((c) => c.id === id);
-      sibs.forEach((c, i) => {
-        if (i === myIdx) return;
-        const e2 = document.querySelector<HTMLElement>(`[data-box-id="${c.id}"]`);
-        if (!e2) return;
-        const r2 = e2.getBoundingClientRect();
-        if (!(r2.top < rect.bottom && rect.top < r2.bottom)) return; // same line only
-        const w = (r2.width / maxW) * 100;
-        othersSumPct += w;
-        if (i === myIdx - 1) prevSib = { id: c.id, w0: w };
-        if (i === myIdx + 1) nextSib = { id: c.id, w0: w };
-      });
-    }
-    const W0pct = (W0 / maxW) * 100, minPct = 3;
-    const fmt = (p: number) => `${Math.max(minPct, p).toFixed(2)}%`;
 
     setResizeCursor(cursorFor(edge));
     setResizing(true);
@@ -416,35 +397,21 @@ export default function BoxCanvas({
     const onMove = (ev: MouseEvent) => {
       const dx = ev.clientX - startX, dy = ev.clientY - startY;
       let tree = base;
-      // ── WIDTH ──
-      if (hasE || hasW) {
-        if (parentRow) {
-          // Row → DIVIDER: this section grows, the neighbour on the grabbed side gives up the width (no gap).
-          const grow = ((hasE ? dx : -dx) / maxW) * 100; // % this section grows
-          const neighbor = hasE ? nextSib : prevSib;
-          if (neighbor) {
-            const T = W0pct + neighbor.w0;
-            const aw = Math.min(T - minPct, Math.max(minPct, W0pct + grow));
-            tree = updateBox(updateBox(tree, id, { width: fmt(aw), marginLeft: 0 }), neighbor.id, { width: fmt(T - aw), marginLeft: 0 });
-          } else if (hasW) {
-            // LEFTMOST section's LEFT edge → open LEADING space (margin-left), keeping the right edge fixed
-            // (edge-anchored). This is the "reduce width from the left without moving the right" behaviour.
-            const left = Math.min(startRightPx - minWpx, Math.max(flowX, startLeftPx + dx));
-            tree = updateBox(tree, id, { width: pct(startRightPx - left), marginLeft: Math.max(0, pxU(left - flowX)) });
-          } else {
-            // RIGHTMOST section's RIGHT edge → grow/shrink into the row's LEFTOVER space (line total ≤ 100%)
-            const maxA = Math.max(minPct, 100 - othersSumPct);
-            tree = updateBox(tree, id, { width: fmt(Math.min(maxA, Math.max(minPct, W0pct + grow))), marginLeft: 0 });
-          }
-        } else {
-          // Column → width is the CROSS axis: bounded width + margin, page-anchored (edge-anchored, no jump).
-          if (hasE) { const right = Math.min(maxRightPx, Math.max(startLeftPx + minWpx, startRightPx + dx)); tree = updateBox(tree, id, { width: pct(right - startLeftPx) }); }
-          if (hasW) { const left = Math.min(startRightPx - minWpx, Math.max(flowX, startLeftPx + dx)); tree = updateBox(tree, id, { width: pct(startRightPx - left), marginLeft: Math.max(0, pxU(left - flowX)) }); }
-        }
+      // ── WIDTH (EDGE-ANCHORED) ── the grabbed edge moves; the OPPOSITE edge of THIS section stays put.
+      // RIGHT edge: grows/shrinks up to the next section's left; the NEXT section stays exactly where it is
+      // (its margin-left absorbs the gap) — so you fill the gap and the neighbour never moves. LEFT edge:
+      // shifts right with margin-left, keeping this section's right edge fixed (a gap opens on the left).
+      if (hasE) {
+        const right = Math.min(nextLeftPx, Math.max(startLeftPx + minWpx, startRightPx + dx));
+        tree = updateBox(tree, id, { width: pct(right - startLeftPx) });
+        if (nextSibId) tree = updateBox(tree, nextSibId, { marginLeft: Math.max(0, pxU(nextLeftPx - right)) }); // pin the neighbour in place
       }
-      // ── HEIGHT ── (both parents; BOTTOM keeps top, TOP keeps bottom)
-      if (hasS) { const bot = Math.max(startTopPx + minHpx, startBotPx + dy); tree = updateBox(tree, id, { height: vh(bot - startTopPx) }); }
-      if (hasN) { const top = Math.min(startBotPx - minHpx, Math.max(flowY, startTopPx + dy)); tree = updateBox(tree, id, { height: vh(startBotPx - top), marginTop: Math.max(0, pxU(top - flowY)) }); }
+      if (hasW) { const left = Math.min(startRightPx - minWpx, Math.max(flowX, startLeftPx + dx)); tree = updateBox(tree, id, { width: pct(startRightPx - left), marginLeft: Math.max(0, pxU(left - flowX)) }); }
+      // ── HEIGHT ── the height you drag sets a MIN-HEIGHT (a floor), not a fixed height. The section HUGS
+      // its content, so growing a child grows the section; shrinking below the content does nothing (the
+      // content holds it up); and when children are empty, dragging the floor up/down grows/shrinks them.
+      if (hasS) { const bot = Math.max(startTopPx + minHpx, startBotPx + dy); tree = updateBox(tree, id, { minHeight: Math.round(bot - startTopPx), height: undefined }); } // top fixed (margin-top unchanged), bottom moves
+      if (hasN) { const top = Math.max(flowY, Math.min(startBotPx - minHpx, startTopPx + dy)); tree = updateBox(tree, id, { minHeight: Math.round(startBotPx - top), height: undefined, marginTop: Math.max(0, pxU(top - flowY)) }); } // bottom fixed, top moves (margin-top compensates)
       pending = tree;
       if (!raf) raf = requestAnimationFrame(flush);
     };
@@ -525,7 +492,7 @@ export default function BoxCanvas({
           {editable && kids.length === 0 && (
             // An empty block shows a non-interactive hint — select it, then use the ⋯ menu (or drag a block
             // in) to fill it. It's a hint only; it does NOT add anything by itself.
-            <div className="w-full flex items-center justify-center gap-1 py-3 text-gray-400 border border-dashed border-gray-300 rounded-lg pointer-events-none" style={{ fontSize: u(11) }}><Plus className="w-3 h-3 shrink-0" /> Empty block</div>
+            <div data-ph className="w-full flex items-center justify-center gap-1 py-3 text-gray-400 border border-dashed border-gray-300 rounded-lg pointer-events-none" style={{ fontSize: u(11) }}><Plus className="w-3 h-3 shrink-0" /> Empty block</div>
           )}
           {isSel && <NodeToolbar node={node} isRoot={isRoot} />}
           {resizeHandles}
