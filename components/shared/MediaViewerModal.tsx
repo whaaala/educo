@@ -124,7 +124,7 @@ function VideoPlayer({ src }: { src: string }) {
             <button onClick={togglePlay} className="text-white hover:text-blue-400 transition-colors cursor-pointer">
               {playing ? <Pause className="w-5 h-5" fill="white" /> : <Play className="w-5 h-5" fill="white" />}
             </button>
-            <span className="text-[11px] sm:text-[12px] text-white/70 font-mono tabular-nums">
+            <span className="text-[0.6875rem] sm:text-[0.75rem] text-white/70 font-mono tabular-nums">
               {formatTime(currentTime)} / {formatTime(duration)}
             </span>
           </div>
@@ -208,7 +208,7 @@ function AudioPlayer({ src, fileName }: { src: string; fileName: string }) {
         {/* Song info */}
         <div className="relative text-center">
           <Music className="w-6 h-6 text-white/30 mx-auto mb-2" />
-          <p className="text-[13px] text-white/60 truncate">{fileName}</p>
+          <p className="text-[0.8125rem] text-white/60 truncate">{fileName}</p>
         </div>
       </div>
 
@@ -221,8 +221,8 @@ function AudioPlayer({ src, fileName }: { src: string; fileName: string }) {
           </div>
         </div>
         <div className="flex justify-between mt-2">
-          <span className="text-[11px] text-gray-400 font-mono tabular-nums">{formatTime(currentTime)}</span>
-          <span className="text-[11px] text-gray-400 font-mono tabular-nums">{formatTime(duration)}</span>
+          <span className="text-[0.6875rem] text-gray-400 font-mono tabular-nums">{formatTime(currentTime)}</span>
+          <span className="text-[0.6875rem] text-gray-400 font-mono tabular-nums">{formatTime(duration)}</span>
         </div>
       </div>
 
@@ -268,11 +268,11 @@ function ImageViewer({ src, fileName }: { src: string; fileName: string }) {
       </div>
 
       {/* Zoom controls */}
-      <div className="inline-flex items-center gap-1.5 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-full px-3 py-1.5 shadow-lg border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+      <div className="inline-flex items-center gap-1.5 bg-surface rounded-full px-3 py-1.5 shadow-lg border border-line">
         <button onClick={() => setZoom(z => Math.max(0.25, z - 0.25))} className="p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer">
           <ZoomOut className="w-4 h-4 text-gray-500" />
         </button>
-        <span className="text-[12px] font-semibold text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 w-10 text-center tabular-nums">{Math.round(zoom * 100)}%</span>
+        <span className="text-[0.75rem] font-semibold text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 w-10 text-center tabular-nums">{Math.round(zoom * 100)}%</span>
         <button onClick={() => setZoom(z => Math.min(4, z + 0.25))} className="p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer">
           <ZoomIn className="w-4 h-4 text-gray-500" />
         </button>
@@ -320,8 +320,8 @@ export default function MediaViewerModal({
                 <span className={typeColor}>{typeIcon}</span>
               </div>
               <div className="min-w-0">
-                <p className="text-[14px] font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate">{fileName}</p>
-                {fileSize && <p className="text-[11px] text-gray-400 mt-0.5">{fileSize}</p>}
+                <p className="text-[0.875rem] font-semibold text-ink truncate">{fileName}</p>
+                {fileSize && <p className="text-[0.6875rem] text-gray-400 mt-0.5">{fileSize}</p>}
               </div>
             </div>
             <div className="flex items-center gap-1 flex-shrink-0">
@@ -343,8 +343,8 @@ export default function MediaViewerModal({
                 <div className={`w-16 h-16 rounded-2xl ${typeBg} flex items-center justify-center mb-4`}>
                   <span className={`${typeColor} opacity-50`}>{type === "video" ? <Film className="w-8 h-8" /> : type === "audio" ? <Music className="w-8 h-8" /> : <ImageIcon className="w-8 h-8" />}</span>
                 </div>
-                <p className="text-[15px] font-semibold text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400">No preview available</p>
-                <p className="text-[13px] text-gray-300 dark:text-gray-600 midnight:text-cyan-500 purple:text-pink-500 mt-1">This file was uploaded to your Drive storage</p>
+                <p className="text-[0.9375rem] font-semibold text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400">No preview available</p>
+                <p className="text-[0.8125rem] text-gray-300 dark:text-gray-600 midnight:text-cyan-500 purple:text-pink-500 mt-1">This file was uploaded to your Drive storage</p>
               </div>
             ) : (
               <>

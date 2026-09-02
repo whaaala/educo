@@ -114,7 +114,7 @@ export function WidgetHeader({
         {badge !== undefined && badge > 0 && (
           <span
             className={cn(
-              "text-[9px] font-bold text-white px-1.5 py-0.5 rounded-full shadow-sm min-w-[18px] text-center shrink-0",
+              "text-[0.5625rem] font-bold text-white px-1.5 py-0.5 rounded-full shadow-sm min-w-[18px] text-center shrink-0",
               "bg-gradient-to-r",
               badgeGradients[colorScheme]
             )}
@@ -131,7 +131,7 @@ export function WidgetHeader({
           <Link
             href={viewAllHref}
             className={cn(
-              "text-[10px] font-semibold flex items-center gap-0.5 whitespace-nowrap transition-colors",
+              "text-[0.625rem] font-semibold flex items-center gap-0.5 whitespace-nowrap transition-colors",
               "text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400",
               "hover:text-blue-700 dark:hover:text-blue-300"
             )}

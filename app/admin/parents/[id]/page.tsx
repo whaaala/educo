@@ -639,7 +639,7 @@ export default function AdminParentDetailPage() {
           {parent.children.length > 0 ? (
             <>
               {/* Select All Header */}
-              <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+              <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 rounded-xl border border-line">
                 <label className="flex items-center gap-3 cursor-pointer">
                   <input
                     type="checkbox"
@@ -667,7 +667,7 @@ export default function AdminParentDetailPage() {
                     className={`flex items-center gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all ${
                       selectedChildrenToDisconnect.includes(child.id)
                         ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20 midnight:bg-cyan-900/20 purple:bg-pink-900/20"
-                        : "border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 hover:border-gray-300 dark:hover:border-gray-600 midnight:hover:border-cyan-500/30 purple:hover:border-pink-500/30"
+                        : "border-line hover:border-gray-300 dark:hover:border-gray-600 midnight:hover:border-cyan-500/30 purple:hover:border-pink-500/30"
                     }`}
                   >
                     <input
@@ -694,10 +694,10 @@ export default function AdminParentDetailPage() {
 
                     {/* Child Info */}
                     <div className="flex-1 min-w-0">
-                      <p className="font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate">
+                      <p className="font-medium text-ink truncate">
                         {child.fullName || `${child.firstName} ${child.lastName}`}
                       </p>
-                      <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
+                      <p className="text-sm text-muted">
                         {child.classLevel || "No class assigned"} • {child.relationship || "Child"}
                       </p>
                     </div>
@@ -718,10 +718,10 @@ export default function AdminParentDetailPage() {
               <div className="w-16 h-16 mx-auto rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mb-4">
                 <Check className="w-8 h-8 text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400" />
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-2">
+              <h3 className="text-lg font-semibold text-ink mb-2">
                 No Connected Children
               </h3>
-              <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mb-4">
+              <p className="text-sm text-muted mb-4">
                 All children have been disconnected. You can now proceed to delete this parent account.
               </p>
             </div>
@@ -922,7 +922,7 @@ function ParentSidebar({
                       : "bg-gray-100 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/30 border-gray-300/60 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30"
                   }`}>
                     <div className={`w-1.5 h-1.5 rounded-full ${parent.status === "Active" ? "bg-green-500 dark:bg-green-400 animate-pulse" : "bg-gray-400"}`}></div>
-                    <span className={`text-[9px] sm:text-[10px] font-semibold uppercase tracking-wide ${
+                    <span className={`text-[0.5625rem] sm:text-[0.625rem] font-semibold uppercase tracking-wide ${
                       parent.status === "Active"
                         ? "text-green-700 dark:text-green-300 midnight:text-green-300 purple:text-green-300"
                         : "text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300"
@@ -934,19 +934,19 @@ function ParentSidebar({
                   {/* Relationship Badge */}
                   <div className="inline-flex items-center gap-1 w-fit px-1.5 sm:px-2 py-0.5 rounded-md border shadow-sm bg-purple-100 dark:bg-purple-900/30 midnight:bg-purple-900/30 purple:bg-purple-900/30 border-purple-300/60 dark:border-purple-700/50">
                     <Heart className="w-2.5 h-2.5 text-purple-600 dark:text-purple-400" />
-                    <span className="text-[9px] sm:text-[10px] font-semibold text-purple-700 dark:text-purple-300 uppercase tracking-wide">
+                    <span className="text-[0.5625rem] sm:text-[0.625rem] font-semibold text-purple-700 dark:text-purple-300 uppercase tracking-wide">
                       {parent.relationship}
                     </span>
                   </div>
                 </div>
 
                 {/* Name */}
-                <h2 className="text-xs sm:text-base font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 tracking-tight truncate leading-tight">
+                <h2 className="text-xs sm:text-base font-bold text-ink tracking-tight truncate leading-tight">
                   {fullName}
                 </h2>
 
                 {/* Parent ID */}
-                <p className="text-[10px] sm:text-xs font-semibold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 tracking-wide truncate">
+                <p className="text-[0.625rem] sm:text-xs font-semibold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 tracking-wide truncate">
                   {parent.id}
                 </p>
               </div>
@@ -955,28 +955,28 @@ function ParentSidebar({
 
           {/* Basic Information */}
           <div className="p-3 sm:p-6 pt-0 mt-3 sm:mt-6">
-            <h3 className="text-xs sm:text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-2 sm:mb-4 uppercase tracking-wider">
+            <h3 className="text-xs sm:text-sm font-bold text-ink mb-2 sm:mb-4 uppercase tracking-wider">
               Basic Information
             </h3>
             <div className="space-y-1.5 sm:space-y-3">
               {/* Children Count */}
               <div className="flex justify-between items-center py-1.5 sm:py-2 px-2 sm:px-3 rounded-lg hover:bg-gray-50/50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors">
                 <span className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70">Children</span>
-                <span className="text-xs sm:text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{parent.children.length}</span>
+                <span className="text-xs sm:text-sm font-bold text-ink">{parent.children.length}</span>
               </div>
 
               {/* Occupation */}
               {parent.occupation && (
                 <div className="flex justify-between items-center py-1.5 sm:py-2 px-2 sm:px-3 rounded-lg hover:bg-gray-50/50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors">
                   <span className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70">Occupation</span>
-                  <span className="text-xs sm:text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{parent.occupation}</span>
+                  <span className="text-xs sm:text-sm font-bold text-ink">{parent.occupation}</span>
                 </div>
               )}
 
               {/* Joined Date */}
               <div className="flex justify-between items-center py-1.5 sm:py-2 px-2 sm:px-3 rounded-lg hover:bg-gray-50/50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors">
                 <span className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70">Joined</span>
-                <span className="text-xs sm:text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                <span className="text-xs sm:text-sm font-bold text-ink">
                   {new Date(parent.createdAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
                 </span>
               </div>
@@ -1006,7 +1006,7 @@ function ParentSidebar({
       {/* Primary Contact Info */}
       <div className="mb-3 sm:mb-4">
         <div className="group bg-gradient-to-br from-white to-gray-50/30 dark:from-gray-800 dark:to-gray-800/50 midnight:from-gray-800 midnight:to-gray-900/50 purple:from-gray-800 purple:to-gray-900/50 rounded-xl sm:rounded-2xl shadow-sm border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/30 purple:border-pink-500/30 p-2.5 sm:p-4 transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/10 dark:hover:shadow-blue-500/20 midnight:hover:shadow-cyan-500/20 purple:hover:shadow-pink-500/20 hover:border-blue-300/60 dark:hover:border-blue-600/60 midnight:hover:border-cyan-400/60 purple:hover:border-pink-400/60 hover:-translate-y-0.5">
-          <h3 className="text-xs sm:text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-2 sm:mb-3 uppercase tracking-wider">
+          <h3 className="text-xs sm:text-sm font-bold text-ink mb-2 sm:mb-3 uppercase tracking-wider">
             Primary Contact Info
           </h3>
 
@@ -1020,10 +1020,10 @@ function ParentSidebar({
                 <Phone className="w-3.5 h-3.5 sm:w-4.5 sm:h-4.5 text-blue-600 dark:text-blue-400 midnight:text-blue-400 purple:text-blue-400" />
               </div>
               <div className="flex-1 min-w-0">
-                <div className="text-[10px] sm:text-xs font-semibold text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70 mb-0.5 uppercase tracking-wide">
+                <div className="text-[0.625rem] sm:text-xs font-semibold text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70 mb-0.5 uppercase tracking-wide">
                   Phone Number
                 </div>
-                <div className="text-xs sm:text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 midnight:group-hover:text-cyan-400 purple:group-hover:text-pink-400 transition-colors">
+                <div className="text-xs sm:text-sm font-bold text-ink truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 midnight:group-hover:text-cyan-400 purple:group-hover:text-pink-400 transition-colors">
                   {parent.phone}
                 </div>
               </div>
@@ -1038,10 +1038,10 @@ function ParentSidebar({
                 <Mail className="w-3.5 h-3.5 sm:w-4.5 sm:h-4.5 text-purple-600 dark:text-purple-400 midnight:text-purple-400 purple:text-purple-400" />
               </div>
               <div className="flex-1 min-w-0">
-                <div className="text-[10px] sm:text-xs font-semibold text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70 mb-0.5 uppercase tracking-wide">
+                <div className="text-[0.625rem] sm:text-xs font-semibold text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70 mb-0.5 uppercase tracking-wide">
                   Email Address
                 </div>
-                <div className="text-xs sm:text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate group-hover:text-purple-600 dark:group-hover:text-purple-400 midnight:group-hover:text-purple-400 purple:group-hover:text-pink-400 transition-colors">
+                <div className="text-xs sm:text-sm font-bold text-ink truncate group-hover:text-purple-600 dark:group-hover:text-purple-400 midnight:group-hover:text-purple-400 purple:group-hover:text-pink-400 transition-colors">
                   {parent.email}
                 </div>
               </div>
@@ -1049,7 +1049,7 @@ function ParentSidebar({
 
             {/* Quick Communication Buttons */}
             <div className="pt-2 sm:pt-3 mt-2 sm:mt-3 border-t border-gray-200/50 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
-              <div className="text-[10px] sm:text-xs font-semibold text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mb-2 uppercase tracking-wide">
+              <div className="text-[0.625rem] sm:text-xs font-semibold text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mb-2 uppercase tracking-wide">
                 Quick Communication
               </div>
               <div className="grid grid-cols-3 gap-2">
@@ -1063,7 +1063,7 @@ function ParentSidebar({
                   className="flex flex-col items-center gap-1 p-2 sm:p-2.5 rounded-lg sm:rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 transition-all duration-200 hover:-translate-y-0.5"
                 >
                   <Video className="w-4 h-4 sm:w-5 sm:h-5" />
-                  <span className="text-[10px] sm:text-xs font-semibold">Video</span>
+                  <span className="text-[0.625rem] sm:text-xs font-semibold">Video</span>
                 </button>
                 <button
                   type="button"
@@ -1075,7 +1075,7 @@ function ParentSidebar({
                   className="flex flex-col items-center gap-1 p-2 sm:p-2.5 rounded-lg sm:rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white shadow-lg shadow-emerald-500/25 hover:shadow-emerald-500/40 transition-all duration-200 hover:-translate-y-0.5"
                 >
                   <Phone className="w-4 h-4 sm:w-5 sm:h-5" />
-                  <span className="text-[10px] sm:text-xs font-semibold">Voice</span>
+                  <span className="text-[0.625rem] sm:text-xs font-semibold">Voice</span>
                 </button>
                 <button
                   type="button"
@@ -1087,7 +1087,7 @@ function ParentSidebar({
                   className="flex flex-col items-center gap-1 p-2 sm:p-2.5 rounded-lg sm:rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 transition-all duration-200 hover:-translate-y-0.5"
                 >
                   <MessageSquare className="w-4 h-4 sm:w-5 sm:h-5" />
-                  <span className="text-[10px] sm:text-xs font-semibold">Chat</span>
+                  <span className="text-[0.625rem] sm:text-xs font-semibold">Chat</span>
                 </button>
               </div>
             </div>
@@ -1098,25 +1098,25 @@ function ParentSidebar({
       {/* Fee Summary Card */}
       <div className="mb-3 sm:mb-4">
         <div className="group bg-gradient-to-br from-white to-gray-50/30 dark:from-gray-800 dark:to-gray-800/50 midnight:from-gray-800 midnight:to-gray-900/50 purple:from-gray-800 purple:to-gray-900/50 rounded-xl sm:rounded-2xl shadow-sm border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/30 purple:border-pink-500/30 p-2.5 sm:p-4 transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/10 dark:hover:shadow-blue-500/20 midnight:hover:shadow-cyan-500/20 purple:hover:shadow-pink-500/20 hover:border-blue-300/60 dark:hover:border-blue-600/60 midnight:hover:border-cyan-400/60 purple:hover:border-pink-400/60 hover:-translate-y-0.5">
-          <h3 className="text-xs sm:text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-2 sm:mb-3 uppercase tracking-wider">
+          <h3 className="text-xs sm:text-sm font-bold text-ink mb-2 sm:mb-3 uppercase tracking-wider">
             Fee Summary
           </h3>
 
           <div className="grid grid-cols-2 gap-2">
             <div className="p-2 sm:p-3 rounded-lg bg-blue-50 dark:bg-blue-900/20 midnight:bg-blue-900/20 purple:bg-blue-900/20 border border-blue-100/50 dark:border-blue-800/30 text-center">
-              <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mb-0.5">Total</p>
-              <p className="text-sm sm:text-base font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{money(feeStats.total)}</p>
+              <p className="text-xs text-muted mb-0.5">Total</p>
+              <p className="text-sm sm:text-base font-bold text-ink">{money(feeStats.total)}</p>
             </div>
             <div className="p-2 sm:p-3 rounded-lg bg-green-50 dark:bg-green-900/20 midnight:bg-green-900/20 purple:bg-green-900/20 border border-green-100/50 dark:border-green-800/30 text-center">
-              <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mb-0.5">Paid</p>
+              <p className="text-xs text-muted mb-0.5">Paid</p>
               <p className="text-sm sm:text-base font-bold text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400">{money(feeStats.paid)}</p>
             </div>
             <div className="p-2 sm:p-3 rounded-lg bg-red-50 dark:bg-red-900/20 midnight:bg-red-900/20 purple:bg-red-900/20 border border-red-100/50 dark:border-red-800/30 text-center">
-              <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mb-0.5">Outstanding</p>
+              <p className="text-xs text-muted mb-0.5">Outstanding</p>
               <p className="text-sm sm:text-base font-bold text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400">{money(feeStats.outstanding)}</p>
             </div>
             <div className="p-2 sm:p-3 rounded-lg bg-amber-50 dark:bg-amber-900/20 midnight:bg-amber-900/20 purple:bg-amber-900/20 border border-amber-100/50 dark:border-amber-800/30 text-center">
-              <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mb-0.5">Overdue</p>
+              <p className="text-xs text-muted mb-0.5">Overdue</p>
               <p className="text-sm sm:text-base font-bold text-amber-600 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400">{feeStats.overdue}</p>
             </div>
           </div>
@@ -1191,7 +1191,7 @@ function ParentTabs({
                     ? "text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400"
                     : "text-gray-600 dark:text-gray-500 midnight:text-cyan-300/70 purple:text-pink-300/70 group-hover:scale-110 group-hover:rotate-6"
                 }`} />
-                <span className={`relative text-[11.75px] sm:text-xs font-semibold transition-all duration-300 ${
+                <span className={`relative text-[0.7344rem] sm:text-xs font-semibold transition-all duration-300 ${
                   isActive ? "tracking-wide" : "group-hover:tracking-wide"
                 }`}>
                   {tab.label}
@@ -1251,23 +1251,23 @@ function ChildrenSection({
           </div>
 
           {/* Name */}
-          <h4 className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-center group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+          <h4 className="text-sm font-semibold text-ink text-center group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
             {child.fullName}
           </h4>
 
           {/* Class & ID inline */}
           <div className="mt-2 flex items-center justify-center gap-2">
-            <span className="text-[11px] font-medium text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/50 px-2 py-0.5 rounded-md">
+            <span className="text-[0.6875rem] font-medium text-muted bg-surface-2/50 px-2 py-0.5 rounded-md">
               {child.classLevel}
             </span>
-            <span className="text-[10px] text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400">
+            <span className="text-[0.625rem] text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400">
               {child.id}
             </span>
           </div>
 
           {/* Action */}
           <div className="mt-3 flex justify-center">
-            <span className="inline-flex items-center gap-1 text-[11px] font-medium text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 group-hover:text-blue-500 dark:group-hover:text-blue-400 transition-colors">
+            <span className="inline-flex items-center gap-1 text-[0.6875rem] font-medium text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 group-hover:text-blue-500 dark:group-hover:text-blue-400 transition-colors">
               View profile
               <ChevronRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
             </span>
@@ -1306,23 +1306,23 @@ function ChildrenSection({
         </div>
 
         {/* Name */}
-        <h4 className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-center group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors truncate">
+        <h4 className="text-sm font-semibold text-ink text-center group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors truncate">
           {child.fullName}
         </h4>
 
         {/* Class & ID inline */}
         <div className="mt-2 flex items-center justify-center gap-2">
-          <span className="text-[11px] font-medium text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/50 px-2 py-0.5 rounded-md">
+          <span className="text-[0.6875rem] font-medium text-muted bg-surface-2/50 px-2 py-0.5 rounded-md">
             {child.classLevel}
           </span>
-          <span className="text-[10px] text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400">
+          <span className="text-[0.625rem] text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400">
             {child.id}
           </span>
         </div>
 
         {/* Action */}
         <div className="mt-3 flex justify-center">
-          <span className="inline-flex items-center gap-1 text-[11px] font-medium text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 group-hover:text-blue-500 dark:group-hover:text-blue-400 transition-colors">
+          <span className="inline-flex items-center gap-1 text-[0.6875rem] font-medium text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 group-hover:text-blue-500 dark:group-hover:text-blue-400 transition-colors">
             View profile
             <ChevronRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
           </span>
@@ -1339,7 +1339,7 @@ function ChildrenSection({
     >
       {/* Profile Image */}
       <div className="relative flex-shrink-0">
-        <div className="relative w-11 h-11 rounded-lg overflow-hidden bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]">
+        <div className="relative w-11 h-11 rounded-lg overflow-hidden bg-surface-2">
           <Image
             src={`https://i.pravatar.cc/150?u=${child.id}`}
             alt={child.fullName}
@@ -1359,9 +1359,9 @@ function ChildrenSection({
           {child.fullName}
         </h4>
         <div className="flex items-center gap-1.5 mt-0.5">
-          <span className="text-[11px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 font-medium">{child.classLevel}</span>
+          <span className="text-[0.6875rem] text-muted font-medium">{child.classLevel}</span>
           <span className="w-1 h-1 rounded-full bg-gray-300 dark:bg-[#2a2d35] midnight:bg-gray-700 purple:bg-gray-700" />
-          <span className="text-[10px] text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400">{child.id}</span>
+          <span className="text-[0.625rem] text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400">{child.id}</span>
         </div>
       </div>
 
@@ -1371,7 +1371,7 @@ function ChildrenSection({
   );
 
   return (
-    <div className="group bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-2xl shadow-sm border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/30 purple:border-pink-500/30 overflow-hidden transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/10 dark:hover:shadow-blue-500/20 midnight:hover:shadow-cyan-500/20 purple:hover:shadow-pink-500/20 hover:border-blue-300/60 dark:hover:border-blue-600/60 midnight:hover:border-cyan-400/60 purple:hover:border-pink-400/60 hover:-translate-y-0.5">
+    <div className="group bg-surface rounded-2xl shadow-sm border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/30 purple:border-pink-500/30 overflow-hidden transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/10 dark:hover:shadow-blue-500/20 midnight:hover:shadow-cyan-500/20 purple:hover:shadow-pink-500/20 hover:border-blue-300/60 dark:hover:border-blue-600/60 midnight:hover:border-cyan-400/60 purple:hover:border-pink-400/60 hover:-translate-y-0.5">
       <div className="p-4 sm:p-5">
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
@@ -1380,10 +1380,10 @@ function ChildrenSection({
               <GraduationCap className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h3 className="text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+              <h3 className="text-sm font-bold text-ink">
                 Children
               </h3>
-              <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
+              <p className="text-xs text-muted">
                 {childCount} {childCount === 1 ? "child" : "children"} linked to this parent
               </p>
             </div>
@@ -1400,7 +1400,7 @@ function ChildrenSection({
         {/* Children Display - Adaptive Layout */}
         {childCount === 0 ? (
           // Empty State - Subtle Design
-          <div className="text-center py-8 bg-gray-50/50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/20 rounded-xl border border-dashed border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+          <div className="text-center py-8 bg-gray-50/50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/20 rounded-xl border border-dashed border-line">
             <div className="w-14 h-14 mx-auto rounded-xl bg-gray-100 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 flex items-center justify-center mb-3">
               <GraduationCap className="w-7 h-7 text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400" />
             </div>
@@ -1437,7 +1437,7 @@ function ChildrenSection({
             {childCount > 4 && (
               <button
                 onClick={() => setShowAllChildren(!showAllChildren)}
-                className="w-full py-2 text-xs font-medium text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:text-gray-700 dark:hover:text-gray-300 midnight:hover:text-cyan-200 purple:hover:text-pink-200 bg-gray-50/50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/30 hover:bg-gray-100/50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 rounded-lg border border-gray-100 dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10 transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                className="w-full py-2 text-xs font-medium text-muted hover:text-gray-700 dark:hover:text-gray-300 midnight:hover:text-cyan-200 purple:hover:text-pink-200 bg-gray-50/50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/30 hover:bg-gray-100/50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 rounded-lg border border-gray-100 dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10 transition-all cursor-pointer flex items-center justify-center gap-1.5"
               >
                 {showAllChildren ? (
                   <>
@@ -1526,7 +1526,7 @@ function FeesSection({
     };
     const c = config[status];
     return (
-      <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-bold ${c.bg} ${c.text}`}>
+      <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-md text-[0.625rem] font-bold ${c.bg} ${c.text}`}>
         {c.icon}
         {c.label}
       </span>
@@ -1541,11 +1541,11 @@ function FeesSection({
 
     return (
       <div className="flex flex-col">
-        <span className={`text-[10px] font-medium ${isOverdue ? "text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400" : "text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300"}`}>
+        <span className={`text-[0.625rem] font-medium ${isOverdue ? "text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400" : "text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300"}`}>
           {formattedDate}
         </span>
         {isOverdue && (
-          <span className="text-[9px] text-red-500 dark:text-red-400 midnight:text-red-400 purple:text-red-400 font-medium">Overdue</span>
+          <span className="text-[0.5625rem] text-red-500 dark:text-red-400 midnight:text-red-400 purple:text-red-400 font-medium">Overdue</span>
         )}
       </div>
     );
@@ -1603,7 +1603,7 @@ function FeesSection({
             <div className="w-8 h-8 rounded-lg bg-blue-500/10 dark:bg-blue-500/20 flex items-center justify-center ring-1 ring-blue-500/20">
               <Wallet className="w-4 h-4 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
             </div>
-            <span className="text-[10px] font-semibold text-blue-600/80 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400/80 uppercase tracking-wider">Total Fees</span>
+            <span className="text-[0.625rem] font-semibold text-blue-600/80 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400/80 uppercase tracking-wider">Total Fees</span>
           </div>
           <p className="text-xl font-bold text-blue-900 dark:text-blue-100">{money(summaryStats.total)}</p>
         </div>
@@ -1613,7 +1613,7 @@ function FeesSection({
             <div className="w-8 h-8 rounded-lg bg-emerald-500/10 dark:bg-emerald-500/20 flex items-center justify-center ring-1 ring-emerald-500/20">
               <TrendingUp className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
             </div>
-            <span className="text-[10px] font-semibold text-emerald-600/80 dark:text-emerald-400/80 uppercase tracking-wider">Paid</span>
+            <span className="text-[0.625rem] font-semibold text-emerald-600/80 dark:text-emerald-400/80 uppercase tracking-wider">Paid</span>
           </div>
           <p className="text-xl font-bold text-emerald-900 dark:text-emerald-100">{money(summaryStats.paid)}</p>
         </div>
@@ -1623,7 +1623,7 @@ function FeesSection({
             <div className="w-8 h-8 rounded-lg bg-amber-500/10 dark:bg-amber-500/20 flex items-center justify-center ring-1 ring-amber-500/20">
               <TrendingDown className="w-4 h-4 text-amber-600 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400" />
             </div>
-            <span className="text-[10px] font-semibold text-amber-600/80 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400/80 uppercase tracking-wider">Outstanding</span>
+            <span className="text-[0.625rem] font-semibold text-amber-600/80 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400/80 uppercase tracking-wider">Outstanding</span>
           </div>
           <p className="text-xl font-bold text-amber-900 dark:text-amber-100">{money(summaryStats.outstanding)}</p>
         </div>
@@ -1633,7 +1633,7 @@ function FeesSection({
             <div className="w-8 h-8 rounded-lg bg-red-500/10 dark:bg-red-500/20 flex items-center justify-center ring-1 ring-red-500/20">
               <AlertCircle className="w-4 h-4 text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400" />
             </div>
-            <span className="text-[10px] font-semibold text-red-600/80 dark:text-red-400 midnight:text-red-400 purple:text-red-400/80 uppercase tracking-wider">Overdue</span>
+            <span className="text-[0.625rem] font-semibold text-red-600/80 dark:text-red-400 midnight:text-red-400 purple:text-red-400/80 uppercase tracking-wider">Overdue</span>
           </div>
           <p className="text-xl font-bold text-red-900 dark:text-red-100">{summaryStats.overdue}</p>
         </div>
@@ -1648,7 +1648,7 @@ function FeesSection({
             <select
               value={selectedChild}
               onChange={(e) => setSelectedChild(e.target.value)}
-              className="text-xs font-medium bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-lg px-3 py-1.5 text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 cursor-pointer"
+              className="text-xs font-medium bg-surface border border-line rounded-lg px-3 py-1.5 text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 cursor-pointer"
             >
               <option value="all">All Children</option>
               {children.map((child) => (
@@ -1672,10 +1672,10 @@ function FeesSection({
             <button
               key={status.value}
               onClick={() => setSelectedStatus(status.value)}
-              className={`px-3 py-1.5 text-[10px] font-semibold rounded-md transition-all duration-200 cursor-pointer ${
+              className={`px-3 py-1.5 text-[0.625rem] font-semibold rounded-md transition-all duration-200 cursor-pointer ${
                 selectedStatus === status.value
-                  ? "bg-white dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 shadow-sm"
-                  : "text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:text-gray-700 dark:hover:text-gray-300 midnight:hover:text-cyan-200 purple:hover:text-pink-200"
+                  ? "bg-white dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] text-ink shadow-sm"
+                  : "text-muted hover:text-gray-700 dark:hover:text-gray-300 midnight:hover:text-cyan-200 purple:hover:text-pink-200"
               }`}
             >
               {status.label}
@@ -1704,8 +1704,8 @@ function FeesSection({
                   />
                 </div>
                 <div>
-                  <p className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-xs">{record.childName}</p>
-                  <p className="text-[10px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">{record.childClass}</p>
+                  <p className="font-semibold text-ink text-xs">{record.childName}</p>
+                  <p className="text-[0.625rem] text-muted">{record.childClass}</p>
                 </div>
               </div>
             ),
@@ -1715,7 +1715,7 @@ function FeesSection({
             label: "Fee Type",
             sortable: true,
             render: (record) => (
-              <span className="text-xs font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{record.feeType}</span>
+              <span className="text-xs font-semibold text-ink">{record.feeType}</span>
             ),
           },
           {
@@ -1723,7 +1723,7 @@ function FeesSection({
             label: "Term",
             sortable: true,
             render: (record) => (
-              <span className="text-[10px] font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">{record.term}</span>
+              <span className="text-[0.625rem] font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">{record.term}</span>
             ),
           },
           {
@@ -1738,9 +1738,9 @@ function FeesSection({
             sortable: true,
             render: (record) => (
               <div className="flex flex-col">
-                <span className="text-xs font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{money(record.amount)}</span>
+                <span className="text-xs font-bold text-ink">{money(record.amount)}</span>
                 {record.paidAmount > 0 && record.paidAmount < record.amount && (
-                  <span className="text-[9px] text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400">Paid: {money(record.paidAmount)}</span>
+                  <span className="text-[0.5625rem] text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400">Paid: {money(record.paidAmount)}</span>
                 )}
               </div>
             ),
@@ -1773,7 +1773,7 @@ function FeesSection({
                 }}
                 className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer"
               >
-                <MoreVertical className="w-4 h-4 text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300" />
+                <MoreVertical className="w-4 h-4 text-muted" />
               </button>
             ),
           },
@@ -1798,7 +1798,7 @@ function FeesSection({
           />
           {/* Menu */}
           <div
-            className="fixed z-[9999] w-48 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 py-1.5 overflow-hidden"
+            className="fixed z-[9999] w-48 bg-surface rounded-xl shadow-2xl border border-line py-1.5 overflow-hidden"
             style={{ top: menuPosition.top, left: menuPosition.left }}
           >
             <button
@@ -1855,9 +1855,9 @@ function FeesSection({
 // Address Card
 function AddressCard({ parent }: { parent: AdminParent }) {
   return (
-    <div className="group bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-2xl shadow-sm border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/30 purple:border-pink-500/30 overflow-hidden transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/10 dark:hover:shadow-blue-500/20 midnight:hover:shadow-cyan-500/20 purple:hover:shadow-pink-500/20 hover:border-blue-300/60 dark:hover:border-blue-600/60 midnight:hover:border-cyan-400/60 purple:hover:border-pink-400/60 hover:-translate-y-0.5">
+    <div className="group bg-surface rounded-2xl shadow-sm border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/30 purple:border-pink-500/30 overflow-hidden transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/10 dark:hover:shadow-blue-500/20 midnight:hover:shadow-cyan-500/20 purple:hover:shadow-pink-500/20 hover:border-blue-300/60 dark:hover:border-blue-600/60 midnight:hover:border-cyan-400/60 purple:hover:border-pink-400/60 hover:-translate-y-0.5">
       <div className="p-4">
-        <h3 className="text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-3 flex items-center gap-2">
+        <h3 className="text-sm font-bold text-ink mb-3 flex items-center gap-2">
           <MapPin className="w-4 h-4 text-purple-600 dark:text-purple-400" />
           Address
         </h3>
@@ -1865,7 +1865,7 @@ function AddressCard({ parent }: { parent: AdminParent }) {
           <div className="p-3 rounded-xl bg-gradient-to-br from-gray-50 to-gray-100/30 dark:from-gray-800/40 dark:to-gray-900/40 border border-gray-200/40 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
             <div className="flex items-center gap-2 mb-1">
               <Home className="w-3 h-3 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
-              <span className="text-[10px] font-bold text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 uppercase">Home</span>
+              <span className="text-[0.625rem] font-bold text-muted uppercase">Home</span>
             </div>
             <p className="text-xs text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 leading-relaxed">
               {parent.address.line1}
@@ -1876,7 +1876,7 @@ function AddressCard({ parent }: { parent: AdminParent }) {
           <div className="p-3 rounded-xl bg-gradient-to-br from-gray-50 to-gray-100/30 dark:from-gray-800/40 dark:to-gray-900/40 border border-gray-200/40 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
             <div className="flex items-center gap-2 mb-1">
               <Building2 className="w-3 h-3 text-purple-600 dark:text-purple-400" />
-              <span className="text-[10px] font-bold text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 uppercase">Work</span>
+              <span className="text-[0.625rem] font-bold text-muted uppercase">Work</span>
             </div>
             <p className="text-xs text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 italic">Not provided</p>
           </div>
@@ -1903,10 +1903,10 @@ function FeeActionsCard({
             <CreditCard className="w-5 h-5 text-white" />
           </div>
           <div>
-            <h3 className="text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+            <h3 className="text-sm font-bold text-ink">
               Fee Management
             </h3>
-            <p className="text-[10px] text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70">
+            <p className="text-[0.625rem] text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70">
               Manage discounts & due dates
             </p>
           </div>
@@ -1930,7 +1930,7 @@ function FeeActionsCard({
                 <span className="block text-sm font-semibold text-gray-800 dark:text-gray-100 midnight:text-cyan-100 purple:text-pink-100 group-hover/btn:text-rose-700 dark:group-hover/btn:text-rose-300 transition-colors">
                   Give Discount
                 </span>
-                <span className="block text-[10px] text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70">
+                <span className="block text-[0.625rem] text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70">
                   Apply percentage or fixed discount
                 </span>
               </div>
@@ -1954,7 +1954,7 @@ function FeeActionsCard({
                 <span className="block text-sm font-semibold text-gray-800 dark:text-gray-100 midnight:text-cyan-100 purple:text-pink-100 group-hover/btn:text-indigo-700 dark:group-hover/btn:text-indigo-300 transition-colors">
                   Extend Due Date
                 </span>
-                <span className="block text-[10px] text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70">
+                <span className="block text-[0.625rem] text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70">
                   Postpone payment deadline
                 </span>
               </div>
@@ -2089,11 +2089,11 @@ function MeetingsSection({ meetings, onScheduleMeeting }: { meetings: ParentTeac
     const config = {
       upcoming: { bg: "bg-blue-100 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30", text: "text-blue-700 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300", label: "Upcoming" },
       completed: { bg: "bg-green-100 dark:bg-green-900/30", text: "text-green-700 dark:text-green-300", label: "Completed" },
-      cancelled: { bg: "bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/30", text: "text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300", label: "Cancelled" },
+      cancelled: { bg: "bg-surface-2/30", text: "text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300", label: "Cancelled" },
       no_show: { bg: "bg-red-100 dark:bg-red-900/30 midnight:bg-red-900/30 purple:bg-red-900/30", text: "text-red-700 dark:text-red-300", label: "No Show" },
     };
     const c = config[status];
-    return <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${c.bg} ${c.text}`}>{c.label}</span>;
+    return <span className={`px-2 py-0.5 rounded text-[0.625rem] font-bold ${c.bg} ${c.text}`}>{c.label}</span>;
   };
 
   const getMeetingTypeBadge = (meeting: ParentTeacherMeeting) => {
@@ -2108,14 +2108,14 @@ function MeetingsSection({ meetings, onScheduleMeeting }: { meetings: ParentTeac
     const label = meeting.meetingType === "custom" && meeting.customMeetingType
       ? meeting.customMeetingType
       : c.label;
-    return <span className={`px-2 py-0.5 rounded text-[10px] font-semibold ${c.bg} ${c.text}`}>{label}</span>;
+    return <span className={`px-2 py-0.5 rounded text-[0.625rem] font-semibold ${c.bg} ${c.text}`}>{label}</span>;
   };
 
   return (
-    <div className="group bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-2xl shadow-sm border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/30 purple:border-pink-500/30 overflow-hidden transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/10 dark:hover:shadow-blue-500/20 midnight:hover:shadow-cyan-500/20 purple:hover:shadow-pink-500/20 hover:border-blue-300/60 dark:hover:border-blue-600/60 midnight:hover:border-cyan-400/60 purple:hover:border-pink-400/60 hover:-translate-y-0.5">
+    <div className="group bg-surface rounded-2xl shadow-sm border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/30 purple:border-pink-500/30 overflow-hidden transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/10 dark:hover:shadow-blue-500/20 midnight:hover:shadow-cyan-500/20 purple:hover:shadow-pink-500/20 hover:border-blue-300/60 dark:hover:border-blue-600/60 midnight:hover:border-cyan-400/60 purple:hover:border-pink-400/60 hover:-translate-y-0.5">
       <div className="p-4">
         <div className="flex items-center justify-between mb-3">
-          <h3 className="text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 flex items-center gap-2">
+          <h3 className="text-sm font-bold text-ink flex items-center gap-2">
             <Users className="w-4 h-4 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
             Parent-Teacher Meetings ({meetings.length})
           </h3>
@@ -2131,7 +2131,7 @@ function MeetingsSection({ meetings, onScheduleMeeting }: { meetings: ParentTeac
         </div>
 
         {displayMeetings.length === 0 ? (
-          <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 text-center py-4">No meetings scheduled</p>
+          <p className="text-xs text-muted text-center py-4">No meetings scheduled</p>
         ) : (
           <div className="space-y-2">
             {displayMeetings.map((meeting) => (
@@ -2146,21 +2146,21 @@ function MeetingsSection({ meetings, onScheduleMeeting }: { meetings: ParentTeac
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1 flex-wrap">
-                      <span className="text-xs font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate">{meeting.subject}</span>
+                      <span className="text-xs font-bold text-ink truncate">{meeting.subject}</span>
                       {getMeetingTypeBadge(meeting)}
                       {getStatusBadge(meeting.status)}
                     </div>
-                    <div className="flex items-center gap-3 text-[10px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
+                    <div className="flex items-center gap-3 text-[0.625rem] text-muted">
                       <span className="flex items-center gap-1">
                         <Calendar className="w-3 h-3" />
                         {new Date(meeting.date).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })} at {meeting.time}
                       </span>
                       <span>{meeting.duration} min</span>
                     </div>
-                    <div className="text-[10px] text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mt-1">
+                    <div className="text-[0.625rem] text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mt-1">
                       <span className="font-semibold">{meeting.teacherName}</span> ({meeting.teacherRole}) • {meeting.childName}
                     </div>
-                    <div className="flex items-center gap-2 text-[10px] text-gray-500 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 mt-0.5">
+                    <div className="flex items-center gap-2 text-[0.625rem] text-gray-500 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 mt-0.5">
                       {meeting.meetingFormat === "virtual" ? (
                         <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 font-medium">
                           {meeting.virtualType === "video" ? <Video className="w-2.5 h-2.5" /> : <Mic className="w-2.5 h-2.5" />}
@@ -2175,7 +2175,7 @@ function MeetingsSection({ meetings, onScheduleMeeting }: { meetings: ParentTeac
                       <span>📍 {meeting.location}</span>
                     </div>
                     {meeting.outcome && (
-                      <div className="text-[10px] text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400 mt-1 italic">{meeting.outcome}</div>
+                      <div className="text-[0.625rem] text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400 mt-1 italic">{meeting.outcome}</div>
                     )}
                   </div>
                   <div className="flex items-center gap-2">
@@ -2185,7 +2185,7 @@ function MeetingsSection({ meetings, onScheduleMeeting }: { meetings: ParentTeac
                           e.stopPropagation();
                           handleViewMeetingDetails(meeting, "cancel");
                         }}
-                        className="px-2 py-1 text-[10px] font-semibold text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400 bg-red-50 dark:bg-red-900/20 midnight:bg-red-900/20 purple:bg-red-900/20 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors cursor-pointer"
+                        className="px-2 py-1 text-[0.625rem] font-semibold text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400 bg-red-50 dark:bg-red-900/20 midnight:bg-red-900/20 purple:bg-red-900/20 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors cursor-pointer"
                       >
                         Cancel
                       </button>
@@ -2195,7 +2195,7 @@ function MeetingsSection({ meetings, onScheduleMeeting }: { meetings: ParentTeac
                         e.stopPropagation();
                         handleViewMeetingDetails(meeting, "view");
                       }}
-                      className="flex items-center gap-1 px-2 py-1 text-[10px] font-semibold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 bg-blue-50 dark:bg-blue-900/20 midnight:bg-cyan-900/20 purple:bg-pink-900/20 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors cursor-pointer"
+                      className="flex items-center gap-1 px-2 py-1 text-[0.625rem] font-semibold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 bg-blue-50 dark:bg-blue-900/20 midnight:bg-cyan-900/20 purple:bg-pink-900/20 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors cursor-pointer"
                     >
                       <Eye className="w-3 h-3" />
                       View
@@ -2293,11 +2293,11 @@ function LeaveRequestsSection({
       family_emergency: { bg: "bg-orange-100 dark:bg-orange-900/30", text: "text-orange-700 dark:text-orange-300" },
       vacation: { bg: "bg-blue-100 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30", text: "text-blue-700 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300" },
       religious: { bg: "bg-purple-100 dark:bg-purple-900/30", text: "text-purple-700 dark:text-purple-300" },
-      other: { bg: "bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/30", text: "text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300" },
+      other: { bg: "bg-surface-2/30", text: "text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300" },
     };
     const c = config[type];
     const label = type.replace("_", " ").replace(/\b\w/g, (l) => l.toUpperCase());
-    return <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${c.bg} ${c.text}`}>{label}</span>;
+    return <span className={`px-2 py-0.5 rounded text-[0.625rem] font-bold ${c.bg} ${c.text}`}>{label}</span>;
   };
 
   const getStatusBadge = (status: LeaveRequest["status"]) => {
@@ -2308,7 +2308,7 @@ function LeaveRequestsSection({
     };
     const c = config[status];
     return (
-      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold ${c.bg} ${c.text}`}>
+      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[0.625rem] font-bold ${c.bg} ${c.text}`}>
         {c.icon}
         {status.charAt(0).toUpperCase() + status.slice(1)}
       </span>
@@ -2317,22 +2317,22 @@ function LeaveRequestsSection({
 
   return (
     <>
-      <div className="group bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-2xl shadow-sm border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/30 purple:border-pink-500/30 overflow-hidden transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/10 dark:hover:shadow-blue-500/20 midnight:hover:shadow-cyan-500/20 purple:hover:shadow-pink-500/20 hover:border-blue-300/60 dark:hover:border-blue-600/60 midnight:hover:border-cyan-400/60 purple:hover:border-pink-400/60 hover:-translate-y-0.5">
+      <div className="group bg-surface rounded-2xl shadow-sm border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/30 purple:border-pink-500/30 overflow-hidden transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/10 dark:hover:shadow-blue-500/20 midnight:hover:shadow-cyan-500/20 purple:hover:shadow-pink-500/20 hover:border-blue-300/60 dark:hover:border-blue-600/60 midnight:hover:border-cyan-400/60 purple:hover:border-pink-400/60 hover:-translate-y-0.5">
         <div className="p-4">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 flex items-center gap-2">
+            <h3 className="text-sm font-bold text-ink flex items-center gap-2">
               <CalendarX className="w-4 h-4 text-orange-600 dark:text-orange-400" />
               Leave Requests ({leaveRequests.length})
             </h3>
             {pendingRequests.length > 0 && (
-              <span className="px-2 py-1 text-[10px] font-bold text-yellow-700 dark:text-yellow-300 bg-yellow-100 dark:bg-yellow-900/30 rounded-lg">
+              <span className="px-2 py-1 text-[0.625rem] font-bold text-yellow-700 dark:text-yellow-300 bg-yellow-100 dark:bg-yellow-900/30 rounded-lg">
                 {pendingRequests.length} Pending Approval
               </span>
             )}
           </div>
 
           {displayRequests.length === 0 ? (
-            <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 text-center py-4">No leave requests</p>
+            <p className="text-xs text-muted text-center py-4">No leave requests</p>
           ) : (
             <div className="space-y-2">
               {displayRequests.map((request) => (
@@ -2348,24 +2348,24 @@ function LeaveRequestsSection({
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1 flex-wrap">
-                        <span className="text-xs font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{request.childName}</span>
-                        <span className="text-[10px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">({request.childClass})</span>
+                        <span className="text-xs font-bold text-ink">{request.childName}</span>
+                        <span className="text-[0.625rem] text-muted">({request.childClass})</span>
                         {getLeaveTypeBadge(request.leaveType)}
                         {getStatusBadge(request.status)}
                       </div>
-                      <div className="flex items-center gap-2 text-[10px] text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
+                      <div className="flex items-center gap-2 text-[0.625rem] text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
                         <Calendar className="w-3 h-3" />
                         {new Date(request.startDate).toLocaleDateString("en-GB", { day: "numeric", month: "short" })} -{" "}
                         {new Date(request.endDate).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
                       </div>
-                      <p className="text-[10px] text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mt-1 line-clamp-1">{request.reason}</p>
+                      <p className="text-[0.625rem] text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mt-1 line-clamp-1">{request.reason}</p>
                       {request.processedBy && (
-                        <p className="text-[10px] text-gray-500 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 mt-1 italic">
+                        <p className="text-[0.625rem] text-gray-500 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 mt-1 italic">
                           Processed by {request.processedBy}
                         </p>
                       )}
                       {request.status === "rejected" && request.adminNotes && (
-                        <p className="text-[10px] text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400 mt-1 italic line-clamp-1">
+                        <p className="text-[0.625rem] text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400 mt-1 italic line-clamp-1">
                           Reason: {request.adminNotes}
                         </p>
                       )}
@@ -2374,14 +2374,14 @@ function LeaveRequestsSection({
                       <div className="flex gap-1.5 flex-shrink-0">
                         <button
                           onClick={(e) => { e.stopPropagation(); handleApprove(request.id); }}
-                          className="px-2.5 py-1.5 text-[10px] font-semibold text-green-700 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400 bg-green-100 dark:bg-green-900/30 rounded-lg hover:bg-green-200 dark:hover:bg-green-900/50 transition-colors cursor-pointer flex items-center gap-1"
+                          className="px-2.5 py-1.5 text-[0.625rem] font-semibold text-green-700 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400 bg-green-100 dark:bg-green-900/30 rounded-lg hover:bg-green-200 dark:hover:bg-green-900/50 transition-colors cursor-pointer flex items-center gap-1"
                         >
                           <CheckCircle2 className="w-3 h-3" />
                           Approve
                         </button>
                         <button
                           onClick={(e) => { e.stopPropagation(); setShowRejectFormInitially(true); setSelectedLeave(request); }}
-                          className="px-2.5 py-1.5 text-[10px] font-semibold text-red-700 dark:text-red-400 midnight:text-red-400 purple:text-red-400 bg-red-100 dark:bg-red-900/30 midnight:bg-red-900/30 purple:bg-red-900/30 rounded-lg hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors cursor-pointer flex items-center gap-1"
+                          className="px-2.5 py-1.5 text-[0.625rem] font-semibold text-red-700 dark:text-red-400 midnight:text-red-400 purple:text-red-400 bg-red-100 dark:bg-red-900/30 midnight:bg-red-900/30 purple:bg-red-900/30 rounded-lg hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors cursor-pointer flex items-center gap-1"
                         >
                           <XCircle className="w-3 h-3" />
                           Reject
@@ -2389,7 +2389,7 @@ function LeaveRequestsSection({
                       </div>
                     )}
                     {request.status !== "pending" && (
-                      <div className="flex items-center gap-1 text-[10px] text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400">
+                      <div className="flex items-center gap-1 text-[0.625rem] text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400">
                         <Eye className="w-3 h-3" />
                         <span>View</span>
                       </div>
@@ -2720,7 +2720,7 @@ function PaymentHistorySection({
     };
     const c = config[status];
     return (
-      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold ${c.bg} ${c.text}`}>
+      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[0.625rem] font-bold ${c.bg} ${c.text}`}>
         {c.icon}
         {status.charAt(0).toUpperCase() + status.slice(1)}
       </span>
@@ -2754,7 +2754,7 @@ function PaymentHistorySection({
             <div className="w-8 h-8 rounded-lg bg-emerald-500/10 dark:bg-emerald-500/20 flex items-center justify-center ring-1 ring-emerald-500/20">
               <Banknote className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
             </div>
-            <span className="text-[10px] font-semibold text-emerald-600/80 dark:text-emerald-400/80 uppercase tracking-wider">Total Paid</span>
+            <span className="text-[0.625rem] font-semibold text-emerald-600/80 dark:text-emerald-400/80 uppercase tracking-wider">Total Paid</span>
           </div>
           <p className="text-xl font-bold text-emerald-900 dark:text-emerald-100">{money(paymentStats.totalPaid)}</p>
         </div>
@@ -2764,7 +2764,7 @@ function PaymentHistorySection({
             <div className="w-8 h-8 rounded-lg bg-blue-500/10 dark:bg-blue-500/20 flex items-center justify-center ring-1 ring-blue-500/20">
               <Receipt className="w-4 h-4 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
             </div>
-            <span className="text-[10px] font-semibold text-blue-600/80 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400/80 uppercase tracking-wider">Transactions</span>
+            <span className="text-[0.625rem] font-semibold text-blue-600/80 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400/80 uppercase tracking-wider">Transactions</span>
           </div>
           <p className="text-xl font-bold text-blue-900 dark:text-blue-100">{paymentStats.totalPayments}</p>
         </div>
@@ -2774,7 +2774,7 @@ function PaymentHistorySection({
             <div className="w-8 h-8 rounded-lg bg-amber-500/10 dark:bg-amber-500/20 flex items-center justify-center ring-1 ring-amber-500/20">
               <Clock className="w-4 h-4 text-amber-600 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400" />
             </div>
-            <span className="text-[10px] font-semibold text-amber-600/80 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400/80 uppercase tracking-wider">Pending</span>
+            <span className="text-[0.625rem] font-semibold text-amber-600/80 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400/80 uppercase tracking-wider">Pending</span>
           </div>
           <p className="text-xl font-bold text-amber-900 dark:text-amber-100">{paymentStats.pending}</p>
         </div>
@@ -2784,7 +2784,7 @@ function PaymentHistorySection({
             <div className="w-8 h-8 rounded-lg bg-red-500/10 dark:bg-red-500/20 flex items-center justify-center ring-1 ring-red-500/20">
               <XCircle className="w-4 h-4 text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400" />
             </div>
-            <span className="text-[10px] font-semibold text-red-600/80 dark:text-red-400 midnight:text-red-400 purple:text-red-400/80 uppercase tracking-wider">Failed</span>
+            <span className="text-[0.625rem] font-semibold text-red-600/80 dark:text-red-400 midnight:text-red-400 purple:text-red-400/80 uppercase tracking-wider">Failed</span>
           </div>
           <p className="text-xl font-bold text-red-900 dark:text-red-100">{paymentStats.failed}</p>
         </div>
@@ -2799,7 +2799,7 @@ function PaymentHistorySection({
             <select
               value={selectedChild}
               onChange={(e) => setSelectedChild(e.target.value)}
-              className="text-xs font-medium bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-lg px-3 py-1.5 text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 cursor-pointer"
+              className="text-xs font-medium bg-surface border border-line rounded-lg px-3 py-1.5 text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 cursor-pointer"
             >
               <option value="all">All Children</option>
               {children.map((child) => (
@@ -2822,10 +2822,10 @@ function PaymentHistorySection({
             <button
               key={status.value}
               onClick={() => setSelectedStatus(status.value)}
-              className={`px-3 py-1.5 text-[10px] font-semibold rounded-md transition-all duration-200 cursor-pointer ${
+              className={`px-3 py-1.5 text-[0.625rem] font-semibold rounded-md transition-all duration-200 cursor-pointer ${
                 selectedStatus === status.value
-                  ? "bg-white dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 shadow-sm"
-                  : "text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:text-gray-700 dark:hover:text-gray-300 midnight:hover:text-cyan-200 purple:hover:text-pink-200"
+                  ? "bg-white dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] text-ink shadow-sm"
+                  : "text-muted hover:text-gray-700 dark:hover:text-gray-300 midnight:hover:text-cyan-200 purple:hover:text-pink-200"
               }`}
             >
               {status.label}
@@ -2835,13 +2835,13 @@ function PaymentHistorySection({
       </div>
 
       {/* Payment List */}
-      <div className="bg-white dark:bg-[#1a1d23] rounded-2xl shadow-sm border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 overflow-hidden">
+      <div className="bg-surface rounded-2xl shadow-sm border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 overflow-hidden">
         {/* Header */}
         <div className="px-4 py-3 border-b border-gray-100 dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <CreditCard className="w-4 h-4 text-gray-400" />
-            <h3 className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">Payment History</h3>
-            <span className="px-2 py-0.5 text-[10px] font-medium bg-gray-100 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 rounded-full">
+            <h3 className="text-sm font-semibold text-ink">Payment History</h3>
+            <span className="px-2 py-0.5 text-[0.625rem] font-medium bg-gray-100 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 rounded-full">
               {filteredPayments.length} {filteredPayments.length === 1 ? "payment" : "payments"}
             </span>
           </div>
@@ -2854,7 +2854,7 @@ function PaymentHistorySection({
               Export
             </button>
             {isExportDropdownOpen && (
-              <div className="absolute right-0 top-full mt-1 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 py-1 min-w-[140px] z-20">
+              <div className="absolute right-0 top-full mt-1 bg-surface rounded-xl shadow-lg border border-line py-1 min-w-[140px] z-20">
                 <button
                   onClick={handleExportPDF}
                   className="w-full flex items-center gap-2 px-3 py-2 text-xs font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer"
@@ -2881,8 +2881,8 @@ function PaymentHistorySection({
             <div className="w-16 h-16 rounded-2xl bg-gray-100 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] flex items-center justify-center mb-4">
               <CreditCard className="w-8 h-8 text-gray-400" />
             </div>
-            <h4 className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-1">No payment records found</h4>
-            <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 text-center max-w-[250px]">
+            <h4 className="text-sm font-semibold text-ink mb-1">No payment records found</h4>
+            <p className="text-xs text-muted text-center max-w-[250px]">
               {selectedChild !== "all" || selectedStatus !== "all"
                 ? "Try adjusting your filters to see more payments."
                 : "There are no payment records for this parent yet."}
@@ -2932,20 +2932,20 @@ function PaymentHistorySection({
 
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-2 mb-1 flex-wrap">
-                            <span className="text-xs font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{payment.feeType}</span>
+                            <span className="text-xs font-bold text-ink">{payment.feeType}</span>
                             {getStatusBadge(payment.status)}
                           </div>
-                          <div className="flex items-center gap-2 text-[10px] text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
+                          <div className="flex items-center gap-2 text-[0.625rem] text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
                             <span className="font-medium">{payment.childName}</span>
                             <span className="text-gray-300 dark:text-gray-600 midnight:text-cyan-500 purple:text-pink-500">•</span>
                             <Calendar className="w-3 h-3" />
                             <span>{new Date(payment.date).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</span>
                           </div>
-                          <p className="text-[10px] text-gray-500 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 mt-1">
+                          <p className="text-[0.625rem] text-gray-500 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 mt-1">
                             Ref: {payment.reference}
                           </p>
                           {relatedFee && relatedFee.balance > 0 && (
-                            <p className="text-[10px] text-amber-600 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400 font-medium mt-0.5">
+                            <p className="text-[0.625rem] text-amber-600 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400 font-medium mt-0.5">
                               Outstanding Balance: {money(relatedFee.balance)}
                             </p>
                           )}
@@ -2960,8 +2960,8 @@ function PaymentHistorySection({
                             ? "text-amber-600 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400"
                             : "text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400"
                         }`}>{money(payment.amount)}</p>
-                        <p className="text-[10px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mt-0.5">{payment.receiptNumber}</p>
-                        <div className="flex items-center gap-1 text-[10px] text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 mt-1.5 justify-end">
+                        <p className="text-[0.625rem] text-muted mt-0.5">{payment.receiptNumber}</p>
+                        <div className="flex items-center gap-1 text-[0.625rem] text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 mt-1.5 justify-end">
                           <Eye className="w-3 h-3" />
                           <span>View</span>
                         </div>
@@ -3095,7 +3095,7 @@ function SupportTicketsSection({ communications, setCommunications, parentName }
     };
     const c = config[type];
     const label = type.replace("_", " ").replace(/\b\w/g, (l) => l.toUpperCase());
-    return <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${c.bg} ${c.text}`}>{label}</span>;
+    return <span className={`px-2 py-0.5 rounded text-[0.625rem] font-bold ${c.bg} ${c.text}`}>{label}</span>;
   };
 
   const getStatusBadge = (status: CommunicationRecord["status"]) => {
@@ -3103,12 +3103,12 @@ function SupportTicketsSection({ communications, setCommunications, parentName }
       open: { bg: "bg-yellow-100 dark:bg-yellow-900/30", text: "text-yellow-700 dark:text-yellow-300", icon: <Clock className="w-3 h-3" /> },
       in_progress: { bg: "bg-blue-100 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30", text: "text-blue-700 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300", icon: <Clock className="w-3 h-3" /> },
       resolved: { bg: "bg-green-100 dark:bg-green-900/30", text: "text-green-700 dark:text-green-300", icon: <CheckCircle2 className="w-3 h-3" /> },
-      closed: { bg: "bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/30", text: "text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300", icon: <XCircle className="w-3 h-3" /> },
+      closed: { bg: "bg-surface-2/30", text: "text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300", icon: <XCircle className="w-3 h-3" /> },
     };
     const c = config[status];
     const label = status.replace("_", " ").replace(/\b\w/g, (l) => l.toUpperCase());
     return (
-      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold ${c.bg} ${c.text}`}>
+      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[0.625rem] font-bold ${c.bg} ${c.text}`}>
         {c.icon}
         {label}
       </span>
@@ -3176,7 +3176,7 @@ function SupportTicketsSection({ communications, setCommunications, parentName }
             <div className="w-8 h-8 rounded-lg bg-amber-500/10 dark:bg-amber-500/20 flex items-center justify-center ring-1 ring-amber-500/20">
               <Clock className="w-4 h-4 text-amber-600 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400" />
             </div>
-            <span className="text-[10px] font-semibold text-amber-600/80 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400/80 uppercase tracking-wider">Open</span>
+            <span className="text-[0.625rem] font-semibold text-amber-600/80 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400/80 uppercase tracking-wider">Open</span>
           </div>
           <p className="text-xl font-bold text-amber-900 dark:text-amber-100">{stats.open}</p>
         </div>
@@ -3186,7 +3186,7 @@ function SupportTicketsSection({ communications, setCommunications, parentName }
             <div className="w-8 h-8 rounded-lg bg-blue-500/10 dark:bg-blue-500/20 flex items-center justify-center ring-1 ring-blue-500/20">
               <Clock className="w-4 h-4 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
             </div>
-            <span className="text-[10px] font-semibold text-blue-600/80 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400/80 uppercase tracking-wider">In Progress</span>
+            <span className="text-[0.625rem] font-semibold text-blue-600/80 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400/80 uppercase tracking-wider">In Progress</span>
           </div>
           <p className="text-xl font-bold text-blue-900 dark:text-blue-100">{stats.inProgress}</p>
         </div>
@@ -3196,7 +3196,7 @@ function SupportTicketsSection({ communications, setCommunications, parentName }
             <div className="w-8 h-8 rounded-lg bg-emerald-500/10 dark:bg-emerald-500/20 flex items-center justify-center ring-1 ring-emerald-500/20">
               <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
             </div>
-            <span className="text-[10px] font-semibold text-emerald-600/80 dark:text-emerald-400/80 uppercase tracking-wider">Resolved</span>
+            <span className="text-[0.625rem] font-semibold text-emerald-600/80 dark:text-emerald-400/80 uppercase tracking-wider">Resolved</span>
           </div>
           <p className="text-xl font-bold text-emerald-900 dark:text-emerald-100">{stats.resolved}</p>
         </div>
@@ -3206,14 +3206,14 @@ function SupportTicketsSection({ communications, setCommunications, parentName }
             <div className="w-8 h-8 rounded-lg bg-slate-500/10 dark:bg-slate-500/20 flex items-center justify-center ring-1 ring-slate-500/20">
               <XCircle className="w-4 h-4 text-slate-600 dark:text-slate-400" />
             </div>
-            <span className="text-[10px] font-semibold text-slate-600/80 dark:text-slate-400/80 uppercase tracking-wider">Closed</span>
+            <span className="text-[0.625rem] font-semibold text-slate-600/80 dark:text-slate-400/80 uppercase tracking-wider">Closed</span>
           </div>
           <p className="text-xl font-bold text-slate-900 dark:text-slate-100">{stats.closed}</p>
         </div>
       </div>
 
       {/* Filters */}
-      <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl p-4 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+      <div className="bg-surface rounded-xl p-4 border border-line">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {/* Search */}
           <div className="md:col-span-2">
@@ -3269,12 +3269,12 @@ function SupportTicketsSection({ communications, setCommunications, parentName }
       </div>
 
       {/* Tickets List */}
-      <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 overflow-hidden">
-        <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 flex items-center justify-between">
-          <h3 className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 flex items-center gap-2">
+      <div className="bg-surface rounded-xl border border-line overflow-hidden">
+        <div className="px-4 py-3 border-b border-line flex items-center justify-between">
+          <h3 className="text-sm font-semibold text-ink flex items-center gap-2">
             <MessageSquare className="w-4 h-4 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
             Support Tickets
-            <span className="px-2 py-0.5 text-[10px] font-medium bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 rounded-full">
+            <span className="px-2 py-0.5 text-[0.625rem] font-medium bg-surface-2 text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 rounded-full">
               {filteredTickets.length}
             </span>
           </h3>
@@ -3289,11 +3289,11 @@ function SupportTicketsSection({ communications, setCommunications, parentName }
 
         {filteredTickets.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 px-4">
-            <div className="w-16 h-16 rounded-2xl bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] flex items-center justify-center mb-4">
+            <div className="w-16 h-16 rounded-2xl bg-surface-2 flex items-center justify-center mb-4">
               <MessageSquare className="w-8 h-8 text-gray-400" />
             </div>
-            <h4 className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-1">No tickets found</h4>
-            <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 text-center">
+            <h4 className="text-sm font-semibold text-ink mb-1">No tickets found</h4>
+            <p className="text-xs text-muted text-center">
               {searchQuery || selectedType !== "all" || selectedStatus !== "all"
                 ? "Try adjusting your filters."
                 : "No support tickets from this parent."}
@@ -3327,12 +3327,12 @@ function SupportTicketsSection({ communications, setCommunications, parentName }
                       {/* Content */}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1 flex-wrap">
-                          <span className="text-xs font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{ticket.subject}</span>
+                          <span className="text-xs font-bold text-ink">{ticket.subject}</span>
                           {getTypeBadge(ticket.type)}
                           {getStatusBadge(ticket.status)}
                         </div>
-                        <p className="text-[10px] text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 line-clamp-2 mb-1.5">{ticket.message}</p>
-                        <div className="flex items-center gap-3 text-[10px] text-gray-500 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 flex-wrap">
+                        <p className="text-[0.625rem] text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 line-clamp-2 mb-1.5">{ticket.message}</p>
+                        <div className="flex items-center gap-3 text-[0.625rem] text-gray-500 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 flex-wrap">
                           <span className="flex items-center gap-1">
                             <Calendar className="w-3 h-3" />
                             {new Date(ticket.createdAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
@@ -3353,7 +3353,7 @@ function SupportTicketsSection({ communications, setCommunications, parentName }
                     </div>
 
                     {/* View Button */}
-                    <div className="flex items-center gap-1 text-[10px] text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 flex-shrink-0">
+                    <div className="flex items-center gap-1 text-[0.625rem] text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 flex-shrink-0">
                       <Eye className="w-3 h-3" />
                       <span className="font-medium">View</span>
                     </div>
@@ -3416,7 +3416,7 @@ function SupportTicketsSection({ communications, setCommunications, parentName }
                     setSelectedTicket(null);
                     setReplyText("");
                   }}
-                  className="px-4 py-2.5 text-sm font-semibold text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] hover:bg-gray-200 dark:hover:bg-[#2a2d35] midnight:hover:bg-cyan-500/15 purple:hover:bg-pink-500/15 rounded-xl transition-all cursor-pointer"
+                  className="px-4 py-2.5 text-sm font-semibold text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 bg-surface-2 hover:bg-gray-200 dark:hover:bg-[#2a2d35] midnight:hover:bg-cyan-500/15 purple:hover:bg-pink-500/15 rounded-xl transition-all cursor-pointer"
                 >
                   Close
                 </button>
@@ -3449,21 +3449,21 @@ function SupportTicketsSection({ communications, setCommunications, parentName }
             <div className="flex items-center gap-2 flex-wrap">
               {getTypeBadge(selectedTicket.type)}
               {getStatusBadge(selectedTicket.status)}
-              <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${getPriorityConfig(selectedTicket.priority).textColor} bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]`}>
+              <span className={`px-2 py-0.5 rounded text-[0.625rem] font-bold ${getPriorityConfig(selectedTicket.priority).textColor} bg-surface-2`}>
                 {getPriorityConfig(selectedTicket.priority).label} Priority
               </span>
             </div>
 
             {/* Meta Info */}
-            <div className="grid grid-cols-2 gap-3 p-3 rounded-xl bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+            <div className="grid grid-cols-2 gap-3 p-3 rounded-xl bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border border-line">
               <div>
-                <p className="text-[10px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 uppercase">Submitted</p>
-                <p className="text-xs font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                <p className="text-[0.625rem] text-muted uppercase">Submitted</p>
+                <p className="text-xs font-medium text-ink">
                   {new Date(selectedTicket.createdAt).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" })}
                 </p>
               </div>
               <div>
-                <p className="text-[10px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 uppercase mb-1">Assign To</p>
+                <p className="text-[0.625rem] text-muted uppercase mb-1">Assign To</p>
                 <CustomDropdown
                   value={assignableStaff.find(s => s.label === selectedTicket.assignedTo)?.value || ""}
                   onChange={(value) => {
@@ -3498,8 +3498,8 @@ function SupportTicketsSection({ communications, setCommunications, parentName }
                   <span className="text-xs font-bold text-blue-700 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300">{parentName.charAt(0)}</span>
                 </div>
                 <div>
-                  <p className="text-xs font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{parentName}</p>
-                  <p className="text-[10px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Original Message</p>
+                  <p className="text-xs font-semibold text-ink">{parentName}</p>
+                  <p className="text-[0.625rem] text-muted">Original Message</p>
                 </div>
               </div>
               <p className="text-sm text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 whitespace-pre-wrap">{selectedTicket.message}</p>
@@ -3515,7 +3515,7 @@ function SupportTicketsSection({ communications, setCommunications, parentName }
                     className={`p-4 rounded-xl border ${
                       response.from === "admin"
                         ? "bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-700/30"
-                        : "bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20"
+                        : "bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border-line"
                     }`}
                   >
                     <div className="flex items-center gap-2 mb-2">
@@ -3529,10 +3529,10 @@ function SupportTicketsSection({ communications, setCommunications, parentName }
                         </span>
                       </div>
                       <div>
-                        <p className="text-xs font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                        <p className="text-xs font-semibold text-ink">
                           {response.from === "admin" ? "Admin" : parentName}
                         </p>
-                        <p className="text-[10px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
+                        <p className="text-[0.625rem] text-muted">
                           {new Date(response.date).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}
                         </p>
                       </div>
@@ -3639,7 +3639,7 @@ function SupportTicketsSection({ communications, setCommunications, parentName }
           <FormTextarea
             label="Message"
             icon={<FileText className="w-full h-full" />}
-            iconBgColor="bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]"
+            iconBgColor="bg-surface-2"
             iconColor="text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300"
             value={newTicket.message}
             onChange={(value) => setNewTicket((prev) => ({ ...prev, message: value }))}
@@ -3650,17 +3650,17 @@ function SupportTicketsSection({ communications, setCommunications, parentName }
 
           {/* Preview Card */}
           {newTicket.subject && (
-            <div className="p-3 rounded-xl bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
-              <p className="text-[10px] font-semibold text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 uppercase mb-2">Preview</p>
+            <div className="p-3 rounded-xl bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border border-line">
+              <p className="text-[0.625rem] font-semibold text-muted uppercase mb-2">Preview</p>
               <div className="flex items-center gap-2 flex-wrap mb-2">
-                <span className="text-xs font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{newTicket.subject || "No subject"}</span>
+                <span className="text-xs font-bold text-ink">{newTicket.subject || "No subject"}</span>
                 {getTypeBadge(newTicket.type)}
-                <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${getPriorityConfig(newTicket.priority).textColor} bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]`}>
+                <span className={`px-2 py-0.5 rounded text-[0.625rem] font-bold ${getPriorityConfig(newTicket.priority).textColor} bg-surface-2`}>
                   {getPriorityConfig(newTicket.priority).label} Priority
                 </span>
               </div>
               {newTicket.assignedTo && (
-                <div className="flex items-center gap-1.5 text-[10px] text-emerald-600 dark:text-emerald-400">
+                <div className="flex items-center gap-1.5 text-[0.625rem] text-emerald-600 dark:text-emerald-400">
                   <User className="w-3 h-3" />
                   <span className="font-medium">
                     Assigned to: {assignableStaff.find((s) => s.value === newTicket.assignedTo)?.label}
@@ -3671,7 +3671,7 @@ function SupportTicketsSection({ communications, setCommunications, parentName }
                 </div>
               )}
               {!newTicket.assignedTo && (
-                <div className="flex items-center gap-1.5 text-[10px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
+                <div className="flex items-center gap-1.5 text-[0.625rem] text-muted">
                   <User className="w-3 h-3" />
                   <span>Unassigned - Will be set to Open status</span>
                 </div>
@@ -3680,7 +3680,7 @@ function SupportTicketsSection({ communications, setCommunications, parentName }
           )}
 
           {/* Actions */}
-          <div className="flex items-center justify-end gap-3 pt-2 border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+          <div className="flex items-center justify-end gap-3 pt-2 border-t border-line">
             <button
               onClick={() => {
                 setIsNewTicketModalOpen(false);
@@ -3760,8 +3760,8 @@ function EventAttendanceSection({ eventAttendance }: { eventAttendance: ParentEv
                 </div>
               </div>
               <div>
-                <h3 className="text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">Event Attendance</h3>
-                <p className="text-[11px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">{eventAttendance.length} total events</p>
+                <h3 className="text-sm font-bold text-ink">Event Attendance</h3>
+                <p className="text-[0.6875rem] text-muted">{eventAttendance.length} total events</p>
               </div>
             </div>
 
@@ -3791,16 +3791,16 @@ function EventAttendanceSection({ eventAttendance }: { eventAttendance: ParentEv
         {/* Stats Row */}
         <div className="px-5 py-3 grid grid-cols-3 gap-3 border-b border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
           <div className="text-center">
-            <p className="text-lg font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{eventAttendance.length}</p>
-            <p className="text-[10px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 uppercase tracking-wide">Total</p>
+            <p className="text-lg font-bold text-ink">{eventAttendance.length}</p>
+            <p className="text-[0.625rem] text-muted uppercase tracking-wide">Total</p>
           </div>
           <div className="text-center border-x border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
             <p className="text-lg font-bold text-emerald-600 dark:text-emerald-400">{attendedCount}</p>
-            <p className="text-[10px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 uppercase tracking-wide">Attended</p>
+            <p className="text-[0.625rem] text-muted uppercase tracking-wide">Attended</p>
           </div>
           <div className="text-center">
             <p className="text-lg font-bold text-red-500 dark:text-red-400 midnight:text-red-400 purple:text-red-400">{absentCount}</p>
-            <p className="text-[10px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 uppercase tracking-wide">Missed</p>
+            <p className="text-[0.625rem] text-muted uppercase tracking-wide">Missed</p>
           </div>
         </div>
 
@@ -3808,10 +3808,10 @@ function EventAttendanceSection({ eventAttendance }: { eventAttendance: ParentEv
         <div className="p-4">
           {displayEvents.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-8">
-              <div className="w-14 h-14 rounded-2xl bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] flex items-center justify-center mb-3">
+              <div className="w-14 h-14 rounded-2xl bg-surface-2 flex items-center justify-center mb-3">
                 <CalendarCheck className="w-7 h-7 text-gray-400" />
               </div>
-              <p className="text-sm font-medium text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">No events recorded</p>
+              <p className="text-sm font-medium text-muted">No events recorded</p>
             </div>
           ) : (
             <div className="space-y-2">
@@ -3828,13 +3828,13 @@ function EventAttendanceSection({ eventAttendance }: { eventAttendance: ParentEv
                       <EventIcon className={`w-5 h-5 ${config.text}`} />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate group-hover/item:text-emerald-600 dark:group-hover/item:text-emerald-400 transition-colors">
+                      <p className="text-xs font-semibold text-ink truncate group-hover/item:text-emerald-600 dark:group-hover/item:text-emerald-400 transition-colors">
                         {event.eventName}
                       </p>
                       <div className="flex items-center gap-2 mt-0.5">
-                        <span className="text-[10px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">{event.childName}</span>
+                        <span className="text-[0.625rem] text-muted">{event.childName}</span>
                         <span className="w-1 h-1 rounded-full bg-gray-300 dark:bg-[#2a2d35] midnight:bg-gray-700 purple:bg-gray-700" />
-                        <span className="text-[10px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
+                        <span className="text-[0.625rem] text-muted">
                           {new Date(event.eventDate).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
                         </span>
                       </div>
@@ -3842,12 +3842,12 @@ function EventAttendanceSection({ eventAttendance }: { eventAttendance: ParentEv
                     {event.attended ? (
                       <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-emerald-100 dark:bg-emerald-500/20">
                         <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-                        <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-300">Present</span>
+                        <span className="text-[0.625rem] font-bold text-emerald-700 dark:text-emerald-300">Present</span>
                       </div>
                     ) : (
                       <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-red-100 dark:bg-red-500/20">
                         <XCircle className="w-3.5 h-3.5 text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400" />
-                        <span className="text-[10px] font-bold text-red-700 dark:text-red-300">Absent</span>
+                        <span className="text-[0.625rem] font-bold text-red-700 dark:text-red-300">Absent</span>
                       </div>
                     )}
                     <ChevronRight className="w-4 h-4 text-gray-400 opacity-0 group-hover/item:opacity-100 transition-opacity" />
@@ -3942,7 +3942,7 @@ function EventAttendanceModal({
                 <EventIcon className="w-7 h-7 text-white" />
               </div>
               <div className="flex-1">
-                <span className="inline-block px-2.5 py-1 rounded-lg bg-white/20 text-white text-[10px] font-bold uppercase tracking-wider mb-2">
+                <span className="inline-block px-2.5 py-1 rounded-lg bg-white/20 text-white text-[0.625rem] font-bold uppercase tracking-wider mb-2">
                   {config.label}
                 </span>
                 <h3 className="text-lg font-bold text-white">{selectedEvent.eventName}</h3>
@@ -3990,16 +3990,16 @@ function EventAttendanceModal({
             <div className="p-4 rounded-xl bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50">
               <div className="flex items-center gap-2 mb-2">
                 <User className="w-4 h-4 text-gray-400" />
-                <p className="text-[10px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 uppercase tracking-wider font-medium">Child</p>
+                <p className="text-[0.625rem] text-muted uppercase tracking-wider font-medium">Child</p>
               </div>
-              <p className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{selectedEvent.childName}</p>
+              <p className="text-sm font-semibold text-ink">{selectedEvent.childName}</p>
             </div>
             <div className="p-4 rounded-xl bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50">
               <div className="flex items-center gap-2 mb-2">
                 <Calendar className="w-4 h-4 text-gray-400" />
-                <p className="text-[10px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 uppercase tracking-wider font-medium">Date</p>
+                <p className="text-[0.625rem] text-muted uppercase tracking-wider font-medium">Date</p>
               </div>
-              <p className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+              <p className="text-sm font-semibold text-ink">
                 {new Date(selectedEvent.eventDate).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
               </p>
             </div>
@@ -4009,7 +4009,7 @@ function EventAttendanceModal({
             <div className="p-4 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-500/30">
               <div className="flex items-center gap-2 mb-2">
                 <FileText className="w-4 h-4 text-amber-500" />
-                <p className="text-[10px] text-amber-600 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400 uppercase tracking-wider font-medium">Notes</p>
+                <p className="text-[0.625rem] text-amber-600 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400 uppercase tracking-wider font-medium">Notes</p>
               </div>
               <p className="text-sm text-amber-700 dark:text-amber-300">{selectedEvent.notes}</p>
             </div>
@@ -4041,15 +4041,15 @@ function EventAttendanceModal({
         <div className="grid grid-cols-3 gap-3">
           <div className="p-4 rounded-xl bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-100 dark:border-blue-500 midnight:border-cyan-500 purple:border-pink-500/20 text-center">
             <p className="text-2xl font-bold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400">{events.length}</p>
-            <p className="text-[10px] text-blue-600/70 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400/70 uppercase tracking-wider font-medium">Total Events</p>
+            <p className="text-[0.625rem] text-blue-600/70 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400/70 uppercase tracking-wider font-medium">Total Events</p>
           </div>
           <div className="p-4 rounded-xl bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20 border border-emerald-100 dark:border-emerald-500/20 text-center">
             <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">{attendedCount}</p>
-            <p className="text-[10px] text-emerald-600/70 dark:text-emerald-400/70 uppercase tracking-wider font-medium">Attended</p>
+            <p className="text-[0.625rem] text-emerald-600/70 dark:text-emerald-400/70 uppercase tracking-wider font-medium">Attended</p>
           </div>
           <div className="p-4 rounded-xl bg-gradient-to-br from-red-50 to-rose-50 dark:from-red-900/20 dark:to-rose-900/20 border border-red-100 dark:border-red-500/20 text-center">
             <p className="text-2xl font-bold text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400">{events.length - attendedCount}</p>
-            <p className="text-[10px] text-red-600/70 dark:text-red-400 midnight:text-red-400 purple:text-red-400/70 uppercase tracking-wider font-medium">Missed</p>
+            <p className="text-[0.625rem] text-red-600/70 dark:text-red-400 midnight:text-red-400 purple:text-red-400/70 uppercase tracking-wider font-medium">Missed</p>
           </div>
         </div>
 
@@ -4062,7 +4062,7 @@ function EventAttendanceModal({
               placeholder="Search events..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 text-sm bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
+              className="w-full pl-10 pr-4 py-2.5 text-sm bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-line rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
             />
           </div>
           <div className="flex bg-gray-100 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl p-1">
@@ -4072,8 +4072,8 @@ function EventAttendanceModal({
                 onClick={() => setFilter(f)}
                 className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
                   filter === f
-                    ? "bg-white dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 shadow-sm"
-                    : "text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:text-gray-700 dark:hover:text-gray-300 midnight:hover:text-cyan-200 purple:hover:text-pink-200"
+                    ? "bg-white dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] text-ink shadow-sm"
+                    : "text-muted hover:text-gray-700 dark:hover:text-gray-300 midnight:hover:text-cyan-200 purple:hover:text-pink-200"
                 }`}
               >
                 {f === "all" ? "All" : f === "attended" ? "Attended" : "Absent"}
@@ -4087,7 +4087,7 @@ function EventAttendanceModal({
           {filteredEvents.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-8">
               <CalendarCheck className="w-10 h-10 text-gray-300 dark:text-gray-600 midnight:text-cyan-500 purple:text-pink-500 mb-2" />
-              <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">No events found</p>
+              <p className="text-sm text-muted">No events found</p>
             </div>
           ) : (
             filteredEvents.map((event) => {
@@ -4102,11 +4102,11 @@ function EventAttendanceModal({
                     <EventIcon className={`w-5 h-5 ${config.text}`} />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate">{event.eventName}</p>
+                    <p className="text-sm font-semibold text-ink truncate">{event.eventName}</p>
                     <div className="flex items-center gap-2 mt-0.5">
-                      <span className="text-[11px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">{event.childName}</span>
+                      <span className="text-[0.6875rem] text-muted">{event.childName}</span>
                       <span className="w-1 h-1 rounded-full bg-gray-300 dark:bg-[#2a2d35] midnight:bg-gray-700 purple:bg-gray-700" />
-                      <span className="text-[11px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
+                      <span className="text-[0.6875rem] text-muted">
                         {new Date(event.eventDate).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
                       </span>
                     </div>
@@ -4180,8 +4180,8 @@ function LibraryPaymentsSection({
                 </div>
               </div>
               <div>
-                <h3 className="text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">Library Payments</h3>
-                <p className="text-[11px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">{libraryPayments.length} transactions</p>
+                <h3 className="text-sm font-bold text-ink">Library Payments</h3>
+                <p className="text-[0.6875rem] text-muted">{libraryPayments.length} transactions</p>
               </div>
             </div>
 
@@ -4189,7 +4189,7 @@ function LibraryPaymentsSection({
             {pendingPayments.length > 0 && (
               <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-100 dark:bg-amber-500/20 border border-amber-200 dark:border-amber-500/30">
                 <div className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
-                <span className="text-[11px] font-bold text-amber-700 dark:text-amber-300">{pendingPayments.length} Pending</span>
+                <span className="text-[0.6875rem] font-bold text-amber-700 dark:text-amber-300">{pendingPayments.length} Pending</span>
               </div>
             )}
           </div>
@@ -4198,16 +4198,16 @@ function LibraryPaymentsSection({
         {/* Stats Row */}
         <div className="px-5 py-3 grid grid-cols-3 gap-3 border-b border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
           <div className="text-center">
-            <p className="text-lg font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{libraryPayments.length}</p>
-            <p className="text-[10px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 uppercase tracking-wide">Total</p>
+            <p className="text-lg font-bold text-ink">{libraryPayments.length}</p>
+            <p className="text-[0.625rem] text-muted uppercase tracking-wide">Total</p>
           </div>
           <div className="text-center border-x border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
             <p className="text-lg font-bold text-emerald-600 dark:text-emerald-400">{money(totalPaid)}</p>
-            <p className="text-[10px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 uppercase tracking-wide">Paid</p>
+            <p className="text-[0.625rem] text-muted uppercase tracking-wide">Paid</p>
           </div>
           <div className="text-center">
             <p className="text-lg font-bold text-amber-600 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400">{money(totalPending)}</p>
-            <p className="text-[10px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 uppercase tracking-wide">Pending</p>
+            <p className="text-[0.625rem] text-muted uppercase tracking-wide">Pending</p>
           </div>
         </div>
 
@@ -4215,10 +4215,10 @@ function LibraryPaymentsSection({
         <div className="p-4">
           {displayPayments.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-8">
-              <div className="w-14 h-14 rounded-2xl bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] flex items-center justify-center mb-3">
+              <div className="w-14 h-14 rounded-2xl bg-surface-2 flex items-center justify-center mb-3">
                 <BookOpen className="w-7 h-7 text-gray-400" />
               </div>
-              <p className="text-sm font-medium text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">No library payments</p>
+              <p className="text-sm font-medium text-muted">No library payments</p>
             </div>
           ) : (
             <div className="space-y-2">
@@ -4236,27 +4236,27 @@ function LibraryPaymentsSection({
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-0.5">
-                        <p className="text-xs font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate group-hover/item:text-indigo-600 dark:group-hover/item:text-indigo-400 transition-colors">
+                        <p className="text-xs font-semibold text-ink truncate group-hover/item:text-indigo-600 dark:group-hover/item:text-indigo-400 transition-colors">
                           {payment.bookTitle}
                         </p>
-                        <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold ${config.lightBg} ${config.text}`}>
+                        <span className={`px-1.5 py-0.5 rounded text-[0.5625rem] font-bold ${config.lightBg} ${config.text}`}>
                           {config.label}
                         </span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="text-[10px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">{payment.childName}</span>
+                        <span className="text-[0.625rem] text-muted">{payment.childName}</span>
                         <span className="w-1 h-1 rounded-full bg-gray-300 dark:bg-[#2a2d35] midnight:bg-gray-700 purple:bg-gray-700" />
-                        <span className="text-[10px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
+                        <span className="text-[0.625rem] text-muted">
                           {new Date(payment.date).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
                         </span>
                       </div>
                     </div>
                     <div className="text-right flex-shrink-0">
-                      <p className="text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{money(payment.amount)}</p>
+                      <p className="text-sm font-bold text-ink">{money(payment.amount)}</p>
                       {payment.status === "paid" ? (
-                        <span className="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400">Paid</span>
+                        <span className="text-[0.625rem] font-semibold text-emerald-600 dark:text-emerald-400">Paid</span>
                       ) : (
-                        <span className="text-[10px] font-semibold text-amber-600 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400">Pending</span>
+                        <span className="text-[0.625rem] font-semibold text-amber-600 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400">Pending</span>
                       )}
                     </div>
                     <ChevronRight className="w-4 h-4 text-gray-400 opacity-0 group-hover/item:opacity-100 transition-opacity" />
@@ -4355,7 +4355,7 @@ function LibraryPaymentModal({
                 <PaymentIcon className="w-7 h-7 text-white" />
               </div>
               <div className="flex-1">
-                <span className="inline-block px-2.5 py-1 rounded-lg bg-white/20 text-white text-[10px] font-bold uppercase tracking-wider mb-2">
+                <span className="inline-block px-2.5 py-1 rounded-lg bg-white/20 text-white text-[0.625rem] font-bold uppercase tracking-wider mb-2">
                   {config.label}
                 </span>
                 <h3 className="text-lg font-bold text-white">{selectedPayment.bookTitle}</h3>
@@ -4396,30 +4396,30 @@ function LibraryPaymentModal({
             <div className="p-4 rounded-xl bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50">
               <div className="flex items-center gap-2 mb-2">
                 <User className="w-4 h-4 text-gray-400" />
-                <p className="text-[10px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 uppercase tracking-wider font-medium">Child</p>
+                <p className="text-[0.625rem] text-muted uppercase tracking-wider font-medium">Child</p>
               </div>
-              <p className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{selectedPayment.childName}</p>
+              <p className="text-sm font-semibold text-ink">{selectedPayment.childName}</p>
             </div>
             <div className="p-4 rounded-xl bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50">
               <div className="flex items-center gap-2 mb-2">
                 <Calendar className="w-4 h-4 text-gray-400" />
-                <p className="text-[10px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 uppercase tracking-wider font-medium">Date</p>
+                <p className="text-[0.625rem] text-muted uppercase tracking-wider font-medium">Date</p>
               </div>
-              <p className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+              <p className="text-sm font-semibold text-ink">
                 {new Date(selectedPayment.date).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
               </p>
             </div>
             <div className="p-4 rounded-xl bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50">
               <div className="flex items-center gap-2 mb-2">
                 <BookOpen className="w-4 h-4 text-gray-400" />
-                <p className="text-[10px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 uppercase tracking-wider font-medium">Book ID</p>
+                <p className="text-[0.625rem] text-muted uppercase tracking-wider font-medium">Book ID</p>
               </div>
-              <p className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{selectedPayment.bookId}</p>
+              <p className="text-sm font-semibold text-ink">{selectedPayment.bookId}</p>
             </div>
             <div className="p-4 rounded-xl bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50">
               <div className="flex items-center gap-2 mb-2">
                 <FileText className="w-4 h-4 text-gray-400" />
-                <p className="text-[10px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 uppercase tracking-wider font-medium">Type</p>
+                <p className="text-[0.625rem] text-muted uppercase tracking-wider font-medium">Type</p>
               </div>
               <p className={`text-sm font-semibold ${config.text}`}>{config.label}</p>
             </div>
@@ -4451,15 +4451,15 @@ function LibraryPaymentModal({
         <div className="grid grid-cols-3 gap-3">
           <div className="p-4 rounded-xl bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-100 dark:border-blue-500 midnight:border-cyan-500 purple:border-pink-500/20 text-center">
             <p className="text-xl font-bold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400">{money(totalAmount)}</p>
-            <p className="text-[10px] text-blue-600/70 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400/70 uppercase tracking-wider font-medium">Total</p>
+            <p className="text-[0.625rem] text-blue-600/70 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400/70 uppercase tracking-wider font-medium">Total</p>
           </div>
           <div className="p-4 rounded-xl bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20 border border-emerald-100 dark:border-emerald-500/20 text-center">
             <p className="text-xl font-bold text-emerald-600 dark:text-emerald-400">{money(paidAmount)}</p>
-            <p className="text-[10px] text-emerald-600/70 dark:text-emerald-400/70 uppercase tracking-wider font-medium">Paid</p>
+            <p className="text-[0.625rem] text-emerald-600/70 dark:text-emerald-400/70 uppercase tracking-wider font-medium">Paid</p>
           </div>
           <div className="p-4 rounded-xl bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 border border-amber-100 dark:border-amber-500/20 text-center">
             <p className="text-xl font-bold text-amber-600 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400">{money(pendingAmount)}</p>
-            <p className="text-[10px] text-amber-600/70 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400/70 uppercase tracking-wider font-medium">Pending</p>
+            <p className="text-[0.625rem] text-amber-600/70 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400/70 uppercase tracking-wider font-medium">Pending</p>
           </div>
         </div>
 
@@ -4472,7 +4472,7 @@ function LibraryPaymentModal({
               placeholder="Search payments..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 text-sm bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
+              className="w-full pl-10 pr-4 py-2.5 text-sm bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-line rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
             />
           </div>
           <div className="flex bg-gray-100 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl p-1">
@@ -4482,8 +4482,8 @@ function LibraryPaymentModal({
                 onClick={() => setFilter(f)}
                 className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
                   filter === f
-                    ? "bg-white dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 shadow-sm"
-                    : "text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:text-gray-700 dark:hover:text-gray-300 midnight:hover:text-cyan-200 purple:hover:text-pink-200"
+                    ? "bg-white dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] text-ink shadow-sm"
+                    : "text-muted hover:text-gray-700 dark:hover:text-gray-300 midnight:hover:text-cyan-200 purple:hover:text-pink-200"
                 }`}
               >
                 {f === "all" ? "All" : f === "paid" ? "Paid" : "Pending"}
@@ -4497,7 +4497,7 @@ function LibraryPaymentModal({
           {filteredPayments.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-8">
               <BookOpen className="w-10 h-10 text-gray-300 dark:text-gray-600 midnight:text-cyan-500 purple:text-pink-500 mb-2" />
-              <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">No payments found</p>
+              <p className="text-sm text-muted">No payments found</p>
             </div>
           ) : (
             filteredPayments.map((payment) => {
@@ -4513,28 +4513,28 @@ function LibraryPaymentModal({
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-0.5">
-                      <p className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate">{payment.bookTitle}</p>
-                      <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold ${config.lightBg} ${config.text}`}>
+                      <p className="text-sm font-semibold text-ink truncate">{payment.bookTitle}</p>
+                      <span className={`px-1.5 py-0.5 rounded text-[0.5625rem] font-bold ${config.lightBg} ${config.text}`}>
                         {config.label}
                       </span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="text-[11px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">{payment.childName}</span>
+                      <span className="text-[0.6875rem] text-muted">{payment.childName}</span>
                       <span className="w-1 h-1 rounded-full bg-gray-300 dark:bg-[#2a2d35] midnight:bg-gray-700 purple:bg-gray-700" />
-                      <span className="text-[11px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
+                      <span className="text-[0.6875rem] text-muted">
                         {new Date(payment.date).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
                       </span>
                     </div>
                   </div>
                   <div className="text-right flex-shrink-0">
-                    <p className="text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{money(payment.amount)}</p>
+                    <p className="text-sm font-bold text-ink">{money(payment.amount)}</p>
                     {payment.status === "paid" ? (
-                      <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-600 dark:text-emerald-400">
+                      <span className="inline-flex items-center gap-1 text-[0.625rem] font-semibold text-emerald-600 dark:text-emerald-400">
                         <CheckCircle2 className="w-3 h-3" />
                         Paid
                       </span>
                     ) : (
-                      <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-amber-600 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400">
+                      <span className="inline-flex items-center gap-1 text-[0.625rem] font-semibold text-amber-600 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400">
                         <Clock className="w-3 h-3" />
                         Pending
                       </span>
@@ -4616,33 +4616,33 @@ function ReminderHistorySection({
                 </div>
               </div>
               <div>
-                <h3 className="text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">Fee Reminders</h3>
-                <p className="text-[11px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">{totalReminders} reminders sent</p>
+                <h3 className="text-sm font-bold text-ink">Fee Reminders</h3>
+                <p className="text-[0.6875rem] text-muted">{totalReminders} reminders sent</p>
               </div>
             </div>
 
             {/* Channel badges */}
             <div className="flex items-center gap-1">
               {channelStats.email > 0 && (
-                <span className="flex items-center gap-1 px-2 py-1 rounded-lg bg-blue-100 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 text-[10px] font-bold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400">
+                <span className="flex items-center gap-1 px-2 py-1 rounded-lg bg-blue-100 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 text-[0.625rem] font-bold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400">
                   <Mail className="w-3 h-3" />
                   {channelStats.email}
                 </span>
               )}
               {channelStats.sms > 0 && (
-                <span className="flex items-center gap-1 px-2 py-1 rounded-lg bg-green-100 dark:bg-green-900/30 text-[10px] font-bold text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400">
+                <span className="flex items-center gap-1 px-2 py-1 rounded-lg bg-green-100 dark:bg-green-900/30 text-[0.625rem] font-bold text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400">
                   <Phone className="w-3 h-3" />
                   {channelStats.sms}
                 </span>
               )}
               {channelStats.whatsapp > 0 && (
-                <span className="flex items-center gap-1 px-2 py-1 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
+                <span className="flex items-center gap-1 px-2 py-1 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 text-[0.625rem] font-bold text-emerald-600 dark:text-emerald-400">
                   <MessageSquare className="w-3 h-3" />
                   {channelStats.whatsapp}
                 </span>
               )}
               {channelStats.push > 0 && (
-                <span className="flex items-center gap-1 px-2 py-1 rounded-lg bg-purple-100 dark:bg-purple-900/30 text-[10px] font-bold text-purple-600 dark:text-purple-400">
+                <span className="flex items-center gap-1 px-2 py-1 rounded-lg bg-purple-100 dark:bg-purple-900/30 text-[0.625rem] font-bold text-purple-600 dark:text-purple-400">
                   <Bell className="w-3 h-3" />
                   {channelStats.push}
                 </span>
@@ -4655,10 +4655,10 @@ function ReminderHistorySection({
         <div className="p-4">
           {displayReminders.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-8">
-              <div className="w-14 h-14 rounded-2xl bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] flex items-center justify-center mb-3">
+              <div className="w-14 h-14 rounded-2xl bg-surface-2 flex items-center justify-center mb-3">
                 <Send className="w-7 h-7 text-gray-400" />
               </div>
-              <p className="text-sm font-medium text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">No reminders sent</p>
+              <p className="text-sm font-medium text-muted">No reminders sent</p>
               <p className="text-xs text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 mt-1">Send a reminder from the Fees page</p>
             </div>
           ) : (
@@ -4688,26 +4688,26 @@ function ReminderHistorySection({
                       );
                     })}
                     {reminder.channels.length > 2 && (
-                      <div className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] flex items-center justify-center border-2 border-white dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10">
-                        <span className="text-[10px] font-bold text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">+{reminder.channels.length - 2}</span>
+                      <div className="w-8 h-8 rounded-lg bg-surface-2 flex items-center justify-center border-2 border-white dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10">
+                        <span className="text-[0.625rem] font-bold text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">+{reminder.channels.length - 2}</span>
                       </div>
                     )}
                   </div>
 
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate group-hover/item:text-orange-600 dark:group-hover/item:text-orange-400 transition-colors">
+                    <p className="text-xs font-semibold text-ink truncate group-hover/item:text-orange-600 dark:group-hover/item:text-orange-400 transition-colors">
                       {reminder.feeType}
                     </p>
                     <div className="flex items-center gap-2 mt-0.5">
-                      <span className="text-[10px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">{reminder.childName}</span>
+                      <span className="text-[0.625rem] text-muted">{reminder.childName}</span>
                       <span className="w-1 h-1 rounded-full bg-gray-300 dark:bg-[#2a2d35] midnight:bg-gray-700 purple:bg-gray-700" />
-                      <span className="text-[10px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">{money(reminder.balance)}</span>
+                      <span className="text-[0.625rem] text-muted">{money(reminder.balance)}</span>
                     </div>
                   </div>
 
                   <div className="text-right">
-                    <p className="text-[10px] font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">{formatDate(reminder.sentAt)}</p>
-                    <div className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold mt-1 ${
+                    <p className="text-[0.625rem] font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">{formatDate(reminder.sentAt)}</p>
+                    <div className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[0.5625rem] font-bold mt-1 ${
                       reminder.status === "delivered"
                         ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400"
                         : reminder.status === "sent"
@@ -4876,7 +4876,7 @@ function ReminderDetailModal({
 
           {/* Message Content */}
           <div className="space-y-3">
-            <h4 className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">Message Content</h4>
+            <h4 className="text-sm font-semibold text-ink">Message Content</h4>
             {selectedReminder.channels.map((channel) => {
               const config = getChannelConfig(channel);
               const ChannelIcon = config.icon;
@@ -4891,14 +4891,14 @@ function ReminderDetailModal({
                     </div>
                     <span className="text-xs font-semibold text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200">{config.label}</span>
                     {msg.attachmentCount && msg.attachmentCount > 0 && (
-                      <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-gray-200 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] text-[10px] font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
+                      <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-gray-200 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] text-[0.625rem] font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
                         <Paperclip className="w-3 h-3" />
                         {msg.attachmentCount} attachment{msg.attachmentCount > 1 ? "s" : ""}
                       </span>
                     )}
                   </div>
                   {msg.subject && (
-                    <p className="text-xs font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-1">{msg.subject}</p>
+                    <p className="text-xs font-semibold text-ink mb-1">{msg.subject}</p>
                   )}
                   <p className="text-xs text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 whitespace-pre-wrap">{msg.message}</p>
                 </div>
@@ -4908,8 +4908,8 @@ function ReminderDetailModal({
 
           {/* Sent By */}
           <div className="flex items-center justify-between pt-3 border-t border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
-            <span className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Sent by</span>
-            <span className="text-xs font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{selectedReminder.sentBy}</span>
+            <span className="text-xs text-muted">Sent by</span>
+            <span className="text-xs font-semibold text-ink">{selectedReminder.sentBy}</span>
           </div>
         </div>
       </Modal>
@@ -4947,7 +4947,7 @@ function ReminderDetailModal({
               >
                 {Icon && <Icon className="w-3.5 h-3.5" />}
                 {f === "all" ? "All" : config?.label}
-                <span className={`ml-1 px-1.5 py-0.5 rounded-full text-[10px] ${
+                <span className={`ml-1 px-1.5 py-0.5 rounded-full text-[0.625rem] ${
                   filter === f ? "bg-white/20" : "bg-gray-200 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]"
                 }`}>
                   {count}
@@ -4981,13 +4981,13 @@ function ReminderDetailModal({
               </div>
 
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate">{reminder.feeType}</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">{reminder.childName} • {money(reminder.balance)}</p>
+                <p className="text-sm font-semibold text-ink truncate">{reminder.feeType}</p>
+                <p className="text-xs text-muted">{reminder.childName} • {money(reminder.balance)}</p>
               </div>
 
               <div className="text-right">
-                <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">{formatDate(reminder.sentAt)}</p>
-                <div className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold mt-1 ${
+                <p className="text-xs text-muted">{formatDate(reminder.sentAt)}</p>
+                <div className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[0.625rem] font-bold mt-1 ${
                   reminder.status === "delivered"
                     ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400"
                     : reminder.status === "sent"
@@ -5271,7 +5271,7 @@ function LinkChildModal({
             </p>
           )}
 
-          <div className="space-y-2 max-h-56 overflow-y-auto rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 p-2 bg-gray-50/50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/30 purple:bg-[#1a0b2e]/30">
+          <div className="space-y-2 max-h-56 overflow-y-auto rounded-xl border border-line p-2 bg-gray-50/50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/30 purple:bg-[#1a0b2e]/30">
             {!selectedClass ? (
               <div className="text-center py-8">
                 <GraduationCap className="w-10 h-10 mx-auto text-gray-300 dark:text-gray-600 midnight:text-cyan-700 purple:text-pink-700 mb-2" />
@@ -5295,7 +5295,7 @@ function LinkChildModal({
                   className={`w-full flex items-center gap-3 p-3 rounded-xl border transition-all duration-200 cursor-pointer hover:shadow-md hover:-translate-y-0.5 ${
                     selectedStudent?.id === student.id
                       ? "bg-blue-50 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 border-blue-300 dark:border-blue-600 midnight:border-cyan-500 purple:border-pink-500 ring-1 ring-blue-300 dark:ring-blue-600 midnight:ring-cyan-500 purple:ring-pink-500 shadow-md shadow-blue-500/10 dark:shadow-blue-500/20"
-                      : "bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 hover:border-blue-300 dark:hover:border-blue-600 midnight:hover:border-cyan-500/50 purple:hover:border-pink-500/50 hover:shadow-blue-500/10 dark:hover:shadow-blue-500/20 midnight:hover:shadow-cyan-500/20 purple:hover:shadow-pink-500/20"
+                      : "bg-surface border-line hover:border-blue-300 dark:hover:border-blue-600 midnight:hover:border-cyan-500/50 purple:hover:border-pink-500/50 hover:shadow-blue-500/10 dark:hover:shadow-blue-500/20 midnight:hover:shadow-cyan-500/20 purple:hover:shadow-pink-500/20"
                   }`}
                 >
                   <div className="relative w-10 h-10 rounded-lg overflow-hidden bg-gray-200 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] flex-shrink-0">
@@ -5308,7 +5308,7 @@ function LinkChildModal({
                     />
                   </div>
                   <div className="flex-1 text-left">
-                    <p className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{student.name}</p>
+                    <p className="text-sm font-semibold text-ink">{student.name}</p>
                     <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70">
                       {student.id} • {student.classLevel}{student.section ? `, ${student.section}` : ""}
                     </p>
@@ -5383,7 +5383,7 @@ function ResetPasswordModal({
         <div className="flex justify-end gap-3">
           <button
             onClick={handleClose}
-            className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] hover:bg-gray-200 dark:hover:bg-[#2a2d35] midnight:hover:bg-cyan-500/15 purple:hover:bg-pink-500/15 rounded-lg transition-colors cursor-pointer"
+            className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 bg-surface-2 hover:bg-gray-200 dark:hover:bg-[#2a2d35] midnight:hover:bg-cyan-500/15 purple:hover:bg-pink-500/15 rounded-lg transition-colors cursor-pointer"
           >
             {resetComplete ? "Close" : "Cancel"}
           </button>
@@ -5414,13 +5414,13 @@ function ResetPasswordModal({
           <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
             <CheckCircle2 className="w-8 h-8 text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400" />
           </div>
-          <h3 className="text-lg font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-2">Password Reset Successful!</h3>
-          <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mb-4">
+          <h3 className="text-lg font-bold text-ink mb-2">Password Reset Successful!</h3>
+          <p className="text-sm text-muted mb-4">
             The new password has been sent to <strong>{parentEmail}</strong>
           </p>
-          <div className="p-3 rounded-lg bg-gray-100 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
-            <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mb-1">New Password</p>
-            <p className="text-lg font-mono font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{newPassword}</p>
+          <div className="p-3 rounded-lg bg-gray-100 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-line">
+            <p className="text-xs text-muted mb-1">New Password</p>
+            <p className="text-lg font-mono font-bold text-ink">{newPassword}</p>
           </div>
         </div>
       ) : (
@@ -5439,12 +5439,12 @@ function ResetPasswordModal({
 
           <div className="space-y-3">
             <div className="flex justify-between items-center py-2 px-3 rounded-lg bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50">
-              <span className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Parent Name</span>
-              <span className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{parentName}</span>
+              <span className="text-sm text-muted">Parent Name</span>
+              <span className="text-sm font-semibold text-ink">{parentName}</span>
             </div>
             <div className="flex justify-between items-center py-2 px-3 rounded-lg bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50">
-              <span className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Email</span>
-              <span className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{parentEmail}</span>
+              <span className="text-sm text-muted">Email</span>
+              <span className="text-sm font-semibold text-ink">{parentEmail}</span>
             </div>
           </div>
         </div>
@@ -5546,8 +5546,8 @@ function FeeRecordDetailsModal({
               />
             </div>
             <div>
-              <p className="text-base font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{feeRecord.childName}</p>
-              <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">{feeRecord.childClass}</p>
+              <p className="text-base font-bold text-ink">{feeRecord.childName}</p>
+              <p className="text-sm text-muted">{feeRecord.childClass}</p>
             </div>
           </div>
           <span className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-semibold ${statusConfig.bg} ${statusConfig.text}`}>
@@ -5575,7 +5575,7 @@ function FeeRecordDetailsModal({
           </div>
           <div className="p-4 rounded-2xl bg-gradient-to-br from-gray-50 to-gray-100/50 dark:from-gray-800/50 dark:to-gray-800/20 border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
             <p className="text-xs font-semibold text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 uppercase tracking-wider mb-2">Due Date</p>
-            <p className={`text-lg font-bold ${feeRecord.status === "overdue" ? "text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400" : "text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50"}`}>
+            <p className={`text-lg font-bold ${feeRecord.status === "overdue" ? "text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400" : "text-ink"}`}>
               {new Date(feeRecord.dueDate).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
             </p>
           </div>
@@ -5586,7 +5586,7 @@ function FeeRecordDetailsModal({
           <div className="p-4 rounded-2xl bg-gradient-to-r from-gray-50 to-gray-100/50 dark:from-gray-800/50 dark:to-gray-800/30 border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
             <div className="flex items-center justify-between mb-3">
               <p className="text-sm font-semibold text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200">Payment Progress</p>
-              <p className="text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{progressPercentage}%</p>
+              <p className="text-sm font-bold text-ink">{progressPercentage}%</p>
             </div>
             <div className="w-full h-3 bg-gray-200 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] rounded-full overflow-hidden">
               <div
@@ -5603,19 +5603,19 @@ function FeeRecordDetailsModal({
             <p className="text-sm font-semibold text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 mb-4">Payment History</p>
             <div className="space-y-3 max-h-48 overflow-y-auto pr-2">
               {feeRecord.paymentHistory.map((payment) => (
-                <div key={payment.id} className="flex items-center justify-between p-3 rounded-xl bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/60 border border-gray-200/50 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 hover:border-gray-300 dark:hover:border-gray-600 midnight:hover:border-cyan-500/30 purple:hover:border-pink-500/30 transition-colors">
+                <div key={payment.id} className="flex items-center justify-between p-3 rounded-xl bg-surface/60 border border-gray-200/50 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 hover:border-gray-300 dark:hover:border-gray-600 midnight:hover:border-cyan-500/30 purple:hover:border-pink-500/30 transition-colors">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-xl bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
                       <BadgeCheck className="w-5 h-5 text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400" />
                     </div>
                     <div>
-                      <p className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{money(payment.amount)}</p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
+                      <p className="text-sm font-semibold text-ink">{money(payment.amount)}</p>
+                      <p className="text-xs text-muted">
                         {new Date(payment.date).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })} • {payment.method}
                       </p>
                     </div>
                   </div>
-                  <p className="text-xs font-medium text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/50 px-2 py-1 rounded-md">{payment.receiptNumber}</p>
+                  <p className="text-xs font-medium text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 bg-surface-2/50 px-2 py-1 rounded-md">{payment.receiptNumber}</p>
                 </div>
               ))}
             </div>
@@ -5711,15 +5711,15 @@ function RecordPaymentModal({
         <div className="p-3 rounded-xl bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/30 border border-gray-200/50 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
           <div className="grid grid-cols-3 gap-3">
             <div>
-              <p className="text-[10px] font-medium text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 uppercase">Total Fee</p>
-              <p className="text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{money(feeRecord.amount)}</p>
+              <p className="text-[0.625rem] font-medium text-muted uppercase">Total Fee</p>
+              <p className="text-sm font-bold text-ink">{money(feeRecord.amount)}</p>
             </div>
             <div>
-              <p className="text-[10px] font-medium text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 uppercase">Paid</p>
+              <p className="text-[0.625rem] font-medium text-muted uppercase">Paid</p>
               <p className="text-sm font-bold text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400">{money(feeRecord.paidAmount)}</p>
             </div>
             <div>
-              <p className="text-[10px] font-medium text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 uppercase">Balance</p>
+              <p className="text-[0.625rem] font-medium text-muted uppercase">Balance</p>
               <p className="text-sm font-bold text-amber-600 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400">{money(feeRecord.balance)}</p>
             </div>
           </div>
@@ -6079,7 +6079,7 @@ function PaymentDetailsModal({
 
         {/* Amount */}
         <div className="p-4 rounded-xl bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border border-green-200/50 dark:border-green-700/30 text-center">
-          <p className="text-[10px] font-medium text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400 uppercase tracking-wide mb-1">Amount Paid</p>
+          <p className="text-[0.625rem] font-medium text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400 uppercase tracking-wide mb-1">Amount Paid</p>
           <p className="text-2xl font-bold text-green-700 dark:text-green-300">{money(payment.amount)}</p>
         </div>
 
@@ -6088,17 +6088,17 @@ function PaymentDetailsModal({
           <div className="flex items-center justify-between p-3 rounded-xl bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/30 border border-gray-200/50 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
             <div className="flex items-center gap-2">
               <GraduationCap className="w-4 h-4 text-gray-400" />
-              <span className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Student</span>
+              <span className="text-xs text-muted">Student</span>
             </div>
-            <span className="text-xs font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{payment.childName}</span>
+            <span className="text-xs font-semibold text-ink">{payment.childName}</span>
           </div>
 
           <div className="flex items-center justify-between p-3 rounded-xl bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/30 border border-gray-200/50 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
             <div className="flex items-center gap-2">
               <Calendar className="w-4 h-4 text-gray-400" />
-              <span className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Date</span>
+              <span className="text-xs text-muted">Date</span>
             </div>
-            <span className="text-xs font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+            <span className="text-xs font-semibold text-ink">
               {new Date(payment.date).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}
             </span>
           </div>
@@ -6106,9 +6106,9 @@ function PaymentDetailsModal({
           <div className="flex items-center justify-between p-3 rounded-xl bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/30 border border-gray-200/50 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
             <div className="flex items-center gap-2">
               <CreditCard className="w-4 h-4 text-gray-400" />
-              <span className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Payment Method</span>
+              <span className="text-xs text-muted">Payment Method</span>
             </div>
-            <span className="text-xs font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+            <span className="text-xs font-semibold text-ink">
               {getMethodIcon(payment.paymentMethod)} {payment.paymentMethod}
             </span>
           </div>
@@ -6116,17 +6116,17 @@ function PaymentDetailsModal({
           <div className="flex items-center justify-between p-3 rounded-xl bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/30 border border-gray-200/50 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
             <div className="flex items-center gap-2">
               <FileText className="w-4 h-4 text-gray-400" />
-              <span className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Reference</span>
+              <span className="text-xs text-muted">Reference</span>
             </div>
-            <span className="text-xs font-mono font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{payment.reference}</span>
+            <span className="text-xs font-mono font-semibold text-ink">{payment.reference}</span>
           </div>
 
           <div className="flex items-center justify-between p-3 rounded-xl bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/30 border border-gray-200/50 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
             <div className="flex items-center gap-2">
               <Receipt className="w-4 h-4 text-gray-400" />
-              <span className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Receipt Number</span>
+              <span className="text-xs text-muted">Receipt Number</span>
             </div>
-            <span className="text-xs font-mono font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{payment.receiptNumber}</span>
+            <span className="text-xs font-mono font-semibold text-ink">{payment.receiptNumber}</span>
           </div>
         </div>
 
@@ -6268,7 +6268,7 @@ function GiveDiscountModal({
               className={`flex-1 group/btn relative overflow-hidden px-4 py-3 text-sm font-semibold rounded-xl border-2 transition-all duration-300 cursor-pointer ${
                 discountType === "percentage"
                   ? "bg-gradient-to-r from-rose-50 to-pink-50 dark:from-rose-900/30 dark:to-pink-900/30 midnight:from-rose-900/30 midnight:to-pink-900/30 purple:from-rose-900/30 purple:to-pink-900/30 border-rose-400 dark:border-rose-500 midnight:border-rose-500 purple:border-rose-500 text-rose-700 dark:text-rose-300 midnight:text-rose-300 purple:text-rose-300 shadow-md shadow-rose-500/10"
-                  : "bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border-gray-200 dark:border-gray-700 midnight:border-gray-700 purple:border-gray-700 text-gray-600 dark:text-gray-400 midnight:text-gray-400 purple:text-gray-400 hover:border-rose-300 dark:hover:border-rose-600 hover:bg-rose-50/50 dark:hover:bg-rose-900/10"
+                  : "bg-surface border-gray-200 dark:border-gray-700 midnight:border-gray-700 purple:border-gray-700 text-gray-600 dark:text-gray-400 midnight:text-gray-400 purple:text-gray-400 hover:border-rose-300 dark:hover:border-rose-600 hover:bg-rose-50/50 dark:hover:bg-rose-900/10"
               }`}
             >
               <div className="flex items-center justify-center gap-2">
@@ -6287,7 +6287,7 @@ function GiveDiscountModal({
               className={`flex-1 group/btn relative overflow-hidden px-4 py-3 text-sm font-semibold rounded-xl border-2 transition-all duration-300 cursor-pointer ${
                 discountType === "fixed"
                   ? "bg-gradient-to-r from-rose-50 to-pink-50 dark:from-rose-900/30 dark:to-pink-900/30 midnight:from-rose-900/30 midnight:to-pink-900/30 purple:from-rose-900/30 purple:to-pink-900/30 border-rose-400 dark:border-rose-500 midnight:border-rose-500 purple:border-rose-500 text-rose-700 dark:text-rose-300 midnight:text-rose-300 purple:text-rose-300 shadow-md shadow-rose-500/10"
-                  : "bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border-gray-200 dark:border-gray-700 midnight:border-gray-700 purple:border-gray-700 text-gray-600 dark:text-gray-400 midnight:text-gray-400 purple:text-gray-400 hover:border-rose-300 dark:hover:border-rose-600 hover:bg-rose-50/50 dark:hover:bg-rose-900/10"
+                  : "bg-surface border-gray-200 dark:border-gray-700 midnight:border-gray-700 purple:border-gray-700 text-gray-600 dark:text-gray-400 midnight:text-gray-400 purple:text-gray-400 hover:border-rose-300 dark:hover:border-rose-600 hover:bg-rose-50/50 dark:hover:bg-rose-900/10"
               }`}
             >
               <div className="flex items-center justify-center gap-2">
@@ -6314,11 +6314,11 @@ function GiveDiscountModal({
           placeholder={discountType === "percentage" ? "e.g., 10" : "e.g., 5000"}
           type="number"
           leftIcon={
-            <span className="text-xs font-bold text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
+            <span className="text-xs font-bold text-muted">
               {discountType === "percentage" ? "%" : "₦"}
             </span>
           }
-          leftIconBg="bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]"
+          leftIconBg="bg-surface-2"
           required
         />
 
@@ -6457,7 +6457,7 @@ function ExtendDueDateModal({
                 Current Due Date: <span className="font-bold">{selectedFeeDetails.dueDate}</span>
               </span>
               {selectedFeeDetails.status === "overdue" && (
-                <span className="px-2 py-0.5 text-[10px] font-bold bg-red-100 dark:bg-red-900/30 midnight:bg-red-900/30 purple:bg-red-900/30 text-red-700 dark:text-red-300 rounded">
+                <span className="px-2 py-0.5 text-[0.625rem] font-bold bg-red-100 dark:bg-red-900/30 midnight:bg-red-900/30 purple:bg-red-900/30 text-red-700 dark:text-red-300 rounded">
                   OVERDUE
                 </span>
               )}
@@ -6624,8 +6624,8 @@ function EditParentModal({
                 onClick={() => setActiveSection(section.id)}
                 className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
                   activeSection === section.id
-                    ? "bg-white dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 shadow-sm"
-                    : "text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:text-gray-700 dark:hover:text-gray-300 midnight:hover:text-cyan-200 purple:hover:text-pink-200"
+                    ? "bg-white dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] text-ink shadow-sm"
+                    : "text-muted hover:text-gray-700 dark:hover:text-gray-300 midnight:hover:text-cyan-200 purple:hover:text-pink-200"
                 }`}
               >
                 <Icon className="w-4 h-4" />
@@ -6792,7 +6792,7 @@ function EditParentModal({
         )}
 
         {/* Actions */}
-        <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+        <div className="flex items-center justify-end gap-3 pt-4 border-t border-line">
           <button
             onClick={onClose}
             className="px-4 py-2.5 text-sm font-semibold text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 rounded-xl transition-all cursor-pointer"
@@ -7130,15 +7130,15 @@ function SendMessageModal({
                 <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-emerald-500 border-2 border-white dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10 shadow-sm" />
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className="text-base font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate">{parentName}</h3>
+                <h3 className="text-base font-bold text-ink truncate">{parentName}</h3>
                 <div className="flex items-center gap-4 mt-1.5">
-                  <span className="inline-flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
+                  <span className="inline-flex items-center gap-1.5 text-xs text-muted">
                     <div className="w-5 h-5 rounded-lg bg-blue-100 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 flex items-center justify-center">
                       <Mail className="w-3 h-3 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
                     </div>
                     <span className="truncate max-w-[140px]">{parent.email}</span>
                   </span>
-                  <span className="inline-flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
+                  <span className="inline-flex items-center gap-1.5 text-xs text-muted">
                     <div className="w-5 h-5 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
                       <Phone className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
                     </div>
@@ -7171,13 +7171,13 @@ function SendMessageModal({
                         : tab.color === "blue"
                         ? "bg-white dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 shadow-sm"
                         : "bg-white dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] text-purple-600 dark:text-purple-400 shadow-sm"
-                      : "text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:text-gray-700 dark:hover:text-gray-300 midnight:hover:text-cyan-200 purple:hover:text-pink-200"
+                      : "text-muted hover:text-gray-700 dark:hover:text-gray-300 midnight:hover:text-cyan-200 purple:hover:text-pink-200"
                   }`}
                 >
                   <Icon className="w-4 h-4" />
                   {tab.label}
                   {tab.id === "chat" && (
-                    <span className="ml-1 px-1.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900/50 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold">
+                    <span className="ml-1 px-1.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900/50 text-emerald-600 dark:text-emerald-400 text-[0.625rem] font-bold">
                       {chatHistory.length}
                     </span>
                   )}
@@ -7203,7 +7203,7 @@ function SendMessageModal({
                     <div key={msg.id}>
                       {showDate && (
                         <div className="flex items-center justify-center my-4">
-                          <span className="px-3 py-1 rounded-full bg-gray-100 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] text-xs font-medium text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
+                          <span className="px-3 py-1 rounded-full bg-gray-100 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] text-xs font-medium text-muted">
                             {new Date(msg.timestamp).toLocaleDateString([], { weekday: "long", month: "short", day: "numeric" })}
                           </span>
                         </div>
@@ -7232,7 +7232,7 @@ function SendMessageModal({
                               <p className="text-sm leading-relaxed whitespace-pre-wrap">{msg.message}</p>
                             </div>
                             <div className={`flex items-center gap-1.5 mt-1 ${isAdmin ? "justify-end" : "justify-start"}`}>
-                              <span className="text-[10px] text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400">{formatTime(msg.timestamp)}</span>
+                              <span className="text-[0.625rem] text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400">{formatTime(msg.timestamp)}</span>
                               {isAdmin && (
                                 <CheckCircle2 className="w-3 h-3 text-blue-500" />
                               )}
@@ -7271,7 +7271,7 @@ function SendMessageModal({
               </div>
 
               {/* Chat Input */}
-              <div className="flex-shrink-0 pt-3 border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 mt-3">
+              <div className="flex-shrink-0 pt-3 border-t border-line mt-3">
                 {/* Chat Attachments Preview */}
                 {chatAttachments.length > 0 && (
                   <div className="flex gap-2 mb-2 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600">
@@ -7281,7 +7281,7 @@ function SendMessageModal({
                         className="relative flex-shrink-0 group"
                       >
                         {file.type.startsWith("image/") ? (
-                          <div className="w-16 h-16 rounded-xl overflow-hidden bg-gray-100 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+                          <div className="w-16 h-16 rounded-xl overflow-hidden bg-gray-100 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-line">
                             <img
                               src={URL.createObjectURL(file)}
                               alt={file.name}
@@ -7289,9 +7289,9 @@ function SendMessageModal({
                             />
                           </div>
                         ) : (
-                          <div className="w-16 h-16 rounded-xl bg-gray-100 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 flex flex-col items-center justify-center p-1">
+                          <div className="w-16 h-16 rounded-xl bg-gray-100 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-line flex flex-col items-center justify-center p-1">
                             <span className="text-lg">{getFileIcon(file)}</span>
-                            <span className="text-[8px] text-gray-500 truncate w-full text-center">{file.name.slice(0, 8)}...</span>
+                            <span className="text-[0.5rem] text-gray-500 truncate w-full text-center">{file.name.slice(0, 8)}...</span>
                           </div>
                         )}
                         <button
@@ -7371,8 +7371,8 @@ function SendMessageModal({
                       <CheckCircle2 className="w-8 h-8 text-emerald-500 dark:text-emerald-400" />
                     </div>
                   </div>
-                  <h3 className="text-base font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-1">Email Sent</h3>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Delivered to {parentName}</p>
+                  <h3 className="text-base font-semibold text-ink mb-1">Email Sent</h3>
+                  <p className="text-sm text-muted">Delivered to {parentName}</p>
                 </div>
               ) : (
                 <>
@@ -7384,7 +7384,7 @@ function SendMessageModal({
                         <Mail className="w-4 h-4 text-blue-500 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">Compose Email</p>
+                        <p className="text-sm font-medium text-ink">Compose Email</p>
                         <p className="text-xs text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400">Create and send an email to this parent</p>
                       </div>
                     </div>
@@ -7422,7 +7422,7 @@ function SendMessageModal({
                           </div>
                         ) : (
                           <div className="w-7 h-7 rounded-full bg-gradient-to-br from-blue-500 to-indigo-500 flex items-center justify-center flex-shrink-0">
-                            <span className="text-[10px] font-bold text-white">{parent.firstName.charAt(0)}{parent.lastName.charAt(0)}</span>
+                            <span className="text-[0.625rem] font-bold text-white">{parent.firstName.charAt(0)}{parent.lastName.charAt(0)}</span>
                           </div>
                         )}
                         <div className="flex-1 min-w-0">
@@ -7442,7 +7442,7 @@ function SendMessageModal({
                         value={subject}
                         onChange={(e) => setSubject(e.target.value)}
                         placeholder="What's this email about?"
-                        className="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/60 border border-gray-200/80 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 focus:border-blue-400 dark:focus:border-blue-500 midnight:focus:border-cyan-500 purple:focus:border-pink-500 focus:ring-2 focus:ring-blue-500/10 text-sm text-gray-800 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 placeholder-gray-400 dark:placeholder-gray-500 midnight:placeholder-cyan-400 purple:placeholder-pink-400 transition-all outline-none"
+                        className="w-full px-3.5 py-2.5 rounded-xl bg-surface/60 border border-gray-200/80 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 focus:border-blue-400 dark:focus:border-blue-500 midnight:focus:border-cyan-500 purple:focus:border-pink-500 focus:ring-2 focus:ring-blue-500/10 text-sm text-gray-800 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 placeholder-gray-400 dark:placeholder-gray-500 midnight:placeholder-cyan-400 purple:placeholder-pink-400 transition-all outline-none"
                       />
                     </div>
 
@@ -7458,7 +7458,7 @@ function SendMessageModal({
                           onChange={(e) => setMessage(e.target.value)}
                           placeholder="Write your message here..."
                           rows={5}
-                          className="w-full px-3.5 py-3 pb-10 rounded-xl bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/60 border border-gray-200/80 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 focus:border-blue-400 dark:focus:border-blue-500 midnight:focus:border-cyan-500 purple:focus:border-pink-500 focus:ring-2 focus:ring-blue-500/10 resize-none text-sm text-gray-800 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 placeholder-gray-400 dark:placeholder-gray-500 midnight:placeholder-cyan-400 purple:placeholder-pink-400 transition-all outline-none leading-relaxed"
+                          className="w-full px-3.5 py-3 pb-10 rounded-xl bg-surface/60 border border-gray-200/80 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 focus:border-blue-400 dark:focus:border-blue-500 midnight:focus:border-cyan-500 purple:focus:border-pink-500 focus:ring-2 focus:ring-blue-500/10 resize-none text-sm text-gray-800 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 placeholder-gray-400 dark:placeholder-gray-500 midnight:placeholder-cyan-400 purple:placeholder-pink-400 transition-all outline-none leading-relaxed"
                         />
                         {/* Message toolbar */}
                         <div className="absolute bottom-2 left-2 right-2 flex items-center justify-between">
@@ -7487,7 +7487,7 @@ function SendMessageModal({
                             />
                           </div>
                           {message.length > 0 && (
-                            <span className="text-[10px] text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400">
+                            <span className="text-[0.625rem] text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400">
                               {message.length} chars
                             </span>
                           )}
@@ -7510,7 +7510,7 @@ function SendMessageModal({
                               <span className="text-base">{getFileIcon(file)}</span>
                               <div className="flex-1 min-w-0 max-w-[120px]">
                                 <p className="text-xs font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 truncate">{file.name}</p>
-                                <p className="text-[10px] text-gray-400">{formatFileSize(file.size)}</p>
+                                <p className="text-[0.625rem] text-gray-400">{formatFileSize(file.size)}</p>
                               </div>
                               <button
                                 type="button"
@@ -7551,7 +7551,7 @@ function SendMessageModal({
                             setEmailAttachments([]);
                           }}
                           disabled={!subject && !message && emailAttachments.length === 0}
-                          className="px-4 py-2 text-xs font-medium text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:text-gray-700 dark:hover:text-gray-300 midnight:hover:text-cyan-200 purple:hover:text-pink-200 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 rounded-lg transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                          className="px-4 py-2 text-xs font-medium text-muted hover:text-gray-700 dark:hover:text-gray-300 midnight:hover:text-cyan-200 purple:hover:text-pink-200 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 rounded-lg transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
                         >
                           Clear
                         </button>
@@ -7594,8 +7594,8 @@ function SendMessageModal({
                       <CheckCircle2 className="w-8 h-8 text-purple-500 dark:text-purple-400" />
                     </div>
                   </div>
-                  <h3 className="text-base font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-1">SMS Sent</h3>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Delivered to {parent.phone}</p>
+                  <h3 className="text-base font-semibold text-ink mb-1">SMS Sent</h3>
+                  <p className="text-sm text-muted">Delivered to {parent.phone}</p>
                 </div>
               ) : (
                 <>
@@ -7607,7 +7607,7 @@ function SendMessageModal({
                         <Phone className="w-4 h-4 text-purple-500 dark:text-purple-400" />
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">Compose SMS</p>
+                        <p className="text-sm font-medium text-ink">Compose SMS</p>
                         <p className="text-xs text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400">Send a text message to this parent</p>
                       </div>
                     </div>
@@ -7629,7 +7629,7 @@ function SendMessageModal({
                       </div>
                       <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-purple-50 dark:bg-purple-900/30">
                         <Phone className="w-3 h-3 text-purple-500" />
-                        <span className="text-[10px] font-medium text-purple-600 dark:text-purple-400">SMS</span>
+                        <span className="text-[0.625rem] font-medium text-purple-600 dark:text-purple-400">SMS</span>
                       </div>
                     </div>
 
@@ -7670,7 +7670,7 @@ function SendMessageModal({
                           placeholder="Type your SMS message here..."
                           rows={4}
                           maxLength={480}
-                          className="w-full px-3.5 py-3 pb-10 rounded-xl bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/60 border border-gray-200/80 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 focus:border-purple-400 dark:focus:border-purple-500 focus:ring-2 focus:ring-purple-500/10 resize-none text-sm text-gray-800 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 placeholder-gray-400 dark:placeholder-gray-500 midnight:placeholder-cyan-400 purple:placeholder-pink-400 transition-all outline-none leading-relaxed"
+                          className="w-full px-3.5 py-3 pb-10 rounded-xl bg-surface/60 border border-gray-200/80 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 focus:border-purple-400 dark:focus:border-purple-500 focus:ring-2 focus:ring-purple-500/10 resize-none text-sm text-gray-800 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 placeholder-gray-400 dark:placeholder-gray-500 midnight:placeholder-cyan-400 purple:placeholder-pink-400 transition-all outline-none leading-relaxed"
                         />
                         {/* Message toolbar */}
                         <div className="absolute bottom-2 left-2 right-2 flex items-center justify-between">
@@ -7698,11 +7698,11 @@ function SendMessageModal({
                               onChange={handleSmsFileSelect}
                               className="hidden"
                             />
-                            <span className="text-[10px] text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 ml-1">
+                            <span className="text-[0.625rem] text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 ml-1">
                               {Math.ceil(message.length / 160) || 0} SMS
                             </span>
                           </div>
-                          <span className={`text-[10px] font-medium ${
+                          <span className={`text-[0.625rem] font-medium ${
                             message.length > 400
                               ? "text-amber-500"
                               : message.length > 320
@@ -7722,7 +7722,7 @@ function SendMessageModal({
                           <p className="text-xs font-medium text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400">
                             Attachments ({smsAttachments.length})
                           </p>
-                          <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400">
+                          <span className="px-1.5 py-0.5 rounded text-[0.625rem] font-medium bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400">
                             MMS
                           </span>
                         </div>
@@ -7733,7 +7733,7 @@ function SendMessageModal({
                               className="group relative"
                             >
                               {file.type.startsWith("image/") ? (
-                                <div className="w-16 h-16 rounded-xl overflow-hidden bg-gray-100 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+                                <div className="w-16 h-16 rounded-xl overflow-hidden bg-gray-100 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-line">
                                   <img
                                     src={URL.createObjectURL(file)}
                                     alt={file.name}
@@ -7743,7 +7743,7 @@ function SendMessageModal({
                               ) : (
                                 <div className="w-16 h-16 rounded-xl bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/60 border border-gray-200/80 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 flex flex-col items-center justify-center p-1">
                                   <span className="text-lg">{getFileIcon(file)}</span>
-                                  <span className="text-[8px] text-gray-500 truncate w-full text-center mt-0.5">{file.name.slice(0, 8)}...</span>
+                                  <span className="text-[0.5rem] text-gray-500 truncate w-full text-center mt-0.5">{file.name.slice(0, 8)}...</span>
                                 </div>
                               )}
                               <button
@@ -7771,13 +7771,13 @@ function SendMessageModal({
                             </div>
                           ) : (
                             <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0">
-                              <span className="text-[10px] font-bold text-white">{parent.firstName.charAt(0)}</span>
+                              <span className="text-[0.625rem] font-bold text-white">{parent.firstName.charAt(0)}</span>
                             </div>
                           )}
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 mb-1">
                               <span className="text-xs font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200">{parentName}</span>
-                              <span className="text-[10px] text-gray-400">now</span>
+                              <span className="text-[0.625rem] text-gray-400">now</span>
                             </div>
                             {message ? (
                               <div className="bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl rounded-tl-sm px-3 py-2 shadow-sm border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 max-w-[90%]">
@@ -7826,7 +7826,7 @@ function SendMessageModal({
                             setSmsAttachments([]);
                           }}
                           disabled={!message && smsAttachments.length === 0}
-                          className="px-4 py-2 text-xs font-medium text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:text-gray-700 dark:hover:text-gray-300 midnight:hover:text-cyan-200 purple:hover:text-pink-200 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 rounded-lg transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                          className="px-4 py-2 text-xs font-medium text-muted hover:text-gray-700 dark:hover:text-gray-300 midnight:hover:text-cyan-200 purple:hover:text-pink-200 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 rounded-lg transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
                         >
                           Clear
                         </button>
@@ -7963,15 +7963,15 @@ function LoginDetailsModal({
         {/* Login Credentials */}
         <div className="space-y-3">
           {/* Username/Email */}
-          <div className="p-4 rounded-xl bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+          <div className="p-4 rounded-xl bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border border-line">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 flex items-center justify-center">
                   <Mail className="w-5 h-5 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
                 </div>
                 <div>
-                  <p className="text-[10px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 uppercase tracking-wider font-medium">Username / Email</p>
-                  <p className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{loginDetails.username}</p>
+                  <p className="text-[0.625rem] text-muted uppercase tracking-wider font-medium">Username / Email</p>
+                  <p className="text-sm font-semibold text-ink">{loginDetails.username}</p>
                 </div>
               </div>
               <button
@@ -7990,15 +7990,15 @@ function LoginDetailsModal({
           </div>
 
           {/* Portal URL */}
-          <div className="p-4 rounded-xl bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+          <div className="p-4 rounded-xl bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border border-line">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-lg bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
                   <ExternalLink className="w-5 h-5 text-purple-600 dark:text-purple-400" />
                 </div>
                 <div>
-                  <p className="text-[10px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 uppercase tracking-wider font-medium">Parent Portal URL</p>
-                  <p className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate max-w-[200px]">{loginDetails.portalUrl}</p>
+                  <p className="text-[0.625rem] text-muted uppercase tracking-wider font-medium">Parent Portal URL</p>
+                  <p className="text-sm font-semibold text-ink truncate max-w-[200px]">{loginDetails.portalUrl}</p>
                 </div>
               </div>
               <button
@@ -8017,14 +8017,14 @@ function LoginDetailsModal({
           </div>
 
           {/* Last Login */}
-          <div className="p-4 rounded-xl bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+          <div className="p-4 rounded-xl bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border border-line">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-lg bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
                 <Clock className="w-5 h-5 text-amber-600 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400" />
               </div>
               <div>
-                <p className="text-[10px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 uppercase tracking-wider font-medium">Last Login</p>
-                <p className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                <p className="text-[0.625rem] text-muted uppercase tracking-wider font-medium">Last Login</p>
+                <p className="text-sm font-semibold text-ink">
                   {loginDetails.lastLogin === "Never"
                     ? "Never logged in"
                     : new Date(loginDetails.lastLogin).toLocaleDateString("en-GB", {

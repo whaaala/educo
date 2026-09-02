@@ -47,7 +47,7 @@ describe("PageHeader — Visual / CSS", () => {
       );
 
       const title = screen.getByText("Dashboard");
-      expect(title.className).toContain("dark:text-white");
+      expect(title.className).toContain("text-ink");
     });
 
     it("title has midnight theme class", () => {
@@ -60,7 +60,7 @@ describe("PageHeader — Visual / CSS", () => {
       );
 
       const title = screen.getByText("Dashboard");
-      expect(title.className).toContain("midnight:text-cyan-50");
+      expect(title.className).toContain("text-ink");
     });
 
     it("title has purple theme class", () => {
@@ -73,7 +73,7 @@ describe("PageHeader — Visual / CSS", () => {
       );
 
       const title = screen.getByText("Dashboard");
-      expect(title.className).toContain("purple:text-pink-50");
+      expect(title.className).toContain("text-ink");
     });
   });
 

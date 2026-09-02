@@ -148,7 +148,7 @@ export function ListWidget({
             {item.primary}
           </div>
           {item.secondary && (
-            <div className="text-[10px] text-gray-500 dark:text-gray-400 midnight:text-gray-400 purple:text-gray-400 mt-0.5 truncate">
+            <div className="text-[0.625rem] text-gray-500 dark:text-gray-400 midnight:text-gray-400 purple:text-gray-400 mt-0.5 truncate">
               {item.secondary}
             </div>
           )}

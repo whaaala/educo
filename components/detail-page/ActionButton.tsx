@@ -44,7 +44,7 @@ export function ActionButton({
       "hover:shadow-blue-500/40 dark:hover:shadow-blue-600/40 midnight:hover:shadow-cyan-500/40 purple:hover:shadow-pink-500/40"
     ),
     secondary: cn(
-      "bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]",
+      "bg-surface-2",
       "hover:bg-gray-200 dark:hover:bg-[#2a2d35] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10",
       "text-gray-900 dark:text-white midnight:text-white purple:text-white",
       "border border-transparent midnight:border-cyan-500/20 purple:border-pink-500/20"

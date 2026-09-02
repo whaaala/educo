@@ -10,10 +10,7 @@ describe("ViewToggle — Visual / CSS", () => {
       );
 
       const toggle = container.firstChild as HTMLElement;
-      expect(toggle.className).toContain("bg-white");
-      expect(toggle.className).toContain("dark:bg-[#1a1d24]");
-      expect(toggle.className).toContain("midnight:bg-[#0a0e27]");
-      expect(toggle.className).toContain("purple:bg-[#1a0b2e]");
+      expect(toggle.className).toContain("bg-surface");
     });
 
     it("has border with theme colors", () => {

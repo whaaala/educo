@@ -214,7 +214,7 @@ export default function BulkDeleteModal({
     <div className="fixed inset-0 z-[100000] flex items-center justify-center p-4 sm:p-6 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
       <div
         ref={modalRef}
-        className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-2xl shadow-2xl w-full max-w-md max-h-[calc(100vh-3rem)] sm:max-h-[calc(100vh-4rem)] flex flex-col animate-in zoom-in-95 duration-200"
+        className="bg-surface rounded-2xl shadow-2xl w-full max-w-md max-h-[calc(100vh-3rem)] sm:max-h-[calc(100vh-4rem)] flex flex-col animate-in zoom-in-95 duration-200"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -334,7 +334,7 @@ export default function BulkDeleteModal({
                         {item.name}
                       </p>
                       {item.badge && (
-                        <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium border ${badgeColorConfig[item.badgeColor || "gray"]}`}>
+                        <span className={`px-1.5 py-0.5 rounded text-[0.625rem] font-medium border ${badgeColorConfig[item.badgeColor || "gray"]}`}>
                           {item.badge}
                         </span>
                       )}
@@ -444,7 +444,7 @@ export default function BulkDeleteModal({
         </div>
 
         {/* Footer */}
-        <div className="px-6 pb-6 pt-4 flex items-center justify-end gap-3 border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-500/30 purple:border-pink-500/30 flex-shrink-0 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-b-2xl">
+        <div className="px-6 pb-6 pt-4 flex items-center justify-end gap-3 border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-500/30 purple:border-pink-500/30 flex-shrink-0 bg-surface rounded-b-2xl">
           <button
             onClick={onClose}
             className="px-5 py-2.5 rounded-lg font-medium text-sm text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 bg-white dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 hover:bg-gray-50 dark:hover:bg-[#2a2d35] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-all duration-200 active:scale-95 cursor-pointer"

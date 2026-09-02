@@ -260,7 +260,7 @@ export default function LecturerDashboardPage() {
                   <p className="text-sm font-medium text-gray-900 dark:text-white midnight:text-cyan-100 purple:text-pink-100">
                     {session.course}
                   </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
+                  <p className="text-xs text-muted">
                     {session.time} • {session.venue} • {session.level}
                   </p>
                 </div>
@@ -287,7 +287,7 @@ export default function LecturerDashboardPage() {
                     <h3 className="font-medium text-gray-900 dark:text-white midnight:text-cyan-100 purple:text-pink-100">
                       {course.code} - {course.title}
                     </h3>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mt-1">
+                    <p className="text-sm text-muted mt-1">
                       {course.students} Students • {course.credits} Credits • {course.level}
                     </p>
                     <p className="text-xs text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 mt-0.5">
@@ -326,7 +326,7 @@ export default function LecturerDashboardPage() {
 
             <div className="flex justify-between items-center text-sm">
               <span className="text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Booked Slots</span>
-              <span className="font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+              <span className="font-medium text-ink">
                 {lecturerData.officeHours.bookedSlots}
               </span>
             </div>

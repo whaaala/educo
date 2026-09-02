@@ -553,7 +553,7 @@ function ClassActionsCell({ classData }: { classData: ClassData }) {
 
           {isMenuOpen && (
             <div
-              className={`absolute right-0 w-52 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-lg shadow-2xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 z-[999999] py-1 animate-in fade-in duration-200 ${
+              className={`absolute right-0 w-52 bg-surface rounded-lg shadow-2xl border border-line z-[999999] py-1 animate-in fade-in duration-200 ${
                 menuPosition === 'top'
                   ? 'bottom-full mb-1 slide-in-from-bottom-2'
                   : 'top-full mt-1 slide-in-from-top-2'
@@ -793,7 +793,7 @@ export default function ClassesPage() {
       render: (classData: ClassData) => (
         <div className="flex items-center justify-start">
           <span
-            className={`inline-flex items-center justify-center px-2 md:px-3 xl:px-3.5 py-1 md:py-1.5 xl:py-2 rounded-full text-[10px] md:text-xs xl:text-sm font-semibold shadow-sm transition-all duration-300 whitespace-nowrap ${
+            className={`inline-flex items-center justify-center px-2 md:px-3 xl:px-3.5 py-1 md:py-1.5 xl:py-2 rounded-full text-[0.625rem] md:text-xs xl:text-sm font-semibold shadow-sm transition-all duration-300 whitespace-nowrap ${
               classData.status === "Active"
                 ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 midnight:bg-green-500/20 midnight:text-green-300 purple:bg-green-500/20 purple:text-green-300"
                 : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 midnight:bg-red-500/20 midnight:text-red-300 purple:bg-red-500/20 purple:text-red-300"

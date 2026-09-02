@@ -101,7 +101,7 @@ export default function UserPermissionManagement() {
           return (
             <div
               key={user.id}
-              className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-lg border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 p-4"
+              className="bg-surface rounded-lg border border-line p-4"
             >
               <div className="flex items-start justify-between gap-4">
                 {/* User Info */}
@@ -112,7 +112,7 @@ export default function UserPermissionManagement() {
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
-                        <h4 className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                        <h4 className="text-sm font-semibold text-ink">
                           {user.name}
                         </h4>
                         <span className="px-2 py-0.5 bg-gray-100 dark:bg-[#22262e] text-gray-700 dark:text-gray-300 text-xs font-medium rounded capitalize">

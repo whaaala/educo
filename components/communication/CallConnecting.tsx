@@ -57,7 +57,7 @@ export default function CallConnecting({
 
         {/* Text */}
         <div className="text-center space-y-1.5">
-          <p className="text-xl font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+          <p className="text-xl font-bold text-ink">
             {isVoice ? "Calling..." : "Connecting to call..."}
           </p>
           <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400">

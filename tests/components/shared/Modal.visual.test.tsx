@@ -34,10 +34,7 @@ describe("Modal — Visual / CSS", () => {
 
       const dialog = container.querySelector(".rounded-2xl.shadow-2xl");
       expect(dialog).toBeInTheDocument();
-      expect(dialog!.className).toContain("bg-white");
-      expect(dialog!.className).toContain("dark:bg-[#1a1d24]");
-      expect(dialog!.className).toContain("midnight:bg-[#0a0e27]");
-      expect(dialog!.className).toContain("purple:bg-[#1a0b2e]");
+      expect(dialog!.className).toContain("bg-surface");
     });
 
     it("has rounded-2xl shadow-2xl", () => {
@@ -133,7 +130,7 @@ describe("Modal — Visual / CSS", () => {
         <Modal {...defaultProps} footer={<button>Save</button>} />
       );
 
-      const footer = container.querySelector(".border-t.border-gray-200");
+      const footer = container.querySelector(".border-t.border-line");
       expect(footer).toBeInTheDocument();
       expect(footer!.className).toContain("bg-gray-50/50");
     });

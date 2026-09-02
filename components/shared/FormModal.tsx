@@ -383,7 +383,7 @@ export default function FormModal({
         {sections?.map((section) => (
           <div key={section.id}>
             {section.title && (
-              <h4 className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-1">
+              <h4 className="text-[0.625rem] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-1">
                 {section.title}
               </h4>
             )}

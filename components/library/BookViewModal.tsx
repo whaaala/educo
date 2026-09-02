@@ -223,7 +223,7 @@ export default function BookViewModal({
         {book.description && (
           <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-50 via-gray-50 to-zinc-50 dark:from-gray-800/80 dark:via-gray-800/60 dark:to-gray-900/80 p-5 border border-gray-200/60 dark:border-gray-700/60 shadow-sm">
             <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-500/5 to-purple-500/5 rounded-full blur-2xl" />
-            <h4 className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-2">Description</h4>
+            <h4 className="text-[0.625rem] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-2">Description</h4>
             <p className="text-sm text-gray-700 dark:text-gray-200 leading-relaxed relative z-10">{book.description}</p>
           </div>
         )}
@@ -232,34 +232,34 @@ export default function BookViewModal({
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
           <div className="group relative overflow-hidden rounded-xl bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-850 p-4 border border-gray-200/60 dark:border-gray-700/60 shadow-sm hover:shadow-md hover:border-blue-300/50 dark:hover:border-blue-600/50 transition-all duration-300">
             <div className="absolute inset-0 bg-gradient-to-br from-blue-500/0 to-blue-500/0 group-hover:from-blue-500/5 group-hover:to-purple-500/5 transition-all duration-300" />
-            <p className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-1.5">ISBN</p>
+            <p className="text-[0.625rem] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-1.5">ISBN</p>
             <p className="text-sm font-bold text-gray-900 dark:text-white font-mono relative z-10">{book.isbn}</p>
           </div>
           <div className="group relative overflow-hidden rounded-xl bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-850 p-4 border border-gray-200/60 dark:border-gray-700/60 shadow-sm hover:shadow-md hover:border-blue-300/50 dark:hover:border-blue-600/50 transition-all duration-300">
             <div className="absolute inset-0 bg-gradient-to-br from-blue-500/0 to-blue-500/0 group-hover:from-blue-500/5 group-hover:to-purple-500/5 transition-all duration-300" />
-            <p className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-1.5">Language</p>
+            <p className="text-[0.625rem] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-1.5">Language</p>
             <p className="text-sm font-bold text-gray-900 dark:text-white relative z-10">{book.language}</p>
           </div>
           <div className="group relative overflow-hidden rounded-xl bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-850 p-4 border border-gray-200/60 dark:border-gray-700/60 shadow-sm hover:shadow-md hover:border-blue-300/50 dark:hover:border-blue-600/50 transition-all duration-300">
             <div className="absolute inset-0 bg-gradient-to-br from-blue-500/0 to-blue-500/0 group-hover:from-blue-500/5 group-hover:to-purple-500/5 transition-all duration-300" />
-            <p className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-1.5">Pages</p>
+            <p className="text-[0.625rem] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-1.5">Pages</p>
             <p className="text-sm font-bold text-gray-900 dark:text-white relative z-10">{book.pages || "N/A"}</p>
           </div>
           <div className="group relative overflow-hidden rounded-xl bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-850 p-4 border border-gray-200/60 dark:border-gray-700/60 shadow-sm hover:shadow-md hover:border-blue-300/50 dark:hover:border-blue-600/50 transition-all duration-300">
             <div className="absolute inset-0 bg-gradient-to-br from-blue-500/0 to-blue-500/0 group-hover:from-blue-500/5 group-hover:to-purple-500/5 transition-all duration-300" />
-            <p className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-1.5">Location</p>
+            <p className="text-[0.625rem] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-1.5">Location</p>
             <p className="text-sm font-bold text-gray-900 dark:text-white relative z-10">{book.location}</p>
           </div>
           <div className="group relative overflow-hidden rounded-xl bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-850 p-4 border border-gray-200/60 dark:border-gray-700/60 shadow-sm hover:shadow-md hover:border-blue-300/50 dark:hover:border-blue-600/50 transition-all duration-300">
             <div className="absolute inset-0 bg-gradient-to-br from-blue-500/0 to-blue-500/0 group-hover:from-blue-500/5 group-hover:to-purple-500/5 transition-all duration-300" />
-            <p className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-1.5">Price</p>
+            <p className="text-[0.625rem] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-1.5">Price</p>
             <p className="text-sm font-bold text-gray-900 dark:text-white relative z-10">
               {book.price ? formatCurrency(book.price) : "N/A"}
             </p>
           </div>
           <div className="group relative overflow-hidden rounded-xl bg-gradient-to-br from-emerald-50 to-green-50 dark:from-emerald-900/30 dark:to-green-900/30 p-4 border border-emerald-200/60 dark:border-emerald-700/60 shadow-sm hover:shadow-md transition-all duration-300">
             <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/0 to-green-500/0 group-hover:from-emerald-500/10 group-hover:to-green-500/10 transition-all duration-300" />
-            <p className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-widest mb-1.5">Copies</p>
+            <p className="text-[0.625rem] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-widest mb-1.5">Copies</p>
             <p className="text-sm font-bold relative z-10">
               <span className={book.availableCopies > 0 ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400"}>
                 {book.availableCopies} available
@@ -272,7 +272,7 @@ export default function BookViewModal({
         {/* Tags */}
         {book.tags && book.tags.length > 0 && (
           <div>
-            <h4 className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">Tags</h4>
+            <h4 className="text-[0.625rem] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">Tags</h4>
             <div className="flex flex-wrap gap-2">
               {book.tags.map((tag, idx) => (
                 <span

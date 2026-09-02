@@ -44,7 +44,7 @@ export default function ThemeSwitcher({ compact = false, className = "", align =
         aria-haspopup="menu"
         aria-expanded={open}
         title={`Theme: ${current.label}`}
-        className="flex items-center gap-1.5 px-2 sm:px-2.5 py-1.5 rounded-lg text-sm font-medium text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 transition-colors"
+        className="flex items-center gap-1.5 px-2 sm:px-2.5 py-1.5 rounded-lg text-sm font-medium text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 border border-line transition-colors"
       >
         <CurrentIcon className="w-4 h-4" />
         {!compact && <span className="hidden sm:inline">{current.label}</span>}
@@ -55,7 +55,7 @@ export default function ThemeSwitcher({ compact = false, className = "", align =
         <div
           role="menu"
           aria-label="Themes"
-          className={`absolute ${align === "right" ? "right-0" : "left-0"} top-full mt-1.5 z-50 min-w-[180px] p-1 rounded-xl shadow-xl bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 animate-in zoom-in-95 duration-150`}
+          className={`absolute ${align === "right" ? "right-0" : "left-0"} top-full mt-1.5 z-50 min-w-[180px] p-1 rounded-xl shadow-xl bg-surface border border-line animate-in zoom-in-95 duration-150`}
         >
           {THEME_ORDER.map((id: ThemeId) => {
             const t = THEMES[id];

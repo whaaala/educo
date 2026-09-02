@@ -494,10 +494,10 @@ export default function ModernCalendar({ value, onChange, onClose, triggerRef }:
     <div
       ref={calendarRef}
       style={calendarStyle}
-      className="fixed bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 p-4 overflow-y-auto animate-in fade-in slide-in-from-top-2 duration-200"
+      className="fixed bg-surface rounded-xl shadow-2xl border border-line p-4 overflow-y-auto animate-in fade-in slide-in-from-top-2 duration-200"
     >
       {/* Header */}
-      <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+      <div className="flex items-center justify-between mb-4 pb-3 border-b border-line">
         <button
           type="button"
           onClick={handlePrevMonth}
@@ -514,7 +514,7 @@ export default function ModernCalendar({ value, onChange, onClose, triggerRef }:
                  setIsMonthDropdownOpen(!isMonthDropdownOpen);
                  setIsYearDropdownOpen(false);
                }}
-                                                               className={`appearance-none text-base font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-gray-700 dark:to-gray-700/50 midnight:from-cyan-900/30 midnight:to-cyan-800/20 purple:from-pink-900/30 purple:to-pink-800/20 hover:from-blue-100 hover:to-blue-100 dark:hover:from-gray-600 dark:hover:to-gray-600 midnight:hover:from-cyan-900/40 midnight:hover:to-cyan-800/30 purple:hover:from-pink-900/40 purple:hover:to-pink-800/30 rounded-lg px-3 py-1.5 pr-8 cursor-pointer outline-none focus:ring-2 focus:ring-blue-500/40 dark:focus:ring-blue-400/40 midnight:focus:ring-cyan-500/40 purple:focus:ring-pink-500/40 transition-all shadow-sm border border-blue-200/50 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 ${isMonthDropdownOpen ? 'ring-2 ring-blue-500/50 dark:ring-blue-400/50' : ''}`}
+                                                               className={`appearance-none text-base font-bold text-ink bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-gray-700 dark:to-gray-700/50 midnight:from-cyan-900/30 midnight:to-cyan-800/20 purple:from-pink-900/30 purple:to-pink-800/20 hover:from-blue-100 hover:to-blue-100 dark:hover:from-gray-600 dark:hover:to-gray-600 midnight:hover:from-cyan-900/40 midnight:hover:to-cyan-800/30 purple:hover:from-pink-900/40 purple:hover:to-pink-800/30 rounded-lg px-3 py-1.5 pr-8 cursor-pointer outline-none focus:ring-2 focus:ring-blue-500/40 dark:focus:ring-blue-400/40 midnight:focus:ring-cyan-500/40 purple:focus:ring-pink-500/40 transition-all shadow-sm border border-blue-200/50 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 ${isMonthDropdownOpen ? 'ring-2 ring-blue-500/50 dark:ring-blue-400/50' : ''}`}
                  key={`month-${displayMonth}-${displayYear}`}
                >
                  {monthNames[displayMonth]}
@@ -530,7 +530,7 @@ export default function ModernCalendar({ value, onChange, onClose, triggerRef }:
                  setIsYearDropdownOpen(!isYearDropdownOpen);
                  setIsMonthDropdownOpen(false);
                }}
-                                                               className={`appearance-none text-base font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 bg-gradient-to-br from-purple-50 to-purple-100/50 dark:from-gray-700 dark:to-gray-700/50 midnight:from-purple-900/30 midnight:to-purple-800/20 purple:from-pink-900/30 purple:to-pink-800/20 hover:from-purple-100 hover:to-purple-100 dark:hover:from-gray-600 dark:hover:to-gray-600 midnight:hover:from-purple-900/40 midnight:hover:to-purple-800/30 purple:hover:from-pink-900/40 purple:hover:to-pink-800/30 rounded-lg px-3 py-1.5 pr-8 cursor-pointer outline-none focus:ring-2 focus:ring-purple-500/40 dark:focus:ring-purple-400/40 midnight:focus:ring-cyan-500/40 purple:focus:ring-pink-500/40 transition-all shadow-sm border border-purple-200/50 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 ${isYearDropdownOpen ? 'ring-2 ring-purple-500/50 dark:ring-purple-400/50' : ''}`}
+                                                               className={`appearance-none text-base font-bold text-ink bg-gradient-to-br from-purple-50 to-purple-100/50 dark:from-gray-700 dark:to-gray-700/50 midnight:from-purple-900/30 midnight:to-purple-800/20 purple:from-pink-900/30 purple:to-pink-800/20 hover:from-purple-100 hover:to-purple-100 dark:hover:from-gray-600 dark:hover:to-gray-600 midnight:hover:from-purple-900/40 midnight:hover:to-purple-800/30 purple:hover:from-pink-900/40 purple:hover:to-pink-800/30 rounded-lg px-3 py-1.5 pr-8 cursor-pointer outline-none focus:ring-2 focus:ring-purple-500/40 dark:focus:ring-purple-400/40 midnight:focus:ring-cyan-500/40 purple:focus:ring-pink-500/40 transition-all shadow-sm border border-purple-200/50 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 ${isYearDropdownOpen ? 'ring-2 ring-purple-500/50 dark:ring-purple-400/50' : ''}`}
                  key={`year-${displayYear}-${displayMonth}`}
                >
                  {displayYear}
@@ -657,7 +657,7 @@ export default function ModernCalendar({ value, onChange, onClose, triggerRef }:
       )}
 
       {/* Quick actions */}
-      <div className="flex items-center justify-end gap-2 mt-3 pt-3 border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+      <div className="flex items-center justify-end gap-2 mt-3 pt-3 border-t border-line">
         <button
           type="button"
           onClick={(e) => {

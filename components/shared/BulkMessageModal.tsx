@@ -165,7 +165,7 @@ const badgeColorClasses = {
   blue: "bg-blue-100 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 text-blue-700 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400",
   orange: "bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400",
   purple: "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400",
-  gray: "bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200",
+  gray: "bg-surface-2 text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200",
 };
 
 // ============================================
@@ -402,7 +402,7 @@ export default function BulkMessageModal({
     <div className="fixed inset-0 z-[100000] flex items-center justify-center p-4 sm:p-6 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
       <div
         ref={modalRef}
-        className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-2xl shadow-2xl w-full max-w-2xl max-h-[calc(100vh-3rem)] sm:max-h-[calc(100vh-4rem)] flex flex-col animate-in zoom-in-95 duration-200"
+        className="bg-surface rounded-2xl shadow-2xl w-full max-w-2xl max-h-[calc(100vh-3rem)] sm:max-h-[calc(100vh-4rem)] flex flex-col animate-in zoom-in-95 duration-200"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -415,7 +415,7 @@ export default function BulkMessageModal({
               </div>
             </div>
           </div>
-          <h2 className="text-sm font-bold text-center text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{title}</h2>
+          <h2 className="text-sm font-bold text-center text-ink">{title}</h2>
           {subtitle && (
             <div className="text-xs text-center text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mt-1">{subtitle}</div>
           )}
@@ -436,9 +436,9 @@ export default function BulkMessageModal({
                   return (
                     <div
                       key={channel.id}
-                      className="flex items-center gap-3 p-3 rounded-xl border-2 border-dashed border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 opacity-60"
+                      className="flex items-center gap-3 p-3 rounded-xl border-2 border-dashed border-line bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 opacity-60"
                     >
-                      <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400">
+                      <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-surface-2 text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400">
                         <Icon className="w-5 h-5" />
                       </div>
                       <div className="text-left">
@@ -456,12 +456,12 @@ export default function BulkMessageModal({
                     className={`flex items-center gap-3 p-3 rounded-xl border-2 transition-all duration-200 cursor-pointer ${
                       isSelected
                         ? `${colors.bg} ${colors.border}`
-                        : "bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 hover:border-gray-300 dark:hover:border-gray-600 midnight:hover:border-cyan-500/30 purple:hover:border-pink-500/30"
+                        : "bg-surface border-line hover:border-gray-300 dark:hover:border-gray-600 midnight:hover:border-cyan-500/30 purple:hover:border-pink-500/30"
                     }`}
                   >
                     <div
                       className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                        isSelected ? `${colors.iconBg} text-white` : "bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300"
+                        isSelected ? `${colors.iconBg} text-white` : "bg-surface-2 text-muted"
                       }`}
                     >
                       <Icon className="w-5 h-5" />
@@ -470,7 +470,7 @@ export default function BulkMessageModal({
                       <p className={`text-sm font-medium ${isSelected ? colors.text : "text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200"}`}>
                         {channel.label}
                       </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">{channel.subtitle}</p>
+                      <p className="text-xs text-muted">{channel.subtitle}</p>
                     </div>
                   </button>
                 );
@@ -480,9 +480,9 @@ export default function BulkMessageModal({
 
           {/* Message Editor Section */}
           {selectedChannels.size > 0 && (
-            <div className="mb-5 p-4 bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+            <div className="mb-5 p-4 bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 rounded-xl border border-line">
               {/* Channel tabs */}
-              <div className="flex items-center gap-2 mb-4 pb-3 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 overflow-x-auto">
+              <div className="flex items-center gap-2 mb-4 pb-3 border-b border-line overflow-x-auto">
                 {Array.from(selectedChannels).map((channelId) => {
                   const channel = channels.find((c) => c.id === channelId);
                   if (!channel) return null;
@@ -519,7 +519,7 @@ export default function BulkMessageModal({
                         {channel.hasSubject && (
                           <div>
                             <div className="flex items-center gap-2 mb-2">
-                              <Icon className="w-4 h-4 text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300" />
+                              <Icon className="w-4 h-4 text-muted" />
                               <label className="text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200">
                                 {channel.subjectLabel || "Subject"}
                               </label>
@@ -538,10 +538,10 @@ export default function BulkMessageModal({
                         <div>
                           <div className="flex items-center justify-between mb-2">
                             <div className="flex items-center gap-2">
-                              <MessageSquare className="w-4 h-4 text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300" />
+                              <MessageSquare className="w-4 h-4 text-muted" />
                               <label className="text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200">Message</label>
                             </div>
-                            <span className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
+                            <span className="text-xs text-muted">
                               {channelMessages[expandedChannel]?.message?.length || 0}/{expandedChannel === "sms" ? "160" : "5000"}
                             </span>
                           </div>
@@ -553,11 +553,11 @@ export default function BulkMessageModal({
                             placeholder="Enter your message..."
                           />
                           {placeholders.length > 0 && (
-                            <p className="mt-2 text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
+                            <p className="mt-2 text-xs text-muted">
                               Available placeholders:{" "}
                               {placeholders.map((p, i) => (
                                 <span key={p.key}>
-                                  <code className="px-1 py-0.5 bg-gray-200 dark:bg-[#2a2d35] midnight:bg-gray-700 purple:bg-gray-700 rounded text-[10px]">{p.key}</code>
+                                  <code className="px-1 py-0.5 bg-gray-200 dark:bg-[#2a2d35] midnight:bg-gray-700 purple:bg-gray-700 rounded text-[0.625rem]">{p.key}</code>
                                   {i < placeholders.length - 1 && " "}
                                 </span>
                               ))}
@@ -653,12 +653,12 @@ export default function BulkMessageModal({
                     {/* Info */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
-                        <p className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate">
+                        <p className="text-sm font-semibold text-ink truncate">
                           {recipient.primaryName}
                         </p>
                         {recipient.badge && (
                           <span
-                            className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${
+                            className={`text-[0.625rem] px-1.5 py-0.5 rounded-full font-medium ${
                               badgeColorClasses[recipient.badgeColor || "gray"]
                             }`}
                           >
@@ -666,11 +666,11 @@ export default function BulkMessageModal({
                           </span>
                         )}
                         {hasCustomMessage(recipient.id) && (
-                          <span className="text-[10px] text-orange-600 dark:text-orange-400 font-normal">(custom)</span>
+                          <span className="text-[0.625rem] text-orange-600 dark:text-orange-400 font-normal">(custom)</span>
                         )}
                       </div>
                       {(recipient.secondaryName || recipient.secondaryInfo) && (
-                        <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 truncate">
+                        <p className="text-xs text-muted truncate">
                           {recipient.secondaryName}
                           {recipient.secondaryName && recipient.secondaryInfo && " • "}
                           {recipient.secondaryInfo}
@@ -718,7 +718,7 @@ export default function BulkMessageModal({
                           Done
                         </button>
                       </div>
-                      <p className="text-[10px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mb-2">
+                      <p className="text-[0.625rem] text-muted mb-2">
                         Leave blank to use the default channel message.
                       </p>
                       {Array.from(selectedChannels).map((channelId) => {
@@ -793,18 +793,18 @@ export default function BulkMessageModal({
           {/* Empty State */}
           {recipients.length === 0 ? (
             <div className="text-center py-8">
-              <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">No recipients selected</p>
+              <p className="text-sm text-muted">No recipients selected</p>
             </div>
           ) : filteredRecipients.length === 0 ? (
             <div className="text-center py-8">
-              <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">No recipients match your search</p>
+              <p className="text-sm text-muted">No recipients match your search</p>
             </div>
           ) : null}
         </div>
 
         {/* Footer */}
-        <div className="px-6 pb-6 pt-4 flex items-center justify-between border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 flex-shrink-0 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-b-2xl">
-          <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
+        <div className="px-6 pb-6 pt-4 flex items-center justify-between border-t border-line flex-shrink-0 bg-surface rounded-b-2xl">
+          <p className="text-xs text-muted">
             Sending to {selectedChannels.size} {selectedChannels.size === 1 ? "channel" : "channels"}
           </p>
           <div className="flex items-center gap-3">

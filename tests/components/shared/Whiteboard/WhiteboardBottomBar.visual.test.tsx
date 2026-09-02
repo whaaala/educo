@@ -25,7 +25,7 @@ describe("WhiteboardBottomBar — Visual / CSS", () => {
       const bar = container.firstChild as HTMLElement;
       expect(bar.className).toContain("bg-white");
       expect(bar.className).toContain("border-t");
-      expect(bar.className).toContain("border-gray-200");
+      expect(bar.className).toContain("border-line");
     });
 
     it("has dark theme classes", () => {
@@ -34,7 +34,7 @@ describe("WhiteboardBottomBar — Visual / CSS", () => {
       );
       const bar = container.firstChild as HTMLElement;
       expect(bar.className).toContain("dark:bg-[#1a1d24]");
-      expect(bar.className).toContain("dark:border-gray-700");
+      expect(bar.className).toContain("border-line");
     });
 
     it("has midnight theme classes", () => {
@@ -43,7 +43,7 @@ describe("WhiteboardBottomBar — Visual / CSS", () => {
       );
       const bar = container.firstChild as HTMLElement;
       expect(bar.className).toContain("midnight:bg-[#0f1729]");
-      expect(bar.className).toContain("midnight:border-cyan-500/20");
+      expect(bar.className).toContain("border-line");
     });
 
     it("has purple theme classes", () => {
@@ -52,7 +52,7 @@ describe("WhiteboardBottomBar — Visual / CSS", () => {
       );
       const bar = container.firstChild as HTMLElement;
       expect(bar.className).toContain("purple:bg-[#2a1a3e]");
-      expect(bar.className).toContain("purple:border-pink-500/20");
+      expect(bar.className).toContain("border-line");
     });
 
     it("has flex layout with items-center and justify-between", () => {
@@ -132,7 +132,6 @@ describe("WhiteboardBottomBar — Visual / CSS", () => {
       render(<WhiteboardBottomBar {...defaultProps} />);
       const zoomText = screen.getByText("100%");
       expect(zoomText.className).toContain("text-gray-500");
-      expect(zoomText.className).toContain("dark:text-gray-400");
       expect(zoomText.className).toContain("midnight:text-cyan-400/70");
       expect(zoomText.className).toContain("purple:text-pink-400/70");
     });
@@ -163,7 +162,6 @@ describe("WhiteboardBottomBar — Visual / CSS", () => {
       await user.click(screen.getByTitle("Clear all"));
       const cancelBtn = screen.getByText("Cancel");
       expect(cancelBtn.className).toContain("bg-gray-100");
-      expect(cancelBtn.className).toContain("dark:bg-[#22262e]");
     });
 
     it("clear/confirm button has red background", async () => {

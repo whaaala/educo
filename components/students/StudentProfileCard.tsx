@@ -68,7 +68,7 @@ export default function StudentProfileCard({
               {/* Status Badge */}
               <div className="inline-flex items-center gap-1 w-fit px-1.5 sm:px-2 py-0.5 bg-green-100 dark:bg-green-900/30 midnight:bg-green-900/30 purple:bg-green-900/30 rounded-md border border-green-300/60 dark:border-green-700/50 midnight:border-green-600/50 purple:border-green-600/50 shadow-sm">
                 <div className="w-1.5 h-1.5 rounded-full bg-green-500 dark:bg-green-400 midnight:bg-green-400 purple:bg-green-400 animate-pulse"></div>
-                <span className="text-[9px] sm:text-[10px] font-semibold text-green-700 dark:text-green-300 midnight:text-green-300 purple:text-green-300 uppercase tracking-wide">
+                <span className="text-[0.5625rem] sm:text-[0.625rem] font-semibold text-green-700 dark:text-green-300 midnight:text-green-300 purple:text-green-300 uppercase tracking-wide">
                   {studentData.status || "Active"}
                 </span>
               </div>
@@ -81,7 +81,7 @@ export default function StudentProfileCard({
                   getEducationLevelColor(studentData.educationLevel).border
                 }`}>
                   <GraduationCap className={`w-2.5 h-2.5 ${getEducationLevelColor(studentData.educationLevel).icon}`} />
-                  <span className={`text-[9px] sm:text-[10px] font-semibold uppercase tracking-wide ${
+                  <span className={`text-[0.5625rem] sm:text-[0.625rem] font-semibold uppercase tracking-wide ${
                     getEducationLevelColor(studentData.educationLevel).text
                   }`}>
                     {studentData.educationLevel}
@@ -97,7 +97,7 @@ export default function StudentProfileCard({
                   getInstitutionTypeColor(studentData.institutionType).border
                 }`}>
                   <Building2 className={`w-2.5 h-2.5 ${getInstitutionTypeColor(studentData.institutionType).icon}`} />
-                  <span className={`text-[9px] sm:text-[10px] font-semibold uppercase tracking-wide ${
+                  <span className={`text-[0.5625rem] sm:text-[0.625rem] font-semibold uppercase tracking-wide ${
                     getInstitutionTypeColor(studentData.institutionType).text
                   }`}>
                     {studentData.institutionType}
@@ -107,12 +107,12 @@ export default function StudentProfileCard({
             </div>
 
             {/* Name */}
-            <h2 className="text-xs sm:text-base font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 tracking-tight truncate leading-tight">
+            <h2 className="text-xs sm:text-base font-bold text-ink tracking-tight truncate leading-tight">
               {fullName}
             </h2>
 
             {/* Admission Number */}
-            <p className="text-[10px] sm:text-xs font-semibold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 tracking-wide truncate">
+            <p className="text-[0.625rem] sm:text-xs font-semibold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 tracking-wide truncate">
               {studentData.admissionNumber}
             </p>
           </div>
@@ -121,7 +121,7 @@ export default function StudentProfileCard({
 
       {/* Basic Information */}
       <div className="p-3 sm:p-6 pt-0 mt-3 sm:mt-6">
-        <h3 className="text-xs sm:text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-2 sm:mb-4 uppercase tracking-wider">
+        <h3 className="text-xs sm:text-sm font-bold text-ink mb-2 sm:mb-4 uppercase tracking-wider">
           Basic Information
         </h3>
         <div className="space-y-1.5 sm:space-y-3">
@@ -129,7 +129,7 @@ export default function StudentProfileCard({
           {studentData.rollNumber && (
             <div className="flex justify-between items-center py-1.5 sm:py-2 px-2 sm:px-3 rounded-lg hover:bg-gray-50/50 dark:hover:bg-[#22262e]/30 midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors">
               <span className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70">Roll No</span>
-              <span className="text-xs sm:text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{studentData.rollNumber}</span>
+              <span className="text-xs sm:text-sm font-bold text-ink">{studentData.rollNumber}</span>
             </div>
           )}
 
@@ -137,7 +137,7 @@ export default function StudentProfileCard({
           {studentData.gender && (
             <div className="flex justify-between items-center py-1.5 sm:py-2 px-2 sm:px-3 rounded-lg hover:bg-gray-50/50 dark:hover:bg-[#22262e]/30 midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors">
               <span className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70">Gender</span>
-              <span className="text-xs sm:text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{studentData.gender}</span>
+              <span className="text-xs sm:text-sm font-bold text-ink">{studentData.gender}</span>
             </div>
           )}
 
@@ -145,7 +145,7 @@ export default function StudentProfileCard({
           {studentData.dateOfBirth && (
             <div className="flex justify-between items-center py-1.5 sm:py-2 px-2 sm:px-3 rounded-lg hover:bg-gray-50/50 dark:hover:bg-[#22262e]/30 midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors">
               <span className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70">Date Of Birth</span>
-              <span className="text-xs sm:text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+              <span className="text-xs sm:text-sm font-bold text-ink">
                 {formatDate(studentData.dateOfBirth)}
               </span>
             </div>
@@ -155,7 +155,7 @@ export default function StudentProfileCard({
           {studentData.bloodGroup && (
             <div className="flex justify-between items-center py-1.5 sm:py-2 px-2 sm:px-3 rounded-lg hover:bg-gray-50/50 dark:hover:bg-[#22262e]/30 midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors">
               <span className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70">Blood Group</span>
-              <span className="text-xs sm:text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{studentData.bloodGroup}</span>
+              <span className="text-xs sm:text-sm font-bold text-ink">{studentData.bloodGroup}</span>
             </div>
           )}
 
@@ -163,7 +163,7 @@ export default function StudentProfileCard({
           {studentData.religion && (
             <div className="flex justify-between items-center py-1.5 sm:py-2 px-2 sm:px-3 rounded-lg hover:bg-gray-50/50 dark:hover:bg-[#22262e]/30 midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors">
               <span className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70">Religion</span>
-              <span className="text-xs sm:text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{studentData.religion}</span>
+              <span className="text-xs sm:text-sm font-bold text-ink">{studentData.religion}</span>
             </div>
           )}
 
@@ -171,7 +171,7 @@ export default function StudentProfileCard({
           {studentData.caste && (
             <div className="flex justify-between items-center py-1.5 sm:py-2 px-2 sm:px-3 rounded-lg hover:bg-gray-50/50 dark:hover:bg-[#22262e]/30 midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors">
               <span className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70">Caste</span>
-              <span className="text-xs sm:text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{studentData.caste}</span>
+              <span className="text-xs sm:text-sm font-bold text-ink">{studentData.caste}</span>
             </div>
           )}
 
@@ -179,7 +179,7 @@ export default function StudentProfileCard({
           {studentData.category && (
             <div className="flex justify-between items-center py-1.5 sm:py-2 px-2 sm:px-3 rounded-lg hover:bg-gray-50/50 dark:hover:bg-[#22262e]/30 midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors">
               <span className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70">Category</span>
-              <span className="text-xs sm:text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{studentData.category}</span>
+              <span className="text-xs sm:text-sm font-bold text-ink">{studentData.category}</span>
             </div>
           )}
 
@@ -187,7 +187,7 @@ export default function StudentProfileCard({
           {studentData.motherTongue && (
             <div className="flex justify-between items-center py-1.5 sm:py-2 px-2 sm:px-3 rounded-lg hover:bg-gray-50/50 dark:hover:bg-[#22262e]/30 midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors">
               <span className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70">Mother tongue</span>
-              <span className="text-xs sm:text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{studentData.motherTongue}</span>
+              <span className="text-xs sm:text-sm font-bold text-ink">{studentData.motherTongue}</span>
             </div>
           )}
 
@@ -199,7 +199,7 @@ export default function StudentProfileCard({
                 studentData.languagesKnown.map((lang, idx) => (
                   <span
                     key={idx}
-                    className="px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-md sm:rounded-lg text-[10px] sm:text-xs font-semibold text-blue-700 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300 bg-blue-50 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 border border-blue-200/50 dark:border-blue-800/50 midnight:border-cyan-800/50 purple:border-pink-800/50"
+                    className="px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-md sm:rounded-lg text-[0.625rem] sm:text-xs font-semibold text-blue-700 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300 bg-blue-50 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 border border-blue-200/50 dark:border-blue-800/50 midnight:border-cyan-800/50 purple:border-pink-800/50"
                   >
                     {lang}
                   </span>

@@ -50,7 +50,7 @@ export default function NotificationCard({
           icon: AlertTriangle,
           gradient: "from-amber-500 to-orange-500",
           bg: "bg-amber-50/80 dark:bg-amber-500/10",
-          text: "text-amber-600 dark:text-amber-400",
+          text: "text-amber-600 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400",
           border: "border-amber-100/50 dark:border-amber-500/20",
           label: "Performance",
         };
@@ -68,8 +68,8 @@ export default function NotificationCard({
           icon: Users,
           gradient: "from-blue-500 to-indigo-500",
           bg: "bg-blue-50/80 dark:bg-blue-500/10",
-          text: "text-blue-600 dark:text-blue-400",
-          border: "border-blue-100/50 dark:border-blue-500/20",
+          text: "text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400",
+          border: "border-blue-100/50 dark:border-blue-500 midnight:border-cyan-500 purple:border-pink-500/20",
           label: "Record",
         };
       case "leave_submitted":
@@ -122,7 +122,7 @@ export default function NotificationCard({
           icon: CheckCircle2,
           gradient: "from-green-500 to-emerald-500",
           bg: "bg-green-50/80 dark:bg-green-500/10",
-          text: "text-green-600 dark:text-green-400",
+          text: "text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400",
           border: "border-green-100/50 dark:border-green-500/20",
           label: "Payment",
         };
@@ -131,8 +131,8 @@ export default function NotificationCard({
           icon: Bell,
           gradient: "from-blue-500 to-cyan-500",
           bg: "bg-blue-50/80 dark:bg-blue-500/10",
-          text: "text-blue-600 dark:text-blue-400",
-          border: "border-blue-100/50 dark:border-blue-500/20",
+          text: "text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400",
+          border: "border-blue-100/50 dark:border-blue-500 midnight:border-cyan-500 purple:border-pink-500/20",
           label: "Message",
         };
       case "alert":
@@ -140,7 +140,7 @@ export default function NotificationCard({
           icon: AlertTriangle,
           gradient: "from-red-500 to-rose-500",
           bg: "bg-red-50/80 dark:bg-red-500/10",
-          text: "text-red-600 dark:text-red-400",
+          text: "text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400",
           border: "border-red-100/50 dark:border-red-500/20",
           label: "Alert",
         };
@@ -158,7 +158,7 @@ export default function NotificationCard({
           icon: AlertTriangle,
           gradient: "from-amber-500 to-yellow-500",
           bg: "bg-amber-50/80 dark:bg-amber-500/10",
-          text: "text-amber-600 dark:text-amber-400",
+          text: "text-amber-600 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400",
           border: "border-amber-100/50 dark:border-amber-500/20",
           label: "Warning",
         };
@@ -167,8 +167,8 @@ export default function NotificationCard({
           icon: Bell,
           gradient: "from-blue-500 to-indigo-500",
           bg: "bg-blue-50/80 dark:bg-blue-500/10",
-          text: "text-blue-600 dark:text-blue-400",
-          border: "border-blue-100/50 dark:border-blue-500/20",
+          text: "text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400",
+          border: "border-blue-100/50 dark:border-blue-500 midnight:border-cyan-500 purple:border-pink-500/20",
           label: "Info",
         };
       default:
@@ -176,7 +176,7 @@ export default function NotificationCard({
           icon: Bell,
           gradient: "from-gray-500 to-gray-600",
           bg: "bg-gray-50/80 dark:bg-gray-500/10",
-          text: "text-gray-600 dark:text-gray-400",
+          text: "text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300",
           border: "border-gray-100/50 dark:border-gray-500/20",
           label: "General",
         };
@@ -190,10 +190,10 @@ export default function NotificationCard({
     return (
       <div className="p-4 animate-pulse">
         <div className="flex gap-4">
-          <div className="w-12 h-12 rounded-xl bg-gray-200 dark:bg-[#22262e]"></div>
+          <div className="w-12 h-12 rounded-xl bg-gray-200 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]"></div>
           <div className="flex-1">
-            <div className="h-4 bg-gray-200 dark:bg-[#22262e] rounded w-3/4 mb-2"></div>
-            <div className="h-3 bg-gray-200 dark:bg-[#22262e] rounded w-1/4"></div>
+            <div className="h-4 bg-gray-200 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] rounded w-3/4 mb-2"></div>
+            <div className="h-3 bg-gray-200 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] rounded w-1/4"></div>
           </div>
         </div>
       </div>
@@ -229,7 +229,7 @@ export default function NotificationCard({
         {/* Avatar / Icon */}
         <div className="flex-shrink-0 relative">
           {avatar ? (
-            <div className="w-12 h-12 rounded-xl overflow-hidden shadow-sm ring-2 ring-white/80 dark:ring-gray-700/50">
+            <div className="w-12 h-12 rounded-xl overflow-hidden shadow-sm ring-2 ring-white/80 dark:ring-gray-700 midnight:ring-cyan-500/20 purple:ring-pink-500/20/50">
               <Image
                 src={avatar}
                 alt={userName || "User"}
@@ -253,10 +253,10 @@ export default function NotificationCard({
         <div className="flex-1 min-w-0" suppressHydrationWarning>
           {/* Type Badge & Time */}
           <div className="flex items-center gap-2 mb-1.5">
-            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold uppercase tracking-wider ${config.bg} ${config.text}`}>
+            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[0.625rem] font-semibold uppercase tracking-wider ${config.bg} ${config.text}`}>
               {config.label}
             </span>
-            <div className="flex items-center gap-1 text-[11px] text-gray-400 dark:text-gray-500">
+            <div className="flex items-center gap-1 text-[0.6875rem] text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400">
               <Clock className="w-3 h-3" />
               <span>{time}</span>
             </div>
@@ -266,11 +266,11 @@ export default function NotificationCard({
           <div className="flex items-start justify-between gap-3">
             <div className="flex-1 min-w-0">
               {userName && (
-                <span className="font-semibold text-gray-900 dark:text-white">
+                <span className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
                   {userName}{" "}
                 </span>
               )}
-              <span className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
+              <span className="text-sm text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 leading-relaxed">
                 {message}
               </span>
             </div>
@@ -308,7 +308,7 @@ export default function NotificationCard({
                   className={`px-4 py-2 text-xs font-semibold rounded-lg transition-all duration-200 cursor-pointer ${
                     action.variant === "primary"
                       ? "text-white bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 shadow-sm hover:shadow-md"
-                      : "text-gray-700 dark:text-gray-200 bg-gray-100/80 dark:bg-[#22262e]/50 hover:bg-gray-200/80 dark:hover:bg-[#2a2d35]/50 border border-gray-200/50 dark:border-gray-600/50"
+                      : "text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 bg-gray-100/80 dark:bg-[#22262e]/50 midnight:bg-[#0f1330]/50 purple:bg-[#251340]/50 hover:bg-gray-200/80 dark:hover:bg-[#2a2d35]/50 border border-gray-200/50 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30/50"
                   }`}
                 >
                   {action.label}
@@ -321,7 +321,7 @@ export default function NotificationCard({
         {/* Clickable indicator */}
         {onClick && (
           <div className="flex-shrink-0 self-center opacity-0 group-hover:opacity-100 transition-opacity">
-            <div className="p-1.5 rounded-lg bg-gray-100/80 dark:bg-[#22262e]/50">
+            <div className="p-1.5 rounded-lg bg-gray-100/80 dark:bg-[#22262e]/50 midnight:bg-[#0f1330]/50 purple:bg-[#251340]/50">
               <ChevronRight className="w-4 h-4 text-gray-400" />
             </div>
           </div>

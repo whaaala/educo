@@ -121,7 +121,7 @@ function Header({ isMobileSidebarOpen, setIsMobileSidebarOpen }: HeaderProps) {
   };
 
   return (
-    <header className="bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] border-b border-gray-200 dark:border-[#1a1d24] midnight:border-cyan-500/20 purple:border-pink-500/20 sticky top-0 z-50 transition-colors duration-300 backdrop-blur-xl dark:backdrop-blur-xl dark:bg-opacity-90 overflow-visible">
+    <header className="bg-surface border-b border-gray-200 dark:border-[#1a1d24] midnight:border-cyan-500/20 purple:border-pink-500/20 sticky top-0 z-50 transition-colors duration-300 backdrop-blur-xl dark:backdrop-blur-xl dark:bg-opacity-90 overflow-visible">
       <div className="flex items-center justify-between gap-3 sm:gap-4 px-3 sm:px-6 py-2 sm:py-3 overflow-visible">
         {/* Left Section: Mobile Menu + Search Bar */}
         <div className="flex items-center gap-2 sm:gap-3 flex-1 max-w-2xl">
@@ -226,10 +226,10 @@ function Header({ isMobileSidebarOpen, setIsMobileSidebarOpen }: HeaderProps) {
 
             {/* Dropdown Menu */}
             {isYearDropdownOpen && (
-              <div className="absolute right-0 mt-2 w-64 bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-xl shadow-2xl border border-gray-100 dark:border-[#1a1d24] midnight:border-cyan-500/20 purple:border-pink-500/20 overflow-hidden z-50 transition-colors duration-300">
+              <div className="absolute right-0 mt-2 w-64 bg-surface rounded-xl shadow-2xl border border-gray-100 dark:border-[#1a1d24] midnight:border-cyan-500/20 purple:border-pink-500/20 overflow-hidden z-50 transition-colors duration-300">
                 {/* Header */}
                 <div className="px-4 py-3 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-500/10 dark:to-indigo-500/10 border-b border-gray-100 dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10">
-                  <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 uppercase tracking-wide">Select Academic Year</p>
+                  <p className="text-xs font-semibold text-muted uppercase tracking-wide">Select Academic Year</p>
                 </div>
 
                 {/* Years List */}
@@ -297,7 +297,7 @@ function Header({ isMobileSidebarOpen, setIsMobileSidebarOpen }: HeaderProps) {
               <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-[#2a2d4e] rounded-xl shadow-2xl border border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 overflow-hidden z-50 transition-colors duration-300">
                 {/* Header */}
                 <div className="px-4 py-3 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/30 dark:to-emerald-900/30 border-b border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
-                  <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 uppercase tracking-wide">Select Language</p>
+                  <p className="text-xs font-semibold text-muted uppercase tracking-wide">Select Language</p>
                 </div>
 
                 {/* Languages List */}
@@ -353,10 +353,10 @@ function Header({ isMobileSidebarOpen, setIsMobileSidebarOpen }: HeaderProps) {
 
             {/* Add New Dropdown Menu */}
             {isAddNewOpen && (
-              <div className="absolute right-0 mt-2 w-72 bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-lg shadow-xl border border-gray-200 dark:border-[#1a1d24] midnight:border-cyan-500/20 purple:border-pink-500/20 overflow-hidden z-50 transition-colors duration-300">
+              <div className="absolute right-0 mt-2 w-72 bg-surface rounded-lg shadow-xl border border-gray-200 dark:border-[#1a1d24] midnight:border-cyan-500/20 purple:border-pink-500/20 overflow-hidden z-50 transition-colors duration-300">
                 {/* Header */}
                 <div className="px-3 py-2 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-500/10 dark:to-indigo-500/10 midnight:from-cyan-500/10 midnight:to-blue-500/10 purple:from-pink-500/10 purple:to-purple-500/10 border-b border-gray-200 dark:border-[#1a1d24] midnight:border-cyan-500/20 purple:border-pink-500/20">
-                  <h3 className="text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">Add New</h3>
+                  <h3 className="text-sm font-bold text-ink">Add New</h3>
                   <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-200 purple:text-pink-200">Quick actions</p>
                 </div>
 
@@ -376,7 +376,7 @@ function Header({ isMobileSidebarOpen, setIsMobileSidebarOpen }: HeaderProps) {
                       </svg>
                     </div>
                     <span className="text-xs font-bold text-blue-900 dark:text-blue-200 midnight:text-cyan-100 purple:text-indigo-200">Students</span>
-                    <span className="text-[10px] text-blue-700 dark:text-blue-300 midnight:text-cyan-300 purple:text-indigo-300 font-medium">Add new</span>
+                    <span className="text-[0.625rem] text-blue-700 dark:text-blue-300 midnight:text-cyan-300 purple:text-indigo-300 font-medium">Add new</span>
                   </button>
 
                   {/* Teachers - Green */}
@@ -393,7 +393,7 @@ function Header({ isMobileSidebarOpen, setIsMobileSidebarOpen }: HeaderProps) {
                       </svg>
                     </div>
                     <span className="text-xs font-bold text-emerald-900 dark:text-emerald-200 midnight:text-emerald-100 purple:text-green-200">Teachers</span>
-                    <span className="text-[10px] text-emerald-700 dark:text-emerald-300 midnight:text-emerald-300 purple:text-green-300 font-medium">Add new</span>
+                    <span className="text-[0.625rem] text-emerald-700 dark:text-emerald-300 midnight:text-emerald-300 purple:text-green-300 font-medium">Add new</span>
                   </button>
 
                   {/* Staffs - Yellow/Gold */}
@@ -410,7 +410,7 @@ function Header({ isMobileSidebarOpen, setIsMobileSidebarOpen }: HeaderProps) {
                       </svg>
                     </div>
                     <span className="text-xs font-bold text-amber-900 dark:text-amber-200 midnight:text-yellow-100 purple:text-amber-200">Staffs</span>
-                    <span className="text-[10px] text-amber-700 dark:text-amber-300 midnight:text-yellow-300 purple:text-amber-300 font-medium">Add new</span>
+                    <span className="text-[0.625rem] text-amber-700 dark:text-amber-300 midnight:text-yellow-300 purple:text-amber-300 font-medium">Add new</span>
                   </button>
 
                   {/* Invoice - Indigo/Purple */}
@@ -427,7 +427,7 @@ function Header({ isMobileSidebarOpen, setIsMobileSidebarOpen }: HeaderProps) {
                       </svg>
                     </div>
                     <span className="text-xs font-bold text-purple-900 dark:text-purple-200 midnight:text-fuchsia-100 purple:text-pink-200">Invoice</span>
-                    <span className="text-[10px] text-purple-700 dark:text-purple-300 midnight:text-fuchsia-300 purple:text-pink-300 font-medium">Add new</span>
+                    <span className="text-[0.625rem] text-purple-700 dark:text-purple-300 midnight:text-fuchsia-300 purple:text-pink-300 font-medium">Add new</span>
                   </button>
                 </div>
               </div>

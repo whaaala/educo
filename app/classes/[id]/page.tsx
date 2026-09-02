@@ -189,7 +189,7 @@ export default function ClassDetailsPage() {
       afterStats={
         <div className="mt-6 min-h-screen bg-gray-50 dark:bg-[#0f1115] midnight:bg-gray-950 purple:bg-gray-950">
       {/* Header */}
-      <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+      <div className="bg-surface border-b border-line">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-4">
@@ -204,7 +204,7 @@ export default function ClassDetailsPage() {
                   <h1 className="text-2xl font-bold text-gray-900 dark:text-white midnight:text-cyan-100 purple:text-pink-100">
                     {classData.name}
                   </h1>
-                  <span className="text-sm font-medium text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] px-2 py-1 rounded">
+                  <span className="text-sm font-medium text-muted bg-surface-2 px-2 py-1 rounded">
                     {classData.id}
                   </span>
                   <div
@@ -230,7 +230,7 @@ export default function ClassDetailsPage() {
                     </span>
                   </div>
                 </div>
-                <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mt-1">
+                <p className="text-sm text-muted mt-1">
                   {isTertiary && classData.faculty && classData.department
                     ? `${classData.faculty} • ${classData.department}`
                     : `${classData.term} • ${classData.academicYear}`}
@@ -251,7 +251,7 @@ export default function ClassDetailsPage() {
                   <MoreVertical className="w-5 h-5 text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300" />
                 </button>
                 {showActions && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 z-10">
+                  <div className="absolute right-0 mt-2 w-48 bg-surface rounded-lg shadow-lg border border-line z-10">
                     <Link
                       href={`/classes/${classId}/edit`}
                       className="flex items-center gap-2 px-4 py-2 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200"
@@ -281,10 +281,10 @@ export default function ClassDetailsPage() {
                   <Users className="w-5 h-5 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
                 </div>
                 <div>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
+                  <p className="text-xs text-muted">
                     {isTertiary ? "Enrolled Students" : "Students"}
                   </p>
-                  <p className="text-xl font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                  <p className="text-xl font-bold text-ink">
                     {classData.students.length}
                     {!isTertiary && `/${classData.capacity}`}
                   </p>
@@ -298,10 +298,10 @@ export default function ClassDetailsPage() {
                   <MapPin className="w-5 h-5 text-purple-600 dark:text-purple-400" />
                 </div>
                 <div>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
+                  <p className="text-xs text-muted">
                     {isTertiary ? "Hall/Lab" : "Room"}
                   </p>
-                  <p className="text-xl font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                  <p className="text-xl font-bold text-ink">
                     {classData.room}
                   </p>
                 </div>
@@ -314,8 +314,8 @@ export default function ClassDetailsPage() {
                   <TrendingUp className="w-5 h-5 text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400" />
                 </div>
                 <div>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Average Grade</p>
-                  <p className="text-xl font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                  <p className="text-xs text-muted">Average Grade</p>
+                  <p className="text-xl font-bold text-ink">
                     {classData.averageGrade}%
                   </p>
                 </div>
@@ -328,8 +328,8 @@ export default function ClassDetailsPage() {
                   <Target className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
                 </div>
                 <div>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Attendance Rate</p>
-                  <p className="text-xl font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                  <p className="text-xs text-muted">Attendance Rate</p>
+                  <p className="text-xl font-bold text-ink">
                     {classData.attendanceRate}%
                   </p>
                 </div>
@@ -338,7 +338,7 @@ export default function ClassDetailsPage() {
           </div>
 
           {/* Tabs */}
-          <div className="flex items-center gap-4 mt-6 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+          <div className="flex items-center gap-4 mt-6 border-b border-line">
             <button
               onClick={() => setActiveTab("overview")}
               className={`px-4 py-2 border-b-2 transition-colors ${
@@ -388,46 +388,46 @@ export default function ClassDetailsPage() {
         {activeTab === "overview" && (
           <div className="space-y-6">
             {/* Class Information */}
-            <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 p-6">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-4">
+            <div className="bg-surface rounded-xl shadow-sm border border-line p-6">
+              <h3 className="text-lg font-semibold text-ink mb-4">
                 Class Information
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Class Code</p>
-                  <p className="text-base font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                  <p className="text-sm text-muted">Class Code</p>
+                  <p className="text-base font-medium text-ink">
                     {classData.id}
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Education Level</p>
-                  <p className="text-base font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                  <p className="text-sm text-muted">Education Level</p>
+                  <p className="text-base font-medium text-ink">
                     {classData.level}
                   </p>
                 </div>
                 {isTertiary ? (
                   <>
                     <div>
-                      <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Faculty</p>
-                      <p className="text-base font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                      <p className="text-sm text-muted">Faculty</p>
+                      <p className="text-base font-medium text-ink">
                         {classData.faculty}
                       </p>
                     </div>
                     <div>
-                      <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Department</p>
-                      <p className="text-base font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                      <p className="text-sm text-muted">Department</p>
+                      <p className="text-base font-medium text-ink">
                         {classData.department}
                       </p>
                     </div>
                     <div>
-                      <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Programme</p>
-                      <p className="text-base font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                      <p className="text-sm text-muted">Programme</p>
+                      <p className="text-base font-medium text-ink">
                         {classData.programme}
                       </p>
                     </div>
                     <div>
-                      <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Semester</p>
-                      <p className="text-base font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                      <p className="text-sm text-muted">Semester</p>
+                      <p className="text-base font-medium text-ink">
                         {classData.semester}
                       </p>
                     </div>
@@ -435,15 +435,15 @@ export default function ClassDetailsPage() {
                 ) : (
                   <>
                     <div>
-                      <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Term</p>
-                      <p className="text-base font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                      <p className="text-sm text-muted">Term</p>
+                      <p className="text-base font-medium text-ink">
                         {classData.term}
                       </p>
                     </div>
                     {classData.academicTrack && (
                       <div>
-                        <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Academic Track</p>
-                        <p className="text-base font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                        <p className="text-sm text-muted">Academic Track</p>
+                        <p className="text-base font-medium text-ink">
                           {classData.academicTrack}
                         </p>
                       </div>
@@ -451,8 +451,8 @@ export default function ClassDetailsPage() {
                   </>
                 )}
                 <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Academic Year</p>
-                  <p className="text-base font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                  <p className="text-sm text-muted">Academic Year</p>
+                  <p className="text-base font-medium text-ink">
                     {classData.academicYear}
                   </p>
                 </div>
@@ -461,9 +461,9 @@ export default function ClassDetailsPage() {
 
             {/* Subjects */}
             {classData.subjects && classData.subjects.length > 0 && (
-              <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 p-6">
+              <div className="bg-surface rounded-xl shadow-sm border border-line p-6">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                  <h3 className="text-lg font-semibold text-ink">
                     Subjects
                   </h3>
                   <Link
@@ -484,10 +484,10 @@ export default function ClassDetailsPage() {
                           <BookOpen className="w-5 h-5 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
                         </div>
                         <div>
-                          <p className="text-sm font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                          <p className="text-sm font-medium text-ink">
                             {subject.name}
                           </p>
-                          <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
+                          <p className="text-xs text-muted">
                             {subject.code}
                             {subject.credits && ` • ${subject.credits} Credits`}
                           </p>
@@ -512,10 +512,10 @@ export default function ClassDetailsPage() {
         )}
 
         {activeTab === "students" && (
-          <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
-            <div className="p-6 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+          <div className="bg-surface rounded-xl shadow-sm border border-line">
+            <div className="p-6 border-b border-line">
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                <h3 className="text-lg font-semibold text-ink">
                   Students List
                 </h3>
                 <input
@@ -529,16 +529,16 @@ export default function ClassDetailsPage() {
               <table className="w-full">
                 <thead className="bg-gray-50 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/30">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider">
                       Student
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider">
                       Email
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider">
                       Attendance
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider">
                       Avg Grade
                     </th>
                   </tr>
@@ -554,10 +554,10 @@ export default function ClassDetailsPage() {
                             className="w-10 h-10 rounded-full"
                           />
                           <div>
-                            <p className="text-sm font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                            <p className="text-sm font-medium text-ink">
                               {student.name}
                             </p>
-                            <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
+                            <p className="text-xs text-muted">
                               {student.id}
                             </p>
                           </div>
@@ -567,12 +567,12 @@ export default function ClassDetailsPage() {
                         {student.email}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="text-sm font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                        <span className="text-sm font-medium text-ink">
                           {student.attendanceRate}%
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="text-sm font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                        <span className="text-sm font-medium text-ink">
                           {student.averageGrade}%
                         </span>
                       </td>
@@ -589,14 +589,14 @@ export default function ClassDetailsPage() {
             {classData.subjects?.map((subject) => (
               <div
                 key={subject.code}
-                className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 p-6"
+                className="bg-surface rounded-xl shadow-sm border border-line p-6"
               >
                 <div className="flex items-center justify-between mb-4">
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                    <h3 className="text-lg font-semibold text-ink">
                       {subject.name}
                     </h3>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
+                    <p className="text-sm text-muted">
                       {subject.code}
                       {subject.credits && ` • ${subject.credits} Credits`}
                     </p>
@@ -612,15 +612,15 @@ export default function ClassDetailsPage() {
                     className="w-12 h-12 rounded-full"
                   />
                   <div className="flex-1">
-                    <p className="text-sm font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                    <p className="text-sm font-medium text-ink">
                       {subject.teacher.name}
                     </p>
                     <div className="flex items-center gap-4 mt-1">
-                      <span className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
+                      <span className="flex items-center gap-1 text-xs text-muted">
                         <Mail className="w-3 h-3" />
                         {subject.teacher.email}
                       </span>
-                      <span className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
+                      <span className="flex items-center gap-1 text-xs text-muted">
                         <Phone className="w-3 h-3" />
                         {subject.teacher.phone}
                       </span>
@@ -635,16 +635,16 @@ export default function ClassDetailsPage() {
         {activeTab === "performance" && (
           <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 p-6">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-4">
+              <div className="bg-surface rounded-xl shadow-sm border border-line p-6">
+                <h3 className="text-lg font-semibold text-ink mb-4">
                   Grade Distribution
                 </h3>
                 <div className="h-64 flex items-center justify-center text-gray-400">
                   Chart placeholder
                 </div>
               </div>
-              <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 p-6">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-4">
+              <div className="bg-surface rounded-xl shadow-sm border border-line p-6">
+                <h3 className="text-lg font-semibold text-ink mb-4">
                   Attendance Trends
                 </h3>
                 <div className="h-64 flex items-center justify-center text-gray-400">

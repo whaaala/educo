@@ -77,19 +77,19 @@ export default function LinkDialog({
       <div className="w-[400px] max-w-[calc(100vw-2rem)] space-y-3">
         {showTextField && (
           <label className="block">
-            <span className="block text-[11px] font-medium text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mb-1">Text</span>
+            <span className="block text-[0.6875rem] font-medium text-muted mb-1">Text</span>
             <input
               value={text}
               onChange={(e) => setText(e.target.value)}
               placeholder="Text to display"
               aria-label="Link display text"
-              className="w-full px-3 py-2 text-[13px] rounded-lg border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] text-gray-800 dark:text-gray-100 outline-none focus:ring-2 focus:ring-blue-400"
+              className="w-full px-3 py-2 text-[0.8125rem] rounded-lg border border-line bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] text-gray-800 dark:text-gray-100 outline-none focus:ring-2 focus:ring-blue-400"
             />
           </label>
         )}
 
         <label className="block">
-          <span className="block text-[11px] font-medium text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mb-1">Link</span>
+          <span className="block text-[0.6875rem] font-medium text-muted mb-1">Link</span>
           <div className="relative">
             <Globe className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" aria-hidden="true" />
             <input
@@ -106,35 +106,35 @@ export default function LinkDialog({
               aria-invalid={showError}
               aria-describedby={showError ? "link-error" : undefined}
               disabled={usingTarget}
-              className={`w-full pl-8 pr-3 py-2 text-[13px] rounded-lg border bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] text-gray-800 dark:text-gray-100 outline-none focus:ring-2 disabled:opacity-50 ${
+              className={`w-full pl-8 pr-3 py-2 text-[0.8125rem] rounded-lg border bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] text-gray-800 dark:text-gray-100 outline-none focus:ring-2 disabled:opacity-50 ${
                 showError
                   ? "border-red-400 focus:ring-red-400"
-                  : "border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 focus:ring-blue-400"
+                  : "border-line focus:ring-blue-400"
               }`}
             />
           </div>
           {showError && (
-            <p id="link-error" role="alert" className="mt-1 text-[11px] text-red-500">
+            <p id="link-error" role="alert" className="mt-1 text-[0.6875rem] text-red-500">
               {dangerous ? "That link type isn’t allowed." : "Enter a valid link (e.g. educo.com)."}
             </p>
           )}
           {!showError && preview && preview !== url.trim() && (
-            <p className="mt-1 text-[11px] text-gray-400">Will link to <span className="font-medium">{preview}</span></p>
+            <p className="mt-1 text-[0.6875rem] text-gray-400">Will link to <span className="font-medium">{preview}</span></p>
           )}
         </label>
 
         {/* In-document destinations (e.g. slides in this deck) */}
         {targets && targets.length > 0 && (
           <div>
-            <span className="block text-[11px] font-medium text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mb-1">{targetsLabel}</span>
-            <div className="max-h-[132px] overflow-y-auto rounded-lg border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 divide-y divide-gray-100 dark:divide-gray-800">
+            <span className="block text-[0.6875rem] font-medium text-muted mb-1">{targetsLabel}</span>
+            <div className="max-h-[132px] overflow-y-auto rounded-lg border border-line divide-y divide-gray-100 dark:divide-gray-800">
               {targets.map((t) => (
                 <button
                   key={t.id}
                   type="button"
                   onClick={() => { setTargetId(t.id); setUrl(""); }}
                   aria-pressed={targetId === t.id}
-                  className={`w-full flex items-center gap-2 px-3 py-2 text-left text-[12px] transition-colors cursor-pointer ${
+                  className={`w-full flex items-center gap-2 px-3 py-2 text-left text-[0.75rem] transition-colors cursor-pointer ${
                     targetId === t.id
                       ? "bg-blue-50 dark:bg-blue-900/25 midnight:bg-cyan-900/25 purple:bg-pink-900/25 text-blue-700 dark:text-blue-300"
                       : "hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 text-gray-700 dark:text-gray-200"
@@ -153,7 +153,7 @@ export default function LinkDialog({
             <button
               type="button"
               onClick={onRemove}
-              className="mr-auto inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[12px] font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors cursor-pointer"
+              className="mr-auto inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[0.75rem] font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors cursor-pointer"
             >
               <Trash2 className="w-3.5 h-3.5" aria-hidden="true" />
               Remove link
@@ -164,7 +164,7 @@ export default function LinkDialog({
             type="button"
             onClick={submit}
             disabled={!valid}
-            className="px-4 py-2 rounded-lg bg-blue-600 text-white text-[13px] font-medium hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
+            className="px-4 py-2 rounded-lg bg-blue-600 text-white text-[0.8125rem] font-medium hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
           >
             Apply
           </button>

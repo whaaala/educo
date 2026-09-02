@@ -341,7 +341,7 @@ export default function PayFeesModal({
         <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-gray-800 via-gray-900 to-gray-800 dark:from-gray-800 dark:via-gray-900 dark:to-gray-800 midnight:from-gray-800 midnight:via-cyan-950/50 midnight:to-gray-800 purple:from-gray-800 purple:via-pink-950/50 purple:to-gray-800 p-4 sm:p-5">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <p className="text-[10px] sm:text-xs text-gray-400 uppercase tracking-wider font-medium mb-0.5">
+              <p className="text-[0.625rem] sm:text-xs text-gray-400 uppercase tracking-wider font-medium mb-0.5">
                 Total Outstanding
               </p>
               <p className="text-2xl sm:text-3xl font-bold text-white">
@@ -349,7 +349,7 @@ export default function PayFeesModal({
               </p>
             </div>
             <div className="text-right">
-              <p className="text-[10px] sm:text-xs text-gray-400 uppercase tracking-wider font-medium mb-0.5">
+              <p className="text-[0.625rem] sm:text-xs text-gray-400 uppercase tracking-wider font-medium mb-0.5">
                 Paying Now
               </p>
               <p className="text-xl sm:text-2xl font-bold text-emerald-400">
@@ -414,7 +414,7 @@ export default function PayFeesModal({
                     <div className="flex items-start justify-between mb-2.5">
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
-                          <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold ${statusConfig.bg} ${statusConfig.text}`}>
+                          <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[0.625rem] font-semibold ${statusConfig.bg} ${statusConfig.text}`}>
                             {statusConfig.icon}
                             {statusConfig.label}
                           </span>
@@ -427,7 +427,7 @@ export default function PayFeesModal({
                         </p>
                       </div>
                       <div className="text-right flex-shrink-0 ml-3">
-                        <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wider">Balance</p>
+                        <p className="text-[0.625rem] text-gray-400 font-medium uppercase tracking-wider">Balance</p>
                         <p className="font-bold text-gray-800 dark:text-white text-sm">
                           {money(fee.balance)}
                         </p>
@@ -446,7 +446,7 @@ export default function PayFeesModal({
                             value={allocation > 0 ? allocation.toLocaleString() : ""}
                             onChange={(e) => handleAllocationChange(fee.id, e.target.value, fee.balance)}
                             placeholder="0"
-                            className="w-full h-[46px] pl-14 pr-4 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-sm font-normal placeholder:text-gray-400 dark:placeholder:text-gray-500 midnight:placeholder:text-cyan-400/50 purple:placeholder:text-pink-400/50 focus:ring-1 focus:ring-blue-500/10 dark:focus:ring-blue-400/10 focus:border-blue-400 dark:focus:border-blue-500 outline-none transition-all duration-200 hover:border-gray-400 dark:hover:border-gray-500"
+                            className="w-full h-[46px] pl-14 pr-4 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-surface text-ink text-sm font-normal placeholder:text-gray-400 dark:placeholder:text-gray-500 midnight:placeholder:text-cyan-400/50 purple:placeholder:text-pink-400/50 focus:ring-1 focus:ring-blue-500/10 dark:focus:ring-blue-400/10 focus:border-blue-400 dark:focus:border-blue-500 outline-none transition-all duration-200 hover:border-gray-400 dark:hover:border-gray-500"
                           />
                         </div>
                       </div>
@@ -509,7 +509,7 @@ export default function PayFeesModal({
                   </div>
 
                   <p
-                    className={`text-[11px] sm:text-xs font-semibold text-center transition-colors duration-200 ${
+                    className={`text-[0.6875rem] sm:text-xs font-semibold text-center transition-colors duration-200 ${
                       isSelected
                         ? "text-green-600 dark:text-green-400 midnight:text-cyan-400 purple:text-pink-400"
                         : "text-gray-600 dark:text-gray-300"
@@ -517,7 +517,7 @@ export default function PayFeesModal({
                   >
                     {method.label}
                   </p>
-                  <p className="text-[9px] sm:text-[10px] text-gray-400 dark:text-gray-500 text-center mt-0.5 hidden sm:block">
+                  <p className="text-[0.5625rem] sm:text-[0.625rem] text-gray-400 dark:text-gray-500 text-center mt-0.5 hidden sm:block">
                     {method.description}
                   </p>
                 </button>
@@ -579,7 +579,7 @@ export default function PayFeesModal({
 
               <div className="flex items-center justify-center gap-2 py-1">
                 <Shield className="w-3.5 h-3.5 text-green-500 dark:text-green-400" />
-                <span className="text-[11px] text-gray-500 dark:text-gray-400">
+                <span className="text-[0.6875rem] text-gray-500 dark:text-gray-400">
                   Secure payment • 256-bit encryption
                 </span>
               </div>
@@ -607,7 +607,7 @@ export default function PayFeesModal({
                       className="flex items-center justify-between p-3 bg-white dark:bg-[#1a1d24]/60 rounded-xl border border-gray-100 dark:border-gray-700/30 hover:border-gray-200 dark:hover:border-gray-600/50 transition-colors"
                     >
                       <div>
-                        <p className="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-wider font-medium">
+                        <p className="text-[0.625rem] text-gray-400 dark:text-gray-500 uppercase tracking-wider font-medium">
                           {item.label}
                         </p>
                         <p className="text-sm font-semibold text-gray-800 dark:text-white">
@@ -630,7 +630,7 @@ export default function PayFeesModal({
                 </div>
 
                 <div className="px-4 py-2.5 bg-gray-50/80 dark:bg-[#1a1d24]/30 border-t border-gray-100 dark:border-gray-700/30">
-                  <p className="text-[11px] text-gray-500 dark:text-gray-400 text-center">
+                  <p className="text-[0.6875rem] text-gray-500 dark:text-gray-400 text-center">
                     Use your child&apos;s admission number as payment reference
                   </p>
                 </div>

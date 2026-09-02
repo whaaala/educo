@@ -9,14 +9,15 @@
  */
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Plus, Smartphone, Tablet, Laptop, Monitor, Tv, Maximize2, Undo2, Redo2, Eye, X, Home, Trash2, Files, Download, Settings2 } from "lucide-react";
+import { Plus, Smartphone, Tablet, Laptop, Monitor, Tv, Maximize2, Undo2, Redo2, Eye, X, Home, Trash2, Files, Download, Settings2, PanelLeftOpen } from "lucide-react";
 import { useTheme } from "@/contexts/ThemeContext";
 import { DEFAULT_THEME, resolveSiteTheme } from "@/lib/site-storage";
 import {
   type BoxNode, type Breakpoint, createContainer, findBox, findParent, updateBox, insertBox, removeBox, duplicateBox, widthPct, makeRowBand, normalizeRowBands,
   floatBox, unfloatBox, bringToFront, bringForward, sendBackward, sendToBack,
-  resolveResponsive, updateBoxResponsive, clearOverride, hasOverride,
+  resolveResponsive, updateBoxResponsive, clearOverride, hasOverride, isContainer,
 } from "@/lib/box-model";
+import { blockForKind } from "@/lib/box-presets";
 import {
   type BoxSite, siteFromRoot, coerceSite, normalizeSite, setPageRoot, addPage, deletePage, renamePage, setHomePage, duplicatePage, emptyPageRoot, pageIdFromHref,
 } from "@/lib/box-site";
@@ -24,6 +25,8 @@ import { renderSiteHTML, downloadHTML } from "@/lib/box-export";
 import BoxCanvas, { measureFloatGeom } from "@/components/website/box/BoxCanvas";
 import BoxInspector from "@/components/website/box/BoxInspector";
 import BulkInspector from "@/components/website/box/BulkInspector";
+import BlocksPanel from "@/components/website/box/BlocksPanel";
+import { ToolBtn, ToolDivider, Segmented } from "@/components/website/box/ui";
 import PageLoader from "@/components/shared/PageLoader";
 import DeleteConfirmationModal from "@/components/shared/DeleteConfirmationModal";
 
@@ -65,6 +68,7 @@ export default function BoxDemoPage() {
   const [device, setDevice] = useState<Device>("full");
   const [preview, setPreview] = useState(false);
   const [pageMenu, setPageMenu] = useState(false); // page-settings popover open
+  const [blocksOpen, setBlocksOpen] = useState(true); // left blocks palette collapsed?
   const [confirmDeletePage, setConfirmDeletePage] = useState(false); // delete-page confirmation modal
 
   const site = hist?.present ?? null;
@@ -154,6 +158,13 @@ export default function BoxDemoPage() {
 
   const onExport = () => downloadHTML(renderSiteHTML(site, renderTheme), "site.html");
 
+  // Click-to-add from the palette: insert into the selected container (or the page) with an optional style.
+  const insertBlock = (kind: string, patch: Partial<BoxNode> = {}) => {
+    const parentId = selected && isContainer(selected) ? selected.id : root.id;
+    const target = findBox(root, parentId) ?? root;
+    commit(insertBox(root, parentId, target.children?.length ?? 0, blockForKind(kind, patch)));
+  };
+
   // In Preview, a click on a page link switches the active page (anchors scroll natively).
   const onPreviewClick = (e: React.MouseEvent) => {
     const a = (e.target as HTMLElement).closest?.("a") as HTMLAnchorElement | null;
@@ -167,16 +178,16 @@ export default function BoxDemoPage() {
   // ── Visitor preview ──
   if (preview) {
     return (
-      <div className="h-screen flex flex-col bg-gray-100 dark:bg-gray-950">
-        <div className="h-12 shrink-0 flex items-center gap-3 px-4 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-[#161922]">
+      <div className="h-screen flex flex-col bg-gray-100 dark:bg-gray-950 midnight:bg-[#060a1e] purple:bg-[#120722]">
+        <div className="h-12 shrink-0 flex items-center gap-3 px-4 border-b border-gray-200 dark:border-gray-800 midnight:border-cyan-500/10 purple:border-pink-500/10 bg-white dark:bg-[#161922]">
           <button onClick={() => setPreview(false)} className="inline-flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700"><X className="w-3.5 h-3.5" /> Exit preview</button>
           <nav className="flex items-center gap-1 overflow-x-auto" aria-label="Pages">
             {site.pages.map((p) => (
-              <button key={p.id} onClick={() => switchPage(p.id)} aria-current={p.id === activePage.id} className={`text-xs px-2.5 py-1 rounded-md whitespace-nowrap ${p.id === activePage.id ? "bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 font-semibold" : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"}`}>{p.name}{p.id === site.homeId ? " ·" : ""}</button>
+              <button key={p.id} onClick={() => switchPage(p.id)} aria-current={p.id === activePage.id} className={`text-xs px-2.5 py-1 rounded-md whitespace-nowrap ${p.id === activePage.id ? "bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 font-semibold" : "text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100 dark:hover:bg-gray-800 midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5"}`}>{p.name}{p.id === site.homeId ? " ·" : ""}</button>
             ))}
           </nav>
-          <div className="ml-auto flex items-center rounded-lg border border-gray-300 dark:border-gray-700 p-0.5" role="group" aria-label="Preview screen size">
-            {DEVICES.map((d) => <button key={d.id} onClick={() => setDevice(d.id)} aria-label={`${d.label} preview`} aria-pressed={device === d.id} className={`p-1.5 rounded-md ${device === d.id ? "bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300" : "text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800"}`}><d.Icon className="w-4 h-4" /></button>)}
+          <div className="ml-auto flex items-center rounded-lg border border-gray-300 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 p-0.5" role="group" aria-label="Preview screen size">
+            {DEVICES.map((d) => <button key={d.id} onClick={() => setDevice(d.id)} aria-label={`${d.label} preview`} aria-pressed={device === d.id} className={`p-1.5 rounded-md ${device === d.id ? "bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300" : "text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5"}`}><d.Icon className="w-4 h-4" /></button>)}
           </div>
         </div>
         <div className="flex-1 overflow-auto p-6 flex justify-center">
@@ -189,68 +200,84 @@ export default function BoxDemoPage() {
   }
 
   return (
-    <div className="flex h-screen bg-gray-100 dark:bg-gray-950">
-      <div className="flex-1 min-w-0 h-screen overflow-auto">
-        <div className="p-6 flex flex-col items-center min-h-full">
-        <div className="mb-3 flex items-center gap-3 self-stretch flex-wrap">
-          <h1 className="text-sm font-bold text-gray-700 dark:text-gray-200">Box Builder</h1>
+    <div className="h-screen flex flex-col bg-gray-50 dark:bg-[#0d1016]">
+      {/* ── Top app bar ── */}
+      <header className="h-14 shrink-0 flex items-center gap-2 px-4 border-b border-gray-200 dark:border-white/10 bg-white dark:bg-[#14171f] z-30">
+        <span className="text-sm font-bold text-gray-800 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50 mr-1 shrink-0">Box Builder</span>
+        <ToolDivider />
 
-          {/* Page tabs */}
-          <div className="relative flex items-center gap-1 rounded-lg border border-gray-300 dark:border-gray-700 p-0.5" role="group" aria-label="Pages">
-            {site.pages.map((p) => (
-              <button key={p.id} onClick={() => switchPage(p.id)} aria-current={p.id === activePage.id} title={p.name} className={`inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-md whitespace-nowrap max-w-[10rem] truncate ${p.id === activePage.id ? "bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 font-semibold" : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"}`}>{p.id === site.homeId && <Home className="w-3 h-3 shrink-0" />}{p.name}</button>
-            ))}
-            <button onClick={onAddPage} aria-label="Add page" title="Add page" className="p-1.5 rounded-md text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800"><Plus className="w-4 h-4" /></button>
-            <button onClick={() => setPageMenu((v) => !v)} aria-label="Page settings" aria-expanded={pageMenu} title="Page settings" className="p-1.5 rounded-md text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800"><Settings2 className="w-4 h-4" /></button>
-            {pageMenu && (
-              <div className="absolute top-full left-0 mt-1 z-40 w-56 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-2xl p-2 space-y-2">
-                <label className="block"><span className="text-[10px] font-medium text-gray-500">Page name</span>
-                  <input value={activePage.name} onChange={(e) => onRenamePage(e.target.value)} aria-label="Page name" className="w-full text-sm px-2 py-1.5 rounded border border-gray-200 dark:border-gray-700 bg-transparent outline-none focus:ring-2 focus:ring-indigo-500" />
-                </label>
-                <div className="text-[10px] text-gray-400">/{activePage.path}{activePage.id === site.homeId ? " · home" : ""}</div>
-                <div className="grid grid-cols-2 gap-1">
-                  <button onClick={onSetHome} disabled={activePage.id === site.homeId} className="flex items-center justify-center gap-1 text-xs px-2 py-1.5 rounded-md border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-40"><Home className="w-3.5 h-3.5" /> Home</button>
-                  <button onClick={onDuplicatePage} className="flex items-center justify-center gap-1 text-xs px-2 py-1.5 rounded-md border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"><Files className="w-3.5 h-3.5" /> Duplicate</button>
-                </div>
-                <button onClick={() => { setPageMenu(false); setConfirmDeletePage(true); }} disabled={site.pages.length <= 1} title={site.pages.length <= 1 ? "A site needs at least one page" : "Delete this page"} className="w-full flex items-center justify-center gap-1 text-xs px-2 py-1.5 rounded-md border border-red-200 dark:border-red-900/50 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 disabled:opacity-40"><Trash2 className="w-3.5 h-3.5" /> Delete page</button>
+        {/* Page tabs */}
+        <div className="relative flex items-center gap-0.5 rounded-xl bg-gray-100 dark:bg-white/5 p-1" role="group" aria-label="Pages">
+          {site.pages.map((p) => (
+            <button key={p.id} onClick={() => switchPage(p.id)} aria-current={p.id === activePage.id} title={p.name} className={`inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-xs font-medium max-w-[9rem] truncate ${p.id === activePage.id ? "bg-white dark:bg-white/15 text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 shadow-sm" : "text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:text-gray-800 dark:hover:text-gray-200 midnight:hover:text-cyan-100 purple:hover:text-pink-100"}`}>{p.id === site.homeId && <Home className="w-3 h-3 shrink-0" />}{p.name}</button>
+          ))}
+          <button onClick={onAddPage} aria-label="Add page" title="Add page" className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 midnight:hover:text-cyan-100 purple:hover:text-pink-100 hover:bg-white dark:hover:bg-white/10"><Plus className="w-4 h-4" /></button>
+          <button onClick={() => setPageMenu((v) => !v)} aria-label="Page settings" aria-expanded={pageMenu} title="Page settings" className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 midnight:hover:text-cyan-100 purple:hover:text-pink-100 hover:bg-white dark:hover:bg-white/10"><Settings2 className="w-4 h-4" /></button>
+          {pageMenu && (
+            <div className="absolute top-full left-0 mt-2 z-40 w-60 rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-[#14171f] shadow-2xl p-2.5 space-y-2">
+              <label className="block"><span className="text-[0.625rem] font-medium text-gray-500">Page name</span>
+                <input value={activePage.name} onChange={(e) => onRenamePage(e.target.value)} aria-label="Page name" className="w-full text-sm px-2.5 py-1.5 rounded-lg border border-gray-200 dark:border-white/10 bg-transparent outline-none focus:ring-2 focus:ring-indigo-500 mt-0.5" />
+              </label>
+              <div className="text-[0.625rem] text-gray-400">/{activePage.path}{activePage.id === site.homeId ? " · home page" : ""}</div>
+              <div className="grid grid-cols-2 gap-1.5">
+                <button onClick={onSetHome} disabled={activePage.id === site.homeId} className="flex items-center justify-center gap-1 text-xs px-2 py-1.5 rounded-lg border border-gray-200 dark:border-white/10 text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100 dark:hover:bg-white/10 disabled:opacity-40"><Home className="w-3.5 h-3.5" /> Home</button>
+                <button onClick={onDuplicatePage} className="flex items-center justify-center gap-1 text-xs px-2 py-1.5 rounded-lg border border-gray-200 dark:border-white/10 text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100 dark:hover:bg-white/10"><Files className="w-3.5 h-3.5" /> Duplicate</button>
               </div>
-            )}
-          </div>
+              <button onClick={() => { setPageMenu(false); setConfirmDeletePage(true); }} disabled={site.pages.length <= 1} title={site.pages.length <= 1 ? "A site needs at least one page" : "Delete this page"} className="w-full flex items-center justify-center gap-1 text-xs px-2 py-1.5 rounded-lg border border-red-200 dark:border-red-900/50 text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 disabled:opacity-40"><Trash2 className="w-3.5 h-3.5" /> Delete page</button>
+            </div>
+          )}
+        </div>
+        <ToolDivider />
 
-          <button onClick={addSection} className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700"><Plus className="w-3.5 h-3.5" /> Add section</button>
-          <button onClick={undo} disabled={!canUndo} title="Undo (Ctrl+Z)" aria-label="Undo" className="p-1.5 rounded-lg border border-gray-300 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-800 disabled:opacity-40 disabled:cursor-not-allowed"><Undo2 className="w-4 h-4" /></button>
-          <button onClick={redo} disabled={!canRedo} title="Redo (Ctrl+Y)" aria-label="Redo" className="p-1.5 rounded-lg border border-gray-300 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-800 disabled:opacity-40 disabled:cursor-not-allowed"><Redo2 className="w-4 h-4" /></button>
-          <button onClick={() => setPreview(true)} className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-lg border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-200 hover:bg-white dark:hover:bg-gray-800"><Eye className="w-3.5 h-3.5" /> Preview</button>
-          <button onClick={onExport} title="Download the whole site as static HTML" className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-lg border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-200 hover:bg-white dark:hover:bg-gray-800"><Download className="w-3.5 h-3.5" /> Export</button>
-          <button onClick={() => resetSite(siteFromRoot(starter()))} className="text-xs px-2.5 py-1 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-white dark:hover:bg-gray-800">Reset</button>
+        <ToolBtn onClick={addSection} primary title="Add a full-width section"><Plus className="w-3.5 h-3.5" /> Add section</ToolBtn>
+        <div className="flex items-center gap-0.5">
+          <ToolBtn onClick={undo} disabled={!canUndo} ariaLabel="Undo" title="Undo (Ctrl+Z)"><Undo2 className="w-4 h-4" /></ToolBtn>
+          <ToolBtn onClick={redo} disabled={!canRedo} ariaLabel="Redo" title="Redo (Ctrl+Y)"><Redo2 className="w-4 h-4" /></ToolBtn>
+        </div>
+        <ToolDivider />
+        <ToolBtn onClick={() => setPreview(true)} title="See it as a visitor"><Eye className="w-3.5 h-3.5" /> Preview</ToolBtn>
+        <ToolBtn onClick={onExport} title="Download the whole site as HTML"><Download className="w-3.5 h-3.5" /> Export</ToolBtn>
+        <ToolBtn onClick={() => resetSite(siteFromRoot(starter()))} title="Start over">Reset</ToolBtn>
 
-          <div className="flex items-center rounded-lg border border-gray-300 dark:border-gray-700 p-0.5 ml-auto" role="group" aria-label="Preview screen size">
-            {DEVICES.map((d) => (
-              <button key={d.id} onClick={() => setDevice(d.id)} title={`${d.label}${d.w ? ` (${d.w}px)` : ""}`} aria-label={`${d.label} preview`} aria-pressed={device === d.id} className={`p-1.5 rounded-md ${device === d.id ? "bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300" : "text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800"}`}><d.Icon className="w-4 h-4" /></button>
-            ))}
-          </div>
-          <label className="flex items-center gap-1 text-[11px] text-gray-500" title="Base unit in px — rendered as rem (WCAG)">
-            Base
-            <input type="number" min={6} max={24} value={root.baseFont ?? 10} onChange={(e) => commit(updateBox(root, root.id, { baseFont: Number(e.target.value) || 10 }))} aria-label="Base font size (px)" className="w-12 text-xs px-1.5 py-1 rounded border border-gray-300 dark:border-gray-700 bg-transparent" />
-            px
+        <div className="ml-auto flex items-center gap-2 shrink-0">
+          <Segmented ariaLabel="Preview screen size" value={device} onChange={setDevice} options={DEVICES.map((d) => ({ value: d.id, Icon: d.Icon, title: `${d.label}${d.w ? ` (${d.w}px)` : ""}` }))} />
+          <label className="flex items-center gap-1 text-[0.6875rem] text-gray-400" title="Base size in px — everything scales off this so text stays readable when zoomed (WCAG)">
+            <span className="hidden lg:inline">Base size</span>
+            <input type="number" min={6} max={24} value={root.baseFont ?? 10} onChange={(e) => commit(updateBox(root, root.id, { baseFont: Number(e.target.value) || 10 }))} aria-label="Base size (px)" className="w-12 text-xs px-1.5 py-1 rounded-lg border border-gray-200 dark:border-white/10 bg-transparent" />
           </label>
         </div>
-        <div className={`bg-white shadow-2xl rounded-xl ring-1 ring-black/10 shrink-0 mx-auto transition-[width] duration-300 ${device === "full" ? "w-full max-w-5xl" : ""}`} style={{ width: frameW ?? undefined, fontFamily: renderTheme.bodyFont, containerType: "inline-size" }}>
-          <BoxCanvas root={root} theme={renderTheme} minHeight={PAGE_MIN_H} selectedIds={selectedIds} onSelectIds={setSelectedIds} onChange={commit} breakpoint={bp} />
-        </div>
-        </div>
-      </div>
+      </header>
 
-      <aside className="w-72 shrink-0 border-l border-gray-200 dark:border-gray-800 bg-white dark:bg-[#161922] overflow-y-auto">
-        <div className="h-11 flex items-center px-3 border-b border-gray-200 dark:border-gray-800 text-xs font-bold uppercase tracking-wide text-gray-500">Inspector</div>
-        {bulk ? (
-          <BulkInspector count={selectedIds.length} theme={renderTheme} sample={(() => { const f = findBox(root, selectedIds[0]); return f ? resolveResponsive(f, bp) : null; })()} onStepWidth={bulkStepWidth} onStepHeight={bulkStepHeight} onPatch={bulkPatch} onDuplicate={bulkDuplicate} onDelete={bulkDelete} onFloatAll={bulkFloat} />
-        ) : selected ? (
-          <BoxInspector node={bp === "base" ? selected : resolveResponsive(selected, bp)} theme={renderTheme} onPatch={onPatch} onAddChild={addChildSection} onFloat={floatSelected} onUnfloat={unfloatSelected} onLayer={layerSelected} canFloat={selected.id !== root.id} inGrid={findParent(root, selected.id)?.parent.layout === "grid"} breakpoint={bp} overridden={hasOverride(selected, bp)} onResetOverride={resetOverride} pages={pageList} currentPageId={activePage.id} />
+      {/* ── Body: Blocks · Canvas · Inspector ── */}
+      <div className="flex-1 flex min-h-0">
+        {blocksOpen ? (
+          <aside className="w-44 shrink-0 border-r border-gray-200 dark:border-white/10 bg-white dark:bg-[#14171f] overflow-y-auto"><BlocksPanel theme={renderTheme} onPick={insertBlock} onCollapse={() => setBlocksOpen(false)} /></aside>
         ) : (
-          <div className="p-6 text-xs text-gray-400 text-center mt-6">Click a block to edit it — or drag a box on empty canvas to select several at once.</div>
+          <aside className="w-10 shrink-0 border-r border-gray-200 dark:border-white/10 bg-white dark:bg-[#14171f] flex flex-col items-center pt-3">
+            <button onClick={() => setBlocksOpen(true)} aria-label="Show blocks panel" title="Show blocks" className="p-1.5 rounded-lg text-gray-500 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-gray-100 dark:hover:bg-white/10"><PanelLeftOpen className="w-4 h-4" /></button>
+            <span className="mt-2 text-[0.625rem] font-semibold uppercase tracking-wide text-gray-400 [writing-mode:vertical-rl] rotate-180">Blocks</span>
+          </aside>
         )}
-      </aside>
+
+        <div className="flex-1 min-w-0 overflow-auto">
+          <div className="p-8 flex justify-center min-h-full">
+            <div className={`bg-white shadow-sm rounded-xl ring-1 ring-gray-200/70 dark:ring-white/10 shrink-0 h-fit transition-[width] duration-300 ${device === "full" ? "w-full max-w-5xl" : ""}`} style={{ width: frameW ?? undefined, fontFamily: renderTheme.bodyFont, containerType: "inline-size" }}>
+              <BoxCanvas root={root} theme={renderTheme} minHeight={PAGE_MIN_H} selectedIds={selectedIds} onSelectIds={setSelectedIds} onChange={commit} breakpoint={bp} />
+            </div>
+          </div>
+        </div>
+
+        <aside className="w-72 shrink-0 border-l border-gray-200 dark:border-white/10 bg-white dark:bg-[#14171f] overflow-y-auto">
+          <div className="h-11 flex items-center px-3 border-b border-gray-200 dark:border-white/10 text-xs font-bold uppercase tracking-wide text-gray-500">Inspector</div>
+          {bulk ? (
+            <BulkInspector count={selectedIds.length} theme={renderTheme} sample={(() => { const f = findBox(root, selectedIds[0]); return f ? resolveResponsive(f, bp) : null; })()} onStepWidth={bulkStepWidth} onStepHeight={bulkStepHeight} onPatch={bulkPatch} onDuplicate={bulkDuplicate} onDelete={bulkDelete} onFloatAll={bulkFloat} />
+          ) : selected ? (
+            <BoxInspector node={bp === "base" ? selected : resolveResponsive(selected, bp)} theme={renderTheme} onPatch={onPatch} onAddChild={addChildSection} onFloat={floatSelected} onUnfloat={unfloatSelected} onLayer={layerSelected} canFloat={selected.id !== root.id} inGrid={findParent(root, selected.id)?.parent.layout === "grid"} breakpoint={bp} overridden={hasOverride(selected, bp)} onResetOverride={resetOverride} pages={pageList} currentPageId={activePage.id} />
+          ) : (
+            <div className="p-6 text-xs text-gray-400 text-center mt-6">Click a block to edit it — or drag a box on empty canvas to select several at once.</div>
+          )}
+        </aside>
+      </div>
 
       <DeleteConfirmationModal
         isOpen={confirmDeletePage}

@@ -396,12 +396,12 @@ export default function TimeTable({ timetable: propTimetable, schoolId = "school
 
   if (!activeTimetable || activeTimetable.length === 0) {
     return (
-      <div className="bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-2xl shadow-lg border border-gray-200/50 dark:border-[#1a1d24]/50 midnight:border-cyan-500/30 purple:border-pink-500/30 p-8">
+      <div className="bg-surface rounded-2xl shadow-lg border border-gray-200/50 dark:border-[#1a1d24]/50 midnight:border-cyan-500/30 purple:border-pink-500/30 p-8">
         <div className="text-center py-16">
           <div className="inline-flex items-center justify-center w-24 h-24 rounded-2xl bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 midnight:from-cyan-950/30 midnight:to-blue-950/30 purple:from-pink-950/30 purple:to-purple-950/30 mb-6 mx-auto">
             <Clock className="w-12 h-12 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
           </div>
-          <h3 className="text-xl font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-2">
+          <h3 className="text-xl font-bold text-ink mb-2">
             No Timetable Available
           </h3>
           <p className="text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70 max-w-sm mx-auto">
@@ -577,13 +577,13 @@ export default function TimeTable({ timetable: propTimetable, schoolId = "school
   return (
     <div className="space-y-6">
       {/* Timetable Grid with integrated header */}
-      <div className="bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-2xl shadow-lg overflow-hidden">
+      <div className="bg-surface rounded-2xl shadow-lg overflow-hidden">
         {/* Desktop Header Section */}
         <div className="hidden md:block px-6 py-2 border-b border-gray-200/50 dark:border-[#1a1d24]/50 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-gradient-to-r from-blue-50/30 to-indigo-50/30 dark:from-blue-900/5 dark:to-indigo-900/5 midnight:from-cyan-900/5 midnight:to-blue-900/5 purple:from-pink-900/5 purple:to-purple-900/5">
           <div className="flex items-center justify-between gap-3">
             {/* Left: Title */}
             <div className="flex items-center gap-2 flex-shrink-0">
-              <h2 className="text-lg font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+              <h2 className="text-lg font-bold text-ink">
                 Timetable
               </h2>
             </div>
@@ -594,7 +594,7 @@ export default function TimeTable({ timetable: propTimetable, schoolId = "school
               <button
                 onClick={handlePreviousWeek}
                 disabled={currentWeek === 1}
-                className="p-1 rounded-md bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-200/60 dark:border-gray-700/60 midnight:border-cyan-500/20 purple:border-pink-500/20 text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                className="p-1 rounded-md bg-surface border border-gray-200/60 dark:border-gray-700/60 midnight:border-cyan-500/20 purple:border-pink-500/20 text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
               >
                 <ChevronLeft className="w-3.5 h-3.5" />
               </button>
@@ -612,7 +612,7 @@ export default function TimeTable({ timetable: propTimetable, schoolId = "school
               <button
                 onClick={handleNextWeek}
                 disabled={currentWeek === totalWeeks}
-                className="p-1 rounded-md bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-200/60 dark:border-gray-700/60 midnight:border-cyan-500/20 purple:border-pink-500/20 text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                className="p-1 rounded-md bg-surface border border-gray-200/60 dark:border-gray-700/60 midnight:border-cyan-500/20 purple:border-pink-500/20 text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
               >
                 <ChevronRight className="w-3.5 h-3.5" />
               </button>
@@ -641,7 +641,7 @@ export default function TimeTable({ timetable: propTimetable, schoolId = "school
             <div className="p-1.5 rounded-lg bg-blue-100 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30">
               <Clock className="w-4 h-4 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
             </div>
-            <h2 className="text-base font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+            <h2 className="text-base font-bold text-ink">
               Timetable
             </h2>
           </div>
@@ -659,7 +659,7 @@ export default function TimeTable({ timetable: propTimetable, schoolId = "school
             <button
               onClick={handlePreviousWeek}
               disabled={currentWeek === 1}
-              className="flex-shrink-0 p-2 rounded-lg bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border-2 border-blue-200/60 dark:border-blue-800/60 midnight:border-cyan-500/30 purple:border-pink-500/30 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 hover:bg-blue-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer active:scale-95 shadow-sm"
+              className="flex-shrink-0 p-2 rounded-lg bg-surface border-2 border-blue-200/60 dark:border-blue-800/60 midnight:border-cyan-500/30 purple:border-pink-500/30 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 hover:bg-blue-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer active:scale-95 shadow-sm"
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
@@ -675,7 +675,7 @@ export default function TimeTable({ timetable: propTimetable, schoolId = "school
             <button
               onClick={handleNextWeek}
               disabled={currentWeek === totalWeeks}
-              className="flex-shrink-0 p-2 rounded-lg bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border-2 border-blue-200/60 dark:border-blue-800/60 midnight:border-cyan-500/30 purple:border-pink-500/30 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 hover:bg-blue-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer active:scale-95 shadow-sm"
+              className="flex-shrink-0 p-2 rounded-lg bg-surface border-2 border-blue-200/60 dark:border-blue-800/60 midnight:border-cyan-500/30 purple:border-pink-500/30 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 hover:bg-blue-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer active:scale-95 shadow-sm"
             >
               <ChevronRight className="w-4 h-4" />
             </button>
@@ -694,7 +694,7 @@ export default function TimeTable({ timetable: propTimetable, schoolId = "school
                     <span className="hidden sm:inline"> • {selectedYear === "this-year" ? "This Year" : selectedYear === "last-year" ? "Last Year" : "2 Years Ago"}</span>
                   </span>
                 </div>
-                <span className="text-[11px] text-blue-600/80 dark:text-blue-400/80 midnight:text-cyan-400/80 purple:text-pink-400/80 font-medium sm:ml-auto">
+                <span className="text-[0.6875rem] text-blue-600/80 dark:text-blue-400/80 midnight:text-cyan-400/80 purple:text-pink-400/80 font-medium sm:ml-auto">
                   {/* Calculate date range for the week */}
                   {(() => {
                     const now = new Date();
@@ -753,7 +753,7 @@ export default function TimeTable({ timetable: propTimetable, schoolId = "school
                   className="relative"
                 >
                   <div className="bg-gradient-to-r from-blue-50/60 to-indigo-50/60 dark:from-blue-900/10 dark:to-indigo-900/10 midnight:from-cyan-900/10 midnight:to-blue-900/10 purple:from-pink-900/10 purple:to-purple-900/10 rounded-lg py-1.5 sm:py-2.5 px-2 sm:px-3 border border-blue-100/50 dark:border-blue-800/20 midnight:border-cyan-500/20 purple:border-pink-500/20">
-                    <h3 className="text-[10px] sm:text-xs font-bold text-blue-700 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300 text-center uppercase tracking-wider truncate">
+                    <h3 className="text-[0.625rem] sm:text-xs font-bold text-blue-700 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300 text-center uppercase tracking-wider truncate">
                       {daySchedule.day}
                     </h3>
                   </div>

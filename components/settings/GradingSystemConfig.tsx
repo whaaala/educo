@@ -191,7 +191,7 @@ export default function GradingSystemConfig({
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-lg font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+          <h3 className="text-lg font-bold text-ink">
             Grading Configuration
           </h3>
           <p className="text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-400/80 purple:text-pink-400/80 mt-1">

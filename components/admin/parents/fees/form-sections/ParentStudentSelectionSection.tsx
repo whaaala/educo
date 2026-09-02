@@ -117,19 +117,19 @@ export default function ParentStudentSelectionSection({
   };
 
   return (
-    <section className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm hover:shadow-md transition-shadow duration-200">
+    <section className="bg-surface rounded-xl border border-line shadow-sm hover:shadow-md transition-shadow duration-200">
       {/* Collapsible Header */}
       <button
         type="button"
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full bg-blue-50/50 dark:bg-blue-900/10 midnight:bg-cyan-900/10 purple:bg-pink-900/10 hover:bg-blue-50 dark:hover:bg-blue-900/20 midnight:hover:bg-cyan-900/20 purple:hover:bg-pink-900/20 px-6 py-3 flex items-center justify-between transition-all duration-200 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20"
+        className="w-full bg-blue-50/50 dark:bg-blue-900/10 midnight:bg-cyan-900/10 purple:bg-pink-900/10 hover:bg-blue-50 dark:hover:bg-blue-900/20 midnight:hover:bg-cyan-900/20 purple:hover:bg-pink-900/20 px-6 py-3 flex items-center justify-between transition-all duration-200 border-b border-line"
       >
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 flex items-center justify-center">
             <Users className="w-4 h-4 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
           </div>
           <div className="text-left">
-            <h2 className="text-base font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+            <h2 className="text-base font-semibold text-ink">
               Parent & Student Selection
             </h2>
             <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70">
@@ -172,7 +172,7 @@ export default function ParentStudentSelectionSection({
                   <button
                     type="button"
                     onClick={() => setIsParentDropdownOpen(!isParentDropdownOpen)}
-                    className={`appearance-none w-full min-h-[46px] text-sm font-normal bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] ${
+                    className={`appearance-none w-full min-h-[46px] text-sm font-normal bg-surface ${
                       errors.parentId
                         ? "border-red-500 dark:border-red-400"
                         : "border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30"
@@ -217,7 +217,7 @@ export default function ParentStudentSelectionSection({
 
                   {/* Parent Dropdown */}
                   {isParentDropdownOpen && (
-                    <div className="absolute z-50 w-full mt-1 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl border border-gray-200 dark:border-gray-700 shadow-xl max-h-80 overflow-hidden">
+                    <div className="absolute z-50 w-full mt-1 bg-surface rounded-xl border border-gray-200 dark:border-gray-700 shadow-xl max-h-80 overflow-hidden">
                       <div className="p-2 border-b border-gray-200 dark:border-gray-700">
                         <div className="relative">
                           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -307,7 +307,7 @@ export default function ParentStudentSelectionSection({
                       }
                     }}
                     disabled={!selectedParent}
-                    className={`appearance-none w-full min-h-[46px] text-sm font-normal bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] ${
+                    className={`appearance-none w-full min-h-[46px] text-sm font-normal bg-surface ${
                       errors.studentId
                         ? "border-red-500 dark:border-red-400"
                         : "border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30"
@@ -356,7 +356,7 @@ export default function ParentStudentSelectionSection({
 
                   {/* Student Dropdown */}
                   {isStudentDropdownOpen && selectedParent && (
-                    <div className="absolute z-50 w-full mt-1 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl border border-gray-200 dark:border-gray-700 shadow-xl max-h-80 overflow-hidden">
+                    <div className="absolute z-50 w-full mt-1 bg-surface rounded-xl border border-gray-200 dark:border-gray-700 shadow-xl max-h-80 overflow-hidden">
                       {selectedParent.children.length > 3 && (
                         <div className="p-2 border-b border-gray-200 dark:border-gray-700">
                           <div className="relative">

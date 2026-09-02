@@ -126,29 +126,29 @@ export default function NotificationDropdown() {
 
   const getNotificationColors = (type: NotificationType) => {
     const colors: Record<NotificationType, { bg: string; text: string; gradient: string }> = {
-      general: { bg: "bg-gray-100 dark:bg-[#22262e]/50", text: "text-gray-600 dark:text-gray-400", gradient: "from-gray-500 to-gray-600" },
-      performance: { bg: "bg-amber-50 dark:bg-amber-500/10", text: "text-amber-600 dark:text-amber-400", gradient: "from-amber-500 to-orange-500" },
+      general: { bg: "bg-gray-100 dark:bg-[#22262e]/50 midnight:bg-[#0f1330]/50 purple:bg-[#251340]/50", text: "text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300", gradient: "from-gray-500 to-gray-600" },
+      performance: { bg: "bg-amber-50 dark:bg-amber-500/10", text: "text-amber-600 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400", gradient: "from-amber-500 to-orange-500" },
       appointment: { bg: "bg-purple-50 dark:bg-purple-500/10", text: "text-purple-600 dark:text-purple-400", gradient: "from-purple-500 to-pink-500" },
-      record: { bg: "bg-blue-50 dark:bg-blue-500/10", text: "text-blue-600 dark:text-blue-400", gradient: "from-blue-500 to-indigo-500" },
+      record: { bg: "bg-blue-50 dark:bg-blue-500/10", text: "text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400", gradient: "from-blue-500 to-indigo-500" },
       leave_submitted: { bg: "bg-cyan-50 dark:bg-cyan-500/10", text: "text-cyan-600 dark:text-cyan-400", gradient: "from-cyan-500 to-blue-500" },
       leave_approved: { bg: "bg-emerald-50 dark:bg-emerald-500/10", text: "text-emerald-600 dark:text-emerald-400", gradient: "from-emerald-500 to-green-500" },
       leave_rejected: { bg: "bg-rose-50 dark:bg-rose-500/10", text: "text-rose-600 dark:text-rose-400", gradient: "from-rose-500 to-red-500" },
       meeting_scheduled: { bg: "bg-indigo-50 dark:bg-indigo-500/10", text: "text-indigo-600 dark:text-indigo-400", gradient: "from-indigo-500 to-purple-500" },
       meeting_cancelled: { bg: "bg-rose-50 dark:bg-rose-500/10", text: "text-rose-600 dark:text-rose-400", gradient: "from-rose-500 to-red-500" },
-      payment: { bg: "bg-green-50 dark:bg-green-500/10", text: "text-green-600 dark:text-green-400", gradient: "from-green-500 to-emerald-500" },
-      message: { bg: "bg-blue-50 dark:bg-blue-500/10", text: "text-blue-600 dark:text-blue-400", gradient: "from-blue-500 to-cyan-500" },
-      alert: { bg: "bg-red-50 dark:bg-red-500/10", text: "text-red-600 dark:text-red-400", gradient: "from-red-500 to-rose-500" },
+      payment: { bg: "bg-green-50 dark:bg-green-500/10", text: "text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400", gradient: "from-green-500 to-emerald-500" },
+      message: { bg: "bg-blue-50 dark:bg-blue-500/10", text: "text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400", gradient: "from-blue-500 to-cyan-500" },
+      alert: { bg: "bg-red-50 dark:bg-red-500/10", text: "text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400", gradient: "from-red-500 to-rose-500" },
       success: { bg: "bg-emerald-50 dark:bg-emerald-500/10", text: "text-emerald-600 dark:text-emerald-400", gradient: "from-emerald-500 to-green-500" },
-      warning: { bg: "bg-amber-50 dark:bg-amber-500/10", text: "text-amber-600 dark:text-amber-400", gradient: "from-amber-500 to-yellow-500" },
-      info: { bg: "bg-blue-50 dark:bg-blue-500/10", text: "text-blue-600 dark:text-blue-400", gradient: "from-blue-500 to-indigo-500" },
+      warning: { bg: "bg-amber-50 dark:bg-amber-500/10", text: "text-amber-600 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400", gradient: "from-amber-500 to-yellow-500" },
+      info: { bg: "bg-blue-50 dark:bg-blue-500/10", text: "text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400", gradient: "from-blue-500 to-indigo-500" },
       document_shared: { bg: "bg-sky-50 dark:bg-sky-500/10", text: "text-sky-600 dark:text-sky-400", gradient: "from-sky-500 to-blue-500" },
       document_published: { bg: "bg-emerald-50 dark:bg-emerald-500/10", text: "text-emerald-600 dark:text-emerald-400", gradient: "from-emerald-500 to-green-500" },
-      document_comment: { bg: "bg-blue-50 dark:bg-blue-500/10", text: "text-blue-600 dark:text-blue-400", gradient: "from-blue-500 to-indigo-500" },
-      document_comment_reply: { bg: "bg-blue-50 dark:bg-blue-500/10", text: "text-blue-600 dark:text-blue-400", gradient: "from-blue-500 to-cyan-500" },
+      document_comment: { bg: "bg-blue-50 dark:bg-blue-500/10", text: "text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400", gradient: "from-blue-500 to-indigo-500" },
+      document_comment_reply: { bg: "bg-blue-50 dark:bg-blue-500/10", text: "text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400", gradient: "from-blue-500 to-cyan-500" },
       document_comment_resolved: { bg: "bg-emerald-50 dark:bg-emerald-500/10", text: "text-emerald-600 dark:text-emerald-400", gradient: "from-emerald-500 to-green-500" },
       document_comment_rejected: { bg: "bg-rose-50 dark:bg-rose-500/10", text: "text-rose-600 dark:text-rose-400", gradient: "from-rose-500 to-red-500" },
       document_comment_mention: { bg: "bg-purple-50 dark:bg-purple-500/10", text: "text-purple-600 dark:text-purple-400", gradient: "from-purple-500 to-pink-500" },
-      permission_request: { bg: "bg-amber-50 dark:bg-amber-500/10", text: "text-amber-600 dark:text-amber-400", gradient: "from-amber-500 to-orange-500" },
+      permission_request: { bg: "bg-amber-50 dark:bg-amber-500/10", text: "text-amber-600 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400", gradient: "from-amber-500 to-orange-500" },
       permission_granted: { bg: "bg-emerald-50 dark:bg-emerald-500/10", text: "text-emerald-600 dark:text-emerald-400", gradient: "from-emerald-500 to-green-500" },
       permission_denied: { bg: "bg-rose-50 dark:bg-rose-500/10", text: "text-rose-600 dark:text-rose-400", gradient: "from-rose-500 to-red-500" },
     };
@@ -165,10 +165,10 @@ export default function NotificationDropdown() {
         aria-label="Notifications"
         aria-expanded={isOpen}
       >
-        <Bell className="w-5 h-5 text-gray-600 dark:text-gray-300 group-hover:scale-110 transition-transform" />
+        <Bell className="w-5 h-5 text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 group-hover:scale-110 transition-transform" />
         {/* Notification Badge with Count */}
         {unreadCount > 0 && (
-          <span className="absolute -top-1.5 -right-1.5 min-w-[20px] h-[20px] px-1 flex items-center justify-center bg-gradient-to-br from-red-500 to-rose-600 text-white text-[9px] font-bold rounded-full ring-2 ring-white dark:ring-gray-900 shadow-lg">
+          <span className="absolute -top-1.5 -right-1.5 min-w-[20px] h-[20px] px-1 flex items-center justify-center bg-gradient-to-br from-red-500 to-rose-600 text-white text-[0.5625rem] font-bold rounded-full ring-2 ring-white dark:ring-gray-900 shadow-lg">
             {unreadCount}
           </span>
         )}
@@ -189,7 +189,7 @@ export default function NotificationDropdown() {
             <div
               ref={dropdownRef}
               style={dropdownStyle}
-              className="w-[380px] bg-white dark:bg-[#0f1115] rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700/50 z-[9999] transition-colors duration-300 overflow-hidden flex flex-col"
+              className="w-[380px] bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20/50 z-[9999] transition-colors duration-300 overflow-hidden flex flex-col"
               role="menu"
               aria-orientation="vertical"
               onClick={(e) => e.stopPropagation()}
@@ -223,14 +223,14 @@ export default function NotificationDropdown() {
 
               {/* Mark All as Read */}
               {unreadCount > 0 && (
-                <div className="px-5 py-2.5 border-b border-gray-100 dark:border-[#1a1d24] bg-gray-50/50 dark:bg-[#1a1d24]/30">
+                <div className="px-5 py-2.5 border-b border-gray-100 dark:border-[#1a1d24] bg-gray-50/50 dark:bg-[#1a1d24]/30 midnight:bg-[#0a0e27]/30 purple:bg-[#1a0b2e]/30">
                   <button
                     type="button"
                     onClick={(e) => {
                       e.stopPropagation();
                       markAllAsRead();
                     }}
-                    className="flex items-center gap-1.5 text-xs font-medium text-blue-600 dark:text-blue-400 hover:underline cursor-pointer"
+                    className="flex items-center gap-1.5 text-xs font-medium text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 hover:underline cursor-pointer"
                   >
                     <CheckCheck className="w-3.5 h-3.5" />
                     Mark all as read
@@ -242,13 +242,13 @@ export default function NotificationDropdown() {
               <div className="max-h-[360px] overflow-y-auto">
                 {displayNotifications.length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-12 px-4">
-                    <div className="w-16 h-16 rounded-2xl bg-gray-100 dark:bg-[#1a1d24] flex items-center justify-center mb-4">
+                    <div className="w-16 h-16 rounded-2xl bg-gray-100 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] flex items-center justify-center mb-4">
                       <Bell className="w-8 h-8 text-gray-400" />
                     </div>
-                    <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                    <p className="text-sm font-semibold text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200">
                       No notifications
                     </p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 text-center">
+                    <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mt-1 text-center">
                       You&apos;re all caught up!
                     </p>
                   </div>
@@ -278,7 +278,7 @@ export default function NotificationDropdown() {
                             {/* Avatar / Icon */}
                             <div className="flex-shrink-0 relative">
                               {notification.avatar ? (
-                                <div className="w-10 h-10 rounded-xl overflow-hidden shadow-sm ring-2 ring-white/80 dark:ring-gray-700/50">
+                                <div className="w-10 h-10 rounded-xl overflow-hidden shadow-sm ring-2 ring-white/80 dark:ring-gray-700 midnight:ring-cyan-500/20 purple:ring-pink-500/20/50">
                                   <Image
                                     src={notification.avatar}
                                     alt={notification.userName || "User"}
@@ -303,16 +303,16 @@ export default function NotificationDropdown() {
                               <div className="flex items-start justify-between gap-2">
                                 <div className="flex-1 min-w-0">
                                   {notification.userName && (
-                                    <span className="font-semibold text-gray-900 dark:text-white text-sm">
+                                    <span className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-sm">
                                       {notification.userName}{" "}
                                     </span>
                                   )}
-                                  <span className="text-sm text-gray-700 dark:text-gray-300">
+                                  <span className="text-sm text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200">
                                     {notification.message}
                                   </span>
                                 </div>
                               </div>
-                              <div className="flex items-center gap-1.5 mt-1.5 text-[11px] text-gray-400 dark:text-gray-500">
+                              <div className="flex items-center gap-1.5 mt-1.5 text-[0.6875rem] text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400">
                                 <Clock className="w-3 h-3" />
                                 <span>{formatTimeAgo(notification.createdAt)}</span>
                               </div>
@@ -344,7 +344,7 @@ export default function NotificationDropdown() {
                                   }
                                   markAsRead(notification.id);
                                 }}
-                                className="px-3 py-1.5 text-[11px] font-semibold text-white bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 rounded-lg transition-all cursor-pointer shadow-sm"
+                                className="px-3 py-1.5 text-[0.6875rem] font-semibold text-white bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 rounded-lg transition-all cursor-pointer shadow-sm"
                               >
                                 ✓ Approve
                               </button>
@@ -363,7 +363,7 @@ export default function NotificationDropdown() {
                                   }
                                   markAsRead(notification.id);
                                 }}
-                                className="px-3 py-1.5 text-[11px] font-semibold text-gray-700 dark:text-gray-200 bg-gray-100/80 dark:bg-[#22262e]/50 hover:bg-gray-200/80 dark:hover:bg-[#2a2d35]/50 border border-gray-200/50 dark:border-gray-600/50 rounded-lg transition-all cursor-pointer"
+                                className="px-3 py-1.5 text-[0.6875rem] font-semibold text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 bg-gray-100/80 dark:bg-[#22262e]/50 midnight:bg-[#0f1330]/50 purple:bg-[#251340]/50 hover:bg-gray-200/80 dark:hover:bg-[#2a2d35]/50 border border-gray-200/50 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30/50 rounded-lg transition-all cursor-pointer"
                               >
                                 ✗ Deny
                               </button>
@@ -378,7 +378,7 @@ export default function NotificationDropdown() {
 
               {/* Footer */}
               {notifications.length > 0 && (
-                <div className="px-4 py-3 border-t border-gray-100 dark:border-[#1a1d24] bg-gray-50/50 dark:bg-[#1a1d24]/30">
+                <div className="px-4 py-3 border-t border-gray-100 dark:border-[#1a1d24] bg-gray-50/50 dark:bg-[#1a1d24]/30 midnight:bg-[#0a0e27]/30 purple:bg-[#1a0b2e]/30">
                   <button
                     type="button"
                     onClick={(e) => {

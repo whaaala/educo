@@ -238,7 +238,7 @@ export default function TransferRequestForm({
                     className="mt-0.5 sm:mt-1 mr-2 sm:mr-3 flex-shrink-0"
                   />
                   <div className="flex-1 min-w-0">
-                    <div className="text-sm sm:text-base font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                    <div className="text-sm sm:text-base font-semibold text-ink">
                       {type.label}
                     </div>
                     <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70 mt-0.5">
@@ -252,7 +252,7 @@ export default function TransferRequestForm({
 
           {/* Destination Details */}
           <div className="space-y-3 sm:space-y-4">
-            <h3 className="text-sm sm:text-base font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 flex items-center gap-2">
+            <h3 className="text-sm sm:text-base font-semibold text-ink flex items-center gap-2">
               <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
               Destination Details
             </h3>

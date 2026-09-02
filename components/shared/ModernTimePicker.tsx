@@ -170,16 +170,16 @@ export default function ModernTimePicker({
     <div
       ref={pickerRef}
       style={pickerStyle}
-      className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/30 purple:border-pink-500/30 w-[280px] animate-in fade-in zoom-in-95 duration-200"
+      className="bg-surface rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/30 purple:border-pink-500/30 w-[280px] animate-in fade-in zoom-in-95 duration-200"
     >
       {/* Header */}
-      <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/10 dark:to-indigo-900/10 midnight:from-cyan-500/5 midnight:to-blue-500/5 purple:from-pink-500/5 purple:to-purple-500/5">
+      <div className="px-4 py-3 border-b border-line bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/10 dark:to-indigo-900/10 midnight:from-cyan-500/5 midnight:to-blue-500/5 purple:from-pink-500/5 purple:to-purple-500/5">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 dark:from-blue-400 dark:to-indigo-500 midnight:from-cyan-500 midnight:to-blue-600 purple:from-pink-500 purple:to-purple-600 flex items-center justify-center">
               <Clock className="w-4 h-4 text-white" />
             </div>
-            <h3 className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+            <h3 className="text-sm font-semibold text-ink">
               Select Time
             </h3>
           </div>
@@ -188,7 +188,7 @@ export default function ModernTimePicker({
 
       {/* Time Display */}
       <div className="px-4 py-4 bg-gradient-to-b from-gray-50/50 to-transparent dark:from-gray-800/50 midnight:from-gray-800/50 purple:from-gray-800/50">
-        <div className="flex items-center justify-center gap-2 text-3xl font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+        <div className="flex items-center justify-center gap-2 text-3xl font-bold text-ink">
           <span className="font-mono">{selectedHour.toString().padStart(2, '0')}</span>
           <span className="text-gray-400">:</span>
           <span className="font-mono">{selectedMinute.toString().padStart(2, '0')}</span>
@@ -291,7 +291,7 @@ export default function ModernTimePicker({
       </div>
 
       {/* Footer */}
-      <div className="px-4 py-3 border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-gray-50/50 dark:bg-[#1a1d24]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50">
+      <div className="px-4 py-3 border-t border-line bg-gray-50/50 dark:bg-[#1a1d24]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50">
         <div className="flex gap-2 justify-end">
           <button
             type="button"

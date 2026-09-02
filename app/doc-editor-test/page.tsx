@@ -106,7 +106,7 @@ export default function DocEditorTestPage() {
     return (
       <MainLayout immersive>
         <div className="-mt-4 -mx-4 lg:-mt-6 lg:-mx-8 -mb-4 lg:-mb-6 h-[calc(100vh-64px)] flex items-center justify-center">
-          <div className="text-gray-400 text-[13px]">Loading document...</div>
+          <div className="text-gray-400 text-[0.8125rem]">Loading document...</div>
         </div>
       </MainLayout>
     );

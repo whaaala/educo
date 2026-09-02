@@ -928,7 +928,7 @@ export default function CumulativeReportPage() {
               <li>Click Save / Print</li>
               <li>Choose where to save your PDF</li>
             </ol>
-            <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
+            <p className="text-xs text-muted">
               Note: the browser print dialog handles colors and layout best.
             </p>
           </div>

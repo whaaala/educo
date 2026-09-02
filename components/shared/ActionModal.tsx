@@ -252,7 +252,7 @@ export default function ActionModal({
 
         {/* Detail text */}
         {detail && (
-          <div className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
+          <div className="text-sm text-muted">
             {detail}
           </div>
         )}
@@ -267,10 +267,10 @@ export default function ActionModal({
                   idx < details.length - 1 ? "border-b border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20" : ""
                 }`}
               >
-                <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 uppercase tracking-wider">
+                <span className="text-xs font-semibold text-muted uppercase tracking-wider">
                   {item.label}
                 </span>
-                <span className="text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                <span className="text-sm font-bold text-ink">
                   {item.value}
                 </span>
               </div>

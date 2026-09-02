@@ -24,7 +24,7 @@ export default function SiblingInformationCard({
   return (
     <div className="group bg-gradient-to-br from-white to-gray-50/30 dark:from-gray-800 dark:to-gray-800/50 midnight:from-gray-800 midnight:to-gray-900/50 purple:from-gray-800 purple:to-gray-900/50 rounded-xl sm:rounded-2xl shadow-sm border border-gray-200/60 dark:border-gray-700/60 midnight:border-cyan-500/30 purple:border-pink-500/30 p-2.5 sm:p-5 transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/10 dark:hover:shadow-blue-500/20 midnight:hover:shadow-cyan-500/20 purple:hover:shadow-pink-500/20 hover:border-blue-300/60 dark:hover:border-blue-600/60 midnight:hover:border-cyan-400/60 purple:hover:border-pink-400/60 hover:-translate-y-0.5">
       {/* Header */}
-      <h3 className="text-xs sm:text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-2 sm:mb-4 uppercase tracking-wider">
+      <h3 className="text-xs sm:text-sm font-bold text-ink mb-2 sm:mb-4 uppercase tracking-wider">
         Sibling Information
       </h3>
 
@@ -89,10 +89,10 @@ export default function SiblingInformationCard({
 
               {/* Name and Class */}
               <div className="flex-1 min-w-0">
-                <div className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate">
+                <div className="text-xs sm:text-sm font-semibold text-ink truncate">
                   {siblingName}
                 </div>
-                <div className="text-[10px] sm:text-xs font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-300/80 purple:text-pink-300/80">
+                <div className="text-[0.625rem] sm:text-xs font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-300/80 purple:text-pink-300/80">
                   {siblingClass}, {siblingSection}
                 </div>
               </div>

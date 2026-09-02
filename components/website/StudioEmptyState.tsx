@@ -41,7 +41,7 @@ export default function StudioEmptyState({ schoolName, brandPrimary, brandAccent
             <span className="self-start inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold" style={{ background: brandTint, color: brandPrimary }}>
               <Sparkles className="w-3.5 h-3.5" /> {schoolName} · Website Builder
             </span>
-            <h1 className="mt-4 text-3xl sm:text-4xl font-extrabold tracking-tight leading-[1.08] text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+            <h1 className="mt-4 text-3xl sm:text-4xl font-extrabold tracking-tight leading-[1.08] text-ink">
               Let&rsquo;s build {schoolName}&rsquo;s website
             </h1>
             <p className="mt-3 text-sm sm:text-base leading-relaxed text-gray-600 dark:text-gray-400 midnight:text-cyan-300/80 purple:text-pink-300/80 max-w-lg">
@@ -75,7 +75,7 @@ export default function StudioEmptyState({ schoolName, brandPrimary, brandAccent
 
       {/* Template gallery */}
       <div>
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mb-4">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-muted mb-4">
           Start from a template
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
@@ -97,7 +97,7 @@ export default function StudioEmptyState({ schoolName, brandPrimary, brandAccent
                   <span className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-100 purple:text-pink-100">{t.name}</span>
                   <ArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" style={{ color: brandPrimary }} />
                 </div>
-                <p className="mt-1 text-[11px] leading-tight text-gray-500 dark:text-gray-400 midnight:text-cyan-400/80 purple:text-pink-400/80">{t.description}</p>
+                <p className="mt-1 text-[0.6875rem] leading-tight text-gray-500 dark:text-gray-400 midnight:text-cyan-400/80 purple:text-pink-400/80">{t.description}</p>
               </div>
             </div>
           ))}

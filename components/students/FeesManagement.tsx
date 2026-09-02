@@ -574,7 +574,7 @@ export default function FeesManagement({
     const style = variants[status];
 
     return (
-      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[12px] font-semibold border ${style.bg} ${style.text} ${style.border}`}>
+      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[0.75rem] font-semibold border ${style.bg} ${style.text} ${style.border}`}>
         <span className={`w-1.5 h-1.5 rounded-full ${style.dot} animate-pulse`}></span>
         {status}
       </span>
@@ -607,7 +607,7 @@ export default function FeesManagement({
     };
 
     return (
-      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[12px] font-medium border ${colorClasses[category.color]}`}>
+      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[0.75rem] font-medium border ${colorClasses[category.color]}`}>
         {Icon && <Icon className="w-3.5 h-3.5" />}
         {category.name}
       </span>
@@ -641,7 +641,7 @@ export default function FeesManagement({
 
     const badgeContent = (
       <span
-        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[12px] font-medium border ${colorClasses[category.color]} whitespace-nowrap max-w-[140px]`}
+        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[0.75rem] font-medium border ${colorClasses[category.color]} whitespace-nowrap max-w-[140px]`}
       >
         {Icon && <Icon className="w-3.5 h-3.5 flex-shrink-0" />}
         <span className="truncate">{category.name}</span>
@@ -666,14 +666,14 @@ export default function FeesManagement({
       key: "feeType",
       label: "Fee Details",
       sortable: true,
-      className: "text-left sticky left-0 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] z-10 after:absolute after:right-0 after:top-0 after:bottom-0 after:w-px after:bg-gradient-to-b after:from-transparent after:via-gray-200 after:to-transparent dark:after:via-gray-700",
+      className: "text-left sticky left-0 bg-surface z-10 after:absolute after:right-0 after:top-0 after:bottom-0 after:w-px after:bg-gradient-to-b after:from-transparent after:via-gray-200 after:to-transparent dark:after:via-gray-700",
       render: (row) => {
         const content = (
           <div className="flex flex-col gap-1 pr-4">
-            <span className="text-[12px] font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 whitespace-nowrap">
+            <span className="text-[0.75rem] font-semibold text-ink whitespace-nowrap">
               {row.feeType}
             </span>
-            <span className="text-[12px] text-gray-500 dark:text-gray-400 midnight:text-cyan-400/60 purple:text-pink-400/60 font-mono">
+            <span className="text-[0.75rem] text-gray-500 dark:text-gray-400 midnight:text-cyan-400/60 purple:text-pink-400/60 font-mono">
               {row.feeCode}
             </span>
           </div>
@@ -703,7 +703,7 @@ export default function FeesManagement({
       sortable: true,
       render: (row) => {
         const content = (
-          <span className="text-xs font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 whitespace-nowrap">
+          <span className="text-xs font-bold text-ink whitespace-nowrap">
             {currencySymbol}{row.amount.toLocaleString()}
           </span>
         );
@@ -771,11 +771,11 @@ export default function FeesManagement({
       sortable: true,
       render: (row) => (
         row.paymentMode ? (
-          <span className="text-[12px] text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 whitespace-nowrap">
+          <span className="text-[0.75rem] text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 whitespace-nowrap">
             {row.paymentMode}
           </span>
         ) : (
-          <span className="text-[12px] text-gray-400 dark:text-gray-500">-</span>
+          <span className="text-[0.75rem] text-gray-400 dark:text-gray-500">-</span>
         )
       ),
     },
@@ -785,17 +785,17 @@ export default function FeesManagement({
       render: (row) => (
         <div className="flex items-center gap-1.5 justify-center">
           {row.discount > 0 && (
-            <span className="text-[12px] text-green-600 dark:text-green-400 font-medium whitespace-nowrap">
+            <span className="text-[0.75rem] text-green-600 dark:text-green-400 font-medium whitespace-nowrap">
               -{currencySymbol}{row.discount}
             </span>
           )}
           {row.fine > 0 && (
-            <span className="text-[12px] text-red-600 dark:text-red-400 font-medium whitespace-nowrap">
+            <span className="text-[0.75rem] text-red-600 dark:text-red-400 font-medium whitespace-nowrap">
               +{currencySymbol}{row.fine}
             </span>
           )}
           {row.discount === 0 && row.fine === 0 && (
-            <span className="text-[12px] text-gray-400">-</span>
+            <span className="text-[0.75rem] text-gray-400">-</span>
           )}
         </div>
       ),

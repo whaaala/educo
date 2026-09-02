@@ -64,7 +64,7 @@ export const VideoTile = forwardRef<HTMLVideoElement, VideoTileProps>(
       <div
         className={cn(
           "relative rounded-xl sm:rounded-2xl overflow-hidden group",
-          "bg-gray-900 dark:bg-[#1a1d24]",
+          "bg-gray-900 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]",
           sizeClasses[size],
           isSpeaking && "ring-2 sm:ring-3",
           onClick && "cursor-pointer",
@@ -150,7 +150,7 @@ export const VideoTile = forwardRef<HTMLVideoElement, VideoTileProps>(
               className={cn(
                 "px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-md sm:rounded-lg bg-black/60 backdrop-blur-sm",
                 "text-white font-medium truncate max-w-[120px] sm:max-w-[150px]",
-                size === "xs" ? "text-[9px]" : size === "sm" ? "text-[10px]" : "text-xs sm:text-sm"
+                size === "xs" ? "text-[0.5625rem]" : size === "sm" ? "text-[0.625rem]" : "text-xs sm:text-sm"
               )}
             >
               {isLocal ? "You" : name}

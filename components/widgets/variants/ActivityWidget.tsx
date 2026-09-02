@@ -159,7 +159,7 @@ export function ActivityWidget({
           <div className="text-xs text-gray-600 dark:text-gray-400 midnight:text-gray-400 purple:text-gray-400 mt-0.5 line-clamp-2">
             {item.description}
           </div>
-          <div className="text-[10px] text-gray-400 dark:text-gray-500 midnight:text-gray-500 purple:text-gray-500 mt-1">
+          <div className="text-[0.625rem] text-gray-400 dark:text-gray-500 midnight:text-gray-500 purple:text-gray-500 mt-1">
             {item.timestamp}
           </div>
         </div>

@@ -76,19 +76,19 @@ export default function DocumentsSection({
   };
 
   return (
-    <section className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm hover:shadow-md transition-shadow duration-200">
+    <section className="bg-surface rounded-xl border border-line shadow-sm hover:shadow-md transition-shadow duration-200">
       {/* Collapsible Header */}
       <button
         type="button"
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full bg-cyan-50/50 dark:bg-cyan-900/10 midnight:bg-cyan-900/10 purple:bg-cyan-900/10 hover:bg-cyan-50 dark:hover:bg-cyan-900/20 midnight:hover:bg-cyan-900/20 purple:hover:bg-cyan-900/20 px-6 py-3 flex items-center justify-between transition-all duration-200 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20"
+        className="w-full bg-cyan-50/50 dark:bg-cyan-900/10 midnight:bg-cyan-900/10 purple:bg-cyan-900/10 hover:bg-cyan-50 dark:hover:bg-cyan-900/20 midnight:hover:bg-cyan-900/20 purple:hover:bg-cyan-900/20 px-6 py-3 flex items-center justify-between transition-all duration-200 border-b border-line"
       >
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-lg bg-cyan-100 dark:bg-cyan-900/30 midnight:bg-cyan-900/30 purple:bg-cyan-900/30 flex items-center justify-center">
             <FileText className="w-4 h-4 text-cyan-600 dark:text-cyan-400 midnight:text-cyan-400 purple:text-cyan-400" />
           </div>
           <div className="text-left">
-            <h2 className="text-base font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+            <h2 className="text-base font-semibold text-ink">
               Documents & Certificates
             </h2>
             <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70">
@@ -119,7 +119,7 @@ export default function DocumentsSection({
               <div className="w-7 h-7 rounded-lg bg-cyan-100 dark:bg-cyan-900/20 midnight:bg-cyan-900/20 purple:bg-cyan-900/20 flex items-center justify-center flex-shrink-0">
                 <FileCheck className="w-4 h-4 text-cyan-600 dark:text-cyan-400 midnight:text-cyan-400 purple:text-cyan-400" />
               </div>
-              <h3 className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+              <h3 className="text-sm font-semibold text-ink">
                 Required Documents
               </h3>
             </div>
@@ -209,7 +209,7 @@ export default function DocumentsSection({
               <div className="w-7 h-7 rounded-lg bg-cyan-100 dark:bg-cyan-900/20 midnight:bg-cyan-900/20 purple:bg-cyan-900/20 flex items-center justify-center flex-shrink-0">
                 <FileText className="w-4 h-4 text-cyan-600 dark:text-cyan-400 midnight:text-cyan-400 purple:text-cyan-400" />
               </div>
-              <h3 className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+              <h3 className="text-sm font-semibold text-ink">
                 Additional Documents
               </h3>
             </div>
@@ -300,7 +300,7 @@ export default function DocumentsSection({
                 <div className="w-7 h-7 rounded-lg bg-cyan-100 dark:bg-cyan-900/20 midnight:bg-cyan-900/20 purple:bg-cyan-900/20 flex items-center justify-center flex-shrink-0">
                   <FolderOpen className="w-4 h-4 text-cyan-600 dark:text-cyan-400 midnight:text-cyan-400 purple:text-cyan-400" />
                 </div>
-                <h3 className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                <h3 className="text-sm font-semibold text-ink">
                   Additional Documents
                 </h3>
               </div>
@@ -319,7 +319,7 @@ export default function DocumentsSection({
                 {additionalDocuments.map((doc) => (
                   <div
                     key={doc.id}
-                    className="space-y-2 p-4 rounded-lg border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-gray-50/50 dark:bg-[#1a1d24]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50"
+                    className="space-y-2 p-4 rounded-lg border border-line bg-gray-50/50 dark:bg-[#1a1d24]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50"
                   >
                     <div className="flex items-center justify-between mb-2">
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 flex items-center gap-1.5">
@@ -367,7 +367,7 @@ export default function DocumentsSection({
 
             {additionalDocuments.length === 0 && (
               <div className="pl-2">
-                <div className="text-center py-8 border-2 border-dashed border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-lg">
+                <div className="text-center py-8 border-2 border-dashed border-line rounded-lg">
                   <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70">
                     No additional documents added yet. Click "Add Document" to
                     add more.

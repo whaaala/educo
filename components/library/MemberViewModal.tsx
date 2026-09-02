@@ -198,7 +198,7 @@ export default function MemberViewModal({
             </div>
 
             {/* Member Name */}
-            <h3 className="text-lg font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-1">
+            <h3 className="text-lg font-bold text-ink mb-1">
               {member.name}
             </h3>
 
@@ -217,7 +217,7 @@ export default function MemberViewModal({
             <div className="p-2 rounded-lg bg-blue-50 dark:bg-blue-900/20 midnight:bg-cyan-900/20 purple:bg-pink-900/20">
               <Mail className="w-4 h-4 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
             </div>
-            <h4 className="text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+            <h4 className="text-sm font-bold text-ink">
               Contact Information
             </h4>
           </div>
@@ -225,11 +225,11 @@ export default function MemberViewModal({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {/* Email */}
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]">
+              <div className="p-2 rounded-lg bg-surface-2">
                 <Mail className="w-4 h-4 text-gray-500 dark:text-gray-400" />
               </div>
               <div>
-                <p className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">Email</p>
+                <p className="text-[0.625rem] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">Email</p>
                 {member.email ? (
                   <a
                     href={`mailto:${member.email}`}
@@ -238,7 +238,7 @@ export default function MemberViewModal({
                     {member.email}
                   </a>
                 ) : (
-                  <p className="text-sm font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                  <p className="text-sm font-medium text-ink">
                     N/A
                   </p>
                 )}
@@ -247,11 +247,11 @@ export default function MemberViewModal({
 
             {/* Phone */}
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]">
+              <div className="p-2 rounded-lg bg-surface-2">
                 <Phone className="w-4 h-4 text-gray-500 dark:text-gray-400" />
               </div>
               <div>
-                <p className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">Phone</p>
+                <p className="text-[0.625rem] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">Phone</p>
                 {member.phone ? (
                   <a
                     href={`tel:${member.phone}`}
@@ -260,7 +260,7 @@ export default function MemberViewModal({
                     {member.phone}
                   </a>
                 ) : (
-                  <p className="text-sm font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                  <p className="text-sm font-medium text-ink">
                     N/A
                   </p>
                 )}
@@ -277,7 +277,7 @@ export default function MemberViewModal({
             <div className="p-2 rounded-lg bg-green-50 dark:bg-green-900/20 midnight:bg-green-900/20 purple:bg-green-900/20">
               <Calendar className="w-4 h-4 text-green-600 dark:text-green-400" />
             </div>
-            <h4 className="text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+            <h4 className="text-sm font-bold text-ink">
               Membership Timeline
             </h4>
           </div>
@@ -293,8 +293,8 @@ export default function MemberViewModal({
                   <CheckCircle2 className="w-4 h-4 text-white" />
                 </div>
                 <div className="flex-1 pt-1">
-                  <p className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">Member Since</p>
-                  <p className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                  <p className="text-[0.625rem] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">Member Since</p>
+                  <p className="text-sm font-semibold text-ink">
                     {memberSince.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
                   </p>
                   <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 flex items-center gap-1">
@@ -317,7 +317,7 @@ export default function MemberViewModal({
                     <Calendar className="w-4 h-4 text-white" />
                   </div>
                   <div className="flex-1 pt-1">
-                    <p className={`text-[10px] font-bold uppercase tracking-widest ${
+                    <p className={`text-[0.625rem] font-bold uppercase tracking-widest ${
                       isExpired
                         ? "text-gray-600 dark:text-gray-400"
                         : isExpiringSoon
@@ -331,7 +331,7 @@ export default function MemberViewModal({
                         ? "text-gray-600 dark:text-gray-400 line-through"
                         : isExpiringSoon
                           ? "text-amber-600 dark:text-amber-400"
-                          : "text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50"
+                          : "text-ink"
                     }`}>
                       {expiryDate.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
                     </p>
@@ -349,9 +349,9 @@ export default function MemberViewModal({
             <div className="absolute inset-0 bg-gradient-to-br from-blue-500/0 to-blue-500/0 group-hover:from-blue-500/5 group-hover:to-purple-500/5 transition-all duration-300" />
             <div className="flex items-center gap-2 mb-1.5">
               <CreditCard className="w-3.5 h-3.5 text-gray-400 dark:text-gray-500" />
-              <p className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">Member ID</p>
+              <p className="text-[0.625rem] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">Member ID</p>
             </div>
-            <p className="text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 font-mono relative z-10">{member.memberId}</p>
+            <p className="text-sm font-bold text-ink font-mono relative z-10">{member.memberId}</p>
           </div>
 
           {/* Books Borrowed */}
@@ -359,10 +359,10 @@ export default function MemberViewModal({
             <div className="absolute inset-0 bg-gradient-to-br from-blue-500/0 to-blue-500/0 group-hover:from-blue-500/5 group-hover:to-purple-500/5 transition-all duration-300" />
             <div className="flex items-center gap-2 mb-1.5">
               <BookOpen className="w-3.5 h-3.5 text-gray-400 dark:text-gray-500" />
-              <p className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">Current Books</p>
+              <p className="text-[0.625rem] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">Current Books</p>
             </div>
             <p className="text-sm font-bold relative z-10">
-              <span className={member.currentBooksCount >= member.maxBooksAllowed ? "text-red-600 dark:text-red-400" : "text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50"}>
+              <span className={member.currentBooksCount >= member.maxBooksAllowed ? "text-red-600 dark:text-red-400" : "text-ink"}>
                 {member.currentBooksCount}
               </span>
               <span className="text-gray-400 dark:text-gray-500"> / {member.maxBooksAllowed}</span>
@@ -374,9 +374,9 @@ export default function MemberViewModal({
             <div className="absolute inset-0 bg-gradient-to-br from-blue-500/0 to-blue-500/0 group-hover:from-blue-500/5 group-hover:to-purple-500/5 transition-all duration-300" />
             <div className="flex items-center gap-2 mb-1.5">
               <Hash className="w-3.5 h-3.5 text-gray-400 dark:text-gray-500" />
-              <p className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">Total Borrowed</p>
+              <p className="text-[0.625rem] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">Total Borrowed</p>
             </div>
-            <p className="text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 relative z-10">{member.totalBorrowedCount}</p>
+            <p className="text-sm font-bold text-ink relative z-10">{member.totalBorrowedCount}</p>
           </div>
 
           {/* Fines Due */}
@@ -387,13 +387,13 @@ export default function MemberViewModal({
           }`}>
             <div className="flex items-center gap-2 mb-1.5">
               <DollarSign className={`w-3.5 h-3.5 ${member.finesDue > 0 ? "text-red-500" : "text-gray-400 dark:text-gray-500"}`} />
-              <p className={`text-[10px] font-bold uppercase tracking-widest ${member.finesDue > 0 ? "text-red-600 dark:text-red-400" : "text-gray-400 dark:text-gray-500"}`}>Fines Due</p>
+              <p className={`text-[0.625rem] font-bold uppercase tracking-widest ${member.finesDue > 0 ? "text-red-600 dark:text-red-400" : "text-gray-400 dark:text-gray-500"}`}>Fines Due</p>
             </div>
             <p className="text-sm font-bold relative z-10">
               {member.finesDue > 0 ? (
                 <span className="text-red-600 dark:text-red-400">{formatCurrency(member.finesDue)}</span>
               ) : (
-                <span className="text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">No Fines</span>
+                <span className="text-ink">No Fines</span>
               )}
             </p>
           </div>
@@ -403,9 +403,9 @@ export default function MemberViewModal({
             <div className="absolute inset-0 bg-gradient-to-br from-blue-500/0 to-blue-500/0 group-hover:from-blue-500/5 group-hover:to-purple-500/5 transition-all duration-300" />
             <div className="flex items-center gap-2 mb-1.5">
               <BookOpen className="w-3.5 h-3.5 text-gray-400 dark:text-gray-500" />
-              <p className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">Max Books</p>
+              <p className="text-[0.625rem] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">Max Books</p>
             </div>
-            <p className="text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 relative z-10">{member.maxBooksAllowed}</p>
+            <p className="text-sm font-bold text-ink relative z-10">{member.maxBooksAllowed}</p>
           </div>
 
           {/* Person ID */}
@@ -413,9 +413,9 @@ export default function MemberViewModal({
             <div className="absolute inset-0 bg-gradient-to-br from-blue-500/0 to-blue-500/0 group-hover:from-blue-500/5 group-hover:to-purple-500/5 transition-all duration-300" />
             <div className="flex items-center gap-2 mb-1.5">
               <User className="w-3.5 h-3.5 text-gray-400 dark:text-gray-500" />
-              <p className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">Person ID</p>
+              <p className="text-[0.625rem] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">Person ID</p>
             </div>
-            <p className="text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 font-mono relative z-10">{member.personId}</p>
+            <p className="text-sm font-bold text-ink font-mono relative z-10">{member.personId}</p>
           </div>
         </div>
 

@@ -384,7 +384,7 @@ export default function ParentMessagesPage() {
         ring: "ring-emerald-500/20",
       },
       System: {
-        bg: "bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/50",
+        bg: "bg-surface-2/50",
         text: "text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300",
         ring: "ring-gray-500/20",
       },
@@ -521,7 +521,7 @@ export default function ParentMessagesPage() {
                 <Inbox className="w-6 h-6 text-white" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{stats.total}</p>
+                <p className="text-2xl font-bold text-ink">{stats.total}</p>
                 <p className="text-xs font-medium text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 uppercase tracking-wide">Total Messages</p>
               </div>
             </div>
@@ -533,13 +533,13 @@ export default function ParentMessagesPage() {
                   <Mail className="w-6 h-6 text-white" />
                 </div>
                 {stats.unread > 0 && (
-                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center text-[10px] font-bold text-white ring-2 ring-white dark:ring-gray-800">
+                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center text-[0.625rem] font-bold text-white ring-2 ring-white dark:ring-gray-800">
                     {stats.unread}
                   </span>
                 )}
               </div>
               <div>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{stats.unread}</p>
+                <p className="text-2xl font-bold text-ink">{stats.unread}</p>
                 <p className="text-xs font-medium text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400 uppercase tracking-wide">Unread</p>
               </div>
             </div>
@@ -550,7 +550,7 @@ export default function ParentMessagesPage() {
                 <Send className="w-6 h-6 text-white" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{stats.sent}</p>
+                <p className="text-2xl font-bold text-ink">{stats.sent}</p>
                 <p className="text-xs font-medium text-emerald-600 dark:text-emerald-400 uppercase tracking-wide">Sent</p>
               </div>
             </div>
@@ -561,7 +561,7 @@ export default function ParentMessagesPage() {
                 <Star className="w-6 h-6 text-white" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{stats.starred}</p>
+                <p className="text-2xl font-bold text-ink">{stats.starred}</p>
                 <p className="text-xs font-medium text-amber-600 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400 uppercase tracking-wide">Starred</p>
               </div>
             </div>
@@ -569,11 +569,11 @@ export default function ParentMessagesPage() {
         </div>
 
         {/* Main Content - Chat-like Layout */}
-        <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-2xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm overflow-hidden">
+        <div className="bg-surface rounded-2xl border border-line shadow-sm overflow-hidden">
           <div className="grid grid-cols-1 lg:grid-cols-12 min-h-[600px]">
             {/* Message List Sidebar */}
             <div
-              className={`lg:col-span-4 xl:col-span-4 border-r border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 flex min-w-0 flex-col ${
+              className={`lg:col-span-4 xl:col-span-4 border-r border-line flex min-w-0 flex-col ${
                 showMobileMessage ? "hidden lg:flex" : "flex"
               }`}
             >
@@ -586,7 +586,7 @@ export default function ParentMessagesPage() {
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Search messages..."
-                    className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-gray-50 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/50 border-0 text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-sm placeholder:text-gray-400 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all"
+                    className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-gray-50 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/50 border-0 text-ink text-sm placeholder:text-gray-400 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all"
                   />
                 </div>
 
@@ -596,14 +596,14 @@ export default function ParentMessagesPage() {
                     onClick={() => setSelectedFilter("all")}
                     className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm font-semibold transition-all duration-200 cursor-pointer ${
                       selectedFilter !== "sent"
-                        ? "bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 shadow-sm"
-                        : "text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:text-gray-700 dark:hover:text-gray-300 midnight:hover:text-cyan-200 purple:hover:text-pink-200"
+                        ? "bg-surface text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 shadow-sm"
+                        : "text-muted hover:text-gray-700 dark:hover:text-gray-300 midnight:hover:text-cyan-200 purple:hover:text-pink-200"
                     }`}
                   >
                     <Inbox className="w-4 h-4" />
                     <span>Inbox</span>
                     {stats.unread > 0 && (
-                      <span className="flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full text-[10px] font-bold bg-red-500 text-white">
+                      <span className="flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full text-[0.625rem] font-bold bg-red-500 text-white">
                         {stats.unread}
                       </span>
                     )}
@@ -612,16 +612,16 @@ export default function ParentMessagesPage() {
                     onClick={() => setSelectedFilter("sent")}
                     className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm font-semibold transition-all duration-200 cursor-pointer ${
                       selectedFilter === "sent"
-                        ? "bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] text-emerald-600 dark:text-emerald-400 shadow-sm"
-                        : "text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:text-gray-700 dark:hover:text-gray-300 midnight:hover:text-cyan-200 purple:hover:text-pink-200"
+                        ? "bg-surface text-emerald-600 dark:text-emerald-400 shadow-sm"
+                        : "text-muted hover:text-gray-700 dark:hover:text-gray-300 midnight:hover:text-cyan-200 purple:hover:text-pink-200"
                     }`}
                   >
                     <Send className="w-4 h-4" />
                     <span>Sent</span>
-                    <span className={`flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full text-[10px] font-bold ${
+                    <span className={`flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full text-[0.625rem] font-bold ${
                       selectedFilter === "sent"
                         ? "bg-emerald-100 dark:bg-emerald-500/30 text-emerald-700 dark:text-emerald-300"
-                        : "bg-gray-200 dark:bg-[#2a2d35] midnight:bg-gray-700 purple:bg-gray-700 text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300"
+                        : "bg-gray-200 dark:bg-[#2a2d35] midnight:bg-gray-700 purple:bg-gray-700 text-muted"
                     }`}>
                       {stats.sent}
                     </span>
@@ -649,7 +649,7 @@ export default function ParentMessagesPage() {
                           <Star className={`w-3.5 h-3.5 ${selectedFilter === filter.id ? "fill-current" : ""}`} />
                         )}
                         {filter.label}
-                        <span className={`text-[10px] font-bold ${
+                        <span className={`text-[0.625rem] font-bold ${
                           selectedFilter === filter.id
                             ? "text-white/80"
                             : "text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400"
@@ -669,7 +669,7 @@ export default function ParentMessagesPage() {
                     <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-4 ${
                       selectedFilter === "sent"
                         ? "bg-emerald-100 dark:bg-emerald-900/30"
-                        : "bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]"
+                        : "bg-surface-2"
                     }`}>
                       {selectedFilter === "sent" ? (
                         <Send className="w-8 h-8 text-emerald-500 dark:text-emerald-400" />
@@ -677,7 +677,7 @@ export default function ParentMessagesPage() {
                         <MessageSquare className="w-8 h-8 text-gray-400" />
                       )}
                     </div>
-                    <p className="text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 font-medium">
+                    <p className="text-muted font-medium">
                       {selectedFilter === "sent" ? "No sent messages" : "No messages found"}
                     </p>
                     <p className="text-sm text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 mt-1">
@@ -689,7 +689,7 @@ export default function ParentMessagesPage() {
                 ) : (
                   <div>
                     {/* Section Header */}
-                    <div className={`sticky top-0 z-10 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wide border-b ${
+                    <div className={`sticky top-0 z-10 px-3 py-1.5 text-[0.625rem] font-semibold uppercase tracking-wide border-b ${
                       selectedFilter === "sent"
                         ? "bg-emerald-50/80 dark:bg-emerald-900/10 text-emerald-600 dark:text-emerald-400 border-emerald-100 dark:border-emerald-800/20"
                         : "bg-blue-50/80 dark:bg-blue-900/10 midnight:bg-cyan-900/10 purple:bg-pink-900/10 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 border-blue-100 dark:border-blue-800/20"
@@ -747,7 +747,7 @@ export default function ParentMessagesPage() {
                                     {isSent ? (
                                       <Send className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
                                     ) : (
-                                      <User className="w-5 h-5 text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300" />
+                                      <User className="w-5 h-5 text-muted" />
                                     )}
                                   </div>
                                 )}
@@ -769,12 +769,12 @@ export default function ParentMessagesPage() {
                               <div className="flex items-center justify-between gap-2 mb-0.5">
                                 <span className={`text-sm truncate ${
                                   !message.isRead && !isSent
-                                    ? "font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50"
+                                    ? "font-semibold text-ink"
                                     : "font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200"
                                 }`}>
                                   {isSent ? (
                                     <span className="flex items-center gap-1">
-                                      <span className="text-emerald-600 dark:text-emerald-400 text-[10px] font-semibold">To:</span>
+                                      <span className="text-emerald-600 dark:text-emerald-400 text-[0.625rem] font-semibold">To:</span>
                                       {displayName}
                                     </span>
                                   ) : (
@@ -785,7 +785,7 @@ export default function ParentMessagesPage() {
                                   {!message.isRead && !isSent && (
                                     <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
                                   )}
-                                  <span className="text-[11px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
+                                  <span className="text-[0.6875rem] text-muted">
                                     {formatTime(message.timestamp)}
                                   </span>
                                 </div>
@@ -801,16 +801,16 @@ export default function ParentMessagesPage() {
 
                               <div className="flex items-center gap-2">
                                 {isSent ? (
-                                  <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-semibold bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 ring-1 ring-emerald-500/20">
+                                  <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[0.625rem] font-semibold bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 ring-1 ring-emerald-500/20">
                                     Sent
                                   </span>
                                 ) : (
-                                  <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-semibold ${roleStyles.bg} ${roleStyles.text} ring-1 ${roleStyles.ring}`}>
+                                  <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[0.625rem] font-semibold ${roleStyles.bg} ${roleStyles.text} ring-1 ${roleStyles.ring}`}>
                                     {displayRole}
                                   </span>
                                 )}
                                 {message.childName && (
-                                  <span className="text-[11px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 truncate">
+                                  <span className="text-[0.6875rem] text-muted truncate">
                                     {message.childName}
                                   </span>
                                 )}
@@ -876,7 +876,7 @@ export default function ParentMessagesPage() {
                             Sent Message
                           </div>
                         )}
-                        <h2 className="text-base min-[420px]:text-lg lg:text-xl font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-3 leading-tight break-words">
+                        <h2 className="text-base min-[420px]:text-lg lg:text-xl font-bold text-ink mb-3 leading-tight break-words">
                           {selectedMessage.subject}
                         </h2>
 
@@ -906,23 +906,23 @@ export default function ParentMessagesPage() {
 
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 flex-wrap">
-                              <span className="text-xs font-medium text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
+                              <span className="text-xs font-medium text-muted">
                                 {isSentMessage ? "To:" : "From:"}
                               </span>
-                              <span className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                              <span className="font-semibold text-ink">
                                 {viewDisplayName}
                               </span>
                               {isSentMessage ? (
-                                <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-semibold bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400">
+                                <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[0.625rem] font-semibold bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400">
                                   {viewDisplayRole}
                                 </span>
                               ) : (
-                                <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-semibold ${getRoleBadgeStyles(selectedMessage.senderRole).bg} ${getRoleBadgeStyles(selectedMessage.senderRole).text}`}>
+                                <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[0.625rem] font-semibold ${getRoleBadgeStyles(selectedMessage.senderRole).bg} ${getRoleBadgeStyles(selectedMessage.senderRole).text}`}>
                                   {selectedMessage.senderRole}
                                 </span>
                               )}
                             </div>
-                            <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 flex items-start gap-1 break-words">
+                            <p className="text-sm text-muted flex items-start gap-1 break-words">
                               <Clock className="w-3.5 h-3.5" />
                               {formatFullDate(selectedMessage.timestamp)}
                             </p>
@@ -974,7 +974,7 @@ export default function ParentMessagesPage() {
                   {/* Reply Section - Only show for received messages */}
                   {!isSentMessage && (
                   <div className="p-4 lg:p-6 border-t border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-gray-50/50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50">
-                    <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-2xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 overflow-hidden">
+                    <div className="bg-surface rounded-2xl border border-line overflow-hidden">
                       <textarea
                         value={replyText}
                         onChange={(e) => setReplyText(e.target.value)}
@@ -986,13 +986,13 @@ export default function ParentMessagesPage() {
                         }}
                         placeholder="Type your reply..."
                         rows={3}
-                        className="w-full px-4 py-3 bg-transparent text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 placeholder:text-gray-400 text-sm resize-none focus:outline-none"
+                        className="w-full px-4 py-3 bg-transparent text-ink placeholder:text-gray-400 text-sm resize-none focus:outline-none"
                       />
 
                       {/* Attachment Preview */}
                       {replyAttachments.length > 0 && (
                         <div className="px-4 pb-3">
-                          <p className="text-xs font-medium text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mb-2">
+                          <p className="text-xs font-medium text-muted mb-2">
                             Attachments ({replyAttachments.length})
                           </p>
                           <div className="flex flex-wrap gap-2">
@@ -1018,7 +1018,7 @@ export default function ParentMessagesPage() {
                                   <p className="text-xs font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 truncate max-w-[120px]">
                                     {file.name}
                                   </p>
-                                  <p className="text-[10px] text-gray-400">{formatFileSize(file.size)}</p>
+                                  <p className="text-[0.625rem] text-gray-400">{formatFileSize(file.size)}</p>
                                 </div>
                                 <button
                                   type="button"
@@ -1088,10 +1088,10 @@ export default function ParentMessagesPage() {
                       <MessageSquare className="w-12 h-12 text-blue-500 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
                     </div>
                   </div>
-                  <h3 className="text-xl font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-2">
+                  <h3 className="text-xl font-bold text-ink mb-2">
                     Select a message
                   </h3>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 text-center max-w-xs mb-6">
+                  <p className="text-sm text-muted text-center max-w-xs mb-6">
                     Choose a message from the list to view its contents and reply
                   </p>
                   <div className="flex items-center gap-2 text-sm text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400">

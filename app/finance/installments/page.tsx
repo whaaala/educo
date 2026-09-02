@@ -489,7 +489,7 @@ export default function InstallmentPlansPage() {
       cancelled: {
         bg: "bg-gray-100 dark:bg-[#1a1d24] midnight:bg-[#0f1330] purple:bg-[#251340]",
         text: "text-gray-500 dark:text-gray-400 midnight:text-gray-400 purple:text-gray-400",
-        border: "border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20",
+        border: "border-line",
         icon: XCircle,
         label: "Cancelled",
       },
@@ -499,7 +499,7 @@ export default function InstallmentPlansPage() {
     const Icon = config.icon;
 
     return (
-      <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full font-semibold border ${config.bg} ${config.text} ${config.border}`} style={{ fontSize: '11.8px' }}>
+      <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full font-semibold border ${config.bg} ${config.text} ${config.border}`} style={{ fontSize: '0.7375rem' }}>
         <Icon className="w-3 h-3" />
         {config.label}
       </span>
@@ -509,7 +509,7 @@ export default function InstallmentPlansPage() {
   // Installment status badge
   const getInstallmentStatusBadge = (status: InstallmentStatus) => {
     const statusConfig = {
-      pending: { bg: "bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]", text: "text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200", label: "Pending" },
+      pending: { bg: "bg-surface-2", text: "text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200", label: "Pending" },
       paid: { bg: "bg-green-100 dark:bg-green-900/30", text: "text-green-700 dark:text-green-300", label: "Paid" },
       overdue: { bg: "bg-red-100 dark:bg-red-900/30 midnight:bg-red-900/30 purple:bg-red-900/30", text: "text-red-700 dark:text-red-300", label: "Overdue" },
       partially_paid: { bg: "bg-amber-100 dark:bg-amber-900/30", text: "text-amber-700 dark:text-amber-300", label: "Partial" },
@@ -519,7 +519,7 @@ export default function InstallmentPlansPage() {
     const config = statusConfig[status];
 
     return (
-      <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium ${config.bg} ${config.text}`}>
+      <span className={`inline-flex items-center px-2 py-0.5 rounded text-[0.625rem] font-medium ${config.bg} ${config.text}`}>
         {config.label}
       </span>
     );
@@ -534,10 +534,10 @@ export default function InstallmentPlansPage() {
       className: "text-left",
       render: (plan) => (
         <div>
-          <div className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50" style={{ fontSize: '11.8px' }}>
+          <div className="font-semibold text-ink" style={{ fontSize: '0.7375rem' }}>
             {plan.studentName}
           </div>
-          <div className="text-gray-500 dark:text-gray-400 midnight:text-cyan-400/60 purple:text-pink-400/60" style={{ fontSize: '10px' }}>
+          <div className="text-gray-500 dark:text-gray-400 midnight:text-cyan-400/60 purple:text-pink-400/60" style={{ fontSize: '0.625rem' }}>
             {plan.studentNumber}
           </div>
         </div>
@@ -549,7 +549,7 @@ export default function InstallmentPlansPage() {
       sortable: true,
       className: "text-left",
       render: (plan) => (
-        <span className="inline-flex px-2.5 py-0.5 rounded-full font-semibold bg-blue-100 dark:bg-blue-900/30 midnight:bg-blue-900/20 purple:bg-blue-900/20 text-blue-700 dark:text-blue-400 midnight:text-blue-400 purple:text-blue-400 border border-blue-200 dark:border-blue-800" style={{ fontSize: '11.8px' }}>
+        <span className="inline-flex px-2.5 py-0.5 rounded-full font-semibold bg-blue-100 dark:bg-blue-900/30 midnight:bg-blue-900/20 purple:bg-blue-900/20 text-blue-700 dark:text-blue-400 midnight:text-blue-400 purple:text-blue-400 border border-blue-200 dark:border-blue-800" style={{ fontSize: '0.7375rem' }}>
           {plan.classLevel}
         </span>
       ),
@@ -560,7 +560,7 @@ export default function InstallmentPlansPage() {
       sortable: true,
       className: "text-left",
       render: (plan) => (
-        <div className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50" style={{ fontSize: '11.8px' }}>
+        <div className="font-semibold text-ink" style={{ fontSize: '0.7375rem' }}>
           {plan.feeTypeName}
         </div>
       ),
@@ -571,7 +571,7 @@ export default function InstallmentPlansPage() {
       sortable: true,
       className: "text-left",
       render: (plan) => (
-        <div className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50" style={{ fontSize: '11.8px' }}>
+        <div className="font-semibold text-ink" style={{ fontSize: '0.7375rem' }}>
           {formatCurrency(plan.totalAmount, countryCode)}
         </div>
       ),
@@ -582,7 +582,7 @@ export default function InstallmentPlansPage() {
       sortable: true,
       className: "text-left",
       render: (plan) => (
-        <div className="font-semibold text-green-600 dark:text-green-400 midnight:text-green-400 purple:text-green-400" style={{ fontSize: '11.8px' }}>
+        <div className="font-semibold text-green-600 dark:text-green-400 midnight:text-green-400 purple:text-green-400" style={{ fontSize: '0.7375rem' }}>
           {formatCurrency(plan.paidAmount, countryCode)}
         </div>
       ),
@@ -593,7 +593,7 @@ export default function InstallmentPlansPage() {
       sortable: true,
       className: "text-left",
       render: (plan) => (
-        <div className={`font-semibold ${plan.remainingAmount === 0 ? "text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400" : "text-amber-600 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400"}`} style={{ fontSize: '11.8px' }}>
+        <div className={`font-semibold ${plan.remainingAmount === 0 ? "text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400" : "text-amber-600 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400"}`} style={{ fontSize: '0.7375rem' }}>
           {formatCurrency(plan.remainingAmount, countryCode)}
         </div>
       ),
@@ -605,7 +605,7 @@ export default function InstallmentPlansPage() {
       render: (plan) => {
         const paidCount = plan.installments.filter(i => i.status === "paid").length;
         return (
-          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full font-semibold bg-purple-100 dark:bg-purple-900/30 midnight:bg-purple-900/20 purple:bg-pink-900/20 text-purple-700 dark:text-purple-400 midnight:text-purple-400 purple:text-pink-400 border border-purple-200 dark:border-purple-800" style={{ fontSize: '11.8px' }}>
+          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full font-semibold bg-purple-100 dark:bg-purple-900/30 midnight:bg-purple-900/20 purple:bg-pink-900/20 text-purple-700 dark:text-purple-400 midnight:text-purple-400 purple:text-pink-400 border border-purple-200 dark:border-purple-800" style={{ fontSize: '0.7375rem' }}>
             <Layers className="w-3 h-3" />
             {paidCount}/{plan.installmentCount}
           </span>
@@ -781,13 +781,13 @@ export default function InstallmentPlansPage() {
             <div className="flex items-center justify-center py-12">
               <div className="flex flex-col items-center gap-3">
                 <div className="w-8 h-8 border-2 border-blue-200 border-t-blue-600 rounded-full animate-spin" />
-                <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
+                <p className="text-sm text-muted">
                   {isRefreshing ? "Refreshing..." : "Filtering..."}
                 </p>
               </div>
             </div>
           ) : filteredData.length === 0 ? (
-            <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm p-8 sm:p-12">
+            <div className="bg-surface rounded-xl border border-line shadow-sm p-8 sm:p-12">
               <div className="flex flex-col items-center justify-center">
                 <div className="relative mb-4">
                   <div className="absolute inset-0 flex items-center justify-center">
@@ -800,7 +800,7 @@ export default function InstallmentPlansPage() {
                 <h3 className="text-sm sm:text-base font-semibold text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 mb-1 text-center">
                   No installment plans found
                 </h3>
-                <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mb-4 text-center">
+                <p className="text-xs sm:text-sm text-muted mb-4 text-center">
                   {searchQuery
                     ? "No results match your search. Try adjusting your filters."
                     : "Get started by adding your first installment plan."}
@@ -828,7 +828,7 @@ export default function InstallmentPlansPage() {
 
               <div
                 key={`table-data-${filterKey}`}
-                className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm overflow-hidden"
+                className="bg-surface rounded-xl border border-line shadow-sm overflow-hidden"
               >
                 <ResponsiveListTable variant="contained" showColumnHeaders={true}
                   columns={columns}
@@ -1025,7 +1025,7 @@ function InstallmentPlanViewModal({
         <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 midnight:from-cyan-900/20 midnight:to-blue-900/20 purple:from-pink-900/20 purple:to-purple-900/20 rounded-xl p-4 border border-blue-200 dark:border-blue-800 midnight:border-cyan-800 purple:border-pink-800">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <h3 className="text-lg font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+              <h3 className="text-lg font-bold text-ink">
                 {displayPlan.studentName}
               </h3>
               <p className="text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70">
@@ -1039,7 +1039,7 @@ function InstallmentPlanViewModal({
           <div className="mt-4">
             <div className="flex justify-between text-sm mb-2">
               <span className="text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Payment Progress</span>
-              <span className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+              <span className="font-semibold text-ink">
                 {formatCurrency(displayPlan.paidAmount, countryCode)} / {formatCurrency(displayPlan.totalAmount, countryCode)}
               </span>
             </div>
@@ -1067,22 +1067,22 @@ function InstallmentPlanViewModal({
         {/* Plan Details Grid */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           <div className="bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-lg p-3">
-            <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Fee Type</p>
-            <p className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mt-1">{displayPlan.feeTypeName}</p>
+            <p className="text-xs text-muted">Fee Type</p>
+            <p className="text-sm font-semibold text-ink mt-1">{displayPlan.feeTypeName}</p>
           </div>
           <div className="bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-lg p-3">
-            <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Installments</p>
-            <p className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mt-1">{displayPlan.installmentCount} payments</p>
+            <p className="text-xs text-muted">Installments</p>
+            <p className="text-sm font-semibold text-ink mt-1">{displayPlan.installmentCount} payments</p>
           </div>
           <div className="bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-lg p-3">
-            <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Start Date</p>
-            <p className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mt-1">
+            <p className="text-xs text-muted">Start Date</p>
+            <p className="text-sm font-semibold text-ink mt-1">
               {new Date(displayPlan.startDate).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
             </p>
           </div>
           <div className="bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-lg p-3">
-            <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">End Date</p>
-            <p className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mt-1">
+            <p className="text-xs text-muted">End Date</p>
+            <p className="text-sm font-semibold text-ink mt-1">
               {new Date(displayPlan.endDate).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
             </p>
           </div>
@@ -1090,7 +1090,7 @@ function InstallmentPlanViewModal({
 
         {/* Installments Timeline */}
         <div>
-          <h4 className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-3 flex items-center gap-2">
+          <h4 className="text-sm font-semibold text-ink mb-3 flex items-center gap-2">
             <Calendar className="w-4 h-4" />
             Payment Schedule
           </h4>
@@ -1105,7 +1105,7 @@ function InstallmentPlanViewModal({
                     ? "bg-red-50 dark:bg-red-900/10 border-red-200 dark:border-red-800"
                     : installment.status === "partially_paid"
                     ? "bg-amber-50 dark:bg-amber-900/10 border-amber-200 dark:border-amber-800"
-                    : "bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20"
+                    : "bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border-line"
                 }`}
               >
                 {/* Sequence Number */}
@@ -1125,7 +1125,7 @@ function InstallmentPlanViewModal({
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex-1">
-                      <p className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                      <p className="text-sm font-semibold text-ink">
                         Installment {installment.sequence}
                       </p>
                       {isEditMode ? (
@@ -1148,7 +1148,7 @@ function InstallmentPlanViewModal({
                           />
                         </div>
                       ) : (
-                        <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mt-0.5">
+                        <p className="text-xs text-muted mt-0.5">
                           Due: {new Date(installment.dueDate).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
                         </p>
                       )}
@@ -1160,7 +1160,7 @@ function InstallmentPlanViewModal({
                     <div className="flex items-center justify-between mt-2">
                       <div className="text-sm">
                         <span className="text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Amount: </span>
-                        <span className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                        <span className="font-semibold text-ink">
                           {formatCurrency(installment.amount, countryCode)}
                         </span>
                       </div>
@@ -1193,8 +1193,8 @@ function InstallmentPlanViewModal({
 
                   {/* Payment Info */}
                   {installment.paidDate && (
-                    <div className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
-                      <div className="flex flex-wrap gap-4 text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
+                    <div className="mt-2 pt-2 border-t border-line">
+                      <div className="flex flex-wrap gap-4 text-xs text-muted">
                         <span>Paid: {new Date(installment.paidDate).toLocaleDateString()}</span>
                         {installment.paymentMethod && <span>Via: {installment.paymentMethod}</span>}
                         {installment.paymentReference && <span>Ref: {installment.paymentReference}</span>}
@@ -1216,10 +1216,10 @@ function InstallmentPlanViewModal({
 
         {/* Edit Mode Actions */}
         {isEditMode && (
-          <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+          <div className="flex justify-end gap-3 pt-4 border-t border-line">
             <button
               onClick={onClose}
-              className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] hover:bg-gray-200 dark:hover:bg-[#2a2d35] midnight:hover:bg-cyan-500/15 purple:hover:bg-pink-500/15 rounded-lg transition-colors"
+              className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 bg-surface-2 hover:bg-gray-200 dark:hover:bg-[#2a2d35] midnight:hover:bg-cyan-500/15 purple:hover:bg-pink-500/15 rounded-lg transition-colors"
             >
               Cancel
             </button>
@@ -1317,15 +1317,15 @@ function DuplicatePlanModal({
     >
       <div className="space-y-6">
         {/* Source Plan Info */}
-        <div className="bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl p-4 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
-          <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mb-2">Copying from:</p>
+        <div className="bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl p-4 border border-line">
+          <p className="text-xs text-muted mb-2">Copying from:</p>
           <div className="flex items-center justify-between">
             <div>
-              <p className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{plan.studentName}</p>
+              <p className="font-semibold text-ink">{plan.studentName}</p>
               <p className="text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">{plan.feeTypeName} - {plan.installmentCount} installments</p>
             </div>
             <div className="text-right">
-              <p className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{formatCurrency(plan.totalAmount, countryCode)}</p>
+              <p className="font-semibold text-ink">{formatCurrency(plan.totalAmount, countryCode)}</p>
               <p className="text-xs text-gray-500">{plan.academicYear} | {plan.term.replace("-", " ")}</p>
             </div>
           </div>
@@ -1350,7 +1350,7 @@ function DuplicatePlanModal({
             <select
               value={selectedStudentId}
               onChange={(e) => setSelectedStudentId(e.target.value)}
-              className="w-full h-[46px] px-4 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-sm focus:ring-1 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all"
+              className="w-full h-[46px] px-4 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-surface text-ink text-sm focus:ring-1 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all"
             >
               <option value="">Select a student...</option>
               {availableStudents.map((student) => (
@@ -1372,7 +1372,7 @@ function DuplicatePlanModal({
         )}
 
         {/* Edit Toggle */}
-        <div className="flex items-center gap-3 p-4 bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+        <div className="flex items-center gap-3 p-4 bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl border border-line">
           <input
             type="checkbox"
             id="editInstallments"
@@ -1381,15 +1381,15 @@ function DuplicatePlanModal({
             className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
           />
           <label htmlFor="editInstallments" className="flex-1 cursor-pointer">
-            <p className="text-sm font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">Modify installment amounts and dates</p>
-            <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Leave unchecked to keep the same schedule as the original plan</p>
+            <p className="text-sm font-medium text-ink">Modify installment amounts and dates</p>
+            <p className="text-xs text-muted">Leave unchecked to keep the same schedule as the original plan</p>
           </label>
         </div>
 
         {/* Editable Installments */}
         {editInstallments && (
           <div className="space-y-3">
-            <h4 className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 flex items-center gap-2">
+            <h4 className="text-sm font-semibold text-ink flex items-center gap-2">
               <Calendar className="w-4 h-4" />
               Edit Payment Schedule
             </h4>
@@ -1397,7 +1397,7 @@ function DuplicatePlanModal({
               {editedInstallments.map((inst, index) => (
                 <div
                   key={inst.id}
-                  className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-lg border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20"
+                  className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-lg border border-line"
                 >
                   <div className="flex-shrink-0 w-7 h-7 rounded-full bg-blue-500 text-white flex items-center justify-center text-xs font-bold">
                     {inst.sequence}
@@ -1423,20 +1423,20 @@ function DuplicatePlanModal({
                 </div>
               ))}
             </div>
-            <div className="flex justify-end pt-2 border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+            <div className="flex justify-end pt-2 border-t border-line">
               <p className="text-sm">
                 <span className="text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Total: </span>
-                <span className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{formatCurrency(totalAmount, countryCode)}</span>
+                <span className="font-semibold text-ink">{formatCurrency(totalAmount, countryCode)}</span>
               </p>
             </div>
           </div>
         )}
 
         {/* Actions */}
-        <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+        <div className="flex justify-end gap-3 pt-4 border-t border-line">
           <button
             onClick={onClose}
-            className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] hover:bg-gray-200 dark:hover:bg-[#2a2d35] midnight:hover:bg-cyan-500/15 purple:hover:bg-pink-500/15 rounded-lg transition-colors"
+            className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 bg-surface-2 hover:bg-gray-200 dark:hover:bg-[#2a2d35] midnight:hover:bg-cyan-500/15 purple:hover:bg-pink-500/15 rounded-lg transition-colors"
           >
             Cancel
           </button>

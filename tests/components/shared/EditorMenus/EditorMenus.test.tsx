@@ -299,7 +299,7 @@ describe("ViewMenuItem", () => {
   it("description has smaller, lighter font styling in every theme (source check)", () => {
     // Assert individually — theme variants sit between these classes in the real className.
     for (const cls of [
-      "text-[11px]",
+      "text-[0.6875rem]",
       "leading-tight",
       "text-gray-400",
       "dark:text-gray-500",

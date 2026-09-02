@@ -331,7 +331,7 @@ export default function ParentsTable({
                 {parent.firstName} {parent.lastName}
               </span>
             </Tooltip>
-            <span className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 block">{parent.relationship}</span>
+            <span className="text-[0.625rem] sm:text-xs text-gray-500 dark:text-gray-400 block">{parent.relationship}</span>
           </div>
         </div>
       ),
@@ -370,11 +370,11 @@ export default function ParentsTable({
         const childrenNames = parent.children.map((c) => c.firstName).join(", ");
         return (
           <div className="flex items-center justify-center sm:justify-start gap-1.5">
-            <span className="inline-flex items-center justify-center w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 text-[10px] sm:text-xs font-bold">
+            <span className="inline-flex items-center justify-center w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 text-[0.625rem] sm:text-xs font-bold">
               {parent.children.length}
             </span>
             <Tooltip content={childrenNames}>
-              <span className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 truncate max-w-[60px] sm:max-w-[80px] hidden sm:inline">
+              <span className="text-[0.625rem] sm:text-xs text-gray-500 dark:text-gray-400 truncate max-w-[60px] sm:max-w-[80px] hidden sm:inline">
                 {childrenNames}
               </span>
             </Tooltip>
@@ -414,7 +414,7 @@ export default function ParentsTable({
       className: "text-left min-w-[70px] md:min-w-[80px]",
       render: (parent) => (
         <span
-          className={`inline-flex items-center px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-semibold ${
+          className={`inline-flex items-center px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full text-[0.625rem] sm:text-xs font-semibold ${
             parent.status === "Active"
               ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
               : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"

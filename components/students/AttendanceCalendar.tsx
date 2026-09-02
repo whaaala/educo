@@ -239,12 +239,12 @@ export default function AttendanceCalendar({ year = 2024, onYearChange, studentI
 
     return (
       <div className="flex items-center gap-1.5 sm:gap-2">
-        <span className={`inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 md:px-3 py-1 sm:py-1.5 rounded-md sm:rounded-lg text-[10px] sm:text-xs font-bold border ${variants[status]}`}>
-          <span className="text-[11px] sm:text-xs">{icons[status]}</span>
+        <span className={`inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 md:px-3 py-1 sm:py-1.5 rounded-md sm:rounded-lg text-[0.625rem] sm:text-xs font-bold border ${variants[status]}`}>
+          <span className="text-[0.6875rem] sm:text-xs">{icons[status]}</span>
           <span className="capitalize">{status}</span>
         </span>
         {status === "late" && lateMinutes && (
-          <span className="text-[9px] sm:text-[10px] md:text-xs text-gray-600 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70">({lateMinutes} min)</span>
+          <span className="text-[0.5625rem] sm:text-[0.625rem] md:text-xs text-gray-600 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70">({lateMinutes} min)</span>
         )}
       </div>
     );
@@ -259,10 +259,10 @@ export default function AttendanceCalendar({ year = 2024, onYearChange, studentI
       className: "text-left min-w-[80px]",
       render: (item) => (
         <div className="flex flex-col">
-          <span className="text-[11px] sm:text-xs md:text-sm font-bold text-gray-900 dark:text-gray-100 midnight:text-cyan-100 purple:text-pink-100">
+          <span className="text-[0.6875rem] sm:text-xs md:text-sm font-bold text-gray-900 dark:text-gray-100 midnight:text-cyan-100 purple:text-pink-100">
             {new Date(item.date).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })}
           </span>
-          <span className="text-[9px] sm:text-[10px] md:text-xs text-gray-600 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70">{item.day}</span>
+          <span className="text-[0.5625rem] sm:text-[0.625rem] md:text-xs text-gray-600 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70">{item.day}</span>
         </div>
       ),
     },
@@ -272,7 +272,7 @@ export default function AttendanceCalendar({ year = 2024, onYearChange, studentI
       sortable: true,
       className: "text-left min-w-[90px]",
       render: (item) => (
-        <span className="text-[11px] sm:text-xs md:text-sm font-semibold text-gray-900 dark:text-gray-100 midnight:text-cyan-100 purple:text-pink-100">
+        <span className="text-[0.6875rem] sm:text-xs md:text-sm font-semibold text-gray-900 dark:text-gray-100 midnight:text-cyan-100 purple:text-pink-100">
           {item.class}
         </span>
       ),
@@ -283,7 +283,7 @@ export default function AttendanceCalendar({ year = 2024, onYearChange, studentI
       sortable: true,
       className: "text-left min-w-[120px]",
       render: (item) => (
-        <span className="text-[11px] sm:text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300">
+        <span className="text-[0.6875rem] sm:text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300">
           {item.subject}
         </span>
       ),
@@ -294,7 +294,7 @@ export default function AttendanceCalendar({ year = 2024, onYearChange, studentI
       sortable: false,
       className: "text-left min-w-[140px]",
       render: (item) => (
-        <span className="text-[10px] sm:text-[11px] md:text-xs text-gray-600 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70">
+        <span className="text-[0.625rem] sm:text-[0.6875rem] md:text-xs text-gray-600 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70">
           {item.period}
         </span>
       ),
@@ -305,7 +305,7 @@ export default function AttendanceCalendar({ year = 2024, onYearChange, studentI
       sortable: true,
       className: "text-left min-w-[100px]",
       render: (item) => (
-        <span className="text-[11px] sm:text-xs md:text-sm text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300">
+        <span className="text-[0.6875rem] sm:text-xs md:text-sm text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300">
           {item.teacher}
         </span>
       ),
@@ -444,7 +444,7 @@ export default function AttendanceCalendar({ year = 2024, onYearChange, studentI
       {/* Header Section */}
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 sm:gap-4">
         <div className="flex-1">
-          <h3 className="text-lg sm:text-xl md:text-lg lg:text-2xl font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-1 sm:mb-2">
+          <h3 className="text-lg sm:text-xl md:text-lg lg:text-2xl font-bold text-ink mb-1 sm:mb-2">
             Attendance
           </h3>
           <div className="flex items-center gap-2">

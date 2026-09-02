@@ -50,7 +50,7 @@ describe("EditorDialog", () => {
     expect(source).toContain("{title}");
 
     // The title text has styling for visibility
-    expect(source).toContain("text-[13px] font-bold");
+    expect(source).toContain("text-[0.8125rem] font-bold");
     expect(source).toContain("text-gray-800");
   });
 
@@ -120,7 +120,7 @@ describe("EditorDialogButton", () => {
   it("has correct text styling", () => {
     // Verify font size and weight
     expect(source).toMatch(
-      /EditorDialogButton[\s\S]*?text-\[12px\] font-semibold/
+      /EditorDialogButton[\s\S]*?text-\[0.75rem\] font-semibold/
     );
   });
 

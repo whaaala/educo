@@ -980,7 +980,7 @@ export default function ChildDetailPage() {
           <div className="mt-6 flex flex-col items-center justify-center min-h-[60vh]">
             <AlertCircle className="w-16 h-16 text-gray-400 mb-4" />
             <h2 className="text-xl font-semibold text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 mb-2">Child Not Found</h2>
-            <p className="text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mb-4">
+            <p className="text-muted mb-4">
               The requested child profile could not be found.
             </p>
             <Button variant="primary" onClick={() => router.push("/parents/children")}>
@@ -1005,7 +1005,7 @@ export default function ChildDetailPage() {
       afterStats={
         <div className="mt-6 space-y-6">
           {/* Profile Card - Hero Section */}
-        <div className="relative overflow-hidden rounded-2xl bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm">
+        <div className="relative overflow-hidden rounded-2xl bg-surface border border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm">
           <div className="relative p-4 sm:p-5">
             {/* Main Content Row */}
             <div className="flex flex-col sm:flex-row sm:items-start gap-4">
@@ -1036,13 +1036,13 @@ export default function ChildDetailPage() {
               <div className="flex-1 min-w-0">
                 {/* Name and status row */}
                 <div className="flex flex-wrap items-center gap-2 mb-1.5">
-                  <h1 className="text-lg font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 tracking-tight truncate">
+                  <h1 className="text-lg font-semibold text-ink tracking-tight truncate">
                     {child.fullName}
                   </h1>
-                  <span className={`flex-shrink-0 px-2 py-0.5 rounded-full text-[9px] font-semibold uppercase tracking-wide ${
+                  <span className={`flex-shrink-0 px-2 py-0.5 rounded-full text-[0.5625rem] font-semibold uppercase tracking-wide ${
                     child.status === "Active"
                       ? "bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400"
-                      : "bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300"
+                      : "bg-surface-2 text-muted"
                   }`}>
                     {child.status}
                   </span>
@@ -1050,19 +1050,19 @@ export default function ChildDetailPage() {
 
                 {/* Info badges - inline with subtle colors */}
                 <div className="flex flex-wrap items-center gap-1.5 mb-2">
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-gray-50 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/50 text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 text-[11px] font-medium">
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-gray-50 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/50 text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 text-[0.6875rem] font-medium">
                     <GraduationCap className="w-3 h-3 text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400" />
                     {child.classLevel} {child.section && `• ${child.section}`}
                   </span>
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-gray-50 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/50 text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 text-[11px] font-medium">
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-gray-50 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/50 text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 text-[0.6875rem] font-medium">
                     <Hash className="w-3 h-3 text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400" />
                     {child.admissionNumber}
                   </span>
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-gray-50 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/50 text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 text-[11px] font-medium">
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-gray-50 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/50 text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 text-[0.6875rem] font-medium">
                     <Calendar className="w-3 h-3 text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400" />
                     {calculateAge(child.dateOfBirth)} yrs
                   </span>
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-gray-50 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/50 text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 text-[11px] font-medium">
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-gray-50 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/50 text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 text-[0.6875rem] font-medium">
                     <User className="w-3 h-3 text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400" />
                     {child.gender}
                   </span>
@@ -1113,7 +1113,7 @@ export default function ChildDetailPage() {
                   <TrendingUp className="w-5 h-5 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-[10px] font-semibold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 uppercase tracking-wider mb-0.5">Term Average</p>
+                  <p className="text-[0.625rem] font-semibold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 uppercase tracking-wider mb-0.5">Term Average</p>
                   <p className="text-2xl font-bold text-blue-700 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300">
                     {academicData?.currentTermAverage?.toFixed(1)}%
                   </p>
@@ -1125,7 +1125,7 @@ export default function ChildDetailPage() {
                   <CheckCircle2 className="w-5 h-5 text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-[10px] font-semibold text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400 uppercase tracking-wider mb-0.5">Active</p>
+                  <p className="text-[0.625rem] font-semibold text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400 uppercase tracking-wider mb-0.5">Active</p>
                   <p className="text-2xl font-bold text-green-700 dark:text-green-300">
                     {child.status === "Active" ? "Yes" : "No"}
                   </p>
@@ -1137,7 +1137,7 @@ export default function ChildDetailPage() {
                   <TrendingUp className="w-5 h-5 text-amber-600 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-[10px] font-semibold text-amber-600 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400 uppercase tracking-wider mb-0.5">Attendance</p>
+                  <p className="text-[0.625rem] font-semibold text-amber-600 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400 uppercase tracking-wider mb-0.5">Attendance</p>
                   <p className="text-2xl font-bold text-amber-700 dark:text-amber-300">
                     {attendanceData?.rate}%
                   </p>
@@ -1149,7 +1149,7 @@ export default function ChildDetailPage() {
                   <Award className="w-5 h-5 text-orange-600 dark:text-orange-400" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-[10px] font-semibold text-orange-600 dark:text-orange-400 uppercase tracking-wider mb-0.5">Best Position</p>
+                  <p className="text-[0.625rem] font-semibold text-orange-600 dark:text-orange-400 uppercase tracking-wider mb-0.5">Best Position</p>
                   <p className="text-2xl font-bold text-orange-700 dark:text-orange-300">
                     #{academicData?.classPosition}
                   </p>
@@ -1196,7 +1196,7 @@ export default function ChildDetailPage() {
                       ? "text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400"
                       : "text-gray-600 dark:text-gray-500 midnight:text-cyan-300/70 purple:text-pink-300/70 group-hover:scale-110 group-hover:rotate-6"
                   }`} />
-                  <span className={`relative text-[11.75px] sm:text-xs font-semibold transition-all duration-300 ${
+                  <span className={`relative text-[0.7344rem] sm:text-xs font-semibold transition-all duration-300 ${
                     isActive ? "tracking-wide" : "group-hover:tracking-wide"
                   }`}>
                     {tab.label}
@@ -1213,7 +1213,7 @@ export default function ChildDetailPage() {
         </div>
 
         {/* Tab Content */}
-        <div className="relative bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-2xl shadow-sm ring-1 ring-gray-200/80 dark:ring-gray-700 midnight:ring-cyan-500/20 purple:ring-pink-500/20 p-4 sm:p-6 overflow-hidden">
+        <div className="relative bg-surface rounded-2xl shadow-sm ring-1 ring-gray-200/80 dark:ring-gray-700 midnight:ring-cyan-500/20 purple:ring-pink-500/20 p-4 sm:p-6 overflow-hidden">
           {/* Decorative background */}
           <div className="absolute top-0 right-0 w-40 h-40 sm:w-64 sm:h-64 lg:w-96 lg:h-96 bg-gradient-to-bl from-blue-500/5 via-purple-500/3 to-transparent pointer-events-none" />
           <div className="absolute bottom-0 left-0 w-32 h-32 sm:w-48 sm:h-48 lg:w-64 lg:h-64 bg-gradient-to-tr from-indigo-500/5 to-transparent pointer-events-none" />
@@ -1228,8 +1228,8 @@ export default function ChildDetailPage() {
                     <TrendingUp className="w-5 h-5 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
                   </div>
                   <div>
-                    <h3 className="font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-base">Recent Performance</h3>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Top 5 subjects this term</p>
+                    <h3 className="font-bold text-ink text-base">Recent Performance</h3>
+                    <p className="text-xs text-muted">Top 5 subjects this term</p>
                   </div>
                 </div>
                 <div className="space-y-3">
@@ -1238,7 +1238,7 @@ export default function ChildDetailPage() {
                     return (
                       <div
                         key={subject.subject}
-                        className="group relative p-4 rounded-2xl bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/60 border border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 hover:border-gray-200 dark:hover:border-gray-600 midnight:hover:border-cyan-500/30 purple:hover:border-pink-500/30 shadow-sm hover:shadow-lg transition-all duration-300"
+                        className="group relative p-4 rounded-2xl bg-surface/60 border border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 hover:border-gray-200 dark:hover:border-gray-600 midnight:hover:border-cyan-500/30 purple:hover:border-pink-500/30 shadow-sm hover:shadow-lg transition-all duration-300"
                         style={{ animationDelay: `${index * 50}ms` }}
                       >
                         {/* Subtle gradient overlay on hover */}
@@ -1252,7 +1252,7 @@ export default function ChildDetailPage() {
 
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center justify-between mb-2.5">
-                              <span className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate">
+                              <span className="text-sm font-semibold text-ink truncate">
                                 {subject.subject}
                               </span>
                               <div className="flex items-center gap-2.5">
@@ -1265,7 +1265,7 @@ export default function ChildDetailPage() {
                               </div>
                             </div>
                             {/* Progress bar - sleeker design */}
-                            <div className="w-full h-1.5 bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] rounded-full overflow-hidden">
+                            <div className="w-full h-1.5 bg-surface-2 rounded-full overflow-hidden">
                               <div
                                 className={`h-full rounded-full transition-all duration-700 ease-out ${
                                   subject.score >= 80
@@ -1294,8 +1294,8 @@ export default function ChildDetailPage() {
                     <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
                   </div>
                   <div>
-                    <h3 className="font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-base">Attendance Overview</h3>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Current term attendance</p>
+                    <h3 className="font-bold text-ink text-base">Attendance Overview</h3>
+                    <p className="text-xs text-muted">Current term attendance</p>
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
@@ -1312,7 +1312,7 @@ export default function ChildDetailPage() {
                       <p className="text-4xl font-bold text-emerald-600 dark:text-emerald-400 mb-1 tracking-tight">
                         {attendanceData?.present}
                       </p>
-                      <p className="text-[10px] font-bold text-emerald-600/80 dark:text-emerald-400/80 uppercase tracking-widest">Days Present</p>
+                      <p className="text-[0.625rem] font-bold text-emerald-600/80 dark:text-emerald-400/80 uppercase tracking-widest">Days Present</p>
                     </div>
                   </div>
 
@@ -1328,7 +1328,7 @@ export default function ChildDetailPage() {
                       <p className="text-4xl font-bold text-rose-600 dark:text-rose-400 mb-1 tracking-tight">
                         {attendanceData?.absent}
                       </p>
-                      <p className="text-[10px] font-bold text-rose-600/80 dark:text-rose-400/80 uppercase tracking-widest">Days Absent</p>
+                      <p className="text-[0.625rem] font-bold text-rose-600/80 dark:text-rose-400/80 uppercase tracking-widest">Days Absent</p>
                     </div>
                   </div>
 
@@ -1344,7 +1344,7 @@ export default function ChildDetailPage() {
                       <p className="text-4xl font-bold text-amber-600 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400 mb-1 tracking-tight">
                         {attendanceData?.late}
                       </p>
-                      <p className="text-[10px] font-bold text-amber-600/80 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400/80 uppercase tracking-widest">Times Late</p>
+                      <p className="text-[0.625rem] font-bold text-amber-600/80 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400/80 uppercase tracking-widest">Times Late</p>
                     </div>
                   </div>
 
@@ -1360,7 +1360,7 @@ export default function ChildDetailPage() {
                       <p className="text-4xl font-bold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 mb-1 tracking-tight">
                         {attendanceData?.rate}%
                       </p>
-                      <p className="text-[10px] font-bold text-blue-600/80 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400/80 uppercase tracking-widest">Attendance Rate</p>
+                      <p className="text-[0.625rem] font-bold text-blue-600/80 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400/80 uppercase tracking-widest">Attendance Rate</p>
                     </div>
                   </div>
                 </div>
@@ -1377,7 +1377,7 @@ export default function ChildDetailPage() {
                         <Sparkles className="w-5 h-5 text-white" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-[10px] font-bold text-amber-700 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400 uppercase tracking-widest mb-2">
+                        <p className="text-[0.625rem] font-bold text-amber-700 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400 uppercase tracking-widest mb-2">
                           Teacher&apos;s Remarks
                         </p>
                         <p className="text-sm text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 italic leading-relaxed">
@@ -1405,8 +1405,8 @@ export default function ChildDetailPage() {
                     <GraduationCap className="w-5 h-5 text-indigo-500 dark:text-indigo-400" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">Subject Performance</h3>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Current term results</p>
+                    <h3 className="font-semibold text-ink">Subject Performance</h3>
+                    <p className="text-sm text-muted">Current term results</p>
                   </div>
                 </div>
                 <Button
@@ -1462,11 +1462,11 @@ export default function ChildDetailPage() {
                       {/* Subject Info */}
                       <div className="relative flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1.5">
-                          <span className="font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-base">
+                          <span className="font-bold text-ink text-base">
                             {subject.subject}
                           </span>
                         </div>
-                        <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 truncate">
+                        <p className="text-sm text-muted truncate">
                           <span className="italic">&quot;{subject.teacherRemarks || "No remarks"}&quot;</span>
                         </p>
                       </div>
@@ -1475,10 +1475,10 @@ export default function ChildDetailPage() {
                       <div className="relative flex items-center gap-5">
                         <div className="hidden sm:block w-40">
                           <div className="flex items-center justify-between text-xs mb-2">
-                            <span className="text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 font-medium">Score</span>
+                            <span className="text-muted font-medium">Score</span>
                             <span className={`font-bold ${scoreColor.text}`}>{subject.score}%</span>
                           </div>
-                          <div className="w-full h-2.5 bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/60 rounded-full overflow-hidden ring-1 ring-gray-200/50 dark:ring-gray-700 midnight:ring-cyan-500/20 purple:ring-pink-500/20">
+                          <div className="w-full h-2.5 bg-surface-2/60 rounded-full overflow-hidden ring-1 ring-gray-200/50 dark:ring-gray-700 midnight:ring-cyan-500/20 purple:ring-pink-500/20">
                             <div
                               className={`h-full rounded-full bg-gradient-to-r ${scoreColor.gradient} transition-all duration-700 ease-out shadow-sm`}
                               style={{ width: `${subject.score}%` }}
@@ -1514,8 +1514,8 @@ export default function ChildDetailPage() {
                       <Award className="relative w-6 h-6 text-purple-600 dark:text-purple-400" />
                     </div>
                     <div>
-                      <span className="font-bold text-lg text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">Conduct Grade</span>
-                      <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Overall behavior assessment</p>
+                      <span className="font-bold text-lg text-ink">Conduct Grade</span>
+                      <p className="text-sm text-muted">Overall behavior assessment</p>
                     </div>
                   </div>
                   <span className={`relative px-6 py-3 rounded-2xl text-xl font-bold shadow-md ring-1 ring-inset ${getGradeColor(academicData.conductGrade)}`}>
@@ -1539,8 +1539,8 @@ export default function ChildDetailPage() {
                   <CheckCircle2 className="w-5 h-5 text-emerald-500 dark:text-emerald-400" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">Attendance Summary</h3>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Current term attendance record</p>
+                  <h3 className="font-semibold text-ink">Attendance Summary</h3>
+                  <p className="text-sm text-muted">Current term attendance record</p>
                 </div>
               </div>
 
@@ -1559,7 +1559,7 @@ export default function ChildDetailPage() {
                     <p className="text-3xl font-bold text-emerald-600 dark:text-emerald-400 mb-1 tracking-tight">
                       {attendanceData?.present}
                     </p>
-                    <p className="text-[10px] font-bold text-emerald-600/70 dark:text-emerald-400/70 uppercase tracking-widest">Days Present</p>
+                    <p className="text-[0.625rem] font-bold text-emerald-600/70 dark:text-emerald-400/70 uppercase tracking-widest">Days Present</p>
                   </div>
                 </div>
 
@@ -1576,7 +1576,7 @@ export default function ChildDetailPage() {
                     <p className="text-3xl font-bold text-rose-600 dark:text-rose-400 mb-1 tracking-tight">
                       {attendanceData?.absent}
                     </p>
-                    <p className="text-[10px] font-bold text-rose-600/70 dark:text-rose-400/70 uppercase tracking-widest">Days Absent</p>
+                    <p className="text-[0.625rem] font-bold text-rose-600/70 dark:text-rose-400/70 uppercase tracking-widest">Days Absent</p>
                   </div>
                 </div>
 
@@ -1593,7 +1593,7 @@ export default function ChildDetailPage() {
                     <p className="text-3xl font-bold text-amber-600 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400 mb-1 tracking-tight">
                       {attendanceData?.late}
                     </p>
-                    <p className="text-[10px] font-bold text-amber-600/70 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400/70 uppercase tracking-widest">Times Late</p>
+                    <p className="text-[0.625rem] font-bold text-amber-600/70 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400/70 uppercase tracking-widest">Times Late</p>
                   </div>
                 </div>
 
@@ -1610,7 +1610,7 @@ export default function ChildDetailPage() {
                     <p className="text-3xl font-bold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 mb-1 tracking-tight">
                       {attendanceData?.rate}%
                     </p>
-                    <p className="text-[10px] font-bold text-blue-600/70 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400/70 uppercase tracking-widest">Attendance Rate</p>
+                    <p className="text-[0.625rem] font-bold text-blue-600/70 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400/70 uppercase tracking-widest">Attendance Rate</p>
                   </div>
                 </div>
               </div>
@@ -1620,12 +1620,12 @@ export default function ChildDetailPage() {
                 <div className="absolute -top-10 -right-10 w-32 h-32 bg-gradient-to-bl from-emerald-100/40 dark:from-emerald-900/20 to-transparent rounded-full blur-2xl" />
                 <div className="relative">
                   <div className="flex items-center justify-between mb-5">
-                    <span className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">Attendance Progress</span>
-                    <span className="px-3 py-1 rounded-lg bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/60 text-sm font-medium text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200">
+                    <span className="font-semibold text-ink">Attendance Progress</span>
+                    <span className="px-3 py-1 rounded-lg bg-surface-2/60 text-sm font-medium text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200">
                       {attendanceData?.present} of {attendanceData?.total} days
                     </span>
                   </div>
-                  <div className="h-3 bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/60 rounded-full overflow-hidden ring-1 ring-gray-200/50 dark:ring-gray-600/30">
+                  <div className="h-3 bg-surface-2/60 rounded-full overflow-hidden ring-1 ring-gray-200/50 dark:ring-gray-600/30">
                     <div
                       className="h-full bg-gradient-to-r from-emerald-400 via-green-500 to-teal-500 rounded-full transition-all duration-700 ease-out relative"
                       style={{ width: `${attendanceData?.rate || 0}%` }}
@@ -1659,11 +1659,11 @@ export default function ChildDetailPage() {
                       <BookOpen className="w-5 h-5 text-blue-500 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
                     </div>
                     <div>
-                      <h4 className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">Subject Attendance</h4>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Per-subject class attendance</p>
+                      <h4 className="font-semibold text-ink">Subject Attendance</h4>
+                      <p className="text-xs text-muted">Per-subject class attendance</p>
                     </div>
                   </div>
-                  <div className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] px-3 py-1.5 rounded-full">
+                  <div className="text-xs text-muted bg-surface-2 px-3 py-1.5 rounded-full">
                     {subjectAttendanceData.length} subjects
                   </div>
                 </div>
@@ -1701,10 +1701,10 @@ export default function ChildDetailPage() {
                               {subjectStyle.icon}
                             </div>
                             <div>
-                              <h5 className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-sm">
+                              <h5 className="font-semibold text-ink text-sm">
                                 {subject.subject}
                               </h5>
-                              <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
+                              <p className="text-xs text-muted">
                                 {subject.teacher}
                               </p>
                             </div>
@@ -1753,7 +1753,7 @@ export default function ChildDetailPage() {
 
                         {/* Last Class Badge */}
                         <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <span className="text-[10px] text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] px-2 py-0.5 rounded">
+                          <span className="text-[0.625rem] text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 bg-surface-2 px-2 py-0.5 rounded">
                             Last: {subject.lastClass}
                           </span>
                         </div>
@@ -1766,16 +1766,16 @@ export default function ChildDetailPage() {
                 <div className="mt-6 pt-4 border-t border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 flex flex-wrap items-center justify-between gap-4">
                   <div className="flex items-center gap-6">
                     <div className="text-center">
-                      <p className="text-2xl font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                      <p className="text-2xl font-bold text-ink">
                         {subjectAttendanceData.reduce((acc, s) => acc + s.attended, 0)}
                       </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Total Classes Attended</p>
+                      <p className="text-xs text-muted">Total Classes Attended</p>
                     </div>
                     <div className="text-center">
                       <p className="text-2xl font-bold text-rose-600 dark:text-rose-400">
                         {subjectAttendanceData.reduce((acc, s) => acc + s.missed, 0)}
                       </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Classes Missed</p>
+                      <p className="text-xs text-muted">Classes Missed</p>
                     </div>
                     <div className="text-center">
                       <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
@@ -1784,10 +1784,10 @@ export default function ChildDetailPage() {
                             subjectAttendanceData.length
                         )}%
                       </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Average Attendance</p>
+                      <p className="text-xs text-muted">Average Attendance</p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
+                  <div className="flex items-center gap-2 text-xs text-muted">
                     <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
                     <span>≥90%</span>
                     <span className="w-2 h-2 rounded-full bg-blue-500"></span>
@@ -1811,8 +1811,8 @@ export default function ChildDetailPage() {
                       <Calendar className="w-5 h-5 text-indigo-500 dark:text-indigo-400" />
                     </div>
                     <div>
-                      <h4 className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">Attendance Calendar</h4>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Daily attendance record</p>
+                      <h4 className="font-semibold text-ink">Attendance Calendar</h4>
+                      <p className="text-xs text-muted">Daily attendance record</p>
                     </div>
                   </div>
 
@@ -1820,7 +1820,7 @@ export default function ChildDetailPage() {
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => navigateMonth("prev")}
-                      className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 transition-colors cursor-pointer"
+                      className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 text-muted transition-colors cursor-pointer"
                     >
                       <ChevronLeft className="w-5 h-5" />
                     </button>
@@ -1829,7 +1829,7 @@ export default function ChildDetailPage() {
                     </span>
                     <button
                       onClick={() => navigateMonth("next")}
-                      className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 transition-colors cursor-pointer"
+                      className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 text-muted transition-colors cursor-pointer"
                     >
                       <ChevronRight className="w-5 h-5" />
                     </button>
@@ -1841,7 +1841,7 @@ export default function ChildDetailPage() {
                   {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
                     <div
                       key={day}
-                      className="text-center text-xs font-semibold text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 py-2"
+                      className="text-center text-xs font-semibold text-muted py-2"
                     >
                       {day}
                     </div>
@@ -1926,7 +1926,7 @@ export default function ChildDetailPage() {
                     <span className="text-xs text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Holiday</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 rounded bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]" />
+                    <div className="w-4 h-4 rounded bg-surface-2" />
                     <span className="text-xs text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Weekend</span>
                   </div>
                 </div>
@@ -1947,8 +1947,8 @@ export default function ChildDetailPage() {
                   <CreditCard className="w-5 h-5 text-emerald-500 dark:text-emerald-400" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">Fee Summary</h3>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Current term fee status</p>
+                  <h3 className="font-semibold text-ink">Fee Summary</h3>
+                  <p className="text-sm text-muted">Current term fee status</p>
                 </div>
               </div>
 
@@ -1963,7 +1963,7 @@ export default function ChildDetailPage() {
                       <div className="p-2 rounded-lg bg-blue-50 dark:bg-blue-900/40 group-hover:scale-110 transition-transform duration-300">
                         <FileText className="w-4 h-4 text-blue-500 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
                       </div>
-                      <p className="text-[10px] font-bold text-blue-600/70 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400/70 uppercase tracking-widest">Total Fees</p>
+                      <p className="text-[0.625rem] font-bold text-blue-600/70 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400/70 uppercase tracking-widest">Total Fees</p>
                     </div>
                     <p className="text-2xl font-bold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 tracking-tight">
                       {formatCurrency(feeData?.total || 0, countryCode)}
@@ -1980,7 +1980,7 @@ export default function ChildDetailPage() {
                       <div className="p-2 rounded-lg bg-emerald-50 dark:bg-emerald-900/40 group-hover:scale-110 transition-transform duration-300">
                         <CheckCircle2 className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
                       </div>
-                      <p className="text-[10px] font-bold text-emerald-600/70 dark:text-emerald-400/70 uppercase tracking-widest">Amount Paid</p>
+                      <p className="text-[0.625rem] font-bold text-emerald-600/70 dark:text-emerald-400/70 uppercase tracking-widest">Amount Paid</p>
                     </div>
                     <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400 tracking-tight">
                       {formatCurrency(feeData?.paid || 0, countryCode)}
@@ -2017,7 +2017,7 @@ export default function ChildDetailPage() {
                           <CheckCircle2 className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
                         )}
                       </div>
-                      <p className={`text-[10px] font-bold uppercase tracking-widest ${
+                      <p className={`text-[0.625rem] font-bold uppercase tracking-widest ${
                         (feeData?.balance || 0) > 0
                           ? "text-rose-600/70 dark:text-rose-400/70"
                           : "text-emerald-600/70 dark:text-emerald-400/70"
@@ -2041,16 +2041,16 @@ export default function ChildDetailPage() {
                 <div className="absolute -top-10 -right-10 w-32 h-32 bg-gradient-to-bl from-emerald-100/40 dark:from-emerald-900/20 to-transparent rounded-full blur-2xl" />
                 <div className="relative">
                   <div className="flex items-center justify-between mb-5">
-                    <span className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">Payment Progress</span>
+                    <span className="font-semibold text-ink">Payment Progress</span>
                     <span className={`px-3 py-1 rounded-lg text-sm font-medium ${
                       ((feeData?.paid || 0) / (feeData?.total || 1)) * 100 >= 100
                         ? "bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400"
-                        : "bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/60 text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200"
+                        : "bg-surface-2/60 text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200"
                     }`}>
                       {Math.round(((feeData?.paid || 0) / (feeData?.total || 1)) * 100)}% Complete
                     </span>
                   </div>
-                  <div className="h-3 bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/60 rounded-full overflow-hidden ring-1 ring-gray-200/50 dark:ring-gray-600/30">
+                  <div className="h-3 bg-surface-2/60 rounded-full overflow-hidden ring-1 ring-gray-200/50 dark:ring-gray-600/30">
                     <div
                       className={`h-full rounded-full transition-all duration-700 ease-out relative ${
                         (feeData?.balance || 0) > 0
@@ -2103,50 +2103,50 @@ export default function ChildDetailPage() {
               <div className="space-y-4">
                 {/* Summary Stats */}
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                  <div className="group relative p-4 rounded-xl bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] shadow-sm border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 overflow-hidden hover:shadow-md transition-all duration-300">
+                  <div className="group relative p-4 rounded-xl bg-surface shadow-sm border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 overflow-hidden hover:shadow-md transition-all duration-300">
                     <div className="absolute -top-4 -right-4 w-16 h-16 bg-emerald-100/50 dark:bg-emerald-900/20 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
                     <div className="relative flex items-center gap-3">
                       <div className="p-2 rounded-lg bg-emerald-50 dark:bg-emerald-900/30 midnight:bg-emerald-900/30 purple:bg-emerald-900/30">
                         <CheckCircle2 className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
                       </div>
                       <div>
-                        <p className="text-[10px] font-bold text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 uppercase tracking-wider">Paid</p>
+                        <p className="text-[0.625rem] font-bold text-muted uppercase tracking-wider">Paid</p>
                         <p className="text-lg font-bold text-emerald-600 dark:text-emerald-400">{paymentHistory.filter(p => p.status === "Paid").length}</p>
                       </div>
                     </div>
                   </div>
-                  <div className="group relative p-4 rounded-xl bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] shadow-sm border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 overflow-hidden hover:shadow-md transition-all duration-300">
+                  <div className="group relative p-4 rounded-xl bg-surface shadow-sm border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 overflow-hidden hover:shadow-md transition-all duration-300">
                     <div className="absolute -top-4 -right-4 w-16 h-16 bg-amber-100/50 dark:bg-amber-900/20 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
                     <div className="relative flex items-center gap-3">
                       <div className="p-2 rounded-lg bg-amber-50 dark:bg-amber-900/30 midnight:bg-amber-900/30 purple:bg-amber-900/30">
                         <Clock className="w-4 h-4 text-amber-500 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400" />
                       </div>
                       <div>
-                        <p className="text-[10px] font-bold text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 uppercase tracking-wider">Pending</p>
+                        <p className="text-[0.625rem] font-bold text-muted uppercase tracking-wider">Pending</p>
                         <p className="text-lg font-bold text-amber-600 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400">{paymentHistory.filter(p => p.status === "Pending").length}</p>
                       </div>
                     </div>
                   </div>
-                  <div className="group relative p-4 rounded-xl bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] shadow-sm border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 overflow-hidden hover:shadow-md transition-all duration-300">
+                  <div className="group relative p-4 rounded-xl bg-surface shadow-sm border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 overflow-hidden hover:shadow-md transition-all duration-300">
                     <div className="absolute -top-4 -right-4 w-16 h-16 bg-rose-100/50 dark:bg-rose-900/20 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
                     <div className="relative flex items-center gap-3">
                       <div className="p-2 rounded-lg bg-rose-50 dark:bg-rose-900/30 midnight:bg-rose-900/30 purple:bg-rose-900/30">
                         <AlertCircle className="w-4 h-4 text-rose-500 dark:text-rose-400" />
                       </div>
                       <div>
-                        <p className="text-[10px] font-bold text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 uppercase tracking-wider">Overdue</p>
+                        <p className="text-[0.625rem] font-bold text-muted uppercase tracking-wider">Overdue</p>
                         <p className="text-lg font-bold text-rose-600 dark:text-rose-400">{paymentHistory.filter(p => p.status === "Overdue").length}</p>
                       </div>
                     </div>
                   </div>
-                  <div className="group relative p-4 rounded-xl bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] shadow-sm border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 overflow-hidden hover:shadow-md transition-all duration-300">
+                  <div className="group relative p-4 rounded-xl bg-surface shadow-sm border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 overflow-hidden hover:shadow-md transition-all duration-300">
                     <div className="absolute -top-4 -right-4 w-16 h-16 bg-blue-100/50 dark:bg-blue-900/20 midnight:bg-cyan-900/20 purple:bg-pink-900/20 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
                     <div className="relative flex items-center gap-3">
                       <div className="p-2 rounded-lg bg-blue-50 dark:bg-blue-900/30 midnight:bg-blue-900/30 purple:bg-blue-900/30">
                         <Banknote className="w-4 h-4 text-blue-500 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
                       </div>
                       <div>
-                        <p className="text-[10px] font-bold text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 uppercase tracking-wider">Total</p>
+                        <p className="text-[0.625rem] font-bold text-muted uppercase tracking-wider">Total</p>
                         <p className="text-lg font-bold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400">{formatCurrency(paymentHistory.reduce((sum, p) => sum + p.amount, 0), countryCode)}</p>
                       </div>
                     </div>
@@ -2154,7 +2154,7 @@ export default function ChildDetailPage() {
                 </div>
 
                 {/* Filter Bar */}
-                <div className="flex flex-wrap items-center justify-between gap-3 p-4 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm">
+                <div className="flex flex-wrap items-center justify-between gap-3 p-4 bg-surface rounded-xl border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm">
                   <div className="flex flex-wrap items-center gap-3">
                     {/* Year Filter */}
                     <div className="relative">
@@ -2171,7 +2171,7 @@ export default function ChildDetailPage() {
                         <ChevronDown className={`w-4 h-4 text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 transition-transform duration-200 ${showYearDropdown ? "rotate-180" : ""}`} />
                       </button>
                       {showYearDropdown && (
-                        <div className="absolute left-0 mt-2 w-44 py-1 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl shadow-lg ring-1 ring-gray-200 dark:ring-gray-700 midnight:ring-cyan-500/30 purple:ring-pink-500/30 z-30 animate-in fade-in slide-in-from-top-2 duration-200">
+                        <div className="absolute left-0 mt-2 w-44 py-1 bg-surface rounded-xl shadow-lg ring-1 ring-gray-200 dark:ring-gray-700 midnight:ring-cyan-500/30 purple:ring-pink-500/30 z-30 animate-in fade-in slide-in-from-top-2 duration-200">
                           {["2024 / 2025", "2023 / 2024", "2022 / 2023"].map((year) => (
                             <button
                               key={year}
@@ -2207,7 +2207,7 @@ export default function ChildDetailPage() {
                         <ChevronDown className={`w-4 h-4 text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 transition-transform duration-200 ${showCategoryDropdown ? "rotate-180" : ""}`} />
                       </button>
                       {showCategoryDropdown && (
-                        <div className="absolute left-0 mt-2 w-56 py-1 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl shadow-lg ring-1 ring-gray-200 dark:ring-gray-700 midnight:ring-cyan-500/30 purple:ring-pink-500/30 z-30 animate-in fade-in slide-in-from-top-2 duration-200">
+                        <div className="absolute left-0 mt-2 w-56 py-1 bg-surface rounded-xl shadow-lg ring-1 ring-gray-200 dark:ring-gray-700 midnight:ring-cyan-500/30 purple:ring-pink-500/30 z-30 animate-in fade-in slide-in-from-top-2 duration-200">
                           {paymentCategories.map((category) => (
                             <button
                               key={category}
@@ -2243,7 +2243,7 @@ export default function ChildDetailPage() {
                         <ChevronDown className={`w-4 h-4 text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 transition-transform duration-200 ${showStatusDropdown ? "rotate-180" : ""}`} />
                       </button>
                       {showStatusDropdown && (
-                        <div className="absolute left-0 mt-2 w-40 py-1 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl shadow-lg ring-1 ring-gray-200 dark:ring-gray-700 midnight:ring-cyan-500/30 purple:ring-pink-500/30 z-30 animate-in fade-in slide-in-from-top-2 duration-200">
+                        <div className="absolute left-0 mt-2 w-40 py-1 bg-surface rounded-xl shadow-lg ring-1 ring-gray-200 dark:ring-gray-700 midnight:ring-cyan-500/30 purple:ring-pink-500/30 z-30 animate-in fade-in slide-in-from-top-2 duration-200">
                           {["All Status", "Paid", "Pending", "Overdue", "Partial"].map((status) => (
                             <button
                               key={status}
@@ -2281,7 +2281,7 @@ export default function ChildDetailPage() {
                       <ChevronDown className={`w-4 h-4 text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 transition-transform duration-200 ${showExportDropdown ? "rotate-180" : ""}`} />
                     </button>
                     {showExportDropdown && (
-                      <div className="absolute right-0 mt-2 w-44 py-1 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl shadow-lg ring-1 ring-gray-200 dark:ring-gray-700 midnight:ring-cyan-500/30 purple:ring-pink-500/30 z-30 animate-in fade-in slide-in-from-top-2 duration-200">
+                      <div className="absolute right-0 mt-2 w-44 py-1 bg-surface rounded-xl shadow-lg ring-1 ring-gray-200 dark:ring-gray-700 midnight:ring-cyan-500/30 purple:ring-pink-500/30 z-30 animate-in fade-in slide-in-from-top-2 duration-200">
                         <button
                           onClick={() => {
                             // Export as PDF
@@ -2382,7 +2382,7 @@ export default function ChildDetailPage() {
                               item.category === "Examination & Certification" ? "text-purple-500 dark:text-purple-400" :
                               item.category === "Extra-Curricular" ? "text-amber-500 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400" :
                               item.category === "Laboratory" ? "text-cyan-500 dark:text-cyan-400" :
-                              "text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300"
+                              "text-muted"
                             }`} />
                           </div>
                           <div>
@@ -2438,7 +2438,7 @@ export default function ChildDetailPage() {
                       className: "text-center",
                       hidden: { mobile: true, tablet: true },
                       render: (item) => (
-                        <span className="inline-flex px-2.5 py-1 text-xs font-medium rounded-lg bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/50 midnight:bg-gray-700/50 purple:bg-gray-700/50 text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300">
+                        <span className="inline-flex px-2.5 py-1 text-xs font-medium rounded-lg bg-surface-2/50 midnight:bg-gray-700/50 purple:bg-gray-700/50 text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300">
                           {item.term}
                         </span>
                       ),

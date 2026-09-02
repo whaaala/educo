@@ -21,6 +21,8 @@ import {
   type Breakpoint, resolveResponsive, updateBoxResponsive,
 } from "@/lib/box-model";
 import { ICON_SET } from "./icons";
+import { PortalMenu, MenuItem, MenuHeader, MenuSep } from "./ui";
+import { blockForKind } from "@/lib/box-presets";
 import { colorToCSS } from "@/components/shared/ColorPalettePicker";
 import { EditableText, ImageBox } from "@/components/website/sections/SectionKit";
 
@@ -164,9 +166,8 @@ export default function BoxCanvas({
   breakpoint?: Breakpoint; // active responsive breakpoint — edits at tablet/mobile write per-breakpoint overrides
 }) {
   const [menuFor, setMenuFor] = useState<string | null>(null); // which box's actions dropdown is open
-  const [menuPos, setMenuPos] = useState<{ top: number; left: number } | null>(null); // fixed pos of the ⋯ menu (portaled to body so it never gets clipped by the box)
-  const menuRef = useRef<HTMLDivElement>(null);
-  const closeMenu = () => { setMenuFor(null); setMenuPos(null); };
+  const [menuAnchor, setMenuAnchor] = useState<{ top: number; left: number; bottom: number; right: number } | null>(null); // the ⋯ button's rect (PortalMenu positions off this)
+  const closeMenu = () => { setMenuFor(null); setMenuAnchor(null); };
   const [resizing, setResizing] = useState(false);
   const [resizeCursor, setResizeCursor] = useState<string | null>(null); // cursor shown by the full-screen overlay while resizing (so it never disappears)
   const [dragId, setDragId] = useState<string | null>(null); // box being dragged (after the move threshold)
@@ -288,17 +289,7 @@ export default function BoxCanvas({
     return () => document.removeEventListener("keydown", onKey);
   }, [editable, selectedId, selectedIds, root, clip, onChange, breakpoint]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // The ⋯ actions menu is portaled to <body> at a fixed position so it's never clipped by a small box.
-  // Close it on outside-click, and dismiss on scroll/resize (its anchored position would go stale).
-  useEffect(() => {
-    if (!menuFor) return;
-    const onDown = (e: MouseEvent) => { if (menuRef.current && !menuRef.current.contains(e.target as Node)) closeMenu(); };
-    const onGone = () => closeMenu();
-    document.addEventListener("mousedown", onDown);
-    window.addEventListener("scroll", onGone, true);
-    window.addEventListener("resize", onGone);
-    return () => { document.removeEventListener("mousedown", onDown); window.removeEventListener("scroll", onGone, true); window.removeEventListener("resize", onGone); };
-  }, [menuFor]);
+  // (The ⋯ actions menu's outside-click / Escape / scroll / flip-and-fit behaviour lives in <PortalMenu>.)
 
   // ── Pointer-based drag & drop ────────────────────────────────────────────────────────────────
   // Replaces the janky native HTML5 drag. Grab a block's grip and a floating PREVIEW follows the
@@ -313,6 +304,7 @@ export default function BoxCanvas({
     if (n.type === "video") return "Video";
     if (n.type === "icon") return `Icon: ${n.icon ?? "Star"}`;
     if (n.type === "divider") return "Divider";
+    if (n.type === "spacer") return "Spacer";
     if (n.type === "list") return "List";
     if (n.type === "embed") return "Embed";
     return t ? `Text: ${t.slice(0, 18)}` : "Text";
@@ -357,12 +349,13 @@ export default function BoxCanvas({
   };
   // Hit-test the deepest box under the cursor that ISN'T the dragged block (or inside it). If it's a
   // container, drop INSIDE it (among its children); if it's a leaf, drop BESIDE it (among its parent's).
-  const computeDrop = (x: number, y: number, draggingId: string): Drop | null => {
+  const computeDrop = (x: number, y: number, draggingId: string | null): Drop | null => {
     // NEAREST-SLOT while ARRANGING within the current parent: as long as the cursor is anywhere inside the
     // dragged block's own parent, snap to the nearest slot among its siblings (you don't have to aim at an
     // edge). The block floats with the cursor and lands packed next to its siblings — moving it OUT of the
     // parent (below) reparents it. This is what makes moving blocks around inside a section feel smooth.
-    const dragInfo = findParent(rootRef.current, draggingId);
+    // (draggingId is null when INSERTING a NEW block from the palette — no self to exclude.)
+    const dragInfo = draggingId ? findParent(rootRef.current, draggingId) : null;
     if (dragInfo) {
       const pEl = document.querySelector<HTMLElement>(`[data-box-id="${dragInfo.parent.id}"]`);
       if (pEl) {
@@ -381,7 +374,7 @@ export default function BoxCanvas({
       const boxEl = (el as HTMLElement).closest?.("[data-box-id]") as HTMLElement | null;
       if (!boxEl) continue;
       const id = boxEl.getAttribute("data-box-id");
-      if (!id || id === draggingId || isAncestor(rootRef.current, draggingId, id)) continue;
+      if (!id || (draggingId && (id === draggingId || isAncestor(rootRef.current, draggingId, id)))) continue;
       hitEl = boxEl; hitId = id; break;
     }
     if (!hitEl || !hitId) return null;
@@ -508,6 +501,29 @@ export default function BoxCanvas({
     dragArm.current = { id: node.id, startX: e.clientX, startY: e.clientY, w: r?.width ?? 160, h: r?.height ?? 40, label: dragLabel(node) };
     document.addEventListener("mousemove", onDragMove);
     document.addEventListener("mouseup", onDragUp);
+  };
+
+  // ── Drag a NEW block from the palette onto the canvas (native HTML5 DnD) ──────────────────────────
+  // The palette sets `application/x-box-block` = the block kind; the canvas shows the same drop line and
+  // inserts a fresh node where you release (filling the line's leftover width when dropping beside).
+  const PALETTE_TYPE = "application/x-box-block";
+  const nodeForKind = (kind: string): BoxNode => blockForKind(kind);
+  const onCanvasDragOver = (e: React.DragEvent) => {
+    if (!editable || !e.dataTransfer.types.includes(PALETTE_TYPE)) return;
+    e.preventDefault(); e.dataTransfer.dropEffect = "copy";
+    const hit = computeDrop(e.clientX, e.clientY, null);
+    setDropRect(hit?.rect ?? null);
+  };
+  const onCanvasDrop = (e: React.DragEvent) => {
+    if (!editable) return;
+    const kind = e.dataTransfer.getData(PALETTE_TYPE);
+    if (!kind) return;
+    e.preventDefault();
+    const hit = computeDrop(e.clientX, e.clientY, null);
+    const node = nodeForKind(kind);
+    if (hit) { if (hit.moveWidth) node.width = hit.moveWidth; onChange(insertBox(rootRef.current, hit.target.parentId, hit.target.index, node)); }
+    else onChange(insertBox(rootRef.current, rootRef.current.id, rootRef.current.children?.length ?? 0, node)); // empty canvas → append to the page
+    setDropRect(null);
   };
 
   // ── Drag-to-resize ───────────────────────────────────────────────────────────────────────────
@@ -743,9 +759,12 @@ export default function BoxCanvas({
             <Fragment key={c.id}>{renderNode(c, node)}</Fragment>
           ))}
           {editable && kids.length === 0 && (
-            // An empty block shows a non-interactive hint — select it, then use the ⋯ menu (or drag a block
-            // in) to fill it. It's a hint only; it does NOT add anything by itself.
-            <div data-ph className="w-full flex items-center justify-center gap-1 py-3 text-gray-400 border border-dashed border-gray-300 rounded-lg pointer-events-none" style={{ fontSize: u(11) }}><Plus className="w-3 h-3 shrink-0" /> Empty block</div>
+            // An empty block shows a non-interactive hint — drag a block from the palette (or use the ⋯ menu)
+            // to fill it. It's a hint only; it does NOT add anything by itself.
+            <div data-ph className="w-full flex flex-col items-center justify-center gap-1.5 py-6 text-gray-400 dark:text-gray-500 border border-dashed border-gray-300/80 dark:border-white/15 rounded-xl pointer-events-none" style={{ fontSize: u(11) }}>
+              <span className="flex items-center justify-center rounded-full bg-gray-100 dark:bg-white/5" style={{ width: u(22), height: u(22) }}><Plus className="w-3.5 h-3.5" /></span>
+              Drag a block here
+            </div>
           )}
           {isSolo && <NodeToolbar node={node} isRoot={isRoot} />}
           {resizeHandles}
@@ -775,16 +794,12 @@ export default function BoxCanvas({
     // COLLAPSED bar: just a drag grip + a ⋯ button (tiny, never covers the box). All actions live in
     // the ⋯ dropdown, opened on demand, so you can always see and work on the element itself.
     const open = menuFor === node.id;
-    const MenuItem = ({ onClick, Icon, label, danger, disabled }: { onClick: () => void; Icon: typeof Copy; label: string; danger?: boolean; disabled?: boolean }) => (
-      <button
-        disabled={disabled}
-        onClick={() => { onClick(); closeMenu(); }}
-        role="menuitem"
-        className={`w-full flex items-center gap-2 px-2.5 py-1.5 text-xs text-left disabled:opacity-40 ${danger ? "text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40" : "text-gray-700 dark:text-gray-200 hover:bg-indigo-50 dark:hover:bg-indigo-950/40"}`}
-      ><Icon className="w-3.5 h-3.5 text-gray-400" /> {label}</button>
+    // A menu row that runs its action then closes the menu.
+    const Item = ({ onClick, Icon, label, danger, disabled, hint }: { onClick: () => void; Icon: typeof Copy; label: string; danger?: boolean; disabled?: boolean; hint?: string }) => (
+      <MenuItem onClick={() => { onClick(); closeMenu(); }} Icon={Icon} label={label} danger={danger} disabled={disabled} hint={hint} />
     );
     return (
-      <div className="absolute top-1.5 left-1.5 z-40 flex items-center gap-0.5 rounded-lg bg-indigo-600 px-1 py-1 shadow-xl ring-1 ring-white/20" onClick={(e) => e.stopPropagation()} onMouseDown={(e) => e.stopPropagation()}>
+      <div className="absolute top-1.5 left-1.5 z-40 flex items-center gap-0.5 rounded-xl bg-gray-900/95 dark:bg-gray-800/95 backdrop-blur-sm px-1 py-1 shadow-lg ring-1 ring-white/10" onClick={(e) => e.stopPropagation()} onMouseDown={(e) => e.stopPropagation()}>
         {!isRoot && (
           <span
             onMouseDown={(e) => startDrag(e, node)}
@@ -797,56 +812,47 @@ export default function BoxCanvas({
           onClick={(e) => {
             if (open) { closeMenu(); return; }
             const r = (e.currentTarget as HTMLElement).getBoundingClientRect();
-            setMenuPos({ top: r.bottom + 4, left: r.left });
+            setMenuAnchor({ top: r.top, left: r.left, bottom: r.bottom, right: r.right });
             setMenuFor(node.id);
           }}
           aria-label="Block actions" aria-expanded={open} title="Actions"
           className="p-1 rounded text-white/90 hover:bg-white/15"
         ><MoreVertical className="w-3.5 h-3.5" /></button>
-        {open && menuPos && createPortal(
-          // Portaled to <body> at a fixed position so the menu is ALWAYS fully visible — a narrow box can
-          // never clip it, and it floats above the canvas, inspector and everything else.
-          <div
-            ref={menuRef}
-            style={{ position: "fixed", top: menuPos.top, left: menuPos.left }}
-            className="z-[9999] w-44 max-h-[70vh] overflow-y-auto rounded-lg bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 shadow-2xl py-1"
-            role="menu" aria-label="Block actions"
-            onMouseDown={(e) => e.stopPropagation()} onClick={(e) => e.stopPropagation()}
-          >
+        {open && menuAnchor && (
+          <PortalMenu anchor={menuAnchor} onClose={closeMenu} ariaLabel="Block actions" width={200}>
             {isContainer(node) && (<>
-              <div className="px-2.5 pt-0.5 pb-1 text-[9px] font-semibold uppercase tracking-wide text-gray-400">Add inside</div>
-              {ADD_ITEMS.map(({ type, label, Icon }) => <MenuItem key={type} onClick={() => addChild(node.id, type)} Icon={Icon} label={label} />)}
-              {!isRoot && <div className="h-px bg-gray-100 dark:bg-gray-800 my-1" />}
+              <MenuHeader>Add inside</MenuHeader>
+              {ADD_ITEMS.map(({ type, label, Icon }) => <Item key={type} onClick={() => addChild(node.id, type)} Icon={Icon} label={label} />)}
+              {!isRoot && <MenuSep />}
             </>)}
             {!isRoot && (isFloating(node) ? (<>
-              <MenuItem onClick={() => unfloatNode(node.id)} Icon={Layers} label="Return to flow" />
-              <MenuItem onClick={() => layer(node.id, "front")} Icon={BringToFront} label="Bring to front" />
-              <MenuItem onClick={() => layer(node.id, "forward")} Icon={ChevronUp} label="Bring forward" />
-              <MenuItem onClick={() => layer(node.id, "backward")} Icon={ChevronDown} label="Send backward" />
-              <MenuItem onClick={() => layer(node.id, "back")} Icon={SendToBack} label="Send to back" />
-              <div className="h-px bg-gray-100 dark:bg-gray-800 my-1" />
+              <Item onClick={() => unfloatNode(node.id)} Icon={Layers} label="Return to flow" />
+              <Item onClick={() => layer(node.id, "front")} Icon={BringToFront} label="Bring to front" />
+              <Item onClick={() => layer(node.id, "forward")} Icon={ChevronUp} label="Bring forward" />
+              <Item onClick={() => layer(node.id, "backward")} Icon={ChevronDown} label="Send backward" />
+              <Item onClick={() => layer(node.id, "back")} Icon={SendToBack} label="Send to back" />
+              <MenuSep />
             </>) : (<>
-              <MenuItem onClick={() => floatNode(node.id)} Icon={Layers} label="Float on top" />
-              <div className="h-px bg-gray-100 dark:bg-gray-800 my-1" />
+              <Item onClick={() => floatNode(node.id)} Icon={Layers} label="Float on top" />
+              <MenuSep />
             </>))}
             {!isRoot && (<>
-              <MenuItem onClick={() => onChange(moveBoxStep(root, node.id, -1))} Icon={ChevronUp} label="Move up" />
-              <MenuItem onClick={() => onChange(moveBoxStep(root, node.id, 1))} Icon={ChevronDown} label="Move down" />
-              <MenuItem onClick={() => onChange(duplicateBox(root, node.id))} Icon={Copy} label="Duplicate" />
-              <MenuItem onClick={() => copyBox(node.id)} Icon={Copy} label="Copy" />
-              <MenuItem onClick={() => cutBox(node.id)} Icon={Scissors} label="Cut" />
-              <MenuItem onClick={() => pasteBox(node.id)} Icon={ClipboardPaste} label="Paste" disabled={!clip} />
-              <MenuItem onClick={() => { onChange(removeBox(root, node.id)); select(null); }} Icon={Trash2} label="Delete" danger />
+              <Item onClick={() => onChange(moveBoxStep(root, node.id, -1))} Icon={ChevronUp} label="Move up" />
+              <Item onClick={() => onChange(moveBoxStep(root, node.id, 1))} Icon={ChevronDown} label="Move down" />
+              <Item onClick={() => onChange(duplicateBox(root, node.id))} Icon={Copy} label="Duplicate" hint="Ctrl+D" />
+              <Item onClick={() => copyBox(node.id)} Icon={Copy} label="Copy" hint="Ctrl+C" />
+              <Item onClick={() => cutBox(node.id)} Icon={Scissors} label="Cut" hint="Ctrl+X" />
+              <Item onClick={() => pasteBox(node.id)} Icon={ClipboardPaste} label="Paste" disabled={!clip} hint="Ctrl+V" />
+              <Item onClick={() => { onChange(removeBox(root, node.id)); select(null); }} Icon={Trash2} label="Delete" danger hint="Del" />
             </>)}
-          </div>,
-          document.body,
+          </PortalMenu>
         )}
       </div>
     );
   }
 
   return (
-    <div onMouseDown={(e) => { if (editable) { select(null); startMarqueeArm(e); } }} className="w-full">
+    <div onMouseDown={(e) => { if (editable) { select(null); startMarqueeArm(e); } }} onDragOver={onCanvasDragOver} onDrop={onCanvasDrop} onDragLeave={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setDropRect(null); }} className="w-full">
       {renderNode(root, null)}
       {/* Marquee (rubber-band) selection rectangle. Portaled so it's never clipped. */}
       {marquee && createPortal(
@@ -937,7 +943,9 @@ function ElementView({ node, theme, editable, onText, onSrc }: {
       return <div style={{ textAlign: align, color: node.color || theme.primary, width: "100%", lineHeight: 0 }}><Ico style={{ width: u(node.fontSize ?? 32), height: u(node.fontSize ?? 32), display: "inline-block" }} /></div>;
     }
     case "divider":
-      return <div aria-hidden="true" style={{ width: "100%", height: node.borderWidth || 2, background: node.color ? colorToCSS(node.color) : node.borderColor ? colorToCSS(node.borderColor) : theme.textMuted, borderRadius: 999 }} />;
+      return <div aria-hidden="true" style={{ width: "100%", borderTopWidth: node.borderWidth || 2, borderTopStyle: node.borderStyle ?? "solid", borderTopColor: node.color ? colorToCSS(node.color) : node.borderColor ? colorToCSS(node.borderColor) : theme.textMuted }} />;
+    case "spacer":
+      return <div aria-hidden="true" style={{ width: "100%", height: sizeToCSS(node.height) ?? "48px" }} />;
     case "list": {
       const items = node.listItems ?? [];
       const numbered = node.listStyle === "number";

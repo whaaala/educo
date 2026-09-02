@@ -68,7 +68,7 @@ export default function PresentationsHomePage() {
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
             <input type="text" value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
               placeholder="Search presentations..."
-              className="w-full pl-12 pr-4 py-3 rounded-full border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] text-[14px] shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition-all" />
+              className="w-full pl-12 pr-4 py-3 rounded-full border border-line bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] text-[14px] shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition-all" />
           </div>
         </div>
 
@@ -121,7 +121,7 @@ export default function PresentationsHomePage() {
                   </div>
                 )}
               </div>
-              <div className="flex items-center rounded-lg border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 overflow-hidden">
+              <div className="flex items-center rounded-lg border border-line overflow-hidden">
                 <button onClick={() => setViewMode("grid")}
                   className={`p-1.5 transition-colors cursor-pointer ${viewMode === "grid" ? "bg-blue-50 dark:bg-blue-900/30 midnight:bg-cyan-500/10 purple:bg-pink-500/10 text-blue-600" : "text-gray-400 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5"}`}>
                   <LayoutGrid className="w-4 h-4" />
@@ -194,7 +194,7 @@ export default function PresentationsHomePage() {
 
           {/* List View */}
           {viewMode === "list" && (
-            <div className="rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] overflow-hidden">
+            <div className="rounded-xl border border-line bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] overflow-hidden">
               <div className="grid grid-cols-[40%_20%_30%_10%] px-4 py-2 border-b border-gray-100 dark:border-[#1a1d24] midnight:border-cyan-500/20 purple:border-pink-500/20 text-[11px] font-semibold text-gray-500 midnight:text-cyan-400 purple:text-pink-400 uppercase tracking-wide">
                 <span>Name</span><span>Owner</span><span>Last opened</span><span></span>
               </div>

@@ -352,7 +352,7 @@ export default function AdminParentsPage() {
                   return (
                     <div
                       key={parent.id}
-                      className="p-3 rounded-xl bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20"
+                      className="p-3 rounded-xl bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-line"
                     >
                       {/* Parent Header */}
                       <div className="flex items-center justify-between mb-3">
@@ -369,10 +369,10 @@ export default function AdminParentsPage() {
                             </div>
                           )}
                           <div>
-                            <p className="text-sm font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                            <p className="text-sm font-medium text-ink">
                               {parent.firstName} {parent.lastName}
                             </p>
-                            <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
+                            <p className="text-xs text-muted">
                               {selectedForParent.length} of {parent.children.length} selected
                             </p>
                           </div>
@@ -499,7 +499,7 @@ export default function AdminParentsPage() {
           )}
 
           {/* Action Buttons */}
-          <div className="flex items-center justify-end gap-3 pt-2 border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+          <div className="flex items-center justify-end gap-3 pt-2 border-t border-line">
             <FormButton
               type="button"
               variant="secondary"
@@ -528,14 +528,14 @@ export default function AdminParentsPage() {
           <button
             type="button"
             onClick={() => handleAddParentType("parent")}
-            className="w-full flex items-center gap-4 p-4 rounded-xl border-2 border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 hover:border-blue-400 dark:hover:border-blue-500 hover:bg-blue-50/50 dark:hover:bg-blue-900/10 midnight:hover:bg-cyan-900/10 purple:hover:bg-pink-900/10 transition-all cursor-pointer group"
+            className="w-full flex items-center gap-4 p-4 rounded-xl border-2 border-line hover:border-blue-400 dark:hover:border-blue-500 hover:bg-blue-50/50 dark:hover:bg-blue-900/10 midnight:hover:bg-cyan-900/10 purple:hover:bg-pink-900/10 transition-all cursor-pointer group"
           >
             <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center flex-shrink-0 shadow-lg group-hover:scale-105 transition-transform">
               <Users className="w-6 h-6 text-white" />
             </div>
             <div className="flex-1 text-left">
-              <p className="text-base font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">Parent</p>
-              <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
+              <p className="text-base font-semibold text-ink">Parent</p>
+              <p className="text-sm text-muted">
                 Biological parent (Father or Mother) of a student
               </p>
             </div>
@@ -544,21 +544,21 @@ export default function AdminParentsPage() {
           <button
             type="button"
             onClick={() => handleAddParentType("guardian")}
-            className="w-full flex items-center gap-4 p-4 rounded-xl border-2 border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 hover:border-purple-400 dark:hover:border-purple-500 hover:bg-purple-50/50 dark:hover:bg-purple-900/10 transition-all cursor-pointer group"
+            className="w-full flex items-center gap-4 p-4 rounded-xl border-2 border-line hover:border-purple-400 dark:hover:border-purple-500 hover:bg-purple-50/50 dark:hover:bg-purple-900/10 transition-all cursor-pointer group"
           >
             <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center flex-shrink-0 shadow-lg group-hover:scale-105 transition-transform">
               <Shield className="w-6 h-6 text-white" />
             </div>
             <div className="flex-1 text-left">
-              <p className="text-base font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">Guardian</p>
-              <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
+              <p className="text-base font-semibold text-ink">Guardian</p>
+              <p className="text-sm text-muted">
                 Legal guardian, sponsor, or caregiver of a student
               </p>
             </div>
           </button>
 
-          <div className="flex items-start gap-2 p-3 mt-2 rounded-lg bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
-            <AlertTriangle className="w-4 h-4 text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 flex-shrink-0 mt-0.5" />
+          <div className="flex items-start gap-2 p-3 mt-2 rounded-lg bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border border-line">
+            <AlertTriangle className="w-4 h-4 text-muted flex-shrink-0 mt-0.5" />
             <p className="text-xs text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
               After creating the account, you can link them to one or more students in the system.
             </p>

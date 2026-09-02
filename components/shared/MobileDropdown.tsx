@@ -64,14 +64,14 @@ export default function MobileDropdown({
         <button
           type="button"
           onClick={() => setIsOpen(!isOpen)}
-          className="p-2 rounded-lg border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 text-gray-600 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 focus:outline-none focus:ring-2 focus:ring-blue-500/50 dark:focus:ring-blue-400/50 midnight:focus:ring-cyan-400/50 purple:focus:ring-pink-400/50 shadow-sm transition-all duration-200 cursor-pointer"
+          className="p-2 rounded-lg border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-surface hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 text-gray-600 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 focus:outline-none focus:ring-2 focus:ring-blue-500/50 dark:focus:ring-blue-400/50 midnight:focus:ring-cyan-400/50 purple:focus:ring-pink-400/50 shadow-sm transition-all duration-200 cursor-pointer"
         >
           <MoreVertical className="w-5 h-5" />
         </button>
 
         {/* Action Menu Dropdown */}
         {isOpen && (
-          <div className="absolute top-full mt-1.5 right-0 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-lg shadow-2xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/30 purple:border-pink-500/30 min-w-40 overflow-hidden z-[10000] animate-slideDown">
+          <div className="absolute top-full mt-1.5 right-0 bg-surface rounded-lg shadow-2xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/30 purple:border-pink-500/30 min-w-40 overflow-hidden z-[10000] animate-slideDown">
             {items.map((item, index) => (
               <button
                 key={index}
@@ -134,7 +134,7 @@ export default function MobileDropdown({
 
       {/* Dropdown Menu */}
       {isOpen && options.length > 0 && (
-        <div className="absolute top-full mt-1.5 left-0 right-0 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-lg shadow-2xl border-2 border-blue-200/60 dark:border-blue-800/60 midnight:border-cyan-500/30 purple:border-pink-500/30 max-h-60 overflow-y-auto z-[10000] animate-slideDown">
+        <div className="absolute top-full mt-1.5 left-0 right-0 bg-surface rounded-lg shadow-2xl border-2 border-blue-200/60 dark:border-blue-800/60 midnight:border-cyan-500/30 purple:border-pink-500/30 max-h-60 overflow-y-auto z-[10000] animate-slideDown">
           {options.map((option, index) => (
             <button
               key={option.value}

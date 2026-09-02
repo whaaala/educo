@@ -239,7 +239,7 @@ export default function PaymentModal({
                   >
                     {method.label}
                   </p>
-                  <p className="text-[10px] text-gray-400 dark:text-gray-500 text-center mt-0.5 hidden sm:block">
+                  <p className="text-[0.625rem] text-gray-400 dark:text-gray-500 text-center mt-0.5 hidden sm:block">
                     {method.description}
                   </p>
                 </button>
@@ -348,7 +348,7 @@ export default function PaymentModal({
                         <p className="text-xs text-gray-400 dark:text-gray-500">
                           {item.label}
                         </p>
-                        <p className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                        <p className="text-sm font-semibold text-ink">
                           {item.value}
                         </p>
                       </div>
@@ -381,7 +381,7 @@ export default function PaymentModal({
                 <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center mx-auto mb-4 shadow-lg shadow-emerald-500/30">
                   <Banknote className="w-7 h-7 text-white" />
                 </div>
-                <h4 className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-2">
+                <h4 className="font-semibold text-ink mb-2">
                   Pay at School Office
                 </h4>
                 <p className="text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mb-4">
@@ -389,7 +389,7 @@ export default function PaymentModal({
                 </p>
                 <div className="inline-flex items-center gap-2 px-4 py-2 bg-white dark:bg-[#1a1d24] midnight:bg-[#0f1330] purple:bg-[#251340] rounded-xl text-sm border border-gray-100 dark:border-gray-700 midnight:border-cyan-700/20 purple:border-pink-700/20">
                   <span className="text-gray-500 dark:text-gray-400">Office Hours:</span>
-                  <span className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">8:00 AM - 4:00 PM</span>
+                  <span className="font-semibold text-ink">8:00 AM - 4:00 PM</span>
                 </div>
               </div>
             </div>

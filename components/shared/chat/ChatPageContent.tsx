@@ -352,7 +352,7 @@ export default function ChatPageContent({
               <p
                 className={`text-xs sm:text-sm truncate ${
                   chat.unreadCount > 0
-                    ? "font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50"
+                    ? "font-semibold text-ink"
                     : "font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200"
                 }`}
               >
@@ -360,7 +360,7 @@ export default function ChatPageContent({
               </p>
             </Tooltip>
             <Tooltip content={chat.recipientEmail} block>
-              <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 truncate hidden sm:block">
+              <p className="text-[0.625rem] sm:text-xs text-muted truncate hidden sm:block">
                 {chat.recipientEmail}
               </p>
             </Tooltip>
@@ -387,7 +387,7 @@ export default function ChatPageContent({
             <p
               className={`text-xs sm:text-sm truncate ${
                 chat.unreadCount > 0
-                  ? "font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50"
+                  ? "font-medium text-ink"
                   : "text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300"
               }`}
             >
@@ -405,11 +405,11 @@ export default function ChatPageContent({
       sortValue: (chat) => new Date(chat.lastMessageTime).getTime(),
       render: (chat) => (
         <div className="flex items-center gap-1 sm:gap-2">
-          <span className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
+          <span className="text-[0.625rem] sm:text-xs text-muted">
             {formatChatTime(chat.lastMessageTime)}
           </span>
           {chat.unreadCount > 0 && (
-            <span className="px-1.5 sm:px-2 py-0.5 rounded-full bg-blue-500 text-white text-[10px] sm:text-xs font-bold">
+            <span className="px-1.5 sm:px-2 py-0.5 rounded-full bg-blue-500 text-white text-[0.625rem] sm:text-xs font-bold">
               {chat.unreadCount}
             </span>
           )}
@@ -431,7 +431,7 @@ export default function ChatPageContent({
               onClick={() => handleViewChat(chat)}
               className="p-1 sm:p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer"
             >
-              <Eye className="w-4 h-4 text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300" />
+              <Eye className="w-4 h-4 text-muted" />
             </button>
           </Tooltip>
           <Tooltip content="Delete">
@@ -484,7 +484,7 @@ export default function ChatPageContent({
               <DeleteAllButton selectedCount={selectedIds.size} onDeleteAll={handleDeleteAll} />
             )}
 
-            <div className="flex items-center px-3 lg:px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]">
+            <div className="flex items-center px-3 lg:px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-surface">
               <span className="text-xs lg:text-sm text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 whitespace-nowrap">
                 {filteredConversations.length} chats
               </span>
@@ -519,13 +519,13 @@ export default function ChatPageContent({
             />
           ) : filteredConversations.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16">
-              <div className="w-16 h-16 rounded-full bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/20 flex items-center justify-center mb-4">
+              <div className="w-16 h-16 rounded-full bg-surface-2/20 flex items-center justify-center mb-4">
                 <MessageCircle className="w-8 h-8 text-gray-400" />
               </div>
               <h3 className="text-base font-semibold text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 mb-1">
                 No chats found
               </h3>
-              <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
+              <p className="text-sm text-muted">
                 {hasActiveFilters
                   ? "Try adjusting your filters."
                   : `Start a new chat with a ${config.recipientLabel.toLowerCase()}.`}

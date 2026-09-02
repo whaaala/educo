@@ -5,6 +5,21 @@
   --color-foreground: #171717;
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  /* ── Educo UI semantic tokens → Tailwind utilities ──────────────────────────
+   * These map utility classes (bg-surface, text-ink, text-muted, border-line,
+   * bg-brand, …) onto the --eu-color-* variables defined per theme below. Adopt
+   * these instead of hand-typed `bg-white dark:bg-[#1a1d24] midnight:… purple:…`
+   * so one token change re-themes the whole app. Purely additive. */
+  --color-canvas: var(--eu-color-bg);
+  --color-surface: var(--eu-color-surface);
+  --color-surface-2: var(--eu-color-surface-2);
+  --color-ink: var(--eu-color-text);
+  --color-muted: var(--eu-color-muted);
+  --color-line: var(--eu-color-border);
+  --color-brand: var(--eu-color-brand);
+  --color-brand-fg: var(--eu-color-on-brand);
+  --color-brand-600: var(--eu-color-brand-600);
 }
 
 /* Theme variant definitions (Tailwind CSS v4)
@@ -40,6 +55,56 @@ html.purple {
   --background: #1a0b2e;
   --foreground: #f3e8ff;
   color-scheme: dark;
+}
+
+/* ── Educo UI semantic tokens (per theme) ─────────────────────────────────────
+ * Single source of truth for chrome colours. Values match the app's EXISTING
+ * surfaces, so replacing `bg-white dark:bg-[#1a1d24] midnight:bg-[#0f1330]
+ * purple:bg-[#251340]` with `bg-surface` looks identical — but is now themed
+ * from one place. Utilities are wired in the @theme block above. */
+:root {
+  --eu-color-bg: #f9fafb;
+  --eu-color-surface: #ffffff;
+  --eu-color-surface-2: #f3f4f6;
+  --eu-color-text: #111827;       /* gray-900 — primary/heading text */
+  --eu-color-muted: #6b7280;
+  --eu-color-border: #e5e7eb;
+  --eu-color-brand: #3b82f6;
+  --eu-color-brand-600: #2563eb;
+  --eu-color-on-brand: #ffffff;
+}
+html.dark {
+  --eu-color-bg: #0f1115;
+  --eu-color-surface: #1a1d24;
+  --eu-color-surface-2: #22262e;
+  --eu-color-text: #ffffff;       /* dark: headings = white */
+  --eu-color-muted: #9ca3af;
+  --eu-color-border: #374151;
+  --eu-color-brand: #3b82f6;
+  --eu-color-brand-600: #60a5fa;
+  --eu-color-on-brand: #ffffff;
+}
+html.midnight {
+  --eu-color-bg: #0a0e27;
+  --eu-color-surface: #0f1729;    /* raised card — stands out from the page bg (unified Family A+B) */
+  --eu-color-surface-2: #0f1330;  /* nested/hover surface */
+  --eu-color-text: #ecfeff;       /* midnight headings = cyan-50 */
+  --eu-color-muted: #67e8f9;      /* midnight muted text = cyan-300 (matches app convention) */
+  --eu-color-border: rgba(6, 182, 212, 0.2);
+  --eu-color-brand: #06b6d4;
+  --eu-color-brand-600: #22d3ee;
+  --eu-color-on-brand: #04121a;
+}
+html.purple {
+  --eu-color-bg: #1a0b2e;
+  --eu-color-surface: #2a1a3e;    /* raised card — stands out from the page bg (unified Family A+B) */
+  --eu-color-surface-2: #251340;  /* nested/hover surface */
+  --eu-color-text: #fdf2f8;       /* purple headings = pink-50 */
+  --eu-color-muted: #f9a8d4;      /* purple muted text = pink-300 (matches app convention) */
+  --eu-color-border: rgba(236, 72, 153, 0.2);
+  --eu-color-brand: #ec4899;
+  --eu-color-brand-600: #f472b6;
+  --eu-color-on-brand: #2a0a1e;
 }
 
 /* Interactive elements show a pointer cursor — native <button> defaults to an arrow otherwise.

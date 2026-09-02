@@ -260,12 +260,12 @@ export default function ShareDialog({
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
       <div
-        className="w-full max-w-[560px] rounded-2xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] shadow-2xl"
+        className="w-full max-w-[560px] rounded-2xl border border-line bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] shadow-2xl"
         onClick={() => { setAccessDropdownOpen(false); }}
       >
         {/* Header */}
         <div className="px-6 pt-5 pb-3">
-          <h2 className="text-[16px] font-medium text-gray-900 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50">
+          <h2 className="text-[1rem] font-medium text-gray-900 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50">
             Share &lsquo;{title}&rsquo;
           </h2>
         </div>
@@ -276,7 +276,7 @@ export default function ShareDialog({
             {(["people", "classes", "groups"] as const).map((tab) => (
               <button
                 key={tab}
-                className={`px-3 py-1.5 rounded-lg text-[12px] font-medium transition-colors ${
+                className={`px-3 py-1.5 rounded-lg text-[0.75rem] font-medium transition-colors ${
                   searchTab === tab
                     ? "bg-blue-600 text-white dark:bg-[#1a1d24] dark:text-gray-100 dark:border dark:border-gray-600 midnight:bg-cyan-500/15 midnight:text-cyan-400 midnight:border midnight:border-cyan-500/30 purple:bg-pink-500/15 purple:text-pink-400 purple:border purple:border-pink-500/30"
                     : "bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-transparent dark:text-gray-400 dark:hover:bg-[#22262e] dark:hover:text-gray-200 midnight:text-cyan-400/60 midnight:hover:bg-cyan-500/10 midnight:hover:text-cyan-300 purple:text-pink-400/60 purple:hover:bg-pink-500/10 purple:hover:text-pink-300"
@@ -325,13 +325,13 @@ export default function ShareDialog({
                     ? `Search for ${classTabLabel.toLowerCase()}...`
                     : "Search for groups..."
                 }
-                className="flex-1 bg-transparent text-[14px] text-gray-800 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 outline-none"
+                className="flex-1 bg-transparent text-[0.875rem] text-gray-800 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 outline-none"
               />
             </div>
 
             {/* Search results dropdown */}
             {searchOpen && searchResults.length > 0 && (
-              <div className="absolute left-0 right-0 top-full mt-1 z-[10000] bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-xl shadow-xl max-h-[240px] overflow-y-auto py-1">
+              <div className="absolute left-0 right-0 top-full mt-1 z-[10000] bg-surface border border-line rounded-xl shadow-xl max-h-[240px] overflow-y-auto py-1">
                 {searchResults.map((item) => (
                   <button
                     key={item.email}
@@ -340,7 +340,7 @@ export default function ShareDialog({
                     onClick={() => handleShareWith(item)}
                   >
                     <div
-                      className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-[12px] font-semibold flex-shrink-0 overflow-hidden ${item.isClass ? "bg-indigo-500" : item.isGroup ? "bg-teal-500" : ""}`}
+                      className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-[0.75rem] font-semibold flex-shrink-0 overflow-hidden ${item.isClass ? "bg-indigo-500" : item.isGroup ? "bg-teal-500" : ""}`}
                       style={(item.isClass || item.isGroup) ? undefined : { background: `hsl(${item.email.length * 37 % 360}, 50%, 45%)` }}
                     >
                       {(item.isClass || item.isGroup) ? (
@@ -352,8 +352,8 @@ export default function ShareDialog({
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="text-[13px] font-medium text-gray-800 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 truncate">{item.name}</div>
-                      <div className="text-[12px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 truncate">
+                      <div className="text-[0.8125rem] font-medium text-gray-800 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 truncate">{item.name}</div>
+                      <div className="text-[0.75rem] text-muted truncate">
                         {item.isClass ? `${item.studentCount} students` : item.isGroup ? `${item.memberCount} members` : item.email}
                       </div>
                     </div>
@@ -364,8 +364,8 @@ export default function ShareDialog({
 
             {/* No results message */}
             {searchQuery.trim().length >= 2 && searchResults.length === 0 && (
-              <div className="absolute left-0 right-0 top-full mt-1 z-[10000] bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-xl shadow-xl py-3 px-4">
-                <div className="text-[12px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
+              <div className="absolute left-0 right-0 top-full mt-1 z-[10000] bg-surface border border-line rounded-xl shadow-xl py-3 px-4">
+                <div className="text-[0.75rem] text-muted">
                   {searchTab === "people"
                     ? <>No users found. Press Enter to share with &ldquo;{searchQuery.trim()}&rdquo; as an external user.</>
                     : searchTab === "classes"
@@ -380,14 +380,14 @@ export default function ShareDialog({
 
         {/* People, classes & groups with access */}
         <div className="px-6 pb-4">
-          <h3 className="text-[13px] font-medium text-gray-800 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 mb-3">
+          <h3 className="text-[0.8125rem] font-medium text-gray-800 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 mb-3">
             People, {classTabLabel.toLowerCase()} & groups with access
           </h3>
           <div className="space-y-1">
             {/* Current user (owner) */}
             <div className="flex items-center gap-3 py-2 px-1 rounded-lg">
               <div
-                className="w-8 h-8 rounded-full flex items-center justify-center text-white text-[13px] font-semibold flex-shrink-0 overflow-hidden"
+                className="w-8 h-8 rounded-full flex items-center justify-center text-white text-[0.8125rem] font-semibold flex-shrink-0 overflow-hidden"
                 style={{ background: "#1a73e8" }}
               >
                 {currentUser?.avatar ? (
@@ -397,15 +397,15 @@ export default function ShareDialog({
                 )}
               </div>
               <div className="flex-1 min-w-0">
-                <div className="text-[13px] font-medium text-gray-800 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 truncate">
+                <div className="text-[0.8125rem] font-medium text-gray-800 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 truncate">
                   {currentUser ? `${currentUser.firstName} ${currentUser.lastName}` : "You"}{" "}
                   <span className="text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 font-normal">(you)</span>
                 </div>
-                <div className="text-[12px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 truncate">
+                <div className="text-[0.75rem] text-muted truncate">
                   {currentUser?.email || "user@educo.africa"}
                 </div>
               </div>
-              <div className="text-[12px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 flex-shrink-0">
+              <div className="text-[0.75rem] text-muted flex-shrink-0">
                 Owner
               </div>
             </div>
@@ -414,7 +414,7 @@ export default function ShareDialog({
             {sharedUsers.map((su) => (
               <div key={su.email} className="flex items-center gap-3 py-2 px-1 rounded-lg hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 group">
                 <div
-                  className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-[13px] font-semibold flex-shrink-0 overflow-hidden ${su.isClass ? "bg-indigo-500" : su.isGroup ? "bg-teal-500" : ""}`}
+                  className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-[0.8125rem] font-semibold flex-shrink-0 overflow-hidden ${su.isClass ? "bg-indigo-500" : su.isGroup ? "bg-teal-500" : ""}`}
                   style={(su.isClass || su.isGroup) ? undefined : { background: `hsl(${su.email.length * 37 % 360}, 50%, 45%)` }}
                 >
                   {(su.isClass || su.isGroup) ? (
@@ -426,8 +426,8 @@ export default function ShareDialog({
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="text-[13px] font-medium text-gray-800 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 truncate">{su.name}</div>
-                  <div className="text-[12px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 truncate">
+                  <div className="text-[0.8125rem] font-medium text-gray-800 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 truncate">{su.name}</div>
+                  <div className="text-[0.75rem] text-muted truncate">
                     {su.isClass ? classTabLabel.slice(0, -1) : su.isGroup ? "Group" : su.email}
                   </div>
                 </div>
@@ -457,7 +457,7 @@ export default function ShareDialog({
 
         {/* General access */}
         <div className="px-6 pb-5 border-t border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 pt-4">
-          <h3 className="text-[13px] font-medium text-gray-800 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 mb-3">General access</h3>
+          <h3 className="text-[0.8125rem] font-medium text-gray-800 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 mb-3">General access</h3>
           <div className="flex items-center gap-3">
             <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${shareAccess === "restricted" ? "bg-gray-200 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]" : "bg-green-100 dark:bg-green-900/40"}`}>
               {shareAccess === "restricted" ? (
@@ -469,7 +469,7 @@ export default function ShareDialog({
             <div className="flex-1 min-w-0">
               <div className="relative">
                 <button
-                  className="flex items-center gap-1 text-[13px] font-medium text-gray-800 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 px-2 py-1 -ml-2 rounded-md"
+                  className="flex items-center gap-1 text-[0.8125rem] font-medium text-gray-800 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 px-2 py-1 -ml-2 rounded-md"
                   onClick={(e) => { e.stopPropagation(); setAccessDropdownOpen(!accessDropdownOpen); }}
                 >
                   {shareAccess === "restricted" ? "Restricted" : "Anyone with the link"}
@@ -477,17 +477,17 @@ export default function ShareDialog({
                 </button>
                 {accessDropdownOpen && (
                   <div
-                    className="absolute left-0 top-full mt-1 z-10 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-200 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 rounded-xl shadow-xl py-1 min-w-[220px]"
+                    className="absolute left-0 top-full mt-1 z-10 bg-surface border border-gray-200 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 rounded-xl shadow-xl py-1 min-w-[220px]"
                     onClick={(e) => e.stopPropagation()}
                   >
                     <button
-                      className={`w-full text-left px-3 py-2 text-[12px] hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 flex items-center gap-2 ${shareAccess === "restricted" ? "text-blue-600 dark:text-gray-100 midnight:text-cyan-400 purple:text-pink-400 font-semibold" : "text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100"}`}
+                      className={`w-full text-left px-3 py-2 text-[0.75rem] hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 flex items-center gap-2 ${shareAccess === "restricted" ? "text-blue-600 dark:text-gray-100 midnight:text-cyan-400 purple:text-pink-400 font-semibold" : "text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100"}`}
                       onClick={() => { setShareAccess("restricted"); setAccessDropdownOpen(false); }}
                     >
                       <Lock className="w-4 h-4" /> Restricted
                     </button>
                     <button
-                      className={`w-full text-left px-3 py-2 text-[12px] hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 flex items-center gap-2 ${shareAccess === "anyone" ? "text-blue-600 dark:text-gray-100 midnight:text-cyan-400 purple:text-pink-400 font-semibold" : "text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100"}`}
+                      className={`w-full text-left px-3 py-2 text-[0.75rem] hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 flex items-center gap-2 ${shareAccess === "anyone" ? "text-blue-600 dark:text-gray-100 midnight:text-cyan-400 purple:text-pink-400 font-semibold" : "text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100"}`}
                       onClick={() => { setShareAccess("anyone"); setAccessDropdownOpen(false); }}
                     >
                       <Globe className="w-4 h-4" /> Anyone with the link
@@ -495,7 +495,7 @@ export default function ShareDialog({
                   </div>
                 )}
               </div>
-              <div className="text-[12px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mt-0.5">
+              <div className="text-[0.75rem] text-muted mt-0.5">
                 {shareAccess === "restricted"
                   ? "Only people with access can open with the link"
                   : `Anyone on the internet with the link can ${shareRole}`}
@@ -542,7 +542,7 @@ export default function ShareDialog({
 
       {/* Internal toast */}
       {toastMessage && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[9999] px-4 py-2 rounded-lg bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 text-[13px] font-medium shadow-xl animate-in fade-in slide-in-from-bottom-4 duration-200">
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[9999] px-4 py-2 rounded-lg bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 text-[0.8125rem] font-medium shadow-xl animate-in fade-in slide-in-from-bottom-4 duration-200">
           {toastMessage}
         </div>
       )}

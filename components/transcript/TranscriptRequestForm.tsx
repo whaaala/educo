@@ -435,7 +435,7 @@ export default function TranscriptRequestForm({ isOpen, onClose, onSubmit }: Tra
                       value={formData.fromYear}
                       onChange={handleChange}
                       placeholder="From Year"
-                      className="w-full h-[46px] px-4 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-sm font-normal placeholder:text-gray-400 dark:placeholder:text-gray-500 midnight:placeholder:text-cyan-400/50 purple:placeholder:text-pink-400/50 focus:ring-1 focus:ring-blue-500/10 dark:focus:ring-blue-400/10 midnight:focus:ring-cyan-500/10 purple:focus:ring-pink-500/10 focus:border-blue-400 dark:focus:border-blue-500 midnight:focus:border-cyan-500 purple:focus:border-pink-500 outline-none transition-all duration-200 hover:border-gray-400 dark:hover:border-gray-500"
+                      className="w-full h-[46px] px-4 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-surface text-ink text-sm font-normal placeholder:text-gray-400 dark:placeholder:text-gray-500 midnight:placeholder:text-cyan-400/50 purple:placeholder:text-pink-400/50 focus:ring-1 focus:ring-blue-500/10 dark:focus:ring-blue-400/10 midnight:focus:ring-cyan-500/10 purple:focus:ring-pink-500/10 focus:border-blue-400 dark:focus:border-blue-500 midnight:focus:border-cyan-500 purple:focus:border-pink-500 outline-none transition-all duration-200 hover:border-gray-400 dark:hover:border-gray-500"
                     />
                     <input
                       type="text"
@@ -443,7 +443,7 @@ export default function TranscriptRequestForm({ isOpen, onClose, onSubmit }: Tra
                       value={formData.toYear}
                       onChange={handleChange}
                       placeholder="To Year"
-                      className="w-full h-[46px] px-4 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-sm font-normal placeholder:text-gray-400 dark:placeholder:text-gray-500 midnight:placeholder:text-cyan-400/50 purple:placeholder:text-pink-400/50 focus:ring-1 focus:ring-blue-500/10 dark:focus:ring-blue-400/10 midnight:focus:ring-cyan-500/10 purple:focus:ring-pink-500/10 focus:border-blue-400 dark:focus:border-blue-500 midnight:focus:border-cyan-500 purple:focus:border-pink-500 outline-none transition-all duration-200 hover:border-gray-400 dark:hover:border-gray-500"
+                      className="w-full h-[46px] px-4 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-surface text-ink text-sm font-normal placeholder:text-gray-400 dark:placeholder:text-gray-500 midnight:placeholder:text-cyan-400/50 purple:placeholder:text-pink-400/50 focus:ring-1 focus:ring-blue-500/10 dark:focus:ring-blue-400/10 midnight:focus:ring-cyan-500/10 purple:focus:ring-pink-500/10 focus:border-blue-400 dark:focus:border-blue-500 midnight:focus:border-cyan-500 purple:focus:border-pink-500 outline-none transition-all duration-200 hover:border-gray-400 dark:hover:border-gray-500"
                     />
                   </div>
                 </div>
@@ -458,7 +458,7 @@ export default function TranscriptRequestForm({ isOpen, onClose, onSubmit }: Tra
                     onChange={handleChange}
                     className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 cursor-pointer"
                   />
-                  <span className="text-sm font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                  <span className="text-sm font-medium text-ink">
                     Urgent Processing (+NGN 2,000) - Ready in 3 business days
                   </span>
                 </label>
@@ -561,7 +561,7 @@ export default function TranscriptRequestForm({ isOpen, onClose, onSubmit }: Tra
                       onChange={handleChange}
                       rows={2}
                       placeholder="Enter full address"
-                      className="w-full px-4 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-sm font-normal placeholder:text-gray-400 dark:placeholder:text-gray-500 midnight:placeholder:text-cyan-400/50 purple:placeholder:text-pink-400/50 focus:ring-1 focus:ring-blue-500/10 dark:focus:ring-blue-400/10 midnight:focus:ring-cyan-500/10 purple:focus:ring-pink-500/10 focus:border-blue-400 dark:focus:border-blue-500 midnight:focus:border-cyan-500 purple:focus:border-pink-500 outline-none transition-all duration-200 hover:border-gray-400 dark:hover:border-gray-500"
+                      className="w-full px-4 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-surface text-ink text-sm font-normal placeholder:text-gray-400 dark:placeholder:text-gray-500 midnight:placeholder:text-cyan-400/50 purple:placeholder:text-pink-400/50 focus:ring-1 focus:ring-blue-500/10 dark:focus:ring-blue-400/10 midnight:focus:ring-cyan-500/10 purple:focus:ring-pink-500/10 focus:border-blue-400 dark:focus:border-blue-500 midnight:focus:border-cyan-500 purple:focus:border-pink-500 outline-none transition-all duration-200 hover:border-gray-400 dark:hover:border-gray-500"
                     />
                     {errors.deliveryAddress && (
                       <p className="text-xs text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400 mt-1.5 flex items-center gap-1">
@@ -630,67 +630,67 @@ export default function TranscriptRequestForm({ isOpen, onClose, onSubmit }: Tra
               <div className="space-y-6">
                 {/* Student Info */}
                 <div className="p-5 bg-gray-50 dark:bg-[#1a1d24]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 rounded-lg border border-gray-200 dark:border-gray-700 midnight:border-cyan-800/30 purple:border-pink-800/30">
-                  <h4 className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-3">
+                  <h4 className="text-sm font-semibold text-ink mb-3">
                     Student Information
                   </h4>
                   <dl className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
                     <div>
                       <dt className="text-gray-600 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70">School</dt>
-                      <dd className="font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{selectedSchool?.name}</dd>
+                      <dd className="font-medium text-ink">{selectedSchool?.name}</dd>
                     </div>
                     <div>
                       <dt className="text-gray-600 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70">Student</dt>
-                      <dd className="font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{selectedStudent?.name}</dd>
+                      <dd className="font-medium text-ink">{selectedStudent?.name}</dd>
                     </div>
                     <div>
                       <dt className="text-gray-600 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70">Admission Number</dt>
-                      <dd className="font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{selectedStudent?.admissionNumber}</dd>
+                      <dd className="font-medium text-ink">{selectedStudent?.admissionNumber}</dd>
                     </div>
                     <div>
                       <dt className="text-gray-600 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70">Class</dt>
-                      <dd className="font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{selectedStudent?.class}</dd>
+                      <dd className="font-medium text-ink">{selectedStudent?.class}</dd>
                     </div>
                   </dl>
                 </div>
 
                 {/* Transcript Options */}
                 <div className="p-5 bg-gray-50 dark:bg-[#1a1d24]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 rounded-lg border border-gray-200 dark:border-gray-700 midnight:border-cyan-800/30 purple:border-pink-800/30">
-                  <h4 className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-3">
+                  <h4 className="text-sm font-semibold text-ink mb-3">
                     Transcript Options
                   </h4>
                   <dl className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
                     <div>
                       <dt className="text-gray-600 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70">Type</dt>
-                      <dd className="font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 capitalize">{formData.transcriptType}</dd>
+                      <dd className="font-medium text-ink capitalize">{formData.transcriptType}</dd>
                     </div>
                     <div>
                       <dt className="text-gray-600 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70">Delivery</dt>
-                      <dd className="font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 capitalize">{formData.deliveryMethod}</dd>
+                      <dd className="font-medium text-ink capitalize">{formData.deliveryMethod}</dd>
                     </div>
                     <div>
                       <dt className="text-gray-600 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70">Purpose</dt>
-                      <dd className="font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 capitalize">{formData.purpose.replace("-", " ")}</dd>
+                      <dd className="font-medium text-ink capitalize">{formData.purpose.replace("-", " ")}</dd>
                     </div>
                     <div>
                       <dt className="text-gray-600 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70">Period</dt>
-                      <dd className="font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{formData.fromYear} - {formData.toYear}</dd>
+                      <dd className="font-medium text-ink">{formData.fromYear} - {formData.toYear}</dd>
                     </div>
                   </dl>
                 </div>
 
                 {/* Recipient Info */}
                 <div className="p-5 bg-gray-50 dark:bg-[#1a1d24]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 rounded-lg border border-gray-200 dark:border-gray-700 midnight:border-cyan-800/30 purple:border-pink-800/30">
-                  <h4 className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-3">
+                  <h4 className="text-sm font-semibold text-ink mb-3">
                     Recipient Information
                   </h4>
                   <dl className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
                     <div>
                       <dt className="text-gray-600 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70">Name</dt>
-                      <dd className="font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{formData.recipientName}</dd>
+                      <dd className="font-medium text-ink">{formData.recipientName}</dd>
                     </div>
                     <div>
                       <dt className="text-gray-600 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70">Email</dt>
-                      <dd className="font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{formData.recipientEmail}</dd>
+                      <dd className="font-medium text-ink">{formData.recipientEmail}</dd>
                     </div>
                   </dl>
                 </div>
@@ -701,33 +701,33 @@ export default function TranscriptRequestForm({ isOpen, onClose, onSubmit }: Tra
                     <div className="w-10 h-10 rounded-full bg-blue-600 dark:bg-blue-500 midnight:bg-cyan-600 purple:bg-pink-600 flex items-center justify-center">
                       <CreditCard className="w-5 h-5 text-white" />
                     </div>
-                    <h4 className="text-base font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                    <h4 className="text-base font-semibold text-ink">
                       Payment Summary
                     </h4>
                   </div>
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
                       <span className="text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300">Base Fee ({formData.transcriptType}):</span>
-                      <span className="font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                      <span className="font-medium text-ink">
                         NGN {(formData.transcriptType === "official" ? 5000 : 2000).toLocaleString()}
                       </span>
                     </div>
                     {formData.urgentProcessing && (
                       <div className="flex justify-between">
                         <span className="text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300">Urgent Processing:</span>
-                        <span className="font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">NGN 2,000</span>
+                        <span className="font-medium text-ink">NGN 2,000</span>
                       </div>
                     )}
                     {(formData.deliveryMethod === "physical" || formData.deliveryMethod === "both") && (
                       <div className="flex justify-between">
                         <span className="text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300">Delivery Fee:</span>
-                        <span className="font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                        <span className="font-medium text-ink">
                           NGN {(formData.deliveryMethod === "physical" ? 1500 : 1000).toLocaleString()}
                         </span>
                       </div>
                     )}
                     <div className="flex justify-between pt-3 border-t-2 border-blue-300 dark:border-blue-700 midnight:border-cyan-700 purple:border-pink-700">
-                      <span className="font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">Total Amount:</span>
+                      <span className="font-bold text-ink">Total Amount:</span>
                       <span className="font-bold text-xl text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400">
                         NGN {totalAmount.toLocaleString()}
                       </span>

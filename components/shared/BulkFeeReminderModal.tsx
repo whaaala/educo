@@ -275,7 +275,7 @@ export default function BulkFeeReminderModal({
     <div className="fixed inset-0 z-[100000] flex items-center justify-center p-4 sm:p-6 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
       <div
         ref={modalRef}
-        className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-2xl shadow-2xl w-full max-w-2xl max-h-[calc(100vh-3rem)] sm:max-h-[calc(100vh-4rem)] flex flex-col animate-in zoom-in-95 duration-200"
+        className="bg-surface rounded-2xl shadow-2xl w-full max-w-2xl max-h-[calc(100vh-3rem)] sm:max-h-[calc(100vh-4rem)] flex flex-col animate-in zoom-in-95 duration-200"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -308,13 +308,13 @@ export default function BulkFeeReminderModal({
                 className={`flex items-center gap-3 p-3 rounded-xl border-2 transition-all duration-200 cursor-pointer ${
                   selectedChannels.has("email")
                     ? "bg-blue-50 dark:bg-blue-900/20 midnight:bg-cyan-900/20 purple:bg-pink-900/20 border-blue-500 dark:border-blue-400"
-                    : "bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 hover:border-gray-300 dark:hover:border-gray-600 midnight:hover:border-cyan-500/30 purple:hover:border-pink-500/30"
+                    : "bg-surface border-line hover:border-gray-300 dark:hover:border-gray-600 midnight:hover:border-cyan-500/30 purple:hover:border-pink-500/30"
                 }`}
               >
                 <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
                   selectedChannels.has("email")
                     ? "bg-blue-500 text-white"
-                    : "bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300"
+                    : "bg-surface-2 text-muted"
                 }`}>
                   <Mail className="w-5 h-5" />
                 </div>
@@ -324,7 +324,7 @@ export default function BulkFeeReminderModal({
                       ? "text-blue-700 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300"
                       : "text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200"
                   }`}>Email</p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Via email address</p>
+                  <p className="text-xs text-muted">Via email address</p>
                 </div>
               </button>
 
@@ -334,13 +334,13 @@ export default function BulkFeeReminderModal({
                 className={`flex items-center gap-3 p-3 rounded-xl border-2 transition-all duration-200 cursor-pointer ${
                   selectedChannels.has("sms")
                     ? "bg-green-50 dark:bg-green-900/20 border-green-500 dark:border-green-400"
-                    : "bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 hover:border-gray-300 dark:hover:border-gray-600 midnight:hover:border-cyan-500/30 purple:hover:border-pink-500/30"
+                    : "bg-surface border-line hover:border-gray-300 dark:hover:border-gray-600 midnight:hover:border-cyan-500/30 purple:hover:border-pink-500/30"
                 }`}
               >
                 <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
                   selectedChannels.has("sms")
                     ? "bg-green-500 text-white"
-                    : "bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300"
+                    : "bg-surface-2 text-muted"
                 }`}>
                   <MessageSquare className="w-5 h-5" />
                 </div>
@@ -350,7 +350,7 @@ export default function BulkFeeReminderModal({
                       ? "text-green-700 dark:text-green-300"
                       : "text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200"
                   }`}>SMS</p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Via phone number</p>
+                  <p className="text-xs text-muted">Via phone number</p>
                 </div>
               </button>
 
@@ -360,13 +360,13 @@ export default function BulkFeeReminderModal({
                 className={`flex items-center gap-3 p-3 rounded-xl border-2 transition-all duration-200 cursor-pointer ${
                   selectedChannels.has("inApp")
                     ? "bg-purple-50 dark:bg-purple-900/20 border-purple-500 dark:border-purple-400"
-                    : "bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 hover:border-gray-300 dark:hover:border-gray-600 midnight:hover:border-cyan-500/30 purple:hover:border-pink-500/30"
+                    : "bg-surface border-line hover:border-gray-300 dark:hover:border-gray-600 midnight:hover:border-cyan-500/30 purple:hover:border-pink-500/30"
                 }`}
               >
                 <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
                   selectedChannels.has("inApp")
                     ? "bg-purple-500 text-white"
-                    : "bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300"
+                    : "bg-surface-2 text-muted"
                 }`}>
                   <Bell className="w-5 h-5" />
                 </div>
@@ -376,13 +376,13 @@ export default function BulkFeeReminderModal({
                       ? "text-purple-700 dark:text-purple-300"
                       : "text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200"
                   }`}>Push Notification</p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Mobile App</p>
+                  <p className="text-xs text-muted">Mobile App</p>
                 </div>
               </button>
 
               {/* WhatsApp Channel (placeholder - disabled) */}
-              <div className="flex items-center gap-3 p-3 rounded-xl border-2 border-dashed border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 opacity-60">
-                <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400">
+              <div className="flex items-center gap-3 p-3 rounded-xl border-2 border-dashed border-line bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 opacity-60">
+                <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-surface-2 text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400">
                   <MessageSquare className="w-5 h-5" />
                 </div>
                 <div className="text-left">
@@ -395,9 +395,9 @@ export default function BulkFeeReminderModal({
 
           {/* Message Editor Section - Only show if at least one channel is selected */}
           {selectedChannels.size > 0 && (
-            <div className="mb-5 p-4 bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+            <div className="mb-5 p-4 bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 rounded-xl border border-line">
               {/* Channel tabs */}
-              <div className="flex items-center gap-2 mb-4 pb-3 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+              <div className="flex items-center gap-2 mb-4 pb-3 border-b border-line">
                 {Array.from(selectedChannels).map((channel) => {
                   const config = channelConfig[channel];
                   const Icon = config.icon;
@@ -426,7 +426,7 @@ export default function BulkFeeReminderModal({
                   {channelConfig[expandedChannel]?.hasSubject && (
                     <div>
                       <div className="flex items-center gap-2 mb-2">
-                        <Mail className="w-4 h-4 text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300" />
+                        <Mail className="w-4 h-4 text-muted" />
                         <label className="text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200">
                           {expandedChannel === 'email' ? 'Email Subject' : 'Notification Title'}
                         </label>
@@ -445,10 +445,10 @@ export default function BulkFeeReminderModal({
                   <div>
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-2">
-                        <MessageSquare className="w-4 h-4 text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300" />
+                        <MessageSquare className="w-4 h-4 text-muted" />
                         <label className="text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200">Message</label>
                       </div>
-                      <span className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
+                      <span className="text-xs text-muted">
                         {channelMessages[expandedChannel]?.message?.length || 0}/{expandedChannel === 'sms' ? '160' : '5000'}
                       </span>
                     </div>
@@ -459,12 +459,12 @@ export default function BulkFeeReminderModal({
                       className="w-full px-4 py-3 text-sm rounded-xl border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] text-gray-900 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 dark:focus:border-orange-400 transition-all resize-none"
                       placeholder="Enter your message..."
                     />
-                    <p className="mt-2 text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
-                      Available placeholders: <code className="px-1 py-0.5 bg-gray-200 dark:bg-[#2a2d35] midnight:bg-gray-700 purple:bg-gray-700 rounded text-[10px]">{"{parentName}"}</code>{" "}
-                      <code className="px-1 py-0.5 bg-gray-200 dark:bg-[#2a2d35] midnight:bg-gray-700 purple:bg-gray-700 rounded text-[10px]">{"{childName}"}</code>{" "}
-                      <code className="px-1 py-0.5 bg-gray-200 dark:bg-[#2a2d35] midnight:bg-gray-700 purple:bg-gray-700 rounded text-[10px]">{"{feeType}"}</code>{" "}
-                      <code className="px-1 py-0.5 bg-gray-200 dark:bg-[#2a2d35] midnight:bg-gray-700 purple:bg-gray-700 rounded text-[10px]">{"{balance}"}</code>{" "}
-                      <code className="px-1 py-0.5 bg-gray-200 dark:bg-[#2a2d35] midnight:bg-gray-700 purple:bg-gray-700 rounded text-[10px]">{"{dueDate}"}</code>
+                    <p className="mt-2 text-xs text-muted">
+                      Available placeholders: <code className="px-1 py-0.5 bg-gray-200 dark:bg-[#2a2d35] midnight:bg-gray-700 purple:bg-gray-700 rounded text-[0.625rem]">{"{parentName}"}</code>{" "}
+                      <code className="px-1 py-0.5 bg-gray-200 dark:bg-[#2a2d35] midnight:bg-gray-700 purple:bg-gray-700 rounded text-[0.625rem]">{"{childName}"}</code>{" "}
+                      <code className="px-1 py-0.5 bg-gray-200 dark:bg-[#2a2d35] midnight:bg-gray-700 purple:bg-gray-700 rounded text-[0.625rem]">{"{feeType}"}</code>{" "}
+                      <code className="px-1 py-0.5 bg-gray-200 dark:bg-[#2a2d35] midnight:bg-gray-700 purple:bg-gray-700 rounded text-[0.625rem]">{"{balance}"}</code>{" "}
+                      <code className="px-1 py-0.5 bg-gray-200 dark:bg-[#2a2d35] midnight:bg-gray-700 purple:bg-gray-700 rounded text-[0.625rem]">{"{dueDate}"}</code>
                     </p>
                   </div>
                 </div>
@@ -550,13 +550,13 @@ export default function BulkFeeReminderModal({
 
                     {/* Info */}
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate">
+                      <p className="text-sm font-semibold text-ink truncate">
                         {record.parentName}
                         {hasCustomMessage(record.id) && (
-                          <span className="ml-2 text-[10px] text-orange-600 dark:text-orange-400 font-normal">(custom message)</span>
+                          <span className="ml-2 text-[0.625rem] text-orange-600 dark:text-orange-400 font-normal">(custom message)</span>
                         )}
                       </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 truncate">
+                      <p className="text-xs text-muted truncate">
                         {record.childName} • {record.feeType}
                       </p>
                       <p className="text-xs font-medium text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400">
@@ -598,7 +598,7 @@ export default function BulkFeeReminderModal({
                           Done
                         </button>
                       </div>
-                      <p className="text-[10px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mb-2">
+                      <p className="text-[0.625rem] text-muted mb-2">
                         Leave blank to use the default channel message. Placeholders will be replaced with actual values.
                       </p>
                       {Array.from(selectedChannels).map((channel) => {
@@ -671,13 +671,13 @@ export default function BulkFeeReminderModal({
           {/* Empty State */}
           {records.length === 0 ? (
             <div className="text-center py-8">
-              <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
+              <p className="text-sm text-muted">
                 No records with outstanding balance selected
               </p>
             </div>
           ) : filteredRecords.length === 0 ? (
             <div className="text-center py-8">
-              <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
+              <p className="text-sm text-muted">
                 No records match your search
               </p>
             </div>
@@ -685,7 +685,7 @@ export default function BulkFeeReminderModal({
         </div>
 
         {/* Footer */}
-        <div className="px-6 pb-6 pt-4 flex items-center justify-end gap-3 border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 flex-shrink-0 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-b-2xl">
+        <div className="px-6 pb-6 pt-4 flex items-center justify-end gap-3 border-t border-line flex-shrink-0 bg-surface rounded-b-2xl">
           <button
             onClick={onClose}
             className="px-5 py-2.5 rounded-lg font-medium text-sm text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 bg-white dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 hover:bg-gray-50 dark:hover:bg-[#2a2d35] midnight:hover:bg-cyan-500/15 purple:hover:bg-pink-500/15 transition-all duration-200 cursor-pointer active:scale-95"

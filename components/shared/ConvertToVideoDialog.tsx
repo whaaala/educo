@@ -229,8 +229,8 @@ export default function ConvertToVideoDialog({
             <div className="w-16 h-16 rounded-2xl bg-green-50 dark:bg-green-900/20 flex items-center justify-center mx-auto mb-4">
               <Check className="w-8 h-8 text-green-500" />
             </div>
-            <h3 className="text-[18px] font-semibold text-gray-900 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50">Video ready!</h3>
-            <p className="text-[13px] text-gray-500 mt-1">{effectiveSlideCount} slides · {formatTime(estimatedDuration)} · {quality}</p>
+            <h3 className="text-[1.125rem] font-semibold text-gray-900 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50">Video ready!</h3>
+            <p className="text-[0.8125rem] text-gray-500 mt-1">{effectiveSlideCount} slides · {formatTime(estimatedDuration)} · {quality}</p>
 
             <div className="flex flex-col gap-2 mt-6">
               <button onClick={() => {
@@ -248,20 +248,20 @@ export default function ConvertToVideoDialog({
                   }
                   onClose();
                 }}
-                className="flex items-center justify-center gap-2 w-full px-5 py-2.5 rounded-xl text-[13px] font-semibold text-white bg-blue-600 hover:bg-blue-700 shadow-sm shadow-blue-500/20 transition-all cursor-pointer">
+                className="flex items-center justify-center gap-2 w-full px-5 py-2.5 rounded-xl text-[0.8125rem] font-semibold text-white bg-blue-600 hover:bg-blue-700 shadow-sm shadow-blue-500/20 transition-all cursor-pointer">
                 <Download className="w-4 h-4" /> Download video
               </button>
               <div className="flex gap-2">
                 <button onClick={() => { window.open(`mailto:?subject=${encodeURIComponent(`Video: ${title}`)}&body=${encodeURIComponent(`The video for "${title}" is ready.`)}`, "_self"); }}
-                  className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl text-[12px] font-medium text-gray-600 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors cursor-pointer">
+                  className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl text-[0.75rem] font-medium text-gray-600 border border-line hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors cursor-pointer">
                   <Mail className="w-3.5 h-3.5" /> Email
                 </button>
                 <button onClick={onClose}
-                  className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl text-[12px] font-medium text-gray-600 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors cursor-pointer">
+                  className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl text-[0.75rem] font-medium text-gray-600 border border-line hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors cursor-pointer">
                   <Share2 className="w-3.5 h-3.5" /> Share link
                 </button>
               </div>
-              <button onClick={onClose} className="text-[12px] text-gray-400 hover:text-gray-600 mt-2 cursor-pointer">Close</button>
+              <button onClick={onClose} className="text-[0.75rem] text-gray-400 hover:text-gray-600 mt-2 cursor-pointer">Close</button>
             </div>
           </div>
         </div>
@@ -280,8 +280,8 @@ export default function ConvertToVideoDialog({
             <Video className="w-4.5 h-4.5 text-white" />
           </div>
           <div className="flex-1 min-w-0">
-            <h2 className="text-[15px] font-semibold text-gray-900 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50">Convert to video</h2>
-            <p className="text-[11px] text-gray-400 truncate">{title}</p>
+            <h2 className="text-[0.9375rem] font-semibold text-gray-900 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50">Convert to video</h2>
+            <p className="text-[0.6875rem] text-gray-400 truncate">{title}</p>
           </div>
           <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors cursor-pointer">
             <X className="w-4 h-4 text-gray-400" />
@@ -293,7 +293,7 @@ export default function ConvertToVideoDialog({
 
           {/* Scope selection */}
           <div>
-            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 block">What to convert</label>
+            <label className="text-[0.625rem] font-bold text-gray-400 uppercase tracking-widest mb-2 block">What to convert</label>
             <div className="grid grid-cols-3 gap-2">
               {([
                 { value: "all" as const, label: "All slides", desc: `${totalSlides} slides`, icon: Monitor },
@@ -307,8 +307,8 @@ export default function ConvertToVideoDialog({
                       : "bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/30 border-2 border-gray-100 dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10 hover:border-gray-200"
                   }`}>
                   <opt.icon className={`w-5 h-5 ${scope === opt.value ? "text-purple-500" : "text-gray-400"}`} />
-                  <span className={`text-[12px] font-semibold ${scope === opt.value ? "text-purple-700 dark:text-purple-300" : "text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300"}`}>{opt.label}</span>
-                  <span className="text-[10px] text-gray-400">{opt.desc}</span>
+                  <span className={`text-[0.75rem] font-semibold ${scope === opt.value ? "text-purple-700 dark:text-purple-300" : "text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300"}`}>{opt.label}</span>
+                  <span className="text-[0.625rem] text-gray-400">{opt.desc}</span>
                 </button>
               ))}
             </div>
@@ -318,15 +318,15 @@ export default function ConvertToVideoDialog({
           {scope === "range" && (
             <div className="flex items-center gap-3">
               <div className="flex-1">
-                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1 block">From</label>
+                <label className="text-[0.625rem] font-bold text-gray-400 uppercase tracking-widest mb-1 block">From</label>
                 <input type="number" min={1} max={totalSlides} value={rangeStart} onChange={e => setRangeStart(Math.max(1, parseInt(e.target.value) || 1))}
-                  className="w-full px-3 py-2 rounded-lg bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 text-[13px] text-center outline-none focus:border-purple-400" />
+                  className="w-full px-3 py-2 rounded-lg bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border border-line text-[0.8125rem] text-center outline-none focus:border-purple-400" />
               </div>
               <span className="text-gray-300 mt-4">→</span>
               <div className="flex-1">
-                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1 block">To</label>
+                <label className="text-[0.625rem] font-bold text-gray-400 uppercase tracking-widest mb-1 block">To</label>
                 <input type="number" min={1} max={totalSlides} value={rangeEnd} onChange={e => setRangeEnd(Math.min(totalSlides, parseInt(e.target.value) || totalSlides))}
-                  className="w-full px-3 py-2 rounded-lg bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 text-[13px] text-center outline-none focus:border-purple-400" />
+                  className="w-full px-3 py-2 rounded-lg bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border border-line text-[0.8125rem] text-center outline-none focus:border-purple-400" />
               </div>
             </div>
           )}
@@ -348,7 +348,7 @@ export default function ConvertToVideoDialog({
                       </div>
                     </div>
                     {/* Slide number */}
-                    <span className={`absolute bottom-1 left-1 text-[7px] font-bold px-1 py-0.5 rounded ${on ? "bg-purple-500 text-white" : "bg-black/50 text-white/80"}`}>{idx + 1}</span>
+                    <span className={`absolute bottom-1 left-1 text-[0.4375rem] font-bold px-1 py-0.5 rounded ${on ? "bg-purple-500 text-white" : "bg-black/50 text-white/80"}`}>{idx + 1}</span>
                     {/* Checkbox */}
                     {on && (
                       <div className="absolute top-1 right-1 w-3.5 h-3.5 rounded bg-purple-500 shadow-sm shadow-purple-500/30 flex items-center justify-center">
@@ -365,7 +365,7 @@ export default function ConvertToVideoDialog({
 
           {/* Quality */}
           <div>
-            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 block">Quality</label>
+            <label className="text-[0.625rem] font-bold text-gray-400 uppercase tracking-widest mb-2 block">Quality</label>
             <div className="flex gap-2">
               {([
                 { value: "720p" as const, label: "720p", desc: "HD" },
@@ -378,8 +378,8 @@ export default function ConvertToVideoDialog({
                       ? "bg-purple-50 dark:bg-purple-900/20 border-2 border-purple-400 text-purple-700 dark:text-purple-300 font-semibold"
                       : "bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/30 border-2 border-gray-100 dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10 text-gray-600 hover:border-gray-200"
                   }`}>
-                  <span className="text-[14px] font-bold block">{q.label}</span>
-                  <span className="text-[10px] text-gray-400">{q.desc}</span>
+                  <span className="text-[0.875rem] font-bold block">{q.label}</span>
+                  <span className="text-[0.625rem] text-gray-400">{q.desc}</span>
                 </button>
               ))}
             </div>
@@ -387,28 +387,28 @@ export default function ConvertToVideoDialog({
 
           {/* Timing */}
           <div>
-            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 block">Slide duration</label>
+            <label className="text-[0.625rem] font-bold text-gray-400 uppercase tracking-widest mb-2 block">Slide duration</label>
             <div className="flex items-center gap-3">
               <input type="range" min={1} max={30} value={slideDuration} onChange={e => setSlideDuration(parseInt(e.target.value))}
                 className="flex-1 h-1.5 rounded-full appearance-none bg-gray-200 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] accent-purple-500 cursor-pointer" />
-              <span className="text-[13px] font-semibold text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 min-w-[40px] text-right">{slideDuration}s</span>
+              <span className="text-[0.8125rem] font-semibold text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 min-w-[40px] text-right">{slideDuration}s</span>
             </div>
             <div className="flex justify-between mt-1">
-              <span className="text-[10px] text-gray-400">1s</span>
-              <span className="text-[10px] text-gray-400">30s</span>
+              <span className="text-[0.625rem] text-gray-400">1s</span>
+              <span className="text-[0.625rem] text-gray-400">30s</span>
             </div>
           </div>
 
           {/* Advanced toggle */}
           <button onClick={() => setShowAdvanced(!showAdvanced)}
-            className="flex items-center gap-1.5 text-[12px] text-gray-500 hover:text-gray-700 cursor-pointer">
+            className="flex items-center gap-1.5 text-[0.75rem] text-gray-500 hover:text-gray-700 cursor-pointer">
             <ChevronDown className={`w-3.5 h-3.5 transition-transform ${showAdvanced ? "rotate-180" : ""}`} />
             Advanced options
           </button>
 
           {showAdvanced && (
             <div>
-              <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 block">Transition speed</label>
+              <label className="text-[0.625rem] font-bold text-gray-400 uppercase tracking-widest mb-2 block">Transition speed</label>
               <div className="flex gap-2">
                 {([
                   { value: "slow" as const, label: "Slow", time: "1.5s" },
@@ -416,12 +416,12 @@ export default function ConvertToVideoDialog({
                   { value: "fast" as const, label: "Fast", time: "0.2s" },
                 ]).map(s => (
                   <button key={s.value} onClick={() => setSpeed(s.value)}
-                    className={`flex-1 px-3 py-2 rounded-lg text-center text-[12px] transition-all cursor-pointer ${
+                    className={`flex-1 px-3 py-2 rounded-lg text-center text-[0.75rem] transition-all cursor-pointer ${
                       speed === s.value
                         ? "bg-purple-100 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300 font-semibold border border-purple-300"
                         : "bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/30 text-gray-500 border border-gray-100 dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10 hover:border-gray-200"
                     }`}>
-                    {s.label} <span className="text-[10px] text-gray-400 ml-1">{s.time}</span>
+                    {s.label} <span className="text-[0.625rem] text-gray-400 ml-1">{s.time}</span>
                   </button>
                 ))}
               </div>
@@ -435,8 +435,8 @@ export default function ConvertToVideoDialog({
             /* Progress bar */
             <div>
               <div className="flex items-center justify-between mb-2">
-                <span className="text-[12px] font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Converting...</span>
-                <span className="text-[12px] font-semibold text-purple-600">{progress}%</span>
+                <span className="text-[0.75rem] font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Converting...</span>
+                <span className="text-[0.75rem] font-semibold text-purple-600">{progress}%</span>
               </div>
               <div className="h-2 bg-gray-200 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] rounded-full overflow-hidden">
                 <div className="h-full bg-gradient-to-r from-purple-500 to-pink-500 rounded-full transition-all duration-200" style={{ width: `${progress}%` }} />
@@ -444,7 +444,7 @@ export default function ConvertToVideoDialog({
             </div>
           ) : (
             <div className="flex items-center justify-between">
-              <div className="text-[11px] text-gray-400">
+              <div className="text-[0.6875rem] text-gray-400">
                 <span>{effectiveSlideCount} slide{effectiveSlideCount !== 1 ? "s" : ""}</span>
                 <span className="mx-1.5">·</span>
                 <span>~{formatTime(estimatedDuration)}</span>
@@ -453,11 +453,11 @@ export default function ConvertToVideoDialog({
               </div>
               <div className="flex gap-2">
                 <button onClick={onClose}
-                  className="px-4 py-2 rounded-xl text-[13px] font-medium text-gray-500 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors cursor-pointer">
+                  className="px-4 py-2 rounded-xl text-[0.8125rem] font-medium text-gray-500 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors cursor-pointer">
                   Cancel
                 </button>
                 <button onClick={handleConvert}
-                  className="flex items-center gap-2 px-5 py-2 rounded-xl text-[13px] font-semibold text-white bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 shadow-sm shadow-purple-500/20 hover:shadow-md transition-all cursor-pointer">
+                  className="flex items-center gap-2 px-5 py-2 rounded-xl text-[0.8125rem] font-semibold text-white bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 shadow-sm shadow-purple-500/20 hover:shadow-md transition-all cursor-pointer">
                   <Play className="w-3.5 h-3.5 fill-current" /> Convert
                 </button>
               </div>

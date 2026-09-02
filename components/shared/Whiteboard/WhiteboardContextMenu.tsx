@@ -100,7 +100,7 @@ export default function WhiteboardContextMenu({
   const menu = (
     <div
       ref={menuRef}
-      className="fixed min-w-[220px] py-1 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-xl shadow-2xl backdrop-blur-sm"
+      className="fixed min-w-[220px] py-1 bg-surface border border-line rounded-xl shadow-2xl backdrop-blur-sm"
       style={{ left: adjustedPos.x, top: adjustedPos.y, zIndex: 99999 }}
       onContextMenu={(e) => e.preventDefault()}
       onPointerDown={(e) => e.stopPropagation()}

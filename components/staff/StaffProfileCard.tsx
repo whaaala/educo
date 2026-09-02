@@ -136,7 +136,7 @@ export default function StaffProfileCard({ staffData, fullName }: StaffProfileCa
               {/* Status Badge */}
               <div className={`inline-flex items-center gap-1 w-fit px-1.5 sm:px-2 py-0.5 rounded-md border shadow-sm ${statusColors.bg} ${statusColors.border}`}>
                 <div className={`w-1.5 h-1.5 rounded-full ${statusColors.dot} animate-pulse`}></div>
-                <span className={`text-[9px] sm:text-[10px] font-semibold uppercase tracking-wide ${statusColors.text}`}>
+                <span className={`text-[0.5625rem] sm:text-[0.625rem] font-semibold uppercase tracking-wide ${statusColors.text}`}>
                   {staffData.employmentStatus}
                 </span>
               </div>
@@ -144,19 +144,19 @@ export default function StaffProfileCard({ staffData, fullName }: StaffProfileCa
               {/* Role Badge */}
               <div className={`inline-flex items-center gap-1 w-fit px-1.5 sm:px-2 py-0.5 rounded-md border shadow-sm ${roleColors.bg} ${roleColors.border}`}>
                 <Briefcase className={`w-2.5 h-2.5 ${roleColors.icon}`} />
-                <span className={`text-[9px] sm:text-[10px] font-semibold uppercase tracking-wide ${roleColors.text}`}>
+                <span className={`text-[0.5625rem] sm:text-[0.625rem] font-semibold uppercase tracking-wide ${roleColors.text}`}>
                   {staffData.role}
                 </span>
               </div>
             </div>
 
             {/* Name */}
-            <h2 className="text-xs sm:text-base font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 tracking-tight truncate leading-tight">
+            <h2 className="text-xs sm:text-base font-bold text-ink tracking-tight truncate leading-tight">
               {fullName}
             </h2>
 
             {/* Staff ID */}
-            <p className="text-[10px] sm:text-xs font-semibold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 tracking-wide truncate">
+            <p className="text-[0.625rem] sm:text-xs font-semibold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 tracking-wide truncate">
               {staffData.staffId}
             </p>
           </div>
@@ -165,7 +165,7 @@ export default function StaffProfileCard({ staffData, fullName }: StaffProfileCa
 
       {/* Basic Information */}
       <div className="p-3 sm:p-6 pt-0 mt-3 sm:mt-6">
-        <h3 className="text-xs sm:text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-2 sm:mb-4 uppercase tracking-wider">
+        <h3 className="text-xs sm:text-sm font-bold text-ink mb-2 sm:mb-4 uppercase tracking-wider">
           Basic Information
         </h3>
         <div className="space-y-1.5 sm:space-y-3">
@@ -173,7 +173,7 @@ export default function StaffProfileCard({ staffData, fullName }: StaffProfileCa
           {staffData.staffId && (
             <div className="flex justify-between items-center py-1.5 sm:py-2 px-2 sm:px-3 rounded-lg hover:bg-gray-50/50 dark:hover:bg-[#22262e]/30 midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors">
               <span className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70">Employee ID</span>
-              <span className="text-xs sm:text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{staffData.staffId}</span>
+              <span className="text-xs sm:text-sm font-bold text-ink">{staffData.staffId}</span>
             </div>
           )}
 
@@ -181,7 +181,7 @@ export default function StaffProfileCard({ staffData, fullName }: StaffProfileCa
           {staffData.gender && (
             <div className="flex justify-between items-center py-1.5 sm:py-2 px-2 sm:px-3 rounded-lg hover:bg-gray-50/50 dark:hover:bg-[#22262e]/30 midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors">
               <span className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70">Gender</span>
-              <span className="text-xs sm:text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{staffData.gender}</span>
+              <span className="text-xs sm:text-sm font-bold text-ink">{staffData.gender}</span>
             </div>
           )}
 
@@ -189,7 +189,7 @@ export default function StaffProfileCard({ staffData, fullName }: StaffProfileCa
           {staffData.dateOfBirth && (
             <div className="flex justify-between items-center py-1.5 sm:py-2 px-2 sm:px-3 rounded-lg hover:bg-gray-50/50 dark:hover:bg-[#22262e]/30 midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors">
               <span className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70">Date Of Birth</span>
-              <span className="text-xs sm:text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+              <span className="text-xs sm:text-sm font-bold text-ink">
                 {formatDate(staffData.dateOfBirth)}
               </span>
             </div>
@@ -199,7 +199,7 @@ export default function StaffProfileCard({ staffData, fullName }: StaffProfileCa
           {staffData.department && (
             <div className="flex justify-between items-center py-1.5 sm:py-2 px-2 sm:px-3 rounded-lg hover:bg-gray-50/50 dark:hover:bg-[#22262e]/30 midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors">
               <span className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70">Department</span>
-              <span className="text-xs sm:text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{staffData.department}</span>
+              <span className="text-xs sm:text-sm font-bold text-ink">{staffData.department}</span>
             </div>
           )}
 
@@ -207,7 +207,7 @@ export default function StaffProfileCard({ staffData, fullName }: StaffProfileCa
           {staffData.employmentType && (
             <div className="flex justify-between items-center py-1.5 sm:py-2 px-2 sm:px-3 rounded-lg hover:bg-gray-50/50 dark:hover:bg-[#22262e]/30 midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors">
               <span className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70">Employment Type</span>
-              <span className="text-xs sm:text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{staffData.employmentType}</span>
+              <span className="text-xs sm:text-sm font-bold text-ink">{staffData.employmentType}</span>
             </div>
           )}
 
@@ -215,7 +215,7 @@ export default function StaffProfileCard({ staffData, fullName }: StaffProfileCa
           {staffData.joinDate && (
             <div className="flex justify-between items-center py-1.5 sm:py-2 px-2 sm:px-3 rounded-lg hover:bg-gray-50/50 dark:hover:bg-[#22262e]/30 midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors">
               <span className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70">Join Date</span>
-              <span className="text-xs sm:text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+              <span className="text-xs sm:text-sm font-bold text-ink">
                 {formatDate(staffData.joinDate)}
               </span>
             </div>
@@ -225,7 +225,7 @@ export default function StaffProfileCard({ staffData, fullName }: StaffProfileCa
           {staffData.experience !== undefined && (
             <div className="flex justify-between items-center py-1.5 sm:py-2 px-2 sm:px-3 rounded-lg hover:bg-gray-50/50 dark:hover:bg-[#22262e]/30 midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors">
               <span className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70">Experience</span>
-              <span className="text-xs sm:text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{staffData.experience} years</span>
+              <span className="text-xs sm:text-sm font-bold text-ink">{staffData.experience} years</span>
             </div>
           )}
         </div>

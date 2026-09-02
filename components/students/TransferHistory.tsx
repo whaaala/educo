@@ -34,7 +34,7 @@ export default function TransferHistory({ history }: TransferHistoryProps) {
     <div className="space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
-        <h3 className="text-lg font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+        <h3 className="text-lg font-bold text-ink">
           Transfer History
         </h3>
         <span className="px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300">
@@ -162,13 +162,13 @@ function TransferRecordCard({ transfer, isFirst, isLast }: TransferRecordCardPro
 
       {/* Card */}
       <div
-        className={`p-4 rounded-lg border-2 ${statusConfig.border} bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] hover:shadow-md transition-all`}
+        className={`p-4 rounded-lg border-2 ${statusConfig.border} bg-surface hover:shadow-md transition-all`}
       >
         {/* Header */}
         <div className="flex items-start justify-between mb-3">
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <h4 className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+              <h4 className="font-semibold text-ink">
                 {getTransferTypeLabel(transfer.transferType)}
               </h4>
               <span
@@ -261,7 +261,7 @@ function TransferRecordCard({ transfer, isFirst, isLast }: TransferRecordCardPro
         </div>
 
         {/* Footer Info */}
-        <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+        <div className="mt-3 pt-3 border-t border-line">
           <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
             <div className="flex items-center gap-2">
               <User className="w-3 h-3" />

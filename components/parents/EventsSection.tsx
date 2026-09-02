@@ -30,14 +30,14 @@ export default function EventsSection({
   };
 
   return (
-    <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm">
+    <div className="bg-surface rounded-xl border border-line shadow-sm">
       {/* Header */}
       <div className="p-4 border-b border-gray-100 dark:border-gray-700/50 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <div className="p-2 rounded-lg bg-purple-100 dark:bg-purple-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30">
             <Calendar className="w-4 h-4 text-purple-600 dark:text-purple-400 midnight:text-cyan-400 purple:text-pink-400" />
           </div>
-          <h3 className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+          <h3 className="font-semibold text-ink">
             Upcoming Events
           </h3>
         </div>
@@ -70,7 +70,7 @@ export default function EventsSection({
                   {event.duration}
                 </span>
               </div>
-              <h4 className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 line-clamp-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+              <h4 className="text-sm font-semibold text-ink line-clamp-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                 {event.title}
               </h4>
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">

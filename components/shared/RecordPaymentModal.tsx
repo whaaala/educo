@@ -248,10 +248,10 @@ export default function RecordPaymentModal({
           <div className="w-20 h-20 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mb-4 animate-in zoom-in duration-300">
             <CheckCircle2 className="w-10 h-10 text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400" />
           </div>
-          <h3 className="text-xl font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-2">
+          <h3 className="text-xl font-semibold text-ink mb-2">
             {successTitle}
           </h3>
-          <p className="text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 text-center mb-2">
+          <p className="text-muted text-center mb-2">
             {successMessage || `Successfully recorded ${money(parseFloat(paymentAmount))} payment`}
           </p>
           {discountAmount > 0 && (
@@ -274,7 +274,7 @@ export default function RecordPaymentModal({
         type="button"
         onClick={onClose}
         disabled={isProcessing}
-        className="flex-1 py-3 rounded-xl font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] hover:bg-gray-200 dark:hover:bg-[#2a2d35] midnight:hover:bg-cyan-500/15 purple:hover:bg-pink-500/15 transition-colors disabled:opacity-50 cursor-pointer"
+        className="flex-1 py-3 rounded-xl font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 bg-surface-2 hover:bg-gray-200 dark:hover:bg-[#2a2d35] midnight:hover:bg-cyan-500/15 purple:hover:bg-pink-500/15 transition-colors disabled:opacity-50 cursor-pointer"
       >
         {cancelButtonText}
       </button>
@@ -316,14 +316,14 @@ export default function RecordPaymentModal({
                 <GraduationCap className="w-6 h-6 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
               </div>
               <div>
-                <p className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{childName}</p>
-                <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
+                <p className="font-semibold text-ink">{childName}</p>
+                <p className="text-sm text-muted">
                   {feeType} | Parent: {parentName}
                 </p>
               </div>
             </div>
             <div className="text-right">
-              <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mb-1">Outstanding</p>
+              <p className="text-xs text-muted mb-1">Outstanding</p>
               <p className="text-xl font-bold text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400">
                 {money(balance)}
               </p>
@@ -333,7 +333,7 @@ export default function RecordPaymentModal({
           {/* Progress bar */}
           {showProgressBar && (
           <div className="mt-4">
-            <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mb-1">
+            <div className="flex justify-between text-xs text-muted mb-1">
               <span>Paid: {money(paidAmount)}</span>
               <span>Total: {money(amount)}</span>
             </div>
@@ -355,7 +355,7 @@ export default function RecordPaymentModal({
               <div className="w-8 h-8 rounded-lg bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center">
                 <Tag className="w-4 h-4 text-orange-600 dark:text-orange-400" />
               </div>
-              <span className="font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{discountSectionLabel}</span>
+              <span className="font-medium text-ink">{discountSectionLabel}</span>
             </div>
             <label className="relative inline-flex items-center cursor-pointer">
               <input
@@ -410,7 +410,7 @@ export default function RecordPaymentModal({
 
               {/* Discount Input */}
               <div className="relative">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 font-medium">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted font-medium">
                   {discountType === "percentage" ? "%" : "NGN"}
                 </span>
                 <input
@@ -432,7 +432,7 @@ export default function RecordPaymentModal({
                     errors.discount
                       ? "border-red-500 dark:border-red-400"
                       : "border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30"
-                  } bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 font-semibold placeholder:text-gray-400 placeholder:font-normal focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none transition-all`}
+                  } bg-surface text-ink font-semibold placeholder:text-gray-400 placeholder:font-normal focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none transition-all`}
                 />
               </div>
               {errors.discount && (
@@ -462,7 +462,7 @@ export default function RecordPaymentModal({
             {paymentAmountLabel} <span className="text-red-500">*</span>
           </label>
           <div className="relative">
-            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 font-medium">
+            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted font-medium">
               {currencyPrefix}
             </span>
             <input
@@ -484,7 +484,7 @@ export default function RecordPaymentModal({
                 errors.amount
                   ? "border-red-500 dark:border-red-400"
                   : "border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30"
-              } bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-lg font-semibold placeholder:text-gray-400 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all`}
+              } bg-surface text-ink text-lg font-semibold placeholder:text-gray-400 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all`}
             />
           </div>
           {errors.amount && (
@@ -500,21 +500,21 @@ export default function RecordPaymentModal({
             <button
               type="button"
               onClick={() => handleQuickAmount(25)}
-              className="flex-1 py-1.5 text-xs font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] rounded-lg hover:bg-gray-200 dark:hover:bg-[#2a2d35] midnight:hover:bg-cyan-500/15 purple:hover:bg-pink-500/15 transition-colors cursor-pointer"
+              className="flex-1 py-1.5 text-xs font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 bg-surface-2 rounded-lg hover:bg-gray-200 dark:hover:bg-[#2a2d35] midnight:hover:bg-cyan-500/15 purple:hover:bg-pink-500/15 transition-colors cursor-pointer"
             >
               25%
             </button>
             <button
               type="button"
               onClick={() => handleQuickAmount(50)}
-              className="flex-1 py-1.5 text-xs font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] rounded-lg hover:bg-gray-200 dark:hover:bg-[#2a2d35] midnight:hover:bg-cyan-500/15 purple:hover:bg-pink-500/15 transition-colors cursor-pointer"
+              className="flex-1 py-1.5 text-xs font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 bg-surface-2 rounded-lg hover:bg-gray-200 dark:hover:bg-[#2a2d35] midnight:hover:bg-cyan-500/15 purple:hover:bg-pink-500/15 transition-colors cursor-pointer"
             >
               50%
             </button>
             <button
               type="button"
               onClick={() => handleQuickAmount(75)}
-              className="flex-1 py-1.5 text-xs font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] rounded-lg hover:bg-gray-200 dark:hover:bg-[#2a2d35] midnight:hover:bg-cyan-500/15 purple:hover:bg-pink-500/15 transition-colors cursor-pointer"
+              className="flex-1 py-1.5 text-xs font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 bg-surface-2 rounded-lg hover:bg-gray-200 dark:hover:bg-[#2a2d35] midnight:hover:bg-cyan-500/15 purple:hover:bg-pink-500/15 transition-colors cursor-pointer"
             >
               75%
             </button>
@@ -528,7 +528,7 @@ export default function RecordPaymentModal({
           </div>
           )}
           {showDiscountSection && enableDiscount && discountAmount > 0 && (
-            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
+            <p className="mt-1 text-xs text-muted">
               Effective balance after discount: <span className="font-semibold">{money(effectiveBalance)}</span>
             </p>
           )}
@@ -548,14 +548,14 @@ export default function RecordPaymentModal({
                 className={`flex items-center gap-3 p-3 rounded-xl border-2 transition-all cursor-pointer ${
                   paymentMethod === method.id
                     ? `border-${method.color}-500 bg-${method.color}-50 dark:bg-${method.color}-900/20`
-                    : "border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 hover:border-gray-300 dark:hover:border-gray-600 midnight:hover:border-cyan-500/30 purple:hover:border-pink-500/30"
+                    : "border-line hover:border-gray-300 dark:hover:border-gray-600 midnight:hover:border-cyan-500/30 purple:hover:border-pink-500/30"
                 }`}
               >
                 <div
                   className={`w-10 h-10 rounded-lg flex items-center justify-center ${
                     paymentMethod === method.id
                       ? `bg-${method.color}-100 dark:bg-${method.color}-900/30 text-${method.color}-600 dark:text-${method.color}-400`
-                      : "bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300"
+                      : "bg-surface-2 text-muted"
                   }`}
                 >
                   {method.icon}
@@ -563,7 +563,7 @@ export default function RecordPaymentModal({
                 <span
                   className={`text-sm font-medium ${
                     paymentMethod === method.id
-                      ? "text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50"
+                      ? "text-ink"
                       : "text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300"
                   }`}
                 >
@@ -593,10 +593,10 @@ export default function RecordPaymentModal({
                   errors.date
                     ? "border-red-500 dark:border-red-400"
                     : "border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30"
-                } bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] text-left flex items-center gap-2 hover:border-gray-400 dark:hover:border-gray-500 midnight:hover:border-cyan-500/40 purple:hover:border-pink-500/40 transition-colors cursor-pointer`}
+                } bg-surface text-left flex items-center gap-2 hover:border-gray-400 dark:hover:border-gray-500 midnight:hover:border-cyan-500/40 purple:hover:border-pink-500/40 transition-colors cursor-pointer`}
               >
                 <Calendar className="w-5 h-5 text-gray-400" />
-                <span className={paymentDate ? "text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50" : "text-gray-400"}>
+                <span className={paymentDate ? "text-ink" : "text-gray-400"}>
                   {paymentDate
                     ? new Date(paymentDate).toLocaleDateString("en-GB", {
                         day: "numeric",
@@ -664,15 +664,15 @@ export default function RecordPaymentModal({
 
         {/* Summary */}
         {showSummary && paymentAmount && parseFloat(paymentAmount) > 0 && (
-          <div className="bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 rounded-xl p-4 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+          <div className="bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 rounded-xl p-4 border border-line">
             <div className="flex items-center gap-2 mb-3">
-              <Receipt className="w-5 h-5 text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300" />
-              <span className="font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{summaryLabel}</span>
+              <Receipt className="w-5 h-5 text-muted" />
+              <span className="font-medium text-ink">{summaryLabel}</span>
             </div>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
-                <span className="text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Payment Amount</span>
-                <span className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                <span className="text-muted">Payment Amount</span>
+                <span className="font-semibold text-ink">
                   {money(parseFloat(paymentAmount))}
                 </span>
               </div>
@@ -688,11 +688,11 @@ export default function RecordPaymentModal({
                 </div>
               )}
               <div className="flex justify-between">
-                <span className="text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Current Balance</span>
-                <span className="text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{money(balance)}</span>
+                <span className="text-muted">Current Balance</span>
+                <span className="text-ink">{money(balance)}</span>
               </div>
-              <div className="border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 pt-2 flex justify-between">
-                <span className="text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">New Balance</span>
+              <div className="border-t border-line pt-2 flex justify-between">
+                <span className="text-muted">New Balance</span>
                 <span
                   className={`font-semibold ${
                     balance - parseFloat(paymentAmount) - discountAmount <= 0

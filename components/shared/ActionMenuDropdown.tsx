@@ -86,7 +86,7 @@ export default function ActionMenuDropdown({
       {/* Dropdown menu */}
       {isOpen && (
         <div
-          className={`absolute top-full mt-1.5 ${align === "right" ? "right-0" : "left-0"} ${width} bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 py-1.5 z-[9999] animate-in fade-in slide-in-from-top-2 duration-200`}
+          className={`absolute top-full mt-1.5 ${align === "right" ? "right-0" : "left-0"} ${width} bg-surface rounded-xl shadow-2xl border border-line py-1.5 z-[9999] animate-in fade-in slide-in-from-top-2 duration-200`}
         >
           {items.map((entry, idx) => {
             if (isDivider(entry)) {
@@ -108,7 +108,7 @@ export default function ActionMenuDropdown({
                   item.onClick?.();
                   setIsOpen(false);
                 }}
-                className="w-full flex items-center gap-3 px-4 py-2 text-[13px] text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-50 dark:hover:bg-white/5 midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors cursor-pointer group"
+                className="w-full flex items-center gap-3 px-4 py-2 text-[0.8125rem] text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-50 dark:hover:bg-white/5 midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors cursor-pointer group"
               >
                 {IconComp && (
                   <IconComp
@@ -119,7 +119,7 @@ export default function ActionMenuDropdown({
                 )}
                 <span className="flex-1 text-left font-medium">{item.label}</span>
                 {item.shortcut && (
-                  <span className="text-[11px] text-gray-400 dark:text-gray-500 font-mono">
+                  <span className="text-[0.6875rem] text-gray-400 dark:text-gray-500 font-mono">
                     {item.shortcut}
                   </span>
                 )}

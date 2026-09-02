@@ -139,10 +139,10 @@ export default function ParentChildrenPage() {
             return (
               <div
                 key={child.id}
-                className="group bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-2xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden"
+                className="group bg-surface rounded-2xl border border-line shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden"
               >
                 {/* Child Header - Modern Design */}
-                <div className="relative px-4 py-4 sm:px-5 sm:py-4 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border-b border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+                <div className="relative px-4 py-4 sm:px-5 sm:py-4 bg-surface border-b border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
                   <div className="flex items-center gap-4">
                     {/* Profile Photo - Enhanced Avatar */}
                     <div className="relative flex-shrink-0 group/avatar">
@@ -169,14 +169,14 @@ export default function ParentChildrenPage() {
                     {/* Info Section */}
                     <div className="flex-1 min-w-0">
                       <div className="flex flex-wrap items-center gap-2 mb-1">
-                        <h2 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                        <h2 className="text-base sm:text-lg font-bold text-ink">
                           {child.fullName}
                         </h2>
                         <span
-                          className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold tracking-wide ${
+                          className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[0.625rem] font-semibold tracking-wide ${
                             child.status === "Active"
                               ? "bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400 ring-1 ring-emerald-200/50 dark:ring-emerald-700/50"
-                              : "bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 ring-1 ring-gray-200/50 dark:ring-gray-600/50"
+                              : "bg-surface-2 text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 ring-1 ring-gray-200/50 dark:ring-gray-600/50"
                           }`}
                         >
                           <span className={`w-1.5 h-1.5 rounded-full ${child.status === "Active" ? "bg-emerald-500" : "bg-gray-400"}`} />
@@ -226,7 +226,7 @@ export default function ParentChildrenPage() {
                           <div className="p-1.5 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 shadow-sm">
                             <TrendingUp className="w-4 h-4 text-white" />
                           </div>
-                          <h3 className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-sm">
+                          <h3 className="font-semibold text-ink text-sm">
                             Academic Performance
                           </h3>
                         </div>
@@ -247,7 +247,7 @@ export default function ParentChildrenPage() {
                             <p className="text-lg font-bold bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400 bg-clip-text text-transparent">
                               {academicData.currentTermAverage?.toFixed(1)}%
                             </p>
-                            <p className="text-[10px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 font-medium uppercase tracking-wide">Term Avg</p>
+                            <p className="text-[0.625rem] text-muted font-medium uppercase tracking-wide">Term Avg</p>
                           </div>
                         </div>
                         <div className="relative p-2.5 rounded-lg bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border border-emerald-100 dark:border-emerald-800/30 overflow-hidden group/stat">
@@ -256,7 +256,7 @@ export default function ParentChildrenPage() {
                             <p className="text-lg font-bold bg-gradient-to-r from-emerald-600 to-green-600 dark:from-emerald-400 dark:to-green-400 bg-clip-text text-transparent">
                               #{academicData.classPosition}
                             </p>
-                            <p className="text-[10px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 font-medium uppercase tracking-wide">of {academicData.totalStudents}</p>
+                            <p className="text-[0.625rem] text-muted font-medium uppercase tracking-wide">of {academicData.totalStudents}</p>
                           </div>
                         </div>
                         <div className="relative p-2.5 rounded-lg bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border border-purple-100 dark:border-purple-800/30 overflow-hidden group/stat">
@@ -265,14 +265,14 @@ export default function ParentChildrenPage() {
                             <p className={`text-lg font-bold ${getGradeColor(academicData.conductGrade || "A").split(" ").slice(0, 2).join(" ")}`}>
                               {academicData.conductGrade}
                             </p>
-                            <p className="text-[10px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 font-medium uppercase tracking-wide">Conduct</p>
+                            <p className="text-[0.625rem] text-muted font-medium uppercase tracking-wide">Conduct</p>
                           </div>
                         </div>
                       </div>
 
                       {/* Subject Performance - Full Width */}
                       <div className="flex-1 flex flex-col">
-                        <p className="text-[10px] font-semibold text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 uppercase tracking-wider mb-2">
+                        <p className="text-[0.625rem] font-semibold text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 uppercase tracking-wider mb-2">
                           Subject Performance
                         </p>
                         <div className="flex-1 flex flex-col gap-1.5">
@@ -289,7 +289,7 @@ export default function ParentChildrenPage() {
                                 <span className="flex-shrink-0 text-xs font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 w-20 truncate">
                                   {subject.subject}
                                 </span>
-                                <div className="flex-1 h-1.5 bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/50 rounded-full overflow-hidden">
+                                <div className="flex-1 h-1.5 bg-surface-2/50 rounded-full overflow-hidden">
                                   <div
                                     className="h-full bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 rounded-full transition-all duration-500"
                                     style={{ width: `${subject.score}%` }}
@@ -299,7 +299,7 @@ export default function ParentChildrenPage() {
                                   {subject.score}%
                                 </span>
                                 <span
-                                  className={`flex-shrink-0 px-1.5 py-0.5 rounded text-[10px] font-bold ${getGradeColor(subject.grade)}`}
+                                  className={`flex-shrink-0 px-1.5 py-0.5 rounded text-[0.625rem] font-bold ${getGradeColor(subject.grade)}`}
                                 >
                                   {subject.grade}
                                 </span>
@@ -321,7 +321,7 @@ export default function ParentChildrenPage() {
                             <div className="p-1.5 rounded-lg bg-gradient-to-br from-emerald-500 to-green-600 shadow-sm">
                               <CheckCircle2 className="w-4 h-4 text-white" />
                             </div>
-                            <h3 className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-sm">
+                            <h3 className="font-semibold text-ink text-sm">
                               Attendance
                             </h3>
                           </div>
@@ -337,10 +337,10 @@ export default function ParentChildrenPage() {
                         {/* Attendance Rate Progress */}
                         <div className="relative p-3 rounded-lg bg-white/80 dark:bg-[#0f1115] midnight:bg-[#0a0e27]/40 purple:bg-[#1a0b2e]/40 border border-emerald-100/60 dark:border-emerald-800/30 mb-3">
                           <div className="flex items-center justify-between mb-2">
-                            <span className="text-xs font-medium text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Attendance Rate</span>
+                            <span className="text-xs font-medium text-muted">Attendance Rate</span>
                             <span className="text-lg font-bold bg-gradient-to-r from-emerald-600 to-green-600 dark:from-emerald-400 dark:to-green-400 bg-clip-text text-transparent">{attendanceData.rate}%</span>
                           </div>
-                          <div className="w-full h-2 bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/50 rounded-full overflow-hidden">
+                          <div className="w-full h-2 bg-surface-2/50 rounded-full overflow-hidden">
                             <div
                               className="h-full bg-gradient-to-r from-emerald-500 via-green-500 to-teal-500 rounded-full transition-all duration-500"
                               style={{ width: `${attendanceData.rate}%` }}
@@ -354,25 +354,25 @@ export default function ParentChildrenPage() {
                             <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-green-500/5 dark:from-emerald-500/10 dark:to-green-500/10 pointer-events-none" />
                             <div className="w-2 h-2 rounded-full bg-emerald-500 mb-1.5" />
                             <p className="text-xl font-bold text-emerald-600 dark:text-emerald-400">{attendanceData.present}</p>
-                            <p className="text-[10px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 font-medium uppercase tracking-wide">Present</p>
+                            <p className="text-[0.625rem] text-muted font-medium uppercase tracking-wide">Present</p>
                           </div>
                           <div className="relative flex flex-col items-center justify-center p-3 rounded-lg bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border border-red-100 dark:border-red-800/30 overflow-hidden group/stat">
                             <div className="absolute inset-0 bg-gradient-to-br from-red-500/5 to-rose-500/5 dark:from-red-500/10 dark:to-rose-500/10 pointer-events-none" />
                             <div className="w-2 h-2 rounded-full bg-red-500 mb-1.5" />
                             <p className="text-xl font-bold text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400">{attendanceData.absent}</p>
-                            <p className="text-[10px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 font-medium uppercase tracking-wide">Absent</p>
+                            <p className="text-[0.625rem] text-muted font-medium uppercase tracking-wide">Absent</p>
                           </div>
                           <div className="relative flex flex-col items-center justify-center p-3 rounded-lg bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border border-amber-100 dark:border-amber-800/30 overflow-hidden group/stat">
                             <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 to-yellow-500/5 dark:from-amber-500/10 dark:to-yellow-500/10 pointer-events-none" />
                             <div className="w-2 h-2 rounded-full bg-amber-500 mb-1.5" />
                             <p className="text-xl font-bold text-amber-600 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400">{attendanceData.late}</p>
-                            <p className="text-[10px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 font-medium uppercase tracking-wide">Late</p>
+                            <p className="text-[0.625rem] text-muted font-medium uppercase tracking-wide">Late</p>
                           </div>
                           <div className="relative flex flex-col items-center justify-center p-3 rounded-lg bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border border-blue-100 dark:border-blue-800/30 overflow-hidden group/stat">
                             <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-indigo-500/5 dark:from-blue-500/10 dark:to-indigo-500/10 pointer-events-none" />
                             <div className="w-2 h-2 rounded-full bg-blue-500 mb-1.5" />
                             <p className="text-xl font-bold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400">{attendanceData.total}</p>
-                            <p className="text-[10px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 font-medium uppercase tracking-wide">Total</p>
+                            <p className="text-[0.625rem] text-muted font-medium uppercase tracking-wide">Total</p>
                           </div>
                         </div>
                       </>
@@ -388,11 +388,11 @@ export default function ParentChildrenPage() {
                           <div className="p-1.5 rounded-lg bg-gradient-to-br from-orange-500 to-amber-600 shadow-sm">
                             <Bus className="w-4 h-4 text-white" />
                           </div>
-                          <h3 className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-sm">
+                          <h3 className="font-semibold text-ink text-sm">
                             Transport
                           </h3>
                         </div>
-                        <span className={`px-2 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wide flex items-center gap-1.5 shadow-sm ${
+                        <span className={`px-2 py-1 rounded-lg text-[0.625rem] font-bold uppercase tracking-wide flex items-center gap-1.5 shadow-sm ${
                           transportData.status === "On Route"
                             ? "bg-gradient-to-r from-blue-500 to-indigo-500 text-white"
                             : transportData.status === "At School"
@@ -413,9 +413,9 @@ export default function ParentChildrenPage() {
                           <div className="relative">
                             <div className="flex items-center gap-1.5 mb-1">
                               <Bus className="w-3 h-3 text-orange-500 dark:text-orange-400" />
-                              <span className="text-[10px] font-medium text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 uppercase tracking-wide">Route</span>
+                              <span className="text-[0.625rem] font-medium text-muted uppercase tracking-wide">Route</span>
                             </div>
-                            <p className="text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate">{transportData.routeName}</p>
+                            <p className="text-sm font-bold text-ink truncate">{transportData.routeName}</p>
                           </div>
                         </div>
                         <div className="relative flex flex-col justify-center p-3 rounded-lg bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border border-red-100 dark:border-red-800/30 overflow-hidden group/stat">
@@ -423,9 +423,9 @@ export default function ParentChildrenPage() {
                           <div className="relative">
                             <div className="flex items-center gap-1.5 mb-1">
                               <MapPin className="w-3 h-3 text-red-500 dark:text-red-400 midnight:text-red-400 purple:text-red-400" />
-                              <span className="text-[10px] font-medium text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 uppercase tracking-wide">Pickup</span>
+                              <span className="text-[0.625rem] font-medium text-muted uppercase tracking-wide">Pickup</span>
                             </div>
-                            <p className="text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate">{transportData.pickupLocation}</p>
+                            <p className="text-sm font-bold text-ink truncate">{transportData.pickupLocation}</p>
                           </div>
                         </div>
                       </div>
@@ -438,7 +438,7 @@ export default function ParentChildrenPage() {
                             <Clock className="w-3.5 h-3.5 text-white" />
                           </div>
                           <div>
-                            <p className="text-[10px] font-medium text-orange-600/70 dark:text-orange-400/70 uppercase tracking-wide">Pickup</p>
+                            <p className="text-[0.625rem] font-medium text-orange-600/70 dark:text-orange-400/70 uppercase tracking-wide">Pickup</p>
                             <p className="text-base font-bold text-orange-700 dark:text-orange-300">{transportData.pickupTime}</p>
                           </div>
                         </div>
@@ -449,7 +449,7 @@ export default function ParentChildrenPage() {
                         {/* Drop-off Time */}
                         <div className="flex-1 flex items-center justify-end gap-2.5 p-2.5">
                           <div className="text-right">
-                            <p className="text-[10px] font-medium text-amber-600/70 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400/70 uppercase tracking-wide">Drop-off</p>
+                            <p className="text-[0.625rem] font-medium text-amber-600/70 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400/70 uppercase tracking-wide">Drop-off</p>
                             <p className="text-base font-bold text-amber-700 dark:text-amber-300">{transportData.dropoffTime}</p>
                           </div>
                           <div className="p-1.5 rounded-md bg-gradient-to-br from-amber-500 to-amber-600 shadow-sm">
@@ -469,12 +469,12 @@ export default function ParentChildrenPage() {
                           <div className="relative p-1.5 rounded-lg bg-gradient-to-br from-purple-500 to-indigo-600 shadow-sm">
                             <Bell className="w-4 h-4 text-white" />
                             {notifications.filter(n => !n.read).length > 0 && (
-                              <span className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-gradient-to-r from-red-500 to-rose-500 rounded-full flex items-center justify-center text-[9px] text-white font-bold shadow-sm ring-2 ring-white dark:ring-gray-800">
+                              <span className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-gradient-to-r from-red-500 to-rose-500 rounded-full flex items-center justify-center text-[0.5625rem] text-white font-bold shadow-sm ring-2 ring-white dark:ring-gray-800">
                                 {notifications.filter(n => !n.read).length}
                               </span>
                             )}
                           </div>
-                          <h3 className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-sm">
+                          <h3 className="font-semibold text-ink text-sm">
                             Notifications
                           </h3>
                         </div>
@@ -517,7 +517,7 @@ export default function ParentChildrenPage() {
                               {/* Content */}
                               <div className="relative flex-1 min-w-0">
                                 <p className="text-sm font-medium text-gray-800 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 line-clamp-2 leading-snug">{notification.message}</p>
-                                <p className="text-[10px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mt-1 font-medium">{notification.time}</p>
+                                <p className="text-[0.625rem] text-muted mt-1 font-medium">{notification.time}</p>
                               </div>
 
                               {/* Unread indicator */}
@@ -541,7 +541,7 @@ export default function ParentChildrenPage() {
                       <div className="p-1.5 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 shadow-sm">
                         <Sparkles className="w-4 h-4 text-white" />
                       </div>
-                      <h3 className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-sm">
+                      <h3 className="font-semibold text-ink text-sm">
                         Quick Actions
                       </h3>
                     </div>
@@ -556,8 +556,8 @@ export default function ParentChildrenPage() {
                           <TrendingUp className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
                         </div>
                         <div className="relative flex-1 min-w-0">
-                          <p className="text-xs font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 leading-tight">Term Progress</p>
-                          <p className="text-[10px] text-indigo-600/70 dark:text-indigo-400/70 leading-tight">Track progress</p>
+                          <p className="text-xs font-semibold text-ink leading-tight">Term Progress</p>
+                          <p className="text-[0.625rem] text-indigo-600/70 dark:text-indigo-400/70 leading-tight">Track progress</p>
                         </div>
                       </Link>
                       <Link
@@ -569,8 +569,8 @@ export default function ParentChildrenPage() {
                           <FileText className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
                         </div>
                         <div className="relative flex-1 min-w-0">
-                          <p className="text-xs font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 leading-tight">Report Card</p>
-                          <p className="text-[10px] text-blue-600/70 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400/70 leading-tight">View grades</p>
+                          <p className="text-xs font-semibold text-ink leading-tight">Report Card</p>
+                          <p className="text-[0.625rem] text-blue-600/70 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400/70 leading-tight">View grades</p>
                         </div>
                       </Link>
                       <Link
@@ -582,8 +582,8 @@ export default function ParentChildrenPage() {
                           <CreditCard className="w-3.5 h-3.5 text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400" />
                         </div>
                         <div className="relative flex-1 min-w-0">
-                          <p className="text-xs font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 leading-tight">Pay Fees</p>
-                          <p className="text-[10px] text-green-600/70 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400/70 leading-tight">Make payment</p>
+                          <p className="text-xs font-semibold text-ink leading-tight">Pay Fees</p>
+                          <p className="text-[0.625rem] text-green-600/70 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400/70 leading-tight">Make payment</p>
                         </div>
                       </Link>
                       <Link
@@ -595,8 +595,8 @@ export default function ParentChildrenPage() {
                           <MessageSquare className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
                         </div>
                         <div className="relative flex-1 min-w-0">
-                          <p className="text-xs font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 leading-tight">Message</p>
-                          <p className="text-[10px] text-purple-600/70 dark:text-purple-400/70 leading-tight">Contact teacher</p>
+                          <p className="text-xs font-semibold text-ink leading-tight">Message</p>
+                          <p className="text-[0.625rem] text-purple-600/70 dark:text-purple-400/70 leading-tight">Contact teacher</p>
                         </div>
                       </Link>
                       <Link
@@ -608,8 +608,8 @@ export default function ParentChildrenPage() {
                           <Calendar className="w-3.5 h-3.5 text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400" />
                         </div>
                         <div className="relative flex-1 min-w-0">
-                          <p className="text-xs font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 leading-tight">Timetable</p>
-                          <p className="text-[10px] text-red-600/70 dark:text-red-400 midnight:text-red-400 purple:text-red-400/70 leading-tight">View schedule</p>
+                          <p className="text-xs font-semibold text-ink leading-tight">Timetable</p>
+                          <p className="text-[0.625rem] text-red-600/70 dark:text-red-400 midnight:text-red-400 purple:text-red-400/70 leading-tight">View schedule</p>
                         </div>
                       </Link>
                     </div>
@@ -630,7 +630,7 @@ export default function ParentChildrenPage() {
 
                         {/* Content */}
                         <div className="flex-1 min-w-0">
-                          <p className="text-[10px] font-bold text-amber-600 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400 uppercase tracking-wider mb-1">
+                          <p className="text-[0.625rem] font-bold text-amber-600 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400 uppercase tracking-wider mb-1">
                             Teacher&apos;s Remarks
                           </p>
                           <p className="text-sm text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 italic leading-relaxed">

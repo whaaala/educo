@@ -290,7 +290,7 @@ export default function ExamResults({
       {/* Header with Year Selector */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          <h2 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+          <h2 className="text-lg sm:text-xl font-bold text-ink">
             Exams & Results
           </h2>
           {isEveningWeekend && (
@@ -316,7 +316,7 @@ export default function ExamResults({
           return (
             <div
               key={exam.id}
-              className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/30 purple:border-pink-500/30 overflow-hidden transition-all duration-200 hover:shadow-md"
+              className="bg-surface rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/30 purple:border-pink-500/30 overflow-hidden transition-all duration-200 hover:shadow-md"
             >
               {/* Exam Header - Clickable */}
               <button
@@ -354,7 +354,7 @@ export default function ExamResults({
                   <div className="overflow-x-auto">
                     <table className="w-full">
                       <thead>
-                        <tr className="bg-gray-50 dark:bg-[#22262e]/30 midnight:bg-gray-700/30 purple:bg-gray-700/30 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+                        <tr className="bg-gray-50 dark:bg-[#22262e]/30 midnight:bg-gray-700/30 purple:bg-gray-700/30 border-b border-line">
                           <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 uppercase tracking-wider">
                             {isTertiary ? "Course" : "Subject"}
                           </th>

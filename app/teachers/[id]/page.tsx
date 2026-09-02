@@ -92,7 +92,7 @@ export default function ViewTeacherPage() {
         afterStats={
           <div className="mt-6 flex items-center justify-center min-h-[60vh]">
             <div className="text-center">
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+              <h2 className="text-xl font-semibold text-ink">
                 Teacher Not Found
               </h2>
               <p className="mt-2 text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
@@ -171,7 +171,7 @@ export default function ViewTeacherPage() {
           </div>
 
         {/* Profile Overview Card */}
-        <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-gray-800 purple:border-gray-800 shadow-sm overflow-hidden">
+        <div className="bg-surface rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-gray-800 purple:border-gray-800 shadow-sm overflow-hidden">
           <div className="p-6 sm:p-8">
             <div className="flex flex-col sm:flex-row gap-6">
               {/* Profile Image */}
@@ -192,7 +192,7 @@ export default function ViewTeacherPage() {
               <div className="flex-1 min-w-0">
                 <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                   <div>
-                    <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                    <h2 className="text-2xl sm:text-3xl font-bold text-ink">
                       {teacherData.firstName} {teacherData.lastName}
                     </h2>
                     <p className="text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-400/80 purple:text-pink-400/80 mt-1">
@@ -216,8 +216,8 @@ export default function ViewTeacherPage() {
                       <Mail className="w-5 h-5 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Email</p>
-                      <p className="text-sm font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate">{teacherData.email}</p>
+                      <p className="text-xs text-muted">Email</p>
+                      <p className="text-sm font-medium text-ink truncate">{teacherData.email}</p>
                     </div>
                   </div>
 
@@ -226,8 +226,8 @@ export default function ViewTeacherPage() {
                       <Phone className="w-5 h-5 text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400" />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Phone</p>
-                      <p className="text-sm font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate">{teacherData.phone}</p>
+                      <p className="text-xs text-muted">Phone</p>
+                      <p className="text-sm font-medium text-ink truncate">{teacherData.phone}</p>
                     </div>
                   </div>
 
@@ -236,8 +236,8 @@ export default function ViewTeacherPage() {
                       <Briefcase className="w-5 h-5 text-purple-600 dark:text-purple-400" />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Department</p>
-                      <p className="text-sm font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate">{teacherData.department}</p>
+                      <p className="text-xs text-muted">Department</p>
+                      <p className="text-sm font-medium text-ink truncate">{teacherData.department}</p>
                     </div>
                   </div>
                 </div>
@@ -280,69 +280,69 @@ export default function ViewTeacherPage() {
           {activeTab === "details" && (
             <>
               {/* Personal Information */}
-              <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-gray-800 purple:border-gray-800 shadow-sm p-6">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-4">
+              <div className="bg-surface rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-gray-800 purple:border-gray-800 shadow-sm p-6">
+                <h3 className="text-lg font-semibold text-ink mb-4">
                   Personal Information
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                   <div>
-                    <label className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Full Name</label>
-                    <p className="mt-1 text-sm font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                    <label className="text-xs text-muted">Full Name</label>
+                    <p className="mt-1 text-sm font-medium text-ink">
                       {teacherData.firstName} {teacherData.lastName}
                     </p>
                   </div>
                   <div>
-                    <label className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Date of Birth</label>
-                    <p className="mt-1 text-sm font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                    <label className="text-xs text-muted">Date of Birth</label>
+                    <p className="mt-1 text-sm font-medium text-ink">
                       {new Date(teacherData.dateOfBirth).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
                     </p>
                   </div>
                   <div>
-                    <label className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Gender</label>
-                    <p className="mt-1 text-sm font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{teacherData.gender}</p>
+                    <label className="text-xs text-muted">Gender</label>
+                    <p className="mt-1 text-sm font-medium text-ink">{teacherData.gender}</p>
                   </div>
                   <div>
-                    <label className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Address</label>
-                    <p className="mt-1 text-sm font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{teacherData.address}</p>
+                    <label className="text-xs text-muted">Address</label>
+                    <p className="mt-1 text-sm font-medium text-ink">{teacherData.address}</p>
                   </div>
                   <div>
-                    <label className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Qualification</label>
-                    <p className="mt-1 text-sm font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{teacherData.qualification}</p>
+                    <label className="text-xs text-muted">Qualification</label>
+                    <p className="mt-1 text-sm font-medium text-ink">{teacherData.qualification}</p>
                   </div>
                   <div>
-                    <label className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Specialization</label>
-                    <p className="mt-1 text-sm font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{teacherData.specialization}</p>
+                    <label className="text-xs text-muted">Specialization</label>
+                    <p className="mt-1 text-sm font-medium text-ink">{teacherData.specialization}</p>
                   </div>
                 </div>
               </div>
 
               {/* Employment Information */}
-              <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-gray-800 purple:border-gray-800 shadow-sm p-6">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-4">
+              <div className="bg-surface rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-gray-800 purple:border-gray-800 shadow-sm p-6">
+                <h3 className="text-lg font-semibold text-ink mb-4">
                   Employment Information
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                   <div>
-                    <label className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Join Date</label>
-                    <p className="mt-1 text-sm font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                    <label className="text-xs text-muted">Join Date</label>
+                    <p className="mt-1 text-sm font-medium text-ink">
                       {new Date(teacherData.joinDate).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
                     </p>
                   </div>
                   <div>
-                    <label className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Employment Type</label>
-                    <p className="mt-1 text-sm font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{teacherData.employmentType}</p>
+                    <label className="text-xs text-muted">Employment Type</label>
+                    <p className="mt-1 text-sm font-medium text-ink">{teacherData.employmentType}</p>
                   </div>
                   <div>
-                    <label className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Experience</label>
-                    <p className="mt-1 text-sm font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{teacherData.experience} years</p>
+                    <label className="text-xs text-muted">Experience</label>
+                    <p className="mt-1 text-sm font-medium text-ink">{teacherData.experience} years</p>
                   </div>
                   <div>
-                    <label className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Branch</label>
-                    <p className="mt-1 text-sm font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{teacherData.branch}</p>
+                    <label className="text-xs text-muted">Branch</label>
+                    <p className="mt-1 text-sm font-medium text-ink">{teacherData.branch}</p>
                   </div>
                   <div>
-                    <label className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Salary</label>
-                    <p className="mt-1 text-sm font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">₦{teacherData.salary.toLocaleString()}</p>
+                    <label className="text-xs text-muted">Salary</label>
+                    <p className="mt-1 text-sm font-medium text-ink">₦{teacherData.salary.toLocaleString()}</p>
                   </div>
                 </div>
               </div>
@@ -350,13 +350,13 @@ export default function ViewTeacherPage() {
           )}
 
           {activeTab === "classes" && (
-            <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-gray-800 purple:border-gray-800 shadow-sm p-6">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-4">
+            <div className="bg-surface rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-gray-800 purple:border-gray-800 shadow-sm p-6">
+              <h3 className="text-lg font-semibold text-ink mb-4">
                 Classes & Subjects
               </h3>
               <div className="space-y-6">
                 <div>
-                  <label className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Classes</label>
+                  <label className="text-xs text-muted">Classes</label>
                   <div className="flex flex-wrap gap-2 mt-2">
                     {teacherData.classes.map((cls, idx) => (
                       <span key={idx} className="inline-flex items-center px-3 py-1 rounded-lg text-sm font-medium bg-blue-100 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 text-blue-700 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300">
@@ -366,7 +366,7 @@ export default function ViewTeacherPage() {
                   </div>
                 </div>
                 <div>
-                  <label className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Subjects</label>
+                  <label className="text-xs text-muted">Subjects</label>
                   <div className="flex flex-wrap gap-2 mt-2">
                     {teacherData.subjects.map((subject, idx) => (
                       <span key={idx} className="inline-flex items-center px-3 py-1 rounded-lg text-sm font-medium bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300">
@@ -380,22 +380,22 @@ export default function ViewTeacherPage() {
           )}
 
           {activeTab === "attendance" && (
-            <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-gray-800 purple:border-gray-800 shadow-sm p-6">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-4">Attendance Records</h3>
+            <div className="bg-surface rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-gray-800 purple:border-gray-800 shadow-sm p-6">
+              <h3 className="text-lg font-semibold text-ink mb-4">Attendance Records</h3>
               <p className="text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Teacher attendance tracking will be displayed here.</p>
             </div>
           )}
 
           {activeTab === "performance" && (
-            <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-gray-800 purple:border-gray-800 shadow-sm p-6">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-4">Performance Reviews</h3>
+            <div className="bg-surface rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-gray-800 purple:border-gray-800 shadow-sm p-6">
+              <h3 className="text-lg font-semibold text-ink mb-4">Performance Reviews</h3>
               <p className="text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Teacher performance reviews and evaluations will be displayed here.</p>
             </div>
           )}
 
           {activeTab === "documents" && (
-            <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-gray-800 purple:border-gray-800 shadow-sm p-6">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-4">Documents</h3>
+            <div className="bg-surface rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-gray-800 purple:border-gray-800 shadow-sm p-6">
+              <h3 className="text-lg font-semibold text-ink mb-4">Documents</h3>
               <p className="text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Teacher documents and certificates will be displayed here.</p>
             </div>
           )}

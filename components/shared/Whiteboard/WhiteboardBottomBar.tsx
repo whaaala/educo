@@ -40,7 +40,7 @@ export default function WhiteboardBottomBar({
   const zoomPercent = Math.round(viewport.zoom * 100);
 
   return (
-    <div className="flex items-center justify-between px-3 py-1.5 bg-white dark:bg-[#1a1d24] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+    <div className="flex items-center justify-between px-3 py-1.5 bg-white dark:bg-[#1a1d24] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] border-t border-line">
       {/* Undo / Redo */}
       <div className="flex items-center gap-1">
         {!readOnly && (
@@ -102,7 +102,7 @@ export default function WhiteboardBottomBar({
             {showClearConfirm && (
               <>
                 <div className="fixed inset-0 z-40" onClick={() => setShowClearConfirm(false)} />
-                <div className="absolute bottom-full right-0 mb-2 z-50 p-3 bg-white dark:bg-[#1a1d24] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-xl shadow-xl animate-in fade-in slide-in-from-bottom-2 duration-150 min-w-[180px]">
+                <div className="absolute bottom-full right-0 mb-2 z-50 p-3 bg-white dark:bg-[#1a1d24] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] border border-line rounded-xl shadow-xl animate-in fade-in slide-in-from-bottom-2 duration-150 min-w-[180px]">
                   <p className="text-xs font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 mb-2">
                     Clear all elements?
                   </p>

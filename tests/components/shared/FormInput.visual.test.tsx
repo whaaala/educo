@@ -34,19 +34,13 @@ describe("FormInput — Visual / CSS", () => {
     it("input has theme-responsive backgrounds", () => {
       const { container } = render(<FormInput {...defaultProps} />);
       const input = container.querySelector("input")!;
-      expect(input.className).toContain("bg-white");
-      expect(input.className).toContain("dark:bg-[#1a1d24]");
-      expect(input.className).toContain("midnight:bg-[#0a0e27]");
-      expect(input.className).toContain("purple:bg-[#1a0b2e]");
+      expect(input.className).toContain("bg-surface");
     });
 
     it("input has theme-responsive text colors", () => {
       const { container } = render(<FormInput {...defaultProps} />);
       const input = container.querySelector("input")!;
-      expect(input.className).toContain("text-gray-900");
-      expect(input.className).toContain("dark:text-white");
-      expect(input.className).toContain("midnight:text-cyan-50");
-      expect(input.className).toContain("purple:text-pink-50");
+      expect(input.className).toContain("text-ink");
     });
 
     it("input has rounded-xl border", () => {

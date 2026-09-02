@@ -505,7 +505,7 @@ export default function DrivePage() {
           onCreateFolder={handleCreateFolder}
           emptyAction={
             <button onClick={() => setShowNewFolderDialog(true)}
-              className="mt-5 inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-[13px] font-medium text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 bg-blue-50 dark:bg-blue-500/10 midnight:bg-cyan-500/10 purple:bg-pink-500/10 hover:bg-blue-100 dark:hover:bg-blue-500/15 midnight:hover:bg-cyan-500/15 purple:hover:bg-pink-500/15 transition-colors cursor-pointer">
+              className="mt-5 inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-[0.8125rem] font-medium text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 bg-blue-50 dark:bg-blue-500/10 midnight:bg-cyan-500/10 purple:bg-pink-500/10 hover:bg-blue-100 dark:hover:bg-blue-500/15 midnight:hover:bg-cyan-500/15 purple:hover:bg-pink-500/15 transition-colors cursor-pointer">
               <FolderPlus className="w-4 h-4" /> Create a folder
             </button>
           }

@@ -40,7 +40,7 @@ function TrustRow({ theme }: { theme: SiteTheme }) {
     <div className="mt-8 flex items-center gap-3">
       <div className="flex -space-x-2">
         {[0, 1, 2, 3].map((i) => (
-          <span key={i} className="w-8 h-8 rounded-full flex items-center justify-center text-white text-[11px] font-bold" style={{ background: `linear-gradient(135deg, ${theme.primary}, ${theme.accent})`, boxShadow: `0 0 0 2px ${theme.background}` }}>
+          <span key={i} className="w-8 h-8 rounded-full flex items-center justify-center text-white text-[0.6875rem] font-bold" style={{ background: `linear-gradient(135deg, ${theme.primary}, ${theme.accent})`, boxShadow: `0 0 0 2px ${theme.background}` }}>
             {String.fromCharCode(65 + i)}
           </span>
         ))}
@@ -64,7 +64,7 @@ function HeroImage({ theme, src, className = "" }: { theme: SiteTheme; src?: str
         </span>
         <div>
           <div className="text-lg font-extrabold leading-none" style={{ color: theme.text, fontFamily: theme.headingFont }}>98%</div>
-          <div className="text-[11px]" style={{ color: theme.textMuted }}>Graduation rate</div>
+          <div className="text-[0.6875rem]" style={{ color: theme.textMuted }}>Graduation rate</div>
         </div>
       </div>
     </div>
@@ -265,7 +265,7 @@ export function TestimonialsSection({ content, theme, editable, onChange }: Sect
           {items.map((it, i) => (
             <div key={i} className="p-6 flex flex-col" style={{ background: theme.background, borderRadius: theme.radius, boxShadow: `0 10px 30px -18px ${tint(theme.text, 0.35)}` }}>
               <QuoteIcon className="w-8 h-8" style={{ color: tint(theme.primary, 0.5) }} />
-              <p className="mt-3 flex-1 text-[15px] leading-relaxed" style={{ color: theme.text }}>
+              <p className="mt-3 flex-1 text-[0.9375rem] leading-relaxed" style={{ color: theme.text }}>
                 <EditableText value={it.body} editable={editable} onChange={(v) => editItem(i, { body: v })} placeholder="Quote" />
               </p>
               <div className="mt-5 flex items-center gap-3">

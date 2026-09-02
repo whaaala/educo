@@ -26,15 +26,15 @@ export default function DeleteIncidentModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="relative w-full max-w-lg bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-2xl shadow-2xl flex flex-col animate-in zoom-in-95 duration-200">
+      <div className="relative w-full max-w-lg bg-surface rounded-2xl shadow-2xl flex flex-col animate-in zoom-in-95 duration-200">
         {/* Header */}
-        <div className="flex-shrink-0 flex items-center justify-between px-6 py-5 bg-gradient-to-r from-red-50/50 to-orange-50/30 dark:from-red-900/10 dark:to-red-800/10 midnight:from-red-900/10 midnight:to-red-800/10 purple:from-red-900/10 purple:to-red-800/10 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-t-2xl">
+        <div className="flex-shrink-0 flex items-center justify-between px-6 py-5 bg-gradient-to-r from-red-50/50 to-orange-50/30 dark:from-red-900/10 dark:to-red-800/10 midnight:from-red-900/10 midnight:to-red-800/10 purple:from-red-900/10 purple:to-red-800/10 border-b border-line rounded-t-2xl">
           <div className="flex-1 flex items-center gap-3">
             <div className="p-2.5 rounded-xl bg-red-100 dark:bg-red-900/30 midnight:bg-red-900/30 purple:bg-red-900/30 border border-red-200/50 dark:border-red-700/30 midnight:border-red-500/30 purple:border-red-500/30">
               <AlertTriangle className="w-5 h-5 sm:w-6 sm:h-6 text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400" />
             </div>
             <div>
-              <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+              <h2 className="text-xl sm:text-2xl font-bold text-ink">
                 Delete Incident Record
               </h2>
               <p className="text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mt-1">
@@ -67,7 +67,7 @@ export default function DeleteIncidentModal({
           </div>
 
           {/* Incident Details */}
-          <div className="bg-white dark:bg-[#22262e]/30 midnight:bg-[#0f1330]/30 purple:bg-[#251340]/30 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-xl p-5 space-y-4">
+          <div className="bg-white dark:bg-[#22262e]/30 midnight:bg-[#0f1330]/30 purple:bg-[#251340]/30 border border-line rounded-xl p-5 space-y-4">
             <h4 className="text-base font-bold text-gray-900 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50 flex items-center gap-2">
               <div className="w-1 h-5 bg-red-500 rounded-full"></div>
               Incident Details
@@ -136,7 +136,7 @@ export default function DeleteIncidentModal({
         </div>
 
         {/* Footer */}
-        <div className="flex-shrink-0 flex items-center justify-end gap-3 px-6 py-4 bg-gray-50/80 dark:bg-[#22262e]/50 midnight:bg-[#0f1330]/50 purple:bg-[#251340]/50 border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-b-2xl">
+        <div className="flex-shrink-0 flex items-center justify-end gap-3 px-6 py-4 bg-gray-50/80 dark:bg-[#22262e]/50 midnight:bg-[#0f1330]/50 purple:bg-[#251340]/50 border-t border-line rounded-b-2xl">
           <button
             onClick={onClose}
             className="px-5 py-2.5 rounded-lg bg-white dark:bg-[#22262e] midnight:bg-gray-700 purple:bg-gray-700 text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 font-semibold border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 hover:bg-gray-50 dark:hover:bg-[#2a2d35] midnight:hover:bg-gray-600 purple:hover:bg-gray-600 transition-colors cursor-pointer"

@@ -175,17 +175,17 @@ function getPlatformInfo(platform: MeetingPlatform) {
       return {
         name: "In Person",
         icon: <Users />,
-        bgClass: "bg-gray-50 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/30",
+        bgClass: "bg-canvas/30",
         textClass: "text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300",
-        borderClass: "border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20",
+        borderClass: "border-line",
       };
     default:
       return {
         name: "Meeting",
         icon: <Video />,
-        bgClass: "bg-gray-50 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/30",
+        bgClass: "bg-canvas/30",
         textClass: "text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300",
-        borderClass: "border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20",
+        borderClass: "border-line",
       };
   }
 }
@@ -217,7 +217,7 @@ function getStatusInfo(status: MeetingStatus) {
       return {
         label: "Completed",
         icon: <CheckCircle2 className="w-3.5 h-3.5" />,
-        bgClass: "bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/40",
+        bgClass: "bg-surface-2/40",
         textClass: "text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300",
       };
     case "cancelled":
@@ -231,7 +231,7 @@ function getStatusInfo(status: MeetingStatus) {
       return {
         label: status,
         icon: <Clock className="w-3.5 h-3.5" />,
-        bgClass: "bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/40",
+        bgClass: "bg-surface-2/40",
         textClass: "text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300",
       };
   }
@@ -499,51 +499,51 @@ export default function TeacherMeetingsPage() {
 
           {/* Stats */}
           <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-          <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 p-4">
+          <div className="bg-surface rounded-xl border border-line p-4">
             <div className="flex items-center gap-3">
               <div className="p-2.5 rounded-lg bg-blue-50 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30">
                 <Calendar className="w-5 h-5 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{upcomingMeetings.length}</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Upcoming</p>
+                <p className="text-2xl font-bold text-ink">{upcomingMeetings.length}</p>
+                <p className="text-xs text-muted">Upcoming</p>
               </div>
             </div>
           </div>
-          <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 p-4">
+          <div className="bg-surface rounded-xl border border-line p-4">
             <div className="flex items-center gap-3">
               <div className="p-2.5 rounded-lg bg-orange-50 dark:bg-orange-900/30">
                 <AlertCircle className="w-5 h-5 text-orange-600 dark:text-orange-400" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                <p className="text-2xl font-bold text-ink">
                   {meetings.filter((m) => m.status === "pending_approval").length}
                 </p>
-                <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Pending Approval</p>
+                <p className="text-xs text-muted">Pending Approval</p>
               </div>
             </div>
           </div>
-          <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 p-4">
+          <div className="bg-surface rounded-xl border border-line p-4">
             <div className="flex items-center gap-3">
               <div className="p-2.5 rounded-lg bg-green-50 dark:bg-green-900/30">
                 <CheckCircle2 className="w-5 h-5 text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                <p className="text-2xl font-bold text-ink">
                   {meetings.filter((m) => m.status === "completed").length}
                 </p>
-                <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Completed</p>
+                <p className="text-xs text-muted">Completed</p>
               </div>
             </div>
           </div>
-          <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 p-4">
+          <div className="bg-surface rounded-xl border border-line p-4">
             <div className="flex items-center gap-3">
               <div className="p-2.5 rounded-lg bg-purple-50 dark:bg-purple-900/30">
                 <Users className="w-5 h-5 text-purple-600 dark:text-purple-400" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{meetings.length}</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Total Meetings</p>
+                <p className="text-2xl font-bold text-ink">{meetings.length}</p>
+                <p className="text-xs text-muted">Total Meetings</p>
               </div>
             </div>
           </div>
@@ -558,14 +558,14 @@ export default function TeacherMeetingsPage() {
               placeholder="Search meetings, parents, students..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-xl text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+              className="w-full pl-10 pr-4 py-2.5 bg-surface border border-line rounded-xl text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
             />
           </div>
 
           <select
             value={selectedPlatform}
             onChange={(e) => setSelectedPlatform(e.target.value as MeetingPlatform | "all")}
-            className="px-4 py-2.5 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-xl text-sm font-medium focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 cursor-pointer"
+            className="px-4 py-2.5 bg-surface border border-line rounded-xl text-sm font-medium focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 cursor-pointer"
           >
             <option value="all">All Platforms</option>
             <option value="educo-meet">Educo Meet</option>
@@ -579,7 +579,7 @@ export default function TeacherMeetingsPage() {
           <select
             value={selectedStatus}
             onChange={(e) => setSelectedStatus(e.target.value as MeetingStatus | "all")}
-            className="px-4 py-2.5 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-xl text-sm font-medium focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 cursor-pointer"
+            className="px-4 py-2.5 bg-surface border border-line rounded-xl text-sm font-medium focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 cursor-pointer"
           >
             <option value="all">All Status</option>
             <option value="scheduled">Scheduled</option>
@@ -593,7 +593,7 @@ export default function TeacherMeetingsPage() {
         {/* Upcoming Meetings */}
         {upcomingMeetings.length > 0 && (
           <div className="space-y-4">
-            <h2 className="text-lg font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 flex items-center gap-2">
+            <h2 className="text-lg font-bold text-ink flex items-center gap-2">
               <Calendar className="w-5 h-5 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
               Upcoming Meetings
               <span className="text-xs font-semibold text-white bg-blue-600 px-2 py-0.5 rounded-full">
@@ -609,7 +609,7 @@ export default function TeacherMeetingsPage() {
                 return (
                   <div
                     key={meeting.id}
-                    className={`group bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-2xl border ${platformInfo.borderClass} shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden`}
+                    className={`group bg-surface rounded-2xl border ${platformInfo.borderClass} shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden`}
                   >
                     <div className="p-5">
                       <div className="flex flex-col lg:flex-row lg:items-center gap-4">
@@ -643,27 +643,27 @@ export default function TeacherMeetingsPage() {
 
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 mb-1">
-                              <h3 className="font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate">{meeting.title}</h3>
+                              <h3 className="font-bold text-ink truncate">{meeting.title}</h3>
                               <span
-                                className={`flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold ${statusInfo.bgClass} ${statusInfo.textClass}`}
+                                className={`flex items-center gap-1 px-2 py-0.5 rounded-md text-[0.625rem] font-bold ${statusInfo.bgClass} ${statusInfo.textClass}`}
                               >
                                 {statusInfo.icon}
                                 {statusInfo.label}
                               </span>
                               {meeting.requestedBy === "parent" && (
-                                <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300">
+                                <span className="px-2 py-0.5 rounded-md text-[0.625rem] font-bold bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300">
                                   Parent Request
                                 </span>
                               )}
                             </div>
                             <p className="text-sm text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 line-clamp-1">{meeting.description}</p>
-                            <div className="flex flex-wrap items-center gap-3 mt-2 text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
+                            <div className="flex flex-wrap items-center gap-3 mt-2 text-xs text-muted">
                               <span className="flex items-center gap-1">
                                 <User className="w-3.5 h-3.5" />
                                 {meeting.parentName}
                               </span>
                               {meeting.childName && (
-                                <span className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] font-medium">
+                                <span className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-surface-2 font-medium">
                                   <GraduationCap className="w-3 h-3" />
                                   {meeting.childName} ({meeting.childClass})
                                 </span>
@@ -675,8 +675,8 @@ export default function TeacherMeetingsPage() {
                         {/* Meeting Time & Actions */}
                         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
                           <div className="text-left sm:text-right">
-                            <p className="text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{formatDate(meeting.scheduledDate)}</p>
-                            <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
+                            <p className="text-sm font-bold text-ink">{formatDate(meeting.scheduledDate)}</p>
+                            <p className="text-xs text-muted">
                               {meeting.scheduledTime} - {meeting.duration} min
                             </p>
                           </div>
@@ -753,8 +753,8 @@ export default function TeacherMeetingsPage() {
                           <div className="flex flex-wrap gap-4">
                             {meeting.meetingId && (
                               <div className="flex items-center gap-2">
-                                <span className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Meeting ID:</span>
-                                <span className="text-xs font-mono font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] px-2 py-1 rounded">
+                                <span className="text-xs text-muted">Meeting ID:</span>
+                                <span className="text-xs font-mono font-bold text-ink bg-surface-2 px-2 py-1 rounded">
                                   {meeting.meetingId}
                                 </span>
                                 <button
@@ -767,8 +767,8 @@ export default function TeacherMeetingsPage() {
                             )}
                             {meeting.passcode && (
                               <div className="flex items-center gap-2">
-                                <span className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Passcode:</span>
-                                <span className="text-xs font-mono font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] px-2 py-1 rounded">
+                                <span className="text-xs text-muted">Passcode:</span>
+                                <span className="text-xs font-mono font-bold text-ink bg-surface-2 px-2 py-1 rounded">
                                   {meeting.passcode}
                                 </span>
                                 <button
@@ -793,7 +793,7 @@ export default function TeacherMeetingsPage() {
         {/* Past Meetings */}
         {pastMeetings.length > 0 && (
           <div className="space-y-4">
-            <h2 className="text-lg font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 flex items-center gap-2">
+            <h2 className="text-lg font-bold text-ink flex items-center gap-2">
               <Clock className="w-5 h-5 text-gray-500" />
               Past Meetings
               <span className="text-xs font-semibold text-gray-600 bg-gray-200 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 px-2 py-0.5 rounded-full">
@@ -809,7 +809,7 @@ export default function TeacherMeetingsPage() {
                 return (
                   <div
                     key={meeting.id}
-                    className="group bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl border border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm hover:shadow-md transition-all duration-200 p-4 opacity-75 hover:opacity-100"
+                    className="group bg-surface rounded-xl border border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm hover:shadow-md transition-all duration-200 p-4 opacity-75 hover:opacity-100"
                   >
                     <div className="flex items-center gap-4">
                       <div className="relative">
@@ -832,19 +832,19 @@ export default function TeacherMeetingsPage() {
                         <div className="flex items-center gap-2">
                           <h3 className="font-semibold text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 text-sm truncate">{meeting.title}</h3>
                           <span
-                            className={`flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-bold ${statusInfo.bgClass} ${statusInfo.textClass}`}
+                            className={`flex items-center gap-1 px-1.5 py-0.5 rounded text-[0.5625rem] font-bold ${statusInfo.bgClass} ${statusInfo.textClass}`}
                           >
                             {statusInfo.icon}
                             {statusInfo.label}
                           </span>
                         </div>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mt-0.5">
+                        <p className="text-xs text-muted mt-0.5">
                           {meeting.parentName} - {meeting.childName} - {formatDate(meeting.scheduledDate)} at {meeting.scheduledTime}
                         </p>
                       </div>
 
                       <div className="flex items-center gap-2">
-                        <span className={`px-2 py-1 rounded-lg text-[10px] font-semibold ${platformInfo.bgClass} ${platformInfo.textClass}`}>
+                        <span className={`px-2 py-1 rounded-lg text-[0.625rem] font-semibold ${platformInfo.bgClass} ${platformInfo.textClass}`}>
                           {platformInfo.name}
                         </span>
                         <button
@@ -869,8 +869,8 @@ export default function TeacherMeetingsPage() {
             <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] flex items-center justify-center">
               <Video className="w-8 h-8 text-gray-400" />
             </div>
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-2">No meetings found</h3>
-            <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mb-4">
+            <h3 className="text-lg font-semibold text-ink mb-2">No meetings found</h3>
+            <p className="text-sm text-muted mb-4">
               {searchQuery || selectedPlatform !== "all" || selectedStatus !== "all"
                 ? "Try adjusting your filters"
                 : "You don't have any meetings scheduled yet"}

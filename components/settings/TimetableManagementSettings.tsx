@@ -135,11 +135,11 @@ export default function TimetableManagementSettings() {
       </div>
 
       {/* Timetable Configuration */}
-      <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
-        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+      <div className="bg-surface rounded-xl border border-line">
+        <div className="px-6 py-4 border-b border-line">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-base font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+              <h3 className="text-base font-semibold text-ink">
                 Calendar Configuration
               </h3>
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
@@ -264,11 +264,11 @@ export default function TimetableManagementSettings() {
       </div>
 
       {/* Custom Events Management */}
-      <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
-        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+      <div className="bg-surface rounded-xl border border-line">
+        <div className="px-6 py-4 border-b border-line">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-base font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+              <h3 className="text-base font-semibold text-ink">
                 Custom Events
               </h3>
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">

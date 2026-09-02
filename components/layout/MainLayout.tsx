@@ -43,7 +43,7 @@ export default function MainLayout({ children, immersive = false }: MainLayoutPr
 
   return (
     <div
-      className="flex h-screen print:h-auto bg-gray-50 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] transition-colors duration-300 print:bg-white"
+      className="flex h-screen print:h-auto bg-canvas transition-colors duration-300 print:bg-white"
       style={{ '--sidebar-width': sidebarWidth } as React.CSSProperties}
     >
       {/* Sidebar — hidden in print */}
@@ -78,7 +78,7 @@ export default function MainLayout({ children, immersive = false }: MainLayoutPr
             onClick={() => setTopBarShown((v) => !v)}
             aria-label={topBarShown ? "Hide top bar" : "Show top bar"}
             title={topBarShown ? "Hide top bar" : "Show top bar"}
-            className="print:hidden fixed top-0 left-1/2 -translate-x-1/2 z-[60] inline-flex items-center gap-1 h-5 px-3 rounded-b-lg bg-gray-900/70 hover:bg-gray-900/90 text-white/80 text-[10px] font-medium backdrop-blur-sm shadow-md transition-colors cursor-pointer"
+            className="print:hidden fixed top-0 left-1/2 -translate-x-1/2 z-[60] inline-flex items-center gap-1 h-5 px-3 rounded-b-lg bg-gray-900/70 hover:bg-gray-900/90 text-white/80 text-[0.625rem] font-medium backdrop-blur-sm shadow-md transition-colors cursor-pointer"
           >
             {topBarShown ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
           </button>

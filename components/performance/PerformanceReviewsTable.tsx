@@ -74,7 +74,7 @@ export default function PerformanceReviewsTable({
       render: (review) => {
         return (
           <Tooltip content={`Review ID: ${review.id}`}>
-            <div className="font-semibold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 whitespace-nowrap truncate max-w-[100px]" style={{ fontSize: '11.8px' }}>
+            <div className="font-semibold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 whitespace-nowrap truncate max-w-[100px]" style={{ fontSize: '0.7375rem' }}>
               {review.id}
             </div>
           </Tooltip>
@@ -101,17 +101,17 @@ export default function PerformanceReviewsTable({
                   />
                 ) : (
                   <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold shadow-lg ring-2 ring-white/80 dark:ring-gray-700/50 midnight:ring-cyan-500/30 purple:ring-pink-500/30 transition-all duration-500 ease-out group-hover/avatar:scale-150 group-hover/avatar:shadow-2xl group-hover/avatar:ring-blue-500/90 dark:group-hover/avatar:ring-blue-400/90 midnight:group-hover/avatar:ring-cyan-400/90 purple:group-hover/avatar:ring-pink-400/90 group-hover/avatar:z-[100]"
-                    style={{ position: 'relative', transformOrigin: 'center center', fontSize: '11.8px' }}>
+                    style={{ position: 'relative', transformOrigin: 'center center', fontSize: '0.7375rem' }}>
                     {review.staffName.charAt(0)}
                   </div>
                 )}
                 <div className="absolute -inset-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 rounded-full opacity-0 group-hover/avatar:opacity-40 blur-md transition-all duration-500 ease-out pointer-events-none -z-10" />
               </div>
               <div>
-                <div className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate max-w-[140px]" style={{ fontSize: '11.8px' }}>
+                <div className="font-semibold text-ink truncate max-w-[140px]" style={{ fontSize: '0.7375rem' }}>
                   {review.staffName}
                 </div>
-                <div className="text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70 truncate max-w-[140px]" style={{ fontSize: '10px' }}>
+                <div className="text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70 truncate max-w-[140px]" style={{ fontSize: '0.625rem' }}>
                   {review.staffPosition}
                 </div>
               </div>
@@ -133,10 +133,10 @@ export default function PerformanceReviewsTable({
         return (
           <Tooltip content={periodLabel}>
             <div className="flex flex-col">
-              <div className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 whitespace-nowrap" style={{ fontSize: '11.8px' }}>
+              <div className="font-semibold text-ink whitespace-nowrap" style={{ fontSize: '0.7375rem' }}>
                 {review.reviewPeriod.charAt(0).toUpperCase() + review.reviewPeriod.slice(1)}
               </div>
-              <div className="text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70" style={{ fontSize: '10px' }}>
+              <div className="text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70" style={{ fontSize: '0.625rem' }}>
                 {review.reviewQuarter || review.reviewYear}
               </div>
             </div>
@@ -153,10 +153,10 @@ export default function PerformanceReviewsTable({
         return (
           <Tooltip content={`Score: ${review.averageScore.toFixed(1)}/5`}>
             <div className="flex flex-col">
-              <div className={`font-semibold whitespace-nowrap ${getRatingColor(review.overallRating)}`} style={{ fontSize: '11.8px' }}>
+              <div className={`font-semibold whitespace-nowrap ${getRatingColor(review.overallRating)}`} style={{ fontSize: '0.7375rem' }}>
                 {getRatingLabel(review.overallRating)}
               </div>
-              <div className="text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70" style={{ fontSize: '10px' }}>
+              <div className="text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70" style={{ fontSize: '0.625rem' }}>
                 Score: {review.averageScore.toFixed(1)}/5
               </div>
             </div>
@@ -181,10 +181,10 @@ export default function PerformanceReviewsTable({
         return (
           <Tooltip content={`Due: ${formatDate(review.reviewDueDate)}`}>
             <div className="flex flex-col">
-              <div className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 whitespace-nowrap" style={{ fontSize: '11.8px' }}>
+              <div className="font-semibold text-ink whitespace-nowrap" style={{ fontSize: '0.7375rem' }}>
                 {formatDate(review.reviewDate)}
               </div>
-              <div className="text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70" style={{ fontSize: '10px' }}>
+              <div className="text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70" style={{ fontSize: '0.625rem' }}>
                 Due: {formatDate(review.reviewDueDate)}
               </div>
             </div>
@@ -245,7 +245,7 @@ export default function PerformanceReviewsTable({
   ];
 
   return (
-    <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm overflow-hidden">
+    <div className="bg-surface rounded-xl border border-line shadow-sm overflow-hidden">
       <ResponsiveListTable<PerformanceReview> variant="contained" showColumnHeaders={true}
         data={reviews}
         columns={columns}

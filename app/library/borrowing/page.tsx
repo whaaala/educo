@@ -393,7 +393,7 @@ export default function BorrowingPage() {
         label: "Returned",
       },
       lost: {
-        bg: "bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]",
+        bg: "bg-surface-2",
         text: "text-gray-700 dark:text-gray-300 midnight:text-gray-300 purple:text-gray-300",
         border: "border-gray-200 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30",
         icon: <AlertCircle className="w-3 h-3" />,
@@ -403,7 +403,7 @@ export default function BorrowingPage() {
 
     const config = statusConfig[status];
     return (
-      <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full font-semibold border ${config.bg} ${config.text} ${config.border}`} style={{ fontSize: '11.8px' }}>
+      <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full font-semibold border ${config.bg} ${config.text} ${config.border}`} style={{ fontSize: '0.7375rem' }}>
         {config.icon}
         {config.label}
       </span>
@@ -432,7 +432,7 @@ export default function BorrowingPage() {
 
     const config = typeConfig[type];
     return (
-      <span className={`inline-flex items-center px-2 py-0.5 rounded-full font-semibold border capitalize ${config.bg} ${config.text} ${config.border}`} style={{ fontSize: '10px' }}>
+      <span className={`inline-flex items-center px-2 py-0.5 rounded-full font-semibold border capitalize ${config.bg} ${config.text} ${config.border}`} style={{ fontSize: '0.625rem' }}>
         {type}
       </span>
     );
@@ -449,21 +449,21 @@ export default function BorrowingPage() {
 
     if (diffDays < 0) {
       return (
-        <span className="text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400 font-medium" style={{ fontSize: '10px' }}>
+        <span className="text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400 font-medium" style={{ fontSize: '0.625rem' }}>
           {Math.abs(diffDays)} days overdue
         </span>
       );
     } else if (diffDays === 0) {
-      return <span className="text-yellow-600 dark:text-yellow-400 font-medium" style={{ fontSize: '10px' }}>Due today</span>;
+      return <span className="text-yellow-600 dark:text-yellow-400 font-medium" style={{ fontSize: '0.625rem' }}>Due today</span>;
     } else if (diffDays <= 3) {
       return (
-        <span className="text-yellow-600 dark:text-yellow-400 font-medium" style={{ fontSize: '10px' }}>
+        <span className="text-yellow-600 dark:text-yellow-400 font-medium" style={{ fontSize: '0.625rem' }}>
           {diffDays} days left
         </span>
       );
     }
     return (
-      <span className="text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300" style={{ fontSize: '10px' }}>
+      <span className="text-muted" style={{ fontSize: '0.625rem' }}>
         {diffDays} days left
       </span>
     );
@@ -476,7 +476,7 @@ export default function BorrowingPage() {
       label: "Loan #",
       sortable: true,
       render: (loan) => (
-        <span className="font-mono text-gray-700 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100" style={{ fontSize: '11.8px' }}>{loan.loanNumber}</span>
+        <span className="font-mono text-gray-700 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100" style={{ fontSize: '0.7375rem' }}>{loan.loanNumber}</span>
       ),
     },
     {
@@ -486,10 +486,10 @@ export default function BorrowingPage() {
       className: "text-left",
       render: (loan) => (
         <div>
-          <div className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50" style={{ fontSize: "11.8px" }}>
+          <div className="font-semibold text-ink" style={{ fontSize: "0.7375rem" }}>
             {loan.bookTitle}
           </div>
-          <div className="text-gray-500 dark:text-gray-400 midnight:text-cyan-400/60 purple:text-pink-400/60 font-mono" style={{ fontSize: "10px" }}>
+          <div className="text-gray-500 dark:text-gray-400 midnight:text-cyan-400/60 purple:text-pink-400/60 font-mono" style={{ fontSize: "0.625rem" }}>
             {loan.bookIsbn}
           </div>
         </div>
@@ -527,7 +527,7 @@ export default function BorrowingPage() {
             />
           </div>
           <div>
-            <div className="font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50" style={{ fontSize: '11.8px' }}>{loan.memberName}</div>
+            <div className="font-medium text-ink" style={{ fontSize: '0.7375rem' }}>{loan.memberName}</div>
             {getMemberTypeBadge(loan.memberType)}
           </div>
         </div>
@@ -538,7 +538,7 @@ export default function BorrowingPage() {
       label: "Borrow Date",
       sortable: true,
       render: (loan) => (
-        <span className="text-gray-600 dark:text-gray-400 midnight:text-gray-400 purple:text-gray-400" style={{ fontSize: '11.8px' }}>
+        <span className="text-gray-600 dark:text-gray-400 midnight:text-gray-400 purple:text-gray-400" style={{ fontSize: '0.7375rem' }}>
           {new Date(loan.borrowDate).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
         </span>
       ),
@@ -549,7 +549,7 @@ export default function BorrowingPage() {
       sortable: true,
       render: (loan) => (
         <div>
-          <div className="text-gray-700 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100" style={{ fontSize: '11.8px' }}>
+          <div className="text-gray-700 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100" style={{ fontSize: '0.7375rem' }}>
             {new Date(loan.dueDate).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
           </div>
           {getDaysStatus(loan.dueDate, loan.status)}
@@ -568,11 +568,11 @@ export default function BorrowingPage() {
       sortable: true,
       render: (loan) =>
         loan.fineAmount > 0 ? (
-          <span className={`font-semibold ${loan.finePaid ? "text-gray-500 line-through" : "text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400"}`} style={{ fontSize: '11.8px' }}>
+          <span className={`font-semibold ${loan.finePaid ? "text-gray-500 line-through" : "text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400"}`} style={{ fontSize: '0.7375rem' }}>
             {formatCurrency(loan.fineAmount, countryCode)}
           </span>
         ) : (
-          <span className="text-gray-400" style={{ fontSize: '11.8px' }}>-</span>
+          <span className="text-gray-400" style={{ fontSize: '0.7375rem' }}>-</span>
         ),
     },
     {

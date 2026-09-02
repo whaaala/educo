@@ -46,10 +46,10 @@ export default function FamilyMemberCard({
             </div>
           )}
           <div className="flex flex-col flex-1 min-w-0">
-            <span className="text-xs sm:text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 leading-tight truncate">
+            <span className="text-xs sm:text-sm font-bold text-ink leading-tight truncate">
               {name}
             </span>
-            <span className="text-[10px] sm:text-xs font-medium text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 leading-tight mt-0.5">
+            <span className="text-[0.625rem] sm:text-xs font-medium text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 leading-tight mt-0.5">
               {relationship}
             </span>
           </div>
@@ -69,11 +69,11 @@ export default function FamilyMemberCard({
               <div className="w-4 h-4 sm:w-6 sm:h-6 rounded-lg bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-900/40 dark:to-blue-900/20 midnight:from-blue-900/40 midnight:to-blue-900/20 purple:from-blue-900/40 purple:to-blue-900/20 flex items-center justify-center flex-shrink-0 group-hover/phone:from-blue-200 group-hover/phone:to-blue-300 dark:group-hover/phone:from-blue-900/60 dark:group-hover/phone:to-blue-900/40 transition-all duration-300 group-hover/phone:scale-110 shadow-sm">
                 <Phone className="w-2 h-2 sm:w-3 sm:h-3 text-blue-600 dark:text-blue-400 midnight:text-blue-400 purple:text-blue-400 transition-transform duration-300 group-hover/phone:scale-110" />
               </div>
-              <span className="text-[10px] sm:text-xs font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-300/80 purple:text-pink-300/80">
+              <span className="text-[0.625rem] sm:text-xs font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-300/80 purple:text-pink-300/80">
                 Phone
               </span>
             </div>
-            <span className="text-[10px] sm:text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 break-words leading-tight group-hover/phone:text-blue-600 dark:group-hover/phone:text-blue-400 midnight:group-hover/phone:text-cyan-400 purple:group-hover/phone:text-pink-400 transition-colors duration-300">
+            <span className="text-[0.625rem] sm:text-sm font-semibold text-ink break-words leading-tight group-hover/phone:text-blue-600 dark:group-hover/phone:text-blue-400 midnight:group-hover/phone:text-cyan-400 purple:group-hover/phone:text-pink-400 transition-colors duration-300">
               {phone}
             </span>
           </a>
@@ -87,12 +87,12 @@ export default function FamilyMemberCard({
               <div className="w-4 h-4 sm:w-6 sm:h-6 rounded-lg bg-gradient-to-br from-purple-100 to-purple-200 dark:from-purple-900/40 dark:to-purple-900/20 midnight:from-purple-900/40 midnight:to-purple-900/20 purple:from-purple-900/40 purple:to-purple-900/20 flex items-center justify-center flex-shrink-0 group-hover/email:from-purple-200 group-hover/email:to-purple-300 dark:group-hover/email:from-purple-900/60 dark:group-hover/email:to-purple-900/40 transition-all duration-300 group-hover/email:scale-110 shadow-sm">
                 <Mail className="w-2 h-2 sm:w-3 sm:h-3 text-purple-600 dark:text-purple-400 midnight:text-purple-400 purple:text-purple-400 transition-transform duration-300 group-hover/email:scale-110" />
               </div>
-              <span className="text-[10px] sm:text-xs font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-300/80 purple:text-pink-300/80">
+              <span className="text-[0.625rem] sm:text-xs font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-300/80 purple:text-pink-300/80">
                 Email
               </span>
             </div>
             <Tooltip content={email}>
-              <span className="text-[10px] sm:text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate leading-tight group-hover/email:text-purple-600 dark:group-hover/email:text-purple-400 midnight:group-hover/email:text-purple-400 purple:group-hover/email:text-pink-400 transition-colors duration-300 block">
+              <span className="text-[0.625rem] sm:text-sm font-semibold text-ink truncate leading-tight group-hover/email:text-purple-600 dark:group-hover/email:text-purple-400 midnight:group-hover/email:text-purple-400 purple:group-hover/email:text-pink-400 transition-colors duration-300 block">
                 {email}
               </span>
             </Tooltip>
@@ -122,10 +122,10 @@ export default function FamilyMemberCard({
             </div>
           )}
           <div className="flex flex-col min-w-0 flex-1">
-            <span className="text-xs lg:text-sm xl:text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 leading-tight truncate">
+            <span className="text-xs lg:text-sm xl:text-sm font-bold text-ink leading-tight truncate">
               {name}
             </span>
-            <span className="text-[10px] lg:text-xs xl:text-xs font-medium text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 leading-tight mt-0.5">
+            <span className="text-[0.625rem] lg:text-xs xl:text-xs font-medium text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 leading-tight mt-0.5">
               {relationship}
             </span>
           </div>
@@ -141,11 +141,11 @@ export default function FamilyMemberCard({
               <div className="w-5 h-5 lg:w-6 lg:h-6 rounded-lg bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-900/40 dark:to-blue-900/20 midnight:from-blue-900/40 midnight:to-blue-900/20 purple:from-blue-900/40 purple:to-blue-900/20 flex items-center justify-center flex-shrink-0 group-hover/phone:from-blue-200 group-hover/phone:to-blue-300 dark:group-hover/phone:from-blue-900/60 dark:group-hover/phone:to-blue-900/40 transition-all duration-300 group-hover/phone:scale-110 shadow-sm">
                 <Phone className="w-2.5 h-2.5 lg:w-3 lg:h-3 text-blue-600 dark:text-blue-400 midnight:text-blue-400 purple:text-blue-400 transition-transform duration-300 group-hover/phone:scale-110" />
               </div>
-              <span className="text-[10px] lg:text-xs xl:text-xs font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-300/80 purple:text-pink-300/80">
+              <span className="text-[0.625rem] lg:text-xs xl:text-xs font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-300/80 purple:text-pink-300/80">
                 Phone
               </span>
             </div>
-            <span className="text-xs lg:text-sm xl:text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 break-words leading-tight group-hover/phone:text-blue-600 dark:group-hover/phone:text-blue-400 midnight:group-hover/phone:text-cyan-400 purple:group-hover/phone:text-pink-400 transition-colors duration-300">
+            <span className="text-xs lg:text-sm xl:text-sm font-semibold text-ink break-words leading-tight group-hover/phone:text-blue-600 dark:group-hover/phone:text-blue-400 midnight:group-hover/phone:text-cyan-400 purple:group-hover/phone:text-pink-400 transition-colors duration-300">
               {phone}
             </span>
           </a>
@@ -161,12 +161,12 @@ export default function FamilyMemberCard({
               <div className="w-5 h-5 lg:w-6 lg:h-6 rounded-lg bg-gradient-to-br from-purple-100 to-purple-200 dark:from-purple-900/40 dark:to-purple-900/20 midnight:from-purple-900/40 midnight:to-purple-900/20 purple:from-purple-900/40 purple:to-purple-900/20 flex items-center justify-center flex-shrink-0 group-hover/email:from-purple-200 group-hover/email:to-purple-300 dark:group-hover/email:from-purple-900/60 dark:group-hover/email:to-purple-900/40 transition-all duration-300 group-hover/email:scale-110 shadow-sm">
                 <Mail className="w-2.5 h-2.5 lg:w-3 lg:h-3 text-purple-600 dark:text-purple-400 midnight:text-purple-400 purple:text-purple-400 transition-transform duration-300 group-hover/email:scale-110" />
               </div>
-              <span className="text-[10px] lg:text-xs xl:text-xs font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-300/80 purple:text-pink-300/80">
+              <span className="text-[0.625rem] lg:text-xs xl:text-xs font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-300/80 purple:text-pink-300/80">
                 Email
               </span>
             </div>
             <Tooltip content={email}>
-              <span className="text-xs lg:text-sm xl:text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate leading-tight group-hover/email:text-purple-600 dark:group-hover/email:text-purple-400 midnight:group-hover/email:text-purple-400 purple:group-hover/email:text-pink-400 transition-colors duration-300 block">
+              <span className="text-xs lg:text-sm xl:text-sm font-semibold text-ink truncate leading-tight group-hover/email:text-purple-600 dark:group-hover/email:text-purple-400 midnight:group-hover/email:text-purple-400 purple:group-hover/email:text-pink-400 transition-colors duration-300 block">
                 {email}
               </span>
             </Tooltip>

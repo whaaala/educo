@@ -107,10 +107,10 @@ export default function StaffTransferTable({
         return (
           <Tooltip content={`Transfer ID: ${request.id}`}>
             <div className="flex flex-col">
-              <div className="font-semibold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 whitespace-nowrap" style={{ fontSize: '11.8px' }}>
+              <div className="font-semibold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 whitespace-nowrap" style={{ fontSize: '0.7375rem' }}>
                 {request.id}
               </div>
-              <div className="text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70" style={{ fontSize: '10px' }}>
+              <div className="text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70" style={{ fontSize: '0.625rem' }}>
                 {formatDate(request.requestedAt)}
               </div>
             </div>
@@ -135,7 +135,7 @@ export default function StaffTransferTable({
                   className="w-9 h-9 rounded-full ring-2 ring-gray-200 dark:ring-gray-700 midnight:ring-cyan-500/20 purple:ring-pink-500/20 object-cover flex-shrink-0"
                 />
               ) : (
-                <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold shadow-sm ring-2 ring-blue-200 dark:ring-blue-900/30 flex-shrink-0" style={{ fontSize: '11.8px' }}>
+                <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold shadow-sm ring-2 ring-blue-200 dark:ring-blue-900/30 flex-shrink-0" style={{ fontSize: '0.7375rem' }}>
                   {request.staffName
                     .split(" ")
                     .map((n) => n[0])
@@ -143,10 +143,10 @@ export default function StaffTransferTable({
                 </div>
               )}
               <div>
-                <div className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate max-w-[140px]" style={{ fontSize: '11.8px' }}>
+                <div className="font-semibold text-ink truncate max-w-[140px]" style={{ fontSize: '0.7375rem' }}>
                   {request.staffName}
                 </div>
-                <div className="text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70 truncate max-w-[140px]" style={{ fontSize: '10px' }}>
+                <div className="text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70 truncate max-w-[140px]" style={{ fontSize: '0.625rem' }}>
                   {request.currentDesignation}
                 </div>
               </div>
@@ -173,10 +173,10 @@ export default function StaffTransferTable({
         return (
           <Tooltip content={reason}>
             <div className="flex flex-col max-w-[200px]">
-              <div className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate" style={{ fontSize: '11.8px' }}>
+              <div className="font-semibold text-ink truncate" style={{ fontSize: '0.7375rem' }}>
                 {details}
               </div>
-              <div className="text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70 truncate" style={{ fontSize: '10px' }}>
+              <div className="text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70 truncate" style={{ fontSize: '0.625rem' }}>
                 {reason}
               </div>
             </div>
@@ -193,7 +193,7 @@ export default function StaffTransferTable({
       render: (request) => {
         return (
           <Tooltip content={`Effective: ${formatDate(request.effectiveDate)}`}>
-            <div className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 whitespace-nowrap" style={{ fontSize: '11.8px' }}>
+            <div className="font-semibold text-ink whitespace-nowrap" style={{ fontSize: '0.7375rem' }}>
               {formatDate(request.effectiveDate)}
             </div>
           </Tooltip>

@@ -525,7 +525,7 @@ export default function MessagesPageContent({
               <p
                 className={`text-xs sm:text-sm truncate leading-tight ${
                   !msg.isRead && msg.type === "received"
-                    ? "font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50"
+                    ? "font-semibold text-ink"
                     : "font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200"
                 }`}
               >
@@ -533,7 +533,7 @@ export default function MessagesPageContent({
               </p>
             </Tooltip>
             <Tooltip content={msg.recipientName} block>
-              <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 truncate leading-tight">
+              <p className="text-[0.625rem] sm:text-xs text-muted truncate leading-tight">
                 <span className="text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400">→</span> {msg.recipientName}
               </p>
             </Tooltip>
@@ -557,7 +557,7 @@ export default function MessagesPageContent({
               <p
                 className={`text-xs sm:text-sm truncate leading-tight ${
                   !msg.isRead && msg.type === "received"
-                    ? "font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50"
+                    ? "font-semibold text-ink"
                     : "text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200"
                 }`}
               >
@@ -566,7 +566,7 @@ export default function MessagesPageContent({
             </Tooltip>
           </div>
           <Tooltip content={msg.preview} block>
-            <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 truncate mt-0.5 leading-tight">
+            <p className="text-[0.625rem] sm:text-xs text-muted truncate mt-0.5 leading-tight">
               {msg.preview}
             </p>
           </Tooltip>
@@ -607,7 +607,7 @@ export default function MessagesPageContent({
       className: "min-w-[80px] md:min-w-[130px] text-right pr-2",
       render: (msg) => (
         <div className="flex items-center justify-end gap-0.5">
-          <span className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mr-1 sm:mr-1.5 whitespace-nowrap">
+          <span className="text-[0.625rem] sm:text-xs text-muted mr-1 sm:mr-1.5 whitespace-nowrap">
             {formatMessageTime(msg.timestamp)}
           </span>
           <div className="hidden sm:flex items-center gap-0.5">
@@ -617,7 +617,7 @@ export default function MessagesPageContent({
                 onClick={() => handleCardView(msg)}
                 className="p-1 rounded-md hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer"
               >
-                <Eye className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300" />
+                <Eye className="w-3.5 h-3.5 text-muted" />
               </button>
             </Tooltip>
             <Tooltip content="Reply">
@@ -645,7 +645,7 @@ export default function MessagesPageContent({
               onClick={() => handleCardView(msg)}
               className="p-1 rounded-md hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer"
             >
-              <Eye className="w-4 h-4 text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300" />
+              <Eye className="w-4 h-4 text-muted" />
             </button>
           </div>
         </div>
@@ -724,7 +724,7 @@ export default function MessagesPageContent({
                     />
                   ) : (
                     <div className="w-5 h-5 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center">
-                      <span className="text-[8px] font-bold text-white">
+                      <span className="text-[0.5rem] font-bold text-white">
                         {selectedRecipient.firstName.charAt(0)}
                         {selectedRecipient.lastName.charAt(0)}
                       </span>
@@ -746,7 +746,7 @@ export default function MessagesPageContent({
               </div>
             )}
 
-            <div className="flex items-center px-3 lg:px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]">
+            <div className="flex items-center px-3 lg:px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-surface">
               <span className="text-xs lg:text-sm text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 whitespace-nowrap">
                 {filteredMessages.length} messages
               </span>
@@ -802,7 +802,7 @@ export default function MessagesPageContent({
                   <h3 className="text-base font-semibold text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 mb-1">
                     No messages found
                   </h3>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
+                  <p className="text-sm text-muted">
                     {hasActiveFilters
                       ? "No results match the current filters. Try adjusting your filters."
                       : "No messages available"}
@@ -867,7 +867,7 @@ export default function MessagesPageContent({
                   <h3 className="text-base font-semibold text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 mb-1">
                     No messages found
                   </h3>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
+                  <p className="text-sm text-muted">
                     {hasActiveFilters
                       ? "No results match the current filters. Try adjusting your filters."
                       : "No messages available"}

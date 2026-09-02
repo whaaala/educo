@@ -115,7 +115,7 @@ export default function ViewStaffPage() {
           <div className="mb-6">
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
             <div>
-              <h1 className="text-xl lg:text-2xl font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-1">
+              <h1 className="text-xl lg:text-2xl font-bold text-ink mb-1">
                 Staff Details
               </h1>
               <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70 flex-wrap">
@@ -318,7 +318,7 @@ function StaffTabs({
                     ? "text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400"
                     : "text-gray-600 dark:text-gray-500 midnight:text-cyan-300/70 purple:text-pink-300/70 group-hover:scale-110 group-hover:rotate-6"
                 }`} />
-                <span className={`relative text-[11.75px] sm:text-xs font-semibold transition-all duration-300 ${
+                <span className={`relative text-[0.7344rem] sm:text-xs font-semibold transition-all duration-300 ${
                   isActive ? "tracking-wide" : "group-hover:tracking-wide"
                 }`}>
                   {tab.label}
@@ -357,7 +357,7 @@ function StaffDetailsTab({
       {/* Subjects & Classes */}
       <div className="group bg-gradient-to-br from-white to-gray-50/30 dark:from-gray-800 dark:to-gray-800/50 midnight:from-gray-800 midnight:to-gray-900/50 purple:from-gray-800 purple:to-gray-900/50 rounded-xl sm:rounded-2xl shadow-sm border border-gray-200/60 dark:border-gray-700/60 midnight:border-cyan-500/30 purple:border-pink-500/30 pt-2 px-3 sm:px-4 pb-4 sm:pb-5 transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/10 dark:hover:shadow-blue-500/20 midnight:hover:shadow-cyan-500/20 purple:hover:shadow-pink-500/20 hover:border-blue-300/60 dark:hover:border-blue-600/60 midnight:hover:border-cyan-400/60 purple:hover:border-pink-400/60 hover:-translate-y-0.5">
         {/* Header */}
-        <h3 className="text-sm sm:text-base font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-1 flex items-center gap-2">
+        <h3 className="text-sm sm:text-base font-bold text-ink mb-1 flex items-center gap-2">
           <BookOpen className="w-4 h-4 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
           Teaching Assignment
         </h3>
@@ -427,7 +427,7 @@ function StaffDetailsTab({
         {/* Address Card */}
         <div className="group bg-gradient-to-br from-white to-gray-50/30 dark:from-gray-800 dark:to-gray-800/50 midnight:from-gray-800 midnight:to-gray-900/50 purple:from-gray-800 purple:to-gray-900/50 rounded-xl sm:rounded-2xl shadow-sm border border-gray-200/60 dark:border-gray-700/60 midnight:border-cyan-500/30 purple:border-pink-500/30 pt-2 px-3 sm:px-4 pb-2 sm:pb-3 transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/10 dark:hover:shadow-blue-500/20 midnight:hover:shadow-cyan-500/20 purple:hover:shadow-pink-500/20 hover:border-blue-300/60 dark:hover:border-blue-600/60 midnight:hover:border-cyan-400/60 purple:hover:border-pink-400/60 hover:-translate-y-0.5">
           {/* Header */}
-          <h3 className="text-sm sm:text-base font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-1">
+          <h3 className="text-sm sm:text-base font-bold text-ink mb-1">
             Address
           </h3>
 
@@ -638,7 +638,7 @@ function AttendanceTab({ staffData }: { staffData: Teacher }) {
   return (
     <div className="space-y-4 sm:space-y-5 lg:space-y-6">
       {/* Main Content Card */}
-      <div className="bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-xl sm:rounded-2xl shadow-sm border border-gray-200/40 dark:border-[#1a1d24]/40 midnight:border-cyan-500/20 purple:border-pink-500/20 overflow-hidden">
+      <div className="bg-surface rounded-xl sm:rounded-2xl shadow-sm border border-gray-200/40 dark:border-[#1a1d24]/40 midnight:border-cyan-500/20 purple:border-pink-500/20 overflow-hidden">
         {/* Header with Tabs */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 p-2 sm:p-3 border-b border-gray-200/40 dark:border-[#1a1d24]/40 midnight:border-cyan-500/20 purple:border-pink-500/20">
           {/* Sub Tabs */}
@@ -706,7 +706,7 @@ function AttendanceTab({ staffData }: { staffData: Teacher }) {
               <div className="space-y-3 sm:space-y-4">
                 {/* Header with Apply Leave Button */}
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                  <h3 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                  <h3 className="text-base sm:text-lg font-bold text-ink">
                     Leave Applications
                   </h3>
                   <AddButton
@@ -844,7 +844,7 @@ function PayrollTab({ staffData }: { staffData: Teacher }) {
   ];
 
   return (
-    <div className="bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-2xl shadow-sm border border-gray-200/40 dark:border-[#1a1d24]/40 midnight:border-cyan-500/20 purple:border-pink-500/20 p-6 lg:p-8">
+    <div className="bg-surface rounded-2xl shadow-sm border border-gray-200/40 dark:border-[#1a1d24]/40 midnight:border-cyan-500/20 purple:border-pink-500/20 p-6 lg:p-8">
       <div className="space-y-4 sm:space-y-5 lg:space-y-6">
         {/* Payroll Summary Section */}
         <PayrollSummaryCard

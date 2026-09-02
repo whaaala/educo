@@ -235,11 +235,11 @@ export default function FeesTable({ records = MOCK_RECORDS }: FeesTableProps) {
 
   if (filteredRecords.length === 0) {
     return (
-      <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl p-8 sm:p-12 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm text-center animate-in fade-in duration-300">
+      <div className="bg-surface rounded-xl p-8 sm:p-12 border border-line shadow-sm text-center animate-in fade-in duration-300">
         <div className="text-gray-400 dark:text-gray-500 mb-4">
           <DollarSign className="mx-auto h-12 w-12" />
         </div>
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-2">
+        <h3 className="text-lg font-semibold text-ink mb-2">
           No Fee Records
         </h3>
         <p className="text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70">
@@ -253,7 +253,7 @@ export default function FeesTable({ records = MOCK_RECORDS }: FeesTableProps) {
     <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
       {/* Header with Search */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <h3 className="text-lg font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+        <h3 className="text-lg font-bold text-ink">
           Records
         </h3>
         <div className="relative w-full sm:w-64">
@@ -263,7 +263,7 @@ export default function FeesTable({ records = MOCK_RECORDS }: FeesTableProps) {
             placeholder="Search..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 rounded-xl border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] text-sm text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 focus:border-blue-500 dark:focus:border-blue-400 transition-all duration-200"
+            className="w-full pl-10 pr-4 py-2 rounded-xl border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-surface text-sm text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 focus:border-blue-500 dark:focus:border-blue-400 transition-all duration-200"
           />
         </div>
       </div>
@@ -274,12 +274,12 @@ export default function FeesTable({ records = MOCK_RECORDS }: FeesTableProps) {
           {filteredRecords.map((record, index) => (
             <div
               key={record.id}
-              className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl p-4 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm hover:shadow-md transition-all duration-200 animate-in slide-in-from-right duration-300"
+              className="bg-surface rounded-xl p-4 border border-line shadow-sm hover:shadow-md transition-all duration-200 animate-in slide-in-from-right duration-300"
               style={{ animationDelay: `${index * 50}ms` }}
             >
               {/* Fee Details */}
               <div className="mb-3">
-                <h4 className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-1">
+                <h4 className="text-sm font-semibold text-ink mb-1">
                   {record.feeDetails}
                 </h4>
                 <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70">
@@ -296,7 +296,7 @@ export default function FeesTable({ records = MOCK_RECORDS }: FeesTableProps) {
                   <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70 mb-1">
                     Amount
                   </p>
-                  <p className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                  <p className="font-semibold text-ink">
                     ₦{record.amount.toLocaleString()}
                   </p>
                 </div>
@@ -304,7 +304,7 @@ export default function FeesTable({ records = MOCK_RECORDS }: FeesTableProps) {
                   <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70 mb-1">
                     Due Date
                   </p>
-                  <div className="flex items-center gap-1 text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                  <div className="flex items-center gap-1 text-ink">
                     <Calendar className="w-3.5 h-3.5 text-gray-400" />
                     <span className="text-xs">{record.dueDate}</span>
                   </div>
@@ -320,7 +320,7 @@ export default function FeesTable({ records = MOCK_RECORDS }: FeesTableProps) {
                   <p className="text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70 mb-0.5">
                     Payment Date
                   </p>
-                  <p className="text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 font-medium">
+                  <p className="text-ink font-medium">
                     {record.paymentDate}
                   </p>
                 </div>
@@ -328,7 +328,7 @@ export default function FeesTable({ records = MOCK_RECORDS }: FeesTableProps) {
                   <p className="text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70 mb-0.5">
                     Method
                   </p>
-                  <p className="text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 font-medium">
+                  <p className="text-ink font-medium">
                     {record.methodOfPayment}
                   </p>
                 </div>
@@ -342,7 +342,7 @@ export default function FeesTable({ records = MOCK_RECORDS }: FeesTableProps) {
       <div className="hidden lg:block">
         <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-transparent hover:scrollbar-thumb-gray-400 dark:hover:scrollbar-thumb-gray-500 transition-colors duration-200">
           <div className="inline-block min-w-full align-middle">
-            <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm overflow-hidden">
+            <div className="bg-surface rounded-xl border border-line shadow-sm overflow-hidden">
               <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 midnight:divide-cyan-500/10 purple:divide-pink-500/10">
                 <thead className="bg-gradient-to-r from-gray-50 to-gray-100/50 dark:from-gray-700 dark:to-gray-700/50 midnight:from-gray-800 midnight:to-gray-800/50 purple:from-gray-800 purple:to-gray-800/50">
                   <tr>
@@ -369,7 +369,7 @@ export default function FeesTable({ records = MOCK_RECORDS }: FeesTableProps) {
                     </th>
                   </tr>
                 </thead>
-                <tbody className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] divide-y divide-gray-200 dark:divide-gray-700 midnight:divide-cyan-500/10 purple:divide-pink-500/10">
+                <tbody className="bg-surface divide-y divide-gray-200 dark:divide-gray-700 midnight:divide-cyan-500/10 purple:divide-pink-500/10">
                   {filteredRecords.map((record, index) => (
                     <tr
                       key={record.id}
@@ -379,7 +379,7 @@ export default function FeesTable({ records = MOCK_RECORDS }: FeesTableProps) {
                       {/* Fee Details */}
                       <td className="px-4 py-4 whitespace-nowrap">
                         <div>
-                          <div className="text-sm font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                          <div className="text-sm font-medium text-ink">
                             {record.feeDetails}
                           </div>
                           <div className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70">
@@ -393,14 +393,14 @@ export default function FeesTable({ records = MOCK_RECORDS }: FeesTableProps) {
 
                       {/* Amount */}
                       <td className="px-4 py-4 whitespace-nowrap">
-                        <span className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                        <span className="text-sm font-semibold text-ink">
                           ₦{record.amount.toLocaleString()}
                         </span>
                       </td>
 
                       {/* Due Date */}
                       <td className="px-4 py-4 whitespace-nowrap">
-                        <div className="flex items-center gap-1.5 text-sm text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                        <div className="flex items-center gap-1.5 text-sm text-ink">
                           <Calendar className="w-4 h-4 text-gray-400" />
                           {record.dueDate}
                         </div>
@@ -411,14 +411,14 @@ export default function FeesTable({ records = MOCK_RECORDS }: FeesTableProps) {
 
                       {/* Payment Date */}
                       <td className="px-4 py-4 whitespace-nowrap">
-                        <span className="text-sm text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                        <span className="text-sm text-ink">
                           {record.paymentDate}
                         </span>
                       </td>
 
                       {/* Method of Payment */}
                       <td className="px-4 py-4 whitespace-nowrap">
-                        <span className="text-sm text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                        <span className="text-sm text-ink">
                           {record.methodOfPayment}
                         </span>
                       </td>

@@ -141,7 +141,7 @@ export default function DeleteConfirmationModal({
       {/* Modal Content */}
       <div
         ref={modalRef}
-        className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-2xl shadow-2xl w-full max-w-md flex flex-col animate-in zoom-in-95 duration-200"
+        className="bg-surface rounded-2xl shadow-2xl w-full max-w-md flex flex-col animate-in zoom-in-95 duration-200"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}

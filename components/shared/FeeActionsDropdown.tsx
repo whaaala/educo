@@ -297,7 +297,7 @@ export default function FeeActionsDropdown({
         onClick={handleToggle}
         className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer"
       >
-        <MoreVertical className="w-4 h-4 text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300" />
+        <MoreVertical className="w-4 h-4 text-muted" />
       </button>
 
       {/* Dropdown Menu - Rendered via Portal */}
@@ -306,14 +306,14 @@ export default function FeeActionsDropdown({
           <div
             ref={dropdownRef}
             style={dropdownStyle}
-            className="w-48 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 py-1 animate-in fade-in zoom-in-95 duration-150"
+            className="w-48 bg-surface rounded-xl shadow-xl border border-line py-1 animate-in fade-in zoom-in-95 duration-150"
           >
             {visibleItems.map((item) => {
               if (item.type === "divider") {
                 return (
                   <div
                     key={item.id}
-                    className="my-1 border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20"
+                    className="my-1 border-t border-line"
                   />
                 );
               }

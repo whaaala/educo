@@ -176,21 +176,21 @@ export default function TextFormatToolbar({
         {/* Bold */}
         {showBold && onBold && (
           <button onMouseDown={(e) => { e.preventDefault(); onBold(); }}
-            className={`w-8 h-8 flex items-center justify-center rounded-lg text-[13px] font-bold cursor-pointer transition-all ${bold ? activeBtn : inactiveBtn}`}
+            className={`w-8 h-8 flex items-center justify-center rounded-lg text-[0.8125rem] font-bold cursor-pointer transition-all ${bold ? activeBtn : inactiveBtn}`}
             title="Bold (Ctrl+B)">B</button>
         )}
 
         {/* Italic */}
         {showItalic && onItalic && (
           <button onMouseDown={(e) => { e.preventDefault(); onItalic(); }}
-            className={`w-8 h-8 flex items-center justify-center rounded-lg text-[13px] italic cursor-pointer transition-all ${italic ? activeBtn : inactiveBtn}`}
+            className={`w-8 h-8 flex items-center justify-center rounded-lg text-[0.8125rem] italic cursor-pointer transition-all ${italic ? activeBtn : inactiveBtn}`}
             title="Italic (Ctrl+I)">I</button>
         )}
 
         {/* Underline */}
         {showUnderline && onUnderline && (
           <button onMouseDown={(e) => { e.preventDefault(); onUnderline(); }}
-            className={`w-8 h-8 flex items-center justify-center rounded-lg text-[13px] underline cursor-pointer transition-all ${inactiveBtn}`}
+            className={`w-8 h-8 flex items-center justify-center rounded-lg text-[0.8125rem] underline cursor-pointer transition-all ${inactiveBtn}`}
             title="Underline (Ctrl+U)">U</button>
         )}
 
@@ -247,7 +247,7 @@ export default function TextFormatToolbar({
         {showTextColor && onTextColorChange && (
           <ColorPickerPopover selectedColor={textColor} onSelect={onTextColorChange} mode="matrix" label="Text Color" align="right" width={272}>
             <button className={`w-8 h-8 flex items-center justify-center rounded-lg cursor-pointer ${inactiveBtn} relative`} title="Text color">
-              <span className="text-[13px] font-bold" style={{ color: textColor }}>A</span>
+              <span className="text-[0.8125rem] font-bold" style={{ color: textColor }}>A</span>
               <div className="absolute bottom-1 left-2 right-2 h-[2.5px] rounded-full" style={{ backgroundColor: textColor }} />
             </button>
           </ColorPickerPopover>
@@ -286,7 +286,7 @@ export default function TextFormatToolbar({
   return createPortal(
     <div
       ref={toolbarRef}
-      className="fixed z-[10002] rounded-xl bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] shadow-lg border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20"
+      className="fixed z-[10002] rounded-xl bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] shadow-lg border border-line"
       style={{
         top: pos?.top ?? -9999,
         left: pos?.left ?? 0,

@@ -295,10 +295,10 @@ export default function ParentSupportPage() {
                   <type.icon className={`w-4 h-4 ${type.text}`} />
                 </div>
                 <div className="min-w-0">
-                  <div className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 group-hover:text-cyan-700 dark:group-hover:text-cyan-300 transition-colors truncate">
+                  <div className="font-semibold text-ink group-hover:text-cyan-700 dark:group-hover:text-cyan-300 transition-colors truncate">
                     {t.subject}
                   </div>
-                  <div className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 line-clamp-2 mt-0.5">
+                  <div className="text-xs text-muted line-clamp-2 mt-0.5">
                     {t.message}
                   </div>
                 </div>
@@ -391,7 +391,7 @@ export default function ParentSupportPage() {
               <Info className="w-5 h-5 sm:w-6 sm:h-6 text-cyan-600 dark:text-cyan-400" />
             </div>
             <div>
-              <h3 className="text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-1">Support Guidelines</h3>
+              <h3 className="text-sm font-bold text-ink mb-1">Support Guidelines</h3>
               <p className="text-xs text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 leading-relaxed">
                 Our support team typically responds within 24-48 hours. For urgent matters, please mark your ticket as
                 high priority. You can track the status of your tickets here.
@@ -483,23 +483,23 @@ function TicketCard({ ticket, onClick }: { ticket: CommunicationRecord; onClick:
           {/* Type Badge */}
           <div className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg ${type.bg}`}>
             <TypeIcon className={`w-3.5 h-3.5 ${type.text}`} />
-            <span className={`text-[11px] font-medium ${type.text}`}>{type.label}</span>
+            <span className={`text-[0.6875rem] font-medium ${type.text}`}>{type.label}</span>
           </div>
 
           {/* Status Badge */}
           <div className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg ${status.bg}`}>
             <StatusIcon className={`w-3.5 h-3.5 ${status.text} ${ticket.status === "in_progress" ? "animate-spin" : ""}`} />
-            <span className={`text-[11px] font-semibold ${status.text}`}>{status.label}</span>
+            <span className={`text-[0.6875rem] font-semibold ${status.text}`}>{status.label}</span>
           </div>
         </div>
 
         {/* Subject/Title */}
-        <h3 className="text-sm sm:text-[15px] font-semibold text-gray-800 dark:text-gray-100 midnight:text-gray-100 purple:text-gray-100 mb-2 line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 midnight:group-hover:text-cyan-400 purple:group-hover:text-pink-400 transition-colors leading-relaxed">
+        <h3 className="text-sm sm:text-[0.9375rem] font-semibold text-gray-800 dark:text-gray-100 midnight:text-gray-100 purple:text-gray-100 mb-2 line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 midnight:group-hover:text-cyan-400 purple:group-hover:text-pink-400 transition-colors leading-relaxed">
           {ticket.subject}
         </h3>
 
         {/* Message Preview */}
-        <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 line-clamp-2 mb-3">
+        <p className="text-xs text-muted line-clamp-2 mb-3">
           {ticket.message}
         </p>
 
@@ -507,12 +507,12 @@ function TicketCard({ ticket, onClick }: { ticket: CommunicationRecord; onClick:
         <div className="flex items-center gap-3 mb-3">
           <div className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-lg ${priority.bg}`}>
             <div className={`w-1.5 h-1.5 rounded-full ${priority.dot}`} />
-            <span className={`text-[10px] font-medium ${priority.text}`}>{priority.label}</span>
+            <span className={`text-[0.625rem] font-medium ${priority.text}`}>{priority.label}</span>
           </div>
           {ticket.responses.length > 0 && (
             <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded-lg bg-gray-50 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/50">
               <MessageSquare className="w-3 h-3 text-gray-400" />
-              <span className="text-[10px] font-medium text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">{ticket.responses.length} response{ticket.responses.length !== 1 ? "s" : ""}</span>
+              <span className="text-[0.625rem] font-medium text-muted">{ticket.responses.length} response{ticket.responses.length !== 1 ? "s" : ""}</span>
             </div>
           )}
         </div>
@@ -521,14 +521,14 @@ function TicketCard({ ticket, onClick }: { ticket: CommunicationRecord; onClick:
         <div className="flex items-center justify-between gap-4 p-3 rounded-xl bg-gray-50/80 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/40 midnight:bg-[#0f1330]/40 purple:bg-[#251340]/40">
           {/* Created Date */}
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] shadow-sm flex items-center justify-center">
+            <div className="w-9 h-9 rounded-xl bg-surface shadow-sm flex items-center justify-center">
               <Calendar className="w-4 h-4 text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400" />
             </div>
             <div>
               <p className="text-xs font-semibold text-gray-800 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100">
                 {formatShortDate(ticket.createdAt)}
               </p>
-              <p className="text-[11px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mt-0.5">
+              <p className="text-[0.6875rem] text-muted mt-0.5">
                 Created
               </p>
             </div>
@@ -537,7 +537,7 @@ function TicketCard({ ticket, onClick }: { ticket: CommunicationRecord; onClick:
           {/* Assigned To */}
           {ticket.assignedTo && (
             <div className="text-right">
-              <p className="text-[10px] text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 uppercase tracking-wider font-medium">Assigned</p>
+              <p className="text-[0.625rem] text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 uppercase tracking-wider font-medium">Assigned</p>
               <p className="text-xs font-semibold text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mt-0.5">{ticket.assignedTo}</p>
             </div>
           )}
@@ -590,7 +590,7 @@ function ViewTicketModal({
     <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200" onClick={onClose}>
       <div
         onClick={(e) => e.stopPropagation()}
-        className="relative w-full max-w-2xl bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-2xl shadow-2xl max-h-[90vh] overflow-hidden animate-in zoom-in-95 duration-200"
+        className="relative w-full max-w-2xl bg-surface rounded-2xl shadow-2xl max-h-[90vh] overflow-hidden animate-in zoom-in-95 duration-200"
       >
         {/* Header */}
         <div className="relative px-4 sm:px-6 py-4 sm:py-5 bg-gradient-to-r from-cyan-500 to-blue-600">
@@ -630,25 +630,25 @@ function ViewTicketModal({
 
           {/* Subject */}
           <div>
-            <h3 className="text-lg font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-2">{ticket.subject}</h3>
+            <h3 className="text-lg font-bold text-ink mb-2">{ticket.subject}</h3>
             <p className="text-sm text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 leading-relaxed">{ticket.message}</p>
           </div>
 
           {/* Meta Information */}
           <div className="grid grid-cols-2 gap-3">
             <div className="p-3 rounded-xl bg-gray-50 dark:bg-[#0f1115] midnight:bg-[#0a0e27]/40 purple:bg-[#1a0b2e]/40">
-              <p className="text-[10px] text-gray-400 uppercase tracking-wider font-medium mb-1">Created</p>
+              <p className="text-[0.625rem] text-gray-400 uppercase tracking-wider font-medium mb-1">Created</p>
               <p className="text-sm font-semibold text-gray-800 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100">{formatDate(ticket.createdAt)}</p>
             </div>
             {ticket.assignedTo && (
               <div className="p-3 rounded-xl bg-gray-50 dark:bg-[#0f1115] midnight:bg-[#0a0e27]/40 purple:bg-[#1a0b2e]/40">
-                <p className="text-[10px] text-gray-400 uppercase tracking-wider font-medium mb-1">Assigned To</p>
+                <p className="text-[0.625rem] text-gray-400 uppercase tracking-wider font-medium mb-1">Assigned To</p>
                 <p className="text-sm font-semibold text-gray-800 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100">{ticket.assignedTo}</p>
               </div>
             )}
             {ticket.resolvedAt && (
               <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-900/20">
-                <p className="text-[10px] text-emerald-600 uppercase tracking-wider font-medium mb-1">Resolved</p>
+                <p className="text-[0.625rem] text-emerald-600 uppercase tracking-wider font-medium mb-1">Resolved</p>
                 <p className="text-sm font-semibold text-emerald-700 dark:text-emerald-300">{formatDate(ticket.resolvedAt)}</p>
               </div>
             )}
@@ -657,7 +657,7 @@ function ViewTicketModal({
           {/* Responses */}
           {ticket.responses.length > 0 && (
             <div>
-              <h4 className="text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-3 flex items-center gap-2">
+              <h4 className="text-sm font-bold text-ink mb-3 flex items-center gap-2">
                 <MessageSquare className="w-4 h-4" />
                 Conversation ({ticket.responses.length})
               </h4>
@@ -682,7 +682,7 @@ function ViewTicketModal({
                       }`}>
                         {response.from === "admin" ? "School Admin" : "You"}
                       </span>
-                      <span className="text-[10px] text-gray-400 ml-auto">{formatDate(response.date)}</span>
+                      <span className="text-[0.625rem] text-gray-400 ml-auto">{formatDate(response.date)}</span>
                     </div>
                     <p className="text-sm text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 leading-relaxed">{response.message}</p>
                   </div>
@@ -782,7 +782,7 @@ function CreateTicketModal({
     <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200" onClick={() => !isSubmitting && onClose()}>
       <div
         onClick={(e) => e.stopPropagation()}
-        className="relative w-full max-w-lg bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-2xl shadow-2xl max-h-[90vh] overflow-hidden animate-in zoom-in-95 duration-200"
+        className="relative w-full max-w-lg bg-surface rounded-2xl shadow-2xl max-h-[90vh] overflow-hidden animate-in zoom-in-95 duration-200"
       >
         {/* Header */}
         <div className="relative px-4 sm:px-6 py-4 sm:py-5 bg-gradient-to-r from-cyan-500 to-blue-600">
@@ -806,8 +806,8 @@ function CreateTicketModal({
               <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-emerald-100 dark:bg-emerald-500/20 flex items-center justify-center">
                 <CheckCircle2 className="w-8 h-8 text-emerald-600 dark:text-emerald-400" />
               </div>
-              <h3 className="text-lg font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-2">Ticket Created!</h3>
-              <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Your support ticket has been submitted successfully.</p>
+              <h3 className="text-lg font-bold text-ink mb-2">Ticket Created!</h3>
+              <p className="text-sm text-muted">Your support ticket has been submitted successfully.</p>
             </div>
           ) : (
             <>
@@ -855,25 +855,25 @@ function CreateTicketModal({
               {/* Preview Card */}
               {(subject.trim() || message.trim()) && (
                 <div className="p-4 rounded-xl bg-gray-50 dark:bg-[#0f1115] midnight:bg-[#0a0e27]/40 purple:bg-[#1a0b2e]/40 border border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
-                  <p className="text-[10px] text-gray-400 uppercase tracking-wider font-medium mb-2">Preview</p>
+                  <p className="text-[0.625rem] text-gray-400 uppercase tracking-wider font-medium mb-2">Preview</p>
                   <div className="flex flex-wrap items-center gap-2 mb-2">
                     <div className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg ${getTypeConfig(ticketType).bg}`}>
-                      <span className={`text-[10px] font-medium ${getTypeConfig(ticketType).text}`}>{typeOptions.find(o => o.value === ticketType)?.label}</span>
+                      <span className={`text-[0.625rem] font-medium ${getTypeConfig(ticketType).text}`}>{typeOptions.find(o => o.value === ticketType)?.label}</span>
                     </div>
                     <div className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg ${getPriorityConfig(ticketPriority).bg}`}>
                       <div className={`w-1.5 h-1.5 rounded-full ${getPriorityConfig(ticketPriority).dot}`} />
-                      <span className={`text-[10px] font-medium ${getPriorityConfig(ticketPriority).text}`}>{priorityOptions.find(o => o.value === ticketPriority)?.label}</span>
+                      <span className={`text-[0.625rem] font-medium ${getPriorityConfig(ticketPriority).text}`}>{priorityOptions.find(o => o.value === ticketPriority)?.label}</span>
                     </div>
                     <div className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-amber-50 dark:bg-amber-500/10">
                       <AlertCircle className="w-3 h-3 text-amber-500" />
-                      <span className="text-[10px] font-medium text-amber-600 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400">Open</span>
+                      <span className="text-[0.625rem] font-medium text-amber-600 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400">Open</span>
                     </div>
                   </div>
                   {subject.trim() && (
                     <h4 className="text-sm font-semibold text-gray-800 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 mb-1">{subject}</h4>
                   )}
                   {message.trim() && (
-                    <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 line-clamp-2">{message}</p>
+                    <p className="text-xs text-muted line-clamp-2">{message}</p>
                   )}
                 </div>
               )}

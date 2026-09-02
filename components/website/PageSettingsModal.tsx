@@ -57,7 +57,7 @@ export default function PageSettingsModal({ isOpen, onClose, page, inNav, canDel
       }
     >
       <label className="block mb-4">
-        <span className="text-xs font-medium text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Page name</span>
+        <span className="text-xs font-medium text-muted">Page name</span>
         <input
           value={name}
           onChange={(e) => setName(e.target.value)}
@@ -67,15 +67,15 @@ export default function PageSettingsModal({ isOpen, onClose, page, inNav, canDel
       </label>
 
       <label className="block mb-4">
-        <span className="text-xs font-medium text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Page URL</span>
+        <span className="text-xs font-medium text-muted">Page URL</span>
         <div className="mt-1 flex items-center rounded-lg border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/30 purple:border-pink-500/30 focus-within:ring-2 focus-within:ring-indigo-500">
           <span className="pl-3 pr-1 text-gray-400"><Link2 className="w-4 h-4" /></span>
           <input value={path} onChange={(e) => setPath(e.target.value)} disabled={page.isHome} aria-label="Page URL" className="flex-1 py-2 pr-3 bg-transparent text-gray-900 dark:text-white outline-none text-sm disabled:opacity-50" />
         </div>
-        {page.isHome && <span className="text-[11px] text-gray-400 mt-1 block">The home page always lives at /</span>}
+        {page.isHome && <span className="text-[0.6875rem] text-gray-400 mt-1 block">The home page always lives at /</span>}
       </label>
 
-      <div className="flex items-center justify-between p-3 rounded-lg border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+      <div className="flex items-center justify-between p-3 rounded-lg border border-line">
         <span className="inline-flex items-center gap-1.5 text-sm text-gray-700 dark:text-gray-300"><Eye className="w-4 h-4" /> Show in navigation</span>
         <button
           type="button"

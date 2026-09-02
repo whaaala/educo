@@ -540,7 +540,7 @@ export default function ParentResultsPage() {
               unoptimized
             />
           </div>
-          <span className="text-sm font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+          <span className="text-sm font-medium text-ink">
             {result.childName}
           </span>
         </div>
@@ -574,7 +574,7 @@ export default function ParentResultsPage() {
               style={{ width: `${result.percentage}%` }}
             />
           </div>
-          <span className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+          <span className="text-sm font-semibold text-ink">
             {result.percentage}%
           </span>
         </div>
@@ -586,8 +586,8 @@ export default function ParentResultsPage() {
       sortable: true,
       render: (result) => (
         <div>
-          <p className="text-sm text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{result.examType}</p>
-          <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">{result.term}</p>
+          <p className="text-sm text-ink">{result.examType}</p>
+          <p className="text-xs text-muted">{result.term}</p>
         </div>
       ),
     },
@@ -665,13 +665,13 @@ export default function ParentResultsPage() {
       defaultItemsPerPage={10}
       itemsPerPageOptions={[5, 10, 15, 20, 25]}
     >
-      <div className="mt-6 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm p-6">
+      <div className="mt-6 bg-surface rounded-xl border border-line shadow-sm p-6">
         <div className="flex items-start gap-4">
           <div className="p-3 rounded-xl bg-indigo-50 dark:bg-indigo-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30">
             <FileText className="w-6 h-6 text-indigo-600 dark:text-indigo-400 midnight:text-cyan-400 purple:text-pink-400" />
           </div>
           <div>
-            <h3 className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-1">
+            <h3 className="font-semibold text-ink mb-1">
               View Detailed Report Cards
             </h3>
             <p className="text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">

@@ -198,7 +198,7 @@ export default function ActionsDropdown<T>({
           onClick={handleToggle}
           className={`
             flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium
-            bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30
+            bg-surface border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30
             hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer
             ${triggerClassName}
           `}
@@ -221,7 +221,7 @@ export default function ActionsDropdown<T>({
           ${triggerClassName}
         `}
       >
-        <IconComponent className="w-5 h-5 text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300" />
+        <IconComponent className="w-5 h-5 text-muted" />
       </button>
     );
   };
@@ -232,7 +232,7 @@ export default function ActionsDropdown<T>({
       ref={menuRef}
       className={`
         ${menuWidths[menuWidth]}
-        bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]
+        bg-surface
         rounded-xl shadow-xl border border-gray-200 dark:border-gray-700
         midnight:border-cyan-700/30 purple:border-pink-700/30
         py-1 animate-in zoom-in-95 duration-150
@@ -249,7 +249,7 @@ export default function ActionsDropdown<T>({
         return (
           <div key={action.id}>
             {action.dividerBefore && index > 0 && (
-              <div className="border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 my-1" />
+              <div className="border-t border-line my-1" />
             )}
             <button
               onClick={(e) => {

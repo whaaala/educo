@@ -257,8 +257,8 @@ export default function EmailDialog({
           <div className="w-16 h-16 rounded-2xl bg-green-50 dark:bg-green-900/20 flex items-center justify-center mx-auto mb-4">
             <Check className="w-8 h-8 text-green-500" />
           </div>
-          <h3 className="text-[17px] font-semibold text-gray-900 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50">Email sent!</h3>
-          <p className="text-[13px] text-gray-400 mt-1">Sent to {selectedEmails.size} recipient{selectedEmails.size !== 1 ? "s" : ""}</p>
+          <h3 className="text-[1.0625rem] font-semibold text-gray-900 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50">Email sent!</h3>
+          <p className="text-[0.8125rem] text-gray-400 mt-1">Sent to {selectedEmails.size} recipient{selectedEmails.size !== 1 ? "s" : ""}</p>
         </div>
       </div>
     );
@@ -275,18 +275,18 @@ export default function EmailDialog({
             {mode === "collaborators" ? <Users className="w-4 h-4 text-white" /> : <Mail className="w-4 h-4 text-white" />}
           </div>
           <div className="flex-1 min-w-0">
-            <h2 className="text-[15px] font-semibold text-gray-900 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50 truncate">
+            <h2 className="text-[0.9375rem] font-semibold text-gray-900 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50 truncate">
               {mode === "collaborators" ? "Email collaborators" : "Email this file"}
             </h2>
           </div>
           {/* Tabs */}
           <div className="flex bg-gray-100 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-lg p-0.5">
             <button onClick={() => setActiveTab("recipients")}
-              className={`px-3 py-1 rounded-md text-[11px] font-semibold transition-all ${activeTab === "recipients" ? "bg-white dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 shadow-sm" : "text-gray-500 hover:text-gray-700 cursor-pointer"}`}>
+              className={`px-3 py-1 rounded-md text-[0.6875rem] font-semibold transition-all ${activeTab === "recipients" ? "bg-white dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] text-ink shadow-sm" : "text-gray-500 hover:text-gray-700 cursor-pointer"}`}>
               Recipients
             </button>
             <button onClick={() => setActiveTab("compose")}
-              className={`px-3 py-1 rounded-md text-[11px] font-semibold transition-all ${activeTab === "compose" ? "bg-white dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 shadow-sm" : "text-gray-500 hover:text-gray-700 cursor-pointer"}`}>
+              className={`px-3 py-1 rounded-md text-[0.6875rem] font-semibold transition-all ${activeTab === "compose" ? "bg-white dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] text-ink shadow-sm" : "text-gray-500 hover:text-gray-700 cursor-pointer"}`}>
               Compose
             </button>
           </div>
@@ -307,9 +307,9 @@ export default function EmailDialog({
                   <input value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
                     placeholder="Search people or enter email..."
                     onKeyDown={e => { if (e.key === "Enter") { addManual(); setSearchQuery(""); } }}
-                    className="flex-1 bg-transparent text-[13px] text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 outline-none placeholder:text-gray-400/60" />
+                    className="flex-1 bg-transparent text-[0.8125rem] text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 outline-none placeholder:text-gray-400/60" />
                   {selectedEmails.size > 0 && (
-                    <span className="px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 text-[10px] font-bold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400">
+                    <span className="px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 text-[0.625rem] font-bold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400">
                       {selectedEmails.size}
                     </span>
                   )}
@@ -324,7 +324,7 @@ export default function EmailDialog({
                     {/* Matched groups/classes/departments */}
                     {filteredGroups.length > 0 && (
                       <div className="mb-2">
-                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-2 mb-1">Groups & Classes</p>
+                        <p className="text-[0.625rem] font-bold text-gray-400 uppercase tracking-widest px-2 mb-1">Groups & Classes</p>
                         {filteredGroups.map(g => (
                           <GroupRow key={g.id} group={g} selectedEmails={selectedEmails}
                             expandedGroups={new Set(filteredGroups.map(fg => fg.id).concat(filteredGroups.flatMap(fg => fg.subgroups?.map(s => s.id) || [])))}
@@ -335,7 +335,7 @@ export default function EmailDialog({
                     {/* Matched people */}
                     {filteredPeople.length > 0 && (
                       <div>
-                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-2 mb-1">People</p>
+                        <p className="text-[0.625rem] font-bold text-gray-400 uppercase tracking-widest px-2 mb-1">People</p>
                         {filteredPeople.map(p => (
                           <PersonRow key={p.email} person={p} selected={selectedEmails.has(p.email)} onToggle={() => toggleEmail(p.email)} />
                         ))}
@@ -344,9 +344,9 @@ export default function EmailDialog({
                     {/* No results */}
                     {filteredGroups.length === 0 && filteredPeople.length === 0 && (
                       <div className="text-center py-8">
-                        <p className="text-[13px] text-gray-400">No matches for &ldquo;{searchQuery}&rdquo;</p>
+                        <p className="text-[0.8125rem] text-gray-400">No matches for &ldquo;{searchQuery}&rdquo;</p>
                         <button onClick={() => { setManualInput(searchQuery); addManual(); setSearchQuery(""); }}
-                          className="mt-2 text-[12px] text-blue-600 hover:text-blue-700 font-medium cursor-pointer">
+                          className="mt-2 text-[0.75rem] text-blue-600 hover:text-blue-700 font-medium cursor-pointer">
                           Add as email address
                         </button>
                       </div>
@@ -366,8 +366,8 @@ export default function EmailDialog({
                         <input value={manualInput} onChange={e => setManualInput(e.target.value)}
                           onKeyDown={e => { if (e.key === "Enter") addManual(); }}
                           placeholder="Add email manually..."
-                          className="flex-1 px-3 py-2 rounded-lg bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border border-gray-200/80 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 text-[12px] outline-none focus:border-blue-400" />
-                        <button onClick={addManual} className="px-3 py-2 rounded-lg bg-blue-600 text-white text-[11px] font-semibold hover:bg-blue-700 transition-colors cursor-pointer">Add</button>
+                          className="flex-1 px-3 py-2 rounded-lg bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border border-gray-200/80 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 text-[0.75rem] outline-none focus:border-blue-400" />
+                        <button onClick={addManual} className="px-3 py-2 rounded-lg bg-blue-600 text-white text-[0.6875rem] font-semibold hover:bg-blue-700 transition-colors cursor-pointer">Add</button>
                       </div>
                     </div>
                   </div>
@@ -378,18 +378,18 @@ export default function EmailDialog({
               {selectedEmails.size > 0 && (
                 <div className="px-4 py-2.5 border-t border-gray-100 dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10 bg-blue-50/50 dark:bg-blue-900/10 midnight:bg-cyan-900/10 purple:bg-pink-900/10">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="text-[11px] font-semibold text-gray-500 mr-1">To:</span>
+                    <span className="text-[0.6875rem] font-semibold text-gray-500 mr-1">To:</span>
                     {Array.from(selectedEmails).slice(0, 5).map(email => {
                       const person = allPeople.find(p => p.email === email);
                       return (
-                        <span key={email} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-blue-100 dark:bg-blue-900/40 text-[10px] font-medium text-blue-700 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300">
+                        <span key={email} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-blue-100 dark:bg-blue-900/40 text-[0.625rem] font-medium text-blue-700 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300">
                           {person?.name || email}
                           <button onClick={() => toggleEmail(email)} className="hover:text-red-500 cursor-pointer"><X className="w-2.5 h-2.5" /></button>
                         </span>
                       );
                     })}
                     {selectedEmails.size > 5 && (
-                      <span className="text-[10px] text-gray-400">+{selectedEmails.size - 5} more</span>
+                      <span className="text-[0.625rem] text-gray-400">+{selectedEmails.size - 5} more</span>
                     )}
                   </div>
                 </div>
@@ -401,18 +401,18 @@ export default function EmailDialog({
               <div className="px-5 py-3 space-y-4 flex-1">
                 {/* To summary */}
                 <div>
-                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5 block">To</label>
+                  <label className="text-[0.625rem] font-bold text-gray-400 uppercase tracking-widest mb-1.5 block">To</label>
                   <div className="flex items-center gap-1.5 flex-wrap px-3 py-2 rounded-xl bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/30 min-h-[36px]">
                     {selectedEmails.size === 0 ? (
-                      <span className="text-[12px] text-gray-400">No recipients selected</span>
+                      <span className="text-[0.75rem] text-gray-400">No recipients selected</span>
                     ) : (
                       <>
                         {Array.from(selectedEmails).slice(0, 4).map(email => {
                           const person = allPeople.find(p => p.email === email);
-                          return <span key={email} className="px-2 py-0.5 rounded-md bg-blue-100 dark:bg-blue-900/40 text-[10px] font-medium text-blue-700 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300">{person?.name || email}</span>;
+                          return <span key={email} className="px-2 py-0.5 rounded-md bg-blue-100 dark:bg-blue-900/40 text-[0.625rem] font-medium text-blue-700 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300">{person?.name || email}</span>;
                         })}
-                        {selectedEmails.size > 4 && <span className="text-[10px] text-gray-400">+{selectedEmails.size - 4} more</span>}
-                        <button onClick={() => setActiveTab("recipients")} className="text-[10px] text-blue-600 font-medium cursor-pointer ml-1">Edit</button>
+                        {selectedEmails.size > 4 && <span className="text-[0.625rem] text-gray-400">+{selectedEmails.size - 4} more</span>}
+                        <button onClick={() => setActiveTab("recipients")} className="text-[0.625rem] text-blue-600 font-medium cursor-pointer ml-1">Edit</button>
                       </>
                     )}
                   </div>
@@ -420,22 +420,22 @@ export default function EmailDialog({
 
                 {/* Subject */}
                 <div>
-                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5 block">Subject</label>
+                  <label className="text-[0.625rem] font-bold text-gray-400 uppercase tracking-widest mb-1.5 block">Subject</label>
                   <input value={subject} onChange={e => setSubject(e.target.value)}
-                    className="w-full px-3 py-2.5 rounded-xl bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/30 border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 text-[13px] text-gray-800 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-500/10 transition-all" />
+                    className="w-full px-3 py-2.5 rounded-xl bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/30 border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 text-[0.8125rem] text-gray-800 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-500/10 transition-all" />
                 </div>
 
                 {/* Message */}
                 <div className="flex-1">
-                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5 block">Message</label>
+                  <label className="text-[0.625rem] font-bold text-gray-400 uppercase tracking-widest mb-1.5 block">Message</label>
                   <textarea value={message} onChange={e => setMessage(e.target.value)} rows={6}
-                    className="w-full px-3 py-2.5 rounded-xl bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/30 border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 text-[13px] text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 outline-none resize-none focus:border-blue-400 focus:ring-2 focus:ring-blue-500/10 transition-all leading-relaxed" />
+                    className="w-full px-3 py-2.5 rounded-xl bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/30 border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 text-[0.8125rem] text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 outline-none resize-none focus:border-blue-400 focus:ring-2 focus:ring-blue-500/10 transition-all leading-relaxed" />
                 </div>
 
                 {/* Attachments */}
                 {availableAttachments.length > 0 && (
                   <div>
-                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5 block">Attachments</label>
+                    <label className="text-[0.625rem] font-bold text-gray-400 uppercase tracking-widest mb-1.5 block">Attachments</label>
                     <div className="space-y-1">
                       {availableAttachments.map(att => {
                         const on = selectedAttachments.has(att.name);
@@ -443,8 +443,8 @@ export default function EmailDialog({
                           <button key={att.name} onClick={() => setSelectedAttachments(prev => { const n = new Set(prev); on ? n.delete(att.name) : n.add(att.name); return n; })}
                             className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left transition-all cursor-pointer ${on ? "bg-blue-50 dark:bg-blue-900/15 border border-blue-200/60 dark:border-blue-800/40" : "bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/30 border border-gray-100 dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10 hover:border-gray-200"}`}>
                             <AttachIcon type={att.type} />
-                            <span className="flex-1 text-[12px] font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 truncate">{att.name}</span>
-                            {att.size && <span className="text-[10px] text-gray-400">{att.size}</span>}
+                            <span className="flex-1 text-[0.75rem] font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 truncate">{att.name}</span>
+                            {att.size && <span className="text-[0.625rem] text-gray-400">{att.size}</span>}
                             <div className={`w-4 h-4 rounded flex items-center justify-center ${on ? "bg-blue-500" : "border-2 border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30"}`}>
                               {on && <Check className="w-2.5 h-2.5 text-white" />}
                             </div>
@@ -461,24 +461,24 @@ export default function EmailDialog({
 
         {/* Footer */}
         <div className="flex items-center justify-between px-5 py-3 border-t border-gray-100 dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10 bg-gray-50/50 dark:bg-gray-950 midnight:bg-[#070d1a] purple:bg-[#150a28]/50">
-          <span className="text-[11px] text-gray-400">
+          <span className="text-[0.6875rem] text-gray-400">
             {selectedEmails.size} recipient{selectedEmails.size !== 1 ? "s" : ""}
             {selectedAttachments.size > 0 ? ` · ${selectedAttachments.size} file${selectedAttachments.size > 1 ? "s" : ""}` : ""}
           </span>
           <div className="flex items-center gap-2">
             {activeTab === "recipients" ? (
               <button onClick={() => setActiveTab("compose")} disabled={selectedEmails.size === 0}
-                className="flex items-center gap-2 px-5 py-2 rounded-xl text-[13px] font-semibold text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed shadow-sm shadow-blue-500/20 transition-all cursor-pointer">
+                className="flex items-center gap-2 px-5 py-2 rounded-xl text-[0.8125rem] font-semibold text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed shadow-sm shadow-blue-500/20 transition-all cursor-pointer">
                 Next <ChevronRight className="w-3.5 h-3.5" />
               </button>
             ) : (
               <>
                 <button onClick={() => handleSend("external")} disabled={selectedEmails.size === 0}
-                  className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-[12px] font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors cursor-pointer">
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-[0.75rem] font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors cursor-pointer">
                   <Mail className="w-3.5 h-3.5" /> Open in email app
                 </button>
                 <button onClick={() => handleSend("app")} disabled={selectedEmails.size === 0 || isSending}
-                  className="flex items-center gap-2 px-5 py-2 rounded-xl text-[13px] font-semibold text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed shadow-sm shadow-blue-500/20 transition-all cursor-pointer">
+                  className="flex items-center gap-2 px-5 py-2 rounded-xl text-[0.8125rem] font-semibold text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed shadow-sm shadow-blue-500/20 transition-all cursor-pointer">
                   {isSending ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <Send className="w-3.5 h-3.5" />}
                   {isSending ? "Sending..." : "Send"}
                 </button>
@@ -514,13 +514,13 @@ function PersonRow({ person, selected, onToggle }: { person: EmailRecipient; sel
       {person.avatar ? (
         <img src={person.avatar} alt={person.name} className="w-8 h-8 rounded-full object-cover flex-shrink-0" />
       ) : (
-        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-bold text-white flex-shrink-0 ${bgColor}`}>
+        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-[0.6875rem] font-bold text-white flex-shrink-0 ${bgColor}`}>
           {initials}
         </div>
       )}
       <div className="flex-1 min-w-0">
-        <p className="text-[13px] font-medium text-gray-800 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 truncate">{person.name}</p>
-        <p className="text-[10px] text-gray-400 truncate">{person.email}{person.role ? ` · ${person.role}` : ""}</p>
+        <p className="text-[0.8125rem] font-medium text-gray-800 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 truncate">{person.name}</p>
+        <p className="text-[0.625rem] text-gray-400 truncate">{person.email}{person.role ? ` · ${person.role}` : ""}</p>
       </div>
       <div className={`w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0 transition-all ${selected ? "bg-blue-500 shadow-sm shadow-blue-500/30" : "border-2 border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30"}`}>
         {selected && <Check className="w-3 h-3 text-white" />}
@@ -549,12 +549,12 @@ function GroupRow({ group, selectedEmails, expandedGroups, onToggleExpand, onTog
           </button>
         )}
         <GroupIcon type={group.icon} className="w-4 h-4 text-gray-400 flex-shrink-0" />
-        <span className="flex-1 text-[13px] font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200">{group.name}</span>
+        <span className="flex-1 text-[0.8125rem] font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200">{group.name}</span>
         {hasMembersDirectly && (
           <>
-            <span className="text-[10px] text-gray-400">{group.members.length}</span>
+            <span className="text-[0.625rem] text-gray-400">{group.members.length}</span>
             <button onClick={() => onToggleGroup(group)}
-              className={`px-2 py-0.5 rounded-md text-[10px] font-semibold transition-all cursor-pointer ${
+              className={`px-2 py-0.5 rounded-md text-[0.625rem] font-semibold transition-all cursor-pointer ${
                 allSelected ? "bg-blue-500 text-white" : someSelected ? "bg-blue-100 text-blue-600 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" : "bg-gray-100 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] text-gray-500 hover:bg-blue-50 hover:text-blue-600"
               }`}>
               {allSelected ? "Selected" : "Select all"}

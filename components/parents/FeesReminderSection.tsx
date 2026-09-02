@@ -36,14 +36,14 @@ export default function FeesReminderSection({
   };
 
   return (
-    <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm">
+    <div className="bg-surface rounded-xl border border-line shadow-sm">
       {/* Header */}
       <div className="p-4 border-b border-gray-100 dark:border-gray-700/50 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <div className="p-2 rounded-lg bg-red-100 dark:bg-red-900/30">
             <CreditCard className="w-4 h-4 text-red-600 dark:text-red-400" />
           </div>
-          <h3 className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+          <h3 className="font-semibold text-ink">
             Fees Reminder
           </h3>
         </div>
@@ -74,7 +74,7 @@ export default function FeesReminderSection({
             >
               <div className="flex items-start justify-between mb-3">
                 <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-sm">
+                  <p className="font-semibold text-ink text-sm">
                     {fee.feeType}
                   </p>
                   <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
@@ -99,7 +99,7 @@ export default function FeesReminderSection({
 
               <div className="flex items-end justify-between">
                 <div>
-                  <p className="text-xl font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                  <p className="text-xl font-bold text-ink">
                     {formatCurrency(fee.amount)}
                   </p>
                   <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">

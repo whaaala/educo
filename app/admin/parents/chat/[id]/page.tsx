@@ -223,11 +223,11 @@ export default function ParentChatPage() {
       afterStats={
         <div className="flex flex-col h-[calc(100vh-120px)]">
           {/* Chat Container */}
-          <div className="flex-1 flex bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-2xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 overflow-hidden shadow-sm">
+          <div className="flex-1 flex bg-surface rounded-2xl border border-line overflow-hidden shadow-sm">
           {/* Chat Area */}
           <div className="flex-1 flex flex-col min-w-0">
             {/* Chat Header */}
-            <div className="flex-shrink-0 px-4 py-3 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-gradient-to-r from-gray-50 to-white dark:from-gray-800 dark:to-gray-800">
+            <div className="flex-shrink-0 px-4 py-3 border-b border-line bg-gradient-to-r from-gray-50 to-white dark:from-gray-800 dark:to-gray-800">
               <div className="flex items-center gap-3">
                 {/* Back Button */}
                 <button
@@ -259,7 +259,7 @@ export default function ParentChatPage() {
                   className="flex-1 min-w-0 cursor-pointer"
                   onClick={() => setShowParticipantInfo(!showParticipantInfo)}
                 >
-                  <h3 className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate">
+                  <h3 className="font-semibold text-ink truncate">
                     Message to {parent.firstName}
                   </h3>
                   <p className="text-xs text-green-500 font-medium">Online</p>
@@ -268,14 +268,14 @@ export default function ParentChatPage() {
                 {/* Actions */}
                 <div className="flex items-center gap-1">
                   {showSearch ? (
-                    <div className="flex items-center gap-2 bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] rounded-full px-3 py-1.5">
+                    <div className="flex items-center gap-2 bg-surface-2 rounded-full px-3 py-1.5">
                       <Search className="w-4 h-4 text-gray-500" />
                       <input
                         type="text"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         placeholder="Search messages..."
-                        className="bg-transparent text-sm w-40 focus:outline-none text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50"
+                        className="bg-transparent text-sm w-40 focus:outline-none text-ink"
                         autoFocus
                       />
                       <button
@@ -338,7 +338,7 @@ export default function ParentChatPage() {
                   <div key={group.date}>
                     {/* Date separator */}
                     <div className="flex items-center justify-center my-4">
-                      <span className="px-4 py-1.5 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 text-xs font-medium rounded-full shadow-sm border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+                      <span className="px-4 py-1.5 bg-surface text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 text-xs font-medium rounded-full shadow-sm border border-line">
                         {group.date}
                       </span>
                     </div>
@@ -383,7 +383,7 @@ export default function ParentChatPage() {
                             className={`max-w-[70%] rounded-2xl px-4 py-2.5 shadow-sm ${
                               isOwn
                                 ? "bg-gradient-to-r from-blue-600 to-blue-500 text-white rounded-br-md"
-                                : "bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 rounded-bl-md border border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20"
+                                : "bg-surface text-ink rounded-bl-md border border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20"
                             }`}
                           >
                             <p className="text-sm whitespace-pre-wrap break-words leading-relaxed">
@@ -416,7 +416,7 @@ export default function ParentChatPage() {
             </div>
 
             {/* Input */}
-            <div className="flex-shrink-0 p-4 border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]">
+            <div className="flex-shrink-0 p-4 border-t border-line bg-surface">
               <div className="flex items-center gap-3">
                 {/* Attachment */}
                 <div className="relative">
@@ -428,7 +428,7 @@ export default function ParentChatPage() {
                   </button>
 
                   {showAttachMenu && (
-                    <div className="absolute bottom-full left-0 mb-2 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 py-2 min-w-[160px] z-10">
+                    <div className="absolute bottom-full left-0 mb-2 bg-surface rounded-xl shadow-lg border border-line py-2 min-w-[160px] z-10">
                       <button
                         onClick={() => {
                           fileInputRef.current?.click();
@@ -477,7 +477,7 @@ export default function ParentChatPage() {
                   onChange={(e) => setNewMessage(e.target.value)}
                   onKeyPress={(e) => e.key === "Enter" && !e.shiftKey && sendMessage()}
                   placeholder="Type a message..."
-                  className="flex-1 px-5 py-3 bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] border-0 rounded-full text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 text-sm"
+                  className="flex-1 px-5 py-3 bg-surface-2 border-0 rounded-full text-ink placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 text-sm"
                 />
 
                 {/* Send */}
@@ -502,7 +502,7 @@ export default function ParentChatPage() {
 
           {/* Participant Info Sidebar */}
           {showParticipantInfo && (
-            <div className="w-80 border-l border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] flex-shrink-0">
+            <div className="w-80 border-l border-line bg-surface flex-shrink-0">
               <div className="p-6">
                 {/* Close button */}
                 <div className="flex justify-end mb-4">
@@ -531,10 +531,10 @@ export default function ParentChatPage() {
                       </span>
                     </div>
                   )}
-                  <h3 className="text-lg font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mt-4">
+                  <h3 className="text-lg font-bold text-ink mt-4">
                     {parent.firstName} {parent.lastName}
                   </h3>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
+                  <p className="text-sm text-muted">
                     {parent.relationship}
                   </p>
                   <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400 mt-2">
@@ -549,8 +549,8 @@ export default function ParentChatPage() {
                       <Mail className="w-5 h-5 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
                     </div>
                     <div className="min-w-0">
-                      <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Email</p>
-                      <p className="text-sm font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate">
+                      <p className="text-xs text-muted">Email</p>
+                      <p className="text-sm font-medium text-ink truncate">
                         {parent.email}
                       </p>
                     </div>
@@ -561,8 +561,8 @@ export default function ParentChatPage() {
                       <Phone className="w-5 h-5 text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400" />
                     </div>
                     <div className="min-w-0">
-                      <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Phone</p>
-                      <p className="text-sm font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate">
+                      <p className="text-xs text-muted">Phone</p>
+                      <p className="text-sm font-medium text-ink truncate">
                         {parent.phone}
                       </p>
                     </div>
@@ -573,8 +573,8 @@ export default function ParentChatPage() {
                       <User className="w-5 h-5 text-purple-600 dark:text-purple-400" />
                     </div>
                     <div className="min-w-0">
-                      <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Children</p>
-                      <p className="text-sm font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                      <p className="text-xs text-muted">Children</p>
+                      <p className="text-sm font-medium text-ink">
                         {parent.children.length} {parent.children.length === 1 ? "child" : "children"}
                       </p>
                     </div>

@@ -54,7 +54,7 @@ export default function RefreshButton({
         ${sizeClasses[size]}
         relative flex items-center justify-center
         rounded-lg
-        bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]
+        bg-surface
         border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/30 purple:border-pink-500/30
         text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400
         hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10

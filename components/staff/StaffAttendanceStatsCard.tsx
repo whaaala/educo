@@ -109,7 +109,7 @@ export default function StaffAttendanceStatsCard({ type, count }: StaffAttendanc
         {/* Text Content with improved typography */}
         <div className="flex-1 min-w-0">
           <p className={`
-            text-[10px] sm:text-xs md:text-[10px] lg:text-xs xl:text-xs 2xl:text-xs
+            text-[0.625rem] sm:text-xs md:text-[0.625rem] lg:text-xs xl:text-xs 2xl:text-xs
             font-semibold sm:font-bold
             ${style.textColor}
             mb-0.5 sm:mb-1 md:mb-0.5 lg:mb-1 xl:mb-1 2xl:mb-1
@@ -132,7 +132,7 @@ export default function StaffAttendanceStatsCard({ type, count }: StaffAttendanc
               {count}
             </p>
             <span className={`
-              text-[10px] sm:text-xs md:text-[10px] lg:text-xs xl:text-xs 2xl:text-xs
+              text-[0.625rem] sm:text-xs md:text-[0.625rem] lg:text-xs xl:text-xs 2xl:text-xs
               font-medium
               ${style.textColor}
               opacity-60

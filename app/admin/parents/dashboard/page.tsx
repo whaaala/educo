@@ -412,7 +412,7 @@ export default function AdminParentDashboardPage() {
         <div className="mt-6">
           <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 mb-3">
             Dashboard Widgets
-            <span className="ml-2 text-xs font-normal text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
+            <span className="ml-2 text-xs font-normal text-muted">
               (Drag to reorder)
             </span>
           </h3>

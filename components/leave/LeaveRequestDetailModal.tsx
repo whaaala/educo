@@ -68,7 +68,7 @@ export default function LeaveRequestDetailModal({
     <div className="flex items-center justify-end gap-3">
       <button
         onClick={onClose}
-        className="px-6 py-2.5 rounded-lg bg-gray-200 hover:bg-gray-300 dark:bg-[#2a2d35] dark:hover:bg-gray-500 midnight:bg-gray-700 midnight:hover:bg-gray-600 purple:bg-gray-700 purple:hover:bg-gray-600 text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 font-semibold transition-colors cursor-pointer"
+        className="px-6 py-2.5 rounded-lg bg-gray-200 hover:bg-gray-300 dark:bg-[#2a2d35] dark:hover:bg-gray-500 midnight:bg-gray-700 midnight:hover:bg-gray-600 purple:bg-gray-700 purple:hover:bg-gray-600 text-ink font-semibold transition-colors cursor-pointer"
       >
         Close
       </button>
@@ -107,8 +107,8 @@ export default function LeaveRequestDetailModal({
       >
         <div className="space-y-6">
           {/* Staff Information */}
-          <div className="bg-white dark:bg-[#22262e]/30 midnight:bg-[#0f1330]/30 purple:bg-[#251340]/30 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-xl p-5 shadow-sm">
-            <h3 className="text-base font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-4 flex items-center gap-2">
+          <div className="bg-white dark:bg-[#22262e]/30 midnight:bg-[#0f1330]/30 purple:bg-[#251340]/30 border border-line rounded-xl p-5 shadow-sm">
+            <h3 className="text-base font-bold text-ink mb-4 flex items-center gap-2">
               <div className="p-2 rounded-lg bg-blue-50 dark:bg-blue-900/20 midnight:bg-cyan-900/20 purple:bg-pink-900/20">
                 <User className="w-4 h-4 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
               </div>
@@ -127,7 +127,7 @@ export default function LeaveRequestDetailModal({
                 </div>
               )}
               <div className="flex-1 space-y-2">
-                <p className="text-lg font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                <p className="text-lg font-bold text-ink">
                   {request.staffName}
                 </p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
@@ -151,13 +151,13 @@ export default function LeaveRequestDetailModal({
           {/* Leave Details */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {/* Leave Type & Duration */}
-            <div className="bg-white dark:bg-[#22262e]/30 midnight:bg-[#0f1330]/30 purple:bg-[#251340]/30 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-xl p-4 shadow-sm">
+            <div className="bg-white dark:bg-[#22262e]/30 midnight:bg-[#0f1330]/30 purple:bg-[#251340]/30 border border-line rounded-xl p-4 shadow-sm">
               <div className="flex items-center gap-2 mb-3">
                 <Briefcase className="w-4 h-4 text-gray-500 dark:text-gray-400" />
                 <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70 uppercase">Leave Type</p>
               </div>
               <div className="space-y-2 text-sm">
-                <p className="font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                <p className="font-bold text-ink">
                   {request.leaveType}
                 </p>
                 <p className="text-gray-700 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100">
@@ -167,7 +167,7 @@ export default function LeaveRequestDetailModal({
             </div>
 
             {/* Leave Period */}
-            <div className="bg-white dark:bg-[#22262e]/30 midnight:bg-[#0f1330]/30 purple:bg-[#251340]/30 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-xl p-4 shadow-sm">
+            <div className="bg-white dark:bg-[#22262e]/30 midnight:bg-[#0f1330]/30 purple:bg-[#251340]/30 border border-line rounded-xl p-4 shadow-sm">
               <div className="flex items-center gap-2 mb-3">
                 <Calendar className="w-4 h-4 text-gray-500 dark:text-gray-400" />
                 <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70 uppercase">Leave Period</p>
@@ -184,8 +184,8 @@ export default function LeaveRequestDetailModal({
           </div>
 
           {/* Reason */}
-          <div className="bg-white dark:bg-[#22262e]/30 midnight:bg-[#0f1330]/30 purple:bg-[#251340]/30 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-xl p-5 shadow-sm">
-            <h3 className="text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-3 flex items-center gap-2">
+          <div className="bg-white dark:bg-[#22262e]/30 midnight:bg-[#0f1330]/30 purple:bg-[#251340]/30 border border-line rounded-xl p-5 shadow-sm">
+            <h3 className="text-sm font-bold text-ink mb-3 flex items-center gap-2">
               <div className="p-1.5 rounded-lg bg-purple-50 dark:bg-purple-900/20 midnight:bg-purple-900/20 purple:bg-pink-900/20">
                 <FileText className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400 midnight:text-purple-400 purple:text-pink-400" />
               </div>
@@ -197,21 +197,21 @@ export default function LeaveRequestDetailModal({
           </div>
 
           {/* Request Timeline */}
-          <div className="bg-white dark:bg-[#22262e]/30 midnight:bg-[#0f1330]/30 purple:bg-[#251340]/30 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-xl p-5 shadow-sm">
-            <h3 className="text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-4">
+          <div className="bg-white dark:bg-[#22262e]/30 midnight:bg-[#0f1330]/30 purple:bg-[#251340]/30 border border-line rounded-xl p-5 shadow-sm">
+            <h3 className="text-sm font-bold text-ink mb-4">
               Request Timeline
             </h3>
             <div className="space-y-3 text-sm">
               <div className="flex justify-between items-center">
                 <span className="text-gray-600 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70">Requested on:</span>
-                <span className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                <span className="font-semibold text-ink">
                   {formatDate(request.requestedDate)}
                 </span>
               </div>
               {request.managerName && (
                 <div className="flex justify-between items-center">
                   <span className="text-gray-600 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70">Reporting to:</span>
-                  <span className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                  <span className="font-semibold text-ink">
                     {request.managerName}
                   </span>
                 </div>

@@ -46,7 +46,7 @@ export default function WhiteboardProperties({
   const showFillColors = FILL_TOOLS.includes(activeTool);
 
   return (
-    <div className="flex flex-col gap-3 p-3 bg-white dark:bg-[#1a1d24] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] border-r border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm w-[60px] items-center">
+    <div className="flex flex-col gap-3 p-3 bg-white dark:bg-[#1a1d24] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] border-r border-line shadow-sm w-[60px] items-center">
       {/* Color picker */}
       <div className="flex flex-col gap-1.5 items-center">
         <span className="text-[9px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500 midnight:text-cyan-400/50 purple:text-pink-400/50">
@@ -115,7 +115,7 @@ export default function WhiteboardProperties({
                 className={`w-7 h-7 rounded-lg flex items-center justify-center text-[10px] font-bold transition-all duration-150 cursor-pointer ${
                   activeFontSize === size
                     ? "bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 midnight:bg-cyan-900/30 midnight:text-cyan-400 purple:bg-pink-900/30 purple:text-pink-400"
-                    : "text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"
+                    : "text-muted hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"
                 }`}
                 title={`${size}px`}
               >

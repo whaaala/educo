@@ -278,8 +278,8 @@ export default function DownloadDialog({
             <Download className="w-4.5 h-4.5 text-white" />
           </div>
           <div className="flex-1 min-w-0">
-            <h2 className="text-[15px] font-semibold text-gray-900 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50">Download</h2>
-            <p className="text-[11px] text-gray-400 truncate">{title}</p>
+            <h2 className="text-[0.9375rem] font-semibold text-gray-900 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50">Download</h2>
+            <p className="text-[0.6875rem] text-gray-400 truncate">{title}</p>
           </div>
           <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors cursor-pointer">
             <X className="w-4 h-4 text-gray-400" />
@@ -290,7 +290,7 @@ export default function DownloadDialog({
         <div className="overflow-y-auto max-h-[80vh]">
           {/* Document formats */}
           <div className="px-5 pt-4 pb-2">
-            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Document formats</p>
+            <p className="text-[0.625rem] font-bold text-gray-400 uppercase tracking-widest mb-2">Document formats</p>
             <div className="space-y-1">
               {docFormats.map(f => (
                 <FormatRow key={f.id} format={f} filename={filename} estimatedSize={estimateSize(content, f.id)}
@@ -301,7 +301,7 @@ export default function DownloadDialog({
 
           {/* Image formats */}
           <div className="px-5 pt-3 pb-4">
-            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">
+            <p className="text-[0.625rem] font-bold text-gray-400 uppercase tracking-widest mb-2">
               Image formats <span className="font-normal text-gray-300">(slide {activeIndex + 1})</span>
             </p>
             <div className="space-y-1">
@@ -315,7 +315,7 @@ export default function DownloadDialog({
 
         {/* Footer */}
         <div className="px-5 py-3 border-t border-gray-100 dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10 bg-gray-50/50 dark:bg-gray-950 midnight:bg-[#070d1a] purple:bg-[#150a28]/50">
-          <p className="text-[11px] text-gray-400 text-center">
+          <p className="text-[0.6875rem] text-gray-400 text-center">
             {content.length} slide{content.length !== 1 ? "s" : ""} · Click a format to download
           </p>
         </div>
@@ -351,14 +351,14 @@ function FormatRow({ format, filename, estimatedSize, isDownloading, isCompleted
       {/* Info */}
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
-          <span className="text-[13px] font-semibold text-gray-800 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+          <span className="text-[0.8125rem] font-semibold text-gray-800 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
             {format.label}
           </span>
-          <span className="text-[10px] font-mono text-gray-400 bg-gray-100 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] px-1.5 py-0.5 rounded">
+          <span className="text-[0.625rem] font-mono text-gray-400 bg-gray-100 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] px-1.5 py-0.5 rounded">
             {format.extension}
           </span>
         </div>
-        <p className="text-[11px] text-gray-400 mt-0.5 truncate">{format.description}</p>
+        <p className="text-[0.6875rem] text-gray-400 mt-0.5 truncate">{format.description}</p>
       </div>
 
       {/* Size / Status */}
@@ -366,9 +366,9 @@ function FormatRow({ format, filename, estimatedSize, isDownloading, isCompleted
         {isDownloading ? (
           <Loader2 className="w-4 h-4 text-blue-500 animate-spin" />
         ) : isCompleted ? (
-          <span className="text-[10px] font-medium text-green-600">Downloaded</span>
+          <span className="text-[0.625rem] font-medium text-green-600">Downloaded</span>
         ) : (
-          <span className="text-[10px] text-gray-400 group-hover:text-gray-600 transition-colors">~{estimatedSize}</span>
+          <span className="text-[0.625rem] text-gray-400 group-hover:text-gray-600 transition-colors">~{estimatedSize}</span>
         )}
       </div>
     </button>

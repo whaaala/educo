@@ -101,7 +101,7 @@ export default function WebsiteBuilderHome() {
   }, [router, schoolName, brandPrimary, brandAccent]);
 
   return (
-    <div className="fixed inset-0 flex flex-col bg-gray-50 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] text-gray-900 dark:text-gray-100">
+    <div className="fixed inset-0 flex flex-col bg-canvas text-gray-900 dark:text-gray-100">
       <StudioHeader schoolName={schoolName} logoUrl={logoUrl} brandColor={brandPrimary} />
 
       <div className="flex-1 min-h-0 overflow-y-auto">
@@ -128,7 +128,7 @@ export default function WebsiteBuilderHome() {
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold" style={{ background: `${brandPrimary}1a`, color: brandPrimary }}>
                 <Sparkles className="w-3.5 h-3.5" /> {schoolName} · Website Builder
               </span>
-              <h1 className="mt-4 text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight leading-[1.05] text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+              <h1 className="mt-4 text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight leading-[1.05] text-ink">
                 Build your school&rsquo;s website in minutes
               </h1>
               <p className="mt-4 text-sm sm:text-base max-w-lg leading-relaxed text-gray-600 dark:text-gray-400 midnight:text-cyan-300/80 purple:text-pink-300/80">
@@ -167,7 +167,7 @@ export default function WebsiteBuilderHome() {
         {/* Your sites */}
         <div>
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-muted">
               Your sites {sites.length > 0 && <span className="text-gray-400">({sites.length})</span>}
             </h2>
           </div>
@@ -200,7 +200,7 @@ export default function WebsiteBuilderHome() {
                 aria-label="Create a new site"
                 className="group rounded-xl border-2 border-dashed border-gray-200 dark:border-gray-700 midnight:border-cyan-700/30 purple:border-pink-700/30 hover:border-indigo-400 dark:hover:border-indigo-500 min-h-[200px] flex flex-col items-center justify-center gap-2 text-gray-400 hover:text-indigo-500 transition-colors"
               >
-                <div className="w-12 h-12 rounded-xl bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] group-hover:bg-indigo-50 dark:group-hover:bg-indigo-950/40 flex items-center justify-center transition-colors">
+                <div className="w-12 h-12 rounded-xl bg-surface-2 group-hover:bg-indigo-50 dark:group-hover:bg-indigo-950/40 flex items-center justify-center transition-colors">
                   <Plus className="w-6 h-6" />
                 </div>
                 <span className="text-sm font-medium">New site</span>

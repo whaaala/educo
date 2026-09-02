@@ -204,7 +204,7 @@ export default function EditParentContactModal({
         </div>
 
         {/* Action Buttons */}
-        <div className="flex items-center justify-end gap-3 pt-3 border-t border-gray-200 dark:border-gray-700">
+        <div className="flex items-center justify-end gap-3 pt-3 border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
           <FormButton type="button" variant="secondary" onClick={handleClose}>
             Cancel
           </FormButton>
@@ -214,7 +214,7 @@ export default function EditParentContactModal({
             className={`px-5 py-2 rounded-xl text-sm font-semibold transition-all active:scale-95 cursor-pointer ${
               hasChanges
                 ? "bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg hover:shadow-xl"
-                : "bg-gray-300 dark:bg-[#2a2d35] text-gray-500 dark:text-gray-400 cursor-not-allowed"
+                : "bg-gray-300 dark:bg-[#2a2d35] midnight:bg-[#0f1330] purple:bg-[#251340] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 cursor-not-allowed"
             }`}
           >
             Save Changes

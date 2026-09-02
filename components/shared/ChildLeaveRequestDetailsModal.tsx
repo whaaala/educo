@@ -266,7 +266,7 @@ export default function ChildLeaveRequestDetailsModal({
       <div
         ref={modalRef}
         onClick={(e) => e.stopPropagation()}
-        className="relative w-full max-w-2xl bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-2xl shadow-2xl max-h-[90vh] overflow-hidden animate-in zoom-in-95 duration-200"
+        className="relative w-full max-w-2xl bg-surface rounded-2xl shadow-2xl max-h-[90vh] overflow-hidden animate-in zoom-in-95 duration-200"
       >
         {/* Header */}
         <div className={`relative px-4 sm:px-6 py-4 sm:py-5 bg-gradient-to-r ${status.gradient}`}>
@@ -291,13 +291,13 @@ export default function ChildLeaveRequestDetailsModal({
         </div>
 
         {/* Tabs */}
-        <div className="flex border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+        <div className="flex border-b border-line">
           <button
             onClick={() => setActiveTab("details")}
             className={`flex-1 px-4 py-3 text-sm font-medium transition-colors cursor-pointer ${
               activeTab === "details"
                 ? "text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 border-b-2 border-blue-600 dark:border-blue-400"
-                : "text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:text-gray-700 dark:hover:text-gray-300 midnight:hover:text-cyan-200 purple:hover:text-pink-200"
+                : "text-muted hover:text-gray-700 dark:hover:text-gray-300 midnight:hover:text-cyan-200 purple:hover:text-pink-200"
             }`}
           >
             <div className="flex items-center justify-center gap-2">
@@ -310,7 +310,7 @@ export default function ChildLeaveRequestDetailsModal({
             className={`flex-1 px-4 py-3 text-sm font-medium transition-colors cursor-pointer ${
               activeTab === "history"
                 ? "text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 border-b-2 border-blue-600 dark:border-blue-400"
-                : "text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:text-gray-700 dark:hover:text-gray-300 midnight:hover:text-cyan-200 purple:hover:text-pink-200"
+                : "text-muted hover:text-gray-700 dark:hover:text-gray-300 midnight:hover:text-cyan-200 purple:hover:text-pink-200"
             }`}
           >
             <div className="flex items-center justify-center gap-2">
@@ -340,14 +340,14 @@ export default function ChildLeaveRequestDetailsModal({
                   )}
                 </div>
                 <div className="flex-1">
-                  <p className="text-base font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{leave.childName}</p>
+                  <p className="text-base font-semibold text-ink">{leave.childName}</p>
                   <div className="flex items-center gap-2 mt-1">
                     <GraduationCap className="w-3.5 h-3.5 text-gray-400" />
-                    <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">{childClass}</p>
+                    <p className="text-sm text-muted">{childClass}</p>
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="text-[10px] font-medium text-gray-400 uppercase tracking-wider">Request ID</p>
+                  <p className="text-[0.625rem] font-medium text-gray-400 uppercase tracking-wider">Request ID</p>
                   <p className="text-xs font-mono text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">{leave.id}</p>
                 </div>
               </div>
@@ -356,9 +356,9 @@ export default function ChildLeaveRequestDetailsModal({
               <div className="p-4 rounded-xl bg-gray-50 dark:bg-[#0f1115] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
                 <div className="flex items-center gap-2 mb-2">
                   <MessageSquare className="w-4 h-4 text-gray-400" />
-                  <label className="text-xs font-medium text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 uppercase tracking-wider">Reason for Leave</label>
+                  <label className="text-xs font-medium text-muted uppercase tracking-wider">Reason for Leave</label>
                 </div>
-                <p className="text-sm sm:text-base text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 leading-relaxed">{leave.reason}</p>
+                <p className="text-sm sm:text-base text-ink leading-relaxed">{leave.reason}</p>
               </div>
 
               {/* Date Range */}
@@ -366,16 +366,16 @@ export default function ChildLeaveRequestDetailsModal({
                 <div className="p-4 rounded-xl bg-gray-50 dark:bg-[#0f1115] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
                   <div className="flex items-center gap-2 mb-1">
                     <Calendar className="w-3.5 h-3.5 text-gray-400" />
-                    <p className="text-[10px] font-medium text-gray-400 uppercase tracking-wider">From</p>
+                    <p className="text-[0.625rem] font-medium text-gray-400 uppercase tracking-wider">From</p>
                   </div>
-                  <p className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{startDate ? formatDate(startDate) : "N/A"}</p>
+                  <p className="text-sm font-semibold text-ink">{startDate ? formatDate(startDate) : "N/A"}</p>
                 </div>
                 <div className="p-4 rounded-xl bg-gray-50 dark:bg-[#0f1115] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
                   <div className="flex items-center gap-2 mb-1">
                     <Calendar className="w-3.5 h-3.5 text-gray-400" />
-                    <p className="text-[10px] font-medium text-gray-400 uppercase tracking-wider">To</p>
+                    <p className="text-[0.625rem] font-medium text-gray-400 uppercase tracking-wider">To</p>
                   </div>
-                  <p className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{endDate ? formatDate(endDate) : "N/A"}</p>
+                  <p className="text-sm font-semibold text-ink">{endDate ? formatDate(endDate) : "N/A"}</p>
                 </div>
               </div>
 
@@ -386,7 +386,7 @@ export default function ChildLeaveRequestDetailsModal({
                   <p className="text-2xl font-bold text-blue-700 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300">{days} {days === 1 ? "Day" : "Days"}</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Applied on</p>
+                  <p className="text-xs text-muted">Applied on</p>
                   <p className="text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200">{appliedDate ? formatDate(appliedDate) : "N/A"}</p>
                 </div>
               </div>
@@ -414,7 +414,7 @@ export default function ChildLeaveRequestDetailsModal({
                   </div>
                   <p className="text-sm text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 leading-relaxed">{rejectionReason}</p>
                   {approvedBy && (
-                    <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mt-2">
+                    <p className="text-xs text-muted mt-2">
                       Processed by <span className="font-semibold">{approvedBy}</span>
                       {approvedDate && <span> on {formatDate(approvedDate)}</span>}
                     </p>
@@ -427,7 +427,7 @@ export default function ChildLeaveRequestDetailsModal({
                 <div className="p-4 rounded-xl bg-gray-50 dark:bg-[#0f1115] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
                   <div className="flex items-center gap-2 mb-3">
                     <FileText className="w-4 h-4 text-gray-400" />
-                    <p className="text-xs font-medium text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 uppercase tracking-wider">Attached Documents</p>
+                    <p className="text-xs font-medium text-muted uppercase tracking-wider">Attached Documents</p>
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {leave.documents.map((doc, idx) => (
@@ -436,7 +436,7 @@ export default function ChildLeaveRequestDetailsModal({
                         href={doc}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 text-xs font-medium text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 midnight:hover:bg-cyan-900/20 purple:hover:bg-pink-900/20 transition-colors"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface border border-line text-xs font-medium text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 midnight:hover:bg-cyan-900/20 purple:hover:bg-pink-900/20 transition-colors"
                       >
                         <FileText className="w-3.5 h-3.5" />
                         Document {idx + 1}
@@ -450,7 +450,7 @@ export default function ChildLeaveRequestDetailsModal({
               {isAdmin && leave.status === "pending" && !showRejectForm && (
                 <div className="space-y-3 pt-2">
                   <div>
-                    <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 uppercase tracking-wider mb-2">
+                    <label className="block text-xs font-medium text-muted uppercase tracking-wider mb-2">
                       Approval Notes (Optional)
                     </label>
                     <textarea
@@ -458,7 +458,7 @@ export default function ChildLeaveRequestDetailsModal({
                       onChange={(e) => setApprovalNotes(e.target.value)}
                       placeholder="Add any notes for approval..."
                       rows={2}
-                      className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] text-sm text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all resize-none"
+                      className="w-full px-4 py-3 rounded-xl border border-line bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] text-sm text-ink placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all resize-none"
                     />
                   </div>
                 </div>
@@ -480,7 +480,7 @@ export default function ChildLeaveRequestDetailsModal({
                       onChange={(e) => setRejectReason(e.target.value)}
                       placeholder="Please provide a reason for rejecting this leave request..."
                       rows={3}
-                      className="w-full px-4 py-3 rounded-xl border border-rose-200 dark:border-rose-700 bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] text-sm text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all resize-none"
+                      className="w-full px-4 py-3 rounded-xl border border-rose-200 dark:border-rose-700 bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] text-sm text-ink placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all resize-none"
                       required
                     />
                   </div>
@@ -550,14 +550,14 @@ export default function ChildLeaveRequestDetailsModal({
                       <div className="p-4 rounded-xl bg-gray-50 dark:bg-[#0f1115] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 ml-2">
                         <div className="flex items-center justify-between mb-2">
                           <span className={`text-sm font-semibold ${config.text} capitalize`}>{entry.action}</span>
-                          <span className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">{formatDateTime(entry.timestamp)}</span>
+                          <span className="text-xs text-muted">{formatDateTime(entry.timestamp)}</span>
                         </div>
                         <div className="flex items-center gap-2 mb-2">
                           <User className="w-3.5 h-3.5 text-gray-400" />
                           <span className="text-sm text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200">{entry.by}</span>
                         </div>
                         {entry.notes && (
-                          <p className="text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mt-2 pl-5 border-l-2 border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+                          <p className="text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mt-2 pl-5 border-l-2 border-line">
                             {entry.notes}
                           </p>
                         )}
@@ -573,7 +573,7 @@ export default function ChildLeaveRequestDetailsModal({
                     </div>
                     <div className="p-4 rounded-xl bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 ml-2">
                       <span className="text-sm font-semibold text-amber-600 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400">Awaiting Approval</span>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mt-1">This request is pending review by school administration.</p>
+                      <p className="text-xs text-muted mt-1">This request is pending review by school administration.</p>
                     </div>
                   </div>
                 )}

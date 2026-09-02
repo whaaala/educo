@@ -55,15 +55,15 @@ export default function IncidentDetailModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="relative w-full max-w-4xl max-h-[90vh] bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-2xl shadow-2xl flex flex-col animate-in zoom-in-95 duration-200">
+      <div className="relative w-full max-w-4xl max-h-[90vh] bg-surface rounded-2xl shadow-2xl flex flex-col animate-in zoom-in-95 duration-200">
         {/* Header */}
-        <div className="flex-shrink-0 flex items-center justify-between px-6 py-5 bg-gradient-to-r from-gray-50/50 to-blue-50/30 dark:from-gray-700/30 dark:to-gray-700/40 midnight:from-gray-800/30 midnight:to-cyan-900/10 purple:from-gray-800/30 purple:to-pink-900/10 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-t-2xl">
+        <div className="flex-shrink-0 flex items-center justify-between px-6 py-5 bg-gradient-to-r from-gray-50/50 to-blue-50/30 dark:from-gray-700/30 dark:to-gray-700/40 midnight:from-gray-800/30 midnight:to-cyan-900/10 purple:from-gray-800/30 purple:to-pink-900/10 border-b border-line rounded-t-2xl">
           <div className="flex-1 flex items-center gap-3">
             <div className="p-2.5 rounded-xl bg-blue-50 dark:bg-blue-900/20 midnight:bg-cyan-900/20 purple:bg-pink-900/20 border border-blue-200/50 dark:border-blue-700/30 midnight:border-cyan-500/30 purple:border-pink-500/30">
               <Shield className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
             </div>
             <div>
-              <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+              <h2 className="text-xl sm:text-2xl font-bold text-ink">
                 Incident Details
               </h2>
               <p className="text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mt-1">
@@ -83,8 +83,8 @@ export default function IncidentDetailModal({
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
           {/* Student Information */}
-          <div className="bg-white dark:bg-[#22262e]/30 midnight:bg-[#0f1330]/30 purple:bg-[#251340]/30 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-xl p-5 shadow-sm">
-            <h3 className="text-base font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-4 flex items-center gap-2">
+          <div className="bg-white dark:bg-[#22262e]/30 midnight:bg-[#0f1330]/30 purple:bg-[#251340]/30 border border-line rounded-xl p-5 shadow-sm">
+            <h3 className="text-base font-bold text-ink mb-4 flex items-center gap-2">
               <div className="p-2 rounded-lg bg-blue-50 dark:bg-blue-900/20 midnight:bg-cyan-900/20 purple:bg-pink-900/20">
                 <User className="w-4 h-4 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
               </div>
@@ -103,7 +103,7 @@ export default function IncidentDetailModal({
                 </div>
               )}
               <div className="flex-1 space-y-2">
-                <p className="text-lg font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                <p className="text-lg font-bold text-ink">
                   {incident.studentName}
                 </p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
@@ -120,42 +120,42 @@ export default function IncidentDetailModal({
 
           {/* Incident Overview */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="bg-white dark:bg-[#22262e]/30 midnight:bg-[#0f1330]/30 purple:bg-[#251340]/30 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-xl p-4 shadow-sm">
+            <div className="bg-white dark:bg-[#22262e]/30 midnight:bg-[#0f1330]/30 purple:bg-[#251340]/30 border border-line rounded-xl p-4 shadow-sm">
               <div className="flex items-center gap-2 mb-2">
                 <Calendar className="w-4 h-4 text-gray-500 dark:text-gray-400" />
                 <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Date</p>
               </div>
-              <p className="text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+              <p className="text-sm font-bold text-ink">
                 {formatDate(incident.incidentDate)}
               </p>
             </div>
 
-            <div className="bg-white dark:bg-[#22262e]/30 midnight:bg-[#0f1330]/30 purple:bg-[#251340]/30 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-xl p-4 shadow-sm">
+            <div className="bg-white dark:bg-[#22262e]/30 midnight:bg-[#0f1330]/30 purple:bg-[#251340]/30 border border-line rounded-xl p-4 shadow-sm">
               <div className="flex items-center gap-2 mb-2">
                 <Clock className="w-4 h-4 text-gray-500 dark:text-gray-400" />
                 <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Time</p>
               </div>
-              <p className="text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+              <p className="text-sm font-bold text-ink">
                 {incident.incidentTime}
               </p>
             </div>
 
-            <div className="bg-white dark:bg-[#22262e]/30 midnight:bg-[#0f1330]/30 purple:bg-[#251340]/30 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-xl p-4 shadow-sm">
+            <div className="bg-white dark:bg-[#22262e]/30 midnight:bg-[#0f1330]/30 purple:bg-[#251340]/30 border border-line rounded-xl p-4 shadow-sm">
               <div className="flex items-center gap-2 mb-2">
                 <MapPin className="w-4 h-4 text-gray-500 dark:text-gray-400" />
                 <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Location</p>
               </div>
-              <p className="text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+              <p className="text-sm font-bold text-ink">
                 {incident.location}
               </p>
             </div>
 
-            <div className="bg-white dark:bg-[#22262e]/30 midnight:bg-[#0f1330]/30 purple:bg-[#251340]/30 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-xl p-4 shadow-sm">
+            <div className="bg-white dark:bg-[#22262e]/30 midnight:bg-[#0f1330]/30 purple:bg-[#251340]/30 border border-line rounded-xl p-4 shadow-sm">
               <div className="flex items-center gap-2 mb-2">
                 <FileText className="w-4 h-4 text-gray-500 dark:text-gray-400" />
                 <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Category</p>
               </div>
-              <p className="text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+              <p className="text-sm font-bold text-ink">
                 {getCategoryLabel(incident.category)}
               </p>
             </div>
@@ -163,7 +163,7 @@ export default function IncidentDetailModal({
 
           {/* Status & Severity */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="bg-white dark:bg-[#22262e]/30 midnight:bg-[#0f1330]/30 purple:bg-[#251340]/30 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-xl p-4 shadow-sm">
+            <div className="bg-white dark:bg-[#22262e]/30 midnight:bg-[#0f1330]/30 purple:bg-[#251340]/30 border border-line rounded-xl p-4 shadow-sm">
               <div className="flex items-center gap-2 mb-3">
                 <Shield className="w-4 h-4 text-gray-500 dark:text-gray-400" />
                 <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Severity</p>
@@ -171,7 +171,7 @@ export default function IncidentDetailModal({
               <SeverityBadge severity={incident.severity} size="md" />
             </div>
 
-            <div className="bg-white dark:bg-[#22262e]/30 midnight:bg-[#0f1330]/30 purple:bg-[#251340]/30 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-xl p-4 shadow-sm">
+            <div className="bg-white dark:bg-[#22262e]/30 midnight:bg-[#0f1330]/30 purple:bg-[#251340]/30 border border-line rounded-xl p-4 shadow-sm">
               <div className="flex items-center gap-2 mb-3">
                 <AlertTriangle className="w-4 h-4 text-gray-500 dark:text-gray-400" />
                 <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Status</p>
@@ -181,8 +181,8 @@ export default function IncidentDetailModal({
           </div>
 
           {/* Incident Details */}
-          <div className="bg-white dark:bg-[#22262e]/30 midnight:bg-[#0f1330]/30 purple:bg-[#251340]/30 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-xl p-5 shadow-sm">
-            <h3 className="text-lg font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-3">
+          <div className="bg-white dark:bg-[#22262e]/30 midnight:bg-[#0f1330]/30 purple:bg-[#251340]/30 border border-line rounded-xl p-5 shadow-sm">
+            <h3 className="text-lg font-bold text-ink mb-3">
               {incident.title}
             </h3>
             <p className="text-sm text-gray-700 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100 leading-relaxed">
@@ -192,8 +192,8 @@ export default function IncidentDetailModal({
 
           {/* Witnesses */}
           {incident.witnesses && incident.witnesses.length > 0 && (
-            <div className="bg-white dark:bg-[#22262e]/30 midnight:bg-[#0f1330]/30 purple:bg-[#251340]/30 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-xl p-5 shadow-sm">
-              <h3 className="text-base font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-4 flex items-center gap-2">
+            <div className="bg-white dark:bg-[#22262e]/30 midnight:bg-[#0f1330]/30 purple:bg-[#251340]/30 border border-line rounded-xl p-5 shadow-sm">
+              <h3 className="text-base font-bold text-ink mb-4 flex items-center gap-2">
                 <div className="p-2 rounded-lg bg-purple-50 dark:bg-purple-900/20 midnight:bg-purple-900/20 purple:bg-pink-900/20">
                   <Users className="w-4 h-4 text-purple-600 dark:text-purple-400 midnight:text-purple-400 purple:text-pink-400" />
                 </div>
@@ -211,17 +211,17 @@ export default function IncidentDetailModal({
           )}
 
           {/* Action Taken */}
-          <div className="bg-white dark:bg-[#22262e]/30 midnight:bg-[#0f1330]/30 purple:bg-[#251340]/30 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-xl p-5 shadow-sm">
+          <div className="bg-white dark:bg-[#22262e]/30 midnight:bg-[#0f1330]/30 purple:bg-[#251340]/30 border border-line rounded-xl p-5 shadow-sm">
             <div className="flex items-center gap-2 mb-3">
               <CheckCircle className="w-5 h-5 text-gray-700 dark:text-gray-300" />
-              <h3 className="text-lg font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+              <h3 className="text-lg font-bold text-ink">
                 Action Taken
               </h3>
             </div>
             <div className="space-y-3">
               <div>
                 <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase mb-1">Type</p>
-                <p className="text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                <p className="text-sm font-bold text-ink">
                   {getActionTypeLabel(incident.actionType || "")}
                 </p>
               </div>
@@ -243,8 +243,8 @@ export default function IncidentDetailModal({
           </div>
 
           {/* Reporter Information */}
-          <div className="bg-white dark:bg-[#22262e]/30 midnight:bg-[#0f1330]/30 purple:bg-[#251340]/30 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-xl p-5 shadow-sm">
-            <h3 className="text-lg font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-3">
+          <div className="bg-white dark:bg-[#22262e]/30 midnight:bg-[#0f1330]/30 purple:bg-[#251340]/30 border border-line rounded-xl p-5 shadow-sm">
+            <h3 className="text-lg font-bold text-ink mb-3">
               Reported By
             </h3>
             <div className="space-y-2 text-sm">
@@ -261,8 +261,8 @@ export default function IncidentDetailModal({
           </div>
 
           {/* Parent Notification */}
-          <div className="bg-white dark:bg-[#22262e]/30 midnight:bg-[#0f1330]/30 purple:bg-[#251340]/30 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-xl p-5 shadow-sm">
-            <h3 className="text-lg font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-3">
+          <div className="bg-white dark:bg-[#22262e]/30 midnight:bg-[#0f1330]/30 purple:bg-[#251340]/30 border border-line rounded-xl p-5 shadow-sm">
+            <h3 className="text-lg font-bold text-ink mb-3">
               Parent Notification
             </h3>
             <div className="space-y-2 text-sm">
@@ -308,10 +308,10 @@ export default function IncidentDetailModal({
         </div>
 
         {/* Footer */}
-        <div className="flex-shrink-0 flex items-center justify-end gap-3 px-6 py-4 bg-gray-50/80 dark:bg-[#22262e]/50 midnight:bg-[#0f1330]/50 purple:bg-[#251340]/50 border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-b-2xl">
+        <div className="flex-shrink-0 flex items-center justify-end gap-3 px-6 py-4 bg-gray-50/80 dark:bg-[#22262e]/50 midnight:bg-[#0f1330]/50 purple:bg-[#251340]/50 border-t border-line rounded-b-2xl">
           <button
             onClick={onClose}
-            className="px-6 py-2.5 rounded-lg bg-gray-200 hover:bg-gray-300 dark:bg-[#2a2d35] dark:hover:bg-gray-500 midnight:bg-gray-700 midnight:hover:bg-gray-600 purple:bg-gray-700 purple:hover:bg-gray-600 text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 font-semibold transition-colors cursor-pointer"
+            className="px-6 py-2.5 rounded-lg bg-gray-200 hover:bg-gray-300 dark:bg-[#2a2d35] dark:hover:bg-gray-500 midnight:bg-gray-700 midnight:hover:bg-gray-600 purple:bg-gray-700 purple:hover:bg-gray-600 text-ink font-semibold transition-colors cursor-pointer"
           >
             Close
           </button>

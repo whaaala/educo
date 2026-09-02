@@ -465,10 +465,10 @@ export default function FeeStructurePage() {
       className: "text-left",
       render: (item) => (
         <div>
-          <div className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50" style={{ fontSize: '11.8px' }}>
+          <div className="font-semibold text-ink" style={{ fontSize: '0.7375rem' }}>
             {item.feeTypeName}
           </div>
-          <div className="text-gray-500 dark:text-gray-400 midnight:text-cyan-400/60 purple:text-pink-400/60" style={{ fontSize: '10px' }}>
+          <div className="text-gray-500 dark:text-gray-400 midnight:text-cyan-400/60 purple:text-pink-400/60" style={{ fontSize: '0.625rem' }}>
             {item.categoryName}
           </div>
         </div>
@@ -480,7 +480,7 @@ export default function FeeStructurePage() {
       sortable: true,
       className: "text-left",
       render: (item) => (
-        <span className="inline-flex px-2.5 py-0.5 rounded-full font-semibold bg-blue-100 dark:bg-blue-900/30 midnight:bg-blue-900/20 purple:bg-blue-900/20 text-blue-700 dark:text-blue-400 midnight:text-blue-400 purple:text-blue-400 border border-blue-200 dark:border-blue-800" style={{ fontSize: '11.8px' }}>
+        <span className="inline-flex px-2.5 py-0.5 rounded-full font-semibold bg-blue-100 dark:bg-blue-900/30 midnight:bg-blue-900/20 purple:bg-blue-900/20 text-blue-700 dark:text-blue-400 midnight:text-blue-400 purple:text-blue-400 border border-blue-200 dark:border-blue-800" style={{ fontSize: '0.7375rem' }}>
           {item.classLevel}
         </span>
       ),
@@ -491,7 +491,7 @@ export default function FeeStructurePage() {
       sortable: true,
       className: "text-left",
       render: (item) => (
-        <div className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50" style={{ fontSize: '11.8px' }}>
+        <div className="font-semibold text-ink" style={{ fontSize: '0.7375rem' }}>
           {formatCurrency(item.amount, countryCode)}
         </div>
       ),
@@ -502,7 +502,7 @@ export default function FeeStructurePage() {
       sortable: true,
       className: "text-left",
       render: (item) => (
-        <div className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 whitespace-nowrap" style={{ fontSize: '11.8px' }}>
+        <div className="font-semibold text-ink whitespace-nowrap" style={{ fontSize: '0.7375rem' }}>
           {new Date(item.dueDate).toLocaleDateString("en-GB", {
             day: "numeric",
             month: "short",
@@ -516,7 +516,7 @@ export default function FeeStructurePage() {
       label: "Term",
       className: "text-left",
       render: (item) => (
-        <div className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 capitalize whitespace-nowrap" style={{ fontSize: '11.8px' }}>
+        <div className="font-semibold text-ink capitalize whitespace-nowrap" style={{ fontSize: '0.7375rem' }}>
           {item.term.replace("-", " ").replace(/\b\w/g, l => l.toUpperCase())}
         </div>
       ),
@@ -527,12 +527,12 @@ export default function FeeStructurePage() {
       className: "text-left",
       render: (item) => (
         item.allowInstallments ? (
-          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full font-semibold bg-green-100 dark:bg-green-900/30 midnight:bg-green-900/20 purple:bg-green-900/20 text-green-700 dark:text-green-400 midnight:text-green-400 purple:text-green-400 border border-green-200 dark:border-green-800" style={{ fontSize: '11.8px' }}>
+          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full font-semibold bg-green-100 dark:bg-green-900/30 midnight:bg-green-900/20 purple:bg-green-900/20 text-green-700 dark:text-green-400 midnight:text-green-400 purple:text-green-400 border border-green-200 dark:border-green-800" style={{ fontSize: '0.7375rem' }}>
             <CheckCircle2 className="w-3 h-3" />
             {item.installmentCount}x
           </span>
         ) : (
-          <span className="text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400" style={{ fontSize: '11.8px' }}>—</span>
+          <span className="text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400" style={{ fontSize: '0.7375rem' }}>—</span>
         )
       ),
     },
@@ -546,9 +546,9 @@ export default function FeeStructurePage() {
           className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full font-semibold cursor-pointer transition-colors border whitespace-nowrap ${
             item.isActive
               ? "bg-green-100 dark:bg-green-900/30 midnight:bg-green-900/20 purple:bg-green-900/20 text-green-700 dark:text-green-400 midnight:text-green-400 purple:text-green-400 border-green-200 dark:border-green-800 hover:bg-green-200"
-              : "bg-gray-100 dark:bg-[#1a1d24] midnight:bg-[#0f1330] purple:bg-[#251340] text-gray-500 dark:text-gray-400 midnight:text-gray-400 purple:text-gray-400 border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 hover:bg-gray-200"
+              : "bg-gray-100 dark:bg-[#1a1d24] midnight:bg-[#0f1330] purple:bg-[#251340] text-gray-500 dark:text-gray-400 midnight:text-gray-400 purple:text-gray-400 border-line hover:bg-gray-200"
           }`}
-          style={{ fontSize: '11.8px' }}
+          style={{ fontSize: '0.7375rem' }}
         >
           <span className="w-1.5 h-1.5 rounded-full bg-current"></span>
           {item.isActive ? "Active" : "Inactive"}
@@ -720,13 +720,13 @@ export default function FeeStructurePage() {
             <div className="flex items-center justify-center py-12">
               <div className="flex flex-col items-center gap-3">
                 <div className="w-8 h-8 border-2 border-blue-200 border-t-blue-600 rounded-full animate-spin" />
-                <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
+                <p className="text-sm text-muted">
                   {isRefreshing ? "Refreshing..." : "Filtering..."}
                 </p>
               </div>
             </div>
           ) : filteredStructures.length === 0 ? (
-            <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm p-8 sm:p-12">
+            <div className="bg-surface rounded-xl border border-line shadow-sm p-8 sm:p-12">
               <div className="flex flex-col items-center justify-center">
                 <div className="relative mb-4">
                   <div className="absolute inset-0 flex items-center justify-center">
@@ -739,7 +739,7 @@ export default function FeeStructurePage() {
                 <h3 className="text-sm sm:text-base font-semibold text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 mb-1 text-center">
                   No fee structures found
                 </h3>
-                <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mb-4 text-center">
+                <p className="text-xs sm:text-sm text-muted mb-4 text-center">
                   {searchQuery
                     ? "No results match your search. Try adjusting your filters."
                     : "Get started by adding your first fee structure."}
@@ -761,7 +761,7 @@ export default function FeeStructurePage() {
 
               <div
                 key={`table-data-${searchQuery}-${selectedYear}-${selectedLevel}-${selectedClass}-${selectedCategory}`}
-                className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm overflow-hidden"
+                className="bg-surface rounded-xl border border-line shadow-sm overflow-hidden"
               >
                 <ResponsiveListTable variant="contained" showColumnHeaders={true}
                   columns={columns}

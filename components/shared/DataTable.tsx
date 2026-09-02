@@ -255,7 +255,7 @@ export default function DataTable<T>({
  return (
  <div className={`w-full transition-all duration-300 overflow-hidden ${
  hideColumnHeaders
- ? 'bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]'
+ ? 'bg-surface'
  : 'bg-gradient-to-b from-white via-white to-gray-50/80 dark:from-gray-800 dark:via-gray-800 dark:to-gray-850/90 midnight:from-gray-900 midnight:via-gray-900 midnight:to-gray-950/90 purple:from-gray-900 purple:via-gray-900 purple:to-gray-950/90 shadow-[0_8px_32px_rgba(0,0,0,0.08),0_2px_8px_rgba(0,0,0,0.06),inset_0_1px_0_rgba(255,255,255,0.8)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.06)] rounded-2xl sm:rounded-3xl border border-gray-200/80 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20'
  }`}>
  {/* Table Header */}
@@ -309,7 +309,7 @@ export default function DataTable<T>({
  <th
  key={column.key}
  onClick={() => column.renderHeader ? undefined : handleSort(column.key)}
- className={`px-2 sm:px-2 md:px-2 lg:px-3 py-2.5 sm:py-2 md:py-2.5 text-[10px] md:text-[9px] lg:text-[10px] font-extrabold uppercase tracking-wide whitespace-nowrap align-middle transition-all duration-300 ease-in-out ${stickyClass} ${
+ className={`px-2 sm:px-2 md:px-2 lg:px-3 py-2.5 sm:py-2 md:py-2.5 text-[0.625rem] md:text-[0.5625rem] lg:text-[0.625rem] font-extrabold uppercase tracking-wide whitespace-nowrap align-middle transition-all duration-300 ease-in-out ${stickyClass} ${
  sortedData.length === 0
  ? 'cursor-not-allowed opacity-50'
  : column.sortable !== false && !column.renderHeader ? 'cursor-pointer group/header select-none hover:bg-gray-100/50 dark:hover:bg-[#2a2d35] midnight:hover:bg-cyan-500/15 :bg-cyan-500/10 purple:hover:bg-pink-500/10' : ''
@@ -424,7 +424,7 @@ export default function DataTable<T>({
  style={allowOverflow ? { overflow: 'visible' } : { overflow: 'hidden' }}
  >
  {column.render ? column.render(item, index) : (
- <span className="text-[12px] font-medium text-gray-900 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100 block truncate">
+ <span className="text-[0.75rem] font-medium text-gray-900 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100 block truncate">
  {String((item as any)[column.key] || "")}
  </span>
  )}
@@ -503,7 +503,7 @@ export default function DataTable<T>({
  disabled={currentPage === 1 || sortedData.length === 0 || isLoading}
  className={`p-1.5 rounded-lg transition-all duration-300 ${
  currentPage === 1 || sortedData.length === 0 || isLoading
- ? "opacity-40 cursor-not-allowed bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]"
+ ? "opacity-40 cursor-not-allowed bg-surface-2"
  : "hover:bg-blue-100 dark:hover:bg-blue-500/20 midnight:hover:bg-cyan-500/20 purple:hover:bg-pink-500/20 cursor-pointer hover:scale-110 active:scale-95"
  }`}
  style={{ cursor: currentPage === 1 || sortedData.length === 0 || isLoading ? 'not-allowed' : 'pointer' }}
@@ -561,7 +561,7 @@ export default function DataTable<T>({
  disabled={currentPage === totalPages || sortedData.length === 0 || isLoading}
  className={`p-1.5 rounded-lg transition-all duration-300 ${
  currentPage === totalPages || sortedData.length === 0 || isLoading
- ? "opacity-40 cursor-not-allowed bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]"
+ ? "opacity-40 cursor-not-allowed bg-surface-2"
  : "hover:bg-blue-100 dark:hover:bg-blue-500/20 midnight:hover:bg-cyan-500/20 purple:hover:bg-pink-500/20 cursor-pointer hover:scale-110 active:scale-95"
  }`}
  style={{ cursor: currentPage === totalPages || sortedData.length === 0 || isLoading ? 'not-allowed' : 'pointer' }}
@@ -590,7 +590,7 @@ export default function DataTable<T>({
  }}
  className={`appearance-none pl-3 pr-8 py-1.5 rounded-lg border text-xs sm:text-sm font-semibold focus:outline-none transition-all duration-200 ${
  sortedData.length === 0 || isLoading
- ? 'cursor-not-allowed opacity-60 border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400'
+ ? 'cursor-not-allowed opacity-60 border-line bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400'
  : 'cursor-pointer border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] text-gray-900 dark:text-gray-200 midnight:text-cyan-200 purple:text-pink-200 hover:border-blue-500 dark:hover:border-blue-400 midnight:hover:border-cyan-400 purple:hover:border-pink-400 hover:shadow-md focus:ring-2 focus:ring-blue-500/50 dark:focus:ring-blue-400/50 midnight:focus:ring-cyan-500/50 purple:focus:ring-pink-500/50'
  }`}
  >

@@ -95,7 +95,7 @@ export function LiveChatPanel({
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-[#1a1d24] midnight:border-cyan-500/20 purple:border-pink-500/20">
         <div className="flex items-center gap-2">
-          <h3 className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+          <h3 className="font-semibold text-ink">
             Live Chat
           </h3>
           {unreadCount > 0 && (
@@ -165,10 +165,10 @@ export function LiveChatPanel({
                   <div className={cn("flex-1 max-w-[80%]", isOwn && "flex flex-col items-end")}>
                     {/* Sender Name & Time */}
                     <div className={cn("flex items-center gap-2 mb-1", isOwn && "flex-row-reverse")}>
-                      <span className="text-xs font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                      <span className="text-xs font-semibold text-ink">
                         {isOwn ? "You" : message.senderName}
                       </span>
-                      <span className="text-[10px] text-gray-400 dark:text-gray-500">
+                      <span className="text-[0.625rem] text-gray-400 dark:text-gray-500">
                         • {formatTime(message.timestamp)}
                       </span>
                     </div>

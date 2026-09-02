@@ -414,7 +414,7 @@ export default function ReceiptsPage() {
     const Icon = config.icon;
 
     return (
-      <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full font-semibold border ${config.bg} ${config.text} ${config.border}`} style={{ fontSize: '11.8px' }}>
+      <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full font-semibold border ${config.bg} ${config.text} ${config.border}`} style={{ fontSize: '0.7375rem' }}>
         <Icon className="w-3 h-3" />
         {config.label}
       </span>
@@ -610,7 +610,7 @@ export default function ReceiptsPage() {
       sortable: true,
       className: "text-left",
       render: (receipt) => (
-        <span className="font-mono font-semibold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" style={{ fontSize: '11.8px' }}>
+        <span className="font-mono font-semibold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" style={{ fontSize: '0.7375rem' }}>
           {receipt.receiptNumber}
         </span>
       ),
@@ -635,10 +635,10 @@ export default function ReceiptsPage() {
             <div className="absolute -inset-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 dark:from-blue-400 dark:via-purple-400 dark:to-pink-400 midnight:from-cyan-400 midnight:via-purple-400 midnight:to-cyan-400 purple:from-pink-400 purple:via-purple-400 purple:to-pink-400 rounded-full opacity-0 group-hover/avatar:opacity-40 blur-md transition-all duration-500 ease-out pointer-events-none -z-10" />
           </div>
           <div>
-            <div className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50" style={{ fontSize: '11.8px' }}>
+            <div className="font-semibold text-ink" style={{ fontSize: '0.7375rem' }}>
               {receipt.studentName}
             </div>
-            <div className="text-gray-500 dark:text-gray-400 midnight:text-cyan-400/60 purple:text-pink-400/60" style={{ fontSize: '10px' }}>
+            <div className="text-gray-500 dark:text-gray-400 midnight:text-cyan-400/60 purple:text-pink-400/60" style={{ fontSize: '0.625rem' }}>
               {receipt.studentNumber}
             </div>
           </div>
@@ -651,7 +651,7 @@ export default function ReceiptsPage() {
       sortable: true,
       className: "text-left",
       render: (receipt) => (
-        <span className="inline-flex px-2.5 py-0.5 rounded-full font-semibold bg-blue-100 dark:bg-blue-900/30 midnight:bg-blue-900/20 purple:bg-blue-900/20 text-blue-700 dark:text-blue-400 midnight:text-blue-400 purple:text-blue-400 border border-blue-200 dark:border-blue-800" style={{ fontSize: '11.8px' }}>
+        <span className="inline-flex px-2.5 py-0.5 rounded-full font-semibold bg-blue-100 dark:bg-blue-900/30 midnight:bg-blue-900/20 purple:bg-blue-900/20 text-blue-700 dark:text-blue-400 midnight:text-blue-400 purple:text-blue-400 border border-blue-200 dark:border-blue-800" style={{ fontSize: '0.7375rem' }}>
           {receipt.classLevel}
         </span>
       ),
@@ -662,7 +662,7 @@ export default function ReceiptsPage() {
       sortable: true,
       className: "text-left",
       render: (receipt) => (
-        <div className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50" style={{ fontSize: '11.8px' }}>
+        <div className="font-semibold text-ink" style={{ fontSize: '0.7375rem' }}>
           {formatCurrency(receipt.totalAmount, countryCode)}
         </div>
       ),
@@ -673,7 +673,7 @@ export default function ReceiptsPage() {
       sortable: true,
       className: "text-left",
       render: (receipt) => (
-        <div className="font-semibold text-green-600 dark:text-green-400 midnight:text-green-400 purple:text-green-400" style={{ fontSize: '11.8px' }}>
+        <div className="font-semibold text-green-600 dark:text-green-400 midnight:text-green-400 purple:text-green-400" style={{ fontSize: '0.7375rem' }}>
           {formatCurrency(receipt.amountPaid, countryCode)}
         </div>
       ),
@@ -684,7 +684,7 @@ export default function ReceiptsPage() {
       sortable: true,
       className: "text-left",
       render: (receipt) => (
-        <div className={`font-semibold ${receipt.balance === 0 ? "text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400" : "text-amber-600 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400"}`} style={{ fontSize: '11.8px' }}>
+        <div className={`font-semibold ${receipt.balance === 0 ? "text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400" : "text-amber-600 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400"}`} style={{ fontSize: '0.7375rem' }}>
           {formatCurrency(receipt.balance, countryCode)}
         </div>
       ),
@@ -695,7 +695,7 @@ export default function ReceiptsPage() {
       sortable: true,
       className: "text-left",
       render: (receipt) => (
-        <span className="text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300" style={{ fontSize: '11.8px' }}>
+        <span className="text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300" style={{ fontSize: '0.7375rem' }}>
           {getPaymentMethodLabel(receipt.paymentMethod)}
         </span>
       ),
@@ -873,7 +873,7 @@ export default function ReceiptsPage() {
           {isLoading ? (
             <PageSpinner message={isRefreshing ? "Refreshing..." : "Filtering..."} size="md" />
           ) : filteredData.length === 0 ? (
-            <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm p-8 sm:p-12">
+            <div className="bg-surface rounded-xl border border-line shadow-sm p-8 sm:p-12">
               <div className="flex flex-col items-center justify-center">
                 <div className="relative mb-4">
                   <div className="absolute inset-0 flex items-center justify-center">
@@ -886,7 +886,7 @@ export default function ReceiptsPage() {
                 <h3 className="text-sm sm:text-base font-semibold text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 mb-1 text-center">
                   No receipts found
                 </h3>
-                <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mb-4 text-center">
+                <p className="text-xs sm:text-sm text-muted mb-4 text-center">
                   {searchQuery
                     ? "No results match your search. Try adjusting your filters."
                     : "Get started by generating your first receipt."}
@@ -914,7 +914,7 @@ export default function ReceiptsPage() {
 
               <div
                 key={`table-data-${filterKey}`}
-                className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm"
+                className="bg-surface rounded-xl border border-line shadow-sm"
               >
                 <ResponsiveListTable variant="contained" showColumnHeaders={true}
                   columns={columns}
@@ -1022,13 +1022,13 @@ function ReceiptViewModal({
 }: ReceiptViewModalProps) {
   const itemRows = receipt.items.map((item) => (
     <tr key={item.id}>
-      <td className="px-4 py-3 text-sm text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+      <td className="px-4 py-3 text-sm text-ink">
         {item.description}
       </td>
       <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 text-right">
         {item.quantity}
       </td>
-      <td className="px-4 py-3 text-sm font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-right">
+      <td className="px-4 py-3 text-sm font-medium text-ink text-right">
         {formatCurrency(item.amount * item.quantity, countryCode)}
       </td>
     </tr>
@@ -1070,7 +1070,7 @@ function ReceiptViewModal({
             <span className="text-sm text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200">
               {receipt.studentName} • {receipt.studentNumber} • {receipt.classLevel}
             </span>
-            <span className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
+            <span className="text-xs text-muted">
               {receipt.academicYear} • {receipt.term.replace("-", " ").replace(/\b\w/g, (l) => l.toUpperCase())}
             </span>
           </div>
@@ -1082,17 +1082,17 @@ function ReceiptViewModal({
           title: "Items",
           type: "custom",
           children: (
-            <div className="border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-lg overflow-hidden">
+            <div className="border border-line rounded-lg overflow-hidden">
               <table className="w-full">
                 <thead className="bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]">
                   <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 uppercase">
+                    <th className="px-4 py-3 text-left text-xs font-medium text-muted uppercase">
                       Description
                     </th>
-                    <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 uppercase">
+                    <th className="px-4 py-3 text-right text-xs font-medium text-muted uppercase">
                       Qty
                     </th>
-                    <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 uppercase">
+                    <th className="px-4 py-3 text-right text-xs font-medium text-muted uppercase">
                       Amount
                     </th>
                   </tr>

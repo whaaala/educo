@@ -111,7 +111,7 @@ export default function EventManagementModal({
   if (isEditMode && !canEdit) {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-        <div className="bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-2xl shadow-2xl max-w-md w-full p-6">
+        <div className="bg-surface rounded-2xl shadow-2xl max-w-md w-full p-6">
           <div className="text-center">
             <div className="w-16 h-16 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center mx-auto mb-4">
               <X className="w-8 h-8 text-red-600 dark:text-red-400" />
@@ -137,7 +137,7 @@ export default function EventManagementModal({
   if (!isEditMode && !canCreate) {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-        <div className="bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-2xl shadow-2xl max-w-md w-full p-6">
+        <div className="bg-surface rounded-2xl shadow-2xl max-w-md w-full p-6">
           <div className="text-center">
             <div className="w-16 h-16 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center mx-auto mb-4">
               <X className="w-8 h-8 text-red-600 dark:text-red-400" />
@@ -162,9 +162,9 @@ export default function EventManagementModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-      <div className="bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+      <div className="bg-surface rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+        <div className="flex items-center justify-between p-6 border-b border-line">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 flex items-center justify-center">
               {isEditMode ? (
@@ -174,7 +174,7 @@ export default function EventManagementModal({
               )}
             </div>
             <div>
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+              <h2 className="text-xl font-bold text-ink">
                 {isEditMode ? "Edit Event" : "Create Event"}
               </h2>
               <p className="text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70">
@@ -333,7 +333,7 @@ export default function EventManagementModal({
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between p-6 border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+        <div className="flex items-center justify-between p-6 border-t border-line">
           {/* Delete Button (only in edit mode) */}
           <div>
             {isEditMode && canDelete && (

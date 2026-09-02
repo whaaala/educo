@@ -95,7 +95,7 @@ export default function SearchBar({
         onBlur={() => setIsFocused(false)}
         placeholder={placeholder}
         className={`flex-1 bg-transparent border-none outline-none font-medium text-gray-900 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50 placeholder-gray-400 dark:placeholder-gray-500 midnight:placeholder-cyan-400/50 purple:placeholder-pink-400/50 [&::-webkit-search-cancel-button]:hidden [&::-webkit-search-decoration]:hidden`}
-        style={{ fontSize: '11.8px' }}
+        style={{ fontSize: '0.7375rem' }}
       />
 
       {/* Clear Button */}

@@ -59,7 +59,7 @@ export default function ContactBursaryModal({ isOpen, onClose }: ContactBursaryM
                 >
                   <Phone className="w-3.5 h-3.5 text-white" />
                 </a>
-                <span className="text-[9px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Phone</span>
+                <span className="text-[0.5625rem] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Phone</span>
               </div>
               <Tooltip content={copiedField === "phone" ? "Copied!" : "Copy"}>
                 <button
@@ -89,7 +89,7 @@ export default function ContactBursaryModal({ isOpen, onClose }: ContactBursaryM
                 >
                   <Mail className="w-3.5 h-3.5 text-white" />
                 </a>
-                <span className="text-[9px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Email</span>
+                <span className="text-[0.5625rem] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Email</span>
               </div>
               <Tooltip content={copiedField === "email" ? "Copied!" : "Copy"}>
                 <button
@@ -118,7 +118,7 @@ export default function ContactBursaryModal({ isOpen, onClose }: ContactBursaryM
                 <div className="p-1.5 rounded-lg bg-gradient-to-br from-purple-500 to-purple-600 shadow-sm shrink-0">
                   <MapPin className="w-3.5 h-3.5 text-white" />
                 </div>
-                <span className="text-[9px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Location</span>
+                <span className="text-[0.5625rem] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Location</span>
               </div>
               <Tooltip content={copiedField === "address" ? "Copied!" : "Copy"}>
                 <button
@@ -144,7 +144,7 @@ export default function ContactBursaryModal({ isOpen, onClose }: ContactBursaryM
                 <div className="p-1.5 rounded-lg bg-gradient-to-br from-orange-500 to-orange-600 shadow-sm shrink-0">
                   <Clock className="w-3.5 h-3.5 text-white" />
                 </div>
-                <span className="text-[9px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Hours</span>
+                <span className="text-[0.5625rem] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Hours</span>
               </div>
               <Tooltip content={copiedField === "hours" ? "Copied!" : "Copy"}>
                 <button
@@ -166,7 +166,7 @@ export default function ContactBursaryModal({ isOpen, onClose }: ContactBursaryM
 
         {/* Bank Account Details */}
         <div className="p-3.5 rounded-xl bg-gradient-to-br from-gray-50 to-gray-100/50 dark:from-gray-800/80 dark:to-gray-700/50 midnight:from-gray-800/80 midnight:to-gray-700/50 purple:from-gray-800/80 purple:to-gray-700/50 border border-gray-200/60 dark:border-gray-700/60 midnight:border-cyan-500/20 purple:border-pink-500/20">
-          <h4 className="text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">
+          <h4 className="text-[0.625rem] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">
             Bank Account Details
           </h4>
           <div className="space-y-2.5">

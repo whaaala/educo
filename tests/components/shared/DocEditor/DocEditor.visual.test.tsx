@@ -110,10 +110,7 @@ describe("DocEditor — Visual / CSS", () => {
       const root = container.querySelector("[data-doc-editor-root]");
       expectClasses(root, [
         "border",
-        "border-gray-200",
-        "dark:border-gray-700",
-        "midnight:border-cyan-500/20",
-        "purple:border-pink-500/20",
+        "border-line",
       ]);
     });
 

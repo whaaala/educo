@@ -22,7 +22,7 @@ export interface AvatarHoverProps {
   name: string;
   /** Size class for the small avatar (default "w-7 h-7") */
   size?: string;
-  /** Size class for the initial text (default "text-[10px]") */
+  /** Size class for the initial text (default "text-[0.625rem]") */
   initialSize?: string;
 }
 
@@ -30,7 +30,7 @@ export default function AvatarHover({
   src,
   name,
   size = "w-7 h-7",
-  initialSize = "text-[10px]",
+  initialSize = "text-[0.625rem]",
 }: AvatarHoverProps) {
   const [hovered, setHovered] = useState(false);
   const [popupPos, setPopupPos] = useState({ top: 0, left: 0 });
@@ -96,7 +96,7 @@ export default function AvatarHover({
             </div>
           )}
           {/* Name label */}
-          <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 px-3 py-1 bg-gray-900 dark:bg-[#1a1d24] text-white text-[11px] font-semibold rounded-lg shadow-lg whitespace-nowrap border border-gray-700 dark:border-gray-700">
+          <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 px-3 py-1 bg-gray-900 dark:bg-[#1a1d24] text-white text-[0.6875rem] font-semibold rounded-lg shadow-lg whitespace-nowrap border border-gray-700 dark:border-gray-700">
             {name}
           </div>
         </div>,

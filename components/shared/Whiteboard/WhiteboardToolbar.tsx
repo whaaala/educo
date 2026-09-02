@@ -627,21 +627,21 @@ export default function WhiteboardToolbar({
           <div className="flex items-center gap-0.5">
             <button
               onClick={() => onInsertChart?.("bar")}
-              className="flex items-center gap-1 px-1.5 py-1.5 rounded-lg text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer"
+              className="flex items-center gap-1 px-1.5 py-1.5 rounded-lg text-muted hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer"
               title="Bar chart"
             >
               <BarChart3 className="w-4 h-4" />
             </button>
             <button
               onClick={() => onInsertChart?.("line")}
-              className="flex items-center gap-1 px-1.5 py-1.5 rounded-lg text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer"
+              className="flex items-center gap-1 px-1.5 py-1.5 rounded-lg text-muted hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer"
               title="Line chart"
             >
               <LineChart className="w-4 h-4" />
             </button>
             <button
               onClick={() => onInsertChart?.("pie")}
-              className="flex items-center gap-1 px-1.5 py-1.5 rounded-lg text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer"
+              className="flex items-center gap-1 px-1.5 py-1.5 rounded-lg text-muted hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer"
               title="Pie chart"
             >
               <PieChart className="w-4 h-4" />
@@ -1025,7 +1025,7 @@ function ColorPickerFlyout({
       onPointerDown={(e) => e.stopPropagation()}
     >
       {/* Arrow pointer */}
-      <div className="absolute left-0 top-1/2 -translate-x-[5px] -translate-y-1/2 w-2.5 h-2.5 rotate-45 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border-l border-b border-gray-200/80 dark:border-gray-700 midnight:border-cyan-500/15 purple:border-pink-500/15" />
+      <div className="absolute left-0 top-1/2 -translate-x-[5px] -translate-y-1/2 w-2.5 h-2.5 rotate-45 bg-surface border-l border-b border-gray-200/80 dark:border-gray-700 midnight:border-cyan-500/15 purple:border-pink-500/15" />
 
       <div className="relative bg-white/95 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/95 purple:bg-[#1a0b2e]/95 backdrop-blur-md border border-gray-200/80 dark:border-gray-700 midnight:border-cyan-500/15 purple:border-pink-500/15 rounded-2xl shadow-xl shadow-black/8 dark:shadow-black/30 p-3 min-w-[200px]">
         {/* Stroke Colors */}
@@ -1155,8 +1155,8 @@ function TableSizePicker({
         Table
       </button>
       {isOpen && (
-        <div className="absolute left-0 top-full mt-1 z-[60] p-2 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-xl shadow-lg">
-          <div className="text-[10px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 text-center mb-1.5 font-medium">
+        <div className="absolute left-0 top-full mt-1 z-[60] p-2 bg-surface border border-line rounded-xl shadow-lg">
+          <div className="text-[10px] text-muted text-center mb-1.5 font-medium">
             {hoverRow > 0 ? `${hoverRow} × ${hoverCol}` : "Select size"}
           </div>
           <div className="grid gap-0.5" style={{ gridTemplateColumns: `repeat(${maxCols}, 1fr)` }}>
@@ -1247,14 +1247,14 @@ function FontFamilyDropdown({
     <div ref={ref} className="relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center justify-between w-full px-2 py-1.5 rounded-lg text-[11px] font-medium text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0f1330]/50 purple:bg-[#251340]/50 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer"
+        className="flex items-center justify-between w-full px-2 py-1.5 rounded-lg text-[11px] font-medium text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0f1330]/50 purple:bg-[#251340]/50 border border-line hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer"
         style={{ fontFamily: `${value}, system-ui, sans-serif` }}
       >
         <span className="truncate">{value}</span>
         <ChevronDown className={`w-3 h-3 ml-1 flex-shrink-0 transition-transform ${isOpen ? "rotate-180" : ""}`} />
       </button>
       {isOpen && (
-        <div className="absolute left-0 top-full mt-1 z-[60] w-full max-h-[200px] overflow-y-auto scrollbar-thin bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-xl shadow-lg">
+        <div className="absolute left-0 top-full mt-1 z-[60] w-full max-h-[200px] overflow-y-auto scrollbar-thin bg-surface border border-line rounded-xl shadow-lg">
           {FONT_FAMILIES.map((font) => (
             <button
               key={font}
@@ -1314,26 +1314,26 @@ function FontSizeInput({
     <div ref={ref} className="relative flex items-center gap-0.5">
       <button
         onClick={decrease}
-        className="flex items-center justify-center w-7 h-7 rounded-lg text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer text-sm font-bold"
+        className="flex items-center justify-center w-7 h-7 rounded-lg text-muted hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer text-sm font-bold"
         title="Decrease font size"
       >
         −
       </button>
       <button
         onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-        className="flex items-center justify-center min-w-[36px] h-7 px-1 rounded-lg text-[11px] font-bold text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0f1330]/50 purple:bg-[#251340]/50 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer"
+        className="flex items-center justify-center min-w-[36px] h-7 px-1 rounded-lg text-[11px] font-bold text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0f1330]/50 purple:bg-[#251340]/50 border border-line hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer"
       >
         {value}
       </button>
       <button
         onClick={increase}
-        className="flex items-center justify-center w-7 h-7 rounded-lg text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer text-sm font-bold"
+        className="flex items-center justify-center w-7 h-7 rounded-lg text-muted hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer text-sm font-bold"
         title="Increase font size"
       >
         +
       </button>
       {isDropdownOpen && (
-        <div className="absolute left-0 top-full mt-1 z-[60] w-full max-h-[180px] overflow-y-auto scrollbar-thin bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-xl shadow-lg">
+        <div className="absolute left-0 top-full mt-1 z-[60] w-full max-h-[180px] overflow-y-auto scrollbar-thin bg-surface border border-line rounded-xl shadow-lg">
           {FONT_SIZES.map((size) => (
             <button
               key={size}

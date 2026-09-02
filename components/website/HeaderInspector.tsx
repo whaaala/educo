@@ -14,8 +14,8 @@ import { FONT_CHOICES } from "@/lib/site-storage";
 import { ColorPickerPopover, colorToCSS } from "@/components/shared/ColorPalettePicker";
 
 const inputCls = "w-full text-sm px-2.5 py-2 rounded-lg border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-transparent text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-indigo-500 outline-none";
-const label = "text-[11px] font-medium text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300";
-const section = "text-[11px] font-semibold uppercase tracking-wide text-gray-400 pt-1";
+const label = "text-[0.6875rem] font-medium text-muted";
+const section = "text-[0.6875rem] font-semibold uppercase tracking-wide text-gray-400 pt-1";
 
 const TYPE_LABEL: Record<HeaderEl["type"], string> = { logo: "Logo", text: "Text", nav: "Navigation", button: "Button" };
 
@@ -110,7 +110,7 @@ export default function HeaderInspector({
 
   return (
     <div className="p-4 space-y-3">
-      <div className="text-[11px] text-gray-400">Editing the <b>{TYPE_LABEL[el.type]}</b> element. Drag it on the canvas to reposition.</div>
+      <div className="text-[0.6875rem] text-gray-400">Editing the <b>{TYPE_LABEL[el.type]}</b> element. Drag it on the canvas to reposition.</div>
 
       {/* ── Logo ── */}
       {el.type === "logo" && (
@@ -120,7 +120,7 @@ export default function HeaderInspector({
             <Upload className="w-3.5 h-3.5" /> {el.src ? "Replace logo image" : "Upload logo image"}
           </button>
           <input ref={fileRef} type="file" accept="image/*" onChange={onPickLogo} className="hidden" aria-label="Upload logo image" />
-          {el.src && <button onClick={() => onChange({ src: undefined })} className="text-[11px] text-red-500 hover:underline">Remove image (use initial)</button>}
+          {el.src && <button onClick={() => onChange({ src: undefined })} className="text-[0.6875rem] text-red-500 hover:underline">Remove image (use initial)</button>}
 
           <div className={section}>Background</div>
           <label className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300">
@@ -176,7 +176,7 @@ export default function HeaderInspector({
           <button onClick={onOpenNav} className="w-full flex items-center justify-center gap-2 text-sm px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800/60 text-gray-700 dark:text-gray-200">
             <ListTree className="w-3.5 h-3.5" /> Manage links & dropdowns
           </button>
-          <p className="text-[11px] text-gray-400">Add pages, custom links and dropdown menus in the Navigation panel — they appear here automatically.</p>
+          <p className="text-[0.6875rem] text-gray-400">Add pages, custom links and dropdown menus in the Navigation panel — they appear here automatically.</p>
         </>
       )}
 

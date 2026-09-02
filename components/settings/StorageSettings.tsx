@@ -104,7 +104,7 @@ export default function StorageSettings() {
   return (
     <div className="space-y-6">
       {/* ── Platform Storage (Supabase) ── */}
-      <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 p-6">
+      <div className="bg-surface rounded-xl border border-line p-6">
         <div className="flex items-center gap-3 mb-4">
           <div className="p-2.5 rounded-xl bg-indigo-100 dark:bg-indigo-500/20 midnight:bg-cyan-500/20 purple:bg-pink-500/20">
             <Database className="w-5 h-5 text-indigo-600 dark:text-indigo-400 midnight:text-cyan-400 purple:text-pink-400" />
@@ -205,7 +205,7 @@ export default function StorageSettings() {
       </div>
 
       {/* ── Additional Storage (Dropbox Overflow) ── */}
-      <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 p-6">
+      <div className="bg-surface rounded-xl border border-line p-6">
         <div className="flex items-center gap-3 mb-4">
           <div className="p-2.5 rounded-xl bg-blue-100 dark:bg-blue-500/20">
             <Cloud className="w-5 h-5 text-blue-600 dark:text-blue-400" />
@@ -309,7 +309,7 @@ export default function StorageSettings() {
       </div>
 
       {/* ── File Settings ── */}
-      <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 p-6">
+      <div className="bg-surface rounded-xl border border-line p-6">
         <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-4">
           File Settings
         </h4>

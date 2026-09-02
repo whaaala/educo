@@ -12,9 +12,9 @@ import type { SiteTheme } from "@/lib/site-storage";
 import type { BoxNode, FlexAlign } from "@/lib/box-model";
 import { ColorPickerPopover, colorToCSS } from "@/components/shared/ColorPalettePicker";
 
-const label = "text-[11px] font-medium text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300";
-const section = "text-[11px] font-semibold uppercase tracking-wide text-gray-400 pt-1";
-const inputCls = "w-full text-sm px-2.5 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-transparent text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-indigo-500 outline-none";
+const label = "text-[0.6875rem] font-medium text-gray-500 dark:text-gray-400";
+const section = "text-[0.6875rem] font-semibold uppercase tracking-wide text-gray-400 pt-1";
+const inputCls = "w-full text-sm px-2.5 py-2 rounded-lg border border-gray-200 dark:border-white/10 bg-transparent text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-indigo-500 outline-none";
 const toRem = (px: number) => +(px / 10).toFixed(2);
 
 /** A −/+ stepper row that repeatedly nudges a property on every selected box. */
@@ -44,8 +44,8 @@ export default function BulkInspector({ count, theme, sample, onStepWidth, onSte
   const s = sample ?? undefined;
   return (
     <div className="p-4 space-y-3">
-      <div className="flex items-center gap-1.5 text-[11px] font-semibold text-indigo-600 dark:text-indigo-300"><Layers className="w-3.5 h-3.5" /> {count} sections selected</div>
-      <p className="text-[10px] text-gray-400">Every change below applies to all {count} at once.</p>
+      <div className="flex items-center gap-1.5 text-[0.6875rem] font-semibold text-indigo-600 dark:text-indigo-300"><Layers className="w-3.5 h-3.5" /> {count} sections selected</div>
+      <p className="text-[0.625rem] text-gray-400">Every change below applies to all {count} at once.</p>
 
       {/* ── Quick steppers (their exact ask: grow/shrink width & height together) ── */}
       <div className={section}>Size</div>
@@ -54,39 +54,39 @@ export default function BulkInspector({ count, theme, sample, onStepWidth, onSte
 
       {/* ── Shared spacing (seeded from the first selected box) ── */}
       <div className={section}>Spacing</div>
-      <label className="block"><span className={label}>Margin (all sides): {toRem(s?.margin ?? 0)}rem</span>
-        <input type="range" min={0} max={96} value={s?.margin ?? 0} onChange={(e) => onPatch({ margin: Number(e.target.value) })} aria-label="Margin all sides" className="w-full mt-1" />
+      <label className="block"><span className={label}>Outer spacing: {toRem(s?.margin ?? 0)}rem</span>
+        <input type="range" min={0} max={96} value={s?.margin ?? 0} onChange={(e) => onPatch({ margin: Number(e.target.value) })} aria-label="Outer spacing" className="w-full mt-1 accent-indigo-600" />
       </label>
-      <label className="block"><span className={label}>Padding (all sides): {toRem(s?.padding ?? 24)}rem</span>
-        <input type="range" min={0} max={96} value={s?.padding ?? 24} onChange={(e) => onPatch({ padding: Number(e.target.value) })} aria-label="Padding all sides" className="w-full mt-1" />
+      <label className="block"><span className={label}>Inner spacing: {toRem(s?.padding ?? 24)}rem</span>
+        <input type="range" min={0} max={96} value={s?.padding ?? 24} onChange={(e) => onPatch({ padding: Number(e.target.value) })} aria-label="Inner spacing" className="w-full mt-1 accent-indigo-600" />
       </label>
 
       {/* ── Shared look ── */}
       <div className={section}>Look</div>
       <div className="flex items-center justify-between gap-2">
-        <span className={label}>Background</span>
-        <ColorPickerPopover selectedColor={s?.background || theme.surface} onSelect={(c) => onPatch({ background: c })} mode="both" label="Background" align="right" width={272} portal>
-          <button aria-label="Background" className="w-8 h-8 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm" style={{ background: colorToCSS(s?.background || theme.surface) }} />
+        <span className={label}>Background colour</span>
+        <ColorPickerPopover selectedColor={s?.background || theme.surface} onSelect={(c) => onPatch({ background: c })} mode="both" label="Background colour" align="right" width={272} portal>
+          <button aria-label="Background colour" className="w-8 h-8 rounded-lg border border-gray-200 dark:border-white/10 shadow-sm" style={{ background: colorToCSS(s?.background || theme.surface) }} />
         </ColorPickerPopover>
       </div>
       <label className="block"><span className={label}>Border: {s?.borderWidth ?? 0}px</span>
-        <input type="range" min={0} max={16} value={s?.borderWidth ?? 0} onChange={(e) => onPatch({ borderWidth: Number(e.target.value) })} aria-label="Border width" className="w-full mt-1" />
+        <input type="range" min={0} max={16} value={s?.borderWidth ?? 0} onChange={(e) => onPatch({ borderWidth: Number(e.target.value) })} aria-label="Border" className="w-full mt-1 accent-indigo-600" />
       </label>
       <div className="space-y-1">
         <span className={label}>Shadow</span>
-        <div className="flex gap-1 p-0.5 rounded-lg border border-gray-200 dark:border-gray-700">
-          {(["none", "sm", "md", "lg", "xl"] as const).map((sh) => <button key={sh} onClick={() => onPatch({ shadow: sh === "none" ? undefined : sh })} className={`flex-1 py-1 text-[11px] uppercase rounded-md ${(s?.shadow ?? "none") === sh ? "bg-indigo-600 text-white" : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"}`}>{sh}</button>)}
+        <div className="inline-flex w-full items-center gap-0.5 rounded-xl bg-gray-100 dark:bg-white/5 p-1">
+          {([["none", "None"], ["sm", "Soft"], ["md", "Medium"], ["lg", "Strong"], ["xl", "Bold"]] as const).map(([sh, l]) => <button key={sh} onClick={() => onPatch({ shadow: sh === "none" ? undefined : sh })} className={`flex-1 py-1 text-[0.6875rem] rounded-lg ${(s?.shadow ?? "none") === sh ? "bg-white dark:bg-white/15 text-gray-900 dark:text-white shadow-sm" : "text-gray-500 hover:text-gray-800 dark:hover:text-gray-200"}`}>{l}</button>)}
         </div>
       </div>
-      <label className="block"><span className={label}>Corner radius: {s?.radius ?? 0}px</span>
-        <input type="range" min={0} max={64} value={s?.radius ?? 0} onChange={(e) => onPatch({ radius: Number(e.target.value) })} aria-label="Corner radius" className="w-full mt-1" />
+      <label className="block"><span className={label}>Rounded corners: {s?.radius ?? 0}px</span>
+        <input type="range" min={0} max={64} value={s?.radius ?? 0} onChange={(e) => onPatch({ radius: Number(e.target.value) })} aria-label="Rounded corners" className="w-full mt-1 accent-indigo-600" />
       </label>
-      <label className="block"><span className={label}>Opacity: {s?.opacity ?? 100}%</span>
-        <input type="range" min={0} max={100} value={s?.opacity ?? 100} onChange={(e) => onPatch({ opacity: Number(e.target.value) })} aria-label="Opacity" className="w-full mt-1" />
+      <label className="block"><span className={label}>See-through: {s?.opacity ?? 100}%</span>
+        <input type="range" min={0} max={100} value={s?.opacity ?? 100} onChange={(e) => onPatch({ opacity: Number(e.target.value) })} aria-label="See-through" className="w-full mt-1 accent-indigo-600" />
       </label>
-      <label className="block"><span className={label}>Align (cross axis)</span>
-        <select value={s?.align ?? "stretch"} onChange={(e) => onPatch({ align: e.target.value as FlexAlign })} className={inputCls}>
-          {["stretch", "start", "center", "end"].map((o) => <option key={o} value={o}>{o}</option>)}
+      <label className="block"><span className={label}>Line up (across)</span>
+        <select value={s?.align ?? "stretch"} onChange={(e) => onPatch({ align: e.target.value as FlexAlign })} aria-label="Line up" className={inputCls}>
+          {([["stretch", "Fill"], ["start", "Start"], ["center", "Center"], ["end", "End"]] as const).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
         </select>
       </label>
 

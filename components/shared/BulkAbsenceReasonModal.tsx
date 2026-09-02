@@ -174,7 +174,7 @@ export default function BulkAbsenceReasonModal({
       />
 
       {/* Modal */}
-      <div className="relative w-full max-w-2xl bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-2xl shadow-2xl max-h-[90vh] overflow-hidden flex flex-col animate-in fade-in zoom-in duration-200">
+      <div className="relative w-full max-w-2xl bg-surface rounded-2xl shadow-2xl max-h-[90vh] overflow-hidden flex flex-col animate-in fade-in zoom-in duration-200">
         {/* Header with gradient */}
         <div className="relative bg-gradient-to-r from-red-500 to-rose-600 dark:from-red-600 dark:to-rose-700 midnight:from-red-600 midnight:to-rose-700 purple:from-red-600 purple:to-rose-700 px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">

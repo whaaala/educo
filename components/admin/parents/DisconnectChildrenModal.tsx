@@ -68,7 +68,7 @@ export default function DisconnectChildrenModal({
       icon={<UserMinus className="w-5 h-5" />}
       footer={
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between w-full gap-3">
-          <p className="text-sm text-gray-500 dark:text-gray-400">
+          <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
             {selectedChildren.length} of {parent.children.length} selected
           </p>
           <div className="flex items-center gap-3 w-full sm:w-auto">
@@ -90,12 +90,12 @@ export default function DisconnectChildrenModal({
       <div className="space-y-4">
         {/* Warning Banner */}
         <div className="flex items-start gap-3 p-4 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800">
-          <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+          <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400 flex-shrink-0 mt-0.5" />
           <div>
             <p className="text-sm font-medium text-amber-800 dark:text-amber-300">
               Important Notice
             </p>
-            <p className="text-sm text-amber-700 dark:text-amber-400 mt-1">
+            <p className="text-sm text-amber-700 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400 mt-1">
               Disconnecting children from this parent will remove the parent-child relationship.
               The children will remain in the system but will no longer be linked to this parent.
               This action can be reversed by re-assigning the parent later.
@@ -105,13 +105,13 @@ export default function DisconnectChildrenModal({
 
         {/* Select All Header */}
         <div className="flex items-center justify-between px-1">
-          <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+          <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200">
             Select Children to Disconnect
           </h3>
           <button
             type="button"
             onClick={selectAll}
-            className="text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 cursor-pointer"
+            className="text-sm font-medium text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 hover:text-blue-700 dark:hover:text-blue-300 cursor-pointer"
           >
             {allSelected ? "Deselect All" : "Select All"}
           </button>
@@ -127,8 +127,8 @@ export default function DisconnectChildrenModal({
                 onClick={() => toggleChild(child.id)}
                 className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
                   isSelected
-                    ? "bg-red-50 dark:bg-red-900/20 border-red-300 dark:border-red-700"
-                    : "bg-white dark:bg-[#1a1d24] border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
+                    ? "bg-red-50 dark:bg-red-900/20 midnight:bg-red-900/20 purple:bg-red-900/20 border-red-300 dark:border-red-700"
+                    : "bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 hover:border-gray-300 dark:hover:border-gray-600 midnight:hover:border-cyan-500/30 purple:hover:border-pink-500/30"
                 }`}
               >
                 {/* Checkbox */}
@@ -136,7 +136,7 @@ export default function DisconnectChildrenModal({
                   className={`w-5 h-5 rounded flex items-center justify-center flex-shrink-0 transition-all ${
                     isSelected
                       ? "bg-red-600 border-red-600"
-                      : "border-2 border-gray-300 dark:border-gray-600"
+                      : "border-2 border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30"
                   }`}
                 >
                   {isSelected && <Check className="w-3.5 h-3.5 text-white" />}
@@ -144,22 +144,22 @@ export default function DisconnectChildrenModal({
 
                 {/* Child Avatar */}
                 <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-900/30 dark:to-blue-800/20 flex items-center justify-center flex-shrink-0">
-                  <GraduationCap className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                  <GraduationCap className="w-5 h-5 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
                 </div>
 
                 {/* Child Info */}
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                  <p className="text-sm font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate">
                     {child.firstName} {child.lastName}
                   </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                  <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
                     {child.classLevel} • ID: {child.id}
                   </p>
                 </div>
 
                 {/* Status indicator */}
                 {isSelected && (
-                  <span className="text-xs font-medium text-red-600 dark:text-red-400 flex-shrink-0">
+                  <span className="text-xs font-medium text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400 flex-shrink-0">
                     Will be disconnected
                   </span>
                 )}
@@ -170,9 +170,9 @@ export default function DisconnectChildrenModal({
 
         {/* Info Note */}
         {someSelected && (
-          <div className="flex items-start gap-2 p-3 rounded-lg bg-gray-50 dark:bg-[#1a1d24]/50 border border-gray-200 dark:border-gray-700">
-            <AlertTriangle className="w-4 h-4 text-gray-500 dark:text-gray-400 flex-shrink-0 mt-0.5" />
-            <p className="text-xs text-gray-600 dark:text-gray-400">
+          <div className="flex items-start gap-2 p-3 rounded-lg bg-gray-50 dark:bg-[#1a1d24]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+            <AlertTriangle className="w-4 h-4 text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 flex-shrink-0 mt-0.5" />
+            <p className="text-xs text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
               After disconnecting all children, you will be able to delete this parent from the system.
             </p>
           </div>

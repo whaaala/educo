@@ -314,7 +314,7 @@ export default function FeeStructureModal({
                   <Layers className="w-5 h-5 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
                 </div>
                 <div>
-                  <p className="font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                  <p className="font-medium text-ink">
                     Allow Installments
                   </p>
                   <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70">
@@ -383,39 +383,39 @@ export default function FeeStructureModal({
               <div className="w-10 h-10 rounded-full bg-green-600 dark:bg-green-500 midnight:bg-cyan-600 purple:bg-pink-600 flex items-center justify-center">
                 <DollarSign className="w-5 h-5 text-white" />
               </div>
-              <h4 className="text-base font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+              <h4 className="text-base font-semibold text-ink">
                 Fee Summary
               </h4>
             </div>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
                 <span className="text-gray-600 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70">Fee Type:</span>
-                <span className="font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                <span className="font-medium text-ink">
                   {selectedFeeType?.name || "Not selected"}
                 </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70">Category:</span>
-                <span className="font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                <span className="font-medium text-ink">
                   {selectedCategory?.name || "Not selected"}
                 </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70">Class/Level:</span>
-                <span className="font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                <span className="font-medium text-ink">
                   {formData.classLevel || "Not selected"}
                 </span>
               </div>
               {formData.allowInstallments && (
                 <div className="flex justify-between">
                   <span className="text-gray-600 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70">Installments:</span>
-                  <span className="font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                  <span className="font-medium text-ink">
                     {formData.installmentCount}x payments
                   </span>
                 </div>
               )}
               <div className="flex justify-between pt-3 border-t-2 border-green-300 dark:border-green-700 midnight:border-cyan-700 purple:border-pink-700">
-                <span className="font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">Total Amount:</span>
+                <span className="font-bold text-ink">Total Amount:</span>
                 <span className="font-bold text-xl text-green-600 dark:text-green-400 midnight:text-cyan-400 purple:text-pink-400">
                   {currencySymbol}{parseFloat(formData.amount || "0").toLocaleString()}
                 </span>

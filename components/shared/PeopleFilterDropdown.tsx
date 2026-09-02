@@ -127,14 +127,14 @@ export default function PeopleFilterDropdown({
             ? "bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-blue-500/20 dark:to-blue-600/10 midnight:from-cyan-500/20 midnight:to-cyan-600/10 purple:from-pink-500/20 purple:to-pink-600/10 border-blue-300 dark:border-blue-500/30 midnight:border-cyan-500/30 purple:border-pink-500/30 text-blue-700 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300 focus:ring-blue-500/40"
             : "bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-gray-700 dark:to-gray-700/50 midnight:from-cyan-900/30 midnight:to-cyan-800/20 purple:from-pink-900/30 purple:to-pink-800/20 hover:from-blue-100 hover:to-blue-100 dark:hover:from-gray-600 dark:hover:to-gray-600 border-blue-200/50 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 text-gray-700 dark:text-white midnight:text-cyan-50 purple:text-pink-50 focus:ring-blue-500/40"
         }`}
-        style={{ fontSize: '11.8px' }}
+        style={{ fontSize: '0.7375rem' }}
       >
         {isActive ? (
           <>
             {selectedPerson!.avatar ? (
               <img src={selectedPerson!.avatar} alt={selectedPerson!.name} className="w-5 h-5 rounded-full object-cover flex-shrink-0" />
             ) : (
-              <div className={`w-5 h-5 rounded-full ${getAvatarColor(selectedPerson!.name)} flex items-center justify-center text-[9px] font-bold text-white flex-shrink-0`}>
+              <div className={`w-5 h-5 rounded-full ${getAvatarColor(selectedPerson!.name)} flex items-center justify-center text-[0.5625rem] font-bold text-white flex-shrink-0`}>
                 {selectedPerson!.name[0].toUpperCase()}
               </div>
             )}
@@ -159,7 +159,7 @@ export default function PeopleFilterDropdown({
 
       {/* Dropdown */}
       {isOpen && (
-        <div className="absolute top-full mt-1 right-0 sm:right-auto sm:left-0 w-[260px] sm:w-[300px] bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 z-[10000] animate-in fade-in slide-in-from-top-1 duration-[120ms] overflow-hidden">
+        <div className="absolute top-full mt-1 right-0 sm:right-auto sm:left-0 w-[260px] sm:w-[300px] bg-surface rounded-xl shadow-2xl border border-line z-[10000] animate-in fade-in slide-in-from-top-1 duration-[120ms] overflow-hidden">
           {/* Search */}
           <div className="p-3 border-b border-gray-100 dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10">
             <SearchBar
@@ -177,7 +177,7 @@ export default function PeopleFilterDropdown({
             {sortedPeople.length === 0 && (
               <div className="px-4 py-6 text-center">
                 <Users className="w-8 h-8 text-gray-200 dark:text-gray-700 mx-auto mb-2" />
-                <p className="text-[12px] text-gray-400">No people found</p>
+                <p className="text-[0.75rem] text-gray-400">No people found</p>
               </div>
             )}
 
@@ -194,7 +194,7 @@ export default function PeopleFilterDropdown({
                 {person.avatar ? (
                   <img src={person.avatar} alt={person.name} className="w-8 h-8 rounded-full object-cover flex-shrink-0" />
                 ) : (
-                  <div className={`w-8 h-8 rounded-full ${getAvatarColor(person.name)} flex items-center justify-center text-[12px] font-bold text-white flex-shrink-0`}>
+                  <div className={`w-8 h-8 rounded-full ${getAvatarColor(person.name)} flex items-center justify-center text-[0.75rem] font-bold text-white flex-shrink-0`}>
                     {person.name[0].toUpperCase()}
                   </div>
                 )}
@@ -202,13 +202,13 @@ export default function PeopleFilterDropdown({
                 {/* Name + email */}
                 <div className="flex-1 min-w-0 text-left">
                   <Tooltip content={`${person.name}${person.isMe ? " (me)" : ""}`} block>
-                    <p className="text-[13px] font-medium text-gray-800 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 truncate">
+                    <p className="text-[0.8125rem] font-medium text-gray-800 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 truncate">
                       {person.name}
                       {person.isMe && <span className="text-gray-400 dark:text-gray-500 font-normal"> (me)</span>}
                     </p>
                   </Tooltip>
                   <Tooltip content={person.email} block>
-                    <p className="text-[11px] text-gray-400 dark:text-gray-500 truncate">{person.email}</p>
+                    <p className="text-[0.6875rem] text-gray-400 dark:text-gray-500 truncate">{person.email}</p>
                   </Tooltip>
                 </div>
 
@@ -228,7 +228,7 @@ export default function PeopleFilterDropdown({
                   <div className="w-8 h-8 rounded-full bg-green-50 dark:bg-green-500/10 flex items-center justify-center flex-shrink-0">
                     <Globe className="w-4 h-4 text-green-500" />
                   </div>
-                  <span className="text-[13px] font-medium text-gray-800 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100">
+                  <span className="text-[0.8125rem] font-medium text-gray-800 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100">
                     Anyone with the link
                   </span>
                 </button>

@@ -154,10 +154,10 @@ export default function ReturnBookModal({
               <div className="p-2 rounded-lg bg-blue-50 dark:bg-blue-900/30 midnight:bg-blue-900/30 purple:bg-blue-900/30">
                 <BookOpen className="w-4 h-4 text-blue-600 dark:text-blue-400 midnight:text-blue-400 purple:text-blue-400" />
               </div>
-              <p className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">Book</p>
+              <p className="text-[0.625rem] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">Book</p>
             </div>
 
-            <h4 className="font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-sm mb-1 line-clamp-2 relative z-10">
+            <h4 className="font-bold text-ink text-sm mb-1 line-clamp-2 relative z-10">
               {loan.bookTitle}
             </h4>
             <p className="text-xs text-gray-500 dark:text-gray-400 font-mono relative z-10">
@@ -173,7 +173,7 @@ export default function ReturnBookModal({
               <div className="p-2 rounded-lg bg-purple-50 dark:bg-purple-900/30 midnight:bg-purple-900/30 purple:bg-purple-900/30">
                 <User className="w-4 h-4 text-purple-600 dark:text-purple-400 midnight:text-purple-400 purple:text-purple-400" />
               </div>
-              <p className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">Borrower</p>
+              <p className="text-[0.625rem] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">Borrower</p>
             </div>
 
             <div className="flex items-center gap-3 relative z-10">
@@ -187,10 +187,10 @@ export default function ReturnBookModal({
                 />
               </div>
               <div className="min-w-0">
-                <h4 className="font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-sm truncate">
+                <h4 className="font-bold text-ink text-sm truncate">
                   {loan.memberName}
                 </h4>
-                <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold ${memberTypeConfig.bgClass} ${memberTypeConfig.textClass} shadow-sm`}>
+                <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[0.625rem] font-bold ${memberTypeConfig.bgClass} ${memberTypeConfig.textClass} shadow-sm`}>
                   {memberTypeConfig.label}
                 </span>
               </div>
@@ -206,8 +206,8 @@ export default function ReturnBookModal({
               <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-500 flex items-center justify-center shadow-lg shadow-blue-500/30 mx-auto mb-2">
                 <Calendar className="w-5 h-5 text-white" />
               </div>
-              <p className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-0.5">Borrowed</p>
-              <p className="text-xs font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+              <p className="text-[0.625rem] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-0.5">Borrowed</p>
+              <p className="text-xs font-semibold text-ink">
                 {borrowDate.toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
               </p>
             </div>
@@ -228,7 +228,7 @@ export default function ReturnBookModal({
               <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-500 to-green-500 flex items-center justify-center shadow-lg shadow-emerald-500/30 mx-auto mb-2">
                 <CheckCircle2 className="w-5 h-5 text-white" />
               </div>
-              <p className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider mb-0.5">Today</p>
+              <p className="text-[0.625rem] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider mb-0.5">Today</p>
               <p className="text-xs font-semibold text-emerald-700 dark:text-emerald-300">
                 {today.toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
               </p>

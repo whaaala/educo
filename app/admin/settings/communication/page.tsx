@@ -140,7 +140,7 @@ function ConfigModeSelector({
         className={`relative p-4 rounded-xl border text-left transition-all duration-200 ${
           value === "platform"
             ? "border-cyan-400 bg-cyan-50 dark:bg-cyan-900/20 dark:border-cyan-500"
-            : "border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 hover:border-gray-300 dark:hover:border-gray-600 midnight:hover:border-cyan-500/30 purple:hover:border-pink-500/30 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]"
+            : "border-line hover:border-gray-300 dark:hover:border-gray-600 midnight:hover:border-cyan-500/30 purple:hover:border-pink-500/30 bg-surface"
         }`}
       >
         <div className="flex items-start gap-3">
@@ -154,7 +154,7 @@ function ConfigModeSelector({
               <Globe className={`w-4 h-4 ${value === "platform" ? "text-cyan-500" : "text-gray-400"}`} />
               <span className="font-medium text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100">Platform Account</span>
             </div>
-            <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mt-1">
+            <p className="text-xs text-muted mt-1">
               Use Educo&apos;s shared account. No setup required.
             </p>
           </div>
@@ -167,7 +167,7 @@ function ConfigModeSelector({
         className={`relative p-4 rounded-xl border text-left transition-all duration-200 ${
           value === "tenant"
             ? "border-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 dark:border-emerald-500"
-            : "border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 hover:border-gray-300 dark:hover:border-gray-600 midnight:hover:border-cyan-500/30 purple:hover:border-pink-500/30 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]"
+            : "border-line hover:border-gray-300 dark:hover:border-gray-600 midnight:hover:border-cyan-500/30 purple:hover:border-pink-500/30 bg-surface"
         }`}
       >
         <div className="flex items-start gap-3">
@@ -181,7 +181,7 @@ function ConfigModeSelector({
               <Building2 className={`w-4 h-4 ${value === "tenant" ? "text-emerald-500" : "text-gray-400"}`} />
               <span className="font-medium text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100">School Account</span>
             </div>
-            <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mt-1">
+            <p className="text-xs text-muted mt-1">
               Use your own account for full control.
             </p>
           </div>
@@ -260,9 +260,9 @@ function PlatformCard({
         relative overflow-hidden rounded-xl border transition-all duration-200
         ${isSelected
           ? "border-transparent shadow-md"
-          : "border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 hover:border-gray-300 dark:hover:border-gray-600 midnight:hover:border-cyan-500/30 purple:hover:border-pink-500/30"
+          : "border-line hover:border-gray-300 dark:hover:border-gray-600 midnight:hover:border-cyan-500/30 purple:hover:border-pink-500/30"
         }
-        bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]
+        bg-surface
       `}>
         {/* Gradient Header Line */}
         <div className={`h-1.5 bg-gradient-to-r ${platform.gradient} ${isActive ? 'opacity-100' : 'opacity-30'}`} />
@@ -281,11 +281,11 @@ function PlatformCard({
           {/* Title */}
           <div className="mb-1.5 sm:mb-2">
             <h3 className="font-semibold text-sm sm:text-base text-gray-800 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50">{platform.name}</h3>
-            <p className="text-[10px] sm:text-xs text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400">{platform.subtitle}</p>
+            <p className="text-[0.625rem] sm:text-xs text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400">{platform.subtitle}</p>
           </div>
 
           {/* Description - hidden on very small screens */}
-          <p className="hidden sm:block text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mb-2 sm:mb-3 line-clamp-2">
+          <p className="hidden sm:block text-xs text-muted mb-2 sm:mb-3 line-clamp-2">
             {platform.description}
           </p>
 
@@ -294,7 +294,7 @@ function PlatformCard({
             {platform.features.map((feature) => (
               <span
                 key={feature}
-                className={`text-[9px] sm:text-[10px] px-1.5 sm:px-2 py-0.5 rounded-full font-medium ${colors.featureBg} ${colors.featureText}`}
+                className={`text-[0.5625rem] sm:text-[0.625rem] px-1.5 sm:px-2 py-0.5 rounded-full font-medium ${colors.featureBg} ${colors.featureText}`}
               >
                 {feature}
               </span>
@@ -587,9 +587,9 @@ export default function CommunicationSettingsPage() {
       loadingText="Loading Communication Settings"
       afterStats={
         <>
-      <div className="flex flex-col h-full bg-gray-50 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]">
+      <div className="flex flex-col h-full bg-canvas">
         {/* Header - Subtle styling */}
-        <div className="flex-shrink-0 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+        <div className="flex-shrink-0 bg-surface border-b border-line">
           <div className="px-4 sm:px-6 py-4 sm:py-5">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div className="flex items-center gap-3">
@@ -600,7 +600,7 @@ export default function CommunicationSettingsPage() {
                   <h1 className="text-lg sm:text-xl font-semibold text-gray-800 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50">
                     Communication Settings
                   </h1>
-                  <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mt-0.5">
+                  <p className="text-xs sm:text-sm text-muted mt-0.5">
                     Configure video, voice, and chat platforms
                   </p>
                 </div>
@@ -636,7 +636,7 @@ export default function CommunicationSettingsPage() {
         <div className="flex-1 overflow-y-auto">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6">
             {/* School Selector Card */}
-            <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+            <div className="bg-surface rounded-xl shadow-sm border border-line">
               <div className="p-4 sm:p-6">
                 <div className="flex items-center gap-3 mb-4 sm:mb-5">
                   <div className="p-2 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-lg shadow-md">
@@ -644,7 +644,7 @@ export default function CommunicationSettingsPage() {
                   </div>
                   <div>
                     <h2 className="text-base sm:text-lg font-semibold text-gray-800 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50">Select School</h2>
-                    <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
+                    <p className="text-xs sm:text-sm text-muted">
                       Choose a school to configure
                     </p>
                   </div>
@@ -657,7 +657,7 @@ export default function CommunicationSettingsPage() {
                     onClick={() => setTenantDropdownOpen(!tenantDropdownOpen)}
                     className={`w-full flex items-center justify-between px-3 sm:px-4 py-3 sm:py-4 border rounded-lg transition-all duration-200 ${
                       selectedTenantId
-                        ? "bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border-gray-200 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 hover:border-gray-300"
+                        ? "bg-surface border-gray-200 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 hover:border-gray-300"
                         : "bg-gray-50 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/50 border-dashed border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 hover:border-gray-400"
                     }`}
                   >
@@ -673,12 +673,12 @@ export default function CommunicationSettingsPage() {
                           <div className="flex items-center gap-2 flex-wrap">
                             <p className="font-medium text-sm sm:text-base text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 truncate">{selectedTenant.name}</p>
                             {hasTenantSettings(selectedTenant.id) && (
-                              <span className="px-1.5 py-0.5 bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400 text-[10px] font-medium rounded">
+                              <span className="px-1.5 py-0.5 bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400 text-[0.625rem] font-medium rounded">
                                 Configured
                               </span>
                             )}
                           </div>
-                          <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 truncate">
+                          <p className="text-xs text-muted truncate">
                             {selectedTenant.config.institutionType} • {selectedTenant.contact?.address?.city || "N/A"}
                           </p>
                         </div>
@@ -702,11 +702,11 @@ export default function CommunicationSettingsPage() {
                         onClick={() => setTenantDropdownOpen(false)}
                       />
                       <div
-                        className="absolute left-0 right-0 mt-2 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-xl shadow-lg"
+                        className="absolute left-0 right-0 mt-2 bg-surface border border-line rounded-xl shadow-lg"
                         style={{ zIndex: 100 }}
                       >
                         {/* Search */}
-                        <div className="p-2 sm:p-3 border-b border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]">
+                        <div className="p-2 sm:p-3 border-b border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-surface">
                           <div className="relative">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                             <input
@@ -714,7 +714,7 @@ export default function CommunicationSettingsPage() {
                               value={tenantSearchQuery}
                               onChange={(e) => setTenantSearchQuery(e.target.value)}
                               placeholder="Search schools..."
-                              className="w-full pl-9 pr-3 py-2 border border-gray-200 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 rounded-lg bg-gray-50 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-sm focus:ring-1 focus:ring-gray-400 focus:border-gray-400 outline-none"
+                              className="w-full pl-9 pr-3 py-2 border border-gray-200 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 rounded-lg bg-gray-50 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] text-ink text-sm focus:ring-1 focus:ring-gray-400 focus:border-gray-400 outline-none"
                               autoFocus
                               onClick={(e) => e.stopPropagation()}
                             />
@@ -722,9 +722,9 @@ export default function CommunicationSettingsPage() {
                         </div>
 
                         {/* Tenant List */}
-                        <div className="max-h-60 sm:max-h-72 overflow-y-auto p-1.5 sm:p-2 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]">
+                        <div className="max-h-60 sm:max-h-72 overflow-y-auto p-1.5 sm:p-2 bg-surface">
                           {filteredTenants.length === 0 ? (
-                            <div className="p-4 text-center text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 text-sm">
+                            <div className="p-4 text-center text-muted text-sm">
                               No schools found
                             </div>
                           ) : (
@@ -735,7 +735,7 @@ export default function CommunicationSettingsPage() {
                                 onClick={() => handleSelectTenant(tenant)}
                                 className={`w-full flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-2 sm:py-2.5 rounded-lg transition-all duration-200 ${
                                   selectedTenantId === tenant.id
-                                    ? "bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]"
+                                    ? "bg-surface-2"
                                     : "hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"
                                 }`}
                               >
@@ -747,13 +747,13 @@ export default function CommunicationSettingsPage() {
                                 </div>
                                 <div className="flex-1 text-left min-w-0">
                                   <p className="font-medium text-sm text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 truncate">{tenant.name}</p>
-                                  <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 truncate">
+                                  <p className="text-[0.625rem] sm:text-xs text-muted truncate">
                                     {tenant.config.institutionType} • {tenant.contact?.address?.city || "N/A"}
                                   </p>
                                 </div>
                                 <div className="flex items-center gap-1.5 flex-shrink-0">
                                   {hasTenantSettings(tenant.id) && (
-                                    <span className="hidden sm:inline px-1.5 py-0.5 bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400 text-[10px] font-medium rounded">
+                                    <span className="hidden sm:inline px-1.5 py-0.5 bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400 text-[0.625rem] font-medium rounded">
                                       Configured
                                     </span>
                                   )}
@@ -774,20 +774,20 @@ export default function CommunicationSettingsPage() {
                 {selectedTenant && (
                   <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
                     <div className="p-2 sm:p-3 bg-gray-50 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/50 rounded-lg">
-                      <p className="text-[10px] sm:text-xs font-medium text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 uppercase tracking-wide">Type</p>
+                      <p className="text-[0.625rem] sm:text-xs font-medium text-muted uppercase tracking-wide">Type</p>
                       <p className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 mt-0.5">{selectedTenant.config.institutionType}</p>
                     </div>
                     <div className="p-2 sm:p-3 bg-gray-50 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/50 rounded-lg">
-                      <p className="text-[10px] sm:text-xs font-medium text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 uppercase tracking-wide">Region</p>
+                      <p className="text-[0.625rem] sm:text-xs font-medium text-muted uppercase tracking-wide">Region</p>
                       <p className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 mt-0.5">{selectedTenant.config.region}</p>
                     </div>
                     <div className="p-2 sm:p-3 bg-gray-50 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/50 rounded-lg">
-                      <p className="text-[10px] sm:text-xs font-medium text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 uppercase tracking-wide">Plan</p>
+                      <p className="text-[0.625rem] sm:text-xs font-medium text-muted uppercase tracking-wide">Plan</p>
                       <p className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 mt-0.5 capitalize">{selectedTenant.subscription?.plan || "N/A"}</p>
                     </div>
                     <div className="p-2 sm:p-3 bg-gray-50 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/50 rounded-lg">
-                      <p className="text-[10px] sm:text-xs font-medium text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 uppercase tracking-wide">Status</p>
-                      <span className={`inline-flex mt-0.5 px-1.5 py-0.5 rounded text-[10px] sm:text-xs font-medium ${
+                      <p className="text-[0.625rem] sm:text-xs font-medium text-muted uppercase tracking-wide">Status</p>
+                      <span className={`inline-flex mt-0.5 px-1.5 py-0.5 rounded text-[0.625rem] sm:text-xs font-medium ${
                         selectedTenant.status === "Active"
                           ? "bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400"
                           : "bg-gray-100 text-gray-500 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300"
@@ -802,7 +802,7 @@ export default function CommunicationSettingsPage() {
 
             {/* Platform Configuration */}
             {!selectedTenantId ? (
-              <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 p-8 sm:p-12 text-center">
+              <div className="bg-surface rounded-xl shadow-sm border border-line p-8 sm:p-12 text-center">
                 <div className="max-w-md mx-auto">
                   <div className="w-14 h-14 sm:w-16 sm:h-16 mx-auto mb-4 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center shadow-lg">
                     <Building2 className="w-7 h-7 sm:w-8 sm:h-8 text-white" />
@@ -810,7 +810,7 @@ export default function CommunicationSettingsPage() {
                   <h3 className="text-base sm:text-lg font-semibold text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 mb-2">
                     Select a School
                   </h3>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
+                  <p className="text-sm text-muted">
                     Choose a school from the dropdown above to configure its communication settings.
                   </p>
                 </div>
@@ -819,38 +819,38 @@ export default function CommunicationSettingsPage() {
               <>
                 {/* Stats Row - Hidden on mobile, simplified */}
                 <div className="hidden sm:grid grid-cols-2 md:grid-cols-4 gap-3">
-                  <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-lg border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 p-3">
+                  <div className="bg-surface rounded-lg border border-line p-3">
                     <div className="flex items-center gap-2">
                       <Radio className="w-4 h-4 text-gray-400" />
-                      <span className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Active</span>
+                      <span className="text-xs text-muted">Active</span>
                     </div>
                     <p className="text-lg font-semibold text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 mt-1">{activePlatformCount}</p>
                   </div>
-                  <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-lg border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 p-3">
+                  <div className="bg-surface rounded-lg border border-line p-3">
                     <div className="flex items-center gap-2">
                       <Video className="w-4 h-4 text-gray-400" />
-                      <span className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Video</span>
+                      <span className="text-xs text-muted">Video</span>
                     </div>
                     <p className="text-lg font-semibold text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 mt-1">{[webrtcForm.enabled, agoraForm.enabled, zoomForm.enabled, googleMeetForm.enabled].filter(Boolean).length}</p>
                   </div>
-                  <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-lg border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 p-3">
+                  <div className="bg-surface rounded-lg border border-line p-3">
                     <div className="flex items-center gap-2">
                       <Phone className="w-4 h-4 text-gray-400" />
-                      <span className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Voice</span>
+                      <span className="text-xs text-muted">Voice</span>
                     </div>
                     <p className="text-lg font-semibold text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 mt-1">{[webrtcForm.enabled, agoraForm.enabled, whatsAppForm.enabled].filter(Boolean).length}</p>
                   </div>
-                  <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-lg border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 p-3">
+                  <div className="bg-surface rounded-lg border border-line p-3">
                     <div className="flex items-center gap-2">
                       <MessageSquare className="w-4 h-4 text-gray-400" />
-                      <span className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Chat</span>
+                      <span className="text-xs text-muted">Chat</span>
                     </div>
                     <p className="text-lg font-semibold text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 mt-1">{[webrtcForm.enabled, agoraForm.enabled, whatsAppForm.enabled].filter(Boolean).length}</p>
                   </div>
                 </div>
 
                 {/* Platform Cards Grid */}
-                <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 p-4 sm:p-6">
+                <div className="bg-surface rounded-xl shadow-sm border border-line p-4 sm:p-6">
                   <h3 className="text-sm sm:text-base font-semibold text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 mb-4">Available Platforms</h3>
                   <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3">
                     {Object.values(PLATFORMS).map((platform) => (
@@ -867,9 +867,9 @@ export default function CommunicationSettingsPage() {
                 </div>
 
                 {/* Selected Platform Configuration */}
-                <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 overflow-hidden">
+                <div className="bg-surface rounded-xl shadow-sm border border-line overflow-hidden">
                   {/* Platform Header */}
-                  <div className={`p-4 sm:p-5 bg-gradient-to-r ${PLATFORMS[selectedPlatform]?.gradient || 'from-gray-500 to-gray-600'} border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20`}>
+                  <div className={`p-4 sm:p-5 bg-gradient-to-r ${PLATFORMS[selectedPlatform]?.gradient || 'from-gray-500 to-gray-600'} border-b border-line`}>
                     <div className="flex items-center gap-3">
                       <div className="p-2 bg-white/20 backdrop-blur-sm rounded-lg">
                         {(() => {
@@ -901,7 +901,7 @@ export default function CommunicationSettingsPage() {
                         <div className="flex items-center justify-between p-3 sm:p-4 bg-gray-50 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/30 rounded-lg">
                           <div>
                             <h4 className="font-medium text-sm text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100">Enable Educo Meet</h4>
-                            <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Use built-in WebRTC</p>
+                            <p className="text-xs text-muted">Use built-in WebRTC</p>
                           </div>
                           <ToggleSwitch
                             enabled={webrtcForm.enabled}
@@ -917,7 +917,7 @@ export default function CommunicationSettingsPage() {
                         <div className="flex items-center justify-between p-3 sm:p-4 bg-gray-50 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/30 rounded-lg">
                           <div>
                             <h4 className="font-medium text-sm text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100">Enable Agora</h4>
-                            <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Video, voice, and chat</p>
+                            <p className="text-xs text-muted">Video, voice, and chat</p>
                           </div>
                           <ToggleSwitch
                             enabled={agoraForm.enabled}
@@ -983,7 +983,7 @@ export default function CommunicationSettingsPage() {
                         <div className="flex items-center justify-between p-3 sm:p-4 bg-gray-50 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/30 rounded-lg">
                           <div>
                             <h4 className="font-medium text-sm text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100">Enable WhatsApp</h4>
-                            <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Business API for messaging</p>
+                            <p className="text-xs text-muted">Business API for messaging</p>
                           </div>
                           <ToggleSwitch
                             enabled={whatsAppForm.enabled}
@@ -1054,7 +1054,7 @@ export default function CommunicationSettingsPage() {
                         <div className="flex items-center justify-between p-3 sm:p-4 bg-gray-50 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/30 rounded-lg">
                           <div>
                             <h4 className="font-medium text-sm text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100">Enable Zoom</h4>
-                            <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Video SDK for meetings</p>
+                            <p className="text-xs text-muted">Video SDK for meetings</p>
                           </div>
                           <ToggleSwitch
                             enabled={zoomForm.enabled}
@@ -1114,7 +1114,7 @@ export default function CommunicationSettingsPage() {
                         <div className="flex items-center justify-between p-3 sm:p-4 bg-gray-50 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/30 rounded-lg">
                           <div>
                             <h4 className="font-medium text-sm text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100">Enable Google Meet</h4>
-                            <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Generate Meet links</p>
+                            <p className="text-xs text-muted">Generate Meet links</p>
                           </div>
                           <ToggleSwitch
                             enabled={googleMeetForm.enabled}
@@ -1159,7 +1159,7 @@ export default function CommunicationSettingsPage() {
                 {/* Default Platforms & Features */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
                   {/* Default Platforms */}
-                  <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 p-4 sm:p-5">
+                  <div className="bg-surface rounded-xl shadow-sm border border-line p-4 sm:p-5">
                     <h3 className="text-sm sm:text-base font-semibold text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 mb-4">Default Platforms</h3>
                     <div className="space-y-3">
                       <FormDropdown
@@ -1200,7 +1200,7 @@ export default function CommunicationSettingsPage() {
                   </div>
 
                   {/* Features */}
-                  <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 p-4 sm:p-5">
+                  <div className="bg-surface rounded-xl shadow-sm border border-line p-4 sm:p-5">
                     <h3 className="text-sm sm:text-base font-semibold text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 mb-4">Features</h3>
                     <div className="space-y-2">
                       {[
@@ -1215,11 +1215,11 @@ export default function CommunicationSettingsPage() {
                         >
                           <div className="flex items-center gap-2 sm:gap-3">
                             <div className="p-1.5 bg-gray-100 dark:bg-[#2a2d35] midnight:bg-gray-700 purple:bg-gray-700 rounded">
-                              <feature.icon className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300" />
+                              <feature.icon className="w-3.5 h-3.5 text-muted" />
                             </div>
                             <div>
                               <h5 className="font-medium text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 text-xs sm:text-sm">{feature.label}</h5>
-                              <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hidden sm:block">{feature.description}</p>
+                              <p className="text-[0.625rem] sm:text-xs text-muted hidden sm:block">{feature.description}</p>
                             </div>
                           </div>
                           <ToggleSwitch

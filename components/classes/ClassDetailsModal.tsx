@@ -99,7 +99,7 @@ export default function ClassDetailsModal({
       onClose={onClose}
       title={classData.name}
       subtitle={classData.id}
-      icon={<BookOpen className="w-5 h-5 text-blue-600 dark:text-blue-400" />}
+      icon={<BookOpen className="w-5 h-5 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />}
       maxWidth="3xl"
     >
       {/* Content */}
@@ -109,9 +109,9 @@ export default function ClassDetailsModal({
           <div
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-semibold ${
               classData.status === "Active"
-                ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400"
                 : classData.status === "Inactive"
-                ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
+                ? "bg-red-100 text-red-700 dark:bg-red-900/30 midnight:bg-red-900/30 purple:bg-red-900/30 dark:text-red-400 midnight:text-red-400 purple:text-red-400"
                 : "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400"
             }`}
           >
@@ -128,12 +128,12 @@ export default function ClassDetailsModal({
           </div>
 
           {isTertiary && classData.programme && (
-            <span className="px-3 py-1.5 text-sm font-medium text-blue-700 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/30 rounded-full">
+            <span className="px-3 py-1.5 text-sm font-medium text-blue-700 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 bg-blue-100 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 rounded-full">
               {classData.programme}
             </span>
           )}
 
-          <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+          <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
             <Calendar className="w-4 h-4" />
             <span>
               {isTertiary ? classData.semester : classData.term} • {classData.academicYear}
@@ -143,15 +143,15 @@ export default function ClassDetailsModal({
 
         {/* Tertiary: Faculty & Department */}
         {isTertiary && (classData.faculty || classData.department) && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-gray-50 dark:bg-[#22262e]/30 rounded-xl">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-gray-50 dark:bg-[#22262e]/30 midnight:bg-[#0f1330]/30 purple:bg-[#251340]/30 rounded-xl">
             {classData.faculty && (
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
-                  <Building2 className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 rounded-lg flex items-center justify-center">
+                  <Building2 className="w-5 h-5 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
                 </div>
                 <div>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">Faculty</p>
-                  <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                  <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Faculty</p>
+                  <p className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
                     {classData.faculty}
                   </p>
                 </div>
@@ -163,8 +163,8 @@ export default function ClassDetailsModal({
                   <GraduationCap className="w-5 h-5 text-purple-600 dark:text-purple-400" />
                 </div>
                 <div>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">Department</p>
-                  <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                  <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Department</p>
+                  <p className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
                     {classData.department}
                   </p>
                 </div>
@@ -176,21 +176,21 @@ export default function ClassDetailsModal({
         {/* Teacher Information */}
         {primaryTeacher && (
           <div className="p-4 bg-gradient-to-br from-gray-50 to-gray-100/50 dark:from-gray-700/30 dark:to-gray-700/10 rounded-xl">
-            <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
+            <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 mb-3">
               {isTertiary ? "Course Coordinator" : "Class Teacher"}
             </h4>
             <div className="flex items-center gap-4">
               <img
                 src={primaryTeacher.image}
                 alt={primaryTeacher.name}
-                className="w-14 h-14 rounded-full object-cover ring-2 ring-white dark:ring-gray-700"
+                className="w-14 h-14 rounded-full object-cover ring-2 ring-white dark:ring-gray-700 midnight:ring-cyan-500/20 purple:ring-pink-500/20"
               />
               <div>
-                <p className="font-semibold text-gray-900 dark:text-white">
+                <p className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
                   {primaryTeacher.name}
                 </p>
                 {primaryTeacher.subject && (
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                  <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
                     {primaryTeacher.subject}
                   </p>
                 )}
@@ -201,14 +201,14 @@ export default function ClassDetailsModal({
 
         {/* Quick Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="p-4 bg-blue-50 dark:bg-blue-900/10 rounded-xl">
+          <div className="p-4 bg-blue-50 dark:bg-blue-900/10 midnight:bg-cyan-900/10 purple:bg-pink-900/10 rounded-xl">
             <div className="flex items-center gap-2 mb-2">
-              <Users className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-              <p className="text-xs text-gray-600 dark:text-gray-400">
+              <Users className="w-4 h-4 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
+              <p className="text-xs text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
                 {isTertiary ? "Enrolled" : "Students"}
               </p>
             </div>
-            <p className="text-xl font-bold text-gray-900 dark:text-white">
+            <p className="text-xl font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
               {isTertiary ? classData.students : `${classData.students}/${classData.capacity}`}
             </p>
           </div>
@@ -216,20 +216,20 @@ export default function ClassDetailsModal({
           <div className="p-4 bg-purple-50 dark:bg-purple-900/10 rounded-xl">
             <div className="flex items-center gap-2 mb-2">
               <MapPin className="w-4 h-4 text-purple-600 dark:text-purple-400" />
-              <p className="text-xs text-gray-600 dark:text-gray-400">
+              <p className="text-xs text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
                 {isTertiary ? "Venue" : "Room"}
               </p>
             </div>
-            <p className="text-xl font-bold text-gray-900 dark:text-white">{classData.room}</p>
+            <p className="text-xl font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{classData.room}</p>
           </div>
 
           {classData.averageGrade !== undefined && (
             <div className="p-4 bg-green-50 dark:bg-green-900/10 rounded-xl">
               <div className="flex items-center gap-2 mb-2">
-                <TrendingUp className="w-4 h-4 text-green-600 dark:text-green-400" />
-                <p className="text-xs text-gray-600 dark:text-gray-400">Avg Grade</p>
+                <TrendingUp className="w-4 h-4 text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400" />
+                <p className="text-xs text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Avg Grade</p>
               </div>
-              <p className="text-xl font-bold text-green-600 dark:text-green-400">
+              <p className="text-xl font-bold text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400">
                 {classData.averageGrade}%
               </p>
             </div>
@@ -239,7 +239,7 @@ export default function ClassDetailsModal({
             <div className="p-4 bg-cyan-50 dark:bg-cyan-900/10 rounded-xl">
               <div className="flex items-center gap-2 mb-2">
                 <Target className="w-4 h-4 text-cyan-600 dark:text-cyan-400" />
-                <p className="text-xs text-gray-600 dark:text-gray-400">Attendance</p>
+                <p className="text-xs text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Attendance</p>
               </div>
               <p className="text-xl font-bold text-cyan-600 dark:text-cyan-400">
                 {classData.attendanceRate}%
@@ -251,7 +251,7 @@ export default function ClassDetailsModal({
         {/* Subjects/Courses List */}
         {classData.subjects && classData.subjects.length > 0 && (
           <div>
-            <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 flex items-center gap-2">
+            <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 mb-3 flex items-center gap-2">
               <BookOpen className="w-4 h-4" />
               {isTertiary ? "Courses" : "Subjects"} ({classData.subjects.length})
             </h4>
@@ -259,12 +259,12 @@ export default function ClassDetailsModal({
               {classData.subjects.map((subject, index) => (
                 <div
                   key={index}
-                  className="p-3 bg-gray-50 dark:bg-[#22262e]/30 rounded-lg flex items-center justify-between"
+                  className="p-3 bg-gray-50 dark:bg-[#22262e]/30 midnight:bg-[#0f1330]/30 purple:bg-[#251340]/30 rounded-lg flex items-center justify-between"
                 >
-                  <span className="text-sm font-medium text-gray-900 dark:text-white">
+                  <span className="text-sm font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
                     {subject.name}
                   </span>
-                  <span className="text-xs text-gray-500 dark:text-gray-400 truncate max-w-[120px]">
+                  <span className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 truncate max-w-[120px]">
                     {subject.teacher.name}
                   </span>
                 </div>
@@ -275,23 +275,23 @@ export default function ClassDetailsModal({
 
         {/* Schedule */}
         {classData.schedule && (
-          <div className="p-4 bg-gray-50 dark:bg-[#22262e]/30 rounded-xl">
-            <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+          <div className="p-4 bg-gray-50 dark:bg-[#22262e]/30 midnight:bg-[#0f1330]/30 purple:bg-[#251340]/30 rounded-xl">
+            <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 mb-2">
               Schedule
             </h4>
-            <p className="text-sm text-gray-600 dark:text-gray-400">{classData.schedule}</p>
+            <p className="text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">{classData.schedule}</p>
           </div>
         )}
 
         {/* Enabled Features */}
         {classData.enabledFeatures && Object.values(classData.enabledFeatures).some((v) => v) && (
           <div>
-            <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
+            <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 mb-3">
               Enabled Features
             </h4>
             <div className="flex flex-wrap gap-2">
               {classData.enabledFeatures.lms && (
-                <span className="px-3 py-1 text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded-full">
+                <span className="px-3 py-1 text-xs font-medium bg-blue-100 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 text-blue-700 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 rounded-full">
                   LMS
                 </span>
               )}
@@ -301,7 +301,7 @@ export default function ClassDetailsModal({
                 </span>
               )}
               {classData.enabledFeatures.transport && (
-                <span className="px-3 py-1 text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-full">
+                <span className="px-3 py-1 text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400 rounded-full">
                   Transport
                 </span>
               )}
@@ -336,17 +336,17 @@ export default function ClassDetailsModal({
       </div>
 
       {/* Footer with Actions */}
-      <div className="flex-shrink-0 px-6 py-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-[#1a1d24]/50">
+      <div className="flex-shrink-0 px-6 py-4 border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-gray-50 dark:bg-[#1a1d24]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50">
         <div className="flex items-center justify-end gap-3">
           <button
             onClick={onClose}
-            className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#22262e] rounded-lg transition-colors"
+            className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100 dark:hover:bg-[#22262e] rounded-lg transition-colors"
           >
             Close
           </button>
           <button
             onClick={handleEdit}
-            className="px-4 py-2 text-sm font-medium text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors flex items-center gap-2"
+            className="px-4 py-2 text-sm font-medium text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 midnight:hover:bg-cyan-900/20 purple:hover:bg-pink-900/20 rounded-lg transition-colors flex items-center gap-2"
           >
             <Edit className="w-4 h-4" />
             Edit Class

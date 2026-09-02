@@ -349,7 +349,7 @@ export default function LibraryMembersPage() {
     return (
       <span
         className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full font-semibold border ${config.bg} ${config.text} ${config.border} capitalize`}
-        style={{ fontSize: "10px" }}
+        style={{ fontSize: "0.625rem" }}
       >
         {config.icon}
         {type}
@@ -363,7 +363,7 @@ export default function LibraryMembersPage() {
       return (
         <span
           className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full font-semibold border bg-green-100 dark:bg-green-900/30 midnight:bg-green-900/20 purple:bg-green-900/20 text-green-700 dark:text-green-400 midnight:text-green-400 purple:text-green-400 border-green-200 dark:border-green-800"
-          style={{ fontSize: "11.8px" }}
+          style={{ fontSize: "0.7375rem" }}
         >
           <UserCheck className="w-3 h-3" />
           Active
@@ -372,8 +372,8 @@ export default function LibraryMembersPage() {
     }
     return (
       <span
-        className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full font-semibold border bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] text-gray-600 dark:text-gray-400 midnight:text-gray-400 purple:text-gray-400 border-gray-200 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30"
-        style={{ fontSize: "11.8px" }}
+        className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full font-semibold border bg-surface-2 text-gray-600 dark:text-gray-400 midnight:text-gray-400 purple:text-gray-400 border-gray-200 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30"
+        style={{ fontSize: "0.7375rem" }}
       >
         <UserX className="w-3 h-3" />
         Inactive
@@ -404,7 +404,7 @@ export default function LibraryMembersPage() {
       render: (member) => (
         <span
           className="font-mono text-gray-700 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100"
-          style={{ fontSize: "11.8px" }}
+          style={{ fontSize: "0.7375rem" }}
         >
           {member.memberId}
         </span>
@@ -456,14 +456,14 @@ export default function LibraryMembersPage() {
           </div>
           <div>
             <div
-              className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50"
-              style={{ fontSize: "11.8px" }}
+              className="font-semibold text-ink"
+              style={{ fontSize: "0.7375rem" }}
             >
               {member.name}
             </div>
             <div
               className="text-gray-500 dark:text-gray-400 midnight:text-cyan-400/60 purple:text-pink-400/60"
-              style={{ fontSize: "10px" }}
+              style={{ fontSize: "0.625rem" }}
             >
               {member.class || member.department}
             </div>
@@ -488,13 +488,13 @@ export default function LibraryMembersPage() {
             className={`font-semibold ${
               member.currentBooksCount >= member.maxBooksAllowed
                 ? "text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400"
-                : "text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50"
+                : "text-ink"
             }`}
-            style={{ fontSize: "11.8px" }}
+            style={{ fontSize: "0.7375rem" }}
           >
             {member.currentBooksCount}
           </span>
-          <span className="text-gray-400" style={{ fontSize: "11.8px" }}>
+          <span className="text-gray-400" style={{ fontSize: "0.7375rem" }}>
             / {member.maxBooksAllowed}
           </span>
         </div>
@@ -507,7 +507,7 @@ export default function LibraryMembersPage() {
       render: (member) => (
         <span
           className="text-gray-600 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70"
-          style={{ fontSize: "11.8px" }}
+          style={{ fontSize: "0.7375rem" }}
         >
           {member.totalBorrowedCount}
         </span>
@@ -521,7 +521,7 @@ export default function LibraryMembersPage() {
         <div>
           <div
             className="text-gray-700 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100"
-            style={{ fontSize: "11.8px" }}
+            style={{ fontSize: "0.7375rem" }}
           >
             {new Date(member.memberSince).toLocaleDateString("en-GB", {
               day: "numeric",
@@ -529,7 +529,7 @@ export default function LibraryMembersPage() {
               year: "numeric",
             })}
           </div>
-          <div className="flex items-center gap-1 text-gray-400" style={{ fontSize: "10px" }}>
+          <div className="flex items-center gap-1 text-gray-400" style={{ fontSize: "0.625rem" }}>
             <Clock className="w-3 h-3" />
             {getMembershipDuration(member.memberSince)}
           </div>
@@ -544,12 +544,12 @@ export default function LibraryMembersPage() {
         member.finesDue > 0 ? (
           <span
             className="font-semibold text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400"
-            style={{ fontSize: "11.8px" }}
+            style={{ fontSize: "0.7375rem" }}
           >
             {formatCurrency(member.finesDue, countryCode)}
           </span>
         ) : (
-          <span className="text-gray-400" style={{ fontSize: "11.8px" }}>
+          <span className="text-gray-400" style={{ fontSize: "0.7375rem" }}>
             -
           </span>
         ),
@@ -687,7 +687,7 @@ export default function LibraryMembersPage() {
                 <p className="text-sm text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200">
                   {viewingMember.email || "-"} • {viewingMember.phone || "-"}
                 </p>
-                <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
+                <p className="text-xs text-muted">
                   {viewingMember.class || viewingMember.department || "-"}
                 </p>
               </div>

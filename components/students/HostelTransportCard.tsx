@@ -75,7 +75,7 @@ export default function HostelTransportCard({
                       <div className="text-xs font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-300/80 purple:text-pink-300/80 mb-0.5">
                         Hostel
                       </div>
-                      <div className="text-xs font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate">
+                      <div className="text-xs font-semibold text-ink truncate">
                         {hostelName}
                       </div>
                     </div>
@@ -90,7 +90,7 @@ export default function HostelTransportCard({
                       <div className="text-xs font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-300/80 purple:text-pink-300/80 mb-0.5">
                         Room Number
                       </div>
-                      <div className="text-xs font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate">
+                      <div className="text-xs font-semibold text-ink truncate">
                         {roomNumber}
                       </div>
                     </div>
@@ -118,7 +118,7 @@ export default function HostelTransportCard({
                       <div className="text-xs font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-300/80 purple:text-pink-300/80 mb-0.5">
                         Route
                       </div>
-                      <div className="text-xs font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate">
+                      <div className="text-xs font-semibold text-ink truncate">
                         {transportRoute}
                       </div>
                     </div>
@@ -133,7 +133,7 @@ export default function HostelTransportCard({
                       <div className="text-xs font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-300/80 purple:text-pink-300/80 mb-0.5">
                         Vehicle Number
                       </div>
-                      <div className="text-xs font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate">
+                      <div className="text-xs font-semibold text-ink truncate">
                         {vehicleNumber}
                       </div>
                     </div>

@@ -31,7 +31,7 @@ export default function PageHeader({
     <div className={`w-full ${className}`}>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="w-full lg:w-auto lg:flex-shrink-0">
-          <h1 className="text-xl lg:text-2xl font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-1">
+          <h1 className="text-xl lg:text-2xl font-bold text-ink mb-1">
             {title}
           </h1>
           {(subtitle || description) && (

@@ -41,8 +41,8 @@ export default function ChatCard({
 }: ChatCardProps) {
   return (
     <div
-      className={`bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl border ${
-        isSelected ? "border-blue-500 ring-2 ring-blue-500/20" : "border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20"
+      className={`bg-surface rounded-xl border ${
+        isSelected ? "border-blue-500 ring-2 ring-blue-500/20" : "border-line"
       } shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden cursor-pointer`}
       onClick={() => onView(chat)}
     >
@@ -98,13 +98,13 @@ export default function ChatCard({
             <p
               className={`text-sm truncate ${
                 chat.unreadCount > 0
-                  ? "font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50"
+                  ? "font-semibold text-ink"
                   : "font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200"
               }`}
             >
               {chat.recipientName}
             </p>
-            <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 truncate">{chat.recipientEmail}</p>
+            <p className="text-xs text-muted truncate">{chat.recipientEmail}</p>
           </div>
         </div>
       </div>
@@ -122,7 +122,7 @@ export default function ChatCard({
           <p
             className={`text-sm line-clamp-2 ${
               chat.unreadCount > 0
-                ? "font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50"
+                ? "font-medium text-ink"
                 : "text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300"
             }`}
           >
@@ -135,7 +135,7 @@ export default function ChatCard({
         )}
 
         <div className="flex items-center justify-between">
-          <span className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
+          <span className="text-xs text-muted">
             {formatTime(chat.lastMessageTime)}
           </span>
           <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>

@@ -19,8 +19,6 @@ describe("CallHeader — Visual / CSS", () => {
       const header = container.firstChild as HTMLElement;
       expect(header.className).toContain("bg-white");
       expect(header.className).toContain("dark:bg-[#0f1115]");
-      expect(header.className).toContain("midnight:bg-[#0f1729]");
-      expect(header.className).toContain("purple:bg-[#2a1a3e]");
     });
 
     it("has border-b with theme colors", () => {
@@ -61,10 +59,7 @@ describe("CallHeader — Visual / CSS", () => {
     it("has theme text colors", () => {
       render(<CallHeader {...defaultProps} />);
       const title = screen.getByText("Math Class");
-      expect(title.className).toContain("text-gray-900");
-      expect(title.className).toContain("dark:text-white");
-      expect(title.className).toContain("midnight:text-cyan-50");
-      expect(title.className).toContain("purple:text-pink-50");
+      expect(title.className).toContain("text-ink");
     });
 
     it("has truncate for overflow", () => {

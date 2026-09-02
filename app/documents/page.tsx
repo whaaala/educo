@@ -80,7 +80,7 @@ export default function DocumentsHomePage() {
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
               placeholder="Search documents..."
-              className="w-full pl-12 pr-4 py-3 rounded-full border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] text-[14px] text-gray-800 dark:text-gray-200 midnight:text-cyan-50 purple:text-pink-50 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition-all"
+              className="w-full pl-12 pr-4 py-3 rounded-full border border-line bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] text-[0.875rem] text-gray-800 dark:text-gray-200 midnight:text-cyan-50 purple:text-pink-50 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition-all"
             />
           </div>
         </div>
@@ -88,10 +88,10 @@ export default function DocumentsHomePage() {
         {/* ── Start a New Document ── */}
         <section className="mb-8">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-[13px] font-semibold text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 uppercase tracking-wide">Start a new document</h2>
+            <h2 className="text-[0.8125rem] font-semibold text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 uppercase tracking-wide">Start a new document</h2>
             <button
               onClick={() => router.push("/documents/templates")}
-              className="text-[12px] font-medium text-blue-600 dark:text-blue-400 hover:underline cursor-pointer"
+              className="text-[0.75rem] font-medium text-blue-600 dark:text-blue-400 hover:underline cursor-pointer"
             >
               Template gallery
             </button>
@@ -106,7 +106,7 @@ export default function DocumentsHomePage() {
                   <Plus className="w-6 h-6 text-gray-400 group-hover:text-blue-500 transition-colors" />
                 </div>
               </div>
-              <p className="mt-2 text-[12px] font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 text-center">Blank</p>
+              <p className="mt-2 text-[0.75rem] font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 text-center">Blank</p>
             </button>
 
             {/* First 5 templates as preview cards */}
@@ -119,21 +119,21 @@ export default function DocumentsHomePage() {
         {/* ── Recent Documents ── */}
         <section>
           <div className="flex items-center justify-between mb-3">
-            <h2 className="text-[13px] font-semibold text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 uppercase tracking-wide">Recent documents</h2>
+            <h2 className="text-[0.8125rem] font-semibold text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 uppercase tracking-wide">Recent documents</h2>
             <div className="flex items-center gap-2">
               {/* Sort dropdown */}
               <div className="relative">
                 <button onClick={() => setSortOpen(!sortOpen)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors cursor-pointer">
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[0.75rem] text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors cursor-pointer">
                   <Clock className="w-3.5 h-3.5" />
                   {sortBy === "lastOpened" ? "Last opened" : sortBy === "lastModified" ? "Last modified" : "Title"}
                   <ChevronDown className="w-3 h-3" />
                 </button>
                 {sortOpen && (
-                  <div className="absolute right-0 top-full mt-1 w-[180px] bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 z-50 py-1">
+                  <div className="absolute right-0 top-full mt-1 w-[180px] bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-lg shadow-xl border border-line z-50 py-1">
                     {([["lastOpened", "Last opened by me"], ["lastModified", "Last modified"], ["title", "Title"]] as const).map(([key, label]) => (
                       <button key={key} onClick={() => { setSortBy(key); setSortOpen(false); }}
-                        className={`w-full px-3 py-2 text-left text-[12px] transition-colors cursor-pointer ${sortBy === key ? "text-blue-600 bg-blue-50 dark:bg-blue-900/20 font-medium" : "text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5"}`}>
+                        className={`w-full px-3 py-2 text-left text-[0.75rem] transition-colors cursor-pointer ${sortBy === key ? "text-blue-600 bg-blue-50 dark:bg-blue-900/20 font-medium" : "text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5"}`}>
                         {label}
                       </button>
                     ))}
@@ -141,7 +141,7 @@ export default function DocumentsHomePage() {
                 )}
               </div>
               {/* View toggle */}
-              <div className="flex items-center rounded-lg border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 overflow-hidden">
+              <div className="flex items-center rounded-lg border border-line overflow-hidden">
                 <button onClick={() => setViewMode("grid")}
                   className={`p-1.5 transition-colors cursor-pointer ${viewMode === "grid" ? "bg-blue-50 dark:bg-blue-900/30 text-blue-600" : "text-gray-400 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5"}`}>
                   <LayoutGrid className="w-4 h-4" />
@@ -167,7 +167,7 @@ export default function DocumentsHomePage() {
                       {doc.html ? (
                         <div className="w-[420px] origin-top-left pointer-events-none" style={{ transform: "scale(0.38)" }}>
                           <div
-                            className="px-7 pt-5 pb-8 text-[13px] leading-[1.6] text-gray-800 dark:text-gray-200 midnight:text-cyan-50 purple:text-pink-50 [&_h1]:text-[22px] [&_h1]:font-bold [&_h1]:mb-2 [&_h1]:leading-tight [&_h2]:text-[16px] [&_h2]:font-bold [&_h2]:mt-4 [&_h2]:mb-1 [&_h3]:text-[14px] [&_h3]:font-semibold [&_h3]:mt-3 [&_h3]:mb-1 [&_p]:my-1 [&_ul]:pl-5 [&_ul]:my-1 [&_ul]:list-disc [&_li]:my-0.5 [&_hr]:my-3 [&_hr]:border-gray-200 [&_strong]:font-semibold"
+                            className="px-7 pt-5 pb-8 text-[0.8125rem] leading-[1.6] text-gray-800 dark:text-gray-200 midnight:text-cyan-50 purple:text-pink-50 [&_h1]:text-[1.375rem] [&_h1]:font-bold [&_h1]:mb-2 [&_h1]:leading-tight [&_h2]:text-[1rem] [&_h2]:font-bold [&_h2]:mt-4 [&_h2]:mb-1 [&_h3]:text-[0.875rem] [&_h3]:font-semibold [&_h3]:mt-3 [&_h3]:mb-1 [&_p]:my-1 [&_ul]:pl-5 [&_ul]:my-1 [&_ul]:list-disc [&_li]:my-0.5 [&_hr]:my-3 [&_hr]:border-gray-200 [&_strong]:font-semibold"
                             dangerouslySetInnerHTML={{ __html: doc.html }}
                           />
                         </div>
@@ -196,15 +196,15 @@ export default function DocumentsHomePage() {
                     {menuOpenId === doc.id && (
                       <div className="absolute top-10 right-2 w-[160px] bg-white/95 dark:bg-[#0f1115]/95 midnight:bg-[#0a0e27]/95 purple:bg-[#1a0b2e]/95 backdrop-blur-xl rounded-xl shadow-xl border border-gray-200/60 dark:border-gray-700/60 midnight:border-cyan-500/20 purple:border-pink-500/20 z-50 py-1"
                         onClick={e => e.stopPropagation()}>
-                        <button className="w-full px-3 py-2 text-left text-[12px] text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 flex items-center gap-2 cursor-pointer transition-colors"
+                        <button className="w-full px-3 py-2 text-left text-[0.75rem] text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 flex items-center gap-2 cursor-pointer transition-colors"
                           onClick={() => { handleOpenDoc(doc.id); setMenuOpenId(null); }}>
                           <ExternalLink className="w-3.5 h-3.5" /> Open
                         </button>
-                        <button className="w-full px-3 py-2 text-left text-[12px] text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 flex items-center gap-2 cursor-pointer transition-colors"
+                        <button className="w-full px-3 py-2 text-left text-[0.75rem] text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 flex items-center gap-2 cursor-pointer transition-colors"
                           onClick={() => setMenuOpenId(null)}>
                           <Copy className="w-3.5 h-3.5" /> Make a copy
                         </button>
-                        <button className="w-full px-3 py-2 text-left text-[12px] text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-2 cursor-pointer transition-colors"
+                        <button className="w-full px-3 py-2 text-left text-[0.75rem] text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-2 cursor-pointer transition-colors"
                           onClick={() => { deleteDoc(doc.id); setMenuOpenId(null); }}>
                           <Trash2 className="w-3.5 h-3.5" /> Remove
                         </button>
@@ -213,10 +213,10 @@ export default function DocumentsHomePage() {
                   </div>
                   {/* Metadata below card */}
                   <div className="mt-2.5 px-0.5">
-                    <p className="text-[14px] font-semibold text-gray-800 dark:text-gray-200 midnight:text-cyan-50 purple:text-pink-50 truncate leading-tight">{doc.title}</p>
+                    <p className="text-[0.875rem] font-semibold text-gray-800 dark:text-gray-200 midnight:text-cyan-50 purple:text-pink-50 truncate leading-tight">{doc.title}</p>
                     <div className="flex items-center gap-1.5 mt-1">
                       <FileText className="w-3 h-3 text-blue-500 flex-shrink-0" />
-                      <span className="text-[11px] text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400">{timeAgo(doc.updatedAt)}</span>
+                      <span className="text-[0.6875rem] text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400">{timeAgo(doc.updatedAt)}</span>
                       {doc.starred && <Star className="w-3 h-3 text-amber-400 fill-current flex-shrink-0" />}
                     </div>
                   </div>
@@ -227,9 +227,9 @@ export default function DocumentsHomePage() {
 
           {/* ── List View ── */}
           {viewMode === "list" && (
-            <div className="rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] overflow-hidden transition-opacity duration-300">
+            <div className="rounded-xl border border-line bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] overflow-hidden transition-opacity duration-300">
               {/* Header */}
-              <div className="grid grid-cols-[40%_20%_30%_10%] px-4 py-2 border-b border-gray-100 dark:border-[#1a1d24] midnight:border-cyan-500/20 purple:border-pink-500/20 text-[11px] font-semibold text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 uppercase tracking-wide">
+              <div className="grid grid-cols-[40%_20%_30%_10%] px-4 py-2 border-b border-gray-100 dark:border-[#1a1d24] midnight:border-cyan-500/20 purple:border-pink-500/20 text-[0.6875rem] font-semibold text-muted uppercase tracking-wide">
                 <span>Name</span>
                 <span>Owner</span>
                 <span>Last opened</span>
@@ -242,11 +242,11 @@ export default function DocumentsHomePage() {
                   className="grid grid-cols-[40%_20%_30%_10%] items-center px-4 h-[52px] border-b border-gray-50 dark:border-[#1a1d24]/50 midnight:border-cyan-500/10 purple:border-pink-500/10 last:border-b-0 hover:bg-blue-50/50 dark:hover:bg-blue-900/10 transition-colors cursor-pointer group">
                   <div className="flex items-center gap-3 min-w-0">
                     <FileText className="w-4 h-4 text-blue-500 flex-shrink-0" />
-                    <span className="text-[13px] text-gray-800 dark:text-gray-200 midnight:text-cyan-50 purple:text-pink-50 truncate">{doc.title}</span>
+                    <span className="text-[0.8125rem] text-gray-800 dark:text-gray-200 midnight:text-cyan-50 purple:text-pink-50 truncate">{doc.title}</span>
                     {doc.starred && <Star className="w-3 h-3 text-amber-400 fill-current flex-shrink-0" />}
                   </div>
-                  <span className="text-[12px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">{doc.owner}</span>
-                  <span className="text-[12px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">{timeAgo(doc.updatedAt)}</span>
+                  <span className="text-[0.75rem] text-muted">{doc.owner}</span>
+                  <span className="text-[0.75rem] text-muted">{timeAgo(doc.updatedAt)}</span>
                   <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                     <button onClick={e => { e.stopPropagation(); toggleStar(doc.id); }}
                       className={`p-1 rounded cursor-pointer ${doc.starred ? "text-amber-400" : "text-gray-400 hover:text-amber-400"}`}>
@@ -256,17 +256,17 @@ export default function DocumentsHomePage() {
                       className="p-1 rounded text-gray-400 hover:text-gray-600 cursor-pointer relative">
                       <MoreVertical className="w-3.5 h-3.5" />
                       {menuOpenId === doc.id && (
-                        <div className="absolute top-full right-0 mt-1 w-[160px] bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 z-50 py-1"
+                        <div className="absolute top-full right-0 mt-1 w-[160px] bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-lg shadow-xl border border-line z-50 py-1"
                           onClick={e => e.stopPropagation()}>
-                          <button className="w-full px-3 py-1.5 text-left text-[12px] text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 flex items-center gap-2 cursor-pointer"
+                          <button className="w-full px-3 py-1.5 text-left text-[0.75rem] text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 flex items-center gap-2 cursor-pointer"
                             onClick={() => { handleOpenDoc(doc.id); setMenuOpenId(null); }}>
                             <ExternalLink className="w-3.5 h-3.5" /> Open
                           </button>
-                          <button className="w-full px-3 py-1.5 text-left text-[12px] text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 flex items-center gap-2 cursor-pointer"
+                          <button className="w-full px-3 py-1.5 text-left text-[0.75rem] text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 flex items-center gap-2 cursor-pointer"
                             onClick={() => setMenuOpenId(null)}>
                             <Copy className="w-3.5 h-3.5" /> Make a copy
                           </button>
-                          <button className="w-full px-3 py-1.5 text-left text-[12px] text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-2 cursor-pointer"
+                          <button className="w-full px-3 py-1.5 text-left text-[0.75rem] text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-2 cursor-pointer"
                             onClick={() => { deleteDoc(doc.id); setMenuOpenId(null); }}>
                             <Trash2 className="w-3.5 h-3.5" /> Remove
                           </button>
@@ -282,8 +282,8 @@ export default function DocumentsHomePage() {
           {filteredDocs.length === 0 && (
             <div className="flex flex-col items-center justify-center py-16 text-gray-400">
               <FolderOpen className="w-12 h-12 mb-3 opacity-40" />
-              <p className="text-[14px] font-medium">No documents found</p>
-              <p className="text-[12px] mt-1">Try a different search or create a new document</p>
+              <p className="text-[0.875rem] font-medium">No documents found</p>
+              <p className="text-[0.75rem] mt-1">Try a different search or create a new document</p>
             </div>
           )}
         </section>
@@ -307,7 +307,7 @@ function TemplatePreviewCard({ template, onClick }: { template: typeof DOC_TEMPL
           {/* Scaled-down real HTML preview */}
           <div className="w-[420px] origin-top-left pointer-events-none" style={{ transform: "scale(0.355)" }}>
             <div
-              className="px-7 pt-5 pb-8 text-[13px] leading-[1.6] text-gray-800 dark:text-gray-200 midnight:text-cyan-50 purple:text-pink-50 [&_h1]:text-[22px] [&_h1]:font-bold [&_h1]:mb-2 [&_h1]:leading-tight [&_h2]:text-[16px] [&_h2]:font-bold [&_h2]:mt-4 [&_h2]:mb-1 [&_h3]:text-[14px] [&_h3]:font-semibold [&_h3]:mt-3 [&_h3]:mb-1 [&_p]:my-1 [&_ul]:pl-5 [&_ul]:my-1 [&_ul]:list-disc [&_li]:my-0.5 [&_hr]:my-3 [&_hr]:border-gray-200 [&_strong]:font-semibold [&_em]:italic"
+              className="px-7 pt-5 pb-8 text-[0.8125rem] leading-[1.6] text-gray-800 dark:text-gray-200 midnight:text-cyan-50 purple:text-pink-50 [&_h1]:text-[1.375rem] [&_h1]:font-bold [&_h1]:mb-2 [&_h1]:leading-tight [&_h2]:text-[1rem] [&_h2]:font-bold [&_h2]:mt-4 [&_h2]:mb-1 [&_h3]:text-[0.875rem] [&_h3]:font-semibold [&_h3]:mt-3 [&_h3]:mb-1 [&_p]:my-1 [&_ul]:pl-5 [&_ul]:my-1 [&_ul]:list-disc [&_li]:my-0.5 [&_hr]:my-3 [&_hr]:border-gray-200 [&_strong]:font-semibold [&_em]:italic"
               dangerouslySetInnerHTML={{ __html: template.html || "" }}
             />
           </div>
@@ -317,7 +317,7 @@ function TemplatePreviewCard({ template, onClick }: { template: typeof DOC_TEMPL
         {/* Hover border highlight */}
         <div className="absolute inset-[-1px] rounded-xl border-2 border-transparent group-hover:border-blue-400/50 transition-colors duration-300 pointer-events-none" />
       </div>
-      <p className="mt-2 text-[12px] font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 truncate text-center">{template.label}</p>
+      <p className="mt-2 text-[0.75rem] font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 truncate text-center">{template.label}</p>
     </button>
   );
 }

@@ -61,7 +61,7 @@ const badgeColors: Record<ColorVariant, string> = {
   indigo: "bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400",
   teal: "bg-teal-100 dark:bg-teal-900/30 text-teal-700 dark:text-teal-400",
   pink: "bg-pink-100 dark:bg-pink-900/30 text-pink-700 dark:text-pink-400",
-  gray: "bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200",
+  gray: "bg-surface-2 text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200",
 };
 
 // Stat color classes
@@ -164,7 +164,7 @@ export default function EntityCard<T>({
     <div
       ref={cardRef}
       className={`
-        relative bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]
+        relative bg-surface
         rounded-xl border transition-all duration-200
         ${
           isSelected
@@ -207,15 +207,15 @@ export default function EntityCard<T>({
               }
             `}
           >
-            <MoreVertical className="w-4 h-4 text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300" />
+            <MoreVertical className="w-4 h-4 text-muted" />
           </button>
 
           {showMenu && (
             <div
               className={`
                 absolute right-0 z-50 min-w-[160px]
-                bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl shadow-xl
-                border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20
+                bg-surface rounded-xl shadow-xl
+                border border-line
                 py-1 animate-in zoom-in-95 duration-150
                 ${menuPosition === "top" ? "bottom-full mb-1" : "top-full mt-1"}
               `}
@@ -284,7 +284,7 @@ export default function EntityCard<T>({
               {title}
             </h3>
             {subtitle && (
-              <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 truncate">
+              <p className="text-sm text-muted truncate">
                 {subtitle}
               </p>
             )}
@@ -317,13 +317,13 @@ export default function EntityCard<T>({
               const Icon = stat.icon;
               return (
                 <div key={index} className="text-center">
-                  <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mb-0.5">
+                  <p className="text-xs text-muted mb-0.5">
                     {stat.label}
                   </p>
                   <p
                     className={`
                       text-sm font-semibold flex items-center justify-center gap-1
-                      ${stat.color ? statColors[stat.color] : "text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50"}
+                      ${stat.color ? statColors[stat.color] : "text-ink"}
                     `}
                   >
                     {Icon && <Icon className="w-3.5 h-3.5" />}

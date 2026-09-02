@@ -146,7 +146,7 @@ export default function UserMenu({
             <div
               style={dropdownStyle}
               ref={dropdownRef}
-              className="w-64 sm:w-72 bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-xl shadow-2xl border border-gray-200 dark:border-[#1a1d24]/50 midnight:border-cyan-500/20 purple:border-pink-500/20 z-[9999] transition-colors duration-300 max-h-[500px] overflow-y-auto"
+              className="w-64 sm:w-72 bg-surface rounded-xl shadow-2xl border border-gray-200 dark:border-[#1a1d24]/50 midnight:border-cyan-500/20 purple:border-pink-500/20 z-[9999] transition-colors duration-300 max-h-[500px] overflow-y-auto"
               role="menu"
               aria-orientation="vertical"
             >
@@ -173,7 +173,7 @@ export default function UserMenu({
 
                 {/* User Info */}
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate">{displayName}</p>
+                  <p className="text-sm font-bold text-ink truncate">{displayName}</p>
                   <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70 truncate mt-0.5">{displayRole}</p>
                 </div>
               </div>
@@ -195,7 +195,7 @@ export default function UserMenu({
 
               {/* Dev-only role switcher (helps differentiate Parent vs Admin UI) */}
               <div className="px-4 pt-3 pb-2">
-                <p className="text-[11px] font-semibold text-gray-500 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70 uppercase tracking-wide mb-2">
+                <p className="text-[0.6875rem] font-semibold text-gray-500 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70 uppercase tracking-wide mb-2">
                   Switch Role (dev)
                 </p>
                 <div className="flex items-center gap-2">

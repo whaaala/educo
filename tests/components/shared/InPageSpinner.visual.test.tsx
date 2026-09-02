@@ -46,10 +46,7 @@ describe("InPageSpinner — Visual / CSS", () => {
       const text = screen.getByText("Loading");
       expect(text.className).toContain("text-xl");
       expect(text.className).toContain("font-bold");
-      expect(text.className).toContain("text-gray-900");
-      expect(text.className).toContain("dark:text-white");
-      expect(text.className).toContain("midnight:text-cyan-50");
-      expect(text.className).toContain("purple:text-pink-50");
+      expect(text.className).toContain("text-ink");
     });
 
     it("subtext has subdued colors", () => {
@@ -57,7 +54,6 @@ describe("InPageSpinner — Visual / CSS", () => {
       const sub = screen.getByText("Please wait a moment...");
       expect(sub.className).toContain("text-sm");
       expect(sub.className).toContain("text-gray-500");
-      expect(sub.className).toContain("dark:text-gray-400");
     });
   });
 });

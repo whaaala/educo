@@ -57,7 +57,7 @@ export default function SuccessModal({
     <div className="fixed inset-0 z-[9999] flex items-start justify-center bg-black/60 backdrop-blur-md pt-4 pb-4 px-4 sm:px-6 overflow-y-auto">
       <div
         ref={modalRef}
-        className="relative w-full max-w-2xl bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl sm:rounded-2xl shadow-2xl max-h-[calc(100vh-32px)] flex flex-col animate-in fade-in zoom-in duration-200"
+        className="relative w-full max-w-2xl bg-surface rounded-xl sm:rounded-2xl shadow-2xl max-h-[calc(100vh-32px)] flex flex-col animate-in fade-in zoom-in duration-200"
       >
         {/* Header with Gradient */}
         <div className="flex-shrink-0 relative bg-gradient-to-r from-green-500/90 to-emerald-500/90 dark:from-green-500/80 dark:to-emerald-500/80 midnight:from-green-500/90 midnight:to-emerald-500/90 purple:from-green-500/90 purple:to-emerald-500/90 px-4 sm:px-5 py-3 sm:py-4 rounded-t-xl sm:rounded-t-2xl">
@@ -98,7 +98,7 @@ export default function SuccessModal({
                       <p className="text-xs text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400 mb-1">
                         {field.label}
                       </p>
-                      <p className={`text-base font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 ${field.valueClassName || ""}`}>
+                      <p className={`text-base font-semibold text-ink ${field.valueClassName || ""}`}>
                         {field.value}
                       </p>
                     </div>

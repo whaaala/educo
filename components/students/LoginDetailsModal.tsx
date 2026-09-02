@@ -96,7 +96,7 @@ export default function LoginDetailsModal({
       onClick={onClose}
     >
       <div
-        className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-4 duration-300"
+        className="bg-surface rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-4 duration-300"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -124,7 +124,7 @@ export default function LoginDetailsModal({
             </div>
           )}
           <div className="flex-1 min-w-0">
-            <h3 className="text-lg font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate">
+            <h3 className="text-lg font-bold text-ink truncate">
               {studentName}
             </h3>
             <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70">
@@ -135,7 +135,7 @@ export default function LoginDetailsModal({
 
         {/* Table Section */}
         <div className="px-6 py-5 overflow-x-auto">
-          <div className="rounded-lg border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 overflow-hidden shadow-sm">
+          <div className="rounded-lg border border-line overflow-hidden shadow-sm">
             <table className="w-full">
               <thead>
                 <tr className="bg-gray-50 dark:bg-[#1a1d24]/50 midnight:bg-[#0f1330]/50 purple:bg-[#251340]/50">
@@ -153,7 +153,7 @@ export default function LoginDetailsModal({
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200 dark:divide-gray-700 midnight:divide-cyan-500/10 purple:divide-pink-500/10 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]">
+              <tbody className="divide-y divide-gray-200 dark:divide-gray-700 midnight:divide-cyan-500/10 purple:divide-pink-500/10 bg-surface">
                 {loginDetails.map((detail, index) => {
                   const isPasswordVisible = visiblePasswords.has(index);
 
@@ -200,7 +200,7 @@ export default function LoginDetailsModal({
                               return (
                                 <div
                                   key={socialIndex}
-                                  className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] border border-gray-200 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30"
+                                  className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-surface-2 border border-gray-200 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30"
                                   title={`${label}: ${social.email}`}
                                 >
                                   <SocialIcon className={`w-3.5 h-3.5 ${color}`} />
@@ -226,7 +226,7 @@ export default function LoginDetailsModal({
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-gray-50/30 dark:bg-[#1a1d24]/20 midnight:bg-[#0f1330]/20 purple:bg-[#251340]/20">
+        <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-line bg-gray-50/30 dark:bg-[#1a1d24]/20 midnight:bg-[#0f1330]/20 purple:bg-[#251340]/20">
           <button
             onClick={onClose}
             className="px-6 py-2.5 rounded-lg bg-gray-200 dark:bg-[#22262e] midnight:bg-gray-700 purple:bg-gray-700 text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-300 dark:hover:bg-[#2a2d35] midnight:hover:bg-gray-600 purple:hover:bg-gray-600 transition-all duration-200 font-medium text-sm shadow-sm hover:shadow active:scale-95 cursor-pointer"

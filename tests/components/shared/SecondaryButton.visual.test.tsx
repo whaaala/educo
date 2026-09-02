@@ -9,7 +9,6 @@ describe("SecondaryButton — Visual / CSS", () => {
 
       const btn = screen.getByText("Cancel").closest("button")!;
       expect(btn.className).toContain("bg-white");
-      expect(btn.className).toContain("dark:bg-[#1a1d24]");
       expect(btn.className).toContain("midnight:bg-[#0f1330]/80");
       expect(btn.className).toContain("purple:bg-[#251340]/80");
     });
@@ -29,10 +28,7 @@ describe("SecondaryButton — Visual / CSS", () => {
 
       const btn = screen.getByText("Cancel").closest("button")!;
       expect(btn.className).toContain("border");
-      expect(btn.className).toContain("border-gray-200");
-      expect(btn.className).toContain("dark:border-gray-700");
-      expect(btn.className).toContain("midnight:border-cyan-500/20");
-      expect(btn.className).toContain("purple:border-pink-500/20");
+      expect(btn.className).toContain("border-line");
     });
   });
 

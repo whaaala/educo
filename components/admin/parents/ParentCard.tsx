@@ -537,13 +537,13 @@ export default function ParentCard({
       >
         <div className="space-y-4">
           {/* Warning Message */}
-          <div className="flex items-start gap-3 p-4 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
-            <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
+          <div className="flex items-start gap-3 p-4 rounded-xl bg-red-50 dark:bg-red-900/20 midnight:bg-red-900/20 purple:bg-red-900/20 border border-red-200 dark:border-red-800">
+            <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400 flex-shrink-0 mt-0.5" />
             <div>
               <p className="text-sm font-medium text-red-800 dark:text-red-300">
                 This parent cannot be deleted
               </p>
-              <p className="text-sm text-red-700 dark:text-red-400 mt-1">
+              <p className="text-sm text-red-700 dark:text-red-400 midnight:text-red-400 purple:text-red-400 mt-1">
                 {parent.firstName} {parent.lastName} is currently connected to {parent.children.length} {parent.children.length === 1 ? "child" : "children"} in the system.
               </p>
             </div>
@@ -551,23 +551,23 @@ export default function ParentCard({
 
           {/* Connected Children List */}
           <div className="space-y-2">
-            <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+            <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200">
               Connected Children:
             </h4>
             <div className="space-y-2 max-h-[150px] overflow-y-auto">
               {parent.children.map((child) => (
                 <div
                   key={child.id}
-                  className="flex items-center gap-3 p-2.5 rounded-lg bg-gray-50 dark:bg-[#1a1d24] border border-gray-200 dark:border-gray-700"
+                  className="flex items-center gap-3 p-2.5 rounded-lg bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20"
                 >
                   <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-900/30 dark:to-blue-800/20 flex items-center justify-center flex-shrink-0">
-                    <GraduationCap className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                    <GraduationCap className="w-4 h-4 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                    <p className="text-sm font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate">
                       {child.firstName} {child.lastName}
                     </p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                    <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
                       {child.classLevel}
                     </p>
                   </div>
@@ -577,8 +577,8 @@ export default function ParentCard({
           </div>
 
           {/* Instructions */}
-          <div className="p-3 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
-            <p className="text-sm text-blue-700 dark:text-blue-300">
+          <div className="p-3 rounded-lg bg-blue-50 dark:bg-blue-900/20 midnight:bg-cyan-900/20 purple:bg-pink-900/20 border border-blue-200 dark:border-blue-800">
+            <p className="text-sm text-blue-700 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300">
               To delete this parent, you must first disconnect all children using the <strong>&quot;Disconnect Children&quot;</strong> option from the dropdown menu.
             </p>
           </div>
@@ -622,7 +622,7 @@ export default function ParentCard({
         <div className="flex flex-col h-[450px]">
           {/* Header with recipient info */}
           <div className="flex-shrink-0 mb-4">
-            <div className="flex items-center gap-4 p-3 rounded-xl bg-gray-50 dark:bg-[#1a1d24]/50 border border-gray-200 dark:border-gray-700">
+            <div className="flex items-center gap-4 p-3 rounded-xl bg-gray-50 dark:bg-[#1a1d24]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
               <div className="relative">
                 {parent.profilePhoto ? (
                   <div className="w-12 h-12 rounded-full overflow-hidden">
@@ -636,28 +636,28 @@ export default function ParentCard({
                 <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-green-500 border-2 border-white dark:border-[#1a1d24]" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="font-semibold text-gray-900 dark:text-white">{parent.firstName} {parent.lastName}</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">{parent.email} • {parent.phone}</p>
+                <p className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{parent.firstName} {parent.lastName}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">{parent.email} • {parent.phone}</p>
               </div>
-              <span className="px-2 py-1 text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-full">
+              <span className="px-2 py-1 text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400 rounded-full">
                 Online
               </span>
             </div>
           </div>
 
           {/* Tabs */}
-          <div className="flex gap-2 p-1.5 rounded-2xl bg-gray-100/80 dark:bg-[#1a1d24]/50 mb-4">
+          <div className="flex gap-2 p-1.5 rounded-2xl bg-gray-100/80 dark:bg-[#1a1d24]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 mb-4">
             <button
               onClick={() => setMessageTab("chat")}
               className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm transition-all cursor-pointer ${
                 messageTab === "chat"
-                  ? "bg-white dark:bg-[#22262e] text-emerald-600 dark:text-emerald-400 shadow-sm"
-                  : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+                  ? "bg-white dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] text-emerald-600 dark:text-emerald-400 shadow-sm"
+                  : "text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:text-gray-700 dark:hover:text-gray-300 midnight:hover:text-cyan-200 purple:hover:text-pink-200"
               }`}
             >
               <MessageCircle className="w-4 h-4" />
               Chat
-              <span className="ml-1 px-1.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900/50 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold">
+              <span className="ml-1 px-1.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900/50 text-emerald-600 dark:text-emerald-400 text-[0.625rem] font-bold">
                 {chatHistory.length}
               </span>
             </button>
@@ -665,8 +665,8 @@ export default function ParentCard({
               onClick={() => setMessageTab("email")}
               className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm transition-all cursor-pointer ${
                 messageTab === "email"
-                  ? "bg-white dark:bg-[#22262e] text-blue-600 dark:text-blue-400 shadow-sm"
-                  : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+                  ? "bg-white dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 shadow-sm"
+                  : "text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:text-gray-700 dark:hover:text-gray-300 midnight:hover:text-cyan-200 purple:hover:text-pink-200"
               }`}
             >
               <Mail className="w-4 h-4" />
@@ -690,7 +690,7 @@ export default function ParentCard({
                       <div key={msg.id}>
                         {showDate && (
                           <div className="flex items-center justify-center my-4">
-                            <span className="px-3 py-1 rounded-full bg-gray-100 dark:bg-[#1a1d24] text-xs font-medium text-gray-500 dark:text-gray-400">
+                            <span className="px-3 py-1 rounded-full bg-gray-100 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] text-xs font-medium text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
                               {new Date(msg.timestamp).toLocaleDateString([], { weekday: "long", month: "short", day: "numeric" })}
                             </span>
                           </div>
@@ -713,13 +713,13 @@ export default function ParentCard({
                                 className={`px-4 py-2.5 rounded-2xl ${
                                   isAdmin
                                     ? "bg-gradient-to-br from-blue-500 to-indigo-600 text-white rounded-br-md"
-                                    : "bg-gray-100 dark:bg-[#1a1d24] text-gray-800 dark:text-gray-200 rounded-bl-md"
+                                    : "bg-gray-100 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] text-gray-800 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 rounded-bl-md"
                                 }`}
                               >
                                 <p className="text-sm leading-relaxed whitespace-pre-wrap">{msg.message}</p>
                               </div>
                               <div className={`flex items-center gap-1.5 mt-1 ${isAdmin ? "justify-end" : "justify-start"}`}>
-                                <span className="text-[10px] text-gray-400 dark:text-gray-500">{formatTime(msg.timestamp)}</span>
+                                <span className="text-[0.625rem] text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400">{formatTime(msg.timestamp)}</span>
                                 {isAdmin && (
                                   <CheckCircle2 className="w-3 h-3 text-blue-500" />
                                 )}
@@ -744,7 +744,7 @@ export default function ParentCard({
                             <span className="text-xs font-bold text-white">{parent.firstName.charAt(0)}</span>
                           </div>
                         )}
-                        <div className="px-4 py-3 rounded-2xl bg-gray-100 dark:bg-[#1a1d24] rounded-bl-md">
+                        <div className="px-4 py-3 rounded-2xl bg-gray-100 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-bl-md">
                           <div className="flex gap-1">
                             <span className="w-2 h-2 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: "0ms" }} />
                             <span className="w-2 h-2 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: "150ms" }} />
@@ -758,20 +758,20 @@ export default function ParentCard({
                 </div>
 
                 {/* Chat Input */}
-                <div className="flex-shrink-0 pt-3 border-t border-gray-200 dark:border-gray-700 mt-3 relative overflow-visible">
+                <div className="flex-shrink-0 pt-3 border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 mt-3 relative overflow-visible">
                   {/* Chat Attachments Preview */}
                   {chatAttachments.length > 0 && (
                     <div className="flex gap-2 mb-2 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600">
                       {chatAttachments.map((file, index) => (
                         <div key={index} className="relative flex-shrink-0 group">
                           {file.type.startsWith("image/") ? (
-                            <div className="w-16 h-16 rounded-xl overflow-hidden bg-gray-100 dark:bg-[#1a1d24] border border-gray-200 dark:border-gray-700">
+                            <div className="w-16 h-16 rounded-xl overflow-hidden bg-gray-100 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
                               <img src={URL.createObjectURL(file)} alt={file.name} className="w-full h-full object-cover" />
                             </div>
                           ) : (
-                            <div className="w-16 h-16 rounded-xl bg-gray-100 dark:bg-[#1a1d24] border border-gray-200 dark:border-gray-700 flex flex-col items-center justify-center p-1">
+                            <div className="w-16 h-16 rounded-xl bg-gray-100 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 flex flex-col items-center justify-center p-1">
                               <span className="text-lg">{getFileIcon(file)}</span>
-                              <span className="text-[8px] text-gray-500 truncate w-full text-center">{file.name.slice(0, 8)}...</span>
+                              <span className="text-[0.5rem] text-gray-500 truncate w-full text-center">{file.name.slice(0, 8)}...</span>
                             </div>
                           )}
                           <button
@@ -800,7 +800,7 @@ export default function ParentCard({
                         }}
                         placeholder="Type a message..."
                         rows={1}
-                        className="w-full px-4 py-3 pr-20 rounded-2xl bg-gray-100 dark:bg-[#1a1d24] border-0 focus:ring-2 focus:ring-blue-500/50 resize-none text-sm text-gray-800 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500 outline-none"
+                        className="w-full px-4 py-3 pr-20 rounded-2xl bg-gray-100 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border-0 focus:ring-2 focus:ring-blue-500/50 resize-none text-sm text-gray-800 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 placeholder-gray-400 dark:placeholder-gray-500 midnight:placeholder-cyan-400 purple:placeholder-pink-400 outline-none"
                         style={{ minHeight: "48px", maxHeight: "120px" }}
                       />
                     </div>
@@ -808,14 +808,14 @@ export default function ParentCard({
                       <EmojiPickerPopover
                         onEmojiSelect={handleChatEmojiSelect}
                         position="top-right"
-                        buttonClassName="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-200 dark:hover:bg-[#22262e] transition-colors cursor-pointer"
+                        buttonClassName="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 midnight:hover:text-cyan-200 purple:hover:text-pink-200 hover:bg-gray-200 dark:hover:bg-[#22262e] transition-colors cursor-pointer"
                         pickerWidth={320}
                         pickerHeight={350}
                       />
                       <button
                         type="button"
                         onClick={() => chatFileInputRef.current?.click()}
-                        className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-200 dark:hover:bg-[#22262e] transition-colors cursor-pointer"
+                        className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 midnight:hover:text-cyan-200 purple:hover:text-pink-200 hover:bg-gray-200 dark:hover:bg-[#22262e] transition-colors cursor-pointer"
                       >
                         <Paperclip className="w-4 h-4" />
                       </button>
@@ -845,11 +845,11 @@ export default function ParentCard({
               <div className="h-full flex flex-col">
                 {isSent ? (
                   <div className="flex-1 flex flex-col items-center justify-center">
-                    <div className="w-16 h-16 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center mb-4">
+                    <div className="w-16 h-16 rounded-full bg-blue-100 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 flex items-center justify-center mb-4">
                       <CheckCircle2 className="w-8 h-8 text-blue-500" />
                     </div>
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">Email Sent</h3>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Delivered to {parent.email}</p>
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-1">Email Sent</h3>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Delivered to {parent.email}</p>
                   </div>
                 ) : (
                   <>
@@ -857,7 +857,7 @@ export default function ParentCard({
                     <div className="flex-1 overflow-y-auto space-y-4 pr-1">
                       {/* Templates */}
                       <div>
-                        <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">Templates</p>
+                        <p className="text-xs font-medium text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mb-2">Templates</p>
                         <div className="flex gap-2 flex-wrap">
                           {emailTemplates.map((template) => (
                             <button
@@ -869,7 +869,7 @@ export default function ParentCard({
                               className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-all cursor-pointer ${
                                 emailSubject === template.subject
                                   ? "bg-blue-500 text-white"
-                                  : "bg-gray-100 dark:bg-[#1a1d24] text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-[#22262e]"
+                                  : "bg-gray-100 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-200 dark:hover:bg-[#22262e]"
                               }`}
                             >
                               {template.label}
@@ -880,25 +880,25 @@ export default function ParentCard({
 
                       {/* To Field */}
                       <div>
-                        <label className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5 block">To</label>
-                        <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-gray-50 dark:bg-[#1a1d24] border border-gray-200 dark:border-gray-700">
+                        <label className="text-xs font-medium text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mb-1.5 block">To</label>
+                        <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
                           {parent.profilePhoto ? (
                             <div className="w-6 h-6 rounded-full overflow-hidden flex-shrink-0">
                               <img src={parent.profilePhoto} alt={`${parent.firstName}`} className="w-full h-full object-cover" />
                             </div>
                           ) : (
                             <div className="w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0">
-                              <span className="text-[10px] font-bold text-white">{parent.firstName.charAt(0)}</span>
+                              <span className="text-[0.625rem] font-bold text-white">{parent.firstName.charAt(0)}</span>
                             </div>
                           )}
-                          <span className="text-sm text-gray-700 dark:text-gray-300">{parent.firstName} {parent.lastName}</span>
+                          <span className="text-sm text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200">{parent.firstName} {parent.lastName}</span>
                           <span className="text-xs text-gray-400 ml-auto">{parent.email}</span>
                         </div>
                       </div>
 
                       {/* Subject */}
                       <div>
-                        <label className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5 block">
+                        <label className="text-xs font-medium text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mb-1.5 block">
                           Subject <span className="text-red-400">*</span>
                         </label>
                         <input
@@ -906,7 +906,7 @@ export default function ParentCard({
                           value={emailSubject}
                           onChange={(e) => setEmailSubject(e.target.value)}
                           placeholder="What's this email about?"
-                          className="w-full px-3 py-2 rounded-xl bg-white dark:bg-[#1a1d24] border border-gray-200 dark:border-gray-700 focus:border-blue-400 focus:ring-2 focus:ring-blue-500/20 text-sm outline-none"
+                          className="w-full px-3 py-2 rounded-xl bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 focus:border-blue-400 focus:ring-2 focus:ring-blue-500/20 text-sm outline-none"
                         />
                       </div>
 
@@ -915,8 +915,8 @@ export default function ParentCard({
                         <FormTextarea
                           label="Message"
                           icon={<AlignLeft className="w-full h-full" />}
-                          iconBgColor="bg-blue-100 dark:bg-blue-900/30"
-                          iconColor="text-blue-600 dark:text-blue-400"
+                          iconBgColor="bg-blue-100 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30"
+                          iconColor="text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400"
                           value={emailMessage}
                           onChange={setEmailMessage}
                           placeholder="Write your message..."
@@ -927,7 +927,7 @@ export default function ParentCard({
                     </div>
 
                     {/* Fixed Footer */}
-                    <div className="flex-shrink-0 pt-3 border-t border-gray-200 dark:border-gray-700 mt-3">
+                    <div className="flex-shrink-0 pt-3 border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 mt-3">
                       {/* Emoji and Attachment buttons */}
                       <div className="flex items-center gap-1 mb-3">
                         <EmojiPickerPopover
@@ -957,15 +957,15 @@ export default function ParentCard({
                       {/* Email Attachments */}
                       {emailAttachments.length > 0 && (
                         <div className="mb-3">
-                          <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">
+                          <p className="text-xs font-medium text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mb-2">
                             Attachments ({emailAttachments.length})
                           </p>
                           <div className="flex flex-wrap gap-2">
                             {emailAttachments.map((file, index) => (
-                              <div key={index} className="flex items-center gap-2 px-2 py-1.5 rounded-lg bg-gray-50 dark:bg-[#1a1d24] border border-gray-200 dark:border-gray-700">
+                              <div key={index} className="flex items-center gap-2 px-2 py-1.5 rounded-lg bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
                                 <span>{getFileIcon(file)}</span>
-                                <span className="text-xs text-gray-700 dark:text-gray-300 max-w-[100px] truncate">{file.name}</span>
-                                <span className="text-[10px] text-gray-400">{formatFileSize(file.size)}</span>
+                                <span className="text-xs text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 max-w-[100px] truncate">{file.name}</span>
+                                <span className="text-[0.625rem] text-gray-400">{formatFileSize(file.size)}</span>
                                 <button
                                   type="button"
                                   onClick={() => removeEmailAttachment(index)}
@@ -988,7 +988,7 @@ export default function ParentCard({
                             setEmailMessage("");
                             setEmailAttachments([]);
                           }}
-                          className="px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-[#22262e] rounded-xl transition-colors cursor-pointer"
+                          className="px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-100 dark:hover:bg-[#22262e] rounded-xl transition-colors cursor-pointer"
                         >
                           Clear
                         </button>

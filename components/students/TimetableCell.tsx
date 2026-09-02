@@ -56,7 +56,7 @@ export default function TimetableCell({
           <div className="flex items-center gap-1.5 mb-2.5">
             <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-md bg-gradient-to-r from-white/70 to-white/50 dark:from-black/40 dark:to-black/30 backdrop-blur-sm border border-white/30 dark:border-gray-700/30 shadow-sm">
               <Clock className="w-3 h-3 text-gray-600 dark:text-gray-400 flex-shrink-0" />
-              <span className="text-[10px] font-bold text-gray-700 dark:text-gray-300 whitespace-nowrap tracking-wide">
+              <span className="text-[0.625rem] font-bold text-gray-700 dark:text-gray-300 whitespace-nowrap tracking-wide">
                 {time}
               </span>
             </div>
@@ -100,7 +100,7 @@ export default function TimetableCell({
                   <p className="text-xs font-bold text-gray-800 dark:text-gray-200 truncate leading-tight group-hover/teacher:text-blue-600 dark:group-hover/teacher:text-blue-400 transition-colors duration-200">
                     {teacher}
                   </p>
-                  <p className="text-[9px] font-medium text-gray-500 dark:text-gray-400 truncate leading-tight mt-0.5">
+                  <p className="text-[0.5625rem] font-medium text-gray-500 dark:text-gray-400 truncate leading-tight mt-0.5">
                     Instructor
                   </p>
                 </div>
@@ -135,8 +135,8 @@ export default function TimetableCell({
             }`} />
             <span className={`font-bold text-gray-800 dark:text-gray-200 midnight:text-cyan-200 purple:text-pink-200 leading-none whitespace-nowrap flex-1 min-w-0 ${
               isSevenDayWeek
-                ? "text-[9px] lg:text-[10px] xl:text-[11px] truncate"
-                : "text-[9px] lg:text-[10px] xl:text-[10px] truncate"
+                ? "text-[0.5625rem] lg:text-[0.625rem] xl:text-[0.6875rem] truncate"
+                : "text-[0.5625rem] lg:text-[0.625rem] xl:text-[0.625rem] truncate"
             }`}>
               {time}
             </span>
@@ -148,7 +148,7 @@ export default function TimetableCell({
           <Tooltip content={subject}>
             <div className={`font-bold ${textColor} truncate leading-tight ${
               isSevenDayWeek
-                ? "text-[11px] md:text-xs lg:text-[13px] xl:text-sm"
+                ? "text-[0.6875rem] md:text-xs lg:text-[0.8125rem] xl:text-sm"
                 : "text-sm lg:text-base xl:text-base"
             }`}>
               {subject}
@@ -179,7 +179,7 @@ export default function TimetableCell({
               )}
               <span className={`font-bold text-gray-800 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 truncate group-hover/teacher:text-blue-600 dark:group-hover/teacher:text-blue-400 midnight:group-hover/teacher:text-cyan-400 purple:group-hover/teacher:text-pink-400 transition-colors duration-200 leading-tight overflow-hidden text-ellipsis flex-1 min-w-0 ${
                 isSevenDayWeek
-                  ? "text-[9px] md:text-[10px] lg:text-[11px] xl:text-xs"
+                  ? "text-[0.5625rem] md:text-[0.625rem] lg:text-[0.6875rem] xl:text-xs"
                   : "text-xs lg:text-sm xl:text-sm"
               }`}>
                 {teacher}

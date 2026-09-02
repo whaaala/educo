@@ -263,7 +263,7 @@ export default function DualCalendar({ startDate, endDate, onApply, onCancel }: 
   return (
     <div className="p-3 sm:p-4 pt-4 sm:pt-6 w-full max-w-[95vw] sm:max-w-[600px] overflow-visible">
       {/* Navigation Header */}
-      <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+      <div className="flex items-center justify-between mb-4 pb-3 border-b border-line">
         <button
           type="button"
           onClick={handlePrevMonth}
@@ -297,7 +297,7 @@ export default function DualCalendar({ startDate, endDate, onApply, onCancel }: 
       </div>
 
       {/* Action Buttons */}
-      <div className="flex items-center justify-end gap-2 sm:gap-3 pt-3 border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+      <div className="flex items-center justify-end gap-2 sm:gap-3 pt-3 border-t border-line">
         <button
           type="button"
           onClick={onCancel}

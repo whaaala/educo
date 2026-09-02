@@ -26,7 +26,7 @@ describe("WhiteboardProperties — Visual / CSS", () => {
       const panel = container.firstChild as HTMLElement;
       expect(panel.className).toContain("bg-white");
       expect(panel.className).toContain("border-r");
-      expect(panel.className).toContain("border-gray-200");
+      expect(panel.className).toContain("border-line");
     });
 
     it("has dark theme classes", () => {
@@ -35,7 +35,7 @@ describe("WhiteboardProperties — Visual / CSS", () => {
       );
       const panel = container.firstChild as HTMLElement;
       expect(panel.className).toContain("dark:bg-[#1a1d24]");
-      expect(panel.className).toContain("dark:border-gray-700");
+      expect(panel.className).toContain("border-line");
     });
 
     it("has midnight theme classes", () => {
@@ -44,7 +44,7 @@ describe("WhiteboardProperties — Visual / CSS", () => {
       );
       const panel = container.firstChild as HTMLElement;
       expect(panel.className).toContain("midnight:bg-[#0f1729]");
-      expect(panel.className).toContain("midnight:border-cyan-500/20");
+      expect(panel.className).toContain("border-line");
     });
 
     it("has purple theme classes", () => {
@@ -53,7 +53,7 @@ describe("WhiteboardProperties — Visual / CSS", () => {
       );
       const panel = container.firstChild as HTMLElement;
       expect(panel.className).toContain("purple:bg-[#2a1a3e]");
-      expect(panel.className).toContain("purple:border-pink-500/20");
+      expect(panel.className).toContain("border-line");
     });
 
     it("has flex column layout with 60px width", () => {
@@ -191,8 +191,7 @@ describe("WhiteboardProperties — Visual / CSS", () => {
         />
       );
       const btn = screen.getByTitle("12px");
-      expect(btn.className).toContain("text-gray-500");
-      expect(btn.className).toContain("dark:text-gray-400");
+      expect(btn.className).toContain("text-muted");
     });
 
     it("font size buttons show size number as text content", () => {

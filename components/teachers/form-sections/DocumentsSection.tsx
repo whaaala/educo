@@ -21,19 +21,19 @@ export default function DocumentsSection({
   const [isExpanded, setIsExpanded] = useState(true);
 
   return (
-    <section className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm hover:shadow-md transition-shadow duration-200">
+    <section className="bg-surface rounded-xl border border-line shadow-sm hover:shadow-md transition-shadow duration-200">
       {/* Collapsible Header */}
       <button
         type="button"
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full bg-violet-50/50 dark:bg-violet-900/10 midnight:bg-violet-900/10 purple:bg-violet-900/10 hover:bg-violet-50 dark:hover:bg-violet-900/20 midnight:hover:bg-violet-900/20 purple:hover:bg-violet-900/20 px-6 py-3 flex items-center justify-between transition-all duration-200 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20"
+        className="w-full bg-violet-50/50 dark:bg-violet-900/10 midnight:bg-violet-900/10 purple:bg-violet-900/10 hover:bg-violet-50 dark:hover:bg-violet-900/20 midnight:hover:bg-violet-900/20 purple:hover:bg-violet-900/20 px-6 py-3 flex items-center justify-between transition-all duration-200 border-b border-line"
       >
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-lg bg-violet-100 dark:bg-violet-900/30 midnight:bg-violet-900/30 purple:bg-violet-900/30 flex items-center justify-center">
             <FileText className="w-4 h-4 text-violet-600 dark:text-violet-400 midnight:text-violet-400 purple:text-violet-400" />
           </div>
           <div className="text-left">
-            <h2 className="text-base font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+            <h2 className="text-base font-semibold text-ink">
               Documents & Certificates
             </h2>
             <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70">

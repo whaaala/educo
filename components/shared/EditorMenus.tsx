@@ -157,7 +157,7 @@ function EditorMenuItem_Internal({
         disabled={disabled}
         onClick={handleClick}
         className={[
-          "w-full flex items-center gap-2.5 px-3 py-1.5 text-left text-[13px] transition-colors",
+          "w-full flex items-center gap-2.5 px-3 py-1.5 text-left text-[0.8125rem] transition-colors",
           disabled
             ? "text-gray-300 dark:text-gray-600 midnight:text-cyan-500 purple:text-pink-500 cursor-not-allowed"
             : "text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-50/80 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 cursor-pointer",
@@ -167,11 +167,11 @@ function EditorMenuItem_Internal({
           {isChecked ? (
             <Check className="w-4 h-4 text-blue-500 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
           ) : Icon ? (
-            <Icon className="w-4 h-4 text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300" />
+            <Icon className="w-4 h-4 text-muted" />
           ) : null}
         </span>
         <span className="flex-1 min-w-0 truncate">{label}</span>
-        {shortcut && <span className="text-[11px] text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 tabular-nums">{shortcut}</span>}
+        {shortcut && <span className="text-[0.6875rem] text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 tabular-nums">{shortcut}</span>}
         {hasSubmenu && <ChevronRight className="w-3.5 h-3.5 text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400" />}
       </button>
       <SubmenuTimerContext.Provider value={hasSubmenu ? timerCallbacks : null}>
@@ -246,7 +246,7 @@ export function EditorMenuRoot({
       <button
         ref={btnRef}
         type="button"
-        className={`px-2.5 py-1 rounded-md transition-colors cursor-pointer text-[13px] font-[440] ${
+        className={`px-2.5 py-1 rounded-md transition-colors cursor-pointer text-[0.8125rem] font-[440] ${
           isOpen
             ? "bg-gray-100 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] text-gray-900 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50"
             : "text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100/70 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 hover:text-gray-900 dark:hover:text-gray-100"
@@ -314,7 +314,7 @@ export function EditorMenuBar({ menus, fileMenuConfig, editMenuConfig, viewMenuC
 
   return (
     <MenuCloseContext.Provider value={close}>
-      <div ref={menuBarRef} className="flex items-center flex-wrap gap-0.5 px-2 py-0.5 text-[13px] text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 select-none border-b border-gray-100 dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10 bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]">
+      <div ref={menuBarRef} className="flex items-center flex-wrap gap-0.5 px-2 py-0.5 text-[0.8125rem] text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 select-none border-b border-gray-100 dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10 bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]">
         {menus.map(m => {
           // File menu uses EditorFileMenuPanel when config is provided
           if (m.id === "file" && fileMenuConfig && FileMenuPanel) {
@@ -368,7 +368,7 @@ function FileMenuRoot({ isOpen, onOpen, onClose, openMenu, fileMenuConfig, FileM
       <button
         ref={btnRef}
         type="button"
-        className={`px-2.5 py-1 rounded-md transition-colors cursor-pointer text-[13px] font-[440] ${
+        className={`px-2.5 py-1 rounded-md transition-colors cursor-pointer text-[0.8125rem] font-[440] ${
           isOpen
             ? "bg-gray-100 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] text-gray-900 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50"
             : "text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100/70 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 hover:text-gray-900 dark:hover:text-gray-100"
@@ -394,7 +394,7 @@ function EditMenuRoot({ isOpen, onOpen, onClose, openMenu, editMenuConfig, EditM
       <button
         ref={btnRef}
         type="button"
-        className={`px-2.5 py-1 rounded-md transition-colors cursor-pointer text-[13px] font-[440] ${
+        className={`px-2.5 py-1 rounded-md transition-colors cursor-pointer text-[0.8125rem] font-[440] ${
           isOpen
             ? "bg-gray-100 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] text-gray-900 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50"
             : "text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100/70 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 hover:text-gray-900 dark:hover:text-gray-100"
@@ -420,7 +420,7 @@ function ViewMenuRoot({ isOpen, onOpen, onClose, openMenu, viewMenuConfig, ViewM
       <button
         ref={btnRef}
         type="button"
-        className={`px-2.5 py-1 rounded-md transition-colors cursor-pointer text-[13px] font-[440] ${
+        className={`px-2.5 py-1 rounded-md transition-colors cursor-pointer text-[0.8125rem] font-[440] ${
           isOpen
             ? "bg-gray-100 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] text-gray-900 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50"
             : "text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100/70 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 hover:text-gray-900 dark:hover:text-gray-100"
@@ -446,7 +446,7 @@ function InsertMenuRoot({ isOpen, onOpen, onClose, openMenu, insertMenuConfig, I
       <button
         ref={btnRef}
         type="button"
-        className={`px-2.5 py-1 rounded-md transition-colors cursor-pointer text-[13px] font-[440] ${
+        className={`px-2.5 py-1 rounded-md transition-colors cursor-pointer text-[0.8125rem] font-[440] ${
           isOpen
             ? "bg-gray-100 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] text-gray-900 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50"
             : "text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100/70 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 hover:text-gray-900 dark:hover:text-gray-100"
@@ -528,13 +528,13 @@ export function ViewMenuItem({
         ].join(" ")}
       >
         <span className="w-5 flex-shrink-0 flex items-center justify-center">
-          {isChecked ? <Check className="w-4 h-4 text-blue-500 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" /> : Icon ? <Icon className="w-4 h-4 text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300" /> : null}
+          {isChecked ? <Check className="w-4 h-4 text-blue-500 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" /> : Icon ? <Icon className="w-4 h-4 text-muted" /> : null}
         </span>
         <div className="flex-1 min-w-0">
-          <span className="block text-[13px] leading-tight truncate">{label}</span>
-          {description && <span className="block text-[11px] leading-tight text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 mt-0.5 truncate">{description}</span>}
+          <span className="block text-[0.8125rem] leading-tight truncate">{label}</span>
+          {description && <span className="block text-[0.6875rem] leading-tight text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 mt-0.5 truncate">{description}</span>}
         </div>
-        {shortcut && <span className="text-[11px] text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 tabular-nums">{shortcut}</span>}
+        {shortcut && <span className="text-[0.6875rem] text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 tabular-nums">{shortcut}</span>}
         {hasSubmenu && <ChevronRight className="w-3.5 h-3.5 text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400" />}
       </button>
       {submenuContent && isSubmenuOpen && submenuContent}
@@ -551,10 +551,10 @@ export function ViewMenuToggle({ label, description, shortcut, isOn, onToggle }:
       role="switch" aria-checked={isOn} aria-label={label}
     >
       <div className="flex-1 min-w-0">
-        <span className="block text-[13px] leading-tight truncate">{label}</span>
-        {description && <span className="block text-[11px] leading-tight text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 mt-0.5 truncate">{description}</span>}
+        <span className="block text-[0.8125rem] leading-tight truncate">{label}</span>
+        {description && <span className="block text-[0.6875rem] leading-tight text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 mt-0.5 truncate">{description}</span>}
       </div>
-      {shortcut && <span className="text-[11px] text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 tabular-nums mr-2">{shortcut}</span>}
+      {shortcut && <span className="text-[0.6875rem] text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 tabular-nums mr-2">{shortcut}</span>}
       <div className={`relative w-[38px] h-[22px] rounded-full flex-shrink-0 transition-colors duration-200 ${isOn ? "bg-blue-500" : "bg-gray-300 dark:bg-[#2a2d35] midnight:bg-gray-700 purple:bg-gray-700"}`}>
         <div className={`absolute top-[2px] w-[18px] h-[18px] rounded-full bg-white shadow-sm transition-transform duration-200 ${isOn ? "translate-x-[18px]" : "translate-x-[2px]"}`} />
       </div>

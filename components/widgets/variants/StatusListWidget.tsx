@@ -193,7 +193,7 @@ export function StatusListWidget({
                 {item.title}
               </p>
               {item.subtitle && (
-                <p className="text-[11px] text-gray-500 dark:text-gray-400 midnight:text-gray-400 purple:text-gray-400 truncate">
+                <p className="text-[0.6875rem] text-gray-500 dark:text-gray-400 midnight:text-gray-400 purple:text-gray-400 truncate">
                   {item.subtitle}
                 </p>
               )}
@@ -202,7 +202,7 @@ export function StatusListWidget({
           {/* Status Badge */}
           <span
             className={cn(
-              "flex-shrink-0 px-2 py-1 rounded-lg text-[10px] font-bold uppercase",
+              "flex-shrink-0 px-2 py-1 rounded-lg text-[0.625rem] font-bold uppercase",
               config.badgeBg,
               config.badgeText
             )}
@@ -215,7 +215,7 @@ export function StatusListWidget({
         {(item.info || item.value) && (
           <div className="flex items-center justify-between gap-2 mt-2">
             {item.info && (
-              <div className="flex-1 text-[11px] text-gray-500 dark:text-gray-400 truncate">
+              <div className="flex-1 text-[0.6875rem] text-gray-500 dark:text-gray-400 truncate">
                 {item.info}
               </div>
             )}

@@ -80,7 +80,7 @@ export default function ApplyLeaveModal({
       onClick={onClose}
     >
       <div
-        className="bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden border border-gray-200/50 dark:border-[#1a1d24]/50 midnight:border-cyan-500/30 purple:border-pink-500/30 animate-in zoom-in-95 slide-in-from-bottom-4 duration-300"
+        className="bg-surface rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden border border-gray-200/50 dark:border-[#1a1d24]/50 midnight:border-cyan-500/30 purple:border-pink-500/30 animate-in zoom-in-95 slide-in-from-bottom-4 duration-300"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Modern Compact Header */}
@@ -102,10 +102,10 @@ export default function ApplyLeaveModal({
 
               {/* Title with modern typography */}
               <div className="flex flex-col">
-                <h2 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 tracking-tight leading-none">
+                <h2 className="text-base sm:text-lg font-bold text-ink tracking-tight leading-none">
                   Apply for Leave
                 </h2>
-                <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-400/60 purple:text-pink-400/60 font-medium mt-0.5">
+                <p className="text-[0.625rem] sm:text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-400/60 purple:text-pink-400/60 font-medium mt-0.5">
                   Submit your leave request
                 </p>
               </div>

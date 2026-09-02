@@ -92,7 +92,7 @@ const colorStyles = {
     outline: "border-2 border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200",
     ghost: "hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200",
     danger: "bg-gradient-to-r from-red-500 to-rose-500 hover:from-red-600 hover:to-rose-600 text-white shadow-md shadow-red-500/25 hover:shadow-lg hover:shadow-red-500/30",
-    iconBg: "bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/50 group-hover:bg-gray-200 dark:group-hover:bg-gray-600/50",
+    iconBg: "bg-surface-2/50 group-hover:bg-gray-200 dark:group-hover:bg-gray-600/50",
     iconBgPrimary: "bg-white/20 group-hover:bg-white/30",
     iconColor: "text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300",
     shimmer: "from-gray-500/0 via-gray-500/5 to-gray-500/0",

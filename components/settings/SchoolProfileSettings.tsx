@@ -170,13 +170,13 @@ export default function SchoolProfileSettings() {
           </span>
         </div>
 
-        <div className="space-y-3 p-4 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-lg">
+        <div className="space-y-3 p-4 bg-surface border border-line rounded-lg">
           {(["Primary", "Secondary", "Tertiary"] as EducationLevelOption[]).map((level) => (
             <button
               key={level}
               type="button"
               onClick={() => toggleEducationLevel(level)}
-              className="w-full flex items-center gap-3 p-3 rounded-lg border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 hover:bg-gray-50 dark:hover:bg-[#22262e]/50 midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors cursor-pointer"
+              className="w-full flex items-center gap-3 p-3 rounded-lg border border-line hover:bg-gray-50 dark:hover:bg-[#22262e]/50 midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors cursor-pointer"
             >
               <div className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 ${
                 selectedLevels.includes(level)
@@ -188,7 +188,7 @@ export default function SchoolProfileSettings() {
                 )}
               </div>
               <div className="flex-1 text-left">
-                <p className="text-sm font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                <p className="text-sm font-medium text-ink">
                   {level} Education
                 </p>
                 <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70 mt-0.5">
@@ -317,7 +317,7 @@ export default function SchoolProfileSettings() {
       )}
 
       {/* Current Configuration Summary */}
-      <div className="p-4 bg-gray-50 dark:bg-[#1a1d24]/50 midnight:bg-[#0f1330]/50 purple:bg-[#251340]/50 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-lg">
+      <div className="p-4 bg-gray-50 dark:bg-[#1a1d24]/50 midnight:bg-[#0f1330]/50 purple:bg-[#251340]/50 border border-line rounded-lg">
         <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 midnight:text-cyan-100 purple:text-pink-100 mb-2">
           Current Configuration
         </h3>

@@ -93,7 +93,7 @@ export default function CollectFeesModal({
 
   const modalContent = (
     <div className="fixed inset-0 z-[9999] flex items-start justify-center bg-black/60 backdrop-blur-md pt-4 pb-4 px-4 sm:px-6 overflow-y-auto">
-      <div ref={modalRef} className="relative w-full max-w-3xl bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl sm:rounded-2xl shadow-2xl max-h-[calc(100vh-32px)] flex flex-col animate-in fade-in zoom-in duration-200">
+      <div ref={modalRef} className="relative w-full max-w-3xl bg-surface rounded-xl sm:rounded-2xl shadow-2xl max-h-[calc(100vh-32px)] flex flex-col animate-in fade-in zoom-in duration-200">
         {/* Header with Gradient */}
         <div className="flex-shrink-0 relative bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-500 dark:to-purple-500 midnight:from-cyan-600 midnight:to-purple-600 purple:from-pink-600 purple:to-purple-600 px-4 sm:px-5 py-3 sm:py-4">
           <div className="flex items-center justify-between">
@@ -119,7 +119,7 @@ export default function CollectFeesModal({
 
         {/* Student Info Card */}
         <div className="px-4 sm:px-5 py-3 bg-gradient-to-br from-gray-50 to-gray-100/50 dark:from-gray-800/50 dark:to-gray-800/30 midnight:from-cyan-900/10 midnight:to-cyan-800/5 purple:from-pink-900/10 purple:to-pink-800/5">
-          <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-lg p-3 shadow-sm border border-gray-200/50 dark:border-gray-700/50 midnight:border-cyan-500/20 purple:border-pink-500/20">
+          <div className="bg-surface rounded-lg p-3 shadow-sm border border-gray-200/50 dark:border-gray-700/50 midnight:border-cyan-500/20 purple:border-pink-500/20">
             <div className="flex items-center gap-3">
               {student.avatar ? (
                 <div className="relative cursor-pointer flex-shrink-0">
@@ -128,7 +128,7 @@ export default function CollectFeesModal({
                     alt={student.name}
                     className="w-12 h-12 rounded-lg object-cover ring-2 ring-blue-500/20 dark:ring-blue-400/20"
                   />
-                  <div className="absolute -top-1 -right-1 w-4 h-4 bg-blue-600 dark:bg-blue-500 midnight:bg-cyan-600 purple:bg-pink-600 rounded-full flex items-center justify-center text-white text-[9px] font-bold shadow-lg">
+                  <div className="absolute -top-1 -right-1 w-4 h-4 bg-blue-600 dark:bg-blue-500 midnight:bg-cyan-600 purple:bg-pink-600 rounded-full flex items-center justify-center text-white text-[0.5625rem] font-bold shadow-lg">
                     ✓
                   </div>
                 </div>
@@ -141,10 +141,10 @@ export default function CollectFeesModal({
               )}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
-                  <h3 className="text-base font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate">
+                  <h3 className="text-base font-bold text-ink truncate">
                     {student.name}
                   </h3>
-                  <span className="px-2 py-0.5 text-[11px] font-bold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 bg-blue-100 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 rounded">
+                  <span className="px-2 py-0.5 text-[0.6875rem] font-bold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 bg-blue-100 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 rounded">
                     {student.id}
                   </span>
                 </div>
@@ -153,18 +153,18 @@ export default function CollectFeesModal({
                 </p>
                 <div className="grid grid-cols-3 gap-2">
                   <div className="bg-gray-100 dark:bg-[#22262e]/50 midnight:bg-cyan-900/20 purple:bg-pink-900/20 rounded-md p-1.5">
-                    <span className="text-[10px] font-bold text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400 uppercase tracking-wide block mb-0.5">
+                    <span className="text-[0.625rem] font-bold text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400 uppercase tracking-wide block mb-0.5">
                       Outstanding
                     </span>
-                    <p className="text-base font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                    <p className="text-base font-bold text-ink">
                       ₦{student.totalOutstanding}
                     </p>
                   </div>
                   <div className="bg-gray-100 dark:bg-[#22262e]/50 midnight:bg-cyan-900/20 purple:bg-pink-900/20 rounded-md p-1.5">
-                    <span className="text-[10px] font-bold text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400 uppercase tracking-wide block mb-0.5">
+                    <span className="text-[0.625rem] font-bold text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400 uppercase tracking-wide block mb-0.5">
                       Last Date
                     </span>
-                    <p className="text-[11px] font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 leading-tight">
+                    <p className="text-[0.6875rem] font-bold text-ink leading-tight">
                       {student.lastDate}
                     </p>
                   </div>
@@ -301,7 +301,7 @@ export default function CollectFeesModal({
           <div className="bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/10 dark:to-purple-900/10 midnight:from-cyan-900/10 midnight:to-purple-900/10 purple:from-pink-900/10 purple:to-purple-900/10 rounded-xl p-4 border border-blue-200/50 dark:border-blue-700/50 midnight:border-cyan-500/20 purple:border-pink-500/20">
             <label className="flex items-center justify-between cursor-pointer">
               <div>
-                <span className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 flex items-center gap-2">
+                <span className="text-sm font-semibold text-ink flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-blue-600 dark:bg-blue-500 midnight:bg-cyan-600 purple:bg-pink-600 animate-pulse"></span>
                   Payment Status
                 </span>
@@ -345,7 +345,7 @@ export default function CollectFeesModal({
         </div>
 
         {/* Footer - Fixed */}
-        <div className="flex-shrink-0 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 px-4 sm:px-5 py-3 flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2 sm:gap-3 shadow-lg">
+        <div className="flex-shrink-0 bg-surface border-t border-line px-4 sm:px-5 py-3 flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2 sm:gap-3 shadow-lg">
           <FormButton
             type="button"
             onClick={onClose}

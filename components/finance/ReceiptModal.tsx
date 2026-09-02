@@ -387,7 +387,7 @@ export default function ReceiptModal({
           {isTertiary ? <GraduationCap className="w-6 h-6 text-white" /> : <BookOpen className="w-6 h-6 text-white" />}
         </div>
         <div>
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+          <h3 className="text-lg font-semibold text-ink">
             Select {subjectLabel}
           </h3>
           <p className="text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70">
@@ -464,7 +464,7 @@ export default function ReceiptModal({
           <User className="w-6 h-6 text-white" />
         </div>
         <div>
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+          <h3 className="text-lg font-semibold text-ink">
             Select Student
           </h3>
           <p className="text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70">
@@ -531,7 +531,7 @@ export default function ReceiptModal({
             <FileText className="w-6 h-6 text-white" />
           </div>
           <div>
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+            <h3 className="text-lg font-semibold text-ink">
               Fee Items
             </h3>
             <p className="text-sm text-gray-600 dark:text-gray-400">
@@ -650,7 +650,7 @@ export default function ReceiptModal({
           <Wallet className="w-6 h-6 text-white" />
         </div>
         <div>
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+          <h3 className="text-lg font-semibold text-ink">
             Payment Details
           </h3>
           <p className="text-sm text-gray-600 dark:text-gray-400">
@@ -797,7 +797,7 @@ export default function ReceiptModal({
           <Receipt className="w-6 h-6 text-white" />
         </div>
         <div>
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+          <h3 className="text-lg font-semibold text-ink">
             Review Receipt
           </h3>
           <p className="text-sm text-gray-600 dark:text-gray-400">
@@ -981,7 +981,7 @@ export default function ReceiptModal({
       icon={
         <div className="relative">
           <Receipt className="w-5 h-5" />
-          <span className="absolute -top-1 -right-2 text-[9px] font-bold text-blue-600 dark:text-cyan-400">
+          <span className="absolute -top-1 -right-2 text-[0.5625rem] font-bold text-blue-600 dark:text-cyan-400">
             {getCurrencyIcon()}
           </span>
         </div>

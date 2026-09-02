@@ -114,7 +114,7 @@ export default function FeatureFlagsAdminPage() {
               {hasChanges && (
                 <button
                   onClick={handleReset}
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm text-gray-700 dark:text-gray-300 bg-white dark:bg-[#22262e] border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-[#2a2d35] transition-all cursor-pointer"
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm text-gray-700 dark:text-gray-300 bg-white dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 hover:bg-gray-50 dark:hover:bg-[#2a2d35] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-all cursor-pointer"
                 >
                   <RotateCcw className="w-4 h-4" />
                   Reset
@@ -142,7 +142,7 @@ export default function FeatureFlagsAdminPage() {
                 <p className="text-xs text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70 font-semibold mb-1">
                   Tenant ID
                 </p>
-                <p className="text-sm font-mono text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                <p className="text-sm font-mono text-ink">
                   {tenantContext.tenantId}
                 </p>
               </div>
@@ -150,7 +150,7 @@ export default function FeatureFlagsAdminPage() {
                 <p className="text-xs text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70 font-semibold mb-1">
                   Region
                 </p>
-                <p className="text-sm font-mono text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                <p className="text-sm font-mono text-ink">
                   {tenantContext.region}
                 </p>
               </div>
@@ -158,7 +158,7 @@ export default function FeatureFlagsAdminPage() {
                 <p className="text-xs text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70 font-semibold mb-1">
                   Education Level
                 </p>
-                <p className="text-sm font-mono text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                <p className="text-sm font-mono text-ink">
                   {tenantContext.educationLevel}
                 </p>
               </div>
@@ -166,12 +166,12 @@ export default function FeatureFlagsAdminPage() {
                 <p className="text-xs text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70 font-semibold mb-1">
                   Institution Type
                 </p>
-                <p className="text-sm font-mono text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                <p className="text-sm font-mono text-ink">
                   {tenantContext.institutionType}
                 </p>
               </div>
             </div>
-            <div className="text-center px-4 py-2 bg-white dark:bg-[#1a1d24] rounded-lg border border-gray-200 dark:border-gray-700">
+            <div className="text-center px-4 py-2 bg-surface rounded-lg border border-line">
               <p className="text-2xl font-bold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400">
                 {enabledCount}/{totalCount}
               </p>
@@ -192,7 +192,7 @@ export default function FeatureFlagsAdminPage() {
                 placeholder="Search feature flags..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-[#1a1d24] text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
             <div className="flex items-center gap-2">
@@ -200,7 +200,7 @@ export default function FeatureFlagsAdminPage() {
               <select
                 value={categoryFilter}
                 onChange={(e) => setCategoryFilter(e.target.value)}
-                className="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-[#1a1d24] text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent cursor-pointer"
+                className="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 focus:ring-2 focus:ring-blue-500 focus:border-transparent cursor-pointer"
               >
                 <option value="all">All Categories</option>
                 {Object.keys(categories).map((cat) => (
@@ -230,7 +230,7 @@ export default function FeatureFlagsAdminPage() {
 
               return (
                 <div key={category}>
-                  <h2 className="text-lg font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-4 flex items-center justify-between">
+                  <h2 className="text-lg font-bold text-ink mb-4 flex items-center justify-between">
                     <span>{category}</span>
                     <span className="text-sm font-normal text-gray-500 dark:text-gray-400">
                       {categoryFlags.filter((f) => localFlags[f]).length}/{categoryFlags.length} enabled
@@ -281,7 +281,7 @@ export default function FeatureFlagsAdminPage() {
                             <button
                               onClick={() => toggleFlag(flagKey)}
                               className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 cursor-pointer ${
-                                isEnabled ? "bg-green-600" : "bg-gray-300 dark:bg-[#2a2d35]"
+                                isEnabled ? "bg-green-600" : "bg-gray-300 dark:bg-[#2a2d35] midnight:bg-[#0f1330] purple:bg-[#251340]"
                               }`}
                             >
                               <span
@@ -311,7 +311,7 @@ export default function FeatureFlagsAdminPage() {
               <div className="flex gap-3">
                 <button
                   onClick={handleReset}
-                  className="px-4 py-2 rounded-lg font-medium text-sm text-gray-700 dark:text-gray-300 bg-white dark:bg-[#22262e] border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-[#2a2d35] transition-all cursor-pointer"
+                  className="px-4 py-2 rounded-lg font-medium text-sm text-gray-700 dark:text-gray-300 bg-white dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 hover:bg-gray-50 dark:hover:bg-[#2a2d35] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-all cursor-pointer"
                 >
                   Cancel
                 </button>

@@ -41,14 +41,14 @@ export default function FormBadge({
         </div>
         <span>{label}</span>
         {helperText && (
-          <span className="text-[10px] font-normal text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70">
+          <span className="text-[0.625rem] font-normal text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70">
             ({helperText})
           </span>
         )}
         {required && <span className="text-red-500 dark:text-red-400 midnight:text-red-400 purple:text-red-400 ml-1">*</span>}
       </label>
       <div
-        className={`appearance-none w-full h-[46px] text-sm font-normal text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] ${
+        className={`appearance-none w-full h-[46px] text-sm font-normal text-ink bg-surface ${
           error ? "border-red-500 dark:border-red-400" : "border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30"
         } rounded-xl px-4 py-2.5 border transition-all duration-200 flex items-center`}
       >

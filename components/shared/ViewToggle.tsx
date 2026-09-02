@@ -14,7 +14,7 @@ export default function ViewToggle({
   className = "",
 }: ViewToggleProps) {
   return (
-    <div className={`relative flex items-center gap-0.5 p-0.5 rounded-lg border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] shadow-sm isolate ${className}`}>
+    <div className={`relative flex items-center gap-0.5 p-0.5 rounded-lg border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-surface shadow-sm isolate ${className}`}>
       {/* Animated background slider */}
       <div
         className={`absolute h-[calc(100%-4px)] w-[calc(50%-2px)] top-0.5 rounded-md bg-gradient-to-br from-blue-600 to-blue-700 dark:from-blue-500 dark:to-blue-600 midnight:from-cyan-600 midnight:to-cyan-700 purple:from-pink-600 purple:to-pink-700 shadow-lg transition-all duration-[400ms] ease-[cubic-bezier(0.34,1.56,0.64,1)] ${

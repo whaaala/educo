@@ -215,7 +215,7 @@ ${event.description}`;
     <div className="fixed inset-0 z-[9999] flex items-start justify-center bg-black/60 backdrop-blur-md pt-4 pb-4 px-4 sm:px-6 overflow-y-auto">
       <div
         ref={modalRef}
-        className="relative w-full max-w-md bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl sm:rounded-2xl shadow-2xl max-h-[calc(100vh-32px)] flex flex-col animate-in fade-in zoom-in duration-200 my-auto"
+        className="relative w-full max-w-md bg-surface rounded-xl sm:rounded-2xl shadow-2xl max-h-[calc(100vh-32px)] flex flex-col animate-in fade-in zoom-in duration-200 my-auto"
       >
         {/* Header with Gradient */}
         <div className="flex-shrink-0 relative bg-gradient-to-r from-blue-500/90 via-indigo-500/90 to-purple-500/90 dark:from-blue-500/80 dark:via-indigo-500/80 dark:to-purple-500/80 px-4 sm:px-5 py-3 sm:py-4 rounded-t-xl sm:rounded-t-2xl overflow-hidden">
@@ -265,17 +265,17 @@ ${event.description}`;
                   </div>
                 )}
                 <div className="flex-1 min-w-0">
-                  <h4 className="text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate">
+                  <h4 className="text-sm font-bold text-ink truncate">
                     {event.title}
                   </h4>
                   <div className="mt-1.5 space-y-1">
-                    <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 flex items-center gap-1.5">
+                    <p className="text-xs text-muted flex items-center gap-1.5">
                       <Calendar className="w-3.5 h-3.5 text-blue-500" />
                       {formatShortDate(event.date)}
                       {event.time && ` &bull; ${event.time}`}
                     </p>
                     {event.location && (
-                      <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 flex items-center gap-1.5">
+                      <p className="text-xs text-muted flex items-center gap-1.5">
                         <MapPin className="w-3.5 h-3.5 text-blue-500" />
                         {event.location}
                       </p>
@@ -288,7 +288,7 @@ ${event.description}`;
             {/* Share Options */}
             <div>
               <div className="flex items-center justify-between mb-3">
-                <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 uppercase tracking-wider">
+                <p className="text-xs font-semibold text-muted uppercase tracking-wider">
                   Share via
                 </p>
                 {sharedVia && (
@@ -324,7 +324,7 @@ ${event.description}`;
 
             {/* Copy Options */}
             <div>
-              <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 uppercase tracking-wider mb-3">
+              <p className="text-xs font-semibold text-muted uppercase tracking-wider mb-3">
                 Or copy
               </p>
               <div className="space-y-2">
@@ -341,13 +341,13 @@ ${event.description}`;
                     className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all ${
                       copiedLink
                         ? "bg-gradient-to-br from-green-500 to-emerald-600 shadow-md"
-                        : "bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] group-hover:bg-blue-100 dark:group-hover:bg-blue-900/30"
+                        : "bg-surface-2 group-hover:bg-blue-100 dark:group-hover:bg-blue-900/30"
                     }`}
                   >
                     {copiedLink ? (
                       <Check className="w-4 h-4 text-white" />
                     ) : (
-                      <Link2 className="w-4 h-4 text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 group-hover:text-blue-600 dark:group-hover:text-blue-400" />
+                      <Link2 className="w-4 h-4 text-muted group-hover:text-blue-600 dark:group-hover:text-blue-400" />
                     )}
                   </div>
                   <div className="flex-1 text-left">
@@ -360,7 +360,7 @@ ${event.description}`;
                     >
                       {copiedLink ? "Link copied!" : "Copy link"}
                     </span>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
+                    <p className="text-xs text-muted">
                       {copiedLink ? "Paste anywhere to share" : "Share the event URL"}
                     </p>
                   </div>
@@ -382,13 +382,13 @@ ${event.description}`;
                     className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all ${
                       copiedDetails
                         ? "bg-gradient-to-br from-green-500 to-emerald-600 shadow-md"
-                        : "bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] group-hover:bg-blue-100 dark:group-hover:bg-blue-900/30"
+                        : "bg-surface-2 group-hover:bg-blue-100 dark:group-hover:bg-blue-900/30"
                     }`}
                   >
                     {copiedDetails ? (
                       <Check className="w-4 h-4 text-white" />
                     ) : (
-                      <FileText className="w-4 h-4 text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 group-hover:text-blue-600 dark:group-hover:text-blue-400" />
+                      <FileText className="w-4 h-4 text-muted group-hover:text-blue-600 dark:group-hover:text-blue-400" />
                     )}
                   </div>
                   <div className="flex-1 text-left">
@@ -401,7 +401,7 @@ ${event.description}`;
                     >
                       {copiedDetails ? "Details copied!" : "Copy event details"}
                     </span>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
+                    <p className="text-xs text-muted">
                       {copiedDetails ? "Ready to paste" : "Copy title, date, time & location"}
                     </p>
                   </div>

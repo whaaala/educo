@@ -31,7 +31,7 @@ export default function AttendanceStatusBadge({
   };
 
   const labelSizes = {
-    sm: "text-[10px] sm:text-xs",
+    sm: "text-[0.625rem] sm:text-xs",
     md: "text-xs sm:text-sm",
     lg: "text-sm sm:text-base",
   };

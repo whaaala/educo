@@ -397,7 +397,7 @@ export default function GradingPage() {
       sortable: true,
       className: "text-left min-w-[100px]",
       render: (item) => (
-        <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-[11px] sm:text-xs md:text-sm font-bold border ${getGradeColorClass(item.color)}`}>
+        <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-[0.6875rem] sm:text-xs md:text-sm font-bold border ${getGradeColorClass(item.color)}`}>
           {item.gradeName}
         </span>
       ),
@@ -408,7 +408,7 @@ export default function GradingPage() {
       sortable: true,
       className: "text-left min-w-[90px]",
       render: (item) => (
-        <span className="text-[11px] sm:text-xs md:text-sm font-semibold text-gray-900 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50">
+        <span className="text-[0.6875rem] sm:text-xs md:text-sm font-semibold text-gray-900 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50">
           {item.minScore}
         </span>
       ),
@@ -419,7 +419,7 @@ export default function GradingPage() {
       sortable: true,
       className: "text-left min-w-[90px]",
       render: (item) => (
-        <span className="text-[11px] sm:text-xs md:text-sm font-semibold text-gray-900 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50">
+        <span className="text-[0.6875rem] sm:text-xs md:text-sm font-semibold text-gray-900 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50">
           {item.maxScore}
         </span>
       ),
@@ -430,7 +430,7 @@ export default function GradingPage() {
       sortable: true,
       className: "text-left min-w-[110px]",
       render: (item) => (
-        <span className="text-[11px] sm:text-xs md:text-sm font-bold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400">
+        <span className="text-[0.6875rem] sm:text-xs md:text-sm font-bold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400">
           {item.gradePoint.toFixed(1)}
         </span>
       ),
@@ -441,7 +441,7 @@ export default function GradingPage() {
       sortable: true,
       className: "text-left min-w-[120px]",
       render: (item) => (
-        <span className="text-[11px] sm:text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300">
+        <span className="text-[0.6875rem] sm:text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300">
           {item.remark}
         </span>
       ),
@@ -612,9 +612,9 @@ export default function GradingPage() {
         </div>
 
         {/* Filters */}
-        <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-gray-800 purple:border-gray-800 shadow-sm">
+        <div className="bg-surface rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-gray-800 purple:border-gray-800 shadow-sm">
           <div className="border-b border-gray-200 dark:border-gray-700 midnight:border-gray-800 purple:border-gray-800 px-4 sm:px-6 py-4">
-            <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+            <h3 className="text-base sm:text-lg font-semibold text-ink">
               Select Subject
             </h3>
             <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mt-1">
@@ -673,13 +673,13 @@ export default function GradingPage() {
               return (
                 <div
                   key={subjectName}
-                  className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-gray-800 purple:border-gray-800 shadow-sm grading-table-container"
+                  className="bg-surface rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-gray-800 purple:border-gray-800 shadow-sm grading-table-container"
                   data-subject={subjectName}
                 >
                   <div className="border-b border-gray-200 dark:border-gray-700 midnight:border-gray-800 purple:border-gray-800 px-4 sm:px-6 py-4">
                     <div className="flex items-center justify-between">
                       <div>
-                        <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                        <h3 className="text-base sm:text-lg font-semibold text-ink">
                           {subjectName}
                         </h3>
                         <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mt-1">
@@ -724,12 +724,12 @@ export default function GradingPage() {
             })}
           </div>
         ) : (
-          <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-gray-800 purple:border-gray-800 shadow-sm p-8 sm:p-12">
+          <div className="bg-surface rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-gray-800 purple:border-gray-800 shadow-sm p-8 sm:p-12">
             <div className="text-center">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] mb-4">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-surface-2 mb-4">
                 <BarChart3 className="w-8 h-8 text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400" />
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-2">
+              <h3 className="text-lg font-semibold text-ink mb-2">
                 No Grading Schemes Found
               </h3>
               <p className="text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mb-6">

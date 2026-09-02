@@ -303,7 +303,7 @@ export default function ViewStudentPage() {
           <div className="mb-6">
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
             <div>
-              <h1 className="text-xl lg:text-2xl font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-1">
+              <h1 className="text-xl lg:text-2xl font-bold text-ink mb-1">
                 Student Details
               </h1>
               <div className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70 flex-wrap">
@@ -707,7 +707,7 @@ function StudentTabs({
                     ? "text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400"
                     : "text-gray-600 dark:text-gray-500 midnight:text-cyan-300/70 purple:text-pink-300/70 group-hover:scale-110 group-hover:rotate-6"
                 }`} />
-                <span className={`relative text-[11.75px] sm:text-xs font-semibold transition-all duration-300 ${
+                <span className={`relative text-[0.7344rem] sm:text-xs font-semibold transition-all duration-300 ${
                   isActive ? "tracking-wide" : "group-hover:tracking-wide"
                 }`}>
                   {tab.label}
@@ -1018,7 +1018,7 @@ function AttendanceTab({ studentId }: { studentId: string }) {
   return (
     <div className="space-y-4 sm:space-y-5 lg:space-y-6">
       {/* Main Content Card */}
-      <div className="bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-xl sm:rounded-2xl shadow-sm border border-gray-200/40 dark:border-[#1a1d24]/40 midnight:border-cyan-500/20 purple:border-pink-500/20 overflow-hidden">
+      <div className="bg-surface rounded-xl sm:rounded-2xl shadow-sm border border-gray-200/40 dark:border-[#1a1d24]/40 midnight:border-cyan-500/20 purple:border-pink-500/20 overflow-hidden">
         {/* Header with Tabs */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 p-2 sm:p-3 border-b border-gray-200/40 dark:border-[#1a1d24]/40 midnight:border-cyan-500/20 purple:border-pink-500/20">
           {/* Sub Tabs */}
@@ -1086,7 +1086,7 @@ function AttendanceTab({ studentId }: { studentId: string }) {
               <div className="space-y-3 sm:space-y-4">
                 {/* Header with Apply Leave Button */}
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                  <h3 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                  <h3 className="text-base sm:text-lg font-bold text-ink">
                     Leave Applications
                   </h3>
                   <AddButton
@@ -1143,7 +1143,7 @@ function AttendanceTab({ studentId }: { studentId: string }) {
 
 function FeesTab({ studentId }: { studentId: string }) {
   return (
-    <div className="bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-2xl shadow-sm border border-gray-200/40 dark:border-[#1a1d24]/40 midnight:border-cyan-500/20 purple:border-pink-500/20 p-6 lg:p-8 transition-all duration-200 hover:shadow-md hover:border-gray-300/60 dark:hover:border-gray-700/60 midnight:hover:border-cyan-500/30 purple:hover:border-pink-500/30">
+    <div className="bg-surface rounded-2xl shadow-sm border border-gray-200/40 dark:border-[#1a1d24]/40 midnight:border-cyan-500/20 purple:border-pink-500/20 p-6 lg:p-8 transition-all duration-200 hover:shadow-md hover:border-gray-300/60 dark:hover:border-gray-700/60 midnight:hover:border-cyan-500/30 purple:hover:border-pink-500/30">
       <FeesManagement educationLevel="primary" schoolType="private" studentId={studentId} />
     </div>
   );
@@ -1151,7 +1151,7 @@ function FeesTab({ studentId }: { studentId: string }) {
 
 function ExamResultsTab({ studentClass }: { studentClass: string }) {
   return (
-    <div className="bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-2xl shadow-sm border border-gray-200/40 dark:border-[#1a1d24]/40 midnight:border-cyan-500/20 purple:border-pink-500/20 p-6 lg:p-8 transition-all duration-200 hover:shadow-md hover:border-gray-300/60 dark:hover:border-gray-700/60 midnight:hover:border-cyan-500/30 purple:hover:border-pink-500/30">
+    <div className="bg-surface rounded-2xl shadow-sm border border-gray-200/40 dark:border-[#1a1d24]/40 midnight:border-cyan-500/20 purple:border-pink-500/20 p-6 lg:p-8 transition-all duration-200 hover:shadow-md hover:border-gray-300/60 dark:hover:border-gray-700/60 midnight:hover:border-cyan-500/30 purple:hover:border-pink-500/30">
       <ExamResults studentClass={studentClass} />
     </div>
   );
@@ -1243,10 +1243,10 @@ function LibraryTab() {
   };
 
   return (
-    <div className="bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-2xl shadow-sm border border-gray-200/40 dark:border-[#1a1d24]/40 midnight:border-cyan-500/20 purple:border-pink-500/20">
+    <div className="bg-surface rounded-2xl shadow-sm border border-gray-200/40 dark:border-[#1a1d24]/40 midnight:border-cyan-500/20 purple:border-pink-500/20">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 p-2.5 sm:p-3 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
-        <h2 className="text-sm sm:text-base font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 flex items-center gap-1.5">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 p-2.5 sm:p-3 border-b border-line">
+        <h2 className="text-sm sm:text-base font-bold text-ink flex items-center gap-1.5">
           <BookOpen className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
           Library
           {searchQuery && (
@@ -1263,7 +1263,7 @@ function LibraryTab() {
               placeholder="Search books..."
               value={searchQuery}
               onChange={(e) => handleSearchChange(e.target.value)}
-              className="w-full sm:w-64 pl-8 pr-2.5 py-1 sm:py-1.5 text-xs bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0f1330] purple:bg-[#251340] border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 midnight:focus:ring-cyan-400 purple:focus:ring-pink-400 text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 placeholder:text-gray-400 dark:placeholder:text-gray-500"
+              className="w-full sm:w-64 pl-8 pr-2.5 py-1 sm:py-1.5 text-xs bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0f1330] purple:bg-[#251340] border border-line rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 midnight:focus:ring-cyan-400 purple:focus:ring-pink-400 text-ink placeholder:text-gray-400 dark:placeholder:text-gray-500"
             />
           </div>
           <CustomDropdown
@@ -1288,7 +1288,7 @@ function LibraryTab() {
                     ? `fadeSlideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1) ${index * 0.05}s both`
                     : undefined,
                 }}
-                className="group bg-gradient-to-br from-white to-gray-50/50 dark:from-gray-800 dark:to-gray-800/50 midnight:from-gray-800 midnight:to-gray-900/50 purple:from-gray-800 purple:to-gray-900/50 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 overflow-hidden hover:shadow-xl hover:shadow-blue-500/10 dark:hover:shadow-blue-500/20 midnight:hover:shadow-cyan-500/20 purple:hover:shadow-pink-500/20 transition-all duration-300 hover:scale-[1.02] hover:-translate-y-1 hover:border-blue-300 dark:hover:border-blue-600 midnight:hover:border-cyan-400 purple:hover:border-pink-400"
+                className="group bg-gradient-to-br from-white to-gray-50/50 dark:from-gray-800 dark:to-gray-800/50 midnight:from-gray-800 midnight:to-gray-900/50 purple:from-gray-800 purple:to-gray-900/50 rounded-xl border border-line overflow-hidden hover:shadow-xl hover:shadow-blue-500/10 dark:hover:shadow-blue-500/20 midnight:hover:shadow-cyan-500/20 purple:hover:shadow-pink-500/20 transition-all duration-300 hover:scale-[1.02] hover:-translate-y-1 hover:border-blue-300 dark:hover:border-blue-600 midnight:hover:border-cyan-400 purple:hover:border-pink-400"
               >
                 {/* Book Cover */}
                 <div className="relative">
@@ -1314,14 +1314,14 @@ function LibraryTab() {
                 {/* Book Details */}
                 <div className="p-4">
                   {/* Book Title */}
-                  <h3 className="text-base font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-3 line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 midnight:group-hover:text-cyan-400 purple:group-hover:text-pink-400 transition-colors">
+                  <h3 className="text-base font-bold text-ink mb-3 line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 midnight:group-hover:text-cyan-400 purple:group-hover:text-pink-400 transition-colors">
                     {book.title}
                   </h3>
 
                   {/* Dates */}
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1">
-                      <p className="text-[10px] font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 midnight:text-cyan-400/60 purple:text-pink-400/60">
+                      <p className="text-[0.625rem] font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 midnight:text-cyan-400/60 purple:text-pink-400/60">
                         Book taken on
                       </p>
                       <p className="text-xs font-semibold text-gray-900 dark:text-white midnight:text-cyan-100 purple:text-pink-100 flex items-center gap-1">
@@ -1330,7 +1330,7 @@ function LibraryTab() {
                       </p>
                     </div>
                     <div className="space-y-1">
-                      <p className="text-[10px] font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 midnight:text-cyan-400/60 purple:text-pink-400/60">
+                      <p className="text-[0.625rem] font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 midnight:text-cyan-400/60 purple:text-pink-400/60">
                         Last Date
                       </p>
                       <p className="text-xs font-semibold text-gray-900 dark:text-white midnight:text-cyan-100 purple:text-pink-100 flex items-center gap-1">
@@ -1351,7 +1351,7 @@ function LibraryTab() {
             <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gray-100 dark:bg-[#1a1d24] midnight:bg-[#0f1330] purple:bg-[#251340] mb-4">
               <Search className="w-10 h-10 text-gray-400 dark:text-gray-500" />
             </div>
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-2">
+            <h3 className="text-lg font-semibold text-ink mb-2">
               No books found
             </h3>
             <p className="text-gray-500 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70">

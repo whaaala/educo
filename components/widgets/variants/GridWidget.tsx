@@ -136,7 +136,7 @@ export function GridWidget({
             {item.badge && (
               <span
                 className={cn(
-                  "absolute top-1.5 left-1.5 px-2 py-0.5 rounded-md text-[9px] font-bold",
+                  "absolute top-1.5 left-1.5 px-2 py-0.5 rounded-md text-[0.5625rem] font-bold",
                   badgeVariants[item.badge.variant || "default"]
                 )}
               >
@@ -147,12 +147,12 @@ export function GridWidget({
         )}
 
         {/* Content */}
-        <div className="p-2 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]">
+        <div className="p-2 bg-surface">
           <p className="text-xs font-semibold text-gray-800 dark:text-white midnight:text-gray-100 purple:text-gray-100 truncate group-hover:text-purple-600 dark:group-hover:text-purple-400 midnight:group-hover:text-indigo-400 purple:group-hover:text-pink-400 transition-colors">
             {item.title}
           </p>
           {item.subtitle && (
-            <div className="text-[10px] text-gray-500 dark:text-gray-400 midnight:text-gray-400 purple:text-gray-400 mt-0.5">
+            <div className="text-[0.625rem] text-gray-500 dark:text-gray-400 midnight:text-gray-400 purple:text-gray-400 mt-0.5">
               {item.subtitle}
             </div>
           )}

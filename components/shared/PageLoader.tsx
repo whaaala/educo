@@ -21,7 +21,7 @@ export default function PageLoader({
           <div className="absolute inset-0 border-4 border-transparent border-t-blue-600 dark:border-t-blue-400 midnight:border-t-cyan-400 purple:border-t-pink-400 rounded-full animate-spin"></div>
         </div>
         <div className="text-center space-y-2 animate-pulse">
-          <p className="text-xl font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+          <p className="text-xl font-bold text-ink">
             {loadingText}
           </p>
           <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400">

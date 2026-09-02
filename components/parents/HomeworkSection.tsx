@@ -49,14 +49,14 @@ export default function HomeworkSection({
   };
 
   return (
-    <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm">
+    <div className="bg-surface rounded-xl border border-line shadow-sm">
       {/* Header */}
       <div className="p-4 border-b border-gray-100 dark:border-gray-700/50 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <div className="p-2 rounded-lg bg-green-100 dark:bg-green-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30">
             <BookOpen className="w-4 h-4 text-green-600 dark:text-green-400 midnight:text-cyan-400 purple:text-pink-400" />
           </div>
-          <h3 className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+          <h3 className="font-semibold text-ink">
             Homework
           </h3>
         </div>
@@ -93,7 +93,7 @@ export default function HomeworkSection({
                     {hw.subject}
                   </span>
                 </div>
-                <p className="text-sm text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mt-2 line-clamp-2">
+                <p className="text-sm text-ink mt-2 line-clamp-2">
                   {hw.description}
                 </p>
                 <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-200/60 dark:border-gray-700/40">

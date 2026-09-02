@@ -53,7 +53,7 @@ export default function SeverityBadge({ severity, size = "md" }: SeverityBadgePr
   return (
     <span
       className={`inline-flex items-center gap-1.5 font-semibold rounded-full border ${sizeClasses[size]} ${config.className}`}
-      style={size === "sm" ? { fontSize: '11.8px' } : {}}
+      style={size === "sm" ? { fontSize: '0.7375rem' } : {}}
     >
       <Icon className={iconSizes[size]} />
       {config.label}

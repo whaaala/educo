@@ -228,7 +228,7 @@ export default function DashboardPageBase<T = unknown>({
     return (
       <div
         key={widget.title}
-        className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-700/30 purple:border-pink-700/30 overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-500"
+        className="bg-surface rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-700/30 purple:border-pink-700/30 overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-500"
         style={{ animationDelay: `${index * 150}ms` }}
       >
         {/* Widget Header */}

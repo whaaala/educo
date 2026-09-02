@@ -69,7 +69,7 @@ const getChannelColorClasses = (channel: string) => {
     case "sms": return { bg: "bg-green-100 dark:bg-green-900/30", text: "text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400", label: "SMS" };
     case "push": return { bg: "bg-purple-100 dark:bg-purple-900/30", text: "text-purple-600 dark:text-purple-400", label: "Push" };
     case "whatsapp": return { bg: "bg-emerald-100 dark:bg-emerald-900/30", text: "text-emerald-600 dark:text-emerald-400", label: "WhatsApp" };
-    default: return { bg: "bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]", text: "text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300", label: channel };
+    default: return { bg: "bg-surface-2", text: "text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300", label: channel };
   }
 };
 
@@ -106,7 +106,7 @@ const getStatusConfig = (status: string) => {
       };
     default:
       return {
-        bg: "bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]",
+        bg: "bg-surface-2",
         text: "text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300",
         icon: null,
         label: status,
@@ -126,10 +126,10 @@ function AttachmentPreview({
 
   return (
     <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/50 backdrop-blur-sm">
-      <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-2xl shadow-2xl max-w-md w-full mx-4 overflow-hidden animate-in zoom-in-95 duration-200">
+      <div className="bg-surface rounded-2xl shadow-2xl max-w-md w-full mx-4 overflow-hidden animate-in zoom-in-95 duration-200">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">Attachment Preview</h3>
+        <div className="flex items-center justify-between p-4 border-b border-line">
+          <h3 className="text-lg font-semibold text-ink">Attachment Preview</h3>
           <button
             type="button"
             onClick={onClose}
@@ -142,7 +142,7 @@ function AttachmentPreview({
         {/* Preview Content */}
         <div className="p-6">
           {/* File Icon */}
-          <div className="w-20 h-20 mx-auto rounded-2xl bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] flex items-center justify-center mb-4">
+          <div className="w-20 h-20 mx-auto rounded-2xl bg-surface-2 flex items-center justify-center mb-4">
             {attachment.type === "pdf" && <FileText className="w-10 h-10 text-red-500" />}
             {attachment.type === "image" && <ImageIcon className="w-10 h-10 text-blue-500" />}
             {attachment.type === "document" && <File className="w-10 h-10 text-gray-500" />}
@@ -150,10 +150,10 @@ function AttachmentPreview({
 
           {/* File Details */}
           <div className="text-center mb-6">
-            <p className="text-base font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-1">
+            <p className="text-base font-semibold text-ink mb-1">
               {attachment.name}
             </p>
-            <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
+            <p className="text-sm text-muted">
               {attachment.type.toUpperCase()} • {attachment.size}
             </p>
           </div>
@@ -213,7 +213,7 @@ function ReminderItem({ reminder }: { reminder: FeeReminderRecord }) {
   };
 
   return (
-    <div className="border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-xl overflow-hidden">
+    <div className="border border-line rounded-xl overflow-hidden">
       {/* Header - Always visible */}
       <button
         type="button"
@@ -240,14 +240,14 @@ function ReminderItem({ reminder }: { reminder: FeeReminderRecord }) {
 
           {/* Date & Time */}
           <div className="text-left">
-            <p className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+            <p className="text-sm font-semibold text-ink">
               {new Date(reminder.sentAt).toLocaleDateString("en-GB", {
                 day: "numeric",
                 month: "short",
                 year: "numeric",
               })}
             </p>
-            <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
+            <p className="text-xs text-muted">
               {new Date(reminder.sentAt).toLocaleTimeString("en-GB", {
                 hour: "2-digit",
                 minute: "2-digit",
@@ -277,7 +277,7 @@ function ReminderItem({ reminder }: { reminder: FeeReminderRecord }) {
         <div className="p-4 space-y-4 bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]">
           {/* Channels Detail */}
           <div>
-            <h4 className="text-xs font-semibold text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 uppercase tracking-wider mb-2">
+            <h4 className="text-xs font-semibold text-muted uppercase tracking-wider mb-2">
               Channels Used
             </h4>
             <div className="flex flex-wrap gap-2">
@@ -298,7 +298,7 @@ function ReminderItem({ reminder }: { reminder: FeeReminderRecord }) {
 
           {/* Message Content per Channel */}
           <div>
-            <h4 className="text-xs font-semibold text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 uppercase tracking-wider mb-2">
+            <h4 className="text-xs font-semibold text-muted uppercase tracking-wider mb-2">
               Message Content
             </h4>
             <div className="space-y-3">
@@ -337,7 +337,7 @@ function ReminderItem({ reminder }: { reminder: FeeReminderRecord }) {
                         <button
                           type="button"
                           onClick={(e) => toggleAttachments(channel, e)}
-                          className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium transition-colors cursor-pointer ${
+                          className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[0.625rem] font-medium transition-colors cursor-pointer ${
                             expandedAttachments === channel
                               ? "bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400"
                               : "bg-gray-200 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-300 dark:hover:bg-[#2a2d35] midnight:hover:bg-cyan-500/15 purple:hover:bg-pink-500/15"
@@ -354,7 +354,7 @@ function ReminderItem({ reminder }: { reminder: FeeReminderRecord }) {
                       )}
                     </div>
                     {msg.subject && (
-                      <p className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-1">
+                      <p className="text-sm font-semibold text-ink mb-1">
                         {msg.subject}
                       </p>
                     )}
@@ -364,9 +364,9 @@ function ReminderItem({ reminder }: { reminder: FeeReminderRecord }) {
 
                     {/* Expandable Attachments List */}
                     {expandedAttachments === channel && effectiveAttachments.length > 0 && (
-                      <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+                      <div className="mt-3 pt-3 border-t border-line">
                         <div className="flex items-center justify-between mb-2">
-                          <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 uppercase tracking-wider">
+                          <span className="text-xs font-semibold text-muted uppercase tracking-wider">
                             Attachments
                           </span>
                           <button
@@ -388,10 +388,10 @@ function ReminderItem({ reminder }: { reminder: FeeReminderRecord }) {
                                   {getFileIcon(attachment.type)}
                                 </div>
                                 <div>
-                                  <p className="text-xs font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate max-w-[150px]">
+                                  <p className="text-xs font-medium text-ink truncate max-w-[150px]">
                                     {attachment.name}
                                   </p>
-                                  <p className="text-[10px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
+                                  <p className="text-[0.625rem] text-muted">
                                     {attachment.size}
                                   </p>
                                 </div>
@@ -433,8 +433,8 @@ function ReminderItem({ reminder }: { reminder: FeeReminderRecord }) {
 
           {/* Sent By */}
           <div className="flex items-center justify-between pt-3 border-t border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
-            <span className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Sent by</span>
-            <span className="text-xs font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{reminder.sentBy}</span>
+            <span className="text-xs text-muted">Sent by</span>
+            <span className="text-xs font-semibold text-ink">{reminder.sentBy}</span>
           </div>
         </div>
       )}
@@ -485,37 +485,37 @@ export default function FeeReminderHistoryModal({
         <div className="p-4 rounded-xl bg-gradient-to-r from-orange-500/10 to-amber-500/10 dark:from-orange-500/20 dark:to-amber-500/20 border border-orange-200 dark:border-orange-500/30">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{feeType}</p>
-              <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">{childName}</p>
+              <p className="text-sm font-semibold text-ink">{feeType}</p>
+              <p className="text-xs text-muted">{childName}</p>
             </div>
             <div className="text-right">
               <p className="text-lg font-bold text-orange-600 dark:text-orange-400">{money(balance)}</p>
-              <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Outstanding</p>
+              <p className="text-xs text-muted">Outstanding</p>
             </div>
           </div>
 
           {/* Channel Summary */}
           <div className="flex items-center gap-2 mt-3 pt-3 border-t border-orange-200/50 dark:border-orange-500/20">
             {channelStats.email > 0 && (
-              <span className="flex items-center gap-1 px-2 py-1 rounded-lg bg-blue-100 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 text-[11px] font-semibold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400">
+              <span className="flex items-center gap-1 px-2 py-1 rounded-lg bg-blue-100 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 text-[0.6875rem] font-semibold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400">
                 <Mail className="w-3 h-3" />
                 {channelStats.email}
               </span>
             )}
             {channelStats.sms > 0 && (
-              <span className="flex items-center gap-1 px-2 py-1 rounded-lg bg-green-100 dark:bg-green-900/30 text-[11px] font-semibold text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400">
+              <span className="flex items-center gap-1 px-2 py-1 rounded-lg bg-green-100 dark:bg-green-900/30 text-[0.6875rem] font-semibold text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400">
                 <Phone className="w-3 h-3" />
                 {channelStats.sms}
               </span>
             )}
             {channelStats.whatsapp > 0 && (
-              <span className="flex items-center gap-1 px-2 py-1 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
+              <span className="flex items-center gap-1 px-2 py-1 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 text-[0.6875rem] font-semibold text-emerald-600 dark:text-emerald-400">
                 <MessageSquare className="w-3 h-3" />
                 {channelStats.whatsapp}
               </span>
             )}
             {channelStats.push > 0 && (
-              <span className="flex items-center gap-1 px-2 py-1 rounded-lg bg-purple-100 dark:bg-purple-900/30 text-[11px] font-semibold text-purple-600 dark:text-purple-400">
+              <span className="flex items-center gap-1 px-2 py-1 rounded-lg bg-purple-100 dark:bg-purple-900/30 text-[0.6875rem] font-semibold text-purple-600 dark:text-purple-400">
                 <Bell className="w-3 h-3" />
                 {channelStats.push}
               </span>
@@ -529,7 +529,7 @@ export default function FeeReminderHistoryModal({
             <div className="w-16 h-16 rounded-2xl bg-gray-100 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] flex items-center justify-center mb-4">
               <Send className="w-8 h-8 text-gray-400" />
             </div>
-            <p className="text-sm font-medium text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">{emptyStateText}</p>
+            <p className="text-sm font-medium text-muted">{emptyStateText}</p>
             <p className="text-xs text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 mt-1">{emptyStateSubtext}</p>
           </div>
         ) : (

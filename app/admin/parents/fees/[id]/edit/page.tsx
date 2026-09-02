@@ -316,10 +316,10 @@ export default function EditFeeRecordPage() {
             <div className="w-16 h-16 rounded-full bg-red-100 dark:bg-red-900/30 midnight:bg-red-900/30 purple:bg-red-900/30 flex items-center justify-center mb-4">
               <AlertCircle className="w-8 h-8 text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400" />
             </div>
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-2">
+            <h2 className="text-xl font-semibold text-ink mb-2">
               Fee Record Not Found
             </h2>
-            <p className="text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mb-6">
+            <p className="text-muted mb-6">
               The fee record you&apos;re looking for doesn&apos;t exist or has been deleted.
             </p>
             <button
@@ -388,10 +388,10 @@ export default function EditFeeRecordPage() {
                   <FileText className="w-5 h-5 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
                 </div>
                 <div>
-                  <h2 className="text-lg font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                  <h2 className="text-lg font-semibold text-ink">
                     Fee Record Preview
                   </h2>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
+                  <p className="text-sm text-muted">
                     Review the updated fee details before saving
                   </p>
                 </div>
@@ -410,19 +410,19 @@ export default function EditFeeRecordPage() {
                       />
                     </div>
                     <div>
-                      <p className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                      <p className="font-semibold text-ink">
                         {selectedStudent.fullName}
                       </p>
-                      <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
+                      <p className="text-sm text-muted">
                         {selectedStudent.classLevel} | Parent: {selectedParent ? `${selectedParent.firstName} ${selectedParent.lastName}` : ""}
                       </p>
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="text-2xl font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                    <p className="text-2xl font-bold text-ink">
                       {settings.currency}{formatCurrency(formData.amount)}
                     </p>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
+                    <p className="text-sm text-muted">
                       {formData.feeType}
                     </p>
                   </div>
@@ -430,21 +430,21 @@ export default function EditFeeRecordPage() {
 
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                   <div>
-                    <p className="text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Term</p>
-                    <p className="font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{formData.term || "-"}</p>
+                    <p className="text-muted">Term</p>
+                    <p className="font-medium text-ink">{formData.term || "-"}</p>
                   </div>
                   <div>
-                    <p className="text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Academic Year</p>
-                    <p className="font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{formData.academicYear}</p>
+                    <p className="text-muted">Academic Year</p>
+                    <p className="font-medium text-ink">{formData.academicYear}</p>
                   </div>
                   <div>
-                    <p className="text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Due Date</p>
-                    <p className="font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                    <p className="text-muted">Due Date</p>
+                    <p className="font-medium text-ink">
                       {formData.dueDate ? new Date(formData.dueDate).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : "-"}
                     </p>
                   </div>
                   <div>
-                    <p className="text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Paid Amount</p>
+                    <p className="text-muted">Paid Amount</p>
                     <p className="font-medium text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400">
                       {settings.currency}{formatCurrency((originalRecord?.paidAmount || 0).toString())}
                     </p>
@@ -460,7 +460,7 @@ export default function EditFeeRecordPage() {
           ref={buttonsRef}
           className={`${
             isSticky ? "fixed" : "relative"
-          } bottom-0 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-t-xl shadow-lg backdrop-blur-sm bg-opacity-95 dark:bg-opacity-95 py-4 px-6 z-50`}
+          } bottom-0 bg-surface border-t border-line rounded-t-xl shadow-lg backdrop-blur-sm bg-opacity-95 dark:bg-opacity-95 py-4 px-6 z-50`}
           style={
             isSticky
               ? {

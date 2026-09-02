@@ -74,8 +74,8 @@ describe("StatCard — Visual / CSS", () => {
       render(<StatCard icon={Users} label="Students" value={42} color="blue" />);
 
       const label = screen.getByText("Students");
-      expect(label.className).toContain("text-[9px]");
-      expect(label.className).toContain("sm:text-[10px]");
+      expect(label.className).toContain("text-[0.5625rem]");
+      expect(label.className).toContain("sm:text-[0.625rem]");
     });
   });
 

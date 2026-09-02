@@ -36,15 +36,15 @@ export default function ShapePickerDialog({ initialCategory = "shapes", onInsert
     <EditorDialog title="Insert Shape" onClose={onClose}>
       <div style={{ minWidth: 420 }}>
         {/* Category tabs */}
-        <div className="flex gap-1 mb-3 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 pb-2">
+        <div className="flex gap-1 mb-3 border-b border-line pb-2">
           {CATEGORIES.map(cat => (
             <button
               key={cat.key}
               onClick={() => setCategory(cat.key)}
-              className={`px-3 py-1.5 rounded-lg text-[12px] font-medium transition-colors cursor-pointer ${
+              className={`px-3 py-1.5 rounded-lg text-[0.75rem] font-medium transition-colors cursor-pointer ${
                 category === cat.key
                   ? "bg-blue-100 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 text-blue-700 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400"
-                  : "text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5"
+                  : "text-muted hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5"
               }`}
             >
               {cat.label}
@@ -59,7 +59,7 @@ export default function ShapePickerDialog({ initialCategory = "shapes", onInsert
               key={key}
               onClick={() => onInsert(key)}
               title={def.label}
-              className="w-12 h-12 rounded-lg border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 hover:border-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 midnight:hover:bg-cyan-900/20 purple:hover:bg-pink-900/20 hover:shadow-sm transition-all cursor-pointer flex items-center justify-center group"
+              className="w-12 h-12 rounded-lg border border-line hover:border-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 midnight:hover:bg-cyan-900/20 purple:hover:bg-pink-900/20 hover:shadow-sm transition-all cursor-pointer flex items-center justify-center group"
             >
               <svg
                 viewBox="0 0 100 100"
@@ -75,7 +75,7 @@ export default function ShapePickerDialog({ initialCategory = "shapes", onInsert
         </div>
 
         {/* Shape count */}
-        <p className="text-[10px] text-gray-400 text-center mt-2">{shapes.length} shapes · Click to insert</p>
+        <p className="text-[0.625rem] text-gray-400 text-center mt-2">{shapes.length} shapes · Click to insert</p>
       </div>
     </EditorDialog>
   );

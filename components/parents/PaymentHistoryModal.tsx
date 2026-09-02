@@ -346,7 +346,7 @@ export default function PaymentHistoryModal({
 
         {/* Export Dropdown Menu */}
         {showExportMenu && (
-          <div className="absolute bottom-full right-0 mb-2 w-48 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 py-2 z-50">
+          <div className="absolute bottom-full right-0 mb-2 w-48 bg-surface rounded-xl shadow-xl border border-line py-2 z-50">
             <button
               type="button"
               onClick={handleExportCSV}
@@ -475,7 +475,7 @@ export default function PaymentHistoryModal({
                           key={payment.id}
                           type="button"
                           onClick={() => onViewReceipt(payment)}
-                          className="w-full p-4 rounded-xl bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-200 dark:border-gray-700 midnight:border-cyan-700/20 purple:border-pink-700/20 hover:border-green-300 dark:hover:border-green-600 hover:shadow-md transition-all cursor-pointer text-left group"
+                          className="w-full p-4 rounded-xl bg-surface border border-gray-200 dark:border-gray-700 midnight:border-cyan-700/20 purple:border-pink-700/20 hover:border-green-300 dark:hover:border-green-600 hover:shadow-md transition-all cursor-pointer text-left group"
                         >
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-3 min-w-0">

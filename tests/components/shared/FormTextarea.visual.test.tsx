@@ -28,10 +28,7 @@ describe("FormTextarea — Visual / CSS", () => {
       const { container } = render(<FormTextarea {...defaultProps} />);
       const wrapper = container.querySelector(".rounded-xl.border");
       expect(wrapper).toBeInTheDocument();
-      expect(wrapper!.className).toContain("bg-white");
-      expect(wrapper!.className).toContain("dark:bg-[#1a1d24]");
-      expect(wrapper!.className).toContain("midnight:bg-[#0a0e27]");
-      expect(wrapper!.className).toContain("purple:bg-[#1a0b2e]");
+      expect(wrapper!.className).toContain("bg-surface");
     });
 
     it("container has rounded-xl border", () => {
@@ -51,10 +48,7 @@ describe("FormTextarea — Visual / CSS", () => {
     it("textarea has theme text colors", () => {
       const { container } = render(<FormTextarea {...defaultProps} />);
       const textarea = container.querySelector("textarea")!;
-      expect(textarea.className).toContain("text-gray-900");
-      expect(textarea.className).toContain("dark:text-white");
-      expect(textarea.className).toContain("midnight:text-cyan-50");
-      expect(textarea.className).toContain("purple:text-pink-50");
+      expect(textarea.className).toContain("text-ink");
     });
   });
 

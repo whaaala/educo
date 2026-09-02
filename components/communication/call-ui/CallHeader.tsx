@@ -111,7 +111,7 @@ export function CallHeader({
             <CallIcon className="w-4 h-4 sm:w-5 sm:h-5" style={{ color: primaryColor }} />
           </div>
           <div className="min-w-0">
-            <h1 className="text-sm sm:text-base lg:text-lg font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate">
+            <h1 className="text-sm sm:text-base lg:text-lg font-bold text-ink truncate">
               {title}
             </h1>
           </div>
@@ -119,7 +119,7 @@ export function CallHeader({
 
         {/* Duration Badge */}
         <div
-          className="hidden sm:flex items-center gap-1.5 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full bg-gray-100 dark:bg-[#1a1d24] midnight:bg-cyan-900/20 purple:bg-pink-900/20 text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-xs sm:text-sm font-semibold flex-shrink-0 shadow-sm border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20"
+          className="hidden sm:flex items-center gap-1.5 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full bg-gray-100 dark:bg-[#1a1d24] midnight:bg-cyan-900/20 purple:bg-pink-900/20 text-ink text-xs sm:text-sm font-semibold flex-shrink-0 shadow-sm border border-line"
         >
           {isRecording && (
             <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
@@ -172,7 +172,7 @@ export function CallHeader({
                 className="fixed inset-0 z-40"
                 onClick={() => setShowMenu(false)}
               />
-              <div className="absolute right-0 top-full mt-2 w-52 bg-white dark:bg-[#1a1d24] midnight:bg-[#0d1220] purple:bg-[#1f0d33] rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 overflow-hidden z-50 py-1">
+              <div className="absolute right-0 top-full mt-2 w-52 bg-white dark:bg-[#1a1d24] midnight:bg-[#0d1220] purple:bg-[#1f0d33] rounded-xl shadow-xl border border-line overflow-hidden z-50 py-1">
                 {onSettings && (
                   <button
                     onClick={() => {
@@ -221,7 +221,7 @@ export function CallHeader({
                     <span>Add Participant</span>
                   </button>
                 )}
-                <div className="border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 my-1" />
+                <div className="border-t border-line my-1" />
                 <button
                   onClick={() => {
                     onClose();

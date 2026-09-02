@@ -140,7 +140,7 @@ function getStatusInfo(status: SubjectProgress["status"]): {
     case "in_progress":
       return { bg: "bg-amber-100 dark:bg-amber-900/40", text: "text-amber-700 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400", label: "In Progress" };
     case "pending":
-      return { bg: "bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/40", text: "text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300", label: "Pending" };
+      return { bg: "bg-surface-2/40", text: "text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300", label: "Pending" };
   }
 }
 
@@ -294,7 +294,7 @@ export default function TermProgressPage() {
 
             {/* Info Section */}
             <div className="flex-1 min-w-0">
-              <h2 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-1">
+              <h2 className="text-base sm:text-lg font-bold text-ink mb-1">
                 {child.name}
               </h2>
               <div className="flex flex-wrap items-center gap-2 text-xs">
@@ -306,14 +306,14 @@ export default function TermProgressPage() {
                   <Calendar className="w-3.5 h-3.5" />
                   {child.term} {child.year}
                 </span>
-                <span className="text-[10px] text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 font-medium">
+                <span className="text-[0.625rem] text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 font-medium">
                   Updated: {formatDate(child.lastUpdated)}
                 </span>
               </div>
             </div>
 
             {/* Status Badge - Top Right */}
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold tracking-wide bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400 ring-1 ring-amber-200/50 dark:ring-amber-700/50 self-start">
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[0.625rem] font-semibold tracking-wide bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400 ring-1 ring-amber-200/50 dark:ring-amber-700/50 self-start">
               <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
               In Progress
             </span>
@@ -326,7 +326,7 @@ export default function TermProgressPage() {
                 <div className="p-1.5 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 shadow-sm">
                   <PieChart className="w-4 h-4 text-white" />
                 </div>
-                <h3 className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-sm">
+                <h3 className="font-semibold text-ink text-sm">
                   Term Completion
                 </h3>
               </div>
@@ -334,13 +334,13 @@ export default function TermProgressPage() {
                 {overallProgress}%
               </span>
             </div>
-            <div className="w-full h-2 bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/50 rounded-full overflow-hidden">
+            <div className="w-full h-2 bg-surface-2/50 rounded-full overflow-hidden">
               <div
                 className="h-full bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 rounded-full transition-all duration-500"
                 style={{ width: `${overallProgress}%` }}
               />
             </div>
-            <p className="text-[10px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 font-medium uppercase tracking-wide mt-1.5">
+            <p className="text-[0.625rem] text-muted font-medium uppercase tracking-wide mt-1.5">
               {completedSubjects} of {totalSubjects} subjects completed
             </p>
           </div>
@@ -354,11 +354,11 @@ export default function TermProgressPage() {
               <div className="p-1.5 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 shadow-sm">
                 <BookOpen className="w-4 h-4 text-white" />
               </div>
-              <h3 className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-sm">
+              <h3 className="font-semibold text-ink text-sm">
                 Subject Progress
               </h3>
             </div>
-            <span className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
+            <span className="text-xs text-muted">
               {totalSubjects} subjects
             </span>
           </div>
@@ -387,11 +387,11 @@ export default function TermProgressPage() {
                   {/* Card Header */}
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex-1 min-w-0">
-                      <h4 className="text-xs font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate">
+                      <h4 className="text-xs font-bold text-ink truncate">
                         {subject.name}
                       </h4>
                       <span
-                        className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[9px] font-semibold tracking-wide ${statusInfo.bg} ${statusInfo.text} ring-1 ring-inset ring-current/10 mt-0.5`}
+                        className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[0.5625rem] font-semibold tracking-wide ${statusInfo.bg} ${statusInfo.text} ring-1 ring-inset ring-current/10 mt-0.5`}
                       >
                         <span className={`w-1 h-1 rounded-full ${
                           subject.status === "completed" ? "bg-emerald-500" :
@@ -409,7 +409,7 @@ export default function TermProgressPage() {
                       <div
                         className={`relative w-10 h-10 rounded-full bg-gradient-to-br ${scoreGradient} flex items-center justify-center shadow-lg ring-2 ring-white dark:ring-gray-700 midnight:ring-cyan-500/20 purple:ring-pink-500/20`}
                       >
-                        <span className="text-[11px] font-bold text-white drop-shadow-sm">
+                        <span className="text-[0.6875rem] font-bold text-white drop-shadow-sm">
                           {subject.currentAverage > 0
                             ? `${subject.currentAverage}%`
                             : "-"}
@@ -429,7 +429,7 @@ export default function TermProgressPage() {
                             ? `${subject.currentAverage}%`
                             : "-"}
                         </p>
-                        <p className="text-[9px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 font-medium uppercase tracking-wide">Average</p>
+                        <p className="text-[0.5625rem] text-muted font-medium uppercase tracking-wide">Average</p>
                       </div>
                     </div>
 
@@ -440,7 +440,7 @@ export default function TermProgressPage() {
                         <p className="text-sm font-bold text-amber-600 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400">
                           {subject.testsCompleted}/{subject.totalTests}
                         </p>
-                        <p className="text-[9px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 font-medium uppercase tracking-wide">Tests</p>
+                        <p className="text-[0.5625rem] text-muted font-medium uppercase tracking-wide">Tests</p>
                       </div>
                     </div>
 
@@ -453,7 +453,7 @@ export default function TermProgressPage() {
                             ? `${subject.lastTestScore}%`
                             : "-"}
                         </p>
-                        <p className="text-[9px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 font-medium uppercase tracking-wide">Last Test</p>
+                        <p className="text-[0.5625rem] text-muted font-medium uppercase tracking-wide">Last Test</p>
                       </div>
                     </div>
 
@@ -480,17 +480,17 @@ export default function TermProgressPage() {
                         <p className={`text-sm font-bold ${trendInfo.color}`}>
                           {trendInfo.label}
                         </p>
-                        <p className="text-[9px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 font-medium uppercase tracking-wide">Trend</p>
+                        <p className="text-[0.5625rem] text-muted font-medium uppercase tracking-wide">Trend</p>
                       </div>
                     </div>
                   </div>
 
                   {/* Progress Bar Row */}
                   <div className="flex items-center gap-2 pt-4 border-t border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
-                    <span className="text-[10px] font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                    <span className="text-[0.625rem] font-bold text-ink">
                       {progressPercent}%
                     </span>
-                    <div className="flex-1 h-1.5 bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/50 rounded-full overflow-hidden">
+                    <div className="flex-1 h-1.5 bg-surface-2/50 rounded-full overflow-hidden">
                       <div
                         className={`h-full rounded-full transition-all duration-500 ${
                           subject.status === "completed"
@@ -500,7 +500,7 @@ export default function TermProgressPage() {
                         style={{ width: `${progressPercent}%` }}
                       />
                     </div>
-                    <span className="text-[10px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
+                    <span className="text-[0.625rem] text-muted">
                       complete
                     </span>
                   </div>

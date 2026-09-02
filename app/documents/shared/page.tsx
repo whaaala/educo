@@ -104,7 +104,7 @@ export default function SharedDocumentsPage() {
                   placeholder="Search by title or shared by..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 placeholder-gray-400 dark:placeholder-gray-500 midnight:placeholder-cyan-400/40 purple:placeholder-pink-400/40 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/40 dark:focus:ring-blue-400/40 midnight:focus:ring-cyan-500/40 purple:focus:ring-pink-500/40 transition-all"
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] text-ink placeholder-gray-400 dark:placeholder-gray-500 midnight:placeholder-cyan-400/40 purple:placeholder-pink-400/40 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/40 dark:focus:ring-blue-400/40 midnight:focus:ring-cyan-500/40 purple:focus:ring-pink-500/40 transition-all"
                 />
               </div>
               {/* Filter buttons */}
@@ -129,7 +129,7 @@ export default function SharedDocumentsPage() {
           {/* Documents Grid */}
           {filteredDocuments.length === 0 ? (
             <div className="bg-white/80 dark:bg-[#1a1d24]/80 midnight:bg-[#0a0e27]/80 purple:bg-[#1a0b2e]/80 backdrop-blur-xl rounded-2xl border border-gray-100/80 dark:border-gray-700/30 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm p-12 flex flex-col items-center justify-center">
-              <div className="w-16 h-16 rounded-2xl bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] flex items-center justify-center mb-4">
+              <div className="w-16 h-16 rounded-2xl bg-surface-2 flex items-center justify-center mb-4">
                 <FolderOpen className="w-8 h-8 text-gray-400 dark:text-gray-500 midnight:text-cyan-500/50 purple:text-pink-500/50" />
               </div>
               <p className="text-base font-semibold text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200">
@@ -169,14 +169,14 @@ export default function SharedDocumentsPage() {
                     </div>
                     <FileText className="w-10 h-10 text-blue-300 dark:text-gray-500 midnight:text-cyan-600/40 purple:text-pink-600/40 group-hover:scale-110 transition-transform" />
                     {/* Faded content preview */}
-                    <div className="mt-2 text-[10px] leading-tight text-gray-400/60 dark:text-gray-500/40 midnight:text-cyan-400/20 purple:text-pink-400/20 line-clamp-3 overflow-hidden max-h-10">
+                    <div className="mt-2 text-[0.625rem] leading-tight text-gray-400/60 dark:text-gray-500/40 midnight:text-cyan-400/20 purple:text-pink-400/20 line-clamp-3 overflow-hidden max-h-10">
                       {doc.html.replace(/<[^>]*>/g, " ").slice(0, 150)}
                     </div>
                   </div>
 
                   {/* Document info */}
                   <div className="p-4">
-                    <h3 className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 midnight:group-hover:text-cyan-400 purple:group-hover:text-pink-400 transition-colors">
+                    <h3 className="text-sm font-semibold text-ink truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 midnight:group-hover:text-cyan-400 purple:group-hover:text-pink-400 transition-colors">
                       {doc.title}
                     </h3>
 
@@ -192,7 +192,7 @@ export default function SharedDocumentsPage() {
                             className="object-cover w-full h-full"
                           />
                         ) : (
-                          <div className="w-full h-full bg-blue-100 dark:bg-blue-500/20 midnight:bg-cyan-500/20 purple:bg-pink-500/20 flex items-center justify-center text-[10px] font-bold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400">
+                          <div className="w-full h-full bg-blue-100 dark:bg-blue-500/20 midnight:bg-cyan-500/20 purple:bg-pink-500/20 flex items-center justify-center text-[0.625rem] font-bold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400">
                             {doc.sharedBy.name.charAt(0).toUpperCase()}
                           </div>
                         )}
@@ -215,7 +215,7 @@ export default function SharedDocumentsPage() {
                     {/* Time */}
                     <div className="flex items-center gap-1.5 mt-2">
                       <Clock className="w-3 h-3 text-gray-400 dark:text-gray-500 midnight:text-cyan-400/50 purple:text-pink-400/50" />
-                      <span className="text-[11px] text-gray-400 dark:text-gray-500 midnight:text-cyan-300/50 purple:text-pink-300/50">
+                      <span className="text-[0.6875rem] text-gray-400 dark:text-gray-500 midnight:text-cyan-300/50 purple:text-pink-300/50">
                         {formatTimeAgo(doc.sharedAt)}
                       </span>
                     </div>

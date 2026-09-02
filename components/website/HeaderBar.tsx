@@ -259,7 +259,7 @@ export default function HeaderBar({
           style={addPos ? { left: addPos.x, top: addPos.y } : { top: 6, right: 8 }}
           onMouseDown={(e) => e.stopPropagation()}
         >
-          <span onMouseDown={onAddBarDown} role="button" aria-label="Move the Add toolbar" title="Drag to move this toolbar" className="flex items-center gap-0.5 pl-0.5 pr-1 cursor-grab active:cursor-grabbing text-white/50 hover:text-white/80 select-none"><Move className="w-3 h-3" /><span className="text-[10px] font-semibold">Add</span></span>
+          <span onMouseDown={onAddBarDown} role="button" aria-label="Move the Add toolbar" title="Drag to move this toolbar" className="flex items-center gap-0.5 pl-0.5 pr-1 cursor-grab active:cursor-grabbing text-white/50 hover:text-white/80 select-none"><Move className="w-3 h-3" /><span className="text-[0.625rem] font-semibold">Add</span></span>
           <button onClick={() => add({ id: hid(), type: "text", x: 40, y: 34, text: "Text", fontSize: 15, color: theme.textMuted })} title="Add text" aria-label="Add header text" className="p-1 rounded text-white/90 hover:bg-white/15"><Type className="w-3.5 h-3.5" /></button>
           <button onClick={() => add({ id: hid(), type: "button", x: 42, y: 28, text: "Button" })} title="Add button" aria-label="Add header button" className="p-1 rounded text-white/90 hover:bg-white/15"><Square className="w-3.5 h-3.5" /></button>
           <button onClick={() => add({ id: hid(), type: "nav", x: 42, y: 34 })} title={hasNav ? "Add another navigation menu" : "Add navigation menu"} aria-label="Add navigation menu" className="p-1 rounded text-white/90 hover:bg-white/15"><MenuIcon className="w-3.5 h-3.5" /></button>
@@ -294,7 +294,7 @@ export default function HeaderBar({
                       <button onClick={() => update(el.id, { fontSize: Math.max(9, (el.fontSize || FONT_FALLBACK[el.type]) - 1) })} title="Smaller text" aria-label="Decrease font size" className="p-1 rounded text-white/90 hover:bg-white/15"><Minus className="w-3 h-3" /></button>
                       <button onClick={() => update(el.id, { fontSize: Math.min(56, (el.fontSize || FONT_FALLBACK[el.type]) + 1) })} title="Bigger text" aria-label="Increase font size" className="p-1 rounded text-white/90 hover:bg-white/15"><Plus className="w-3 h-3" /></button>
                     </>)}
-                    {el.type !== "logo" && <span className="inline-flex items-center gap-0.5 text-[10px] text-white/45 px-1" title="Colours, fonts & links are in the panel on the right"><Paintbrush className="w-3 h-3" /> colours →</span>}
+                    {el.type !== "logo" && <span className="inline-flex items-center gap-0.5 text-[0.625rem] text-white/45 px-1" title="Colours, fonts & links are in the panel on the right"><Paintbrush className="w-3 h-3" /> colours →</span>}
                     {el.type !== "logo" && <button onClick={() => remove(el.id)} title="Delete" aria-label="Delete element" className="p-1 rounded text-red-300 hover:bg-red-500/30"><Trash2 className="w-3.5 h-3.5" /></button>}
                   </div>
                 )}

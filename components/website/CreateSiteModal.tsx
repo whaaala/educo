@@ -48,7 +48,7 @@ export default function CreateSiteModal({ isOpen, onClose, onCreate }: CreateSit
       }
     >
       <label className="block mb-4">
-        <span className="text-xs font-medium text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">School / site name</span>
+        <span className="text-xs font-medium text-muted">School / site name</span>
         <input
           autoFocus
           value={name}
@@ -60,7 +60,7 @@ export default function CreateSiteModal({ isOpen, onClose, onCreate }: CreateSit
         />
       </label>
 
-      <span className="text-xs font-medium text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Start from</span>
+      <span className="text-xs font-medium text-muted">Start from</span>
       <div className="mt-1.5 grid grid-cols-2 gap-3">
         {([
           ["starter", LayoutTemplate, "Starter", "Hero, About & CTA — ready to edit"],
@@ -73,12 +73,12 @@ export default function CreateSiteModal({ isOpen, onClose, onCreate }: CreateSit
             className={`text-left p-3 rounded-xl border-2 transition-colors ${
               starter === key
                 ? "border-indigo-500 bg-indigo-50 dark:bg-indigo-950/30 midnight:bg-cyan-950/30 purple:bg-purple-950/30"
-                : "border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 hover:border-gray-300 dark:hover:border-gray-600"
+                : "border-line hover:border-gray-300 dark:hover:border-gray-600"
             }`}
           >
             <Icon className={`w-5 h-5 mb-1.5 ${starter === key ? "text-indigo-600 dark:text-indigo-400 midnight:text-cyan-400 purple:text-pink-400" : "text-gray-400"}`} />
             <div className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-100 purple:text-pink-100">{label}</div>
-            <div className="text-[11px] text-gray-500 dark:text-gray-400 midnight:text-cyan-400/80 purple:text-pink-400/80 leading-tight mt-0.5">{desc}</div>
+            <div className="text-[0.6875rem] text-gray-500 dark:text-gray-400 midnight:text-cyan-400/80 purple:text-pink-400/80 leading-tight mt-0.5">{desc}</div>
           </button>
         ))}
       </div>

@@ -315,7 +315,7 @@ export default function SiteBuilder({ value, onChange, onExit }: SiteBuilderProp
   const panelBg = "bg-white dark:bg-[#161922] midnight:bg-[#0d1230] purple:bg-[#241435]";
   const border = "border-gray-200 dark:border-gray-800 midnight:border-cyan-900/40 purple:border-purple-900/40";
   const inputCls = "w-full text-sm px-2.5 py-2 rounded-lg border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-transparent text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-indigo-500 outline-none";
-  const label = "text-[11px] font-medium text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300";
+  const label = "text-[0.6875rem] font-medium text-muted";
   const sectionMeta = (t: SectionType) => SECTION_CATALOG.find((c) => c.type === t);
 
   return (
@@ -378,7 +378,7 @@ export default function SiteBuilder({ value, onChange, onExit }: SiteBuilderProp
                             <button onClick={(e) => { e.stopPropagation(); setPageMenuId(pageMenuId === p.id ? null : p.id); }} aria-label={`Actions for ${p.name}`} aria-haspopup="menu" className="opacity-0 group-hover:opacity-100 p-0.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-500"><MoreVertical className="w-3.5 h-3.5" /></button>
                           </div>
                           {pageMenuId === p.id && (
-                            <div role="menu" aria-label={`${p.name} actions`} className="absolute right-2 top-9 z-20 min-w-[150px] py-1 rounded-lg shadow-xl bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+                            <div role="menu" aria-label={`${p.name} actions`} className="absolute right-2 top-9 z-20 min-w-[150px] py-1 rounded-lg shadow-xl bg-surface border border-line">
                               <button role="menuitem" onClick={() => { setSettingsPageId(p.id); setPageMenuId(null); }} className="w-full flex items-center gap-2 px-3 py-1.5 text-sm text-left text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#22262e]"><Settings2 className="w-4 h-4" /> Settings</button>
                               <button role="menuitem" onClick={() => duplicatePage(p.id)} className="w-full flex items-center gap-2 px-3 py-1.5 text-sm text-left text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#22262e]"><Copy className="w-4 h-4" /> Duplicate</button>
                               {!p.isHome && <button role="menuitem" onClick={() => setHomePage(p.id)} className="w-full flex items-center gap-2 px-3 py-1.5 text-sm text-left text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#22262e]"><Home className="w-4 h-4" /> Set as home</button>}
@@ -400,7 +400,7 @@ export default function SiteBuilder({ value, onChange, onExit }: SiteBuilderProp
                     return (
                       <button key={c.type} onClick={() => addSection(c.type)} role="menuitem" className={`w-full flex items-start gap-2.5 text-left p-2.5 rounded-lg border ${border} hover:border-indigo-400 hover:bg-indigo-50/50 dark:hover:bg-indigo-950/30 transition-colors`}>
                         <span className="w-8 h-8 rounded-lg bg-indigo-50 dark:bg-indigo-950/50 text-indigo-500 flex items-center justify-center shrink-0"><Icon className="w-4 h-4" /></span>
-                        <span className="min-w-0"><span className="text-sm font-semibold block">{c.label}</span><span className="text-[11px] text-gray-400 leading-tight block">{c.description}</span></span>
+                        <span className="min-w-0"><span className="text-sm font-semibold block">{c.label}</span><span className="text-[0.6875rem] text-gray-400 leading-tight block">{c.description}</span></span>
                       </button>
                     );
                   })}
@@ -411,7 +411,7 @@ export default function SiteBuilder({ value, onChange, onExit }: SiteBuilderProp
               {railTab === "layers" && (
                 <div>
                   <button onClick={() => { setRailTab("add"); }} className="w-full mb-3 flex items-center justify-center gap-1.5 py-2 rounded-lg text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"><Plus className="w-4 h-4" /> Add section</button>
-                  <p className="text-[11px] text-gray-400 mb-2 px-0.5">Drag the ⠿ handle to reorder sections — they drop <b>between</b> others and never overlap.</p>
+                  <p className="text-[0.6875rem] text-gray-400 mb-2 px-0.5">Drag the ⠿ handle to reorder sections — they drop <b>between</b> others and never overlap.</p>
                   <ul className="space-y-1" onDrop={(e) => { if (secDrag !== null && secDropIdx !== null) { e.preventDefault(); dropSectionAt(secDropIdx); } }}>
                     {activePage?.sections.map((s, i) => {
                       const Icon = resolveIcon(sectionMeta(s.type)?.icon);
@@ -457,14 +457,14 @@ export default function SiteBuilder({ value, onChange, onExit }: SiteBuilderProp
                   {/* What this panel is — the header menu shown on every page */}
                   <div className="mb-4 flex items-start gap-2 rounded-xl border border-indigo-100 dark:border-indigo-900/40 midnight:border-cyan-900/40 purple:border-purple-900/40 bg-gradient-to-br from-indigo-50 to-indigo-100/40 dark:from-indigo-950/30 dark:to-transparent midnight:from-cyan-950/30 purple:from-purple-950/30 p-3">
                     <ListTree className="w-4 h-4 mt-0.5 shrink-0 text-indigo-500 midnight:text-cyan-400 purple:text-pink-400" />
-                    <p className="text-[11px] leading-snug text-indigo-900/80 dark:text-indigo-200/80 midnight:text-cyan-200/80 purple:text-pink-200/80">
+                    <p className="text-[0.6875rem] leading-snug text-indigo-900/80 dark:text-indigo-200/80 midnight:text-cyan-200/80 purple:text-pink-200/80">
                       Your <b>header menu</b> — shown at the top of <b>every page</b>. Drag the <b>⠿</b> handle to reorder.
                     </p>
                   </div>
 
                   {/* Draggable "Navigation menu" block — drop it onto the header on the canvas */}
                   <div className="mb-4">
-                    <div className="text-[10px] font-semibold uppercase tracking-wider text-gray-400 mb-1.5 px-0.5">Menu block</div>
+                    <div className="text-[0.625rem] font-semibold uppercase tracking-wider text-gray-400 mb-1.5 px-0.5">Menu block</div>
                     <div
                       draggable
                       onDragStart={(e) => { e.dataTransfer.setData("application/x-educo-block", "nav"); e.dataTransfer.effectAllowed = "copy"; }}
@@ -479,11 +479,11 @@ export default function SiteBuilder({ value, onChange, onExit }: SiteBuilderProp
                       <span className={`shrink-0 w-8 h-8 rounded-lg flex items-center justify-center ${NAV_TYPE.dropdown.badge}`}><ListTree className="w-4 h-4" /></span>
                       <div className="flex-1 min-w-0">
                         <div className="text-xs font-semibold text-gray-800 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50">Navigation menu</div>
-                        <div className="text-[10px] text-gray-500 dark:text-gray-400">Drag onto your header ↗</div>
+                        <div className="text-[0.625rem] text-gray-500 dark:text-gray-400">Drag onto your header ↗</div>
                       </div>
                       <GripVertical className="w-4 h-4 text-gray-300 group-hover:text-indigo-400 shrink-0" />
                     </div>
-                    <button onClick={addNavToHeader} className="mt-1.5 w-full inline-flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-[11px] font-medium border border-indigo-200 dark:border-indigo-800 midnight:border-cyan-800 purple:border-pink-800 text-indigo-700 dark:text-indigo-300 midnight:text-cyan-300 purple:text-pink-300 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 transition-colors">
+                    <button onClick={addNavToHeader} className="mt-1.5 w-full inline-flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-[0.6875rem] font-medium border border-indigo-200 dark:border-indigo-800 midnight:border-cyan-800 purple:border-pink-800 text-indigo-700 dark:text-indigo-300 midnight:text-cyan-300 purple:text-pink-300 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 transition-colors">
                       <Plus className="w-3.5 h-3.5" /> {headerHasNav ? "Menu is on your header — select it" : "Add menu to header"}
                     </button>
                   </div>
@@ -491,7 +491,7 @@ export default function SiteBuilder({ value, onChange, onExit }: SiteBuilderProp
                   {/* Quick-add your pages (WordPress/Hostinger style) — one tap each */}
                   {site.pages.some((p) => !site.nav.some((n) => n.type === "page" && n.pageId === p.id)) && (
                     <div className="mb-4">
-                      <div className="text-[10px] font-semibold uppercase tracking-wider text-gray-400 mb-1.5 px-0.5">Add one of your pages</div>
+                      <div className="text-[0.625rem] font-semibold uppercase tracking-wider text-gray-400 mb-1.5 px-0.5">Add one of your pages</div>
                       <div className="flex flex-wrap gap-1.5">
                         {site.pages.filter((p) => !site.nav.some((n) => n.type === "page" && n.pageId === p.id)).map((p) => (
                           <button key={p.id} onClick={() => addNavPage(p.id)} title={`Add ${p.name} to the menu`} className={`group inline-flex items-center gap-1.5 pl-1.5 pr-2.5 py-1 rounded-full border ${border} bg-white dark:bg-gray-900/40 midnight:bg-cyan-950/20 purple:bg-purple-950/20 text-xs hover:border-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-950/30 midnight:hover:bg-cyan-950/40 purple:hover:bg-purple-950/40 transition-colors`}>
@@ -504,7 +504,7 @@ export default function SiteBuilder({ value, onChange, onExit }: SiteBuilderProp
                   )}
 
                   {/* Add item types — modern icon cards */}
-                  <div className="text-[10px] font-semibold uppercase tracking-wider text-gray-400 mb-1.5 px-0.5">Add to menu</div>
+                  <div className="text-[0.625rem] font-semibold uppercase tracking-wider text-gray-400 mb-1.5 px-0.5">Add to menu</div>
                   <div className="grid grid-cols-3 gap-2 mb-4">
                     {([
                       { key: "page", onClick: () => setNavPagePicker(navPagePicker === "top" ? null : "top"), hint: "Link to one of your pages" },
@@ -515,7 +515,7 @@ export default function SiteBuilder({ value, onChange, onExit }: SiteBuilderProp
                       return (
                         <button key={key} onClick={onClick} title={hint} className={`group flex flex-col items-center gap-1.5 py-2.5 rounded-xl border ${border} bg-white dark:bg-gray-900/40 midnight:bg-cyan-950/20 purple:bg-purple-950/20 hover:border-indigo-300 hover:-translate-y-0.5 hover:shadow-md transition-all`}>
                           <span className={`w-8 h-8 rounded-lg flex items-center justify-center ${meta.badge} group-hover:scale-110 transition-transform`}><meta.Icon className="w-4 h-4" /></span>
-                          <span className="text-[11px] font-medium text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100">{meta.label}</span>
+                          <span className="text-[0.6875rem] font-medium text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100">{meta.label}</span>
                         </button>
                       );
                     })}
@@ -527,8 +527,8 @@ export default function SiteBuilder({ value, onChange, onExit }: SiteBuilderProp
                   )}
 
                   <div className="flex items-center justify-between mb-2 px-0.5">
-                    <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-400">Your menu</span>
-                    <span className="text-[10px] font-semibold text-gray-400 tabular-nums px-1.5 py-0.5 rounded-full bg-gray-100 dark:bg-gray-800 midnight:bg-cyan-950/40 purple:bg-purple-950/40">{site.nav.length}</span>
+                    <span className="text-[0.625rem] font-semibold uppercase tracking-wider text-gray-400">Your menu</span>
+                    <span className="text-[0.625rem] font-semibold text-gray-400 tabular-nums px-1.5 py-0.5 rounded-full bg-gray-100 dark:bg-gray-800 midnight:bg-cyan-950/40 purple:bg-purple-950/40">{site.nav.length}</span>
                   </div>
                   <ul className="space-y-2">
                     {site.nav.map((item, i) => {
@@ -554,7 +554,7 @@ export default function SiteBuilder({ value, onChange, onExit }: SiteBuilderProp
                             <span className={`shrink-0 w-7 h-7 rounded-lg flex items-center justify-center ${meta.badge}`}><meta.Icon className="w-4 h-4" /></span>
                             <div className="flex-1 min-w-0">
                               <input value={item.label} onChange={(e) => editNav(item.id, { label: e.target.value })} aria-label="Menu item label" className="w-full bg-transparent text-sm font-medium text-gray-800 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50 outline-none focus:ring-1 focus:ring-indigo-400 rounded px-0.5" />
-                              <span className="text-[10px] uppercase tracking-wide text-gray-400">{meta.label}</span>
+                              <span className="text-[0.625rem] uppercase tracking-wide text-gray-400">{meta.label}</span>
                             </div>
                             <div className="flex items-center shrink-0 opacity-60 group-hover:opacity-100 transition-opacity">
                               <button onClick={() => moveNav(i, -1)} disabled={i === 0} aria-label="Move up" className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400 disabled:opacity-30"><ChevronUp className="w-3.5 h-3.5" /></button>
@@ -595,8 +595,8 @@ export default function SiteBuilder({ value, onChange, onExit }: SiteBuilderProp
                                 );
                               })}
                               <div className="flex gap-3 pt-0.5 pl-1">
-                                <button onClick={() => setNavPagePicker(navPagePicker === item.id ? null : item.id)} aria-label="Add a page to this dropdown" className="text-[11px] font-medium text-indigo-600 dark:text-indigo-400 midnight:text-cyan-400 purple:text-pink-400 hover:underline">+ Page</button>
-                                <button onClick={() => addNavLink(item.id)} aria-label="Add a link to this dropdown" className="text-[11px] font-medium text-indigo-600 dark:text-indigo-400 midnight:text-cyan-400 purple:text-pink-400 hover:underline">+ Link</button>
+                                <button onClick={() => setNavPagePicker(navPagePicker === item.id ? null : item.id)} aria-label="Add a page to this dropdown" className="text-[0.6875rem] font-medium text-indigo-600 dark:text-indigo-400 midnight:text-cyan-400 purple:text-pink-400 hover:underline">+ Page</button>
+                                <button onClick={() => addNavLink(item.id)} aria-label="Add a link to this dropdown" className="text-[0.6875rem] font-medium text-indigo-600 dark:text-indigo-400 midnight:text-cyan-400 purple:text-pink-400 hover:underline">+ Link</button>
                               </div>
                               {navPagePicker === item.id && (
                                 <div className={`rounded-lg border ${border} overflow-hidden`} role="menu" aria-label="Pick a page">
@@ -612,7 +612,7 @@ export default function SiteBuilder({ value, onChange, onExit }: SiteBuilderProp
                       <li className={`rounded-xl border border-dashed ${border} text-center py-8 px-4`}>
                         <ListTree className="w-8 h-8 mx-auto mb-2 text-gray-300 dark:text-gray-600" />
                         <p className="text-xs font-medium text-gray-500 dark:text-gray-400">No menu items yet</p>
-                        <p className="text-[11px] text-gray-400 mt-0.5">Add a Page, Link or Dropdown above.</p>
+                        <p className="text-[0.6875rem] text-gray-400 mt-0.5">Add a Page, Link or Dropdown above.</p>
                       </li>
                     )}
                   </ul>
@@ -631,7 +631,7 @@ export default function SiteBuilder({ value, onChange, onExit }: SiteBuilderProp
               {/* Theme (global styles) */}
               {railTab === "theme" && (
                 <div className="space-y-4">
-                  <p className="text-[11px] text-gray-400">The light/dark base follows the app theme. These set your school brand.</p>
+                  <p className="text-[0.6875rem] text-gray-400">The light/dark base follows the app theme. These set your school brand.</p>
                   <div className="text-xs font-semibold uppercase tracking-wide text-gray-400">Brand colours</div>
                   {([["primary", "Primary"], ["accent", "Accent"]] as const).map(([key, l]) => (
                     <div key={key} className="flex items-center justify-between gap-2">
@@ -684,7 +684,7 @@ export default function SiteBuilder({ value, onChange, onExit }: SiteBuilderProp
             <button disabled aria-label="Publish (coming soon)" className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-gray-100 dark:bg-gray-800 text-gray-400 cursor-not-allowed"><Lock className="w-3.5 h-3.5" /> Publish</button>
           </Tooltip>
 
-          <span className="hidden md:flex text-[11px] text-gray-400 items-center gap-1 w-14 justify-end" aria-live="polite">
+          <span className="hidden md:flex text-[0.6875rem] text-gray-400 items-center gap-1 w-14 justify-end" aria-live="polite">
             {savedAt === "saving" ? <><Save className="w-3 h-3 animate-pulse" /> Saving</> : savedAt === "saved" ? <><Save className="w-3 h-3" /> Saved</> : null}
           </span>
         </div>
@@ -765,7 +765,7 @@ export default function SiteBuilder({ value, onChange, onExit }: SiteBuilderProp
               />
             ) : activeSection ? (
               <div className="p-4 space-y-3">
-                <div className="text-[11px] text-gray-400 flex items-center gap-1"><Type className="w-3 h-3" /> Tip: you can also edit text directly on the canvas.</div>
+                <div className="text-[0.6875rem] text-gray-400 flex items-center gap-1"><Type className="w-3 h-3" /> Tip: you can also edit text directly on the canvas.</div>
                 {activeSection.content.eyebrow !== undefined && <label className="block"><span className={label}>Eyebrow</span><input value={activeSection.content.eyebrow || ""} onChange={(e) => setContent(activeSection.id, "eyebrow", e.target.value)} className={inputCls} /></label>}
                 {activeSection.content.heading !== undefined && <label className="block"><span className={label}>Heading</span><textarea value={activeSection.content.heading || ""} onChange={(e) => setContent(activeSection.id, "heading", e.target.value)} rows={2} className={inputCls} /></label>}
                 {activeSection.content.subheading !== undefined && <label className="block"><span className={label}>Subheading</span><textarea value={activeSection.content.subheading || ""} onChange={(e) => setContent(activeSection.id, "subheading", e.target.value)} rows={2} className={inputCls} /></label>}

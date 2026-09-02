@@ -24,7 +24,7 @@ export default function ChartGalleryPage() {
         <h1 className="text-xl font-bold text-slate-800 dark:text-slate-100">Chart gallery — 19 types</h1>
         <button
           onClick={() => setThreeD(v => !v)}
-          className={`px-3 py-1.5 text-sm rounded-lg font-medium transition-colors ${threeD ? "bg-indigo-600 text-white" : "bg-white dark:bg-[#1a1d24] text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700"}`}
+          className={`px-3 py-1.5 text-sm rounded-lg font-medium transition-colors ${threeD ? "bg-indigo-600 text-white" : "bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700"}`}
         >
           3D: {threeD ? "on" : "off"}
         </button>
@@ -53,7 +53,7 @@ export default function ChartGalleryPage() {
               };
               return (
                 <div key={t} className="bg-white dark:bg-[#11151c] rounded-xl p-3 shadow-sm">
-                  <div className="text-[11px] uppercase tracking-wide text-slate-400 mb-1 px-1">{CHART_TYPE_LABELS[t]}</div>
+                  <div className="text-[0.6875rem] uppercase tracking-wide text-slate-400 mb-1 px-1">{CHART_TYPE_LABELS[t]}</div>
                   <div style={{ aspectRatio: "16 / 10" }}>
                     <Chart spec={spec as any} aspect={16 / 10} />
                   </div>

@@ -714,4 +714,45 @@ describe("BoxCanvas (box-model editor)", () => {
     expect(h.style.textDecoration).toBe("underline");
     expect(h.style.textTransform).toBe("uppercase");
   });
+
+  it("a divider honours its line style (dashed) and a leaf element can float over others", () => {
+    const t = createContainer("column", {
+      id: "root",
+      children: [
+        createElement("divider", { id: "dv", borderWidth: 2, borderStyle: "dashed", color: "#111111" } as Partial<BoxNode>),
+        createElement("heading", { id: "hd", text: "Overlay", position: "absolute", left: 20, top: 30, zIndex: 5 } as Partial<BoxNode>),
+      ],
+    } as Partial<BoxNode>);
+    const { container } = render(<BoxCanvas root={t} theme={DEFAULT_THEME} editable={false} onChange={() => {}} />);
+    const line = container.querySelector<HTMLElement>('[data-box-id="dv"] div')!;
+    expect(line.style.borderTopStyle).toBe("dashed");
+    const overlay = container.querySelector<HTMLElement>('[data-box-id="hd"]')!;
+    expect(overlay.style.position).toBe("absolute"); // a heading can be floated as an overlay
+    expect(overlay.style.left).toBe("20%");
+  });
+
+  it("the actions menu stays open when you scroll INSIDE it, and closes on Escape", async () => {
+    const user = userEvent.setup();
+    render(<Harness initial={tree()} initialSel="t1" />);
+    await user.click(screen.getByLabelText("Block actions"));
+    const menu = screen.getByRole("menu", { name: "Block actions" });
+    fireEvent.scroll(menu);                                   // scrolling the menu itself must NOT dismiss it (the bug)
+    expect(screen.getByRole("menu", { name: "Block actions" })).toBeInTheDocument();
+    fireEvent.keyDown(document, { key: "Escape" });           // Escape closes it
+    expect(screen.queryByRole("menu", { name: "Block actions" })).not.toBeInTheDocument();
+  });
+
+  it("dropping a block from the palette inserts a new node of that kind", () => {
+    const onChange = vi.fn();
+    const initial = createContainer("column", { id: "root", children: [makeRowBand([createContainer("column", { id: "a" } as Partial<BoxNode>)])] } as Partial<BoxNode>);
+    const { container } = render(<BoxCanvas root={initial} theme={DEFAULT_THEME} onChange={onChange} />);
+    const wrapper = container.firstElementChild as HTMLElement; // the canvas drop surface
+    const dt = { types: ["application/x-box-block"], getData: () => "heading", dropEffect: "", effectAllowed: "" };
+    fireEvent.dragOver(wrapper, { dataTransfer: dt, clientX: 10, clientY: 10 });
+    fireEvent.drop(wrapper, { dataTransfer: dt, clientX: 10, clientY: 10 });
+    const tree = onChange.mock.calls.at(-1)![0];
+    // jsdom has no elementsFromPoint, so it appends to the page — a heading node now exists in the tree.
+    const found = (function walk(n: BoxNode): boolean { return n.type === "heading" || (n.children ?? []).some(walk); })(tree);
+    expect(found).toBe(true);
+  });
 });

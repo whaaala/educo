@@ -254,7 +254,7 @@ export default function TenantCommunicationSettingsPage() {
         <>
       <div className="flex flex-col h-full">
         {/* Header */}
-        <div className="flex-shrink-0 px-6 py-4 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+        <div className="flex-shrink-0 px-6 py-4 border-b border-line">
           <div className="flex items-center justify-between">
             <div>
               <div className="flex items-center gap-3">
@@ -262,7 +262,7 @@ export default function TenantCommunicationSettingsPage() {
                   <Settings className="w-6 h-6 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
                 </div>
                 <div>
-                  <h1 className="text-2xl font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                  <h1 className="text-2xl font-bold text-ink">
                     Communication Settings
                   </h1>
                   <p className="text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
@@ -293,42 +293,42 @@ export default function TenantCommunicationSettingsPage() {
         <div className="flex-1 overflow-y-auto p-6">
           {/* Status Cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl p-4 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+            <div className="bg-surface rounded-xl p-4 border border-line">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
                   <Video className="w-5 h-5 text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400" />
                 </div>
                 <div>
                   <p className="text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Video Platforms</p>
-                  <p className="text-lg font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                  <p className="text-lg font-semibold text-ink">
                     {availablePlatforms.filter((p) => ["webrtc", "agora", "zoom", "google-meet"].includes(p)).length} Active
                   </p>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl p-4 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+            <div className="bg-surface rounded-xl p-4 border border-line">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
                   <Phone className="w-5 h-5 text-purple-600 dark:text-purple-400" />
                 </div>
                 <div>
                   <p className="text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Voice Platforms</p>
-                  <p className="text-lg font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                  <p className="text-lg font-semibold text-ink">
                     {availablePlatforms.filter((p) => ["webrtc", "agora", "whatsapp"].includes(p)).length} Active
                   </p>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl p-4 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+            <div className="bg-surface rounded-xl p-4 border border-line">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-blue-100 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 rounded-lg">
                   <MessageSquare className="w-5 h-5 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
                 </div>
                 <div>
                   <p className="text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Chat Platforms</p>
-                  <p className="text-lg font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                  <p className="text-lg font-semibold text-ink">
                     {availablePlatforms.filter((p) => ["webrtc", "agora", "whatsapp"].includes(p)).length} Active
                   </p>
                 </div>
@@ -337,9 +337,9 @@ export default function TenantCommunicationSettingsPage() {
           </div>
 
           {/* Platform Tabs */}
-          <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 overflow-hidden">
+          <div className="bg-surface rounded-xl border border-line overflow-hidden">
             {/* Tab Headers */}
-            <div className="flex border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 overflow-x-auto">
+            <div className="flex border-b border-line overflow-x-auto">
               {tabs.map((tab) => {
                 const info = PLATFORM_INFO[tab];
                 const configured = isConfigured(tab);
@@ -384,7 +384,7 @@ export default function TenantCommunicationSettingsPage() {
 
                   <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/50 rounded-xl">
                     <div>
-                      <h4 className="font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">Enable WebRTC</h4>
+                      <h4 className="font-medium text-ink">Enable WebRTC</h4>
                       <p className="text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
                         Use built-in WebRTC for in-app communication
                       </p>
@@ -431,7 +431,7 @@ export default function TenantCommunicationSettingsPage() {
 
                   <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/50 rounded-xl">
                     <div>
-                      <h4 className="font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">Enable Agora</h4>
+                      <h4 className="font-medium text-ink">Enable Agora</h4>
                       <p className="text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
                         Use Agora for video, voice, and chat
                       </p>
@@ -452,7 +452,7 @@ export default function TenantCommunicationSettingsPage() {
 
                   {/* Configuration Mode */}
                   <div className="p-4 bg-gray-50 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/50 rounded-xl">
-                    <h4 className="font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-3 flex items-center gap-2">
+                    <h4 className="font-medium text-ink mb-3 flex items-center gap-2">
                       <Shield className="w-4 h-4" />
                       Configuration Mode
                     </h4>
@@ -481,9 +481,9 @@ export default function TenantCommunicationSettingsPage() {
                               <div className="w-2 h-2 rounded-full bg-cyan-500" />
                             )}
                           </div>
-                          <span className="font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">Platform Account</span>
+                          <span className="font-medium text-ink">Platform Account</span>
                         </div>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 ml-6">
+                        <p className="text-xs text-muted ml-6">
                           Use Educo&apos;s shared Agora account. No setup required - just enable and start using.
                         </p>
                       </button>
@@ -509,9 +509,9 @@ export default function TenantCommunicationSettingsPage() {
                               <div className="w-2 h-2 rounded-full bg-cyan-500" />
                             )}
                           </div>
-                          <span className="font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">School Account</span>
+                          <span className="font-medium text-ink">School Account</span>
                         </div>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 ml-6">
+                        <p className="text-xs text-muted ml-6">
                           Use your own Agora account. More control over usage and billing.
                         </p>
                       </button>
@@ -530,7 +530,7 @@ export default function TenantCommunicationSettingsPage() {
                         value={agoraForm.appId}
                         onChange={(e) => setAgoraForm((prev) => ({ ...prev, appId: e.target.value }))}
                         placeholder="Enter your Agora App ID"
-                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 rounded-xl bg-white dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 rounded-xl bg-white dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] text-ink focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       />
                     </div>
 
@@ -546,7 +546,7 @@ export default function TenantCommunicationSettingsPage() {
                             setAgoraForm((prev) => ({ ...prev, appCertificate: e.target.value }))
                           }
                           placeholder="Enter your App Certificate"
-                          className="w-full px-4 py-2 pr-10 border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 rounded-xl bg-white dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          className="w-full px-4 py-2 pr-10 border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 rounded-xl bg-white dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] text-ink focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         />
                         <button
                           type="button"
@@ -584,7 +584,7 @@ export default function TenantCommunicationSettingsPage() {
 
                   <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/50 rounded-xl">
                     <div>
-                      <h4 className="font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">Enable WhatsApp</h4>
+                      <h4 className="font-medium text-ink">Enable WhatsApp</h4>
                       <p className="text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
                         Use WhatsApp Business API for messaging
                       </p>
@@ -605,7 +605,7 @@ export default function TenantCommunicationSettingsPage() {
 
                   {/* Configuration Mode */}
                   <div className="p-4 bg-gray-50 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/50 rounded-xl">
-                    <h4 className="font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-3 flex items-center gap-2">
+                    <h4 className="font-medium text-ink mb-3 flex items-center gap-2">
                       <Shield className="w-4 h-4" />
                       Configuration Mode
                     </h4>
@@ -634,9 +634,9 @@ export default function TenantCommunicationSettingsPage() {
                               <div className="w-2 h-2 rounded-full bg-emerald-500" />
                             )}
                           </div>
-                          <span className="font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">Platform Account</span>
+                          <span className="font-medium text-ink">Platform Account</span>
                         </div>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 ml-6">
+                        <p className="text-xs text-muted ml-6">
                           Use Educo&apos;s shared WhatsApp Business account. No setup required.
                         </p>
                       </button>
@@ -662,9 +662,9 @@ export default function TenantCommunicationSettingsPage() {
                               <div className="w-2 h-2 rounded-full bg-emerald-500" />
                             )}
                           </div>
-                          <span className="font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">School Account</span>
+                          <span className="font-medium text-ink">School Account</span>
                         </div>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 ml-6">
+                        <p className="text-xs text-muted ml-6">
                           Use your own WhatsApp Business account. More control over branding.
                         </p>
                       </button>
@@ -685,7 +685,7 @@ export default function TenantCommunicationSettingsPage() {
                           setWhatsAppForm((prev) => ({ ...prev, businessPhoneNumber: e.target.value }))
                         }
                         placeholder="123456789012345"
-                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 rounded-xl bg-white dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 rounded-xl bg-white dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] text-ink focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       />
                     </div>
 
@@ -701,7 +701,7 @@ export default function TenantCommunicationSettingsPage() {
                             setWhatsAppForm((prev) => ({ ...prev, accessToken: e.target.value }))
                           }
                           placeholder="Enter access token"
-                          className="w-full px-4 py-2 pr-10 border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 rounded-xl bg-white dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          className="w-full px-4 py-2 pr-10 border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 rounded-xl bg-white dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] text-ink focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         />
                         <button
                           type="button"
@@ -738,7 +738,7 @@ export default function TenantCommunicationSettingsPage() {
 
                   <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/50 rounded-xl">
                     <div>
-                      <h4 className="font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">Enable Zoom</h4>
+                      <h4 className="font-medium text-ink">Enable Zoom</h4>
                       <p className="text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
                         Use Zoom for video meetings
                       </p>
@@ -776,7 +776,7 @@ export default function TenantCommunicationSettingsPage() {
 
                   <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/50 rounded-xl">
                     <div>
-                      <h4 className="font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">Enable Google Meet</h4>
+                      <h4 className="font-medium text-ink">Enable Google Meet</h4>
                       <p className="text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
                         Use Google Meet for video meetings
                       </p>
@@ -800,8 +800,8 @@ export default function TenantCommunicationSettingsPage() {
           </div>
 
           {/* General Settings */}
-          <div className="mt-6 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-4">
+          <div className="mt-6 bg-surface rounded-xl border border-line p-6">
+            <h3 className="text-lg font-semibold text-ink mb-4">
               Default Platforms
             </h3>
 
@@ -818,7 +818,7 @@ export default function TenantCommunicationSettingsPage() {
                       defaultVideoPlatform: e.target.value as CommunicationPlatform,
                     }))
                   }
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 rounded-xl bg-white dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 rounded-xl bg-white dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] text-ink focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
                   <option value="webrtc">Educo Meet (WebRTC)</option>
                   <option value="agora" disabled={!agoraForm.enabled}>
@@ -845,7 +845,7 @@ export default function TenantCommunicationSettingsPage() {
                       defaultVoicePlatform: e.target.value as CommunicationPlatform,
                     }))
                   }
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 rounded-xl bg-white dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 rounded-xl bg-white dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] text-ink focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
                   <option value="webrtc">Educo Meet (WebRTC)</option>
                   <option value="agora" disabled={!agoraForm.enabled}>
@@ -869,7 +869,7 @@ export default function TenantCommunicationSettingsPage() {
                       defaultChatPlatform: e.target.value as CommunicationPlatform,
                     }))
                   }
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 rounded-xl bg-white dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 rounded-xl bg-white dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] text-ink focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
                   <option value="webrtc">Educo Meet (WebRTC)</option>
                   <option value="agora" disabled={!agoraForm.enabled}>
@@ -883,7 +883,7 @@ export default function TenantCommunicationSettingsPage() {
             </div>
 
             {/* Feature Toggles */}
-            <h4 className="text-md font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mt-6 mb-4">
+            <h4 className="text-md font-medium text-ink mt-6 mb-4">
               Features
             </h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -914,7 +914,7 @@ export default function TenantCommunicationSettingsPage() {
                   className="flex items-center justify-between p-4 bg-gray-50 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/50 rounded-xl"
                 >
                   <div>
-                    <h5 className="font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{feature.label}</h5>
+                    <h5 className="font-medium text-ink">{feature.label}</h5>
                     <p className="text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">{feature.description}</p>
                   </div>
                   <button

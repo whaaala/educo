@@ -159,26 +159,26 @@ function ItemContextMenu({ item, onRename, onMove, onDelete, onDownload, onCopy,
 
   return (
     <div ref={menuRef} className={`absolute right-0 w-[180px] bg-white/95 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/95 backdrop-blur-xl rounded-xl shadow-xl border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 z-50 py-1 ${openUpward ? "bottom-full mb-1" : "top-full mt-1"}`} onClick={e => e.stopPropagation()}>
-      <button className="w-full px-3 py-2 text-left text-[12px] text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 flex items-center gap-2.5 cursor-pointer transition-colors" onClick={onRename}>
+      <button className="w-full px-3 py-2 text-left text-[0.75rem] text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 flex items-center gap-2.5 cursor-pointer transition-colors" onClick={onRename}>
         <Pencil className="w-3.5 h-3.5 text-gray-400" /> Rename
       </button>
-      <button className="w-full px-3 py-2 text-left text-[12px] text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 flex items-center gap-2.5 cursor-pointer transition-colors" onClick={onMove}>
+      <button className="w-full px-3 py-2 text-left text-[0.75rem] text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 flex items-center gap-2.5 cursor-pointer transition-colors" onClick={onMove}>
         <FolderInput className="w-3.5 h-3.5 text-gray-400" /> Move to
       </button>
-      <button className="w-full px-3 py-2 text-left text-[12px] text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 flex items-center gap-2.5 cursor-pointer transition-colors" onClick={() => { onDownload?.(); onClose(); }}>
+      <button className="w-full px-3 py-2 text-left text-[0.75rem] text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 flex items-center gap-2.5 cursor-pointer transition-colors" onClick={() => { onDownload?.(); onClose(); }}>
         <Download className="w-3.5 h-3.5 text-gray-400" /> Download
       </button>
-      <button className="w-full px-3 py-2 text-left text-[12px] text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 flex items-center gap-2.5 cursor-pointer transition-colors" onClick={() => { onCopy?.(); onClose(); }}>
+      <button className="w-full px-3 py-2 text-left text-[0.75rem] text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 flex items-center gap-2.5 cursor-pointer transition-colors" onClick={() => { onCopy?.(); onClose(); }}>
         <Copy className="w-3.5 h-3.5 text-gray-400" /> Make a copy
       </button>
       <div className="my-1 h-px bg-gray-100 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]" />
-      <button className="w-full px-3 py-2 text-left text-[12px] text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 flex items-center gap-2.5 cursor-pointer transition-colors" onClick={() => { onShare?.(); onClose(); }}>
+      <button className="w-full px-3 py-2 text-left text-[0.75rem] text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 flex items-center gap-2.5 cursor-pointer transition-colors" onClick={() => { onShare?.(); onClose(); }}>
         <Share2 className="w-3.5 h-3.5 text-gray-400" /> Share
       </button>
       {!item.readOnly && (
         <>
           <div className="my-1 h-px bg-gray-100 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]" />
-          <button className="w-full px-3 py-2 text-left text-[12px] text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 midnight:hover:bg-red-900/20 purple:hover:bg-red-900/20 flex items-center gap-2.5 cursor-pointer transition-colors" onClick={onDelete}>
+          <button className="w-full px-3 py-2 text-left text-[0.75rem] text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 midnight:hover:bg-red-900/20 purple:hover:bg-red-900/20 flex items-center gap-2.5 cursor-pointer transition-colors" onClick={onDelete}>
             <Trash2 className="w-3.5 h-3.5" /> Move to bin
           </button>
         </>
@@ -272,13 +272,13 @@ export default function FileBrowser({
           {/* Spacer to reserve width — desktop only */}
           <div className="hidden lg:block w-[220px] flex-shrink-0" />
           {/* Fixed sidebar panel — desktop only */}
-          <div className="hidden lg:flex flex-col fixed top-[5.75rem] bottom-0 w-[220px] bg-gray-50 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] z-20 transition-[left] duration-500 ease-in-out" style={{ left: 'var(--sidebar-width)' }}>
+          <div className="hidden lg:flex flex-col fixed top-[5.75rem] bottom-0 w-[220px] bg-canvas z-20 transition-[left] duration-500 ease-in-out" style={{ left: 'var(--sidebar-width)' }}>
             {headerActions && <div className="px-4 mb-4 relative z-30">{headerActions}</div>}
             <div className="flex-1 px-4 overflow-y-auto">
               <nav className="flex flex-col gap-0.5">
                 {sidebarItems.map(nav => (
                   <button key={nav.id} onClick={() => onSidebarNavigate?.(nav.id)}
-                    className={`group flex items-center gap-3 px-3 py-[7px] rounded-lg text-[13px] font-medium transition-all duration-150 cursor-pointer ${
+                    className={`group flex items-center gap-3 px-3 py-[7px] rounded-lg text-[0.8125rem] font-medium transition-all duration-150 cursor-pointer ${
                       nav.active
                         ? "bg-blue-50 dark:bg-blue-500/10 midnight:bg-blue-500/10 text-blue-700 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300 font-semibold shadow-sm shadow-blue-100/50 dark:shadow-none"
                         : "text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-100/80 dark:hover:bg-white/5 midnight:hover:bg-white/5"
@@ -295,10 +295,10 @@ export default function FileBrowser({
             </div>
             {storageUsed && storageTotal && (
               <div className="flex-shrink-0 px-4 pb-4 pt-3 border-t border-gray-100 dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10">
-                <div className="h-1.5 bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/50 rounded-full overflow-hidden mb-2">
+                <div className="h-1.5 bg-surface-2/50 rounded-full overflow-hidden mb-2">
                   <div className="h-full bg-gradient-to-r from-blue-500 to-blue-400 rounded-full transition-all" style={{ width: `${storagePercent ?? 0}%` }} />
                 </div>
-                <p className="text-[11px] text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400">{storageUsed} of {storageTotal} used</p>
+                <p className="text-[0.6875rem] text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400">{storageUsed} of {storageTotal} used</p>
               </div>
             )}
           </div>
@@ -315,7 +315,7 @@ export default function FileBrowser({
           {titleMenuItems && titleMenuItems.length > 0 ? (
             <ActionMenuDropdown
               trigger={(menuOpen) => (
-                <button className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 rounded-lg text-[15px] sm:text-[18px] font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 hover:bg-gray-100 dark:hover:bg-white/5 transition-colors cursor-pointer flex-shrink-0">
+                <button className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 rounded-lg text-[0.9375rem] sm:text-[1.125rem] font-bold text-ink hover:bg-gray-100 dark:hover:bg-white/5 transition-colors cursor-pointer flex-shrink-0">
                   {breadcrumbs.length > 1 ? breadcrumbs[breadcrumbs.length - 1]?.name : title}
                   <ChevronDown className={`w-4 h-4 transition-all duration-[120ms] ease-out ${menuOpen ? "rotate-180 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" : "rotate-0 text-gray-500"}`} />
                 </button>
@@ -324,7 +324,7 @@ export default function FileBrowser({
               width="w-[260px]"
             />
           ) : (
-            <h2 className="text-[18px] font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 flex-shrink-0">
+            <h2 className="text-[1.125rem] font-bold text-ink flex-shrink-0">
               {breadcrumbs.length > 1 ? breadcrumbs[breadcrumbs.length - 1]?.name : title}
             </h2>
           )}
@@ -348,7 +348,7 @@ export default function FileBrowser({
             <div className="relative md:hidden">
               <button
                 onClick={() => setMobileNavOpen(!mobileNavOpen)}
-                className={`flex items-center gap-1.5 px-3 py-[7px] rounded-full text-[12px] font-medium transition-all cursor-pointer border ${
+                className={`flex items-center gap-1.5 px-3 py-[7px] rounded-full text-[0.75rem] font-medium transition-all cursor-pointer border ${
                   mobileNavOpen
                     ? "bg-blue-50 dark:bg-blue-500/10 border-blue-200 dark:border-blue-500 midnight:border-cyan-500 purple:border-pink-500/30 text-blue-700 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300"
                     : "border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-50 dark:hover:bg-white/5"
@@ -369,7 +369,7 @@ export default function FileBrowser({
                     )}
                     {sidebarItems.map(nav => (
                       <button key={nav.id} onClick={() => { onSidebarNavigate?.(nav.id); setMobileNavOpen(false); }}
-                        className={`w-full flex items-center gap-3 px-4 py-2 text-[13px] font-medium transition-all cursor-pointer ${
+                        className={`w-full flex items-center gap-3 px-4 py-2 text-[0.8125rem] font-medium transition-all cursor-pointer ${
                           nav.active
                             ? "bg-blue-50 dark:bg-blue-500/10 text-blue-700 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300 font-semibold"
                             : "text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-50 dark:hover:bg-white/5"
@@ -380,10 +380,10 @@ export default function FileBrowser({
                     ))}
                     {storageUsed && storageTotal && (
                       <div className="mx-3 mt-2 pt-2 border-t border-gray-100 dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10">
-                        <div className="h-1.5 bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/50 rounded-full overflow-hidden mb-1.5">
+                        <div className="h-1.5 bg-surface-2/50 rounded-full overflow-hidden mb-1.5">
                           <div className="h-full bg-gradient-to-r from-blue-500 to-blue-400 rounded-full" style={{ width: `${storagePercent ?? 0}%` }} />
                         </div>
-                        <p className="text-[10px] text-gray-400 pb-1">{storageUsed} of {storageTotal} used</p>
+                        <p className="text-[0.625rem] text-gray-400 pb-1">{storageUsed} of {storageTotal} used</p>
                       </div>
                     )}
                   </div>
@@ -438,10 +438,10 @@ export default function FileBrowser({
             <div className="flex items-center gap-1 flex-shrink-0">
               {sidebarItems.map(nav => (
                 <button key={nav.id} onClick={() => onSidebarNavigate?.(nav.id)}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] font-medium whitespace-nowrap transition-all cursor-pointer ${
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[0.75rem] font-medium whitespace-nowrap transition-all cursor-pointer ${
                     nav.active
                       ? "bg-blue-50 dark:bg-blue-500/10 text-blue-700 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300 font-semibold"
-                      : "text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-100 dark:hover:bg-white/5"
+                      : "text-muted hover:bg-gray-100 dark:hover:bg-white/5"
                   }`}>
                   <nav.icon className={`w-3.5 h-3.5 flex-shrink-0 ${nav.active ? "text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" : "text-gray-400"}`} />
                   {nav.label}
@@ -458,8 +458,8 @@ export default function FileBrowser({
             <input type="text" value={newFolderName} onChange={e => setNewFolderName(e.target.value)}
               onKeyDown={e => { if (e.key === "Enter") handleCreateFolder(); if (e.key === "Escape") { onNewFolderModeChange?.(false); setNewFolderName(""); } }}
               placeholder="Untitled folder" autoFocus
-              className="flex-1 px-3 py-1.5 rounded-lg bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 text-[13px] text-gray-800 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 placeholder-gray-400 outline-none focus:ring-2 focus:ring-blue-500/30 transition-all" />
-            <button onClick={handleCreateFolder} disabled={!newFolderName.trim()} className="px-4 py-1.5 rounded-lg text-[12px] font-semibold text-white bg-blue-500 hover:bg-blue-600 disabled:opacity-30 cursor-pointer shadow-sm">Create</button>
+              className="flex-1 px-3 py-1.5 rounded-lg bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-line text-[0.8125rem] text-gray-800 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 placeholder-gray-400 outline-none focus:ring-2 focus:ring-blue-500/30 transition-all" />
+            <button onClick={handleCreateFolder} disabled={!newFolderName.trim()} className="px-4 py-1.5 rounded-lg text-[0.75rem] font-semibold text-white bg-blue-500 hover:bg-blue-600 disabled:opacity-30 cursor-pointer shadow-sm">Create</button>
             <button onClick={() => { onNewFolderModeChange?.(false); setNewFolderName(""); }} className="p-1 rounded-lg hover:bg-gray-200/60 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 cursor-pointer"><X className="w-4 h-4 text-gray-400" /></button>
           </div>
         )}
@@ -477,17 +477,17 @@ export default function FileBrowser({
                 <Search className="w-3.5 h-3.5 text-blue-500" />
               </div>
               <div>
-                <p className="text-[13px] font-semibold text-gray-800 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100">
+                <p className="text-[0.8125rem] font-semibold text-gray-800 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100">
                   Search results for &ldquo;{searchQuery}&rdquo;
                 </p>
-                <p className="text-[11px] text-gray-400">
+                <p className="text-[0.6875rem] text-gray-400">
                   {sortedItems.length} {sortedItems.length === 1 ? "item" : "items"} found
                 </p>
               </div>
             </div>
             <button
               onClick={() => setSearchQuery("")}
-              className="text-[12px] font-medium text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 hover:underline cursor-pointer"
+              className="text-[0.75rem] font-medium text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 hover:underline cursor-pointer"
             >
               Clear search
             </button>
@@ -502,17 +502,17 @@ export default function FileBrowser({
                 <Users className="w-3.5 h-3.5 text-violet-500" />
               </div>
               <div>
-                <p className="text-[13px] font-semibold text-gray-800 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100">
+                <p className="text-[0.8125rem] font-semibold text-gray-800 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100">
                   Files from {selectedPerson!.name}
                 </p>
-                <p className="text-[11px] text-gray-400">
+                <p className="text-[0.6875rem] text-gray-400">
                   {sortedItems.length} {sortedItems.length === 1 ? "file" : "files"} found
                 </p>
               </div>
             </div>
             <button
               onClick={() => { setSelectedPerson(null); onPeopleFilter?.(null); }}
-              className="text-[12px] font-medium text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 hover:underline cursor-pointer"
+              className="text-[0.75rem] font-medium text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 hover:underline cursor-pointer"
             >
               Clear filter
             </button>
@@ -533,10 +533,10 @@ export default function FileBrowser({
               <div className="relative my-6">
                 <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20" /></div>
                 <div className="relative flex justify-center">
-                  <span className="bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#1e1030] px-4 text-[11px] font-semibold text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 uppercase tracking-widest flex items-center gap-2">
+                  <span className="bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#1e1030] px-4 text-[0.6875rem] font-semibold text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 uppercase tracking-widest flex items-center gap-2">
                     <Folder className="w-3 h-3" />
                     All files
-                    <span className="text-[10px] font-normal text-gray-300 dark:text-gray-600 midnight:text-cyan-500 purple:text-pink-500">({sortedItems.length})</span>
+                    <span className="text-[0.625rem] font-normal text-gray-300 dark:text-gray-600 midnight:text-cyan-500 purple:text-pink-500">({sortedItems.length})</span>
                   </span>
                 </div>
               </div>
@@ -560,7 +560,7 @@ export default function FileBrowser({
                     <div className="flex items-center gap-2">
                       <div className="relative cursor-pointer group/avatar flex-shrink-0">
                         <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${
-                          item.type === "folder" ? "bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/50" :
+                          item.type === "folder" ? "bg-surface-2/50" :
                           item.sourceType === "document" ? "bg-blue-50 dark:bg-blue-500/10" :
                           item.sourceType === "presentation" ? "bg-amber-50 dark:bg-amber-500/10" :
                           item.sourceType === "spreadsheet" ? "bg-green-50 dark:bg-green-500/10" :
@@ -574,15 +574,15 @@ export default function FileBrowser({
                           <input type="text" value={renameValue} onChange={e => setRenameValue(e.target.value)}
                             onKeyDown={e => { if (e.key === "Enter") submitRename(); if (e.key === "Escape") setRenamingId(null); }}
                             onBlur={submitRename} autoFocus onClick={e => e.stopPropagation()}
-                            className="w-full px-3 py-1 rounded-lg bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500 midnight:border-cyan-500 purple:border-pink-500/30 text-[13px] outline-none focus:ring-2 focus:ring-blue-500/20" />
+                            className="w-full px-3 py-1 rounded-lg bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500 midnight:border-cyan-500 purple:border-pink-500/30 text-[0.8125rem] outline-none focus:ring-2 focus:ring-blue-500/20" />
                         ) : (
                           <>
                             <Tooltip content={item.name} block>
                               <p className={`text-xs sm:text-sm truncate leading-tight ${
-                                item.type === "folder" ? "font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50" : "font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200"
+                                item.type === "folder" ? "font-semibold text-ink" : "font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200"
                               }`}>{item.name}</p>
                             </Tooltip>
-                            <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 truncate leading-tight">
+                            <p className="text-[0.625rem] sm:text-xs text-muted truncate leading-tight">
                               {item.type === "folder"
                                 ? `${item.childCount ?? 0} items`
                                 : item.owner || "Me"
@@ -609,7 +609,7 @@ export default function FileBrowser({
                          item.sourceType === "spreadsheet" ? "Spreadsheet" :
                          "File"}
                       </p>
-                      <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 truncate mt-0.5 leading-tight">
+                      <p className="text-[0.625rem] sm:text-xs text-muted truncate mt-0.5 leading-tight">
                         {item.type === "folder" ? `${item.childCount ?? 0} items inside` : formatSize(item.size)}
                       </p>
                     </div>
@@ -642,7 +642,7 @@ export default function FileBrowser({
                   sortable: true,
                   sortValue: (item) => (item.type === "folder" ? -1 : (item.size || 0)),
                   render: (item) => (
-                    <span className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
+                    <span className="text-xs text-muted">
                       {item.type === "folder" ? "—" : formatSize(item.size)}
                     </span>
                   ),
@@ -653,14 +653,14 @@ export default function FileBrowser({
                   className: "min-w-[80px] md:min-w-[130px] text-right pr-2",
                   render: (item) => (
                     <div className="flex items-center justify-end gap-0.5 relative">
-                      <span className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mr-1 sm:mr-1.5 whitespace-nowrap">
+                      <span className="text-[0.625rem] sm:text-xs text-muted mr-1 sm:mr-1.5 whitespace-nowrap">
                         {timeAgo(item.updatedAt)}
                       </span>
                       <div className="hidden sm:flex items-center gap-0.5">
                         <Tooltip content="Open">
                           <button onClick={e => { e.stopPropagation(); handleItemClick(item); }}
                             className="p-1 rounded-md hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer">
-                            <ExternalLink className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300" />
+                            <ExternalLink className="w-3.5 h-3.5 text-muted" />
                           </button>
                         </Tooltip>
                         <button onClick={e => { e.stopPropagation(); setMenuOpenId(menuOpenId === item.id ? null : item.id); }}
@@ -671,7 +671,7 @@ export default function FileBrowser({
                       <div className="flex sm:hidden">
                         <button onClick={e => { e.stopPropagation(); setMenuOpenId(menuOpenId === item.id ? null : item.id); }}
                           className="p-1 rounded-md hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer">
-                          <MoreVertical className="w-4 h-4 text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300" />
+                          <MoreVertical className="w-4 h-4 text-muted" />
                         </button>
                       </div>
                       {menuOpenId === item.id && (
@@ -735,8 +735,8 @@ export default function FileBrowser({
         {sortedItems.length === 0 && !newFolderMode && (
           <div className="flex flex-col items-center justify-center py-16 text-gray-400">
             <FolderOpen className="w-12 h-12 mb-3 opacity-40" />
-            <p className="text-[14px] font-medium">{emptyTitle || (searchQuery ? "No results found" : "This folder is empty")}</p>
-            <p className="text-[12px] mt-1">{emptySubtitle || "Try different filters or create a new file"}</p>
+            <p className="text-[0.875rem] font-medium">{emptyTitle || (searchQuery ? "No results found" : "This folder is empty")}</p>
+            <p className="text-[0.75rem] mt-1">{emptySubtitle || "Try different filters or create a new file"}</p>
             {!searchQuery && !typeFilter && emptyAction}
           </div>
         )}

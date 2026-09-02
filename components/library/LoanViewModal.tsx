@@ -200,7 +200,7 @@ export default function LoanViewModal({
             </div>
 
             {/* Borrower Name */}
-            <h3 className="text-lg font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-1">
+            <h3 className="text-lg font-bold text-ink mb-1">
               {loan.memberName}
             </h3>
 
@@ -219,7 +219,7 @@ export default function LoanViewModal({
             <div className="p-2 rounded-lg bg-blue-50 dark:bg-blue-900/20 midnight:bg-cyan-900/20 purple:bg-pink-900/20">
               <Calendar className="w-4 h-4 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
             </div>
-            <h4 className="text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+            <h4 className="text-sm font-bold text-ink">
               Loan Timeline
             </h4>
           </div>
@@ -235,8 +235,8 @@ export default function LoanViewModal({
                   <BookOpen className="w-4 h-4 text-white" />
                 </div>
                 <div className="flex-1 pt-1">
-                  <p className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">Borrowed</p>
-                  <p className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                  <p className="text-[0.625rem] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">Borrowed</p>
+                  <p className="text-sm font-semibold text-ink">
                     {borrowDate.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
                   </p>
                 </div>
@@ -252,8 +252,8 @@ export default function LoanViewModal({
                   <Clock className="w-4 h-4 text-white" />
                 </div>
                 <div className="flex-1 pt-1">
-                  <p className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">Due Date</p>
-                  <p className={`text-sm font-semibold ${isOverdue ? "text-red-600 dark:text-red-400" : "text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50"}`}>
+                  <p className="text-[0.625rem] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">Due Date</p>
+                  <p className={`text-sm font-semibold ${isOverdue ? "text-red-600 dark:text-red-400" : "text-ink"}`}>
                     {dueDate.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
                   </p>
                   {!loan.returnDate && !isOverdue && daysUntilDue > 0 && (
@@ -269,7 +269,7 @@ export default function LoanViewModal({
                     <CheckCircle2 className="w-4 h-4 text-white" />
                   </div>
                   <div className="flex-1 pt-1">
-                    <p className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-widest">Returned</p>
+                    <p className="text-[0.625rem] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-widest">Returned</p>
                     <p className="text-sm font-semibold text-emerald-700 dark:text-emerald-300">
                       {new Date(loan.returnDate).toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
                     </p>
@@ -287,9 +287,9 @@ export default function LoanViewModal({
             <div className="absolute inset-0 bg-gradient-to-br from-blue-500/0 to-blue-500/0 group-hover:from-blue-500/5 group-hover:to-purple-500/5 transition-all duration-300" />
             <div className="flex items-center gap-2 mb-1.5">
               <Hash className="w-3.5 h-3.5 text-gray-400 dark:text-gray-500" />
-              <p className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">Loan #</p>
+              <p className="text-[0.625rem] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">Loan #</p>
             </div>
-            <p className="text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 font-mono relative z-10">{loan.loanNumber}</p>
+            <p className="text-sm font-bold text-ink font-mono relative z-10">{loan.loanNumber}</p>
           </div>
 
           {/* Renewals */}
@@ -297,10 +297,10 @@ export default function LoanViewModal({
             <div className="absolute inset-0 bg-gradient-to-br from-blue-500/0 to-blue-500/0 group-hover:from-blue-500/5 group-hover:to-purple-500/5 transition-all duration-300" />
             <div className="flex items-center gap-2 mb-1.5">
               <RotateCcw className="w-3.5 h-3.5 text-gray-400 dark:text-gray-500" />
-              <p className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">Renewals</p>
+              <p className="text-[0.625rem] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">Renewals</p>
             </div>
             <p className="text-sm font-bold relative z-10">
-              <span className={loan.renewalCount >= loan.maxRenewals ? "text-red-600 dark:text-red-400" : "text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50"}>
+              <span className={loan.renewalCount >= loan.maxRenewals ? "text-red-600 dark:text-red-400" : "text-ink"}>
                 {loan.renewalCount}
               </span>
               <span className="text-gray-400 dark:text-gray-500"> / {loan.maxRenewals}</span>
@@ -321,7 +321,7 @@ export default function LoanViewModal({
                   ? loan.finePaid ? "text-green-500" : "text-red-500"
                   : "text-gray-400 dark:text-gray-500"
               }`} />
-              <p className={`text-[10px] font-bold uppercase tracking-widest ${
+              <p className={`text-[0.625rem] font-bold uppercase tracking-widest ${
                 loan.fineAmount > 0
                   ? loan.finePaid ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"
                   : "text-gray-400 dark:text-gray-500"
@@ -340,7 +340,7 @@ export default function LoanViewModal({
                   )}
                 </>
               ) : (
-                <span className="text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">No Fine</span>
+                <span className="text-ink">No Fine</span>
               )}
             </p>
           </div>

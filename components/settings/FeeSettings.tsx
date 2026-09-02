@@ -125,7 +125,7 @@ export default function FeeSettings() {
       <div>
         <div className="flex items-center gap-2 mb-3">
           <CreditCard className="w-4 h-4 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
-          <h3 className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+          <h3 className="text-sm font-semibold text-ink">
             Payment Channels
           </h3>
         </div>
@@ -184,7 +184,7 @@ export default function FeeSettings() {
       <div>
         <div className="flex items-center gap-2 mb-3">
           <DollarSign className="w-4 h-4 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
-          <h3 className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+          <h3 className="text-sm font-semibold text-ink">
             Fee Categories
           </h3>
         </div>

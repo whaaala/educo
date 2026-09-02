@@ -65,7 +65,7 @@ function FilePreviewModal({ isOpen, onClose, file }: FilePreviewModalProps) {
       />
 
       {/* Modal */}
-      <div className="relative w-full max-w-4xl max-h-[90vh] bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-2xl shadow-2xl overflow-hidden flex flex-col">
+      <div className="relative w-full max-w-4xl max-h-[90vh] bg-surface rounded-2xl shadow-2xl overflow-hidden flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
           <div className="flex items-center gap-3">
@@ -86,7 +86,7 @@ function FilePreviewModal({ isOpen, onClose, file }: FilePreviewModalProps) {
               <h3 className="text-sm font-semibold text-gray-800 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate max-w-md">
                 {file.name}
               </h3>
-              <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
+              <div className="flex items-center gap-2 text-xs text-muted">
                 <span>{file.size}</span>
                 {file.isGraded && (
                   <>
@@ -115,7 +115,7 @@ function FilePreviewModal({ isOpen, onClose, file }: FilePreviewModalProps) {
             <button
               type="button"
               onClick={onClose}
-              className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 transition-colors"
+              className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 text-muted transition-colors"
             >
               <X className="w-5 h-5" />
             </button>
@@ -123,7 +123,7 @@ function FilePreviewModal({ isOpen, onClose, file }: FilePreviewModalProps) {
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-auto p-4 bg-gray-50 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]">
+        <div className="flex-1 overflow-auto p-4 bg-canvas">
           {file.type === "image" ? (
             <div className="flex items-center justify-center min-h-[400px]">
               <img
@@ -141,7 +141,7 @@ function FilePreviewModal({ isOpen, onClose, file }: FilePreviewModalProps) {
                         </svg>
                       </div>
                       <p class="text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 font-medium mb-1">${file.name}</p>
-                      <p class="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Image preview not available</p>
+                      <p class="text-sm text-muted">Image preview not available</p>
                       <p class="text-xs text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 mt-2">Click Download to view the file</p>
                     </div>
                   `;
@@ -152,7 +152,7 @@ function FilePreviewModal({ isOpen, onClose, file }: FilePreviewModalProps) {
             <div className="flex flex-col items-center justify-center min-h-[400px]">
               <iframe
                 src={file.url}
-                className="w-full h-[70vh] rounded-lg border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20"
+                className="w-full h-[70vh] rounded-lg border border-line"
                 title={file.name}
                 onError={() => {}}
               />
@@ -161,7 +161,7 @@ function FilePreviewModal({ isOpen, onClose, file }: FilePreviewModalProps) {
                   <FileText className="w-8 h-8 text-rose-500" />
                 </div>
                 <p className="text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 font-medium mb-1">{file.name}</p>
-                <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">PDF preview not available</p>
+                <p className="text-sm text-muted">PDF preview not available</p>
                 <p className="text-xs text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 mt-2">Click Download to view the file</p>
               </div>
             </div>
@@ -171,7 +171,7 @@ function FilePreviewModal({ isOpen, onClose, file }: FilePreviewModalProps) {
                 <File className="w-10 h-10 text-blue-500" />
               </div>
               <p className="text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 font-medium mb-1">{file.name}</p>
-              <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mb-4">Document preview not available</p>
+              <p className="text-sm text-muted mb-4">Document preview not available</p>
               <button
                 type="button"
                 onClick={handleDownload}
@@ -583,10 +583,10 @@ export default function HomeworkDetailPage() {
         afterStats={
           <div className="mt-6 flex flex-col items-center justify-center min-h-[60vh]">
             <AlertCircle className="w-16 h-16 text-gray-300 dark:text-gray-600 midnight:text-cyan-500 purple:text-pink-500 mb-4" />
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-2">
+            <h2 className="text-xl font-semibold text-ink mb-2">
               Homework Not Found
             </h2>
-            <p className="text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mb-6">
+            <p className="text-muted mb-6">
               The homework assignment you&apos;re looking for doesn&apos;t exist.
             </p>
             <Link href="/parents/homework">
@@ -620,7 +620,7 @@ export default function HomeworkDetailPage() {
           {/* Left Column - Assignment Details */}
           <div className="lg:col-span-2 space-y-4 sm:space-y-5">
             {/* Assignment Info Card */}
-            <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/95 rounded-xl border border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm overflow-hidden">
+            <div className="bg-surface/95 rounded-xl border border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm overflow-hidden">
               {/* Header Section */}
               <div className="p-4 sm:p-5 border-b border-gray-50 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
                 <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-3">
@@ -635,12 +635,12 @@ export default function HomeworkDetailPage() {
                         {statusConfig.label}
                       </span>
                     </div>
-                    <h1 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                    <h1 className="text-base sm:text-lg font-semibold text-ink">
                       {homework.title}
                     </h1>
                   </div>
                 </div>
-                <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 leading-relaxed">
+                <p className="text-sm text-muted leading-relaxed">
                   {homework.description}
                 </p>
               </div>
@@ -771,7 +771,7 @@ export default function HomeworkDetailPage() {
                   <div className="space-y-3">
                     <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm">
                       <Calendar className="w-3.5 h-3.5 text-gray-400" />
-                      <span className="text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Submitted:</span>
+                      <span className="text-muted">Submitted:</span>
                       <span className="font-medium text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100">
                         {homework.submissionDate && formatDate(homework.submissionDate)}
                       </span>
@@ -981,7 +981,7 @@ export default function HomeworkDetailPage() {
                       <p className="text-xl sm:text-2xl font-bold text-gray-800 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
                         {homework.score}<span className="text-gray-300 dark:text-gray-600 midnight:text-cyan-500 purple:text-pink-500 font-normal">/</span>{homework.maxScore}
                       </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mt-0.5">
+                      <p className="text-xs text-muted mt-0.5">
                         {((homework.score! / homework.maxScore!) * 100).toFixed(0)}% Score
                       </p>
                     </div>
@@ -1011,8 +1011,8 @@ export default function HomeworkDetailPage() {
           {/* Right Column - Sidebar */}
           <div className="space-y-4 sm:space-y-5">
             {/* Student Card */}
-            <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/95 rounded-xl border border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm p-4">
-              <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 uppercase tracking-wide mb-3">
+            <div className="bg-surface/95 rounded-xl border border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm p-4">
+              <h3 className="text-xs font-semibold text-muted uppercase tracking-wide mb-3">
                 Student
               </h3>
               <div className="flex items-center gap-3">
@@ -1029,7 +1029,7 @@ export default function HomeworkDetailPage() {
                   <p className="text-sm font-medium text-gray-800 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate">
                     {homework.childName}
                   </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
+                  <p className="text-xs text-muted">
                     {homework.class} - {homework.section}
                   </p>
                 </div>
@@ -1037,8 +1037,8 @@ export default function HomeworkDetailPage() {
             </div>
 
             {/* Teacher Card */}
-            <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/95 rounded-xl border border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm p-4">
-              <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 uppercase tracking-wide mb-3">
+            <div className="bg-surface/95 rounded-xl border border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm p-4">
+              <h3 className="text-xs font-semibold text-muted uppercase tracking-wide mb-3">
                 Teacher
               </h3>
               <div className="flex items-center gap-3">
@@ -1055,7 +1055,7 @@ export default function HomeworkDetailPage() {
                   <p className="text-sm font-medium text-gray-800 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate">
                     {homework.teacher}
                   </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
+                  <p className="text-xs text-muted">
                     {homework.subject}
                   </p>
                 </div>
@@ -1063,8 +1063,8 @@ export default function HomeworkDetailPage() {
             </div>
 
             {/* Dates Card */}
-            <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/95 rounded-xl border border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm p-4">
-              <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 uppercase tracking-wide mb-3">
+            <div className="bg-surface/95 rounded-xl border border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm p-4">
+              <h3 className="text-xs font-semibold text-muted uppercase tracking-wide mb-3">
                 Timeline
               </h3>
               <div className="space-y-3">

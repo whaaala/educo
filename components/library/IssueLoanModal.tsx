@@ -999,9 +999,9 @@ export default function IssueLoanModal({
 
   const getMemberTypeBadge = (type: BorrowerType) => {
     const styles = {
-      student: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 border-blue-200 dark:border-blue-800",
+      student: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 border-blue-200 dark:border-blue-800",
       teacher: "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 border-purple-200 dark:border-purple-800",
-      staff: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 border-amber-200 dark:border-amber-800",
+      staff: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400 border-amber-200 dark:border-amber-800",
     };
 
     return (
@@ -1033,10 +1033,10 @@ export default function IssueLoanModal({
     <div className="flex items-center justify-center gap-2 mb-6">
       <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
         currentStep === "book"
-          ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
+          ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400"
           : selectedBook
-            ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-            : "bg-gray-100 text-gray-500 dark:bg-[#1a1d24] dark:text-gray-400"
+            ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400"
+            : "bg-gray-100 text-gray-500 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300"
       }`}>
         <BookOpen className="w-3.5 h-3.5" />
         <span>Book</span>
@@ -1045,10 +1045,10 @@ export default function IssueLoanModal({
       <ArrowRight className="w-4 h-4 text-gray-400" />
       <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
         currentStep === "borrower"
-          ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
+          ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400"
           : selectedMember
-            ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-            : "bg-gray-100 text-gray-500 dark:bg-[#1a1d24] dark:text-gray-400"
+            ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400"
+            : "bg-gray-100 text-gray-500 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300"
       }`}>
         <User className="w-3.5 h-3.5" />
         <span>Borrower</span>
@@ -1057,8 +1057,8 @@ export default function IssueLoanModal({
       <ArrowRight className="w-4 h-4 text-gray-400" />
       <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
         currentStep === "details"
-          ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
-          : "bg-gray-100 text-gray-500 dark:bg-[#1a1d24] dark:text-gray-400"
+          ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400"
+          : "bg-gray-100 text-gray-500 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300"
       }`}>
         <Calendar className="w-3.5 h-3.5" />
         <span>Details</span>
@@ -1150,26 +1150,26 @@ export default function IssueLoanModal({
                     />
                   ) : (
                     <div className="w-16 h-20 bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-900/40 dark:to-blue-800/40 rounded-lg flex items-center justify-center">
-                      <BookOpen className="w-8 h-8 text-blue-600 dark:text-blue-400" />
+                      <BookOpen className="w-8 h-8 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
                     </div>
                   )}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <CheckCircle2 className="w-4 h-4 text-green-600 dark:text-green-400" />
-                      <span className="text-xs font-semibold text-green-700 dark:text-green-400">Selected</span>
+                      <CheckCircle2 className="w-4 h-4 text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400" />
+                      <span className="text-xs font-semibold text-green-700 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400">Selected</span>
                     </div>
-                    <h4 className="font-semibold text-gray-900 dark:text-white text-sm mt-1">
+                    <h4 className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-sm mt-1">
                       {selectedBook.title}
                     </h4>
-                    <p className="text-xs text-gray-600 dark:text-gray-400">
+                    <p className="text-xs text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
                       by {selectedBook.author}
                     </p>
                     <div className="flex flex-wrap items-center gap-2 mt-2">
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-[#22262e] text-gray-700 dark:text-gray-300">
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200">
                         <Hash className="w-3 h-3" />
                         {selectedBook.isbn}
                       </span>
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400">
                         {selectedBook.availableCopies} available
                       </span>
                     </div>
@@ -1207,8 +1207,8 @@ export default function IssueLoanModal({
                 {/* Loading State */}
                 {isLoadingBooks && (
                   <div className="flex items-center justify-center py-8">
-                    <Loader2 className="w-6 h-6 animate-spin text-blue-600 dark:text-blue-400" />
-                    <span className="ml-2 text-sm text-gray-600 dark:text-gray-400">Loading books...</span>
+                    <Loader2 className="w-6 h-6 animate-spin text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
+                    <span className="ml-2 text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Loading books...</span>
                   </div>
                 )}
 
@@ -1223,12 +1223,12 @@ export default function IssueLoanModal({
                         value={bookSearchQuery}
                         onChange={(e) => setBookSearchQuery(e.target.value)}
                         placeholder="Search by title, author, ISBN, or subject..."
-                        className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-[#1a1d24] text-gray-900 dark:text-white text-sm placeholder:text-gray-400 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all"
+                        className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-sm placeholder:text-gray-400 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all"
                       />
                     </div>
 
                     {/* Book Grid */}
-                    <div className="max-h-[350px] overflow-y-auto border border-gray-200 dark:border-gray-700 rounded-xl">
+                    <div className="max-h-[350px] overflow-y-auto border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-xl">
                       {filteredBooks.length > 0 ? (
                         <div className="divide-y divide-gray-100 dark:divide-gray-700">
                           {filteredBooks.map((book) => (
@@ -1236,7 +1236,7 @@ export default function IssueLoanModal({
                               key={book.id}
                               type="button"
                               onClick={() => handleSelectBook(book)}
-                              className="w-full flex items-start gap-3 p-3 hover:bg-blue-50/50 dark:hover:bg-blue-900/10 transition-all text-left cursor-pointer group"
+                              className="w-full flex items-start gap-3 p-3 hover:bg-blue-50/50 dark:hover:bg-blue-900/10 midnight:hover:bg-cyan-900/10 purple:hover:bg-pink-900/10 transition-all text-left cursor-pointer group"
                             >
                               {book.coverImage ? (
                                 <Image
@@ -1253,37 +1253,37 @@ export default function IssueLoanModal({
                                 </div>
                               )}
                               <div className="flex-1 min-w-0">
-                                <h4 className="font-semibold text-gray-900 dark:text-white text-sm truncate group-hover:text-blue-600 dark:group-hover:text-blue-400">
+                                <h4 className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-sm truncate group-hover:text-blue-600 dark:group-hover:text-blue-400">
                                   {book.title}
                                 </h4>
-                                <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                                <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 truncate">
                                   {book.author}
                                 </p>
                                 <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
-                                  <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400">
+                                  <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[0.625rem] font-medium bg-blue-100 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 text-blue-700 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400">
                                     {book.educationLevel}
                                   </span>
-                                  <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold ${
+                                  <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[0.625rem] font-semibold ${
                                     book.availableCopies > 3
-                                      ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                                      ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400"
                                       : book.availableCopies > 0
                                         ? "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400"
-                                        : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
+                                        : "bg-red-100 text-red-700 dark:bg-red-900/30 midnight:bg-red-900/30 purple:bg-red-900/30 dark:text-red-400 midnight:text-red-400 purple:text-red-400"
                                   }`}>
                                     {book.availableCopies}/{book.totalCopies} available
                                   </span>
                                 </div>
-                                <div className="flex items-center gap-1 mt-1 text-[10px] text-gray-400">
+                                <div className="flex items-center gap-1 mt-1 text-[0.625rem] text-gray-400">
                                   <MapPin className="w-3 h-3" />
                                   {book.location}
                                 </div>
                               </div>
-                              <CheckCircle2 className="w-5 h-5 text-gray-300 dark:text-gray-600 group-hover:text-blue-500 dark:group-hover:text-blue-400 flex-shrink-0 transition-colors" />
+                              <CheckCircle2 className="w-5 h-5 text-gray-300 dark:text-gray-600 midnight:text-cyan-500 purple:text-pink-500 group-hover:text-blue-500 dark:group-hover:text-blue-400 flex-shrink-0 transition-colors" />
                             </button>
                           ))}
                         </div>
                       ) : (
-                        <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                        <div className="text-center py-8 text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
                           <BookOpen className="w-8 h-8 mx-auto mb-2 text-gray-400" />
                           <p className="text-sm">
                             {bookSearchQuery
@@ -1298,9 +1298,9 @@ export default function IssueLoanModal({
 
                 {/* Empty state when no category selected */}
                 {!selectedCategory && (
-                  <div className="text-center py-8 border border-dashed border-gray-300 dark:border-gray-600 rounded-xl">
+                  <div className="text-center py-8 border border-dashed border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 rounded-xl">
                     <FolderOpen className="w-10 h-10 mx-auto mb-3 text-gray-400" />
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                    <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
                       Select a category to browse available books
                     </p>
                   </div>
@@ -1315,7 +1315,7 @@ export default function IssueLoanModal({
           <div className="space-y-4">
             {/* Selected Book Summary */}
             {selectedBook && (
-              <div className="bg-gray-50 dark:bg-[#1a1d24]/50 rounded-xl p-3 border border-gray-200 dark:border-gray-700">
+              <div className="bg-gray-50 dark:bg-[#1a1d24]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 rounded-xl p-3 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
                 <div className="flex items-center gap-3">
                   {selectedBook.coverImage ? (
                     <Image
@@ -1327,13 +1327,13 @@ export default function IssueLoanModal({
                       unoptimized
                     />
                   ) : (
-                    <div className="w-8 h-10 bg-gray-200 dark:bg-[#22262e] rounded flex items-center justify-center">
+                    <div className="w-8 h-10 bg-gray-200 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] rounded flex items-center justify-center">
                       <BookOpen className="w-4 h-4 text-gray-400" />
                     </div>
                   )}
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs text-gray-500 dark:text-gray-400">Issuing:</p>
-                    <p className="font-semibold text-sm text-gray-900 dark:text-white truncate">
+                    <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Issuing:</p>
+                    <p className="font-semibold text-sm text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate">
                       {selectedBook.title}
                     </p>
                   </div>
@@ -1352,7 +1352,7 @@ export default function IssueLoanModal({
                         alt={selectedMember.name}
                         width={40}
                         height={40}
-                        className="w-10 h-10 rounded-full object-cover flex-shrink-0 bg-gray-100 dark:bg-[#22262e]"
+                        className="w-10 h-10 rounded-full object-cover flex-shrink-0 bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]"
                         unoptimized
                       />
                     ) : (
@@ -1362,21 +1362,21 @@ export default function IssueLoanModal({
                     )}
                     <div>
                       <div className="flex items-center gap-2">
-                        <CheckCircle2 className="w-4 h-4 text-green-600 dark:text-green-400" />
-                        <h4 className="font-semibold text-gray-900 dark:text-white text-sm">
+                        <CheckCircle2 className="w-4 h-4 text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400" />
+                        <h4 className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-sm">
                           {selectedMember.name}
                         </h4>
                         {getMemberTypeBadge(selectedMember.type)}
                       </div>
-                      <p className="text-xs text-gray-600 dark:text-gray-400 mt-0.5">
+                      <p className="text-xs text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mt-0.5">
                         {selectedMember.memberId} {selectedMember.class || selectedMember.department}
                       </p>
                       <div className="flex items-center gap-3 mt-2 text-xs">
-                        <span className="text-gray-500 dark:text-gray-400">
+                        <span className="text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
                           Books: {selectedMember.currentBooksCount}/{selectedMember.maxBooksAllowed}
                         </span>
                         {selectedMember.finesDue > 0 && (
-                          <span className="text-red-600 dark:text-red-400 font-medium">
+                          <span className="text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400 font-medium">
                             Fines: NGN {selectedMember.finesDue.toLocaleString()}
                           </span>
                         )}
@@ -1396,7 +1396,7 @@ export default function IssueLoanModal({
                 </div>
                 {/* Validation Error */}
                 {errors.memberId && (
-                  <div className="mt-3 flex items-start gap-2 text-red-600 dark:text-red-400">
+                  <div className="mt-3 flex items-start gap-2 text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400">
                     <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
                     <p className="text-xs">{errors.memberId}</p>
                   </div>
@@ -1427,17 +1427,17 @@ export default function IssueLoanModal({
                     value={selectedEducationLevel}
                     onChange={(val) => setSelectedEducationLevel(val as EducationLevel | "")}
                     options={filteredEducationLevels}
-                    iconBgColor="bg-blue-100 dark:bg-blue-900/30"
-                    iconColor="text-blue-600 dark:text-blue-400"
+                    iconBgColor="bg-blue-100 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30"
+                    iconColor="text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400"
                     required
                   />
                 )}
 
                 {/* Show auto-selected education level info for single-level schools */}
                 {selectedBorrowerType === "student" && hasSingleEducationLevel && selectedEducationLevel && (
-                  <div className="flex items-center gap-2 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-200 dark:border-blue-800">
-                    <Building2 className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                    <span className="text-sm text-blue-700 dark:text-blue-300">
+                  <div className="flex items-center gap-2 p-3 bg-blue-50 dark:bg-blue-900/20 midnight:bg-cyan-900/20 purple:bg-pink-900/20 rounded-xl border border-blue-200 dark:border-blue-800">
+                    <Building2 className="w-4 h-4 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
+                    <span className="text-sm text-blue-700 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300">
                       {filteredEducationLevels.find(l => l.value === selectedEducationLevel)?.label}
                     </span>
                   </div>
@@ -1467,12 +1467,12 @@ export default function IssueLoanModal({
                         value={memberSearchQuery}
                         onChange={(e) => setMemberSearchQuery(e.target.value)}
                         placeholder="Search by name, ID, class, or department..."
-                        className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-[#1a1d24] text-gray-900 dark:text-white text-sm placeholder:text-gray-400 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all"
+                        className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-sm placeholder:text-gray-400 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all"
                       />
                     </div>
 
                     {/* Member List */}
-                    <div className="max-h-60 overflow-y-auto border border-gray-200 dark:border-gray-700 rounded-xl divide-y divide-gray-100 dark:divide-gray-700">
+                    <div className="max-h-60 overflow-y-auto border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-xl divide-y divide-gray-100 dark:divide-gray-700">
                       {filteredMembers.length > 0 ? (
                         filteredMembers.map((member) => (
                           <button
@@ -1488,7 +1488,7 @@ export default function IssueLoanModal({
                                   alt={member.name}
                                   width={32}
                                   height={32}
-                                  className="w-8 h-8 rounded-full object-cover flex-shrink-0 bg-gray-100 dark:bg-[#22262e]"
+                                  className="w-8 h-8 rounded-full object-cover flex-shrink-0 bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]"
                                   unoptimized
                                 />
                               ) : (
@@ -1498,12 +1498,12 @@ export default function IssueLoanModal({
                               )}
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-center gap-2">
-                                  <span className="font-medium text-gray-900 dark:text-white text-sm truncate">
+                                  <span className="font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-sm truncate">
                                     {member.name}
                                   </span>
                                   {getMemberTypeBadge(member.type)}
                                 </div>
-                                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                                <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mt-0.5">
                                   {member.memberId} {member.class || member.department}
                                 </p>
                                 <div className="flex items-center gap-3 mt-1 text-xs text-gray-400">
@@ -1524,7 +1524,7 @@ export default function IssueLoanModal({
                           </button>
                         ))
                       ) : (
-                        <div className="p-4 text-center text-gray-500 dark:text-gray-400 text-sm">
+                        <div className="p-4 text-center text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 text-sm">
                           {memberSearchQuery ? `No members found matching "${memberSearchQuery}"` : "No members found for the selected filters"}
                         </div>
                       )}
@@ -1535,14 +1535,14 @@ export default function IssueLoanModal({
                 {/* Loading State */}
                 {isLoadingMembers && (
                   <div className="flex items-center justify-center py-8">
-                    <Loader2 className="w-6 h-6 animate-spin text-blue-600 dark:text-blue-400" />
-                    <span className="ml-2 text-sm text-gray-600 dark:text-gray-400">Loading members...</span>
+                    <Loader2 className="w-6 h-6 animate-spin text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
+                    <span className="ml-2 text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Loading members...</span>
                   </div>
                 )}
 
                 {/* Validation Error */}
                 {errors.memberId && !showMemberSearch && (
-                  <div className="flex items-start gap-2 text-red-600 dark:text-red-400">
+                  <div className="flex items-start gap-2 text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400">
                     <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
                     <p className="text-xs">{errors.memberId}</p>
                   </div>
@@ -1559,10 +1559,10 @@ export default function IssueLoanModal({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Book Summary */}
               {selectedBook && (
-                <div className="bg-gray-50 dark:bg-[#1a1d24]/50 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
+                <div className="bg-gray-50 dark:bg-[#1a1d24]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 rounded-xl p-4 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
                   <div className="flex items-center gap-2 mb-3">
-                    <BookOpen className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                    <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Book</p>
+                    <BookOpen className="w-4 h-4 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
+                    <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 uppercase">Book</p>
                   </div>
                   <div className="flex items-start gap-3">
                     {selectedBook.coverImage ? (
@@ -1576,17 +1576,17 @@ export default function IssueLoanModal({
                       />
                     ) : (
                       <div className="w-12 h-16 bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-900/40 dark:to-blue-800/40 rounded-lg flex items-center justify-center">
-                        <BookOpen className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+                        <BookOpen className="w-6 h-6 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
                       </div>
                     )}
                     <div className="flex-1 min-w-0">
-                      <h4 className="font-semibold text-gray-900 dark:text-white text-sm truncate">
+                      <h4 className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-sm truncate">
                         {selectedBook.title}
                       </h4>
-                      <p className="text-xs text-gray-600 dark:text-gray-400 mt-0.5">
+                      <p className="text-xs text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mt-0.5">
                         by {selectedBook.author}
                       </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-500 font-mono mt-1">
+                      <p className="text-xs text-gray-500 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 font-mono mt-1">
                         {selectedBook.isbn}
                       </p>
                     </div>
@@ -1596,10 +1596,10 @@ export default function IssueLoanModal({
 
               {/* Borrower Summary */}
               {selectedMember && (
-                <div className="bg-gray-50 dark:bg-[#1a1d24]/50 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
+                <div className="bg-gray-50 dark:bg-[#1a1d24]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 rounded-xl p-4 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
                   <div className="flex items-center gap-2 mb-3">
                     <User className="w-4 h-4 text-purple-600 dark:text-purple-400" />
-                    <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Borrower</p>
+                    <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 uppercase">Borrower</p>
                   </div>
                   <div className="flex items-start gap-3">
                     {selectedMember.avatarUrl ? (
@@ -1608,7 +1608,7 @@ export default function IssueLoanModal({
                         alt={selectedMember.name}
                         width={40}
                         height={40}
-                        className="w-10 h-10 rounded-full object-cover flex-shrink-0 bg-gray-100 dark:bg-[#22262e]"
+                        className="w-10 h-10 rounded-full object-cover flex-shrink-0 bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]"
                         unoptimized
                       />
                     ) : (
@@ -1618,15 +1618,15 @@ export default function IssueLoanModal({
                     )}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
-                        <h4 className="font-semibold text-gray-900 dark:text-white text-sm">
+                        <h4 className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-sm">
                           {selectedMember.name}
                         </h4>
                         {getMemberTypeBadge(selectedMember.type)}
                       </div>
-                      <p className="text-xs text-gray-600 dark:text-gray-400 mt-0.5">
+                      <p className="text-xs text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mt-0.5">
                         {selectedMember.memberId}
                       </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-500 mt-0.5">
+                      <p className="text-xs text-gray-500 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 mt-0.5">
                         {selectedMember.class || selectedMember.department}
                       </p>
                     </div>
@@ -1660,7 +1660,7 @@ export default function IssueLoanModal({
                   required
                   error={errors.dueDate}
                   iconBgColor="bg-amber-100 dark:bg-amber-900/30"
-                  iconColor="text-amber-600 dark:text-amber-400"
+                  iconColor="text-amber-600 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400"
                 />
               </div>
               <div className="mt-4">
@@ -1679,10 +1679,10 @@ export default function IssueLoanModal({
             {/* Ready to Issue Summary */}
             {selectedMember && selectedBook && !errors.memberId && (
               <div className="flex items-start gap-3 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl">
-                <CheckCircle2 className="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
+                <CheckCircle2 className="w-5 h-5 text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400 flex-shrink-0 mt-0.5" />
                 <div>
                   <p className="text-sm font-semibold text-green-700 dark:text-green-300">Ready to issue</p>
-                  <p className="text-xs text-green-600 dark:text-green-400 mt-1">
+                  <p className="text-xs text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400 mt-1">
                     "{selectedBook.title}" will be issued to {selectedMember.name} until{" "}
                     {formData.dueDate && new Date(formData.dueDate).toLocaleDateString("en-US", {
                       year: "numeric",

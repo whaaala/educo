@@ -56,7 +56,7 @@ export default function LeaveRequestsTable({
       render: (request) => {
         return (
           <Tooltip content={`Request ID: ${request.id}`}>
-            <div className="font-semibold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 whitespace-nowrap truncate max-w-[100px]" style={{ fontSize: '11.8px' }}>
+            <div className="font-semibold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 whitespace-nowrap truncate max-w-[100px]" style={{ fontSize: '0.7375rem' }}>
               {request.id}
             </div>
           </Tooltip>
@@ -83,17 +83,17 @@ export default function LeaveRequestsTable({
                   />
                 ) : (
                   <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold shadow-lg ring-2 ring-white/80 dark:ring-gray-700/50 midnight:ring-cyan-500/30 purple:ring-pink-500/30 transition-all duration-500 ease-out group-hover/avatar:scale-150 group-hover/avatar:shadow-2xl group-hover/avatar:ring-blue-500/90 dark:group-hover/avatar:ring-blue-400/90 midnight:group-hover/avatar:ring-cyan-400/90 purple:group-hover/avatar:ring-pink-400/90 group-hover/avatar:z-[100]"
-                    style={{ position: 'relative', transformOrigin: 'center center', fontSize: '11.8px' }}>
+                    style={{ position: 'relative', transformOrigin: 'center center', fontSize: '0.7375rem' }}>
                     {request.staffName.charAt(0)}
                   </div>
                 )}
                 <div className="absolute -inset-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 rounded-full opacity-0 group-hover/avatar:opacity-40 blur-md transition-all duration-500 ease-out pointer-events-none -z-10" />
               </div>
               <div>
-                <div className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate max-w-[140px]" style={{ fontSize: '11.8px' }}>
+                <div className="font-semibold text-ink truncate max-w-[140px]" style={{ fontSize: '0.7375rem' }}>
                   {request.staffName}
                 </div>
-                <div className="text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70 truncate max-w-[140px]" style={{ fontSize: '10px' }}>
+                <div className="text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70 truncate max-w-[140px]" style={{ fontSize: '0.625rem' }}>
                   {request.staffPosition}
                 </div>
               </div>
@@ -109,7 +109,7 @@ export default function LeaveRequestsTable({
       className: "text-left",
       render: (request) => (
         <Tooltip content={request.leaveType}>
-          <div className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate max-w-[120px]" style={{ fontSize: '11.8px' }}>
+          <div className="font-semibold text-ink truncate max-w-[120px]" style={{ fontSize: '0.7375rem' }}>
             {request.leaveType}
           </div>
         </Tooltip>
@@ -126,10 +126,10 @@ export default function LeaveRequestsTable({
         return (
           <Tooltip content={periodInfo}>
             <div className="flex flex-col">
-              <div className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 whitespace-nowrap" style={{ fontSize: '11.8px' }}>
+              <div className="font-semibold text-ink whitespace-nowrap" style={{ fontSize: '0.7375rem' }}>
                 {formatDate(request.startDate)} - {formatDate(request.endDate)}
               </div>
-              <div className="text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70" style={{ fontSize: '10px' }}>
+              <div className="text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70" style={{ fontSize: '0.625rem' }}>
                 {request.numberOfDays} day{request.numberOfDays > 1 ? 's' : ''}
               </div>
             </div>
@@ -153,7 +153,7 @@ export default function LeaveRequestsTable({
       render: (request) => {
         return (
           <Tooltip content={formatDate(request.requestedDate)}>
-            <div className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 whitespace-nowrap" style={{ fontSize: '11.8px' }}>
+            <div className="font-semibold text-ink whitespace-nowrap" style={{ fontSize: '0.7375rem' }}>
               {formatDate(request.requestedDate)}
             </div>
           </Tooltip>
@@ -213,7 +213,7 @@ export default function LeaveRequestsTable({
   ];
 
   return (
-    <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm overflow-hidden">
+    <div className="bg-surface rounded-xl border border-line shadow-sm overflow-hidden">
       <ResponsiveListTable<LeaveRequest> variant="contained" showColumnHeaders={true}
         data={requests}
         columns={columns}

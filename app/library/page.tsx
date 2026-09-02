@@ -426,7 +426,7 @@ export default function LibraryPage() {
         label: "Damaged",
       },
       maintenance: {
-        bg: "bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]",
+        bg: "bg-surface-2",
         text: "text-gray-700 dark:text-gray-300 midnight:text-gray-300 purple:text-gray-300",
         border: "border-gray-200 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30",
         label: "Maintenance",
@@ -435,7 +435,7 @@ export default function LibraryPage() {
 
     const config = statusConfig[status];
     return (
-      <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full font-semibold border ${config.bg} ${config.text} ${config.border}`} style={{ fontSize: '11.8px' }}>
+      <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full font-semibold border ${config.bg} ${config.text} ${config.border}`} style={{ fontSize: '0.7375rem' }}>
         {config.label}
       </span>
     );
@@ -453,7 +453,7 @@ export default function LibraryPage() {
 
     const config = conditionConfig[condition];
     return (
-      <span className={`inline-flex items-center px-2 py-0.5 rounded-full font-medium capitalize ${config.bg} ${config.text}`} style={{ fontSize: '10px' }}>
+      <span className={`inline-flex items-center px-2 py-0.5 rounded-full font-medium capitalize ${config.bg} ${config.text}`} style={{ fontSize: '0.625rem' }}>
         {condition}
       </span>
     );
@@ -495,7 +495,7 @@ export default function LibraryPage() {
               />
             ) : (
               <div
-                className="absolute inset-0 w-10 h-14 rounded-md bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] ring-2 ring-white/80 dark:ring-gray-700 midnight:ring-cyan-500/20 purple:ring-pink-500/20 shadow-lg flex items-center justify-center transition-all duration-300 ease-out group-hover/cover:scale-[2.5] group-hover/cover:shadow-2xl group-hover/cover:ring-blue-500/90"
+                className="absolute inset-0 w-10 h-14 rounded-md bg-surface-2 ring-2 ring-white/80 dark:ring-gray-700 midnight:ring-cyan-500/20 purple:ring-pink-500/20 shadow-lg flex items-center justify-center transition-all duration-300 ease-out group-hover/cover:scale-[2.5] group-hover/cover:shadow-2xl group-hover/cover:ring-blue-500/90"
                 style={{ transformOrigin: 'left center' }}
               >
                 <BookOpen className="w-5 h-5 text-gray-400" />
@@ -503,13 +503,13 @@ export default function LibraryPage() {
             )}
           </div>
           <div className="min-w-0">
-            <div className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate" style={{ fontSize: "11.8px" }}>
+            <div className="font-semibold text-ink truncate" style={{ fontSize: "0.7375rem" }}>
               {book.title}
             </div>
-            <div className="text-gray-500 dark:text-gray-400 midnight:text-cyan-400/60 purple:text-pink-400/60 truncate" style={{ fontSize: "10px" }}>
+            <div className="text-gray-500 dark:text-gray-400 midnight:text-cyan-400/60 purple:text-pink-400/60 truncate" style={{ fontSize: "0.625rem" }}>
               {book.author}
             </div>
-            <div className="text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 font-mono" style={{ fontSize: "9px" }}>
+            <div className="text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 font-mono" style={{ fontSize: "0.5625rem" }}>
               {book.isbn}
             </div>
           </div>
@@ -522,7 +522,7 @@ export default function LibraryPage() {
       sortable: true,
       className: "text-left",
       render: (book) => (
-        <span className="inline-flex px-2.5 py-0.5 rounded-full font-semibold bg-purple-100 dark:bg-purple-900/30 midnight:bg-purple-900/20 purple:bg-purple-900/20 text-purple-700 dark:text-purple-400 midnight:text-purple-400 purple:text-purple-400 border border-purple-200 dark:border-purple-800 capitalize" style={{ fontSize: '11.8px' }}>
+        <span className="inline-flex px-2.5 py-0.5 rounded-full font-semibold bg-purple-100 dark:bg-purple-900/30 midnight:bg-purple-900/20 purple:bg-purple-900/20 text-purple-700 dark:text-purple-400 midnight:text-purple-400 purple:text-purple-400 border border-purple-200 dark:border-purple-800 capitalize" style={{ fontSize: '0.7375rem' }}>
           {book.category.replace("-", " ")}
         </span>
       ),
@@ -533,7 +533,7 @@ export default function LibraryPage() {
       sortable: true,
       className: "text-left",
       render: (book) => (
-        <span className="inline-flex px-2.5 py-0.5 rounded-full font-semibold bg-blue-100 dark:bg-blue-900/30 midnight:bg-blue-900/20 purple:bg-blue-900/20 text-blue-700 dark:text-blue-400 midnight:text-blue-400 purple:text-blue-400 border border-blue-200 dark:border-blue-800" style={{ fontSize: '11.8px' }}>
+        <span className="inline-flex px-2.5 py-0.5 rounded-full font-semibold bg-blue-100 dark:bg-blue-900/30 midnight:bg-blue-900/20 purple:bg-blue-900/20 text-blue-700 dark:text-blue-400 midnight:text-blue-400 purple:text-blue-400 border border-blue-200 dark:border-blue-800" style={{ fontSize: '0.7375rem' }}>
           {book.educationLevel}
         </span>
       ),
@@ -544,7 +544,7 @@ export default function LibraryPage() {
       sortable: true,
       className: "text-left",
       render: (book) => (
-        <div style={{ fontSize: '11.8px' }}>
+        <div style={{ fontSize: '0.7375rem' }}>
           <span className={`font-semibold ${book.availableCopies > 0 ? "text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400" : "text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400"}`}>
             {book.availableCopies}
           </span>
@@ -558,7 +558,7 @@ export default function LibraryPage() {
       sortable: true,
       className: "text-left",
       render: (book) => (
-        <span className="text-gray-600 dark:text-gray-400 midnight:text-gray-400 purple:text-gray-400" style={{ fontSize: '11.8px' }}>
+        <span className="text-gray-600 dark:text-gray-400 midnight:text-gray-400 purple:text-gray-400" style={{ fontSize: '0.7375rem' }}>
           {book.location}
         </span>
       ),
@@ -694,7 +694,7 @@ export default function LibraryPage() {
                     unoptimized
                   />
                 ) : (
-                  <div className="w-full h-full bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] flex items-center justify-center">
+                  <div className="w-full h-full bg-surface-2 flex items-center justify-center">
                     <BookOpen className="w-8 h-8 text-gray-400" />
                   </div>
                 )}
@@ -732,7 +732,7 @@ export default function LibraryPage() {
                 <p className="text-sm text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200">
                   {viewingBook.isbn}
                 </p>
-                <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
+                <p className="text-xs text-muted">
                   {viewingBook.educationLevel} • {viewingBook.subject} • {viewingBook.category.replace("-", " ")}
                 </p>
               </div>

@@ -139,7 +139,7 @@ export default function PaymentHistoryModal({
         return {
           bg: "bg-gray-100 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/30",
           text: "text-gray-700 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300",
-          border: "border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20",
+          border: "border-line",
         };
     }
   };
@@ -651,7 +651,7 @@ export default function PaymentHistoryModal({
     >
       <div className="space-y-5">
         {/* Summary Card - Subtle Design */}
-        <div className="rounded-xl bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 p-4">
+        <div className="rounded-xl bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border border-line p-4">
           {/* Top Section: Student Info + Amount */}
           <div className="flex items-start justify-between gap-4 mb-4">
             <div className="flex items-center gap-3 min-w-0">
@@ -667,10 +667,10 @@ export default function PaymentHistoryModal({
                 </div>
               )}
               <div className="min-w-0">
-                <p className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate">
+                <p className="font-semibold text-ink truncate">
                   {studentName}
                 </p>
-                <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
+                <p className="text-sm text-muted">
                   {payments.length} payment{payments.length !== 1 ? "s" : ""}{" "}
                   made
                 </p>
@@ -680,7 +680,7 @@ export default function PaymentHistoryModal({
               <p className="text-xl font-bold text-emerald-600 dark:text-emerald-400">
                 {money(paidAmount)}
               </p>
-              <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
+              <p className="text-xs text-muted">
                 of {money(totalAmount)}
               </p>
             </div>
@@ -690,7 +690,7 @@ export default function PaymentHistoryModal({
           {showProgressBar && (
           <div className="space-y-2">
             <div className="flex items-center justify-between text-sm">
-              <span className="text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
+              <span className="text-muted">
                 Payment Progress
               </span>
               <span className="font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200">
@@ -704,7 +704,7 @@ export default function PaymentHistoryModal({
               />
             </div>
             {balance > 0 && (
-              <p className="text-xs text-right text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
+              <p className="text-xs text-right text-muted">
                 Balance remaining:{" "}
                 <span className="font-medium text-orange-600 dark:text-orange-400">
                   {money(balance)}
@@ -720,7 +720,7 @@ export default function PaymentHistoryModal({
           <div className="p-1.5 rounded-lg bg-gray-100 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]">
             <CreditCard className="w-4 h-4 text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300" />
           </div>
-          <h4 className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-sm">
+          <h4 className="font-semibold text-ink text-sm">
             {paymentRecordsTitle}
           </h4>
         </div>
@@ -731,7 +731,7 @@ export default function PaymentHistoryModal({
             <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gray-100 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] flex items-center justify-center">
               <Receipt className="w-8 h-8 text-gray-400" />
             </div>
-            <p className="text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 font-medium">
+            <p className="text-muted font-medium">
               {emptyStateText}
             </p>
             <p className="text-sm text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 mt-1">
@@ -749,7 +749,7 @@ export default function PaymentHistoryModal({
               return (
                 <div
                   key={payment.id}
-                  className="rounded-xl bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 overflow-hidden transition-all duration-200 hover:shadow-md hover:border-emerald-300 dark:hover:border-emerald-700"
+                  className="rounded-xl bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border border-line overflow-hidden transition-all duration-200 hover:shadow-md hover:border-emerald-300 dark:hover:border-emerald-700"
                 >
                   {/* Main Row - Always Visible */}
                   <div className="p-3.5">
@@ -760,7 +760,7 @@ export default function PaymentHistoryModal({
                           <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
                         </div>
                         <div className="min-w-0">
-                          <p className="font-bold text-lg text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                          <p className="font-bold text-lg text-ink">
                             {money(payment.amount)}
                           </p>
                           <span
@@ -844,11 +844,11 @@ export default function PaymentHistoryModal({
                         <div className="min-w-0">
                           <div className="flex items-center gap-1.5 mb-0.5">
                             <Calendar className="w-3 h-3 text-gray-400 flex-shrink-0" />
-                            <span className="text-[10px] uppercase tracking-wider text-gray-400 font-medium">
+                            <span className="text-[0.625rem] uppercase tracking-wider text-gray-400 font-medium">
                               Date
                             </span>
                           </div>
-                          <p className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                          <p className="text-sm font-semibold text-ink">
                             {new Date(payment.date).toLocaleDateString(
                               "en-GB",
                               {
@@ -864,12 +864,12 @@ export default function PaymentHistoryModal({
                         <div className="min-w-0">
                           <div className="flex items-center gap-1.5 mb-0.5">
                             <Hash className="w-3 h-3 text-gray-400 flex-shrink-0" />
-                            <span className="text-[10px] uppercase tracking-wider text-gray-400 font-medium">
+                            <span className="text-[0.625rem] uppercase tracking-wider text-gray-400 font-medium">
                               Receipt
                             </span>
                           </div>
                           <Tooltip content={payment.receiptNumber}>
-                            <p className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 font-mono truncate cursor-help">
+                            <p className="text-sm font-semibold text-ink font-mono truncate cursor-help">
                               {truncateText(payment.receiptNumber, 14)}
                             </p>
                           </Tooltip>
@@ -879,13 +879,13 @@ export default function PaymentHistoryModal({
                         <div className="min-w-0">
                           <div className="flex items-center gap-1.5 mb-0.5">
                             <ExternalLink className="w-3 h-3 text-gray-400 flex-shrink-0" />
-                            <span className="text-[10px] uppercase tracking-wider text-gray-400 font-medium">
+                            <span className="text-[0.625rem] uppercase tracking-wider text-gray-400 font-medium">
                               Reference
                             </span>
                           </div>
                           <div className="flex items-center gap-1">
                             <Tooltip content={payment.reference}>
-                              <p className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 font-mono truncate cursor-help flex-1">
+                              <p className="text-sm font-semibold text-ink font-mono truncate cursor-help flex-1">
                                 {truncateText(payment.reference, 12)}
                               </p>
                             </Tooltip>
@@ -912,13 +912,13 @@ export default function PaymentHistoryModal({
 
                       {/* Expanded Reference */}
                       {isExpanded && (
-                        <div className="mt-3 p-2.5 rounded-lg bg-gray-50 dark:bg-[#0f1115] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+                        <div className="mt-3 p-2.5 rounded-lg bg-gray-50 dark:bg-[#0f1115] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border border-line">
                           <div className="flex items-start justify-between gap-2">
                             <div className="min-w-0 flex-1">
-                              <span className="text-[10px] uppercase tracking-wider text-gray-400 font-medium">
+                              <span className="text-[0.625rem] uppercase tracking-wider text-gray-400 font-medium">
                                 Full Reference
                               </span>
-                              <p className="text-xs font-mono text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 break-all mt-1">
+                              <p className="text-xs font-mono text-ink break-all mt-1">
                                 {payment.reference}
                               </p>
                             </div>

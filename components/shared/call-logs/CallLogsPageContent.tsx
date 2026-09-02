@@ -402,7 +402,7 @@ export default function CallLogsPageContent({
               </div>
               {call.recipientEmail && (
                 <Tooltip content={call.recipientEmail} block>
-                  <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 truncate hidden sm:block">
+                  <p className="text-[0.625rem] sm:text-xs text-muted truncate hidden sm:block">
                     {call.recipientEmail}
                   </p>
                 </Tooltip>
@@ -442,7 +442,7 @@ export default function CallLogsPageContent({
       className: "min-w-[70px] md:min-w-[100px] text-left",
       sortValue: (call) => new Date(call.startTime).getTime(),
       render: (call) => (
-        <span className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
+        <span className="text-[0.625rem] sm:text-xs text-muted">
           {formatCallTime(call.startTime)}
         </span>
       ),
@@ -527,7 +527,7 @@ export default function CallLogsPageContent({
               <DeleteAllButton selectedCount={selectedIds.size} onDeleteAll={handleDeleteAll} />
             )}
 
-            <div className="flex items-center px-3 lg:px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]">
+            <div className="flex items-center px-3 lg:px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-surface">
               <span className="text-xs lg:text-sm text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 whitespace-nowrap">
                 {filteredCalls.length} calls
               </span>
@@ -562,13 +562,13 @@ export default function CallLogsPageContent({
             />
           ) : filteredCalls.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16">
-              <div className="w-16 h-16 rounded-full bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/20 flex items-center justify-center mb-4">
+              <div className="w-16 h-16 rounded-full bg-surface-2/20 flex items-center justify-center mb-4">
                 <PhoneCall className="w-8 h-8 text-gray-400" />
               </div>
               <h3 className="text-base font-semibold text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 mb-1">
                 No call history found
               </h3>
-              <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
+              <p className="text-sm text-muted">
                 {hasActiveFilters
                   ? "Try adjusting your filters."
                   : `Start a call with a ${config.recipientLabel.toLowerCase()}.`}

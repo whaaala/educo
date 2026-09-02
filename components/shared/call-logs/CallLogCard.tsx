@@ -52,12 +52,12 @@ export default function CallLogCard({
 
   return (
     <div
-      className={`bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl border ${
+      className={`bg-surface rounded-xl border ${
         isSelected
           ? "border-blue-500 ring-2 ring-blue-500/20"
           : isMissed
           ? "border-red-200 dark:border-red-500/30"
-          : "border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20"
+          : "border-line"
       } shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden cursor-pointer`}
       onClick={() => onView(call)}
     >
@@ -136,7 +136,7 @@ export default function CallLogCard({
               </p>
             </div>
             {call.recipientEmail && (
-              <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 truncate">
+              <p className="text-xs text-muted truncate">
                 {call.recipientEmail}
               </p>
             )}
@@ -160,7 +160,7 @@ export default function CallLogCard({
         {call.recordingUrl && (
           <div className="flex items-center gap-2 mb-3">
             <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-            <span className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Recording available</span>
+            <span className="text-xs text-muted">Recording available</span>
           </div>
         )}
 
@@ -169,7 +169,7 @@ export default function CallLogCard({
         )}
 
         <div className="flex items-center justify-between">
-          <span className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
+          <span className="text-xs text-muted">
             {formatTime(call.startTime)}
           </span>
           <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>

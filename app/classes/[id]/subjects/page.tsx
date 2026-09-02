@@ -218,7 +218,7 @@ export default function SubjectsManagementPage() {
       afterStats={
         <div className="mt-6 min-h-screen bg-gray-50 dark:bg-[#0f1115] midnight:bg-gray-950 purple:bg-gray-950">
       {/* Header */}
-      <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+      <div className="bg-surface border-b border-line">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-4">
@@ -232,7 +232,7 @@ export default function SubjectsManagementPage() {
                 <h1 className="text-2xl font-bold text-gray-900 dark:text-white midnight:text-cyan-100 purple:text-pink-100">
                   Subjects Management
                 </h1>
-                <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mt-1">
+                <p className="text-sm text-muted mt-1">
                   Manage subjects and teachers for {classId}
                 </p>
               </div>
@@ -255,8 +255,8 @@ export default function SubjectsManagementPage() {
                   <BookOpen className="w-5 h-5 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
                 </div>
                 <div>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Total Subjects</p>
-                  <p className="text-xl font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                  <p className="text-xs text-muted">Total Subjects</p>
+                  <p className="text-xl font-bold text-ink">
                     {mockSubjects.length}
                   </p>
                 </div>
@@ -270,8 +270,8 @@ export default function SubjectsManagementPage() {
                     <GraduationCap className="w-5 h-5 text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400" />
                   </div>
                   <div>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Total Credits</p>
-                    <p className="text-xl font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                    <p className="text-xs text-muted">Total Credits</p>
+                    <p className="text-xl font-bold text-ink">
                       {totalCredits}
                     </p>
                   </div>
@@ -285,8 +285,8 @@ export default function SubjectsManagementPage() {
                   <Users className="w-5 h-5 text-purple-600 dark:text-purple-400" />
                 </div>
                 <div>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Weekly Hours</p>
-                  <p className="text-xl font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                  <p className="text-xs text-muted">Weekly Hours</p>
+                  <p className="text-xl font-bold text-ink">
                     {totalHours}
                   </p>
                 </div>
@@ -317,20 +317,20 @@ export default function SubjectsManagementPage() {
           {filteredSubjects.map((subject) => (
             <div
               key={subject.id}
-              className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 overflow-hidden hover:shadow-lg transition-shadow"
+              className="bg-surface rounded-xl shadow-sm border border-line overflow-hidden hover:shadow-lg transition-shadow"
             >
               {/* Subject Header */}
-              <div className="p-6 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+              <div className="p-6 border-b border-line">
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex items-start gap-3">
                     <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-500 rounded-lg flex items-center justify-center flex-shrink-0">
                       <BookOpen className="w-6 h-6 text-white" />
                     </div>
                     <div>
-                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                      <h3 className="text-lg font-semibold text-ink">
                         {subject.name}
                       </h3>
-                      <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
+                      <p className="text-sm text-muted">
                         {subject.code}
                         {subject.credits && ` • ${subject.credits} Credits`}
                       </p>
@@ -348,7 +348,7 @@ export default function SubjectsManagementPage() {
                       <MoreVertical className="w-5 h-5 text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300" />
                     </button>
                     {showActionsMenu === subject.id && (
-                      <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 z-10">
+                      <div className="absolute right-0 mt-2 w-48 bg-surface rounded-lg shadow-lg border border-line z-10">
                         <button className="flex items-center gap-2 px-4 py-2 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 w-full text-left">
                           <Edit className="w-4 h-4" />
                           Edit Subject
@@ -387,7 +387,7 @@ export default function SubjectsManagementPage() {
 
               {/* Teacher Info */}
               <div className="p-6 bg-gray-50 dark:bg-[#22262e] midnight:bg-[#0f1330]/50 purple:bg-[#251340]/50">
-                <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mb-3">
+                <p className="text-xs text-muted mb-3">
                   {isTertiary ? "Lecturer" : "Teacher"}
                 </p>
                 <div className="flex items-center gap-3">
@@ -397,15 +397,15 @@ export default function SubjectsManagementPage() {
                     className="w-12 h-12 rounded-full ring-2 ring-white dark:ring-gray-800 shadow-md object-cover"
                   />
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate">
+                    <p className="text-sm font-medium text-ink truncate">
                       {subject.teacher.name}
                     </p>
                     <div className="flex flex-col gap-1 mt-1">
-                      <span className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 truncate">
+                      <span className="flex items-center gap-1 text-xs text-muted truncate">
                         <Mail className="w-3 h-3 flex-shrink-0" />
                         {subject.teacher.email}
                       </span>
-                      <span className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
+                      <span className="flex items-center gap-1 text-xs text-muted">
                         <Phone className="w-3 h-3 flex-shrink-0" />
                         {subject.teacher.phone}
                       </span>
@@ -420,10 +420,10 @@ export default function SubjectsManagementPage() {
         {filteredSubjects.length === 0 && (
           <div className="text-center py-12">
             <BookOpen className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-2">
+            <h3 className="text-lg font-medium text-ink mb-2">
               No subjects found
             </h3>
-            <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mb-6">
+            <p className="text-sm text-muted mb-6">
               {searchQuery
                 ? "Try adjusting your search query"
                 : "Get started by adding your first subject"}
@@ -444,9 +444,9 @@ export default function SubjectsManagementPage() {
       {/* Add Subject Modal */}
       {showAddModal && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+          <div className="bg-surface rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6 border-b border-line">
+              <h2 className="text-xl font-bold text-ink">
                 Add New Subject
               </h2>
             </div>

@@ -32,15 +32,15 @@ describe("BulkInspector (multi-select bulk edits)", () => {
     expect(p.onStepHeight).toHaveBeenCalledWith(-1);
   });
 
-  it("setting margin / padding / radius / opacity patches ALL selected", () => {
+  it("setting spacing / rounded corners / see-through patches ALL selected (plain labels)", () => {
     const p = setup();
-    fireEvent.change(screen.getByLabelText("Margin all sides"), { target: { value: "40" } });
+    fireEvent.change(screen.getByLabelText("Outer spacing"), { target: { value: "40" } });
     expect(p.onPatch).toHaveBeenCalledWith({ margin: 40 });
-    fireEvent.change(screen.getByLabelText("Padding all sides"), { target: { value: "8" } });
+    fireEvent.change(screen.getByLabelText("Inner spacing"), { target: { value: "8" } });
     expect(p.onPatch).toHaveBeenCalledWith({ padding: 8 });
-    fireEvent.change(screen.getByLabelText("Corner radius"), { target: { value: "12" } });
+    fireEvent.change(screen.getByLabelText("Rounded corners"), { target: { value: "12" } });
     expect(p.onPatch).toHaveBeenCalledWith({ radius: 12 });
-    fireEvent.change(screen.getByLabelText("Opacity"), { target: { value: "50" } });
+    fireEvent.change(screen.getByLabelText("See-through"), { target: { value: "50" } });
     expect(p.onPatch).toHaveBeenCalledWith({ opacity: 50 });
   });
 

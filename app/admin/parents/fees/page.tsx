@@ -1121,8 +1121,8 @@ export default function AdminParentFeesPage() {
               </div>
             </Tooltip>
             <div className="min-w-0 flex-1 overflow-hidden">
-              <p className="font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-xs sm:text-sm truncate">{record.parentName}</p>
-              <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 truncate hidden sm:block">{record.parentEmail}</p>
+              <p className="font-medium text-ink text-xs sm:text-sm truncate">{record.parentName}</p>
+              <p className="text-[0.625rem] sm:text-xs text-muted truncate hidden sm:block">{record.parentEmail}</p>
             </div>
           </div>
         ),
@@ -1149,8 +1149,8 @@ export default function AdminParentFeesPage() {
               </div>
             </Tooltip>
             <div className="min-w-0 flex-1 overflow-hidden">
-              <p className="font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-xs sm:text-sm truncate">{record.childName}</p>
-              <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 truncate">{record.childClass}</p>
+              <p className="font-medium text-ink text-xs sm:text-sm truncate">{record.childName}</p>
+              <p className="text-[0.625rem] sm:text-xs text-muted truncate">{record.childClass}</p>
             </div>
           </div>
         ),
@@ -1164,8 +1164,8 @@ export default function AdminParentFeesPage() {
         render: (record) => (
           <Tooltip content={`${record.feeType}\n${record.term} - ${record.academicYear}`}>
             <div className="overflow-hidden">
-              <p className="font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-xs sm:text-sm truncate">{record.feeType}</p>
-              <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 whitespace-nowrap">
+              <p className="font-medium text-ink text-xs sm:text-sm truncate">{record.feeType}</p>
+              <p className="text-[0.625rem] sm:text-xs text-muted whitespace-nowrap">
                 {record.term} - {record.academicYear}
               </p>
             </div>
@@ -1178,7 +1178,7 @@ export default function AdminParentFeesPage() {
         sortable: true,
         className: "w-[15%] lg:w-[7%]",
         render: (record) => (
-          <span className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-xs sm:text-sm whitespace-nowrap">
+          <span className="font-semibold text-ink text-xs sm:text-sm whitespace-nowrap">
             {money(record.amount)}
           </span>
         ),
@@ -1244,7 +1244,7 @@ export default function AdminParentFeesPage() {
                   onClick={() => handleViewDetails(record)}
                   className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer"
                 >
-                  <Eye className="w-4 h-4 text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300" />
+                  <Eye className="w-4 h-4 text-muted" />
                 </button>
               </Tooltip>
               {record.paymentHistory.length > 0 && (
@@ -1275,7 +1275,7 @@ export default function AdminParentFeesPage() {
                     className="relative p-1 rounded-lg hover:bg-purple-50 dark:hover:bg-purple-900/30 transition-colors cursor-pointer"
                   >
                     <History className="w-4 h-4 text-purple-600 dark:text-purple-400" />
-                    <span className="absolute -top-0.5 -right-0.5 min-w-[12px] h-3 px-0.5 flex items-center justify-center text-[8px] font-bold bg-purple-500 text-white rounded-full">
+                    <span className="absolute -top-0.5 -right-0.5 min-w-[12px] h-3 px-0.5 flex items-center justify-center text-[0.5rem] font-bold bg-purple-500 text-white rounded-full">
                       {reminderCounts[record.id] > 9 ? "9+" : reminderCounts[record.id]}
                     </span>
                   </button>
@@ -1625,7 +1625,7 @@ function FeeRecordCard({
   onRecordPayment,
 }: FeeRecordCardProps) {
   return (
-    <div className={`bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl border ${isSelected ? 'border-blue-500 dark:border-blue-400 ring-2 ring-blue-500/20' : 'border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20'} shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden`}>
+    <div className={`bg-surface rounded-xl border ${isSelected ? 'border-blue-500 dark:border-blue-400 ring-2 ring-blue-500/20' : 'border-line'} shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden`}>
       {/* Header */}
       <div className="p-4 border-b border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
         <div className="flex items-start justify-between gap-3">
@@ -1650,10 +1650,10 @@ function FeeRecordCard({
               />
             </div>
             <div className="min-w-0">
-              <p className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-sm truncate">
+              <p className="font-semibold text-ink text-sm truncate">
                 {record.childName}
               </p>
-              <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">{record.childClass}</p>
+              <p className="text-xs text-muted">{record.childClass}</p>
             </div>
           </div>
           {getStatusBadge(record.status)}
@@ -1664,23 +1664,23 @@ function FeeRecordCard({
       <div className="p-4 space-y-3">
         {/* Fee Type */}
         <div>
-          <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mb-0.5">Fee Type</p>
-          <p className="font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-sm">{record.feeType}</p>
-          <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">{record.term} - {record.academicYear}</p>
+          <p className="text-xs text-muted mb-0.5">Fee Type</p>
+          <p className="font-medium text-ink text-sm">{record.feeType}</p>
+          <p className="text-xs text-muted">{record.term} - {record.academicYear}</p>
         </div>
 
         {/* Amounts */}
         <div className="grid grid-cols-3 gap-2">
           <div>
-            <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mb-0.5">Amount</p>
-            <p className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-sm">{money(record.amount)}</p>
+            <p className="text-xs text-muted mb-0.5">Amount</p>
+            <p className="font-semibold text-ink text-sm">{money(record.amount)}</p>
           </div>
           <div>
-            <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mb-0.5">Paid</p>
+            <p className="text-xs text-muted mb-0.5">Paid</p>
             <p className="font-medium text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400 text-sm">{money(record.paidAmount)}</p>
           </div>
           <div>
-            <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mb-0.5">Balance</p>
+            <p className="text-xs text-muted mb-0.5">Balance</p>
             <p className={`font-semibold text-sm ${record.balance > 0 ? "text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400" : "text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400"}`}>
               {money(record.balance)}
             </p>
@@ -1689,7 +1689,7 @@ function FeeRecordCard({
 
         {/* Parent Info */}
         <div className="pt-2 border-t border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
-          <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mb-1">Parent</p>
+          <p className="text-xs text-muted mb-1">Parent</p>
           <div className="flex items-center gap-2">
             <div className="relative w-6 h-6 rounded-full overflow-hidden bg-gray-200 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] flex-shrink-0">
               <Image
@@ -1701,15 +1701,15 @@ function FeeRecordCard({
               />
             </div>
             <div className="min-w-0">
-              <p className="font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-xs truncate">{record.parentName}</p>
+              <p className="font-medium text-ink text-xs truncate">{record.parentName}</p>
             </div>
           </div>
         </div>
 
         {/* Due Date */}
         <div className="flex items-center justify-between text-xs">
-          <span className="text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Due Date</span>
-          <span className="font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+          <span className="text-muted">Due Date</span>
+          <span className="font-medium text-ink">
             {new Date(record.dueDate).toLocaleDateString("en-GB", {
               day: "numeric",
               month: "short",
@@ -1729,7 +1729,7 @@ function FeeRecordCard({
           >
             <Send className="w-4 h-4 text-orange-600 dark:text-orange-400" />
             {reminderCount > 0 && (
-              <span className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 flex items-center justify-center text-[10px] font-bold bg-orange-500 text-white rounded-full">
+              <span className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 flex items-center justify-center text-[0.625rem] font-bold bg-orange-500 text-white rounded-full">
                 {reminderCount > 9 ? "9+" : reminderCount}
               </span>
             )}

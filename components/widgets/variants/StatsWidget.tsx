@@ -123,7 +123,7 @@ export function StatsWidget({
               {stat.icon}
             </div>
           )}
-          <span className="text-[10px] font-medium text-gray-500 dark:text-gray-400 midnight:text-gray-400 purple:text-gray-400 uppercase tracking-wide truncate">
+          <span className="text-[0.625rem] font-medium text-gray-500 dark:text-gray-400 midnight:text-gray-400 purple:text-gray-400 uppercase tracking-wide truncate">
             {stat.label}
           </span>
         </div>
@@ -137,7 +137,7 @@ export function StatsWidget({
               {stat.trendValue && (
                 <span
                   className={cn(
-                    "text-[10px] font-semibold",
+                    "text-[0.625rem] font-semibold",
                     stat.trend === "up" && "text-green-600 dark:text-green-400",
                     stat.trend === "down" && "text-red-600 dark:text-red-400",
                     stat.trend === "stable" && "text-gray-500 dark:text-gray-400"

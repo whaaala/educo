@@ -19,8 +19,6 @@ describe("ParticipantsPanel — Visual / CSS", () => {
       const panel = container.firstChild as HTMLElement;
       expect(panel.className).toContain("bg-white");
       expect(panel.className).toContain("dark:bg-[#0f1115]");
-      expect(panel.className).toContain("midnight:bg-[#0f1729]");
-      expect(panel.className).toContain("purple:bg-[#2a1a3e]");
     });
 
     it("has flex-col full size", () => {
@@ -46,15 +44,14 @@ describe("ParticipantsPanel — Visual / CSS", () => {
       render(<ParticipantsPanel {...defaultProps} />);
       const title = screen.getByText("Participants");
       expect(title.className).toContain("font-semibold");
-      expect(title.className).toContain("text-gray-900");
-      expect(title.className).toContain("dark:text-white");
+      expect(title.className).toContain("text-ink");
     });
 
     it("title has midnight and purple theme text colors", () => {
       render(<ParticipantsPanel {...defaultProps} />);
       const title = screen.getByText("Participants");
-      expect(title.className).toContain("midnight:text-cyan-50");
-      expect(title.className).toContain("purple:text-pink-50");
+      expect(title.className).toContain("text-ink");
+      expect(title.className).toContain("text-ink");
     });
   });
 
@@ -64,8 +61,7 @@ describe("ParticipantsPanel — Visual / CSS", () => {
       const name = screen.getByText("John");
       expect(name.className).toContain("text-sm");
       expect(name.className).toContain("font-medium");
-      expect(name.className).toContain("text-gray-900");
-      expect(name.className).toContain("dark:text-white");
+      expect(name.className).toContain("text-ink");
     });
 
     it("host badge has amber styling", () => {

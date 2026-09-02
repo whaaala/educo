@@ -286,7 +286,7 @@ describe("ColorPalettePicker", () => {
       const hexInput = container.querySelector('input[type="text"]');
       const classes = (hexInput!.getAttribute("class") ?? "").split(/\s+/);
       expect(classes).toContain("font-mono");
-      expect(classes).toContain("text-[11px]");
+      expect(classes).toContain("text-[0.6875rem]");
       expect(classes).toContain("rounded-md");
       expect(classes).toContain("focus:border-blue-400");
     });
@@ -464,7 +464,7 @@ describe("ColorPalettePicker", () => {
       // Then the "Custom" label should have correct text styling classes
       const label = getByText("Custom");
       const classes = (label.getAttribute("class") ?? "").split(/\s+/);
-      expect(classes).toContain("text-[10px]");
+      expect(classes).toContain("text-[0.625rem]");
       expect(classes).toContain("text-gray-400");
       expect(classes).toContain("dark:text-gray-500");
     });

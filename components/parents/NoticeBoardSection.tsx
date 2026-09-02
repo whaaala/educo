@@ -28,14 +28,14 @@ export default function NoticeBoardSection({
   };
 
   return (
-    <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm">
+    <div className="bg-surface rounded-xl border border-line shadow-sm">
       {/* Header */}
       <div className="p-4 border-b border-gray-100 dark:border-gray-700/50 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <div className="p-2 rounded-lg bg-amber-100 dark:bg-amber-900/30">
             <Bell className="w-4 h-4 text-amber-600 dark:text-amber-400" />
           </div>
-          <h3 className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+          <h3 className="font-semibold text-ink">
             Notice Board
           </h3>
         </div>
@@ -66,7 +66,7 @@ export default function NoticeBoardSection({
                   <span className="w-2 h-2 rounded-full bg-blue-500 flex-shrink-0 mt-2" />
                 )}
                 <div className={`flex-1 min-w-0 ${!notice.isNew ? "pl-5" : ""}`}>
-                  <p className="text-sm font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                  <p className="text-sm font-medium text-ink line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                     {notice.title}
                   </p>
                   <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 flex items-center gap-1">

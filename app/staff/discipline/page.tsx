@@ -462,7 +462,7 @@ export default function DisciplinePage() {
       headerContent={
         <>
           {/* Tabs */}
-          <div className="mt-6 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+          <div className="mt-6 border-b border-line">
             <nav className="-mb-px flex space-x-8">
               <button
                 onClick={() => setActiveTab("discipline")}

@@ -31,7 +31,7 @@ export default function SearchFilterBar({
   className = "",
 }: SearchFilterBarProps) {
   return (
-    <div className={`bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl p-4 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm ${className}`}>
+    <div className={`bg-surface rounded-xl p-4 border border-line shadow-sm ${className}`}>
       <div className="flex flex-col gap-4">
         {/* Filters - Show first on mobile */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">

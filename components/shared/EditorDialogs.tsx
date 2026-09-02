@@ -30,13 +30,13 @@ export function EditorDialog({
       data-editor-dialog
       className="absolute inset-0 z-[210] flex items-center justify-center bg-black/25 backdrop-blur-[2px] p-4"
     >
-      <div className="w-full max-w-[520px] rounded-2xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] shadow-2xl p-4">
+      <div className="w-full max-w-[520px] rounded-2xl border border-line bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] shadow-2xl p-4">
         <div className="flex items-center justify-between mb-3">
-          <div className="text-[13px] font-bold text-gray-800 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50">
+          <div className="text-[0.8125rem] font-bold text-gray-800 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50">
             {title}
           </div>
           <button
-            className="px-2 py-1 rounded-lg text-[12px] text-gray-500 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 cursor-pointer"
+            className="px-2 py-1 rounded-lg text-[0.75rem] text-gray-500 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 cursor-pointer"
             onClick={onClose}
           >
             Close
@@ -73,7 +73,7 @@ export function EditorDialogButton({
 }) {
   const styles: Record<string, string> = {
     secondary:
-      "border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5",
+      "border border-line bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5",
     primary: "bg-blue-600 text-white hover:bg-blue-700 border border-transparent",
     danger: "bg-red-600 text-white hover:bg-red-700 border border-transparent",
   };
@@ -81,7 +81,7 @@ export function EditorDialogButton({
     <button
       onClick={onClick}
       disabled={disabled}
-      className={`px-3 py-2 rounded-xl text-[12px] font-semibold transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed ${styles[variant]}`}
+      className={`px-3 py-2 rounded-xl text-[0.75rem] font-semibold transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed ${styles[variant]}`}
     >
       {children}
     </button>
@@ -139,7 +139,7 @@ export function FullscreenFloatingPill({
   if (!visible) return null;
 
   const pillBtnClass =
-    "px-3 py-2 text-[12px] font-medium transition-colors hover:bg-white/20 dark:hover:bg-white/10 cursor-pointer min-h-[44px] flex items-center";
+    "px-3 py-2 text-[0.75rem] font-medium transition-colors hover:bg-white/20 dark:hover:bg-white/10 cursor-pointer min-h-[44px] flex items-center";
 
   return (
     <div
@@ -198,7 +198,7 @@ export function FullscreenFloatingPill({
       >
         <Minimize2 className="w-3.5 h-3.5" />
         <span className="hidden sm:inline">Exit</span>
-        <kbd className="text-[10px] text-white/50 ml-1 hidden sm:inline">
+        <kbd className="text-[0.625rem] text-white/50 ml-1 hidden sm:inline">
           Esc
         </kbd>
       </button>
@@ -223,7 +223,7 @@ export function TableGridPicker({
   const [hoverCol, setHoverCol] = useState(1);
   return (
     <div className="inline-block">
-      <div className="text-[12px] font-semibold text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 mb-2 text-center">
+      <div className="text-[0.75rem] font-semibold text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 mb-2 text-center">
         {hoverRow} × {hoverCol}
       </div>
       <div
@@ -246,7 +246,7 @@ export function TableGridPicker({
               className={`w-5 h-5 rounded-sm border transition-colors cursor-pointer ${
                 active
                   ? "bg-blue-500/30 border-blue-400 dark:bg-blue-500/30 midnight:bg-cyan-500/30 purple:bg-pink-500/30 midnight:border-cyan-400 purple:border-pink-400"
-                  : "bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 hover:border-gray-300"
+                  : "bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border-line hover:border-gray-300"
               }`}
               aria-label={`${r}x${c}`}
             />
@@ -291,7 +291,7 @@ export function EditingModeButton({
         <button
           type="button"
           onClick={() => setOpen(!open)}
-          className="h-7 inline-flex items-center gap-1.5 px-2 rounded-lg hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors cursor-pointer text-[11px] font-medium text-gray-600 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100"
+          className="h-7 inline-flex items-center gap-1.5 px-2 rounded-lg hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors cursor-pointer text-[0.6875rem] font-medium text-gray-600 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100"
         >
           <PenLine className="w-3.5 h-3.5" />
           <span>{label}</span>
@@ -331,11 +331,11 @@ export function EditingModeButton({
               <MIcon className="w-4 h-4 flex-shrink-0" />
               <div>
                 <div
-                  className={`text-[12px] ${mode === editingMode ? "font-semibold" : ""}`}
+                  className={`text-[0.75rem] ${mode === editingMode ? "font-semibold" : ""}`}
                 >
                   {mode.charAt(0).toUpperCase() + mode.slice(1)}
                 </div>
-                <div className="text-[10px] text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400">
+                <div className="text-[0.625rem] text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400">
                   {desc}
                 </div>
               </div>

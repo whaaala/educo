@@ -245,14 +245,14 @@ export function ViewMenuItem({
           ) : null}
         </span>
         <div className="flex-1 min-w-0">
-          <span className="block text-[13px] leading-tight truncate">{label}</span>
+          <span className="block text-[0.8125rem] leading-tight truncate">{label}</span>
           {description && (
-            <span className="block text-[11px] leading-tight text-gray-400 dark:text-gray-500 midnight:text-cyan-300/40 purple:text-pink-300/40 mt-0.5 truncate">{description}</span>
+            <span className="block text-[0.6875rem] leading-tight text-gray-400 dark:text-gray-500 midnight:text-cyan-300/40 purple:text-pink-300/40 mt-0.5 truncate">{description}</span>
           )}
         </div>
         {activeMode && hasSubmenu && (
           <span className={[
-            "text-[10px] font-semibold px-1.5 py-0.5 rounded-full leading-none",
+            "text-[0.625rem] font-semibold px-1.5 py-0.5 rounded-full leading-none",
             activeMode === "suggesting"
               ? "bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-300 shadow-[0_0_8px_rgba(245,158,11,0.2)]"
               : activeMode === "viewing"
@@ -262,7 +262,7 @@ export function ViewMenuItem({
             {activeMode.charAt(0).toUpperCase() + activeMode.slice(1)}
           </span>
         )}
-        {shortcut && <span className="text-[11px] text-gray-400 dark:text-gray-500 tabular-nums">{shortcut}</span>}
+        {shortcut && <span className="text-[0.6875rem] text-gray-400 dark:text-gray-500 tabular-nums">{shortcut}</span>}
         {hasSubmenu && <ChevronRight className="w-3.5 h-3.5 text-gray-400 dark:text-gray-500" />}
       </button>
       <SubmenuTimerContext.Provider value={hasSubmenu ? timerCallbacks : null}>
@@ -294,13 +294,13 @@ export function ViewMenuToggle({ label, description, shortcut, isOn, onToggle }:
     >
       <div className="flex-1 min-w-0 flex items-center gap-2.5">
         <div className="min-w-0">
-          <span className="block text-[13px] leading-tight truncate">{label}</span>
+          <span className="block text-[0.8125rem] leading-tight truncate">{label}</span>
           {description && (
-            <span className="block text-[11px] leading-tight text-gray-400 dark:text-gray-500 midnight:text-cyan-300/40 purple:text-pink-300/40 mt-0.5 truncate">{description}</span>
+            <span className="block text-[0.6875rem] leading-tight text-gray-400 dark:text-gray-500 midnight:text-cyan-300/40 purple:text-pink-300/40 mt-0.5 truncate">{description}</span>
           )}
         </div>
       </div>
-      {shortcut && <span className="text-[11px] text-gray-400 dark:text-gray-500 tabular-nums mr-2">{shortcut}</span>}
+      {shortcut && <span className="text-[0.6875rem] text-gray-400 dark:text-gray-500 tabular-nums mr-2">{shortcut}</span>}
       <div className={[
         "relative w-[38px] h-[22px] rounded-full flex-shrink-0 transition-colors duration-200",
         isOn

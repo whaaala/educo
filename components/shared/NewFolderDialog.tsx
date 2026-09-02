@@ -60,7 +60,7 @@ export default function NewFolderDialog({
               <div className="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-500/10 midnight:bg-amber-500/10 purple:bg-amber-500/10 flex items-center justify-center">
                 <Folder className="w-5 h-5 text-amber-500" />
               </div>
-              <h2 className="text-[17px] font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+              <h2 className="text-[1.0625rem] font-semibold text-ink">
                 {title}
               </h2>
             </div>
@@ -74,7 +74,7 @@ export default function NewFolderDialog({
 
           {/* Input */}
           <div className="px-6 pb-2">
-            <label className="block text-[11px] font-semibold text-gray-400 dark:text-gray-500 midnight:text-cyan-400/60 purple:text-pink-400/60 uppercase tracking-wider mb-2">
+            <label className="block text-[0.6875rem] font-semibold text-gray-400 dark:text-gray-500 midnight:text-cyan-400/60 purple:text-pink-400/60 uppercase tracking-wider mb-2">
               Folder name
             </label>
             <input
@@ -84,7 +84,7 @@ export default function NewFolderDialog({
               onChange={e => setName(e.target.value)}
               onKeyDown={e => { if (e.key === "Enter") handleSubmit(); }}
               autoFocus
-              className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-[#1a1d24]/50 midnight:bg-white/[0.03] purple:bg-white/[0.03] border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 text-[15px] font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 placeholder-gray-400 outline-none focus:bg-white dark:focus:bg-white/8 focus:border-blue-400 dark:focus:border-blue-500 midnight:focus:border-cyan-400 purple:focus:border-pink-400 focus:ring-4 focus:ring-blue-500/10 dark:focus:ring-blue-400/10 midnight:focus:ring-cyan-400/10 purple:focus:ring-pink-400/10 transition-all duration-200"
+              className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-[#1a1d24]/50 midnight:bg-white/[0.03] purple:bg-white/[0.03] border border-line text-[0.9375rem] font-medium text-ink placeholder-gray-400 outline-none focus:bg-white dark:focus:bg-white/8 focus:border-blue-400 dark:focus:border-blue-500 midnight:focus:border-cyan-400 purple:focus:border-pink-400 focus:ring-4 focus:ring-blue-500/10 dark:focus:ring-blue-400/10 midnight:focus:ring-cyan-400/10 purple:focus:ring-pink-400/10 transition-all duration-200"
               placeholder="Enter folder name"
             />
           </div>
@@ -93,14 +93,14 @@ export default function NewFolderDialog({
           <div className="flex items-center justify-end gap-2.5 px-6 pt-4 pb-6">
             <button
               onClick={onClose}
-              className="px-5 py-2.5 rounded-xl text-[13px] font-semibold text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400 hover:bg-gray-100 dark:hover:bg-white/5 midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-all cursor-pointer"
+              className="px-5 py-2.5 rounded-xl text-[0.8125rem] font-semibold text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400 hover:bg-gray-100 dark:hover:bg-white/5 midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-all cursor-pointer"
             >
               Cancel
             </button>
             <button
               onClick={handleSubmit}
               disabled={!name.trim()}
-              className="px-6 py-2.5 rounded-xl text-[13px] font-semibold text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 midnight:bg-cyan-600 midnight:hover:bg-cyan-700 purple:bg-pink-600 purple:hover:bg-pink-700 shadow-sm hover:shadow-md disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:shadow-sm transition-all duration-200 cursor-pointer"
+              className="px-6 py-2.5 rounded-xl text-[0.8125rem] font-semibold text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 midnight:bg-cyan-600 midnight:hover:bg-cyan-700 purple:bg-pink-600 purple:hover:bg-pink-700 shadow-sm hover:shadow-md disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:shadow-sm transition-all duration-200 cursor-pointer"
             >
               Create
             </button>

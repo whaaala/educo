@@ -92,7 +92,7 @@ export default function FormDropdown({
             type="button"
             onClick={() => !disabled && setIsOpen(!isOpen)}
             disabled={disabled}
-            className={`appearance-none w-full min-h-[46px] text-sm font-normal text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] ${error ? "border-red-500 dark:border-red-400" : "border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30"} hover:border-gray-400 dark:hover:border-gray-500 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 midnight:focus:ring-cyan-500/20 purple:focus:ring-pink-500/20 focus:border-blue-500 dark:focus:border-blue-400 midnight:focus:border-cyan-500 purple:focus:border-pink-500 rounded-xl px-4 py-2.5 pr-10 outline-none focus:ring-2 transition-all duration-200 border text-left ${disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
+            className={`appearance-none w-full min-h-[46px] text-sm font-normal text-ink bg-surface ${error ? "border-red-500 dark:border-red-400" : "border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30"} hover:border-gray-400 dark:hover:border-gray-500 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 midnight:focus:ring-cyan-500/20 purple:focus:ring-pink-500/20 focus:border-blue-500 dark:focus:border-blue-400 midnight:focus:border-cyan-500 purple:focus:border-pink-500 rounded-xl px-4 py-2.5 pr-10 outline-none focus:ring-2 transition-all duration-200 border text-left ${disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
           >
             <span className="block truncate">
               {selectedOption?.label || <span className="text-gray-400/70 dark:text-gray-500/70 midnight:text-cyan-400/50 purple:text-pink-400/50 italic font-normal">{placeholder}</span>}
@@ -107,7 +107,7 @@ export default function FormDropdown({
         {isOpen && (
           <div
             ref={menuRef}
-            className="absolute top-full mt-1 left-0 right-0 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 max-h-64 overflow-y-auto z-50"
+            className="absolute top-full mt-1 left-0 right-0 bg-surface rounded-xl shadow-xl border border-line max-h-64 overflow-y-auto z-50"
           >
             {options.map((option) => (
               <Tooltip key={option.value} content={option.label}>

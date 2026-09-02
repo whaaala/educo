@@ -58,7 +58,7 @@ export default function TransferTypeBadge({ type, size = "md" }: TransferTypeBad
   return (
     <span
       className={`inline-flex items-center gap-1.5 font-semibold rounded-full border ${sizeClasses[size]} ${config.className}`}
-      style={size === "sm" ? { fontSize: '11.8px' } : undefined}
+      style={size === "sm" ? { fontSize: '0.7375rem' } : undefined}
     >
       <Icon className={iconSizes[size]} />
       {config.label}

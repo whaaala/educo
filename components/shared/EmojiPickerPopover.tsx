@@ -10,10 +10,10 @@ import Portal from "./Portal";
 const EmojiPicker = dynamic(() => import("emoji-picker-react"), {
   ssr: false,
   loading: () => (
-    <div className="w-[350px] h-[400px] flex items-center justify-center bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-2xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-xl">
+    <div className="w-[350px] h-[400px] flex items-center justify-center bg-surface rounded-2xl border border-line shadow-xl">
       <div className="flex flex-col items-center gap-2">
         <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
-        <span className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Loading emojis...</span>
+        <span className="text-sm text-muted">Loading emojis...</span>
       </div>
     </div>
   ),

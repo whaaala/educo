@@ -943,11 +943,11 @@ export default function InstallmentPlanModal({
                         : plan.color === "green"
                         ? "border-green-500 bg-green-50 dark:bg-green-900/20 midnight:bg-green-900/20 purple:bg-green-900/20"
                         : "border-purple-500 bg-purple-50 dark:bg-purple-900/20 midnight:bg-purple-900/20 purple:bg-pink-900/20"
-                      : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]"
+                      : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 bg-surface"
                   }`}
                 >
                   {/* Badge */}
-                  <span className={`absolute top-2 right-2 px-2 py-0.5 text-[10px] font-bold rounded-full ${
+                  <span className={`absolute top-2 right-2 px-2 py-0.5 text-[0.625rem] font-bold rounded-full ${
                     plan.badge === "Bulk"
                       ? "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"
                       : "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400"
@@ -1646,7 +1646,7 @@ export default function InstallmentPlanModal({
                 <Calendar className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h4 className="text-base font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                <h4 className="text-base font-semibold text-ink">
                   Payment Schedule Preview
                 </h4>
                 {formData.planType !== "custom" && (
@@ -1668,7 +1668,7 @@ export default function InstallmentPlanModal({
                 return (
                   <div
                     key={item.sequence}
-                    className="flex items-center justify-between p-3 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-lg"
+                    className="flex items-center justify-between p-3 bg-surface rounded-lg"
                   >
                     <div className="flex items-center gap-3">
                       <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
@@ -1727,7 +1727,7 @@ export default function InstallmentPlanModal({
             </div>
 
             <div className="mt-4 pt-4 border-t-2 border-green-300 dark:border-green-700 midnight:border-cyan-700 purple:border-pink-700 flex justify-between items-center">
-              <span className="font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+              <span className="font-bold text-ink">
                 Total Amount {formData.planType !== "custom" ? "per Student" : ""}
               </span>
               <span className="font-bold text-xl text-green-600 dark:text-green-400 midnight:text-cyan-400 purple:text-pink-400">

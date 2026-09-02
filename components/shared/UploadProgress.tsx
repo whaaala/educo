@@ -56,11 +56,11 @@ export default function UploadProgress({
   return (
     <>
       {/* Upload toast — fixed bottom-right */}
-      <div className="fixed bottom-4 right-4 z-[8000] w-[360px] bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 overflow-hidden animate-in slide-in-from-bottom-4 fade-in duration-300">
+      <div className="fixed bottom-4 right-4 z-[8000] w-[360px] bg-surface rounded-xl shadow-2xl border border-line overflow-hidden animate-in slide-in-from-bottom-4 fade-in duration-300">
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-[#1a1d24]">
           <div className="flex-1 min-w-0">
-            <p className="text-[13px] font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+            <p className="text-[0.8125rem] font-semibold text-ink">
               {allDone ? (
                 <span className="flex items-center gap-2">
                   <Check className="w-4 h-4 text-green-500" />
@@ -71,14 +71,14 @@ export default function UploadProgress({
               )}
             </p>
             {!allDone && estimatedTime && (
-              <p className="text-[11px] text-gray-400 dark:text-gray-500 mt-0.5">{estimatedTime}</p>
+              <p className="text-[0.6875rem] text-gray-400 dark:text-gray-500 mt-0.5">{estimatedTime}</p>
             )}
           </div>
           <div className="flex items-center gap-1">
             {!allDone && (
               <button
                 onClick={() => { setShowCancelConfirm(true); onPause?.(); }}
-                className="text-[12px] font-medium text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 hover:underline cursor-pointer px-2 py-1"
+                className="text-[0.75rem] font-medium text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 hover:underline cursor-pointer px-2 py-1"
               >
                 Cancel
               </button>
@@ -123,7 +123,7 @@ export default function UploadProgress({
                 </div>
                 {/* Name + progress */}
                 <div className="flex-1 min-w-0">
-                  <p className="text-[12px] text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 truncate">{file.name}</p>
+                  <p className="text-[0.75rem] text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 truncate">{file.name}</p>
                   {file.status === "uploading" && (
                     <div className="mt-1 h-1 bg-gray-100 dark:bg-[#22262e] rounded-full overflow-hidden">
                       <div
@@ -162,21 +162,21 @@ export default function UploadProgress({
                   <AlertTriangle className="w-5 h-5 text-amber-500" />
                 </div>
                 <div>
-                  <h2 className="text-[17px] font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">Cancel upload?</h2>
+                  <h2 className="text-[1.0625rem] font-semibold text-ink">Cancel upload?</h2>
                 </div>
               </div>
               <div className="px-6 py-3">
-                <p className="text-[14px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70 leading-relaxed">
+                <p className="text-[0.875rem] text-gray-500 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70 leading-relaxed">
                   Your upload is not complete. Would you like to cancel the upload?
                 </p>
               </div>
               <div className="flex items-center justify-end gap-2.5 px-6 pt-3 pb-6">
                 <button onClick={() => { setShowCancelConfirm(false); onCancel(); }}
-                  className="px-5 py-2.5 rounded-xl text-[13px] font-semibold text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 transition-all cursor-pointer">
+                  className="px-5 py-2.5 rounded-xl text-[0.8125rem] font-semibold text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 transition-all cursor-pointer">
                   Cancel upload
                 </button>
                 <button onClick={() => { setShowCancelConfirm(false); onResume?.(); }}
-                  className="px-6 py-2.5 rounded-xl text-[13px] font-semibold text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 midnight:bg-cyan-600 midnight:hover:bg-cyan-700 purple:bg-pink-600 purple:hover:bg-pink-700 shadow-sm hover:shadow-md transition-all cursor-pointer">
+                  className="px-6 py-2.5 rounded-xl text-[0.8125rem] font-semibold text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 midnight:bg-cyan-600 midnight:hover:bg-cyan-700 purple:bg-pink-600 purple:hover:bg-pink-700 shadow-sm hover:shadow-md transition-all cursor-pointer">
                   Continue upload
                 </button>
               </div>

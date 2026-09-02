@@ -377,7 +377,7 @@ export default function ValidationErrorsModal({
        {/* Modal Content */}
               <div
          ref={modalRef}
-         className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-2xl shadow-2xl w-full max-w-lg max-h-[calc(100vh-2rem)] sm:max-h-[calc(100vh-3rem)] mb-4 flex flex-col animate-in zoom-in-95 duration-200"
+         className="bg-surface rounded-2xl shadow-2xl w-full max-w-lg max-h-[calc(100vh-2rem)] sm:max-h-[calc(100vh-3rem)] mb-4 flex flex-col animate-in zoom-in-95 duration-200"
          onClick={(e) => e.stopPropagation()}
        >
         {/* Header */}
@@ -437,11 +437,11 @@ export default function ValidationErrorsModal({
                        <p className="font-semibold text-xs text-gray-900 dark:text-white midnight:text-cyan-100 purple:text-pink-100">
                          {fieldLabel}
                        </p>
-                       <span className="text-[10px] font-medium text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 bg-blue-50 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 px-1.5 py-0.5 rounded">
+                       <span className="text-[0.625rem] font-medium text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 bg-blue-50 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 px-1.5 py-0.5 rounded">
                          {sectionName}
                        </span>
                      </div>
-                     <p className="text-[11px] text-gray-600 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70 leading-tight">
+                     <p className="text-[0.6875rem] text-gray-600 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70 leading-tight">
                        {errorMessage}
                      </p>
                    </div>

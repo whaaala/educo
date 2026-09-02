@@ -113,7 +113,7 @@ export default function CompletePerformanceReviewModal({
       onClick={onClose}
     >
       <div
-        className="bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-2xl shadow-2xl w-full max-w-5xl max-h-[90vh] flex flex-col border border-gray-200/50 dark:border-[#1a1d24]/50 midnight:border-cyan-500/30 purple:border-pink-500/30 animate-in zoom-in-95 slide-in-from-bottom-4 duration-300"
+        className="bg-surface rounded-2xl shadow-2xl w-full max-w-5xl max-h-[90vh] flex flex-col border border-gray-200/50 dark:border-[#1a1d24]/50 midnight:border-cyan-500/30 purple:border-pink-500/30 animate-in zoom-in-95 slide-in-from-bottom-4 duration-300"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -128,7 +128,7 @@ export default function CompletePerformanceReviewModal({
                 <div className="absolute inset-0 rounded-lg bg-gradient-to-br from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
               </div>
               <div>
-                <h3 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                <h3 className="text-base sm:text-lg font-bold text-ink">
                   Complete Performance Review
                 </h3>
                 <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70">
@@ -156,7 +156,7 @@ export default function CompletePerformanceReviewModal({
                 {review.staffName.charAt(0)}
               </div>
               <div>
-                <h4 className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                <h4 className="font-semibold text-ink">
                   {review.staffName}
                 </h4>
                 <p className="text-sm text-gray-600 dark:text-gray-400">
@@ -172,7 +172,7 @@ export default function CompletePerformanceReviewModal({
               <div className="w-8 h-8 rounded-lg bg-purple-100 dark:bg-purple-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 flex items-center justify-center">
                 <BarChart3 className="w-4 h-4 text-purple-600 dark:text-purple-400 midnight:text-cyan-400 purple:text-pink-400" />
               </div>
-              <h4 className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+              <h4 className="text-sm font-semibold text-ink">
                 Performance Criteria
               </h4>
             </div>
@@ -181,9 +181,9 @@ export default function CompletePerformanceReviewModal({
               {PERFORMANCE_CATEGORIES.map((category) => (
                 <div
                   key={category.id}
-                  className="p-4 bg-gray-50 dark:bg-[#1a1d24]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 rounded-lg border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20"
+                  className="p-4 bg-gray-50 dark:bg-[#1a1d24]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 rounded-lg border border-line"
                 >
-                  <h5 className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-3">
+                  <h5 className="text-sm font-semibold text-ink mb-3">
                     {category.name}
                   </h5>
                   <div className="space-y-3">
@@ -225,7 +225,7 @@ export default function CompletePerformanceReviewModal({
               <div className="w-8 h-8 rounded-lg bg-yellow-100 dark:bg-yellow-900/30 midnight:bg-yellow-900/30 purple:bg-yellow-900/30 flex items-center justify-center">
                 <Star className="w-4 h-4 text-yellow-600 dark:text-yellow-400 midnight:text-yellow-400 purple:text-yellow-400" />
               </div>
-              <h4 className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+              <h4 className="text-sm font-semibold text-ink">
                 Overall Rating
               </h4>
             </div>
@@ -254,7 +254,7 @@ export default function CompletePerformanceReviewModal({
               <div className="w-8 h-8 rounded-lg bg-green-100 dark:bg-green-900/30 midnight:bg-green-900/30 purple:bg-green-900/30 flex items-center justify-center">
                 <CheckCircle className="w-4 h-4 text-green-600 dark:text-green-400 midnight:text-green-400 purple:text-green-400" />
               </div>
-              <h4 className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+              <h4 className="text-sm font-semibold text-ink">
                 Strengths
               </h4>
             </div>
@@ -275,7 +275,7 @@ export default function CompletePerformanceReviewModal({
               <div className="w-8 h-8 rounded-lg bg-orange-100 dark:bg-orange-900/30 midnight:bg-orange-900/30 purple:bg-orange-900/30 flex items-center justify-center">
                 <Target className="w-4 h-4 text-orange-600 dark:text-orange-400 midnight:text-orange-400 purple:text-orange-400" />
               </div>
-              <h4 className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+              <h4 className="text-sm font-semibold text-ink">
                 Areas for Improvement
               </h4>
             </div>
@@ -293,10 +293,10 @@ export default function CompletePerformanceReviewModal({
           {/* Reviewer Comments */}
           <div>
             <div className="flex items-center gap-2 mb-4">
-              <div className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] flex items-center justify-center">
+              <div className="w-8 h-8 rounded-lg bg-surface-2 flex items-center justify-center">
                 <FileText className="w-4 h-4 text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400" />
               </div>
-              <h4 className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+              <h4 className="text-sm font-semibold text-ink">
                 Additional Comments
               </h4>
             </div>
@@ -313,7 +313,7 @@ export default function CompletePerformanceReviewModal({
 
         {/* Footer */}
         <form onSubmit={handleSubmit}>
-          <div className="px-4 sm:px-6 py-3 sm:py-4 border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-gray-50/50 dark:bg-[#1a1d24]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50">
+          <div className="px-4 sm:px-6 py-3 sm:py-4 border-t border-line bg-gray-50/50 dark:bg-[#1a1d24]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50">
             <div className="flex flex-col sm:flex-row gap-3 justify-end">
               <button
                 type="button"

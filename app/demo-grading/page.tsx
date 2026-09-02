@@ -27,8 +27,8 @@ export default function GradingDemo() {
       afterStats={
         <div className="mt-6 max-w-7xl mx-auto space-y-6">
           {/* Demo Header */}
-          <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl p-6 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-2">
+          <div className="bg-surface rounded-xl p-6 border border-line shadow-sm">
+            <h2 className="text-2xl font-bold text-ink mb-2">
               Configurable Grading System Demo
             </h2>
             <p className="text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mb-6">
@@ -62,7 +62,7 @@ export default function GradingDemo() {
                   className={`w-full px-4 py-2 rounded-lg font-medium transition-colors ${
                     allowConfiguration
                       ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 border border-green-300 dark:border-green-700"
-                      : "bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30"
+                      : "bg-surface-2 text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30"
                   }`}
                 >
                   {allowConfiguration

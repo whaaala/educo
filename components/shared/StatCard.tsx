@@ -192,14 +192,14 @@ export default function StatCard({
           <Icon className={`w-4 h-4 sm:w-4.5 sm:h-4.5 ${style.badgeColor}`} />
         </div>
         {badge && (
-          <div className={`flex-shrink-0 text-[9px] font-bold ${style.badgeColor} ${style.badgeBg} px-1.5 py-0.5 rounded-md ring-1 ring-white/10`}>
+          <div className={`flex-shrink-0 text-[0.5625rem] font-bold ${style.badgeColor} ${style.badgeBg} px-1.5 py-0.5 rounded-md ring-1 ring-white/10`}>
             {badge}
           </div>
         )}
       </div>
 
       <div className="relative z-10 flex flex-col gap-0.5 min-w-0">
-        <p className={`text-[9px] sm:text-[10px] font-semibold ${style.labelColor} uppercase tracking-wide opacity-80 whitespace-nowrap truncate`}>
+        <p className={`text-[0.5625rem] sm:text-[0.625rem] font-semibold ${style.labelColor} uppercase tracking-wide opacity-80 whitespace-nowrap truncate`}>
           {label}
         </p>
         <div className="flex items-baseline gap-1">
@@ -213,7 +213,7 @@ export default function StatCard({
           </p>
         </div>
         {subtitle && (
-          <p className="text-[9px] text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 font-medium">
+          <p className="text-[0.5625rem] text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 font-medium">
             {subtitle}
           </p>
         )}

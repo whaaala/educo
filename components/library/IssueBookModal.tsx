@@ -657,9 +657,9 @@ export default function IssueBookModal({
 
   const getMemberTypeBadge = (type: BorrowerType) => {
     const styles = {
-      student: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 border-blue-200 dark:border-blue-800",
+      student: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 border-blue-200 dark:border-blue-800",
       teacher: "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 border-purple-200 dark:border-purple-800",
-      staff: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 border-amber-200 dark:border-amber-800",
+      staff: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400 border-amber-200 dark:border-amber-800",
     };
 
     return (
@@ -708,11 +708,11 @@ export default function IssueBookModal({
       <div className="space-y-6">
         {/* Book Availability Warning */}
         {book.availableCopies < 1 && (
-          <div className="flex items-start gap-3 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl">
-            <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
+          <div className="flex items-start gap-3 p-4 bg-red-50 dark:bg-red-900/20 midnight:bg-red-900/20 purple:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl">
+            <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400 flex-shrink-0 mt-0.5" />
             <div>
               <p className="text-sm font-semibold text-red-700 dark:text-red-300">No copies available</p>
-              <p className="text-xs text-red-600 dark:text-red-400 mt-1">
+              <p className="text-xs text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400 mt-1">
                 All copies of this book are currently borrowed. Please wait for a return or check for reservations.
               </p>
             </div>
@@ -722,9 +722,9 @@ export default function IssueBookModal({
         {/* Book Information Section */}
         <FormSection
           title="Book Information"
-          icon={<BookOpen className="w-5 h-5 text-blue-600 dark:text-blue-400" />}
+          icon={<BookOpen className="w-5 h-5 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />}
         >
-          <div className="bg-gray-50 dark:bg-[#1a1d24]/50 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
+          <div className="bg-gray-50 dark:bg-[#1a1d24]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 rounded-xl p-4 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
             <div className="flex items-start gap-4">
               {book.coverImage ? (
                 <img
@@ -734,25 +734,25 @@ export default function IssueBookModal({
                 />
               ) : (
                 <div className="w-16 h-20 bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-900/40 dark:to-blue-800/40 rounded-lg flex items-center justify-center">
-                  <BookOpen className="w-8 h-8 text-blue-600 dark:text-blue-400" />
+                  <BookOpen className="w-8 h-8 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
                 </div>
               )}
               <div className="flex-1 min-w-0">
-                <h4 className="font-semibold text-gray-900 dark:text-white text-sm truncate">
+                <h4 className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-sm truncate">
                   {book.title}
                 </h4>
-                <p className="text-xs text-gray-600 dark:text-gray-400 mt-0.5">
+                <p className="text-xs text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mt-0.5">
                   by {book.author}
                 </p>
                 <div className="flex flex-wrap items-center gap-2 mt-2">
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-[#22262e] text-gray-700 dark:text-gray-300">
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200">
                     <Hash className="w-3 h-3" />
                     {book.isbn}
                   </span>
                   <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold ${
                     book.availableCopies > 0
-                      ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-                      : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
+                      ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400"
+                      : "bg-red-100 text-red-700 dark:bg-red-900/30 midnight:bg-red-900/30 purple:bg-red-900/30 dark:text-red-400 midnight:text-red-400 purple:text-red-400"
                   }`}>
                     {book.availableCopies} of {book.totalCopies} available
                   </span>
@@ -769,14 +769,14 @@ export default function IssueBookModal({
         >
           {/* Selected Member Display */}
           {selectedMember ? (
-            <div className="bg-gray-50 dark:bg-[#1a1d24]/50 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
+            <div className="bg-gray-50 dark:bg-[#1a1d24]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 rounded-xl p-4 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
               <div className="flex items-start justify-between gap-4">
                 <div className="flex items-start gap-3">
                   {selectedMember.avatarUrl ? (
                     <img
                       src={selectedMember.avatarUrl}
                       alt={selectedMember.name}
-                      className="w-10 h-10 rounded-full object-cover flex-shrink-0 bg-gray-100 dark:bg-[#22262e]"
+                      className="w-10 h-10 rounded-full object-cover flex-shrink-0 bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]"
                     />
                   ) : (
                     <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-100 to-purple-200 dark:from-purple-900/40 dark:to-purple-800/40 flex items-center justify-center">
@@ -785,20 +785,20 @@ export default function IssueBookModal({
                   )}
                   <div>
                     <div className="flex items-center gap-2">
-                      <h4 className="font-semibold text-gray-900 dark:text-white text-sm">
+                      <h4 className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-sm">
                         {selectedMember.name}
                       </h4>
                       {getMemberTypeBadge(selectedMember.type)}
                     </div>
-                    <p className="text-xs text-gray-600 dark:text-gray-400 mt-0.5">
+                    <p className="text-xs text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mt-0.5">
                       {selectedMember.memberId} • {selectedMember.class || selectedMember.department}
                     </p>
                     <div className="flex items-center gap-3 mt-2 text-xs">
-                      <span className="text-gray-500 dark:text-gray-400">
+                      <span className="text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
                         Books: {selectedMember.currentBooksCount}/{selectedMember.maxBooksAllowed}
                       </span>
                       {selectedMember.finesDue > 0 && (
-                        <span className="text-red-600 dark:text-red-400 font-medium">
+                        <span className="text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400 font-medium">
                           Fines: ₦{selectedMember.finesDue.toLocaleString()}
                         </span>
                       )}
@@ -818,7 +818,7 @@ export default function IssueBookModal({
               </div>
               {/* Validation Error */}
               {errors.memberId && (
-                <div className="mt-3 flex items-start gap-2 text-red-600 dark:text-red-400">
+                <div className="mt-3 flex items-start gap-2 text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400">
                   <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
                   <p className="text-xs">{errors.memberId}</p>
                 </div>
@@ -849,17 +849,17 @@ export default function IssueBookModal({
                   value={selectedEducationLevel}
                   onChange={(val) => setSelectedEducationLevel(val as EducationLevel | "")}
                   options={filteredEducationLevels}
-                  iconBgColor="bg-blue-100 dark:bg-blue-900/30"
-                  iconColor="text-blue-600 dark:text-blue-400"
+                  iconBgColor="bg-blue-100 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30"
+                  iconColor="text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400"
                   required
                 />
               )}
 
               {/* Show auto-selected education level info for single-level schools */}
               {selectedBorrowerType === "student" && hasSingleEducationLevel && selectedEducationLevel && (
-                <div className="flex items-center gap-2 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-200 dark:border-blue-800">
-                  <Building2 className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                  <span className="text-sm text-blue-700 dark:text-blue-300">
+                <div className="flex items-center gap-2 p-3 bg-blue-50 dark:bg-blue-900/20 midnight:bg-cyan-900/20 purple:bg-pink-900/20 rounded-xl border border-blue-200 dark:border-blue-800">
+                  <Building2 className="w-4 h-4 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
+                  <span className="text-sm text-blue-700 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300">
                     {filteredEducationLevels.find(l => l.value === selectedEducationLevel)?.label}
                   </span>
                 </div>
@@ -889,12 +889,12 @@ export default function IssueBookModal({
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       placeholder="Search by name, ID, class, or department..."
-                      className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-[#1a1d24] text-gray-900 dark:text-white text-sm placeholder:text-gray-400 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all"
+                      className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-sm placeholder:text-gray-400 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all"
                     />
                   </div>
 
                   {/* Member List */}
-                  <div className="max-h-60 overflow-y-auto border border-gray-200 dark:border-gray-700 rounded-xl divide-y divide-gray-100 dark:divide-gray-700">
+                  <div className="max-h-60 overflow-y-auto border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-xl divide-y divide-gray-100 dark:divide-gray-700">
                     {filteredMembers.length > 0 ? (
                       filteredMembers.map((member) => (
                         <button
@@ -908,7 +908,7 @@ export default function IssueBookModal({
                               <img
                                 src={member.avatarUrl}
                                 alt={member.name}
-                                className="w-8 h-8 rounded-full object-cover flex-shrink-0 bg-gray-100 dark:bg-[#22262e]"
+                                className="w-8 h-8 rounded-full object-cover flex-shrink-0 bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]"
                               />
                             ) : (
                               <div className="w-8 h-8 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-600 flex items-center justify-center flex-shrink-0">
@@ -917,12 +917,12 @@ export default function IssueBookModal({
                             )}
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-2">
-                                <span className="font-medium text-gray-900 dark:text-white text-sm truncate">
+                                <span className="font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-sm truncate">
                                   {member.name}
                                 </span>
                                 {getMemberTypeBadge(member.type)}
                               </div>
-                              <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                              <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mt-0.5">
                                 {member.memberId} • {member.class || member.department}
                               </p>
                               <div className="flex items-center gap-3 mt-1 text-xs text-gray-400">
@@ -943,7 +943,7 @@ export default function IssueBookModal({
                         </button>
                       ))
                     ) : (
-                      <div className="p-4 text-center text-gray-500 dark:text-gray-400 text-sm">
+                      <div className="p-4 text-center text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 text-sm">
                         {searchQuery ? `No members found matching "${searchQuery}"` : "No members found for the selected filters"}
                       </div>
                     )}
@@ -954,14 +954,14 @@ export default function IssueBookModal({
               {/* Loading State */}
               {isLoadingMembers && (
                 <div className="flex items-center justify-center py-8">
-                  <Loader2 className="w-6 h-6 animate-spin text-blue-600 dark:text-blue-400" />
-                  <span className="ml-2 text-sm text-gray-600 dark:text-gray-400">Loading members...</span>
+                  <Loader2 className="w-6 h-6 animate-spin text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
+                  <span className="ml-2 text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Loading members...</span>
                 </div>
               )}
 
               {/* Validation Error */}
               {errors.memberId && !showMemberSearch && (
-                <div className="flex items-start gap-2 text-red-600 dark:text-red-400">
+                <div className="flex items-start gap-2 text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400">
                   <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
                   <p className="text-xs">{errors.memberId}</p>
                 </div>
@@ -995,7 +995,7 @@ export default function IssueBookModal({
               required
               error={errors.dueDate}
               iconBgColor="bg-amber-100 dark:bg-amber-900/30"
-              iconColor="text-amber-600 dark:text-amber-400"
+              iconColor="text-amber-600 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400"
             />
           </div>
           <div className="mt-4">
@@ -1014,10 +1014,10 @@ export default function IssueBookModal({
         {/* Loan Summary */}
         {selectedMember && book.availableCopies > 0 && !errors.memberId && (
           <div className="flex items-start gap-3 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl">
-            <CheckCircle2 className="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
+            <CheckCircle2 className="w-5 h-5 text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400 flex-shrink-0 mt-0.5" />
             <div>
               <p className="text-sm font-semibold text-green-700 dark:text-green-300">Ready to issue</p>
-              <p className="text-xs text-green-600 dark:text-green-400 mt-1">
+              <p className="text-xs text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400 mt-1">
                 "{book.title}" will be issued to {selectedMember.name} until{" "}
                 {formData.dueDate && new Date(formData.dueDate).toLocaleDateString("en-US", {
                   year: "numeric",

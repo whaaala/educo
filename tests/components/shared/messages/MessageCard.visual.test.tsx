@@ -36,10 +36,7 @@ describe("MessageCard — Visual / CSS", () => {
     it("has theme backgrounds", () => {
       const { container } = render(<MessageCard {...defaultProps} />);
       const card = container.firstChild as HTMLElement;
-      expect(card.className).toContain("bg-white");
-      expect(card.className).toContain("dark:bg-[#1a1d24]");
-      expect(card.className).toContain("midnight:bg-[#0a0e27]");
-      expect(card.className).toContain("purple:bg-[#1a0b2e]");
+      expect(card.className).toContain("bg-surface");
     });
 
     it("has rounded-xl with border", () => {
@@ -79,8 +76,7 @@ describe("MessageCard — Visual / CSS", () => {
       render(<MessageCard {...defaultProps} />);
       const preview = screen.getByText("Hello there");
       expect(preview.className).toContain("text-xs");
-      expect(preview.className).toContain("text-gray-500");
-      expect(preview.className).toContain("dark:text-gray-400");
+      expect(preview.className).toContain("text-muted");
     });
 
     it("preview has line-clamp-2", () => {

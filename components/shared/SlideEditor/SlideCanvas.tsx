@@ -1554,7 +1554,7 @@ export default function SlideCanvas({
       {contextMenu && typeof document !== "undefined" && (() => {
         const menuBtnClass = "w-full text-left px-3 py-1.5 text-[12px] text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-blue-50 dark:hover:bg-blue-900/20 midnight:hover:bg-cyan-900/20 purple:hover:bg-pink-900/20 flex items-center justify-between cursor-pointer";
         const dividerClass = "border-t border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 my-1";
-        const menuPanelClass = "bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-lg shadow-2xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 py-1 min-w-[200px]";
+        const menuPanelClass = "bg-surface rounded-lg shadow-2xl border border-line py-1 min-w-[200px]";
         const objId = contextMenu.objId;
         const ctxObj = objects.find(o => o.id === objId);
         const hasMultiSelect = multiSelectedIds.size > 1;
@@ -1996,11 +1996,11 @@ function FontSizeCombo({ value, onChange }: { value: number; onChange: (v: numbe
           }}
           className="h-full px-1 flex items-center justify-center cursor-pointer hover:bg-blue-100 dark:hover:bg-[#2a2d35] midnight:hover:bg-cyan-500/15 purple:hover:bg-pink-500/15 transition-colors"
         >
-          <svg viewBox="0 0 10 6" className={`w-2.5 h-2.5 text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 transition-transform ${isOpen ? "rotate-180" : ""}`} fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><polyline points="1,1 5,5 9,1" /></svg>
+          <svg viewBox="0 0 10 6" className={`w-2.5 h-2.5 text-muted transition-transform ${isOpen ? "rotate-180" : ""}`} fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><polyline points="1,1 5,5 9,1" /></svg>
         </button>
       </div>
       {isOpen && (
-        <div className="absolute top-full mt-1 left-0 min-w-full w-fit bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 z-[10000] py-1 max-h-[200px] overflow-y-auto">
+        <div className="absolute top-full mt-1 left-0 min-w-full w-fit bg-surface rounded-lg shadow-xl border border-line z-[10000] py-1 max-h-[200px] overflow-y-auto">
           {FONT_SIZES.map(s => (
             <button key={s} type="button"
               onClick={() => { onChange(s); setInputVal(String(s)); setIsOpen(false); }}
@@ -2303,7 +2303,7 @@ function SlideTableRenderer({ obj, isEditing, isSelected, canEdit, onCellChange,
       {/* Format button — shows when a cell is being edited */}
       {editingCell && !showCellToolbar && toolbarPos && typeof document !== "undefined" && createPortal(
         <button
-          className="fixed z-[10002] w-8 h-8 rounded-lg bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] shadow-lg border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 flex items-center justify-center cursor-pointer hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-all"
+          className="fixed z-[10002] w-8 h-8 rounded-lg bg-surface shadow-lg border border-line flex items-center justify-center cursor-pointer hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-all"
           style={{ top: toolbarPos.top + 4, left: toolbarPos.left }}
           onMouseDown={(e) => {
             e.stopPropagation();
@@ -2402,7 +2402,7 @@ function ShapeColorToolbar({ obj, updateObj, canvasRef }: {
       {/* Header — shape preview + opacity */}
       <div className="px-4 pt-3 pb-2 bg-gradient-to-b from-gray-50 dark:from-gray-800/50 to-transparent">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 flex items-center justify-center overflow-hidden" style={{ backgroundColor: obj.fill || "#3b82f6" }}>
+          <div className="w-10 h-10 rounded-lg border border-line flex items-center justify-center overflow-hidden" style={{ backgroundColor: obj.fill || "#3b82f6" }}>
             <svg viewBox="0 0 100 100" className="w-7 h-7" style={{ color: "#fff" }}>
               <g dangerouslySetInnerHTML={{ __html: SHAPE_DEFS[obj.shape]?.svg.replace(/fill="currentColor"/g, 'fill="white"').replace(/stroke="currentColor"/g, 'stroke="white"') || "" }} />
             </svg>
@@ -2419,7 +2419,7 @@ function ShapeColorToolbar({ obj, updateObj, canvasRef }: {
                 onChange={(e) => updateObj(obj.id, { opacity: Number(e.target.value) / 100 } as Partial<ShapeObject>)}
                 className="flex-1 h-1 accent-blue-500 cursor-pointer"
               />
-              <span className="text-[10px] font-mono text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 w-8 text-right">{Math.round((obj.opacity ?? 1) * 100)}%</span>
+              <span className="text-[10px] font-mono text-muted w-8 text-right">{Math.round((obj.opacity ?? 1) * 100)}%</span>
             </div>
           </div>
         </div>
@@ -2461,7 +2461,7 @@ function ShapeColorToolbar({ obj, updateObj, canvasRef }: {
               className={`mt-2 w-full py-1.5 rounded-lg text-[11px] font-medium transition-all cursor-pointer ${
                 obj.fill === "transparent"
                   ? "bg-blue-50 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 ring-1 ring-blue-200 dark:ring-blue-800"
-                  : "text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20"
+                  : "text-muted hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 border border-line"
               }`}
             >
               No fill
@@ -2473,7 +2473,7 @@ function ShapeColorToolbar({ obj, updateObj, canvasRef }: {
           <div className="space-y-3">
             {/* Border color */}
             <div>
-              <div className="text-[10px] font-semibold text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 uppercase tracking-wider mb-1.5">Color</div>
+              <div className="text-[10px] font-semibold text-muted uppercase tracking-wider mb-1.5">Color</div>
               <ColorGrid
                 colors={BORDER_COLORS.slice(0, 24)}
                 selectedColor={obj.stroke}
@@ -2489,7 +2489,7 @@ function ShapeColorToolbar({ obj, updateObj, canvasRef }: {
 
             {/* Border weight */}
             <div>
-              <div className="text-[10px] font-semibold text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 uppercase tracking-wider mb-1.5">Weight</div>
+              <div className="text-[10px] font-semibold text-muted uppercase tracking-wider mb-1.5">Weight</div>
               <div className="flex gap-1">
                 {[0, 1, 2, 3, 4, 6, 8].map(w => (
                   <button
@@ -2498,7 +2498,7 @@ function ShapeColorToolbar({ obj, updateObj, canvasRef }: {
                     className={`flex-1 h-8 flex items-center justify-center rounded-lg transition-all cursor-pointer ${
                       obj.strokeWidth === w
                         ? "bg-blue-50 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 ring-1.5 ring-blue-400"
-                        : "hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20"
+                        : "hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 border border-line"
                     }`}
                     title={w === 0 ? "None" : `${w}px`}
                   >
@@ -2514,7 +2514,7 @@ function ShapeColorToolbar({ obj, updateObj, canvasRef }: {
 
             {/* Border style — future: dashed, dotted */}
             <div>
-              <div className="text-[10px] font-semibold text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 uppercase tracking-wider mb-1.5">Style</div>
+              <div className="text-[10px] font-semibold text-muted uppercase tracking-wider mb-1.5">Style</div>
               <div className="flex gap-1">
                 {[
                   { label: "Solid", svg: <line x1="2" y1="10" x2="30" y2="10" stroke="currentColor" strokeWidth="2" /> },
@@ -2523,10 +2523,10 @@ function ShapeColorToolbar({ obj, updateObj, canvasRef }: {
                 ].map((s, i) => (
                   <button
                     key={i}
-                    className="flex-1 h-8 flex items-center justify-center rounded-lg border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 cursor-pointer transition-all"
+                    className="flex-1 h-8 flex items-center justify-center rounded-lg border border-line hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 cursor-pointer transition-all"
                     title={s.label}
                   >
-                    <svg viewBox="0 0 32 20" className="w-6 h-4 text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">{s.svg}</svg>
+                    <svg viewBox="0 0 32 20" className="w-6 h-4 text-muted">{s.svg}</svg>
                   </button>
                 ))}
               </div>
@@ -2538,7 +2538,7 @@ function ShapeColorToolbar({ obj, updateObj, canvasRef }: {
           <div className="space-y-3">
             {/* Text color */}
             <div>
-              <div className="text-[10px] font-semibold text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 uppercase tracking-wider mb-1.5">Color</div>
+              <div className="text-[10px] font-semibold text-muted uppercase tracking-wider mb-1.5">Color</div>
               <ColorGrid
                 colors={TEXT_COLORS}
                 selectedColor={obj.textColor || "#ffffff"}
@@ -2551,7 +2551,7 @@ function ShapeColorToolbar({ obj, updateObj, canvasRef }: {
 
             {/* Text size */}
             <div>
-              <div className="text-[10px] font-semibold text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 uppercase tracking-wider mb-1.5">Size</div>
+              <div className="text-[10px] font-semibold text-muted uppercase tracking-wider mb-1.5">Size</div>
               <div className="flex gap-1">
                 {[8, 10, 12, 14, 18, 24, 32, 48].map(s => (
                   <button
@@ -2560,7 +2560,7 @@ function ShapeColorToolbar({ obj, updateObj, canvasRef }: {
                     className={`flex-1 py-1.5 rounded-lg text-[10px] font-medium transition-all cursor-pointer ${
                       (obj.textSize || 14) === s
                         ? "bg-blue-50 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 ring-1 ring-blue-200 dark:ring-blue-800"
-                        : "text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 border border-gray-100 dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10"
+                        : "text-muted hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 border border-gray-100 dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10"
                     }`}
                   >{s}</button>
                 ))}

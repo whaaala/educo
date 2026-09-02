@@ -602,10 +602,10 @@ export default function ReportCardPage() {
         afterStats={
           <div className="mt-6 flex flex-col items-center justify-center min-h-[60vh]">
             <AlertCircle className="w-16 h-16 text-gray-300 dark:text-gray-600 midnight:text-cyan-500 purple:text-pink-500 mb-4" />
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-2">
+            <h2 className="text-xl font-semibold text-ink mb-2">
               Student Not Found
             </h2>
-            <p className="text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mb-6">
+            <p className="text-muted mb-6">
               The student you&apos;re looking for doesn&apos;t exist.
             </p>
             <Link href="/parents/children">
@@ -947,7 +947,7 @@ export default function ReportCardPage() {
               <UserCheck className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
             </div>
             <div>
-              <h3 className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-1">Parent Portal View</h3>
+              <h3 className="font-semibold text-ink mb-1">Parent Portal View</h3>
               <p className="text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
                 You are viewing your child&apos;s report card through the Parent Portal.
                 Use the Print or Download options above to save a copy for your records.

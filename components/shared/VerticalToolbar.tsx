@@ -226,9 +226,9 @@ function SectionButton({
           onMouseLeave={onFlyoutLeave}
         >
           {/* Arrow pointer */}
-          <div className="absolute left-0 top-1/2 -translate-x-[5px] -translate-y-1/2 w-2.5 h-2.5 rotate-45 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border-l border-b border-gray-200/80 dark:border-gray-700/80 midnight:border-cyan-500/15 purple:border-pink-500/15" />
+          <div className="absolute left-0 top-1/2 -translate-x-[5px] -translate-y-1/2 w-2.5 h-2.5 rotate-45 bg-surface border-l border-b border-gray-200/80 dark:border-gray-700/80 midnight:border-cyan-500/15 purple:border-pink-500/15" />
           <div className="relative bg-white/95 dark:bg-[#1a1d24]/95 midnight:bg-[#0a0e27]/95 purple:bg-[#1a0b2e]/95 backdrop-blur-sm border border-gray-200/80 dark:border-gray-700/80 midnight:border-cyan-500/15 purple:border-pink-500/15 rounded-xl shadow-lg shadow-black/8 dark:shadow-black/30 p-2 min-w-[140px]">
-            <div className="text-[9px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 midnight:text-cyan-500/50 purple:text-pink-500/50 px-1 mb-1.5">
+            <div className="text-[0.5625rem] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 midnight:text-cyan-500/50 purple:text-pink-500/50 px-1 mb-1.5">
               {section.label}
             </div>
             <div
@@ -250,7 +250,7 @@ function SectionButton({
                     title={tool.label}
                   >
                     <ToolIcon className="w-[18px] h-[18px]" />
-                    <span className="text-[8px] font-medium leading-none truncate w-full text-center opacity-70">
+                    <span className="text-[0.5rem] font-medium leading-none truncate w-full text-center opacity-70">
                       {tool.label}
                     </span>
                   </button>

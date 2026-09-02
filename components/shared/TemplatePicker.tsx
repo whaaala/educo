@@ -94,7 +94,7 @@ export default function TemplatePicker({
               <button
                 key={cat.id}
                 onClick={() => { setActiveCategory(cat.id); setSearchQuery(""); }}
-                className={`flex items-center gap-1 px-2 py-1.5 rounded-lg text-[10px] font-semibold transition-all duration-150 cursor-pointer ${
+                className={`flex items-center gap-1 px-2 py-1.5 rounded-lg text-[0.625rem] font-semibold transition-all duration-150 cursor-pointer ${
                   activeCategory === cat.id && !searchQuery
                     ? "bg-blue-500/12 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400 midnight:bg-cyan-500/20 midnight:text-cyan-400 purple:bg-pink-500/20 purple:text-pink-400"
                     : "text-gray-400 dark:text-gray-500 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"
@@ -116,16 +116,16 @@ export default function TemplatePicker({
               onClick={() => handleSelect(tpl)}
               className="flex flex-col gap-0.5 px-2.5 py-2 rounded-lg text-left transition-all duration-150 cursor-pointer hover:bg-white dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 group"
             >
-              <span className="text-[11px] font-semibold text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 midnight:group-hover:text-cyan-400 purple:group-hover:text-pink-400 transition-colors">
+              <span className="text-[0.6875rem] font-semibold text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 midnight:group-hover:text-cyan-400 purple:group-hover:text-pink-400 transition-colors">
                 {tpl.name}
               </span>
-              <span className="text-[10px] text-gray-400 dark:text-gray-500 midnight:text-cyan-400/40 purple:text-pink-400/40 leading-tight">
+              <span className="text-[0.625rem] text-gray-400 dark:text-gray-500 midnight:text-cyan-400/40 purple:text-pink-400/40 leading-tight">
                 {tpl.description}
               </span>
             </button>
           ))}
           {filteredTemplates.length === 0 && (
-            <div className="text-[11px] text-gray-400 dark:text-gray-500 text-center py-4">
+            <div className="text-[0.6875rem] text-gray-400 dark:text-gray-500 text-center py-4">
               No templates found
             </div>
           )}
@@ -150,7 +150,7 @@ export default function TemplatePicker({
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search templates..."
-            className="w-full pl-8 pr-3 py-1.5 rounded-lg text-[12px] bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0f1330]/50 purple:bg-[#251340]/50 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-blue-500/30 dark:focus:ring-blue-500/40"
+            className="w-full pl-8 pr-3 py-1.5 rounded-lg text-[0.75rem] bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0f1330]/50 purple:bg-[#251340]/50 border border-line text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-blue-500/30 dark:focus:ring-blue-500/40"
           />
         </div>
       </div>
@@ -181,7 +181,7 @@ export default function TemplatePicker({
                 />
                 <div className="flex-1 min-w-0">
                   <span
-                    className={`text-[11px] font-semibold block truncate ${
+                    className={`text-[0.6875rem] font-semibold block truncate ${
                       isActive
                         ? "text-blue-600 dark:text-blue-400 midnight:text-cyan-300 purple:text-pink-300"
                         : "text-gray-600 dark:text-gray-300"
@@ -189,7 +189,7 @@ export default function TemplatePicker({
                   >
                     {cat.label}
                   </span>
-                  <span className="text-[9px] text-gray-400 dark:text-gray-600">
+                  <span className="text-[0.5625rem] text-gray-400 dark:text-gray-600">
                     {count} templates
                   </span>
                 </div>
@@ -211,17 +211,17 @@ export default function TemplatePicker({
                 <div className="w-full h-16 rounded-lg bg-gray-100 dark:bg-[#1a1d24] midnight:bg-[#0f1330]/50 purple:bg-[#251340]/50 flex items-center justify-center">
                   <LayoutTemplate className="w-6 h-6 text-gray-300 dark:text-gray-600 group-hover:text-blue-400 dark:group-hover:text-blue-500 transition-colors" />
                 </div>
-                <span className="text-[11px] font-semibold text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 midnight:group-hover:text-cyan-400 purple:group-hover:text-pink-400 transition-colors">
+                <span className="text-[0.6875rem] font-semibold text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 midnight:group-hover:text-cyan-400 purple:group-hover:text-pink-400 transition-colors">
                   {tpl.name}
                 </span>
-                <span className="text-[9px] text-gray-400 dark:text-gray-500 midnight:text-cyan-400/40 purple:text-pink-400/40 leading-tight line-clamp-2">
+                <span className="text-[0.5625rem] text-gray-400 dark:text-gray-500 midnight:text-cyan-400/40 purple:text-pink-400/40 leading-tight line-clamp-2">
                   {tpl.description}
                 </span>
               </button>
             ))}
           </div>
           {filteredTemplates.length === 0 && (
-            <div className="text-[12px] text-gray-400 dark:text-gray-500 text-center py-8">
+            <div className="text-[0.75rem] text-gray-400 dark:text-gray-500 text-center py-8">
               No templates found for &ldquo;{searchQuery}&rdquo;
             </div>
           )}

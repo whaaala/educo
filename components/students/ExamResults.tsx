@@ -729,7 +729,7 @@ export default function ExamResults({
               </div>
             </div>
             <div className="flex-1 flex flex-col justify-end">
-              <p className="text-[9px] sm:text-[10px] font-semibold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 uppercase tracking-wide mb-0.5">
+              <p className="text-[0.5625rem] sm:text-[0.625rem] font-semibold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 uppercase tracking-wide mb-0.5">
                 Total {isTertiary ? "Modules" : "Subjects"}
               </p>
               <p className="text-base sm:text-lg font-bold text-blue-900 dark:text-blue-100 midnight:text-cyan-100 purple:text-pink-100 truncate leading-none">
@@ -746,7 +746,7 @@ export default function ExamResults({
               </div>
             </div>
             <div className="flex-1 flex flex-col justify-end">
-              <p className="text-[9px] sm:text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 uppercase tracking-wide mb-0.5">
+              <p className="text-[0.5625rem] sm:text-[0.625rem] font-semibold text-emerald-600 dark:text-emerald-400 uppercase tracking-wide mb-0.5">
                 Passed
               </p>
               <p className="text-base sm:text-lg font-bold text-emerald-900 dark:text-emerald-100 truncate leading-none">
@@ -763,7 +763,7 @@ export default function ExamResults({
               </div>
             </div>
             <div className="flex-1 flex flex-col justify-end">
-              <p className="text-[9px] sm:text-[10px] font-semibold text-red-600 dark:text-red-400 uppercase tracking-wide mb-0.5">
+              <p className="text-[0.5625rem] sm:text-[0.625rem] font-semibold text-red-600 dark:text-red-400 uppercase tracking-wide mb-0.5">
                 Failed
               </p>
               <p className="text-base sm:text-lg font-bold text-red-900 dark:text-red-100 truncate leading-none">
@@ -780,7 +780,7 @@ export default function ExamResults({
               </div>
             </div>
             <div className="flex-1 flex flex-col justify-end">
-              <p className="text-[9px] sm:text-[10px] font-semibold text-indigo-600 dark:text-indigo-400 uppercase tracking-wide mb-0.5">
+              <p className="text-[0.5625rem] sm:text-[0.625rem] font-semibold text-indigo-600 dark:text-indigo-400 uppercase tracking-wide mb-0.5">
                 Average Score
               </p>
               <p className="text-base sm:text-lg font-bold text-indigo-900 dark:text-indigo-100 truncate leading-none">
@@ -798,7 +798,7 @@ export default function ExamResults({
                 </div>
               </div>
               <div className="flex-1 flex flex-col justify-end">
-                <p className="text-[9px] sm:text-[10px] font-semibold text-purple-600 dark:text-purple-400 midnight:text-purple-400 purple:text-pink-400 uppercase tracking-wide mb-0.5">
+                <p className="text-[0.5625rem] sm:text-[0.625rem] font-semibold text-purple-600 dark:text-purple-400 midnight:text-purple-400 purple:text-pink-400 uppercase tracking-wide mb-0.5">
                   GPA
                 </p>
                 <p className="text-base sm:text-lg font-bold text-purple-900 dark:text-purple-100 midnight:text-purple-100 purple:text-pink-100 truncate leading-none">
@@ -810,7 +810,7 @@ export default function ExamResults({
         </div>
 
         {/* Filter Buttons */}
-        <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm p-3 sm:p-4">
+        <div className="bg-surface rounded-xl border border-line shadow-sm p-3 sm:p-4">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
             {/* Year Selector */}
             <div className="w-full sm:w-auto">
@@ -828,7 +828,7 @@ export default function ExamResults({
               {/* All Button */}
               <button
                 onClick={() => handleFilterChange("all")}
-                className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-[10px] sm:text-xs font-semibold transition-all duration-200 cursor-pointer ${
+                className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-[0.625rem] sm:text-xs font-semibold transition-all duration-200 cursor-pointer ${
                   statusFilter === "all"
                     ? "bg-blue-600 dark:bg-blue-500 text-white shadow-sm"
                     : "bg-gray-100 dark:bg-[#22262e] text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-[#2a2d35]"
@@ -836,7 +836,7 @@ export default function ExamResults({
               >
                 <span className="flex items-center gap-1.5">
                   All
-                  <span className={`inline-flex items-center justify-center min-w-[18px] h-4 px-1.5 rounded text-[9px] font-bold ${
+                  <span className={`inline-flex items-center justify-center min-w-[18px] h-4 px-1.5 rounded text-[0.5625rem] font-bold ${
                     statusFilter === "all"
                       ? "bg-blue-500 dark:bg-blue-600 text-white"
                       : "bg-gray-200 dark:bg-[#2a2d35] text-gray-700 dark:text-gray-300"
@@ -849,7 +849,7 @@ export default function ExamResults({
               {/* Pass Button */}
               <button
                 onClick={() => handleFilterChange("Pass")}
-                className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-[10px] sm:text-xs font-semibold transition-all duration-200 cursor-pointer ${
+                className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-[0.625rem] sm:text-xs font-semibold transition-all duration-200 cursor-pointer ${
                   statusFilter === "Pass"
                     ? "bg-emerald-600 dark:bg-emerald-500 text-white shadow-sm"
                     : "bg-gray-100 dark:bg-[#22262e] text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-[#2a2d35]"
@@ -858,7 +858,7 @@ export default function ExamResults({
                 <span className="flex items-center gap-1.5">
                   <span className={`w-1 h-1 rounded-full ${statusFilter === "Pass" ? "bg-emerald-200" : "bg-gray-400 dark:bg-gray-500"}`}></span>
                   Pass
-                  <span className={`inline-flex items-center justify-center min-w-[18px] h-4 px-1.5 rounded text-[9px] font-bold ${
+                  <span className={`inline-flex items-center justify-center min-w-[18px] h-4 px-1.5 rounded text-[0.5625rem] font-bold ${
                     statusFilter === "Pass"
                       ? "bg-emerald-500 dark:bg-emerald-600 text-white"
                       : "bg-gray-200 dark:bg-[#2a2d35] text-gray-700 dark:text-gray-300"
@@ -871,7 +871,7 @@ export default function ExamResults({
               {/* Failed Button */}
               <button
                 onClick={() => handleFilterChange("Fail")}
-                className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-[10px] sm:text-xs font-semibold transition-all duration-200 cursor-pointer ${
+                className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-[0.625rem] sm:text-xs font-semibold transition-all duration-200 cursor-pointer ${
                   statusFilter === "Fail"
                     ? "bg-red-600 dark:bg-red-500 text-white shadow-sm"
                     : "bg-gray-100 dark:bg-[#22262e] text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-[#2a2d35]"
@@ -880,7 +880,7 @@ export default function ExamResults({
                 <span className="flex items-center gap-1.5">
                   <span className={`w-1 h-1 rounded-full ${statusFilter === "Fail" ? "bg-red-200" : "bg-gray-400 dark:bg-gray-500"}`}></span>
                   Failed
-                  <span className={`inline-flex items-center justify-center min-w-[18px] h-4 px-1.5 rounded text-[9px] font-bold ${
+                  <span className={`inline-flex items-center justify-center min-w-[18px] h-4 px-1.5 rounded text-[0.5625rem] font-bold ${
                     statusFilter === "Fail"
                       ? "bg-red-500 dark:bg-red-600 text-white"
                       : "bg-gray-200 dark:bg-[#2a2d35] text-gray-700 dark:text-gray-300"
@@ -893,7 +893,7 @@ export default function ExamResults({
               {/* In Progress Button */}
               <button
                 onClick={() => handleFilterChange("In Progress")}
-                className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-[10px] sm:text-xs font-semibold transition-all duration-200 cursor-pointer ${
+                className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-[0.625rem] sm:text-xs font-semibold transition-all duration-200 cursor-pointer ${
                   statusFilter === "In Progress"
                     ? "bg-amber-600 dark:bg-amber-500 text-white shadow-sm"
                     : "bg-gray-100 dark:bg-[#22262e] text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-[#2a2d35]"
@@ -902,7 +902,7 @@ export default function ExamResults({
                 <span className="flex items-center gap-1.5">
                   <span className={`w-1 h-1 rounded-full ${statusFilter === "In Progress" ? "bg-amber-200" : "bg-gray-400 dark:bg-gray-500"}`}></span>
                   In Progress
-                  <span className={`inline-flex items-center justify-center min-w-[18px] h-4 px-1.5 rounded text-[9px] font-bold ${
+                  <span className={`inline-flex items-center justify-center min-w-[18px] h-4 px-1.5 rounded text-[0.5625rem] font-bold ${
                     statusFilter === "In Progress"
                       ? "bg-amber-500 dark:bg-amber-600 text-white"
                       : "bg-gray-200 dark:bg-[#2a2d35] text-gray-700 dark:text-gray-300"
@@ -917,7 +917,7 @@ export default function ExamResults({
       </div>
 
       {/* Subjects/Modules Table */}
-      <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-2xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/30 purple:border-pink-500/30 overflow-hidden shadow-xl">
+      <div className="bg-surface rounded-2xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/30 purple:border-pink-500/30 overflow-hidden shadow-xl">
         {/* Search Bar */}
         <div className="bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] px-4 sm:px-5 md:px-6 py-2.5 sm:py-3 flex flex-row items-center justify-between gap-2 sm:gap-3 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/30 purple:border-pink-500/30 rounded-t-xl md:rounded-t-2xl">
           <h2 className="text-xs sm:text-sm font-bold text-gray-800 dark:text-gray-100 midnight:text-cyan-300 purple:text-pink-300 tracking-tight whitespace-nowrap">
@@ -938,7 +938,7 @@ export default function ExamResults({
               <tr className="bg-gray-50 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] border-b border-gray-200 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30">
                 <th
                   onClick={() => handleSort("code")}
-                  className={`px-2 sm:px-2 md:px-2 lg:px-3 py-2.5 sm:py-2 md:py-2.5 text-left text-[10px] font-extrabold uppercase tracking-wide whitespace-nowrap cursor-pointer group/header select-none hover:bg-gray-100/50 dark:hover:bg-[#2a2d35]/30 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-all duration-300 ease-in-out ${
+                  className={`px-2 sm:px-2 md:px-2 lg:px-3 py-2.5 sm:py-2 md:py-2.5 text-left text-[0.625rem] font-extrabold uppercase tracking-wide whitespace-nowrap cursor-pointer group/header select-none hover:bg-gray-100/50 dark:hover:bg-[#2a2d35]/30 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-all duration-300 ease-in-out ${
                     sortColumn === "code"
                       ? "text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 bg-blue-50/50 dark:bg-blue-500/10 midnight:bg-cyan-500/10 purple:bg-pink-500/10"
                       : "text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70"
@@ -960,7 +960,7 @@ export default function ExamResults({
                 </th>
                 <th
                   onClick={() => handleSort("name")}
-                  className={`px-2 sm:px-2 md:px-2 lg:px-3 py-2.5 sm:py-2 md:py-2.5 text-left text-[10px] font-extrabold uppercase tracking-wide whitespace-nowrap cursor-pointer group/header select-none hover:bg-gray-100/50 dark:hover:bg-[#2a2d35]/30 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-all duration-300 ease-in-out hidden sm:table-cell ${
+                  className={`px-2 sm:px-2 md:px-2 lg:px-3 py-2.5 sm:py-2 md:py-2.5 text-left text-[0.625rem] font-extrabold uppercase tracking-wide whitespace-nowrap cursor-pointer group/header select-none hover:bg-gray-100/50 dark:hover:bg-[#2a2d35]/30 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-all duration-300 ease-in-out hidden sm:table-cell ${
                     sortColumn === "name"
                       ? "text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 bg-blue-50/50 dark:bg-blue-500/10 midnight:bg-cyan-500/10 purple:bg-pink-500/10"
                       : "text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70"
@@ -981,7 +981,7 @@ export default function ExamResults({
                 </th>
                 <th
                   onClick={() => handleSort("teacher")}
-                  className={`px-2 sm:px-2 md:px-2 lg:px-3 py-2.5 sm:py-2 md:py-2.5 text-left text-[10px] font-extrabold uppercase tracking-wide whitespace-nowrap cursor-pointer group/header select-none hover:bg-gray-100/50 dark:hover:bg-[#2a2d35]/30 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-all duration-300 ease-in-out hidden md:table-cell ${
+                  className={`px-2 sm:px-2 md:px-2 lg:px-3 py-2.5 sm:py-2 md:py-2.5 text-left text-[0.625rem] font-extrabold uppercase tracking-wide whitespace-nowrap cursor-pointer group/header select-none hover:bg-gray-100/50 dark:hover:bg-[#2a2d35]/30 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-all duration-300 ease-in-out hidden md:table-cell ${
                     sortColumn === "teacher"
                       ? "text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 bg-blue-50/50 dark:bg-blue-500/10 midnight:bg-cyan-500/10 purple:bg-pink-500/10"
                       : "text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70"
@@ -1001,16 +1001,16 @@ export default function ExamResults({
                   </div>
                 </th>
                 {isTertiary && (
-                  <th className="px-2 sm:px-2 md:px-2 lg:px-3 py-2.5 sm:py-2 md:py-2.5 text-center text-[10px] font-extrabold uppercase tracking-wide whitespace-nowrap text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70 hidden lg:table-cell">
+                  <th className="px-2 sm:px-2 md:px-2 lg:px-3 py-2.5 sm:py-2 md:py-2.5 text-center text-[0.625rem] font-extrabold uppercase tracking-wide whitespace-nowrap text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70 hidden lg:table-cell">
                     Credits
                   </th>
                 )}
-                <th className="px-2 sm:px-2 md:px-2 lg:px-3 py-2.5 sm:py-2 md:py-2.5 text-center text-[10px] font-extrabold uppercase tracking-wide whitespace-nowrap text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70 hidden sm:table-cell">
+                <th className="px-2 sm:px-2 md:px-2 lg:px-3 py-2.5 sm:py-2 md:py-2.5 text-center text-[0.625rem] font-extrabold uppercase tracking-wide whitespace-nowrap text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70 hidden sm:table-cell">
                   Progress
                 </th>
                 <th
                   onClick={() => handleSort("score")}
-                  className={`px-2 sm:px-2 md:px-2 lg:px-3 py-2.5 sm:py-2 md:py-2.5 text-center text-[10px] font-extrabold uppercase tracking-wide whitespace-nowrap cursor-pointer group/header select-none hover:bg-gray-100/50 dark:hover:bg-[#2a2d35]/30 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-all duration-300 ease-in-out ${
+                  className={`px-2 sm:px-2 md:px-2 lg:px-3 py-2.5 sm:py-2 md:py-2.5 text-center text-[0.625rem] font-extrabold uppercase tracking-wide whitespace-nowrap cursor-pointer group/header select-none hover:bg-gray-100/50 dark:hover:bg-[#2a2d35]/30 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-all duration-300 ease-in-out ${
                     sortColumn === "score"
                       ? "text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 bg-blue-50/50 dark:bg-blue-500/10 midnight:bg-cyan-500/10 purple:bg-pink-500/10"
                       : "text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70"
@@ -1030,13 +1030,13 @@ export default function ExamResults({
                   </div>
                 </th>
                 {isTertiary && (
-                  <th className="px-2 sm:px-2 md:px-2 lg:px-3 py-2.5 sm:py-2 md:py-2.5 text-center text-[10px] font-extrabold uppercase tracking-wide whitespace-nowrap text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70 hidden lg:table-cell">
+                  <th className="px-2 sm:px-2 md:px-2 lg:px-3 py-2.5 sm:py-2 md:py-2.5 text-center text-[0.625rem] font-extrabold uppercase tracking-wide whitespace-nowrap text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70 hidden lg:table-cell">
                     Grade
                   </th>
                 )}
                 <th
                   onClick={() => handleSort("result")}
-                  className={`px-2 sm:px-2 md:px-2 lg:px-3 py-2.5 sm:py-2 md:py-2.5 text-center text-[10px] font-extrabold uppercase tracking-wide whitespace-nowrap cursor-pointer group/header select-none hover:bg-gray-100/50 dark:hover:bg-[#2a2d35]/30 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-all duration-300 ease-in-out ${
+                  className={`px-2 sm:px-2 md:px-2 lg:px-3 py-2.5 sm:py-2 md:py-2.5 text-center text-[0.625rem] font-extrabold uppercase tracking-wide whitespace-nowrap cursor-pointer group/header select-none hover:bg-gray-100/50 dark:hover:bg-[#2a2d35]/30 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-all duration-300 ease-in-out ${
                     sortColumn === "result"
                       ? "text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 bg-blue-50/50 dark:bg-blue-500/10 midnight:bg-cyan-500/10 purple:bg-pink-500/10"
                       : "text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70"
@@ -1055,7 +1055,7 @@ export default function ExamResults({
                     </span>
                   </div>
                 </th>
-                <th className="px-2 sm:px-2 md:px-2 lg:px-3 py-2.5 sm:py-2 md:py-2.5 text-center text-[10px] font-extrabold uppercase tracking-wide whitespace-nowrap text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70">
+                <th className="px-2 sm:px-2 md:px-2 lg:px-3 py-2.5 sm:py-2 md:py-2.5 text-center text-[0.625rem] font-extrabold uppercase tracking-wide whitespace-nowrap text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70">
 
                 </th>
               </tr>
@@ -1098,10 +1098,10 @@ export default function ExamResults({
                       {/* Subject Code */}
                       <td className="px-2 sm:px-2 md:px-2 lg:px-3 py-3 sm:py-2 md:py-2.5 text-left align-middle whitespace-nowrap">
                         <div className="flex items-center gap-2">
-                          <div className={`flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-gradient-to-br ${getSubjectColor(subject.name)} text-white font-bold text-[12px] flex-shrink-0 shadow-md`}>
+                          <div className={`flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-gradient-to-br ${getSubjectColor(subject.name)} text-white font-bold text-[0.75rem] flex-shrink-0 shadow-md`}>
                             {subject.code.substring(0, 2).toUpperCase()}
                           </div>
-                          <span className="text-[12px] font-medium text-gray-900 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100 truncate">
+                          <span className="text-[0.75rem] font-medium text-gray-900 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100 truncate">
                             {subject.code}
                           </span>
                         </div>
@@ -1109,17 +1109,17 @@ export default function ExamResults({
 
                       {/* Subject Name */}
                       <td className="px-2 sm:px-2 md:px-2 lg:px-3 py-3 sm:py-2 md:py-2.5 text-left align-middle hidden sm:table-cell">
-                        <div className="text-[12px] font-medium text-gray-900 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100 truncate">
+                        <div className="text-[0.75rem] font-medium text-gray-900 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100 truncate">
                           {subject.name}
                         </div>
-                        <div className="text-[12px] text-gray-500 dark:text-gray-400 midnight:text-cyan-400/60 purple:text-pink-400/60 mt-0.5 truncate">
+                        <div className="text-[0.75rem] text-gray-500 dark:text-gray-400 midnight:text-cyan-400/60 purple:text-pink-400/60 mt-0.5 truncate">
                           {isTertiary ? `${subject.semester} • ${subject.level}` : subject.term}
                         </div>
                       </td>
 
                       {/* Teacher */}
                       <td className="px-2 sm:px-2 md:px-2 lg:px-3 py-3 sm:py-2 md:py-2.5 text-left align-middle hidden md:table-cell">
-                        <span className="text-[12px] font-medium text-gray-900 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100 truncate block">
+                        <span className="text-[0.75rem] font-medium text-gray-900 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100 truncate block">
                           {subject.teacher || "—"}
                         </span>
                       </td>
@@ -1127,7 +1127,7 @@ export default function ExamResults({
                       {/* Credits (Tertiary Only) */}
                       {isTertiary && (
                         <td className="px-2 sm:px-2 md:px-2 lg:px-3 py-3 sm:py-2 md:py-2.5 text-center align-middle hidden lg:table-cell">
-                          <span className="text-[12px] font-medium text-gray-900 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100">
+                          <span className="text-[0.75rem] font-medium text-gray-900 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100">
                             {subject.credits}
                           </span>
                         </td>
@@ -1142,7 +1142,7 @@ export default function ExamResults({
                               style={{ width: `${progressPercentage}%` }}
                             />
                           </div>
-                          <span className="text-[12px] font-medium text-gray-600 dark:text-gray-400 whitespace-nowrap">
+                          <span className="text-[0.75rem] font-medium text-gray-600 dark:text-gray-400 whitespace-nowrap">
                             {completedComponents}/{totalComponents}
                           </span>
                         </div>
@@ -1150,10 +1150,10 @@ export default function ExamResults({
 
                       {/* Score */}
                       <td className="px-2 sm:px-2 md:px-2 lg:px-3 py-3 sm:py-2 md:py-2.5 text-center align-middle">
-                        <div className={`text-[12px] font-bold ${getGradeColor(subject.percentage)}`}>
+                        <div className={`text-[0.75rem] font-bold ${getGradeColor(subject.percentage)}`}>
                           {subject.percentage.toFixed(1)}%
                         </div>
-                        <div className="text-[12px] text-gray-500 dark:text-gray-400">
+                        <div className="text-[0.75rem] text-gray-500 dark:text-gray-400">
                           {subject.totalScore}/100
                         </div>
                       </td>
@@ -1161,10 +1161,10 @@ export default function ExamResults({
                       {/* Grade (Tertiary Only) */}
                       {isTertiary && (
                         <td className="px-2 sm:px-2 md:px-2 lg:px-3 py-3 sm:py-2 md:py-2.5 text-center align-middle hidden lg:table-cell">
-                          <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[12px] font-bold bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300">
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[0.75rem] font-bold bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300">
                             {subject.grade}
                           </span>
-                          <div className="text-[12px] text-gray-600 dark:text-gray-400 mt-0.5">
+                          <div className="text-[0.75rem] text-gray-600 dark:text-gray-400 mt-0.5">
                             {subject.gpa?.toFixed(2)} GPA
                           </div>
                         </td>
@@ -1172,7 +1172,7 @@ export default function ExamResults({
 
                       {/* Result */}
                       <td className="px-2 sm:px-2 md:px-2 lg:px-3 py-3 sm:py-2 md:py-2.5 text-center align-middle">
-                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[12px] font-bold ${
+                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[0.75rem] font-bold ${
                           subject.result === "Pass"
                             ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300"
                             : subject.result === "Fail"
@@ -1216,7 +1216,7 @@ export default function ExamResults({
                           <div className={`space-y-3 py-3 sm:py-4 ${isCollapsing ? 'animate-fadeSlideUp' : 'animate-fadeSlideDown'}`}>
                             <div className="flex items-center gap-2 mb-2">
                               <TrendingUp className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                              <h4 className="text-[12px] font-bold text-gray-800 dark:text-gray-200 midnight:text-cyan-200 purple:text-pink-200">
+                              <h4 className="text-[0.75rem] font-bold text-gray-800 dark:text-gray-200 midnight:text-cyan-200 purple:text-pink-200">
                                 Assessment
                               </h4>
                             </div>
@@ -1226,36 +1226,36 @@ export default function ExamResults({
                               {subject.gradingComponents.map((component) => (
                                 <div
                                   key={component.id}
-                                  className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0f1330] purple:bg-[#251340] rounded-lg p-3 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm hover:shadow-md transition-shadow"
+                                  className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0f1330] purple:bg-[#251340] rounded-lg p-3 border border-line shadow-sm hover:shadow-md transition-shadow"
                                 >
                                   <div className="flex items-start justify-between mb-2">
                                     <div className="flex-1">
                                       <div className="flex items-center gap-1.5 mb-1">
-                                        <h5 className="text-[12px] font-semibold text-gray-900 dark:text-gray-100 midnight:text-cyan-100 purple:text-pink-100">
+                                        <h5 className="text-[0.75rem] font-semibold text-gray-900 dark:text-gray-100 midnight:text-cyan-100 purple:text-pink-100">
                                           {component.name}
                                         </h5>
-                                        <span className="inline-flex items-center px-1.5 py-0.5 rounded-md text-[12px] font-bold bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300">
+                                        <span className="inline-flex items-center px-1.5 py-0.5 rounded-md text-[0.75rem] font-bold bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300">
                                           {component.weight}%
                                         </span>
                                       </div>
                                       {component.status === "completed" ? (
-                                        <p className="text-[12px] text-gray-600 dark:text-gray-400 midnight:text-cyan-400/80 purple:text-pink-400/80">
+                                        <p className="text-[0.75rem] text-gray-600 dark:text-gray-400 midnight:text-cyan-400/80 purple:text-pink-400/80">
                                           Score: {component.scoreObtained}/{component.maxScore} • {component.percentage?.toFixed(1)}%
                                         </p>
                                       ) : (
-                                        <p className="text-[12px] text-yellow-600 dark:text-yellow-400">
+                                        <p className="text-[0.75rem] text-yellow-600 dark:text-yellow-400">
                                           {component.status === "pending" ? "Not yet graded" : "In progress"}
                                           {component.dueDate && ` • Due: ${component.dueDate}`}
                                         </p>
                                       )}
                                       {component.feedback && (
-                                        <p className="text-[12px] text-gray-500 dark:text-gray-400 mt-1 italic">
+                                        <p className="text-[0.75rem] text-gray-500 dark:text-gray-400 mt-1 italic">
                                           "{component.feedback}"
                                         </p>
                                       )}
                                     </div>
                                     {component.status === "completed" && component.percentage !== undefined && (
-                                      <div className={`text-[12px] font-bold ${getGradeColor(component.percentage)}`}>
+                                      <div className={`text-[0.75rem] font-bold ${getGradeColor(component.percentage)}`}>
                                         {component.percentage.toFixed(1)}%
                                       </div>
                                     )}
@@ -1276,16 +1276,16 @@ export default function ExamResults({
 
                             {/* Summary */}
                             <div className="mt-3 p-3 bg-gray-100 dark:bg-[#22262e] rounded-lg">
-                              <div className="flex items-center justify-between text-[12px]">
+                              <div className="flex items-center justify-between text-[0.75rem]">
                                 <span className="font-semibold text-gray-800 dark:text-gray-200">Final Score:</span>
-                                <span className={`text-[12px] font-bold ${getGradeColor(subject.percentage)}`}>
+                                <span className={`text-[0.75rem] font-bold ${getGradeColor(subject.percentage)}`}>
                                   {subject.totalScore}/100 ({subject.percentage.toFixed(1)}%)
                                 </span>
                               </div>
                               {isTertiary && subject.gpa && (
-                                <div className="flex items-center justify-between text-[12px] mt-1.5">
+                                <div className="flex items-center justify-between text-[0.75rem] mt-1.5">
                                   <span className="font-semibold text-gray-800 dark:text-gray-200">GPA:</span>
-                                  <span className="text-[12px] font-bold text-blue-600 dark:text-blue-400">
+                                  <span className="text-[0.75rem] font-bold text-blue-600 dark:text-blue-400">
                                     {subject.gpa.toFixed(2)}/5.00
                                   </span>
                                 </div>
@@ -1361,11 +1361,11 @@ export default function ExamResults({
       {/* Grading Configuration Modal */}
       {configModalOpen && selectedSubjectForConfig && (
         <div className="fixed inset-0 bg-black/60 dark:bg-black/80 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
-          <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+          <div className="bg-surface rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
             {/* Modal Header */}
             <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/30 purple:border-pink-500/30">
               <div>
-                <h3 className="text-xl font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                <h3 className="text-xl font-bold text-ink">
                   Configure Grading System
                 </h3>
                 <p className="text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-400/80 purple:text-pink-400/80 mt-1">

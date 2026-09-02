@@ -37,7 +37,7 @@ export default function SiteCard({ site, onOpen, onDelete, updatedLabel }: SiteC
       aria-label={`Open ${site.name}`}
       onClick={() => onOpen(site.id)}
       onKeyDown={(e) => { if (e.key === "Enter") onOpen(site.id); }}
-      className="group relative rounded-xl overflow-hidden cursor-pointer bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-200 dark:border-gray-700 midnight:border-cyan-700/30 purple:border-pink-700/30 hover:border-gray-300 dark:hover:border-gray-600 midnight:hover:border-cyan-500/40 purple:hover:border-pink-500/40 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200"
+      className="group relative rounded-xl overflow-hidden cursor-pointer bg-surface border border-gray-200 dark:border-gray-700 midnight:border-cyan-700/30 purple:border-pink-700/30 hover:border-gray-300 dark:hover:border-gray-600 midnight:hover:border-cyan-500/40 purple:hover:border-pink-500/40 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200"
     >
       {/* Live preview of the actual site */}
       <div className="relative border-b border-gray-100 dark:border-gray-800">
@@ -60,7 +60,7 @@ export default function SiteCard({ site, onOpen, onDelete, updatedLabel }: SiteC
             <div
               role="menu"
               onClick={(e) => e.stopPropagation()}
-              className="absolute right-0 top-full mt-1 z-20 min-w-[150px] py-1 rounded-xl shadow-xl bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 animate-in zoom-in-95 duration-150"
+              className="absolute right-0 top-full mt-1 z-20 min-w-[150px] py-1 rounded-xl shadow-xl bg-surface border border-line animate-in zoom-in-95 duration-150"
             >
               <button
                 role="menuitem"
@@ -84,14 +84,14 @@ export default function SiteCard({ site, onOpen, onDelete, updatedLabel }: SiteC
       {/* Meta */}
       <div className="p-3.5 sm:p-4">
         <div className="flex items-center gap-2 min-w-0">
-          <span className="w-7 h-7 rounded-lg bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] flex items-center justify-center flex-shrink-0">
-            <Globe className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300" />
+          <span className="w-7 h-7 rounded-lg bg-surface-2 flex items-center justify-center flex-shrink-0">
+            <Globe className="w-3.5 h-3.5 text-muted" />
           </span>
           <span className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-100 purple:text-pink-100 truncate">
             {site.name}
           </span>
         </div>
-        <div className="mt-2 flex items-center gap-3 text-[11px] text-gray-500 dark:text-gray-400 midnight:text-cyan-400/80 purple:text-pink-400/80">
+        <div className="mt-2 flex items-center gap-3 text-[0.6875rem] text-gray-500 dark:text-gray-400 midnight:text-cyan-400/80 purple:text-pink-400/80">
           <span className="inline-flex items-center gap-1"><FileStack className="w-3 h-3" /> {pageCount} page{pageCount !== 1 ? "s" : ""}</span>
           <span className="inline-flex items-center gap-1"><Clock className="w-3 h-3" /> {updatedLabel}</span>
         </div>

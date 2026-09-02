@@ -232,7 +232,7 @@ export default function StaffPerformanceReviews({ staffName }: StaffPerformanceR
               </div>
             </div>
             <div className="flex-1 flex flex-col justify-end">
-              <p className="text-[9px] sm:text-[10px] font-semibold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 uppercase tracking-wide mb-0.5">
+              <p className="text-[0.5625rem] sm:text-[0.625rem] font-semibold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 uppercase tracking-wide mb-0.5">
                 Total Reviews
               </p>
               <p className="text-base sm:text-lg font-bold text-blue-900 dark:text-blue-100 midnight:text-cyan-100 purple:text-pink-100 truncate leading-none">
@@ -249,7 +249,7 @@ export default function StaffPerformanceReviews({ staffName }: StaffPerformanceR
               </div>
             </div>
             <div className="flex-1 flex flex-col justify-end">
-              <p className="text-[9px] sm:text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 uppercase tracking-wide mb-0.5">
+              <p className="text-[0.5625rem] sm:text-[0.625rem] font-semibold text-emerald-600 dark:text-emerald-400 uppercase tracking-wide mb-0.5">
                 Average Rating
               </p>
               <p className="text-base sm:text-lg font-bold text-emerald-900 dark:text-emerald-100 truncate leading-none">
@@ -266,7 +266,7 @@ export default function StaffPerformanceReviews({ staffName }: StaffPerformanceR
               </div>
             </div>
             <div className="flex-1 flex flex-col justify-end">
-              <p className="text-[9px] sm:text-[10px] font-semibold text-purple-600 dark:text-purple-400 midnight:text-purple-400 purple:text-pink-400 uppercase tracking-wide mb-0.5">
+              <p className="text-[0.5625rem] sm:text-[0.625rem] font-semibold text-purple-600 dark:text-purple-400 midnight:text-purple-400 purple:text-pink-400 uppercase tracking-wide mb-0.5">
                 Teaching Score
               </p>
               <p className="text-base sm:text-lg font-bold text-purple-900 dark:text-purple-100 midnight:text-purple-100 purple:text-pink-100 truncate leading-none">
@@ -283,7 +283,7 @@ export default function StaffPerformanceReviews({ staffName }: StaffPerformanceR
               </div>
             </div>
             <div className="flex-1 flex flex-col justify-end">
-              <p className="text-[9px] sm:text-[10px] font-semibold text-indigo-600 dark:text-indigo-400 uppercase tracking-wide mb-0.5">
+              <p className="text-[0.5625rem] sm:text-[0.625rem] font-semibold text-indigo-600 dark:text-indigo-400 uppercase tracking-wide mb-0.5">
                 Engagement
               </p>
               <p className="text-base sm:text-lg font-bold text-indigo-900 dark:text-indigo-100 truncate leading-none">
@@ -294,7 +294,7 @@ export default function StaffPerformanceReviews({ staffName }: StaffPerformanceR
         </div>
 
         {/* Filter Buttons - Matching ExamResults pattern */}
-        <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm p-3 sm:p-4">
+        <div className="bg-surface rounded-xl border border-line shadow-sm p-3 sm:p-4">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
             {/* Year Selector */}
             <div className="w-full sm:w-auto">
@@ -312,7 +312,7 @@ export default function StaffPerformanceReviews({ staffName }: StaffPerformanceR
               {/* All Button */}
               <button
                 onClick={() => setStatusFilter("all")}
-                className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-[10px] sm:text-xs font-semibold transition-all duration-200 cursor-pointer ${
+                className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-[0.625rem] sm:text-xs font-semibold transition-all duration-200 cursor-pointer ${
                   statusFilter === "all"
                     ? "bg-blue-600 dark:bg-blue-500 text-white shadow-sm"
                     : "bg-gray-100 dark:bg-[#22262e] text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-[#2a2d35]"
@@ -320,7 +320,7 @@ export default function StaffPerformanceReviews({ staffName }: StaffPerformanceR
               >
                 <span className="flex items-center gap-1.5">
                   All
-                  <span className={`inline-flex items-center justify-center min-w-[18px] h-4 px-1.5 rounded text-[9px] font-bold ${
+                  <span className={`inline-flex items-center justify-center min-w-[18px] h-4 px-1.5 rounded text-[0.5625rem] font-bold ${
                     statusFilter === "all"
                       ? "bg-blue-500 dark:bg-blue-600 text-white"
                       : "bg-gray-200 dark:bg-[#2a2d35] text-gray-700 dark:text-gray-300"
@@ -333,7 +333,7 @@ export default function StaffPerformanceReviews({ staffName }: StaffPerformanceR
               {/* Completed Button */}
               <button
                 onClick={() => setStatusFilter("Completed")}
-                className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-[10px] sm:text-xs font-semibold transition-all duration-200 cursor-pointer ${
+                className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-[0.625rem] sm:text-xs font-semibold transition-all duration-200 cursor-pointer ${
                   statusFilter === "Completed"
                     ? "bg-emerald-600 dark:bg-emerald-500 text-white shadow-sm"
                     : "bg-gray-100 dark:bg-[#22262e] text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-[#2a2d35]"
@@ -342,7 +342,7 @@ export default function StaffPerformanceReviews({ staffName }: StaffPerformanceR
                 <span className="flex items-center gap-1.5">
                   <span className={`w-1 h-1 rounded-full ${statusFilter === "Completed" ? "bg-emerald-200" : "bg-gray-400 dark:bg-gray-500"}`}></span>
                   Completed
-                  <span className={`inline-flex items-center justify-center min-w-[18px] h-4 px-1.5 rounded text-[9px] font-bold ${
+                  <span className={`inline-flex items-center justify-center min-w-[18px] h-4 px-1.5 rounded text-[0.5625rem] font-bold ${
                     statusFilter === "Completed"
                       ? "bg-emerald-500 dark:bg-emerald-600 text-white"
                       : "bg-gray-200 dark:bg-[#2a2d35] text-gray-700 dark:text-gray-300"
@@ -355,7 +355,7 @@ export default function StaffPerformanceReviews({ staffName }: StaffPerformanceR
               {/* Pending Button */}
               <button
                 onClick={() => setStatusFilter("Pending")}
-                className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-[10px] sm:text-xs font-semibold transition-all duration-200 cursor-pointer ${
+                className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-[0.625rem] sm:text-xs font-semibold transition-all duration-200 cursor-pointer ${
                   statusFilter === "Pending"
                     ? "bg-amber-600 dark:bg-amber-500 text-white shadow-sm"
                     : "bg-gray-100 dark:bg-[#22262e] text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-[#2a2d35]"
@@ -364,7 +364,7 @@ export default function StaffPerformanceReviews({ staffName }: StaffPerformanceR
                 <span className="flex items-center gap-1.5">
                   <span className={`w-1 h-1 rounded-full ${statusFilter === "Pending" ? "bg-amber-200" : "bg-gray-400 dark:bg-gray-500"}`}></span>
                   Pending
-                  <span className={`inline-flex items-center justify-center min-w-[18px] h-4 px-1.5 rounded text-[9px] font-bold ${
+                  <span className={`inline-flex items-center justify-center min-w-[18px] h-4 px-1.5 rounded text-[0.5625rem] font-bold ${
                     statusFilter === "Pending"
                       ? "bg-amber-500 dark:bg-amber-600 text-white"
                       : "bg-gray-200 dark:bg-[#2a2d35] text-gray-700 dark:text-gray-300"
@@ -377,7 +377,7 @@ export default function StaffPerformanceReviews({ staffName }: StaffPerformanceR
               {/* In Progress Button */}
               <button
                 onClick={() => setStatusFilter("In Progress")}
-                className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-[10px] sm:text-xs font-semibold transition-all duration-200 cursor-pointer ${
+                className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-[0.625rem] sm:text-xs font-semibold transition-all duration-200 cursor-pointer ${
                   statusFilter === "In Progress"
                     ? "bg-cyan-600 dark:bg-cyan-500 text-white shadow-sm"
                     : "bg-gray-100 dark:bg-[#22262e] text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-[#2a2d35]"
@@ -386,7 +386,7 @@ export default function StaffPerformanceReviews({ staffName }: StaffPerformanceR
                 <span className="flex items-center gap-1.5">
                   <span className={`w-1 h-1 rounded-full ${statusFilter === "In Progress" ? "bg-cyan-200" : "bg-gray-400 dark:bg-gray-500"}`}></span>
                   In Progress
-                  <span className={`inline-flex items-center justify-center min-w-[18px] h-4 px-1.5 rounded text-[9px] font-bold ${
+                  <span className={`inline-flex items-center justify-center min-w-[18px] h-4 px-1.5 rounded text-[0.5625rem] font-bold ${
                     statusFilter === "In Progress"
                       ? "bg-cyan-500 dark:bg-cyan-600 text-white"
                       : "bg-gray-200 dark:bg-[#2a2d35] text-gray-700 dark:text-gray-300"
@@ -401,7 +401,7 @@ export default function StaffPerformanceReviews({ staffName }: StaffPerformanceR
       </div>
 
       {/* Performance Reviews Table */}
-      <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm overflow-hidden">
+      <div className="bg-surface rounded-xl border border-line shadow-sm overflow-hidden">
         <ResponsiveListTable<PerformanceReview> variant="contained" showColumnHeaders={true}
           data={filteredReviews}
           columns={reviewColumns}

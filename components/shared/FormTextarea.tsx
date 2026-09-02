@@ -190,7 +190,7 @@ export default function FormTextarea({
             : isOverLimit
             ? "border-red-500 dark:border-red-400"
             : "border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 hover:border-gray-400 dark:hover:border-gray-500 midnight:hover:border-cyan-500/40 purple:hover:border-pink-500/40"
-        } bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]`}
+        } bg-surface`}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
@@ -202,7 +202,7 @@ export default function FormTextarea({
           placeholder={placeholder}
           rows={rows}
           style={{ minHeight: `${minHeight}px` }}
-          className="w-full px-4 py-2.5 bg-transparent text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-sm font-normal placeholder:text-gray-400 dark:placeholder:text-gray-500 midnight:placeholder:text-cyan-400/50 purple:placeholder:text-pink-400/50 placeholder:font-normal focus:ring-0 outline-none resize-y overflow-hidden border-0"
+          className="w-full px-4 py-2.5 bg-transparent text-ink text-sm font-normal placeholder:text-gray-400 dark:placeholder:text-gray-500 midnight:placeholder:text-cyan-400/50 purple:placeholder:text-pink-400/50 placeholder:font-normal focus:ring-0 outline-none resize-y overflow-hidden border-0"
         />
 
         {/* Attachments List */}
@@ -211,9 +211,9 @@ export default function FormTextarea({
             {attachments.map((attachment) => (
               <div
                 key={attachment.id}
-                className="flex items-center gap-2 px-3 py-1.5 bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] rounded-lg text-sm group/attachment"
+                className="flex items-center gap-2 px-3 py-1.5 bg-surface-2 rounded-lg text-sm group/attachment"
               >
-                <span className="text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
+                <span className="text-muted">
                   {getFileIcon(attachment.type)}
                 </span>
                 <span className="text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 max-w-[150px] truncate">
@@ -227,7 +227,7 @@ export default function FormTextarea({
                   onClick={() => handleRemoveAttachment(attachment.id)}
                   className="p-0.5 rounded-full hover:bg-gray-200 dark:hover:bg-[#2a2d35] midnight:hover:bg-cyan-500/15 purple:hover:bg-pink-500/15 transition-colors opacity-60 group-hover/attachment:opacity-100 cursor-pointer"
                 >
-                  <X className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300" />
+                  <X className="w-3.5 h-3.5 text-muted" />
                 </button>
               </div>
             ))}
@@ -236,7 +236,7 @@ export default function FormTextarea({
 
         {/* Toolbar */}
         {showAttachments && (
-          <div className="flex items-center justify-between px-4 py-2 border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+          <div className="flex items-center justify-between px-4 py-2 border-t border-line">
             <div className="flex items-center gap-2">
               <input
                 ref={fileInputRef}
@@ -257,7 +257,7 @@ export default function FormTextarea({
                       : "hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"
                   }`}
                 >
-                  <Paperclip className="w-4 h-4 text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300" />
+                  <Paperclip className="w-4 h-4 text-muted" />
                 </button>
               </Tooltip>
               {attachments.length > 0 && (

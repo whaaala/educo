@@ -1139,7 +1139,7 @@ export default function AttendancePage() {
                       <Check className="w-4 h-4 text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400" />
                     </div>
                     <div className="px-1.5 py-0.5 bg-green-100 dark:bg-green-800/30 rounded-full">
-                      <p className="text-[10px] sm:text-xs font-semibold text-green-700 dark:text-green-300">
+                      <p className="text-[0.625rem] sm:text-xs font-semibold text-green-700 dark:text-green-300">
                         {filteredStudents.length > 0 ? Math.round((stats.present / filteredStudents.length) * 100) : 0}%
                       </p>
                     </div>
@@ -1162,7 +1162,7 @@ export default function AttendancePage() {
                       <X className="w-4 h-4 text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400" />
                     </div>
                     <div className="px-1.5 py-0.5 bg-red-100 dark:bg-red-800/30 rounded-full">
-                      <p className="text-[10px] sm:text-xs font-semibold text-red-700 dark:text-red-300">
+                      <p className="text-[0.625rem] sm:text-xs font-semibold text-red-700 dark:text-red-300">
                         {filteredStudents.length > 0 ? Math.round((stats.absent / filteredStudents.length) * 100) : 0}%
                       </p>
                     </div>
@@ -1185,7 +1185,7 @@ export default function AttendancePage() {
                       <Clock className="w-4 h-4 text-amber-600 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400" />
                     </div>
                     <div className="px-1.5 py-0.5 bg-amber-100 dark:bg-amber-800/30 rounded-full">
-                      <p className="text-[10px] sm:text-xs font-semibold text-amber-700 dark:text-amber-300">
+                      <p className="text-[0.625rem] sm:text-xs font-semibold text-amber-700 dark:text-amber-300">
                         {filteredStudents.length > 0 ? Math.round((stats.late / filteredStudents.length) * 100) : 0}%
                       </p>
                     </div>
@@ -1208,7 +1208,7 @@ export default function AttendancePage() {
                       <UserCheck className="w-4 h-4 text-neutral-600 dark:text-neutral-400" />
                     </div>
                     <div className="px-1.5 py-0.5 bg-neutral-100 dark:bg-neutral-700/50 rounded-full">
-                      <p className="text-[10px] sm:text-xs font-semibold text-neutral-700 dark:text-neutral-300">
+                      <p className="text-[0.625rem] sm:text-xs font-semibold text-neutral-700 dark:text-neutral-300">
                         {filteredStudents.length > 0 ? Math.round((stats.unmarked / filteredStudents.length) * 100) : 0}%
                       </p>
                     </div>

@@ -137,7 +137,7 @@ function StaffActionsCell({ staff }: { staff: Teacher }) {
         </div>
 
         {isMenuOpen && (
-          <div className="absolute right-0 top-full mt-1 w-52 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-lg shadow-2xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 z-[999999] py-1 animate-in fade-in slide-in-from-top-2 duration-200">
+          <div className="absolute right-0 top-full mt-1 w-52 bg-surface rounded-lg shadow-2xl border border-line z-[999999] py-1 animate-in fade-in slide-in-from-top-2 duration-200">
             <button onClick={() => handleMenuItemClick('View Staff')} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer">
               <Eye className="w-4 h-4" /><span>View Staff</span>
             </button>
@@ -289,7 +289,7 @@ export default function StaffPage() {
       className: "text-left w-[18%] md:w-[8%]",
       render: (staffMember) => (
         <div className="flex items-center justify-start">
-          <span className={`inline-flex items-center justify-center px-2 md:px-3 xl:px-3.5 py-1 md:py-1.5 xl:py-2 rounded-full text-[10px] md:text-xs xl:text-sm font-semibold shadow-sm transition-all duration-300 whitespace-nowrap ${getStatusBadgeColor(staffMember.employmentStatus)}`}>
+          <span className={`inline-flex items-center justify-center px-2 md:px-3 xl:px-3.5 py-1 md:py-1.5 xl:py-2 rounded-full text-[0.625rem] md:text-xs xl:text-sm font-semibold shadow-sm transition-all duration-300 whitespace-nowrap ${getStatusBadgeColor(staffMember.employmentStatus)}`}>
             {staffMember.employmentStatus}
           </span>
         </div>
@@ -360,7 +360,7 @@ export default function StaffPage() {
               flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm whitespace-nowrap transition-all duration-200
               ${selectedCategory === category.value
                 ? 'bg-blue-600 text-white dark:bg-blue-500 midnight:bg-cyan-600 purple:bg-pink-600 shadow-lg'
-                : 'bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5'
+                : 'bg-surface text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5'
               }
             `}
           >
@@ -369,7 +369,7 @@ export default function StaffPage() {
               px-2 py-0.5 rounded-full text-xs font-semibold
               ${selectedCategory === category.value
                 ? 'bg-white/20 text-white'
-                : 'bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400'
+                : 'bg-surface-2 text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400'
               }
             `}>
               {category.count}

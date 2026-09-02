@@ -634,11 +634,11 @@ export default function CallSettings({
                   className={`p-3 rounded-xl border-2 text-left transition-all cursor-pointer ${
                     selectedQuality.id === preset.id
                       ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20 midnight:bg-cyan-900/20 midnight:border-cyan-500 purple:bg-pink-900/20 purple:border-pink-500"
-                      : "border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 hover:border-gray-300 dark:hover:border-gray-600"
+                      : "border-line hover:border-gray-300 dark:hover:border-gray-600"
                   }`}
                 >
                   <div className="flex items-center justify-between">
-                    <span className="font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                    <span className="font-medium text-ink">
                       {preset.name}
                     </span>
                     {selectedQuality.id === preset.id && (
@@ -671,7 +671,7 @@ export default function CallSettings({
                 className={`relative aspect-video rounded-xl overflow-hidden border-2 transition-all cursor-pointer ${
                   selectedBackground.id === bg.id
                     ? "border-blue-500 ring-2 ring-blue-500/30 midnight:border-cyan-500 midnight:ring-cyan-500/30 purple:border-pink-500 purple:ring-pink-500/30"
-                    : "border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 hover:border-gray-300 dark:hover:border-gray-600"
+                    : "border-line hover:border-gray-300 dark:hover:border-gray-600"
                 }`}
               >
                 {bg.type === "none" ? (

@@ -175,7 +175,7 @@ export default function LeaveNotificationDropdown({
         <CalendarCheck className="w-5 h-5 text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 group-hover:scale-110 transition-transform" />
         {/* Notification Badge with Count */}
         {unreadCount > 0 && (
-          <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] flex items-center justify-center bg-gradient-to-br from-cyan-500 to-blue-600 text-white text-[10px] font-bold rounded-full ring-2 ring-white dark:ring-gray-900 shadow-lg">
+          <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] flex items-center justify-center bg-gradient-to-br from-cyan-500 to-blue-600 text-white text-[0.625rem] font-bold rounded-full ring-2 ring-white dark:ring-gray-900 shadow-lg">
             {unreadCount > 9 ? "9+" : unreadCount}
           </span>
         )}
@@ -195,7 +195,7 @@ export default function LeaveNotificationDropdown({
 
             <div
               style={dropdownStyle}
-              className="w-[380px] bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 z-[9999] transition-colors duration-300 overflow-hidden flex flex-col"
+              className="w-[380px] bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-2xl shadow-2xl border border-line z-[9999] transition-colors duration-300 overflow-hidden flex flex-col"
               role="menu"
               aria-orientation="vertical"
             >
@@ -248,7 +248,7 @@ export default function LeaveNotificationDropdown({
                     <p className="text-sm font-semibold text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200">
                       No leave notifications
                     </p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mt-1 text-center">
+                    <p className="text-xs text-muted mt-1 text-center">
                       {isAdmin
                         ? "New leave requests will appear here"
                         : "Updates on your leave requests will appear here"}
@@ -281,7 +281,7 @@ export default function LeaveNotificationDropdown({
                             {/* Content */}
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-2 mb-1">
-                                <h4 className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate">
+                                <h4 className="text-sm font-semibold text-ink truncate">
                                   {notification.title}
                                 </h4>
                                 {!notification.read && (
@@ -291,7 +291,7 @@ export default function LeaveNotificationDropdown({
                               <p className="text-xs text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 line-clamp-2 mb-2">
                                 {notification.message}
                               </p>
-                              <div className="flex items-center gap-1.5 text-[11px] text-gray-500 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400">
+                              <div className="flex items-center gap-1.5 text-[0.6875rem] text-gray-500 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400">
                                 <Clock className="w-3 h-3" />
                                 <span>{formatTimeAgo(notification.createdAt)}</span>
                               </div>

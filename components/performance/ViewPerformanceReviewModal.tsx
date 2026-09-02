@@ -69,7 +69,7 @@ export default function ViewPerformanceReviewModal({
       onClick={onClose}
     >
       <div
-        className="bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-2xl shadow-2xl w-full max-w-5xl max-h-[90vh] flex flex-col border border-gray-200/50 dark:border-[#1a1d24]/50 midnight:border-cyan-500/30 purple:border-pink-500/30 animate-in zoom-in-95 slide-in-from-bottom-4 duration-300"
+        className="bg-surface rounded-2xl shadow-2xl w-full max-w-5xl max-h-[90vh] flex flex-col border border-gray-200/50 dark:border-[#1a1d24]/50 midnight:border-cyan-500/30 purple:border-pink-500/30 animate-in zoom-in-95 slide-in-from-bottom-4 duration-300"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -84,7 +84,7 @@ export default function ViewPerformanceReviewModal({
                 <div className="absolute inset-0 rounded-lg bg-gradient-to-br from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
               </div>
               <div>
-                <h3 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                <h3 className="text-base sm:text-lg font-bold text-ink">
                   Performance Review Details
                 </h3>
                 <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70">
@@ -121,7 +121,7 @@ export default function ViewPerformanceReviewModal({
               )}
               <div className="flex-1 space-y-2">
                 <div>
-                  <h4 className="text-lg font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                  <h4 className="text-lg font-bold text-ink">
                     {review.staffName}
                   </h4>
                   <p className="text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70">
@@ -152,14 +152,14 @@ export default function ViewPerformanceReviewModal({
           {/* Review Information Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {/* Review Period */}
-            <div className="bg-white dark:bg-[#1a1d24]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 rounded-lg p-4 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+            <div className="bg-white dark:bg-[#1a1d24]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 rounded-lg p-4 border border-line">
               <div className="flex items-center gap-2 mb-2">
                 <Calendar className="w-4 h-4 text-purple-600 dark:text-purple-400 midnight:text-cyan-400 purple:text-pink-400" />
                 <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">
                   Review Period
                 </span>
               </div>
-              <p className="text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+              <p className="text-sm font-bold text-ink">
                 {review.reviewPeriod.charAt(0).toUpperCase() + review.reviewPeriod.slice(1)}
               </p>
               <p className="text-xs text-gray-600 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70">
@@ -168,50 +168,50 @@ export default function ViewPerformanceReviewModal({
             </div>
 
             {/* Review Date */}
-            <div className="bg-white dark:bg-[#1a1d24]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 rounded-lg p-4 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+            <div className="bg-white dark:bg-[#1a1d24]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 rounded-lg p-4 border border-line">
               <div className="flex items-center gap-2 mb-2">
                 <Calendar className="w-4 h-4 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
                 <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">
                   Review Date
                 </span>
               </div>
-              <p className="text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+              <p className="text-sm font-bold text-ink">
                 {formatDate(review.reviewDate)}
               </p>
             </div>
 
             {/* Due Date */}
-            <div className="bg-white dark:bg-[#1a1d24]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 rounded-lg p-4 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+            <div className="bg-white dark:bg-[#1a1d24]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 rounded-lg p-4 border border-line">
               <div className="flex items-center gap-2 mb-2">
                 <Clock className="w-4 h-4 text-orange-600 dark:text-orange-400 midnight:text-orange-400 purple:text-orange-400" />
                 <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">
                   Due Date
                 </span>
               </div>
-              <p className="text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+              <p className="text-sm font-bold text-ink">
                 {formatDate(review.reviewDueDate)}
               </p>
             </div>
           </div>
 
           {/* Reviewer Information */}
-          <div className="bg-white dark:bg-[#1a1d24]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 rounded-lg p-4 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+          <div className="bg-white dark:bg-[#1a1d24]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 rounded-lg p-4 border border-line">
             <div className="flex items-center gap-2 mb-3">
               <User className="w-4 h-4 text-green-600 dark:text-green-400 midnight:text-green-400 purple:text-green-400" />
-              <h5 className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+              <h5 className="text-sm font-semibold text-ink">
                 Reviewer Information
               </h5>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
               <div>
                 <span className="text-gray-500 dark:text-gray-400">Name:</span>
-                <span className="ml-2 font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                <span className="ml-2 font-medium text-ink">
                   {review.reviewerName}
                 </span>
               </div>
               <div>
                 <span className="text-gray-500 dark:text-gray-400">Position:</span>
-                <span className="ml-2 font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                <span className="ml-2 font-medium text-ink">
                   {review.reviewerPosition}
                 </span>
               </div>
@@ -222,7 +222,7 @@ export default function ViewPerformanceReviewModal({
           <div className="bg-gradient-to-r from-yellow-50/50 to-orange-50/50 dark:from-yellow-900/10 dark:to-orange-900/10 midnight:from-yellow-900/10 midnight:to-orange-900/10 purple:from-yellow-900/10 purple:to-orange-900/10 rounded-xl p-5 border border-yellow-200/50 dark:border-yellow-800/30 midnight:border-yellow-700/30 purple:border-yellow-700/30">
             <div className="flex items-center gap-2 mb-3">
               <Award className="w-5 h-5 text-yellow-600 dark:text-yellow-400 midnight:text-yellow-400 purple:text-yellow-400" />
-              <h5 className="text-base font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+              <h5 className="text-base font-semibold text-ink">
                 Overall Performance Rating
               </h5>
             </div>
@@ -234,7 +234,7 @@ export default function ViewPerformanceReviewModal({
               </div>
               <div className="flex items-center gap-2">
                 <div className="flex gap-1">{getStarRating(review.averageScore)}</div>
-                <span className="text-lg font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                <span className="text-lg font-bold text-ink">
                   {review.averageScore.toFixed(1)}/5.0
                 </span>
               </div>
@@ -246,7 +246,7 @@ export default function ViewPerformanceReviewModal({
             <div>
               <div className="flex items-center gap-2 mb-3">
                 <TrendingUp className="w-4 h-4 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
-                <h5 className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                <h5 className="text-sm font-semibold text-ink">
                   Performance Criteria
                 </h5>
               </div>
@@ -254,20 +254,20 @@ export default function ViewPerformanceReviewModal({
                 {review.criteria.map((criterion) => (
                   <div
                     key={criterion.id}
-                    className="bg-white dark:bg-[#1a1d24]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 rounded-lg p-4 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20"
+                    className="bg-white dark:bg-[#1a1d24]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 rounded-lg p-4 border border-line"
                   >
                     <div className="flex items-start justify-between mb-2">
                       <div>
                         <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">
                           {criterion.category}
                         </p>
-                        <p className="text-sm font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mt-1">
+                        <p className="text-sm font-medium text-ink mt-1">
                           {criterion.criterion}
                         </p>
                       </div>
                       <div className="flex items-center gap-1">
                         {getStarRating(criterion.rating)}
-                        <span className="ml-1 text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                        <span className="ml-1 text-sm font-bold text-ink">
                           {criterion.rating}/5
                         </span>
                       </div>
@@ -288,7 +288,7 @@ export default function ViewPerformanceReviewModal({
             <div className="bg-green-50/50 dark:bg-green-900/10 midnight:bg-green-900/10 purple:bg-green-900/10 rounded-lg p-4 border border-green-200 dark:border-green-800/30 midnight:border-green-700/30 purple:border-green-700/30">
               <div className="flex items-center gap-2 mb-2">
                 <CheckCircle2 className="w-4 h-4 text-green-600 dark:text-green-400 midnight:text-green-400 purple:text-green-400" />
-                <h5 className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                <h5 className="text-sm font-semibold text-ink">
                   Strengths
                 </h5>
               </div>
@@ -303,7 +303,7 @@ export default function ViewPerformanceReviewModal({
             <div className="bg-orange-50/50 dark:bg-orange-900/10 midnight:bg-orange-900/10 purple:bg-orange-900/10 rounded-lg p-4 border border-orange-200 dark:border-orange-800/30 midnight:border-orange-700/30 purple:border-orange-700/30">
               <div className="flex items-center gap-2 mb-2">
                 <Target className="w-4 h-4 text-orange-600 dark:text-orange-400 midnight:text-orange-400 purple:text-orange-400" />
-                <h5 className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                <h5 className="text-sm font-semibold text-ink">
                   Areas for Improvement
                 </h5>
               </div>
@@ -315,10 +315,10 @@ export default function ViewPerformanceReviewModal({
 
           {/* Reviewer Comments */}
           {review.reviewerComments && (
-            <div className="bg-white dark:bg-[#1a1d24]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 rounded-lg p-4 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+            <div className="bg-white dark:bg-[#1a1d24]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 rounded-lg p-4 border border-line">
               <div className="flex items-center gap-2 mb-2">
                 <FileText className="w-4 h-4 text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400" />
-                <h5 className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                <h5 className="text-sm font-semibold text-ink">
                   Reviewer Comments
                 </h5>
               </div>
@@ -330,10 +330,10 @@ export default function ViewPerformanceReviewModal({
 
           {/* Employee Comments */}
           {review.employeeComments && (
-            <div className="bg-white dark:bg-[#1a1d24]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 rounded-lg p-4 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+            <div className="bg-white dark:bg-[#1a1d24]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 rounded-lg p-4 border border-line">
               <div className="flex items-center gap-2 mb-2">
                 <FileText className="w-4 h-4 text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400" />
-                <h5 className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                <h5 className="text-sm font-semibold text-ink">
                   Employee Comments
                 </h5>
               </div>
@@ -345,15 +345,15 @@ export default function ViewPerformanceReviewModal({
 
           {/* Signatures Section */}
           {(review.reviewerSignedDate || review.employeeAcknowledgedDate || review.hrApprovedDate) && (
-            <div className="bg-gray-50 dark:bg-[#1a1d24]/30 midnight:bg-[#0a0e27]/30 purple:bg-[#1a0b2e]/30 rounded-lg p-4 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
-              <h5 className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-3">
+            <div className="bg-gray-50 dark:bg-[#1a1d24]/30 midnight:bg-[#0a0e27]/30 purple:bg-[#1a0b2e]/30 rounded-lg p-4 border border-line">
+              <h5 className="text-sm font-semibold text-ink mb-3">
                 Signatures & Approvals
               </h5>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
                 {review.reviewerSignedDate && (
                   <div>
                     <span className="text-gray-500 dark:text-gray-400">Reviewer Signed:</span>
-                    <p className="font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                    <p className="font-medium text-ink">
                       {formatDate(review.reviewerSignedDate)}
                     </p>
                   </div>
@@ -361,7 +361,7 @@ export default function ViewPerformanceReviewModal({
                 {review.employeeAcknowledgedDate && (
                   <div>
                     <span className="text-gray-500 dark:text-gray-400">Employee Acknowledged:</span>
-                    <p className="font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                    <p className="font-medium text-ink">
                       {formatDate(review.employeeAcknowledgedDate)}
                     </p>
                   </div>
@@ -369,7 +369,7 @@ export default function ViewPerformanceReviewModal({
                 {review.hrApprovedDate && (
                   <div>
                     <span className="text-gray-500 dark:text-gray-400">HR Approved:</span>
-                    <p className="font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                    <p className="font-medium text-ink">
                       {formatDate(review.hrApprovedDate)}
                     </p>
                     {review.hrApprovedBy && (
@@ -383,7 +383,7 @@ export default function ViewPerformanceReviewModal({
         </div>
 
         {/* Footer */}
-        <div className="px-4 sm:px-6 py-3 sm:py-4 border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-gray-50/50 dark:bg-[#1a1d24]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50">
+        <div className="px-4 sm:px-6 py-3 sm:py-4 border-t border-line bg-gray-50/50 dark:bg-[#1a1d24]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50">
           <div className="flex justify-between items-center">
             {onEdit && review.status !== "completed" && (
               <button

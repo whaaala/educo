@@ -159,7 +159,7 @@ export default function NotificationsPage() {
             <div className="flex items-center gap-2 flex-wrap">
               <div className="flex items-center gap-1 mr-2">
                 <Filter className="w-4 h-4 text-gray-400" />
-                <span className="text-xs font-medium text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Filter:</span>
+                <span className="text-xs font-medium text-muted">Filter:</span>
               </div>
               <div className="flex items-center gap-1.5 p-1 bg-gray-100/80 dark:bg-[#0f1115] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 rounded-xl flex-wrap">
                 {FILTER_OPTIONS.slice(0, 4).map((option) => (
@@ -168,13 +168,13 @@ export default function NotificationsPage() {
                     onClick={() => setFilter(option.value)}
                     className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer whitespace-nowrap ${
                       filter === option.value
-                        ? "bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 shadow-sm"
+                        ? "bg-surface text-ink shadow-sm"
                         : "text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:text-gray-900 dark:hover:text-white midnight:hover:text-cyan-50 purple:hover:text-pink-50"
                     }`}
                   >
                     {option.label}
                     {option.value === "unread" && unreadCount > 0 && (
-                      <span className="ml-1.5 px-1.5 py-0.5 text-[10px] font-bold bg-red-500 text-white rounded-full">
+                      <span className="ml-1.5 px-1.5 py-0.5 text-[0.625rem] font-bold bg-red-500 text-white rounded-full">
                         {unreadCount}
                       </span>
                     )}
@@ -213,7 +213,7 @@ export default function NotificationsPage() {
               <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-gray-100 to-gray-50 dark:from-gray-700 dark:to-gray-800 flex items-center justify-center mx-auto mb-4">
                 <Bell className="w-10 h-10 text-gray-400" />
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-2">
+              <h3 className="text-lg font-semibold text-ink mb-2">
                 {filter === "unread" ? "No unread notifications" : "No notifications"}
               </h3>
               <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70 max-w-xs mx-auto">

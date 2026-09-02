@@ -200,16 +200,16 @@ export default function ChatRoom({
   const displayName = roomName || recipient?.name || "Chat";
 
   return (
-    <div className="flex flex-col h-full bg-white dark:bg-[#0f1115]">
+    <div className="flex flex-col h-full bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]">
       {/* Header */}
-      <div className="flex-shrink-0 px-4 py-3 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-[#1a1d24]">
+      <div className="flex-shrink-0 px-4 py-3 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]">
         <div className="flex items-center gap-3">
           {onBack && (
             <button
               onClick={onBack}
               className="p-2 hover:bg-gray-100 dark:hover:bg-[#22262e] rounded-full transition-colors"
             >
-              <ArrowLeft className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+              <ArrowLeft className="w-5 h-5 text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300" />
             </button>
           )}
 
@@ -230,8 +230,8 @@ export default function ChatRoom({
 
           {/* Info */}
           <div className="flex-1 min-w-0">
-            <h3 className="font-semibold text-gray-900 dark:text-white truncate">{displayName}</h3>
-            <p className="text-xs text-gray-500 dark:text-gray-400">
+            <h3 className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate">{displayName}</h3>
+            <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
               {recipient?.isOnline ? (
                 <span className="text-green-500">Online</span>
               ) : roomType === "group" ? (
@@ -245,14 +245,14 @@ export default function ChatRoom({
           {/* Actions */}
           <div className="flex items-center gap-1">
             {showSearch ? (
-              <div className="flex items-center gap-2 bg-gray-100 dark:bg-[#22262e] rounded-full px-3 py-1">
+              <div className="flex items-center gap-2 bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] rounded-full px-3 py-1">
                 <Search className="w-4 h-4 text-gray-500" />
                 <input
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search..."
-                  className="bg-transparent text-sm w-32 focus:outline-none text-gray-900 dark:text-white"
+                  className="bg-transparent text-sm w-32 focus:outline-none text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50"
                   autoFocus
                   suppressHydrationWarning
                 />
@@ -271,14 +271,14 @@ export default function ChatRoom({
                   onClick={() => setShowSearch(true)}
                   className="p-2 hover:bg-gray-100 dark:hover:bg-[#22262e] rounded-full transition-colors"
                 >
-                  <Search className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                  <Search className="w-5 h-5 text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300" />
                 </button>
                 {onStartVoiceCall && (
                   <button
                     onClick={onStartVoiceCall}
                     className="p-2 hover:bg-gray-100 dark:hover:bg-[#22262e] rounded-full transition-colors"
                   >
-                    <Phone className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                    <Phone className="w-5 h-5 text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300" />
                   </button>
                 )}
                 {onStartVideoCall && (
@@ -286,11 +286,11 @@ export default function ChatRoom({
                     onClick={onStartVideoCall}
                     className="p-2 hover:bg-gray-100 dark:hover:bg-[#22262e] rounded-full transition-colors"
                   >
-                    <Video className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                    <Video className="w-5 h-5 text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300" />
                   </button>
                 )}
                 <button className="p-2 hover:bg-gray-100 dark:hover:bg-[#22262e] rounded-full transition-colors">
-                  <MoreVertical className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                  <MoreVertical className="w-5 h-5 text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300" />
                 </button>
               </>
             )}
@@ -299,14 +299,14 @@ export default function ChatRoom({
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50 dark:bg-[#0f1115]">
+      <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]">
         {isLoading ? (
           <div className="flex items-center justify-center py-8">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500" />
           </div>
         ) : messages.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-gray-500">
-            <div className="w-16 h-16 rounded-full bg-gray-200 dark:bg-[#22262e] flex items-center justify-center mb-4">
+            <div className="w-16 h-16 rounded-full bg-gray-200 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] flex items-center justify-center mb-4">
               <Send className="w-8 h-8 opacity-50" />
             </div>
             <p>No messages yet</p>
@@ -317,7 +317,7 @@ export default function ChatRoom({
             <div key={group.date}>
               {/* Date separator */}
               <div className="flex items-center justify-center my-4">
-                <span className="px-3 py-1 bg-gray-200 dark:bg-[#22262e] text-gray-600 dark:text-gray-400 text-xs rounded-full">
+                <span className="px-3 py-1 bg-gray-200 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 text-xs rounded-full">
                   {group.date}
                 </span>
               </div>
@@ -362,7 +362,7 @@ export default function ChatRoom({
                       className={`max-w-[70%] rounded-2xl px-4 py-2 ${
                         isOwn
                           ? "bg-blue-600 text-white rounded-br-sm"
-                          : "bg-white dark:bg-[#1a1d24] text-gray-900 dark:text-white rounded-bl-sm shadow-sm"
+                          : "bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 rounded-bl-sm shadow-sm"
                       }`}
                     >
                       {/* Reply reference */}
@@ -371,7 +371,7 @@ export default function ChatRoom({
                           className={`text-xs mb-1 px-2 py-1 rounded border-l-2 ${
                             isOwn
                               ? "bg-blue-700/50 border-blue-400"
-                              : "bg-gray-100 dark:bg-[#22262e] border-gray-400"
+                              : "bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] border-gray-400"
                           }`}
                         >
                           Replying to message...
@@ -435,9 +435,9 @@ export default function ChatRoom({
 
       {/* Reply preview */}
       {replyTo && (
-        <div className="flex-shrink-0 px-4 py-2 bg-gray-100 dark:bg-[#1a1d24] border-t border-gray-200 dark:border-gray-700">
+        <div className="flex-shrink-0 px-4 py-2 bg-gray-100 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
           <div className="flex items-center gap-2">
-            <div className="flex-1 text-sm text-gray-600 dark:text-gray-400">
+            <div className="flex-1 text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
               <p className="font-medium">Replying to {replyTo.senderName}</p>
               <p className="truncate">{replyTo.content}</p>
             </div>
@@ -452,7 +452,7 @@ export default function ChatRoom({
       )}
 
       {/* Input */}
-      <div className="flex-shrink-0 p-4 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-[#1a1d24]">
+      <div className="flex-shrink-0 p-4 border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]">
         <div className="flex items-center gap-2">
           {/* Attachment */}
           <div className="relative">
@@ -460,11 +460,11 @@ export default function ChatRoom({
               onClick={() => setShowAttachMenu(!showAttachMenu)}
               className="p-2 hover:bg-gray-100 dark:hover:bg-[#22262e] rounded-full transition-colors"
             >
-              <Paperclip className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+              <Paperclip className="w-5 h-5 text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300" />
             </button>
 
             {showAttachMenu && (
-              <div className="absolute bottom-full left-0 mb-2 bg-white dark:bg-[#1a1d24] rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-2 min-w-[150px]">
+              <div className="absolute bottom-full left-0 mb-2 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 py-2 min-w-[150px]">
                 <button
                   onClick={() => fileInputRef.current?.click()}
                   className="flex items-center gap-3 w-full px-4 py-2 hover:bg-gray-100 dark:hover:bg-[#22262e] text-left"
@@ -494,7 +494,7 @@ export default function ChatRoom({
 
           {/* Emoji */}
           <button className="p-2 hover:bg-gray-100 dark:hover:bg-[#22262e] rounded-full transition-colors">
-            <Smile className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+            <Smile className="w-5 h-5 text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300" />
           </button>
 
           {/* Input */}
@@ -505,7 +505,7 @@ export default function ChatRoom({
             onChange={(e) => setNewMessage(e.target.value)}
             onKeyPress={(e) => e.key === "Enter" && !e.shiftKey && sendMessage()}
             placeholder="Type a message..."
-            className="flex-1 px-4 py-2 bg-gray-100 dark:bg-[#22262e] border-0 rounded-full text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="flex-1 px-4 py-2 bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] border-0 rounded-full text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
             suppressHydrationWarning
           />
 
@@ -516,7 +516,7 @@ export default function ChatRoom({
             className={`p-3 rounded-full transition-colors ${
               newMessage.trim() && !isSending
                 ? "bg-blue-600 hover:bg-blue-700 text-white"
-                : "bg-gray-200 dark:bg-[#22262e] text-gray-400"
+                : "bg-gray-200 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] text-gray-400"
             }`}
           >
             {isSending ? (

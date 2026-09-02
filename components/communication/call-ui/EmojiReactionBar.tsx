@@ -415,11 +415,11 @@ export function EmojiReactionBar({
                   </p>
                   <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
                     Add your free GIPHY API key to{" "}
-                    <code className="px-1.5 py-0.5 bg-gray-100 dark:bg-white/10 rounded text-[10px] font-mono">
+                    <code className="px-1.5 py-0.5 bg-gray-100 dark:bg-white/10 rounded text-[0.625rem] font-mono">
                       .env.local
                     </code>
                   </p>
-                  <p className="text-[10px] text-gray-400 dark:text-gray-500">
+                  <p className="text-[0.625rem] text-gray-400 dark:text-gray-500">
                     NEXT_PUBLIC_GIPHY_API_KEY=your_key
                   </p>
                 </div>
@@ -471,10 +471,10 @@ export function EmojiReactionBar({
 
           {/* GIPHY attribution footer */}
           <div className="px-3 py-2 border-t border-gray-100 dark:border-white/10 midnight:border-cyan-500/15 purple:border-pink-500/15 flex items-center justify-center gap-1.5">
-            <span className="text-[11px] text-gray-400 dark:text-gray-500 font-medium">
+            <span className="text-[0.6875rem] text-gray-400 dark:text-gray-500 font-medium">
               Powered by
             </span>
-            <GiphyLogo className="text-[11px]" />
+            <GiphyLogo className="text-[0.6875rem]" />
           </div>
         </div>
       )}

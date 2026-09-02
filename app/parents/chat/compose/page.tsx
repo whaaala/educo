@@ -248,13 +248,13 @@ export default function ParentComposeNewChatPage() {
             </button>
           </div>
 
-          <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-2xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-700 ease-out h-[calc(100vh-250px)] min-h-[500px] flex flex-col">
+          <div className="bg-surface rounded-2xl border border-line shadow-sm overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-700 ease-out h-[calc(100vh-250px)] min-h-[500px] flex flex-col">
           {!selectedStaff ? (
             /* Staff Selection View */
             <div className="flex-1 flex flex-col">
               <div className="p-6 border-b border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
-                <h2 className="text-lg font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-1">Start a Conversation</h2>
-                <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Select a teacher or staff member to start chatting</p>
+                <h2 className="text-lg font-semibold text-ink mb-1">Start a Conversation</h2>
+                <p className="text-sm text-muted">Select a teacher or staff member to start chatting</p>
               </div>
 
               {/* Search & Filters */}
@@ -266,7 +266,7 @@ export default function ParentComposeNewChatPage() {
                     value={staffSearch}
                     onChange={(e) => setStaffSearch(e.target.value)}
                     placeholder="Search by name, subject, or role..."
-                    className="w-full pl-12 pr-4 py-3 rounded-xl bg-gray-50 dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 focus:border-blue-400 focus:ring-2 focus:ring-blue-500/20 text-sm outline-none"
+                    className="w-full pl-12 pr-4 py-3 rounded-xl bg-canvas border border-line focus:border-blue-400 focus:ring-2 focus:ring-blue-500/20 text-sm outline-none"
                   />
                 </div>
 
@@ -279,7 +279,7 @@ export default function ParentComposeNewChatPage() {
                       className={`px-4 py-2 rounded-full text-sm font-medium transition-all cursor-pointer ${
                         filterRole === role
                           ? "bg-blue-500 text-white shadow-lg shadow-blue-500/25"
-                          : "bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-200 dark:hover:bg-[#2a2d35] midnight:hover:bg-cyan-500/15 purple:hover:bg-pink-500/15"
+                          : "bg-surface-2 text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-200 dark:hover:bg-[#2a2d35] midnight:hover:bg-cyan-500/15 purple:hover:bg-pink-500/15"
                       }`}
                     >
                       {role === "all" ? "All Staff" : `${role}s`}
@@ -293,7 +293,7 @@ export default function ParentComposeNewChatPage() {
                 {filteredStaff.length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-12">
                     <Users className="w-12 h-12 text-gray-300 dark:text-gray-600 midnight:text-cyan-500 purple:text-pink-500 mb-3" />
-                    <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">No staff members found</p>
+                    <p className="text-sm text-muted">No staff members found</p>
                   </div>
                 ) : (
                   <div className="divide-y divide-gray-100 dark:divide-gray-700">
@@ -319,7 +319,7 @@ export default function ParentComposeNewChatPage() {
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-0.5">
-                            <p className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate">
+                            <p className="text-sm font-semibold text-ink truncate">
                               {staff.name}
                             </p>
                             {staff.isOnline && (
@@ -335,7 +335,7 @@ export default function ParentComposeNewChatPage() {
                               {staff.role}
                             </span>
                             {staff.subject && (
-                              <span className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">{staff.subject}</span>
+                              <span className="text-xs text-muted">{staff.subject}</span>
                             )}
                           </div>
                           <p className="text-xs text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 truncate mt-0.5">{staff.email}</p>
@@ -374,14 +374,14 @@ export default function ParentComposeNewChatPage() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <p className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate">
+                    <p className="text-sm font-semibold text-ink truncate">
                       {selectedStaff.name}
                     </p>
                     <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${getRoleColor(selectedStaff.role)}`}>
                       {selectedStaff.role}
                     </span>
                   </div>
-                  <p className={`text-xs ${selectedStaff.isOnline ? "text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400" : "text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300"}`}>
+                  <p className={`text-xs ${selectedStaff.isOnline ? "text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400" : "text-muted"}`}>
                     {selectedStaff.isOnline ? "Online" : "Offline"}
                     {selectedStaff.subject && ` • ${selectedStaff.subject}`}
                   </p>
@@ -393,14 +393,14 @@ export default function ParentComposeNewChatPage() {
                 <div className="w-20 h-20 rounded-full bg-blue-100 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 flex items-center justify-center mb-4">
                   <MessageCircle className="w-10 h-10 text-blue-500" />
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-1">Start a Conversation</h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 text-center max-w-sm">
+                <h3 className="text-lg font-semibold text-ink mb-1">Start a Conversation</h3>
+                <p className="text-sm text-muted text-center max-w-sm">
                   Send your first message to {selectedStaff.name.split(" ")[0]}. They will be notified and respond as soon as possible.
                 </p>
               </div>
 
               {/* Message Input */}
-              <div className="border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]">
+              <div className="border-t border-line bg-surface">
                 {/* Attachments Preview */}
                 {attachments.length > 0 && (
                   <div className="px-4 pt-3">
@@ -408,13 +408,13 @@ export default function ParentComposeNewChatPage() {
                       {attachments.map((file, index) => (
                         <div key={index} className="relative flex-shrink-0 group">
                           {file.type.startsWith("image/") ? (
-                            <div className="w-16 h-16 rounded-xl overflow-hidden bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] border border-gray-200 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30">
+                            <div className="w-16 h-16 rounded-xl overflow-hidden bg-surface-2 border border-gray-200 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30">
                               <img src={URL.createObjectURL(file)} alt={file.name} className="w-full h-full object-cover" />
                             </div>
                           ) : (
-                            <div className="w-16 h-16 rounded-xl bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] border border-gray-200 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 flex flex-col items-center justify-center p-1">
+                            <div className="w-16 h-16 rounded-xl bg-surface-2 border border-gray-200 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 flex flex-col items-center justify-center p-1">
                               {getFileIcon(file)}
-                              <span className="text-[8px] text-gray-500 truncate w-full text-center mt-1">{file.name.slice(0, 8)}...</span>
+                              <span className="text-[0.5rem] text-gray-500 truncate w-full text-center mt-1">{file.name.slice(0, 8)}...</span>
                             </div>
                           )}
                           <button

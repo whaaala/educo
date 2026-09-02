@@ -101,12 +101,12 @@ export default function StaffLeaveStatsCard({
       <div className="relative z-10 space-y-2 sm:space-y-1.5 lg:space-y-2.5 2xl:space-y-1.5">
         {/* Header */}
         <div className="flex items-center justify-between gap-2 sm:gap-1.5 lg:gap-2.5 2xl:gap-2">
-          <h3 className={`text-xs sm:text-[10px] lg:text-sm xl:text-base 2xl:text-sm font-bold ${style.titleColor} leading-tight flex-1`}>
+          <h3 className={`text-xs sm:text-[0.625rem] lg:text-sm xl:text-base 2xl:text-sm font-bold ${style.titleColor} leading-tight flex-1`}>
             {title}
           </h3>
           {/* Total badge */}
           <div className={`${style.iconBg} px-2 py-1 sm:px-1.5 sm:py-0.5 lg:px-2.5 lg:py-1 2xl:px-2 2xl:py-0.5 rounded-md sm:rounded lg:rounded-lg 2xl:rounded-md`}>
-            <span className={`text-xs sm:text-[9px] sm:text-[10px] lg:text-sm xl:text-base 2xl:text-sm font-bold ${style.textColor}`}>
+            <span className={`text-xs sm:text-[0.5625rem] sm:text-[0.625rem] lg:text-sm xl:text-base 2xl:text-sm font-bold ${style.textColor}`}>
               {total}
             </span>
           </div>
@@ -125,14 +125,14 @@ export default function StaffLeaveStatsCard({
           <div className="grid grid-cols-2 gap-3 sm:gap-1.5 sm:gap-2 lg:gap-4 xl:gap-5 2xl:gap-3">
             {/* Used */}
             <div className="flex flex-col">
-              <span className={`text-[10px] sm:text-[8px] sm:text-[9px] lg:text-[11px] xl:text-xs 2xl:text-[10px] font-semibold uppercase tracking-wide ${style.labelColor} mb-1 sm:mb-0.5 lg:mb-1 2xl:mb-0.5`}>
+              <span className={`text-[0.625rem] sm:text-[0.5rem] sm:text-[0.5625rem] lg:text-[0.6875rem] xl:text-xs 2xl:text-[0.625rem] font-semibold uppercase tracking-wide ${style.labelColor} mb-1 sm:mb-0.5 lg:mb-1 2xl:mb-0.5`}>
                 Used
               </span>
               <div className="flex items-baseline gap-1 sm:gap-0.5 lg:gap-1 2xl:gap-0.5">
                 <span className={`text-base sm:text-xs sm:text-sm lg:text-xl xl:text-2xl 2xl:text-lg font-bold ${style.textColor} leading-none`}>
                   {used}
                 </span>
-                <span className={`text-[10px] sm:text-[8px] sm:text-[9px] lg:text-xs xl:text-sm 2xl:text-xs ${style.labelColor}`}>
+                <span className={`text-[0.625rem] sm:text-[0.5rem] sm:text-[0.5625rem] lg:text-xs xl:text-sm 2xl:text-xs ${style.labelColor}`}>
                   days
                 </span>
               </div>
@@ -140,14 +140,14 @@ export default function StaffLeaveStatsCard({
 
             {/* Available */}
             <div className="flex flex-col">
-              <span className={`text-[10px] sm:text-[8px] sm:text-[9px] lg:text-[11px] xl:text-xs 2xl:text-[10px] font-semibold uppercase tracking-wide ${style.labelColor} mb-1 sm:mb-0.5 lg:mb-1 2xl:mb-0.5`}>
+              <span className={`text-[0.625rem] sm:text-[0.5rem] sm:text-[0.5625rem] lg:text-[0.6875rem] xl:text-xs 2xl:text-[0.625rem] font-semibold uppercase tracking-wide ${style.labelColor} mb-1 sm:mb-0.5 lg:mb-1 2xl:mb-0.5`}>
                 Available
               </span>
               <div className="flex items-baseline gap-1 sm:gap-0.5 lg:gap-1 2xl:gap-0.5">
                 <span className={`text-base sm:text-xs sm:text-sm lg:text-xl xl:text-2xl 2xl:text-lg font-bold ${style.textColor} leading-none`}>
                   {available}
                 </span>
-                <span className={`text-[10px] sm:text-[8px] sm:text-[9px] lg:text-xs xl:text-sm 2xl:text-xs ${style.labelColor}`}>
+                <span className={`text-[0.625rem] sm:text-[0.5rem] sm:text-[0.5625rem] lg:text-xs xl:text-sm 2xl:text-xs ${style.labelColor}`}>
                   days
                 </span>
               </div>

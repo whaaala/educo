@@ -270,7 +270,7 @@ export default function DetailViewModal({
         {sections.map((section) => (
           <div key={section.id}>
             {section.title && (
-              <h4 className="text-[10px] font-bold text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 uppercase tracking-widest mb-3">
+              <h4 className="text-[0.625rem] font-bold text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 uppercase tracking-widest mb-3">
                 {section.title}
               </h4>
             )}
@@ -295,10 +295,10 @@ export default function DetailViewModal({
                       key={idx}
                       className={`group relative overflow-hidden rounded-xl bg-gradient-to-br ${hl} p-4 border shadow-sm hover:shadow-md transition-all duration-300 ${field.fullWidth ? "col-span-2 md:col-span-full" : ""}`}
                     >
-                      <p className="text-[10px] font-bold text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 uppercase tracking-widest mb-1.5">
+                      <p className="text-[0.625rem] font-bold text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 uppercase tracking-widest mb-1.5">
                         {field.label}
                       </p>
-                      <div className={`text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 relative z-10 ${field.valueClassName || ""}`}>
+                      <div className={`text-sm font-bold text-ink relative z-10 ${field.valueClassName || ""}`}>
                         {field.value}
                       </div>
                     </div>
@@ -326,8 +326,8 @@ export default function DetailViewModal({
               <div className="space-y-2">
                 {section.rows.map((row, idx) => (
                   <div key={idx} className="flex items-center justify-between text-sm">
-                    <span className="text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">{row.label}</span>
-                    <span className="font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{row.value}</span>
+                    <span className="text-muted">{row.label}</span>
+                    <span className="font-medium text-ink">{row.value}</span>
                   </div>
                 ))}
               </div>
@@ -340,7 +340,7 @@ export default function DetailViewModal({
 
         {/* Footer info */}
         {footerInfo && (
-          <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 border-t border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 pt-4">
+          <div className="flex items-center justify-between text-xs text-muted border-t border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 pt-4">
             {footerInfo.items.map((item, idx) => (
               <p key={idx} className="flex items-center gap-1.5">
                 <span className="font-semibold text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200">{item.label}:</span>

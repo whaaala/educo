@@ -61,40 +61,40 @@ const getStatusConfig = (status: string) => {
         icon: CheckCircle,
         label: "Paid",
         bgColor: "bg-green-100 dark:bg-green-900/30",
-        textColor: "text-green-700 dark:text-green-400",
-        iconColor: "text-green-600 dark:text-green-400",
+        textColor: "text-green-700 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400",
+        iconColor: "text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400",
       };
     case "partial":
       return {
         icon: Clock,
         label: "Partial",
         bgColor: "bg-amber-100 dark:bg-amber-900/30",
-        textColor: "text-amber-700 dark:text-amber-400",
-        iconColor: "text-amber-600 dark:text-amber-400",
+        textColor: "text-amber-700 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400",
+        iconColor: "text-amber-600 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400",
       };
     case "pending":
       return {
         icon: Clock,
         label: "Pending",
-        bgColor: "bg-blue-100 dark:bg-blue-900/30",
-        textColor: "text-blue-700 dark:text-blue-400",
-        iconColor: "text-blue-600 dark:text-blue-400",
+        bgColor: "bg-blue-100 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30",
+        textColor: "text-blue-700 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400",
+        iconColor: "text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400",
       };
     case "overdue":
       return {
         icon: AlertCircle,
         label: "Overdue",
-        bgColor: "bg-red-100 dark:bg-red-900/30",
-        textColor: "text-red-700 dark:text-red-400",
-        iconColor: "text-red-600 dark:text-red-400",
+        bgColor: "bg-red-100 dark:bg-red-900/30 midnight:bg-red-900/30 purple:bg-red-900/30",
+        textColor: "text-red-700 dark:text-red-400 midnight:text-red-400 purple:text-red-400",
+        iconColor: "text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400",
       };
     default:
       return {
         icon: XCircle,
         label: "Unknown",
-        bgColor: "bg-gray-100 dark:bg-[#22262e]",
-        textColor: "text-gray-700 dark:text-gray-400",
-        iconColor: "text-gray-600 dark:text-gray-400",
+        bgColor: "bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]",
+        textColor: "text-gray-700 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300",
+        iconColor: "text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300",
       };
   }
 };
@@ -157,38 +157,38 @@ export default function ViewFeeStatementModal({
         {/* Summary Cards */}
         <div className="grid grid-cols-3 gap-3">
           <div className="p-4 rounded-xl bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-800/20 border border-blue-200 dark:border-blue-800">
-            <p className="text-xs font-medium text-blue-600 dark:text-blue-400 mb-1">Total Fees</p>
+            <p className="text-xs font-medium text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 mb-1">Total Fees</p>
             <p className="text-lg font-bold text-blue-900 dark:text-blue-100">{formatCurrency(summary.totalAmount)}</p>
           </div>
           <div className="p-4 rounded-xl bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/30 dark:to-green-800/20 border border-green-200 dark:border-green-800">
-            <p className="text-xs font-medium text-green-600 dark:text-green-400 mb-1">Total Paid</p>
+            <p className="text-xs font-medium text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400 mb-1">Total Paid</p>
             <p className="text-lg font-bold text-green-900 dark:text-green-100">{formatCurrency(summary.totalPaid)}</p>
           </div>
           <div className="p-4 rounded-xl bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900/30 dark:to-red-800/20 border border-red-200 dark:border-red-800">
-            <p className="text-xs font-medium text-red-600 dark:text-red-400 mb-1">Outstanding</p>
+            <p className="text-xs font-medium text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400 mb-1">Outstanding</p>
             <p className="text-lg font-bold text-red-900 dark:text-red-100">{formatCurrency(summary.totalOutstanding)}</p>
           </div>
         </div>
 
         {/* Status Summary */}
-        <div className="flex items-center gap-4 px-4 py-3 rounded-xl bg-gray-50 dark:bg-[#1a1d24]/50 border border-gray-200 dark:border-gray-700">
+        <div className="flex items-center gap-4 px-4 py-3 rounded-xl bg-gray-50 dark:bg-[#1a1d24]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 rounded-full bg-green-500"></div>
-            <span className="text-sm text-gray-600 dark:text-gray-400">{summary.paidCount} Paid</span>
+            <span className="text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">{summary.paidCount} Paid</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 rounded-full bg-amber-500"></div>
-            <span className="text-sm text-gray-600 dark:text-gray-400">{summary.pendingCount} Pending</span>
+            <span className="text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">{summary.pendingCount} Pending</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 rounded-full bg-red-500"></div>
-            <span className="text-sm text-gray-600 dark:text-gray-400">{summary.overdueCount} Overdue</span>
+            <span className="text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">{summary.overdueCount} Overdue</span>
           </div>
         </div>
 
         {/* Recent Fee Records */}
         <div>
-          <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Recent Fee Records</h3>
+          <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 mb-3">Recent Fee Records</h3>
           <div className="space-y-2 max-h-[280px] overflow-y-auto">
             {feeRecords.slice(0, 6).map((record) => {
               const statusConfig = getStatusConfig(record.status);
@@ -198,27 +198,27 @@ export default function ViewFeeStatementModal({
               return (
                 <div
                   key={record.id}
-                  className="flex items-center justify-between p-3 rounded-xl bg-white dark:bg-[#1a1d24] border border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 transition-colors"
+                  className="flex items-center justify-between p-3 rounded-xl bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 hover:border-gray-300 dark:hover:border-gray-600 midnight:hover:border-cyan-500/30 purple:hover:border-pink-500/30 transition-colors"
                 >
                   <div className="flex items-center gap-3 min-w-0">
                     <div className={`w-10 h-10 rounded-lg ${statusConfig.bgColor} flex items-center justify-center flex-shrink-0`}>
                       <StatusIcon className={`w-5 h-5 ${statusConfig.iconColor}`} />
                     </div>
                     <div className="min-w-0">
-                      <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                      <p className="text-sm font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate">
                         {record.feeType}
                       </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                      <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 truncate">
                         {record.childName} • {record.term}
                       </p>
                     </div>
                   </div>
                   <div className="text-right flex-shrink-0 ml-3">
-                    <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                    <p className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
                       {formatCurrency(record.amount)}
                     </p>
                     {balance > 0 && (
-                      <p className="text-xs text-red-600 dark:text-red-400">
+                      <p className="text-xs text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400">
                         Bal: {formatCurrency(balance)}
                       </p>
                     )}
@@ -235,10 +235,10 @@ export default function ViewFeeStatementModal({
         </div>
 
         {/* Action Buttons */}
-        <div className="flex items-center justify-between pt-3 border-t border-gray-200 dark:border-gray-700">
+        <div className="flex items-center justify-between pt-3 border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
           <button
             onClick={handleViewFullDetails}
-            className="flex items-center gap-2 text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors cursor-pointer"
+            className="flex items-center gap-2 text-sm font-medium text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors cursor-pointer"
           >
             <ExternalLink className="w-4 h-4" />
             View Full Details

@@ -88,7 +88,7 @@ export default function CheckSalaryModal({
     <div className="fixed inset-0 z-[9999] flex items-start justify-center bg-black/60 backdrop-blur-md pt-4 pb-4 px-4 sm:px-6 overflow-y-auto">
       <div
         ref={modalRef}
-        className="relative w-full max-w-3xl bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl sm:rounded-2xl shadow-2xl max-h-[calc(100vh-32px)] flex flex-col animate-in fade-in zoom-in duration-200"
+        className="relative w-full max-w-3xl bg-surface rounded-xl sm:rounded-2xl shadow-2xl max-h-[calc(100vh-32px)] flex flex-col animate-in fade-in zoom-in duration-200"
       >
         {/* Header with Gradient */}
         <div className="flex-shrink-0 relative bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-500 dark:to-purple-500 midnight:from-cyan-600 midnight:to-purple-600 purple:from-pink-600 purple:to-purple-600 px-4 sm:px-5 py-3 sm:py-4">
@@ -119,7 +119,7 @@ export default function CheckSalaryModal({
         <div className="flex-1 overflow-y-auto overflow-x-visible">
           <div className="p-4 sm:p-5 space-y-4">
           {/* Staff Profile Section */}
-          <div className="mb-6 p-4 bg-gradient-to-r from-gray-50 to-blue-50/30 dark:from-gray-800/50 dark:to-gray-800/30 midnight:from-gray-800/50 midnight:to-cyan-900/10 purple:from-gray-800/50 purple:to-pink-900/10 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+          <div className="mb-6 p-4 bg-gradient-to-r from-gray-50 to-blue-50/30 dark:from-gray-800/50 dark:to-gray-800/30 midnight:from-gray-800/50 midnight:to-cyan-900/10 purple:from-gray-800/50 purple:to-pink-900/10 rounded-xl border border-line">
             <div className="flex items-start gap-4">
               {staff.imageUrl ? (
                 <img
@@ -138,7 +138,7 @@ export default function CheckSalaryModal({
                     <User className="w-4 h-4 text-gray-500 dark:text-gray-400" />
                     <p className="text-xs text-gray-500 dark:text-gray-400">Position</p>
                   </div>
-                  <p className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                  <p className="text-sm font-semibold text-ink">
                     {staff.role}
                   </p>
                 </div>
@@ -147,7 +147,7 @@ export default function CheckSalaryModal({
                     <Briefcase className="w-4 h-4 text-gray-500 dark:text-gray-400" />
                     <p className="text-xs text-gray-500 dark:text-gray-400">Department</p>
                   </div>
-                  <p className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                  <p className="text-sm font-semibold text-ink">
                     {staff.department}
                   </p>
                 </div>
@@ -156,7 +156,7 @@ export default function CheckSalaryModal({
                     <Calendar className="w-4 h-4 text-gray-500 dark:text-gray-400" />
                     <p className="text-xs text-gray-500 dark:text-gray-400">Join Date</p>
                   </div>
-                  <p className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                  <p className="text-sm font-semibold text-ink">
                     {new Date(staff.joinDate).toLocaleDateString("en-US", {
                       month: "short",
                       day: "numeric",
@@ -169,7 +169,7 @@ export default function CheckSalaryModal({
                     <TrendingUp className="w-4 h-4 text-gray-500 dark:text-gray-400" />
                     <p className="text-xs text-gray-500 dark:text-gray-400">Years of Service</p>
                   </div>
-                  <p className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                  <p className="text-sm font-semibold text-ink">
                     {yearsOfService} {yearsOfService === 1 ? "year" : "years"}
                   </p>
                 </div>
@@ -183,7 +183,7 @@ export default function CheckSalaryModal({
               <div className="w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 flex items-center justify-center">
                 <FileText className="w-4 h-4 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
               </div>
-              <h3 className="text-lg font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+              <h3 className="text-lg font-bold text-ink">
                 Monthly Salary Breakdown
               </h3>
             </div>
@@ -246,7 +246,7 @@ export default function CheckSalaryModal({
               <div className="w-8 h-8 rounded-lg bg-purple-100 dark:bg-purple-900/30 midnight:bg-purple-900/30 purple:bg-pink-900/30 flex items-center justify-center">
                 <Calendar className="w-4 h-4 text-purple-600 dark:text-purple-400 midnight:text-purple-400 purple:text-pink-400" />
               </div>
-              <h3 className="text-lg font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+              <h3 className="text-lg font-bold text-ink">
                 Annual Summary
               </h3>
             </div>
@@ -272,13 +272,13 @@ export default function CheckSalaryModal({
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Employment Type</p>
-                <p className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                <p className="text-sm font-semibold text-ink">
                   {staff.employmentType}
                 </p>
               </div>
               <div>
                 <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Employment Status</p>
-                <p className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                <p className="text-sm font-semibold text-ink">
                   {staff.employmentStatus}
                 </p>
               </div>
@@ -292,7 +292,7 @@ export default function CheckSalaryModal({
                 <div className="w-8 h-8 rounded-lg bg-green-100 dark:bg-green-900/30 midnight:bg-green-900/30 purple:bg-green-900/30 flex items-center justify-center">
                   <TrendingUp className="w-4 h-4 text-green-600 dark:text-green-400 midnight:text-green-400 purple:text-green-400" />
                 </div>
-                <h3 className="text-lg font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                <h3 className="text-lg font-bold text-ink">
                   Increase Salary
                 </h3>
               </div>
@@ -364,7 +364,7 @@ export default function CheckSalaryModal({
         </div>
 
         {/* Footer - Fixed */}
-        <div className="flex-shrink-0 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 px-4 sm:px-5 py-3 flex items-center justify-between shadow-lg">
+        <div className="flex-shrink-0 bg-surface border-t border-line px-4 sm:px-5 py-3 flex items-center justify-between shadow-lg">
           {!isEditingMode ? (
             <>
               <button

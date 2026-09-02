@@ -152,13 +152,13 @@ export default function FloatingChartEditor({
   return (
     <div
       ref={panelRef}
-      className="absolute z-[70] w-[280px] bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 rounded-xl shadow-xl shadow-black/15 dark:shadow-black/40 select-none overflow-hidden"
+      className="absolute z-[70] w-[280px] bg-surface border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 rounded-xl shadow-xl shadow-black/15 dark:shadow-black/40 select-none overflow-hidden"
       style={{ left: rightEdgeX, top: topY }}
       onPointerDown={(e) => e.stopPropagation()}
       onMouseDown={(e) => e.stopPropagation()}
     >
       {/* Header */}
-      <div className="flex items-center justify-between px-3 py-2 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+      <div className="flex items-center justify-between px-3 py-2 border-b border-line">
         <span className="text-xs font-semibold text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100">
           Chart Editor
         </span>
@@ -195,7 +195,7 @@ export default function FloatingChartEditor({
                 <Type className="w-3 h-3" style={{ color: isLightColor(titleColor) ? "#374151" : "#ffffff" }} />
               </button>
               {showTitleColorPicker && (
-                <div className="absolute right-0 top-full mt-1 z-[80] p-2 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/25 purple:border-pink-500/25 rounded-lg shadow-xl w-[160px]">
+                <div className="absolute right-0 top-full mt-1 z-[80] p-2 bg-surface border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/25 purple:border-pink-500/25 rounded-lg shadow-xl w-[160px]">
                   <div className="text-[9px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-600 midnight:text-cyan-500/40 purple:text-pink-500/40 mb-1.5">
                     Title Color
                   </div>
@@ -257,7 +257,7 @@ export default function FloatingChartEditor({
                 className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[10px] font-semibold transition-all duration-150 cursor-pointer ${
                   chartType === type || (chartType === "column" && type === "bar")
                     ? "bg-blue-500/12 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400 midnight:bg-cyan-500/20 midnight:text-cyan-400 purple:bg-pink-500/20 purple:text-pink-400 ring-1 ring-blue-500/15 dark:ring-blue-500/25"
-                    : "text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"
+                    : "text-muted hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"
                 }`}
               >
                 <Icon className="w-3.5 h-3.5" />
@@ -284,7 +284,7 @@ export default function FloatingChartEditor({
                     title="Change color"
                   />
                   {colorPickerIndex === i && (
-                    <div className="absolute left-0 top-full mt-1 z-[80] p-2 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/25 purple:border-pink-500/25 rounded-lg shadow-xl w-[200px]">
+                    <div className="absolute left-0 top-full mt-1 z-[80] p-2 bg-surface border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/25 purple:border-pink-500/25 rounded-lg shadow-xl w-[200px]">
                       <TabbedColorPalette
                         selectedColor={colors[i]}
                         onSelect={(c) => handleColorChange(i, c)}

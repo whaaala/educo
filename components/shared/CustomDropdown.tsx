@@ -76,7 +76,7 @@ export default function CustomDropdown({
           setIsOpen(opening);
         }}
         className={`appearance-none w-full font-semibold text-gray-700 dark:text-white midnight:text-cyan-50 purple:text-pink-50 ${styles.button} rounded-lg px-2 sm:px-3 py-1.5 sm:py-2.5 pr-6 sm:pr-8 cursor-pointer outline-none focus:ring-2 transition-all border truncate whitespace-nowrap overflow-hidden`}
-        style={{ fontSize: '11.8px' }}
+        style={{ fontSize: '0.7375rem' }}
       >
         {selectedOption?.label || value}
       </button>
@@ -90,7 +90,7 @@ export default function CustomDropdown({
 
       {/* Custom Dropdown Menu */}
       {isOpen && (
-        <div className={`absolute ${dropup ? "bottom-full mb-1" : "top-full mt-1"} left-0 min-w-full w-fit bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 z-[10000] py-1 max-h-[240px] overflow-y-auto animate-in fade-in ${dropup ? "slide-in-from-bottom-1" : "slide-in-from-top-1"} duration-[120ms]`}>
+        <div className={`absolute ${dropup ? "bottom-full mb-1" : "top-full mt-1"} left-0 min-w-full w-fit bg-surface rounded-lg shadow-xl border border-line z-[10000] py-1 max-h-[240px] overflow-y-auto animate-in fade-in ${dropup ? "slide-in-from-bottom-1" : "slide-in-from-top-1"} duration-[120ms]`}>
           {options.map((option) => (
             <button
               key={option.value}
@@ -104,7 +104,7 @@ export default function CustomDropdown({
                   ? styles.selected
                   : "text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"
               }`}
-              style={{ fontSize: '11.8px' }}
+              style={{ fontSize: '0.7375rem' }}
             >
               {option.label}
             </button>

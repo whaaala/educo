@@ -125,7 +125,7 @@ export default function ActionBar({
   return (
     <div
       className={`
-        ${sticky ? "sticky top-0 z-30 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]" : ""}
+        ${sticky ? "sticky top-0 z-30 bg-surface" : ""}
         ${className}
       `}
     >
@@ -172,7 +172,7 @@ export default function ActionBar({
 
           {/* Record Count */}
           {displayCount !== undefined && (
-            <span className="text-[11px] sm:text-sm font-medium text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70 whitespace-nowrap flex-shrink-0">
+            <span className="text-[0.6875rem] sm:text-sm font-medium text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70 whitespace-nowrap flex-shrink-0">
               {getCountText()}
             </span>
           )}
@@ -241,7 +241,7 @@ export default function ActionBar({
                     <Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                     <span className="hidden sm:inline">{action.label}</span>
                     {action.showCount && (
-                      <span className="px-1 sm:px-1.5 py-0.5 rounded bg-white/20 text-[10px] sm:text-xs">
+                      <span className="px-1 sm:px-1.5 py-0.5 rounded bg-white/20 text-[0.625rem] sm:text-xs">
                         {selectedCount}
                       </span>
                     )}

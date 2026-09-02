@@ -528,7 +528,7 @@ export default function MeetingDetailsModal({
                   <div className="p-1.5 rounded-lg bg-indigo-500/10">
                     <GraduationCap className="w-3.5 h-3.5 text-indigo-500 dark:text-indigo-400" />
                   </div>
-                  <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">Student</span>
+                  <span className="text-[0.625rem] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">Student</span>
                 </div>
                 <p className="text-sm font-bold text-slate-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 leading-tight">{meeting.childName}</p>
                 {meeting.childClass && (
@@ -546,7 +546,7 @@ export default function MeetingDetailsModal({
                 <div className="p-1.5 rounded-lg bg-blue-500/10">
                   <Calendar className="w-3.5 h-3.5 text-blue-500 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
                 </div>
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">Date & Time</span>
+                <span className="text-[0.625rem] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">Date & Time</span>
               </div>
               <p className="text-sm font-bold text-slate-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 leading-tight">{formatShortDate(meeting.scheduledDate)}</p>
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 flex items-center gap-1">
@@ -565,7 +565,7 @@ export default function MeetingDetailsModal({
                   <div className="p-1.5 rounded-lg bg-violet-500/10">
                     <MapPin className="w-3.5 h-3.5 text-violet-500 dark:text-violet-400" />
                   </div>
-                  <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">Location</span>
+                  <span className="text-[0.625rem] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">Location</span>
                 </div>
                 <p className="text-sm font-bold text-slate-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 leading-tight">{meeting.location}</p>
               </div>
@@ -581,7 +581,7 @@ export default function MeetingDetailsModal({
                   <div className="p-1.5 rounded-lg bg-amber-500/10">
                     <Sparkles className="w-3.5 h-3.5 text-amber-500 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400" />
                   </div>
-                  <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">Type</span>
+                  <span className="text-[0.625rem] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">Type</span>
                 </div>
                 <p className="text-sm font-bold text-slate-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 leading-tight capitalize">{meeting.meetingType.replace(/_/g, " ").replace(/-/g, " ")}</p>
               </div>
@@ -609,7 +609,7 @@ export default function MeetingDetailsModal({
                 </div>
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-0.5">{otherParticipantLabel}</p>
+                <p className="text-[0.625rem] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-0.5">{otherParticipantLabel}</p>
                 <p className="text-base font-bold text-slate-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate">{otherParticipantName}</p>
                 {otherParticipantRole && (
                   <p className="text-xs text-slate-500 dark:text-slate-400">{otherParticipantRole}</p>
@@ -633,7 +633,7 @@ export default function MeetingDetailsModal({
               {meeting.meetingId && (
                 <div className="flex items-center justify-between gap-3 px-3 py-2 bg-white/70 dark:bg-slate-900/50 rounded-xl border border-slate-200/50 dark:border-slate-700/30">
                   <div className="flex-1 min-w-0">
-                    <p className="text-[10px] font-medium text-slate-400 dark:text-slate-500 uppercase tracking-wider">Meeting ID</p>
+                    <p className="text-[0.625rem] font-medium text-slate-400 dark:text-slate-500 uppercase tracking-wider">Meeting ID</p>
                     <p className="text-sm font-mono font-semibold text-slate-800 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate">{meeting.meetingId}</p>
                   </div>
                   <button
@@ -652,7 +652,7 @@ export default function MeetingDetailsModal({
               {meeting.passcode && (
                 <div className="flex items-center justify-between gap-3 px-3 py-2 bg-white/70 dark:bg-slate-900/50 rounded-xl border border-slate-200/50 dark:border-slate-700/30">
                   <div className="flex-1 min-w-0">
-                    <p className="text-[10px] font-medium text-slate-400 dark:text-slate-500 uppercase tracking-wider">Passcode</p>
+                    <p className="text-[0.625rem] font-medium text-slate-400 dark:text-slate-500 uppercase tracking-wider">Passcode</p>
                     <p className="text-sm font-mono font-semibold text-slate-800 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{meeting.passcode}</p>
                   </div>
                   <button
@@ -791,7 +791,7 @@ export default function MeetingDetailsModal({
               {meeting.cancellationReason}
             </p>
             {meeting.cancelledByName && (
-              <p className="text-[10px] text-red-500 dark:text-red-400 midnight:text-red-400 purple:text-red-400 mt-2 font-medium">
+              <p className="text-[0.625rem] text-red-500 dark:text-red-400 midnight:text-red-400 purple:text-red-400 mt-2 font-medium">
                 Cancelled by {meeting.cancelledByName}
                 {meeting.cancelledAt && ` on ${formatShortDate(meeting.cancelledAt.split("T")[0])}`}
               </p>
@@ -861,7 +861,7 @@ export default function MeetingDetailsModal({
         {/* Action Buttons - Modern Pill Style */}
         {showActions && (
           <div className="rounded-2xl bg-gradient-to-br from-slate-50 to-slate-100/50 dark:from-slate-800/50 dark:to-slate-900/30 p-4 border border-slate-200/60 dark:border-slate-700/40">
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-3">Quick Actions</p>
+            <p className="text-[0.625rem] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-3">Quick Actions</p>
             <div className="flex flex-wrap gap-2">
               {canAccept && (
                 <button
@@ -1087,7 +1087,7 @@ export default function MeetingDetailsModal({
                     </div>
                     <div>
                       <p className="text-sm font-semibold text-slate-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{participant.name}</p>
-                      <p className="text-[10px] text-slate-500 dark:text-slate-400">{participant.role}</p>
+                      <p className="text-[0.625rem] text-slate-500 dark:text-slate-400">{participant.role}</p>
                     </div>
                   </div>
                   {onRemoveParticipant && (viewContext === "teacher" || viewContext === "admin") && isUpcoming && (

@@ -490,7 +490,7 @@ function Sidebar({ isCollapsed, setIsCollapsed, isMobileSidebarOpen, setIsMobile
             {/* Popover menu for collapsed sidebar */}
             {isCollapsedDesktop && level === 0 && hoveredItem === item.id && (
               <div
-                className="absolute left-full top-0 w-56 bg-white dark:bg-[#1e2128] midnight:bg-[#0d1220] purple:bg-[#1f0d33] rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 py-2 backdrop-blur-sm animate-in fade-in slide-in-from-left-2 duration-200"
+                className="absolute left-full top-0 w-56 bg-white dark:bg-[#1e2128] midnight:bg-[#0d1220] purple:bg-[#1f0d33] rounded-xl shadow-2xl border border-line py-2 backdrop-blur-sm animate-in fade-in slide-in-from-left-2 duration-200"
                 style={{
                   zIndex: 9999,
                   marginLeft: '8px',
@@ -498,7 +498,7 @@ function Sidebar({ isCollapsed, setIsCollapsed, isMobileSidebarOpen, setIsMobile
                 onMouseEnter={() => handleMouseEnterItem(item.id)}
                 onMouseLeave={() => handleMouseLeaveItem(item.id)}
               >
-                <div className="px-4 py-2.5 text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 border-b border-gray-100 dark:border-[#1a1d24] midnight:border-cyan-500/20 purple:border-pink-500/20 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800/50 dark:to-gray-900/50">
+                <div className="px-4 py-2.5 text-sm font-bold text-ink border-b border-gray-100 dark:border-[#1a1d24] midnight:border-cyan-500/20 purple:border-pink-500/20 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800/50 dark:to-gray-900/50">
                   {item.label}
                 </div>
                 <div className="py-1">
@@ -526,7 +526,7 @@ function Sidebar({ isCollapsed, setIsCollapsed, isMobileSidebarOpen, setIsMobile
                                 "flex items-center justify-center w-7 h-7 rounded-lg transition-all duration-200",
                                 childIsActive
                                   ? "bg-blue-100/30 dark:bg-blue-800/20 midnight:bg-cyan-800/20 purple:bg-pink-800/20"
-                                  : "bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/50"
+                                  : "bg-surface-2/50"
                               )}>
                                 {child.icon}
                               </div>
@@ -538,7 +538,7 @@ function Sidebar({ isCollapsed, setIsCollapsed, isMobileSidebarOpen, setIsMobile
                           {/* Nested submenu popup */}
                           {hoveredSubmenuItem === child.id && (
                             <div
-                              className="absolute left-full top-0 w-52 bg-white dark:bg-[#1e2128] midnight:bg-[#0d1220] purple:bg-[#1f0d33] rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 py-2 backdrop-blur-sm animate-in fade-in slide-in-from-left-2 duration-200"
+                              className="absolute left-full top-0 w-52 bg-white dark:bg-[#1e2128] midnight:bg-[#0d1220] purple:bg-[#1f0d33] rounded-xl shadow-2xl border border-line py-2 backdrop-blur-sm animate-in fade-in slide-in-from-left-2 duration-200"
                               style={{
                                 zIndex: 10000,
                                 marginLeft: '8px',
@@ -567,7 +567,7 @@ function Sidebar({ isCollapsed, setIsCollapsed, isMobileSidebarOpen, setIsMobile
                                         "flex items-center justify-center w-7 h-7 rounded-lg transition-all duration-200",
                                         isActive
                                           ? "bg-blue-100/30 dark:bg-blue-800/20 midnight:bg-cyan-800/20 purple:bg-pink-800/20"
-                                          : "bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/50"
+                                          : "bg-surface-2/50"
                                       )}>
                                         {grandchild.icon}
                                       </div>
@@ -588,7 +588,7 @@ function Sidebar({ isCollapsed, setIsCollapsed, isMobileSidebarOpen, setIsMobile
                         href={child.href || "#"}
                         className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100 hover:bg-blue-50 dark:hover:bg-blue-500/10 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 hover:text-blue-600 dark:hover:text-blue-300 midnight:hover:text-cyan-300 purple:hover:text-pink-300 transition-all duration-150 rounded-lg mx-2 cursor-pointer"
                       >
-                        <div className="flex items-center justify-center w-6 h-6 rounded-md bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/50">
+                        <div className="flex items-center justify-center w-6 h-6 rounded-md bg-surface-2/50">
                           {child.icon}
                         </div>
                         <span className="font-medium">{child.label}</span>

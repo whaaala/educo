@@ -141,7 +141,7 @@ export default function LanguageSelector({
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 hover:border-gray-400 dark:hover:border-gray-500 transition-all duration-200 cursor-pointer"
+        className="flex items-center gap-2 px-3 py-2 rounded-lg bg-surface border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 hover:border-gray-400 dark:hover:border-gray-500 transition-all duration-200 cursor-pointer"
       >
         <Globe className="w-4 h-4 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
         <span className="text-sm font-medium text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400">
@@ -152,9 +152,9 @@ export default function LanguageSelector({
 
       {/* Language Dropdown Menu */}
       {isOpen && (
-        <div className="absolute top-full mt-2 left-0 min-w-[280px] bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 overflow-hidden z-[10000] animate-in fade-in slide-in-from-top-2 duration-200">
+        <div className="absolute top-full mt-2 left-0 min-w-[280px] bg-surface rounded-xl shadow-2xl border border-line overflow-hidden z-[10000] animate-in fade-in slide-in-from-top-2 duration-200">
           {/* Header */}
-          <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-gray-50 dark:bg-gray-750 midnight:bg-[#0f1330] purple:bg-[#251340]">
+          <div className="px-4 py-3 border-b border-line bg-gray-50 dark:bg-gray-750 midnight:bg-[#0f1330] purple:bg-[#251340]">
             <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70 uppercase tracking-wider">
               Select Language
             </p>
@@ -178,7 +178,7 @@ export default function LanguageSelector({
                   }`}
                 >
                   {/* Language Icon */}
-                  <div className="flex items-center justify-center w-8 h-8 rounded-full bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-200 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 flex-shrink-0">
+                  <div className="flex items-center justify-center w-8 h-8 rounded-full bg-surface border border-gray-200 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 flex-shrink-0">
                     <span className="text-base leading-none">{icon}</span>
                   </div>
 
@@ -201,7 +201,7 @@ export default function LanguageSelector({
           </div>
 
           {/* Footer Info */}
-          <div className="px-4 py-2 border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-gray-50 dark:bg-gray-750 midnight:bg-[#0f1330] purple:bg-[#251340]">
+          <div className="px-4 py-2 border-t border-line bg-gray-50 dark:bg-gray-750 midnight:bg-[#0f1330] purple:bg-[#251340]">
             <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70">
               Based on {countryConfig.name}
             </p>

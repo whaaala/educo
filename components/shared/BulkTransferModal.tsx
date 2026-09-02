@@ -290,7 +290,7 @@ export default function BulkTransferModal({
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
 
       {/* Modal */}
-      <div className="relative w-full max-w-3xl bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-2xl shadow-2xl max-h-[90vh] overflow-hidden flex flex-col animate-in fade-in zoom-in duration-200">
+      <div className="relative w-full max-w-3xl bg-surface rounded-2xl shadow-2xl max-h-[90vh] overflow-hidden flex flex-col animate-in fade-in zoom-in duration-200">
         {/* Header with gradient */}
         <div className={`relative bg-gradient-to-r ${colors.gradient} px-6 py-4 flex items-center justify-between`}>
           <div className="flex items-center gap-3">
@@ -360,7 +360,7 @@ export default function BulkTransferModal({
                         </div>
                       )}
                       <div>
-                        <p className="text-sm font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                        <p className="text-sm font-medium text-ink">
                           {student.name}
                         </p>
                         <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70">

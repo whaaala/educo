@@ -1108,7 +1108,7 @@ export default function WhiteboardCanvas({
   return (
     <div
       ref={containerRef}
-      className="absolute inset-0 z-0 overflow-hidden bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e]"
+      className="absolute inset-0 z-0 overflow-hidden bg-surface"
       style={{ cursor: getCursor(), touchAction: "none" }}
       onWheel={handleWheel}
       onTouchMove={handleTouchMove}

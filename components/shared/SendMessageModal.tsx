@@ -128,7 +128,7 @@ export default function SendMessageModal({
       <div className="flex flex-col h-[400px]">
         {/* Header with recipient info */}
         <div className="flex-shrink-0 mb-4">
-          <div className="flex items-center gap-4 p-3 rounded-xl bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+          <div className="flex items-center gap-4 p-3 rounded-xl bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border border-line">
             <div className="relative">
               {recipient.profilePhoto ? (
                 <div className="w-12 h-12 rounded-full overflow-hidden">
@@ -145,8 +145,8 @@ export default function SendMessageModal({
               )}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">{fullName}</p>
-              <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
+              <p className="font-semibold text-ink">{fullName}</p>
+              <p className="text-xs text-muted">
                 {recipient.email}
                 {recipient.phone && ` • ${recipient.phone}`}
               </p>
@@ -180,7 +180,7 @@ export default function SendMessageModal({
               value={emailSubject}
               onChange={(e) => setEmailSubject(e.target.value)}
               placeholder="Subject"
-              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] focus:bg-white dark:focus:bg-gray-700 focus:border-blue-500 dark:focus:border-blue-400 midnight:focus:border-cyan-400 purple:focus:border-pink-400 focus:ring-2 focus:ring-blue-500/20 transition-all text-sm text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 placeholder-gray-400"
+              className="w-full px-4 py-2.5 rounded-xl border border-line bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] focus:bg-white dark:focus:bg-gray-700 focus:border-blue-500 dark:focus:border-blue-400 midnight:focus:border-cyan-400 purple:focus:border-pink-400 focus:ring-2 focus:ring-blue-500/20 transition-all text-sm text-ink placeholder-gray-400"
             />
           </div>
 
@@ -190,7 +190,7 @@ export default function SendMessageModal({
               value={emailMessage}
               onChange={(e) => setEmailMessage(e.target.value)}
               placeholder="Write your message..."
-              className="w-full h-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] focus:bg-white dark:focus:bg-gray-700 focus:border-blue-500 dark:focus:border-blue-400 midnight:focus:border-cyan-400 purple:focus:border-pink-400 focus:ring-2 focus:ring-blue-500/20 transition-all resize-none text-sm text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 placeholder-gray-400"
+              className="w-full h-full px-4 py-3 rounded-xl border border-line bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] focus:bg-white dark:focus:bg-gray-700 focus:border-blue-500 dark:focus:border-blue-400 midnight:focus:border-cyan-400 purple:focus:border-pink-400 focus:ring-2 focus:ring-blue-500/20 transition-all resize-none text-sm text-ink placeholder-gray-400"
             />
           </div>
 
@@ -200,7 +200,7 @@ export default function SendMessageModal({
               {emailAttachments.map((file, index) => (
                 <div
                   key={index}
-                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gray-100 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20"
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gray-100 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-line"
                 >
                   <span>{getFileIcon(file)}</span>
                   <span className="text-xs text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 max-w-[100px] truncate">
@@ -219,7 +219,7 @@ export default function SendMessageModal({
           )}
 
           {/* Email Actions */}
-          <div className="flex items-center justify-between pt-2 border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+          <div className="flex items-center justify-between pt-2 border-t border-line">
             <div className="flex items-center gap-2">
               <button
                 type="button"

@@ -35,7 +35,7 @@ export default function ParentProfileCard({
   onChildSelect,
 }: ParentProfileCardProps) {
   return (
-    <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm overflow-hidden">
+    <div className="bg-surface rounded-xl border border-line shadow-sm overflow-hidden">
       {/* Header Banner with Gradient */}
       <div className="relative h-24 bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-700 dark:from-blue-600 dark:via-blue-700 dark:to-indigo-800">
         <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-20" />
@@ -50,7 +50,7 @@ export default function ParentProfileCard({
         {/* Avatar - Overlapping Banner */}
         <div className="relative -mt-12 mb-4 flex items-end gap-4">
           <div className="relative">
-            <div className="w-24 h-24 rounded-2xl overflow-hidden ring-4 ring-white dark:ring-gray-800 shadow-xl bg-white dark:bg-[#22262e]">
+            <div className="w-24 h-24 rounded-2xl overflow-hidden ring-4 ring-white dark:ring-gray-800 shadow-xl bg-white dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]">
               <Image
                 src={parent.profilePhoto}
                 alt={parent.fullName}
@@ -68,7 +68,7 @@ export default function ParentProfileCard({
 
           {/* Parent ID Badge */}
           <div className="mb-2">
-            <span className="inline-flex items-center gap-1 text-xs font-bold text-blue-700 dark:text-blue-300 bg-blue-100 dark:bg-blue-900/40 px-2.5 py-1 rounded-lg shadow-sm">
+            <span className="inline-flex items-center gap-1 text-xs font-bold text-blue-700 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300 bg-blue-100 dark:bg-blue-900/40 px-2.5 py-1 rounded-lg shadow-sm">
               ID: {parent.id}
             </span>
           </div>
@@ -76,11 +76,11 @@ export default function ParentProfileCard({
 
         {/* Parent Info */}
         <div className="space-y-2 mb-5">
-          <h3 className="font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-xl leading-tight">
+          <h3 className="font-bold text-ink text-xl leading-tight">
             {parent.fullName}
           </h3>
-          <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-            <div className="p-1 rounded-md bg-gray-100 dark:bg-[#22262e]/50">
+          <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
+            <div className="p-1 rounded-md bg-gray-100 dark:bg-[#22262e]/50 midnight:bg-[#0f1330]/50 purple:bg-[#251340]/50">
               <Mail className="w-3.5 h-3.5" />
             </div>
             <span className="truncate">{parent.email}</span>
@@ -99,7 +99,7 @@ export default function ParentProfileCard({
               <div className="p-2 rounded-xl bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-900/40 dark:to-purple-900/40 shadow-sm">
                 <Users className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
               </div>
-              <span className="text-sm font-semibold text-gray-700 dark:text-gray-200">
+              <span className="text-sm font-semibold text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100">
                 My Children
               </span>
             </div>
@@ -117,13 +117,13 @@ export default function ParentProfileCard({
                   onClick={() => onChildSelect(child.id)}
                   className={`w-full flex items-center gap-3.5 p-3.5 rounded-xl transition-all duration-300 group ${
                     isSelected
-                      ? "bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/30 dark:to-indigo-900/30 border-2 border-blue-400 dark:border-blue-500 shadow-md shadow-blue-500/10"
-                      : "bg-gray-50/80 dark:bg-[#22262e]/20 border-2 border-transparent hover:bg-white dark:hover:bg-[#22262e]/40 hover:border-gray-200 dark:hover:border-gray-600 hover:shadow-md"
+                      ? "bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/30 dark:to-indigo-900/30 border-2 border-blue-400 dark:border-blue-500 midnight:border-cyan-500 purple:border-pink-500 shadow-md shadow-blue-500/10"
+                      : "bg-gray-50/80 dark:bg-[#22262e]/20 midnight:bg-[#0f1330]/20 purple:bg-[#251340]/20 border-2 border-transparent hover:bg-white dark:hover:bg-[#22262e]/40 hover:border-gray-200 dark:hover:border-gray-600 midnight:hover:border-cyan-500/30 purple:hover:border-pink-500/30 hover:shadow-md"
                   }`}
                 >
                   {/* Child Avatar */}
                   <div className={`relative w-12 h-12 rounded-xl overflow-hidden flex-shrink-0 transition-transform duration-300 ${
-                    isSelected ? "ring-2 ring-blue-400 ring-offset-2 ring-offset-white dark:ring-offset-gray-800" : "group-hover:scale-105"
+                    isSelected ? "ring-2 ring-blue-400 ring-offset-2 ring-offset-white dark:ring-offset-gray-800 midnight:ring-offset-[#111827] purple:ring-offset-[#2a1447]" : "group-hover:scale-105"
                   }`}>
                     <Image
                       src={child.profilePhoto}
@@ -139,21 +139,21 @@ export default function ParentProfileCard({
                   <div className="flex-1 text-left min-w-0">
                     <p className={`font-semibold truncate transition-colors ${
                       isSelected
-                        ? "text-blue-700 dark:text-blue-300"
-                        : "text-gray-800 dark:text-gray-100 group-hover:text-blue-600 dark:group-hover:text-blue-400"
+                        ? "text-blue-700 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300"
+                        : "text-gray-800 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50 group-hover:text-blue-600 dark:group-hover:text-blue-400"
                     }`}>
                       {child.fullName}
                     </p>
                     <div className="flex items-center gap-2 mt-1">
                       <span className={`text-xs px-2 py-0.5 rounded-md font-semibold ${
                         isSelected
-                          ? "bg-blue-200/70 dark:bg-blue-800/50 text-blue-700 dark:text-blue-200"
-                          : "bg-gray-200/80 dark:bg-[#2a2d35]/50 text-gray-600 dark:text-gray-300"
+                          ? "bg-blue-200/70 dark:bg-blue-800/50 text-blue-700 dark:text-blue-200 midnight:text-cyan-200 purple:text-pink-200"
+                          : "bg-gray-200/80 dark:bg-[#2a2d35]/50 midnight:bg-[#0f1330]/50 purple:bg-[#251340]/50 text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200"
                       }`}>
                         {child.classLevel}
                       </span>
-                      <span className="text-xs text-gray-400 dark:text-gray-500">•</span>
-                      <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">
+                      <span className="text-xs text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400">•</span>
+                      <span className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 font-medium">
                         Section {child.section}
                       </span>
                     </div>
@@ -163,7 +163,7 @@ export default function ParentProfileCard({
                   <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 ${
                     isSelected
                       ? "bg-gradient-to-br from-blue-500 to-indigo-600 shadow-lg shadow-blue-500/30"
-                      : "bg-gray-100 dark:bg-[#22262e] group-hover:bg-blue-100 dark:group-hover:bg-blue-900/30"
+                      : "bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] group-hover:bg-blue-100 dark:group-hover:bg-blue-900/30"
                   }`}>
                     {isSelected ? (
                       <CheckCircle2 className="w-4 h-4 text-white" />

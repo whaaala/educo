@@ -86,7 +86,7 @@ export default function BankAccountSettings() {
           onChange={(e) => setCurrency(e.target.value.toUpperCase())}
           placeholder="NGN"
           maxLength={3}
-          className="w-full h-[46px] px-4 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-sm font-normal placeholder:text-gray-400 dark:placeholder:text-gray-500 midnight:placeholder:text-cyan-400/50 purple:placeholder:text-pink-400/50 focus:ring-1 focus:ring-blue-500/10 dark:focus:ring-blue-400/10 midnight:focus:ring-cyan-500/10 purple:focus:ring-pink-500/10 focus:border-blue-400 dark:focus:border-blue-500 midnight:focus:border-cyan-500 purple:focus:border-pink-500 outline-none transition-all duration-200 hover:border-gray-400 dark:hover:border-gray-500"
+          className="w-full h-[46px] px-4 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-surface text-ink text-sm font-normal placeholder:text-gray-400 dark:placeholder:text-gray-500 midnight:placeholder:text-cyan-400/50 purple:placeholder:text-pink-400/50 focus:ring-1 focus:ring-blue-500/10 dark:focus:ring-blue-400/10 midnight:focus:ring-cyan-500/10 purple:focus:ring-pink-500/10 focus:border-blue-400 dark:focus:border-blue-500 midnight:focus:border-cyan-500 purple:focus:border-pink-500 outline-none transition-all duration-200 hover:border-gray-400 dark:hover:border-gray-500"
         />
         <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70 mt-2">
           3-letter ISO currency code (e.g., NGN, USD, GHS, KES)
@@ -95,7 +95,7 @@ export default function BankAccountSettings() {
 
       {/* Bank Account Details */}
       <div className="space-y-4">
-        <h3 className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 flex items-center gap-2">
+        <h3 className="text-sm font-semibold text-ink flex items-center gap-2">
           <Building2 className="w-4 h-4 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
           Bank Account Details
         </h3>
@@ -152,25 +152,25 @@ export default function BankAccountSettings() {
 
       {/* Preview Section */}
       <div className="mt-6 p-4 bg-gray-50 dark:bg-[#1a1d24]/50 midnight:bg-[#0f1330]/50 purple:bg-[#251340]/50 rounded-lg border border-gray-200 dark:border-gray-700 midnight:border-cyan-700/30 purple:border-pink-700/30">
-        <h4 className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-3">
+        <h4 className="text-sm font-semibold text-ink mb-3">
           Preview (as shown to users)
         </h4>
         <div className="space-y-2 text-sm">
           <div className="flex justify-between">
             <span className="text-gray-500 dark:text-gray-400">Bank Name:</span>
-            <span className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+            <span className="font-semibold text-ink">
               {bankName || "Not set"}
             </span>
           </div>
           <div className="flex justify-between">
             <span className="text-gray-500 dark:text-gray-400">Account Number:</span>
-            <span className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+            <span className="font-semibold text-ink">
               {accountNumber || "Not set"}
             </span>
           </div>
           <div className="flex justify-between">
             <span className="text-gray-500 dark:text-gray-400">Account Name:</span>
-            <span className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+            <span className="font-semibold text-ink">
               {accountName || "Not set"}
             </span>
           </div>

@@ -56,7 +56,7 @@ export function ParticipantsPanel({
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-[#1a1d24] midnight:border-cyan-500/20 purple:border-pink-500/20">
         <div className="flex items-center gap-2">
-          <h3 className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+          <h3 className="font-semibold text-ink">
             Participants
           </h3>
           <span
@@ -112,11 +112,11 @@ export function ParticipantsPanel({
             {/* Name and Username */}
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1.5">
-                <span className="font-medium text-sm text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate">
+                <span className="font-medium text-sm text-ink truncate">
                   {participant.name}
                 </span>
                 {participant.isHost && (
-                  <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-500 text-white">
+                  <span className="px-1.5 py-0.5 rounded text-[0.625rem] font-bold bg-amber-500 text-white">
                     Host
                   </span>
                 )}

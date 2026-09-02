@@ -11,6 +11,18 @@
   --color-foreground: #171717;
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  /* Educo UI semantic tokens → Tailwind utilities (bg-surface, text-ink, text-muted,
+   * border-line, bg-brand …). Adopt these instead of hand-typed variant classes. */
+  --color-canvas: var(--eu-color-bg);
+  --color-surface: var(--eu-color-surface);
+  --color-surface-2: var(--eu-color-surface-2);
+  --color-ink: var(--eu-color-text);
+  --color-muted: var(--eu-color-muted);
+  --color-line: var(--eu-color-border);
+  --color-brand: var(--eu-color-brand);
+  --color-brand-fg: var(--eu-color-on-brand);
+  --color-brand-600: var(--eu-color-brand-600);
 }
 
 @variant dark (&:where(.dark, .dark *));
@@ -39,6 +51,28 @@ html.purple {
   --background: #1a0b2e;
   --foreground: #f3e8ff;
   color-scheme: dark;
+}
+
+/* ── Educo UI semantic tokens (per theme) — match existing surfaces exactly ─── */
+:root {
+  --eu-color-bg: #f9fafb; --eu-color-surface: #ffffff; --eu-color-surface-2: #f3f4f6;
+  --eu-color-text: #111827; --eu-color-muted: #6b7280; --eu-color-border: #e5e7eb;
+  --eu-color-brand: #3b82f6; --eu-color-brand-600: #2563eb; --eu-color-on-brand: #ffffff;
+}
+html.dark {
+  --eu-color-bg: #0f1115; --eu-color-surface: #1a1d24; --eu-color-surface-2: #22262e;
+  --eu-color-text: #ffffff; --eu-color-muted: #9ca3af; --eu-color-border: #374151;
+  --eu-color-brand: #3b82f6; --eu-color-brand-600: #60a5fa; --eu-color-on-brand: #ffffff;
+}
+html.midnight {
+  --eu-color-bg: #0a0e27; --eu-color-surface: #0f1729; --eu-color-surface-2: #0f1330;
+  --eu-color-text: #ecfeff; --eu-color-muted: #67e8f9; --eu-color-border: rgba(6, 182, 212, 0.2);
+  --eu-color-brand: #06b6d4; --eu-color-brand-600: #22d3ee; --eu-color-on-brand: #04121a;
+}
+html.purple {
+  --eu-color-bg: #1a0b2e; --eu-color-surface: #2a1a3e; --eu-color-surface-2: #251340;
+  --eu-color-text: #fdf2f8; --eu-color-muted: #f9a8d4; --eu-color-border: rgba(236, 72, 153, 0.2);
+  --eu-color-brand: #ec4899; --eu-color-brand-600: #f472b6; --eu-color-on-brand: #2a0a1e;
 }
 
 @media (prefers-color-scheme: dark) {

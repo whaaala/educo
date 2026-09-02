@@ -205,17 +205,17 @@ export default function NewIncidentReportModal({
       onClick={onClose}
     >
       <div
-        className="bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col border border-gray-200/50 dark:border-[#1a1d24]/50 midnight:border-cyan-500/30 purple:border-pink-500/30 animate-in zoom-in-95 slide-in-from-bottom-4 duration-300"
+        className="bg-surface rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col border border-gray-200/50 dark:border-[#1a1d24]/50 midnight:border-cyan-500/30 purple:border-pink-500/30 animate-in zoom-in-95 slide-in-from-bottom-4 duration-300"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-4 sm:px-6 py-4 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-gradient-to-r from-red-50 to-orange-50 dark:from-red-900/10 dark:to-orange-900/10 midnight:from-red-500/5 midnight:to-orange-500/5 purple:from-red-500/5 purple:to-orange-500/5">
+        <div className="flex items-center justify-between px-4 sm:px-6 py-4 border-b border-line bg-gradient-to-r from-red-50 to-orange-50 dark:from-red-900/10 dark:to-orange-900/10 midnight:from-red-500/5 midnight:to-orange-500/5 purple:from-red-500/5 purple:to-orange-500/5">
             <div className="flex items-center gap-3">
               <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-red-500 to-orange-600 shadow-lg">
                 <AlertTriangle className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                <h3 className="text-lg font-semibold text-ink">
                   Report Incident
                 </h3>
                 <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70">
@@ -240,7 +240,7 @@ export default function NewIncidentReportModal({
                 <div className="w-8 h-8 rounded-lg bg-red-100 dark:bg-red-900/30 midnight:bg-red-900/30 purple:bg-red-900/30 flex items-center justify-center">
                   <User className="w-4 h-4 text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400" />
                 </div>
-                <h4 className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                <h4 className="text-sm font-semibold text-ink">
                   Staff Member
                 </h4>
               </div>
@@ -284,23 +284,23 @@ export default function NewIncidentReportModal({
                 />
               </div>
               {formData.staffId && selectedStaff && (
-                <div className="mt-3 p-3 bg-gray-50 dark:bg-[#1a1d24]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 rounded-lg border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+                <div className="mt-3 p-3 bg-gray-50 dark:bg-[#1a1d24]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 rounded-lg border border-line">
                   <div className="grid grid-cols-2 gap-2 text-xs">
                     <div>
                       <span className="text-gray-500 dark:text-gray-400">Department:</span>
-                      <span className="ml-1 font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                      <span className="ml-1 font-medium text-ink">
                         {selectedStaff.department}
                       </span>
                     </div>
                     <div>
                       <span className="text-gray-500 dark:text-gray-400">Position:</span>
-                      <span className="ml-1 font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                      <span className="ml-1 font-medium text-ink">
                         {selectedStaff.position}
                       </span>
                     </div>
                     <div className="col-span-2">
                       <span className="text-gray-500 dark:text-gray-400">Email:</span>
-                      <span className="ml-1 font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                      <span className="ml-1 font-medium text-ink">
                         {selectedStaff.email}
                       </span>
                     </div>
@@ -315,7 +315,7 @@ export default function NewIncidentReportModal({
                 <div className="w-8 h-8 rounded-lg bg-orange-100 dark:bg-orange-900/30 midnight:bg-orange-900/30 purple:bg-orange-900/30 flex items-center justify-center">
                   <AlertTriangle className="w-4 h-4 text-orange-600 dark:text-orange-400 midnight:text-orange-400 purple:text-orange-400" />
                 </div>
-                <h4 className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                <h4 className="text-sm font-semibold text-ink">
                   Incident Details
                 </h4>
               </div>
@@ -392,10 +392,10 @@ export default function NewIncidentReportModal({
             {/* Description Section */}
             <div>
               <div className="flex items-center gap-2 mb-4">
-                <div className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] flex items-center justify-center">
+                <div className="w-8 h-8 rounded-lg bg-surface-2 flex items-center justify-center">
                   <FileText className="w-4 h-4 text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400" />
                 </div>
-                <h4 className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                <h4 className="text-sm font-semibold text-ink">
                   Incident Description
                 </h4>
               </div>
@@ -431,7 +431,7 @@ export default function NewIncidentReportModal({
 
         {/* Footer */}
         <form onSubmit={handleSubmit}>
-          <div className="px-4 sm:px-6 py-3 sm:py-4 border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-gray-50/50 dark:bg-[#1a1d24]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50">
+          <div className="px-4 sm:px-6 py-3 sm:py-4 border-t border-line bg-gray-50/50 dark:bg-[#1a1d24]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50">
             <div className="flex flex-col sm:flex-row gap-3 justify-end">
               <button
                 type="button"

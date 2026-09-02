@@ -127,7 +127,7 @@ export default function FilterButton({ fields, onFilterChange, className = "", r
         className={`flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-lg border transition-all duration-200 cursor-pointer ${
           isOpen
             ? "bg-blue-50 border-blue-300 dark:bg-blue-500/20 dark:border-blue-500 midnight:bg-cyan-500/20 midnight:border-cyan-500 purple:bg-pink-500/20 purple:border-pink-500"
-            : "border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] hover:bg-gray-50 dark:hover:bg-[#22262e]/50 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"
+            : "border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-surface hover:bg-gray-50 dark:hover:bg-[#22262e]/50 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"
         }`}
       >
         <Filter
@@ -147,7 +147,7 @@ export default function FilterButton({ fields, onFilterChange, className = "", r
           Filter
         </span>
         {activeFilterCount > 0 && (
-          <span className="px-1.5 py-0.5 text-[10px] sm:text-xs font-bold bg-blue-600 dark:bg-blue-500 midnight:bg-cyan-600 purple:bg-pink-600 text-white rounded-full shadow-sm">
+          <span className="px-1.5 py-0.5 text-[0.625rem] sm:text-xs font-bold bg-blue-600 dark:bg-blue-500 midnight:bg-cyan-600 purple:bg-pink-600 text-white rounded-full shadow-sm">
             {activeFilterCount}
           </span>
         )}
@@ -162,19 +162,19 @@ export default function FilterButton({ fields, onFilterChange, className = "", r
 
       {/* Dropdown Menu */}
       {isOpen && (
-        <div className="fixed inset-x-4 top-20 sm:absolute sm:left-0 sm:right-auto sm:top-auto sm:inset-x-auto sm:mt-2 w-auto sm:w-[380px] max-w-[440px] bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-2xl shadow-2xl border-2 border-gray-200 dark:border-gray-700 midnight:border-cyan-500/30 purple:border-pink-500/30 overflow-hidden z-[9999] animate-in fade-in slide-in-from-top-3 duration-300 max-h-[calc(100vh-120px)] overflow-y-auto">
+        <div className="fixed inset-x-4 top-20 sm:absolute sm:left-0 sm:right-auto sm:top-auto sm:inset-x-auto sm:mt-2 w-auto sm:w-[380px] max-w-[440px] bg-surface rounded-2xl shadow-2xl border-2 border-gray-200 dark:border-gray-700 midnight:border-cyan-500/30 purple:border-pink-500/30 overflow-hidden z-[9999] animate-in fade-in slide-in-from-top-3 duration-300 max-h-[calc(100vh-120px)] overflow-y-auto">
           {/* Compact Header */}
-          <div className="relative px-4 py-3 bg-gradient-to-br from-gray-50 to-gray-100/50 dark:from-gray-800/50 dark:to-gray-900/30 midnight:from-cyan-500/10 midnight:to-cyan-600/5 purple:from-pink-500/10 purple:to-pink-600/5 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+          <div className="relative px-4 py-3 bg-gradient-to-br from-gray-50 to-gray-100/50 dark:from-gray-800/50 dark:to-gray-900/30 midnight:from-cyan-500/10 midnight:to-cyan-600/5 purple:from-pink-500/10 purple:to-pink-600/5 border-b border-line">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2.5">
                 <div className="p-1.5 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 dark:from-blue-600 dark:to-blue-700 midnight:from-cyan-600 midnight:to-cyan-700 purple:from-pink-600 purple:to-pink-700 shadow-md">
                   <Filter className="w-4 h-4 text-white" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                  <h3 className="text-sm font-bold text-ink">
                     Filter Options
                   </h3>
-                  <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70">
+                  <p className="text-[0.625rem] sm:text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70">
                     {activeFilterCount > 0
                       ? `${activeFilterCount} active`
                       : "Customize view"}
@@ -205,7 +205,7 @@ export default function FilterButton({ fields, onFilterChange, className = "", r
                     key={field.id}
                     className={`${field.width === "full" ? "col-span-2" : ""} ${isDropdownOpen ? "z-50" : "z-10"}`}
                   >
-                    <label className="block text-[10px] sm:text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400 midnight:text-cyan-400/80 purple:text-pink-400/80 mb-1.5">
+                    <label className="block text-[0.625rem] sm:text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-400 midnight:text-cyan-400/80 purple:text-pink-400/80 mb-1.5">
                       {field.label}
                     </label>
                     <div className="relative">
@@ -223,7 +223,7 @@ export default function FilterButton({ fields, onFilterChange, className = "", r
                               ? "border-blue-500 dark:border-blue-400 midnight:border-cyan-400 purple:border-pink-400 bg-gradient-to-br from-blue-50 to-blue-100/70 dark:from-blue-500/20 dark:to-blue-600/10 midnight:from-cyan-500/20 midnight:to-cyan-600/10 purple:from-pink-500/20 purple:to-pink-600/10 ring-2 ring-blue-500/20 dark:ring-blue-400/20 midnight:ring-cyan-400/20 purple:ring-pink-400/20"
                               : selectedForField.length > 0
                               ? "border-blue-400 dark:border-blue-500 midnight:border-cyan-500 purple:border-pink-500 bg-blue-50/50 dark:bg-blue-500/10 midnight:bg-cyan-500/10 purple:bg-pink-500/10"
-                              : "border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-white dark:bg-[#1a1d24]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 hover:border-gray-300 dark:hover:border-gray-600 midnight:hover:border-cyan-500/30 purple:hover:border-pink-500/30"
+                              : "border-line bg-white dark:bg-[#1a1d24]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 hover:border-gray-300 dark:hover:border-gray-600 midnight:hover:border-cyan-500/30 purple:hover:border-pink-500/30"
                           }`}
                         >
                           <span
@@ -239,7 +239,7 @@ export default function FilterButton({ fields, onFilterChange, className = "", r
                           </span>
                           <div className="flex items-center gap-1.5 flex-shrink-0">
                             {selectedForField.length > 0 && (
-                              <span className="px-1.5 py-0.5 text-[10px] font-bold rounded-full bg-blue-600 dark:bg-blue-500 midnight:bg-cyan-600 purple:bg-pink-600 text-white shadow-sm">
+                              <span className="px-1.5 py-0.5 text-[0.625rem] font-bold rounded-full bg-blue-600 dark:bg-blue-500 midnight:bg-cyan-600 purple:bg-pink-600 text-white shadow-sm">
                                 {selectedForField.length}
                               </span>
                             )}
@@ -255,7 +255,7 @@ export default function FilterButton({ fields, onFilterChange, className = "", r
                         {isDropdownOpen && (
                           <div
                             data-dropdown-id={field.id}
-                            className={`absolute left-0 right-0 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl border-2 border-blue-200 dark:border-blue-500/50 midnight:border-cyan-500/50 purple:border-pink-500/50 shadow-2xl max-h-32 overflow-y-auto z-[100] animate-in fade-in duration-200 ${
+                            className={`absolute left-0 right-0 bg-surface rounded-xl border-2 border-blue-200 dark:border-blue-500/50 midnight:border-cyan-500/50 purple:border-pink-500/50 shadow-2xl max-h-32 overflow-y-auto z-[100] animate-in fade-in duration-200 ${
                             isLastRow
                               ? "bottom-full mb-2 slide-in-from-bottom-1"
                               : "top-full mt-2 slide-in-from-top-1"
@@ -296,7 +296,7 @@ export default function FilterButton({ fields, onFilterChange, className = "", r
           </div>
 
           {/* Compact Footer */}
-          <div className="flex items-center justify-between gap-2 px-4 py-3 border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-gradient-to-br from-gray-50 to-gray-100/30 dark:from-gray-800/30 dark:to-gray-900/20 midnight:from-cyan-900/10 midnight:to-cyan-800/5 purple:from-pink-900/10 purple:to-pink-800/5">
+          <div className="flex items-center justify-between gap-2 px-4 py-3 border-t border-line bg-gradient-to-br from-gray-50 to-gray-100/30 dark:from-gray-800/30 dark:to-gray-900/20 midnight:from-cyan-900/10 midnight:to-cyan-800/5 purple:from-pink-900/10 purple:to-pink-800/5">
             <button
               type="button"
               onClick={handleReset}

@@ -352,12 +352,12 @@ export default function DrawingCanvas({ onSave, onCancel }: { onSave: (dataUrl: 
     <div className="fixed inset-0 z-[500] flex items-center justify-center bg-black/40 backdrop-blur-sm" onClick={onCancel}>
       <div
         ref={containerRef}
-        className="bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 flex flex-col overflow-hidden"
+        className="bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-2xl shadow-2xl border border-line flex flex-col overflow-hidden"
         style={{ width: CANVAS_W + 48, maxWidth: "95vw", maxHeight: "95vh" }}
         onClick={e => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-4 py-2.5 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-gray-50/50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50">
+        <div className="flex items-center justify-between px-4 py-2.5 border-b border-line bg-gray-50/50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50">
           <span className="text-sm font-semibold text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100">Drawing</span>
           <div className="flex items-center gap-2">
             <button onClick={onCancel} className="px-3 py-1.5 text-xs font-medium text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 rounded-lg transition-colors cursor-pointer">
@@ -377,17 +377,17 @@ export default function DrawingCanvas({ onSave, onCancel }: { onSave: (dataUrl: 
               key={tool.type}
               onClick={() => setActiveTool(tool.type)}
               title={tool.label}
-              className={`w-8 h-8 inline-flex items-center justify-center rounded-lg transition-colors cursor-pointer ${activeTool === tool.type ? "bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-300 ring-1 ring-indigo-400" : "text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5"}`}
+              className={`w-8 h-8 inline-flex items-center justify-center rounded-lg transition-colors cursor-pointer ${activeTool === tool.type ? "bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-300 ring-1 ring-indigo-400" : "text-muted hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5"}`}
             >
               <tool.Icon className="w-4 h-4" />
             </button>
           ))}
           <div className="w-px h-6 bg-gray-200 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] mx-1" />
-          <label className="flex items-center gap-1 text-[10px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 cursor-pointer" title="Fill color">
+          <label className="flex items-center gap-1 text-[10px] text-muted cursor-pointer" title="Fill color">
             Fill
             <input type="color" value={fillColor} onChange={e => setFillColor(e.target.value)} className="w-5 h-5 border-0 p-0 rounded cursor-pointer" />
           </label>
-          <label className="flex items-center gap-1 text-[10px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 cursor-pointer" title="Stroke color">
+          <label className="flex items-center gap-1 text-[10px] text-muted cursor-pointer" title="Stroke color">
             Stroke
             <input type="color" value={strokeColor} onChange={e => setStrokeColor(e.target.value)} className="w-5 h-5 border-0 p-0 rounded cursor-pointer" />
           </label>

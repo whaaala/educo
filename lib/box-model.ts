@@ -12,7 +12,7 @@
 
 import type { CSSProperties } from "react";
 
-export type BoxType = "container" | "text" | "heading" | "button" | "image" | "video" | "icon" | "divider" | "list" | "embed";
+export type BoxType = "container" | "text" | "heading" | "button" | "image" | "video" | "icon" | "divider" | "list" | "embed" | "spacer";
 
 export type FlexDir = "row" | "column";
 export type FlexAlign = "start" | "center" | "end" | "stretch";
@@ -161,6 +161,7 @@ export function createElement(type: Exclude<BoxType, "container">, overrides: Pa
     case "divider": return { ...base, width: "fill", ...overrides };
     case "list": return { ...base, width: "100%", listStyle: "bullet", listItems: ["First item", "Second item", "Third item"], fontSize: 16, ...overrides };
     case "embed": return { ...base, width: "100%", height: "260px", html: "", ...overrides };
+    case "spacer": return { ...base, width: "100%", height: "48px", ...overrides };
     default: return { ...base, type: "text", text: "New text — click to edit.", ...overrides };
   }
 }

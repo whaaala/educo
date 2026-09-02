@@ -597,7 +597,7 @@ export default function VideoCallRoom({
           >
             <PhoneOff className="w-8 h-8 sm:w-10 sm:h-10" style={{ color: primaryColor }} />
           </div>
-          <h2 className="text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-xl sm:text-2xl font-bold mb-2 sm:mb-3">
+          <h2 className="text-ink text-xl sm:text-2xl font-bold mb-2 sm:mb-3">
             Connection Failed
           </h2>
           <p className="text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70 text-sm sm:text-base mb-4 sm:mb-6">{error}</p>
@@ -667,7 +667,7 @@ export default function VideoCallRoom({
             <div className="flex-1 flex gap-2 sm:gap-3 lg:gap-4 min-h-0">
               <div className="flex-1 flex flex-col lg:flex-row gap-2 sm:gap-3 lg:gap-4 min-h-0">
                 {/* Whiteboard (main area) */}
-                <div className="flex-1 relative rounded-xl sm:rounded-2xl overflow-hidden min-h-0 bg-white dark:bg-[#0f1115] midnight:bg-[#0a0f1a] purple:bg-[#120622] border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+                <div className="flex-1 relative rounded-xl sm:rounded-2xl overflow-hidden min-h-0 bg-white dark:bg-[#0f1115] midnight:bg-[#0a0f1a] purple:bg-[#120622] border border-line">
                   <WhiteboardPanel
                     primaryColor={primaryColor}
                     secondaryColor={secondaryColor}
@@ -685,7 +685,7 @@ export default function VideoCallRoom({
                   >
                     <WhiteboardThumbnail elements={whiteboardElements} className="w-full h-full" />
                     <div className="absolute bottom-1.5 left-1.5">
-                      <span className="px-2 py-0.5 bg-white/80 dark:bg-black/70 backdrop-blur-sm rounded-md text-[10px] font-medium text-gray-900 dark:text-white flex items-center gap-1">
+                      <span className="px-2 py-0.5 bg-white/80 dark:bg-black/70 backdrop-blur-sm rounded-md text-[0.625rem] font-medium text-gray-900 dark:text-white flex items-center gap-1">
                         <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="M2 2l7.586 7.586"/><circle cx="11" cy="11" r="2"/></svg>
                         Board
                       </span>
@@ -710,7 +710,7 @@ export default function VideoCallRoom({
                         className="w-full h-full object-cover"
                       />
                       <div className="absolute bottom-1.5 left-1.5">
-                        <span className="px-2 py-0.5 bg-white/80 dark:bg-black/70 backdrop-blur-sm rounded-md text-[10px] font-medium text-gray-900 dark:text-white flex items-center gap-1">
+                        <span className="px-2 py-0.5 bg-white/80 dark:bg-black/70 backdrop-blur-sm rounded-md text-[0.625rem] font-medium text-gray-900 dark:text-white flex items-center gap-1">
                           <Monitor className="w-2.5 h-2.5" />
                           Screen
                         </span>
@@ -752,7 +752,7 @@ export default function VideoCallRoom({
                       </div>
                     )}
                     <div className="absolute bottom-1.5 left-1.5 right-1.5 flex items-center justify-between">
-                      <span className="px-2 py-0.5 bg-white/80 dark:bg-black/70 backdrop-blur-sm rounded-md text-[10px] font-medium text-gray-900 dark:text-white">You</span>
+                      <span className="px-2 py-0.5 bg-white/80 dark:bg-black/70 backdrop-blur-sm rounded-md text-[0.625rem] font-medium text-gray-900 dark:text-white">You</span>
                       {isMuted && (
                         <span className="p-1 bg-red-500 rounded-md"><MicOff className="w-2.5 h-2.5 text-white" /></span>
                       )}
@@ -778,7 +778,7 @@ export default function VideoCallRoom({
                         )}
                       </div>
                       <div className="absolute bottom-1.5 left-1.5 right-1.5 flex items-center justify-between">
-                        <span className="px-2 py-0.5 bg-white/80 dark:bg-black/70 backdrop-blur-sm rounded-md text-[10px] font-medium text-gray-900 dark:text-white truncate max-w-[90px]">
+                        <span className="px-2 py-0.5 bg-white/80 dark:bg-black/70 backdrop-blur-sm rounded-md text-[0.625rem] font-medium text-gray-900 dark:text-white truncate max-w-[90px]">
                           {recipientName}
                         </span>
                         <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
@@ -822,7 +822,7 @@ export default function VideoCallRoom({
                           </div>
                         )}
                         <div className="absolute bottom-1.5 left-1.5 right-1.5 flex items-center justify-between">
-                          <span className="px-2 py-0.5 bg-white/80 dark:bg-black/70 backdrop-blur-sm rounded-md text-[10px] font-medium text-gray-900 dark:text-white truncate max-w-[90px]">
+                          <span className="px-2 py-0.5 bg-white/80 dark:bg-black/70 backdrop-blur-sm rounded-md text-[0.625rem] font-medium text-gray-900 dark:text-white truncate max-w-[90px]">
                             {participant.name}
                           </span>
                           {participant.isMuted && (
@@ -853,7 +853,7 @@ export default function VideoCallRoom({
                         )}
                       </div>
                       <div className="absolute bottom-1.5 left-1.5 right-1.5 flex items-center justify-between">
-                        <span className="px-2 py-0.5 bg-white/80 dark:bg-black/70 backdrop-blur-sm rounded-md text-[10px] font-medium text-gray-900 dark:text-white truncate max-w-[90px]">
+                        <span className="px-2 py-0.5 bg-white/80 dark:bg-black/70 backdrop-blur-sm rounded-md text-[0.625rem] font-medium text-gray-900 dark:text-white truncate max-w-[90px]">
                           {p.name}
                         </span>
                         <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
@@ -1034,7 +1034,7 @@ export default function VideoCallRoom({
                     className="w-full h-full object-contain cursor-pointer"
                   />
                   <div className="absolute bottom-1.5 left-1.5 right-1.5 flex items-center justify-between pointer-events-none">
-                    <span className="px-2 py-0.5 bg-white/80 dark:bg-black/70 backdrop-blur-sm rounded-md text-[10px] lg:text-xs font-medium text-gray-900 dark:text-white flex items-center gap-1">
+                    <span className="px-2 py-0.5 bg-white/80 dark:bg-black/70 backdrop-blur-sm rounded-md text-[0.625rem] lg:text-xs font-medium text-gray-900 dark:text-white flex items-center gap-1">
                       <Monitor className="w-2.5 h-2.5" /> Screen
                     </span>
                   </div>
@@ -1048,7 +1048,7 @@ export default function VideoCallRoom({
                   >
                     <WhiteboardThumbnail elements={whiteboardElements} className="w-full h-full" />
                     <div className="absolute bottom-1.5 left-1.5">
-                      <span className="px-2 py-0.5 bg-white/80 dark:bg-black/70 backdrop-blur-sm rounded-md text-[10px] font-medium text-gray-900 dark:text-white flex items-center gap-1">
+                      <span className="px-2 py-0.5 bg-white/80 dark:bg-black/70 backdrop-blur-sm rounded-md text-[0.625rem] font-medium text-gray-900 dark:text-white flex items-center gap-1">
                         <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="M2 2l7.586 7.586"/><circle cx="11" cy="11" r="2"/></svg>
                         Board
                       </span>
@@ -1088,7 +1088,7 @@ export default function VideoCallRoom({
                     </div>
                   )}
                   <div className="absolute bottom-1.5 left-1.5 right-1.5 flex items-center justify-between">
-                    <span className="px-2 py-0.5 bg-white/80 dark:bg-black/70 backdrop-blur-sm rounded-md text-[10px] lg:text-xs font-medium text-gray-900 dark:text-white">
+                    <span className="px-2 py-0.5 bg-white/80 dark:bg-black/70 backdrop-blur-sm rounded-md text-[0.625rem] lg:text-xs font-medium text-gray-900 dark:text-white">
                       You
                     </span>
                     {isMuted && (
@@ -1118,7 +1118,7 @@ export default function VideoCallRoom({
                       )}
                     </div>
                     <div className="absolute bottom-1.5 left-1.5 right-1.5 flex items-center justify-between">
-                      <span className="px-2 py-0.5 bg-white/80 dark:bg-black/70 backdrop-blur-sm rounded-md text-[10px] lg:text-xs font-medium text-gray-900 dark:text-white truncate max-w-[100px]">
+                      <span className="px-2 py-0.5 bg-white/80 dark:bg-black/70 backdrop-blur-sm rounded-md text-[0.625rem] lg:text-xs font-medium text-gray-900 dark:text-white truncate max-w-[100px]">
                         {recipientName || "Participant"}
                       </span>
                       <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
@@ -1166,7 +1166,7 @@ export default function VideoCallRoom({
                         </div>
                       )}
                       <div className="absolute bottom-1.5 left-1.5 right-1.5 flex items-center justify-between">
-                        <span className="px-2 py-0.5 bg-white/80 dark:bg-black/70 backdrop-blur-sm rounded-md text-[10px] lg:text-xs font-medium text-gray-900 dark:text-white truncate max-w-[100px]">
+                        <span className="px-2 py-0.5 bg-white/80 dark:bg-black/70 backdrop-blur-sm rounded-md text-[0.625rem] lg:text-xs font-medium text-gray-900 dark:text-white truncate max-w-[100px]">
                           {participant.name}
                         </span>
                         {participant.isMuted && (
@@ -1199,7 +1199,7 @@ export default function VideoCallRoom({
                       )}
                     </div>
                     <div className="absolute bottom-1.5 left-1.5 right-1.5 flex items-center justify-between">
-                      <span className="px-2 py-0.5 bg-white/80 dark:bg-black/70 backdrop-blur-sm rounded-md text-[10px] lg:text-xs font-medium text-gray-900 dark:text-white truncate max-w-[100px]">
+                      <span className="px-2 py-0.5 bg-white/80 dark:bg-black/70 backdrop-blur-sm rounded-md text-[0.625rem] lg:text-xs font-medium text-gray-900 dark:text-white truncate max-w-[100px]">
                         {p.name}
                       </span>
                       <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
@@ -1437,7 +1437,7 @@ export default function VideoCallRoom({
                 >
                   <WhiteboardThumbnail elements={whiteboardElements} className="w-full h-full" />
                   <div className="absolute bottom-1.5 left-1.5">
-                    <span className="px-2 py-0.5 bg-white/80 dark:bg-black/70 backdrop-blur-sm rounded-md text-[10px] font-medium text-gray-900 dark:text-white flex items-center gap-1">
+                    <span className="px-2 py-0.5 bg-white/80 dark:bg-black/70 backdrop-blur-sm rounded-md text-[0.625rem] font-medium text-gray-900 dark:text-white flex items-center gap-1">
                       <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="M2 2l7.586 7.586"/><circle cx="11" cy="11" r="2"/></svg>
                       Board
                     </span>
@@ -1456,7 +1456,7 @@ export default function VideoCallRoom({
                     className="w-full h-full object-contain"
                   />
                   <div className="absolute bottom-1.5 left-1.5 right-1.5 flex items-center justify-between">
-                    <span className="px-2 py-0.5 bg-white/80 dark:bg-black/70 backdrop-blur-sm rounded-md text-[10px] font-medium text-gray-900 dark:text-white flex items-center gap-1">
+                    <span className="px-2 py-0.5 bg-white/80 dark:bg-black/70 backdrop-blur-sm rounded-md text-[0.625rem] font-medium text-gray-900 dark:text-white flex items-center gap-1">
                       <Monitor className="w-2.5 h-2.5" /> Screen
                     </span>
                   </div>
@@ -1497,7 +1497,7 @@ export default function VideoCallRoom({
                   </div>
                 )}
                 <div className="absolute bottom-1.5 left-1.5 right-1.5 flex items-center justify-between">
-                  <span className="px-2 py-0.5 bg-white/80 dark:bg-black/70 backdrop-blur-sm rounded-md text-[10px] font-medium text-gray-900 dark:text-white">
+                  <span className="px-2 py-0.5 bg-white/80 dark:bg-black/70 backdrop-blur-sm rounded-md text-[0.625rem] font-medium text-gray-900 dark:text-white">
                     You
                   </span>
                   {isMuted && (
@@ -1524,7 +1524,7 @@ export default function VideoCallRoom({
                     )}
                   </div>
                   <div className="absolute bottom-1.5 left-1.5 right-1.5 flex items-center justify-between">
-                    <span className="px-2 py-0.5 bg-white/80 dark:bg-black/70 backdrop-blur-sm rounded-md text-[10px] font-medium text-gray-900 dark:text-white truncate max-w-[90px]">
+                    <span className="px-2 py-0.5 bg-white/80 dark:bg-black/70 backdrop-blur-sm rounded-md text-[0.625rem] font-medium text-gray-900 dark:text-white truncate max-w-[90px]">
                       {recipientName || "Participant"}
                     </span>
                     <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
@@ -1575,7 +1575,7 @@ export default function VideoCallRoom({
                       </div>
                     )}
                     <div className="absolute bottom-1.5 left-1.5 right-1.5 flex items-center justify-between">
-                      <span className="px-2 py-0.5 bg-white/80 dark:bg-black/70 backdrop-blur-sm rounded-md text-[10px] font-medium text-gray-900 dark:text-white truncate max-w-[90px]">
+                      <span className="px-2 py-0.5 bg-white/80 dark:bg-black/70 backdrop-blur-sm rounded-md text-[0.625rem] font-medium text-gray-900 dark:text-white truncate max-w-[90px]">
                         {participant.name}
                       </span>
                       {participant.isMuted && (
@@ -1604,7 +1604,7 @@ export default function VideoCallRoom({
                     )}
                   </div>
                   <div className="absolute bottom-1.5 left-1.5 right-1.5 flex items-center justify-between">
-                    <span className="px-2 py-0.5 bg-white/80 dark:bg-black/70 backdrop-blur-sm rounded-md text-[10px] font-medium text-gray-900 dark:text-white truncate max-w-[90px]">
+                    <span className="px-2 py-0.5 bg-white/80 dark:bg-black/70 backdrop-blur-sm rounded-md text-[0.625rem] font-medium text-gray-900 dark:text-white truncate max-w-[90px]">
                       {p.name}
                     </span>
                     <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
@@ -1823,7 +1823,7 @@ export default function VideoCallRoom({
                     >
                       <WhiteboardThumbnail elements={whiteboardElements} className="w-full h-full" />
                       <div className="absolute bottom-1.5 left-1.5">
-                        <span className="px-2 py-0.5 bg-white/80 dark:bg-black/70 backdrop-blur-sm rounded-md text-[10px] font-medium text-gray-900 dark:text-white flex items-center gap-1">
+                        <span className="px-2 py-0.5 bg-white/80 dark:bg-black/70 backdrop-blur-sm rounded-md text-[0.625rem] font-medium text-gray-900 dark:text-white flex items-center gap-1">
                           <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="M2 2l7.586 7.586"/><circle cx="11" cy="11" r="2"/></svg>
                           Board
                         </span>
@@ -1878,7 +1878,7 @@ export default function VideoCallRoom({
                       </div>
                     )}
                     <div className="absolute bottom-1.5 left-1.5 right-1.5 flex items-center justify-between">
-                      <span className="px-2 py-0.5 bg-white/80 dark:bg-black/70 backdrop-blur-sm rounded-md text-[10px] font-medium text-gray-900 dark:text-white">
+                      <span className="px-2 py-0.5 bg-white/80 dark:bg-black/70 backdrop-blur-sm rounded-md text-[0.625rem] font-medium text-gray-900 dark:text-white">
                         You
                       </span>
                       {isMuted && (
@@ -1917,7 +1917,7 @@ export default function VideoCallRoom({
                         )}
                       </div>
                       <div className="absolute bottom-1.5 left-1.5 right-1.5 flex items-center justify-between">
-                        <span className="px-2 py-0.5 bg-white/80 dark:bg-black/70 backdrop-blur-sm rounded-md text-[10px] font-medium text-gray-900 dark:text-white truncate max-w-[90px]">
+                        <span className="px-2 py-0.5 bg-white/80 dark:bg-black/70 backdrop-blur-sm rounded-md text-[0.625rem] font-medium text-gray-900 dark:text-white truncate max-w-[90px]">
                           {recipientName || "Participant"}
                         </span>
                         <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
@@ -1980,7 +1980,7 @@ export default function VideoCallRoom({
                           </div>
                         )}
                         <div className="absolute bottom-1.5 left-1.5 right-1.5 flex items-center justify-between">
-                          <span className="px-2 py-0.5 bg-white/80 dark:bg-black/70 backdrop-blur-sm rounded-md text-[10px] font-medium text-gray-900 dark:text-white truncate max-w-[90px]">
+                          <span className="px-2 py-0.5 bg-white/80 dark:bg-black/70 backdrop-blur-sm rounded-md text-[0.625rem] font-medium text-gray-900 dark:text-white truncate max-w-[90px]">
                             {participant.name}
                           </span>
                           {participant.isMuted && (
@@ -2016,7 +2016,7 @@ export default function VideoCallRoom({
                         )}
                       </div>
                       <div className="absolute bottom-1.5 left-1.5 right-1.5 flex items-center justify-between">
-                        <span className="px-2 py-0.5 bg-white/80 dark:bg-black/70 backdrop-blur-sm rounded-md text-[10px] font-medium text-gray-900 dark:text-white truncate max-w-[90px]">
+                        <span className="px-2 py-0.5 bg-white/80 dark:bg-black/70 backdrop-blur-sm rounded-md text-[0.625rem] font-medium text-gray-900 dark:text-white truncate max-w-[90px]">
                           {p.name}
                         </span>
                         <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />

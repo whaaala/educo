@@ -17,7 +17,7 @@ function InlineColorPicker({ color, onChange, label }: { color: string; onChange
   return (
     <div>
       <div className="flex items-center gap-2">
-        {label && <span className="text-[10px] text-gray-400 dark:text-gray-500 w-10 shrink-0">{label}</span>}
+        {label && <span className="text-[0.625rem] text-gray-400 dark:text-gray-500 w-10 shrink-0">{label}</span>}
         <button
           onClick={() => setExpanded(!expanded)}
           className="w-8 h-8 rounded-lg border border-gray-200 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 cursor-pointer hover:scale-105 transition-all flex items-center justify-center"
@@ -25,7 +25,7 @@ function InlineColorPicker({ color, onChange, label }: { color: string; onChange
         >
           {color === "transparent" && <svg viewBox="0 0 20 20" className="w-4 h-4"><line x1="4" y1="16" x2="16" y2="4" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" /></svg>}
         </button>
-        <span className="text-[10px] font-mono text-gray-400 dark:text-gray-500 flex-1 truncate">{color}</span>
+        <span className="text-[0.625rem] font-mono text-gray-400 dark:text-gray-500 flex-1 truncate">{color}</span>
         <ChevronDown className={`w-3.5 h-3.5 text-gray-400 transition-transform cursor-pointer ${expanded ? "rotate-180" : ""}`} onClick={() => setExpanded(!expanded)} />
       </div>
       {expanded && (
@@ -49,13 +49,13 @@ function InlineColorPicker({ color, onChange, label }: { color: string; onChange
                   <div className="w-full h-full rounded-lg" style={{ backgroundColor: color, opacity: 0.7 }} />
                 </div>
               </label>
-              <span className="text-[10px] text-gray-400 dark:text-gray-500">Custom</span>
+              <span className="text-[0.625rem] text-gray-400 dark:text-gray-500">Custom</span>
               <input
                 type="text"
                 value={color}
                 onChange={(e) => { if (/^#[0-9a-fA-F]{6}$/.test(e.target.value)) onChange(e.target.value); }}
                 onKeyDown={(e) => e.stopPropagation()}
-                className="flex-1 px-2 py-1 text-[11px] font-mono rounded-md border border-gray-200 dark:border-gray-600 bg-white dark:bg-[#0f1115] text-gray-700 dark:text-gray-300 outline-none focus:border-blue-400"
+                className="flex-1 px-2 py-1 text-[0.6875rem] font-mono rounded-md border border-gray-200 dark:border-gray-600 bg-white dark:bg-[#0f1115] text-gray-700 dark:text-gray-300 outline-none focus:border-blue-400"
                 maxLength={7}
                 spellCheck={false}
               />
@@ -96,8 +96,8 @@ interface TableStylePanelProps {
 
 // ── Active state classes ──
 const activeBtn = "bg-blue-100 text-blue-700 dark:bg-[#22262e] dark:text-gray-100 dark:border dark:border-gray-600 midnight:bg-cyan-500/15 midnight:text-cyan-400 midnight:border midnight:border-cyan-500/30 purple:bg-pink-500/15 purple:text-pink-400 purple:border purple:border-pink-500/30";
-const inactiveBtn = "text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 border border-transparent";
-const sectionLabel = "text-[10px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500 midnight:text-cyan-400/60 purple:text-pink-400/60 mb-2";
+const inactiveBtn = "text-muted hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 border border-transparent";
+const sectionLabel = "text-[0.625rem] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500 midnight:text-cyan-400/60 purple:text-pink-400/60 mb-2";
 
 export default function TableStylePanel({ obj, onUpdate, anchorRect, onClose }: TableStylePanelProps) {
   const [tab, setTab] = useState<"theme" | "border" | "structure">("theme");
@@ -129,7 +129,7 @@ export default function TableStylePanel({ obj, onUpdate, anchorRect, onClose }: 
   return (
     <div
       ref={panelRef}
-      className="fixed z-[10001] w-[300px] rounded-2xl bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] shadow-2xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 flex flex-col"
+      className="fixed z-[10001] w-[300px] rounded-2xl bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] shadow-2xl border border-line flex flex-col"
       style={{ top: pos.top, left: pos.left, maxHeight: `calc(100vh - ${pos.top + 16}px)` }}
       onClick={(e) => e.stopPropagation()}
       onMouseDown={(e) => e.stopPropagation()}
@@ -142,10 +142,10 @@ export default function TableStylePanel({ obj, onUpdate, anchorRect, onClose }: 
               <Grid3X3 className="w-4.5 h-4.5 text-blue-600 dark:text-gray-300 midnight:text-cyan-400 purple:text-pink-400" />
             </div>
             <div>
-              <div className="text-[12px] font-semibold text-gray-800 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50">
+              <div className="text-[0.75rem] font-semibold text-gray-800 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50">
                 Table {obj.rows} × {obj.cols}
               </div>
-              <div className="text-[10px] text-gray-400 dark:text-gray-500 midnight:text-cyan-400/50 purple:text-pink-400/50">
+              <div className="text-[0.625rem] text-gray-400 dark:text-gray-500 midnight:text-cyan-400/50 purple:text-pink-400/50">
                 Double-click to edit cells
               </div>
             </div>
@@ -164,7 +164,7 @@ export default function TableStylePanel({ obj, onUpdate, anchorRect, onClose }: 
           <button
             key={t.key}
             onClick={() => setTab(t.key)}
-            className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 text-[11px] font-medium transition-all cursor-pointer relative ${
+            className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 text-[0.6875rem] font-medium transition-all cursor-pointer relative ${
               tab === t.key
                 ? "text-blue-600 dark:text-gray-100 midnight:text-cyan-400 purple:text-pink-400"
                 : "text-gray-400 dark:text-gray-500 midnight:text-cyan-400/40 purple:text-pink-400/40 hover:text-gray-600 dark:hover:text-gray-300"
@@ -205,7 +205,7 @@ export default function TableStylePanel({ obj, onUpdate, anchorRect, onClose }: 
                         <div className="h-2.5" style={{ backgroundColor: t.odd }} />
                         <div className="h-2.5" style={{ backgroundColor: t.even }} />
                       </div>
-                      <div className="text-[8px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300/60 purple:text-pink-300/60 mt-1 text-center font-medium">{t.name}</div>
+                      <div className="text-[0.5rem] text-gray-500 dark:text-gray-400 midnight:text-cyan-300/60 purple:text-pink-300/60 mt-1 text-center font-medium">{t.name}</div>
                     </button>
                   );
                 })}
@@ -217,7 +217,7 @@ export default function TableStylePanel({ obj, onUpdate, anchorRect, onClose }: 
               <InlineColorPicker color={obj.headerColor} onChange={(c) => onUpdate({ headerColor: c })} />
               <label className="flex items-center gap-1.5 cursor-pointer mt-2">
                 <input type="checkbox" checked={obj.headerRow} onChange={(e) => onUpdate({ headerRow: e.target.checked })} className="w-3.5 h-3.5 rounded accent-blue-500 cursor-pointer" />
-                <span className="text-[10px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Header row</span>
+                <span className="text-[0.625rem] text-muted">Header row</span>
               </label>
             </div>
           </>
@@ -259,7 +259,7 @@ export default function TableStylePanel({ obj, onUpdate, anchorRect, onClose }: 
                   onChange={(e) => onUpdate({ cellPadding: Number(e.target.value) })}
                   className="flex-1 h-1.5 accent-blue-500 dark:accent-gray-400 midnight:accent-cyan-500 purple:accent-pink-500 cursor-pointer rounded-full"
                 />
-                <span className="text-[11px] font-mono text-gray-400 dark:text-gray-500 w-8 text-right">{obj.cellPadding}px</span>
+                <span className="text-[0.6875rem] font-mono text-gray-400 dark:text-gray-500 w-8 text-right">{obj.cellPadding}px</span>
               </div>
             </div>
 
@@ -269,7 +269,7 @@ export default function TableStylePanel({ obj, onUpdate, anchorRect, onClose }: 
                 {[8, 10, 12, 14, 16, 18, 20, 24].map(s => (
                   <button key={s}
                     onClick={() => onUpdate({ fontSize: s })}
-                    className={`flex-1 py-1.5 rounded-lg text-[10px] font-medium cursor-pointer transition-all ${
+                    className={`flex-1 py-1.5 rounded-lg text-[0.625rem] font-medium cursor-pointer transition-all ${
                       obj.fontSize === s ? activeBtn : inactiveBtn
                     }`}
                   >{s}</button>
@@ -289,14 +289,14 @@ export default function TableStylePanel({ obj, onUpdate, anchorRect, onClose }: 
                   const newCells = [...obj.cells, Array.from({ length: obj.cols }, () => ({ content: "" }))];
                   const rh = obj.rowHeights ? [...obj.rowHeights, 100 / (obj.rows + 1)] : undefined;
                   onUpdate({ rows: obj.rows + 1, cells: newCells, rowHeights: rh, height: obj.height + 6 });
-                }} className={`flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-[11px] font-medium cursor-pointer transition-all ${inactiveBtn} hover:!bg-blue-50 dark:hover:!bg-[#22262e]`}>
+                }} className={`flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-[0.6875rem] font-medium cursor-pointer transition-all ${inactiveBtn} hover:!bg-blue-50 dark:hover:!bg-[#22262e]`}>
                   <Plus className="w-3.5 h-3.5" /> Add Row
                 </button>
                 <button onClick={() => {
                   const newCells = obj.cells.map(row => [...row, { content: "" }]);
                   const cw = obj.colWidths ? [...obj.colWidths, 100 / (obj.cols + 1)] : undefined;
                   onUpdate({ cols: obj.cols + 1, cells: newCells, colWidths: cw });
-                }} className={`flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-[11px] font-medium cursor-pointer transition-all ${inactiveBtn} hover:!bg-blue-50 dark:hover:!bg-[#22262e]`}>
+                }} className={`flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-[0.6875rem] font-medium cursor-pointer transition-all ${inactiveBtn} hover:!bg-blue-50 dark:hover:!bg-[#22262e]`}>
                   <Plus className="w-3.5 h-3.5" /> Add Column
                 </button>
                 <button onClick={() => {
@@ -305,7 +305,7 @@ export default function TableStylePanel({ obj, onUpdate, anchorRect, onClose }: 
                   const rh = obj.rowHeights?.slice(0, -1);
                   onUpdate({ rows: obj.rows - 1, cells: newCells, rowHeights: rh, height: Math.max(10, obj.height - 6) });
                 }} disabled={obj.rows <= 1}
-                  className={`flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-[11px] font-medium cursor-pointer transition-all disabled:opacity-30 disabled:cursor-not-allowed text-red-500 dark:text-red-400 border border-transparent hover:bg-red-50 dark:hover:bg-red-500/10`}>
+                  className={`flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-[0.6875rem] font-medium cursor-pointer transition-all disabled:opacity-30 disabled:cursor-not-allowed text-red-500 dark:text-red-400 border border-transparent hover:bg-red-50 dark:hover:bg-red-500/10`}>
                   <Minus className="w-3.5 h-3.5" /> Remove Row
                 </button>
                 <button onClick={() => {
@@ -314,7 +314,7 @@ export default function TableStylePanel({ obj, onUpdate, anchorRect, onClose }: 
                   const cw = obj.colWidths?.slice(0, -1);
                   onUpdate({ cols: obj.cols - 1, cells: newCells, colWidths: cw });
                 }} disabled={obj.cols <= 1}
-                  className={`flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-[11px] font-medium cursor-pointer transition-all disabled:opacity-30 disabled:cursor-not-allowed text-red-500 dark:text-red-400 border border-transparent hover:bg-red-50 dark:hover:bg-red-500/10`}>
+                  className={`flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-[0.6875rem] font-medium cursor-pointer transition-all disabled:opacity-30 disabled:cursor-not-allowed text-red-500 dark:text-red-400 border border-transparent hover:bg-red-50 dark:hover:bg-red-500/10`}>
                   <Minus className="w-3.5 h-3.5" /> Remove Column
                 </button>
               </div>

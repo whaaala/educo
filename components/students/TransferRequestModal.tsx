@@ -168,7 +168,7 @@ export default function TransferRequestModal({
 
   const modalContent = (
     <div className="fixed inset-0 z-[9999] flex items-start justify-center bg-black/60 backdrop-blur-md pt-4 pb-4 px-4 sm:px-6 overflow-y-auto">
-      <div ref={modalRef} className="relative w-full max-w-3xl bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl sm:rounded-2xl shadow-2xl max-h-[calc(100vh-32px)] flex flex-col animate-in fade-in zoom-in duration-200">
+      <div ref={modalRef} className="relative w-full max-w-3xl bg-surface rounded-xl sm:rounded-2xl shadow-2xl max-h-[calc(100vh-32px)] flex flex-col animate-in fade-in zoom-in duration-200">
         {/* Header with Gradient */}
         <div className="flex-shrink-0 relative bg-gradient-to-r from-blue-600 via-blue-700 to-purple-600 dark:from-blue-500 dark:via-blue-600 dark:to-purple-500 midnight:from-cyan-600 midnight:via-cyan-700 midnight:to-purple-600 purple:from-pink-600 purple:via-pink-700 purple:to-purple-600 px-4 sm:px-6 py-4 sm:py-5 overflow-hidden">
           {/* Animated background patterns */}
@@ -212,7 +212,7 @@ export default function TransferRequestModal({
 
         {/* Student Info Card */}
         <div className="px-4 sm:px-5 py-3 bg-gradient-to-br from-blue-50/50 via-purple-50/30 to-pink-50/40 dark:from-gray-800/50 dark:via-gray-800/40 dark:to-gray-800/30 midnight:from-cyan-900/10 midnight:via-cyan-800/8 midnight:to-cyan-700/5 purple:from-pink-900/10 purple:via-pink-800/8 purple:to-pink-700/5 animate-in fade-in slide-in-from-top-2 duration-500">
-          <div className="relative group bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl p-4 shadow-lg border-2 border-blue-200/60 dark:border-gray-700/60 midnight:border-cyan-500/30 purple:border-pink-500/30 hover:shadow-xl hover:border-blue-300/80 dark:hover:border-gray-600/80 midnight:hover:border-cyan-400/50 purple:hover:border-pink-400/50 transition-all duration-300 overflow-hidden">
+          <div className="relative group bg-surface rounded-xl p-4 shadow-lg border-2 border-blue-200/60 dark:border-gray-700/60 midnight:border-cyan-500/30 purple:border-pink-500/30 hover:shadow-xl hover:border-blue-300/80 dark:hover:border-gray-600/80 midnight:hover:border-cyan-400/50 purple:hover:border-pink-400/50 transition-all duration-300 overflow-hidden">
             {/* Animated background gradient on hover */}
             <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-purple-500/5 to-pink-500/5 dark:from-blue-400/5 dark:via-purple-400/5 dark:to-pink-400/5 midnight:from-cyan-500/5 midnight:via-purple-500/5 midnight:to-cyan-500/5 purple:from-pink-500/5 purple:via-purple-500/5 purple:to-pink-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
 
@@ -224,7 +224,7 @@ export default function TransferRequestModal({
                     alt={studentName}
                     className="w-14 h-14 rounded-xl object-cover ring-2 ring-blue-500/30 dark:ring-blue-400/30 midnight:ring-cyan-500/30 purple:ring-pink-500/30 shadow-md group-hover/avatar:ring-4 group-hover/avatar:ring-blue-500/50 dark:group-hover/avatar:ring-blue-400/50 midnight:group-hover/avatar:ring-cyan-400/50 purple:group-hover/avatar:ring-pink-400/50 group-hover/avatar:scale-105 transition-all duration-300"
                   />
-                  <div className="absolute -top-1 -right-1 w-5 h-5 bg-gradient-to-br from-blue-600 to-blue-700 dark:from-blue-500 dark:to-blue-600 midnight:from-cyan-600 midnight:to-cyan-700 purple:from-pink-600 purple:to-pink-700 rounded-full flex items-center justify-center text-white text-[10px] font-bold shadow-lg ring-2 ring-white dark:ring-gray-800 midnight:ring-gray-900 purple:ring-gray-900 animate-in zoom-in duration-300 delay-100">
+                  <div className="absolute -top-1 -right-1 w-5 h-5 bg-gradient-to-br from-blue-600 to-blue-700 dark:from-blue-500 dark:to-blue-600 midnight:from-cyan-600 midnight:to-cyan-700 purple:from-pink-600 purple:to-pink-700 rounded-full flex items-center justify-center text-white text-[0.625rem] font-bold shadow-lg ring-2 ring-white dark:ring-gray-800 midnight:ring-gray-900 purple:ring-gray-900 animate-in zoom-in duration-300 delay-100">
                     ✓
                   </div>
                   {/* Pulsing glow effect */}
@@ -241,36 +241,36 @@ export default function TransferRequestModal({
               )}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-2">
-                  <h3 className="text-lg font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate animate-in fade-in slide-in-from-left duration-300">
+                  <h3 className="text-lg font-bold text-ink truncate animate-in fade-in slide-in-from-left duration-300">
                     {studentName}
                   </h3>
-                  <span className="px-2.5 py-1 text-[11px] font-bold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 bg-gradient-to-r from-blue-100 to-blue-200 dark:from-blue-900/30 dark:to-blue-800/30 midnight:from-cyan-900/30 midnight:to-cyan-800/30 purple:from-pink-900/30 purple:to-pink-800/30 rounded-md shadow-sm border border-blue-300/30 dark:border-blue-700/30 midnight:border-cyan-500/30 purple:border-pink-500/30 animate-in fade-in zoom-in duration-300 delay-75">
+                  <span className="px-2.5 py-1 text-[0.6875rem] font-bold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 bg-gradient-to-r from-blue-100 to-blue-200 dark:from-blue-900/30 dark:to-blue-800/30 midnight:from-cyan-900/30 midnight:to-cyan-800/30 purple:from-pink-900/30 purple:to-pink-800/30 rounded-md shadow-sm border border-blue-300/30 dark:border-blue-700/30 midnight:border-cyan-500/30 purple:border-pink-500/30 animate-in fade-in zoom-in duration-300 delay-75">
                     {studentAdmissionNumber}
                   </span>
                 </div>
                 <div className="grid grid-cols-2 gap-2 animate-in fade-in slide-in-from-bottom-2 duration-500 delay-100">
                   <div className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-700/50 dark:to-gray-700/30 midnight:from-cyan-900/20 midnight:to-cyan-900/10 purple:from-pink-900/20 purple:to-pink-900/10 rounded-lg p-2 border border-gray-200/50 dark:border-gray-600/30 midnight:border-cyan-500/20 purple:border-pink-500/20 hover:shadow-md hover:scale-105 transition-all duration-300">
-                    <span className="text-[10px] font-bold text-gray-500 dark:text-gray-400 midnight:text-cyan-400/80 purple:text-pink-400/80 uppercase tracking-wider block mb-1">
+                    <span className="text-[0.625rem] font-bold text-gray-500 dark:text-gray-400 midnight:text-cyan-400/80 purple:text-pink-400/80 uppercase tracking-wider block mb-1">
                       Class
                     </span>
-                    <p className="text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                    <p className="text-sm font-bold text-ink">
                       {currentClass}
                     </p>
                   </div>
                   <div className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-700/50 dark:to-gray-700/30 midnight:from-cyan-900/20 midnight:to-cyan-900/10 purple:from-pink-900/20 purple:to-pink-900/10 rounded-lg p-2 border border-gray-200/50 dark:border-gray-600/30 midnight:border-cyan-500/20 purple:border-pink-500/20 hover:shadow-md hover:scale-105 transition-all duration-300">
-                    <span className="text-[10px] font-bold text-gray-500 dark:text-gray-400 midnight:text-cyan-400/80 purple:text-pink-400/80 uppercase tracking-wider block mb-1">
+                    <span className="text-[0.625rem] font-bold text-gray-500 dark:text-gray-400 midnight:text-cyan-400/80 purple:text-pink-400/80 uppercase tracking-wider block mb-1">
                       Section
                     </span>
-                    <p className="text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                    <p className="text-sm font-bold text-ink">
                       {currentSection}
                     </p>
                   </div>
                   {currentBranchName && (
                     <div className="col-span-2 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-700/50 dark:to-gray-700/30 midnight:from-cyan-900/20 midnight:to-cyan-900/10 purple:from-pink-900/20 purple:to-pink-900/10 rounded-lg p-2 border border-gray-200/50 dark:border-gray-600/30 midnight:border-cyan-500/20 purple:border-pink-500/20 hover:shadow-md hover:scale-105 transition-all duration-300 animate-in fade-in zoom-in duration-500 delay-150">
-                      <span className="text-[10px] font-bold text-gray-500 dark:text-gray-400 midnight:text-cyan-400/80 purple:text-pink-400/80 uppercase tracking-wider block mb-1">
+                      <span className="text-[0.625rem] font-bold text-gray-500 dark:text-gray-400 midnight:text-cyan-400/80 purple:text-pink-400/80 uppercase tracking-wider block mb-1">
                         Branch
                       </span>
-                      <p className="text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                      <p className="text-sm font-bold text-ink">
                         {currentBranchName}
                       </p>
                     </div>
@@ -310,7 +310,7 @@ export default function TransferRequestModal({
                       className="mt-0.5 sm:mt-1 mr-2 sm:mr-3 flex-shrink-0"
                     />
                     <div className="flex-1 min-w-0">
-                      <div className="text-sm sm:text-base font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                      <div className="text-sm sm:text-base font-semibold text-ink">
                         {type.label}
                       </div>
                       <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70 mt-0.5">
@@ -432,7 +432,7 @@ export default function TransferRequestModal({
             <div className="bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/10 dark:to-purple-900/10 midnight:from-cyan-900/10 midnight:to-purple-900/10 purple:from-pink-900/10 purple:to-purple-900/10 rounded-xl p-4 border border-blue-200/50 dark:border-blue-700/50 midnight:border-cyan-500/20 purple:border-pink-500/20">
               <label className="flex items-center justify-between cursor-pointer">
                 <div>
-                  <span className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 flex items-center gap-2">
+                  <span className="text-sm font-semibold text-ink flex items-center gap-2">
                     <span className="w-2 h-2 rounded-full bg-blue-600 dark:bg-blue-500 midnight:bg-cyan-600 purple:bg-pink-600 animate-pulse"></span>
                     Notify Parent/Guardian
                   </span>
@@ -463,7 +463,7 @@ export default function TransferRequestModal({
         </div>
 
         {/* Footer - Fixed */}
-        <div className="flex-shrink-0 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 px-4 sm:px-5 py-3 flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2 sm:gap-3 shadow-lg">
+        <div className="flex-shrink-0 bg-surface border-t border-line px-4 sm:px-5 py-3 flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2 sm:gap-3 shadow-lg">
           <FormButton
             type="button"
             onClick={onClose}

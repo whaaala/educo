@@ -404,7 +404,7 @@ export default function AutoReminderScheduleModal({
           <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
             <CheckCircle2 className="w-10 h-10 text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400" />
           </div>
-          <h3 className="text-xl font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-2">
+          <h3 className="text-xl font-bold text-ink mb-2">
             Reminders Scheduled!
           </h3>
           <p className="text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
@@ -415,7 +415,7 @@ export default function AutoReminderScheduleModal({
       ) : (
         <div className="space-y-5">
           {/* Parent & Student Info - Compact */}
-          <div className="flex items-center justify-between p-3 rounded-xl bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800/50 dark:to-gray-800/30 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+          <div className="flex items-center justify-between p-3 rounded-xl bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800/50 dark:to-gray-800/30 border border-line">
             <div className="flex items-center gap-3">
               <div className="relative w-10 h-10 rounded-full overflow-hidden bg-gray-200 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] ring-2 ring-white dark:ring-gray-800">
                 <Image
@@ -427,10 +427,10 @@ export default function AutoReminderScheduleModal({
                 />
               </div>
               <div>
-                <p className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-sm">
+                <p className="font-semibold text-ink text-sm">
                   {parentName}
                 </p>
-                <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
+                <p className="text-xs text-muted">
                   Parent of {childName}
                 </p>
               </div>
@@ -445,7 +445,7 @@ export default function AutoReminderScheduleModal({
                   Overdue
                 </span>
               ) : (
-                <span className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
+                <span className="text-xs text-muted">
                   Due:{" "}
                   {new Date(dueDate).toLocaleDateString("en-GB", {
                     day: "numeric",
@@ -498,7 +498,7 @@ export default function AutoReminderScheduleModal({
                   className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg border-2 transition-all cursor-pointer ${
                     channels.includes(channel.id)
                       ? "border-purple-500 bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300"
-                      : "border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:border-gray-300 dark:hover:border-gray-600 midnight:hover:border-cyan-500/30 purple:hover:border-pink-500/30"
+                      : "border-line text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:border-gray-300 dark:hover:border-gray-600 midnight:hover:border-cyan-500/30 purple:hover:border-pink-500/30"
                   }`}
                 >
                   {channel.icon}
@@ -514,7 +514,7 @@ export default function AutoReminderScheduleModal({
               <div className="p-1.5 rounded-lg bg-purple-100 dark:bg-purple-900/30">
                 <Settings className="w-4 h-4 text-purple-600 dark:text-purple-400" />
               </div>
-              <h3 className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-sm">
+              <h3 className="font-semibold text-ink text-sm">
                 Global Settings
               </h3>
             </div>
@@ -532,7 +532,7 @@ export default function AutoReminderScheduleModal({
                     onClick={() =>
                       setReminderCount(Math.max(1, reminderCount - 1))
                     }
-                    className="w-9 h-9 rounded-lg bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 flex items-center justify-center text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 cursor-pointer transition-colors"
+                    className="w-9 h-9 rounded-lg bg-surface border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 flex items-center justify-center text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 cursor-pointer transition-colors"
                   >
                     -
                   </button>
@@ -546,14 +546,14 @@ export default function AutoReminderScheduleModal({
                         Math.min(10, Math.max(1, parseInt(e.target.value) || 1))
                       )
                     }
-                    className="w-14 h-9 text-center text-sm font-semibold bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 rounded-lg focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none"
+                    className="w-14 h-9 text-center text-sm font-semibold bg-surface border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 rounded-lg focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none"
                   />
                   <button
                     type="button"
                     onClick={() =>
                       setReminderCount(Math.min(10, reminderCount + 1))
                     }
-                    className="w-9 h-9 rounded-lg bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 flex items-center justify-center text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 cursor-pointer transition-colors"
+                    className="w-9 h-9 rounded-lg bg-surface border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 flex items-center justify-center text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 cursor-pointer transition-colors"
                   >
                     +
                   </button>
@@ -573,7 +573,7 @@ export default function AutoReminderScheduleModal({
                       onClick={() =>
                         setIntervalDays(Math.max(1, intervalDays - 1))
                       }
-                      className="w-9 h-9 rounded-lg bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 flex items-center justify-center text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 cursor-pointer transition-colors"
+                      className="w-9 h-9 rounded-lg bg-surface border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 flex items-center justify-center text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 cursor-pointer transition-colors"
                     >
                       -
                     </button>
@@ -590,14 +590,14 @@ export default function AutoReminderScheduleModal({
                           )
                         )
                       }
-                      className="w-14 h-9 text-center text-sm font-semibold bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 rounded-lg focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none"
+                      className="w-14 h-9 text-center text-sm font-semibold bg-surface border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 rounded-lg focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none"
                     />
                     <button
                       type="button"
                       onClick={() =>
                         setIntervalDays(Math.min(30, intervalDays + 1))
                       }
-                      className="w-9 h-9 rounded-lg bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 flex items-center justify-center text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 cursor-pointer transition-colors"
+                      className="w-9 h-9 rounded-lg bg-surface border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 flex items-center justify-center text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 cursor-pointer transition-colors"
                     >
                       +
                     </button>
@@ -619,9 +619,9 @@ export default function AutoReminderScheduleModal({
                     setActiveDatePicker(null);
                     setActiveTimePicker(null);
                   }}
-                  className="w-full h-9 text-sm font-medium text-left bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 hover:border-gray-400 dark:hover:border-gray-500 midnight:hover:border-cyan-500/40 purple:hover:border-pink-500/40 rounded-lg px-3 outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all cursor-pointer"
+                  className="w-full h-9 text-sm font-medium text-left bg-surface border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 hover:border-gray-400 dark:hover:border-gray-500 midnight:hover:border-cyan-500/40 purple:hover:border-pink-500/40 rounded-lg px-3 outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all cursor-pointer"
                 >
-                  <span className="text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                  <span className="text-ink">
                     {defaultTime}
                   </span>
                 </button>
@@ -658,9 +658,9 @@ export default function AutoReminderScheduleModal({
                     setActiveTimePicker(null);
                     setActiveDefaultTimePicker(false);
                   }}
-                  className="w-full sm:w-48 h-9 text-sm font-medium text-left bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 hover:border-gray-400 dark:hover:border-gray-500 midnight:hover:border-cyan-500/40 purple:hover:border-pink-500/40 rounded-lg px-3 outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all cursor-pointer"
+                  className="w-full sm:w-48 h-9 text-sm font-medium text-left bg-surface border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 hover:border-gray-400 dark:hover:border-gray-500 midnight:hover:border-cyan-500/40 purple:hover:border-pink-500/40 rounded-lg px-3 outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all cursor-pointer"
                 >
-                  <span className="text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                  <span className="text-ink">
                     {formatDisplayDate(startDate)}
                   </span>
                 </button>
@@ -688,10 +688,10 @@ export default function AutoReminderScheduleModal({
                 value={globalMessage}
                 onChange={(e) => setGlobalMessage(e.target.value)}
                 rows={4}
-                className="w-full text-sm bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all resize-none"
+                className="w-full text-sm bg-surface border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all resize-none"
                 placeholder="Enter the message that will be sent with each reminder..."
               />
-              <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mt-1">
+              <p className="text-xs text-muted mt-1">
                 This message will be used for all reminders unless individually
                 customized.
               </p>
@@ -721,7 +721,7 @@ export default function AutoReminderScheduleModal({
             {reminders.map((reminder, index) => (
               <div
                 key={reminder.id}
-                className="rounded-xl bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 overflow-hidden"
+                className="rounded-xl bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border border-line overflow-hidden"
               >
                 {/* Reminder Header */}
                 <div
@@ -733,10 +733,10 @@ export default function AutoReminderScheduleModal({
                       {index + 1}
                     </span>
                     <div>
-                      <p className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                      <p className="text-sm font-semibold text-ink">
                         Reminder {index + 1}
                       </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
+                      <p className="text-xs text-muted">
                         {reminder.date
                           ? `${formatDisplayDate(reminder.date)} at ${reminder.time}`
                           : "Date not set"}
@@ -761,7 +761,7 @@ export default function AutoReminderScheduleModal({
                         <Trash2 className="w-4 h-4" />
                       </button>
                     )}
-                    <div className="p-1.5 rounded-lg bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]">
+                    <div className="p-1.5 rounded-lg bg-surface-2">
                       {expandedReminders.has(reminder.id) ? (
                         <ChevronUp className="w-4 h-4 text-gray-500" />
                       ) : (
@@ -798,10 +798,10 @@ export default function AutoReminderScheduleModal({
                             setActiveDefaultTimePicker(false);
                             setActiveStartDatePicker(false);
                           }}
-                          className="w-full h-9 text-sm font-normal text-left bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 hover:border-gray-400 dark:hover:border-gray-500 midnight:hover:border-cyan-500/40 purple:hover:border-pink-500/40 rounded-lg px-3 outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all cursor-pointer"
+                          className="w-full h-9 text-sm font-normal text-left bg-surface border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 hover:border-gray-400 dark:hover:border-gray-500 midnight:hover:border-cyan-500/40 purple:hover:border-pink-500/40 rounded-lg px-3 outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all cursor-pointer"
                         >
                           {reminder.date ? (
-                            <span className="text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                            <span className="text-ink">
                               {formatDisplayDate(reminder.date)}
                             </span>
                           ) : (
@@ -850,10 +850,10 @@ export default function AutoReminderScheduleModal({
                             setActiveDefaultTimePicker(false);
                             setActiveStartDatePicker(false);
                           }}
-                          className="w-full h-9 text-sm font-normal text-left bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 hover:border-gray-400 dark:hover:border-gray-500 midnight:hover:border-cyan-500/40 purple:hover:border-pink-500/40 rounded-lg px-3 outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all cursor-pointer"
+                          className="w-full h-9 text-sm font-normal text-left bg-surface border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 hover:border-gray-400 dark:hover:border-gray-500 midnight:hover:border-cyan-500/40 purple:hover:border-pink-500/40 rounded-lg px-3 outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all cursor-pointer"
                         >
                           {reminder.time ? (
-                            <span className="text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                            <span className="text-ink">
                               {reminder.time}
                             </span>
                           ) : (
@@ -929,7 +929,7 @@ export default function AutoReminderScheduleModal({
                           }
                           onClick={(e) => e.stopPropagation()}
                           rows={3}
-                          className="w-full text-sm bg-gray-50 dark:bg-[#0f1115] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all resize-none"
+                          className="w-full text-sm bg-gray-50 dark:bg-[#0f1115] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 border border-line rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all resize-none"
                           placeholder="Enter a custom message for this reminder..."
                         />
                       )}

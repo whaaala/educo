@@ -93,10 +93,10 @@ export default function ChartEditor({ spec, anchorRect, onUpdate, onClose }: {
   const maxH = Math.min(Math.round(vh * 0.88), vh - 16);
   const topPos = Math.max(8, Math.min(anchorRect.top, vh - maxH - 8));
 
-  const inputCls = "flex-1 min-w-0 px-2 py-1 text-[12px] rounded-md border border-gray-200 dark:border-gray-600 midnight:border-gray-600 purple:border-purple-700 dark:bg-[#1a1d24] midnight:bg-[#10131a] purple:bg-[#241a33] dark:text-gray-100 outline-none focus:ring-2 focus:ring-blue-400";
-  const numCls = "w-14 px-1.5 py-1 text-[12px] rounded-md border border-gray-200 dark:border-gray-600 midnight:border-gray-600 purple:border-purple-700 dark:bg-[#1a1d24] midnight:bg-[#10131a] purple:bg-[#241a33] dark:text-gray-100 outline-none focus:ring-2 focus:ring-blue-400 text-right flex-shrink-0";
-  const chip = (active: boolean) => `px-2 py-1 text-[11px] rounded-md cursor-pointer transition-colors ${active ? "bg-blue-600 text-white" : "bg-gray-100 dark:bg-[#22262e] midnight:bg-[#181c24] purple:bg-[#2c2140] text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-[#2a2f38]"}`;
-  const lbl = "text-[10px] uppercase tracking-wide text-gray-400 font-semibold";
+  const inputCls = "flex-1 min-w-0 px-2 py-1 text-[0.75rem] rounded-md border border-gray-200 dark:border-gray-600 midnight:border-gray-600 purple:border-purple-700 dark:bg-[#1a1d24] midnight:bg-[#10131a] purple:bg-[#241a33] dark:text-gray-100 outline-none focus:ring-2 focus:ring-blue-400";
+  const numCls = "w-14 px-1.5 py-1 text-[0.75rem] rounded-md border border-gray-200 dark:border-gray-600 midnight:border-gray-600 purple:border-purple-700 dark:bg-[#1a1d24] midnight:bg-[#10131a] purple:bg-[#241a33] dark:text-gray-100 outline-none focus:ring-2 focus:ring-blue-400 text-right flex-shrink-0";
+  const chip = (active: boolean) => `px-2 py-1 text-[0.6875rem] rounded-md cursor-pointer transition-colors ${active ? "bg-blue-600 text-white" : "bg-gray-100 dark:bg-[#22262e] midnight:bg-[#181c24] purple:bg-[#2c2140] text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-[#2a2f38]"}`;
+  const lbl = "text-[0.625rem] uppercase tracking-wide text-gray-400 font-semibold";
 
   return createPortal(
     <>
@@ -112,8 +112,8 @@ export default function ChartEditor({ spec, anchorRect, onUpdate, onClose }: {
         onPointerDown={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-2">
-          <span className="text-[12px] font-semibold text-gray-700 dark:text-gray-200">Edit chart</span>
-          <button onClick={onClose} aria-label="Close chart editor" className="text-gray-400 hover:text-red-500 text-[14px] leading-none cursor-pointer">✕</button>
+          <span className="text-[0.75rem] font-semibold text-gray-700 dark:text-gray-200">Edit chart</span>
+          <button onClick={onClose} aria-label="Close chart editor" className="text-gray-400 hover:text-red-500 text-[0.875rem] leading-none cursor-pointer">✕</button>
         </div>
 
         {/* Chart type picker, grouped */}
@@ -180,7 +180,7 @@ export default function ChartEditor({ spec, anchorRect, onUpdate, onClose }: {
           <button className={chip(!!font.bold)} aria-label="Bold all labels" onClick={() => setFont({ bold: !font.bold })} style={{ fontWeight: 700 }}>B</button>
           <button className={chip(!!font.italic)} aria-label="Italic all labels" onClick={() => setFont({ italic: !font.italic })} style={{ fontStyle: "italic" }}>I</button>
           <input type="color" aria-label="Label colour" className="w-7 h-7 p-0 border-0 rounded cursor-pointer bg-transparent" value={font.color || "#334155"} onChange={(e) => setFont({ color: e.target.value })} />
-          <span className="text-[10px] text-gray-400">Tip: click any label on the chart to style or drag it.</span>
+          <span className="text-[0.625rem] text-gray-400">Tip: click any label on the chart to style or drag it.</span>
         </div>
 
         {/* Y-axis override (cartesian) */}
@@ -204,7 +204,7 @@ export default function ChartEditor({ spec, anchorRect, onUpdate, onClose }: {
               <input className={numCls} type="number" aria-label="Gauge value" value={spec.data[0]?.value ?? 0} onChange={(e) => setDatum(0, { value: Number(e.target.value) })} />
             </div>
             <div className="flex items-center gap-1">
-              <span className="text-[11px] text-gray-400">Max</span>
+              <span className="text-[0.6875rem] text-gray-400">Max</span>
               <input className={numCls} type="number" aria-label="Gauge max" value={spec.gaugeMax ?? 100} onChange={(e) => onUpdate({ gaugeMax: Number(e.target.value) })} />
             </div>
           </>
@@ -214,15 +214,15 @@ export default function ChartEditor({ spec, anchorRect, onUpdate, onClose }: {
             <div className="space-y-1.5">
               {(spec.scatter || []).map((pt, i) => (
                 <div key={i} className="flex items-center gap-1">
-                  {type === "bubble" && <input className={`${inputCls} text-[11px]`} aria-label={`Point ${i + 1} label`} value={pt.label || ""} onChange={(e) => setPoint(i, { label: e.target.value })} placeholder="label" />}
+                  {type === "bubble" && <input className={`${inputCls} text-[0.6875rem]`} aria-label={`Point ${i + 1} label`} value={pt.label || ""} onChange={(e) => setPoint(i, { label: e.target.value })} placeholder="label" />}
                   <input className={numCls} type="number" aria-label={`Point ${i + 1} x`} value={pt.x} onChange={(e) => setPoint(i, { x: Number(e.target.value) })} />
                   <input className={numCls} type="number" aria-label={`Point ${i + 1} y`} value={pt.y} onChange={(e) => setPoint(i, { y: Number(e.target.value) })} />
                   {type === "bubble" && <input className={numCls} type="number" aria-label={`Point ${i + 1} size`} value={pt.size ?? 16} onChange={(e) => setPoint(i, { size: Number(e.target.value) })} />}
-                  <button onClick={() => removePoint(i)} aria-label={`Remove point ${i + 1}`} className="text-gray-300 hover:text-red-500 text-[13px] px-0.5 cursor-pointer flex-shrink-0">✕</button>
+                  <button onClick={() => removePoint(i)} aria-label={`Remove point ${i + 1}`} className="text-gray-300 hover:text-red-500 text-[0.8125rem] px-0.5 cursor-pointer flex-shrink-0">✕</button>
                 </div>
               ))}
             </div>
-            <button onClick={addPoint} className="mt-2 w-full py-1 text-[12px] rounded-md border border-dashed border-gray-300 dark:border-gray-600 text-gray-500 hover:bg-gray-50 dark:hover:bg-[#22262e] cursor-pointer">+ Add point</button>
+            <button onClick={addPoint} className="mt-2 w-full py-1 text-[0.75rem] rounded-md border border-dashed border-gray-300 dark:border-gray-600 text-gray-500 hover:bg-gray-50 dark:hover:bg-[#22262e] cursor-pointer">+ Add point</button>
           </>
         ) : multi ? (
           <>
@@ -230,11 +230,11 @@ export default function ChartEditor({ spec, anchorRect, onUpdate, onClose }: {
             <div className="flex flex-wrap gap-1 mb-2">
               {cats.map((c, i) => (
                 <div key={i} className="flex items-center gap-0.5 bg-gray-100 dark:bg-[#22262e] rounded-md pl-1">
-                  <input className="w-16 bg-transparent text-[11px] px-1 py-0.5 outline-none dark:text-gray-100" aria-label={`Category ${i + 1}`} value={c} onChange={(e) => setCat(i, e.target.value)} />
-                  <button onClick={() => removeCat(i)} aria-label={`Remove category ${i + 1}`} className="text-gray-300 hover:text-red-500 text-[11px] px-1 cursor-pointer">✕</button>
+                  <input className="w-16 bg-transparent text-[0.6875rem] px-1 py-0.5 outline-none dark:text-gray-100" aria-label={`Category ${i + 1}`} value={c} onChange={(e) => setCat(i, e.target.value)} />
+                  <button onClick={() => removeCat(i)} aria-label={`Remove category ${i + 1}`} className="text-gray-300 hover:text-red-500 text-[0.6875rem] px-1 cursor-pointer">✕</button>
                 </div>
               ))}
-              <button onClick={addCat} aria-label="Add category" className="text-[11px] px-2 py-0.5 rounded-md border border-dashed border-gray-300 dark:border-gray-600 text-gray-500 cursor-pointer">+</button>
+              <button onClick={addCat} aria-label="Add category" className="text-[0.6875rem] px-2 py-0.5 rounded-md border border-dashed border-gray-300 dark:border-gray-600 text-gray-500 cursor-pointer">+</button>
             </div>
             <div className={`${lbl} mb-1`}>Series</div>
             <div className="space-y-2">
@@ -246,17 +246,17 @@ export default function ChartEditor({ spec, anchorRect, onUpdate, onClose }: {
                       <input type="color" aria-label={`Series ${si + 1} colour`} className="w-6 h-6 p-0 border-0 rounded cursor-pointer flex-shrink-0 bg-transparent" value={s.color || hslToHex(pal.h, pal.s, pal.l)} onChange={(e) => setSeries(si, { color: e.target.value })} />
                       <input className={inputCls} aria-label={`Series ${si + 1} name`} value={s.name} onChange={(e) => setSeries(si, { name: e.target.value })} placeholder="Series name" />
                       {type === "combo" && (
-                        <select aria-label={`Series ${si + 1} kind`} className="w-16 px-1 py-1 text-[11px] rounded-md border border-gray-200 dark:border-gray-600 dark:bg-[#1a1d24] dark:text-gray-100" value={s.kind || "bar"} onChange={(e) => setSeries(si, { kind: e.target.value as ChartSeries["kind"] })}>
+                        <select aria-label={`Series ${si + 1} kind`} className="w-16 px-1 py-1 text-[0.6875rem] rounded-md border border-gray-200 dark:border-gray-600 dark:bg-[#1a1d24] dark:text-gray-100" value={s.kind || "bar"} onChange={(e) => setSeries(si, { kind: e.target.value as ChartSeries["kind"] })}>
                           <option value="bar">Bar</option><option value="line">Line</option><option value="area">Area</option>
                         </select>
                       )}
-                      <button onClick={() => removeSeries(si)} aria-label={`Remove series ${si + 1}`} className="text-gray-300 hover:text-red-500 text-[13px] px-0.5 cursor-pointer flex-shrink-0">✕</button>
+                      <button onClick={() => removeSeries(si)} aria-label={`Remove series ${si + 1}`} className="text-gray-300 hover:text-red-500 text-[0.8125rem] px-0.5 cursor-pointer flex-shrink-0">✕</button>
                     </div>
                     <div className="flex flex-wrap gap-1 pl-7">
                       {cats.map((c, ci) => (
                         <div key={ci} className="flex flex-col items-center">
-                          <span className="text-[9px] text-gray-400">{c.slice(0, 4)}</span>
-                          <input className="w-11 px-1 py-0.5 text-[11px] text-right rounded border border-gray-200 dark:border-gray-600 dark:bg-[#1a1d24] dark:text-gray-100" aria-label={`Series ${si + 1} ${c}`} type="number" value={s.values[ci] ?? 0} onChange={(e) => setSeriesVal(si, ci, Number(e.target.value))} />
+                          <span className="text-[0.5625rem] text-gray-400">{c.slice(0, 4)}</span>
+                          <input className="w-11 px-1 py-0.5 text-[0.6875rem] text-right rounded border border-gray-200 dark:border-gray-600 dark:bg-[#1a1d24] dark:text-gray-100" aria-label={`Series ${si + 1} ${c}`} type="number" value={s.values[ci] ?? 0} onChange={(e) => setSeriesVal(si, ci, Number(e.target.value))} />
                         </div>
                       ))}
                     </div>
@@ -264,7 +264,7 @@ export default function ChartEditor({ spec, anchorRect, onUpdate, onClose }: {
                 );
               })}
             </div>
-            <button onClick={addSeries} className="mt-2 w-full py-1 text-[12px] rounded-md border border-dashed border-gray-300 dark:border-gray-600 text-gray-500 hover:bg-gray-50 dark:hover:bg-[#22262e] cursor-pointer">+ Add series</button>
+            <button onClick={addSeries} className="mt-2 w-full py-1 text-[0.75rem] rounded-md border border-dashed border-gray-300 dark:border-gray-600 text-gray-500 hover:bg-gray-50 dark:hover:bg-[#22262e] cursor-pointer">+ Add series</button>
           </>
         ) : (
           <>
@@ -279,15 +279,15 @@ export default function ChartEditor({ spec, anchorRect, onUpdate, onClose }: {
                       <input type="color" aria-label={`Item ${i + 1} colour`} className="w-6 h-6 p-0 border-0 rounded cursor-pointer flex-shrink-0 bg-transparent" value={d.color || hslToHex(pal.h, pal.s, pal.l)} onChange={(e) => setDatum(i, { color: e.target.value })} />
                       <input className={inputCls} aria-label={`Item ${i + 1} label`} value={d.label} onChange={(e) => setDatum(i, { label: e.target.value })} placeholder="Label" />
                       <input className={numCls} type="number" aria-label={`Item ${i + 1} value`} value={d.value} onChange={(e) => setDatum(i, { value: Number(e.target.value) })} />
-                      {circular && <span className="text-[10px] text-gray-400 w-7 text-right flex-shrink-0">{Math.round((Number(d.value) || 0) / total * 100)}%</span>}
-                      <button onClick={() => removeDatum(i)} aria-label={`Remove item ${i + 1}`} className="text-gray-300 hover:text-red-500 text-[13px] px-0.5 cursor-pointer flex-shrink-0">✕</button>
+                      {circular && <span className="text-[0.625rem] text-gray-400 w-7 text-right flex-shrink-0">{Math.round((Number(d.value) || 0) / total * 100)}%</span>}
+                      <button onClick={() => removeDatum(i)} aria-label={`Remove item ${i + 1}`} className="text-gray-300 hover:text-red-500 text-[0.8125rem] px-0.5 cursor-pointer flex-shrink-0">✕</button>
                     </div>
-                    <input className={`${inputCls} w-full text-[11px]`} aria-label={`Item ${i + 1} custom label`} value={d.customLabel || ""} onChange={(e) => setDatum(i, { customLabel: e.target.value })} placeholder="Label text — e.g. Sales {percent}%" />
+                    <input className={`${inputCls} w-full text-[0.6875rem]`} aria-label={`Item ${i + 1} custom label`} value={d.customLabel || ""} onChange={(e) => setDatum(i, { customLabel: e.target.value })} placeholder="Label text — e.g. Sales {percent}%" />
                   </div>
                 );
               })}
             </div>
-            <button onClick={addDatum} className="mt-2 w-full py-1 text-[12px] rounded-md border border-dashed border-gray-300 dark:border-gray-600 text-gray-500 hover:bg-gray-50 dark:hover:bg-[#22262e] cursor-pointer">+ Add {circular ? "segment" : "data point"}</button>
+            <button onClick={addDatum} className="mt-2 w-full py-1 text-[0.75rem] rounded-md border border-dashed border-gray-300 dark:border-gray-600 text-gray-500 hover:bg-gray-50 dark:hover:bg-[#22262e] cursor-pointer">+ Add {circular ? "segment" : "data point"}</button>
           </>
         )}
       </div>

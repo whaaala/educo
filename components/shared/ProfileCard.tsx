@@ -291,7 +291,7 @@ export default function ProfileCard({
             </div>
           )}
           <div className="flex-1 min-w-0 space-y-1.5">
-            <h3 className="text-base font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 group-hover:text-black truncate">
+            <h3 className="text-base font-bold text-ink group-hover:text-black truncate">
               {name}
             </h3>
             <p className="text-xs font-semibold text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 truncate">
@@ -322,7 +322,7 @@ export default function ProfileCard({
                 key={index}
                 className="group/detail flex items-center justify-between py-1.5 px-3 rounded-lg bg-white/70 backdrop-blur-sm dark:bg-[#22262e]/40 midnight:bg-cyan-500/10 purple:bg-pink-500/10 group-hover:bg-white/95 dark:group-hover:bg-gray-700/60 midnight:group-hover:bg-cyan-500/25 purple:group-hover:bg-pink-500/25 transition-all duration-200 border border-white/40 group-hover:border-white/60"
               >
-                <span className="text-[10px] font-bold text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 group-hover:text-gray-900 dark:group-hover:text-gray-100 transition-colors uppercase tracking-wider truncate">
+                <span className="text-[0.625rem] font-bold text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 group-hover:text-gray-900 dark:group-hover:text-gray-100 transition-colors uppercase tracking-wider truncate">
                   {detail.label}
                 </span>
                 {badgeColors ? (
@@ -330,7 +330,7 @@ export default function ProfileCard({
                     {detail.value}
                   </span>
                 ) : (
-                  <span className="text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 group-hover:text-black ml-3 flex-shrink-0">
+                  <span className="text-sm font-bold text-ink group-hover:text-black ml-3 flex-shrink-0">
                     {detail.value}
                   </span>
                 )}
@@ -372,7 +372,7 @@ export default function ProfileCard({
                   label={primaryAction.label}
                   size="sm"
                   currency={primaryAction.label === "Add Fees" ? "₦" : ""}
-                  className="!px-2 !py-1 !text-[10px] sm:!px-2.5 sm:!py-1.5 sm:!text-xs whitespace-nowrap"
+                  className="!px-2 !py-1 !text-[0.625rem] sm:!px-2.5 sm:!py-1.5 sm:!text-xs whitespace-nowrap"
                 />
               </div>
             </Tooltip>
@@ -384,7 +384,7 @@ export default function ProfileCard({
         {isMenuOpen && (
           <div
             ref={menuRef}
-            className={`absolute ${showDetailsInDropdown ? 'w-52' : 'w-52'} bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-lg shadow-2xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 ${showDetailsInDropdown ? 'p-0' : 'py-1'} animate-in fade-in slide-in-from-top-1 duration-200 z-[99999]`}
+            className={`absolute ${showDetailsInDropdown ? 'w-52' : 'w-52'} bg-surface rounded-lg shadow-2xl border border-line ${showDetailsInDropdown ? 'p-0' : 'py-1'} animate-in fade-in slide-in-from-top-1 duration-200 z-[99999]`}
             style={{
               top: buttonRef.current ? `${buttonRef.current.getBoundingClientRect().bottom - (buttonRef.current.closest('.relative')?.getBoundingClientRect().top || 0) + 4}px` : '0px',
               right: '16px',

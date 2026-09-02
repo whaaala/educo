@@ -55,7 +55,7 @@ export function InfoRow({
       {icon && (
         <div className={cn(
           "flex-shrink-0 w-10 h-10 rounded-lg shadow-sm flex items-center justify-center",
-          "bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]",
+          "bg-surface",
           "text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400"
         )}>
           {icon}

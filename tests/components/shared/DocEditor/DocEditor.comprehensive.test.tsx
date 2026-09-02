@@ -117,8 +117,7 @@ describe("DocEditor — Comprehensive Look & Feel", () => {
         "text-[12px]",
         "font-semibold",
         "border",
-        "border-gray-200",
-        "dark:border-gray-700",
+        "border-line",
       ]);
     });
 
@@ -135,8 +134,7 @@ describe("DocEditor — Comprehensive Look & Feel", () => {
       const svgClasses = (svg!.getAttribute("class") ?? "").split(/\s+/).filter(Boolean);
       expect(svgClasses).toContain("w-3.5");
       expect(svgClasses).toContain("h-3.5");
-      expect(svgClasses).toContain("text-gray-500");
-      expect(svgClasses).toContain("dark:text-gray-400");
+      expect(svgClasses).toContain("text-muted");
     });
 
     it("template chip label span has text colors", () => {
@@ -1719,7 +1717,7 @@ describe("DocEditor — Comprehensive Look & Feel", () => {
       expect(cell2x2).not.toBeNull();
       const classes = classesOf(cell2x2);
       expect(classes).toContain("bg-gray-50");
-      expect(classes).toContain("border-gray-200");
+      expect(classes).toContain("border-line");
     });
   });
 

@@ -53,7 +53,7 @@ export default function DocumentViewerModal({
       onClick={onClose}
     >
       <div
-        className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-2xl shadow-2xl w-full max-w-5xl h-[90vh] flex flex-col overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-4 duration-300"
+        className="bg-surface rounded-2xl shadow-2xl w-full max-w-5xl h-[90vh] flex flex-col overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-4 duration-300"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -104,7 +104,7 @@ export default function DocumentViewerModal({
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between gap-3 px-6 py-4 border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-gray-50/30 dark:bg-[#1a1d24]/20 midnight:bg-[#0f1330]/20 purple:bg-[#251340]/20">
+        <div className="flex items-center justify-between gap-3 px-6 py-4 border-t border-line bg-gray-50/30 dark:bg-[#1a1d24]/20 midnight:bg-[#0f1330]/20 purple:bg-[#251340]/20">
           <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70">
             <FileText className="w-4 h-4" />
             <span className="font-medium">{documentType.toUpperCase()}</span>

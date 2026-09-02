@@ -22,7 +22,7 @@ export default function PayrollSummaryCard({
   return (
     <div className="group bg-gradient-to-br from-white to-gray-50/30 dark:from-gray-800 dark:to-gray-800/50 midnight:from-gray-800 midnight:to-gray-900/50 purple:from-gray-800 purple:to-gray-900/50 rounded-xl sm:rounded-2xl shadow-sm border border-gray-200/60 dark:border-gray-700/60 midnight:border-cyan-500/30 purple:border-pink-500/30 pt-2 px-3 sm:px-4 pb-4 sm:pb-5 transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/10 dark:hover:shadow-blue-500/20 midnight:hover:shadow-cyan-500/20 purple:hover:shadow-pink-500/20 hover:border-blue-300/60 dark:hover:border-blue-600/60 midnight:hover:border-cyan-400/60 purple:hover:border-pink-400/60 hover:-translate-y-0.5">
       {/* Header */}
-      <h3 className="text-sm sm:text-base font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-1 flex items-center gap-2">
+      <h3 className="text-sm sm:text-base font-bold text-ink mb-1 flex items-center gap-2">
         <Wallet className="w-4 h-4 text-green-600 dark:text-green-400 midnight:text-green-400 purple:text-green-400" />
         Salary Summary
       </h3>
@@ -37,7 +37,7 @@ export default function PayrollSummaryCard({
             <TrendingUp className="w-3.5 h-3.5 text-green-600 dark:text-green-400 midnight:text-green-400 purple:text-green-400 transition-transform duration-300 group-hover/gross:scale-110" />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-0.5">
+            <p className="text-xs sm:text-sm font-semibold text-ink mb-0.5">
               Gross Salary
             </p>
             <p className="text-sm sm:text-base font-bold text-green-600 dark:text-green-400 midnight:text-green-300 purple:text-green-300 leading-snug">
@@ -52,7 +52,7 @@ export default function PayrollSummaryCard({
             <TrendingDown className="w-3.5 h-3.5 text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400 transition-transform duration-300 group-hover/deduct:scale-110" />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-0.5">
+            <p className="text-xs sm:text-sm font-semibold text-ink mb-0.5">
               Total Deductions
             </p>
             <p className="text-sm sm:text-base font-bold text-red-600 dark:text-red-400 midnight:text-red-300 purple:text-red-300 leading-snug">
@@ -67,7 +67,7 @@ export default function PayrollSummaryCard({
             <DollarSign className="w-4 h-4 text-blue-700 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300 transition-transform duration-300 group-hover/net:scale-110" />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm sm:text-base font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-1">
+            <p className="text-sm sm:text-base font-bold text-ink mb-1">
               Net Salary
             </p>
             <p className="text-lg sm:text-xl font-extrabold text-blue-700 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300 leading-none">

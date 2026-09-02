@@ -42,10 +42,10 @@ export default function StudioHeader({ schoolName, logoUrl, brandColor = "#4f46e
             </span>
           )}
           <div className="leading-tight min-w-0">
-            <div className="font-bold text-sm text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate max-w-[40vw] sm:max-w-none">
+            <div className="font-bold text-sm text-ink truncate max-w-[40vw] sm:max-w-none">
               {schoolName}
             </div>
-            <div className="text-[11px] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Website Builder</div>
+            <div className="text-[0.6875rem] text-muted">Website Builder</div>
           </div>
         </div>
 

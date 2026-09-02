@@ -248,7 +248,7 @@ function getEventStatusInfo(status: EventStatus) {
     case "ongoing":
       return { label: "Ongoing", bgClass: "bg-green-100 dark:bg-green-900/40", textClass: "text-green-700 dark:text-green-300" };
     case "completed":
-      return { label: "Completed", bgClass: "bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/40", textClass: "text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300" };
+      return { label: "Completed", bgClass: "bg-surface-2/40", textClass: "text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300" };
     case "cancelled":
       return { label: "Cancelled", bgClass: "bg-red-100 dark:bg-red-900/40", textClass: "text-red-700 dark:text-red-300" };
   }
@@ -267,7 +267,7 @@ function EventGridCard({ item }: GridCardProps<SchoolEvent>) {
   return (
     <Link
       href={`/parents/events/${event.id}`}
-      className={`group relative bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-2xl border ${typeInfo.borderClass} shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden`}
+      className={`group relative bg-surface rounded-2xl border ${typeInfo.borderClass} shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden`}
     >
       <div className={`absolute inset-0 opacity-[0.03] bg-gradient-to-br ${typeInfo.bgClass}`} />
 
@@ -283,13 +283,13 @@ function EventGridCard({ item }: GridCardProps<SchoolEvent>) {
 
         <div className="absolute top-3 left-3 flex items-center gap-2 flex-wrap">
           <span
-            className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold ${typeInfo.bgClass} ${typeInfo.textClass} backdrop-blur-sm`}
+            className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[0.625rem] font-bold ${typeInfo.bgClass} ${typeInfo.textClass} backdrop-blur-sm`}
           >
             <TypeIcon className="w-3 h-3" />
             {typeInfo.label}
           </span>
           {event.isImportant && (
-            <span className="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold bg-red-500/90 text-white backdrop-blur-sm">
+            <span className="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[0.625rem] font-bold bg-red-500/90 text-white backdrop-blur-sm">
               <Star className="w-3 h-3" />
               Important
             </span>
@@ -297,7 +297,7 @@ function EventGridCard({ item }: GridCardProps<SchoolEvent>) {
         </div>
 
         <span
-          className={`absolute top-3 right-3 px-2.5 py-1 rounded-lg text-[10px] font-bold backdrop-blur-sm ${
+          className={`absolute top-3 right-3 px-2.5 py-1 rounded-lg text-[0.625rem] font-bold backdrop-blur-sm ${
             event.duration === "Half Day" ? "bg-blue-500/90 text-white" : "bg-purple-500/90 text-white"
           }`}
         >
@@ -321,7 +321,7 @@ function EventGridCard({ item }: GridCardProps<SchoolEvent>) {
           {event.description}
         </p>
 
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-muted">
           {event.time && (
             <span className="inline-flex items-center gap-1.5">
               <Clock className="w-3.5 h-3.5" />
@@ -351,7 +351,7 @@ function EventGridCard({ item }: GridCardProps<SchoolEvent>) {
           )}
 
           <span
-            className={`shrink-0 px-2 py-1 rounded-lg text-[10px] font-bold ${statusInfo.bgClass} ${statusInfo.textClass}`}
+            className={`shrink-0 px-2 py-1 rounded-lg text-[0.625rem] font-bold ${statusInfo.bgClass} ${statusInfo.textClass}`}
           >
             {statusInfo.label}
           </span>
@@ -377,17 +377,17 @@ export default function ParentEventsPage() {
           const TypeIcon = typeInfo.icon;
           return (
             <div className="flex items-center gap-3">
-              <div className="relative w-12 h-12 rounded-xl overflow-hidden flex-shrink-0 bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]">
+              <div className="relative w-12 h-12 rounded-xl overflow-hidden flex-shrink-0 bg-surface-2">
                 <Image src={event.image} alt={event.title} fill className="object-cover" unoptimized />
               </div>
               <div className="min-w-0">
                 <div className="flex items-center gap-2">
-                  <span className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate">
+                  <span className="text-sm font-semibold text-ink truncate">
                     {event.title}
                   </span>
                   {event.isImportant && <Star className="w-4 h-4 text-red-500" />}
                 </div>
-                <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mt-0.5">
+                <div className="flex items-center gap-2 text-xs text-muted mt-0.5">
                   <span className={`inline-flex items-center gap-1 ${typeInfo.textClass}`}>
                     <TypeIcon className="w-3.5 h-3.5" />
                     {typeInfo.label}
@@ -413,7 +413,7 @@ export default function ParentEventsPage() {
           <div className="text-sm text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200">
             <div className="font-medium">{formatDate(event.date)}</div>
             {event.endDate ? (
-              <div className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">to {formatDate(event.endDate)}</div>
+              <div className="text-xs text-muted">to {formatDate(event.endDate)}</div>
             ) : null}
           </div>
         ),

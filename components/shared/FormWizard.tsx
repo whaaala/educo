@@ -70,8 +70,8 @@ export default function FormWizard({
                       status === "completed"
                         ? "bg-blue-600 dark:bg-blue-500 midnight:bg-cyan-600 purple:bg-pink-600 border-blue-600 dark:border-blue-500 midnight:border-cyan-500 purple:border-pink-500"
                         : status === "current"
-                        ? "bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border-blue-600 dark:border-blue-500 midnight:border-cyan-500 purple:border-pink-500 ring-4 ring-blue-100 dark:ring-blue-900/30 midnight:ring-cyan-900/30 purple:ring-pink-900/30"
-                        : "bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border-gray-300 dark:border-gray-600 midnight:border-gray-700 purple:border-gray-700"
+                        ? "bg-surface border-blue-600 dark:border-blue-500 midnight:border-cyan-500 purple:border-pink-500 ring-4 ring-blue-100 dark:ring-blue-900/30 midnight:ring-cyan-900/30 purple:ring-pink-900/30"
+                        : "bg-surface border-gray-300 dark:border-gray-600 midnight:border-gray-700 purple:border-gray-700"
                     } ${isClickable && status !== "current" ? "group-hover:border-blue-400 dark:group-hover:border-blue-400" : ""}`}
                   >
                     {status === "completed" ? (
@@ -103,7 +103,7 @@ export default function FormWizard({
                       {step.title}
                     </span>
                     {step.description && (
-                      <span className="hidden md:block text-[10px] text-gray-500 dark:text-gray-400 midnight:text-gray-500 purple:text-gray-500 mt-0.5">
+                      <span className="hidden md:block text-[0.625rem] text-gray-500 dark:text-gray-400 midnight:text-gray-500 purple:text-gray-500 mt-0.5">
                         {step.description}
                       </span>
                     )}
@@ -152,7 +152,7 @@ export function FormSection({ title, description, children, icon }: FormSectionP
           </div>
         )}
         <div className="flex-1">
-          <h3 className="text-base font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+          <h3 className="text-base font-semibold text-ink">
             {title}
           </h3>
           {description && (

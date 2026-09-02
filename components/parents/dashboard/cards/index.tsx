@@ -77,10 +77,10 @@ export function ParentProfileCard({ parent }: { parent: ParentProfile }) {
             <CheckCircle2 className="w-3.5 h-3.5 text-white" />
           </div>
         </div>
-        <span className="inline-flex items-center text-[10px] font-bold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 bg-blue-50 dark:bg-blue-900/40 midnight:bg-cyan-900/40 purple:bg-pink-900/40 px-2.5 py-1 rounded-lg shadow-sm">
+        <span className="inline-flex items-center text-[0.625rem] font-bold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 bg-blue-50 dark:bg-blue-900/40 midnight:bg-cyan-900/40 purple:bg-pink-900/40 px-2.5 py-1 rounded-lg shadow-sm">
           {parent.id}
         </span>
-        <h3 className="font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-lg mt-2">{parent.fullName}</h3>
+        <h3 className="font-bold text-ink text-lg mt-2">{parent.fullName}</h3>
         <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-gray-400 purple:text-gray-400 flex items-center gap-1.5 mt-1.5">
           <Mail className="w-3.5 h-3.5" /> {parent.email}
         </p>
@@ -112,7 +112,7 @@ export function MyChildrenCard({
           <span className="text-sm font-bold text-gray-800 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50 truncate">My Children</span>
         </div>
         <div className="flex items-center gap-2 shrink-0">
-          <span className="text-[10px] font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 midnight:from-cyan-500 midnight:to-indigo-500 purple:from-pink-500 purple:to-purple-500 px-3 py-1.5 rounded-full shadow-md">
+          <span className="text-[0.625rem] font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 midnight:from-cyan-500 midnight:to-indigo-500 purple:from-pink-500 purple:to-purple-500 px-3 py-1.5 rounded-full shadow-md">
             {children.length}
           </span>
           <DashboardDragHandle />
@@ -152,7 +152,7 @@ export function MyChildrenCard({
                   {child.fullName}
                 </p>
                 <p
-                  className={`text-[11px] mt-0.5 ${
+                  className={`text-[0.6875rem] mt-0.5 ${
                     isSelected
                       ? "text-blue-600/70 dark:text-blue-400/70 midnight:text-cyan-400/70 purple:text-pink-400/70"
                       : "text-gray-500 dark:text-gray-400"
@@ -248,7 +248,7 @@ export function PaymentHistoryCard({
           <h4 className="text-sm font-bold text-gray-800 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50 truncate">Payment History</h4>
         </div>
         <div className="flex items-center gap-2 shrink-0">
-          <Link href="/parents/fees" className="text-[10px] font-semibold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 hover:text-blue-700 dark:hover:text-blue-300 flex items-center gap-0.5 transition-colors">
+          <Link href="/parents/fees" className="text-[0.625rem] font-semibold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 hover:text-blue-700 dark:hover:text-blue-300 flex items-center gap-0.5 transition-colors">
             View All <ChevronRight className="w-3 h-3" />
           </Link>
           <DashboardDragHandle />
@@ -268,17 +268,17 @@ export function PaymentHistoryCard({
                 {index === 0 && <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-gradient-to-r from-green-400 to-emerald-500 shadow-sm animate-pulse" />}
               </div>
               <div>
-                <p className="text-[11px] font-semibold text-gray-800 dark:text-white midnight:text-gray-100 purple:text-gray-100 group-hover:text-green-700 dark:group-hover:text-green-300 transition-colors">
+                <p className="text-[0.6875rem] font-semibold text-gray-800 dark:text-white midnight:text-gray-100 purple:text-gray-100 group-hover:text-green-700 dark:group-hover:text-green-300 transition-colors">
                   {payment.description}
                 </p>
-                <p className="text-[10px] text-gray-500 dark:text-gray-400 midnight:text-gray-400 purple:text-gray-400 mt-0.5">{formatShortDate(payment.date)}</p>
+                <p className="text-[0.625rem] text-gray-500 dark:text-gray-400 midnight:text-gray-400 purple:text-gray-400 mt-0.5">{formatShortDate(payment.date)}</p>
               </div>
             </div>
             <div className="text-right">
               <span className="text-sm font-bold text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400">
                 {formatCurrency(payment.amount, countryCode)}
               </span>
-              <p className="text-[9px] text-gray-400 dark:text-gray-500 mt-0.5">Completed</p>
+              <p className="text-[0.5625rem] text-gray-400 dark:text-gray-500 mt-0.5">Completed</p>
             </div>
           </div>
         ))}
@@ -302,7 +302,7 @@ export function ExamResultsCard({ results }: { results: ExamResultItem[] }) {
         <div className="flex items-center gap-2 shrink-0">
           <Link
             href="/parents/results"
-            className="text-[10px] font-semibold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 hover:text-blue-700 dark:hover:text-blue-300 flex items-center gap-0.5 transition-colors"
+            className="text-[0.625rem] font-semibold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 hover:text-blue-700 dark:hover:text-blue-300 flex items-center gap-0.5 transition-colors"
           >
             View All <ChevronRight className="w-3 h-3" />
           </Link>
@@ -337,7 +337,7 @@ export function ExamResultsCard({ results }: { results: ExamResultItem[] }) {
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-semibold text-gray-800 dark:text-white midnight:text-gray-100 purple:text-gray-100 truncate">{result.studentName}</p>
-                    <p className="text-[11px] text-gray-500 dark:text-gray-400 midnight:text-gray-400 purple:text-gray-400 truncate">
+                    <p className="text-[0.6875rem] text-gray-500 dark:text-gray-400 midnight:text-gray-400 purple:text-gray-400 truncate">
                       {result.class}-{result.section} • {result.examType}
                     </p>
                   </div>
@@ -395,7 +395,7 @@ export function RecentGradesCard({
         <div className="flex items-center gap-2 shrink-0">
           <Link
             href={`/parents/children/${selectedChildId}`}
-            className="text-[10px] font-semibold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 hover:text-blue-700 dark:hover:text-blue-300 flex items-center gap-0.5 transition-colors"
+            className="text-[0.625rem] font-semibold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 hover:text-blue-700 dark:hover:text-blue-300 flex items-center gap-0.5 transition-colors"
           >
             View All <ChevronRight className="w-3 h-3" />
           </Link>
@@ -456,7 +456,7 @@ export function EventsCard({ events, selectedChildId }: { events: ParentEvent[];
         <div className="flex items-center gap-2 shrink-0">
           <Link
             href={selectedChildId ? `/parents/events?child=${selectedChildId}` : "/parents/events"}
-            className="text-[10px] font-semibold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 hover:text-blue-700 dark:hover:text-blue-300 flex items-center gap-0.5 transition-colors"
+            className="text-[0.625rem] font-semibold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 hover:text-blue-700 dark:hover:text-blue-300 flex items-center gap-0.5 transition-colors"
           >
             View All <ChevronRight className="w-3 h-3" />
           </Link>
@@ -486,7 +486,7 @@ export function EventsCard({ events, selectedChildId }: { events: ParentEvent[];
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
 
                 {/* Duration badge */}
-                <span className={`absolute top-2 left-2 px-2 py-0.5 rounded-md text-[9px] font-bold shadow-md backdrop-blur-sm ${
+                <span className={`absolute top-2 left-2 px-2 py-0.5 rounded-md text-[0.5625rem] font-bold shadow-md backdrop-blur-sm ${
                   event.duration === "Half Day"
                     ? "bg-blue-500/90 text-white"
                     : "bg-gradient-to-r from-purple-500 to-pink-500 text-white"
@@ -499,7 +499,7 @@ export function EventsCard({ events, selectedChildId }: { events: ParentEvent[];
                   <p className="text-xs font-bold text-white truncate drop-shadow-md">
                     {event.title}
                   </p>
-                  <p className="text-[10px] text-white/80 flex items-center gap-1 mt-0.5">
+                  <p className="text-[0.625rem] text-white/80 flex items-center gap-1 mt-0.5">
                     <Calendar className="w-3 h-3" />
                     {formatShortDate(event.date)}
                   </p>
@@ -517,7 +517,7 @@ export function EventsCard({ events, selectedChildId }: { events: ParentEvent[];
             <CalendarDays className="w-6 h-6 text-gray-400" />
           </div>
           <p className="text-sm font-medium text-gray-600 dark:text-gray-300">No upcoming events</p>
-          <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-1">Check back later for school events</p>
+          <p className="text-[0.6875rem] text-gray-500 dark:text-gray-400 mt-1">Check back later for school events</p>
         </div>
       )}
     </div>
@@ -539,7 +539,7 @@ export function ChildLeaveRequestsCard({ leaves }: { leaves: ChildLeaveRequest[]
         <div className="flex items-center gap-1.5 shrink-0">
           <Link
             href="/parents/leaves"
-            className="text-[10px] font-semibold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 hover:text-blue-700 dark:hover:text-blue-300 flex items-center gap-0.5 transition-colors whitespace-nowrap"
+            className="text-[0.625rem] font-semibold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 hover:text-blue-700 dark:hover:text-blue-300 flex items-center gap-0.5 transition-colors whitespace-nowrap"
           >
             View All <ChevronRight className="w-3 h-3" />
           </Link>
@@ -578,13 +578,13 @@ export function ChildLeaveRequestsCard({ leaves }: { leaves: ChildLeaveRequest[]
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-semibold text-gray-800 dark:text-white midnight:text-gray-100 purple:text-gray-100 truncate">{leave.reason}</p>
-                    <p className="text-[11px] text-gray-500 dark:text-gray-400 midnight:text-gray-400 purple:text-gray-400 truncate">
+                    <p className="text-[0.6875rem] text-gray-500 dark:text-gray-400 midnight:text-gray-400 purple:text-gray-400 truncate">
                       {leave.childName}
                     </p>
                   </div>
                 </div>
                 <span
-                  className={`flex-shrink-0 px-2 py-1 rounded-lg text-[10px] font-bold uppercase ${
+                  className={`flex-shrink-0 px-2 py-1 rounded-lg text-[0.625rem] font-bold uppercase ${
                     leave.status === "approved"
                       ? "bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-400"
                       : leave.status === "pending"
@@ -598,7 +598,7 @@ export function ChildLeaveRequestsCard({ leaves }: { leaves: ChildLeaveRequest[]
 
               {/* Bottom row: Date range */}
               <div className="flex items-center gap-2">
-                <div className="flex-1 flex items-center gap-1.5 text-[11px] text-gray-500 dark:text-gray-400">
+                <div className="flex-1 flex items-center gap-1.5 text-[0.6875rem] text-gray-500 dark:text-gray-400">
                   <Calendar className="w-3 h-3 flex-shrink-0" />
                   <span className="truncate">{formatShortDate(leave.fromDate)} - {formatShortDate(leave.toDate)}</span>
                 </div>
@@ -637,7 +637,7 @@ export function HomeworkCard({ homework }: { homework: HomeworkItem[] }) {
         <div className="flex items-center gap-2">
           <Link
             href="/parents/homework"
-            className="text-[10px] font-semibold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 hover:text-blue-700 dark:hover:text-blue-300 flex items-center gap-0.5 transition-colors"
+            className="text-[0.625rem] font-semibold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 hover:text-blue-700 dark:hover:text-blue-300 flex items-center gap-0.5 transition-colors"
           >
             View All <ChevronRight className="w-3 h-3" />
           </Link>
@@ -659,7 +659,7 @@ export function HomeworkCard({ homework }: { homework: HomeworkItem[] }) {
           >
             <div className="flex items-center justify-between gap-2 mb-2">
               <div
-                className={`flex-shrink-0 px-2.5 py-1 rounded-lg text-[10px] font-bold ${
+                className={`flex-shrink-0 px-2.5 py-1 rounded-lg text-[0.625rem] font-bold ${
                   hw.color === "purple"
                     ? "bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-300"
                     : hw.color === "green"
@@ -671,13 +671,13 @@ export function HomeworkCard({ homework }: { homework: HomeworkItem[] }) {
               </div>
               <div className="flex-shrink-0 flex items-center gap-1 px-2 py-1 rounded-md bg-gray-100/80 dark:bg-[#22262e]/50 midnight:bg-gray-700/50 purple:bg-gray-700/50">
                 <Clock className="w-3 h-3 text-gray-500 dark:text-gray-400" />
-                <span className="text-[9px] font-semibold text-gray-600 dark:text-gray-300">{formatShortDate(hw.dueDate)}</span>
+                <span className="text-[0.5625rem] font-semibold text-gray-600 dark:text-gray-300">{formatShortDate(hw.dueDate)}</span>
               </div>
             </div>
             <div className="min-w-0 flex items-center justify-between gap-2">
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-semibold text-gray-800 dark:text-white midnight:text-gray-100 purple:text-gray-100 truncate group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">{hw.description}</p>
-                <p className="text-[10px] text-gray-500 dark:text-gray-400 midnight:text-gray-400 purple:text-gray-400 mt-0.5 truncate">{hw.teacher}</p>
+                <p className="text-[0.625rem] text-gray-500 dark:text-gray-400 midnight:text-gray-400 purple:text-gray-400 mt-0.5 truncate">{hw.teacher}</p>
               </div>
               <ChevronRight className="w-4 h-4 flex-shrink-0 text-gray-300 dark:text-gray-600 group-hover:text-emerald-500 dark:group-hover:text-emerald-400 group-hover:translate-x-0.5 transition-all duration-200" />
             </div>
@@ -711,7 +711,7 @@ export function FeesReminderCard({
         <div className="flex items-center gap-2">
           <Link
             href="/parents/fees"
-            className="text-[10px] font-semibold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 hover:text-blue-700 dark:hover:text-blue-300 flex items-center gap-0.5 transition-colors"
+            className="text-[0.625rem] font-semibold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 hover:text-blue-700 dark:hover:text-blue-300 flex items-center gap-0.5 transition-colors"
           >
             View All <ChevronRight className="w-3 h-3" />
           </Link>
@@ -731,10 +731,10 @@ export function FeesReminderCard({
             <div className="flex items-start justify-between gap-2 mb-2">
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-bold text-gray-900 dark:text-white midnight:text-gray-100 purple:text-gray-100 truncate">{fee.feeType}</p>
-                <p className="text-[10px] text-gray-500 dark:text-gray-400 midnight:text-gray-400 purple:text-gray-400 mt-0.5">{fee.childName}</p>
+                <p className="text-[0.625rem] text-gray-500 dark:text-gray-400 midnight:text-gray-400 purple:text-gray-400 mt-0.5">{fee.childName}</p>
               </div>
               <span
-                className={`flex-shrink-0 inline-flex items-center gap-1 px-2 py-1 rounded-md text-[9px] font-bold uppercase tracking-wide ${
+                className={`flex-shrink-0 inline-flex items-center gap-1 px-2 py-1 rounded-md text-[0.5625rem] font-bold uppercase tracking-wide ${
                   fee.status === "overdue"
                     ? "bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-400"
                     : "bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-400"
@@ -749,14 +749,14 @@ export function FeesReminderCard({
                 <p className={`text-lg font-bold ${fee.status === "overdue" ? "text-red-700 dark:text-red-400" : "text-amber-700 dark:text-amber-400"}`}>
                   {formatCurrency(fee.amount, countryCode)}
                 </p>
-                <p className="text-[9px] text-gray-500 dark:text-gray-400 midnight:text-gray-400 purple:text-gray-400 flex items-center gap-1">
+                <p className="text-[0.5625rem] text-gray-500 dark:text-gray-400 midnight:text-gray-400 purple:text-gray-400 flex items-center gap-1">
                   <CalendarDays className="w-2.5 h-2.5" /> Due: {formatShortDate(fee.dueDate)}
                 </p>
               </div>
               <Button
                 size="sm"
                 onClick={() => onPayNow?.(fee)}
-                className={`text-[10px] px-3 py-1.5 font-bold shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 cursor-pointer ${
+                className={`text-[0.625rem] px-3 py-1.5 font-bold shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 cursor-pointer ${
                   fee.status === "overdue"
                     ? "bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700"
                     : "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700"
@@ -785,7 +785,7 @@ export function MessagesCard({ messages }: { messages: ParentMessage[] }) {
           </div>
           <span className="text-sm font-bold text-gray-800 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50">Messages</span>
           {unreadCount > 0 && (
-            <span className="text-[9px] font-bold text-white bg-gradient-to-r from-red-500 to-rose-500 px-1.5 py-0.5 rounded-full shadow-md animate-pulse min-w-[18px] text-center">
+            <span className="text-[0.5625rem] font-bold text-white bg-gradient-to-r from-red-500 to-rose-500 px-1.5 py-0.5 rounded-full shadow-md animate-pulse min-w-[18px] text-center">
               {unreadCount}
             </span>
           )}
@@ -793,7 +793,7 @@ export function MessagesCard({ messages }: { messages: ParentMessage[] }) {
         <div className="flex items-center gap-2">
           <Link
             href="/parents/messages"
-            className="text-[10px] font-semibold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 hover:text-blue-700 dark:hover:text-blue-300 flex items-center gap-0.5 transition-colors"
+            className="text-[0.625rem] font-semibold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 hover:text-blue-700 dark:hover:text-blue-300 flex items-center gap-0.5 transition-colors"
           >
             View All <ChevronRight className="w-3 h-3" />
           </Link>
@@ -816,7 +816,7 @@ export function MessagesCard({ messages }: { messages: ParentMessage[] }) {
               <p className="text-sm font-semibold text-gray-800 dark:text-white midnight:text-gray-100 purple:text-gray-100 truncate group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors">
                 {msg.subject}
               </p>
-              <p className="text-[10px] text-gray-500 dark:text-gray-400 midnight:text-gray-400 purple:text-gray-400 mt-0.5 truncate">
+              <p className="text-[0.625rem] text-gray-500 dark:text-gray-400 midnight:text-gray-400 purple:text-gray-400 mt-0.5 truncate">
                 {msg.from} • {msg.time}
               </p>
             </div>
@@ -841,7 +841,7 @@ export function NoticeBoardCard({ notices }: { notices: NoticeItem[] }) {
           <span className="text-sm font-bold text-gray-800 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50">Notice Board</span>
         </div>
         <div className="flex items-center gap-2">
-          <Link href="/parents/notices" className="text-[10px] font-semibold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 hover:text-blue-700 dark:hover:text-blue-300 flex items-center gap-0.5 transition-colors">
+          <Link href="/parents/notices" className="text-[0.625rem] font-semibold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 hover:text-blue-700 dark:hover:text-blue-300 flex items-center gap-0.5 transition-colors">
             View All <ChevronRight className="w-3 h-3" />
           </Link>
           <DashboardDragHandle />
@@ -860,7 +860,7 @@ export function NoticeBoardCard({ notices }: { notices: NoticeItem[] }) {
                 <p className="text-xs font-semibold text-gray-800 dark:text-white midnight:text-gray-100 purple:text-gray-100 line-clamp-1 group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">
                   {notice.title}
                 </p>
-                <p className="text-[10px] text-gray-500 dark:text-gray-400 midnight:text-gray-400 purple:text-gray-400 mt-0.5 flex items-center gap-1">
+                <p className="text-[0.625rem] text-gray-500 dark:text-gray-400 midnight:text-gray-400 purple:text-gray-400 mt-0.5 flex items-center gap-1">
                   <Calendar className="w-2.5 h-2.5" /> {formatShortDate(notice.date)}
                 </p>
               </div>
@@ -998,7 +998,7 @@ export function UpcomingMeetingsCard({ meetings }: { meetings: UpcomingMeeting[]
           </div>
           <span className="text-sm font-bold text-gray-800 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50 truncate">Meetings</span>
           {upcomingMeetings.length > 0 && (
-            <span className="text-[9px] font-bold text-white bg-violet-500 dark:bg-violet-600 midnight:bg-violet-600 purple:bg-pink-500 px-1.5 py-0.5 rounded-full min-w-[18px] text-center shrink-0">
+            <span className="text-[0.5625rem] font-bold text-white bg-violet-500 dark:bg-violet-600 midnight:bg-violet-600 purple:bg-pink-500 px-1.5 py-0.5 rounded-full min-w-[18px] text-center shrink-0">
               {upcomingMeetings.length}
             </span>
           )}
@@ -1006,7 +1006,7 @@ export function UpcomingMeetingsCard({ meetings }: { meetings: UpcomingMeeting[]
         <div className="flex items-center gap-1.5 shrink-0">
           <Link
             href="/parents/meetings"
-            className="text-[10px] font-semibold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 hover:text-blue-700 dark:hover:text-blue-300 flex items-center gap-0.5 transition-colors whitespace-nowrap"
+            className="text-[0.625rem] font-semibold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 hover:text-blue-700 dark:hover:text-blue-300 flex items-center gap-0.5 transition-colors whitespace-nowrap"
           >
             View All <ChevronRight className="w-3 h-3" />
           </Link>
@@ -1042,13 +1042,13 @@ export function UpcomingMeetingsCard({ meetings }: { meetings: UpcomingMeeting[]
                   <p className="text-sm font-semibold text-gray-800 dark:text-white midnight:text-gray-100 purple:text-gray-100 truncate group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors">
                     {meeting.title}
                   </p>
-                  <p className="text-[10px] text-gray-500 dark:text-gray-400 midnight:text-gray-400 purple:text-gray-400 mt-0.5 truncate">
+                  <p className="text-[0.625rem] text-gray-500 dark:text-gray-400 midnight:text-gray-400 purple:text-gray-400 mt-0.5 truncate">
                     {meeting.hostName} • {meeting.hostRole}
                   </p>
                 </div>
                 <div className="flex-shrink-0 text-right">
-                  <p className="text-[11px] font-bold text-gray-900 dark:text-white">{formatMeetingDate(meeting.scheduledDate)}</p>
-                  <p className="text-[10px] text-gray-500 dark:text-gray-400 flex items-center justify-end gap-1">
+                  <p className="text-[0.6875rem] font-bold text-gray-900 dark:text-white">{formatMeetingDate(meeting.scheduledDate)}</p>
+                  <p className="text-[0.625rem] text-gray-500 dark:text-gray-400 flex items-center justify-end gap-1">
                     <Clock className="w-2.5 h-2.5" />
                     {meeting.scheduledTime}
                   </p>

@@ -53,7 +53,7 @@ export default function TranscriptRequestsTable({
     };
 
     return (
-      <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full font-semibold border whitespace-nowrap ${styles[status]}`} style={{ fontSize: '11.8px' }}>
+      <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full font-semibold border whitespace-nowrap ${styles[status]}`} style={{ fontSize: '0.7375rem' }}>
         <span className="w-1.5 h-1.5 rounded-full bg-current"></span>
         {status.charAt(0).toUpperCase() + status.slice(1)}
       </span>
@@ -69,7 +69,7 @@ export default function TranscriptRequestsTable({
     };
 
     return (
-      <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full font-semibold border whitespace-nowrap ${styles[status]}`} style={{ fontSize: '11.8px' }}>
+      <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full font-semibold border whitespace-nowrap ${styles[status]}`} style={{ fontSize: '0.7375rem' }}>
         {status.charAt(0).toUpperCase() + status.slice(1)}
       </span>
     );
@@ -83,7 +83,7 @@ export default function TranscriptRequestsTable({
       sortable: true,
       className: "text-left",
       render: (request) => (
-        <div className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 whitespace-nowrap" style={{ fontSize: '11.8px' }}>
+        <div className="font-semibold text-ink whitespace-nowrap" style={{ fontSize: '0.7375rem' }}>
           {request.requestNumber}
         </div>
       ),
@@ -108,13 +108,13 @@ export default function TranscriptRequestsTable({
                   />
                 ) : (
                   <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold shadow-lg ring-2 ring-white/80 dark:ring-gray-700/50 midnight:ring-cyan-500/30 purple:ring-pink-500/30 transition-all duration-500 ease-out group-hover/avatar:scale-150 group-hover/avatar:shadow-2xl group-hover/avatar:ring-blue-500/90 dark:group-hover/avatar:ring-blue-400/90 midnight:group-hover/avatar:ring-cyan-400/90 purple:group-hover/avatar:ring-pink-400/90 group-hover/avatar:z-[100]"
-                    style={{ position: 'relative', transformOrigin: 'center center', fontSize: '11.8px' }}>
+                    style={{ position: 'relative', transformOrigin: 'center center', fontSize: '0.7375rem' }}>
                     {request.studentName.charAt(0)}
                   </div>
                 )}
                 <div className="absolute -inset-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 rounded-full opacity-0 group-hover/avatar:opacity-40 blur-md transition-all duration-500 ease-out pointer-events-none -z-10" />
               </div>
-              <div className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate max-w-[140px]" style={{ fontSize: '11.8px' }}>
+              <div className="font-semibold text-ink truncate max-w-[140px]" style={{ fontSize: '0.7375rem' }}>
                 {request.studentName}
               </div>
             </div>
@@ -129,10 +129,10 @@ export default function TranscriptRequestsTable({
       className: "text-left",
       render: (request) => (
         <div>
-          <div className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 capitalize" style={{ fontSize: '11.8px' }}>
+          <div className="font-semibold text-ink capitalize" style={{ fontSize: '0.7375rem' }}>
             {request.transcriptType}
           </div>
-          <div className="text-gray-500 dark:text-gray-400 midnight:text-cyan-400/60 purple:text-pink-400/60 capitalize" style={{ fontSize: '10px' }}>
+          <div className="text-gray-500 dark:text-gray-400 midnight:text-cyan-400/60 purple:text-pink-400/60 capitalize" style={{ fontSize: '0.625rem' }}>
             {request.deliveryMethod}
           </div>
         </div>
@@ -145,7 +145,7 @@ export default function TranscriptRequestsTable({
       className: "text-left",
       render: (request) => (
         <Tooltip content={request.purpose.replace(/-/g, " ")} block>
-          <div className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 capitalize truncate max-w-[150px]" style={{ fontSize: '11.8px' }}>
+          <div className="font-semibold text-ink capitalize truncate max-w-[150px]" style={{ fontSize: '0.7375rem' }}>
             {request.purpose.replace(/-/g, " ")}
           </div>
         </Tooltip>
@@ -160,7 +160,7 @@ export default function TranscriptRequestsTable({
       render: (request) => (
         <div className="flex flex-col gap-1">
           {getPaymentBadge(request.payment.status)}
-          <div className="text-gray-600 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70 font-medium" style={{ fontSize: '10px' }}>
+          <div className="text-gray-600 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70 font-medium" style={{ fontSize: '0.625rem' }}>
             {request.payment.currency} {request.payment.amount.toLocaleString()}
           </div>
         </div>
@@ -180,7 +180,7 @@ export default function TranscriptRequestsTable({
       className: "text-left",
       sortValue: (request) => new Date(request.requestDate).getTime(),
       render: (request) => (
-        <div className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 whitespace-nowrap" style={{ fontSize: '11.8px' }}>
+        <div className="font-semibold text-ink whitespace-nowrap" style={{ fontSize: '0.7375rem' }}>
           {formatDate(request.requestDate)}
         </div>
       ),

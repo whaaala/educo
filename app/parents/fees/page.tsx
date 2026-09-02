@@ -773,13 +773,13 @@ export default function ParentFeesPage() {
       }
     >
       {/* Need Help? Quick Actions */}
-      <div className="mt-6 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm p-4 sm:p-6">
+      <div className="mt-6 bg-surface rounded-xl border border-line shadow-sm p-4 sm:p-6">
         <div className="flex items-start gap-3 mb-4 sm:mb-5">
           <div className="p-2 sm:p-2.5 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-600 midnight:from-gray-800 midnight:to-gray-700 purple:from-gray-800 purple:to-gray-700">
             <HelpCircle className="w-5 h-5 sm:w-6 sm:h-6 text-gray-600 dark:text-gray-300 midnight:text-cyan-400 purple:text-pink-400" />
           </div>
           <div>
-            <h3 className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-sm sm:text-base">
+            <h3 className="font-semibold text-ink text-sm sm:text-base">
               Need Help?
             </h3>
             <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70">
@@ -798,10 +798,10 @@ export default function ParentFeesPage() {
             <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 dark:from-blue-600 dark:to-blue-700 midnight:from-cyan-500 midnight:to-cyan-600 purple:from-pink-500 purple:to-pink-600 flex items-center justify-center mb-2 sm:mb-3 shadow-lg shadow-blue-500/20 dark:shadow-blue-500/10 group-hover:scale-110 transition-transform duration-300">
               <Phone className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
             </div>
-            <p className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-[10px] sm:text-xs text-center">
+            <p className="font-semibold text-ink text-[0.625rem] sm:text-xs text-center">
               Contact
             </p>
-            <p className="text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-[10px] sm:text-xs text-center font-semibold">
+            <p className="text-ink text-[0.625rem] sm:text-xs text-center font-semibold">
               Finance
             </p>
           </button>
@@ -815,10 +815,10 @@ export default function ParentFeesPage() {
             <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-green-500 to-green-600 dark:from-green-600 dark:to-green-700 midnight:from-emerald-500 midnight:to-emerald-600 purple:from-emerald-500 purple:to-emerald-600 flex items-center justify-center mb-2 sm:mb-3 shadow-lg shadow-green-500/20 dark:shadow-green-500/10 group-hover:scale-110 transition-transform duration-300">
               <History className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
             </div>
-            <p className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-[10px] sm:text-xs text-center">
+            <p className="font-semibold text-ink text-[0.625rem] sm:text-xs text-center">
               Payment
             </p>
-            <p className="text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-[10px] sm:text-xs text-center font-semibold">
+            <p className="text-ink text-[0.625rem] sm:text-xs text-center font-semibold">
               History
             </p>
           </button>
@@ -832,10 +832,10 @@ export default function ParentFeesPage() {
             <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-orange-500 to-orange-600 dark:from-orange-600 dark:to-orange-700 midnight:from-amber-500 midnight:to-amber-600 purple:from-amber-500 purple:to-amber-600 flex items-center justify-center mb-2 sm:mb-3 shadow-lg shadow-orange-500/20 dark:shadow-orange-500/10 group-hover:scale-110 transition-transform duration-300">
               <Download className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
             </div>
-            <p className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-[10px] sm:text-xs text-center">
+            <p className="font-semibold text-ink text-[0.625rem] sm:text-xs text-center">
               Download
             </p>
-            <p className="text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-[10px] sm:text-xs text-center font-semibold">
+            <p className="text-ink text-[0.625rem] sm:text-xs text-center font-semibold">
               Statement
             </p>
           </button>

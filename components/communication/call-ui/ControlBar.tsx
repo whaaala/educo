@@ -152,7 +152,7 @@ function ControlButton({
       {label && (
         <span
           className={cn(
-            "hidden sm:block text-[10px] sm:text-[11px] font-medium tracking-wide transition-all duration-300",
+            "hidden sm:block text-[0.625rem] sm:text-[0.6875rem] font-medium tracking-wide transition-all duration-300",
             "group-hover:tracking-wider",
             isDestructive
               ? "text-red-500 dark:text-red-400 group-hover:text-red-400"
@@ -168,7 +168,7 @@ function ControlButton({
       {/* Badge */}
       {badge !== undefined && badge > 0 && (
         <span
-          className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full text-[10px] font-bold text-white flex items-center justify-center ring-2 ring-white dark:ring-gray-900 midnight:ring-[#0f1729] purple:ring-[#2a1a3e]"
+          className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full text-[0.625rem] font-bold text-white flex items-center justify-center ring-2 ring-white dark:ring-gray-900 midnight:ring-[#0f1729] purple:ring-[#2a1a3e]"
           style={{ backgroundColor: primaryColor }}
         >
           {badge > 99 ? "99+" : badge}

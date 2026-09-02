@@ -53,7 +53,7 @@ export default function ViewDisciplinaryActionModal({
       onClick={onClose}
     >
       <div
-        className="bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-2xl shadow-2xl w-full max-w-5xl max-h-[90vh] flex flex-col border border-gray-200/50 dark:border-[#1a1d24]/50 midnight:border-cyan-500/30 purple:border-pink-500/30 animate-in zoom-in-95 slide-in-from-bottom-4 duration-300"
+        className="bg-surface rounded-2xl shadow-2xl w-full max-w-5xl max-h-[90vh] flex flex-col border border-gray-200/50 dark:border-[#1a1d24]/50 midnight:border-cyan-500/30 purple:border-pink-500/30 animate-in zoom-in-95 slide-in-from-bottom-4 duration-300"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -68,7 +68,7 @@ export default function ViewDisciplinaryActionModal({
                 <div className="absolute inset-0 rounded-lg bg-gradient-to-br from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
               </div>
               <div>
-                <h3 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                <h3 className="text-base sm:text-lg font-bold text-ink">
                   Disciplinary Action Details
                 </h3>
                 <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70">
@@ -105,7 +105,7 @@ export default function ViewDisciplinaryActionModal({
               )}
               <div className="flex-1 space-y-2">
                 <div>
-                  <h4 className="text-lg font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                  <h4 className="text-lg font-bold text-ink">
                     {action.staffName}
                   </h4>
                   <p className="text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70">
@@ -136,20 +136,20 @@ export default function ViewDisciplinaryActionModal({
           {/* Incident Information Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {/* Incident Type */}
-            <div className="bg-white dark:bg-[#1a1d24]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 rounded-lg p-4 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+            <div className="bg-white dark:bg-[#1a1d24]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 rounded-lg p-4 border border-line">
               <div className="flex items-center gap-2 mb-2">
                 <AlertTriangle className="w-4 h-4 text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400" />
                 <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">
                   Incident Type
                 </span>
               </div>
-              <p className="text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 capitalize">
+              <p className="text-sm font-bold text-ink capitalize">
                 {action.incidentType.replace(/-/g, ' ')}
               </p>
             </div>
 
             {/* Severity */}
-            <div className="bg-white dark:bg-[#1a1d24]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 rounded-lg p-4 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+            <div className="bg-white dark:bg-[#1a1d24]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 rounded-lg p-4 border border-line">
               <div className="flex items-center gap-2 mb-2">
                 <Shield className="w-4 h-4 text-orange-600 dark:text-orange-400 midnight:text-orange-400 purple:text-orange-400" />
                 <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">
@@ -162,14 +162,14 @@ export default function ViewDisciplinaryActionModal({
             </div>
 
             {/* Incident Date */}
-            <div className="bg-white dark:bg-[#1a1d24]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 rounded-lg p-4 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+            <div className="bg-white dark:bg-[#1a1d24]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 rounded-lg p-4 border border-line">
               <div className="flex items-center gap-2 mb-2">
                 <Calendar className="w-4 h-4 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
                 <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">
                   Incident Date
                 </span>
               </div>
-              <p className="text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+              <p className="text-sm font-bold text-ink">
                 {formatDate(action.incidentDate)}
               </p>
               {action.incidentTime && (
@@ -180,41 +180,41 @@ export default function ViewDisciplinaryActionModal({
             </div>
 
             {/* Location */}
-            <div className="bg-white dark:bg-[#1a1d24]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 rounded-lg p-4 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+            <div className="bg-white dark:bg-[#1a1d24]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 rounded-lg p-4 border border-line">
               <div className="flex items-center gap-2 mb-2">
                 <MapPin className="w-4 h-4 text-green-600 dark:text-green-400 midnight:text-green-400 purple:text-green-400" />
                 <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">
                   Location
                 </span>
               </div>
-              <p className="text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+              <p className="text-sm font-bold text-ink">
                 {action.incidentLocation}
               </p>
             </div>
 
             {/* Reported Date */}
-            <div className="bg-white dark:bg-[#1a1d24]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 rounded-lg p-4 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+            <div className="bg-white dark:bg-[#1a1d24]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 rounded-lg p-4 border border-line">
               <div className="flex items-center gap-2 mb-2">
                 <Clock className="w-4 h-4 text-purple-600 dark:text-purple-400 midnight:text-purple-400 purple:text-purple-400" />
                 <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">
                   Reported Date
                 </span>
               </div>
-              <p className="text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+              <p className="text-sm font-bold text-ink">
                 {formatDate(action.reportedDate)}
               </p>
             </div>
 
             {/* Action Taken */}
             {action.actionTaken && (
-              <div className="bg-white dark:bg-[#1a1d24]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 rounded-lg p-4 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+              <div className="bg-white dark:bg-[#1a1d24]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 rounded-lg p-4 border border-line">
                 <div className="flex items-center gap-2 mb-2">
                   <CheckCircle2 className="w-4 h-4 text-indigo-600 dark:text-indigo-400 midnight:text-indigo-400 purple:text-indigo-400" />
                   <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">
                     Action Taken
                   </span>
                 </div>
-                <p className="text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                <p className="text-sm font-bold text-ink">
                   {getActionTakenLabel(action.actionTaken)}
                 </p>
               </div>
@@ -222,23 +222,23 @@ export default function ViewDisciplinaryActionModal({
           </div>
 
           {/* Reporter Information */}
-          <div className="bg-white dark:bg-[#1a1d24]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 rounded-lg p-4 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+          <div className="bg-white dark:bg-[#1a1d24]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 rounded-lg p-4 border border-line">
             <div className="flex items-center gap-2 mb-3">
               <User className="w-4 h-4 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
-              <h5 className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+              <h5 className="text-sm font-semibold text-ink">
                 Reported By
               </h5>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
               <div>
                 <span className="text-gray-500 dark:text-gray-400">Name:</span>
-                <span className="ml-2 font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                <span className="ml-2 font-medium text-ink">
                   {action.reportedByName}
                 </span>
               </div>
               <div>
                 <span className="text-gray-500 dark:text-gray-400">Role:</span>
-                <span className="ml-2 font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                <span className="ml-2 font-medium text-ink">
                   {action.reportedByRole}
                 </span>
               </div>
@@ -249,7 +249,7 @@ export default function ViewDisciplinaryActionModal({
           <div className="bg-red-50/50 dark:bg-red-900/10 midnight:bg-red-900/10 purple:bg-red-900/10 rounded-lg p-4 border border-red-200 dark:border-red-800/30 midnight:border-red-700/30 purple:border-red-700/30">
             <div className="flex items-center gap-2 mb-2">
               <FileText className="w-4 h-4 text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400" />
-              <h5 className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+              <h5 className="text-sm font-semibold text-ink">
                 Incident Description
               </h5>
             </div>
@@ -260,10 +260,10 @@ export default function ViewDisciplinaryActionModal({
 
           {/* Witnesses */}
           {action.witnessNames && action.witnessNames.length > 0 && (
-            <div className="bg-white dark:bg-[#1a1d24]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 rounded-lg p-4 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+            <div className="bg-white dark:bg-[#1a1d24]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 rounded-lg p-4 border border-line">
               <div className="flex items-center gap-2 mb-2">
                 <Eye className="w-4 h-4 text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400" />
-                <h5 className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                <h5 className="text-sm font-semibold text-ink">
                   Witnesses
                 </h5>
               </div>
@@ -283,21 +283,21 @@ export default function ViewDisciplinaryActionModal({
             <div className="bg-blue-50/50 dark:bg-blue-900/10 midnight:bg-blue-900/10 purple:bg-blue-900/10 rounded-lg p-4 border border-blue-200 dark:border-blue-800/30 midnight:border-blue-700/30 purple:border-blue-700/30">
               <div className="flex items-center gap-2 mb-3">
                 <Shield className="w-4 h-4 text-blue-600 dark:text-blue-400 midnight:text-blue-400 purple:text-blue-400" />
-                <h5 className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                <h5 className="text-sm font-semibold text-ink">
                   Investigation
                 </h5>
               </div>
               <div className="space-y-2 text-sm">
                 <div>
                   <span className="text-gray-500 dark:text-gray-400">Investigator:</span>
-                  <span className="ml-2 font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                  <span className="ml-2 font-medium text-ink">
                     {action.investigatorName}
                   </span>
                 </div>
                 {action.investigationStartDate && (
                   <div>
                     <span className="text-gray-500 dark:text-gray-400">Started:</span>
-                    <span className="ml-2 font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                    <span className="ml-2 font-medium text-ink">
                       {formatDate(action.investigationStartDate)}
                     </span>
                   </div>
@@ -305,7 +305,7 @@ export default function ViewDisciplinaryActionModal({
                 {action.investigationEndDate && (
                   <div>
                     <span className="text-gray-500 dark:text-gray-400">Completed:</span>
-                    <span className="ml-2 font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                    <span className="ml-2 font-medium text-ink">
                       {formatDate(action.investigationEndDate)}
                     </span>
                   </div>
@@ -327,7 +327,7 @@ export default function ViewDisciplinaryActionModal({
             <div className="bg-orange-50/50 dark:bg-orange-900/10 midnight:bg-orange-900/10 purple:bg-orange-900/10 rounded-lg p-4 border border-orange-200 dark:border-orange-800/30 midnight:border-orange-700/30 purple:border-orange-700/30">
               <div className="flex items-center gap-2 mb-2">
                 <CheckCircle2 className="w-4 h-4 text-orange-600 dark:text-orange-400 midnight:text-orange-400 purple:text-orange-400" />
-                <h5 className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                <h5 className="text-sm font-semibold text-ink">
                   Action Details
                 </h5>
               </div>
@@ -349,10 +349,10 @@ export default function ViewDisciplinaryActionModal({
 
           {/* Employee Statement */}
           {action.employeeStatement && (
-            <div className="bg-white dark:bg-[#1a1d24]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 rounded-lg p-4 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+            <div className="bg-white dark:bg-[#1a1d24]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 rounded-lg p-4 border border-line">
               <div className="flex items-center gap-2 mb-2">
                 <FileText className="w-4 h-4 text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400" />
-                <h5 className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                <h5 className="text-sm font-semibold text-ink">
                   Employee Statement
                 </h5>
               </div>
@@ -372,7 +372,7 @@ export default function ViewDisciplinaryActionModal({
             <div className="bg-purple-50/50 dark:bg-purple-900/10 midnight:bg-purple-900/10 purple:bg-purple-900/10 rounded-lg p-4 border border-purple-200 dark:border-purple-800/30 midnight:border-purple-700/30 purple:border-purple-700/30">
               <div className="flex items-center gap-2 mb-2">
                 <Shield className="w-4 h-4 text-purple-600 dark:text-purple-400 midnight:text-purple-400 purple:text-purple-400" />
-                <h5 className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                <h5 className="text-sm font-semibold text-ink">
                   HR Review
                 </h5>
               </div>
@@ -397,7 +397,7 @@ export default function ViewDisciplinaryActionModal({
             <div className="bg-yellow-50/50 dark:bg-yellow-900/10 midnight:bg-yellow-900/10 purple:bg-yellow-900/10 rounded-lg p-4 border border-yellow-200 dark:border-yellow-800/30 midnight:border-yellow-700/30 purple:border-yellow-700/30">
               <div className="flex items-center gap-2 mb-2">
                 <Clock className="w-4 h-4 text-yellow-600 dark:text-yellow-400 midnight:text-yellow-400 purple:text-yellow-400" />
-                <h5 className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                <h5 className="text-sm font-semibold text-ink">
                   Follow-up Required
                 </h5>
               </div>
@@ -416,7 +416,7 @@ export default function ViewDisciplinaryActionModal({
         </div>
 
         {/* Footer */}
-        <div className="px-4 sm:px-6 py-3 sm:py-4 border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-gray-50/50 dark:bg-[#1a1d24]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50">
+        <div className="px-4 sm:px-6 py-3 sm:py-4 border-t border-line bg-gray-50/50 dark:bg-[#1a1d24]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50">
           <div className="flex justify-between items-center">
             {onEdit && action.status !== "resolved" && action.status !== "closed" && (
               <button

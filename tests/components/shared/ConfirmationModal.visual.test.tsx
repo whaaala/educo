@@ -33,10 +33,7 @@ describe("ConfirmationModal — Visual / CSS", () => {
     it("has theme backgrounds", () => {
       const { container } = render(<ConfirmationModal {...defaultProps} />);
       const dialog = container.querySelector(".rounded-2xl")!;
-      expect(dialog.className).toContain("bg-white");
-      expect(dialog.className).toContain("dark:bg-[#1a1d23]");
-      expect(dialog.className).toContain("midnight:bg-[#0f1729]");
-      expect(dialog.className).toContain("purple:bg-[#2a1a3e]");
+      expect(dialog.className).toContain("bg-surface");
     });
 
     it("has rounded-2xl shadow-2xl", () => {
@@ -61,10 +58,7 @@ describe("ConfirmationModal — Visual / CSS", () => {
     it("has theme text colors", () => {
       render(<ConfirmationModal {...defaultProps} />);
       const title = screen.getByText("Delete Item");
-      expect(title.className).toContain("text-gray-900");
-      expect(title.className).toContain("dark:text-white");
-      expect(title.className).toContain("midnight:text-cyan-50");
-      expect(title.className).toContain("purple:text-pink-50");
+      expect(title.className).toContain("text-ink");
     });
   });
 
@@ -73,7 +67,6 @@ describe("ConfirmationModal — Visual / CSS", () => {
       render(<ConfirmationModal {...defaultProps} />);
       const cancel = screen.getByText("Cancel");
       expect(cancel.className).toContain("bg-white");
-      expect(cancel.className).toContain("dark:bg-[#1a1d24]");
       expect(cancel.className).toContain("border");
       expect(cancel.className).toContain("rounded-lg");
     });

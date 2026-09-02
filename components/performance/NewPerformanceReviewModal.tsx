@@ -285,7 +285,7 @@ export default function NewPerformanceReviewModal({
       onClick={onClose}
     >
       <div
-        className="bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col border border-gray-200/50 dark:border-[#1a1d24]/50 midnight:border-cyan-500/30 purple:border-pink-500/30 animate-in zoom-in-95 slide-in-from-bottom-4 duration-300"
+        className="bg-surface rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col border border-gray-200/50 dark:border-[#1a1d24]/50 midnight:border-cyan-500/30 purple:border-pink-500/30 animate-in zoom-in-95 slide-in-from-bottom-4 duration-300"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Modern Compact Header */}
@@ -305,7 +305,7 @@ export default function NewPerformanceReviewModal({
                 <div className="absolute inset-0 rounded-lg bg-gradient-to-br from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
               </div>
               <div>
-                <h3 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                <h3 className="text-base sm:text-lg font-bold text-ink">
                   Schedule Performance Review
                 </h3>
                 <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70">
@@ -332,7 +332,7 @@ export default function NewPerformanceReviewModal({
               <div className="w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 flex items-center justify-center">
                 <User className="w-4 h-4 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
               </div>
-              <h4 className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+              <h4 className="text-sm font-semibold text-ink">
                 Staff Member
               </h4>
             </div>
@@ -397,17 +397,17 @@ export default function NewPerformanceReviewModal({
               required
             />
             {formData.staffId && (
-              <div className="mt-3 p-3 bg-gray-50 dark:bg-[#1a1d24]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 rounded-lg border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+              <div className="mt-3 p-3 bg-gray-50 dark:bg-[#1a1d24]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 rounded-lg border border-line">
                 <div className="grid grid-cols-2 gap-2 text-xs">
                   <div>
                     <span className="text-gray-500 dark:text-gray-400">Department:</span>
-                    <span className="ml-1 font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                    <span className="ml-1 font-medium text-ink">
                       {formData.staffDepartment}
                     </span>
                   </div>
                   <div>
                     <span className="text-gray-500 dark:text-gray-400">Email:</span>
-                    <span className="ml-1 font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                    <span className="ml-1 font-medium text-ink">
                       {formData.staffEmail}
                     </span>
                   </div>
@@ -423,7 +423,7 @@ export default function NewPerformanceReviewModal({
                 <div className="w-8 h-8 rounded-lg bg-indigo-100 dark:bg-indigo-900/30 midnight:bg-indigo-900/30 purple:bg-indigo-900/30 flex items-center justify-center">
                   <Users className="w-4 h-4 text-indigo-600 dark:text-indigo-400 midnight:text-indigo-400 purple:text-indigo-400" />
                 </div>
-                <h4 className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                <h4 className="text-sm font-semibold text-ink">
                   Staff Hierarchy
                 </h4>
               </div>
@@ -431,7 +431,7 @@ export default function NewPerformanceReviewModal({
                 <p className="text-xs text-gray-600 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70 mb-1">
                   <span className="font-semibold">{formData.staffName}</span> manages the following staff members:
                 </p>
-                <p className="text-sm font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                <p className="text-sm font-medium text-ink">
                   {getManagedStaffNames()}
                 </p>
               </div>
@@ -444,7 +444,7 @@ export default function NewPerformanceReviewModal({
               <div className="w-8 h-8 rounded-lg bg-purple-100 dark:bg-purple-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 flex items-center justify-center">
                 <Calendar className="w-4 h-4 text-purple-600 dark:text-purple-400 midnight:text-cyan-400 purple:text-pink-400" />
               </div>
-              <h4 className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+              <h4 className="text-sm font-semibold text-ink">
                 Review Period
               </h4>
             </div>
@@ -496,7 +496,7 @@ export default function NewPerformanceReviewModal({
               <div className="w-8 h-8 rounded-lg bg-orange-100 dark:bg-orange-900/30 midnight:bg-orange-900/30 purple:bg-orange-900/30 flex items-center justify-center">
                 <Clock className="w-4 h-4 text-orange-600 dark:text-orange-400 midnight:text-orange-400 purple:text-orange-400" />
               </div>
-              <h4 className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+              <h4 className="text-sm font-semibold text-ink">
                 Due Date
               </h4>
             </div>
@@ -517,7 +517,7 @@ export default function NewPerformanceReviewModal({
                 <div className="w-8 h-8 rounded-lg bg-green-100 dark:bg-green-900/30 midnight:bg-green-900/30 purple:bg-green-900/30 flex items-center justify-center">
                   <User className="w-4 h-4 text-green-600 dark:text-green-400 midnight:text-green-400 purple:text-green-400" />
                 </div>
-                <h4 className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                <h4 className="text-sm font-semibold text-ink">
                   Reviewers
                 </h4>
               </div>
@@ -539,9 +539,9 @@ export default function NewPerformanceReviewModal({
             ) : (
               <div className="space-y-4">
                 {formData.reviewers.map((reviewer, index) => (
-                  <div key={index} className="p-4 bg-gray-50 dark:bg-[#1a1d24]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 rounded-lg border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+                  <div key={index} className="p-4 bg-gray-50 dark:bg-[#1a1d24]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 rounded-lg border border-line">
                     <div className="flex items-center justify-between mb-3">
-                      <h5 className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                      <h5 className="text-sm font-semibold text-ink">
                         Reviewer {index + 1}{index === 0 ? " (Primary)" : ""}
                       </h5>
                       {formData.reviewers.length > 1 && (
@@ -595,7 +595,7 @@ export default function NewPerformanceReviewModal({
               <div className="w-8 h-8 rounded-lg bg-yellow-100 dark:bg-yellow-900/30 midnight:bg-yellow-900/30 purple:bg-yellow-900/30 flex items-center justify-center">
                 <BarChart3 className="w-4 h-4 text-yellow-600 dark:text-yellow-400 midnight:text-yellow-400 purple:text-yellow-400" />
               </div>
-              <h4 className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+              <h4 className="text-sm font-semibold text-ink">
                 Expected Performance Rating
               </h4>
             </div>
@@ -618,10 +618,10 @@ export default function NewPerformanceReviewModal({
           {/* Review Notes */}
           <div>
             <div className="flex items-center gap-2 mb-4">
-              <div className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] flex items-center justify-center">
+              <div className="w-8 h-8 rounded-lg bg-surface-2 flex items-center justify-center">
                 <FileText className="w-4 h-4 text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400" />
               </div>
-              <h4 className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+              <h4 className="text-sm font-semibold text-ink">
                 Review Notes
               </h4>
             </div>
@@ -638,7 +638,7 @@ export default function NewPerformanceReviewModal({
 
         {/* Footer */}
         <form onSubmit={handleSubmit}>
-          <div className="px-4 sm:px-6 py-3 sm:py-4 border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-gray-50/50 dark:bg-[#1a1d24]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50">
+          <div className="px-4 sm:px-6 py-3 sm:py-4 border-t border-line bg-gray-50/50 dark:bg-[#1a1d24]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50">
             <div className="flex flex-col sm:flex-row gap-3 justify-end">
               <button
                 type="button"

@@ -242,7 +242,7 @@ function CustomHexRow({ color, onSelect }: { color: string; onSelect: (c: string
           <div className="w-full h-full rounded-lg" style={{ background: "conic-gradient(red, yellow, lime, aqua, blue, magenta, red)", opacity: 0.3 }} />
         </div>
       </label>
-      <span className="text-[10px] text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400">Custom</span>
+      <span className="text-[0.625rem] text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400">Custom</span>
       <input
         type="text"
         value={hexText}
@@ -258,7 +258,7 @@ function CustomHexRow({ color, onSelect }: { color: string; onSelect: (c: string
             onSelect(hexText);
           }
         }}
-        className="flex-1 px-2 py-1 text-[11px] font-mono rounded-md border border-gray-200 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 outline-none focus:border-blue-400"
+        className="flex-1 px-2 py-1 text-[0.6875rem] font-mono rounded-md border border-gray-200 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 outline-none focus:border-blue-400"
         maxLength={7}
         spellCheck={false}
       />
@@ -419,12 +419,12 @@ export function FullColorPicker({
     <div>
       {/* Tabs — only show if more than one */}
       {tabs.length > 1 && (
-        <div className="flex mb-2 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+        <div className="flex mb-2 border-b border-line">
           {tabs.map(t => (
             <button
               key={t}
               onClick={() => setTab(t)}
-              className={`flex-1 py-1.5 text-[11px] font-medium transition-colors cursor-pointer relative ${
+              className={`flex-1 py-1.5 text-[0.6875rem] font-medium transition-colors cursor-pointer relative ${
                 tab === t
                   ? "text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400"
                   : "text-gray-400 dark:text-gray-500 midnight:text-cyan-500/50 purple:text-pink-500/50 hover:text-gray-600 dark:hover:text-gray-300"
@@ -500,10 +500,10 @@ export function TabbedColorPalette({
           <button
             key={t}
             onClick={() => setTab(t)}
-            className={`flex-1 px-2 py-1 rounded-md text-[10px] font-semibold transition-colors cursor-pointer capitalize ${
+            className={`flex-1 px-2 py-1 rounded-md text-[0.625rem] font-semibold transition-colors cursor-pointer capitalize ${
               tab === t
                 ? "bg-blue-500/12 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400"
-                : "text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"
+                : "text-muted hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"
             }`}
           >
             {t}
@@ -638,7 +638,7 @@ export function ColorPickerPopover({
   const popoverInner = (
     <>
       {label && (
-        <div className="text-[9px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-600 midnight:text-cyan-500/40 purple:text-pink-500/40 mb-1.5">
+        <div className="text-[0.5625rem] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-600 midnight:text-cyan-500/40 purple:text-pink-500/40 mb-1.5">
           {label}
         </div>
       )}
@@ -682,8 +682,8 @@ export function ColorPickerPopover({
       ref={popoverRef}
       className={
         portal
-          ? "fixed z-[10003] p-2.5 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/25 purple:border-pink-500/25 rounded-xl shadow-2xl max-h-[min(420px,calc(100vh-100px))] overflow-y-auto"
-          : `absolute ${align === "right" ? "right-0" : "left-0"} ${openAbove ? "bottom-full mb-1" : "top-full mt-1"} z-[10003] p-2.5 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/25 purple:border-pink-500/25 rounded-xl shadow-2xl max-h-[min(420px,calc(100vh-100px))] overflow-y-auto`
+          ? "fixed z-[10003] p-2.5 bg-surface border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/25 purple:border-pink-500/25 rounded-xl shadow-2xl max-h-[min(420px,calc(100vh-100px))] overflow-y-auto"
+          : `absolute ${align === "right" ? "right-0" : "left-0"} ${openAbove ? "bottom-full mb-1" : "top-full mt-1"} z-[10003] p-2.5 bg-surface border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/25 purple:border-pink-500/25 rounded-xl shadow-2xl max-h-[min(420px,calc(100vh-100px))] overflow-y-auto`
       }
       style={portal ? { width, top: portalPos?.top ?? -9999, left: portalPos?.left ?? -9999 } : { width }}
     >

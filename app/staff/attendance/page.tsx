@@ -193,7 +193,7 @@ export default function StaffAttendancePage() {
       itemLabel="attendance record"
       itemLabelPlural="attendance records"
       beforeContent={
-        <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 p-4 space-y-4">
+        <div className="bg-surface rounded-xl border border-line p-4 space-y-4">
           {/* Date Selector */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
@@ -204,13 +204,13 @@ export default function StaffAttendancePage() {
                 type="date"
                 value={selectedDate}
                 onChange={(e) => setSelectedDate(e.target.value)}
-                className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-[#1a1d24] midnight:bg-[#0f1330] purple:bg-[#251340] text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50"
+                className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-[#1a1d24] midnight:bg-[#0f1330] purple:bg-[#251340] text-ink"
               />
             </div>
           </div>
 
           {/* Bulk Actions */}
-          <div className="flex flex-col md:flex-row items-start md:items-end gap-4 pt-4 border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+          <div className="flex flex-col md:flex-row items-start md:items-end gap-4 pt-4 border-t border-line">
             <div className="flex-1">
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 mb-2">
                 Bulk Mark As
@@ -219,7 +219,7 @@ export default function StaffAttendancePage() {
                 <select
                   value={bulkStatus}
                   onChange={(e) => setBulkStatus(e.target.value as StaffAttendanceStatus)}
-                  className="flex-1 px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-[#1a1d24] midnight:bg-[#0f1330] purple:bg-[#251340] text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50"
+                  className="flex-1 px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-[#1a1d24] midnight:bg-[#0f1330] purple:bg-[#251340] text-ink"
                 >
                   <option value="present">Present</option>
                   <option value="absent">Absent</option>
@@ -249,10 +249,10 @@ export default function StaffAttendancePage() {
         </div>
       }
       customListComponent={
-        <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 overflow-hidden">
+        <div className="bg-surface rounded-xl border border-line overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-gray-50 dark:bg-[#1a1d24]/50 midnight:bg-[#0f1330]/50 purple:bg-[#251340]/50 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+              <thead className="bg-gray-50 dark:bg-[#1a1d24]/50 midnight:bg-[#0f1330]/50 purple:bg-[#251340]/50 border-b border-line">
                 <tr>
                   <th className="px-4 py-3 text-left">
                     <input
@@ -309,7 +309,7 @@ export default function StaffAttendancePage() {
                           />
                         )}
                         <div>
-                          <div className="text-sm font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                          <div className="text-sm font-medium text-ink">
                             {record.staffName}
                           </div>
                           <div className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400">

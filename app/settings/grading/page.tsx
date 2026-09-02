@@ -53,14 +53,14 @@ export default function GradingConfigPage() {
       afterStats={
         <div className="mt-6 pb-20 space-y-6">
           {/* Info Section */}
-          <section className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm">
+          <section className="bg-surface rounded-xl border border-line shadow-sm">
             <div className="p-6">
               <div className="flex items-start gap-4">
                 <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center flex-shrink-0">
                   <GraduationCap className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <h2 className="text-lg font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-2">
+                  <h2 className="text-lg font-bold text-ink mb-2">
                     Configure Grading Components
                   </h2>
                   <p className="text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-400/80 purple:text-pink-400/80">
@@ -73,7 +73,7 @@ export default function GradingConfigPage() {
           </section>
 
           {/* Selection Controls */}
-          <section className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm">
+          <section className="bg-surface rounded-xl border border-line shadow-sm">
             <div className="p-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Education Level Selector */}
@@ -111,7 +111,7 @@ export default function GradingConfigPage() {
           </section>
 
           {/* Grading Configuration Section */}
-          <section className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm">
+          <section className="bg-surface rounded-xl border border-line shadow-sm">
             <div className="p-6">
               <GradingSystemConfig
                 subjectId={currentSubject.id}

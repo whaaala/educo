@@ -54,7 +54,7 @@ export default function ExportButton({ onExportPDF, onExportExcel, description =
         className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-all duration-200 cursor-pointer ${
           isOpen
             ? "bg-blue-50 border-blue-300 dark:bg-blue-500/20 dark:border-blue-500 midnight:bg-cyan-500/20 midnight:border-cyan-500 purple:bg-pink-500/20 purple:border-pink-500"
-            : "border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] hover:bg-gray-50 dark:hover:bg-[#22262e]/50 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"
+            : "border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-surface hover:bg-gray-50 dark:hover:bg-[#22262e]/50 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"
         }`}
       >
         <Download className={`w-4 h-4 transition-colors ${
@@ -80,10 +80,10 @@ export default function ExportButton({ onExportPDF, onExportExcel, description =
 
       {/* Export Dropdown Menu */}
       {isOpen && (
-        <div className="absolute left-0 sm:left-auto sm:right-0 mt-2 w-64 sm:w-56 bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-xl shadow-2xl border border-gray-200 dark:border-[#1a1d24]/50 midnight:border-cyan-500/20 purple:border-pink-500/20 overflow-hidden z-50 transition-all duration-200 animate-in fade-in slide-in-from-top-2">
+        <div className="absolute left-0 sm:left-auto sm:right-0 mt-2 w-64 sm:w-56 bg-surface rounded-xl shadow-2xl border border-gray-200 dark:border-[#1a1d24]/50 midnight:border-cyan-500/20 purple:border-pink-500/20 overflow-hidden z-50 transition-all duration-200 animate-in fade-in slide-in-from-top-2">
           {/* Header */}
           <div className="px-4 py-3 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-500/10 dark:to-indigo-500/10 midnight:from-cyan-500/10 midnight:to-blue-500/10 purple:from-pink-500/10 purple:to-purple-500/10 border-b border-gray-200 dark:border-[#1a1d24] midnight:border-cyan-500/20 purple:border-pink-500/20">
-            <h3 className="text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+            <h3 className="text-sm font-bold text-ink">
               Export Options
             </h3>
             <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-200/70 purple:text-pink-200/70 mt-0.5">
@@ -114,7 +114,7 @@ export default function ExportButton({ onExportPDF, onExportExcel, description =
                 </svg>
               </div>
               <div className="flex-1 text-left">
-                <p className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                <p className="text-sm font-semibold text-ink">
                   Export as PDF
                 </p>
                 <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70">
@@ -144,7 +144,7 @@ export default function ExportButton({ onExportPDF, onExportExcel, description =
                 </svg>
               </div>
               <div className="flex-1 text-left">
-                <p className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                <p className="text-sm font-semibold text-ink">
                   Export as Excel
                 </p>
                 <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70">

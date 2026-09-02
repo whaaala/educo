@@ -296,10 +296,10 @@ export default function ParentHomeworkPage() {
             />
           </div>
           <div>
-            <span className="text-sm font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 block">
+            <span className="text-sm font-medium text-ink block">
               {hw.childName}
             </span>
-            <span className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
+            <span className="text-xs text-muted">
               {hw.class} - {hw.section}
             </span>
           </div>
@@ -312,10 +312,10 @@ export default function ParentHomeworkPage() {
       sortable: true,
       render: (hw) => (
         <div>
-          <span className="text-sm font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 block">
+          <span className="text-sm font-medium text-ink block">
             {hw.subject}
           </span>
-          <span className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
+          <span className="text-xs text-muted">
             {hw.teacher}
           </span>
         </div>
@@ -327,10 +327,10 @@ export default function ParentHomeworkPage() {
       sortable: true,
       render: (hw) => (
         <div className="max-w-xs">
-          <p className="text-sm font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate">
+          <p className="text-sm font-medium text-ink truncate">
             {hw.title}
           </p>
-          <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 truncate">
+          <p className="text-xs text-muted truncate">
             {hw.description}
           </p>
         </div>
@@ -386,11 +386,11 @@ export default function ParentHomeworkPage() {
                 style={{ width: `${percentage}%` }}
               />
             </div>
-            <span className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+            <span className="text-sm font-semibold text-ink">
               {hw.score}/{hw.maxScore}
             </span>
             {hw.grade && (
-              <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
+              <span className={`px-1.5 py-0.5 rounded text-[0.625rem] font-bold ${
                 hw.grade === "A" ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400" :
                 hw.grade === "B" ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" :
                 hw.grade === "C" ? "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400" :
@@ -445,13 +445,13 @@ export default function ParentHomeworkPage() {
       enableExport={false}
       enableViewToggle={false}
     >
-      <div className="mt-6 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm p-6">
+      <div className="mt-6 bg-surface rounded-xl border border-line shadow-sm p-6">
         <div className="flex items-start gap-4">
           <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30">
             <FileText className="w-6 h-6 text-emerald-600 dark:text-emerald-400 midnight:text-cyan-400 purple:text-pink-400" />
           </div>
           <div>
-            <h3 className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-1">
+            <h3 className="font-semibold text-ink mb-1">
               Track Your Child&apos;s Progress
             </h3>
             <p className="text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">

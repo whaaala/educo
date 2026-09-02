@@ -76,7 +76,7 @@ export default function AddPageModal({ isOpen, onClose, siteName, theme, onCreat
       {/* Name + URL */}
       <div className="grid sm:grid-cols-2 gap-3 mb-5">
         <label className="block">
-          <span className="text-xs font-medium text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Page name</span>
+          <span className="text-xs font-medium text-muted">Page name</span>
           <input
             autoFocus
             value={name}
@@ -87,7 +87,7 @@ export default function AddPageModal({ isOpen, onClose, siteName, theme, onCreat
           />
         </label>
         <label className="block">
-          <span className="text-xs font-medium text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Page URL</span>
+          <span className="text-xs font-medium text-muted">Page URL</span>
           <div className="mt-1 flex items-center rounded-lg border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/30 purple:border-pink-500/30 focus-within:ring-2 focus-within:ring-indigo-500">
             <span className="pl-3 pr-1 text-gray-400"><Link2 className="w-4 h-4" /></span>
             <input
@@ -101,7 +101,7 @@ export default function AddPageModal({ isOpen, onClose, siteName, theme, onCreat
       </div>
 
       {/* Template gallery */}
-      <span className="text-xs font-medium text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Choose a layout</span>
+      <span className="text-xs font-medium text-muted">Choose a layout</span>
       <div className="mt-2 grid grid-cols-2 sm:grid-cols-3 gap-3">
         {PAGE_TEMPLATES.map((t) => {
           const Icon = resolveIcon(t.icon);
@@ -115,7 +115,7 @@ export default function AddPageModal({ isOpen, onClose, siteName, theme, onCreat
               onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setTemplateKey(t.key); } }}
               aria-pressed={active}
               aria-label={`${t.name} layout`}
-              className={`group cursor-pointer text-left rounded-xl overflow-hidden border-2 transition-all focus:outline-none focus:ring-2 focus:ring-indigo-500 ${active ? "border-indigo-500 shadow-lg" : "border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 hover:border-gray-300 dark:hover:border-gray-600"}`}
+              className={`group cursor-pointer text-left rounded-xl overflow-hidden border-2 transition-all focus:outline-none focus:ring-2 focus:ring-indigo-500 ${active ? "border-indigo-500 shadow-lg" : "border-line hover:border-gray-300 dark:hover:border-gray-600"}`}
             >
               <div className="relative border-b border-gray-100 dark:border-gray-800">
                 <SitePreviewThumb site={previews[t.key]} heightClass="h-24" />
@@ -125,7 +125,7 @@ export default function AddPageModal({ isOpen, onClose, siteName, theme, onCreat
                 <span className="w-6 h-6 rounded-md bg-indigo-50 dark:bg-indigo-950/50 text-indigo-500 flex items-center justify-center shrink-0"><Icon className="w-3.5 h-3.5" /></span>
                 <span className="min-w-0">
                   <span className="text-sm font-semibold block text-gray-900 dark:text-white midnight:text-cyan-100 purple:text-pink-100">{t.name}</span>
-                  <span className="text-[11px] text-gray-400 leading-tight block">{t.description}</span>
+                  <span className="text-[0.6875rem] text-gray-400 leading-tight block">{t.description}</span>
                 </span>
               </div>
             </div>

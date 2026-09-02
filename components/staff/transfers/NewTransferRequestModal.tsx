@@ -147,17 +147,17 @@ export default function NewTransferRequestModal({
       onClick={onClose}
     >
       <div
-        className="bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col border border-gray-200/50 dark:border-[#1a1d24]/50 midnight:border-cyan-500/30 purple:border-pink-500/30 animate-in zoom-in-95 slide-in-from-bottom-4 duration-300"
+        className="bg-surface rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col border border-gray-200/50 dark:border-[#1a1d24]/50 midnight:border-cyan-500/30 purple:border-pink-500/30 animate-in zoom-in-95 slide-in-from-bottom-4 duration-300"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-4 sm:px-6 py-4 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/10 dark:to-indigo-900/10 midnight:from-blue-500/5 midnight:to-indigo-500/5 purple:from-blue-500/5 purple:to-indigo-500/5">
+        <div className="flex items-center justify-between px-4 sm:px-6 py-4 border-b border-line bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/10 dark:to-indigo-900/10 midnight:from-blue-500/5 midnight:to-indigo-500/5 purple:from-blue-500/5 purple:to-indigo-500/5">
           <div className="flex items-center gap-3">
             <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 shadow-lg">
               <ArrowRight className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+              <h3 className="text-lg font-semibold text-ink">
                 New Transfer Request
               </h3>
               <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70">
@@ -182,7 +182,7 @@ export default function NewTransferRequestModal({
               <div className="w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-900/30 midnight:bg-blue-900/30 purple:bg-blue-900/30 flex items-center justify-center">
                 <User className="w-4 h-4 text-blue-600 dark:text-blue-400 midnight:text-blue-400 purple:text-blue-400" />
               </div>
-              <h4 className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+              <h4 className="text-sm font-semibold text-ink">
                 Staff Member
               </h4>
             </div>
@@ -224,29 +224,29 @@ export default function NewTransferRequestModal({
             />
 
             {formData.staffId && selectedStaff && (
-              <div className="mt-3 p-3 bg-gray-50 dark:bg-[#1a1d24]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 rounded-lg border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+              <div className="mt-3 p-3 bg-gray-50 dark:bg-[#1a1d24]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 rounded-lg border border-line">
                 <div className="grid grid-cols-2 gap-2 text-xs">
                   <div>
                     <span className="text-gray-500 dark:text-gray-400">Department:</span>
-                    <span className="ml-1 font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                    <span className="ml-1 font-medium text-ink">
                       {selectedStaff.department}
                     </span>
                   </div>
                   <div>
                     <span className="text-gray-500 dark:text-gray-400">Branch:</span>
-                    <span className="ml-1 font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                    <span className="ml-1 font-medium text-ink">
                       {selectedStaff.branch}
                     </span>
                   </div>
                   <div>
                     <span className="text-gray-500 dark:text-gray-400">Designation:</span>
-                    <span className="ml-1 font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                    <span className="ml-1 font-medium text-ink">
                       {selectedStaff.designation}
                     </span>
                   </div>
                   <div>
                     <span className="text-gray-500 dark:text-gray-400">Location:</span>
-                    <span className="ml-1 font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                    <span className="ml-1 font-medium text-ink">
                       {selectedStaff.location}
                     </span>
                   </div>
@@ -263,7 +263,7 @@ export default function NewTransferRequestModal({
               <div className="w-8 h-8 rounded-lg bg-indigo-100 dark:bg-indigo-900/30 midnight:bg-indigo-900/30 purple:bg-indigo-900/30 flex items-center justify-center">
                 <ArrowRight className="w-4 h-4 text-indigo-600 dark:text-indigo-400 midnight:text-indigo-400 purple:text-indigo-400" />
               </div>
-              <h4 className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+              <h4 className="text-sm font-semibold text-ink">
                 Transfer Type
               </h4>
             </div>
@@ -322,7 +322,7 @@ export default function NewTransferRequestModal({
               <div className="w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 midnight:bg-emerald-900/30 purple:bg-emerald-900/30 flex items-center justify-center">
                 <FileText className="w-4 h-4 text-emerald-600 dark:text-emerald-400 midnight:text-emerald-400 purple:text-emerald-400" />
               </div>
-              <h4 className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+              <h4 className="text-sm font-semibold text-ink">
                 Transfer Details
               </h4>
             </div>
@@ -577,7 +577,7 @@ export default function NewTransferRequestModal({
               <div className="w-8 h-8 rounded-lg bg-amber-100 dark:bg-amber-900/30 midnight:bg-amber-900/30 purple:bg-amber-900/30 flex items-center justify-center">
                 <Calendar className="w-4 h-4 text-amber-600 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400" />
               </div>
-              <h4 className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+              <h4 className="text-sm font-semibold text-ink">
                 Important Dates
               </h4>
             </div>
@@ -628,7 +628,7 @@ export default function NewTransferRequestModal({
         </form>
 
         {/* Footer */}
-        <div className="flex items-center justify-end gap-3 px-4 sm:px-6 py-4 border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-gray-50/50 dark:bg-[#1a1d24]/50 midnight:bg-cyan-900/5 purple:bg-pink-900/5">
+        <div className="flex items-center justify-end gap-3 px-4 sm:px-6 py-4 border-t border-line bg-gray-50/50 dark:bg-[#1a1d24]/50 midnight:bg-cyan-900/5 purple:bg-pink-900/5">
           <button
             type="button"
             onClick={onClose}

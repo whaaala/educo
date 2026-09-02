@@ -180,7 +180,7 @@ export default function TranscriptDetailModal({ request, isOpen, onClose }: Tran
             </div>
           </div>
           <div className="flex-1 min-w-0">
-            <h4 className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-2">
+            <h4 className="text-xs sm:text-sm font-semibold text-ink mb-2">
               Transcript Information
             </h4>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 text-xs sm:text-sm">
@@ -188,7 +188,7 @@ export default function TranscriptDetailModal({ request, isOpen, onClose }: Tran
                 <span className="text-gray-600 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70">
                   Status:
                 </span>
-                <span className="font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 capitalize">
+                <span className="font-medium text-ink capitalize">
                   {request.status}
                 </span>
               </div>
@@ -196,7 +196,7 @@ export default function TranscriptDetailModal({ request, isOpen, onClose }: Tran
                 <span className="text-gray-600 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70">
                   Type:
                 </span>
-                <span className="font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 capitalize">
+                <span className="font-medium text-ink capitalize">
                   {request.transcriptType}
                 </span>
               </div>
@@ -204,7 +204,7 @@ export default function TranscriptDetailModal({ request, isOpen, onClose }: Tran
                 <span className="text-gray-600 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70">
                   Delivery:
                 </span>
-                <span className="font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 capitalize">
+                <span className="font-medium text-ink capitalize">
                   {request.deliveryMethod}
                 </span>
               </div>
@@ -212,7 +212,7 @@ export default function TranscriptDetailModal({ request, isOpen, onClose }: Tran
                 <span className="text-gray-600 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70">
                   Payment:
                 </span>
-                <span className="font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 capitalize">
+                <span className="font-medium text-ink capitalize">
                   {request.payment.status} ({request.payment.currency} {request.payment.amount.toLocaleString()})
                 </span>
               </div>

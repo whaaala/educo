@@ -103,7 +103,7 @@ const categoryColors: Record<string, string> = {
   amber: "bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400 border-amber-200 dark:border-amber-800 ring-amber-500/20",
   emerald: "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800 ring-emerald-500/20",
   rose: "bg-rose-100 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 border-rose-200 dark:border-rose-800 ring-rose-500/20",
-  gray: "bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/30 text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 ring-gray-500/20",
+  gray: "bg-surface-2/30 text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 border-line ring-gray-500/20",
 };
 
 interface Attachment {
@@ -252,15 +252,15 @@ export default function ComposeMessagePage() {
         <>
           <div className="flex items-center gap-4 mb-6">
             <Link href="/parents/messages">
-              <button className="p-2 rounded-xl bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 hover:text-gray-900 dark:hover:text-white midnight:hover:text-cyan-50 purple:hover:text-pink-50 transition-all cursor-pointer shadow-sm">
+              <button className="p-2 rounded-xl bg-surface border border-line text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 hover:text-gray-900 dark:hover:text-white midnight:hover:text-cyan-50 purple:hover:text-pink-50 transition-all cursor-pointer shadow-sm">
                 <ArrowLeft className="w-5 h-5" />
               </button>
             </Link>
-            <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">Back to Messages</p>
+            <p className="text-sm text-muted">Back to Messages</p>
           </div>
 
           <div className="max-w-4xl mx-auto">
-            <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-2xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm overflow-hidden">
+            <div className="bg-surface rounded-2xl border border-line shadow-sm overflow-hidden">
               {isSent ? (
               /* Success State */
               <div className="flex flex-col items-center justify-center py-20 text-center px-6">
@@ -270,10 +270,10 @@ export default function ComposeMessagePage() {
                     <CheckCircle className="w-12 h-12 text-white" />
                   </div>
                 </div>
-                <h3 className="text-2xl font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-2">
+                <h3 className="text-2xl font-bold text-ink mb-2">
                   Message Sent!
                 </h3>
-                <p className="text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mb-6 max-w-sm">
+                <p className="text-muted mb-6 max-w-sm">
                   {selectedTeacher?.name} will receive your message and respond shortly.
                 </p>
                 <div className="flex items-center gap-2 text-sm text-emerald-600 dark:text-emerald-400">
@@ -284,7 +284,7 @@ export default function ComposeMessagePage() {
             ) : (
               <>
                 {/* Header Section */}
-                <div className="relative bg-gradient-to-r from-slate-50 via-blue-50 to-indigo-50 dark:from-gray-800 dark:via-gray-800 dark:to-gray-800 px-6 py-5 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+                <div className="relative bg-gradient-to-r from-slate-50 via-blue-50 to-indigo-50 dark:from-gray-800 dark:via-gray-800 dark:to-gray-800 px-6 py-5 border-b border-line">
                   <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500" />
 
                   <div className="relative flex items-center gap-4">
@@ -292,10 +292,10 @@ export default function ComposeMessagePage() {
                       <MessageSquare className="w-6 h-6 text-white" />
                     </div>
                     <div>
-                      <h2 className="text-xl font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                      <h2 className="text-xl font-bold text-ink">
                         New Message
                       </h2>
-                      <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
+                      <p className="text-sm text-muted">
                         Compose and send a message to your child&apos;s teacher
                       </p>
                     </div>
@@ -326,7 +326,7 @@ export default function ComposeMessagePage() {
                           className={`w-full flex items-center gap-3 p-3 rounded-xl border-2 transition-all cursor-pointer ${
                             selectedTeacher
                               ? "border-blue-200 dark:border-blue-800 bg-blue-50/50 dark:bg-blue-900/20 midnight:bg-cyan-900/20 purple:bg-pink-900/20"
-                              : "border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 hover:border-gray-300 dark:hover:border-gray-600 midnight:hover:border-cyan-500/30 purple:hover:border-pink-500/30 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]"
+                              : "border-line hover:border-gray-300 dark:hover:border-gray-600 midnight:hover:border-cyan-500/30 purple:hover:border-pink-500/30 bg-surface"
                           }`}
                         >
                           {selectedTeacher ? (
@@ -347,13 +347,13 @@ export default function ComposeMessagePage() {
                                 )}
                               </div>
                               <div className="flex-1 text-left min-w-0">
-                                <p className="font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-sm truncate">{selectedTeacher.name}</p>
-                                <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 truncate">{selectedTeacher.subject}</p>
+                                <p className="font-medium text-ink text-sm truncate">{selectedTeacher.name}</p>
+                                <p className="text-xs text-muted truncate">{selectedTeacher.subject}</p>
                               </div>
                             </>
                           ) : (
                             <>
-                              <div className="w-10 h-10 rounded-lg bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] flex items-center justify-center">
+                              <div className="w-10 h-10 rounded-lg bg-surface-2 flex items-center justify-center">
                                 <User className="w-5 h-5 text-gray-400" />
                               </div>
                               <span className="flex-1 text-left text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 text-sm">Choose a teacher...</span>
@@ -364,7 +364,7 @@ export default function ComposeMessagePage() {
 
                         {/* Teacher Dropdown */}
                         {showTeacherDropdown && (
-                          <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 z-50 overflow-hidden">
+                          <div className="absolute top-full left-0 right-0 mt-2 bg-surface rounded-xl shadow-xl border border-line z-50 overflow-hidden">
                             <div className="p-3 border-b border-gray-100 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
                               <div className="relative">
                                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -373,7 +373,7 @@ export default function ComposeMessagePage() {
                                   value={teacherSearch}
                                   onChange={(e) => setTeacherSearch(e.target.value)}
                                   placeholder="Search teachers..."
-                                  className="w-full pl-10 pr-4 py-2 rounded-lg bg-gray-50 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-sm border-0 focus:ring-2 focus:ring-blue-500/30 outline-none"
+                                  className="w-full pl-10 pr-4 py-2 rounded-lg bg-gray-50 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] text-ink text-sm border-0 focus:ring-2 focus:ring-blue-500/30 outline-none"
                                   autoFocus
                                 />
                               </div>
@@ -409,8 +409,8 @@ export default function ComposeMessagePage() {
                                     )}
                                   </div>
                                   <div className="flex-1 text-left min-w-0">
-                                    <p className="font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-sm truncate">{teacher.name}</p>
-                                    <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 truncate">{teacher.subject}</p>
+                                    <p className="font-medium text-ink text-sm truncate">{teacher.name}</p>
+                                    <p className="text-xs text-muted truncate">{teacher.subject}</p>
                                   </div>
                                   {selectedTeacherId === teacher.id && (
                                     <div className="w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0">
@@ -444,7 +444,7 @@ export default function ComposeMessagePage() {
                           className={`w-full flex items-center gap-3 p-3 rounded-xl border-2 transition-all cursor-pointer ${
                             selectedChild
                               ? "border-purple-200 dark:border-purple-800 bg-purple-50/50 dark:bg-purple-900/20"
-                              : "border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 hover:border-gray-300 dark:hover:border-gray-600 midnight:hover:border-cyan-500/30 purple:hover:border-pink-500/30 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]"
+                              : "border-line hover:border-gray-300 dark:hover:border-gray-600 midnight:hover:border-cyan-500/30 purple:hover:border-pink-500/30 bg-surface"
                           }`}
                         >
                           {selectedChild ? (
@@ -453,13 +453,13 @@ export default function ComposeMessagePage() {
                                 {selectedChild.name.charAt(0)}
                               </div>
                               <div className="flex-1 text-left min-w-0">
-                                <p className="font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-sm truncate">{selectedChild.name}</p>
-                                <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">{selectedChild.class}</p>
+                                <p className="font-medium text-ink text-sm truncate">{selectedChild.name}</p>
+                                <p className="text-xs text-muted">{selectedChild.class}</p>
                               </div>
                             </>
                           ) : (
                             <>
-                              <div className="w-10 h-10 rounded-lg bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] flex items-center justify-center">
+                              <div className="w-10 h-10 rounded-lg bg-surface-2 flex items-center justify-center">
                                 <Users className="w-5 h-5 text-gray-400" />
                               </div>
                               <span className="flex-1 text-left text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 text-sm">Select child (optional)</span>
@@ -470,7 +470,7 @@ export default function ComposeMessagePage() {
 
                         {/* Child Dropdown */}
                         {showChildDropdown && (
-                          <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 z-50 overflow-hidden p-2">
+                          <div className="absolute top-full left-0 right-0 mt-2 bg-surface rounded-xl shadow-xl border border-line z-50 overflow-hidden p-2">
                             {MOCK_CHILDREN.map((child) => (
                               <button
                                 key={child.id}
@@ -488,8 +488,8 @@ export default function ComposeMessagePage() {
                                   {child.name.charAt(0)}
                                 </div>
                                 <div className="flex-1 text-left">
-                                  <p className="font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-sm">{child.name}</p>
-                                  <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">{child.class}</p>
+                                  <p className="font-medium text-ink text-sm">{child.name}</p>
+                                  <p className="text-xs text-muted">{child.class}</p>
                                 </div>
                                 {selectedChildId === child.id && (
                                   <div className="w-5 h-5 rounded-full bg-purple-500 flex items-center justify-center">
@@ -534,7 +534,7 @@ export default function ComposeMessagePage() {
                             className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-full text-sm font-medium border transition-all cursor-pointer ${
                               isSelected
                                 ? `${categoryColors[cat.color]} ring-1`
-                                : "bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"
+                                : "bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 border-line hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"
                             }`}
                           >
                             <Icon className="w-4 h-4" />
@@ -559,7 +559,7 @@ export default function ComposeMessagePage() {
                       value={subject}
                       onChange={(e) => setSubject(e.target.value)}
                       placeholder="What's this message about?"
-                      className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/50 border-2 border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 placeholder:text-gray-400 focus:border-blue-500 dark:focus:border-blue-400 midnight:focus:border-cyan-400 purple:focus:border-pink-400 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all"
+                      className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/50 border-2 border-line text-ink placeholder:text-gray-400 focus:border-blue-500 dark:focus:border-blue-400 midnight:focus:border-cyan-400 purple:focus:border-pink-400 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all"
                     />
                   </div>
 
@@ -579,7 +579,7 @@ export default function ComposeMessagePage() {
                         onChange={(e) => setMessage(e.target.value)}
                         placeholder="Type your message here..."
                         rows={8}
-                        className="w-full px-4 py-3 pb-14 rounded-xl bg-gray-50 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/50 border-2 border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 placeholder:text-gray-400 focus:border-blue-500 dark:focus:border-blue-400 midnight:focus:border-cyan-400 purple:focus:border-pink-400 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all resize-none"
+                        className="w-full px-4 py-3 pb-14 rounded-xl bg-gray-50 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/50 border-2 border-line text-ink placeholder:text-gray-400 focus:border-blue-500 dark:focus:border-blue-400 midnight:focus:border-cyan-400 purple:focus:border-pink-400 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all resize-none"
                       />
                       <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between">
                         <div className="flex items-center gap-1">
@@ -617,7 +617,7 @@ export default function ComposeMessagePage() {
                           return (
                             <div
                               key={attachment.id}
-                              className="relative group flex items-center gap-2 px-3 py-2 bg-gray-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/50 rounded-xl border border-gray-200 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30"
+                              className="relative group flex items-center gap-2 px-3 py-2 bg-surface-2/50 rounded-xl border border-gray-200 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30"
                             >
                               {attachment.preview ? (
                                 <div className="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0">
@@ -631,14 +631,14 @@ export default function ComposeMessagePage() {
                                 </div>
                               ) : (
                                 <div className="w-10 h-10 rounded-lg bg-gray-200 dark:bg-[#2a2d35] midnight:bg-gray-700 purple:bg-gray-700 flex items-center justify-center flex-shrink-0">
-                                  <FileIcon className="w-5 h-5 text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300" />
+                                  <FileIcon className="w-5 h-5 text-muted" />
                                 </div>
                               )}
                               <div className="min-w-0">
                                 <p className="text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 truncate max-w-[120px]">
                                   {attachment.name}
                                 </p>
-                                <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
+                                <p className="text-xs text-muted">
                                   {formatFileSize(attachment.size)}
                                 </p>
                               </div>
@@ -663,7 +663,7 @@ export default function ComposeMessagePage() {
                 </div>
 
                 {/* Footer Actions */}
-                <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-gray-50/50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50">
+                <div className="px-6 py-4 border-t border-line bg-gray-50/50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50">
                   <div className="flex items-center justify-between gap-4">
                     <Link href="/parents/messages">
                       <button className="px-5 py-2.5 rounded-xl text-sm font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:text-gray-900 dark:hover:text-white midnight:hover:text-cyan-50 purple:hover:text-pink-50 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-all cursor-pointer">

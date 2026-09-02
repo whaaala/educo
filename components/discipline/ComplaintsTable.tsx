@@ -56,7 +56,7 @@ export default function ComplaintsTable({
       render: (complaint) => {
         return (
           <Tooltip content={`Complaint ID: ${complaint.id}`}>
-            <div className="font-semibold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 whitespace-nowrap truncate max-w-[100px]" style={{ fontSize: '11.8px' }}>
+            <div className="font-semibold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 whitespace-nowrap truncate max-w-[100px]" style={{ fontSize: '0.7375rem' }}>
               {complaint.id}
             </div>
           </Tooltip>
@@ -78,15 +78,15 @@ export default function ComplaintsTable({
                   <UserX className="w-5 h-5" />
                 </div>
               ) : (
-                <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold shadow-sm ring-2 ring-blue-200 dark:ring-blue-900/30 flex-shrink-0" style={{ fontSize: '11.8px' }}>
+                <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold shadow-sm ring-2 ring-blue-200 dark:ring-blue-900/30 flex-shrink-0" style={{ fontSize: '0.7375rem' }}>
                   {displayName.charAt(0)}
                 </div>
               )}
               <div>
-                <div className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate max-w-[140px]" style={{ fontSize: '11.8px' }}>
+                <div className="font-semibold text-ink truncate max-w-[140px]" style={{ fontSize: '0.7375rem' }}>
                   {displayName}
                 </div>
-                <div className="text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70 truncate max-w-[140px]" style={{ fontSize: '10px' }}>
+                <div className="text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70 truncate max-w-[140px]" style={{ fontSize: '0.625rem' }}>
                   {complaint.isAnonymous ? "Anonymous Report" : (complaint.complainantPosition || "N/A")}
                 </div>
               </div>
@@ -102,7 +102,7 @@ export default function ComplaintsTable({
       className: "text-left",
       render: (complaint) => (
         <Tooltip content={complaint.subject}>
-          <div className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate max-w-[200px]" style={{ fontSize: '11.8px' }}>
+          <div className="font-semibold text-ink truncate max-w-[200px]" style={{ fontSize: '0.7375rem' }}>
             {complaint.subject}
           </div>
         </Tooltip>
@@ -115,7 +115,7 @@ export default function ComplaintsTable({
       className: "text-left",
       render: (complaint) => (
         <Tooltip content={`Priority: ${complaint.priority}`}>
-          <div className={`font-semibold capitalize ${getPriorityColor(complaint.priority)}`} style={{ fontSize: '11.8px' }}>
+          <div className={`font-semibold capitalize ${getPriorityColor(complaint.priority)}`} style={{ fontSize: '0.7375rem' }}>
             {complaint.priority}
           </div>
         </Tooltip>
@@ -137,7 +137,7 @@ export default function ComplaintsTable({
       render: (complaint) => {
         return (
           <Tooltip content={formatDate(complaint.complaintDate)}>
-            <div className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 whitespace-nowrap" style={{ fontSize: '11.8px' }}>
+            <div className="font-semibold text-ink whitespace-nowrap" style={{ fontSize: '0.7375rem' }}>
               {formatDate(complaint.complaintDate)}
             </div>
           </Tooltip>
@@ -169,7 +169,7 @@ export default function ComplaintsTable({
   ];
 
   return (
-    <div className="bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm overflow-hidden">
+    <div className="bg-surface rounded-xl border border-line shadow-sm overflow-hidden">
       <ResponsiveListTable<Complaint> variant="contained" showColumnHeaders={true}
         data={complaints}
         columns={columns}

@@ -288,7 +288,7 @@ export default function EditStaffPage() {
           {/* Action Buttons - Sticky to bottom until form ends */}
           <div
             ref={buttonsRef}
-            className={`${isSticky ? "fixed" : "relative"} bottom-0 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-t-xl shadow-lg backdrop-blur-sm bg-opacity-95 dark:bg-opacity-95 py-4 px-6 z-50`}
+            className={`${isSticky ? "fixed" : "relative"} bottom-0 bg-surface border-t border-line rounded-t-xl shadow-lg backdrop-blur-sm bg-opacity-95 dark:bg-opacity-95 py-4 px-6 z-50`}
             style={
               isSticky
                 ? {

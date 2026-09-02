@@ -71,7 +71,7 @@ export default function TagInput({
 
       <div className="relative">
         {/* Combined Tags and Input Container */}
-        <div className="w-full min-h-[42px] px-3 py-1.5 rounded-xl border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] focus-within:ring-1 focus-within:ring-blue-500/10 dark:focus-within:ring-blue-400/10 midnight:focus-within:ring-cyan-500/10 purple:focus-within:ring-pink-500/10 focus-within:border-blue-400 dark:focus-within:border-blue-500 midnight:focus-within:border-cyan-500 purple:focus-within:border-pink-500 transition-all duration-200 hover:border-gray-400 dark:hover:border-gray-500 flex flex-wrap items-center gap-2">
+        <div className="w-full min-h-[42px] px-3 py-1.5 rounded-xl border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-surface focus-within:ring-1 focus-within:ring-blue-500/10 dark:focus-within:ring-blue-400/10 midnight:focus-within:ring-cyan-500/10 purple:focus-within:ring-pink-500/10 focus-within:border-blue-400 dark:focus-within:border-blue-500 midnight:focus-within:border-cyan-500 purple:focus-within:border-pink-500 transition-all duration-200 hover:border-gray-400 dark:hover:border-gray-500 flex flex-wrap items-center gap-2">
           {/* Tags Display */}
           {value.map((tag) => (
             <div
@@ -102,13 +102,13 @@ export default function TagInput({
             onFocus={() => setShowSuggestions(inputValue.length > 0)}
             onBlur={handleBlur}
             placeholder={value.length === 0 ? placeholder : ""}
-            className="flex-1 min-w-[120px] px-1 py-1 bg-transparent text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-sm font-normal placeholder:text-gray-400 dark:placeholder:text-gray-500 midnight:placeholder:text-cyan-400/50 purple:placeholder:text-pink-400/50 placeholder:italic placeholder:font-normal outline-none border-none"
+            className="flex-1 min-w-[120px] px-1 py-1 bg-transparent text-ink text-sm font-normal placeholder:text-gray-400 dark:placeholder:text-gray-500 midnight:placeholder:text-cyan-400/50 purple:placeholder:text-pink-400/50 placeholder:italic placeholder:font-normal outline-none border-none"
           />
         </div>
 
         {/* Suggestions Dropdown */}
         {showSuggestions && filteredSuggestions.length > 0 && (
-          <div className="absolute z-[10000] w-full mt-1 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-xl shadow-xl max-h-48 overflow-y-auto animate-in fade-in slide-in-from-top-2 duration-200">
+          <div className="absolute z-[10000] w-full mt-1 bg-surface border border-line rounded-xl shadow-xl max-h-48 overflow-y-auto animate-in fade-in slide-in-from-top-2 duration-200">
             {filteredSuggestions.map((suggestion) => (
               <button
                 key={suggestion}

@@ -137,7 +137,7 @@ export default function DocsPage() {
 function OverviewDoc() {
   return (
     <div className="prose prose-blue dark:prose-invert max-w-none">
-      <h1 className="text-3xl font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-4">
+      <h1 className="text-3xl font-bold text-ink mb-4">
         Educo v4.0 Overview
       </h1>
 
@@ -148,13 +148,13 @@ function OverviewDoc() {
         </p>
       </div>
 
-      <h2 className="text-2xl font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mt-8 mb-4">
+      <h2 className="text-2xl font-bold text-ink mt-8 mb-4">
         Key Features
       </h2>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
         <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 midnight:from-cyan-900/20 midnight:to-blue-900/20 purple:from-pink-900/20 purple:to-purple-900/20 p-5 rounded-lg border border-blue-200 dark:border-blue-800 midnight:border-cyan-500/30 purple:border-pink-500/30">
-          <h3 className="font-bold text-lg text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-2">
+          <h3 className="font-bold text-lg text-ink mb-2">
             🏢 Multi-Tenant Architecture
           </h3>
           <p className="text-sm text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200">
@@ -163,7 +163,7 @@ function OverviewDoc() {
         </div>
 
         <div className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 midnight:from-blue-900/20 midnight:to-purple-900/20 purple:from-purple-900/20 purple:to-pink-900/20 p-5 rounded-lg border border-purple-200 dark:border-purple-800 midnight:border-cyan-500/30 purple:border-pink-500/30">
-          <h3 className="font-bold text-lg text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-2">
+          <h3 className="font-bold text-lg text-ink mb-2">
             🚩 Feature Flags
           </h3>
           <p className="text-sm text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200">
@@ -172,7 +172,7 @@ function OverviewDoc() {
         </div>
 
         <div className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 midnight:from-green-900/20 midnight:to-emerald-900/20 purple:from-green-900/20 purple:to-emerald-900/20 p-5 rounded-lg border border-green-200 dark:border-green-800 midnight:border-cyan-500/30 purple:border-pink-500/30">
-          <h3 className="font-bold text-lg text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-2">
+          <h3 className="font-bold text-lg text-ink mb-2">
             🎓 Education Level Support
           </h3>
           <p className="text-sm text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200">
@@ -181,7 +181,7 @@ function OverviewDoc() {
         </div>
 
         <div className="bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 midnight:from-amber-900/20 midnight:to-orange-900/20 purple:from-amber-900/20 purple:to-orange-900/20 p-5 rounded-lg border border-amber-200 dark:border-amber-800 midnight:border-cyan-500/30 purple:border-pink-500/30">
-          <h3 className="font-bold text-lg text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-2">
+          <h3 className="font-bold text-lg text-ink mb-2">
             🌍 Regional Support
           </h3>
           <p className="text-sm text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200">
@@ -190,7 +190,7 @@ function OverviewDoc() {
         </div>
       </div>
 
-      <h2 className="text-2xl font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mt-8 mb-4">
+      <h2 className="text-2xl font-bold text-ink mt-8 mb-4">
         Architecture Components
       </h2>
 
@@ -225,7 +225,7 @@ function OverviewDoc() {
         </li>
       </ul>
 
-      <h2 className="text-2xl font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mt-8 mb-4">
+      <h2 className="text-2xl font-bold text-ink mt-8 mb-4">
         Quick Links
       </h2>
 
@@ -289,7 +289,7 @@ function FeatureFlagsDoc() {
 
   return (
     <div className="prose prose-blue dark:prose-invert max-w-none">
-      <h1 className="text-3xl font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-4">
+      <h1 className="text-3xl font-bold text-ink mb-4">
         Feature Flags
       </h1>
 
@@ -300,7 +300,7 @@ function FeatureFlagsDoc() {
 
       {featureFlagCategories.map((category) => (
         <div key={category.category} className="mb-8">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-4">
+          <h2 className="text-2xl font-bold text-ink mb-4">
             {category.category}
           </h2>
 
@@ -359,7 +359,7 @@ function MyComponent() {
 function QuickStartDoc() {
   return (
     <div className="prose prose-blue dark:prose-invert max-w-none">
-      <h1 className="text-3xl font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-4">
+      <h1 className="text-3xl font-bold text-ink mb-4">
         Quick Start Guide
       </h1>
 
@@ -367,7 +367,7 @@ function QuickStartDoc() {
         Get started with feature flags and multi-tenant architecture in your components.
       </p>
 
-      <h2 className="text-2xl font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mt-8 mb-4">
+      <h2 className="text-2xl font-bold text-ink mt-8 mb-4">
         1. Basic Feature Check
       </h2>
 
@@ -383,7 +383,7 @@ function StudentTransferButton() {
 }`}</code>
       </pre>
 
-      <h2 className="text-2xl font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mt-8 mb-4">
+      <h2 className="text-2xl font-bold text-ink mt-8 mb-4">
         2. Using Feature Guards
       </h2>
 
@@ -399,7 +399,7 @@ function MyPage() {
 }`}</code>
       </pre>
 
-      <h2 className="text-2xl font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mt-8 mb-4">
+      <h2 className="text-2xl font-bold text-ink mt-8 mb-4">
         3. Accessing Tenant Context
       </h2>
 
@@ -448,7 +448,7 @@ function ImplementationDoc() {
 
   return (
     <div className="prose prose-blue dark:prose-invert max-w-none">
-      <h1 className="text-3xl font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-4">
+      <h1 className="text-3xl font-bold text-ink mb-4">
         Implementation Status
       </h1>
 
@@ -463,7 +463,7 @@ function ImplementationDoc() {
             className="p-4 bg-white dark:bg-[#22262e]/50 midnight:bg-gray-700/50 purple:bg-gray-700/50 rounded-lg border border-gray-200 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30"
           >
             <div className="flex items-center justify-between mb-2">
-              <h3 className="font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+              <h3 className="font-bold text-ink">
                 {item.phase}
               </h3>
               <span
@@ -546,13 +546,13 @@ function TenantInfoDoc({
 }) {
   return (
     <div className="prose prose-blue dark:prose-invert max-w-none">
-      <h1 className="text-3xl font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-4">
+      <h1 className="text-3xl font-bold text-ink mb-4">
         Current Tenant Information
       </h1>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
         <div className="p-6 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 midnight:from-cyan-900/20 midnight:to-blue-900/20 purple:from-pink-900/20 purple:to-purple-900/20 rounded-lg border border-blue-200 dark:border-blue-800 midnight:border-cyan-500/50 purple:border-pink-500/50">
-          <h3 className="text-lg font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-4">
+          <h3 className="text-lg font-bold text-ink mb-4">
             Tenant Details
           </h3>
           <dl className="space-y-3">
@@ -560,7 +560,7 @@ function TenantInfoDoc({
               <dt className="text-sm font-semibold text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70">
                 Tenant ID
               </dt>
-              <dd className="text-base font-mono text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+              <dd className="text-base font-mono text-ink">
                 {tenantContext.tenantId || "default"}
               </dd>
             </div>
@@ -568,7 +568,7 @@ function TenantInfoDoc({
               <dt className="text-sm font-semibold text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70">
                 Region
               </dt>
-              <dd className="text-base font-mono text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+              <dd className="text-base font-mono text-ink">
                 {tenantContext.region || "Nigeria"}
               </dd>
             </div>
@@ -576,7 +576,7 @@ function TenantInfoDoc({
               <dt className="text-sm font-semibold text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70">
                 Education Level
               </dt>
-              <dd className="text-base font-mono text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+              <dd className="text-base font-mono text-ink">
                 {tenantContext.educationLevel || "Secondary"}
               </dd>
             </div>
@@ -584,7 +584,7 @@ function TenantInfoDoc({
               <dt className="text-sm font-semibold text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70">
                 Institution Type
               </dt>
-              <dd className="text-base font-mono text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+              <dd className="text-base font-mono text-ink">
                 {tenantContext.institutionType || "Private"}
               </dd>
             </div>
@@ -592,7 +592,7 @@ function TenantInfoDoc({
               <dt className="text-sm font-semibold text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70">
                 Subdomain
               </dt>
-              <dd className="text-base font-mono text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+              <dd className="text-base font-mono text-ink">
                 {tenantContext.subdomain || "demo.educo.africa"}
               </dd>
             </div>
@@ -600,7 +600,7 @@ function TenantInfoDoc({
         </div>
 
         <div className="p-6 bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 midnight:from-blue-900/20 midnight:to-purple-900/20 purple:from-purple-900/20 purple:to-pink-900/20 rounded-lg border border-purple-200 dark:border-purple-800 midnight:border-cyan-500/50 purple:border-pink-500/50">
-          <h3 className="text-lg font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-4">
+          <h3 className="text-lg font-bold text-ink mb-4">
             Statistics
           </h3>
           <dl className="space-y-3">
@@ -624,7 +624,7 @@ function TenantInfoDoc({
         </div>
       </div>
 
-      <h2 className="text-2xl font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-4">
+      <h2 className="text-2xl font-bold text-ink mb-4">
         Enabled Features ({enabledFeatures.length})
       </h2>
 

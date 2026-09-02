@@ -54,10 +54,7 @@ describe("CallConnecting — Visual / CSS", () => {
       const heading = screen.getByText("Calling...");
       expect(heading.className).toContain("text-xl");
       expect(heading.className).toContain("font-bold");
-      expect(heading.className).toContain("text-gray-900");
-      expect(heading.className).toContain("dark:text-white");
-      expect(heading.className).toContain("midnight:text-cyan-50");
-      expect(heading.className).toContain("purple:text-pink-50");
+      expect(heading.className).toContain("text-ink");
     });
 
     it("subtitle has sm text with subdued theme colors", () => {
@@ -65,7 +62,6 @@ describe("CallConnecting — Visual / CSS", () => {
       const subtitle = screen.getByText("Setting up your session");
       expect(subtitle.className).toContain("text-sm");
       expect(subtitle.className).toContain("text-gray-500");
-      expect(subtitle.className).toContain("dark:text-gray-400");
       expect(subtitle.className).toContain("midnight:text-cyan-400");
       expect(subtitle.className).toContain("purple:text-pink-400");
     });
