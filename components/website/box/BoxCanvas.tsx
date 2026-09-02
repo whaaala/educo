@@ -14,16 +14,18 @@ import { Plus, ChevronUp, ChevronDown, Copy, Scissors, ClipboardPaste, Trash2, U
 import type { SiteTheme } from "@/lib/site-storage";
 import {
   type BoxNode, type BoxType,
-  containerStyle, childStyle, marginCSS, sizeToCSS, u, baseUnit, createContainer, createGrid, createElement,
+  containerStyle, childStyle, marginCSS, sizeToCSS, u, baseUnit, createContainer, createGrid, createElement, createComponent,
   updateBox, removeBox, insertBox, moveBoxStep, duplicateBox, moveBox, cloneBox, findParent, isAncestor, isContainer, isEmptyBox, widthPct,
   isFloating, floatBox, unfloatBox, bringToFront, sendToBack, bringForward, sendBackward,
-  radiusCSS, isClipped, SHADOW_CSS, videoEmbedSrc,
+  radiusCSS, isClipped, SHADOW_CSS, videoEmbedSrc, sanitizeCssDeclarations,
   type Breakpoint, resolveResponsive, updateBoxResponsive,
 } from "@/lib/box-model";
 import { ICON_SET } from "./icons";
 import { PortalMenu, MenuItem, MenuHeader, MenuSep } from "./ui";
 import { blockForKind } from "@/lib/box-presets";
 import { colorToCSS } from "@/components/shared/ColorPalettePicker";
+import { COMPONENT_CSS } from "@/lib/educo-ui/components";
+import { tokensFromTheme, tokensToCss } from "@/lib/educo-ui/tokens";
 import { EditableText, ImageBox } from "@/components/website/sections/SectionKit";
 
 /** Layered background CSS: base fill (colour/gradient) → image → overlay; content renders above. */
@@ -114,11 +116,17 @@ export function measureFloatGeom(root: BoxNode, id: string): { parentId: string;
   const padL = parseFloat(cs.paddingLeft) || 0, padT = parseFloat(cs.paddingTop) || 0;
   const padR = parseFloat(cs.paddingRight) || 0, padB = parseFloat(cs.paddingBottom) || 0;
   const cw = Math.max(1, pr.width - padL - padR), ch = Math.max(1, pr.height - padT - padB);
+  // A COMPONENT floats as a COMPACT card (a fixed px width ≈ half the parent, never wider than its content) so
+  // it can be dragged freely in 2D and resized — instead of a full-width bar that only slides vertically. Other
+  // blocks keep their measured % width.
+  const isComponent = node.type === "component";
+  const compactPx = Math.round(Math.min(r.width, Math.max(320, cw * 0.5)));
+  const width = isComponent ? `${compactPx}px` : `${round1((r.width / cw) * 100)}%`;
   return {
     parentId,
     left: ((r.left - (pr.left + padL)) / cw) * 100,
     top: ((r.top - (pr.top + padT)) / ch) * 100,
-    width: `${round1((r.width / cw) * 100)}%`,
+    width,
     height: r.height,
   };
 }
@@ -135,7 +143,7 @@ const HANDLES: { edge: Edge; pos: string; cursor: string; label: string; title: 
   { edge: "sw", pos: "-bottom-1 -left-1 w-3 h-3 rounded-full", cursor: "cursor-nesw-resize", label: "bottom-left corner", title: "Drag the bottom-left corner" },
 ];
 
-const ADD_ITEMS: { type: BoxType | "row" | "grid"; label: string; Icon: typeof Type }[] = [
+const ADD_ITEMS: { type: BoxType | "row" | "grid" | "accordion"; label: string; Icon: typeof Type }[] = [
   { type: "container", label: "Section (stack)", Icon: Rows3 },
   { type: "row", label: "Row", Icon: Columns3 },
   { type: "grid", label: "Grid", Icon: Grid3x3 },
@@ -146,6 +154,7 @@ const ADD_ITEMS: { type: BoxType | "row" | "grid"; label: string; Icon: typeof T
   { type: "video", label: "Video", Icon: VideoIcon },
   { type: "icon", label: "Icon", Icon: Sparkles },
   { type: "list", label: "List", Icon: ListIcon },
+  { type: "accordion", label: "Accordion", Icon: ChevronDown },
   { type: "divider", label: "Divider", Icon: MinusIcon },
   { type: "embed", label: "Embed / HTML", Icon: Code2 },
 ];
@@ -682,12 +691,13 @@ export default function BoxCanvas({
     document.addEventListener("mouseup", onUp);
   };
 
-  const addChild = (parentId: string, kind: BoxType | "row" | "grid") => {
+  const addChild = (parentId: string, kind: BoxType | "row" | "grid" | "accordion") => {
     const parent = findByIdLocal(root, parentId);
     const node =
       kind === "row" ? createContainer("row")
       : kind === "grid" ? createGrid(3)
       : kind === "container" ? createContainer("row", { direction: "row", wrap: true, align: "stretch", clip: true, padding: 24 })
+      : kind === "accordion" ? createComponent("accordion")
       : createElement(kind as Exclude<BoxType, "container">);
     // If the parent lays its blocks out horizontally (a section / wrapping row), the new block fills the
     // row's leftover width and WRAPS when full — so blocks sit BESIDE each other, never overflowing.
@@ -782,7 +792,7 @@ export default function BoxCanvas({
         style={{ ...wrapStyle, ...(isDragging ? { opacity: 0.4 } : {}) }}
         className={`${isSel ? "outline outline-2 outline-indigo-500 outline-offset-[-2px]" : editable ? "hover:outline hover:outline-1 hover:outline-indigo-300/70 hover:outline-offset-[-1px]" : ""}`}
       >
-        <ElementView node={node} theme={theme} editable={editable} onText={(v) => onChange(updateBox(root, node.id, { text: v }))} onSrc={(v) => onChange(updateBox(root, node.id, { src: v }))} />
+        <ElementView node={node} theme={theme} editable={editable} onText={(v) => onChange(updateBox(root, node.id, { text: v }))} onSrc={(v) => onChange(updateBox(root, node.id, { src: v }))} onPatchNode={(patch) => onChange(updateBox(root, node.id, patch))} />
         {isSolo && <NodeToolbar node={node} isRoot={isRoot} />}
         {resizeHandles}
       </div>
@@ -853,6 +863,10 @@ export default function BoxCanvas({
 
   return (
     <div onMouseDown={(e) => { if (editable) { select(null); startMarqueeArm(e); } }} onDragOver={onCanvasDragOver} onDrop={onCanvasDrop} onDragLeave={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setDropRect(null); }} className="w-full">
+      {/* Educo UI component styles + this site's tokens, injected once so any placed component (accordion, …)
+          renders exactly as it will in the exported site. COMPONENT_CSS is scoped to `.eu-root`; each component
+          wrapper carries that class, so styles never leak into the editor chrome. */}
+      {treeHasComponent(root) && <style dangerouslySetInnerHTML={{ __html: tokensToCss(tokensFromTheme(theme), ".eu-root") + COMPONENT_CSS }} />}
       {renderNode(root, null)}
       {/* Marquee (rubber-band) selection rectangle. Portaled so it's never clipped. */}
       {marquee && createPortal(
@@ -904,12 +918,66 @@ function findByIdLocal(node: BoxNode, id: string): BoxNode | null {
   return null;
 }
 
-function ElementView({ node, theme, editable, onText, onSrc }: {
-  node: BoxNode; theme: SiteTheme; editable?: boolean; onText: (v: string) => void; onSrc: (v: string) => void;
+/** Does the tree contain any Educo UI component instance? (gates the one-time stylesheet injection) */
+function treeHasComponent(node: BoxNode): boolean {
+  if (node.type === "component") return true;
+  return (node.children ?? []).some(treeHasComponent);
+}
+
+/**
+ * An Educo UI component instance in the canvas. The wrapper carries `.eu-root` (so the injected component
+ * stylesheet + this site's tokens apply) plus any per-instance token overrides as inline CSS variables, and
+ * fills the width the section allocated to it. Content is edited INLINE (titles/bodies) via EditableText;
+ * structure (add/remove items, variant, colours) is edited in the inspector. In edit mode every panel is
+ * shown open so its body is editable; clicking a header doesn't collapse it.
+ */
+function ComponentView({ node, editable, onPatchNode }: { node: BoxNode; editable?: boolean; onPatchNode?: (patch: Partial<BoxNode>) => void }) {
+  // Typography set on the wrapper cascades into the component's text (titles/bodies inherit family + size).
+  const typo: React.CSSProperties = {};
+  if (node.fontFamily) typo.fontFamily = node.fontFamily;
+  if (node.fontSize) typo.fontSize = u(node.fontSize);
+  if (node.fontWeight) typo.fontWeight = node.fontWeight;
+  if (node.lineHeight) typo.lineHeight = node.lineHeight;
+  if (node.letterSpacing != null) typo.letterSpacing = `${node.letterSpacing}px`;
+  if (node.textTransform && node.textTransform !== "none") typo.textTransform = node.textTransform;
+  if (node.italic) typo.fontStyle = "italic";
+  const styleVars = { width: "100%", ...typo, ...(node.tokenOverrides ?? {}) } as React.CSSProperties;
+  if (node.component === "accordion") {
+    const items = node.accItems ?? [];
+    const cls = "eu-accordion" + (node.variant ? ` eu-accordion${node.variant}` : "");
+    const setItem = (id: string, patch: Partial<import("@/lib/box-model").AccordionItem>) =>
+      onPatchNode?.({ accItems: items.map((it) => (it.id === id ? { ...it, ...patch } : it)) });
+    const adv = sanitizeCssDeclarations(node.advancedCss);
+    return (
+      <div className="eu-root" style={styleVars}>
+        {adv ? <style dangerouslySetInnerHTML={{ __html: `[data-box-id="${node.id}"] .eu-accordion{${adv}}` }} /> : null}
+        <div className={cls}>
+          {items.map((it) => (
+            <details key={it.id} className="eu-accordion__item" open={editable ? true : it.open} name={node.accMultiOpen ? undefined : `acc-${node.id}`}>
+              <summary className="eu-accordion__header" onClick={editable ? (e) => e.preventDefault() : undefined}>
+                {it.media ? <img className="eu-accordion__media" src={it.media} alt="" /> : null}
+                <EditableText value={it.title} editable={editable} onChange={(v) => setItem(it.id, { title: v })} placeholder="Question" />
+                {it.meta ? <span className="eu-accordion__meta">{it.meta}</span> : null}
+              </summary>
+              <div className="eu-accordion__body">
+                <EditableText value={it.body} editable={editable} onChange={(v) => setItem(it.id, { body: v })} placeholder="Answer — click to edit" />
+              </div>
+            </details>
+          ))}
+        </div>
+      </div>
+    );
+  }
+  return <div className="eu-root" style={styleVars} />;
+}
+
+function ElementView({ node, theme, editable, onText, onSrc, onPatchNode }: {
+  node: BoxNode; theme: SiteTheme; editable?: boolean; onText: (v: string) => void; onSrc: (v: string) => void; onPatchNode?: (patch: Partial<BoxNode>) => void;
 }) {
   const fileRef = useRef<HTMLInputElement>(null);
   const align = node.textAlign ?? "left";
   switch (node.type) {
+    case "component": return <ComponentView node={node} editable={editable} onPatchNode={onPatchNode} />;
     case "heading":
       return <h2 style={{ color: node.color || theme.text, fontSize: u(node.fontSize ?? 32), textAlign: align, width: "100%", ...typoStyle(node, theme.headingFont, 600) }}><EditableText value={node.text} editable={editable} onChange={onText} placeholder="Heading" /></h2>;
     case "button":

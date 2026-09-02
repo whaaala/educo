@@ -39,6 +39,29 @@ describe("Educo UI token bridge (globals.css)", () => {
           expect(count).toBeGreaterThanOrEqual(4);
         }
       });
+
+      it("exposes the theme-independent tokens (spacing / radius / type) on :root", () => {
+        expect(css).toContain("--eu-space-4: 1rem");
+        expect(css).toContain("--eu-radius-lg: 16px");
+        expect(css).toContain("--eu-text-base: 1rem");
+      });
+
+      it("makes the Educo UI layout utilities available APP-WIDE (not scoped under .eu-root)", () => {
+        for (const util of [".eu-container", ".eu-grid", ".eu-stack", ".eu-cluster", ".eu-media", ".eu-columns", ".eu-visually-hidden"]) {
+          expect(css).toContain(util);
+          // must be a standalone selector, never gated behind an .eu-root ancestor
+          expect(css).not.toContain(`.eu-root ${util}`);
+        }
+        expect(css).toContain("repeat(auto-fit, minmax(");  // intrinsic responsive grid
+        expect(css).toContain("container-type: inline-size"); // container queries
+      });
+
+      it("applies the responsive foundation (four ingredients) app-wide", () => {
+        expect(css).toContain("font-size: 100%");            // ② respect user font size
+        expect(css).toMatch(/img[^{]*\{[^}]*max-width: 100%/); // ③ flexible images
+        expect(css).toContain("overflow-wrap: break-word");  // responsive text
+        expect(css).toContain("prefers-reduced-motion: reduce"); // a11y
+      });
     });
   }
 });

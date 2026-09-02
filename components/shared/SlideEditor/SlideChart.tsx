@@ -11,9 +11,13 @@
  */
 
 import React from "react";
+import dynamic from "next/dynamic";
 import Chart from "@/components/shared/Chart/Chart";
-import ChartEditor from "@/components/shared/Chart/ChartEditor";
 import type { ChartObject, ChartSpec, SlideObject } from "@/lib/slide-storage";
+
+// Lazy-load the chart EDITOR — only needed while editing a chart, not to display one. Keeps it out of
+// the slide-editor's initial bundle (the lightweight <Chart> renderer stays eager).
+const ChartEditor = dynamic(() => import("@/components/shared/Chart/ChartEditor"), { ssr: false });
 
 const SLIDE_ASPECT = 16 / 9;
 const chartAspect = (obj: ChartObject) => Math.max(0.3, (obj.width / Math.max(1, obj.height)) * SLIDE_ASPECT);

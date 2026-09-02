@@ -2,9 +2,14 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { FileText, Mail } from "lucide-react";
+import dynamic from "next/dynamic";
 import MainLayout from "@/components/layout/MainLayout";
-import DocEditor, { type DocEditorValue, type DocTemplate } from "@/components/shared/DocEditor/DocEditor";
+import type { DocEditorValue, DocTemplate } from "@/components/shared/DocEditor/DocEditor";
+import PageLoader from "@/components/shared/PageLoader";
 import { docStorage } from "@/lib/doc-storage";
+
+// Lazy-load the DocEditor (~12k lines) so this route compiles/loads fast; the editor streams in after.
+const DocEditor = dynamic(() => import("@/components/shared/DocEditor/DocEditor"), { ssr: false, loading: () => <PageLoader /> });
 
 const defaultTemplates: DocTemplate[] = [
   {

@@ -87,10 +87,11 @@ export default function EducoTokensPage() {
 
   if (!mounted) return <PageLoader />;
 
-  const colorFields: { key: keyof SiteTheme; label: string }[] = [
+  const colorFields: { key: keyof SiteTheme; label: string; contrastAgainst?: keyof SiteTheme }[] = [
     { key: "primary", label: "Primary" }, { key: "accent", label: "Accent" },
     { key: "background", label: "Background" }, { key: "surface", label: "Surface" },
-    { key: "text", label: "Text" }, { key: "textMuted", label: "Muted text" },
+    { key: "text", label: "Text", contrastAgainst: "background" },
+    { key: "textMuted", label: "Muted text", contrastAgainst: "background" },
   ];
   const typeSizes: [string, string][] = [["6xl", "Aa"], ["4xl", "Heading"], ["2xl", "Subhead"], ["xl", "Lead"], ["base", "Body text — the quick brown fox jumps over the lazy dog."], ["sm", "Small / caption"]];
   const { success, warning, danger, info } = tokens.color;
@@ -127,8 +128,8 @@ export default function EducoTokensPage() {
             ))}
           </div>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-            {colorFields.map(({ key, label }) => (
-              <ColorField key={key} label={label} value={theme[key] as string} onChange={(hex) => patch({ [key]: hex } as Partial<SiteTheme>)} />
+            {colorFields.map(({ key, label, contrastAgainst }) => (
+              <ColorField key={key} label={label} value={theme[key] as string} onChange={(hex) => patch({ [key]: hex } as Partial<SiteTheme>)} contrastBg={contrastAgainst ? (theme[contrastAgainst] as string) : undefined} />
             ))}
           </div>
           <div className="mt-3">

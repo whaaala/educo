@@ -53,4 +53,25 @@ describe("ColorField", () => {
     render(<ColorField label="Primary" value="#fff" onChange={vi.fn()} required helpText="Pick a brand colour" />);
     expect(screen.getByText("Pick a brand colour")).toBeInTheDocument();
   });
+
+  it("shows a WCAG contrast badge when contrastBg is given", () => {
+    render(<ColorField label="Text" value="#0f172a" onChange={vi.fn()} contrastBg="#ffffff" />);
+    expect(screen.getByText(/:1$/)).toBeInTheDocument(); // ratio like 17.85:1
+    expect(screen.getByText("AAA")).toBeInTheDocument(); // dark on white passes AAA
+    expect(screen.queryByText("Fix contrast")).not.toBeInTheDocument(); // passing → no fix
+  });
+
+  it("offers a one-click accessible fix when contrast fails", async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    render(<ColorField label="Muted" value="#9ca3af" onChange={onChange} contrastBg="#ffffff" />); // grey on white fails
+    expect(screen.getByText("Fail")).toBeInTheDocument();
+    const fix = screen.getByRole("button", { name: /Fix/i });
+    await user.click(fix);
+    expect(onChange).toHaveBeenCalledTimes(1);
+    // the fixed colour must actually clear AA against white
+    const fixed = onChange.mock.calls[0][0] as string;
+    const { contrastRatio } = await import("@/lib/educo-ui/color");
+    expect(contrastRatio(fixed, "#ffffff")).toBeGreaterThanOrEqual(4.5);
+  });
 });

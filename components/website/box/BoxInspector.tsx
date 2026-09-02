@@ -10,15 +10,19 @@
 import { useState, useRef } from "react";
 import { Plus, Rows3, Columns3, Upload, AlignLeft, AlignCenter, AlignRight, Layers, Move, BringToFront, SendToBack, ChevronUp, ChevronDown, Italic, Underline, LayoutGrid, Maximize2, Sparkles, Paintbrush, Ruler, Link2, Type as TypeIcon, MonitorSmartphone, Bookmark } from "lucide-react";
 import type { SiteTheme } from "@/lib/site-storage";
-import { FONT_CHOICES } from "@/lib/site-storage";
 import type { BoxNode, FlexAlign, FlexJustify } from "@/lib/box-model";
-import { isContainer, isFloating } from "@/lib/box-model";
+import { isContainer, isFloating, addAccItem, removeAccItem, moveAccItem, updateAccItem } from "@/lib/box-model";
+import { ACCORDION_DESIGNS, ACCORDION_DESIGN_COUNT } from "@/lib/educo-ui/accordions";
+import { familyOptions } from "@/lib/educo-ui/fonts";
 import { getPresets, presetKindFor } from "@/lib/box-presets";
 import { ICON_SET, ICON_NAMES } from "./icons";
 import { Tabs, Accordion, Segmented, type SegOption } from "./ui";
-import { ColorPickerPopover, colorToCSS } from "@/components/shared/ColorPalettePicker";
+import EducoColorField from "@/components/shared/EducoColorField";
+import Slider from "@/components/shared/Slider";
+import CompactField from "@/components/shared/CompactField";
+import CompactSelect from "@/components/shared/CompactSelect";
+import CompactTextarea from "@/components/shared/CompactTextarea";
 
-const inputCls = "w-full text-sm px-2.5 py-2 rounded-lg border border-gray-200 dark:border-white/10 bg-transparent text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-indigo-500 outline-none";
 const label = "text-[0.6875rem] font-medium text-gray-500 dark:text-gray-400";
 
 const toRem = (px: number) => +(px / 10).toFixed(2);
@@ -30,23 +34,17 @@ const ALIGN_OPTS: [FlexAlign, string][] = [["stretch", "Fill"], ["start", "Start
 const WEIGHT_OPTS: [string, string][] = [["", "Auto"], ["300", "Light"], ["400", "Normal"], ["500", "Medium"], ["600", "Semibold"], ["700", "Bold"], ["800", "Extra bold"], ["900", "Black"]];
 const TRANSFORM_OPTS: [NonNullable<BoxNode["textTransform"]>, string][] = [["none", "Normal"], ["uppercase", "UPPERCASE"], ["lowercase", "lowercase"], ["capitalize", "Capitalise"]];
 const SHADOW_OPTS: SegOption<string>[] = [{ value: "none", label: "None" }, { value: "sm", label: "Soft" }, { value: "md", label: "Medium" }, { value: "lg", label: "Strong" }, { value: "xl", label: "Bold" }];
-const FONT_LABEL = (f: string) => f.replace(/['"]/g, "").split(",")[0];
 
+// Reuses the shared <Slider> (labelled range control) instead of a raw <input type="range">.
 function Range({ title, value, min, max, fallback, onChange, unit = "px" }: { title: string; value?: number; min: number; max: number; fallback: number; onChange: (n: number) => void; unit?: string }) {
   const v = value ?? fallback;
-  const disp = unit === "rem" ? `${toRem(v)}rem` : `${v}${unit}`;
-  return <label className="block"><span className={label}>{title}: {disp}</span><input type="range" min={min} max={max} value={v} onChange={(e) => onChange(Number(e.target.value))} aria-label={title} className="w-full mt-1 accent-indigo-600" /></label>;
+  return <Slider label={title} value={v} min={min} max={max} onChange={onChange} formatValue={unit === "rem" ? (x) => `${toRem(x)}rem` : (x) => `${x}${unit}`} />;
 }
 
-function ColorRow({ title, value, fallback, onSelect, mode = "matrix" }: { title: string; value?: string; fallback: string; onSelect: (c: string) => void; mode?: "matrix" | "both" }) {
-  return (
-    <div className="flex items-center justify-between gap-2">
-      <span className={label}>{title}</span>
-      <ColorPickerPopover selectedColor={value || fallback} onSelect={onSelect} mode={mode} label={title} align="right" width={272} portal>
-        <button aria-label={title} className="w-8 h-8 rounded-lg border border-gray-200 dark:border-white/10 shadow-sm" style={{ background: colorToCSS(value || fallback) }} />
-      </ColorPickerPopover>
-    </div>
-  );
+// A labelled colour control that reuses the design-system OKLCH palette picker (spectrum + palettes + hex).
+// When `onClear` is given, the picker offers a "None (transparent)" choice and shows a checkerboard when unset.
+function ColorRow({ title, value, fallback, onSelect, onClear }: { title: string; value?: string; fallback: string; onSelect: (c: string) => void; onClear?: () => void; mode?: "matrix" | "both" }) {
+  return <EducoColorField label={title} ariaLabel={title} value={onClear ? (value ?? "") : (value || fallback)} onChange={onSelect} onClear={onClear} />;
 }
 
 /** Width: Fit content / Full width / Custom (% or px). */
@@ -59,7 +57,7 @@ function WidthControl({ node, onPatch }: { node: BoxNode; onPatch: (p: Partial<B
       <span className={label}>Width</span>
       <Segmented full ariaLabel="Width" value={mode} onChange={(m) => onPatch({ width: m === "auto" ? "auto" : m === "fill" ? "fill" : isCustom ? w : "50%" })}
         options={[{ value: "auto", label: "Fit" }, { value: "fill", label: "Full" }, { value: "custom", label: "Custom" }]} />
-      {isCustom && <input value={w} onChange={(e) => onPatch({ width: e.target.value })} placeholder="50% or 240px" aria-label="Custom width" className={inputCls} />}
+      {isCustom && <CompactField ariaLabel="Custom width" value={w} onChange={(v) => onPatch({ width: v })} placeholder="50% or 240px" />}
     </div>
   );
 }
@@ -74,9 +72,7 @@ function SideSpacing({ title, node, base, sides, onPatch, max = 96 }: {
   const [t, r, b, l] = sides;
   return (
     <div className="space-y-1.5">
-      <label className="block"><span className={label}>{title}: {toRem(g)}rem (all sides)</span>
-        <input type="range" min={0} max={max} value={g} onChange={(e) => setPx(base, Number(e.target.value))} aria-label={`${title} all sides`} className="w-full mt-1 accent-indigo-600" />
-      </label>
+      <Slider label={title} value={g} min={0} max={max} onChange={(n) => setPx(base, n)} formatValue={(x) => `${toRem(x)}rem`} />
       <div className="grid grid-cols-4 gap-1">
         {([["Top", t], ["Right", r], ["Bottom", b], ["Left", l]] as const).map(([lab, key]) => (
           <label key={lab} className="flex flex-col items-center gap-0.5">
@@ -172,9 +168,7 @@ export default function BoxInspector({ node, theme, onPatch, onAddChild, onFloat
                   <p className="text-[0.625rem] text-gray-400 flex items-start gap-1"><Move className="w-3 h-3 mt-0.5 shrink-0" /> Drag it anywhere to overlap other blocks. Arrow keys nudge it.</p>
                   <div className="grid grid-cols-2 gap-2">
                     {([["Left %", "left"], ["Top %", "top"]] as const).map(([lab, key]) => (
-                      <label key={key} className="flex flex-col gap-0.5"><span className={label}>{lab}</span>
-                        <input type="number" step={0.5} value={node[key] !== undefined ? Math.round((node[key] as number) * 10) / 10 : 0} onChange={(e) => onPatch({ [key]: Number(e.target.value) })} aria-label={`${lab} position`} className={inputCls} />
-                      </label>
+                      <CompactField key={key} label={lab} ariaLabel={`${lab} position`} type="number" step={0.5} value={node[key] !== undefined ? Math.round((node[key] as number) * 10) / 10 : 0} onChange={(v) => onPatch({ [key]: Number(v) })} />
                     ))}
                   </div>
                   <div className="flex items-center justify-between gap-2">
@@ -201,19 +195,11 @@ export default function BoxInspector({ node, theme, onPatch, onAddChild, onFloat
                 <>
                   <Segmented full ariaLabel="Direction" value={node.direction === "row" ? "row" : "column"} onChange={(v) => onPatch({ direction: v as "row" | "column" })}
                     options={[{ value: "column", label: "Top-to-bottom", Icon: Rows3 }, { value: "row", label: "Side-by-side", Icon: Columns3 }]} />
-                  <label className="block"><span className={label}>Position blocks</span>
-                    <select value={node.justify ?? "start"} onChange={(e) => onPatch({ justify: e.target.value as FlexJustify })} aria-label="Position blocks" className={inputCls}>
-                      {JUSTIFY_OPTS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
-                    </select>
-                  </label>
+                  <CompactSelect label="Position blocks" ariaLabel="Position blocks" value={node.justify ?? "start"} onChange={(v) => onPatch({ justify: v as FlexJustify })} options={JUSTIFY_OPTS.map(([v, l]) => ({ value: v, label: l }))} />
                   <label className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300"><input type="checkbox" checked={!!node.wrap} onChange={(e) => onPatch({ wrap: e.target.checked })} /> Let blocks wrap to a new line</label>
                 </>
               )}
-              <label className="block"><span className={label}>Line up (across)</span>
-                <select value={node.align ?? "stretch"} onChange={(e) => onPatch({ align: e.target.value as FlexAlign })} aria-label="Line up" className={inputCls}>
-                  {ALIGN_OPTS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
-                </select>
-              </label>
+              <CompactSelect label="Line up (across)" ariaLabel="Line up" value={node.align ?? "stretch"} onChange={(v) => onPatch({ align: v as FlexAlign })} options={ALIGN_OPTS.map(([v, l]) => ({ value: v, label: l }))} />
               <Range title="Space between blocks" value={node.gap} min={0} max={64} fallback={16} onChange={(n) => onPatch({ gap: n })} unit="rem" />
             </Accordion>
           )}
@@ -221,21 +207,15 @@ export default function BoxInspector({ node, theme, onPatch, onAddChild, onFloat
           {inGrid && (
             <Accordion title="Grid cell" icon={LayoutGrid}>
               <div className="grid grid-cols-2 gap-2">
-                <label className="block"><span className={label}>Columns wide</span>
-                  <input type="number" min={1} max={12} value={node.colSpan ?? 1} onChange={(e) => onPatch({ colSpan: Math.max(1, Number(e.target.value) || 1) })} aria-label="Columns wide" className={inputCls} />
-                </label>
-                <label className="block"><span className={label}>Rows tall</span>
-                  <input type="number" min={1} max={12} value={node.rowSpan ?? 1} onChange={(e) => onPatch({ rowSpan: Math.max(1, Number(e.target.value) || 1) })} aria-label="Rows tall" className={inputCls} />
-                </label>
+                <CompactField label="Columns wide" ariaLabel="Columns wide" type="number" min={1} max={12} value={node.colSpan ?? 1} onChange={(v) => onPatch({ colSpan: Math.max(1, Number(v) || 1) })} />
+                <CompactField label="Rows tall" ariaLabel="Rows tall" type="number" min={1} max={12} value={node.rowSpan ?? 1} onChange={(v) => onPatch({ rowSpan: Math.max(1, Number(v) || 1) })} />
               </div>
             </Accordion>
           )}
 
           <Accordion title="Size" icon={Maximize2}>
             <WidthControl node={node} onPatch={onPatch} />
-            <label className="block"><span className={label}>Height</span>
-              <input value={node.height ?? ""} onChange={(e) => onPatch({ height: e.target.value || undefined })} placeholder="auto, 300px or 40vh" aria-label="Height" className={inputCls} />
-            </label>
+            <CompactField label="Height" ariaLabel="Height" value={node.height ?? ""} onChange={(v) => onPatch({ height: v || undefined })} placeholder="auto, 300px or 40vh" />
             <label className="flex items-start gap-2 text-xs text-gray-600 dark:text-gray-300">
               <input type="checkbox" checked={!!node.clip} onChange={(e) => onPatch({ clip: e.target.checked })} className="mt-0.5" />
               <span>Trim to size <span className="text-gray-400">— by default a block grows to fit its content; tick this to force a smaller size and hide the overflow.</span></span>
@@ -259,11 +239,7 @@ export default function BoxInspector({ node, theme, onPatch, onAddChild, onFloat
             </div>
             <div className="grid grid-cols-2 gap-2">
               <Range title="Border" value={node.borderWidth} min={0} max={16} fallback={0} onChange={(n) => onPatch({ borderWidth: n })} />
-              <label className="block"><span className={label}>Border style</span>
-                <select value={node.borderStyle ?? "solid"} onChange={(e) => onPatch({ borderStyle: e.target.value as BoxNode["borderStyle"] })} aria-label="Border style" className={inputCls}>
-                  {[["solid", "Solid"], ["dashed", "Dashed"], ["dotted", "Dotted"]].map(([v, l]) => <option key={v} value={v}>{l}</option>)}
-                </select>
-              </label>
+              <CompactSelect label="Border style" ariaLabel="Border style" value={node.borderStyle ?? "solid"} onChange={(v) => onPatch({ borderStyle: v as BoxNode["borderStyle"] })} options={[{ value: "solid", label: "Solid" }, { value: "dashed", label: "Dashed" }, { value: "dotted", label: "Dotted" }]} />
             </div>
             {!!node.borderWidth && <ColorRow title="Border colour" value={node.borderColor} fallback={theme.text} onSelect={(c) => onPatch({ borderColor: c })} />}
             <div className="space-y-1">
@@ -275,7 +251,7 @@ export default function BoxInspector({ node, theme, onPatch, onAddChild, onFloat
           </Accordion>
 
           <Accordion title="Background" icon={Paintbrush}>
-            <ColorRow title="Background colour" value={node.background} fallback={theme.surface} onSelect={(c) => onPatch({ background: c })} mode="both" />
+            <ColorRow title="Background colour" value={node.background} fallback={theme.surface} onSelect={(c) => onPatch({ background: c })} onClear={() => onPatch({ background: undefined })} />
             <button onClick={() => fileRef.current?.click()} className="w-full flex items-center justify-center gap-2 text-sm px-3 py-2 rounded-lg border border-dashed border-gray-300 dark:border-white/15 hover:bg-gray-50 dark:hover:bg-white/5 text-gray-700 dark:text-gray-200"><Upload className="w-3.5 h-3.5" /> {node.bgImage ? "Replace background image" : "Background image"}</button>
             <input ref={fileRef} type="file" accept="image/*" className="hidden" aria-label="Upload background image" onChange={(e) => { const f = e.target.files?.[0]; if (!f) return; const r = new FileReader(); r.onload = () => onPatch({ bgImage: String(r.result) }); r.readAsDataURL(f); e.target.value = ""; }} />
             {node.bgImage && (
@@ -294,7 +270,7 @@ export default function BoxInspector({ node, theme, onPatch, onAddChild, onFloat
         <div>
           <Accordion title="Bookmark" icon={Bookmark} defaultOpen={!container}>
             <label className="block"><span className={label}>Bookmark name</span>
-              <input value={node.anchor ?? ""} onChange={(e) => onPatch({ anchor: e.target.value.replace(/\s+/g, "-").toLowerCase() || undefined })} placeholder="e.g. pricing → link with #pricing" aria-label="Bookmark name" className={inputCls} />
+              <CompactField ariaLabel="Bookmark name" value={node.anchor ?? ""} onChange={(v) => onPatch({ anchor: v.replace(/\s+/g, "-").toLowerCase() || undefined })} placeholder="e.g. pricing → link with #pricing" />
               <span className="text-[0.5625rem] text-gray-400">Give this block a name so a button can jump straight to it.</span>
             </label>
           </Accordion>
@@ -305,42 +281,29 @@ export default function BoxInspector({ node, theme, onPatch, onAddChild, onFloat
             <>
               <Accordion title="Content" icon={TypeIcon}>
                 {(node.type === "text" || node.type === "heading" || node.type === "button") && (
-                  <label className="block"><span className={label}>Text</span>
-                    <textarea value={node.text ?? ""} onChange={(e) => onPatch({ text: e.target.value })} rows={2} aria-label="Text" className={inputCls} />
-                  </label>
+                  <CompactTextarea label="Text" value={node.text ?? ""} onChange={(v) => onPatch({ text: v })} rows={2} />
                 )}
                 {node.type === "button" && (
                   <>
-                    <label className="block"><span className={label}>Link (web address or #bookmark)</span>
-                      <input value={node.href ?? ""} onChange={(e) => onPatch({ href: e.target.value })} placeholder="https://… or #pricing" aria-label="Link" className={inputCls} />
-                    </label>
+                    <CompactField label="Link (web address or #bookmark)" ariaLabel="Link" value={node.href ?? ""} onChange={(v) => onPatch({ href: v })} placeholder="https://… or #pricing" />
                     {pages && pages.filter((p) => p.id !== currentPageId).length > 0 && (
-                      <label className="block"><span className={label}>…or jump to a page</span>
-                        <select value={node.href?.startsWith("page:") ? node.href : ""} onChange={(e) => onPatch({ href: e.target.value })} aria-label="Link to page" className={inputCls}>
-                          <option value="">— choose a page —</option>
-                          {pages.filter((p) => p.id !== currentPageId).map((p) => <option key={p.id} value={`page:${p.id}`}>{p.name}</option>)}
-                        </select>
-                      </label>
+                      <CompactSelect label="…or jump to a page" ariaLabel="Link to page" value={node.href?.startsWith("page:") ? node.href : ""} onChange={(v) => onPatch({ href: v })}
+                        options={[{ value: "", label: "— choose a page —" }, ...pages.filter((p) => p.id !== currentPageId).map((p) => ({ value: `page:${p.id}`, label: p.name }))]} />
                     )}
                     <label className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300"><input type="checkbox" checked={!!node.newTab} onChange={(e) => onPatch({ newTab: e.target.checked })} /> Open in a new tab</label>
                   </>
                 )}
                 {node.type === "video" && (
-                  <label className="block"><span className={label}>Video link</span>
-                    <input value={node.src ?? ""} onChange={(e) => onPatch({ src: e.target.value })} placeholder="YouTube, Vimeo or .mp4 link" aria-label="Video URL" className={inputCls} />
-                    <span className="text-[0.5625rem] text-gray-400">YouTube/Vimeo links play automatically; a direct .mp4 plays inline.</span>
-                  </label>
+                  <CompactField label="Video link" ariaLabel="Video URL" value={node.src ?? ""} onChange={(v) => onPatch({ src: v })} placeholder="YouTube, Vimeo or .mp4 link" helpText="YouTube/Vimeo links play automatically; a direct .mp4 plays inline." />
                 )}
                 {node.type === "embed" && (
-                  <label className="block"><span className={label}>Embed code</span>
-                    <textarea value={node.html ?? ""} onChange={(e) => onPatch({ html: e.target.value })} rows={4} placeholder="Paste an <iframe> or any HTML" aria-label="Embed code" className={`${inputCls} font-mono text-[0.6875rem]`} />
-                  </label>
+                  <CompactTextarea label="Embed code" value={node.html ?? ""} onChange={(v) => onPatch({ html: v })} rows={4} placeholder="Paste an <iframe> or any HTML" textareaClassName="font-mono text-[0.6875rem]" />
                 )}
                 {node.type === "icon" && (
                   <>
                     <div className="space-y-1.5">
                       <span className={label}>Choose an icon</span>
-                      <input value={iconQuery} onChange={(e) => setIconQuery(e.target.value)} placeholder="Search icons…" aria-label="Search icons" className={inputCls} />
+                      <CompactField ariaLabel="Search icons" value={iconQuery} onChange={setIconQuery} placeholder="Search icons…" />
                       <div className="grid grid-cols-6 gap-1 max-h-44 overflow-y-auto p-1 rounded-lg border border-gray-200 dark:border-white/10">
                         {ICON_NAMES.filter((n) => n.toLowerCase().includes(iconQuery.trim().toLowerCase())).map((name) => { const Ico = ICON_SET[name]; return <button key={name} onClick={() => onPatch({ icon: name })} aria-label={`Icon ${name}`} title={name} className={`aspect-square flex items-center justify-center rounded-md ${(node.icon ?? "Star") === name ? "bg-indigo-600 text-white" : "text-gray-500 hover:bg-gray-100 dark:hover:bg-white/10"}`}><Ico className="w-4 h-4" /></button>; })}
                       </div>
@@ -359,42 +322,123 @@ export default function BoxInspector({ node, theme, onPatch, onAddChild, onFloat
                 {node.type === "list" && (
                   <>
                     <Segmented full ariaLabel="List style" value={node.listStyle ?? "bullet"} onChange={(v) => onPatch({ listStyle: v as "bullet" | "number" })} options={[{ value: "bullet", label: "Bulleted" }, { value: "number", label: "Numbered" }]} />
-                    <label className="block"><span className={label}>Items (one per line)</span>
-                      <textarea value={(node.listItems ?? []).join("\n")} onChange={(e) => onPatch({ listItems: e.target.value.split("\n") })} rows={4} aria-label="List items" className={inputCls} />
-                    </label>
+                    <CompactTextarea label="Items (one per line)" ariaLabel="List items" value={(node.listItems ?? []).join("\n")} onChange={(v) => onPatch({ listItems: v.split("\n") })} rows={4} />
+                  </>
+                )}
+                {node.type === "component" && node.component === "accordion" && (
+                  <>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className={label}>Design</span>
+                        <span className="text-[0.5625rem] text-gray-400">{ACCORDION_DESIGN_COUNT} styles · tap to apply</span>
+                      </div>
+                      {ACCORDION_DESIGNS.map((g) => (
+                        <div key={g.group} className="space-y-1">
+                          <div className="text-[0.5625rem] font-semibold uppercase tracking-wide text-gray-400/90">{g.group}</div>
+                          <div className="flex flex-wrap gap-1" role="listbox" aria-label={`${g.group} accordion designs`}>
+                            {g.items.map((v) => {
+                              const on = (node.variant ?? "") === v.id;
+                              return (
+                                <button key={v.id || "boxed"} role="option" aria-selected={on} aria-label={`${v.label} design`} title={v.label}
+                                  onClick={() => onPatch({ variant: v.id })}
+                                  className={`px-2 py-1 rounded-md text-[0.6875rem] font-medium border transition-colors ${on ? "bg-indigo-600 border-transparent text-white" : "border-gray-200 dark:border-white/10 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-white/10"}`}>
+                                  {v.label}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <label className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300"><input type="checkbox" checked={!!node.accMultiOpen} onChange={(e) => onPatch({ accMultiOpen: e.target.checked })} /> Allow more than one open at once</label>
+                    <div className="space-y-2">
+                      <span className={label}>Items</span>
+                      {(node.accItems ?? []).map((it, i) => (
+                        <div key={it.id} className="rounded-lg border border-gray-200 dark:border-white/10 p-2 space-y-1.5">
+                          <div className="flex items-center gap-1">
+                            <div className="flex-1"><CompactField ariaLabel={`Item ${i + 1} title`} value={it.title} onChange={(v) => onPatch({ accItems: updateAccItem(node, it.id, { title: v }).accItems })} placeholder="Question / title" /></div>
+                            <button onClick={() => onPatch({ accItems: moveAccItem(node, it.id, -1).accItems })} disabled={i === 0} aria-label="Move item up" className="p-1 rounded text-gray-400 hover:text-gray-700 disabled:opacity-30"><ChevronUp className="w-3.5 h-3.5" /></button>
+                            <button onClick={() => onPatch({ accItems: moveAccItem(node, it.id, 1).accItems })} disabled={i === (node.accItems?.length ?? 0) - 1} aria-label="Move item down" className="p-1 rounded text-gray-400 hover:text-gray-700 disabled:opacity-30"><ChevronDown className="w-3.5 h-3.5" /></button>
+                          </div>
+                          <CompactTextarea ariaLabel={`Item ${i + 1} body`} value={it.body} onChange={(v) => onPatch({ accItems: updateAccItem(node, it.id, { body: v }).accItems })} rows={2} placeholder="Answer / body" />
+                          <div className="grid grid-cols-2 gap-1">
+                            <CompactField ariaLabel={`Item ${i + 1} meta`} value={it.meta ?? ""} onChange={(v) => onPatch({ accItems: updateAccItem(node, it.id, { meta: v || undefined }).accItems })} placeholder="Meta (e.g. $10)" />
+                            <CompactField ariaLabel={`Item ${i + 1} image`} value={it.media ?? ""} onChange={(v) => onPatch({ accItems: updateAccItem(node, it.id, { media: v || undefined }).accItems })} placeholder="Image URL" />
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <label className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300"><input type="checkbox" checked={!!it.open} onChange={(e) => onPatch({ accItems: updateAccItem(node, it.id, { open: e.target.checked || undefined }).accItems })} /> Open by default</label>
+                            <button onClick={() => onPatch({ accItems: removeAccItem(node, it.id).accItems })} disabled={(node.accItems?.length ?? 0) <= 1} aria-label={`Remove item ${i + 1}`} className="text-xs text-red-500 hover:text-red-600 disabled:opacity-30">Remove</button>
+                          </div>
+                        </div>
+                      ))}
+                      <button onClick={() => onPatch({ accItems: addAccItem(node).accItems })} className="w-full flex items-center justify-center gap-1.5 py-2 rounded-lg border border-dashed border-gray-300 dark:border-white/15 text-xs text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5"><Plus className="w-3.5 h-3.5" /> Add item</button>
+                    </div>
                   </>
                 )}
               </Accordion>
+
+              {node.type === "component" && (
+                <Accordion title="Component colours" icon={Paintbrush}>
+                  <p className="text-[0.625rem] text-gray-400 -mt-1">These re-skin the whole component — and any other Educo component — because they set its design tokens. Type a hex, use the native picker, or the eyedropper.</p>
+                  {(() => {
+                    const setTok = (k: string, hex: string) => onPatch({ tokenOverrides: { ...node.tokenOverrides, [k]: hex } });
+                    const tok = (k: string) => node.tokenOverrides?.[k];
+                    const bg = tok("--eu-color-surface") || theme.surface;
+                    return (
+                      <div className="space-y-2.5">
+                        <EducoColorField label="Brand" value={tok("--eu-color-brand") || theme.primary} onChange={(hex) => setTok("--eu-color-brand", hex)} />
+                        <EducoColorField label="Accent" value={tok("--eu-color-accent-500") || theme.accent} onChange={(hex) => setTok("--eu-color-accent-500", hex)} />
+                        <EducoColorField label="Surface" value={tok("--eu-color-surface") || theme.surface} onChange={(hex) => setTok("--eu-color-surface", hex)} onClear={() => setTok("--eu-color-surface", "transparent")} />
+                        <EducoColorField label="Background" value={tok("--eu-color-bg") || theme.background} onChange={(hex) => setTok("--eu-color-bg", hex)} onClear={() => setTok("--eu-color-bg", "transparent")} />
+                        <EducoColorField label="Text" value={tok("--eu-color-text") || theme.text} onChange={(hex) => setTok("--eu-color-text", hex)} contrastBg={bg} />
+                        <EducoColorField label="Muted text" value={tok("--eu-color-muted") || theme.textMuted} onChange={(hex) => setTok("--eu-color-muted", hex)} contrastBg={bg} />
+                        <EducoColorField label="On-brand" value={tok("--eu-color-on-brand") || "#ffffff"} onChange={(hex) => setTok("--eu-color-on-brand", hex)} contrastBg={tok("--eu-color-brand") || theme.primary} />
+                      </div>
+                    );
+                  })()}
+                  {node.tokenOverrides && Object.keys(node.tokenOverrides).length > 0 && (
+                    <button onClick={() => onPatch({ tokenOverrides: undefined })} className="text-xs text-indigo-600 hover:text-indigo-500">Reset colours</button>
+                  )}
+                </Accordion>
+              )}
+
+              {node.type === "component" && (
+                <Accordion title="Typography" icon={TypeIcon}>
+                  <CompactSelect label="Font" ariaLabel="Font" value={node.fontFamily ?? ""} onChange={(v) => onPatch({ fontFamily: v || undefined })}
+                    options={[{ value: "", label: "Theme default" }, ...familyOptions()]} />
+                  <Range title="Text size" value={node.fontSize} min={10} max={48} fallback={16} onChange={(n) => onPatch({ fontSize: n })} unit="rem" />
+                  <div className="grid grid-cols-2 gap-2">
+                    <CompactSelect label="Boldness" ariaLabel="Boldness" value={node.fontWeight?.toString() ?? ""} onChange={(v) => onPatch({ fontWeight: v === "" ? undefined : Number(v) })} options={WEIGHT_OPTS.map(([v, l]) => ({ value: v, label: l }))} />
+                    <CompactSelect label="Capitalisation" ariaLabel="Capitalisation" value={node.textTransform ?? "none"} onChange={(v) => onPatch({ textTransform: v as BoxNode["textTransform"] })} options={TRANSFORM_OPTS.map(([v, l]) => ({ value: v, label: l }))} />
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <CompactField label="Line spacing" ariaLabel="Line spacing" type="number" step={0.05} min={0.8} max={3} value={node.lineHeight ?? ""} placeholder="auto" onChange={(v) => onPatch({ lineHeight: v === "" ? undefined : Number(v) })} />
+                    <CompactField label="Letter spacing" ariaLabel="Letter spacing" type="number" step={0.5} value={node.letterSpacing ?? ""} placeholder="0px" onChange={(v) => onPatch({ letterSpacing: v === "" ? undefined : Number(v) })} />
+                  </div>
+                  <p className="text-[0.5625rem] text-gray-400">Font &amp; size cascade into every item. For text <em>colour</em>, use “Component colours → Text”.</p>
+                </Accordion>
+              )}
+
+              {node.type === "component" && (
+                <Accordion title="Advanced CSS" icon={Sparkles} defaultOpen={false}>
+                  <CompactTextarea label="Custom CSS declarations" ariaLabel="Advanced CSS" value={node.advancedCss ?? ""} onChange={(v) => onPatch({ advancedCss: v || undefined })} rows={4} placeholder={"letter-spacing: .02em;\nbackdrop-filter: blur(6px);"} textareaClassName="font-mono text-[0.6875rem]"
+                    helpText={<>One <code>property: value;</code> per line. Applied to the component; sanitised on export (no selectors, @-rules, or remote URLs).</>} />
+                </Accordion>
+              )}
 
               {textual && (
                 <Accordion title="Text style" icon={TypeIcon}>
                   <Range title="Text size" value={node.fontSize} min={10} max={72} fallback={node.type === "heading" ? 32 : 16} onChange={(n) => onPatch({ fontSize: n })} unit="rem" />
                   <ColorRow title="Text colour" value={node.color} fallback={theme.text} onSelect={(c) => onPatch({ color: c })} />
-                  <label className="block"><span className={label}>Font</span>
-                    <select value={node.fontFamily ?? ""} onChange={(e) => onPatch({ fontFamily: e.target.value || undefined })} aria-label="Font" className={inputCls}>
-                      <option value="">Theme default</option>
-                      {FONT_CHOICES.map((f) => <option key={f} value={f}>{FONT_LABEL(f)}</option>)}
-                    </select>
-                  </label>
+                  <CompactSelect label="Font" ariaLabel="Font" value={node.fontFamily ?? ""} onChange={(v) => onPatch({ fontFamily: v || undefined })}
+                    options={[{ value: "", label: "Theme default" }, ...familyOptions()]} />
                   <div className="grid grid-cols-2 gap-2">
-                    <label className="block"><span className={label}>Boldness</span>
-                      <select value={node.fontWeight?.toString() ?? ""} onChange={(e) => onPatch({ fontWeight: e.target.value === "" ? undefined : Number(e.target.value) })} aria-label="Boldness" className={inputCls}>
-                        {WEIGHT_OPTS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
-                      </select>
-                    </label>
-                    <label className="block"><span className={label}>Capitalisation</span>
-                      <select value={node.textTransform ?? "none"} onChange={(e) => onPatch({ textTransform: e.target.value as BoxNode["textTransform"] })} aria-label="Capitalisation" className={inputCls}>
-                        {TRANSFORM_OPTS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
-                      </select>
-                    </label>
+                    <CompactSelect label="Boldness" ariaLabel="Boldness" value={node.fontWeight?.toString() ?? ""} onChange={(v) => onPatch({ fontWeight: v === "" ? undefined : Number(v) })} options={WEIGHT_OPTS.map(([v, l]) => ({ value: v, label: l }))} />
+                    <CompactSelect label="Capitalisation" ariaLabel="Capitalisation" value={node.textTransform ?? "none"} onChange={(v) => onPatch({ textTransform: v as BoxNode["textTransform"] })} options={TRANSFORM_OPTS.map(([v, l]) => ({ value: v, label: l }))} />
                   </div>
                   <div className="grid grid-cols-2 gap-2">
-                    <label className="block"><span className={label}>Line spacing</span>
-                      <input type="number" step={0.05} min={0.8} max={3} value={node.lineHeight ?? ""} placeholder="auto" onChange={(e) => onPatch({ lineHeight: e.target.value === "" ? undefined : Number(e.target.value) })} aria-label="Line spacing" className={inputCls} />
-                    </label>
-                    <label className="block"><span className={label}>Letter spacing</span>
-                      <input type="number" step={0.5} value={node.letterSpacing ?? ""} placeholder="0px" onChange={(e) => onPatch({ letterSpacing: e.target.value === "" ? undefined : Number(e.target.value) })} aria-label="Letter spacing" className={inputCls} />
-                    </label>
+                    <CompactField label="Line spacing" ariaLabel="Line spacing" type="number" step={0.05} min={0.8} max={3} value={node.lineHeight ?? ""} placeholder="auto" onChange={(v) => onPatch({ lineHeight: v === "" ? undefined : Number(v) })} />
+                    <CompactField label="Letter spacing" ariaLabel="Letter spacing" type="number" step={0.5} value={node.letterSpacing ?? ""} placeholder="0px" onChange={(v) => onPatch({ letterSpacing: v === "" ? undefined : Number(v) })} />
                   </div>
                   <AlignRow />
                   <div className="flex items-center gap-1">

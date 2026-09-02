@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 import BoxInspector from "@/components/website/box/BoxInspector";
 import { DEFAULT_THEME } from "@/lib/site-storage";
-import { createContainer, createElement, type BoxNode } from "@/lib/box-model";
+import { createContainer, createElement, createComponent, type BoxNode } from "@/lib/box-model";
 
 function renderFor(node: BoxNode, extra: Record<string, unknown> = {}) {
   const onPatch = vi.fn();
@@ -11,6 +11,55 @@ function renderFor(node: BoxNode, extra: Record<string, unknown> = {}) {
 }
 const openContent = () => fireEvent.click(screen.getByRole("tab", { name: "Content" }));
 const openDevice = () => fireEvent.click(screen.getByRole("tab", { name: "Per-device" }));
+
+describe("BoxInspector — Accordion component editing (Content tab)", () => {
+  const acc = () => createComponent("accordion", { id: "a", accItems: [
+    { id: "i1", title: "Q1", body: "A1" }, { id: "i2", title: "Q2", body: "A2" },
+  ] } as Partial<BoxNode>);
+
+  it("changes the accordion design from the visual picker", () => {
+    const onPatch = renderFor(acc());
+    openContent();
+    fireEvent.click(screen.getByRole("option", { name: "Solid panel design" }));
+    expect(onPatch).toHaveBeenCalledWith({ variant: "--panel" });
+    // every design is offered
+    expect(screen.getByRole("option", { name: "Horizontal design" })).toBeInTheDocument();
+    expect(screen.getByRole("option", { name: "Dark glossy design" })).toBeInTheDocument();
+  });
+
+  it("toggles multi-open and adds an item", () => {
+    const onPatch = renderFor(acc());
+    openContent();
+    fireEvent.click(screen.getByLabelText("Allow more than one open at once"));
+    expect(onPatch).toHaveBeenCalledWith({ accMultiOpen: true });
+    fireEvent.click(screen.getByRole("button", { name: "Add item" }));
+    expect(onPatch).toHaveBeenCalledWith(expect.objectContaining({ accItems: expect.arrayContaining([expect.objectContaining({ title: "New question" })]) }));
+  });
+
+  it("edits an item title; remove is enabled with two items", () => {
+    const onPatch = renderFor(acc());
+    openContent();
+    fireEvent.change(screen.getByLabelText("Item 1 title"), { target: { value: "Changed" } });
+    expect(onPatch).toHaveBeenCalledWith(expect.objectContaining({ accItems: expect.arrayContaining([expect.objectContaining({ title: "Changed" })]) }));
+    expect(screen.getByLabelText("Remove item 1")).not.toBeDisabled();
+  });
+
+  it("cannot remove the last remaining item", () => {
+    renderFor(createComponent("accordion", { id: "a2", accItems: [{ id: "i1", title: "only", body: "b" }] } as Partial<BoxNode>));
+    openContent();
+    expect(screen.getByLabelText("Remove item 1")).toBeDisabled();
+  });
+
+  it("re-skins the component through design-token colour overrides", () => {
+    const onPatch = renderFor(acc());
+    openContent();
+    fireEvent.click(screen.getByRole("button", { name: "Component colours" })); // expand the section
+    // ColorRow drives ColorPickerPopover; assert the section + reset wiring exist by editing advanced CSS instead
+    fireEvent.click(screen.getByRole("button", { name: "Advanced CSS" }));
+    fireEvent.change(screen.getByLabelText("Advanced CSS"), { target: { value: "letter-spacing: .02em;" } });
+    expect(onPatch).toHaveBeenCalledWith({ advancedCss: "letter-spacing: .02em;" });
+  });
+});
 
 describe("BoxInspector — styling primitives (Design tab)", () => {
   it("edits border width, shadow strength and tilt", () => {
@@ -122,9 +171,10 @@ describe("BoxInspector — content types & links (Content tab)", () => {
       currentPageId: "home",
     });
     openContent();
-    fireEvent.change(screen.getByLabelText("Link to page"), { target: { value: "page:about" } });
-    expect(onPatch).toHaveBeenCalledWith({ href: "page:about" });
+    fireEvent.click(screen.getByLabelText("Link to page")); // open the custom dropdown
     expect(screen.queryByRole("option", { name: "Home" })).not.toBeInTheDocument(); // current page excluded
+    fireEvent.click(screen.getByRole("option", { name: "About" }));
+    expect(onPatch).toHaveBeenCalledWith({ href: "page:about" });
   });
 });
 

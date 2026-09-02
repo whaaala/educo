@@ -8,8 +8,9 @@
  */
 
 import { useEffect, useId, useState } from "react";
-import { Pipette } from "lucide-react";
+import { Pipette, Wand2 } from "lucide-react";
 import ErrorMessage from "./ErrorMessage";
+import { contrastRatio, nearestAccessibleColor } from "@/lib/educo-ui/color";
 
 export interface ColorFieldProps {
   label: string;
@@ -21,6 +22,10 @@ export interface ColorFieldProps {
   helpText?: string;
   /** Show the screen eyedropper button when the browser supports the EyeDropper API (default true). */
   eyedropper?: boolean;
+  /** When set, shows a live WCAG contrast badge (this colour vs `contrastBg`) + a one-click accessible fix. */
+  contrastBg?: string;
+  /** Grade the contrast for large text (≥3:1) instead of body text (≥4.5:1). */
+  largeText?: boolean;
   className?: string;
 }
 
@@ -40,7 +45,7 @@ function normalizeHex(raw: string): string | null {
 
 export default function ColorField({
   label, value, onChange, disabled = false, required = false, error, helpText,
-  eyedropper = true, className = "",
+  eyedropper = true, contrastBg, largeText = false, className = "",
 }: ColorFieldProps) {
   const id = useId();
   const [text, setText] = useState(value);
@@ -103,6 +108,32 @@ export default function ColorField({
           </button>
         )}
       </div>
+      {/* WCAG contrast checker + one-click accessible fix (app-wide guardrail) */}
+      {contrastBg && (() => {
+        const min = largeText ? 3 : 4.5;
+        const ratio = contrastRatio(normalized, contrastBg);
+        const ok = ratio >= min;
+        const grade = ratio >= 7 ? "AAA" : ratio >= 4.5 ? "AA" : ratio >= 3 ? "AA Large" : "Fail";
+        return (
+          <div className="flex items-center justify-between gap-2 text-xs">
+            <span className="inline-flex items-center gap-1.5">
+              <span className="inline-block h-3 w-3 shrink-0 rounded ring-1 ring-inset ring-black/10 dark:ring-white/15" style={{ background: contrastBg }} aria-hidden="true" />
+              <span className="font-mono tabular-nums text-gray-500 dark:text-gray-400 midnight:text-slate-400 purple:text-purple-300">{ratio.toFixed(2)}:1</span>
+              <span className={`rounded px-1.5 py-0.5 font-bold text-white ${ok ? "bg-green-600" : ratio >= 3 ? "bg-amber-500" : "bg-red-600"}`}>{grade}</span>
+            </span>
+            {!ok && !disabled && (
+              <button
+                type="button"
+                onClick={() => onChange(nearestAccessibleColor(normalized, contrastBg, min))}
+                className="inline-flex items-center gap-1 rounded-md px-2 py-0.5 font-medium text-blue-600 transition hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-500/10 midnight:text-cyan-400 midnight:hover:bg-cyan-500/10 purple:text-pink-400 purple:hover:bg-pink-500/10"
+                title={`Nudge ${label} to the nearest shade that meets WCAG ${largeText ? "AA large (3:1)" : "AA (4.5:1)"}`}
+              >
+                <Wand2 className="h-3 w-3" aria-hidden="true" /> Fix contrast
+              </button>
+            )}
+          </div>
+        );
+      })()}
       {error ? <ErrorMessage message={error} /> : helpText ? (
         <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-slate-400 purple:text-purple-300">{helpText}</p>
       ) : null}

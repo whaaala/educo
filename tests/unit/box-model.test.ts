@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import {
-  createContainer, createGrid, createElement, createRoot,
+  createContainer, createGrid, createElement, createRoot, createComponent,
+  addAccItem, removeAccItem, moveAccItem, updateAccItem, sanitizeCssDeclarations, isEmptyBox,
   findBox, findParent, isAncestor, updateBox, insertBox, removeBox, moveBoxStep, moveBox,
   containerStyle, childStyle, paddingCSS, marginCSS, sizeToCSS, flexForWidth, fillMainAxis, u, newBoxId, dropIndexAmong,
   makeRowBand, normalizeRowBands, clampRowWidths, widthPct,
@@ -9,6 +10,46 @@ import {
   resolveResponsive, updateBoxResponsive, hasOverride, clearOverride,
   type BoxNode,
 } from "@/lib/box-model";
+
+describe("box-model — Educo UI component instances", () => {
+  it("createComponent('accordion') makes a component node with starter items", () => {
+    const acc = createComponent("accordion");
+    expect(acc.type).toBe("component");
+    expect(acc.component).toBe("accordion");
+    expect(acc.variant).toBe("");
+    expect(acc.width).toBe("100%");                 // fills the section it's dropped into
+    expect((acc.accItems ?? []).length).toBeGreaterThanOrEqual(3);
+    expect(isEmptyBox(acc)).toBe(false);            // never treated as an empty (shrinkable) box
+  });
+
+  it("accordion item helpers add / remove / move / update immutably", () => {
+    const a = createComponent("accordion", { accItems: [{ id: "x", title: "one", body: "b1" }] } as Partial<BoxNode>);
+    const added = addAccItem(a);
+    expect(added.accItems!.length).toBe(2);
+    expect(a.accItems!.length).toBe(1);             // original untouched
+
+    const renamed = updateAccItem(added, "x", { title: "ONE", meta: "$5" });
+    expect(renamed.accItems![0]).toMatchObject({ title: "ONE", meta: "$5" });
+    expect(added.accItems![0].title).toBe("one");   // immutable
+
+    const moved = moveAccItem(renamed, renamed.accItems![1].id, -1);
+    expect(moved.accItems![0].id).toBe(renamed.accItems![1].id);
+
+    const removed = removeAccItem(moved, "x");
+    expect(removed.accItems!.some((it) => it.id === "x")).toBe(false);
+  });
+
+  it("sanitizeCssDeclarations keeps safe declarations and rejects breakouts / remote urls", () => {
+    expect(sanitizeCssDeclarations("color: red; letter-spacing: .02em"))
+      .toBe("color: red; letter-spacing: .02em;");
+    expect(sanitizeCssDeclarations("color:red} body{display:none")).toBe("");      // selector breakout
+    expect(sanitizeCssDeclarations("@import url(evil.css)")).toBe("");             // at-rule
+    expect(sanitizeCssDeclarations("background: url(https://x/y.png)")).toBe("");  // remote url
+    expect(sanitizeCssDeclarations("background: url('data:image/png;base64,AA')"))
+      .toContain("background:");                                                    // data: url allowed
+    expect(sanitizeCssDeclarations(undefined)).toBe("");
+  });
+});
 
 describe("box-model — factories", () => {
   it("createContainer defaults to a flex column that fills its parent", () => {
@@ -427,6 +468,7 @@ describe("box-model — floating layers (free overlap)", () => {
     expect(a.minHeight).toBe(200);
     expect(a.zIndex).toBe(1); // first floating child → z 1
     expect(a.marginLeft).toBeUndefined(); expect(a.alignSelf).toBeUndefined(); // flow-only styling cleared
+    expect(a.clip).toBe(true); // a floating card can be resized (W+H) below its content
     // It became a DIRECT child of the positioning parent (out of its row band).
     expect(findParent(next, "a")!.parent.id).toBe("sec");
   });

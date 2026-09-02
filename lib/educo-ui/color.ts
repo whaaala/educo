@@ -99,3 +99,22 @@ export function contrastRatio(a: string, b: string): number {
   return Math.round(((hi + 0.05) / (lo + 0.05)) * 100) / 100;
 }
 export const passesAA = (fg: string, bg: string, large = false) => contrastRatio(fg, bg) >= (large ? 3 : 4.5);
+
+/**
+ * Nudge a foreground colour to the NEAREST accessible shade against `bg` — the theme editor's one-click
+ * "fix contrast". Keeps the hue and chroma, walks lightness (in OKLCH, away from the background) until it
+ * clears `minRatio` (AA body 4.5 by default; pass 3 for large text). Returns hex; falls back to black/white.
+ */
+export function nearestAccessibleColor(fg: string, bg: string, minRatio = 4.5): string {
+  if (contrastRatio(fg, bg) >= minRatio) return fg;
+  const { L, C, h } = hexToOklch(fg);
+  const dir = relativeLuminance(bg) > 0.4 ? -1 : 1; // darken on a light bg, lighten on a dark bg
+  let l = L;
+  for (let i = 0; i < 110; i++) {
+    l = clamp(l + dir * 0.01);
+    const cand = oklchToHex({ L: l, C, h });
+    if (contrastRatio(cand, bg) >= minRatio) return cand;
+    if (l <= 0 || l >= 1) break;
+  }
+  return contrastRatio("#000000", bg) >= contrastRatio("#ffffff", bg) ? "#000000" : "#ffffff";
+}

@@ -8,7 +8,7 @@
  * The whole site persists to localStorage.
  */
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Plus, Smartphone, Tablet, Laptop, Monitor, Tv, Maximize2, Undo2, Redo2, Eye, X, Home, Trash2, Files, Download, Settings2, PanelLeftOpen } from "lucide-react";
 import { useTheme } from "@/contexts/ThemeContext";
 import { DEFAULT_THEME, resolveSiteTheme } from "@/lib/site-storage";
@@ -19,7 +19,7 @@ import {
 } from "@/lib/box-model";
 import { blockForKind } from "@/lib/box-presets";
 import {
-  type BoxSite, siteFromRoot, coerceSite, normalizeSite, setPageRoot, addPage, deletePage, renamePage, setHomePage, duplicatePage, emptyPageRoot, pageIdFromHref,
+  type BoxSite, siteFromRoot, coerceSite, normalizeSite, setPageRoot, addPage, deletePage, renamePage, setHomePage, duplicatePage, emptyPageRoot,
 } from "@/lib/box-site";
 import { renderSiteHTML, downloadHTML } from "@/lib/box-export";
 import BoxCanvas, { measureFloatGeom } from "@/components/website/box/BoxCanvas";
@@ -108,6 +108,15 @@ export default function BoxDemoPage() {
 
   const renderTheme = useMemo(() => resolveSiteTheme(DEFAULT_THEME, appTheme), [appTheme]);
 
+  // ── Isolated preview (Phase 0.4): render the ACTUAL export HTML in a sandboxed iframe, so the
+  // preview is a true WYSIWYG of the exported, self-contained site — no editor styles bleed in. ──
+  const previewFrameRef = useRef<HTMLIFrameElement>(null);
+  const previewHTML = useMemo(() => (preview ? renderSiteHTML(site, renderTheme) : ""), [preview, site, renderTheme]);
+  const scrollPreviewToPage = useCallback((path: string) => {
+    const win = previewFrameRef.current?.contentWindow;
+    if (win) win.location.hash = `#${path}`;
+  }, []);
+
   if (!site || !activePage || !root) return <PageLoader isLoading loadingText="Box Builder" subText="Preparing your canvas…" />;
 
   const selected = selectedIds.length === 1 ? findBox(root, selectedIds[0]) : null;
@@ -165,13 +174,6 @@ export default function BoxDemoPage() {
     commit(insertBox(root, parentId, target.children?.length ?? 0, blockForKind(kind, patch)));
   };
 
-  // In Preview, a click on a page link switches the active page (anchors scroll natively).
-  const onPreviewClick = (e: React.MouseEvent) => {
-    const a = (e.target as HTMLElement).closest?.("a") as HTMLAnchorElement | null;
-    const pid = pageIdFromHref(a?.getAttribute("href") ?? undefined);
-    if (pid && site.pages.some((p) => p.id === pid)) { e.preventDefault(); switchPage(pid); }
-  };
-
   const frameW = DEVICES.find((d) => d.id === device)!.w;
   const pageList = site.pages.map((p) => ({ id: p.id, name: p.name }));
 
@@ -183,17 +185,22 @@ export default function BoxDemoPage() {
           <button onClick={() => setPreview(false)} className="inline-flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700"><X className="w-3.5 h-3.5" /> Exit preview</button>
           <nav className="flex items-center gap-1 overflow-x-auto" aria-label="Pages">
             {site.pages.map((p) => (
-              <button key={p.id} onClick={() => switchPage(p.id)} aria-current={p.id === activePage.id} className={`text-xs px-2.5 py-1 rounded-md whitespace-nowrap ${p.id === activePage.id ? "bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 font-semibold" : "text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100 dark:hover:bg-gray-800 midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5"}`}>{p.name}{p.id === site.homeId ? " ·" : ""}</button>
+              <button key={p.id} onClick={() => { switchPage(p.id); scrollPreviewToPage(p.path); }} aria-current={p.id === activePage.id} className={`text-xs px-2.5 py-1 rounded-md whitespace-nowrap ${p.id === activePage.id ? "bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 font-semibold" : "text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100 dark:hover:bg-gray-800 midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5"}`}>{p.name}{p.id === site.homeId ? " ·" : ""}</button>
             ))}
           </nav>
           <div className="ml-auto flex items-center rounded-lg border border-gray-300 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 p-0.5" role="group" aria-label="Preview screen size">
             {DEVICES.map((d) => <button key={d.id} onClick={() => setDevice(d.id)} aria-label={`${d.label} preview`} aria-pressed={device === d.id} className={`p-1.5 rounded-md ${device === d.id ? "bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300" : "text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5"}`}><d.Icon className="w-4 h-4" /></button>)}
           </div>
         </div>
-        <div className="flex-1 overflow-auto p-6 flex justify-center">
-          <div onClickCapture={onPreviewClick} className={`bg-white shadow-2xl rounded-xl ring-1 ring-black/10 shrink-0 h-fit ${frameW ? "" : "w-full max-w-5xl"}`} style={{ width: frameW ?? undefined, fontFamily: renderTheme.bodyFont, containerType: "inline-size" }}>
-            <BoxCanvas root={root} theme={renderTheme} minHeight={PAGE_MIN_H} editable={false} onChange={() => {}} breakpoint={bp} />
-          </div>
+        <div className="flex-1 overflow-hidden p-6 flex justify-center">
+          <iframe
+            ref={previewFrameRef}
+            title="Site preview"
+            srcDoc={previewHTML}
+            sandbox="allow-same-origin allow-scripts allow-popups"
+            className="bg-white shadow-2xl rounded-xl ring-1 ring-black/10 shrink-0 border-0"
+            style={{ width: frameW ?? "100%", maxWidth: frameW ? undefined : "64rem", height: "100%" }}
+          />
         </div>
       </div>
     );

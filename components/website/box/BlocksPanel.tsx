@@ -7,7 +7,7 @@
  */
 
 import { useState } from "react";
-import { Square, Grid3x3, Columns3, Type, Heading as HeadingIcon, MousePointerClick, Image as ImageIcon, Video, Sparkles, List, Minus, Code2, SeparatorHorizontal, Quote, SquareStack, BarChart3, Tag, Star, PanelLeftClose, Plus, type LucideIcon } from "lucide-react";
+import { Square, Grid3x3, Columns3, Type, Heading as HeadingIcon, MousePointerClick, Image as ImageIcon, Video, Sparkles, List, Minus, Code2, SeparatorHorizontal, Quote, SquareStack, BarChart3, Tag, Star, ChevronDown, PanelLeftClose, Plus, type LucideIcon } from "lucide-react";
 import type { BoxNode } from "@/lib/box-model";
 import type { SiteTheme } from "@/lib/site-storage";
 import { getPresets } from "@/lib/box-presets";
@@ -35,6 +35,7 @@ const GROUPS: { name: string; blocks: Block[] }[] = [
     { kind: "embed", label: "Embed", Icon: Code2, hint: "Paste code / an iframe" },
   ] },
   { name: "Components", blocks: [
+    { kind: "accordion", label: "Accordion", Icon: ChevronDown, hint: "Expandable Q&A / FAQ — 54 designs" },
     { kind: "card", label: "Card", Icon: SquareStack, hint: "Image + title + text + button" },
     { kind: "quote", label: "Quote", Icon: Quote, hint: "A testimonial quote" },
     { kind: "stats", label: "Stat", Icon: BarChart3, hint: "A big number + label" },

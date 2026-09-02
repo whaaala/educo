@@ -3,9 +3,17 @@
 import { X, Maximize2, Minimize2 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { Whiteboard } from "@/components/shared/Whiteboard";
+import dynamic from "next/dynamic";
 import type { WhiteboardState } from "@/components/shared/Whiteboard";
+import InPageSpinner from "@/components/shared/InPageSpinner";
 import { useSidebar } from "@/contexts/SidebarContext";
+
+// Lazy-load the heavy Whiteboard (~1.5k lines) — it only mounts when the panel is opened in a call,
+// so it stays out of the initial call-room bundle. Perf: load-on-demand with a spinner.
+const Whiteboard = dynamic(() => import("@/components/shared/Whiteboard").then((m) => m.Whiteboard), {
+  ssr: false,
+  loading: () => <div className="flex h-full w-full items-center justify-center"><InPageSpinner /></div>,
+});
 
 export interface WhiteboardPanelProps {
   primaryColor?: string;

@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import {
   SHADES, hexToRgb, rgbToHex, hexToOklch, oklchToHex,
-  rampFromHex, relativeLuminance, contrastRatio, passesAA,
+  rampFromHex, relativeLuminance, contrastRatio, passesAA, nearestAccessibleColor,
 } from "@/lib/educo-ui/color";
 
 describe("Educo UI colour — hex/rgb", () => {
@@ -74,5 +74,25 @@ describe("Educo UI colour — WCAG contrast", () => {
     expect(passesAA("#0f172a", "#ffffff")).toBe(true);   // dark text on white
     expect(passesAA("#9ca3af", "#ffffff")).toBe(false);  // light grey on white fails body
     expect(passesAA("#9ca3af", "#ffffff", true)).toBe(false);
+  });
+});
+
+describe("Educo UI colour — nearest accessible fix", () => {
+  it("leaves an already-passing colour unchanged", () => {
+    expect(nearestAccessibleColor("#0f172a", "#ffffff")).toBe("#0f172a");
+  });
+  it("darkens a too-light foreground on a light background until it clears AA", () => {
+    const fixed = nearestAccessibleColor("#9ca3af", "#ffffff"); // light grey on white (fails)
+    expect(contrastRatio(fixed, "#ffffff")).toBeGreaterThanOrEqual(4.5);
+    expect(relativeLuminance(fixed)).toBeLessThan(relativeLuminance("#9ca3af")); // it got darker
+  });
+  it("lightens a too-dark foreground on a dark background", () => {
+    const fixed = nearestAccessibleColor("#334155", "#0f172a"); // slate on near-black (fails)
+    expect(contrastRatio(fixed, "#0f172a")).toBeGreaterThanOrEqual(4.5);
+    expect(relativeLuminance(fixed)).toBeGreaterThan(relativeLuminance("#334155")); // it got lighter
+  });
+  it("honours a custom (large-text) ratio of 3", () => {
+    const fixed = nearestAccessibleColor("#b0b0b0", "#ffffff", 3);
+    expect(contrastRatio(fixed, "#ffffff")).toBeGreaterThanOrEqual(3);
   });
 });

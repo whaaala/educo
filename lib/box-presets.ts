@@ -5,7 +5,7 @@
  * Card container — without touching individual properties. Pure + theme-aware.
  */
 
-import { type BoxNode, type BoxType, createContainer, createGrid, createElement } from "@/lib/box-model";
+import { type BoxNode, type BoxType, createContainer, createGrid, createElement, createComponent } from "@/lib/box-model";
 import type { SiteTheme } from "@/lib/site-storage";
 
 export type Preset = { id: string; label: string; patch: Partial<BoxNode> };
@@ -127,6 +127,7 @@ export function blockForKind(kind: string, patch: Partial<BoxNode> = {}): BoxNod
     : kind === "row" ? createContainer("row")
     : kind === "grid" ? createGrid(3)
     : kind === "container" ? createContainer("column", { width: "100%", padding: 24, gap: 0, align: "stretch" })
+    : kind === "accordion" ? createComponent("accordion")
     : createElement(kind as Exclude<BoxType, "container">);
   return Object.assign(base, patch);
 }

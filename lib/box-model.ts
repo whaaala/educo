@@ -12,7 +12,17 @@
 
 import type { CSSProperties } from "react";
 
-export type BoxType = "container" | "text" | "heading" | "button" | "image" | "video" | "icon" | "divider" | "list" | "embed" | "spacer";
+export type BoxType = "container" | "text" | "heading" | "button" | "image" | "video" | "icon" | "divider" | "list" | "embed" | "spacer" | "component";
+
+/** One row of an accordion component (title + body, plus optional media thumbnail / right-aligned meta). */
+export interface AccordionItem {
+  id: string;
+  title: string;
+  body: string;
+  meta?: string;    // right-aligned price / count / badge
+  media?: string;   // leading thumbnail (URL / data URL)
+  open?: boolean;   // open by default
+}
 
 export type FlexDir = "row" | "column";
 export type FlexAlign = "start" | "center" | "end" | "stretch";
@@ -99,6 +109,16 @@ export interface BoxNode {
   underline?: boolean;
   textTransform?: "none" | "uppercase" | "lowercase" | "capitalize";
 
+  // ── Educo UI design-system component instance (type === "component") ──
+  // A component reads its whole look from CSS tokens (--eu-color-*, --eu-radius-*, …), so a single set of
+  // per-instance `tokenOverrides` re-skins ANY component — including ones not built yet — with no extra code.
+  component?: string;                       // which eu-component: "accordion" | "card" | "tabs" | …
+  variant?: string;                         // design variant class suffix, e.g. "--panel" ("" = default look)
+  accItems?: AccordionItem[];               // accordion content (component === "accordion")
+  accMultiOpen?: boolean;                   // accordion: allow more than one panel open at once
+  tokenOverrides?: Record<string, string>;  // CSS custom-property overrides, e.g. { "--eu-color-brand": "#5b5bd6" }
+  advancedCss?: string;                     // raw CSS declarations applied to the instance (sanitized before export)
+
   // ── children (containers only) ──
   children?: BoxNode[];
 }
@@ -123,7 +143,7 @@ const round1 = (n: number) => Math.round(n * 10) / 10;
 
 /** A box with nothing inside — no children, no text, no image. It can shrink to ~1px. */
 export function isEmptyBox(node: BoxNode): boolean {
-  return (node.children?.length ?? 0) === 0 && !node.text && !node.src;
+  return (node.children?.length ?? 0) === 0 && !node.text && !node.src && node.type !== "component";
 }
 
 // ── Factories ───────────────────────────────────────────────────────────────
@@ -164,6 +184,74 @@ export function createElement(type: Exclude<BoxType, "container">, overrides: Pa
     case "spacer": return { ...base, width: "100%", height: "48px", ...overrides };
     default: return { ...base, type: "text", text: "New text — click to edit.", ...overrides };
   }
+}
+
+// ── Educo UI components ──────────────────────────────────────────────────────
+
+/** Three starter rows for a fresh accordion. */
+export function defaultAccordionItems(): AccordionItem[] {
+  return [
+    { id: newBoxId(), title: "What is your return policy?", body: "Answer — click to edit. Returns are accepted within 30 days of purchase.", open: true },
+    { id: newBoxId(), title: "How long does shipping take?", body: "Answer — click to edit. Most orders arrive within 3–5 business days." },
+    { id: newBoxId(), title: "Do you ship internationally?", body: "Answer — click to edit. Yes, we ship to most countries worldwide." },
+  ];
+}
+
+/** Create an Educo UI component instance (type "component"). Component-specific defaults live here. */
+export function createComponent(component: string, overrides: Partial<BoxNode> = {}): BoxNode {
+  const base: BoxNode = { id: newBoxId(), type: "component", component, variant: "", width: "100%" };
+  switch (component) {
+    case "accordion": return { ...base, accItems: defaultAccordionItems(), accMultiOpen: false, ...overrides };
+    default: return { ...base, ...overrides };
+  }
+}
+
+/** Immutably patch one accordion item on a component node. */
+export function updateAccItem(node: BoxNode, itemId: string, patch: Partial<AccordionItem>): BoxNode {
+  return { ...node, accItems: (node.accItems ?? []).map((it) => (it.id === itemId ? { ...it, ...patch } : it)) };
+}
+/** Append a fresh accordion item. */
+export function addAccItem(node: BoxNode): BoxNode {
+  const item: AccordionItem = { id: newBoxId(), title: "New question", body: "Answer — click to edit." };
+  return { ...node, accItems: [...(node.accItems ?? []), item] };
+}
+/** Remove an accordion item (keeps at least zero; UI guards the last one). */
+export function removeAccItem(node: BoxNode, itemId: string): BoxNode {
+  return { ...node, accItems: (node.accItems ?? []).filter((it) => it.id !== itemId) };
+}
+/** Move an accordion item one step up (-1) or down (+1). */
+export function moveAccItem(node: BoxNode, itemId: string, dir: -1 | 1): BoxNode {
+  const items = [...(node.accItems ?? [])];
+  const i = items.findIndex((it) => it.id === itemId);
+  const j = i + dir;
+  if (i < 0 || j < 0 || j >= items.length) return node;
+  [items[i], items[j]] = [items[j], items[i]];
+  return { ...node, accItems: items };
+}
+
+/**
+ * Sanitize a block of raw CSS DECLARATIONS (what a user types in the Advanced-CSS box) so it is safe to inline.
+ * We keep only `property: value;` pairs and hard-reject anything that could break out of the declaration
+ * context or fetch remotely: braces/at-rules/selectors, `</…>`, `expression()`, `javascript:` and any `url(…)`
+ * that isn't a `data:` URL. Returns a normalized "prop: val; prop: val;" string (never null).
+ */
+export function sanitizeCssDeclarations(raw?: string): string {
+  if (!raw) return "";
+  return raw
+    .split(";")
+    .map((decl) => decl.trim())
+    .filter(Boolean)
+    .filter((decl) => {
+      if (/[{}<>]/.test(decl)) return false;                 // no selectors / at-rules / tag breakouts
+      if (/@|expression\s*\(|javascript:|<\/?/i.test(decl)) return false;
+      if (/url\s*\(/i.test(decl) && !/url\s*\(\s*['"]?data:/i.test(decl)) return false; // only data: urls
+      const idx = decl.indexOf(":");
+      if (idx <= 0) return false;                            // must be property: value
+      const prop = decl.slice(0, idx).trim();
+      return /^-{0,2}[a-zA-Z][a-zA-Z0-9-]*$/.test(prop);     // a plausible CSS property / custom property
+    })
+    .map((decl) => decl + ";")
+    .join(" ");
 }
 
 /** Turn a YouTube/Vimeo URL into an embeddable iframe src; null for a direct video file (use <video>). */
@@ -381,6 +469,9 @@ export function floatBox(root: BoxNode, id: string, targetParentId: string, left
   let next = moveBox(root, id, targetParentId, tp?.children?.length ?? 0);
   next = updateBox(next, id, {
     position: "absolute", left: round1(left), top: round1(top), width, minHeight: Math.max(8, Math.round(height)), zIndex: z,
+    // A free-floating layer is a movable/resizable CARD: `clip` drops the content minimum so its width AND
+    // height handles can shrink it below its content (otherwise a full-width component can only slide vertically).
+    clip: true,
     alignSelf: undefined, margin: undefined, marginTop: undefined, marginRight: undefined, marginBottom: undefined, marginLeft: undefined,
   });
   return next;
