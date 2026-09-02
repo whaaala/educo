@@ -55,5 +55,9 @@ con
 playwright-report/
 test-results/
 
-# Stray debug screenshots at the repo root (e2e snapshot baselines live in subdirs)
+# Stray debug/research screenshots at the repo root (e2e snapshot baselines live in subdirs)
 /*.png
+/*.jpeg
+/*.jpg
+/*.gif
+/*.webp
