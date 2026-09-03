@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { createContainer, type BoxNode } from "@/lib/box-model";
 import {
   slugify, uniquePath, siteFromRoot, findPage, setPageRoot, addPage, duplicatePage, renamePage,
-  deletePage, setHomePage, coerceSite, pageIdFromHref, emptyPageRoot, type BoxSite,
+  deletePage, setHomePage, coerceSite, pageIdFromHref, emptyPageRoot, setSiteTheme, type BoxSite,
 } from "@/lib/box-site";
 
 const root = () => createContainer("column", { id: "r", children: [] } as Partial<BoxNode>);
@@ -27,6 +27,15 @@ describe("box-site — multi-page model", () => {
     const b = addPage(s, "About", emptyPageRoot()); s = b.site; // same name → unique slug
     expect(s.pages.map((p) => p.path)).toEqual(["home", "about", "about-2"]);
     expect(findPage(s, b.id)).toBeTruthy();
+  });
+
+  it("setSiteTheme sets the WEBSITE theme, and it survives a save/load round-trip (coerceSite)", () => {
+    let s = siteFromRoot(root());
+    expect(s.themeId).toBeUndefined();                 // fresh site → no theme (falls back to Light)
+    s = setSiteTheme(s, "purple");
+    expect(s.themeId).toBe("purple");
+    const reloaded = coerceSite(JSON.parse(JSON.stringify(s)))!; // persist → reload
+    expect(reloaded.themeId).toBe("purple");           // the site's theme is saved with the site
   });
 
   it("uniquePath ignores the page's own slug when renaming", () => {

@@ -24,9 +24,9 @@ Build and maintain your school's public website by dragging blocks onto a page �
 
 | Area | What it does |
 |------|--------------|
-| **Blocks panel** (left) | Everything you can add: Layout, Text, Media, and Components. Click to add, or drag onto the page. |
+| **Blocks panel** (floating) | Everything you can add: Layout, Text, Media, and Components. Open it from the **Blocks** launcher at the canvas's top-left (or press **B**); it floats over the canvas so your page keeps its full width. **Search** to filter, use the **category tabs** to jump, then click a block to add it (or drag it onto the page). Close it with the ✕, Esc, or by clicking the launcher again. |
 | **Canvas** (middle) | Your page. Click a block to select it; its controls appear on the right. |
-| **Inspector** (right) | Every setting for the selected block, in three tabs: **Design**, **Content**, **Per‑device**. |
+| **Inspector** (right) | Every setting for the selected block, in three tabs: **Design**, **Content**, **Per‑device**. Collapse it (the ⟩ button in its header) to give the canvas more room, and reopen it from the slim rail on the right. |
 | **Top bar** | Pages, **Add section**, Undo/Redo, **Preview**, **Export**, **Reset**, the device switcher, and **Base size**. |
 
 **Flow by default, float for free.** New blocks join the normal page flow (they stack and reflow responsively). When you want to place something freely on top, you switch a block to **Floating** — see §7.
@@ -161,7 +161,11 @@ The builder is responsive by design, and you can fine‑tune per size.
 
 ## 9. Themes, colours and accessibility
 
-- Colours come from the site's **design tokens** (an OKLCH colour system) — pick from themed swatches, a spectrum, a hex field, or the eyedropper. There are **no hardcoded colours**, so switching the site theme re‑skins everything consistently.
+**Two independent themes — pick each freely:**
+- **Website theme** (top bar, the 🎨 *Purple Dream / Light / Dark / Midnight* picker) — the theme of the **site you're building**. It re‑skins the **canvas, all its content, and the export** so you can design, say, a Purple site. It's **saved with your site**.
+- **Editor theme** (the sun/moon picker beside it) — how the **builder UI itself** looks while you work. It never changes your website; design a Light site in a Dark editor if you like.
+
+- Colours come from the site's **design tokens** (an OKLCH colour system) — pick from themed swatches, a spectrum, a hex field, or the eyedropper. There are **no hardcoded colours**, so switching the Website theme re‑skins everything consistently.
 - Colour fields show a **WCAG contrast** readout so text stays legible.
 - Every control is keyboard‑accessible and labelled.
 
@@ -189,6 +193,8 @@ The builder is responsive by design, and you can fine‑tune per size.
 | Lock / Unlock | Ctrl+L |
 | Bring forward / to front (floating) | Ctrl+] / Ctrl+Shift+] |
 | Send backward / to back (floating) | Ctrl+[ / Ctrl+Shift+[ |
+| Open / close the Blocks panel | B |
+| Open Blocks panel + focus search | / |
 | Deselect | Escape |
 
 ---

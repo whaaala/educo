@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen, fireEvent, cleanup } from "@testing-library/react";
 import BoxInspector from "@/components/website/box/BoxInspector";
 import { DEFAULT_THEME } from "@/lib/site-storage";
 import { createContainer, createElement, createComponent, type BoxNode } from "@/lib/box-model";
@@ -197,5 +197,221 @@ describe("BoxInspector — per-device", () => {
     openDevice();
     fireEvent.click(screen.getByLabelText(/Hidden on mobile/));
     expect(onPatch).toHaveBeenCalledWith({ hidden: true });
+  });
+});
+
+// ── Functionality AUDIT: every core control fires the right patch. Because these controls are shared across
+//    all block/component types, verifying them here proves they work for every current AND future component. ──
+describe("BoxInspector — functionality audit (controls act)", () => {
+  const heading = () => createElement("heading", { id: "h", text: "Hi" } as Partial<BoxNode>);
+
+  it("Design › Width: Full / Fit fire the width patch", () => {
+    const onPatch = renderFor(heading());
+    fireEvent.click(screen.getByRole("button", { name: "Full" }));
+    expect(onPatch).toHaveBeenCalledWith(expect.objectContaining({ width: "fill" }));
+    fireEvent.click(screen.getByRole("button", { name: "Fit" }));
+    expect(onPatch).toHaveBeenCalledWith(expect.objectContaining({ width: "auto" }));
+  });
+
+  it("Design › Outline & effects: Rounded/Border/Tilt/See-through sliders fire", () => {
+    const onPatch = renderFor(heading());
+    fireEvent.change(screen.getByLabelText("Rounded corners"), { target: { value: "12" } });
+    expect(onPatch).toHaveBeenCalledWith({ radius: 12 });
+    fireEvent.change(screen.getByLabelText("Border"), { target: { value: "3" } });
+    expect(onPatch).toHaveBeenCalledWith({ borderWidth: 3 });
+    fireEvent.change(screen.getByLabelText("Tilt"), { target: { value: "10" } });
+    expect(onPatch).toHaveBeenCalledWith({ rotate: 10 });
+    fireEvent.change(screen.getByLabelText("See-through"), { target: { value: "50" } });
+    expect(onPatch).toHaveBeenCalledWith({ opacity: 50 });
+  });
+
+  it("Design › Spacing: Inner + Outer sliders fire padding/margin", () => {
+    const onPatch = renderFor(createContainer("column", { id: "s" } as Partial<BoxNode>));
+    // per-side padding/margin number inputs (rem → px)
+    fireEvent.change(screen.getByLabelText("Inner spacing top"), { target: { value: "2.4" } });
+    expect(onPatch).toHaveBeenCalledWith({ paddingTop: 24 });
+    fireEvent.change(screen.getByLabelText("Outer spacing left"), { target: { value: "1.6" } });
+    expect(onPatch).toHaveBeenCalledWith({ marginLeft: 16 });
+  });
+
+  it("a Style preset applies its whole patch (Heading → Display)", () => {
+    const onPatch = renderFor(heading());
+    fireEvent.click(screen.getByRole("button", { name: "Style Display" }));
+    expect(onPatch).toHaveBeenCalled();
+  });
+
+  it("Content › Text edits heading/text/button copy", () => {
+    for (const t of ["heading", "text", "button"] as const) {
+      const onPatch = renderFor(createElement(t, { id: t } as Partial<BoxNode>));
+      openContent();
+      fireEvent.change(screen.getByLabelText("Text"), { target: { value: "Changed" } });
+      expect(onPatch).toHaveBeenCalledWith({ text: "Changed" });
+      cleanup();
+    }
+  });
+
+  it("Content › Button: Link + open-in-new-tab fire", () => {
+    const onPatch = renderFor(createElement("button", { id: "b" } as Partial<BoxNode>));
+    openContent();
+    fireEvent.change(screen.getByLabelText("Link"), { target: { value: "#pricing" } });
+    expect(onPatch).toHaveBeenCalledWith({ href: "#pricing" });
+    fireEvent.click(screen.getByLabelText("Open in a new tab"));
+    expect(onPatch).toHaveBeenCalledWith({ newTab: true });
+  });
+
+  it("Content › List: style + items fire", () => {
+    const onPatch = renderFor(createElement("list", { id: "l", listItems: ["a"] } as Partial<BoxNode>));
+    openContent();
+    fireEvent.click(screen.getByRole("button", { name: "Numbered" }));
+    expect(onPatch).toHaveBeenCalledWith({ listStyle: "number" });
+    fireEvent.change(screen.getByLabelText("List items"), { target: { value: "one\ntwo" } });
+    expect(onPatch).toHaveBeenCalledWith({ listItems: ["one", "two"] });
+  });
+
+  it("Content › Video / Embed / Divider / Icon controls fire", () => {
+    let onPatch = renderFor(createElement("video", { id: "v" } as Partial<BoxNode>));
+    openContent();
+    fireEvent.change(screen.getByLabelText("Video URL"), { target: { value: "https://youtu.be/x" } });
+    expect(onPatch).toHaveBeenCalledWith({ src: "https://youtu.be/x" });
+    cleanup();
+
+    onPatch = renderFor(createElement("embed", { id: "e" } as Partial<BoxNode>));
+    openContent();
+    fireEvent.change(screen.getByLabelText("Embed code"), { target: { value: "<iframe>" } });
+    expect(onPatch).toHaveBeenCalledWith({ html: "<iframe>" });
+    cleanup();
+
+    onPatch = renderFor(createElement("divider", { id: "d" } as Partial<BoxNode>));
+    openContent();
+    fireEvent.change(screen.getByLabelText("Thickness"), { target: { value: "5" } });
+    expect(onPatch).toHaveBeenCalledWith({ borderWidth: 5 });
+    cleanup();
+
+    onPatch = renderFor(createElement("icon", { id: "i" } as Partial<BoxNode>));
+    openContent();
+    fireEvent.change(screen.getByLabelText("Icon size"), { target: { value: "40" } });
+    expect(onPatch).toHaveBeenCalledWith({ fontSize: 40 });
+  });
+});
+
+// A custom <CompactSelect> is a button + a portaled listbox: open it, then click an option.
+const pickSelect = (name: string, option: string) => {
+  fireEvent.click(screen.getByRole("button", { name })); // the trigger (aria-label = the field label)
+  fireEvent.click(screen.getByRole("option", { name: option }));
+};
+
+describe("BoxInspector — functionality audit (every remaining control)", () => {
+  const heading = () => createElement("heading", { id: "h", text: "Hi" } as Partial<BoxNode>);
+
+  // ── PLACEMENT ──
+  it("Placement: Floating / In-the-layout / Lock fire their handlers", () => {
+    const onFloat = vi.fn(), onUnfloat = vi.fn();
+    const onPatch = renderFor(heading(), { canFloat: true, onFloat, onUnfloat });
+    fireEvent.click(screen.getByRole("button", { name: "Floating" }));
+    expect(onFloat).toHaveBeenCalled();
+    fireEvent.click(screen.getByRole("button", { name: "In the layout" }));
+    expect(onUnfloat).toHaveBeenCalled();
+    fireEvent.click(screen.getByRole("button", { name: /Lock position/ }));
+    expect(onPatch).toHaveBeenCalledWith({ locked: true });
+  });
+
+  it("Placement (floating): Left% + layer buttons fire", () => {
+    const onLayer = vi.fn();
+    const onPatch = renderFor(createElement("heading", { id: "f", position: "absolute", left: 10, top: 10 } as Partial<BoxNode>), { canFloat: true, onLayer });
+    fireEvent.change(screen.getByLabelText("Left % position"), { target: { value: "25" } });
+    expect(onPatch).toHaveBeenCalledWith({ left: 25 });
+    fireEvent.click(screen.getByLabelText("Bring to front"));
+    expect(onLayer).toHaveBeenCalledWith("front");
+    fireEvent.click(screen.getByLabelText("Send to back"));
+    expect(onLayer).toHaveBeenCalledWith("back");
+  });
+
+  // ── ARRANGE (containers) ──
+  it("Arrange: grid toggle, direction, position, wrap, line-up, gap fire", () => {
+    const onPatch = renderFor(createContainer("column", { id: "c" } as Partial<BoxNode>));
+    fireEvent.click(screen.getByRole("button", { name: "Side-by-side" }));
+    expect(onPatch).toHaveBeenCalledWith({ direction: "row" });
+    fireEvent.click(screen.getByLabelText("Let blocks wrap to a new line"));
+    expect(onPatch).toHaveBeenCalledWith({ wrap: true });
+    fireEvent.change(screen.getByLabelText("Space between blocks"), { target: { value: "20" } });
+    expect(onPatch).toHaveBeenCalledWith({ gap: 20 });
+    pickSelect("Position blocks", "Center");
+    expect(onPatch).toHaveBeenCalledWith({ justify: "center" });
+    pickSelect("Line up", "Center");
+    expect(onPatch).toHaveBeenCalledWith({ align: "center" });
+    fireEvent.click(screen.getByRole("button", { name: "Grid" }));
+    expect(onPatch).toHaveBeenCalledWith({ layout: "grid" });
+  });
+
+  it("Arrange (grid): Columns slider fires", () => {
+    const onPatch = renderFor(createContainer("column", { id: "g", layout: "grid", columns: 3 } as Partial<BoxNode>));
+    fireEvent.change(screen.getByLabelText("Columns"), { target: { value: "4" } });
+    expect(onPatch).toHaveBeenCalledWith({ columns: 4 });
+  });
+
+  it("Grid cell: Columns wide + Rows tall fire (only when inside a grid)", () => {
+    const onPatch = renderFor(createContainer("column", { id: "gc" } as Partial<BoxNode>), { inGrid: true });
+    fireEvent.change(screen.getByLabelText("Columns wide"), { target: { value: "2" } });
+    expect(onPatch).toHaveBeenCalledWith({ colSpan: 2 });
+    fireEvent.change(screen.getByLabelText("Rows tall"), { target: { value: "3" } });
+    expect(onPatch).toHaveBeenCalledWith({ rowSpan: 3 });
+  });
+
+  // ── SIZE ──
+  it("Size: Custom width, Height, Content position, Trim, Position-in-row fire", () => {
+    const onAlignInRow = vi.fn();
+    const onPatch = renderFor(heading(), { onAlignInRow, rowJustify: "start" });
+    fireEvent.click(screen.getByRole("button", { name: "Custom" }));
+    expect(onPatch).toHaveBeenCalledWith(expect.objectContaining({ width: expect.any(String) }));
+    fireEvent.change(screen.getByLabelText("Height"), { target: { value: "300px" } });
+    expect(onPatch).toHaveBeenCalledWith({ height: "300px" });
+    fireEvent.click(screen.getByLabelText("Content middle center"));
+    expect(onPatch).toHaveBeenCalledWith({ contentX: "center", contentY: "center" });
+    fireEvent.click(screen.getByLabelText(/Trim to size/));
+    expect(onPatch).toHaveBeenCalledWith({ clip: true });
+    fireEvent.click(screen.getByRole("button", { name: "Center" }));
+    expect(onAlignInRow).toHaveBeenCalledWith("center");
+  });
+
+  // ── OUTLINE ──
+  it("Outline: Border style select fires", () => {
+    const onPatch = renderFor(heading());
+    pickSelect("Border style", "Dashed");
+    expect(onPatch).toHaveBeenCalledWith({ borderStyle: "dashed" });
+  });
+
+  // ── TYPOGRAPHY (text elements) ──
+  it("Typography: size, font, boldness, capitalisation, align, bold fire", () => {
+    const onPatch = renderFor(createElement("text", { id: "t", text: "Hi" } as Partial<BoxNode>));
+    openContent();
+    fireEvent.change(screen.getByLabelText("Text size"), { target: { value: "22" } });
+    expect(onPatch).toHaveBeenCalledWith({ fontSize: 22 });
+    pickSelect("Boldness", "Bold");
+    expect(onPatch).toHaveBeenCalledWith({ fontWeight: 700 });
+    pickSelect("Capitalisation", "UPPERCASE");
+    expect(onPatch).toHaveBeenCalledWith({ textTransform: "uppercase" });
+    fireEvent.click(screen.getByLabelText("Align center"));
+    expect(onPatch).toHaveBeenCalledWith({ textAlign: "center" });
+    fireEvent.click(screen.getByLabelText("Bold"));
+    expect(onPatch).toHaveBeenCalledWith(expect.objectContaining({ bold: expect.any(Boolean) }));
+  });
+
+  // ── BOOKMARK (any block) ──
+  it("Bookmark name patches the anchor", () => {
+    const onPatch = renderFor(heading());
+    openContent();
+    fireEvent.change(screen.getByLabelText("Bookmark name"), { target: { value: "Pricing Table" } });
+    expect(onPatch).toHaveBeenCalledWith({ anchor: "pricing-table" });
+  });
+
+  // ── COMPONENT content slots (registry-generated, e.g. Card) ──
+  it("a registry component (Card) edits its auto-generated content fields", () => {
+    const onPatch = renderFor(createComponent("card", { id: "cd" } as Partial<BoxNode>));
+    openContent();
+    fireEvent.change(screen.getByLabelText("Title"), { target: { value: "My card" } });
+    expect(onPatch).toHaveBeenCalledWith(expect.objectContaining({ componentFields: expect.objectContaining({ title: "My card" }) }));
+    // and its design variants apply
+    fireEvent.click(screen.getByRole("option", { name: "Raised design" }));
+    expect(onPatch).toHaveBeenCalledWith({ variant: "--raised" });
   });
 });

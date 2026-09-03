@@ -9,10 +9,11 @@
 
 import { useId, type ReactNode } from "react";
 
+// Filled, token-driven controls — one clean look that re-skins with every theme (Light/Dark/Midnight/Purple).
 export const COMPACT_INPUT_CLS =
-  "w-full text-sm px-2.5 py-2 rounded-lg border border-gray-200 dark:border-white/10 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-transparent text-gray-900 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50 focus:ring-2 focus:ring-indigo-500 outline-none";
+  "w-full text-sm px-3 py-2 rounded-xl border border-transparent bg-surface-2 text-ink placeholder:text-muted focus:border-brand focus:bg-surface outline-none transition-colors";
 export const COMPACT_LABEL_CLS =
-  "text-[0.6875rem] font-medium text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300";
+  "text-[0.6875rem] font-semibold text-muted";
 
 export interface CompactFieldProps {
   label?: ReactNode;

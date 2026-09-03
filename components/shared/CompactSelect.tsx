@@ -65,7 +65,7 @@ export default function CompactSelect({ label, ariaLabel, value, onChange, optio
   const renderOpt = (o: CompactSelectOption) => (
     <button key={o.value} type="button" role="option" aria-selected={o.value === value}
       onClick={() => { onChange(o.value); setOpen(false); }}
-      className={`w-full flex items-center gap-2 px-2 py-1.5 text-xs text-left rounded-md transition-colors ${o.value === value ? "bg-indigo-600 text-white" : "text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-100 dark:hover:bg-white/10 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"}`}>
+      className={`w-full flex items-center gap-2 px-2 py-1.5 text-xs text-left rounded-lg transition-colors ${o.value === value ? "bg-brand text-brand-fg" : "text-ink hover:bg-surface-2"}`}>
       <span className="flex-1 truncate">{o.label}</span>
       {o.value === value && <Check className="w-3 h-3 shrink-0" />}
     </button>
@@ -83,7 +83,7 @@ export default function CompactSelect({ label, ariaLabel, value, onChange, optio
   const menu = open && pos ? createPortal(
     <div ref={menuRef} role="listbox" aria-label={aria}
       style={{ position: "fixed", left: pos.left, top: pos.top, bottom: pos.bottom, width: pos.width, maxHeight: 260 }}
-      className="z-[10000] overflow-y-auto overscroll-contain rounded-lg border border-gray-200 dark:border-white/10 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-white dark:bg-[#14171f] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] shadow-xl ring-1 ring-black/5 p-1">
+      className="z-[10000] overflow-y-auto overscroll-contain rounded-xl border border-line bg-surface shadow-xl ring-1 ring-black/5 p-1">
       {optionGroups
         ? optionGroups.map((g) => (
           <div key={g.group}>

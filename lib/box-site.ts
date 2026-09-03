@@ -16,6 +16,7 @@ export interface BoxPage {
 export interface BoxSite {
   pages: BoxPage[];
   homeId: string; // which page is the landing page
+  themeId?: string; // the WEBSITE's theme (light | dark | midnight | purple) — drives the canvas + content + export
 }
 
 /** Slugify a page name into a URL-safe path ("About Us" → "about-us"). */
@@ -49,6 +50,11 @@ export function siteFromRoot(root: BoxNode, name = "Home"): BoxSite {
 }
 
 export const findPage = (site: BoxSite, id: string): BoxPage | undefined => site.pages.find((p) => p.id === id);
+
+/** Set the WEBSITE's theme (the theme the canvas + content + export use). Returns a new site. */
+export function setSiteTheme(site: BoxSite, themeId: string): BoxSite {
+  return { ...site, themeId };
+}
 
 /** Replace a page's root (an edit). Returns a new site. */
 export function setPageRoot(site: BoxSite, id: string, root: BoxNode): BoxSite {

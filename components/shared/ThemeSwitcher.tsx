@@ -13,15 +13,29 @@ export interface ThemeSwitcherProps {
   className?: string;
   /** Alignment of the dropdown relative to the trigger. */
   align?: "left" | "right";
+  /** CONTROLLED mode: drive a theme OTHER than the app-wide editor theme (e.g. the website's own theme).
+   *  When `value` + `onChange` are given the switcher reads/writes them instead of the ThemeContext. */
+  value?: ThemeId;
+  onChange?: (id: ThemeId) => void;
+  /** Accessible name / tooltip prefix for the trigger (default "Change theme" / "Theme"). */
+  ariaLabel?: string;
+  /** Override the trigger's icon (default: the current theme's icon). */
+  triggerIcon?: LucideIcon;
+  /** Override the trigger's label when not compact (default: the current theme's label). */
+  triggerLabel?: string;
 }
 
 /**
  * Reusable theme switcher — a dropdown listing all available themes (Light / Dark / Midnight /
- * Purple) with icons + labels, wired to the app-wide ThemeContext. Fully theme-aware and
- * keyboard/aria accessible. Drop it into any header/toolbar.
+ * Purple) with icons + labels. By default it drives the app-wide ThemeContext (the EDITOR theme);
+ * pass `value` + `onChange` to control a different theme (e.g. the WEBSITE theme saved on the site).
+ * Fully theme-aware and keyboard/aria accessible. Drop it into any header/toolbar.
  */
-export default function ThemeSwitcher({ compact = false, className = "", align = "right" }: ThemeSwitcherProps) {
-  const { theme, setTheme } = useTheme();
+export default function ThemeSwitcher({ compact = false, className = "", align = "right", value, onChange, ariaLabel, triggerIcon, triggerLabel }: ThemeSwitcherProps) {
+  const ctx = useTheme();
+  const controlled = value !== undefined && !!onChange;
+  const theme = controlled ? (value as ThemeId) : ctx.theme;
+  const setTheme = controlled ? (onChange as (id: ThemeId) => void) : ctx.setTheme;
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -34,20 +48,20 @@ export default function ThemeSwitcher({ compact = false, className = "", align =
   }, []);
 
   const current = THEMES[theme];
-  const CurrentIcon = ICONS[current.icon] ?? Sun;
+  const CurrentIcon = triggerIcon ?? ICONS[current.icon] ?? Sun;
 
   return (
     <div ref={ref} className={`relative ${className}`}>
       <button
         onClick={() => setOpen((v) => !v)}
-        aria-label="Change theme"
+        aria-label={ariaLabel ?? "Change theme"}
         aria-haspopup="menu"
         aria-expanded={open}
-        title={`Theme: ${current.label}`}
+        title={`${ariaLabel ?? "Theme"}: ${current.label}`}
         className="flex items-center gap-1.5 px-2 sm:px-2.5 py-1.5 rounded-lg text-sm font-medium text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 border border-line transition-colors"
       >
         <CurrentIcon className="w-4 h-4" />
-        {!compact && <span className="hidden sm:inline">{current.label}</span>}
+        {!compact && <span className="hidden sm:inline">{triggerLabel ?? current.label}</span>}
         <ChevronDown className={`w-3.5 h-3.5 transition-transform ${open ? "rotate-180" : ""}`} />
       </button>
 
