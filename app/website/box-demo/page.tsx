@@ -13,7 +13,7 @@ import { Plus, Smartphone, Tablet, Laptop, Monitor, Tv, Maximize2, Undo2, Redo2,
 import { useTheme } from "@/contexts/ThemeContext";
 import { DEFAULT_THEME, resolveSiteTheme } from "@/lib/site-storage";
 import {
-  type BoxNode, type Breakpoint, createContainer, findBox, findParent, updateBox, insertBox, removeBox, duplicateBox, widthPct, makeRowBand, normalizeRowBands,
+  type BoxNode, type Breakpoint, createContainer, findBox, findParent, updateBox, insertBox, removeBox, duplicateBox, widthPct, makeRowBand, normalizeRowBands, groupBoxes, alignInRow, alignInRowOf,
   floatBox, unfloatBox, bringToFront, bringForward, sendBackward, sendToBack,
   resolveResponsive, updateBoxResponsive, clearOverride, hasOverride, isContainer,
 } from "@/lib/box-model";
@@ -22,7 +22,7 @@ import {
   type BoxSite, siteFromRoot, coerceSite, normalizeSite, setPageRoot, addPage, deletePage, renamePage, setHomePage, duplicatePage, emptyPageRoot,
 } from "@/lib/box-site";
 import { renderSiteHTML, downloadHTML } from "@/lib/box-export";
-import BoxCanvas, { measureFloatGeom } from "@/components/website/box/BoxCanvas";
+import BoxCanvas, { measureFloatGeom, measureGroupGeom } from "@/components/website/box/BoxCanvas";
 import BoxInspector from "@/components/website/box/BoxInspector";
 import BulkInspector from "@/components/website/box/BulkInspector";
 import BlocksPanel from "@/components/website/box/BlocksPanel";
@@ -32,6 +32,7 @@ import DeleteConfirmationModal from "@/components/shared/DeleteConfirmationModal
 
 const KEY = "educo_box_site_v1"; // multi-page site
 const LEGACY_KEY = "educo_box_demo_v9"; // old single-tree document (migrated on load)
+const CLEANED_KEY = "educo_box_site_cleaned_v1"; // one-time flag: empty-section chrome already pruned
 const PAGE_MIN_H = 160;
 const ROW_GAP = 0;
 const SECTION_TINTS = ["#eef2ff", "#faf5ff", "#ecfeff", "#fef2f2", "#f0fdf4", "#fffbeb"];
@@ -54,8 +55,20 @@ function pageRoot(rows: BoxNode[] = []): BoxNode {
 const makeRow = (sections: BoxNode[] = []): BoxNode => makeRowBand(sections, ROW_GAP);
 const makeSection = (bg: string): BoxNode => createContainer("column", { direction: "column", wrap: false, width: "100%", padding: 48, gap: 0, align: "stretch", justify: "start", background: bg });
 const makeBlock = (bg: string, width: string): BoxNode => createContainer("column", { direction: "column", wrap: false, width, padding: 24, gap: 0, align: "stretch", justify: "start", background: bg });
-const starter = (): BoxNode => pageRoot([makeRow([makeSection(SECTION_TINTS[0])]), makeRow([makeSection(SECTION_TINTS[1])])]);
+// A fresh page starts BLANK — an empty, transparent canvas. Blocks you drop land standalone (no tinted Section
+// chrome around them); "Add section" is how you deliberately create a tinted, padded layout container.
+const starter = (): BoxNode => pageRoot([]);
 const countSections = (root: BoxNode): number => (root.children ?? []).reduce((n, row) => n + (row.children?.length ?? 0), 0);
+
+// One-time cleanup for pages saved by the OLD starter (which seeded 2 empty tinted sections). A root row is
+// "empty chrome" when its whole subtree holds no real content — no element/component anywhere, just nested
+// containers — so we drop it. Runs ONCE (guarded by a flag) so a section a user deliberately leaves empty
+// from now on is never removed on reload.
+const hasRealContent = (n: BoxNode): boolean => (n.type !== "container" ? true : (n.children ?? []).some(hasRealContent));
+function pruneEmptyChrome(root: BoxNode): BoxNode {
+  const rows = (root.children ?? []).filter(hasRealContent);
+  return rows.length === (root.children?.length ?? 0) ? root : { ...root, children: rows };
+}
 
 type Hist = { present: BoxSite; past: BoxSite[]; future: BoxSite[] };
 const HIST_CAP = 100;
@@ -65,6 +78,7 @@ export default function BoxDemoPage() {
   const [hist, setHist] = useState<Hist | null>(null);
   const [activePageId, setActivePageId] = useState<string | null>(null);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const pendingReveal = useRef<string | null>(null); // id of a just-added block to select + scroll into view
   const [device, setDevice] = useState<Device>("full");
   const [preview, setPreview] = useState(false);
   const [pageMenu, setPageMenu] = useState(false); // page-settings popover open
@@ -79,16 +93,42 @@ export default function BoxDemoPage() {
     let loaded: BoxSite | null = null;
     try { const raw = localStorage.getItem(KEY); if (raw) loaded = coerceSite(JSON.parse(raw)); } catch { /* ignore */ }
     if (!loaded) { try { const legacy = localStorage.getItem(LEGACY_KEY); if (legacy) loaded = coerceSite(JSON.parse(legacy)); } catch { /* ignore */ } }
+    // One-time: strip empty tinted sections left by the old starter from previously-saved sites.
+    if (loaded) {
+      try {
+        if (!localStorage.getItem(CLEANED_KEY)) {
+          loaded = { ...loaded, pages: loaded.pages.map((p) => ({ ...p, root: pruneEmptyChrome(p.root) })) };
+          localStorage.setItem(CLEANED_KEY, "1");
+        }
+      } catch { /* ignore */ }
+    }
     const s = normalizeSite(loaded ?? siteFromRoot(starter()), ROW_GAP);
     setHist({ present: s, past: [], future: [] });
     setActivePageId(s.homeId);
   }, []);
   useEffect(() => { if (site) { try { localStorage.setItem(KEY, JSON.stringify(site)); } catch { /* ignore */ } } }, [site]);
+  // After the tree changes, scroll a freshly-added block into view (set via revealBox) so it's never lost.
+  useEffect(() => {
+    const id = pendingReveal.current;
+    if (!id) return;
+    pendingReveal.current = null;
+    requestAnimationFrame(() => document.querySelector<HTMLElement>(`[data-box-id="${id}"]`)?.scrollIntoView({ behavior: "smooth", block: "nearest" }));
+  }, [site]);
 
   const pushSite = (next: BoxSite) => setHist((h) => (h ? { present: next, past: [...h.past, h.present].slice(-HIST_CAP), future: [] } : h));
   const resetSite = (next: BoxSite) => { const s = normalizeSite(next, ROW_GAP); setHist({ present: s, past: [], future: [] }); setActivePageId(s.homeId); setSelectedIds([]); };
   // An edit to the ACTIVE page's tree.
   const commit = (nextRoot: BoxNode) => setHist((h) => (h && activePage ? { present: setPageRoot(h.present, activePage.id, normalizeRowBands(nextRoot, ROW_GAP)), past: [...h.past, h.present].slice(-HIST_CAP), future: [] } : h));
+  // Race-safe edit: `fn` receives the LATEST committed root (not a possibly-stale render closure), so rapid
+  // successive actions (e.g. adding several blocks fast) each build on the previous result — every new block
+  // lands in its OWN full-width row instead of being grouped into a shared row band with clamped widths.
+  const commitWith = (fn: (currentRoot: BoxNode) => BoxNode) => setHist((h) => {
+    if (!h || !activePage) return h;
+    const cur = h.present.pages.find((p) => p.id === activePage.id)?.root;
+    if (!cur) return h;
+    const next = normalizeRowBands(fn(cur), ROW_GAP);
+    return { present: setPageRoot(h.present, activePage.id, next), past: [...h.past, h.present].slice(-HIST_CAP), future: [] };
+  });
 
   const undo = useCallback(() => setHist((h) => (h && h.past.length ? { present: h.past[h.past.length - 1], past: h.past.slice(0, -1), future: [h.present, ...h.future].slice(0, HIST_CAP) } : h)), []);
   const redo = useCallback(() => setHist((h) => (h && h.future.length ? { present: h.future[0], past: [...h.past, h.present].slice(-HIST_CAP), future: h.future.slice(1) } : h)), []);
@@ -111,7 +151,7 @@ export default function BoxDemoPage() {
   // ── Isolated preview (Phase 0.4): render the ACTUAL export HTML in a sandboxed iframe, so the
   // preview is a true WYSIWYG of the exported, self-contained site — no editor styles bleed in. ──
   const previewFrameRef = useRef<HTMLIFrameElement>(null);
-  const previewHTML = useMemo(() => (preview ? renderSiteHTML(site, renderTheme) : ""), [preview, site, renderTheme]);
+  const previewHTML = useMemo(() => (preview && site ? renderSiteHTML(site, renderTheme, { preview: true }) : ""), [preview, site, renderTheme]);
   const scrollPreviewToPage = useCallback((path: string) => {
     const win = previewFrameRef.current?.contentWindow;
     if (win) win.location.hash = `#${path}`;
@@ -135,7 +175,7 @@ export default function BoxDemoPage() {
 
   // ── Page management ──
   const switchPage = (id: string) => { setActivePageId(id); setSelectedIds([]); setPageMenu(false); };
-  const onAddPage = () => { const { site: s, id } = addPage(site, `Page ${site.pages.length + 1}`, emptyPageRoot(makeSection(SECTION_TINTS[site.pages.length % SECTION_TINTS.length]))); pushSite(s); setActivePageId(id); setSelectedIds([]); };
+  const onAddPage = () => { const { site: s, id } = addPage(site, `Page ${site.pages.length + 1}`, emptyPageRoot()); pushSite(s); setActivePageId(id); setSelectedIds([]); };
   const onDuplicatePage = () => { const { site: s, id } = duplicatePage(site, activePage.id); pushSite(s); setActivePageId(id); setPageMenu(false); };
   const onRenamePage = (name: string) => pushSite(renamePage(site, activePage.id, name));
   const onDeletePage = () => { if (site.pages.length <= 1) return; const s = deletePage(site, activePage.id); pushSite(s); setActivePageId(s.homeId); setSelectedIds([]); setPageMenu(false); setConfirmDeletePage(false); };
@@ -144,7 +184,7 @@ export default function BoxDemoPage() {
   const addSection = () => { const sec = makeSection(SECTION_TINTS[countSections(root) % SECTION_TINTS.length]); sec.width = "100%"; commit(insertBox(root, root.id, root.children?.length ?? 0, makeRow([sec]))); };
   const onPatch = (patch: Partial<BoxNode>) => { if (selected) commit(patchAt(root, selected.id, patch)); };
   const resetOverride = () => { if (selected && bp !== "base") commit(clearOverride(root, selected.id, bp)); };
-  const addChildSection = () => { if (!selected) return; const tint = SECTION_TINTS[(countSections(selected) + 1) % SECTION_TINTS.length]; commit(insertBox(root, selected.id, selected.children?.length ?? 0, makeBlock(tint, "100%"))); };
+  const addChildSection = () => { if (!selected) return; const tint = SECTION_TINTS[(countSections(selected) + 1) % SECTION_TINTS.length]; const child = makeBlock(tint, "100%"); const pid = selected.id; commitWith((cur) => insertBox(cur, pid, findBox(cur, pid)?.children?.length ?? 0, child)); revealBox(child.id); };
 
   const floatSelected = () => { if (!selected) return; const g = measureFloatGeom(root, selected.id); if (g) commit(floatBox(root, selected.id, g.parentId, g.left, g.top, g.width, g.height)); };
   const unfloatSelected = () => { if (selected) commit(unfloatBox(root, selected.id)); };
@@ -164,19 +204,36 @@ export default function BoxDemoPage() {
   const bulkDuplicate = () => { commit(selectedIds.reduce((next, id) => duplicateBox(next, id), root)); };
   const bulkDelete = () => { commit(selectedIds.reduce((next, id) => (id !== root.id ? removeBox(next, id) : next), root)); setSelectedIds([]); };
   const bulkFloat = () => { commit(selectedIds.reduce((next, id) => { const g = measureFloatGeom(next, id); return g ? floatBox(next, id, g.parentId, g.left, g.top, g.width, g.height) : next; }, root)); };
+  const bulkGroup = () => {
+    const g = measureGroupGeom(root, selectedIds);
+    if (!g) return;
+    const next = groupBoxes(root, selectedIds, g);
+    commit(next);
+    const groupId = (next.children ?? []).filter((c) => c.position === "absolute").slice(-1)[0]?.id; // new group = root's last float
+    if (groupId) setSelectedIds([groupId]);
+  };
 
   const onExport = () => downloadHTML(renderSiteHTML(site, renderTheme), "site.html");
 
   // Click-to-add from the palette: insert into the selected container (or the page) with an optional style.
   const insertBlock = (kind: string, patch: Partial<BoxNode> = {}) => {
     const node = blockForKind(kind, patch);
-    // A COMPONENT is a self-contained element: it never lives inside a tinted, padded Section "chrome" box —
-    // it drops onto the page in its own transparent, hug-to-content wrapper (invisible unless the user styles
-    // it). Plain blocks (heading/text/…) still drop into the selected container so you can compose sections.
-    const parentId = node.type === "component" ? root.id : (selected && isContainer(selected) ? selected.id : root.id);
-    const target = findBox(root, parentId) ?? root;
-    commit(insertBox(root, parentId, target.children?.length ?? 0, node));
+    // Drop where YOU target: into the selected container if one is selected, else onto the page. Every block
+    // (element OR component) sits in its own TRANSPARENT, hug-to-content wrapper — the only visible box is the
+    // one the block itself paints. The tinted "Section" chrome only appears when you deliberately Add a section.
+    commitWith((cur) => {
+      const parentId = selected && isContainer(selected) ? selected.id : cur.id;
+      const target = findBox(cur, parentId) ?? cur;
+      return insertBox(cur, parentId, target.children?.length ?? 0, node);
+    });
+    // "Flow + auto-reveal": a new block joins the normal flow (a floating sibling overlays it), so SELECT it and
+    // scroll it into view — you always see exactly what landed and where, never lost behind a floating card.
+    revealBox(node.id);
   };
+
+  // Select a box and scroll it into view AFTER the tree re-renders (so a just-added block is never hidden —
+  // e.g. behind a floating sibling on the overlay layer). The reveal id is consumed by the effect below.
+  const revealBox = (id: string) => { pendingReveal.current = id; setSelectedIds([id]); };
 
   const frameW = DEVICES.find((d) => d.id === device)!.w;
   const pageList = site.pages.map((p) => ({ id: p.id, name: p.name }));
@@ -281,9 +338,9 @@ export default function BoxDemoPage() {
         <aside className="w-72 shrink-0 border-l border-gray-200 dark:border-white/10 bg-white dark:bg-[#14171f] overflow-y-auto">
           <div className="h-11 flex items-center px-3 border-b border-gray-200 dark:border-white/10 text-xs font-bold uppercase tracking-wide text-gray-500">Inspector</div>
           {bulk ? (
-            <BulkInspector count={selectedIds.length} theme={renderTheme} sample={(() => { const f = findBox(root, selectedIds[0]); return f ? resolveResponsive(f, bp) : null; })()} onStepWidth={bulkStepWidth} onStepHeight={bulkStepHeight} onPatch={bulkPatch} onDuplicate={bulkDuplicate} onDelete={bulkDelete} onFloatAll={bulkFloat} />
+            <BulkInspector count={selectedIds.length} theme={renderTheme} sample={(() => { const f = findBox(root, selectedIds[0]); return f ? resolveResponsive(f, bp) : null; })()} onStepWidth={bulkStepWidth} onStepHeight={bulkStepHeight} onPatch={bulkPatch} onDuplicate={bulkDuplicate} onDelete={bulkDelete} onFloatAll={bulkFloat} onGroup={bulkGroup} />
           ) : selected ? (
-            <BoxInspector node={bp === "base" ? selected : resolveResponsive(selected, bp)} theme={renderTheme} onPatch={onPatch} onAddChild={addChildSection} onFloat={floatSelected} onUnfloat={unfloatSelected} onLayer={layerSelected} canFloat={selected.id !== root.id} inGrid={findParent(root, selected.id)?.parent.layout === "grid"} breakpoint={bp} overridden={hasOverride(selected, bp)} onResetOverride={resetOverride} pages={pageList} currentPageId={activePage.id} />
+            <BoxInspector node={bp === "base" ? selected : resolveResponsive(selected, bp)} theme={renderTheme} onPatch={onPatch} onAddChild={addChildSection} onFloat={floatSelected} onUnfloat={unfloatSelected} onLayer={layerSelected} onAlignInRow={(j) => commit(alignInRow(root, selected.id, j))} rowJustify={alignInRowOf(root, selected.id)} canFloat={selected.id !== root.id} inGrid={findParent(root, selected.id)?.parent.layout === "grid"} breakpoint={bp} overridden={hasOverride(selected, bp)} onResetOverride={resetOverride} pages={pageList} currentPageId={activePage.id} />
           ) : (
             <div className="p-6 text-xs text-gray-400 text-center mt-6">Click a block to edit it — or drag a box on empty canvas to select several at once.</div>
           )}

@@ -53,4 +53,16 @@ describe("BulkInspector (multi-select bulk edits)", () => {
     fireEvent.click(screen.getByRole("button", { name: /Delete/ }));
     expect(p.onDelete).toHaveBeenCalled();
   });
+
+  it("shows a Group action that combines all selected into one unit", () => {
+    const onGroup = vi.fn();
+    setup({ count: 3, onGroup });
+    fireEvent.click(screen.getByRole("button", { name: /Group these 3/ }));
+    expect(onGroup).toHaveBeenCalled();
+  });
+
+  it("hides the Group action when no onGroup handler is provided", () => {
+    setup(); // no onGroup
+    expect(screen.queryByRole("button", { name: /Group these/ })).not.toBeInTheDocument();
+  });
 });

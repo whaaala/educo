@@ -7,7 +7,7 @@
  * selection. Mirrors BoxInspector's look so it feels like the same panel, just multi-target.
  */
 
-import { Minus, Plus, Copy, Trash2, Layers } from "lucide-react";
+import { Minus, Plus, Copy, Trash2, Layers, Group as GroupIcon } from "lucide-react";
 import type { SiteTheme } from "@/lib/site-storage";
 import type { BoxNode, FlexAlign } from "@/lib/box-model";
 import { ColorPickerPopover, colorToCSS } from "@/components/shared/ColorPalettePicker";
@@ -30,7 +30,7 @@ function Stepper({ title, onStep }: { title: string; onStep: (dir: -1 | 1) => vo
   );
 }
 
-export default function BulkInspector({ count, theme, sample, onStepWidth, onStepHeight, onPatch, onDuplicate, onDelete, onFloatAll }: {
+export default function BulkInspector({ count, theme, sample, onStepWidth, onStepHeight, onPatch, onDuplicate, onDelete, onFloatAll, onGroup }: {
   count: number;
   theme: SiteTheme;
   sample?: BoxNode | null;                      // a representative selected box (first) — seeds the sliders' shown values
@@ -40,6 +40,7 @@ export default function BulkInspector({ count, theme, sample, onStepWidth, onSte
   onDuplicate: () => void;
   onDelete: () => void;
   onFloatAll: () => void;
+  onGroup?: () => void;                          // combine all selected into ONE movable, lockable group
 }) {
   const s = sample ?? undefined;
   return (
@@ -92,6 +93,9 @@ export default function BulkInspector({ count, theme, sample, onStepWidth, onSte
 
       {/* ── Bulk actions ── */}
       <div className={section}>Actions</div>
+      {onGroup && (
+        <button onClick={onGroup} className="w-full flex items-center justify-center gap-2 py-2 rounded-lg bg-indigo-600 text-white text-xs font-medium hover:bg-indigo-700" title="Group into one movable, lockable unit (Ctrl+G)"><GroupIcon className="w-4 h-4" /> Group these {count}</button>
+      )}
       <div className="grid grid-cols-3 gap-1.5">
         <button onClick={onFloatAll} className="flex flex-col items-center gap-0.5 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-xs text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"><Layers className="w-4 h-4" /> Float</button>
         <button onClick={onDuplicate} className="flex flex-col items-center gap-0.5 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-xs text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"><Copy className="w-4 h-4" /> Duplicate</button>

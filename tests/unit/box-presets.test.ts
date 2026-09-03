@@ -31,14 +31,30 @@ describe("box-presets", () => {
     const spacer = blockForKind("spacer"); expect(spacer.type).toBe("spacer"); expect(spacer.height).toBe("48px");
   });
 
-  it("blockForKind builds COMPOSITE blocks (Card, Quote, Stats, Rating) as ready-made trees", () => {
+  it("blockForKind builds Card/Quote/Stat/Rating as EDITABLE TREES — every inner piece is a real, editable BoxNode", () => {
+    // a Card = image + heading + text + button, each a normal element you can select + fully style
     const card = blockForKind("card");
-    const kinds = (card.children ?? []).map((c) => c.type);
-    expect(kinds).toEqual(["image", "heading", "text", "button"]); // a real card
-    expect(card.shadow).toBe("md");
-    const rating = blockForKind("rating");
-    expect((rating.children ?? []).filter((c) => c.type === "icon")).toHaveLength(5); // five stars
-    const stats = blockForKind("stats");
-    expect((stats.children ?? [])[0].type).toBe("heading");
+    expect(card.type).toBe("container");
+    expect((card.children ?? []).map((c) => c.type)).toEqual(["image", "heading", "text", "button"]);
+    // a Quote = two editable text elements (quote + author)
+    expect((blockForKind("quote").children ?? []).every((c) => c.type === "text")).toBe(true);
+    // a Stat = heading (value) + text (label)
+    expect((blockForKind("stat").children ?? []).map((c) => c.type)).toEqual(["heading", "text"]);
+    // a Rating = five editable star icons
+    expect((blockForKind("rating").children ?? []).filter((c) => c.type === "icon")).toHaveLength(5);
+    // every composite uses design TOKENS (no hardcoded hex) so it re-themes + passes WCAG
+    const hex = (n: BoxNode): boolean => /#([0-9a-f]{3}|[0-9a-f]{6})\b/i.test(JSON.stringify(n));
+    for (const kind of ["card", "quote", "stat", "badge", "rating"]) expect(hex(blockForKind(kind))).toBe(false);
+  });
+
+  it("blockForKind builds a Badge as a single fully-editable text element (pill-styled)", () => {
+    const badge = blockForKind("badge");
+    expect(badge.type).toBe("text");     // one editable element — change text/colour/size/radius directly
+    expect(badge.text).toBeTruthy();
+    expect(badge.radius).toBeGreaterThan(0); // pill
+  });
+
+  it("the Accordion stays a component (its items edit inline)", () => {
+    expect(blockForKind("accordion").type).toBe("component");
   });
 });

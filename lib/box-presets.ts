@@ -80,54 +80,50 @@ export function getPresets(kind: string, theme: SiteTheme): Preset[] {
   }
 }
 
-// ── Composite blocks: ready-made little trees users expect (Card, Quote, Stats, Badge, Rating). ──
+// ── Design-system components as EDITABLE TREES (Card, Quote, Stat, Badge, Rating) ──
+// Each is a ready-made tree whose EVERY inner piece is a real, individually-selectable, fully-editable BoxNode
+// (click a card's heading → the full heading inspector; a badge's text → the full text inspector; …). The
+// component's OWN container is the box (no extra wrapper). EVERY colour is a design token (var(--eu-color-*))
+// so they re-theme with the site + pass WCAG. The Accordion stays a `component` (its items edit inline).
 function makeCard(): BoxNode {
-  return createContainer("column", { width: "100%", padding: 24, gap: 12, radius: 16, shadow: "md", borderWidth: 1, borderColor: "#0000000f", align: "stretch", children: [
-    createElement("image", { height: "160px" }),
-    createElement("heading", { text: "Card title", fontSize: 22, bold: true }),
-    createElement("text", { text: "A short description for this card goes right here." }),
-    createElement("button", { text: "Learn more" }),
+  return createContainer("column", { width: "100%", padding: 24, gap: 12, radius: 16, shadow: "md", borderWidth: 1, borderColor: "var(--eu-color-border)", background: "var(--eu-color-surface)", align: "stretch", children: [
+    createElement("image", { width: "100%", height: "160px", radius: 12 }),
+    createElement("heading", { text: "Card title", fontSize: 22, bold: true, width: "100%", color: "var(--eu-color-text)" }),
+    createElement("text", { text: "A short description for this card goes right here.", width: "100%", color: "var(--eu-color-muted)" }),
+    createElement("button", { text: "Learn more", background: "var(--eu-color-brand)", color: "var(--eu-color-on-brand)" }),
   ] });
 }
 function makeQuote(): BoxNode {
   return createContainer("column", { width: "100%", padding: 20, paddingLeft: 24, gap: 8, borderWidth: 0, align: "start", children: [
-    createElement("text", { text: "“This changed everything for us — we couldn't be happier.”", fontSize: 22, italic: true }),
-    createElement("text", { text: "— Happy Customer", fontSize: 14 }),
+    createElement("text", { text: "“This changed everything for us — we couldn't be happier.”", fontSize: 22, italic: true, width: "100%", color: "var(--eu-color-text)" }),
+    createElement("text", { text: "— Happy Customer", fontSize: 14, width: "100%", color: "var(--eu-color-muted)" }),
   ] });
 }
-function makeStats(): BoxNode {
-  return createContainer("column", { width: "100%", padding: 16, gap: 4, align: "center", children: [
-    createElement("heading", { text: "1,000+", fontSize: 44, bold: true, textAlign: "center" }),
-    createElement("text", { text: "Happy customers", textAlign: "center" }),
+function makeStat(): BoxNode {
+  return createContainer("column", { width: "auto", padding: 16, gap: 4, align: "center", children: [
+    createElement("heading", { text: "1,000+", fontSize: 44, bold: true, textAlign: "center", color: "var(--eu-color-brand)" }),
+    createElement("text", { text: "Happy customers", textAlign: "center", color: "var(--eu-color-muted)" }),
   ] });
 }
 function makeBadge(): BoxNode {
-  return createContainer("row", { width: "100%", padding: 8, gap: 6, align: "center", justify: "center", children: [
-    createContainer("row", { width: "auto", padding: 8, gap: 6, radius: 999, background: "#eef2ff", align: "center", justify: "center", children: [
-      createElement("text", { text: "New", fontSize: 12, bold: true, textAlign: "center" }),
-    ] }),
-  ] });
+  // A single editable text element styled as a pill — click it and change everything (text, colour, size, radius…).
+  return createElement("text", { text: "New", fontSize: 12, bold: true, width: "auto", textAlign: "center", color: "var(--eu-color-brand)", background: "var(--eu-color-primary-50)", radius: 999, paddingTop: 6, paddingBottom: 6, paddingLeft: 12, paddingRight: 12 });
 }
 function makeRating(): BoxNode {
-  return createContainer("row", { width: "100%", padding: 8, gap: 4, align: "center", justify: "center", wrap: false, children: [
-    createElement("icon", { icon: "Star", fontSize: 24, color: "#f59e0b" }),
-    createElement("icon", { icon: "Star", fontSize: 24, color: "#f59e0b" }),
-    createElement("icon", { icon: "Star", fontSize: 24, color: "#f59e0b" }),
-    createElement("icon", { icon: "Star", fontSize: 24, color: "#f59e0b" }),
-    createElement("icon", { icon: "Star", fontSize: 24, color: "#d1d5db" }),
-  ] });
+  const star = (on: boolean) => createElement("icon", { icon: "Star", fontSize: 24, color: on ? "var(--eu-color-warning)" : "var(--eu-color-neutral-300)" });
+  return createContainer("row", { width: "auto", padding: 4, gap: 4, align: "center", justify: "start", wrap: false, children: [star(true), star(true), star(true), star(true), star(false)] });
 }
+const COMPOSITES: Record<string, () => BoxNode> = { card: makeCard, quote: makeQuote, stat: makeStat, badge: makeBadge, rating: makeRating };
 
-const COMPOSITES: Record<string, () => BoxNode> = { card: makeCard, quote: makeQuote, stats: makeStats, badge: makeBadge, rating: makeRating };
-
-/** Build a fresh block for a palette kind (primitive OR composite), then apply an optional preset patch. */
+/** Build a fresh block for a palette kind. Card/Quote/Stat/Badge/Rating are EDITABLE TREES; the accordion is a
+ *  `component` (inline-editable items); everything else is a primitive element / container. */
 export function blockForKind(kind: string, patch: Partial<BoxNode> = {}): BoxNode {
   const base =
     COMPOSITES[kind] ? COMPOSITES[kind]()
+    : kind === "accordion" ? createComponent(kind)
     : kind === "row" ? createContainer("row")
     : kind === "grid" ? createGrid(3)
     : kind === "container" ? createContainer("column", { width: "100%", padding: 24, gap: 0, align: "stretch" })
-    : kind === "accordion" ? createComponent("accordion")
     : createElement(kind as Exclude<BoxType, "container">);
   return Object.assign(base, patch);
 }

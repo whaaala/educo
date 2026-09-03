@@ -35,7 +35,7 @@ export const COMPONENT_CSS = `
 .eu-root .eu-card { container-type: inline-size; background: var(--eu-color-surface); border: 1px solid var(--eu-color-border); border-radius: var(--eu-radius-lg); padding: clamp(var(--eu-space-4), 4cqi, var(--eu-space-6)); box-shadow: var(--eu-shadow-sm); }
 .eu-root .eu-card--flat { box-shadow: none; }
 .eu-root .eu-card--raised { box-shadow: var(--eu-shadow-lg); }
-.eu-root .eu-card__title { font-family: var(--eu-font-heading); font-weight: var(--eu-weight-bold); font-size: var(--eu-text-xl); margin-block-end: var(--eu-space-2); }
+.eu-root .eu-card__title { font-family: var(--eu-font-heading); font-weight: var(--eu-weight-bold); font-size: 1.35em; margin-block-end: var(--eu-space-2); }
 
 /* ── Form controls + field ─────────────────────────────────────────────────── */
 .eu-root .eu-input, .eu-root .eu-select, .eu-root .eu-textarea {
@@ -52,12 +52,38 @@ export const COMPONENT_CSS = `
 .eu-root .eu-error { font-size: var(--eu-text-xs); color: var(--eu-color-danger); }
 
 /* ── Badge ─────────────────────────────────────────────────────────────────── */
-.eu-root .eu-badge { display: inline-flex; align-items: center; gap: var(--eu-space-1); font-size: var(--eu-text-xs); font-weight: var(--eu-weight-semibold); padding: var(--eu-space-1) var(--eu-space-2); border-radius: var(--eu-radius-full); background: var(--eu-color-neutral-100); color: var(--eu-color-text); }
+.eu-root .eu-badge { display: inline-flex; align-items: center; gap: var(--eu-space-1); font-size: 0.8em; font-weight: var(--eu-weight-semibold); padding: 0.35em 0.7em; border-radius: var(--eu-radius-full); background: var(--eu-color-neutral-100); color: var(--eu-color-text); }
 .eu-root .eu-badge--brand   { background: var(--eu-color-brand);   color: var(--eu-color-on-brand); }
 .eu-root .eu-badge--success { background: var(--eu-color-success); color: var(--eu-color-on-brand); }
 .eu-root .eu-badge--warning { background: var(--eu-color-warning); color: var(--eu-color-on-brand); }
 .eu-root .eu-badge--danger  { background: var(--eu-color-danger);  color: var(--eu-color-on-brand); }
 .eu-root .eu-badge--info    { background: var(--eu-color-info);    color: var(--eu-color-on-brand); }
+
+/* ── Card extras (media / body / action) — fluid + token-driven ─────────────── */
+.eu-root .eu-card { display: flex; flex-direction: column; gap: clamp(var(--eu-space-2), 2cqi, var(--eu-space-3)); }
+.eu-root .eu-card__media { width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; border-radius: var(--eu-radius-md); display: block; }
+.eu-root .eu-card__body { color: var(--eu-color-muted); font-size: 1em; }
+.eu-root .eu-card__action { align-self: flex-start; margin-block-start: var(--eu-space-1); }
+
+/* ── Quote (blockquote) ─────────────────────────────────────────────────────── */
+.eu-root .eu-quote { container-type: inline-size; display: flex; flex-direction: column; gap: var(--eu-space-2); margin: 0; }
+.eu-root .eu-quote__text { margin: 0; font-family: var(--eu-font-heading); font-style: italic; color: var(--eu-color-text); font-size: 1.6em; line-height: var(--eu-leading-snug); }
+.eu-root .eu-quote__author { color: var(--eu-color-muted); font-size: 0.9em; }
+.eu-root .eu-quote--bordered { border-inline-start: 4px solid var(--eu-color-brand); padding-inline-start: clamp(var(--eu-space-3), 3cqi, var(--eu-space-5)); }
+.eu-root .eu-quote--large .eu-quote__text { font-size: 2.1em; }
+
+/* ── Stat (big number + label) ──────────────────────────────────────────────── */
+.eu-root .eu-stat { container-type: inline-size; display: flex; flex-direction: column; gap: var(--eu-space-1); align-items: center; text-align: center; }
+.eu-root .eu-stat__value { font-family: var(--eu-font-heading); font-weight: var(--eu-weight-bold); line-height: 1; color: var(--eu-color-text); font-size: 3.4em; }
+.eu-root .eu-stat__label { color: var(--eu-color-muted); font-size: 0.95em; }
+.eu-root .eu-stat--brand .eu-stat__value { color: var(--eu-color-brand); }
+.eu-root .eu-stat--big .eu-stat__value { font-size: 4.8em; }
+
+/* ── Rating (stars) — inline SVG, currentColor, em-sized ────────────────────── */
+.eu-root .eu-rating { display: inline-flex; align-items: center; gap: clamp(0.1em, 1cqi, 0.25em); color: var(--eu-color-neutral-300); }
+.eu-root .eu-rating__star { width: 1.3em; height: 1.3em; flex: none; }
+.eu-root .eu-rating__star.is-on { color: var(--eu-color-warning); }
+.eu-root .eu-rating--brand .eu-rating__star.is-on { color: var(--eu-color-brand); }
 
 /* ── Alert ─────────────────────────────────────────────────────────────────── */
 .eu-root .eu-alert { padding: var(--eu-space-4) var(--eu-space-5); border-radius: var(--eu-radius-md); border-left: 4px solid var(--eu-color-info); background: var(--eu-color-surface); color: var(--eu-color-text); }

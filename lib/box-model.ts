@@ -11,6 +11,7 @@
  */
 
 import type { CSSProperties } from "react";
+import { isRegistryComponent, defaultComponentFields, defaultComponentWidth, componentIsColumn } from "@/lib/educo-ui/registry";
 
 export type BoxType = "container" | "text" | "heading" | "button" | "image" | "video" | "icon" | "divider" | "list" | "embed" | "spacer" | "component";
 
@@ -81,6 +82,10 @@ export interface BoxNode {
   left?: number;            // absolute only: X offset as % of the positioning parent's content box (responsive)
   top?: number;             // absolute only: Y offset as % of the positioning parent's content box
   zIndex?: number;          // absolute only: stacking order among floating siblings (higher = on top)
+  locked?: boolean;         // EDITOR-ONLY: freeze position + size (no drag / no resize / no nudge). Still selectable + content-editable. No effect on the exported site.
+  group?: boolean;          // this container is a GROUP (created via "Group") — moves/locks as one unit; ungroup dissolves it.
+  contentX?: "start" | "center" | "end"; // component only: horizontal position of the content inside the component
+  contentY?: "start" | "center" | "end"; // component only: vertical position of the content inside the component
 
   // ── responsive ──
   hidden?: boolean;         // hide this box (per breakpoint via `responsive`, or everywhere at the base)
@@ -116,6 +121,7 @@ export interface BoxNode {
   variant?: string;                         // design variant class suffix, e.g. "--panel" ("" = default look)
   accItems?: AccordionItem[];               // accordion content (component === "accordion")
   accMultiOpen?: boolean;                   // accordion: allow more than one panel open at once
+  componentFields?: Record<string, string | number>; // registry-component content (card/quote/stat/badge/rating/…)
   tokenOverrides?: Record<string, string>;  // CSS custom-property overrides, e.g. { "--eu-color-brand": "#5b5bd6" }
   advancedCss?: string;                     // raw CSS declarations applied to the instance (sanitized before export)
 
@@ -137,6 +143,19 @@ export function isContainer(node: BoxNode): boolean {
 /** Lifted out of the flow onto its own free-floating layer (can overlap siblings)? */
 export function isFloating(node: BoxNode): boolean {
   return node.position === "absolute";
+}
+
+/**
+ * Responsive Field Guide — "STACK on narrow": a floating box collapses back into normal flow (full-width,
+ * content-height) on MOBILE, so it can never clip its content or exceed its parent on a phone. The one
+ * exception is when the user has DELIBERATELY re-pinned it on mobile (set left/top/position in the mobile
+ * override) — then we honour their explicit placement instead of auto-stacking.
+ */
+export function floatStacksOnMobile(node: BoxNode): boolean {
+  if (!isFloating(node)) return false;
+  const m = node.responsive?.mobile;
+  const pinned = !!m && (m.left != null || m.top != null || m.position != null || m.width != null || m.height != null);
+  return !pinned;
 }
 
 const round1 = (n: number) => Math.round(n * 10) / 10;
@@ -179,7 +198,7 @@ export function createElement(type: Exclude<BoxType, "container">, overrides: Pa
     case "video": return { ...base, src: "", width: "100%", height: "315px", ...overrides };
     case "icon": return { ...base, icon: "Star", fontSize: 32, ...overrides };
     case "divider": return { ...base, width: "fill", ...overrides };
-    case "list": return { ...base, width: "100%", listStyle: "bullet", listItems: ["First item", "Second item", "Third item"], fontSize: 16, ...overrides };
+    case "list": return { ...base, listStyle: "bullet", listItems: ["First item", "Second item", "Third item"], fontSize: 16, ...overrides };
     case "embed": return { ...base, width: "100%", height: "260px", html: "", ...overrides };
     case "spacer": return { ...base, width: "100%", height: "48px", ...overrides };
     default: return { ...base, type: "text", text: "New text — click to edit.", ...overrides };
@@ -197,13 +216,71 @@ export function defaultAccordionItems(): AccordionItem[] {
   ];
 }
 
-/** Create an Educo UI component instance (type "component"). Component-specific defaults live here. */
+/** Create an Educo UI component instance (type "component"). Component-specific defaults live here.
+ *  Accordion keeps its bespoke item model; every other component draws its default content fields from the
+ *  registry, so ADDING a future component needs no change here — just a registry entry + its CSS. */
 export function createComponent(component: string, overrides: Partial<BoxNode> = {}): BoxNode {
   const base: BoxNode = { id: newBoxId(), type: "component", component, variant: "", width: "100%" };
-  switch (component) {
-    case "accordion": return { ...base, accItems: defaultAccordionItems(), accMultiOpen: false, ...overrides };
-    default: return { ...base, ...overrides };
+  if (component === "accordion") return { ...base, accItems: defaultAccordionItems(), accMultiOpen: false, ...overrides };
+  if (isRegistryComponent(component)) return { ...base, width: defaultComponentWidth(component), componentFields: defaultComponentFields(component), ...overrides };
+  return { ...base, ...overrides };
+}
+
+/**
+ * The user's TYPOGRAPHY (font family / weight / capitalisation / style / spacing — NOT size) as CSS declarations,
+ * to inject as a HIGH-SPECIFICITY rule on a component's text so the inspector's controls actually override the
+ * component's own built-in styling (e.g. a card title's bold heading font). Size is handled separately (the
+ * component's text is `em`-based, so it scales from the wrapper's font-size). Only user-set props are emitted.
+ */
+export function componentTextCss(node: BoxNode): string {
+  const d: string[] = [];
+  if (node.fontFamily) d.push(`font-family:${node.fontFamily}`);
+  if (node.fontWeight) d.push(`font-weight:${node.fontWeight}`);
+  else if (node.bold) d.push(`font-weight:700`);
+  if (node.textTransform && node.textTransform !== "none") d.push(`text-transform:${node.textTransform}`);
+  if (node.italic) d.push(`font-style:italic`);
+  if (node.letterSpacing != null) d.push(`letter-spacing:${node.letterSpacing}px`);
+  if (node.lineHeight) d.push(`line-height:${node.lineHeight}`);
+  return d.join(";");
+}
+
+/**
+ * The user's BOX styling (border, corner radius, shadow, background, rotation) as CSS declarations, to inject
+ * directly onto the component's OWN element (`.eu-<component>`) instead of a surrounding wrapper box — so the
+ * inspector's Design controls style the component ITSELF (the card, the pill, the quote…), not a container
+ * around it. Only user-set props are emitted (defaults keep the component's built-in look).
+ */
+export function componentBoxCss(node: BoxNode): string {
+  const d: string[] = [];
+  // SIZE: the component element FILLS its box when the box is given a definite size (Full / Custom width, or a
+  // resized height) so resizing the block actually resizes the component. When width is "auto" (Fit) it keeps
+  // hugging its content. box-sizing so an added border never overflows the box.
+  // INNER SPACING: padding applies to the component's OWN element (with border-box so it stays INSIDE the box —
+  // the component still fills the node box exactly, so the selection edges match). Per-side falls back to `padding`.
+  const pt = node.paddingTop ?? node.padding, pr = node.paddingRight ?? node.padding, pb = node.paddingBottom ?? node.padding, pl = node.paddingLeft ?? node.padding;
+  const hasPad = [pt, pr, pb, pl].some((v) => v != null);
+  const sized = (node.width && node.width !== "auto") || node.height || node.minHeight;
+  if (node.borderWidth || sized || hasPad) d.push("box-sizing:border-box");
+  if (hasPad) d.push(`padding:${u(pt ?? 0)} ${u(pr ?? 0)} ${u(pb ?? 0)} ${u(pl ?? 0)}`);
+  if (node.width && node.width !== "auto") d.push("width:100%");
+  if (node.height) d.push("height:100%");
+  if (node.minHeight) d.push("min-height:100%");
+  if (node.borderWidth) d.push(`border:${node.borderWidth}px ${node.borderStyle ?? "solid"} ${node.borderColor ?? "rgba(0,0,0,0.15)"}`);
+  const br = radiusCSS(node); if (br) d.push(`border-radius:${br}`);
+  if (node.shadow) d.push(`box-shadow:${SHADOW_CSS[node.shadow]}`);
+  if (node.background) d.push(`background:${node.background}`);
+  if (node.bgImage) d.push(`background-image:url("${node.bgImage}");background-size:${node.bgSize ?? "cover"};background-position:center;background-repeat:no-repeat`);
+  if (node.rotate) d.push(`transform:rotate(${node.rotate}deg)`);
+  if (node.opacity !== undefined && node.opacity !== 100) d.push(`opacity:${node.opacity / 100}`);
+  // CONTENT POSITION: place the content inside the component (X = horizontal, Y = vertical) regardless of whether
+  // the component stacks in a column or a row — map X/Y to the right flex axis (justify vs align) per component.
+  if (node.contentX || node.contentY) {
+    const flex = (v?: string) => (v === "center" ? "center" : v === "end" ? "flex-end" : "flex-start");
+    const col = componentIsColumn(node.component);
+    if (node.contentX) d.push(`${col ? "align-items" : "justify-content"}:${flex(node.contentX)}`);
+    if (node.contentY) d.push(`${col ? "justify-content" : "align-items"}:${flex(node.contentY)}`);
   }
+  return d.join(";");
 }
 
 /** Immutably patch one accordion item on a component node. */
@@ -426,8 +503,11 @@ export function normalizeRowBands(node: BoxNode, gap = 0): BoxNode {
       const row = clampRowWidths(normalizeRowBands(c, gap));
       if (row.children?.length) rows.push(row); // prune empty rows
     } else {
-      // Bare item → wrap in its own full-width row (a new row of its own): it fills the fresh row.
-      rows.push(makeRowBand([normalizeRowBands({ ...c, width: "100%" }, gap)], gap));
+      // Bare item → wrap in its own new row. A CONTAINER (section) fills the row; an ELEMENT/COMPONENT keeps
+      // its own width so it HUGS its content (a short heading / button is exactly as wide as its content, not a
+      // full-width "container" box). Width is still user-editable via Fit / Full / Custom.
+      const forced = isContainer(c) ? { ...c, width: "100%" } : c;
+      rows.push(makeRowBand([normalizeRowBands(forced, gap)], gap));
     }
   }
   return { ...node, children: rows };
@@ -468,9 +548,10 @@ export function floatBox(root: BoxNode, id: string, targetParentId: string, left
   const z = floatingZRange(tp).max + 1;
   let next = moveBox(root, id, targetParentId, tp?.children?.length ?? 0);
   next = updateBox(next, id, {
-    position: "absolute", left: round1(left), top: round1(top), width, minHeight: Math.max(8, Math.round(height)), zIndex: z,
-    // A free-floating layer is a movable/resizable CARD: `clip` drops the content minimum so its width AND
-    // height handles can shrink it below its content (otherwise a full-width component can only slide vertically).
+    // A free-floating layer is a fixed-size CARD: a DEFINITE height (not a min-height floor that content can grow
+    // past) so the box, its parent's reserved height, and the export all agree on exactly how tall it is. `clip`
+    // lets the width AND height handles shrink it below its content.
+    position: "absolute", left: round1(left), top: round1(top), width, height: `${Math.max(8, Math.round(height))}px`, minHeight: undefined, zIndex: z,
     clip: true,
     alignSelf: undefined, margin: undefined, marginTop: undefined, marginRight: undefined, marginBottom: undefined, marginLeft: undefined,
   });
@@ -486,7 +567,7 @@ export function unfloatBox(root: BoxNode, id: string): BoxNode {
   const info = findParent(root, id);
   // Drop everything the float set: geometry, the auto `clip`, and the card's `minHeight` (so the box hugs its
   // content again). A COMPONENT also returns to full width (its compact fixed px width was only for the card).
-  const patch: Partial<BoxNode> = { position: undefined, left: undefined, top: undefined, zIndex: undefined, clip: undefined, minHeight: undefined };
+  const patch: Partial<BoxNode> = { position: undefined, left: undefined, top: undefined, zIndex: undefined, clip: undefined, minHeight: undefined, height: undefined };
   if (node?.type === "component") patch.width = "100%";
   let next = updateBox(root, id, patch);
   if (info) {
@@ -494,6 +575,57 @@ export function unfloatBox(root: BoxNode, id: string): BoxNode {
     if (!stillFloating) next = updateBox(next, info.parent.id, { minHeight: undefined });
   }
   return next;
+}
+
+/**
+ * GROUP the given boxes into ONE floating container (slide-style). The selected boxes are lifted out of the
+ * flow and placed IN-FLOW inside a new `group` container that floats at `geom` (a bounding box measured by the
+ * canvas). The group then moves + locks as a SINGLE unit, and because its children are in normal flow inside it
+ * (not absolutely pinned) the group reflows + STACKS on narrow like everything else (Responsive Field Guide).
+ * Children keep document order. Pure; `ungroupBoxes` reverses it.
+ */
+export function groupBoxes(root: BoxNode, ids: string[], geom: { left: number; top: number; width: string; height: number }): BoxNode {
+  const set = new Set(ids);
+  const ordered: string[] = [];
+  const collect = (n: BoxNode) => { if (set.has(n.id) && n.id !== root.id) ordered.push(n.id); (n.children ?? []).forEach(collect); };
+  collect(root); // tree/document order so the group's stack matches what the user saw
+  if (ordered.length < 2) return root; // need at least two boxes to form a group
+  const byId = new Map(ordered.map((id) => [id, findBox(root, id)!]));
+  const kids = ordered.map((id) => ({ ...byId.get(id)!, position: undefined, left: undefined, top: undefined, zIndex: undefined, width: "100%" }));
+  let next = root;
+  for (const id of ordered) next = removeBox(next, id); // pull each out of wherever it lives
+  const z = floatingZRange(next).max + 1;
+  const group = createContainer("column", {
+    group: true, position: "absolute", left: geom.left, top: geom.top,
+    width: geom.width, height: `${Math.max(8, Math.round(geom.height))}px`,
+    zIndex: z, gap: 12, padding: 0, align: "stretch", wrap: false, children: kids,
+  } as Partial<BoxNode>);
+  return insertBox(next, next.id, next.children?.length ?? 0, group); // the group floats at the page root
+}
+
+/** UNGROUP: dissolve a `group` container, returning its children to the flow of the group's parent (they
+ *  stack again as normal blocks). Pure. */
+export function ungroupBoxes(root: BoxNode, groupId: string): BoxNode {
+  const group = findBox(root, groupId);
+  const info = findParent(root, groupId);
+  if (!group || !info) return root;
+  const kids = (group.children ?? []).map((c) => ({ ...c, position: undefined, left: undefined, top: undefined, zIndex: undefined, width: c.width ?? "100%" }));
+  const children = (info.parent.children ?? []).flatMap((c) => (c.id === groupId ? kids : [c]));
+  return updateBox(root, info.parent.id, { children });
+}
+
+/** Position a block within its own container (its row band / flex parent): sets the PARENT's justify-content
+ *  so the child sits at the start / center / end. Because blocks now HUG their content, this is how you
+ *  left / centre / right a heading, button, badge, etc. Fluid (justify-content, no fixed px) → Field-Guide-safe. */
+export function alignInRow(root: BoxNode, id: string, justify: FlexJustify): BoxNode {
+  const info = findParent(root, id);
+  if (!info) return root;
+  return updateBox(root, info.parent.id, { justify });
+}
+
+/** The block's current position within its container (its parent row's justify-content). */
+export function alignInRowOf(root: BoxNode, id: string): FlexJustify {
+  return findParent(root, id)?.parent.justify ?? "start";
 }
 
 /** Raise a floating box above all its floating siblings. */
@@ -658,8 +790,36 @@ export function marginCSS(node: BoxNode): CSSProperties {
   };
 }
 
-/** The container's own layout CSS (flex or grid), as inline style. */
-export function containerStyle(node: BoxNode): CSSProperties {
+/**
+ * How tall a positioning parent must be so it still CONTAINS its floating children (which are out of the flow).
+ * A floating child's `top` is a % of the parent's content height and its height is its `minHeight` (a floating
+ * card is `clip`ped, so minHeight IS its height). Its bottom fits when contentH ≥ h/(1 − top). We compute that
+ * from the STORED values only (no measuring, no stored reserve on the parent → nothing to leak) so the parent
+ * always wraps its floating children AND re-computes automatically as you drag/resize them. Padding is added
+ * back so the border-box stays tall enough. Returns 0 when there are no floating children.
+ */
+export function floatingReserve(node: BoxNode, bp: Breakpoint = "base"): number {
+  let need = 0;
+  for (const c of node.children ?? []) {
+    if (!isFloating(c)) continue;
+    // On MOBILE a float that stacks is back in normal flow — it grows the parent itself, so it needs NO
+    // reserve (reserving here would leave a tall empty gap under the now-inline card).
+    if (bp === "mobile" && floatStacksOnMobile(c)) continue;
+    const rc = bp === "base" ? c : resolveResponsive(c, bp); // its effective height/top at this breakpoint
+    // A floating card has a DEFINITE `height` (px) — its true rendered height; fall back to minHeight for old data.
+    const h = rc.height && rc.height.endsWith("px") ? parseFloat(rc.height) : (rc.minHeight ?? 0);
+    const top = Math.min(Math.max(rc.top ?? 0, 0), 92); // cap so we never divide by ~0
+    const n = h / (1 - top / 100);
+    if (n > need) need = n;
+  }
+  if (need <= 0) return 0;
+  const padV = (node.paddingTop ?? node.padding ?? 0) + (node.paddingBottom ?? node.padding ?? 0);
+  return Math.round(need + padV);
+}
+
+/** The container's own layout CSS (flex or grid), as inline style. `bp` makes the floating reserve device-aware. */
+export function containerStyle(node: BoxNode, bp: Breakpoint = "base"): CSSProperties {
+  const minH = Math.max(node.minHeight ?? 0, floatingReserve(node, bp)) || undefined;
   if (node.layout === "grid") {
     return {
       display: "grid",
@@ -667,7 +827,7 @@ export function containerStyle(node: BoxNode): CSSProperties {
       gap: u(node.gap ?? 16),
       alignItems: ALIGN_CSS[node.align ?? "stretch"],
       ...paddingCSS(node),
-      minHeight: node.minHeight,
+      minHeight: minH,
     };
   }
   return {
@@ -682,7 +842,7 @@ export function containerStyle(node: BoxNode): CSSProperties {
     // Pack wrapped lines to the top so they never stretch apart and leave gaps between sections.
     alignContent: "flex-start",
     ...paddingCSS(node),
-    minHeight: node.minHeight,
+    minHeight: minH,
   };
 }
 
@@ -725,8 +885,17 @@ export function childStyle(child: BoxNode, parent: BoxNode): CSSProperties {
   // A section inside a ROW BAND keeps a usable minimum width (`min(100%, 14rem)`): its siblings stay side-by-side
   // while they fit, but once the row is too narrow for everyone at that minimum, it WRAPS — so on a phone the
   // sections stack (each ~14rem-or-full) instead of cramming into unreadable columns. Doesn't touch resize/grow.
-  if (parent.rowBand && isRow && !child.clip && !isEmptyBox(child)) s.minWidth = "min(100%, 14rem)";
+  if (parent.rowBand && isRow && !child.clip && !isEmptyBox(child) && isContainer(child)) s.minWidth = "min(100%, 14rem)"; // only SECTIONS get the reflow floor; elements/components hug their content
   const crossCss = sizeToCSS(crossToken);
   if (crossCss) { if (isRow) s.height = crossCss; else s.width = crossCss; }
+  // HUG, don't stretch: a BLOCK (element/component) with an auto cross-size ("Fit") must be exactly as big as its
+  // content — the parent's default `align-items: stretch` would otherwise blow it up to the full cross axis, which
+  // reads as an empty "wrapper" box around a short heading/button. Pin it to the start (or follow an explicit parent
+  // alignment). Containers keep stretching (sections fill their row / share equal height); an explicit self-align
+  // (edge-anchored resize) is never overwritten.
+  if (!crossCss && !isContainer(child) && !child.alignSelf) {
+    const pa = parent.align ?? "stretch";
+    s.alignSelf = pa === "stretch" ? "flex-start" : ALIGN_CSS[pa];
+  }
   return s;
 }

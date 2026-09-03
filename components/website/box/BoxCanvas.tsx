@@ -10,14 +10,14 @@
 
 import { Fragment, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { Plus, ChevronUp, ChevronDown, Copy, Scissors, ClipboardPaste, Trash2, Upload, GripVertical, MoreVertical, Rows3, Columns3, Grid3x3, Type, Heading as HeadingIcon, MousePointerClick, Image as ImageIcon, Layers, BringToFront, SendToBack, Video as VideoIcon, Sparkles, Minus as MinusIcon, List as ListIcon, Code2, Star } from "lucide-react";
+import { Plus, ChevronUp, ChevronDown, Copy, Scissors, ClipboardPaste, Trash2, Upload, GripVertical, MoreVertical, Rows3, Columns3, Grid3x3, Type, Heading as HeadingIcon, MousePointerClick, Image as ImageIcon, Layers, BringToFront, SendToBack, Video as VideoIcon, Sparkles, Minus as MinusIcon, List as ListIcon, Code2, Star, Lock, LockOpen, Ungroup } from "lucide-react";
 import type { SiteTheme } from "@/lib/site-storage";
 import {
   type BoxNode, type BoxType,
-  containerStyle, childStyle, marginCSS, sizeToCSS, u, baseUnit, createContainer, createGrid, createElement, createComponent,
+  containerStyle, childStyle, marginCSS, sizeToCSS, u, baseUnit, floatingReserve, floatStacksOnMobile, createContainer, createGrid, createElement, createComponent,
   updateBox, removeBox, insertBox, moveBoxStep, duplicateBox, moveBox, cloneBox, findParent, isAncestor, isContainer, isEmptyBox, widthPct,
-  isFloating, floatBox, unfloatBox, bringToFront, sendToBack, bringForward, sendBackward,
-  radiusCSS, isClipped, SHADOW_CSS, videoEmbedSrc, sanitizeCssDeclarations,
+  isFloating, floatBox, unfloatBox, groupBoxes, ungroupBoxes, bringToFront, sendToBack, bringForward, sendBackward,
+  radiusCSS, isClipped, SHADOW_CSS, videoEmbedSrc, sanitizeCssDeclarations, componentTextCss, componentBoxCss,
   type Breakpoint, resolveResponsive, updateBoxResponsive,
 } from "@/lib/box-model";
 import { ICON_SET } from "./icons";
@@ -26,6 +26,7 @@ import { blockForKind } from "@/lib/box-presets";
 import { colorToCSS } from "@/components/shared/ColorPalettePicker";
 import { COMPONENT_CSS } from "@/lib/educo-ui/components";
 import { tokensFromTheme, tokensToCss } from "@/lib/educo-ui/tokens";
+import { isRegistryComponent, renderComponent } from "@/lib/educo-ui/registry";
 import { EditableText, ImageBox } from "@/components/website/sections/SectionKit";
 
 /** Layered background CSS: base fill (colour/gradient) → image → overlay; content renders above. */
@@ -90,6 +91,8 @@ function measureBoxU(el: HTMLElement, baseFont: number): number {
 }
 
 const round1 = (n: number) => Math.round(n * 10) / 10;
+/** Map a content-position value (start/center/end) to a flex alignment keyword. */
+const flexPos = (v?: string): string => (v === "center" ? "center" : v === "end" ? "flex-end" : "flex-start");
 
 /** Measure the geometry needed to lift a box onto a free-floating layer: its POSITIONING PARENT (the
  *  nearest real content container — never a structural row band) and the box's current left/top (% of
@@ -116,12 +119,11 @@ export function measureFloatGeom(root: BoxNode, id: string): { parentId: string;
   const padL = parseFloat(cs.paddingLeft) || 0, padT = parseFloat(cs.paddingTop) || 0;
   const padR = parseFloat(cs.paddingRight) || 0, padB = parseFloat(cs.paddingBottom) || 0;
   const cw = Math.max(1, pr.width - padL - padR), ch = Math.max(1, pr.height - padT - padB);
-  // A COMPONENT floats as a COMPACT card (a fixed px width ≈ half the parent, never wider than its content) so
-  // it can be dragged freely in 2D and resized — instead of a full-width bar that only slides vertically. Other
-  // blocks keep their measured % width.
-  const isComponent = node.type === "component";
-  const compactPx = Math.round(Math.min(r.width, Math.max(320, cw * 0.5)));
-  const width = isComponent ? `${compactPx}px` : `${round1((r.width / cw) * 100)}%`;
+  // Float at the block's CURRENT width so its measured height is the height it will actually have as a card
+  // (changing the width on float would change the height and break the parent's reserved space). Resize after.
+  // +1px safety margin: the frozen card must never be a hair NARROWER than the content it just measured (sub-pixel
+  // rounding would otherwise wrap the last word to a new line that the card's clip then cuts off). Still hugs.
+  const width = `${round1(((r.width + 1) / cw) * 100)}%`;
   return {
     parentId,
     left: ((r.left - (pr.left + padL)) / cw) * 100,
@@ -129,6 +131,25 @@ export function measureFloatGeom(root: BoxNode, id: string): { parentId: string;
     width,
     height: r.height,
   };
+}
+
+/** Bounding box of several selected boxes, as a floating geom (left/top % of the ROOT content box + width % +
+ *  height px) — where a GROUP wrapping them should sit so it appears exactly over them. Null if <2 measurable. */
+export function measureGroupGeom(root: BoxNode, ids: string[]): { left: number; top: number; width: string; height: number } | null {
+  if (typeof document === "undefined") return null;
+  const picked = ids.filter((id) => id !== root.id);
+  if (picked.length < 2) return null;
+  const rootEl = document.querySelector<HTMLElement>(`[data-box-id="${root.id}"]`);
+  if (!rootEl) return null;
+  const pr = rootEl.getBoundingClientRect(), cs = getComputedStyle(rootEl);
+  const padL = parseFloat(cs.paddingLeft) || 0, padT = parseFloat(cs.paddingTop) || 0;
+  const cw = Math.max(1, pr.width - padL - (parseFloat(cs.paddingRight) || 0));
+  const ch = Math.max(1, pr.height - padT - (parseFloat(cs.paddingBottom) || 0));
+  const rects = picked.map((id) => document.querySelector<HTMLElement>(`[data-box-id="${id}"]`)?.getBoundingClientRect()).filter(Boolean) as DOMRect[];
+  if (rects.length < 2) return null;
+  const minL = Math.min(...rects.map((r) => r.left)), minT = Math.min(...rects.map((r) => r.top));
+  const maxR = Math.max(...rects.map((r) => r.right)), maxB = Math.max(...rects.map((r) => r.bottom));
+  return { left: ((minL - (pr.left + padL)) / cw) * 100, top: ((minT - (pr.top + padT)) / ch) * 100, width: `${round1(((maxR - minL) / cw) * 100)}%`, height: maxB - minT };
 }
 
 type Edge = "n" | "s" | "e" | "w" | "ne" | "nw" | "se" | "sw";
@@ -207,9 +228,50 @@ export default function BoxCanvas({
   // ── Floating layers (lift a section out of the flow to OVERLAP others) ──
   const floatNode = (id: string) => { const g = measureFloatGeom(rootRef.current, id); if (g) onChange(floatBox(rootRef.current, id, g.parentId, g.left, g.top, g.width, g.height)); };
   const unfloatNode = (id: string) => onChange(unfloatBox(rootRef.current, id));
+  // GROUP the selected boxes into one floating, movable, lockable unit — positioned over their measured
+  // bounding box so it appears exactly where they already sit, then selected as a single group.
+  const groupSelected = () => {
+    const ids = [...selSet].filter((id) => id !== rootRef.current.id);
+    const geom = measureGroupGeom(rootRef.current, ids);
+    if (!geom) return;
+    const next = groupBoxes(rootRef.current, ids, geom);
+    onChange(next);
+    const groupId = (next.children ?? []).filter(isFloating).slice(-1)[0]?.id; // the new group is root's last float
+    if (groupId) emitSelection([groupId]);
+  };
+  const ungroupSelected = () => {
+    const id = [...selSet][0];
+    const n = id ? findByIdLocal(rootRef.current, id) : null;
+    if (n?.group) { onChange(ungroupBoxes(rootRef.current, id)); emitSelection([]); }
+  };
   const toggleFloat = (id: string) => { const n = findByIdLocal(rootRef.current, id); if (n && isFloating(n)) unfloatNode(id); else floatNode(id); };
   const LAYER_OPS = { front: bringToFront, forward: bringForward, backward: sendBackward, back: sendToBack };
   const layer = (id: string, dir: keyof typeof LAYER_OPS) => onChange(LAYER_OPS[dir](rootRef.current, id));
+
+  // Auto-migrate OLD floating blocks (saved before floating cards got a DEFINITE height): measure each one's real
+  // rendered height ONCE and store it as `height`, so its parent's reserved space matches and it no longer spills.
+  const migratedFloats = useRef<Set<string>>(new Set());
+  useEffect(() => {
+    if (!editable) return;
+    const stale: string[] = [];
+    const walk = (n: BoxNode) => {
+      if (isFloating(n) && !(n.height && n.height.endsWith("px")) && !migratedFloats.current.has(n.id)) stale.push(n.id);
+      (n.children ?? []).forEach(walk);
+    };
+    walk(rootRef.current);
+    if (!stale.length) return;
+    const raf = requestAnimationFrame(() => {
+      let next = rootRef.current; let changed = false;
+      for (const id of stale) {
+        migratedFloats.current.add(id);
+        const el = document.querySelector<HTMLElement>(`[data-box-id="${id}"]`);
+        const h = el ? Math.round(el.getBoundingClientRect().height) : 0;
+        if (h > 8) { next = updateBox(next, id, { height: `${h}px`, minHeight: undefined }); changed = true; }
+      }
+      if (changed) onChange(next);
+    });
+    return () => cancelAnimationFrame(raf);
+  }, [root, editable]); // converges: once migrated, a box has a px height + is in the ref, so it drops out of `stale` // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Marquee (rubber-band) multi-select ──────────────────────────────────────────────────────────
   // Armed on any box-BODY / canvas mousedown; upgrades to a marquee only past a small drag threshold (so a
@@ -251,7 +313,16 @@ export default function BoxCanvas({
   const cutBox = (id: string) => { if (id === root.id) return; const n = findByIdLocal(root, id); if (n) { setClip(cloneBox(n)); onChange(removeBox(root, id)); select(null); } };
   const pasteBox = (id: string | null) => {
     if (!clip) return;
-    const node = cloneBox(clip);
+    const node = cloneBox(clip); // deep clone with FRESH ids — a whole group (container + children) copies as one unit
+    // A FLOATING block/group pastes as a free-floating copy at the page root, NUDGED a little so it doesn't hide
+    // the original. It stays selected + floating, so you drag it or arrow-nudge it into the position you want.
+    if (isFloating(node)) {
+      node.left = round1(Math.min(92, (node.left ?? 0) + 3));
+      node.top = round1(Math.min(92, (node.top ?? 0) + 3));
+      onChange(insertBox(rootRef.current, rootRef.current.id, rootRef.current.children?.length ?? 0, node));
+      select(node.id);
+      return;
+    }
     const target = id ? findByIdLocal(root, id) : null;
     if (target && isContainer(target)) onChange(insertBox(root, target.id, target.children?.length ?? 0, node));
     else if (target) { const p = findParent(root, target.id); onChange(p ? insertBox(root, p.parent.id, p.index + 1, node) : insertBox(root, root.id, root.children?.length ?? 0, node)); }
@@ -286,12 +357,15 @@ export default function BoxCanvas({
       else if (mod && k === "d") { if (ids.length) { let next = root; for (const d of ids) next = duplicateBox(next, d); onChange(next); e.preventDefault(); } } // duplicate ALL selected
       else if (mod && k === "]" && id && floating) { onChange((e.shiftKey ? bringToFront : bringForward)(root, id)); e.preventDefault(); } // ]=forward, Shift+]=to front (floating only)
       else if (mod && k === "[" && id && floating) { onChange((e.shiftKey ? sendToBack : sendBackward)(root, id)); e.preventDefault(); }    // [=backward, Shift+[=to back (floating only)
-      else if (e.altKey && k === "f" && id) { toggleFloat(id); e.preventDefault(); }                      // float ⇄ flow
+      else if (mod && k === "l") { if (ids.length) { const anyUnlocked = ids.some((d) => d !== root.id && !findByIdLocal(root, d)?.locked); let next = root; for (const d of ids) if (d !== root.id) next = updateBox(next, d, { locked: anyUnlocked }); onChange(next); e.preventDefault(); } } // lock/unlock ALL selected
+      else if (mod && k === "g" && !e.shiftKey) { if (ids.length >= 2) { groupSelected(); e.preventDefault(); } }      // group selected
+      else if (mod && k === "g" && e.shiftKey) { const g = id ? findByIdLocal(root, id) : null; if (g?.group) { ungroupSelected(); e.preventDefault(); } } // ungroup
+      else if (e.altKey && k === "f" && id && !rn.locked) { toggleFloat(id); e.preventDefault(); }           // float ⇄ flow (blocked while locked)
       else if ((e.key === "Delete" || e.key === "Backspace") && ids.length) { let next = root; for (const d of ids) if (d !== root.id) next = removeBox(next, d); onChange(next); select(null); e.preventDefault(); } // delete ALL selected
-      else if (e.key === "ArrowUp" && id) { if (floating) onChange(writeBox(root, id, { top: round1((rn.top ?? 0) - stepPct("y")) })); else onChange(moveBoxStep(root, id, -1)); e.preventDefault(); }
-      else if (e.key === "ArrowDown" && id) { if (floating) onChange(writeBox(root, id, { top: round1((rn.top ?? 0) + stepPct("y")) })); else onChange(moveBoxStep(root, id, 1)); e.preventDefault(); }
-      else if (e.key === "ArrowLeft" && id && floating) { onChange(writeBox(root, id, { left: round1((rn.left ?? 0) - stepPct("x")) })); e.preventDefault(); }
-      else if (e.key === "ArrowRight" && id && floating) { onChange(writeBox(root, id, { left: round1((rn.left ?? 0) + stepPct("x")) })); e.preventDefault(); }
+      else if (e.key === "ArrowUp" && id && !rn.locked) { if (floating) onChange(writeBox(root, id, { top: round1((rn.top ?? 0) - stepPct("y")) })); else onChange(moveBoxStep(root, id, -1)); e.preventDefault(); }
+      else if (e.key === "ArrowDown" && id && !rn.locked) { if (floating) onChange(writeBox(root, id, { top: round1((rn.top ?? 0) + stepPct("y")) })); else onChange(moveBoxStep(root, id, 1)); e.preventDefault(); }
+      else if (e.key === "ArrowLeft" && id && floating && !rn.locked) { onChange(writeBox(root, id, { left: round1((rn.left ?? 0) - stepPct("x")) })); e.preventDefault(); }
+      else if (e.key === "ArrowRight" && id && floating && !rn.locked) { onChange(writeBox(root, id, { left: round1((rn.left ?? 0) + stepPct("x")) })); e.preventDefault(); }
       else if (e.key === "Escape") { select(null); }
     };
     document.addEventListener("keydown", onKey);
@@ -440,7 +514,11 @@ export default function BoxCanvas({
     if (id && p) { const hit = computeDrop(p.x, p.y, id); target = hit?.target ?? target; w = hit ? (hit.moveWidth ?? null) : w; }
     if (id && target) {
       let next = moveBox(rootRef.current, id, target.parentId, target.index);
-      if (w) next = updateBox(next, id, { width: w }); // take the line's leftover space so it fills, never wraps to a new row
+      // Only a block with a DEFINITE width (Full / Custom) fills the line's leftover space when reparented. A
+      // HUGGING block (Fit / width auto) keeps hugging when moved — moving it must never blow it up to full width.
+      const moved = findByIdLocal(rootRef.current, id);
+      const hugs = !moved?.width || moved.width === "auto";
+      if (w && !hugs) next = updateBox(next, id, { width: w });
       onChange(next);
     }
     dragArm.current = null; dragIdRef.current = null; dropRef.current = null; dropWidthRef.current = null; dragPtRef.current = null;
@@ -501,7 +579,7 @@ export default function BoxCanvas({
   };
 
   const startDrag = (e: React.MouseEvent, node: BoxNode) => {
-    if (!editable) return;
+    if (!editable || node.locked) return; // locked: position is frozen — no drag
     // A floating box (or an Alt-drag on a flow box) moves FREELY on its own layer; a plain drag arranges in the flow.
     if (isFloating(node) || e.altKey) { startFreeDrag(e, node, !isFloating(node)); return; }
     e.preventDefault(); e.stopPropagation();
@@ -530,7 +608,8 @@ export default function BoxCanvas({
     e.preventDefault();
     const hit = computeDrop(e.clientX, e.clientY, null);
     const node = nodeForKind(kind);
-    if (hit) { if (hit.moveWidth) node.width = hit.moveWidth; onChange(insertBox(rootRef.current, hit.target.parentId, hit.target.index, node)); }
+    // A new hugging block (Fit / width auto) stays hugging where it lands; only definite-width blocks fill the line.
+    if (hit) { const hugs = !node.width || node.width === "auto"; if (hit.moveWidth && !hugs) node.width = hit.moveWidth; onChange(insertBox(rootRef.current, hit.target.parentId, hit.target.index, node)); }
     else onChange(insertBox(rootRef.current, rootRef.current.id, rootRef.current.children?.length ?? 0, node)); // empty canvas → append to the page
     setDropRect(null);
   };
@@ -571,8 +650,9 @@ export default function BoxCanvas({
       const patch: Partial<BoxNode> = {};
       if (hasE) { const w = Math.max(16, bw + dx); patch.width = `${round1((w / cw) * 100)}%`; }
       if (hasW) { const w = Math.max(16, bw - dx); patch.width = `${round1((w / cw) * 100)}%`; patch.left = round1(((x0 + (bw - w)) / cw) * 100); }
-      if (hasS) { const h = Math.max(16, bh + dy); patch.minHeight = Math.round(h); patch.height = undefined; }
-      if (hasN) { const h = Math.max(16, bh - dy); patch.minHeight = Math.round(h); patch.height = undefined; patch.top = round1(((y0 + (bh - h)) / ch) * 100); }
+      // A floating card has a DEFINITE height (px) — so resizing it keeps the parent's reserved space exact.
+      if (hasS) { const h = Math.max(16, bh + dy); patch.height = `${Math.round(h)}px`; patch.minHeight = undefined; }
+      if (hasN) { const h = Math.max(16, bh - dy); patch.height = `${Math.round(h)}px`; patch.minHeight = undefined; patch.top = round1(((y0 + (bh - h)) / ch) * 100); }
       pending = writeBox(rootRef.current, id, patch);
       if (!raf) raf = requestAnimationFrame(flush);
     };
@@ -676,8 +756,20 @@ export default function BoxCanvas({
       // ── HEIGHT ── the height you drag sets a MIN-HEIGHT (a floor), not a fixed height. The section HUGS
       // its content, so growing a child grows the section; shrinking below the content does nothing (the
       // content holds it up); and when children are empty, dragging the floor up/down grows/shrinks them.
-      if (hasS) { const bot = Math.max(startTopPx + minHpx, startBotPx + dy); tree = writeBox(tree, id, { minHeight: Math.round(bot - startTopPx), height: undefined }); } // top fixed (margin-top unchanged), bottom moves
-      if (hasN) { const top = Math.max(flowY, Math.min(startBotPx - minHpx, startTopPx + dy)); tree = writeBox(tree, id, { minHeight: Math.round(startBotPx - top), height: undefined, marginTop: Math.max(0, pxU(top - flowY)) }); } // bottom fixed, top moves (margin-top compensates)
+      // A SELF-PAINTING block (COMPONENT or BUTTON) resizes FREELY in height: it gets a DEFINITE height (px) so its
+      // element (which FILLS the box via height:100%) actually grows/shrinks with the drag. A normal element/section
+      // uses min-height (a floor it hugs up from) so it can still grow with its content.
+      const isComp = node.type === "component" || node.type === "button";
+      if (hasS) { const h = Math.round(Math.max(startTopPx + minHpx, startBotPx + dy) - startTopPx); tree = writeBox(tree, id, isComp ? { height: `${h}px`, minHeight: undefined, clip: true } : { minHeight: h, height: undefined }); } // top fixed, bottom moves
+      if (hasN) {
+        // Edge-anchored: the BOTTOM stays put, the TOP moves. Dragging the top UP grows the block — even at the
+        // canvas top — by letting margin-top go negative so the block extends upward (was clamped to the flow
+        // origin, which pinned the first block and made top-resize do nothing).
+        const top = Math.min(startBotPx - minHpx, startTopPx + dy);
+        const h = Math.round(startBotPx - top);
+        const mt = pxU(top - flowY); // may be negative → the block grows upward past its flow origin
+        tree = writeBox(tree, id, isComp ? { height: `${h}px`, minHeight: undefined, clip: true, marginTop: mt } : { minHeight: h, height: undefined, marginTop: mt });
+      }
       pending = tree;
       if (!raf) raf = requestAnimationFrame(flush);
     };
@@ -722,24 +814,35 @@ export default function BoxCanvas({
     // Hidden on this breakpoint: skip entirely on the live site; in the editor keep it faintly visible so
     // it can still be selected and un-hidden.
     if (node.hidden && !editable) return null;
-    const floating = isFloating(node) && !isRoot;
+    // "STACK on narrow": on mobile a (non-pinned) float drops back into normal flow — full-width, content-height —
+    // so it can never clip its content or overflow its parent on a phone. Editor MUST match the export here.
+    const stacked = breakpoint === "mobile" && !isRoot && floatStacksOnMobile(rawNode);
+    const floating = isFloating(node) && !isRoot && !stacked;
+    // SELF-PAINTING blocks (components AND buttons) draw their own visual (background/border/radius/shadow) on the
+    // block element itself and FILL the box — so the wrapper stays transparent (no duplicate "shape behind" when the
+    // block is resized) and the visual grows with the box while its content re-centres. Everything else paints on the wrapper.
+    const selfPaint = node.type === "component" || node.type === "button";
     const wrapStyle: React.CSSProperties = {
       position: floating ? "absolute" : "relative", // floating boxes are positioned inside their (relative) parent → they overlap the flow
       maxWidth: "100%", // Responsive Field Guide: never wider than the container (a fixed px width shrinks on a phone — no horizontal scrollbar). Editor MUST match the export.
-      ...decorStyle(node), // border, shadow, per-corner radius, rotation
+      // A COMPONENT's border/radius/shadow/background style the COMPONENT ITSELF (injected onto `.eu-<component>`),
+      // not this wrapper — so the wrapper stays transparent and the controls act on the pill/card/quote directly.
+      ...(selfPaint ? {} : decorStyle(node)), // border, shadow, per-corner radius, rotation
       ...(floating ? {} : marginCSS(node)), // margins are a FLOW concept; a floating box uses left/top instead
-      opacity: node.hidden ? 0.35 : node.opacity !== undefined ? node.opacity / 100 : undefined, // hidden-on-this-device shows faint in the editor
-      overflow: isClipped(node) ? "hidden" : undefined, // clip only when opted-in or rounded (never clip the selection chrome)
-      // Floating: free-position on its own layer. Flow: fill+divide per childStyle. Root: fill the canvas +
-      // define the global base unit (--box-u, rem-based) that every size scales off.
+      opacity: node.hidden ? 0.35 : node.type === "component" ? undefined : node.opacity !== undefined ? node.opacity / 100 : undefined, // component opacity applies to the component element; hidden shows faint
+      overflow: stacked || isSolo ? "visible" : isClipped(node) ? "hidden" : undefined, // selected → show the outside toolbar + resize handles (never clip them); stacked → grow with content; else clip only when opted-in/rounded
+      // Floating: free-position on its own layer. Stacked (mobile): plain full-width flow block. Flow: fill+divide
+      // per childStyle. Root: fill the canvas + define the global base unit (--box-u, rem-based).
       ...(floating
-        ? { left: `${node.left ?? 0}%`, top: `${node.top ?? 0}%`, width: sizeToCSS(node.width) ?? "40%", height: node.height ? sizeToCSS(node.height) : undefined, minHeight: node.minHeight, zIndex: node.zIndex ?? 1 }
-        : parent ? childStyle(node, parent) : { width: "100%", minHeight, ["--box-u" as string]: baseUnit(node.baseFont ?? 10) }),
-      ...backgroundStyle(node),
+        ? { left: `${node.left ?? 0}%`, top: `${node.top ?? 0}%`, width: sizeToCSS(node.width), height: node.height ? sizeToCSS(node.height) : undefined, minHeight: node.minHeight, zIndex: node.zIndex ?? 1 } // no width ⇒ auto ⇒ hug content (never a wide default box)
+        : stacked
+        ? { width: "100%" } // content-height (no fixed height/minHeight) so nothing is clipped
+        : parent ? childStyle(node, parent) : { width: "100%", minHeight: Math.max(minHeight, floatingReserve(node, breakpoint)), ["--box-u" as string]: baseUnit(node.baseFont ?? 10) }),
+      ...(selfPaint ? {} : backgroundStyle(node)), // a component/button's background styles the block element, not this wrapper
     };
 
     // Visible drag-to-resize handles on every edge + corner, so you can resize from any side.
-    const resizeHandles = isSolo && editable && !isRoot ? (
+    const resizeHandles = isSolo && editable && !isRoot && !node.locked ? (
       <>
         {HANDLES.map((h) => (
           <div key={h.edge} onMouseDown={(e) => startResize(e, node.id, h.edge)} aria-label={`Resize ${h.label}`} title={h.title} className={`absolute ${h.pos} ${h.cursor} bg-indigo-500 border-2 border-white shadow z-30`} />
@@ -750,7 +853,16 @@ export default function BoxCanvas({
     // Select on mousedown (fires before the inline editor's click-guard) and stop propagation so the
     // DEEPEST box under the pointer wins and the canvas-background deselect doesn't also fire. Also arm a
     // marquee from here — a drag on the box BODY rubber-band-selects instead of doing nothing.
-    const onSelectDown = (e: React.MouseEvent) => { if (editable) { e.stopPropagation(); select(node.id); closeMenu(); startMarqueeArm(e); } };
+    // A structural ROW BAND is never itself selectable: clicking its own area selects the block inside it (or
+    // clears the selection when the row is empty/has several) — so the user always targets a real block, never
+    // an "Editing: Row" wrapper.
+    const onSelectDown = (e: React.MouseEvent) => {
+      if (!editable) return;
+      e.stopPropagation();
+      if (node.rowBand) { const kids = node.children ?? []; select(kids.length === 1 ? kids[0].id : null); }
+      else select(node.id);
+      closeMenu(); startMarqueeArm(e);
+    };
 
     const isDragging = dragId === node.id;
 
@@ -763,8 +875,11 @@ export default function BoxCanvas({
           data-box-id={node.id}
           id={node.anchor || undefined}
           onMouseDown={onSelectDown}
-          style={{ ...containerStyle(node), ...wrapStyle, ...(isDragging ? { opacity: 0.4 } : {}) }}
-          className={`${editable ? "transition-shadow" : ""} ${isSel ? "outline outline-2 outline-indigo-500 outline-offset-[-2px]" : editable ? "hover:outline hover:outline-1 hover:outline-indigo-300/70 hover:outline-offset-[-1px]" : ""}`}
+          style={{ ...containerStyle(node, breakpoint), ...wrapStyle, ...(isDragging ? { opacity: 0.4 } : {}) }}
+          // Structural boxes (a row BAND, the page ROOT) are invisible scaffolding — never selectable — so they must
+          // NOT show a hover outline: an indigo box around a full-width band/page reads as an empty "container wrapper".
+          // Real, user-added containers (sections) still highlight on hover as drop targets.
+          className={`${editable ? "transition-shadow" : ""} ${isSel ? "outline outline-2 outline-indigo-500 outline-offset-[-2px]" : (editable && !node.rowBand && !isRoot) ? "hover:outline hover:outline-1 hover:outline-indigo-300/70 hover:outline-offset-[-1px]" : ""}`}
         >
           {kids.map((c) => (
             <Fragment key={c.id}>{renderNode(c, node)}</Fragment>
@@ -790,7 +905,14 @@ export default function BoxCanvas({
         data-box-id={node.id}
         id={node.anchor || undefined}
         onMouseDown={onSelectDown}
-        style={{ ...wrapStyle, ...(isDragging ? { opacity: 0.4 } : {}) }}
+        // Elements (non-containers) apply their own minHeight/height here (containers get it from containerStyle),
+        // so dragging the TOP/BOTTOM edge actually resizes a heading / text / button / list. When a Content
+        // position is set, the wrapper becomes a flex box so the content re-positions as the block grows.
+        style={{ ...wrapStyle, minHeight: node.minHeight, height: node.height ? sizeToCSS(node.height) : (wrapStyle as React.CSSProperties).height,
+          // Content position → the wrapper flexes so the content re-positions as the block grows. A BUTTON fills its
+          // box itself and positions its own label, so it opts out here (otherwise the two would fight).
+          ...((node.contentX || node.contentY) && node.type !== "button" ? { display: "flex", flexDirection: "column", justifyContent: flexPos(node.contentY), alignItems: flexPos(node.contentX) } : {}),
+          ...(isDragging ? { opacity: 0.4 } : {}) }}
         className={`${isSel ? "outline outline-2 outline-indigo-500 outline-offset-[-2px]" : editable ? "hover:outline hover:outline-1 hover:outline-indigo-300/70 hover:outline-offset-[-1px]" : ""}`}
       >
         <ElementView node={node} theme={theme} editable={editable} onText={(v) => onChange(updateBox(root, node.id, { text: v }))} onSrc={(v) => onChange(updateBox(root, node.id, { src: v }))} onPatchNode={(patch) => onChange(updateBox(root, node.id, patch))} />
@@ -809,15 +931,46 @@ export default function BoxCanvas({
     const Item = ({ onClick, Icon, label, danger, disabled, hint }: { onClick: () => void; Icon: typeof Copy; label: string; danger?: boolean; disabled?: boolean; hint?: string }) => (
       <MenuItem onClick={() => { onClick(); closeMenu(); }} Icon={Icon} label={label} danger={danger} disabled={disabled} hint={hint} />
     );
+    // The toolbar sits ABOVE the box (outside it) so it NEVER covers the content — important now that blocks hug
+    // their content and can be small. When the box is near the canvas top (no room above), it flips to BELOW.
+    const barRef = useRef<HTMLDivElement>(null);
+    const [below, setBelow] = useState(false);
+    useEffect(() => {
+      const box = barRef.current?.parentElement;
+      if (!box) return;
+      const canvasTop = document.querySelector(`[data-box-id="${rootRef.current.id}"]`)?.getBoundingClientRect().top ?? 0;
+      setBelow(box.getBoundingClientRect().top < canvasTop + 36); // within 36px of the canvas top → drop the bar below the box instead of over the app header
+    });
     return (
-      <div className="absolute top-1.5 left-1.5 z-40 flex items-center gap-0.5 rounded-xl bg-gray-900/95 dark:bg-gray-800/95 backdrop-blur-sm px-1 py-1 shadow-lg ring-1 ring-white/10" onClick={(e) => e.stopPropagation()} onMouseDown={(e) => e.stopPropagation()}>
-        {!isRoot && (
+      <div ref={barRef} className={`absolute left-0 w-max max-w-none ${below ? "top-full mt-1" : "bottom-full mb-1"} z-40 flex items-center gap-0.5 rounded-xl bg-gray-900/95 dark:bg-gray-800/95 backdrop-blur-sm px-1 py-1 shadow-lg ring-1 ring-white/10`} onClick={(e) => e.stopPropagation()} onMouseDown={(e) => e.stopPropagation()}>
+        {!isRoot && !node.locked && (
           <span
             onMouseDown={(e) => startDrag(e, node)}
             title={isFloating(node) ? "Drag to move this floating block freely" : "Drag to move (hold Alt to float it on top)"}
             aria-label="Drag to move"
             className="cursor-grab active:cursor-grabbing text-white/80 hover:text-white px-0.5"
           ><GripVertical className="w-3.5 h-3.5" /></span>
+        )}
+        {node.locked && !isRoot && (
+          <span className="flex items-center gap-1 rounded-lg bg-amber-500 text-white text-[10px] font-semibold px-1.5 py-0.5 whitespace-nowrap" title="Locked — position & size are frozen. Click the lock to unlock.">
+            <Lock className="w-3 h-3" aria-hidden="true" /> Locked
+          </span>
+        )}
+        {!isRoot && (
+          <button
+            onClick={() => onChange(updateBox(rootRef.current, node.id, { locked: !node.locked }))}
+            aria-label={node.locked ? "Unlock position and size" : "Lock position and size"}
+            aria-pressed={!!node.locked}
+            title={node.locked ? "Unlock (Ctrl+L) — allow moving & resizing again" : "Lock (Ctrl+L) — freeze position & size"}
+            className="p-1 rounded text-white/90 hover:bg-white/15"
+          >{node.locked ? <LockOpen className="w-3.5 h-3.5" /> : <Lock className="w-3.5 h-3.5" />}</button>
+        )}
+        {isFloating(node) && !isRoot && (
+          // Clear signal that this block is on the OVERLAY layer (floats above flowing content) — explains why
+          // newly-added blocks appear beneath it, and pairs with the front/back order controls in the inspector.
+          <span className="flex items-center gap-1 rounded-lg bg-indigo-500 text-white text-[10px] font-semibold px-1.5 py-0.5 whitespace-nowrap" title="On the overlay layer — floats above flowing content. Use Front/back order to layer it.">
+            <Layers className="w-3 h-3" aria-hidden="true" /> Floating
+          </span>
         )}
         <button
           onClick={(e) => {
@@ -831,6 +984,10 @@ export default function BoxCanvas({
         ><MoreVertical className="w-3.5 h-3.5" /></button>
         {open && menuAnchor && (
           <PortalMenu anchor={menuAnchor} onClose={closeMenu} ariaLabel="Block actions" width={200}>
+            {node.group && (<>
+              <Item onClick={() => ungroupSelected()} Icon={Ungroup} label="Ungroup" hint="Ctrl+Shift+G" />
+              <MenuSep />
+            </>)}
             {isContainer(node) && (<>
               <MenuHeader>Add inside</MenuHeader>
               {ADD_ITEMS.map(({ type, label, Icon }) => <Item key={type} onClick={() => addChild(node.id, type)} Icon={Icon} label={label} />)}
@@ -942,16 +1099,24 @@ function ComponentView({ node, editable, onPatchNode }: { node: BoxNode; editabl
   if (node.letterSpacing != null) typo.letterSpacing = `${node.letterSpacing}px`;
   if (node.textTransform && node.textTransform !== "none") typo.textTransform = node.textTransform;
   if (node.italic) typo.fontStyle = "italic";
-  const styleVars = { width: "100%", ...typo, ...(node.tokenOverrides ?? {}) } as React.CSSProperties;
+  // This `.eu-root` is a TRANSPARENT box that fills the node box EXACTLY (coincident) — so it reads as "no
+  // wrapper" (no border/background/gap of its own) while still giving the component element a real, definite
+  // containing block so width/height percentages resolve (display:contents would break % height). The component's
+  // own element carries the border/radius/background + fills this box (injected below). `display:grid` so the
+  // component stretches to fill in BOTH axes when sized, and hugs when the box is auto.
+  const styleVars = { width: "100%", height: "100%", ...typo, ...(node.tokenOverrides ?? {}) } as React.CSSProperties;
   if (node.component === "accordion") {
     const items = node.accItems ?? [];
     const cls = "eu-accordion" + (node.variant ? ` eu-accordion${node.variant}` : "");
     const setItem = (id: string, patch: Partial<import("@/lib/box-model").AccordionItem>) =>
       onPatchNode?.({ accItems: items.map((it) => (it.id === id ? { ...it, ...patch } : it)) });
     const adv = sanitizeCssDeclarations(node.advancedCss);
+    const tcss = componentTextCss(node), bcss = componentBoxCss(node);
+    const sel = `[data-box-id="${node.id}"] .eu-accordion`;
+    const inject = [tcss ? `${sel}, ${sel} *{${tcss}}` : "", bcss ? `${sel}{${bcss}}` : "", adv ? `${sel}{${adv}}` : ""].filter(Boolean).join("");
     return (
       <div className="eu-root" style={styleVars}>
-        {adv ? <style dangerouslySetInnerHTML={{ __html: `[data-box-id="${node.id}"] .eu-accordion{${adv}}` }} /> : null}
+        {inject ? <style dangerouslySetInnerHTML={{ __html: inject }} /> : null}
         <div className={cls}>
           {items.map((it) => (
             <details key={it.id} className="eu-accordion__item" open={editable ? true : it.open} name={node.accMultiOpen ? undefined : `acc-${node.id}`}>
@@ -969,6 +1134,22 @@ function ComponentView({ node, editable, onPatchNode }: { node: BoxNode; editabl
       </div>
     );
   }
+  // Registry components render as ONE clean node from the SAME HTML the export emits (true WYSIWYG). Content
+  // is edited in the inspector (auto-generated from the component's slots), never inline — so a plain injected
+  // markup string is exactly right here.
+  if (isRegistryComponent(node.component)) {
+    const adv = sanitizeCssDeclarations(node.advancedCss);
+    const tcss = componentTextCss(node), bcss = componentBoxCss(node);
+    const sel = `[data-box-id="${node.id}"] .eu-${node.component}`;
+    const inject = [tcss ? `${sel}, ${sel} *{${tcss}}` : "", bcss ? `${sel}{${bcss}}` : "", adv ? `${sel}{${adv}}` : ""].filter(Boolean).join("");
+    const html = renderComponent(node.component!, node.componentFields, node.variant);
+    return (
+      <div className="eu-root" style={styleVars}>
+        {inject ? <style dangerouslySetInnerHTML={{ __html: inject }} /> : null}
+        <div style={{ width: "100%", height: "100%", display: "flex" }} dangerouslySetInnerHTML={{ __html: html }} />
+      </div>
+    );
+  }
   return <div className="eu-root" style={styleVars} />;
 }
 
@@ -981,8 +1162,19 @@ function ElementView({ node, theme, editable, onText, onSrc, onPatchNode }: {
     case "component": return <ComponentView node={node} editable={editable} onPatchNode={onPatchNode} />;
     case "heading":
       return <h2 style={{ color: node.color || theme.text, fontSize: u(node.fontSize ?? 32), textAlign: align, width: "100%", ...typoStyle(node, theme.headingFont, 600) }}><EditableText value={node.text} editable={editable} onChange={onText} placeholder="Heading" /></h2>;
-    case "button":
-      return <a href={node.href || "#"} target={node.newTab ? "_blank" : undefined} rel={node.newTab ? "noopener noreferrer" : undefined} onClick={(e) => editable && e.preventDefault()} className="inline-flex items-center gap-2 rounded-full" style={{ background: node.background ? colorToCSS(node.background) : theme.primary, color: node.color || "#fff", fontSize: u(node.fontSize ?? 14), padding: `${u(12)} ${u(24)}`, ...typoStyle(node, theme.bodyFont, 600) }}><EditableText value={node.text} editable={editable} onChange={onText} placeholder="Button" /></a>;
+    case "button": {
+      // The button FILLS its box and paints its OWN visual (bg + radius + border/shadow), so resizing the box grows
+      // the button itself (one shape — no duplicate wrapper behind it) and the label re-positions inside it. Content
+      // position (or centre by default) decides where the label sits; a resized button therefore centres its text.
+      const deco = decorStyle(node);
+      return <a href={node.href || "#"} target={node.newTab ? "_blank" : undefined} rel={node.newTab ? "noopener noreferrer" : undefined} onClick={(e) => editable && e.preventDefault()}
+        style={{ display: "flex", width: "100%", height: "100%", boxSizing: "border-box", gap: u(8),
+          alignItems: flexPos(node.contentY ?? "center"), justifyContent: flexPos(node.contentX ?? "center"),
+          background: node.background ? colorToCSS(node.background) : colorToCSS(theme.primary), color: node.color || "#fff",
+          fontSize: u(node.fontSize ?? 14), padding: `${u(12)} ${u(24)}`, textDecoration: "none",
+          ...deco, borderRadius: deco.borderRadius ?? "9999px", ...typoStyle(node, theme.bodyFont, 600) }}>
+        <EditableText value={node.text} editable={editable} onChange={onText} placeholder="Button" /></a>;
+    }
     case "image":
       return (
         <div className="relative w-full" style={{ height: sizeToCSS(node.height) ?? 260 }}>

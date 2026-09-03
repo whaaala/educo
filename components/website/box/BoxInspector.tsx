@@ -8,11 +8,12 @@
  */
 
 import { useState, useRef } from "react";
-import { Plus, Rows3, Columns3, Upload, AlignLeft, AlignCenter, AlignRight, Layers, Move, BringToFront, SendToBack, ChevronUp, ChevronDown, Italic, Underline, LayoutGrid, Maximize2, Sparkles, Paintbrush, Ruler, Link2, Type as TypeIcon, MonitorSmartphone, Bookmark } from "lucide-react";
+import { Plus, Rows3, Columns3, Upload, AlignLeft, AlignCenter, AlignRight, Layers, Move, BringToFront, SendToBack, ChevronUp, ChevronDown, Italic, Underline, LayoutGrid, Maximize2, Sparkles, Paintbrush, Ruler, Link2, Type as TypeIcon, MonitorSmartphone, Bookmark, Lock, LockOpen } from "lucide-react";
 import type { SiteTheme } from "@/lib/site-storage";
 import type { BoxNode, FlexAlign, FlexJustify } from "@/lib/box-model";
 import { isContainer, isFloating, addAccItem, removeAccItem, moveAccItem, updateAccItem } from "@/lib/box-model";
 import { ACCORDION_DESIGNS, ACCORDION_DESIGN_COUNT } from "@/lib/educo-ui/accordions";
+import { COMPONENT_REGISTRY, isRegistryComponent, defaultComponentFields } from "@/lib/educo-ui/registry";
 import { familyOptions } from "@/lib/educo-ui/fonts";
 import { getPresets, presetKindFor } from "@/lib/box-presets";
 import { ICON_SET, ICON_NAMES } from "./icons";
@@ -87,7 +88,7 @@ function SideSpacing({ title, node, base, sides, onPatch, max = 96 }: {
 
 const iconBtn = (on: boolean) => `p-1.5 rounded-md ${on ? "bg-indigo-100 dark:bg-indigo-500/20 text-indigo-700 dark:text-indigo-300" : "text-gray-500 hover:bg-gray-100 dark:hover:bg-white/10"}`;
 
-export default function BoxInspector({ node, theme, onPatch, onAddChild, onFloat, onUnfloat, onLayer, canFloat = true, inGrid = false, breakpoint = "base", overridden = false, onResetOverride, pages, currentPageId }: {
+export default function BoxInspector({ node, theme, onPatch, onAddChild, onFloat, onUnfloat, onLayer, onAlignInRow, rowJustify, canFloat = true, inGrid = false, breakpoint = "base", overridden = false, onResetOverride, pages, currentPageId }: {
   node: BoxNode;
   theme: SiteTheme;
   onPatch: (patch: Partial<BoxNode>) => void;
@@ -95,6 +96,8 @@ export default function BoxInspector({ node, theme, onPatch, onAddChild, onFloat
   onFloat?: () => void;
   onUnfloat?: () => void;
   onLayer?: (dir: "front" | "forward" | "backward" | "back") => void;
+  onAlignInRow?: (justify: FlexJustify) => void; // position this block within its row (start/center/end)
+  rowJustify?: FlexJustify;                        // its current position (parent row's justify-content)
   canFloat?: boolean;
   inGrid?: boolean;
   breakpoint?: "base" | "tablet" | "mobile";
@@ -163,6 +166,13 @@ export default function BoxInspector({ node, theme, onPatch, onAddChild, onFloat
             <Accordion title="Placement" icon={Move}>
               <Segmented full ariaLabel="Placement" value={floating ? "float" : "flow"} onChange={(v) => (v === "float" ? onFloat?.() : onUnfloat?.())}
                 options={[{ value: "flow", label: "In the layout", Icon: Rows3 }, { value: "float", label: "Floating", Icon: Layers }]} />
+              <button
+                onClick={() => onPatch({ locked: !node.locked })}
+                aria-pressed={!!node.locked}
+                className={`w-full flex items-center justify-center gap-2 py-2 rounded-lg text-xs font-medium border transition-colors ${node.locked ? "bg-amber-500 border-transparent text-white" : "border-gray-200 dark:border-white/10 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-white/10"}`}
+                title={node.locked ? "Unlock (Ctrl+L)" : "Lock position & size (Ctrl+L)"}
+              >{node.locked ? <><LockOpen className="w-3.5 h-3.5" /> Unlock position &amp; size</> : <><Lock className="w-3.5 h-3.5" /> Lock position &amp; size</>}</button>
+              {node.locked && <p className="text-[0.625rem] text-gray-400 flex items-start gap-1"><Lock className="w-3 h-3 mt-0.5 shrink-0" /> Frozen — can't be moved or resized. Content &amp; colours stay editable.</p>}
               {floating && (
                 <>
                   <p className="text-[0.625rem] text-gray-400 flex items-start gap-1"><Move className="w-3 h-3 mt-0.5 shrink-0" /> Drag it anywhere to overlap other blocks. Arrow keys nudge it.</p>
@@ -215,7 +225,31 @@ export default function BoxInspector({ node, theme, onPatch, onAddChild, onFloat
 
           <Accordion title="Size" icon={Maximize2}>
             <WidthControl node={node} onPatch={onPatch} />
+            {!container && onAlignInRow && (
+              <div className="space-y-1">
+                <span className={label}>Position in row</span>
+                <Segmented full ariaLabel="Position in row" value={rowJustify ?? "start"} onChange={(v) => onAlignInRow(v as FlexJustify)}
+                  options={[{ value: "start", label: "Left", Icon: AlignLeft }, { value: "center", label: "Center", Icon: AlignCenter }, { value: "end", label: "Right", Icon: AlignRight }]} />
+              </div>
+            )}
             <CompactField label="Height" ariaLabel="Height" value={node.height ?? ""} onChange={(v) => onPatch({ height: v || undefined })} placeholder="auto, 300px or 40vh" />
+            {!container && (
+              <div className="space-y-1">
+                <span className={label}>Content position</span>
+                <div className="inline-grid grid-cols-3 gap-0.5 p-1 rounded-lg border border-gray-200 dark:border-white/10">
+                  {(["start", "center", "end"] as const).map((y) => (["start", "center", "end"] as const).map((x) => {
+                    const on = (node.contentX ?? "start") === x && (node.contentY ?? "start") === y;
+                    return (
+                      <button key={`${y}-${x}`} aria-label={`Content ${y === "start" ? "top" : y === "end" ? "bottom" : "middle"} ${x === "start" ? "left" : x === "end" ? "right" : "center"}`}
+                        onClick={() => onPatch({ contentX: x, contentY: y })}
+                        className={`w-6 h-6 rounded flex items-center justify-center transition-colors ${on ? "bg-indigo-600 text-white" : "text-gray-400 hover:bg-gray-100 dark:hover:bg-white/10"}`}>
+                        <span className="block w-2 h-2 rounded-sm bg-current" />
+                      </button>
+                    );
+                  }))}
+                </div>
+              </div>
+            )}
             <label className="flex items-start gap-2 text-xs text-gray-600 dark:text-gray-300">
               <input type="checkbox" checked={!!node.clip} onChange={(e) => onPatch({ clip: e.target.checked })} className="mt-0.5" />
               <span>Trim to size <span className="text-gray-400">— by default a block grows to fit its content; tick this to force a smaller size and hide the overflow.</span></span>
@@ -223,7 +257,7 @@ export default function BoxInspector({ node, theme, onPatch, onAddChild, onFloat
           </Accordion>
 
           <Accordion title="Spacing" icon={Ruler}>
-            {container && <SideSpacing title="Inner spacing" node={node} base="padding" sides={["paddingTop", "paddingRight", "paddingBottom", "paddingLeft"]} onPatch={onPatch} />}
+            {(container || node.type === "component") && <SideSpacing title="Inner spacing" node={node} base="padding" sides={["paddingTop", "paddingRight", "paddingBottom", "paddingLeft"]} onPatch={onPatch} />}
             <SideSpacing title="Outer spacing" node={node} base="margin" sides={["marginTop", "marginRight", "marginBottom", "marginLeft"]} onPatch={onPatch} />
           </Accordion>
 
@@ -375,6 +409,44 @@ export default function BoxInspector({ node, theme, onPatch, onAddChild, onFloat
                     </div>
                   </>
                 )}
+                {/* Registry components (Card/Quote/Stat/Badge/Rating/…): design variants + content fields, both
+                    auto-generated from the component's registry entry — a future component needs NO inspector code. */}
+                {node.type === "component" && isRegistryComponent(node.component) && (() => {
+                  const def = COMPONENT_REGISTRY[node.component!];
+                  const fields = node.componentFields ?? {};
+                  const setField = (k: string, v: string | number) => onPatch({ componentFields: { ...defaultComponentFields(node.component!), ...fields, [k]: v } });
+                  return (
+                    <>
+                      {def.variants.length > 1 && (
+                        <div className="space-y-2">
+                          <span className={label}>Design</span>
+                          <div className="flex flex-wrap gap-1" role="listbox" aria-label={`${def.label} designs`}>
+                            {def.variants.map((v) => {
+                              const on = (node.variant ?? "") === v.id;
+                              return (
+                                <button key={v.id || "default"} role="option" aria-selected={on} aria-label={`${v.label} design`} title={v.label}
+                                  onClick={() => onPatch({ variant: v.id })}
+                                  className={`px-2 py-1 rounded-md text-[0.6875rem] font-medium border transition-colors ${on ? "bg-indigo-600 border-transparent text-white" : "border-gray-200 dark:border-white/10 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-white/10"}`}>
+                                  {v.label}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+                      <div className="space-y-2">
+                        <span className={label}>Content</span>
+                        {def.slots.map((s) => (
+                          s.type === "textarea"
+                            ? <CompactTextarea key={s.key} label={s.label} ariaLabel={s.label} value={String(fields[s.key] ?? "")} onChange={(v) => setField(s.key, v)} rows={2} />
+                            : s.type === "number"
+                            ? <CompactField key={s.key} label={s.label} ariaLabel={s.label} type="number" min={s.min} max={s.max} value={Number(fields[s.key] ?? 0)} onChange={(v) => setField(s.key, Math.max(s.min ?? 0, Math.min(s.max ?? 9999, Number(v) || 0)))} />
+                            : <CompactField key={s.key} label={s.label} ariaLabel={s.label} value={String(fields[s.key] ?? "")} onChange={(v) => setField(s.key, v)} placeholder={s.type === "url" ? "https://…" : undefined} />
+                        ))}
+                      </div>
+                    </>
+                  );
+                })()}
               </Accordion>
 
               {node.type === "component" && (

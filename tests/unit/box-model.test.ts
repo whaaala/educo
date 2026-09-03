@@ -5,7 +5,7 @@ import {
   findBox, findParent, isAncestor, updateBox, insertBox, removeBox, moveBoxStep, moveBox,
   containerStyle, childStyle, paddingCSS, marginCSS, sizeToCSS, flexForWidth, fillMainAxis, u, newBoxId, dropIndexAmong,
   makeRowBand, normalizeRowBands, clampRowWidths, widthPct,
-  isFloating, floatBox, unfloatBox, bringToFront, sendToBack, bringForward, sendBackward, floatingZRange,
+  isFloating, floatBox, unfloatBox, groupBoxes, ungroupBoxes, alignInRow, alignInRowOf, bringToFront, sendToBack, bringForward, sendBackward, floatingZRange, cloneBox,
   radiusCSS, isClipped, SHADOW_CSS, videoEmbedSrc,
   resolveResponsive, updateBoxResponsive, hasOverride, clearOverride,
   type BoxNode,
@@ -176,6 +176,71 @@ describe("box-model — mutations are immutable and correct", () => {
     expect(normalizeRowBands(norm, 0)).toEqual(norm);          // idempotent
   });
 
+  it("adding SEVERAL blocks to the page (append + normalize) stacks each in its OWN full-width row — never grouped", () => {
+    // Mirrors the builder's add path: append bare items to the root, then normalize. Every block must land in
+    // its own row band at 100% (no shared parent, no width-clamping) — the guarantee behind race-safe adds.
+    let root = createContainer("column", { id: "root", children: [] } as Partial<BoxNode>);
+    for (const id of ["a", "b", "c", "d"]) {
+      root = insertBox(root, "root", root.children?.length ?? 0, createComponent("card", { id } as Partial<BoxNode>));
+      root = normalizeRowBands(root, 0); // normalize after each add, exactly like commit does
+    }
+    expect(root.children!.length).toBe(4);                                  // four separate rows
+    for (const row of root.children!) {
+      expect(row.rowBand).toBe(true);
+      expect(row.children!.length).toBe(1);                                 // one block per row — never grouped
+      expect(row.children![0].type).toBe("component");
+      expect(row.children![0].width).toBe("100%");                          // full width — never clamped
+      expect(row.children![0].children).toBeUndefined();                    // the component is a single node
+    }
+  });
+
+  it("groupBoxes wraps selected boxes in ONE floating group container (children in-flow, full-width); ungroup reverses it", () => {
+    let root = createContainer("column", { id: "root", children: [] } as Partial<BoxNode>);
+    for (const id of ["a", "b", "c"]) { root = insertBox(root, "root", root.children?.length ?? 0, createComponent("card", { id } as Partial<BoxNode>)); root = normalizeRowBands(root, 0); }
+    const grouped = groupBoxes(root, ["a", "c"], { left: 12, top: 8, width: "40%", height: 300 });
+    // 'a' and 'c' left the flow; a new floating GROUP holds them; 'b' stays a normal row
+    expect(findParent(grouped, "a")!.parent.group).toBe(true);
+    const group = grouped.children!.find((r) => r.group)!;
+    expect(group).toBeTruthy();
+    expect(group.position).toBe("absolute");                 // it FLOATS (movable as one unit)
+    expect(group.left).toBe(12); expect(group.top).toBe(8); expect(group.width).toBe("40%");
+    expect(group.children!.map((c) => c.id)).toEqual(["a", "c"]); // document order preserved
+    expect(group.children!.every((c) => c.position === undefined && c.width === "100%")).toBe(true); // in-flow inside
+    expect(findBox(grouped, "b")).toBeTruthy();              // 'b' untouched
+    // ungroup → the two return to the flow, group gone
+    const back = ungroupBoxes(grouped, group.id);
+    expect(back.children!.some((r) => r.group)).toBe(false);
+    expect(findBox(back, "a")).toBeTruthy(); expect(findBox(back, "c")).toBeTruthy();
+    expect(findBox(back, "a")!.position).toBeUndefined();     // back in normal flow
+  });
+
+  it("alignInRow positions a (hugging) block by setting its parent row's justify; alignInRowOf reads it back", () => {
+    let root = createContainer("column", { id: "root", children: [] } as Partial<BoxNode>);
+    root = insertBox(root, "root", 0, createElement("heading", { id: "h", text: "Hi" } as Partial<BoxNode>));
+    root = normalizeRowBands(root, 0); // heading now lives in its own row band
+    expect(alignInRowOf(root, "h")).toBe("start");            // default = left
+    const centered = alignInRow(root, "h", "center");
+    expect(findParent(centered, "h")!.parent.justify).toBe("center"); // parent row centres it
+    expect(alignInRowOf(centered, "h")).toBe("center");
+    expect(alignInRowOf(alignInRow(centered, "h", "end"), "h")).toBe("end");
+  });
+
+  it("cloneBox deep-copies a GROUP with fresh ids for the container AND every descendant (independent copy)", () => {
+    const group = createContainer("column", { id: "g", group: true, position: "absolute", left: 10, top: 10, children: [createElement("text", { id: "a" } as Partial<BoxNode>), createElement("icon", { id: "b" } as Partial<BoxNode>)] } as unknown as Partial<BoxNode>);
+    const copy = cloneBox(group);
+    expect(copy.group).toBe(true); expect(copy.position).toBe("absolute"); // still a floating group
+    const ids = [copy.id, ...(copy.children ?? []).map((c) => c.id)];
+    expect(new Set(ids).size).toBe(3);                 // all ids unique
+    expect(ids).not.toContain("g"); expect(ids).not.toContain("a"); expect(ids).not.toContain("b"); // none reused
+    expect((copy.children ?? []).map((c) => c.type)).toEqual(["text", "icon"]); // contents preserved
+  });
+
+  it("groupBoxes needs at least two boxes (a single selection is a no-op)", () => {
+    let root = createContainer("column", { id: "root", children: [] } as Partial<BoxNode>);
+    root = insertBox(root, "root", 0, createComponent("card", { id: "a" } as Partial<BoxNode>));
+    expect(groupBoxes(root, ["a"], { left: 0, top: 0, width: "50%", height: 100 })).toBe(root);
+  });
+
   it("clampRowWidths scales an over-full row's sections down so they never exceed 100% (no off-page overflow)", () => {
     const row = makeRowBand([
       createContainer("column", { id: "a", width: "100%" } as Partial<BoxNode>),
@@ -252,6 +317,22 @@ describe("box-model — layout CSS mapping", () => {
     expect(childStyle(createElement("text", { width: "fill" } as Partial<BoxNode>), parent).flex).toBe("1 1 0%");
     expect(childStyle(createElement("text", { width: "50%" } as Partial<BoxNode>), parent).flex).toBe("0 1 50%"); // fixed share, may shrink to fit
     expect(childStyle(createElement("text", { width: "auto" } as Partial<BoxNode>), parent).flex).toBe("0 0 auto");
+  });
+
+  it("childStyle: a Fit (auto-width) element HUGS in a column — it is pinned to the start, never stretched", () => {
+    const col = createContainer("column"); // default align = stretch (would stretch a width:auto child to full width)
+    // An element that hugs (width auto, the "Fit" default) must NOT be stretched to full width — align-self pins it.
+    expect(childStyle(createElement("heading", { width: "auto" } as Partial<BoxNode>), col).alignSelf).toBe("flex-start");
+    expect(childStyle(createElement("text", {} as Partial<BoxNode>), col).alignSelf).toBe("flex-start"); // text base width is auto
+    // A definite width (Full/Custom) fills/uses its size — no hug pin.
+    expect(childStyle(createElement("text", { width: "100%" } as Partial<BoxNode>), col).alignSelf).toBeUndefined();
+    expect(childStyle(createElement("text", { width: "50%" } as Partial<BoxNode>), col).alignSelf).toBeUndefined();
+    // A CONTAINER (section) still stretches to fill its row/column — only element/component blocks hug.
+    expect(childStyle(createContainer("column", {} as Partial<BoxNode>), col).alignSelf).toBeUndefined();
+    // An explicit alignSelf (edge-anchored resize) is never overwritten.
+    expect(childStyle(createElement("heading", { width: "auto", alignSelf: "flex-end" } as Partial<BoxNode>), col).alignSelf).toBe("flex-end");
+    // An explicit parent alignment is honoured (centre-aligned hugging child follows it).
+    expect(childStyle(createElement("heading", { width: "auto" } as Partial<BoxNode>), createContainer("column", { align: "center" } as Partial<BoxNode>)).alignSelf).toBe("center");
   });
 
   it("childStyle divides the MAIN axis: height drives flex in a column, width in a row", () => {
@@ -477,7 +558,8 @@ describe("box-model — floating layers (free overlap)", () => {
     expect(a.position).toBe("absolute");
     expect(a.left).toBe(12); expect(a.top).toBe(8);
     expect(a.width).toBe("60%");
-    expect(a.minHeight).toBe(200);
+    expect(a.height).toBe("200px");        // a floating card gets a DEFINITE height (not a min-height floor)
+    expect(a.minHeight).toBeUndefined();
     expect(a.zIndex).toBe(1); // first floating child → z 1
     expect(a.marginLeft).toBeUndefined(); expect(a.alignSelf).toBeUndefined(); // flow-only styling cleared
     expect(a.clip).toBe(true); // a floating card can be resized (W+H) below its content
@@ -485,9 +567,15 @@ describe("box-model — floating layers (free overlap)", () => {
     expect(findParent(next, "a")!.parent.id).toBe("sec");
   });
 
-  it("floatBox does NOT inflate the parent's height (no reserved-height leak / tall empty sections)", () => {
+  it("floatBox does NOT store a reserved height on the parent (no leak) — the parent's height is computed instead", () => {
     const next = floatBox(tree(), "a", "sec", 0, 10, "50%", 220);
-    expect(findBox(next, "sec")!.minHeight).toBeUndefined();
+    expect(findBox(next, "sec")!.minHeight).toBeUndefined(); // nothing stored
+    // …but containerStyle GROWS the parent at render time so it CONTAINS the floating child (never spills out)
+    const sec = findBox(next, "sec")!;
+    const mh = containerStyle(sec).minHeight as number;
+    expect(mh).toBeGreaterThanOrEqual(220);                  // ≥ the floated child's height
+    // unfloating removes the containment automatically (no floating child → no reserve, no tall gap)
+    expect(containerStyle(findBox(unfloatBox(next, "a"), "sec")!).minHeight).toBeUndefined();
   });
 
   it("a second float stacks ABOVE the first (zIndex increments)", () => {

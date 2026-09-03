@@ -101,6 +101,91 @@ describe("BoxCanvas (box-model editor)", () => {
     expect(grids[0].style.gridTemplateColumns).toContain("repeat(3");
   });
 
+  it("the ROOT grows (min-height = floatingReserve) so a floated child is contained, not spilling below", () => {
+    // A floated card sitting at top:40% with a 300px definite height needs the parent to be
+    // at least 300 / (1 − 0.40) = 500px tall so its bottom stays inside. The root's own floor
+    // (PAGE_MIN_H) must NOT override that reserve.
+    const floated = createContainer("column", {
+      id: "f", position: "absolute", left: "10%", top: "40%", width: "50%", height: "300px",
+    } as unknown as Partial<BoxNode>);
+    render(<Harness initial={createContainer("column", { id: "root", children: [floated] } as Partial<BoxNode>)} />);
+    const rootEl = document.querySelector<HTMLElement>('[data-box-id="root"]')!;
+    expect(parseFloat(rootEl.style.minHeight)).toBeGreaterThanOrEqual(500); // reserve wins over the small page floor
+  });
+
+  it("a SELECTED box shows overflow:visible so its (outside) toolbar + resize handles are never clipped", () => {
+    // a clipped floating box would otherwise hide the toolbar that now sits ABOVE/BELOW it
+    const clipped = createElement("text", { id: "t", text: "Hi", position: "absolute", clip: true, left: 20, top: 20 } as unknown as Partial<BoxNode>);
+    const { container, rerender } = render(<Harness initial={createContainer("column", { id: "root", children: [clipped] } as Partial<BoxNode>)} initialSel="t" />);
+    const el = container.querySelector<HTMLElement>('[data-box-id="t"]')!;
+    expect(el.style.overflow).toBe("visible"); // selected → chrome not clipped
+    void rerender;
+  });
+
+  it("a LOCKED box hides its resize handles + drag grip and shows a Locked badge (position frozen)", () => {
+    const locked = createElement("heading", { id: "h", text: "Fixed", locked: true } as Partial<BoxNode>);
+    render(<Harness initial={createContainer("column", { id: "root", children: [locked] } as Partial<BoxNode>)} initialSel="h" />);
+    expect(screen.queryByLabelText("Resize right edge")).not.toBeInTheDocument(); // no resize handles while locked
+    expect(screen.queryByLabelText("Drag to move")).not.toBeInTheDocument();       // no drag grip while locked
+    expect(screen.getByText("Locked")).toBeInTheDocument();                        // a clear Locked badge
+    expect(screen.getByLabelText("Unlock position and size")).toBeInTheDocument(); // and a one-click unlock
+  });
+
+  it("an UNLOCKED box shows resize handles + drag grip + a Lock button", () => {
+    const box = createElement("heading", { id: "h", text: "Movable" } as Partial<BoxNode>);
+    render(<Harness initial={createContainer("column", { id: "root", children: [box] } as Partial<BoxNode>)} initialSel="h" />);
+    expect(screen.getByLabelText("Resize right edge")).toBeInTheDocument();
+    expect(screen.getByLabelText("Drag to move")).toBeInTheDocument();
+    expect(screen.getByLabelText("Lock position and size")).toBeInTheDocument();
+  });
+
+  it("clicking the toolbar lock toggles the box's locked flag", async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    const box = createElement("heading", { id: "h", text: "X" } as Partial<BoxNode>);
+    render(<BoxCanvas root={createContainer("column", { id: "root", children: [box] } as Partial<BoxNode>)} theme={DEFAULT_THEME} selectedId="h" onChange={onChange} />);
+    await user.click(screen.getByLabelText("Lock position and size"));
+    const next = onChange.mock.calls.at(-1)![0];
+    expect(findBox(next, "h")!.locked).toBe(true);
+  });
+
+  it("clicking a structural ROW BAND selects the block INSIDE it — never the row band itself", () => {
+    // A row band is invisible structure; the user must always target a real block, never an "Editing: Row" wrapper.
+    const child = createElement("text", { id: "c", text: "Hi" } as Partial<BoxNode>);
+    const band = makeRowBand([child]); band.id = "band";
+    const root = createContainer("column", { id: "root", children: [band] } as Partial<BoxNode>);
+    function H() { const [r, setR] = useState(root); const [sel, setSel] = useState<string | null>(null); return <><BoxCanvas root={r} theme={DEFAULT_THEME} selectedId={sel} onSelectId={setSel} onChange={setR} /><div data-testid="sel">{sel}</div></>; }
+    const { container, getByTestId } = render(<H />);
+    fireEvent.mouseDown(container.querySelector('[data-box-id="band"]')!);
+    expect(getByTestId("sel").textContent).toBe("c"); // the block inside, not "band"
+  });
+
+  it("clicking a row band with several blocks clears the selection (never selects the band)", () => {
+    const band = makeRowBand([createElement("text", { id: "a" } as Partial<BoxNode>), createElement("text", { id: "b" } as Partial<BoxNode>)]); band.id = "band";
+    const root = createContainer("column", { id: "root", children: [band] } as Partial<BoxNode>);
+    function H() { const [r, setR] = useState(root); const [sel, setSel] = useState<string | null>("a"); return <><BoxCanvas root={r} theme={DEFAULT_THEME} selectedId={sel} onSelectId={setSel} onChange={setR} /><div data-testid="sel">{sel ?? ""}</div></>; }
+    const { container, getByTestId } = render(<H />);
+    fireEvent.mouseDown(container.querySelector('[data-box-id="band"]')!);
+    expect(getByTestId("sel").textContent).toBe(""); // deselected, not "band"
+  });
+
+  it("copy + paste a floating GROUP: a full OFFSET copy appears (floating, fresh ids), not hiding the original", () => {
+    const group = createContainer("column", { id: "g", group: true, position: "absolute", left: 10, top: 10, children: [createElement("text", { id: "a", text: "x" } as Partial<BoxNode>)] } as unknown as Partial<BoxNode>);
+    const initial = createContainer("column", { id: "root", children: [group] } as Partial<BoxNode>);
+    const onChange = vi.fn();
+    function H() { const [r, setR] = useState(initial); const [sel, setSel] = useState<string | null>("g"); return <BoxCanvas root={r} theme={DEFAULT_THEME} selectedId={sel} onSelectId={setSel} onChange={(t) => { onChange(t); setR(t); }} />; }
+    render(<H />);
+    fireEvent.keyDown(document, { ctrlKey: true, key: "c" }); // copy
+    fireEvent.keyDown(document, { ctrlKey: true, key: "v" }); // paste
+    const next = onChange.mock.calls.at(-1)![0];
+    const groups = (next.children ?? []).filter((c: BoxNode) => c.group);
+    expect(groups.length).toBe(2);                                   // original + pasted
+    const pasted = groups.find((g: BoxNode) => g.id !== "g")!;
+    expect(pasted.position).toBe("absolute");                        // still floating → placeable
+    expect(pasted.left).toBe(13); expect(pasted.top).toBe(13);       // offset +3% so it doesn't hide the original
+    expect(pasted.children![0].id).not.toBe("a");                    // fresh child ids (independent copy)
+  });
+
   it("renders a grid tree with the right column template", () => {
     const g = createGrid(4, { id: "g" } as Partial<BoxNode>);
     render(<Harness initial={createContainer("column", { id: "root", children: [g] } as Partial<BoxNode>)} />);
@@ -162,6 +247,46 @@ describe("BoxCanvas (box-model editor)", () => {
     // A is now a child of C
     const cAfter = container.querySelector<HTMLElement>('[data-box-id="c"]')!;
     expect(cAfter.querySelector('[data-box-id="a"]')).not.toBeNull();
+  });
+
+  it("moving a HUGGING block keeps it hugging — a reparented Fit block never becomes full-width", () => {
+    // Dragging a Fit (width:auto) button into another container must NOT overwrite its width with the line-fill
+    // width — it stays hugging its content. Only definite-width blocks fill the leftover space.
+    const initial = createContainer("column", {
+      id: "root",
+      children: [
+        createElement("button", { id: "a", text: "Go", width: "auto" } as Partial<BoxNode>),
+        createContainer("column", { id: "c" } as Partial<BoxNode>),
+      ],
+    } as Partial<BoxNode>);
+    const onChange = vi.fn();
+    function DragHarness() {
+      const [root, setRoot] = useState(initial);
+      const [sel, setSel] = useState<string | null>("a");
+      return <BoxCanvas root={root} theme={DEFAULT_THEME} selectedId={sel} onSelectId={setSel} onChange={(t) => { onChange(t); setRoot(t); }} />;
+    }
+    const { container } = render(<DragHarness />);
+    const cEl = container.querySelector<HTMLElement>('[data-box-id="c"]')!;
+    stubRect(cEl, { top: 20, left: 0, width: 100, height: 40 });
+    document.elementsFromPoint = () => [cEl];
+    fireEvent.mouseDown(screen.getByLabelText("Drag to move"), { clientX: 0, clientY: 5 });
+    fireEvent.mouseMove(document, { clientX: 40, clientY: 40 });
+    fireEvent.mouseUp(document, { clientX: 40, clientY: 40 });
+    const tree = onChange.mock.calls.at(-1)![0];
+    const moved = findBox(tree, "a")!;
+    expect(moved.width === "auto" || moved.width == null).toBe(true); // stayed hugging, never forced to "100%"
+  });
+
+  it("structural row bands and the page root never carry a hover-outline (no 'empty container wrapper' look)", () => {
+    const root = createContainer("column", {
+      id: "root",
+      children: [makeRowBand([createElement("button", { id: "b", text: "Go" } as Partial<BoxNode>)], 0)],
+    } as Partial<BoxNode>);
+    const { container } = render(<BoxCanvas root={root} theme={DEFAULT_THEME} selectedId={null} onChange={() => {}} />);
+    const rootEl = container.querySelector<HTMLElement>('[data-box-id="root"]')!;
+    const band = rootEl.querySelector<HTMLElement>('[data-box-id]')!; // first descendant box = the row band
+    expect(rootEl.className).not.toMatch(/hover:outline/); // the page never outlines on hover
+    expect(band.className).not.toMatch(/hover:outline/);   // the invisible row band never outlines on hover
   });
 
   it("deleting a section via the ⋯ menu works through the page's NORMALIZING onChange (not re-created)", async () => {
@@ -336,6 +461,20 @@ describe("BoxCanvas (box-model editor)", () => {
     expect(findBox(last, "t1")?.minHeight).toBeGreaterThan(0); // a floor, not a fixed height
     expect(findBox(last, "t1")?.height).toBeUndefined();       // no fixed height → the section grows with content
     expect(onResized).toHaveBeenCalledWith("t1", "height");
+  });
+
+  it("dragging a BUTTON's height sets a DEFINITE height (self-painting → the button fills it), not a min-height floor", () => {
+    // A button (self-painting, fills its box) must resize like a component: a definite height so the <a> grows via
+    // height:100%. A min-height floor would leave the button short at the top while the box grew (the reported bug).
+    const onChange = vi.fn();
+    const root = createContainer("column", { id: "root", children: [createElement("button", { id: "b1", text: "Go" } as Partial<BoxNode>)] } as Partial<BoxNode>);
+    render(<BoxCanvas root={root} theme={DEFAULT_THEME} selectedId="b1" onChange={onChange} />);
+    fireEvent.mouseDown(screen.getByLabelText("Resize bottom edge"), { clientX: 0, clientY: 0 });
+    fireEvent.mouseMove(document, { clientX: 0, clientY: 120 });
+    fireEvent.mouseUp(document);
+    const n = findBox(onChange.mock.calls.at(-1)![0], "b1");
+    expect(n?.height).toMatch(/px$/);       // DEFINITE height → the <a>'s height:100% resolves and fills
+    expect(n?.minHeight).toBeUndefined();   // NOT a min-height floor
   });
 
   it("dragging the RIGHT edge moves only that edge — width changes and the LEFT edge stays put (alignSelf pins it, so a centred box can't grow from the middle)", () => {

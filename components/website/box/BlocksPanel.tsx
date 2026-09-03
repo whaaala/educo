@@ -38,7 +38,7 @@ const GROUPS: { name: string; blocks: Block[] }[] = [
     { kind: "accordion", label: "Accordion", Icon: ChevronDown, hint: "Expandable Q&A / FAQ — 54 designs" },
     { kind: "card", label: "Card", Icon: SquareStack, hint: "Image + title + text + button" },
     { kind: "quote", label: "Quote", Icon: Quote, hint: "A testimonial quote" },
-    { kind: "stats", label: "Stat", Icon: BarChart3, hint: "A big number + label" },
+    { kind: "stat", label: "Stat", Icon: BarChart3, hint: "A big number + label" },
     { kind: "badge", label: "Badge", Icon: Tag, hint: "A small pill label" },
     { kind: "rating", label: "Rating", Icon: Star, hint: "Five stars" },
   ] },
