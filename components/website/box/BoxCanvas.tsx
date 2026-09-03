@@ -725,6 +725,7 @@ export default function BoxCanvas({
     const floating = isFloating(node) && !isRoot;
     const wrapStyle: React.CSSProperties = {
       position: floating ? "absolute" : "relative", // floating boxes are positioned inside their (relative) parent → they overlap the flow
+      maxWidth: "100%", // Responsive Field Guide: never wider than the container (a fixed px width shrinks on a phone — no horizontal scrollbar). Editor MUST match the export.
       ...decorStyle(node), // border, shadow, per-corner radius, rotation
       ...(floating ? {} : marginCSS(node)), // margins are a FLOW concept; a floating box uses left/top instead
       opacity: node.hidden ? 0.35 : node.opacity !== undefined ? node.opacity / 100 : undefined, // hidden-on-this-device shows faint in the editor

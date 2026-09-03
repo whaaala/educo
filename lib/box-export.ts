@@ -140,6 +140,9 @@ function renderNode(node: BoxNode, parent: BoxNode | null, theme: SiteTheme, pag
   const floating = r.position === "absolute" && parent !== null;
   const wrap: CSSProperties = {
     position: floating ? "absolute" : "relative",
+    // Responsive Field Guide: NO box may ever be wider than its container — a fixed px width (e.g. a floated
+    // 500px card) shrinks to fit a narrow phone instead of forcing a horizontal scrollbar.
+    maxWidth: "100%",
     ...decorCss(r),
     ...(floating ? {} : marginCSS(r)),
     opacity: r.opacity !== undefined ? r.opacity / 100 : undefined,
@@ -175,7 +178,7 @@ function documentShell(theme: SiteTheme, title: string, body: string): string {
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${esc(title)}</title>
 <style>${stylesheet(theme)}</style>
-<style>.eu-site-nav{position:sticky;top:0;z-index:1000;display:flex;gap:4px;padding:8px 16px;background:var(--eu-color-surface);border-bottom:1px solid var(--eu-color-border)}.eu-site-nav a{color:var(--eu-color-text);text-decoration:none;padding:8px 12px;border-radius:var(--eu-radius-md)}.eu-site-nav a:hover{background:var(--eu-color-surface-2)}</style>
+<style>html,body{max-width:100%;overflow-x:hidden}.eu-site-nav{position:sticky;top:0;z-index:1000;display:flex;gap:4px;padding:8px 16px;background:var(--eu-color-surface);border-bottom:1px solid var(--eu-color-border)}.eu-site-nav a{color:var(--eu-color-text);text-decoration:none;padding:8px 12px;border-radius:var(--eu-radius-md)}.eu-site-nav a:hover{background:var(--eu-color-surface-2)}</style>
 </head><body class="eu-root">${body}</body></html>`;
 }
 

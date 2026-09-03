@@ -169,9 +169,13 @@ export default function BoxDemoPage() {
 
   // Click-to-add from the palette: insert into the selected container (or the page) with an optional style.
   const insertBlock = (kind: string, patch: Partial<BoxNode> = {}) => {
-    const parentId = selected && isContainer(selected) ? selected.id : root.id;
+    const node = blockForKind(kind, patch);
+    // A COMPONENT is a self-contained element: it never lives inside a tinted, padded Section "chrome" box —
+    // it drops onto the page in its own transparent, hug-to-content wrapper (invisible unless the user styles
+    // it). Plain blocks (heading/text/…) still drop into the selected container so you can compose sections.
+    const parentId = node.type === "component" ? root.id : (selected && isContainer(selected) ? selected.id : root.id);
     const target = findBox(root, parentId) ?? root;
-    commit(insertBox(root, parentId, target.children?.length ?? 0, blockForKind(kind, patch)));
+    commit(insertBox(root, parentId, target.children?.length ?? 0, node));
   };
 
   const frameW = DEVICES.find((d) => d.id === device)!.w;

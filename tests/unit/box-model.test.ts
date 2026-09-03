@@ -284,6 +284,18 @@ describe("box-model — layout CSS mapping", () => {
     expect(clipped.minWidth).toBe(0);
   });
 
+  it("Responsive Field Guide: a ROW BAND wraps, and its sections keep a min width so they STACK on narrow screens", () => {
+    const band = makeRowBand([createContainer("column", { width: "40%", children: [createElement("text", {} as Partial<BoxNode>)] } as Partial<BoxNode>)]);
+    // the row band itself allows wrapping (so it reflows instead of cramming)
+    expect(containerStyle(band).flexWrap).toBe("wrap");
+    // a non-clipped section inside it keeps a usable minimum → wraps to a new line rather than shrinking below ~14rem
+    const section = band.children![0];
+    expect(childStyle(section, band).minWidth).toBe("min(100%, 14rem)");
+    // a CLIPPED (explicitly resized) section still drops to 0 — reflow never overrides an intentional resize
+    const clipped = childStyle(createContainer("column", { width: "40%", clip: true } as Partial<BoxNode>), band);
+    expect(clipped.minWidth).toBe(0);
+  });
+
   it("an EMPTY box with an EXPLICIT resize floor keeps that floor (childStyle must NOT zero it) — the height-resize regression", () => {
     const parent = createContainer("row"); // sections live inside a row band
     // An empty section (no children) that the user resized taller → minHeight set. isEmptyBox is true, but
@@ -473,6 +485,11 @@ describe("box-model — floating layers (free overlap)", () => {
     expect(findParent(next, "a")!.parent.id).toBe("sec");
   });
 
+  it("floatBox does NOT inflate the parent's height (no reserved-height leak / tall empty sections)", () => {
+    const next = floatBox(tree(), "a", "sec", 0, 10, "50%", 220);
+    expect(findBox(next, "sec")!.minHeight).toBeUndefined();
+  });
+
   it("a second float stacks ABOVE the first (zIndex increments)", () => {
     let next = floatBox(tree(), "a", "sec", 0, 0, "50%", 100);
     next = floatBox(next, "b", "sec", 20, 20, "50%", 100);
@@ -494,12 +511,22 @@ describe("box-model — floating layers (free overlap)", () => {
     expect(findBox(next, "b")!.zIndex!).toBeGreaterThan(findBox(next, "a")!.zIndex!);
   });
 
-  it("unfloatBox returns the box to the flow (drops position/left/top/z)", () => {
-    const floated = floatBox(tree(), "a", "sec", 12, 8, "60%", 200);
+  it("unfloatBox returns the box to the flow (drops position/left/top/z) and undoes the float's side-effects", () => {
+    // even a parent that carries a leaked minHeight (from an older reserve) is released on unfloat → no tall gap
+    const floated = updateBox(floatBox(tree(), "a", "sec", 12, 8, "60%", 200), "sec", { minHeight: 400 });
     const back = unfloatBox(floated, "a");
     const a = findBox(back, "a")!;
     expect(isFloating(a)).toBe(false);
     expect(a.position).toBeUndefined(); expect(a.left).toBeUndefined(); expect(a.top).toBeUndefined(); expect(a.zIndex).toBeUndefined();
+    expect(a.clip).toBeUndefined();                                  // the auto float-clip is cleared
+    expect(findBox(back, "sec")!.minHeight).toBeUndefined();         // any leaked parent gap is released
+  });
+
+  it("unfloatBox restores a COMPONENT to full width (its compact fixed px width was only for the floating card)", () => {
+    const sec = createContainer("column", { id: "s", children: [createComponent("accordion", { id: "c", width: "500px" } as Partial<BoxNode>)] } as Partial<BoxNode>);
+    const floated = floatBox(sec, "c", "s", 0, 0, "500px", 300);
+    expect(findBox(floated, "c")!.width).toBe("500px");
+    expect(findBox(unfloatBox(floated, "c"), "c")!.width).toBe("100%"); // back to responsive
   });
 
   it("normalizeRowBands keeps a floating child OUT of the flow — not wrapped in a row band, not pruned", () => {

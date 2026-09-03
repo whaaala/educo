@@ -9,7 +9,8 @@ export const COMPONENT_CSS = `
 /* ── Button ────────────────────────────────────────────────────────────────── */
 .eu-root .eu-btn {
   display: inline-flex; align-items: center; justify-content: center; gap: var(--eu-space-2);
-  font-family: var(--eu-font-body); font-weight: var(--eu-weight-semibold); font-size: var(--eu-text-sm);
+  /* fluid type — scales gently with the viewport (Responsive Field Guide, ingredient 2), token-bounded */
+  font-family: var(--eu-font-body); font-weight: var(--eu-weight-semibold); font-size: clamp(var(--eu-text-xs), 0.7rem + 0.35vw, var(--eu-text-sm));
   line-height: 1; padding: var(--eu-space-3) var(--eu-space-5); border-radius: var(--eu-radius-md);
   border: 1px solid transparent; cursor: pointer; text-decoration: none; white-space: nowrap;
   transition: background-color var(--eu-dur-fast) var(--eu-ease-standard), border-color var(--eu-dur-fast) var(--eu-ease-standard), box-shadow var(--eu-dur-fast) var(--eu-ease-standard), transform var(--eu-dur-fast) var(--eu-ease-standard);
@@ -30,7 +31,8 @@ export const COMPONENT_CSS = `
 .eu-root .eu-btn--block { width: 100%; }
 
 /* ── Card ──────────────────────────────────────────────────────────────────── */
-.eu-root .eu-card { background: var(--eu-color-surface); border: 1px solid var(--eu-color-border); border-radius: var(--eu-radius-lg); padding: var(--eu-space-6); box-shadow: var(--eu-shadow-sm); }
+/* container-type + fluid padding: the card tightens its own padding when placed in a narrow column */
+.eu-root .eu-card { container-type: inline-size; background: var(--eu-color-surface); border: 1px solid var(--eu-color-border); border-radius: var(--eu-radius-lg); padding: clamp(var(--eu-space-4), 4cqi, var(--eu-space-6)); box-shadow: var(--eu-shadow-sm); }
 .eu-root .eu-card--flat { box-shadow: none; }
 .eu-root .eu-card--raised { box-shadow: var(--eu-shadow-lg); }
 .eu-root .eu-card__title { font-family: var(--eu-font-heading); font-weight: var(--eu-weight-bold); font-size: var(--eu-text-xl); margin-block-end: var(--eu-space-2); }
@@ -72,10 +74,14 @@ export const COMPONENT_CSS = `
 /* ── Accordion — native <details>/<summary>: ZERO JS, works in the export. Fully fluid (any width),
  *    long titles wrap, the indicator never shrinks. Variants: flush · separated · filled · accent ·
  *    chevron · numbered — all token-themed and flat/clean. ───────────────────────────────────────── */
-.eu-root .eu-accordion { display: grid; gap: var(--eu-space-2); }
+/* container-type makes the accordion respond to ITS OWN width (cqi) — so type + padding scale down when it's
+   placed in a narrow column, not only when the whole viewport shrinks (Responsive Field Guide, ingredient 4). */
+.eu-root .eu-accordion { display: grid; gap: var(--eu-space-2); container-type: inline-size; }
 .eu-root .eu-accordion__item { border: 1px solid var(--eu-color-border); border-radius: var(--eu-radius-md); background: var(--eu-color-surface); overflow: hidden; }
 .eu-root .eu-accordion__header {
-  cursor: pointer; list-style: none; padding: var(--eu-space-4); font-weight: var(--eu-weight-semibold);
+  cursor: pointer; list-style: none; padding: clamp(var(--eu-space-3), 3.2cqi, var(--eu-space-4)); font-weight: var(--eu-weight-semibold);
+  /* fluid type: scales with the accordion's own width so a narrow card shrinks its text instead of breaking words */
+  font-size: clamp(0.9rem, 0.82rem + 1.1cqi, 1.05rem); line-height: var(--eu-leading-snug);
   color: var(--eu-color-text); display: flex; align-items: center; justify-content: space-between;
   gap: var(--eu-space-3); overflow-wrap: anywhere; transition: background-color var(--eu-dur-fast) var(--eu-ease-standard);
 }
@@ -83,7 +89,7 @@ export const COMPONENT_CSS = `
 .eu-root .eu-accordion__header::-webkit-details-marker { display: none; }
 .eu-root .eu-accordion__header::after { content: "+"; flex: 0 0 auto; color: var(--eu-color-muted); font-weight: var(--eu-weight-normal); transition: transform var(--eu-dur-base) var(--eu-ease-standard); }
 .eu-root .eu-accordion__item[open] > .eu-accordion__header::after { content: "\\2212"; } /* minus */
-.eu-root .eu-accordion__body { padding: 0 var(--eu-space-4) var(--eu-space-4); color: var(--eu-color-muted); }
+.eu-root .eu-accordion__body { padding: 0 clamp(var(--eu-space-3), 3.2cqi, var(--eu-space-4)) clamp(var(--eu-space-3), 3.2cqi, var(--eu-space-4)); font-size: clamp(0.85rem, 0.8rem + 0.7cqi, 1rem); color: var(--eu-color-muted); }
 
 /* flush — borderless, hairline dividers only (Bootstrap-flush / ultra-minimal) */
 .eu-root .eu-accordion--flush { gap: 0; }

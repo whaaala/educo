@@ -150,6 +150,17 @@ describe("box-export — static HTML", () => {
     for (const m of html.matchAll(/style="([^"]*)"/g)) expect(m[1]).not.toContain('"');
   });
 
+  it("Responsive Field Guide: no box overflows its container (max-width:100%) and the body can't scroll sideways", () => {
+    const acc = createComponent("accordion", { width: "500px", accItems: [{ id: "i", title: "T", body: "B" }] } as Partial<BoxNode>);
+    const root = createContainer("column", { children: [makeRowBand([acc])] } as Partial<BoxNode>);
+    const html = renderPageHTML(root, DEFAULT_THEME);
+    // every rendered box caps at its container so a fixed 500px card shrinks on a phone (never a scrollbar)
+    for (const m of html.matchAll(/style="([^"]*)"/g)) expect(m[1]).toContain("max-width:100%");
+    // the exported document body never scrolls horizontally
+    const doc = renderPageDocument(createContainer("column", {} as Partial<BoxNode>), DEFAULT_THEME, "P");
+    expect(doc).toContain("html,body{max-width:100%;overflow-x:hidden}");
+  });
+
   it("downloadHTML is a safe no-op when the DOM/URL APIs are unavailable", () => {
     expect(() => downloadHTML("<html></html>")).not.toThrow();
   });

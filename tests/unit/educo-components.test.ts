@@ -51,6 +51,9 @@ describe("Educo UI component styles", () => {
     // responsive robustness: long titles wrap, the indicator never shrinks
     expect(COMPONENT_CSS).toContain("overflow-wrap: anywhere");
     expect(COMPONENT_CSS).toContain("flex: 0 0 auto");
+    // Responsive Field Guide: the accordion is a container context + fluid type (scales with its OWN width)
+    expect(COMPONENT_CSS).toContain("container-type: inline-size");
+    expect(COMPONENT_CSS).toMatch(/font-size: clamp\([^)]*cqi/); // clamp() driven by container-query units
     // no hardcoded hex anywhere in the variants — all token-driven
     expect(COMPONENT_CSS).not.toMatch(/#[0-9a-fA-F]{3,8}\b/);
     // theme-safe indicators: chevron/currentColor, counters, gradients from tokens

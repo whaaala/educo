@@ -477,9 +477,23 @@ export function floatBox(root: BoxNode, id: string, targetParentId: string, left
   return next;
 }
 
-/** Return `id` to the normal flow (drop its floating position); normalizeRowBands re-docks it as a row. */
+/** Return `id` to the normal flow (drop its floating position); normalizeRowBands re-docks it as a row.
+ *  Undoes the float's side-effects so nothing leaks back into the flow: the auto-applied `clip` is cleared, a
+ *  COMPONENT returns to full width (its compact fixed px width existed only for the floating card), and — if it
+ *  was the parent's LAST floating child — the parent's reserved `minHeight` is dropped so no tall empty gap remains. */
 export function unfloatBox(root: BoxNode, id: string): BoxNode {
-  return updateBox(root, id, { position: undefined, left: undefined, top: undefined, zIndex: undefined });
+  const node = findBox(root, id);
+  const info = findParent(root, id);
+  // Drop everything the float set: geometry, the auto `clip`, and the card's `minHeight` (so the box hugs its
+  // content again). A COMPONENT also returns to full width (its compact fixed px width was only for the card).
+  const patch: Partial<BoxNode> = { position: undefined, left: undefined, top: undefined, zIndex: undefined, clip: undefined, minHeight: undefined };
+  if (node?.type === "component") patch.width = "100%";
+  let next = updateBox(root, id, patch);
+  if (info) {
+    const stillFloating = (findBox(next, info.parent.id)?.children ?? []).some((c) => c.id !== id && isFloating(c));
+    if (!stillFloating) next = updateBox(next, info.parent.id, { minHeight: undefined });
+  }
+  return next;
 }
 
 /** Raise a floating box above all its floating siblings. */
@@ -662,7 +676,9 @@ export function containerStyle(node: BoxNode): CSSProperties {
     gap: u(node.gap ?? 16),
     alignItems: ALIGN_CSS[node.align ?? "stretch"],
     justifyContent: JUSTIFY_CSS[node.justify ?? "start"],
-    flexWrap: node.wrap ? "wrap" : "nowrap",
+    // Responsive Field Guide: a ROW BAND always allows wrapping so its sections REFLOW (stack) on narrow
+    // screens instead of shrinking to unreadable slivers. On desktop they still sit side-by-side (they fit).
+    flexWrap: node.wrap || node.rowBand ? "wrap" : "nowrap",
     // Pack wrapped lines to the top so they never stretch apart and leave gaps between sections.
     alignContent: "flex-start",
     ...paddingCSS(node),
@@ -705,6 +721,11 @@ export function childStyle(child: BoxNode, parent: BoxNode): CSSProperties {
   // what's inside it. When `clip` is on, OR the box is EMPTY (nothing inside), we drop the minimum so
   // it can be shrunk all the way down to ~1px (padding is clipped along with it).
   if (child.clip || isEmptyBox(child)) { s.minWidth = 0; if (child.minHeight == null) s.minHeight = 0; } // keep an EXPLICIT resize floor; only drop the content-min when there's none
+  // ── Responsive Field Guide reflow ──
+  // A section inside a ROW BAND keeps a usable minimum width (`min(100%, 14rem)`): its siblings stay side-by-side
+  // while they fit, but once the row is too narrow for everyone at that minimum, it WRAPS — so on a phone the
+  // sections stack (each ~14rem-or-full) instead of cramming into unreadable columns. Doesn't touch resize/grow.
+  if (parent.rowBand && isRow && !child.clip && !isEmptyBox(child)) s.minWidth = "min(100%, 14rem)";
   const crossCss = sizeToCSS(crossToken);
   if (crossCss) { if (isRow) s.height = crossCss; else s.width = crossCss; }
   return s;
