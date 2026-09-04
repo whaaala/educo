@@ -10,7 +10,9 @@
  * the palette, canvas, export and inspector all read from this registry. Colours come from CSS tokens only.
  */
 
-export type SlotType = "text" | "textarea" | "url" | "number";
+import { iconSvg } from "./icon-svg";
+
+export type SlotType = "text" | "textarea" | "url" | "number" | "icon";
 export type Slot = { key: string; label: string; type: SlotType; default: string | number; min?: number; max?: number };
 export type ComponentVariant = { id: string; label: string }; // id is the class SUFFIX, e.g. "--raised" ("" = default)
 export type ComponentDef = {
@@ -47,6 +49,7 @@ export const COMPONENT_REGISTRY: Record<string, ComponentDef> = {
   card: {
     name: "card", label: "Card",
     slots: [
+      { key: "icon", label: "Icon", type: "icon", default: "" },
       { key: "image", label: "Image URL", type: "url", default: "" },
       { key: "title", label: "Title", type: "text", default: "Card title" },
       { key: "body", label: "Body", type: "textarea", default: "A short description for this card goes right here." },
@@ -58,8 +61,9 @@ export const COMPONENT_REGISTRY: Record<string, ComponentDef> = {
     ],
     render: (f, v) => {
       const media = f.image ? `<img class="eu-card__media" src="${esc(f.image)}" alt="" />` : "";
+      const icon = f.icon ? `<span class="eu-card__icon" aria-hidden="true">${iconSvg(String(f.icon))}</span>` : "";
       const btn = f.buttonText ? `<a class="eu-btn eu-btn--primary eu-card__action" href="${esc(f.buttonHref || "#")}">${esc(f.buttonText)}</a>` : "";
-      return `<div class="eu-card${v}">${media}<div class="eu-card__title">${esc(f.title)}</div><div class="eu-card__body">${esc(f.body)}</div>${btn}</div>`;
+      return `<div class="eu-card${v}">${media}${icon}<div class="eu-card__title">${esc(f.title)}</div><div class="eu-card__body">${esc(f.body)}</div>${btn}</div>`;
     },
   },
   quote: {
@@ -78,23 +82,32 @@ export const COMPONENT_REGISTRY: Record<string, ComponentDef> = {
   stat: {
     name: "stat", label: "Stat", hug: true,
     slots: [
+      { key: "icon", label: "Icon", type: "icon", default: "" },
       { key: "value", label: "Value", type: "text", default: "1,000+" },
       { key: "label", label: "Label", type: "text", default: "Happy customers" },
     ],
     variants: [
       { id: "", label: "Default" }, { id: "--brand", label: "Brand" }, { id: "--big", label: "Big" },
     ],
-    render: (f, v) =>
-      `<div class="eu-stat${v}"><div class="eu-stat__value">${esc(f.value)}</div><div class="eu-stat__label">${esc(f.label)}</div></div>`,
+    render: (f, v) => {
+      const icon = f.icon ? `<span class="eu-stat__icon" aria-hidden="true">${iconSvg(String(f.icon))}</span>` : "";
+      return `<div class="eu-stat${v}">${icon}<div class="eu-stat__value">${esc(f.value)}</div><div class="eu-stat__label">${esc(f.label)}</div></div>`;
+    },
   },
   badge: {
     name: "badge", label: "Badge", hug: true,
-    slots: [{ key: "text", label: "Text", type: "text", default: "New" }],
+    slots: [
+      { key: "icon", label: "Icon", type: "icon", default: "" },
+      { key: "text", label: "Text", type: "text", default: "New" },
+    ],
     variants: [
       { id: "", label: "Neutral" }, { id: "--brand", label: "Brand" }, { id: "--success", label: "Success" },
       { id: "--warning", label: "Warning" }, { id: "--danger", label: "Danger" }, { id: "--info", label: "Info" },
     ],
-    render: (f, v) => `<span class="eu-badge${v}">${esc(f.text)}</span>`,
+    render: (f, v) => {
+      const icon = f.icon ? `<span class="eu-badge__icon" aria-hidden="true">${iconSvg(String(f.icon))}</span>` : "";
+      return `<span class="eu-badge${v}">${icon}${esc(f.text)}</span>`;
+    },
   },
   rating: {
     name: "rating", label: "Rating", hug: true,

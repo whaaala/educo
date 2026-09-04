@@ -36,6 +36,8 @@ export const COMPONENT_CSS = `
 .eu-root .eu-card--flat { box-shadow: none; }
 .eu-root .eu-card--raised { box-shadow: var(--eu-shadow-lg); }
 .eu-root .eu-card__title { font-family: var(--eu-font-heading); font-weight: var(--eu-weight-bold); font-size: 1.35em; margin-block-end: var(--eu-space-2); }
+.eu-root .eu-card__icon { display: inline-flex; font-size: 2em; line-height: 1; color: var(--eu-color-brand); margin-block-end: var(--eu-space-2); }
+.eu-root .eu-card__icon svg, .eu-root .eu-stat__icon svg, .eu-root .eu-badge__icon svg { width: 1em; height: 1em; }
 
 /* ── Form controls + field ─────────────────────────────────────────────────── */
 .eu-root .eu-input, .eu-root .eu-select, .eu-root .eu-textarea {
@@ -53,6 +55,7 @@ export const COMPONENT_CSS = `
 
 /* ── Badge ─────────────────────────────────────────────────────────────────── */
 .eu-root .eu-badge { display: inline-flex; align-items: center; gap: var(--eu-space-1); font-size: 0.8em; font-weight: var(--eu-weight-semibold); padding: 0.35em 0.7em; border-radius: var(--eu-radius-full); background: var(--eu-color-neutral-100); color: var(--eu-color-text); }
+.eu-root .eu-badge__icon { display: inline-flex; font-size: 1.1em; line-height: 1; }
 .eu-root .eu-badge--brand   { background: var(--eu-color-brand);   color: var(--eu-color-on-brand); }
 .eu-root .eu-badge--success { background: var(--eu-color-success); color: var(--eu-color-on-brand); }
 .eu-root .eu-badge--warning { background: var(--eu-color-warning); color: var(--eu-color-on-brand); }
@@ -78,6 +81,7 @@ export const COMPONENT_CSS = `
 .eu-root .eu-stat__label { color: var(--eu-color-muted); font-size: 0.95em; }
 .eu-root .eu-stat--brand .eu-stat__value { color: var(--eu-color-brand); }
 .eu-root .eu-stat--big .eu-stat__value { font-size: 4.8em; }
+.eu-root .eu-stat__icon { display: inline-flex; font-size: 2em; line-height: 1; color: var(--eu-color-brand); margin-block-end: var(--eu-space-1); }
 
 /* ── Rating (stars) — inline SVG, currentColor, em-sized ────────────────────── */
 .eu-root .eu-rating { display: inline-flex; align-items: center; gap: clamp(0.1em, 1cqi, 0.25em); color: var(--eu-color-neutral-300); }

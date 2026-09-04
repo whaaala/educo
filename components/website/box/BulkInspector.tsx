@@ -11,6 +11,7 @@ import { Minus, Plus, Copy, Trash2, Layers, Group as GroupIcon } from "lucide-re
 import type { SiteTheme } from "@/lib/site-storage";
 import type { BoxNode, FlexAlign } from "@/lib/box-model";
 import { ColorPickerPopover, colorToCSS } from "@/components/shared/ColorPalettePicker";
+import BackgroundPicker from "@/components/shared/BackgroundPicker";
 
 const label = "text-[0.6875rem] font-medium text-gray-500 dark:text-gray-400";
 const section = "text-[0.6875rem] font-semibold uppercase tracking-wide text-gray-400 pt-1";
@@ -69,6 +70,13 @@ export default function BulkInspector({ count, theme, sample, onStepWidth, onSte
         <ColorPickerPopover selectedColor={s?.background || theme.surface} onSelect={(c) => onPatch({ background: c })} mode="both" label="Background colour" align="right" width={272} portal>
           <button aria-label="Background colour" className="w-8 h-8 rounded-lg border border-gray-200 dark:border-white/10 shadow-sm" style={{ background: colorToCSS(s?.background || theme.surface) }} />
         </ColorPickerPopover>
+      </div>
+      {/* Same reusable BackgroundPicker as the single-block inspector — apply a gradient/pattern/photo to ALL selected at once */}
+      <div className="space-y-1"><span className={label}>Background library</span>
+        <BackgroundPicker ariaLabel="Bulk background library" value={s?.bgImage}
+          onSelect={(p) => onPatch({ bgImage: p.css, bgTile: p.tile, bgSize: undefined })}
+          onSelectPhoto={(url) => onPatch({ bgImage: url, bgTile: undefined, bgSize: "cover" })}
+          onClear={() => onPatch({ bgImage: undefined, bgTile: undefined, bgOverlay: undefined })} />
       </div>
       <label className="block"><span className={label}>Border: {s?.borderWidth ?? 0}px</span>
         <input type="range" min={0} max={16} value={s?.borderWidth ?? 0} onChange={(e) => onPatch({ borderWidth: Number(e.target.value) })} aria-label="Border" className="w-full mt-1 accent-indigo-600" />

@@ -659,6 +659,10 @@ export default function BoxInspector({ node, theme, onPatch, onAddChild, onFloat
                             ? <CompactTextarea key={s.key} label={s.label} ariaLabel={s.label} value={String(fields[s.key] ?? "")} onChange={(v) => setField(s.key, v)} rows={2} />
                             : s.type === "number"
                             ? <CompactField key={s.key} label={s.label} ariaLabel={s.label} type="number" min={s.min} max={s.max} value={Number(fields[s.key] ?? 0)} onChange={(v) => setField(s.key, Math.max(s.min ?? 0, Math.min(s.max ?? 9999, Number(v) || 0)))} />
+                            : s.type === "icon"
+                            ? <div key={s.key} className="space-y-1"><span className={label}>{s.label}</span>
+                                <IconPicker ariaLabel={`${def.label} ${s.label}`} value={String(fields[s.key] ?? "") || undefined} onChange={(v) => setField(s.key, v ?? "")} />
+                              </div>
                             : <CompactField key={s.key} label={s.label} ariaLabel={s.label} value={String(fields[s.key] ?? "")} onChange={(v) => setField(s.key, v)} placeholder={s.type === "url" ? "https://…" : undefined} />
                         ))}
                       </div>

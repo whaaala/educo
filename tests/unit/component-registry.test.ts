@@ -37,5 +37,16 @@ describe("component registry (single-node design-system components)", () => {
     const card = renderComponent("card", undefined, "");
     expect(card).toContain("Card title");        // default title
     expect(card).toContain("Learn more");        // default button
+    expect(card).not.toContain("eu-card__icon");  // no icon by default (empty)
+  });
+
+  it("Card / Stat / Badge render an inline-SVG icon when their icon field is set (IconPicker-driven)", () => {
+    const card = renderComponent("card", { icon: "Star", title: "T", body: "B", buttonText: "", image: "" }, "");
+    expect(card).toContain('<span class="eu-card__icon" aria-hidden="true"><svg');
+    const stat = renderComponent("stat", { icon: "Users", value: "1k", label: "x" }, "");
+    expect(stat).toContain('<span class="eu-stat__icon" aria-hidden="true"><svg');
+    const badge = renderComponent("badge", { icon: "Check", text: "New" }, "--success");
+    expect(badge).toContain('<span class="eu-badge__icon" aria-hidden="true"><svg');
+    expect(badge).toContain("New");
   });
 });
