@@ -1,11 +1,12 @@
 import { describe, it, expect } from "vitest";
 import {
   createContainer, createGrid, createElement, createRoot, createComponent,
-  addAccItem, removeAccItem, moveAccItem, updateAccItem, sanitizeCssDeclarations, isEmptyBox,
+  addAccItem, removeAccItem, moveAccItem, updateAccItem, addAccChild, updateAccChild, removeAccChild, moveAccChild, sanitizeCssDeclarations, expandScopedCss, ACCORDION_CSS_PARTS, accItemOverrideCss, accItemHasOverride, accFloatReserveRem, richBody, plainBody, isEmptyBox,
   findBox, findParent, isAncestor, updateBox, insertBox, removeBox, moveBoxStep, moveBox,
   containerStyle, childStyle, paddingCSS, marginCSS, sizeToCSS, flexForWidth, fillMainAxis, u, newBoxId, dropIndexAmong,
   makeRowBand, normalizeRowBands, clampRowWidths, widthPct,
   isFloating, floatBox, unfloatBox, groupBoxes, ungroupBoxes, alignInRow, alignInRowOf, bringToFront, sendToBack, bringForward, sendBackward, floatingZRange, cloneBox,
+  isCssBg, bgImageLayer,
   radiusCSS, isClipped, SHADOW_CSS, videoEmbedSrc,
   resolveResponsive, updateBoxResponsive, hasOverride, clearOverride,
   type BoxNode,
@@ -48,6 +49,169 @@ describe("box-model — Educo UI component instances", () => {
     expect(sanitizeCssDeclarations("background: url('data:image/png;base64,AA')"))
       .toContain("background:");                                                    // data: url allowed
     expect(sanitizeCssDeclarations(undefined)).toBe("");
+  });
+
+  it("expandScopedCss: bare declarations style the scope itself (and always win via !important)", () => {
+    expect(expandScopedCss("background: #fef3c7; color: red", ".item", ACCORDION_CSS_PARTS))
+      .toBe(".item{background: #fef3c7 !important; color: red !important;}");
+  });
+
+  it("expandScopedCss: part blocks target inner parts — text, background, colour of ANY part", () => {
+    const out = expandScopedCss(
+      "background:#111; title { color:#fff } body { background:#222 } icon { color:#0f0 } meta { color:#ff0 } media { border-radius:8px }",
+      ".it", ACCORDION_CSS_PARTS,
+    );
+    expect(out).toContain(".it{background:#111 !important;}");
+    expect(out).toContain(".it .eu-accordion__header{color:#fff !important;}");   // title → header text
+    expect(out).toContain(".it .eu-accordion__body{background:#222 !important;}"); // body/answer
+    expect(out).toContain(".it .eu-accordion__header::after{color:#0f0 !important;}"); // icon marker
+    expect(out).toContain(".it .eu-accordion__meta{color:#ff0 !important;}");
+    expect(out).toContain(".it .eu-accordion__media{border-radius:8px !important;}");
+  });
+
+  it("expandScopedCss: friendly aliases resolve (content→body, header/summary→header, root→item)", () => {
+    expect(expandScopedCss("content { color:red }", ".x", ACCORDION_CSS_PARTS)).toBe(".x .eu-accordion__body{color:red !important;}");
+    expect(expandScopedCss("summary { color:red }", ".x", ACCORDION_CSS_PARTS)).toBe(".x .eu-accordion__header{color:red !important;}");
+    expect(expandScopedCss("root { color:red }", ".x", ACCORDION_CSS_PARTS)).toBe(".x{color:red !important;}");
+  });
+
+  it("expandScopedCss: an existing !important is not doubled", () => {
+    expect(expandScopedCss("color: red !important", ".x", ACCORDION_CSS_PARTS)).toBe(".x{color: red !important;}");
+  });
+
+  it("expandScopedCss: unknown parts and unsafe declarations are dropped (safe)", () => {
+    expect(expandScopedCss("evilpart { color:red }", ".x", ACCORDION_CSS_PARTS)).toBe("");     // not allow-listed
+    expect(expandScopedCss("title { color:red; background:url(https://x/y) }", ".x", ACCORDION_CSS_PARTS))
+      .toBe(".x .eu-accordion__header{color:red !important;}");                                 // remote url stripped
+    expect(expandScopedCss("body { position:fixed } head { display:none }", ".x", ACCORDION_CSS_PARTS))
+      .toBe(".x .eu-accordion__body{position:fixed !important;}");                              // 'head' not a part
+    expect(expandScopedCss("", ".x", ACCORDION_CSS_PARTS)).toBe("");
+    expect(expandScopedCss(undefined, ".x", ACCORDION_CSS_PARTS)).toBe("");
+  });
+
+  it("expandScopedCss: with no parts map, only bare declarations survive", () => {
+    expect(expandScopedCss("color: red; title { color:#fff }", ".x")).toBe(".x{color: red !important;}");
+  });
+
+  it("richBody: safe markdown-lite → links / bold / italic / lists / paragraphs; HTML is escaped first", () => {
+    expect(richBody("See [our docs](https://x.com/a) for **more** *now*."))
+      .toBe('<p>See <a href="https://x.com/a" target="_blank" rel="noopener noreferrer">our docs</a> for <strong>more</strong> <em>now</em>.</p>');
+    expect(richBody("- one\n- two")).toBe("<ul><li>one</li><li>two</li></ul>");
+    expect(richBody("a\n\nb")).toBe("<p>a</p><p>b</p>");
+    // injection is neutralised (escaped) — no live tag, and non-http links are NOT linkified
+    expect(richBody("<script>alert(1)</script> [x](javascript:alert(1))"))
+      .toBe("<p>&lt;script&gt;alert(1)&lt;/script&gt; [x](javascript:alert(1))</p>");
+    expect(richBody("")).toBe("");
+  });
+
+  it("plainBody: strips the rich markup for JSON-LD / meta", () => {
+    expect(plainBody("See [docs](https://x.com) for **more**.")).toBe("See docs for more.");
+  });
+
+  it("nested sub-item CRUD: add / update / move / remove children under a parent item", () => {
+    let n = createComponent("accordion", { id: "a", accItems: [{ id: "p", title: "Parent", body: "" }] } as Partial<BoxNode>);
+    n = addAccChild(n, "p"); n = addAccChild(n, "p");
+    expect(n.accItems![0].children).toHaveLength(2);
+    const [c1, c2] = n.accItems![0].children!;
+    n = updateAccChild(n, "p", c1.id, { title: "First" });
+    expect(n.accItems![0].children![0].title).toBe("First");
+    n = moveAccChild(n, "p", c1.id, 1); // c1 down → order c2, c1
+    expect(n.accItems![0].children!.map((c) => c.id)).toEqual([c2.id, c1.id]);
+    n = removeAccChild(n, "p", c2.id);
+    expect(n.accItems![0].children!.map((c) => c.id)).toEqual([c1.id]);
+  });
+
+  it("accItemHasOverride: true when the item has header/body styling OR raw CSS, false when bare", () => {
+    expect(accItemHasOverride({ id: "i", title: "t", body: "b" })).toBe(false);
+    expect(accItemHasOverride({ id: "i", title: "t", body: "b", headerStyle: { color: "#111" } })).toBe(true);
+    expect(accItemHasOverride({ id: "i", title: "t", body: "b", bodyStyle: { background: "#eee" } })).toBe(true);
+    expect(accItemHasOverride({ id: "i", title: "t", body: "b", css: "color: red;" })).toBe(true);
+    expect(accItemHasOverride({ id: "i", title: "t", body: "b", headerStyle: {} })).toBe(false); // empty style = nothing
+  });
+
+  it("accItemOverrideCss: point-and-click Header/Content colour+font compile to scoped !important rules", () => {
+    const out = accItemOverrideCss(".it", {
+      id: "i", title: "t", body: "b",
+      headerStyle: { color: "#b45309", background: "#fef3c7", fontFamily: "Georgia, serif", fontSize: "26px" },
+      bodyStyle: { color: "#334155", background: "#fff7ed" },
+    });
+    expect(out).toContain(".it .eu-accordion__header{");
+    expect(out).toContain("color: #b45309 !important;");
+    expect(out).toContain("background: #fef3c7 !important;");
+    expect(out).toContain("font-family: Georgia, serif !important;");
+    expect(out).toContain("font-size: 26px !important;");
+    expect(out).toContain(".it .eu-accordion__body{color: #334155 !important; background: #fff7ed !important;}");
+  });
+
+  it("accItemOverrideCss: content ALIGN — header aligns via flex (justify-content), body via text-align", () => {
+    expect(accItemHasOverride({ id: "i", title: "t", body: "b", headerStyle: { align: "center" } })).toBe(true);
+    const out = accItemOverrideCss(".it", { id: "i", title: "t", body: "b", headerStyle: { align: "right" }, bodyStyle: { align: "center" } });
+    expect(out).toContain(".it .eu-accordion__header{text-align: right !important; justify-content: flex-end !important;}");
+    expect(out).toContain(".it .eu-accordion__body{text-align: center !important;}");
+  });
+
+  it("accItemOverrideCss: FREE positioning — header moves the title, content moves the text area (rem, gap kept)", () => {
+    expect(accItemHasOverride({ id: "i", title: "t", body: "b", headerStyle: { pos: { x: 1, y: 1 } } })).toBe(true);
+    const out = accItemOverrideCss(".it", { id: "i", title: "t", body: "b", headerStyle: { pos: { x: 2, y: -1 } }, bodyStyle: { pos: { x: 0, y: 3 } } });
+    expect(out).toContain(".it .eu-accordion__title{position:relative !important;transform:translate(2rem,-1rem) !important;}");
+    expect(out).toContain(".it .eu-accordion__body{position:relative !important;transform:translate(0rem,3rem) !important;}");
+  });
+
+  it("bgImageLayer: gradients/patterns pass through raw; image URLs get url(\"…\") wrapping", () => {
+    expect(isCssBg("linear-gradient(135deg, #a, #b)")).toBe(true);
+    expect(isCssBg("radial-gradient(currentColor 1.5px, transparent 1.6px)")).toBe(true);
+    expect(isCssBg("repeating-linear-gradient(45deg, currentColor 0, transparent 50%)")).toBe(true);
+    expect(isCssBg("https://x/y.jpg")).toBe(false);
+    expect(isCssBg("data:image/png;base64,AAA")).toBe(false);
+    expect(bgImageLayer("linear-gradient(135deg, #a, #b)")).toBe("linear-gradient(135deg, #a, #b)"); // no url()
+    expect(bgImageLayer("https://x/y.jpg")).toBe('url("https://x/y.jpg")');
+    expect(bgImageLayer('a"b\\c')).toBe('url("abc")'); // sanitises quotes/backslashes
+  });
+
+  it("accItemOverrideCss: per-item ICON — colour, size, align and free-move all compile onto .eu-accordion__icon", () => {
+    expect(accItemHasOverride({ id: "i", title: "t", body: "b", iconDx: 2 })).toBe(true);
+    expect(accItemHasOverride({ id: "i", title: "t", body: "b", iconAlign: "end" })).toBe(true);
+    const out = accItemOverrideCss(".it", { id: "i", title: "t", body: "b", icon: "Star", iconColor: "#f0f", iconSize: "1.4rem", iconAlign: "end", iconDx: 2, iconDy: -1 });
+    expect(out).toContain(".it .eu-accordion__icon{");
+    expect(out).toContain("color: #f0f !important");
+    expect(out).toContain("font-size: 1.4rem !important");
+    expect(out).toContain("align-self: end !important");
+    expect(out).toContain("transform: translate(2rem, -1rem) !important");
+  });
+
+  it("accItemOverrideCss: structured styling AND the raw CSS box both apply (structured first)", () => {
+    const out = accItemOverrideCss(".it", { id: "i", title: "t", body: "b", headerStyle: { color: "#111" }, css: "icon { color: #0f0 }" });
+    expect(out.indexOf(".eu-accordion__header{color: #111")).toBeGreaterThanOrEqual(0);
+    expect(out).toContain(".it .eu-accordion__header::after{color: #0f0 !important;}");
+    expect(out.indexOf("header{color: #111")).toBeLessThan(out.indexOf("::after")); // structured emitted before raw
+  });
+
+  it("accItemOverrideCss: a custom per-item number overrides the auto-counter (::before content), safely quoted", () => {
+    expect(accItemHasOverride({ id: "i", title: "t", body: "b", num: "7" })).toBe(true);
+    const out = accItemOverrideCss(".it", { id: "i", title: "t", body: "b", num: "A1" });
+    expect(out).toBe('.it .eu-accordion__header::before{content: "A1" !important;}');
+    // quotes/backslashes in the value are escaped → the `"` can't close the string and start a new rule
+    const evil = accItemOverrideCss(".it", { id: "i", title: "t", body: "b", num: '3" } html { display:none' });
+    expect(evil).toBe('.it .eu-accordion__header::before{content: "3\\" } html { display:none" !important;}');
+    expect((evil.match(/::before\{/g) || []).length).toBe(1);   // exactly ONE rule — no breakout rule created
+  });
+
+  it("accItemOverrideCss: a FLOATED item is absolutely placed at (x,y) rem; reverts to the stack on mobile export", () => {
+    const it = { id: "i", title: "t", body: "b", float: { x: 12, y: 6, z: 10 } };
+    expect(accItemHasOverride(it)).toBe(true);
+    const out = accItemOverrideCss(".it", it, { mobileReset: true });
+    expect(out).toContain(".it{position:absolute !important;left:12rem !important;top:6rem !important;z-index:10 !important;");
+    expect(out).toContain("@media (max-width:480px){.it{position:static !important;left:auto !important;top:auto !important;}}");
+    // canvas can skip the float (mobile preview) without touching the other overrides
+    expect(accItemOverrideCss(".it", { ...it, headerStyle: { color: "#111" } }, { skipFloat: true })).toBe(".it .eu-accordion__header{color: #111 !important;}");
+  });
+
+  it("accFloatReserveRem: reserves the lowest float + a nominal item height; 0 when nothing floats", () => {
+    expect(accFloatReserveRem([{ id: "a", title: "", body: "" }])).toBe(0);
+    expect(accFloatReserveRem([
+      { id: "a", title: "", body: "", float: { x: 2, y: 10 } },
+      { id: "b", title: "", body: "", float: { x: 2, y: 4 } },
+    ])).toBe(16); // max y (10) + 6
   });
 });
 

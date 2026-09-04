@@ -16,13 +16,41 @@ import { isRegistryComponent, defaultComponentFields, defaultComponentWidth, com
 export type BoxType = "container" | "text" | "heading" | "button" | "image" | "video" | "icon" | "divider" | "list" | "embed" | "spacer" | "component";
 
 /** One row of an accordion component (title + body, plus optional media thumbnail / right-aligned meta). */
+/** Point-and-click styling for one PART (the header, or the content/body) of a single accordion item. */
+export interface AccPartStyle {
+  color?: string;        // text colour
+  background?: string;   // background colour
+  fontFamily?: string;   // CSS font stack (from the font library)
+  fontSize?: string;     // rem string, e.g. "1.8rem" (scales with base size; legacy "18px" still honoured)
+  align?: "left" | "center" | "right"; // horizontal alignment within the header / content area
+  pos?: { x: number; y: number };      // free nudge (rem) of the content up/down/left/right within its area
+}
+
 export interface AccordionItem {
   id: string;
   title: string;
   body: string;
   meta?: string;    // right-aligned price / count / badge
+  icon?: string;    // leading icon (name from the icon library) shown before the title
+  iconColor?: string; // icon colour (overrides the default brand tint)
+  iconSize?: string;  // icon size, rem string e.g. "1.4rem"
+  iconAlign?: "start" | "center" | "end"; // vertical alignment of the icon within the header row
+  iconDx?: number;    // free-move icon horizontally (rem)
+  iconDy?: number;    // free-move icon vertically (rem)
   media?: string;   // leading thumbnail (URL / data URL)
+  mediaAlt?: string; // alt text for the image (a11y/SEO); empty = decorative (alt="")
   open?: boolean;   // open by default
+  anchor?: string;  // per-item link slug → exported as id on the <details> so #slug scrolls to + opens this item
+  category?: string; // optional category — a heading is shown before the first item of each category group
+  num?: string;     // custom leading number / badge (overrides the auto-counter in numbered/big-number/step designs)
+  float?: { x: number; y: number; z?: number }; // detached & positioned freely (rem offsets in the accordion box; z = layer)
+  group?: string;   // items sharing a group id move together when dragged; individual items move on their own
+  children?: AccordionItem[]; // nested sub-accordion inside this item's body (one level of nesting)
+  css?: string;     // per-ITEM Advanced CSS declarations (sanitised) — override this one item's styling
+  // Dedicated per-item styling for the header + content, set via the Inspector's colour/font controls
+  // (no CSS typing). Composed into scoped, !important rules so they win over the chosen design variant.
+  headerStyle?: AccPartStyle;
+  bodyStyle?: AccPartStyle;
 }
 
 export type FlexDir = "row" | "column";
@@ -63,8 +91,12 @@ export interface BoxNode {
   shadow?: "sm" | "md" | "lg" | "xl"; // preset drop shadow (undefined = none)
   // ── background (layered: base fill → image → overlay, content renders on top) ──
   background?: string;      // base fill: colour hex or "gradient:#a:#b"
-  bgImage?: string;         // background image (data URL)
-  bgSize?: "cover" | "contain"; // background-size for the image (default cover)
+  bgImage?: string;         // background image: a data/http URL, OR a raw CSS gradient/pattern value (see isCssBg)
+  bgSize?: string;          // background-size for a photo: "cover" | "contain" | "auto" | "100% 100%" | any CSS
+  bgPosition?: string;      // background-position: "center" | "top" | "left top" | "50% 20%" | any CSS
+  bgRepeat?: string;        // background-repeat: "no-repeat" | "repeat" | "repeat-x" | "repeat-y" | "space" | "round"
+  bgAttach?: "fixed";       // background-attachment: "fixed" gives a parallax-style locked background
+  bgTile?: string;          // pattern tile size (background-size) — when set, the bgImage repeats instead of covering
   bgOverlay?: string;       // overlay drawn over the image (colour hex or gradient) for readability
 
   // ── sizing (any node) ──
@@ -121,6 +153,10 @@ export interface BoxNode {
   variant?: string;                         // design variant class suffix, e.g. "--panel" ("" = default look)
   accItems?: AccordionItem[];               // accordion content (component === "accordion")
   accMultiOpen?: boolean;                   // accordion: allow more than one panel open at once
+  accShowAll?: boolean;                      // accordion: show "Expand all / Collapse all" controls (opt-in; adds a tiny script to the export)
+  accFaqSchema?: boolean;                    // accordion: emit schema.org FAQPage JSON-LD on export (SEO rich results)
+  accSearch?: boolean;                       // accordion: show a live search/filter box above the items (opt-in; small script)
+  accSplitMedia?: string;                    // accordion "--split" design: the beside-the-items media/visual panel image URL
   componentFields?: Record<string, string | number>; // registry-component content (card/quote/stat/badge/rating/…)
   tokenOverrides?: Record<string, string>;  // CSS custom-property overrides, e.g. { "--eu-color-brand": "#5b5bd6" }
   advancedCss?: string;                     // raw CSS declarations applied to the instance (sanitized before export)
@@ -250,6 +286,16 @@ export function componentTextCss(node: BoxNode): string {
  * inspector's Design controls style the component ITSELF (the card, the pill, the quote…), not a container
  * around it. Only user-set props are emitted (defaults keep the component's built-in look).
  */
+/** A bgImage value that is a raw CSS gradient/pattern (linear/radial/conic…), not an image URL. */
+export function isCssBg(v?: string): boolean {
+  return !!v && /(^|[\s,])(repeating-)?(linear|radial|conic)-gradient\s*\(/i.test(v.trim());
+}
+/** The `background-image` layer for a bgImage value — gradients/patterns pass through; URLs get url("…"). */
+export function bgImageLayer(v: string): string {
+  const s = v.trim();
+  return isCssBg(s) ? s : `url("${s.replace(/["\\]/g, "")}")`;
+}
+
 export function componentBoxCss(node: BoxNode): string {
   const d: string[] = [];
   // SIZE: the component element FILLS its box when the box is given a definite size (Full / Custom width, or a
@@ -269,7 +315,13 @@ export function componentBoxCss(node: BoxNode): string {
   const br = radiusCSS(node); if (br) d.push(`border-radius:${br}`);
   if (node.shadow) d.push(`box-shadow:${SHADOW_CSS[node.shadow]}`);
   if (node.background) d.push(`background:${node.background}`);
-  if (node.bgImage) d.push(`background-image:url("${node.bgImage}");background-size:${node.bgSize ?? "cover"};background-position:center;background-repeat:no-repeat`);
+  if (node.bgImage) {
+    const size = node.bgTile ?? (node.bgSize ?? "cover");
+    const pos = node.bgPosition ?? (node.bgTile ? "0 0" : "center");
+    const rep = node.bgRepeat ?? (node.bgTile ? "repeat" : "no-repeat");
+    d.push(`background-image:${bgImageLayer(node.bgImage)};background-size:${size};background-position:${pos};background-repeat:${rep}`);
+    if (node.bgAttach) d.push(`background-attachment:${node.bgAttach}`);
+  }
   if (node.rotate) d.push(`transform:rotate(${node.rotate}deg)`);
   if (node.opacity !== undefined && node.opacity !== 100) d.push(`opacity:${node.opacity / 100}`);
   // CONTENT POSITION: place the content inside the component (X = horizontal, Y = vertical) regardless of whether
@@ -306,6 +358,31 @@ export function moveAccItem(node: BoxNode, itemId: string, dir: -1 | 1): BoxNode
   return { ...node, accItems: items };
 }
 
+// ── Nested sub-item CRUD (one level): operate on a parent item's `children` array ──
+function mapChildren(node: BoxNode, parentId: string, fn: (kids: AccordionItem[]) => AccordionItem[]): BoxNode {
+  return { ...node, accItems: (node.accItems ?? []).map((it) => (it.id === parentId ? { ...it, children: fn(it.children ?? []) } : it)) };
+}
+/** Append a fresh sub-item to a parent item. */
+export function addAccChild(node: BoxNode, parentId: string): BoxNode {
+  return mapChildren(node, parentId, (kids) => [...kids, { id: newBoxId(), title: "Sub-question", body: "Answer — click to edit." }]);
+}
+/** Update one sub-item. */
+export function updateAccChild(node: BoxNode, parentId: string, childId: string, patch: Partial<AccordionItem>): BoxNode {
+  return mapChildren(node, parentId, (kids) => kids.map((c) => (c.id === childId ? { ...c, ...patch } : c)));
+}
+/** Remove one sub-item. */
+export function removeAccChild(node: BoxNode, parentId: string, childId: string): BoxNode {
+  return mapChildren(node, parentId, (kids) => kids.filter((c) => c.id !== childId));
+}
+/** Move a sub-item one step up (-1) or down (+1). */
+export function moveAccChild(node: BoxNode, parentId: string, childId: string, dir: -1 | 1): BoxNode {
+  return mapChildren(node, parentId, (kids) => {
+    const arr = [...kids]; const i = arr.findIndex((c) => c.id === childId); const j = i + dir;
+    if (i < 0 || j < 0 || j >= arr.length) return kids;
+    [arr[i], arr[j]] = [arr[j], arr[i]]; return arr;
+  });
+}
+
 /**
  * Sanitize a block of raw CSS DECLARATIONS (what a user types in the Advanced-CSS box) so it is safe to inline.
  * We keep only `property: value;` pairs and hard-reject anything that could break out of the declaration
@@ -329,6 +406,202 @@ export function sanitizeCssDeclarations(raw?: string): string {
     })
     .map((decl) => decl + ";")
     .join(" ");
+}
+
+/**
+ * Named inner "parts" of the accordion that a user can target from a per-item OR whole-component
+ * CSS override. Each value is the descendant selector suffix appended to the item/component scope.
+ * Friendly aliases (title→header, content→body, root→item) match how a non-technical user thinks.
+ * Adding a component's part map here is all it takes to give that component the same power.
+ */
+export const ACCORDION_CSS_PARTS: Record<string, string> = {
+  item: "",                                 // the whole item (or, at component scope, the accordion box)
+  root: "",
+  header: " .eu-accordion__header",
+  title: " .eu-accordion__header",          // the question text lives directly in the header
+  summary: " .eu-accordion__header",
+  body: " .eu-accordion__body",             // the answer
+  content: " .eu-accordion__body",
+  answer: " .eu-accordion__body",
+  meta: " .eu-accordion__meta",             // the little right-aligned label (e.g. a price)
+  media: " .eu-accordion__media",           // the item's image
+  icon: " .eu-accordion__header::after",    // the +/− / chevron indicator
+  marker: " .eu-accordion__header::after",
+  number: " .eu-accordion__header::before", // the leading numeral / badge (numbered / big-number / step / ring / index designs)
+  num: " .eu-accordion__header::before",
+  badge: " .eu-accordion__header::before",
+};
+
+/**
+ * Expand a user CSS override into fully-scoped rules so it can restyle ANY part of a component/item —
+ * text, background, colour, borders, the icon, the image — not just the root element.
+ *
+ *   background: #fef3c7;              → applies to the item/component itself
+ *   title { color: #b45309; }         → applies to that item's (or every item's) header text
+ *   body  { background: #fff7ed; }    → the answer panel
+ *   icon  { color: #f59e0b; }         → the +/− indicator
+ *
+ * SAFE: only allow-listed part names produce a selector; every declaration body still passes through
+ * `sanitizeCssDeclarations` (no raw selectors, at-rules, script, or non-data: urls can break out).
+ * Each declaration is marked `!important` so a user's override ALWAYS wins over the chosen design variant
+ * (whose `[open] >` rules reach high specificity) — this is an explicit "change anything" field.
+ * Returns a string of complete CSS rules (already including `scope{…}`), or "" when nothing is valid.
+ */
+export function expandScopedCss(raw: string | undefined, scope: string, parts?: Record<string, string>): string {
+  if (!raw || !raw.trim()) return "";
+  const rules: string[] = [];
+  const loose: string[] = [];
+  const blockRe = /([a-zA-Z][\w-]*)\s*\{([^{}]*)\}/g; // `part { declarations }` — no nested braces in CSS decls
+  let last = 0;
+  let m: RegExpExecArray | null;
+  while ((m = blockRe.exec(raw)) !== null) {
+    loose.push(raw.slice(last, m.index));            // text outside any block → declarations for the root
+    last = blockRe.lastIndex;
+    const part = m[1].toLowerCase();
+    const decls = importantify(sanitizeCssDeclarations(m[2]));
+    const suffix = parts && Object.prototype.hasOwnProperty.call(parts, part) ? parts[part] : undefined;
+    if (decls && suffix !== undefined) rules.push(`${scope}${suffix}{${decls}}`);
+  }
+  loose.push(raw.slice(last));
+  const looseDecls = importantify(sanitizeCssDeclarations(loose.join(" ")));
+  if (looseDecls) rules.unshift(`${scope}{${looseDecls}}`);
+  return rules.join("");
+}
+
+/** Append `!important` to every declaration in a sanitised "p: v; p2: v2;" string (idempotent). */
+function importantify(decls: string): string {
+  return decls
+    .split(";")
+    .map((d) => d.trim())
+    .filter(Boolean)
+    .map((d) => (/!important$/i.test(d) ? d : `${d} !important`) + ";")
+    .join(" ");
+}
+
+/** Turn a point-and-click AccPartStyle into a sanitised, !important declaration block (or "").
+ *  `part` decides how "align" is applied: the header is a flexbox row (justify-content), the body is text. */
+function accPartStyleDecls(s?: AccPartStyle, part?: "header" | "body"): string {
+  if (!s) return "";
+  const d: string[] = [];
+  if (s.color) d.push(`color: ${s.color}`);
+  if (s.background) d.push(`background: ${s.background}`);
+  if (s.fontFamily) d.push(`font-family: ${s.fontFamily}`);
+  if (s.fontSize) d.push(`font-size: ${s.fontSize}`);
+  if (s.align) {
+    d.push(`text-align: ${s.align}`);
+    if (part === "header") d.push(`justify-content: ${s.align === "left" ? "flex-start" : s.align === "right" ? "flex-end" : "center"}`);
+  }
+  return importantify(sanitizeCssDeclarations(d.join("; ")));
+}
+
+/** True when an item carries ANY override (structured styling, a custom number, a float, OR raw CSS) — needs a scope class. */
+export function accItemHasOverride(it: AccordionItem): boolean {
+  return !!(accPartStyleDecls(it.headerStyle, "header") || accPartStyleDecls(it.bodyStyle, "body") || it.headerStyle?.pos || it.bodyStyle?.pos || (it.num && it.num.trim()) || it.iconColor || it.iconSize || it.iconAlign || it.iconDx || it.iconDy || it.float || (it.css && it.css.trim()));
+}
+
+/** Is this item detached (floating) — and, for the canvas, is the current breakpoint one where floats apply? */
+export function accItemIsFloating(it: AccordionItem): boolean {
+  return !!it.float;
+}
+
+/** Height (rem) an accordion must reserve so its floated items aren't clipped / don't overlap what follows.
+ *  Approximate: the lowest floated top + a nominal item height. 0 when nothing floats. */
+export function accFloatReserveRem(items: AccordionItem[]): number {
+  let max = 0;
+  for (const it of items) if (it.float) max = Math.max(max, it.float.y + 6);
+  return max;
+}
+
+/**
+ * Render an accordion answer body as SAFE rich HTML from a tiny markdown-lite source:
+ *   [text](https://url) → link · **bold** · *italic* · lines starting "- " → bullet list · blank line → paragraph.
+ * HTML is escaped FIRST, so only the fixed set of tags below can ever be produced — no script/style injection.
+ */
+export function richBody(raw?: string): string {
+  if (!raw || !raw.trim()) return "";
+  const esc = (t: string) => t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const inline = (t: string) => esc(t)
+    .replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, (_m, x, u) => `<a href="${u}" target="_blank" rel="noopener noreferrer">${x}</a>`)
+    .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
+    .replace(/\*([^*\n]+)\*/g, "<em>$1</em>");
+  const out: string[] = [];
+  let list: string[] = [];
+  const flush = () => { if (list.length) { out.push(`<ul>${list.map((li) => `<li>${inline(li)}</li>`).join("")}</ul>`); list = []; } };
+  for (const ln of raw.split(/\r?\n/)) {
+    const m = ln.match(/^\s*-\s+(.*)/);
+    if (m) { list.push(m[1]); continue; }
+    flush();
+    if (ln.trim()) out.push(`<p>${inline(ln)}</p>`);
+  }
+  flush();
+  return out.join("");
+}
+
+/** Plain-text version of a rich body (tags stripped) — for JSON-LD / meta where markup isn't wanted. */
+export function plainBody(raw?: string): string {
+  return richBody(raw).replace(/<[^>]+>/g, "").replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").trim();
+}
+
+/** Quote a value for CSS `content:` safely (escape backslashes + quotes). */
+function cssContentString(v: string): string {
+  return `"${v.replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"`;
+}
+
+/**
+ * The per-item CSS custom properties that carry the item's ordinal to the numbered designs
+ * (`--eu-n` = "1", "2"…; `--eu-n0` = "01", "02"…). The designs read these via `content: var(--eu-n0)`
+ * instead of a CSS counter, so numbering is deterministic and identical in the editor AND the export
+ * (CSS counters silently fail to accumulate in the editor's DOM). Returns { "--eu-n": "'1'", ... }.
+ */
+export function accItemNumberVars(index: number): Record<string, string> {
+  const n = index + 1;
+  return { "--eu-n": `'${n}'`, "--eu-n0": `'${n < 10 ? `0${n}` : n}'` };
+}
+
+/**
+ * The complete scoped CSS for one accordion item: the point-and-click Header/Content styling FIRST, then the
+ * raw per-item CSS override (which can still target any part). `scope` is the item's selector
+ * (e.g. `.eu-accordion .eu-acc-i-<id>`). Returns "" when the item has no overrides.
+ */
+export function accItemOverrideCss(scope: string, it: AccordionItem, opts?: { skipFloat?: boolean; mobileReset?: boolean }): string {
+  const h = accPartStyleDecls(it.headerStyle, "header");
+  const b = accPartStyleDecls(it.bodyStyle, "body");
+  // Free positioning of the CONTENT: the header's title moves within the header; the body (text area) moves
+  // within the item. `transform: translate` keeps layout but shifts visually; the item's overflow keeps it inside.
+  const hp = it.headerStyle?.pos, bp = it.bodyStyle?.pos;
+  const pos = [
+    hp ? `${scope} .eu-accordion__title{position:relative !important;transform:translate(${hp.x}rem,${hp.y}rem) !important;}` : "",
+    bp ? `${scope} .eu-accordion__body{position:relative !important;transform:translate(${bp.x}rem,${bp.y}rem) !important;}` : "",
+  ].filter(Boolean).join("");
+  const num = it.num && it.num.trim()
+    ? `${scope} .eu-accordion__header::before{content: ${cssContentString(it.num.trim())} !important;}`
+    : "";
+  // Per-item icon colour + size + alignment + free-move (the icon is an inline SVG using currentColor at 1em).
+  const iconMove = (it.iconDx || it.iconDy) ? `transform: translate(${it.iconDx || 0}rem, ${it.iconDy || 0}rem)` : "";
+  const iconAlignDecl = it.iconAlign ? `align-self: ${it.iconAlign}` : "";
+  const iconDecls = importantify(sanitizeCssDeclarations([
+    it.iconColor ? `color: ${it.iconColor}` : "",
+    it.iconSize ? `font-size: ${it.iconSize}` : "",
+    iconAlignDecl, iconMove,
+  ].filter(Boolean).join("; ")));
+  const iconRule = iconDecls ? `${scope} .eu-accordion__icon{${iconDecls}}` : "";
+  // Float: detach the item and place it at (x,y) rem. On mobile (export) it returns to the normal stack.
+  let float = "";
+  if (it.float && !opts?.skipFloat) {
+    const { x, y, z } = it.float;
+    float = `${scope}{position:absolute !important;left:${x}rem !important;top:${y}rem !important;${z != null ? `z-index:${Math.round(z)} !important;` : ""}margin:0 !important;width:auto !important;}`;
+    if (opts?.mobileReset) float += `@media (max-width:480px){${scope}{position:static !important;left:auto !important;top:auto !important;}}`;
+  }
+  const structured = [
+    num,
+    iconRule,
+    h ? `${scope} .eu-accordion__header{${h}}` : "",
+    b ? `${scope} .eu-accordion__body{${b}}` : "",
+    pos,
+    float,
+  ].filter(Boolean).join("");
+  const raw = expandScopedCss(it.css, scope, ACCORDION_CSS_PARTS);
+  return [structured, raw].filter(Boolean).join("");
 }
 
 /** Turn a YouTube/Vimeo URL into an embeddable iframe src; null for a direct video file (use <video>). */

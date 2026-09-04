@@ -28,16 +28,17 @@ describe("Educo UI component styles", () => {
       // bold, structurally-distinct designs (grounded in a live study of the 4 source sites)
       "--horizontal", "--panel", "--index", "--bubble", "--alt", "--bignum",
       "--qa", "--callout", "--float", "--folder", "--news", "--ring", "--stripe", "--dashed",
-      "--enclosed", "--menu", "--quote", "--invert", "--grid", "--gradient-full", "--spotlight", "--corner"];
+      "--enclosed", "--menu", "--quote", "--invert", "--grid", "--gradient-full", "--spotlight", "--corner", "--split"];
     for (const v of variants) expect(COMPONENT_CSS).toContain(`.eu-accordion${v}`);
     expect(variants.length).toBeGreaterThanOrEqual(40);
     // the dark-glossy "invert" swaps text/bg tokens rather than hardcoding a dark colour
     expect(COMPONENT_CSS).toContain(".eu-accordion--invert { background: var(--eu-color-text)");
-    // the two-column grid collapses to one column on narrow screens
-    expect(COMPONENT_CSS).toContain("grid-template-columns: repeat(2, minmax(0, 1fr))");
-    // horizontal accordion reflows to a vertical stack on narrow screens (responsive)
+    // the two-column grid reflows to one column on the ACCORDION's OWN width (intrinsic auto-fit, no breakpoint)
+    expect(COMPONENT_CSS).toContain("repeat(auto-fit, minmax(min(100%, 15rem), 1fr))");
+    // horizontal accordion reflows to a vertical stack based on its own width — CONTAINER query, not viewport
     expect(COMPONENT_CSS).toContain("writing-mode: vertical-rl");
-    expect(COMPONENT_CSS).toContain("@media (max-width: 40rem)");
+    expect(COMPONENT_CSS).toContain("@container (max-width: 40rem)");
+    expect(COMPONENT_CSS).not.toContain("@media (max-width: 40rem)"); // no viewport breakpoints for reflow
     // horizontal panels tint from the token ramps (Articulate / Dribbble colored fan), never hardcoded hues
     expect(COMPONENT_CSS).toContain(".eu-accordion--horizontal .eu-accordion__item:nth-child(4n+1)");
     // circular avatar helper for pill rows (Dribbble kffein)
@@ -56,9 +57,12 @@ describe("Educo UI component styles", () => {
     expect(COMPONENT_CSS).toMatch(/font-size: clamp\([^)]*cqi/); // clamp() driven by container-query units
     // no hardcoded hex anywhere in the variants — all token-driven
     expect(COMPONENT_CSS).not.toMatch(/#[0-9a-fA-F]{3,8}\b/);
-    // theme-safe indicators: chevron/currentColor, counters, gradients from tokens
+    // theme-safe indicators: chevron/currentColor, deterministic numbering, gradients from tokens
     expect(COMPONENT_CSS).toContain("border-right: 2px solid currentColor");
-    expect(COMPONENT_CSS).toContain("counter(eu-acc");
+    // numbered designs read the item's ordinal from a per-item CSS var (deterministic in editor + export),
+    // never a CSS counter (which fails to accumulate in the editor's DOM)
+    expect(COMPONENT_CSS).toContain("content: var(--eu-n0");
+    expect(COMPONENT_CSS).not.toContain("counter(eu-");
     expect(COMPONENT_CSS).toContain("linear-gradient(90deg, var(--eu-color-primary-50), var(--eu-color-accent-50))");
   });
 

@@ -45,6 +45,39 @@ describe("box-export — static HTML", () => {
     expect(wrapRule).not.toMatch(/background/);
   });
 
+  it("background library exports self-contained: a gradient stays raw (no url()) and a pattern tiles", () => {
+    const grad = createContainer("column", { id: "g", bgImage: "linear-gradient(135deg, #a, #b)",
+      children: [makeRowBand([createElement("heading", { text: "x" } as Partial<BoxNode>)])] } as Partial<BoxNode>);
+    const gHtml = renderPageHTML(grad, DEFAULT_THEME);
+    expect(gHtml).toContain("linear-gradient(135deg, #a, #b)");
+    expect(gHtml).not.toContain('url("linear-gradient'); // gradient is NOT wrapped in url()
+
+    const pat = createContainer("column", { id: "p", bgImage: "radial-gradient(currentColor 1.5px, transparent 1.6px)", bgTile: "20px 20px",
+      children: [makeRowBand([createElement("heading", { text: "x" } as Partial<BoxNode>)])] } as Partial<BoxNode>);
+    const pHtml = renderPageHTML(pat, DEFAULT_THEME);
+    expect(pHtml).toContain("background-size:20px 20px");
+    expect(pHtml).toContain("background-repeat:repeat");
+  });
+
+  it("an EMPTY container that paints a background gets a visible min-height (so it isn't 0px in preview)", () => {
+    const empty = createContainer("column", { id: "e", bgImage: "linear-gradient(90deg, #f00, #00f)", children: [] } as Partial<BoxNode>);
+    expect(renderPageHTML(empty, DEFAULT_THEME)).toContain("min-height:8rem");
+    // …but a container WITH content is left to size from its content (no forced band)
+    const filled = createContainer("column", { id: "f", bgImage: "linear-gradient(90deg, #f00, #00f)",
+      children: [makeRowBand([createElement("heading", { text: "x" } as Partial<BoxNode>)])] } as Partial<BoxNode>);
+    expect(renderPageHTML(filled, DEFAULT_THEME)).not.toContain("min-height:8rem");
+  });
+
+  it("background fit options — size/position/repeat/attachment all export", () => {
+    const n = createContainer("column", { id: "b", bgImage: "https://x/y.jpg", bgSize: "contain", bgPosition: "left top", bgRepeat: "repeat-x", bgAttach: "fixed",
+      children: [makeRowBand([createElement("heading", { text: "x" } as Partial<BoxNode>)])] } as Partial<BoxNode>);
+    const html = renderPageHTML(n, DEFAULT_THEME);
+    expect(html).toContain("background-size:contain");
+    expect(html).toContain("background-position:left top");
+    expect(html).toContain("background-repeat:repeat-x");
+    expect(html).toContain("background-attachment:fixed");
+  });
+
   it("escapes text content", () => {
     const root = createContainer("column", { id: "r", children: [makeRowBand([createElement("text", { text: "<script>x</script>" } as Partial<BoxNode>)])] } as Partial<BoxNode>);
     const html = renderPageHTML(root, DEFAULT_THEME);
@@ -103,27 +136,154 @@ describe("box-export — static HTML", () => {
     const root = createContainer("column", { children: [makeRowBand([acc])] } as Partial<BoxNode>);
     const html = renderPageHTML(root, DEFAULT_THEME);
     expect(html).toContain('class="eu-accordion eu-accordion--panel"');
-    expect(html).toContain('<details class="eu-accordion__item" open');
-    expect(html).toContain('<summary class="eu-accordion__header">Q one');
+    expect(html).toContain('<details class="eu-accordion__item" style="--eu-n:\'1\';--eu-n0:\'01\'" open');
+    expect(html).toContain("--eu-n0:'02'");                     // 2nd item carries ordinal 02 (deterministic numbering)
+    expect(html).toContain('<summary class="eu-accordion__header"><span class="eu-accordion__title">Q one');
     expect(html).toContain('<span class="eu-accordion__meta">$10</span>');
-    expect(html).toContain('<div class="eu-accordion__body">A two</div>');
+    expect(html).toContain('<div class="eu-accordion__body"><p>A two</p></div>');
     expect(html).toContain('name="acc-'); // single-open grouping by default
+  });
+
+  it("accordion is ZERO-JS by default, but 'Expand/Collapse all' adds opt-in controls + a scoped script", () => {
+    const mk = (extra: Partial<BoxNode>) => createContainer("column", { id: "r", children: [makeRowBand([createComponent("accordion", { id: "acc", accItems: [{ id: "i1", title: "Q", body: "A" }], ...extra } as Partial<BoxNode>)])] } as Partial<BoxNode>);
+    // OFF (default): no controls, no script
+    const off = renderPageHTML(mk({}), DEFAULT_THEME);
+    expect(off).not.toContain("data-eu-acc-all");
+    expect(off).not.toContain("<script");
+    // ON: two controls + a script scoped to THIS accordion's id
+    const on = renderPageHTML(mk({ accShowAll: true }), DEFAULT_THEME);
+    expect(on).toContain('data-eu-acc-all="open"');
+    expect(on).toContain('data-eu-acc-all="close"');
+    expect(on).toContain('id="eu-acc-acc"');
+    expect(on).toContain("getElementById('eu-acc-acc')");
+  });
+
+  it("per-ITEM CSS can change ANY part of just that item (text, background, colour) and stays scoped + safe", () => {
+    const acc = createComponent("accordion", { id: "acc", accItems: [
+      // bare decl → the item; part blocks → that item's title/body/icon; a breakout attempt targeting the page.
+      { id: "i1", title: "Q", body: "A", css: "background: #fef3c7; title { color: #b45309 } body { background: #fff7ed } icon { color: #f59e0b } html { display: none }" },
+      { id: "i2", title: "Q2", body: "A2" },
+    ] } as Partial<BoxNode>);
+    const root = createContainer("column", { children: [makeRowBand([acc])] } as Partial<BoxNode>);
+    const html = renderPageHTML(root, DEFAULT_THEME);
+    expect(html).toContain('class="eu-accordion__item eu-acc-i-i1"');                         // scoping class on the item that has CSS
+    expect(html).toContain(".eu-accordion .eu-acc-i-i1{background: #fef3c7 !important;}");     // bare decl → the item itself
+    expect(html).toContain(".eu-accordion .eu-acc-i-i1 .eu-accordion__header{color: #b45309 !important;}"); // title text colour
+    expect(html).toContain(".eu-accordion .eu-acc-i-i1 .eu-accordion__body{background: #fff7ed !important;}"); // body/answer background
+    expect(html).toContain(".eu-accordion .eu-acc-i-i1 .eu-accordion__header::after{color: #f59e0b !important;}"); // the +/− icon colour
+    expect(html).not.toContain("html {");                                                     // page-level breakout dropped (not a part)
+    expect(html).not.toContain("eu-acc-i-i2");                                                // the untouched item gets no rule
+  });
+
+  it("split design: renders a media panel beside the items (safe url) and stacks via container query", () => {
+    const acc = createComponent("accordion", { id: "acc", variant: "--split", accSplitMedia: "https://x.com/p.jpg", accItems: [{ id: "i1", title: "Q", body: "A" }] } as Partial<BoxNode>);
+    const root = createContainer("column", { children: [makeRowBand([acc])] } as Partial<BoxNode>);
+    const html = renderPageHTML(root, DEFAULT_THEME);
+    expect(html).toContain("eu-accordion eu-accordion--split");
+    expect(html).toContain(`<div class="eu-accordion__panel" style="background-image:url('https://x.com/p.jpg')"></div>`);
+    // a non-http/js url is rejected (no background-image)
+    const bad = createComponent("accordion", { id: "b", variant: "--split", accSplitMedia: "javascript:alert(1)", accItems: [{ id: "i1", title: "Q", body: "A" }] } as Partial<BoxNode>);
+    expect(renderPageHTML(createContainer("column", { children: [makeRowBand([bad])] } as Partial<BoxNode>), DEFAULT_THEME)).toContain('<div class="eu-accordion__panel"></div>');
+  });
+
+  it("categories: a heading is emitted before the first item of each category group", () => {
+    const acc = createComponent("accordion", { id: "acc", accItems: [
+      { id: "i1", title: "A", body: "a", category: "Billing" },
+      { id: "i2", title: "B", body: "b", category: "Billing" }, // same group → no second heading
+      { id: "i3", title: "C", body: "c", category: "Shipping" }, // new group → heading
+    ] } as Partial<BoxNode>);
+    const root = createContainer("column", { children: [makeRowBand([acc])] } as Partial<BoxNode>);
+    const html = renderPageHTML(root, DEFAULT_THEME);
+    expect(html).toContain('<div class="eu-accordion__category">Billing</div>');
+    expect(html).toContain('<div class="eu-accordion__category">Shipping</div>');
+    expect((html.match(/eu-accordion__category">Billing/g) || []).length).toBe(1); // Billing heading once (grouped)
+  });
+
+  it("opt-in search: adds a filter box + a scoped filter script (accordion stays zero-JS otherwise)", () => {
+    const mk = (extra: Partial<BoxNode>) => createContainer("column", { children: [makeRowBand([createComponent("accordion", { id: "acc", accItems: [{ id: "i1", title: "Q", body: "A" }], ...extra } as Partial<BoxNode>)])] } as Partial<BoxNode>);
+    const off = renderPageHTML(mk({}), DEFAULT_THEME);
+    expect(off).not.toContain("data-eu-acc-search");
+    const on = renderPageHTML(mk({ accSearch: true }), DEFAULT_THEME);
+    expect(on).toContain('class="eu-accordion__search"');
+    expect(on).toContain('<input type="search" data-eu-acc-search');
+    expect(on).toContain('class="eu-accordion__search-ico"');         // modern leading icon
+    expect(on).toContain("data-eu-acc-empty");                        // no-results element
+    expect(on).toContain('id="eu-acc-acc"');                          // accordion carries an id for the script
+    expect(on).toContain("querySelector('[data-eu-acc-search]')");    // the scoped filter script
+    expect(on).toContain(":scope > .eu-accordion__category");         // headings hidden while searching
+  });
+
+  it("nested sub-accordion: children render as an indented accordion inside the parent body", () => {
+    const acc = createComponent("accordion", { id: "acc", accItems: [
+      { id: "p", title: "Billing", body: "Overview.", children: [
+        { id: "c1", title: "Refunds?", body: "Yes." }, { id: "c2", title: "Invoices?", body: "Monthly." },
+      ] },
+    ] } as Partial<BoxNode>);
+    const root = createContainer("column", { children: [makeRowBand([acc])] } as Partial<BoxNode>);
+    const html = renderPageHTML(root, DEFAULT_THEME);
+    expect(html).toContain('<div class="eu-accordion eu-accordion--nested">');   // nested accordion inside the body
+    expect(html).toContain('<span class="eu-accordion__title">Refunds?</span>');  // child rendered
+    expect(html).toContain("<p>Monthly.</p>");                                     // child body is rich too
+  });
+
+  it("per-item icon renders inline SVG in the header (and the Icon block now exports too)", () => {
+    const acc = createComponent("accordion", { id: "acc", accItems: [{ id: "i1", title: "Fast shipping", body: "…", icon: "Truck" }] } as Partial<BoxNode>);
+    const root = createContainer("column", { children: [makeRowBand([acc])] } as Partial<BoxNode>);
+    const html = renderPageHTML(root, DEFAULT_THEME);
+    expect(html).toContain('<span class="eu-accordion__icon" aria-hidden="true"><svg'); // icon svg in the header
+    expect(html).toContain('stroke="currentColor"');                                     // themeable (inherits colour)
+    // the Icon block itself now exports an svg (was previously blank)
+    const iconBlock = createContainer("column", { children: [makeRowBand([createElement("icon", { id: "ic", icon: "Star" } as Partial<BoxNode>)])] } as Partial<BoxNode>);
+    expect(renderPageHTML(iconBlock, DEFAULT_THEME)).toContain("<svg");
+  });
+
+  it("rich body + FAQ SEO schema: markdown-lite renders to safe HTML, and FAQPage JSON-LD is opt-in", () => {
+    const acc = createComponent("accordion", { id: "acc", accFaqSchema: true, accItems: [
+      { id: "i1", title: "Do you ship?", body: "Yes — see [rates](https://x.com/r) and **note** the cutoff." },
+    ] } as Partial<BoxNode>);
+    const root = createContainer("column", { children: [makeRowBand([acc])] } as Partial<BoxNode>);
+    const html = renderPageHTML(root, DEFAULT_THEME);
+    expect(html).toContain('<a href="https://x.com/r" target="_blank" rel="noopener noreferrer">rates</a>'); // rich body link
+    expect(html).toContain("<strong>note</strong>");
+    expect(html).toContain('"@type":"FAQPage"');                    // JSON-LD present (opt-in)
+    expect(html).toContain('"name":"Do you ship?"');
+    expect(html).toContain('"text":"Yes — see rates and note the cutoff."'); // answer is PLAIN text in schema
+    // schema off by default
+    const off = createComponent("accordion", { id: "a2", accItems: [{ id: "x", title: "T", body: "B" }] } as Partial<BoxNode>);
+    expect(renderPageHTML(createContainer("column", { children: [makeRowBand([off])] } as Partial<BoxNode>), DEFAULT_THEME)).not.toContain("FAQPage");
+  });
+
+  it("per-item deep-link: an item anchor becomes an id on its <details> + a hash-open script", () => {
+    const acc = createComponent("accordion", { id: "acc", accItems: [
+      { id: "i1", title: "Shipping", body: "…", anchor: "shipping" },
+      { id: "i2", title: "Returns", body: "…" },
+    ] } as Partial<BoxNode>);
+    const root = createContainer("column", { children: [makeRowBand([acc])] } as Partial<BoxNode>);
+    const html = renderPageHTML(root, DEFAULT_THEME);
+    expect(html).toContain('id="shipping"');                                  // stable id on the item's <details>
+    expect(html).toContain("closest('details.eu-accordion__item')");         // the deep-link open+scroll script
+    expect(html).toContain("addEventListener('hashchange'");
+    // no anchors → no script
+    const plain = createComponent("accordion", { id: "a2", accItems: [{ id: "x", title: "T", body: "B" }] } as Partial<BoxNode>);
+    const html2 = renderPageHTML(createContainer("column", { children: [makeRowBand([plain])] } as Partial<BoxNode>), DEFAULT_THEME);
+    expect(html2).not.toContain("__euAccDeep");
   });
 
   it("multi-open accordion drops the shared name; token overrides + advanced CSS reach the wrapper", () => {
     const acc = createComponent("accordion", {
       accMultiOpen: true,
       tokenOverrides: { "--eu-color-brand": "#ff0088" },
-      advancedCss: "letter-spacing: .04em; } body{display:none} ; @import url(evil.css)",
+      advancedCss: "letter-spacing: .04em; title { color: #fff } html { display: none } ; @import url(evil.css)",
       accItems: [{ id: "i1", title: "T", body: "B" }],
     } as Partial<BoxNode>);
     const root = createContainer("column", { children: [makeRowBand([acc])] } as Partial<BoxNode>);
     const html = renderPageHTML(root, DEFAULT_THEME);
-    expect(html).not.toContain('name="acc-');                 // multi-open → no grouping
-    expect(html).toContain("--eu-color-brand:#ff0088");       // token override inlined
-    expect(html).toContain("letter-spacing: .04em;");         // safe declaration kept
-    expect(html).not.toContain("display:none");               // selector breakout stripped
-    expect(html).not.toContain("@import");                    // at-rule stripped
+    expect(html).not.toContain('name="acc-');                     // multi-open → no grouping
+    expect(html).toContain("--eu-color-brand:#ff0088");           // token override inlined
+    expect(html).toContain("letter-spacing: .04em !important;");             // safe bare declaration → the accordion box
+    expect(html).toContain(".eu-accordion__header{color: #fff !important;}"); // `title{…}` restyles every item's header text
+    expect(html).not.toContain("html {");                         // page-level breakout dropped (not a part)
+    expect(html).not.toContain("@import");                        // at-rule stripped
   });
 
   it("applies component typography (font family + size) to the wrapper so it cascades into items", () => {
@@ -217,7 +377,9 @@ describe("box-export — static HTML", () => {
     const html = renderPageHTML(root, DEFAULT_THEME);
     // styles are class rules (so media queries can override them); every base rule caps at its container
     for (const m of html.matchAll(/\.bx-[A-Za-z0-9_-]+\{([^}]*)\}/g)) expect(m[1]).toContain("max-width:100%");
-    expect(html).not.toMatch(/\sstyle="/); // no inline styles that a media query could never beat
+    // No inline LAYOUT/paint styles a media query could never beat. CSS custom-property data vars (--eu-n ordinals) are exempt.
+    for (const m of html.matchAll(/\sstyle="([^"]*)"/g))
+      for (const decl of m[1].split(";").filter(Boolean)) expect(decl.trim().startsWith("--")).toBe(true);
     // the exported document body never scrolls horizontally
     const doc = renderPageDocument(createContainer("column", {} as Partial<BoxNode>), DEFAULT_THEME, "P");
     expect(doc).toContain("html,body{max-width:100%;overflow-x:hidden}");

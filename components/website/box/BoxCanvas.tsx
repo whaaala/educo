@@ -8,7 +8,7 @@
  * onChange(root); selection via selectedId/onSelectId.
  */
 
-import { Fragment, useEffect, useRef, useState } from "react";
+import { Fragment, useEffect, useLayoutEffect, useReducer, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Plus, ChevronUp, ChevronDown, Copy, Scissors, ClipboardPaste, Trash2, Upload, GripVertical, MoreVertical, Rows3, Columns3, Grid3x3, Type, Heading as HeadingIcon, MousePointerClick, Image as ImageIcon, Layers, BringToFront, SendToBack, Video as VideoIcon, Sparkles, Minus as MinusIcon, List as ListIcon, Code2, Star, Lock, LockOpen, Ungroup } from "lucide-react";
 import type { SiteTheme } from "@/lib/site-storage";
@@ -17,7 +17,7 @@ import {
   containerStyle, childStyle, marginCSS, sizeToCSS, u, baseUnit, floatingReserve, floatStacksOnMobile, createContainer, createGrid, createElement, createComponent,
   updateBox, removeBox, insertBox, moveBoxStep, duplicateBox, moveBox, cloneBox, findParent, isAncestor, isContainer, isEmptyBox, widthPct,
   isFloating, floatBox, unfloatBox, groupBoxes, ungroupBoxes, bringToFront, sendToBack, bringForward, sendBackward,
-  radiusCSS, isClipped, SHADOW_CSS, videoEmbedSrc, sanitizeCssDeclarations, componentTextCss, componentBoxCss,
+  radiusCSS, isClipped, SHADOW_CSS, videoEmbedSrc, sanitizeCssDeclarations, expandScopedCss, ACCORDION_CSS_PARTS, accItemOverrideCss, accItemHasOverride, accItemNumberVars, accFloatReserveRem, richBody, componentTextCss, componentBoxCss, bgImageLayer,
   type Breakpoint, resolveResponsive, updateBoxResponsive,
 } from "@/lib/box-model";
 import { ICON_SET } from "./icons";
@@ -25,6 +25,7 @@ import { PortalMenu, MenuItem, MenuHeader, MenuSep } from "./ui";
 import { blockForKind } from "@/lib/box-presets";
 import { colorToCSS } from "@/components/shared/ColorPalettePicker";
 import { COMPONENT_CSS } from "@/lib/educo-ui/components";
+import { iconSvg, onIconsLoaded, warmIcons, hasIcon } from "@/lib/educo-ui/icon-svg";
 import { tokensFromTheme, tokensToCss } from "@/lib/educo-ui/tokens";
 import { isRegistryComponent, renderComponent } from "@/lib/educo-ui/registry";
 import { EditableText, ImageBox } from "@/components/website/sections/SectionKit";
@@ -35,14 +36,17 @@ function backgroundStyle(node: BoxNode): React.CSSProperties {
   const layers: string[] = [];
   const asGradient = (c: string) => { const css = colorToCSS(c); return css.startsWith("linear-gradient") ? css : `linear-gradient(${css}, ${css})`; };
   if (node.bgOverlay) layers.push(asGradient(node.bgOverlay));
-  if (node.bgImage) layers.push(`url("${node.bgImage}")`);
+  if (node.bgImage) layers.push(bgImageLayer(node.bgImage)); // gradient/pattern passes through; URL gets url("…")
   const baseGrad = node.background?.startsWith("gradient:");
   if (baseGrad && !node.bgImage) layers.push(colorToCSS(node.background!));
   if (layers.length) {
     s.backgroundImage = layers.join(", ");
-    s.backgroundSize = node.bgImage ? (node.bgSize ?? "cover") : undefined;
-    s.backgroundPosition = "center";
-    s.backgroundRepeat = "no-repeat";
+    if (node.bgImage) {
+      s.backgroundSize = node.bgTile ?? (node.bgSize ?? "cover");
+      s.backgroundPosition = node.bgPosition ?? (node.bgTile ? "0 0" : "center");
+      s.backgroundRepeat = node.bgRepeat ?? (node.bgTile ? "repeat" : "no-repeat");
+      if (node.bgAttach) s.backgroundAttachment = node.bgAttach;
+    } else { s.backgroundPosition = "center"; s.backgroundRepeat = "no-repeat"; }
   }
   if (node.background && !baseGrad) s.backgroundColor = node.background;
   return s;
@@ -211,6 +215,20 @@ export default function BoxCanvas({
   const dragPtRef = useRef<{ x: number; y: number } | null>(null); // latest cursor pos (rAF-batched during drag)
   const dragRaf = useRef(0);
   const rootRef = useRef(root); rootRef.current = root; // always-fresh tree for the drag listeners
+  // Non-lucide icons (Brands/Google/Ionicons) load lazily — warm every icon in the tree so the canvas
+  // paints them, and repaint when a source finishes loading.
+  const [, iconTick] = useReducer((x) => x + 1, 0);
+  useEffect(() => onIconsLoaded(() => iconTick()), []);
+  useEffect(() => {
+    const names: string[] = [];
+    const walk = (v: unknown) => {
+      if (typeof v === "string") { if (hasIcon(v)) names.push(v); }
+      else if (Array.isArray(v)) v.forEach(walk);
+      else if (v && typeof v === "object") Object.values(v as Record<string, unknown>).forEach(walk);
+    };
+    walk(root);
+    if (names.length) warmIcons(names);
+  }, [root]);
   const [clip, setClip] = useState<BoxNode | null>(null); // copy/cut clipboard (a cloned subtree)
   const [marquee, setMarquee] = useState<{ x0: number; y0: number; x: number; y: number } | null>(null); // rubber-band rectangle (viewport coords) while marquee-selecting
 
@@ -915,7 +933,7 @@ export default function BoxCanvas({
           ...(isDragging ? { opacity: 0.4 } : {}) }}
         className={`${isSel ? "outline outline-2 outline-indigo-500 outline-offset-[-2px]" : editable ? "hover:outline hover:outline-1 hover:outline-indigo-300/70 hover:outline-offset-[-1px]" : ""}`}
       >
-        <ElementView node={node} theme={theme} editable={editable} onText={(v) => onChange(updateBox(root, node.id, { text: v }))} onSrc={(v) => onChange(updateBox(root, node.id, { src: v }))} onPatchNode={(patch) => onChange(updateBox(root, node.id, patch))} />
+        <ElementView node={node} theme={theme} editable={editable} breakpoint={breakpoint} onText={(v) => onChange(updateBox(root, node.id, { text: v }))} onSrc={(v) => onChange(updateBox(root, node.id, { src: v }))} onPatchNode={(patch) => onChange(updateBox(root, node.id, patch))} />
         {isSolo && <NodeToolbar node={node} isRoot={isRoot} />}
         {resizeHandles}
       </div>
@@ -1089,7 +1107,30 @@ function treeHasComponent(node: BoxNode): boolean {
  * structure (add/remove items, variant, colours) is edited in the inspector. In edit mode every panel is
  * shown open so its body is editable; clicking a header doesn't collapse it.
  */
-function ComponentView({ node, editable, onPatchNode }: { node: BoxNode; editable?: boolean; onPatchNode?: (patch: Partial<BoxNode>) => void }) {
+function ComponentView({ node, editable, onPatchNode, breakpoint = "base" }: { node: BoxNode; editable?: boolean; onPatchNode?: (patch: Partial<BoxNode>) => void; breakpoint?: Breakpoint }) {
+  // Always write item edits from the FRESHEST accItems (a drag's move handler must not replay a stale snapshot
+  // and wipe positions set by another edit path — the ref updates every render).
+  const accItemsRef = useRef(node.accItems ?? []);
+  accItemsRef.current = node.accItems ?? [];
+  // Grow the accordion box to CONTAIN its floated items exactly, so a detached item never spills outside its
+  // container (measured after each render → correct even for tall, open items; reverts on the mobile preview).
+  const accRef = useRef<HTMLDivElement>(null);
+  useLayoutEffect(() => {
+    const el = accRef.current;
+    if (!el || node.component !== "accordion") return;
+    // Only relevant when items actually float; skip entirely otherwise (avoids a measure→write→resize loop).
+    const hasFloat = breakpoint !== "mobile" && (node.accItems ?? []).some((it) => it.float);
+    let target = "";
+    if (hasFloat) {
+      let maxBottom = 0;
+      el.querySelectorAll(":scope > .eu-accordion__item").forEach((c) => {
+        const ce = c as HTMLElement;
+        if (getComputedStyle(ce).position === "absolute") maxBottom = Math.max(maxBottom, ce.offsetTop + ce.offsetHeight);
+      });
+      target = maxBottom > 0 ? `${Math.ceil(maxBottom)}px` : "";
+    }
+    if (el.style.minHeight !== target) el.style.minHeight = target; // write only on change → no ResizeObserver loop
+  });
   // Typography set on the wrapper cascades into the component's text (titles/bodies inherit family + size).
   const typo: React.CSSProperties = {};
   if (node.fontFamily) typo.fontFamily = node.fontFamily;
@@ -1109,26 +1150,110 @@ function ComponentView({ node, editable, onPatchNode }: { node: BoxNode; editabl
     const items = node.accItems ?? [];
     const cls = "eu-accordion" + (node.variant ? ` eu-accordion${node.variant}` : "");
     const setItem = (id: string, patch: Partial<import("@/lib/box-model").AccordionItem>) =>
-      onPatchNode?.({ accItems: items.map((it) => (it.id === id ? { ...it, ...patch } : it)) });
-    const adv = sanitizeCssDeclarations(node.advancedCss);
+      onPatchNode?.({ accItems: accItemsRef.current.map((it) => (it.id === id ? { ...it, ...patch } : it)) });
+    const setChild = (pid: string, cid: string, patch: Partial<import("@/lib/box-model").AccordionItem>) =>
+      onPatchNode?.({ accItems: accItemsRef.current.map((it) => (it.id === pid ? { ...it, children: (it.children ?? []).map((c) => (c.id === cid ? { ...c, ...patch } : c)) } : it)) });
     const tcss = componentTextCss(node), bcss = componentBoxCss(node);
     const sel = `[data-box-id="${node.id}"] .eu-accordion`;
-    const inject = [tcss ? `${sel}, ${sel} *{${tcss}}` : "", bcss ? `${sel}{${bcss}}` : "", adv ? `${sel}{${adv}}` : ""].filter(Boolean).join("");
+    // Floats apply on desktop/tablet; on the mobile preview items return to the normal stack (matches export).
+    const floatsActive = breakpoint !== "mobile";
+    // Whole-component Advanced CSS + per-item CSS both support part blocks (title/body/icon/meta/media),
+    // so any text/background/colour of the accordion OR any single item can be overridden — canvas == export.
+    const adv = expandScopedCss(node.advancedCss, sel, ACCORDION_CSS_PARTS);
+    const itemCss = items.map((it) => (accItemHasOverride(it) ? accItemOverrideCss(`${sel} .eu-acc-i-${it.id}`, it, { skipFloat: !floatsActive }) : "")).filter(Boolean).join("");
+    const reserve = floatsActive ? accFloatReserveRem(items) : 0;
+    const floatCtx = reserve > 0 ? `${sel}{position:relative;min-height:${reserve}rem}` : "";
+    const inject = [tcss ? `${sel}, ${sel} *{${tcss}}` : "", bcss ? `${sel}{${bcss}}` : "", adv, itemCss, floatCtx].filter(Boolean).join("");
+    // Drag a detached (floating) item on the canvas to reposition it — X/Y (rem) update live.
+    // Write several items in one patch (so a grouped drag moves every member together, atomically) — from the
+    // freshest accItems (accItemsRef), never the render-time closure, so no other item's position is lost.
+    const setItems = (updates: { id: string; float: import("@/lib/box-model").AccordionItem["float"] }[]) =>
+      onPatchNode?.({ accItems: accItemsRef.current.map((it) => { const u = updates.find((x) => x.id === it.id); return u ? { ...it, float: u.float } : it; }) });
+    const startItemDrag = (e: React.PointerEvent, it: import("@/lib/box-model").AccordionItem) => {
+      if (!editable || !it.float || !floatsActive) return;
+      if ((e.target as HTMLElement).closest("[contenteditable='true']")) return; // let text editing win
+      e.preventDefault(); e.stopPropagation();
+      const remPx = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+      const accEl = (e.currentTarget as HTMLElement).closest(".eu-accordion") as HTMLElement | null;
+      const accR = accEl?.getBoundingClientRect();
+      // Move the whole GROUP together (individual item on its own when ungrouped). Capture each member's start
+      // position + how far it may move before its box leaves the accordion, so the rigid group stays contained.
+      const members = (it.group ? items.filter((m) => m.group === it.group && m.float) : [it]).map((m) => {
+        const mel = accEl?.querySelector(`.eu-acc-i-${m.id}`) as HTMLElement | null;
+        const mr = mel?.getBoundingClientRect();
+        const maxX = accR && mr ? Math.max(0, (accR.width - mr.width) / remPx) : Infinity;
+        const maxY = accR && mr ? Math.max(0, (accR.height - mr.height) / remPx) : Infinity;
+        return { id: m.id, f: m.float!, maxX, maxY };
+      });
+      const sx = e.clientX, sy = e.clientY;
+      const move = (ev: PointerEvent) => {
+        let dx = (ev.clientX - sx) / remPx, dy = (ev.clientY - sy) / remPx;
+        for (const mb of members) { // clamp the SHARED delta so no member exits the box (keeps the group rigid)
+          dx = Math.max(-mb.f.x, Math.min(dx, mb.maxX - mb.f.x));
+          dy = Math.max(-mb.f.y, Math.min(dy, mb.maxY - mb.f.y));
+        }
+        setItems(members.map((mb) => ({ id: mb.id, float: { ...mb.f, x: +(mb.f.x + dx).toFixed(1), y: +(mb.f.y + dy).toFixed(1) } })));
+      };
+      const up = () => { window.removeEventListener("pointermove", move); window.removeEventListener("pointerup", up); };
+      window.addEventListener("pointermove", move); window.addEventListener("pointerup", up);
+    };
     return (
       <div className="eu-root" style={styleVars}>
         {inject ? <style dangerouslySetInnerHTML={{ __html: inject }} /> : null}
-        <div className={cls}>
-          {items.map((it) => (
-            <details key={it.id} className="eu-accordion__item" open={editable ? true : it.open} name={node.accMultiOpen ? undefined : `acc-${node.id}`}>
+        <div ref={accRef} className={cls} id={node.accShowAll ? `eu-acc-${node.id}` : undefined}>
+          {node.variant === "--split" && (
+            <div className="eu-accordion__panel" style={node.accSplitMedia && /^(https?:|data:)/.test(node.accSplitMedia) ? { backgroundImage: `url('${node.accSplitMedia.replace(/["'()\\]/g, "")}')` } : undefined} />
+          )}
+          {node.accSearch && (
+            <div className="eu-accordion__search">
+              <span className="eu-accordion__search-ico" aria-hidden="true">{(() => { const S = ICON_SET["Search"]; return S ? <S style={{ width: "1em", height: "1em" }} /> : null; })()}</span>
+              <input type="search" placeholder="Search…" aria-label="Search these items"
+                onChange={!editable ? (e) => { const q = e.target.value.toLowerCase(); const el = accRef.current; if (!el) return; let n = 0; el.querySelectorAll(":scope > .eu-accordion__item").forEach((d) => { const m = !q || (d.textContent || "").toLowerCase().includes(q); (d as HTMLElement).style.display = m ? "" : "none"; if (m) n++; }); el.querySelectorAll(":scope > .eu-accordion__category").forEach((h) => { (h as HTMLElement).style.display = q ? "none" : ""; }); const em = el.querySelector("[data-eu-acc-empty]") as HTMLElement | null; if (em) em.hidden = !(q && n === 0); } : undefined} />
+              <div className="eu-accordion__noresults" data-eu-acc-empty hidden>No matching items.</div>
+            </div>
+          )}
+          {node.accShowAll && (
+            <div className="eu-accordion__controls">
+              <button type="button" data-eu-acc-all="open" onClick={() => onPatchNode?.({ accItems: items.map((it) => ({ ...it, open: true })) })} title="Open every panel by default (visitors can still toggle)">Expand all</button>
+              <button type="button" data-eu-acc-all="close" onClick={() => onPatchNode?.({ accItems: items.map((it) => ({ ...it, open: undefined })) })} title="Collapse every panel by default">Collapse all</button>
+            </div>
+          )}
+          {items.map((it, i) => (
+            <Fragment key={it.id}>
+            {it.category && it.category !== items[i - 1]?.category ? <div className="eu-accordion__category">{it.category}</div> : null}
+            <details id={it.anchor || undefined} className={`eu-accordion__item${accItemHasOverride(it) ? ` eu-acc-i-${it.id}` : ""}`}
+              style={{ ...(accItemNumberVars(i) as React.CSSProperties), ...(editable && it.float && floatsActive ? { cursor: "move" } : {}) }}
+              onPointerDown={editable && it.float && floatsActive ? (e) => startItemDrag(e, it) : undefined}
+              open={editable ? true : it.open} name={node.accMultiOpen ? undefined : `acc-${node.id}`}>
               <summary className="eu-accordion__header" onClick={editable ? (e) => e.preventDefault() : undefined}>
-                {it.media ? <img className="eu-accordion__media" src={it.media} alt="" /> : null}
-                <EditableText value={it.title} editable={editable} onChange={(v) => setItem(it.id, { title: v })} placeholder="Question" />
+                {it.icon && iconSvg(it.icon) ? <span className="eu-accordion__icon" aria-hidden="true" dangerouslySetInnerHTML={{ __html: iconSvg(it.icon) }} /> : null}
+                {it.media ? <img className="eu-accordion__media" src={it.media} alt={it.mediaAlt ?? ""} /> : null}
+                <span className="eu-accordion__title"><EditableText value={it.title} editable={editable} onChange={(v) => setItem(it.id, { title: v })} placeholder="Question" /></span>
                 {it.meta ? <span className="eu-accordion__meta">{it.meta}</span> : null}
               </summary>
               <div className="eu-accordion__body">
-                <EditableText value={it.body} editable={editable} onChange={(v) => setItem(it.id, { body: v })} placeholder="Answer — click to edit" />
+                {editable
+                  ? <EditableText value={it.body} editable onChange={(v) => setItem(it.id, { body: v })} placeholder="Answer — click to edit" />
+                  : <span dangerouslySetInnerHTML={{ __html: richBody(it.body) }} />}
+                {(it.children ?? []).length ? (
+                  <div className="eu-accordion eu-accordion--nested">
+                    {(it.children ?? []).map((c) => (
+                      <details key={c.id} className="eu-accordion__item" open={editable ? true : c.open}>
+                        <summary className="eu-accordion__header" onClick={editable ? (e) => e.preventDefault() : undefined}>
+                          <span className="eu-accordion__title"><EditableText value={c.title} editable={editable} onChange={(v) => setChild(it.id, c.id, { title: v })} placeholder="Sub-question" /></span>
+                        </summary>
+                        <div className="eu-accordion__body">
+                          {editable
+                            ? <EditableText value={c.body} editable onChange={(v) => setChild(it.id, c.id, { body: v })} placeholder="Answer" />
+                            : <span dangerouslySetInnerHTML={{ __html: richBody(c.body) }} />}
+                        </div>
+                      </details>
+                    ))}
+                  </div>
+                ) : null}
               </div>
             </details>
+            </Fragment>
           ))}
         </div>
       </div>
@@ -1153,13 +1278,13 @@ function ComponentView({ node, editable, onPatchNode }: { node: BoxNode; editabl
   return <div className="eu-root" style={styleVars} />;
 }
 
-function ElementView({ node, theme, editable, onText, onSrc, onPatchNode }: {
-  node: BoxNode; theme: SiteTheme; editable?: boolean; onText: (v: string) => void; onSrc: (v: string) => void; onPatchNode?: (patch: Partial<BoxNode>) => void;
+function ElementView({ node, theme, editable, onText, onSrc, onPatchNode, breakpoint = "base" }: {
+  node: BoxNode; theme: SiteTheme; editable?: boolean; onText: (v: string) => void; onSrc: (v: string) => void; onPatchNode?: (patch: Partial<BoxNode>) => void; breakpoint?: Breakpoint;
 }) {
   const fileRef = useRef<HTMLInputElement>(null);
   const align = node.textAlign ?? "left";
   switch (node.type) {
-    case "component": return <ComponentView node={node} editable={editable} onPatchNode={onPatchNode} />;
+    case "component": return <ComponentView node={node} editable={editable} onPatchNode={onPatchNode} breakpoint={breakpoint} />;
     case "heading":
       return <h2 style={{ color: node.color || theme.text, fontSize: u(node.fontSize ?? 32), textAlign: align, width: "100%", ...typoStyle(node, theme.headingFont, 600) }}><EditableText value={node.text} editable={editable} onChange={onText} placeholder="Heading" /></h2>;
     case "button": {
@@ -1200,8 +1325,17 @@ function ElementView({ node, theme, editable, onText, onSrc, onPatchNode }: {
       );
     }
     case "icon": {
-      const Ico = ICON_SET[node.icon ?? "Star"] ?? Star;
-      return <div style={{ textAlign: align, color: node.color || theme.primary, width: "100%", lineHeight: 0 }}><Ico style={{ width: u(node.fontSize ?? 32), height: u(node.fontSize ?? 32), display: "inline-block" }} /></div>;
+      // Render via iconSvg (all four libraries) so the canvas matches the export exactly. `fontSize` drives
+      // the em box (the inline SVG is 1em). Falls back to a lucide Star component if the SVG isn't ready.
+      const svg = iconSvg(node.icon ?? "Star");
+      const size = u(node.fontSize ?? 32);
+      return (
+        <div style={{ textAlign: align, color: node.color ? colorToCSS(node.color) : theme.primary, width: "100%", lineHeight: 0 }}>
+          {svg
+            ? <span aria-hidden="true" style={{ display: "inline-flex", fontSize: size, width: "1em", height: "1em" }} dangerouslySetInnerHTML={{ __html: svg }} />
+            : <Star style={{ width: size, height: size, display: "inline-block" }} />}
+        </div>
+      );
     }
     case "divider":
       return <div aria-hidden="true" style={{ width: "100%", borderTopWidth: node.borderWidth || 2, borderTopStyle: node.borderStyle ?? "solid", borderTopColor: node.color ? colorToCSS(node.color) : node.borderColor ? colorToCSS(node.borderColor) : theme.textMuted }} />;

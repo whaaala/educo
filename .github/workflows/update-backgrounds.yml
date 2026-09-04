@@ -1,0 +1,43 @@
+name: Refresh background photos
+
+# Regenerate the bundled Unsplash photo set on a schedule (and on demand), then open a PR if it changed.
+# Requires a repo secret UNSPLASH_ACCESS_KEY (Settings → Secrets and variables → Actions).
+# This is the RIGHT "cron" for keeping backgrounds fresh — not an agent/session cron.
+
+on:
+  schedule:
+    - cron: "0 6 * * 1" # every Monday 06:00 UTC
+  workflow_dispatch: {} # allow manual runs from the Actions tab
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Regenerate photo library
+        env:
+          UNSPLASH_ACCESS_KEY: ${{ secrets.UNSPLASH_ACCESS_KEY }}
+        run: |
+          if [ -z "$UNSPLASH_ACCESS_KEY" ]; then
+            echo "::warning::UNSPLASH_ACCESS_KEY secret is not set — skipping."
+            exit 0
+          fi
+          npm run gen:photos
+
+      - name: Open a PR if the photo set changed
+        uses: peter-evans/create-pull-request@v6
+        with:
+          commit-message: "chore: refresh Unsplash background photos"
+          title: "Refresh Unsplash background photos"
+          body: "Automated weekly refresh of `lib/educo-ui/stock-photos-curated.generated.ts` via `scripts/gen-stock-photos.js`."
+          branch: chore/refresh-backgrounds
+          add-paths: lib/educo-ui/stock-photos-curated.generated.ts

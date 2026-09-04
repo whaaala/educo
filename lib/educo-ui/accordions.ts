@@ -17,7 +17,7 @@ export const ACCORDION_DESIGNS: AccordionDesignGroup[] = [
     { id: "--enclosed", label: "Enclosed card" }, { id: "--invert", label: "Dark glossy" }, { id: "--grid", label: "Two-column" },
     { id: "--quote", label: "Quote" }, { id: "--glass", label: "Glass" }, { id: "--timeline", label: "Timeline" },
     { id: "--alt", label: "Alternating" }, { id: "--stripe", label: "Colour stripe" }, { id: "--spotlight", label: "Spotlight" },
-    { id: "--corner", label: "Folded corner" },
+    { id: "--corner", label: "Folded corner" }, { id: "--split", label: "Split (media panel)" },
   ] },
   { group: "Indicator", items: [
     { id: "--chevron", label: "Chevron" }, { id: "--arrow", label: "Arrow" }, { id: "--plus-circle", label: "Plus-circle" },

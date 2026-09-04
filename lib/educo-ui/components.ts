@@ -104,6 +104,9 @@ export const COMPONENT_CSS = `
    placed in a narrow column, not only when the whole viewport shrinks (Responsive Field Guide, ingredient 4). */
 .eu-root .eu-accordion { display: grid; gap: var(--eu-space-2); container-type: inline-size; }
 .eu-root .eu-accordion__item { border: 1px solid var(--eu-color-border); border-radius: var(--eu-radius-md); background: var(--eu-color-surface); overflow: hidden; }
+/* title wrapper: behaves like the bare title text did (fills the header row, keeps the gap to meta/icon) so
+   its spacing is preserved even when the header content is nudged/positioned. */
+.eu-root .eu-accordion__title { flex: 1 1 auto; min-width: 0; }
 .eu-root .eu-accordion__header {
   cursor: pointer; list-style: none; padding: clamp(var(--eu-space-3), 3.2cqi, var(--eu-space-4)); font-weight: var(--eu-weight-semibold);
   /* fluid type: scales with the accordion's own width so a narrow card shrinks its text instead of breaking words */
@@ -112,10 +115,37 @@ export const COMPONENT_CSS = `
   gap: var(--eu-space-3); overflow-wrap: anywhere; transition: background-color var(--eu-dur-fast) var(--eu-ease-standard);
 }
 .eu-root .eu-accordion__header:hover { background: var(--eu-color-surface-2); }
+/* a11y: a clear keyboard focus ring on the header (inset so overflow:hidden never clips it) */
+.eu-root .eu-accordion__header:focus-visible { outline: none; box-shadow: inset 0 0 0 2px var(--eu-color-brand); }
 .eu-root .eu-accordion__header::-webkit-details-marker { display: none; }
 .eu-root .eu-accordion__header::after { content: "+"; flex: 0 0 auto; color: var(--eu-color-muted); font-weight: var(--eu-weight-normal); transition: transform var(--eu-dur-base) var(--eu-ease-standard); }
 .eu-root .eu-accordion__item[open] > .eu-accordion__header::after { content: "\\2212"; } /* minus */
 .eu-root .eu-accordion__body { padding: 0 clamp(var(--eu-space-3), 3.2cqi, var(--eu-space-4)) clamp(var(--eu-space-3), 3.2cqi, var(--eu-space-4)); font-size: clamp(0.85rem, 0.8rem + 0.7cqi, 1rem); color: var(--eu-color-muted); }
+/* rich answer body (safe markdown-lite → links / bold / lists) */
+.eu-root .eu-accordion__body p { margin: 0 0 var(--eu-space-2); }
+.eu-root .eu-accordion__body p:last-child { margin-bottom: 0; }
+.eu-root .eu-accordion__body ul { margin: var(--eu-space-1) 0; padding-inline-start: 1.25em; }
+.eu-root .eu-accordion__body a { color: var(--eu-color-brand); text-decoration: underline; }
+.eu-root .eu-accordion__body a:hover { text-decoration: none; }
+/* a11y: honour the OS "reduce motion" setting — no header/indicator/shadow animation */
+@media (prefers-reduced-motion: reduce) { .eu-root .eu-accordion *, .eu-root .eu-accordion *::after, .eu-root .eu-accordion *::before { transition: none !important; animation: none !important; } }
+/* opt-in "Expand all / Collapse all" control bar (token-driven ghost buttons) */
+.eu-root .eu-accordion__controls { display: flex; gap: var(--eu-space-2); justify-content: flex-end; margin-block-end: var(--eu-space-1); }
+/* category heading — groups items under a label */
+.eu-root .eu-accordion__category { font-family: var(--eu-font-heading); font-size: var(--eu-text-sm); font-weight: var(--eu-weight-bold); letter-spacing: .04em; text-transform: uppercase; color: var(--eu-color-muted); margin-block: var(--eu-space-3) var(--eu-space-1); padding-inline-start: var(--eu-space-1); }
+.eu-root .eu-accordion__category:first-child { margin-block-start: 0; }
+/* no doubled gap when a category heading (or an item) follows the search box */
+.eu-root .eu-accordion__search + .eu-accordion__category { margin-block-start: 0; }
+/* live search / filter box — modern: full-width, leading icon, clean focus ring */
+.eu-root .eu-accordion__search { position: relative; display: flex; align-items: center; inline-size: 100%; margin-block-end: var(--eu-space-3); }
+.eu-root .eu-accordion__search-ico { position: absolute; inset-inline-start: 0.9em; inset-block-start: 50%; transform: translateY(-50%); display: inline-flex; color: var(--eu-color-muted); font-size: 1.05em; pointer-events: none; }
+.eu-root .eu-accordion__search input { inline-size: 100%; box-sizing: border-box; padding: clamp(var(--eu-space-2), 2cqi, var(--eu-space-3)); padding-inline-start: 2.6em; border: 1px solid var(--eu-color-border); border-radius: var(--eu-radius-lg); background: var(--eu-color-surface); color: var(--eu-color-text); font: inherit; transition: border-color var(--eu-dur-base) var(--eu-ease-standard), box-shadow var(--eu-dur-base) var(--eu-ease-standard); }
+.eu-root .eu-accordion__search input::placeholder { color: var(--eu-color-muted); }
+.eu-root .eu-accordion__search input:focus-visible { outline: none; border-color: var(--eu-color-brand); box-shadow: 0 0 0 3px color-mix(in oklab, var(--eu-color-brand) 22%, transparent); }
+.eu-root .eu-accordion__noresults { color: var(--eu-color-muted); font-size: var(--eu-text-sm); padding: var(--eu-space-3) var(--eu-space-1); }
+.eu-root .eu-accordion__controls button { font: inherit; font-size: var(--eu-text-xs); font-weight: var(--eu-weight-medium); cursor: pointer; padding: .3em .75em; border-radius: var(--eu-radius-sm); border: 1px solid var(--eu-color-border); background: var(--eu-color-surface); color: var(--eu-color-muted); transition: background-color var(--eu-dur-fast) var(--eu-ease-standard), color var(--eu-dur-fast) var(--eu-ease-standard); }
+.eu-root .eu-accordion__controls button:hover { background: var(--eu-color-surface-2); color: var(--eu-color-text); }
+.eu-root .eu-accordion__controls button:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--eu-color-brand); }
 
 /* flush — borderless, hairline dividers only (Bootstrap-flush / ultra-minimal) */
 .eu-root .eu-accordion--flush { gap: 0; }
@@ -135,7 +165,7 @@ export const COMPONENT_CSS = `
 /* numbered — 01 / 02 / 03 leading counter */
 .eu-root .eu-accordion--numbered { counter-reset: eu-acc; }
 .eu-root .eu-accordion--numbered .eu-accordion__header { counter-increment: eu-acc; }
-.eu-root .eu-accordion--numbered .eu-accordion__header::before { content: counter(eu-acc, decimal-leading-zero); flex: 0 0 auto; font-family: var(--eu-font-mono); font-size: var(--eu-text-xs); color: var(--eu-color-muted); margin-inline-end: var(--eu-space-1); }
+.eu-root .eu-accordion--numbered .eu-accordion__header::before { content: var(--eu-n0, "01"); flex: 0 0 auto; font-family: var(--eu-font-mono); font-size: var(--eu-text-xs); color: var(--eu-color-muted); margin-inline-end: var(--eu-space-1); }
 /* plus-circle — the +/− sits inside a round badge that fills with brand when open */
 .eu-root .eu-accordion--plus-circle .eu-accordion__header::after { display: grid; place-items: center; width: 1.6em; height: 1.6em; border-radius: 999px; background: var(--eu-color-surface-2); color: var(--eu-color-muted); font-size: .8em; }
 .eu-root .eu-accordion--plus-circle .eu-accordion__item[open] > .eu-accordion__header::after { background: var(--eu-color-brand); color: var(--eu-color-on-brand); }
@@ -196,7 +226,7 @@ export const COMPONENT_CSS = `
 /* stepper — a circular number badge that fills with brand when open (e-learning) */
 .eu-root .eu-accordion--stepper { counter-reset: eu-step; }
 .eu-root .eu-accordion--stepper .eu-accordion__header { counter-increment: eu-step; }
-.eu-root .eu-accordion--stepper .eu-accordion__header::before { content: counter(eu-step); flex: 0 0 auto; width: 1.8em; height: 1.8em; display: grid; place-items: center; border-radius: 999px; background: var(--eu-color-surface-2); color: var(--eu-color-muted); font-family: var(--eu-font-mono); font-size: .8em; margin-inline-end: var(--eu-space-3); }
+.eu-root .eu-accordion--stepper .eu-accordion__header::before { content: var(--eu-n, "1"); flex: 0 0 auto; width: 1.8em; height: 1.8em; display: grid; place-items: center; border-radius: 999px; background: var(--eu-color-surface-2); color: var(--eu-color-muted); font-family: var(--eu-font-mono); font-size: .8em; margin-inline-end: var(--eu-space-3); }
 .eu-root .eu-accordion--stepper .eu-accordion__item[open] > .eu-accordion__header::before { background: var(--eu-color-brand); color: var(--eu-color-on-brand); }
 /* outline — transparent items with an outlined edge that turns brand when open */
 .eu-root .eu-accordion--outline .eu-accordion__item { background: transparent; }
@@ -221,7 +251,9 @@ export const COMPONENT_CSS = `
 /* __meta — an optional right-aligned slot in the header for a price / count / badge (Colorlib pricing V01, menu V02) */
 .eu-root .eu-accordion__meta { margin-inline-start: auto; color: var(--eu-color-muted); font-size: 0.9em; font-weight: var(--eu-weight-normal); font-variant-numeric: tabular-nums; }
 /* __media — an optional leading thumbnail in the header (Colorlib image V09, menu V02) */
-.eu-root .eu-accordion__media { flex: 0 0 auto; inline-size: 2.75em; block-size: 2.75em; border-radius: var(--eu-radius-md); object-fit: cover; background: var(--eu-color-surface-2); }
+.eu-root .eu-accordion__icon { flex: 0 0 auto; display: inline-flex; align-items: center; justify-content: center; font-size: 1.15em; color: var(--eu-color-brand); }
+.eu-root .eu-accordion__icon svg { inline-size: 1em; block-size: 1em; }
+.eu-root .eu-accordion__media { flex: 0 0 auto; inline-size: 2.75em; block-size: 2.75em; max-inline-size: 100%; border-radius: var(--eu-radius-md); object-fit: cover; background: var(--eu-color-surface-2); }
 .eu-root .eu-accordion__media--wide { inline-size: 4em; block-size: 2.5em; }
 /* nested — an accordion inside a body panel gets indented with a subtle guide rule (Colorlib profile V04/V05/V08/V15) */
 .eu-root .eu-accordion .eu-accordion { margin-block-start: var(--eu-space-2); margin-inline-start: var(--eu-space-3); border-inline-start: 2px solid var(--eu-color-border); padding-inline-start: var(--eu-space-3); gap: var(--eu-space-1); }
@@ -231,7 +263,7 @@ export const COMPONENT_CSS = `
    BOLD designs — structurally distinct, not recolours
    ============================================================ */
 /* horizontal — panels sit in a row; the open one expands sideways, collapsed ones show a vertical label (Articulate 5-panel) */
-.eu-root .eu-accordion--horizontal { display: flex; flex-direction: row; gap: var(--eu-space-2); min-block-size: 15rem; align-items: stretch; }
+.eu-root .eu-accordion--horizontal { display: flex; flex-direction: row; flex-wrap: wrap; gap: var(--eu-space-2); min-block-size: 15rem; align-items: stretch; }
 .eu-root .eu-accordion--horizontal .eu-accordion__item { flex: 0 0 3.25rem; display: flex; flex-direction: column; overflow: hidden; transition: flex-grow var(--eu-dur-slow) var(--eu-ease-standard); }
 .eu-root .eu-accordion--horizontal .eu-accordion__item[open] { flex: 1 1 auto; }
 .eu-root .eu-accordion--horizontal .eu-accordion__header { flex: 1 1 auto; justify-content: center; writing-mode: vertical-rl; transform: rotate(180deg); white-space: nowrap; }
@@ -243,9 +275,11 @@ export const COMPONENT_CSS = `
 .eu-root .eu-accordion--horizontal .eu-accordion__item:nth-child(4n+2) { background: var(--eu-color-accent-50); }
 .eu-root .eu-accordion--horizontal .eu-accordion__item:nth-child(4n+3) { background: var(--eu-color-neutral-100); }
 .eu-root .eu-accordion--horizontal .eu-accordion__item:nth-child(4n+4) { background: var(--eu-color-primary-100); }
-@media (max-width: 40rem) {
-  .eu-root .eu-accordion--horizontal { flex-direction: column; min-block-size: 0; }
-  .eu-root .eu-accordion--horizontal .eu-accordion__item { flex: none; }
+/* Reflow on the accordion's OWN width (container query, not viewport): full-width items wrap into a vertical
+   stack, headers return to horizontal text. Descendant-only rules so the container-query context applies. */
+@container (max-width: 40rem) {
+  .eu-root .eu-accordion--horizontal .eu-accordion__item { flex: 1 1 100%; }
+  .eu-root .eu-accordion--horizontal .eu-accordion__item[open] { flex: 1 1 100%; }
   .eu-root .eu-accordion--horizontal .eu-accordion__header { writing-mode: horizontal-tb; transform: none; justify-content: space-between; }
 }
 /* panel — open fills the WHOLE item solid brand with light text (FreeFrontend "Collapse Blue") */
@@ -257,7 +291,7 @@ export const COMPONENT_CSS = `
 /* index — a large bold numeral tile on the left that fills brand when open (e-learning step) */
 .eu-root .eu-accordion--index { counter-reset: eu-idx; }
 .eu-root .eu-accordion--index .eu-accordion__header { counter-increment: eu-idx; gap: var(--eu-space-4); }
-.eu-root .eu-accordion--index .eu-accordion__header::before { content: counter(eu-idx); flex: 0 0 auto; display: grid; place-items: center; inline-size: 2.4em; block-size: 2.4em; border-radius: var(--eu-radius-md); background: var(--eu-color-primary-50); color: var(--eu-color-brand); font-family: var(--eu-font-heading); font-size: 1.05em; font-weight: var(--eu-weight-bold); line-height: 1; }
+.eu-root .eu-accordion--index .eu-accordion__header::before { content: var(--eu-n, "1"); flex: 0 0 auto; display: grid; place-items: center; inline-size: 2.4em; block-size: 2.4em; border-radius: var(--eu-radius-md); background: var(--eu-color-primary-50); color: var(--eu-color-brand); font-family: var(--eu-font-heading); font-size: 1.05em; font-weight: var(--eu-weight-bold); line-height: 1; }
 .eu-root .eu-accordion--index .eu-accordion__item[open] { background: var(--eu-color-primary-50); border-color: var(--eu-color-brand); }
 .eu-root .eu-accordion--index .eu-accordion__item[open] > .eu-accordion__header::before { background: var(--eu-color-brand); color: var(--eu-color-on-brand); }
 .eu-root .eu-accordion--index .eu-accordion__item[open] > .eu-accordion__header:hover { background: transparent; }
@@ -277,7 +311,7 @@ export const COMPONENT_CSS = `
 .eu-root .eu-accordion--bignum { counter-reset: eu-bn; gap: 0; }
 .eu-root .eu-accordion--bignum .eu-accordion__item { border: 0; border-bottom: 1px solid var(--eu-color-border); border-radius: 0; background: transparent; }
 .eu-root .eu-accordion--bignum .eu-accordion__header { counter-increment: eu-bn; gap: var(--eu-space-4); padding-inline: 0; align-items: center; }
-.eu-root .eu-accordion--bignum .eu-accordion__header::before { content: counter(eu-bn, decimal-leading-zero); flex: 0 0 auto; font-family: var(--eu-font-heading); font-size: 1.7em; font-weight: var(--eu-weight-bold); line-height: 1; color: var(--eu-color-border); font-variant-numeric: tabular-nums; transition: color var(--eu-dur-base) var(--eu-ease-standard); }
+.eu-root .eu-accordion--bignum .eu-accordion__header::before { content: var(--eu-n0, "01"); flex: 0 0 auto; font-family: var(--eu-font-heading); font-size: 1.7em; font-weight: var(--eu-weight-bold); line-height: 1; color: var(--eu-color-border); font-variant-numeric: tabular-nums; transition: color var(--eu-dur-base) var(--eu-ease-standard); }
 .eu-root .eu-accordion--bignum .eu-accordion__item[open] > .eu-accordion__header::before { color: var(--eu-color-brand); }
 .eu-root .eu-accordion--bignum .eu-accordion__body { padding-inline: 0; }
 /* __media--round — circular avatar/thumbnail, e.g. for pill rows (Dribbble kffein) */
@@ -312,7 +346,7 @@ export const COMPONENT_CSS = `
 /* ring — an outlined circular step number that turns brand when open (Dribbble big-number/step) */
 .eu-root .eu-accordion--ring { counter-reset: eu-ring; }
 .eu-root .eu-accordion--ring .eu-accordion__header { counter-increment: eu-ring; gap: var(--eu-space-3); }
-.eu-root .eu-accordion--ring .eu-accordion__header::before { content: counter(eu-ring); flex: 0 0 auto; display: grid; place-items: center; inline-size: 2em; block-size: 2em; border-radius: 999px; border: 2px solid var(--eu-color-border); color: var(--eu-color-muted); font-weight: var(--eu-weight-semibold); font-size: 0.85em; }
+.eu-root .eu-accordion--ring .eu-accordion__header::before { content: var(--eu-n, "1"); flex: 0 0 auto; display: grid; place-items: center; inline-size: 2em; block-size: 2em; border-radius: 999px; border: 2px solid var(--eu-color-border); color: var(--eu-color-muted); font-weight: var(--eu-weight-semibold); font-size: 0.85em; }
 .eu-root .eu-accordion--ring .eu-accordion__item[open] > .eu-accordion__header::before { border-color: var(--eu-color-brand); color: var(--eu-color-brand); }
 /* stripe — a permanent, multi-colour left bar per item, cycling the token ramps (Dribbble colour fan) */
 .eu-root .eu-accordion--stripe .eu-accordion__item { border-inline-start: 4px solid var(--eu-color-brand); }
@@ -341,9 +375,9 @@ export const COMPONENT_CSS = `
 .eu-root .eu-accordion--invert .eu-accordion__header::after { color: var(--eu-color-bg); }
 .eu-root .eu-accordion--invert .eu-accordion__header:hover { background: color-mix(in oklab, var(--eu-color-bg) 12%, transparent); }
 .eu-root .eu-accordion--invert .eu-accordion__body { color: color-mix(in oklab, var(--eu-color-bg) 68%, transparent); }
-/* grid — a two-column wall of items that collapses to one column on narrow screens (Dribbble two-column FAQ) */
-.eu-root .eu-accordion--grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--eu-space-2); align-items: start; }
-@media (max-width: 40rem) { .eu-root .eu-accordion--grid { grid-template-columns: minmax(0, 1fr); } }
+/* grid — a two-column wall of items that collapses to one column on narrow (Dribbble two-column FAQ).
+   Intrinsic auto-fit: reflows on the accordion's OWN width with NO breakpoint (Field Guide ingredient 1). */
+.eu-root .eu-accordion--grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr)); gap: var(--eu-space-2); align-items: start; }
 /* gradient-full — every header is a brand→accent gradient bar with light text (Dribbble gradient FAQ) */
 .eu-root .eu-accordion--gradient-full .eu-accordion__header,
 .eu-root .eu-accordion--gradient-full .eu-accordion__header:hover { background: linear-gradient(90deg, var(--eu-color-primary-500), var(--eu-color-accent-500)); color: var(--eu-color-on-brand); }
@@ -354,6 +388,22 @@ export const COMPONENT_CSS = `
 .eu-root .eu-accordion--corner .eu-accordion__item { position: relative; overflow: hidden; }
 .eu-root .eu-accordion--corner .eu-accordion__item::before { content: ""; position: absolute; inset-block-start: 0; inset-inline-end: 0; border-width: 0 var(--eu-space-5) var(--eu-space-5) 0; border-style: solid; border-color: var(--eu-color-primary-100) transparent; transition: border-color var(--eu-dur-base) var(--eu-ease-standard); }
 .eu-root .eu-accordion--corner .eu-accordion__item[open]::before { border-color: var(--eu-color-brand) transparent; }
+/* split — the accordion sits beside a media/visual panel; stacks on the accordion's OWN narrow width (SaaS) */
+.eu-root .eu-accordion--split { display: grid; grid-template-columns: minmax(min(100%, 14rem), 1fr) minmax(0, 1.6fr); gap: var(--eu-space-4); align-items: start; }
+.eu-root .eu-accordion--split .eu-accordion__panel { grid-column: 1; grid-row: 1 / -1; align-self: stretch; min-block-size: 12rem; border-radius: var(--eu-radius-lg); background-color: var(--eu-color-surface-2); background-size: cover; background-position: center; }
+/* everything except the panel lives in the items column (2), so nothing lands in an empty cell */
+.eu-root .eu-accordion--split > .eu-accordion__item,
+.eu-root .eu-accordion--split > .eu-accordion__search,
+.eu-root .eu-accordion--split > .eu-accordion__controls,
+.eu-root .eu-accordion--split > .eu-accordion__category { grid-column: 2; }
+@container (max-width: 34rem) {
+  .eu-root .eu-accordion--split { grid-template-columns: 1fr; }
+  .eu-root .eu-accordion--split .eu-accordion__panel { grid-column: 1; grid-row: auto; min-block-size: 8rem; }
+  .eu-root .eu-accordion--split > .eu-accordion__item,
+  .eu-root .eu-accordion--split > .eu-accordion__search,
+  .eu-root .eu-accordion--split > .eu-accordion__controls,
+  .eu-root .eu-accordion--split > .eu-accordion__category { grid-column: 1; }
+}
 
 /* ── Tabs — styles; the export injects a tiny vanilla toggle (aria-selected / [hidden]) ──────── */
 .eu-root .eu-tabs__list { display: flex; flex-wrap: wrap; gap: var(--eu-space-1); border-bottom: 1px solid var(--eu-color-border); }

@@ -8,9 +8,10 @@
 import type { CSSProperties } from "react";
 import {
   type BoxNode, type Breakpoint, containerStyle, childStyle, marginCSS, sizeToCSS, radiusCSS, SHADOW_CSS, u, baseUnit,
-  resolveResponsive, floatStacksOnMobile, videoEmbedSrc, isContainer, sanitizeCssDeclarations, componentTextCss, componentBoxCss,
+  resolveResponsive, floatStacksOnMobile, videoEmbedSrc, isContainer, sanitizeCssDeclarations, expandScopedCss, ACCORDION_CSS_PARTS, accItemOverrideCss, accItemHasOverride, accItemNumberVars, accFloatReserveRem, richBody, plainBody, componentTextCss, componentBoxCss, bgImageLayer,
 } from "@/lib/box-model";
 import { isRegistryComponent, renderComponent } from "@/lib/educo-ui/registry";
+import { iconSvg } from "@/lib/educo-ui/icon-svg";
 import type { BoxSite } from "@/lib/box-site";
 import type { SiteTheme } from "@/lib/site-storage";
 import { colorToCSS } from "@/components/shared/ColorPalettePicker";
@@ -42,10 +43,18 @@ function bgCss(node: BoxNode): CSSProperties {
   const layers: string[] = [];
   const asGrad = (c: string) => { const css = colorToCSS(c); return css.startsWith("linear-gradient") ? css : `linear-gradient(${css}, ${css})`; };
   if (node.bgOverlay) layers.push(asGrad(node.bgOverlay));
-  if (node.bgImage) layers.push(`url("${node.bgImage}")`);
+  if (node.bgImage) layers.push(bgImageLayer(node.bgImage)); // gradient/pattern passes through; URL gets url("…")
   const baseGrad = node.background?.startsWith("gradient:");
   if (baseGrad && !node.bgImage) layers.push(colorToCSS(node.background!));
-  if (layers.length) { s.backgroundImage = layers.join(", "); s.backgroundSize = node.bgImage ? (node.bgSize ?? "cover") : undefined; s.backgroundPosition = "center"; s.backgroundRepeat = "no-repeat"; }
+  if (layers.length) {
+    s.backgroundImage = layers.join(", ");
+    if (node.bgImage) {
+      s.backgroundSize = node.bgTile ?? (node.bgSize ?? "cover"); // a pattern tiles at its tile size…
+      s.backgroundPosition = node.bgPosition ?? (node.bgTile ? "0 0" : "center");
+      s.backgroundRepeat = node.bgRepeat ?? (node.bgTile ? "repeat" : "no-repeat"); // …and repeats; a photo/gradient covers once
+      if (node.bgAttach) s.backgroundAttachment = node.bgAttach;
+    } else { s.backgroundPosition = "center"; s.backgroundRepeat = "no-repeat"; }
+  }
   if (node.background && !baseGrad) s.backgroundColor = node.background;
   return s;
 }
@@ -94,6 +103,7 @@ function elementHTML(node: BoxNode, theme: SiteTheme, pageMap: Map<string, strin
     case "list": { const items = (node.listItems ?? []).map((it) => `<li>${esc(it)}</li>`).join(""); const st = styleString({ color: node.color || theme.text, fontSize: u(node.fontSize ?? 16), textAlign: align, width: "100%", paddingLeft: u(22), ...typoCss(node, theme.bodyFont, 400) }); return node.listStyle === "number" ? `<ol style="${st}">${items}</ol>` : `<ul style="${st}">${items}</ul>`; }
     case "embed": return node.html ?? "";
     case "spacer": return `<div aria-hidden="true" style="${styleString({ width: "100%", height: sizeToCSS(node.height) ?? "48px" })}"></div>`;
+    case "icon": { const svg = iconSvg(node.icon ?? "Star"); return svg ? `<span aria-hidden="true" style="${styleString({ display: "inline-flex", color: node.color ? colorToCSS(node.color) : theme.text, fontSize: u(node.fontSize ?? 24) })}">${svg}</span>` : ""; }
     case "component": return componentHTML(node);
     default: return "";
   }
@@ -104,8 +114,18 @@ function elementHTML(node: BoxNode, theme: SiteTheme, pageMap: Map<string, strin
 function componentInjectCss(node: BoxNode): string {
   const name = node.component === "accordion" ? "accordion" : node.component!;
   const sel = `.${classFor(node.id)} .eu-${name}`;
-  const tcss = componentTextCss(node), bcss = componentBoxCss(node), adv = sanitizeCssDeclarations(node.advancedCss);
-  return [tcss ? `${sel}, ${sel} *{${tcss}}` : "", bcss ? `${sel}{${bcss}}` : "", adv ? `${sel}{${adv}}` : ""].filter(Boolean).join("");
+  const tcss = componentTextCss(node), bcss = componentBoxCss(node);
+  // Whole-component Advanced CSS: bare declarations style the accordion box; `title{…}`/`body{…}`/`icon{…}` etc.
+  // restyle that part of EVERY item (text, background, colour — anything).
+  const adv = expandScopedCss(node.advancedCss, sel, node.component === "accordion" ? ACCORDION_CSS_PARTS : undefined);
+  // When any accordion item is detached (floating), make the accordion a positioning context and reserve
+  // height so floats aren't clipped. Reverts on mobile, where floated items return to the normal stack.
+  let floatCtx = "";
+  if (node.component === "accordion") {
+    const reserve = accFloatReserveRem(node.accItems ?? []);
+    if (reserve > 0) floatCtx = `${sel}{position:relative;min-height:${reserve}rem}@media (max-width:480px){${sel}{min-height:0}}`;
+  }
+  return [tcss ? `${sel}, ${sel} *{${tcss}}` : "", bcss ? `${sel}{${bcss}}` : "", adv, floatCtx].filter(Boolean).join("");
 }
 
 /** Render an Educo UI component instance to its `.eu-*` markup + a per-instance <style> (so Design/Typography
@@ -117,12 +137,57 @@ function componentHTML(node: BoxNode): string {
     const cls = "eu-accordion" + (node.variant ? ` eu-accordion${node.variant}` : "");
     // A shared `name` groups <details> so only one opens at a time (native exclusive accordion); omitted when multi-open.
     const grp = node.accMultiOpen ? "" : ` name="acc-${esc(node.id)}"`;
-    const items = (node.accItems ?? []).map((it) => {
-      const media = it.media ? `<img class="eu-accordion__media" src="${esc(it.media)}" alt="" />` : "";
+    const itemStyles: string[] = []; // per-ITEM Advanced CSS, scoped to that one item
+    let lastCat: string | undefined; // category grouping — a heading before the first item of each group
+    const items = (node.accItems ?? []).map((it, i) => {
+      const catHead = it.category && it.category !== lastCat ? `<div class="eu-accordion__category">${esc(it.category)}</div>` : "";
+      lastCat = it.category;
+      const icon = it.icon ? `<span class="eu-accordion__icon" aria-hidden="true">${iconSvg(it.icon)}</span>` : "";
+      const media = it.media ? `<img class="eu-accordion__media" src="${esc(it.media)}" alt="${esc(it.mediaAlt ?? "")}" />` : "";
       const meta = it.meta ? `<span class="eu-accordion__meta">${esc(it.meta)}</span>` : "";
-      return `<details class="eu-accordion__item"${it.open ? " open" : ""}${grp}><summary class="eu-accordion__header">${media}${esc(it.title)}${meta}</summary><div class="eu-accordion__body">${esc(it.body)}</div></details>`;
+      // Per-ITEM styling: the point-and-click Header/Content colour+font controls, then the raw CSS box
+      // (bare declarations style THIS item; `title{…}`/`body{…}`/`icon{…}` blocks target one part).
+      let itemCls = "eu-accordion__item";
+      if (accItemHasOverride(it)) {
+        const ic = `eu-acc-i-${esc(it.id)}`;
+        const rule = accItemOverrideCss(`.eu-accordion .${ic}`, it, { mobileReset: true });
+        if (rule) { itemCls += ` ${ic}`; itemStyles.push(rule); }
+      }
+      // Ordinal (01, 02…) fed to numbered designs as CSS vars — deterministic, matches the editor exactly.
+      const nvars = Object.entries(accItemNumberVars(i)).map(([k, v]) => `${k}:${v}`).join(";");
+      // Per-item deep-link: a stable id on the <details> so #slug scrolls to (and, via the script below, opens) it.
+      const idAttr = it.anchor ? ` id="${esc(it.anchor)}"` : "";
+      // Nested sub-accordion (one level) rendered inside the body — the `.eu-accordion .eu-accordion` CSS indents it.
+      const kids = (it.children ?? []).length
+        ? `<div class="eu-accordion eu-accordion--nested">${(it.children ?? []).map((c) => `<details class="eu-accordion__item"${c.open ? " open" : ""}><summary class="eu-accordion__header"><span class="eu-accordion__title">${esc(c.title)}</span></summary><div class="eu-accordion__body">${richBody(c.body)}</div></details>`).join("")}</div>`
+        : "";
+      // Body is rich (safe markdown-lite → links / bold / italic / lists / paragraphs), then any nested items.
+      return `${catHead}<details${idAttr} class="${itemCls}" style="${nvars}"${it.open ? " open" : ""}${grp}><summary class="eu-accordion__header">${icon}${media}<span class="eu-accordion__title">${esc(it.title)}</span>${meta}</summary><div class="eu-accordion__body">${richBody(it.body)}${kids}</div></details>`;
     }).join("");
-    return `${style}<div class="${cls}">${items}</div>`;
+    // FAQ SEO: opt-in schema.org FAQPage JSON-LD (rich results). Each item → Question + Answer (plain text).
+    const faqSchema = node.accFaqSchema && (node.accItems ?? []).length
+      ? `<script type="application/ld+json">${JSON.stringify({ "@context": "https://schema.org", "@type": "FAQPage", mainEntity: (node.accItems ?? []).map((it) => ({ "@type": "Question", name: it.title, acceptedAnswer: { "@type": "Answer", text: plainBody(it.body) } })) }).replace(/</g, "\\u003c")}<\/script>`
+      : "";
+    const istyle = itemStyles.length ? `<style>${itemStyles.join("")}</style>` : "";
+    // Deep-link: when any item has an anchor, add a tiny GLOBAL-guarded script that opens + scrolls to the
+    // item whose id matches the URL hash (on load + hashchange). Progressive enhancement — links still scroll without JS.
+    const deepScript = (node.accItems ?? []).some((it) => it.anchor)
+      ? `<script>(function(){if(window.__euAccDeep)return;window.__euAccDeep=1;function o(){var h=location.hash.slice(1);if(!h)return;var e=document.getElementById(h);var d=e&&e.closest?e.closest('details.eu-accordion__item'):null;if(d){d.open=true;d.scrollIntoView();}}addEventListener('hashchange',o);o();})();<\/script>`
+      : "";
+    // Opt-in interactivity (Expand/Collapse-all + Search). The accordion stays ZERO-JS unless one is enabled;
+    // each adds a small SCOPED script (progressive enhancement — the panels still work without JS).
+    const accId = `eu-acc-${esc(node.id)}`;
+    const needsId = node.accShowAll || node.accSearch;
+    const searchBox = node.accSearch ? `<div class="eu-accordion__search"><span class="eu-accordion__search-ico" aria-hidden="true">${iconSvg("Search")}</span><input type="search" data-eu-acc-search placeholder="Search…" aria-label="Search these items" /><div class="eu-accordion__noresults" data-eu-acc-empty hidden>No matching items.</div></div>` : "";
+    const controls = node.accShowAll ? `<div class="eu-accordion__controls"><button type="button" data-eu-acc-all="open">Expand all</button><button type="button" data-eu-acc-all="close">Collapse all</button></div>` : "";
+    const showAllScript = node.accShowAll ? `<script>(function(){var a=document.getElementById('${accId}');if(!a)return;a.querySelectorAll('[data-eu-acc-all]').forEach(function(b){b.addEventListener('click',function(){var o=b.getAttribute('data-eu-acc-all')==='open';a.querySelectorAll('details.eu-accordion__item').forEach(function(d){d.open=o;});});});})();<\/script>` : "";
+    // Search: filter items by text; hide category headings while searching (no orphans); show a no-results note.
+    const searchScript = node.accSearch ? `<script>(function(){var a=document.getElementById('${accId}');if(!a)return;var s=a.querySelector('[data-eu-acc-search]');if(!s)return;var e=a.querySelector('[data-eu-acc-empty]');s.addEventListener('input',function(){var q=s.value.toLowerCase(),n=0;a.querySelectorAll(':scope > .eu-accordion__item').forEach(function(d){var t=(d.textContent||'').toLowerCase(),m=!q||t.indexOf(q)>=0;d.style.display=m?'':'none';if(m)n++;});a.querySelectorAll(':scope > .eu-accordion__category').forEach(function(h){h.style.display=q?'none':'';});if(e)e.hidden=!(q&&n===0);});})();<\/script>` : "";
+    const idPart = needsId ? ` id="${accId}"` : "";
+    // "--split" design: a media/visual panel beside the items (grid places it in column 1, items in column 2).
+    const splitUrl = node.accSplitMedia && /^(https?:|data:)/.test(node.accSplitMedia) ? node.accSplitMedia.replace(/["'()\\]/g, "") : "";
+    const splitPanel = node.variant === "--split" ? `<div class="eu-accordion__panel"${splitUrl ? ` style="background-image:url('${splitUrl}')"` : ""}></div>` : "";
+    return `${style}${istyle}<div class="${cls}"${idPart}>${splitPanel}${searchBox}${controls}${items}</div>${showAllScript}${searchScript}${deepScript}${faqSchema}`;
   }
   // Every other component renders as ONE clean node straight from the registry (same HTML the canvas shows).
   if (isRegistryComponent(node.component)) return `${style}${renderComponent(node.component!, node.componentFields, node.variant)}`;
@@ -197,7 +262,16 @@ function styleAt(node: BoxNode, rawParent: BoxNode | null, bp: Breakpoint): CSSP
     ...(isComp ? componentTypoCss(r) : {}),
   };
   if (r.hidden) wrap.display = "none"; // hidden-on-this-device → removed at that breakpoint
-  if (isContainer(r)) return { ...containerStyle(r, bp), ...wrap };
+  if (isContainer(r)) {
+    const cs: CSSProperties = { ...containerStyle(r, bp), ...wrap };
+    // An EMPTY container that paints a background would collapse to 0px in the exported/preview site (the editor's
+    // "Drag a block here" placeholder gives it height, but that's editor-only). Give it a visible band so the
+    // background actually shows — unless the user gave it an explicit height/min-height.
+    const empty = !(r.children && r.children.length);
+    const paints = !selfPaint && (r.bgImage || r.background || r.bgOverlay);
+    if (empty && paints && r.minHeight == null && r.height == null && cs.minHeight == null && cs.height == null) cs.minHeight = "8rem";
+    return cs;
+  }
   // Elements apply their OWN minHeight/height (containers get it from containerStyle) so a height-resized
   // heading / text / button / list looks the same in the export as in the editor.
   if (r.minHeight != null) wrap.minHeight = r.minHeight;

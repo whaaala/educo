@@ -199,7 +199,47 @@ The builder is responsive by design, and you can fine‑tune per size.
 
 ---
 
-## 12. Tips, gotchas & FAQ
+## 12. Component guide — Accordion
+
+The **Accordion** is a stack of expandable panels (FAQ, product specs, pricing details, help topics). It's built on native `<details>`/`<summary>`, so it's **zero‑JavaScript**, works in the exported HTML, and is **keyboard‑ and screen‑reader‑accessible out of the box**.
+
+**Add one:** Blocks panel → **Accordion**. It arrives with three starter items.
+
+**Pick a look — the design gallery.** Select the accordion → **Content** tab → **Design**. You get a **visual gallery of 54 designs** (live mini‑previews you can tap), grouped into families:
+- **Signature** (22) — Horizontal, Solid panel, Index tile, Big number, Ring step, Chat bubble, Q&A, Callout, Float, Folder tabs, Editorial, Menu pills, Enclosed card, Dark glossy, Two‑column, Quote, Glass, Timeline, Alternating, Colour stripe, Spotlight, Folded corner.
+- **Indicator** (6) — Chevron, Arrow, Plus‑circle, Tag dot, Switch, Left‑aligned.
+- **Shape & border** (9) — Boxed (default), **Flush**, Separated, Pill, Square, Divided, Outline, Elevated, Dashed.
+- **Open‑state colour** (6) — Filled, Accent, Brand header, Body tint, Gradient, Gradient bars.
+- **Numbered** (2), **Quiet & minimal** (5), **Density & rhythm** (4).
+
+**Edit the items (full CRUD on every item).** Each item has a **Title**, **Body**, optional **Meta** (a right‑aligned price/badge), an **Image** thumbnail, a **Number/badge** (for numbered designs), and an **Open by default** toggle. You can **add, remove, reorder (▲/▼), and replace** every item — the last item can't be removed so the accordion is never empty. You can also click a panel's **title or body directly on the canvas** to edit the text in place.
+
+**Numbers you control.** Numbered designs (Big number, Numbered, Ring step, Index tile, Stepper) show **01, 02, 03…** automatically. To override one, type your own value in an item's **Number/badge** field (e.g. `1`, `A`, `★`) — it's per item and works across every numbered design.
+
+**Style each item's Header and Content — no CSS needed.** Every item has dedicated point‑and‑click controls for both its **Header** and its **Content** area:
+- **Text colour** and **Background (Fill) colour** — from the OKLCH palette picker.
+- **Font** — any face from the font library.
+- **Size** — scales with your base size (uses rem, so it stays readable when zoomed).
+- **Align** — Left / Centre / Right.
+- **Move ← → / ↑ ↓** — nudge the content freely up, down, left or right (in rem): **Move title** shifts the header's title; **Move text** shifts the answer / text area. The spacing between the pieces in the row is kept, and each control says exactly what it moves.
+
+These win over the chosen design, so a single item can look completely different from the rest (e.g. a highlighted "featured" row).
+
+**Move an item freely — position it anywhere in the accordion.** Each item has a **"Move freely — position within the accordion"** toggle. Turn it on and the item lifts out of the stack so you can place it exactly where you want — **drag it on the canvas**, or type an exact **X / Y** (in rem). It's **kept inside the accordion's box** (it can't spill outside), the box grows to hold it, and it applies to **every item in any accordion**. On phones the item returns to the normal stack so the page stays readable. (You can also **select several items and group them** so they move together as one unit.)
+
+**One open, or many.** By default only **one panel is open at a time** (opening another closes the current one). Tick **"Allow more than one open at once"** to let several stay open.
+
+**Expand / Collapse all (optional).** Tick **"Show 'Expand all / Collapse all' controls"** to add two buttons above the panels. This is the one feature that adds a *tiny* script to your exported site (opt‑in) — the accordion stays fully usable without it.
+
+**Style anything — including per item.**
+- **Whole accordion:** Design tab controls (spacing, borders, radius, shadow, background), **Component colours** (design tokens), **Typography**, and an **Advanced CSS** box. The Advanced CSS understands **parts**: plain lines style the whole accordion, and `title { … }`, `body { … }`, `icon { … }`, `meta { … }` or `media { … }` blocks restyle that part of **every** item.
+- **One specific item:** use the point‑and‑click **Header/Content** controls above, plus a per‑item CSS box that takes the same **part** blocks (`title`/`body`/`icon`/`meta`/`media`) — so you can change *anything* (text, background, colour, borders, the icon, the image) on just that one panel. Every override is scoped to that item and always wins over the design.
+
+**Themes & accessibility.** Every design is **token‑driven** — no hardcoded colours — so it re‑skins automatically for Light, Dark, Midnight, Purple, and any future theme. Panels are keyboard‑focusable with a visible focus ring, and animations respect the OS **"reduce motion"** setting.
+
+---
+
+## 13. Tips, gotchas & FAQ
 
 - **"There's an empty container/row wrapping my block."** There isn't — the structural row and the page itself are invisible scaffolding: they're never selectable and never highlight on hover, so nothing empty appears around your block. Click your block (or anywhere in its row) and you select the block itself; the only highlight you see is the block's own selection box, hugging its content.
 - **"Dragging my block made it full-width."** Fixed — moving a hugging (**Fit**) block in the layout keeps it hugging wherever it lands. Only a block you've set to **Full** or **Custom** fills the row. (Nothing changes its width just by being moved.)

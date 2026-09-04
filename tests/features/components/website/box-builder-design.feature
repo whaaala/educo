@@ -55,3 +55,53 @@ Feature: Box Builder — modern look & feel, blocks palette, plain language
   Scenario: Bulk panel uses the same plain words
     Given several sections selected
     Then the bulk panel reads Outer/Inner spacing, Rounded corners, See-through, Line up (not margin/padding/opacity)
+
+  # ── Icon library (reusable IconPicker across the whole builder) ──
+  Scenario: Pick from every free icon library
+    Given any control that chooses an icon (an Icon block, an accordion item's icon)
+    Then it uses the shared, reusable IconPicker component
+    And the picker searches across lucide + Simple Icons (Brands) + Material Symbols + Ionicons — thousands of icons
+    And a "Brands" filter surfaces company/social logos (GitHub, Instagram, LinkedIn, YouTube, …)
+    And the vendor names are never shown as tabs (only neutral, function-first filters)
+    And the heavy icon sets load lazily per source, so the builder stays fast
+    And a chosen icon renders identically on the canvas AND in the exported HTML
+
+  Scenario: The icon picker is always fully visible and modern
+    When the picker opens near the bottom of the screen
+    Then it flips toward whichever side has more room and never runs off-screen
+    And its search box, category filters, icon grid and footer count are all visible
+    And every tile shows the real icon; a still-loading tile shows a subtle skeleton
+
+  # ── Per-item icon styling (parity with header/content parts) ──
+  Scenario Outline: Style and position an accordion item's icon
+    Given an accordion item with an icon
+    When I change its "<control>"
+    Then only that item's icon updates, on the canvas and on export
+    Examples:
+      | control              |
+      | Icon colour          |
+      | Icon size            |
+      | Align (top/mid/end)  |
+      | Move icon ← → (rem)   |
+      | Move icon ↑ ↓ (rem)   |
+
+  # ── Background library (reusable BackgroundPicker across the whole app) ──
+  Scenario: Choose from a big background library, seeing each one
+    Given any block's Background control
+    Then it uses the shared, reusable BackgroundPicker component
+    And the picker offers 100+ ready-made backgrounds: Gradients, Mesh gradients and Patterns
+    And every option is a LIVE preview swatch with its name shown beneath, so users see what they pick
+    And options can be browsed by category (Themed, Gradients, Mesh, Patterns) and by mood (Warm, Cool, Dark, Light, Vibrant)
+    And gradients/mesh/patterns are pure CSS and export fully self-contained (gradients raw, patterns tiled)
+    And patterns follow the block's colour (currentColor) so they re-theme
+
+  Scenario: Photos come from a live search, not a bundle
+    Given the picker's "Photos" tab
+    Then with an Unsplash access key it searches millions of free photos (credited)
+    And without a key it shows featured photos that always load, plus URL paste and image upload
+    And a chosen photo is an external URL (the page is then no longer fully self-contained)
+
+  Scenario: The background picker is modern and always fully visible
+    When the picker opens near a screen edge
+    Then it flips to whichever side has more room and never runs off-screen
+    And its search, category filters, preview grid and footer are all visible

@@ -20,11 +20,11 @@ describe("BoxInspector — Accordion component editing (Content tab)", () => {
   it("changes the accordion design from the visual picker", () => {
     const onPatch = renderFor(acc());
     openContent();
-    fireEvent.click(screen.getByRole("option", { name: "Solid panel design" }));
+    fireEvent.click(screen.getByRole("button", { name: "Solid panel design" }));
     expect(onPatch).toHaveBeenCalledWith({ variant: "--panel" });
     // every design is offered
-    expect(screen.getByRole("option", { name: "Horizontal design" })).toBeInTheDocument();
-    expect(screen.getByRole("option", { name: "Dark glossy design" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Horizontal design" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Dark glossy design" })).toBeInTheDocument();
   });
 
   it("toggles multi-open and adds an item", () => {
@@ -36,12 +36,26 @@ describe("BoxInspector — Accordion component editing (Content tab)", () => {
     expect(onPatch).toHaveBeenCalledWith(expect.objectContaining({ accItems: expect.arrayContaining([expect.objectContaining({ title: "New question" })]) }));
   });
 
+  it("toggles the opt-in 'Expand all / Collapse all' controls", () => {
+    const onPatch = renderFor(acc());
+    openContent();
+    fireEvent.click(screen.getByLabelText(/Expand all/));
+    expect(onPatch).toHaveBeenCalledWith({ accShowAll: true });
+  });
+
   it("edits an item title; remove is enabled with two items", () => {
     const onPatch = renderFor(acc());
     openContent();
     fireEvent.change(screen.getByLabelText("Item 1 title"), { target: { value: "Changed" } });
     expect(onPatch).toHaveBeenCalledWith(expect.objectContaining({ accItems: expect.arrayContaining([expect.objectContaining({ title: "Changed" })]) }));
     expect(screen.getByLabelText("Remove item 1")).not.toBeDisabled();
+  });
+
+  it("edits a per-item Advanced CSS override (each item can override any CSS)", () => {
+    const onPatch = renderFor(acc());
+    openContent();
+    fireEvent.change(screen.getByLabelText("Item 1 CSS"), { target: { value: "background: #fef3c7;" } });
+    expect(onPatch).toHaveBeenCalledWith(expect.objectContaining({ accItems: expect.arrayContaining([expect.objectContaining({ css: "background: #fef3c7;" })]) }));
   });
 
   it("cannot remove the last remaining item", () => {
@@ -104,11 +118,13 @@ describe("BoxInspector — styling primitives (Design tab)", () => {
   it("the icon picker has a search box that filters the library", () => {
     renderFor(createElement("icon", { id: "i" } as Partial<BoxNode>));
     openContent();
-    // a broad library is present
-    expect(screen.getByLabelText("Icon Rocket")).toBeInTheDocument();
+    fireEvent.click(screen.getByLabelText("Icon")); // open the reusable IconPicker popover
+    // a broad library is searchable
+    fireEvent.change(screen.getByLabelText("Search icons"), { target: { value: "rocket" } });
+    expect(screen.getByLabelText("Rocket")).toBeInTheDocument();
     fireEvent.change(screen.getByLabelText("Search icons"), { target: { value: "heart" } });
-    expect(screen.getByLabelText("Icon Heart")).toBeInTheDocument();
-    expect(screen.queryByLabelText("Icon Rocket")).not.toBeInTheDocument(); // filtered out
+    expect(screen.getByLabelText("Heart")).toBeInTheDocument();
+    expect(screen.queryByLabelText("Rocket")).not.toBeInTheDocument(); // filtered out
   });
 });
 
@@ -152,7 +168,9 @@ describe("BoxInspector — content types & links (Content tab)", () => {
   it("picks an icon", () => {
     const onPatch = renderFor(createElement("icon", { id: "i" } as Partial<BoxNode>));
     openContent();
-    fireEvent.click(screen.getByLabelText("Icon Heart"));
+    fireEvent.click(screen.getByLabelText("Icon")); // open the reusable IconPicker popover
+    fireEvent.change(screen.getByLabelText("Search icons"), { target: { value: "heart" } });
+    fireEvent.click(screen.getByLabelText("Heart"));
     expect(onPatch).toHaveBeenCalledWith({ icon: "Heart" });
   });
 
@@ -411,7 +429,141 @@ describe("BoxInspector — functionality audit (every remaining control)", () =>
     fireEvent.change(screen.getByLabelText("Title"), { target: { value: "My card" } });
     expect(onPatch).toHaveBeenCalledWith(expect.objectContaining({ componentFields: expect.objectContaining({ title: "My card" }) }));
     // and its design variants apply
-    fireEvent.click(screen.getByRole("option", { name: "Raised design" }));
+    fireEvent.click(screen.getByRole("button", { name: "Raised design" }));
     expect(onPatch).toHaveBeenCalledWith({ variant: "--raised" });
+  });
+});
+
+// ══ ACCORDION — FINAL AUDIT: every control in all THREE tabs acts on the component AND its items ══
+describe("Accordion — full three-tab audit (Design · Content · Per-device)", () => {
+  const acc = () => createComponent("accordion", { id: "a", accItems: [
+    { id: "i1", title: "Q1", body: "A1" }, { id: "i2", title: "Q2", body: "A2" }, { id: "i3", title: "Q3", body: "A3" },
+  ] } as Partial<BoxNode>);
+
+  it("DESIGN › Placement — Floating / In-the-layout / Lock", () => {
+    const onFloat = vi.fn(), onUnfloat = vi.fn();
+    const onPatch = renderFor(acc(), { canFloat: true, onFloat, onUnfloat });
+    fireEvent.click(screen.getByRole("button", { name: "Floating" }));      expect(onFloat).toHaveBeenCalled();
+    fireEvent.click(screen.getByRole("button", { name: "In the layout" })); expect(onUnfloat).toHaveBeenCalled();
+    fireEvent.click(screen.getByRole("button", { name: /Lock position/ })); expect(onPatch).toHaveBeenCalledWith({ locked: true });
+  });
+
+  it("DESIGN › Size — Width, Position-in-row, Height, Content position, Trim", () => {
+    const onAlignInRow = vi.fn();
+    const onPatch = renderFor(acc(), { onAlignInRow, rowJustify: "start" });
+    fireEvent.click(screen.getByRole("button", { name: "Full" }));   expect(onPatch).toHaveBeenCalledWith(expect.objectContaining({ width: "fill" }));
+    fireEvent.click(screen.getByRole("button", { name: "Center" })); expect(onAlignInRow).toHaveBeenCalledWith("center");
+    fireEvent.change(screen.getByLabelText("Height"), { target: { value: "320px" } }); expect(onPatch).toHaveBeenCalledWith({ height: "320px" });
+    fireEvent.click(screen.getByLabelText("Content middle center"));  expect(onPatch).toHaveBeenCalledWith({ contentX: "center", contentY: "center" });
+    fireEvent.click(screen.getByLabelText(/Trim to size/));           expect(onPatch).toHaveBeenCalledWith({ clip: true });
+  });
+
+  it("DESIGN › Spacing — Inner + Outer (per-side)", () => {
+    const onPatch = renderFor(acc());
+    fireEvent.change(screen.getByLabelText("Inner spacing top"), { target: { value: "2.4" } });    expect(onPatch).toHaveBeenCalledWith({ paddingTop: 24 });
+    fireEvent.change(screen.getByLabelText("Outer spacing bottom"), { target: { value: "1.6" } }); expect(onPatch).toHaveBeenCalledWith({ marginBottom: 16 });
+  });
+
+  it("DESIGN › Outline & effects — rounded, per-corner, border, border-style, shadow, tilt, see-through", () => {
+    const onPatch = renderFor(acc());
+    fireEvent.change(screen.getByLabelText("Rounded corners"), { target: { value: "16" } });        expect(onPatch).toHaveBeenCalledWith({ radius: 16 });
+    fireEvent.change(screen.getByLabelText("Rounded corner top-left"), { target: { value: "4" } }); expect(onPatch).toHaveBeenCalledWith({ radiusTopLeft: 4 });
+    fireEvent.change(screen.getByLabelText("Border"), { target: { value: "2" } });                   expect(onPatch).toHaveBeenCalledWith({ borderWidth: 2 });
+    pickSelect("Border style", "Dashed");                                                            expect(onPatch).toHaveBeenCalledWith({ borderStyle: "dashed" });
+    fireEvent.click(screen.getByRole("button", { name: "Medium" }));                                 expect(onPatch).toHaveBeenCalledWith({ shadow: "md" });
+    fireEvent.change(screen.getByLabelText("Tilt"), { target: { value: "5" } });                     expect(onPatch).toHaveBeenCalledWith({ rotate: 5 });
+    fireEvent.change(screen.getByLabelText("See-through"), { target: { value: "80" } });             expect(onPatch).toHaveBeenCalledWith({ opacity: 80 });
+  });
+
+  it("CONTENT › Bookmark + design gallery + multi-open + expand-all", () => {
+    const onPatch = renderFor(acc());
+    openContent();
+    fireEvent.change(screen.getByLabelText("Bookmark name"), { target: { value: "Our FAQ" } }); expect(onPatch).toHaveBeenCalledWith({ anchor: "our-faq" });
+    fireEvent.click(screen.getByRole("button", { name: "Solid panel design" }));                 expect(onPatch).toHaveBeenCalledWith({ variant: "--panel" });
+    fireEvent.click(screen.getByLabelText("Allow more than one open at once"));                   expect(onPatch).toHaveBeenCalledWith({ accMultiOpen: true });
+    fireEvent.click(screen.getByLabelText(/Expand all/));                                         expect(onPatch).toHaveBeenCalledWith({ accShowAll: true });
+  });
+
+  it("CONTENT › Items — EVERY per-item field works on ANY item (title, body, meta, image, CSS, open)", () => {
+    const onPatch = renderFor(acc());
+    openContent();
+    const hasItem = (m: Record<string, unknown>) => expect.objectContaining({ accItems: expect.arrayContaining([expect.objectContaining(m)]) });
+    fireEvent.change(screen.getByLabelText("Item 2 title"), { target: { value: "New Q" } });           expect(onPatch).toHaveBeenCalledWith(hasItem({ id: "i2", title: "New Q" }));
+    fireEvent.change(screen.getByLabelText("Item 2 body"), { target: { value: "New A" } });            expect(onPatch).toHaveBeenCalledWith(hasItem({ id: "i2", body: "New A" }));
+    fireEvent.change(screen.getByLabelText("Item 2 meta"), { target: { value: "$5" } });               expect(onPatch).toHaveBeenCalledWith(hasItem({ id: "i2", meta: "$5" }));
+    fireEvent.change(screen.getByLabelText("Item 2 image"), { target: { value: "https://x/y.png" } }); expect(onPatch).toHaveBeenCalledWith(hasItem({ id: "i2", media: "https://x/y.png" }));
+    fireEvent.change(screen.getByLabelText("Item 2 CSS"), { target: { value: "color: red;" } });       expect(onPatch).toHaveBeenCalledWith(hasItem({ id: "i2", css: "color: red;" }));
+    fireEvent.click(screen.getAllByLabelText("Open by default")[0]);                                    expect(onPatch).toHaveBeenCalledWith(hasItem({ id: "i1", open: true }));
+  });
+
+  it("CONTENT › Items — add, remove, reorder", () => {
+    const onPatch = renderFor(acc());
+    openContent();
+    fireEvent.click(screen.getByRole("button", { name: "Add item" }));
+    expect(onPatch).toHaveBeenCalledWith(expect.objectContaining({ accItems: expect.arrayContaining([expect.objectContaining({ title: "New question" })]) }));
+    fireEvent.click(screen.getByLabelText("Remove item 2"));
+    expect(onPatch).toHaveBeenCalledWith(expect.objectContaining({ accItems: expect.not.arrayContaining([expect.objectContaining({ id: "i2" })]) }));
+    fireEvent.click(screen.getAllByLabelText("Move item down")[0]);
+    const reordered = onPatch.mock.calls.map((c) => c[0]).reverse().find((p) => p.accItems);
+    expect(reordered.accItems[0].id).toBe("i2");
+  });
+
+  it("CONTENT › Typography — size, boldness, capitalisation, line/letter spacing (cascade into items)", () => {
+    const onPatch = renderFor(acc());
+    openContent();
+    fireEvent.change(screen.getByLabelText("Text size"), { target: { value: "20" } });    expect(onPatch).toHaveBeenCalledWith({ fontSize: 20 });
+    pickSelect("Boldness", "Bold");                                                        expect(onPatch).toHaveBeenCalledWith({ fontWeight: 700 });
+    pickSelect("Capitalisation", "UPPERCASE");                                             expect(onPatch).toHaveBeenCalledWith({ textTransform: "uppercase" });
+    fireEvent.change(screen.getByLabelText("Line spacing"), { target: { value: "1.5" } }); expect(onPatch).toHaveBeenCalledWith({ lineHeight: 1.5 });
+    fireEvent.change(screen.getByLabelText("Letter spacing"), { target: { value: "1" } }); expect(onPatch).toHaveBeenCalledWith({ letterSpacing: 1 });
+  });
+
+  it("CONTENT › whole-component Advanced CSS (sanitised)", () => {
+    const onPatch = renderFor(acc());
+    openContent();
+    fireEvent.click(screen.getByRole("button", { name: "Advanced CSS" }));
+    fireEvent.change(screen.getByLabelText("Advanced CSS"), { target: { value: "backdrop-filter: blur(4px);" } });
+    expect(onPatch).toHaveBeenCalledWith({ advancedCss: "backdrop-filter: blur(4px);" });
+  });
+
+  it("PER-DEVICE › Hidden toggle", () => {
+    const onPatch = renderFor(acc());
+    openDevice();
+    fireEvent.click(screen.getByLabelText(/Hidden everywhere/));
+    expect(onPatch).toHaveBeenCalledWith({ hidden: true });
+  });
+
+  const hasItem = (m: Record<string, unknown>) => expect.objectContaining({ accItems: expect.arrayContaining([expect.objectContaining(m)]) });
+
+  it("CONTENT › Float — the toggle detaches an item (gives it a default position)", () => {
+    const onPatch = renderFor(acc());
+    openContent();
+    fireEvent.click(screen.getByLabelText("Item 1 float"));
+    expect(onPatch).toHaveBeenCalledWith(hasItem({ id: "i1", float: expect.objectContaining({ x: expect.any(Number), y: expect.any(Number) }) }));
+  });
+
+  it("CONTENT › Float — X/Y inputs drive a floated item's position (rem)", () => {
+    const floated = createComponent("accordion", { id: "a", accItems: [
+      { id: "i1", title: "Q1", body: "A1", float: { x: 4, y: 4, z: 1 } }, { id: "i2", title: "Q2", body: "A2" },
+    ] } as Partial<BoxNode>);
+    const onPatch = renderFor(floated);
+    openContent();
+    fireEvent.change(screen.getByLabelText("Item 1 float X"), { target: { value: "12" } });
+    expect(onPatch).toHaveBeenCalledWith(hasItem({ id: "i1", float: expect.objectContaining({ x: 12 }) }));
+    fireEvent.change(screen.getByLabelText("Item 1 float Y"), { target: { value: "8" } });
+    expect(onPatch).toHaveBeenCalledWith(hasItem({ id: "i1", float: expect.objectContaining({ y: 8 }) }));
+  });
+
+  // ── EVERY design variant: the controls are variant-independent, so the audit holds for ALL 54 looks ──
+  it("holds for EVERY accordion design variant (a control + an item edit fire regardless of the look)", () => {
+    for (const v of ["", "--panel", "--flush", "--invert", "--timeline", "--glass", "--numbered", "--pill", "--horizontal"]) {
+      const onPatch = renderFor(createComponent("accordion", { id: "a", variant: v, accItems: [{ id: "i1", title: "Q", body: "A" }] } as Partial<BoxNode>));
+      fireEvent.change(screen.getByLabelText("Rounded corners"), { target: { value: "8" } });
+      expect(onPatch).toHaveBeenCalledWith({ radius: 8 });
+      openContent();
+      fireEvent.change(screen.getByLabelText("Item 1 title"), { target: { value: "Z" } });
+      expect(onPatch).toHaveBeenCalledWith(expect.objectContaining({ accItems: expect.arrayContaining([expect.objectContaining({ title: "Z" })]) }));
+      cleanup();
+    }
   });
 });

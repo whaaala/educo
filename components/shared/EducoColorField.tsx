@@ -62,7 +62,11 @@ export default function EducoColorField({ label, ariaLabel, value, onChange, con
     const below = window.innerHeight - r.bottom;
     const openUp = below < 360 && r.top > below;
     const width = Math.max(r.width, 236);
-    setPos(openUp ? { left: r.left, bottom: window.innerHeight - r.top + 6, width } : { left: r.left, top: r.bottom + 6, width });
+    // Keep the popover fully on-screen: clamp its left edge so it never spills past either viewport edge
+    // (it opens from the narrow right-hand Inspector, so without this it clips off the right).
+    const margin = 8;
+    const left = Math.max(margin, Math.min(r.left, window.innerWidth - width - margin));
+    setPos(openUp ? { left, bottom: window.innerHeight - r.top + 6, width } : { left, top: r.bottom + 6, width });
   }, [open]);
 
   useEffect(() => {

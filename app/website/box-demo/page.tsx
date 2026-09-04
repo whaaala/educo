@@ -22,6 +22,7 @@ import {
   type BoxSite, siteFromRoot, coerceSite, normalizeSite, setPageRoot, addPage, deletePage, renamePage, setHomePage, duplicatePage, emptyPageRoot, setSiteTheme,
 } from "@/lib/box-site";
 import { renderSiteHTML, downloadHTML } from "@/lib/box-export";
+import { warmIcons, hasIcon } from "@/lib/educo-ui/icon-svg";
 import BoxCanvas, { measureFloatGeom, measureGroupGeom } from "@/components/website/box/BoxCanvas";
 import BoxInspector from "@/components/website/box/BoxInspector";
 import BulkInspector from "@/components/website/box/BulkInspector";
@@ -217,7 +218,19 @@ export default function BoxDemoPage() {
     if (groupId) setSelectedIds([groupId]);
   };
 
-  const onExport = () => downloadHTML(renderSiteHTML(site, renderTheme), "site.html");
+  // Non-lucide icons (Brands/Google/Ionicons) load lazily, so warm every icon the site uses BEFORE
+  // building the HTML — otherwise iconSvg() would return "" for icons whose source isn't in memory yet.
+  const onExport = async () => {
+    const names: string[] = [];
+    const walk = (v: unknown) => {
+      if (typeof v === "string") { if (hasIcon(v)) names.push(v); }
+      else if (Array.isArray(v)) v.forEach(walk);
+      else if (v && typeof v === "object") Object.values(v as Record<string, unknown>).forEach(walk);
+    };
+    walk(site);
+    await warmIcons(names);
+    downloadHTML(renderSiteHTML(site, renderTheme), "site.html");
+  };
 
   // Click-to-add from the palette: insert into the selected container (or the page) with an optional style.
   const insertBlock = (kind: string, patch: Partial<BoxNode> = {}) => {
