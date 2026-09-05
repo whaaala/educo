@@ -17,7 +17,10 @@
     "test:e2e:ui": "playwright test --ui",
     "postinstall": "node scripts/patch-vitest-timeout.js",
     "gen:photos": "node scripts/gen-stock-photos.js",
-    "gen:icons": "node scripts/gen-icon-svg.js && node scripts/gen-all-icons.js"
+    "gen:icons": "node scripts/gen-icon-svg.js && node scripts/gen-all-icons.js",
+    "test:layout": "playwright test tests/e2e/component-layout-invariants.spec.ts --project=desktop-chrome --workers=1",
+    "test:layout:export": "playwright test tests/e2e/export-layout-invariants.spec.ts --project=desktop-chrome",
+    "test:invariants": "npm run test:layout && npm run test:layout:export"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

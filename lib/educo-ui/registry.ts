@@ -1,13 +1,22 @@
 /**
- * Educo UI COMPONENT REGISTRY — the single, extensible source of truth for design-system components that
- * render as ONE clean node (no wrapper container), exactly like the accordion. Each entry declares:
+ * Educo UI COMPONENT REGISTRY — the SINGLE-NODE rendering of design-system components: one entry declares
  *   • `slots`   — the editable content fields (auto-generate the inspector's Content editor)
  *   • `variants`— the design looks offered in the inspector
- *   • `render`  — pure fn → the component's `.eu-*` HTML (used by BOTH the canvas and the export, so the
- *                 editor is always a true WYSIWYG of the published site)
+ *   • `render`  — pure fn → the component's `.eu-*` HTML (used by BOTH the canvas and the export)
  *
- * To add a FUTURE component: add one entry here + its `.eu-<name>` CSS in components.ts. No other code changes —
- * the palette, canvas, export and inspector all read from this registry. Colours come from CSS tokens only.
+ * WHAT THIS IS NOT (corrected 2026-09-05). This header used to claim to be "the single source of truth for
+ * design-system components" and that "the palette, canvas, export and inspector all read from this registry".
+ * Neither was true: it excludes `accordion` and `alert`, and the palette never read from it. Card, Quote,
+ * Stat, Badge and Rating are inserted as EDITABLE TREES (see lib/component-catalogue.ts) precisely so every
+ * inner piece is individually selectable and gets the full inspector — which a single opaque node cannot do.
+ *
+ * → To add a FUTURE component, add it to **lib/component-catalogue.ts**. That is the one list.
+ *
+ * This file is still live and still needed, for two things:
+ *   1. BACK-COMPAT — documents saved before the tree presets can contain `{type:"component", component:"card"}`
+ *      nodes. The canvas, export and inspector all still read them through here, so those pages keep working.
+ *      Do not delete the render path; it is the only thing that can open them.
+ *   2. The `.eu-*` CSS contract and the token-driven look every component renders against.
  */
 
 import { iconSvg } from "./icon-svg";

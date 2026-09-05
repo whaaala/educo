@@ -8,14 +8,14 @@
 import type { CSSProperties } from "react";
 import {
   type BoxNode, type Breakpoint, containerStyle, childStyle, marginCSS, sizeToCSS, radiusCSS, SHADOW_CSS, u, baseUnit,
-  resolveResponsive, floatStacksOnMobile, videoEmbedSrc, isContainer, sanitizeCssDeclarations, expandScopedCss, ACCORDION_CSS_PARTS, ALERT_CSS_PARTS, itemOverrideCss, itemHasOverride, itemNumberVars, itemFloatReserveRem, richBody, plainBody, componentTextCss, componentBoxCss, bgImageLayer, renderAlertHTML, alertDismissScript, bgShowThroughCss, hugContainmentCss, COMPONENT_ITEM_SEL,
+  resolveResponsive, floatStacksOnMobile, videoEmbedSrc, isContainer, sanitizeCssDeclarations, expandScopedCss, ACCORDION_CSS_PARTS, ALERT_CSS_PARTS, COMPONENT_PARTS, itemFloatContextCss, itemOverrideCss, itemHasOverride, itemNumberVars, itemFloatReserveRem, richBody, plainBody, componentTextCss, componentBoxCss, bgImageLayer, renderAlertHTML, alertDismissScript, bgShowThroughCss, blockContainmentCss, COMPONENT_ITEM_SEL, remLen,
 } from "@/lib/box-model";
 import { isRegistryComponent, renderComponent, componentScripts } from "@/lib/educo-ui/registry";
 import { iconSvg } from "@/lib/educo-ui/icon-svg";
 import type { BoxSite } from "@/lib/box-site";
 import type { SiteTheme } from "@/lib/site-storage";
 import { colorToCSS } from "@/components/shared/ColorPalettePicker";
-import { stylesheet } from "@/lib/educo-ui/base";
+import { BREAKPOINTS_EM, stylesheet } from "@/lib/educo-ui/base";
 
 const UNITLESS = new Set(["opacity", "zIndex", "lineHeight", "fontWeight", "flexGrow", "flexShrink", "order", "flex"]);
 
@@ -119,19 +119,15 @@ function componentInjectCss(node: BoxNode): string {
   const tcss = componentTextCss(node), bcss = componentBoxCss(node);
   // Whole-component Advanced CSS: bare declarations style the component box; `title{…}`/`body{…}`/`icon{…}` etc.
   // restyle that part of EVERY item (text, background, colour — anything).
-  const adv = expandScopedCss(node.advancedCss, sel, node.component === "accordion" ? ACCORDION_CSS_PARTS : isAlert ? ALERT_CSS_PARTS : undefined);
-  // When any accordion item is detached (floating), make the accordion a positioning context and reserve
-  // height so floats aren't clipped. Reverts on mobile, where floated items return to the normal stack.
-  let floatCtx = "";
-  if (node.component === "accordion") {
-    const reserve = itemFloatReserveRem(node.items ?? []);
-    if (reserve > 0) floatCtx = `${sel}{position:relative;min-height:${reserve}rem}@media (max-width:480px){${sel}{min-height:0}}`;
-  }
+  const adv = expandScopedCss(node.advancedCss, sel, COMPONENT_PARTS[node.component!]);
+  // RULE N — when ANY item of ANY component is detached (floating), its box becomes a positioning context and
+  // reserves height so floats are never clipped. Reverts on mobile, where floated items return to the stack.
+  const floatCtx = itemFloatContextCss(node.items, sel, { stackOnNarrow: true });
   // REUSABLE across components: if the whole component has a block background, let it show through the items.
   const itemSel = COMPONENT_ITEM_SEL[node.component!];
   const showThrough = itemSel ? bgShowThroughCss(node, `${sel} ${itemSel}`) : "";
-  // RULE G/K: a hug-to-content block must be able to size to its contents — see hugContainmentCss.
-  return [tcss ? `${sel}, ${sel} *{${tcss}}` : "", bcss ? `${sel}{${bcss}}` : "", adv, floatCtx, showThrough, hugContainmentCss(node, sel)].filter(Boolean).join("");
+  // RULE G/K/R: the block box carries the container-query context (and drops it while hugging) — see blockContainmentCss.
+  return [tcss ? `${sel}, ${sel} *{${tcss}}` : "", bcss ? `${sel}{${bcss}}` : "", adv, floatCtx, showThrough, blockContainmentCss(node, sel)].filter(Boolean).join("");
 }
 
 /** Render an Educo UI component instance to its `.eu-*` markup + a per-instance <style> (so Design/Typography
@@ -156,7 +152,7 @@ function componentHTML(node: BoxNode): string {
       let itemCls = "eu-accordion__item";
       if (itemHasOverride(it)) {
         const ic = `eu-acc-i-${esc(it.id)}`;
-        const rule = itemOverrideCss(`.eu-accordion .${ic}`, it, { mobileReset: true });
+        const rule = itemOverrideCss(`.eu-accordion .${ic}`, it, { stackOnNarrow: true });
         if (rule) { itemCls += ` ${ic}`; itemStyles.push(rule); }
       }
       // Ordinal (01, 02…) fed to numbered designs as CSS vars — deterministic, matches the editor exactly.
@@ -197,7 +193,8 @@ function componentHTML(node: BoxNode): string {
   }
   // Alert — a multi-item component (mirrors the accordion), rendered from the SAME shared HTML as the canvas,
   // plus its opt-in zero-JS dismiss script.
-  if (node.component === "alert") return `${style}${renderAlertHTML(node)}${alertDismissScript(node)}`;
+  // RULE N: stackOnNarrow so free placement only applies from the `sm` breakpoint up — the stack is the base.
+  if (node.component === "alert") return `${style}${renderAlertHTML(node, undefined, { stackOnNarrow: true })}${alertDismissScript(node)}`;
   // Every other component renders as ONE clean node straight from the registry (same HTML the canvas shows),
   // plus its opt-in progressive-enhancement script (zero-JS unless the component asked for one, e.g. dismiss).
   if (isRegistryComponent(node.component)) return `${style}${renderComponent(node.component!, node.componentFields, node.variant)}${componentScripts(node.component!, node.componentFields, node.variant, node.id)}`;
@@ -232,9 +229,15 @@ function overridesCss(node: BoxNode): string {
 // would be invisible in the export. Instead every box gets a stable class (`bx-<id>`) and its BASE style is
 // emitted as a rule; tablet/mobile DIFFS are emitted inside @media blocks that override by cascade. The
 // breakpoints mirror the editor's device frames (mobile 375, tablet 768) so the preview MATCHES the editor.
-const TABLET_MAX = 1024; // fires for the ≤768 tablet frame
-const MOBILE_MAX = 480;  // fires for the ≤375 phone frame
-type Sheet = { base: string[]; tablet: string[]; mobile: string[] };
+// MOBILE-FIRST (Responsive Design Field Guide, ingredient ④): the BASE rule is the phone layout, and wider
+// screens ADD to it through `min-width` queries in `em` on the documented ladder. `em` so a reader who has
+// raised their browser's base font crosses the breakpoints later, in step with their own preference.
+// (Previously the base was DESKTOP and narrow screens undid it with `max-width` px queries — the exact
+// inversion the guide warns against. The editor's per-device DATA model is unchanged: a page still stores a
+// base plus tablet/mobile overrides; only the CSS that comes out of it is now built up instead of torn down.)
+const TABLET_MIN_EM = BREAKPOINTS_EM.sm; // 40em / 640px — tablet layout and up
+const DESKTOP_MIN_EM = BREAKPOINTS_EM.lg; // 64em / 1024px — desktop layout and up
+type Sheet = { base: string[]; tablet: string[]; desktop: string[] };
 const classFor = (id: string) => "bx-" + id.replace(/[^A-Za-z0-9_-]/g, "-");
 // When a property is set at BASE but dropped at a breakpoint, we must actively neutralise it (the base rule
 // still applies at every width) — reset it to its layout initial rather than leaving the desktop value.
@@ -284,8 +287,13 @@ function styleAt(node: BoxNode, rawParent: BoxNode | null, bp: Breakpoint): CSSP
   }
   // Elements apply their OWN minHeight/height (containers get it from containerStyle) so a height-resized
   // heading / text / button / list looks the same in the export as in the editor.
-  if (r.minHeight != null) wrap.minHeight = r.minHeight;
-  if (r.height) wrap.height = sizeToCSS(r.height);
+  if (r.minHeight != null) wrap.minHeight = remLen(r.minHeight); // rem, never px (field guide ②)
+  // RULE O — a self-painting block's height is a FLOOR (min-height) so its content can never spill out, and the
+  // block is a column flex so its `.eu-root` still stretches to fill it (no empty gap under the component).
+  if (r.height) {
+    if (selfPaint) { wrap.minHeight = sizeToCSS(r.height); wrap.display = "flex"; wrap.flexDirection = "column"; }
+    else wrap.height = sizeToCSS(r.height);
+  }
   // Content position (start/center/end) → the element becomes a flex box so its content re-positions as it grows.
   if (r.contentX || r.contentY) {
     const fp = (v?: string) => (v === "center" ? "center" : v === "end" ? "flex-end" : "flex-start");
@@ -314,13 +322,17 @@ function renderNode(node: BoxNode, rawParent: BoxNode | null, theme: SiteTheme, 
   const r = resolveResponsive(node, "base");
   if (r.hidden && !node.responsive) return ""; // hidden at base with no per-device un-hide → skip entirely
   const cls = classFor(node.id);
-  const baseObj = styleAt(node, rawParent, "base");
+  // Build UP: the phone layout is the base rule, tablet adds what changes at `sm`, desktop adds what changes
+  // again at `lg`. Each block is diffed against the one BELOW it, which is the order the cascade applies them.
+  const phoneObj = styleAt(node, rawParent, "mobile");
+  const tabletObj = styleAt(node, rawParent, "tablet");
+  const desktopObj = styleAt(node, rawParent, "base");
   const ov = overridesCss(r);
-  sheet.base.push(`.${cls}{${[styleString(baseObj), ov].filter(Boolean).join(";")}}`);
-  const tDiff = diffStyle(baseObj, styleAt(node, rawParent, "tablet"));
+  sheet.base.push(`.${cls}{${[styleString(phoneObj), ov].filter(Boolean).join(";")}}`);
+  const tDiff = diffStyle(phoneObj, tabletObj);
   if (tDiff) sheet.tablet.push(`.${cls}{${tDiff}}`);
-  const mDiff = diffStyle(baseObj, styleAt(node, rawParent, "mobile"));
-  if (mDiff) sheet.mobile.push(`.${cls}{${mDiff}}`);
+  const dDiff = diffStyle(tabletObj, desktopObj);
+  if (dDiff) sheet.desktop.push(`.${cls}{${dDiff}}`);
   const idAttr = r.anchor ? ` id="${esc(r.anchor)}"` : "";
   if (isContainer(r)) {
     const kids = (r.children ?? []).map((c) => renderNode(c, node, theme, pageMap, sheet)).join("");
@@ -329,12 +341,12 @@ function renderNode(node: BoxNode, rawParent: BoxNode | null, theme: SiteTheme, 
   return `<div${idAttr} class="${cls}">${elementHTML(r, theme, pageMap)}</div>`;
 }
 
-/** Turn the collected rules into a stylesheet (base first, then tablet, then mobile so narrow wins). */
+/** Turn the collected rules into a stylesheet: the phone layout first, then each wider screen adds to it. */
 function sheetCss(sheet: Sheet): string {
   return [
     sheet.base.join(""),
-    sheet.tablet.length ? `@media (max-width:${TABLET_MAX}px){${sheet.tablet.join("")}}` : "",
-    sheet.mobile.length ? `@media (max-width:${MOBILE_MAX}px){${sheet.mobile.join("")}}` : "",
+    sheet.tablet.length ? `@media (min-width:${TABLET_MIN_EM}em){${sheet.tablet.join("")}}` : "",
+    sheet.desktop.length ? `@media (min-width:${DESKTOP_MIN_EM}em){${sheet.desktop.join("")}}` : "",
   ].filter(Boolean).join("");
 }
 
@@ -342,7 +354,7 @@ function sheetCss(sheet: Sheet): string {
  *  `<style>` block (a passed `sheet` instead accumulates into a shared document-level sheet, no inline block). */
 export function renderPageHTML(root: BoxNode, theme: SiteTheme, pageMap: Map<string, string> = new Map(), sheet?: Sheet): string {
   if (sheet) return renderNode(root, null, theme, pageMap, sheet); // shared sheet → caller emits the CSS
-  const own: Sheet = { base: [], tablet: [], mobile: [] };
+  const own: Sheet = { base: [], tablet: [], desktop: [] };
   const body = renderNode(root, null, theme, pageMap, own);
   return `<style>${sheetCss(own)}</style>${body}`;
 }
@@ -369,7 +381,7 @@ function documentShell(theme: SiteTheme, title: string, body: string, responsive
 
 /** Render ONE page to a self-contained document (used by the isolated iframe preview). */
 export function renderPageDocument(root: BoxNode, theme: SiteTheme, title = "Page", pageMap: Map<string, string> = new Map(), opts: { preview?: boolean } = {}): string {
-  const sheet: Sheet = { base: [], tablet: [], mobile: [] };
+  const sheet: Sheet = { base: [], tablet: [], desktop: [] };
   const body = renderPageHTML(root, theme, pageMap, sheet);
   return documentShell(theme, title, body, sheetCss(sheet), opts.preview);
 }
@@ -379,7 +391,7 @@ export function renderPageDocument(root: BoxNode, theme: SiteTheme, title = "Pag
 export function renderSiteHTML(site: BoxSite, theme: SiteTheme, opts: { preview?: boolean } = {}): string {
   const pageMap = new Map(site.pages.map((p) => [p.id, p.path]));
   const ordered = [...site.pages].sort((a, b) => (a.id === site.homeId ? -1 : b.id === site.homeId ? 1 : 0));
-  const sheet: Sheet = { base: [], tablet: [], mobile: [] };
+  const sheet: Sheet = { base: [], tablet: [], desktop: [] };
   const nav = ordered.map((p) => `<a href="#${esc(p.path)}">${esc(p.name)}</a>`).join("");
   const sections = ordered.map((p) => `<section id="${esc(p.path)}">${renderPageHTML(p.root, theme, pageMap, sheet)}</section>`).join("\n");
   return documentShell(theme, ordered[0]?.name ?? "Site", `<nav class="eu-site-nav">${nav}</nav>\n${sections}`, sheetCss(sheet), opts.preview);

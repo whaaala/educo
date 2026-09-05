@@ -17,7 +17,7 @@ import {
   containerStyle, childStyle, marginCSS, sizeToCSS, u, baseUnit, floatingReserve, floatStacksOnMobile, createContainer, createGrid, createElement, createComponent,
   updateBox, removeBox, insertBox, moveBoxStep, duplicateBox, moveBox, cloneBox, findParent, isAncestor, isContainer, isEmptyBox, widthPct,
   isFloating, floatBox, unfloatBox, groupBoxes, ungroupBoxes, bringToFront, sendToBack, bringForward, sendBackward,
-  radiusCSS, isClipped, SHADOW_CSS, videoEmbedSrc, sanitizeCssDeclarations, expandScopedCss, ACCORDION_CSS_PARTS, itemOverrideCss, itemHasOverride, itemNumberVars, itemFloatReserveRem, richBody, componentTextCss, componentBoxCss, bgImageLayer, renderAlertHTML, bgShowThroughCss, resizeTopEdge, hugContainmentCss, hugsContent, addItemAfter, duplicateItem, duplicateChildItem, removeItem, removeChildItem, moveItem, moveChildItem, updateItem, updateChildItem, ALERT_SEVERITY_ICON, alertPartInline, alertIconInline, collectAlertItemStyles,
+  radiusCSS, isClipped, SHADOW_CSS, videoEmbedSrc, sanitizeCssDeclarations, expandScopedCss, ACCORDION_CSS_PARTS, itemOverrideCss, itemHasOverride, itemNumberVars, itemFloatReserveRem, richBody, componentTextCss, componentBoxCss, bgImageLayer, renderAlertHTML, bgShowThroughCss, resizeTopEdge, blockContainmentCss, hugsContent, itemFloatContextCss, COMPONENT_ITEM_SEL, clampContentScale, MIN_CONTENT_SCALE, isMultiItemComponent, comfortableWidth, remLen, rootFontPx, isDefiniteLen, addItemAfter, duplicateItem, duplicateChildItem, removeItem, removeChildItem, moveItem, moveChildItem, updateItem, updateChildItem, ALERT_SEVERITY_ICON, alertPartInline, alertIconInline, collectAlertItemStyles,
   type Breakpoint, resolveResponsive, updateBoxResponsive,
 } from "@/lib/box-model";
 import { ICON_SET } from "./icons";
@@ -281,7 +281,7 @@ export default function BoxCanvas({
     if (!editable) return;
     const stale: string[] = [];
     const walk = (n: BoxNode) => {
-      if (isFloating(n) && !hugsContent(n) && !(n.height && n.height.endsWith("px")) && !migratedFloats.current.has(n.id)) stale.push(n.id);
+      if (isFloating(n) && !hugsContent(n) && !isDefiniteLen(n.height) && !migratedFloats.current.has(n.id)) stale.push(n.id);
       (n.children ?? []).forEach(walk);
     };
     walk(rootRef.current);
@@ -292,7 +292,7 @@ export default function BoxCanvas({
         migratedFloats.current.add(id);
         const el = document.querySelector<HTMLElement>(`[data-box-id="${id}"]`);
         const h = el ? Math.round(el.getBoundingClientRect().height) : 0;
-        if (h > 8) { next = updateBox(next, id, { height: `${h}px`, minHeight: undefined }); changed = true; }
+        if (h > 8) { next = updateBox(next, id, { height: remLen(h, rootFontPx()), minHeight: undefined }); changed = true; }
       }
       if (changed) onChange(next);
     });
@@ -683,8 +683,8 @@ export default function BoxCanvas({
       // A floating card has a DEFINITE height (px) — so resizing it keeps the parent's reserved space exact.
       // The BOTTOM is deliberately not capped: the parent reserves height for its floats, so growing down just
       // makes the section (and the page) taller — nothing is ever hidden, unlike growing past the near edges.
-      if (hasS) { const h = Math.max(16, bh + dy); patch.height = `${Math.round(h)}px`; patch.minHeight = undefined; }
-      if (hasN) { const h = Math.min(y0 + bh, Math.max(16, bh - dy)); patch.height = `${Math.round(h)}px`; patch.minHeight = undefined; patch.top = round1(((y0 + (bh - h)) / ch) * 100); }
+      if (hasS) { const h = Math.max(16, bh + dy); patch.height = remLen(Math.round(h), rootFontPx()); patch.minHeight = undefined; }
+      if (hasN) { const h = Math.min(y0 + bh, Math.max(16, bh - dy)); patch.height = remLen(Math.round(h), rootFontPx()); patch.minHeight = undefined; patch.top = round1(((y0 + (bh - h)) / ch) * 100); }
       pending = writeBox(rootRef.current, id, patch);
       if (!raf) raf = requestAnimationFrame(flush);
     };
@@ -766,7 +766,52 @@ export default function BoxCanvas({
     const startLeftPx = rect.left - contentLeftPx, startRightPx = rect.right - contentLeftPx;
     const startTopPx = rect.top - contentTopPx, startBotPx = rect.bottom - contentTopPx;
     const flowX = startLeftPx - ML0px, flowY = startTopPx - MT0px;
-    const minWpx = Math.max(8, 0.03 * maxW), minHpx = 8;
+    // RULE G/O — a component (or button) must never be CROPPED by a resize. Down to the size its own content
+    // needs, the box simply follows the drag. PAST that, the component's TEXT SCALES DOWN so the content still
+    // fits, until it reaches MIN_CONTENT_SCALE — then the drag stops, so text never becomes unreadable and
+    // nothing is ever hidden.
+    //
+    // The two NATURAL sizes are measured once here, so a drag stays smooth (no re-measuring per mouse-move).
+    // Measuring them correctly is subtle: `scrollHeight` reports the BOX whenever the content already fits, and
+    // the element may already be carrying a shrink from an earlier drag. Reading either of those straight gives
+    // an inflated reference, which is what made the text shrink out of proportion and stopped the height ever
+    // going back down to the content. So both are measured with the box unconstrained AND the scale neutralised.
+    const selfSizing = node.type === "component" || node.type === "button";
+    let naturalH = 0, naturalW = 0;
+    if (selfSizing) {
+      const inner = (el.querySelector(".eu-root > *:not(style)") as HTMLElement | null) ?? el;
+      // Components declare `container-type: inline-size` for their container queries, which makes their inline
+      // size INDEPENDENT of their contents — so max-content/min-content would report the padding and nothing
+      // else (measured: 42px for a full alert). Neutralise it for the duration of the measurement, exactly as
+      // blockContainmentCss does for a hug-to-content block at render time.
+      const measureCss = document.createElement("style");
+      measureCss.textContent = `[data-box-id="${node.id}"], [data-box-id="${node.id}"] *{container-type:normal !important}`;
+      document.head.appendChild(measureCss);
+      const prevElH = el.style.height, prevElMinH = el.style.minHeight;
+      const prevW = inner.style.width, prevFs = inner.style.fontSize;
+      inner.style.fontSize = "1em";      // undo any contentScale so we measure the TRUE natural size
+      el.style.height = "auto";          // …and let the box follow its content rather than the other way round
+      el.style.minHeight = "0";
+      naturalH = Math.ceil(el.getBoundingClientRect().height);
+      // Two width references, both with the scale neutralised: the content on ONE line (max-content) and the
+      // narrowest it can legally get (min-content, its longest unbreakable word). The COMFORTABLE width sits
+      // between them — wrapping to a tidy couple of lines. Narrower than that and the text scales rather than
+      // rewrapping into a one-word-per-line column.
+      inner.style.width = "max-content";
+      const maxContentW = Math.ceil(inner.getBoundingClientRect().width);
+      inner.style.width = "min-content";
+      const minContentW = Math.ceil(inner.getBoundingClientRect().width);
+      naturalW = comfortableWidth(maxContentW, minContentW);
+      inner.style.width = prevW; inner.style.fontSize = prevFs;
+      el.style.height = prevElH; el.style.minHeight = prevElMinH;
+      measureCss.remove();
+    }
+    // Sizes are written in rem (field guide ②) — read the root font once per drag, never per mouse-move.
+    const rootPx = rootFontPx();
+    const minWpx = selfSizing ? Math.max(8, naturalW * MIN_CONTENT_SCALE) : Math.max(8, 0.03 * maxW);
+    const minHpx = selfSizing ? Math.max(8, naturalH * MIN_CONTENT_SCALE) : 8;
+    /** The text scale a box of `px` needs so `natural` px of content still fits (1 until it must shrink). */
+    const fitScale = (px: number, natural: number) => (natural > 0 ? clampContentScale(px / natural) : 1);
     // The IMMEDIATE next section on this line (the closest sibling to the right) and its FIXED absolute
     // left. Resizing this section's right edge holds that neighbour EXACTLY in place — its margin-left
     // absorbs the change — so this section fills / opens the gap and the neighbour never moves.
@@ -795,10 +840,15 @@ export default function BoxCanvas({
       // shifts right with margin-left, keeping this section's right edge fixed (a gap opens on the left).
       if (hasE) {
         const right = Math.min(nextLeftPx, Math.max(startLeftPx + minWpx, startRightPx + dx));
-        tree = writeBox(tree, id, { width: pct(right - startLeftPx) });
+        const scE = selfSizing ? fitScale(right - startLeftPx, naturalW) : 1;
+        tree = writeBox(tree, id, { width: pct(right - startLeftPx), ...(selfSizing ? { contentScale: scE < 1 ? scE : undefined } : {}) });
         if (nextSibId) tree = writeBox(tree, nextSibId, { marginLeft: Math.max(0, pxU(nextLeftPx - right)) }); // pin the neighbour in place
       }
-      if (hasW) { const left = Math.min(startRightPx - minWpx, Math.max(flowX, startLeftPx + dx)); tree = writeBox(tree, id, { width: pct(startRightPx - left), marginLeft: Math.max(0, pxU(left - flowX)) }); }
+      if (hasW) {
+        const left = Math.min(startRightPx - minWpx, Math.max(flowX, startLeftPx + dx));
+        const scW = selfSizing ? fitScale(startRightPx - left, naturalW) : 1;
+        tree = writeBox(tree, id, { width: pct(startRightPx - left), marginLeft: Math.max(0, pxU(left - flowX)), ...(selfSizing ? { contentScale: scW < 1 ? scW : undefined } : {}) });
+      }
       // ── HEIGHT ── the height you drag sets a MIN-HEIGHT (a floor), not a fixed height. The section HUGS
       // its content, so growing a child grows the section; shrinking below the content does nothing (the
       // content holds it up); and when children are empty, dragging the floor up/down grows/shrinks them.
@@ -806,7 +856,11 @@ export default function BoxCanvas({
       // element (which FILLS the box via height:100%) actually grows/shrinks with the drag. A normal element/section
       // uses min-height (a floor it hugs up from) so it can still grow with its content.
       const isComp = node.type === "component" || node.type === "button";
-      if (hasS) { const h = Math.round(Math.max(startTopPx + minHpx, startBotPx + dy) - startTopPx); tree = writeBox(tree, id, isComp ? { height: `${h}px`, minHeight: undefined, clip: true } : { minHeight: h, height: undefined }); } // top fixed, bottom moves
+      if (hasS) {
+        const h = Math.round(Math.max(startTopPx + minHpx, startBotPx + dy) - startTopPx);
+        const sc = fitScale(h, naturalH);
+        tree = writeBox(tree, id, isComp ? { height: remLen(h, rootPx), minHeight: undefined, clip: undefined, contentScale: sc < 1 ? sc : undefined } : { minHeight: h, height: undefined });
+      } // top fixed, bottom moves
       if (hasN) {
         // Edge-anchored: the BOTTOM stays put, the TOP moves. Dragging the top UP grows the block — even at the
         // canvas top — by letting margin-top go negative so the block extends upward (was clamped to the flow
@@ -819,7 +873,8 @@ export default function BoxCanvas({
         // `resizeTopEdge` (box-model) owns the maths + the page clamp so the rule is unit-testable.
         const { top, height: h } = resizeTopEdge(startTopPx, startBotPx, dy, minHpx, pageTopPx ?? flowY);
         const mt = pxU(top - flowY); // may be negative → the block grows upward past its flow origin
-        tree = writeBox(tree, id, isComp ? { height: `${h}px`, minHeight: undefined, clip: true, marginTop: mt } : { minHeight: h, height: undefined, marginTop: mt });
+        const scN = fitScale(h, naturalH);
+        tree = writeBox(tree, id, isComp ? { height: remLen(h, rootPx), minHeight: undefined, clip: undefined, marginTop: mt, contentScale: scN < 1 ? scN : undefined } : { minHeight: h, height: undefined, marginTop: mt });
       }
       pending = tree;
       if (!raf) raf = requestAnimationFrame(flush);
@@ -959,7 +1014,14 @@ export default function BoxCanvas({
         // Elements (non-containers) apply their own minHeight/height here (containers get it from containerStyle),
         // so dragging the TOP/BOTTOM edge actually resizes a heading / text / button / list. When a Content
         // position is set, the wrapper becomes a flex box so the content re-positions as the block grows.
-        style={{ ...wrapStyle, minHeight: node.minHeight, height: node.height ? sizeToCSS(node.height) : (wrapStyle as React.CSSProperties).height,
+        // RULE O: for a COMPONENT/BUTTON the stored height is a floor (see componentBoxCss) — the box grows if
+        // its content later needs more room, instead of the content spilling out below it.
+        style={{ ...wrapStyle,
+          // A self-painting block is a COLUMN FLEX whose stored height is a FLOOR: the box grows if its content
+          // needs more room (never a spill), while its `.eu-root` stretches to fill it (never an empty gap).
+          ...(selfPaint ? { display: "flex", flexDirection: "column" } : {}),
+          minHeight: selfPaint && node.height ? sizeToCSS(node.height) : (node.minHeight != null ? remLen(node.minHeight) : undefined),
+          height: !selfPaint && node.height ? sizeToCSS(node.height) : (wrapStyle as React.CSSProperties).height,
           // Content position → the wrapper flexes so the content re-positions as the block grows. A BUTTON fills its
           // box itself and positions its own label, so it opts out here (otherwise the two would fight).
           ...((node.contentX || node.contentY) && node.type !== "button" ? { display: "flex", flexDirection: "column", justifyContent: flexPos(node.contentY), alignItems: flexPos(node.contentX) } : {}),
@@ -1175,10 +1237,13 @@ function inlineToStyle(css: string): React.CSSProperties | undefined {
  * `EditableText`; this follows exactly that pattern, so both components behave identically (RULE F).
  * Sub-items recurse through the same component, so no nesting level is less editable than the top (RULE I).
  */
-function AlertItemView({ item, sev, treat, dismiss, editable, parentId, onEdit }: {
+function AlertItemView({ item, sev, treat, dismiss, editable, parentId, onEdit, onFloatDrag, floatsActive }: {
   item: import("@/lib/box-model").ComponentItem;
   sev: string; treat: string; dismiss: boolean; editable?: boolean; parentId?: string;
   onEdit: (id: string, patch: Partial<import("@/lib/box-model").ComponentItem>, parentId?: string) => void;
+  /** RULE N — drag a detached item to position it (the inspector's X/Y inputs are the keyboard path). */
+  onFloatDrag?: (e: React.PointerEvent, item: import("@/lib/box-model").ComponentItem) => void;
+  floatsActive?: boolean;
 }) {
   const iconName = item.icon || ALERT_SEVERITY_ICON[sev] || "Info";
   const svg = iconName ? iconSvg(iconName) : "";
@@ -1186,7 +1251,14 @@ function AlertItemView({ item, sev, treat, dismiss, editable, parentId, onEdit }
   const role = sev === "danger" || sev === "warning" ? "alert" : "status";
   const set = (patch: Partial<import("@/lib/box-model").ComponentItem>) => onEdit(item.id, patch, parentId);
   return (
-    <div className={cls} role={role} data-eu-item={item.id} data-eu-parent={parentId}>
+    <div
+      className={cls}
+      role={role}
+      data-eu-item={item.id}
+      data-eu-parent={parentId}
+      style={editable && item.float && floatsActive ? { cursor: "move" } : undefined}
+      onPointerDown={editable && item.float && floatsActive && onFloatDrag ? (e) => onFloatDrag(e, item) : undefined}
+    >
       {item.media ? <img className="eu-alert__media" src={item.media} alt={item.mediaAlt ?? ""} /> : null}
       {svg ? <span className="eu-alert__icon" aria-hidden="true" style={inlineToStyle(alertIconInline(item))} dangerouslySetInnerHTML={{ __html: svg }} /> : null}
       <div className="eu-alert__content">
@@ -1202,7 +1274,10 @@ function AlertItemView({ item, sev, treat, dismiss, editable, parentId, onEdit }
               : <span dangerouslySetInnerHTML={{ __html: richBody(item.body) }} />}
           </div>
         )}
-        {(item.meta || editable) && (
+        {/* Meta renders only when it HAS a value — exactly like the export. Rendering an empty one in the
+            editor put a stray little box on the right of every alert (`.eu-alert__meta` is margin-start:auto),
+            which is canvas/export divergence AND visual noise. It is added from the inspector's Meta field. */}
+        {item.meta && (
           <span className="eu-alert__meta">
             <EditableText value={item.meta} editable={editable} onChange={(v) => set({ meta: v })} placeholder="" />
           </span>
@@ -1210,7 +1285,7 @@ function AlertItemView({ item, sev, treat, dismiss, editable, parentId, onEdit }
         {(item.children ?? []).length > 0 && (
           <div className="eu-alert__sub">
             {(item.children ?? []).map((c) => (
-              <AlertItemView key={c.id} item={c} sev={sev} treat={treat} dismiss={false} editable={editable} parentId={item.id} onEdit={onEdit} />
+              <AlertItemView key={c.id} item={c} sev={sev} treat={treat} dismiss={false} editable={editable} parentId={item.id} onEdit={onEdit} onFloatDrag={onFloatDrag} floatsActive={floatsActive} />
             ))}
           </div>
         )}
@@ -1312,9 +1387,49 @@ function useItemCrud(
     down: () => { if (sel) apply(sel.parentId ? moveChildItem(nodeRef.current, sel.parentId, sel.id, 1) : moveItem(nodeRef.current, sel.id, 1)); },
   };
   // How many siblings the selection has — the toolbar guards Delete at the last one.
+  const siblings: import("@/lib/box-model").ComponentItem[] = sel?.parentId
+    ? ((node.items ?? []).find((it) => it.id === sel.parentId)?.children ?? [])
+    : (node.items ?? []);
+  const siblingIndex = sel ? siblings.findIndex((it) => it.id === sel.id) : -1;
   const siblingCount = sel?.parentId
     ? ((node.items ?? []).find((it) => it.id === sel.parentId)?.children ?? []).length
     : (node.items ?? []).length;
+
+  /**
+   * RULE N — drag a DETACHED (floating) item to position it, for EVERY component. It finds elements by the
+   * `data-eu-item` attribute every component already stamps, and measures against the component's own host
+   * box, so nothing here is accordion- or alert-specific. A grouped set moves rigidly as one unit, and the
+   * shared delta is clamped so no member can leave the component's box (RULE H, at item level).
+   * The inspector's X/Y number inputs are the keyboard alternative to this drag (RULE C).
+   */
+  const startItemDrag = (e: React.PointerEvent, it: import("@/lib/box-model").ComponentItem, floatsActive: boolean) => {
+    if (!it.float || !floatsActive) return;
+    if ((e.target as HTMLElement).closest("[contenteditable='true']")) return; // let text editing win
+    e.preventDefault(); e.stopPropagation();
+    const remPx = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+    const host = hostRef.current;
+    const hostR = host?.getBoundingClientRect();
+    const all = nodeRef.current.items ?? [];
+    const members = (it.group ? all.filter((m) => m.group === it.group && m.float) : [it]).map((m) => {
+      const mel = host?.querySelector(`[data-eu-item="${CSS.escape(m.id)}"]`) as HTMLElement | null;
+      const mr = mel?.getBoundingClientRect();
+      const maxX = hostR && mr ? Math.max(0, (hostR.width - mr.width) / remPx) : Infinity;
+      const maxY = hostR && mr ? Math.max(0, (hostR.height - mr.height) / remPx) : Infinity;
+      return { id: m.id, f: m.float!, maxX, maxY };
+    });
+    const sx = e.clientX, sy = e.clientY;
+    const move = (ev: PointerEvent) => {
+      let dx = (ev.clientX - sx) / remPx, dy = (ev.clientY - sy) / remPx;
+      for (const mb of members) { // clamp the SHARED delta so no member exits the box (keeps the group rigid)
+        dx = Math.max(-mb.f.x, Math.min(dx, mb.maxX - mb.f.x));
+        dy = Math.max(-mb.f.y, Math.min(dy, mb.maxY - mb.f.y));
+      }
+      const moved = new Map(members.map((mb) => [mb.id, { ...mb.f, x: +(mb.f.x + dx).toFixed(1), y: +(mb.f.y + dy).toFixed(1) }]));
+      onPatchNode?.({ items: (nodeRef.current.items ?? []).map((m) => (moved.has(m.id) ? { ...m, float: moved.get(m.id) } : m)) });
+    };
+    const up = () => { window.removeEventListener("pointermove", move); window.removeEventListener("pointerup", up); };
+    window.addEventListener("pointermove", move); window.addEventListener("pointerup", up);
+  };
 
   // Used by a component's React item views to write one field of one item (top-level or nested).
   const editItem = (id: string, patch: Partial<import("@/lib/box-model").ComponentItem>, parentId?: string) => {
@@ -1322,7 +1437,7 @@ function useItemCrud(
     const next = parentId ? updateChildItem(cur, parentId, id, patch) : updateItem(cur, id, patch);
     onPatchNode?.({ items: next.items });
   };
-  return { selected, setSelected, hostRef, handlers: { onMouseDown, onBlur, onKeyDown }, actions, siblingCount, editItem };
+  return { selected, setSelected, hostRef, handlers: { onMouseDown, onBlur, onKeyDown }, actions, siblingCount, siblingIndex, editItem, startItemDrag };
 }
 
 function ComponentView({ node, editable, onPatchNode, breakpoint = "base", itemSel, setItemSel }: {
@@ -1338,19 +1453,23 @@ function ComponentView({ node, editable, onPatchNode, breakpoint = "base", itemS
   const crud = useItemCrud(node, onPatchNode, itemSel, setItemSel);
   const itemHostRef = useRef<HTMLDivElement>(null);
   crud.hostRef.current = itemHostRef.current; // the click-away check needs this component’s DOM subtree
-  // Grow the accordion box to CONTAIN its floated items exactly, so a detached item never spills outside its
-  // container (measured after each render → correct even for tall, open items; reverts on the mobile preview).
+  // RULE N — grow the component's box to CONTAIN its floated items exactly, so a detached item never spills
+  // outside its container. Measured after each render, so it is right even for tall or newly-opened items, and
+  // it applies to EVERY multi-item component: the box element is found through that component's own item
+  // selector, not a hard-coded accordion class. Reverts on the mobile preview, where floats rejoin the stack.
   const accRef = useRef<HTMLDivElement>(null);
+  const itemBoxRef = useRef<HTMLDivElement>(null);
   useLayoutEffect(() => {
-    const el = accRef.current;
-    if (!el || node.component !== "accordion") return;
+    const el = accRef.current ?? itemBoxRef.current;
+    const itemSel = COMPONENT_ITEM_SEL[node.component ?? ""];
+    if (!el || !itemSel) return;
     // Only relevant when items actually float; skip entirely otherwise (avoids a measure→write→resize loop).
     const hasFloat = breakpoint !== "mobile" && (node.items ?? []).some((it) => it.float);
     let target = "";
     if (hasFloat) {
       let maxBottom = 0;
-      el.querySelectorAll(":scope > .eu-accordion__item").forEach((c) => {
-        const ce = c as HTMLElement;
+      el.querySelectorAll(`:scope > ${itemSel}`).forEach((child) => {
+        const ce = child as HTMLElement;
         if (getComputedStyle(ce).position === "absolute") maxBottom = Math.max(maxBottom, ce.offsetTop + ce.offsetHeight);
       });
       target = maxBottom > 0 ? `${Math.ceil(maxBottom)}px` : "";
@@ -1376,7 +1495,9 @@ function ComponentView({ node, editable, onPatchNode, breakpoint = "base", itemS
   // column of one-letter-per-line text, inside a full-width band that read as a wrapper). A block-level box with
   // `width:auto` FILLS a definite-width parent and reports its real content width to a shrink-to-fit one — which
   // is exactly what Full and Fit each need. Same reason `COMPONENT_FILL` sets height only.
-  const styleVars = { height: "100%", display: "grid", ...typo, ...(node.tokenOverrides ?? {}) } as React.CSSProperties;
+  // `flex:1` (not `height:100%`) — the block box is a column flex, so this stretches to whatever height the box
+  // ends up with, whether that came from a resize or from the content itself. See the wrapper style below.
+  const styleVars = { flex: "1 1 auto", minHeight: 0, display: "grid", ...typo, ...(node.tokenOverrides ?? {}) } as React.CSSProperties;
   if (node.component === "accordion") {
     const items = node.items ?? [];
     const cls = "eu-accordion" + (node.variant ? ` eu-accordion${node.variant}` : "");
@@ -1392,42 +1513,13 @@ function ComponentView({ node, editable, onPatchNode, breakpoint = "base", itemS
     // so any text/background/colour of the accordion OR any single item can be overridden — canvas == export.
     const adv = expandScopedCss(node.advancedCss, sel, ACCORDION_CSS_PARTS);
     const itemCss = items.map((it) => (itemHasOverride(it) ? itemOverrideCss(`${sel} .eu-acc-i-${it.id}`, it, { skipFloat: !floatsActive }) : "")).filter(Boolean).join("");
-    const reserve = floatsActive ? itemFloatReserveRem(items) : 0;
-    const floatCtx = reserve > 0 ? `${sel}{position:relative;min-height:${reserve}rem}` : "";
-    const inject = [tcss ? `${sel}, ${sel} *{${tcss}}` : "", bcss ? `${sel}{${bcss}}` : "", adv, itemCss, floatCtx, bgShowThroughCss(node, `${sel} .eu-accordion__item`), hugContainmentCss(node, sel)].filter(Boolean).join("");
+    const floatCtx = floatsActive ? itemFloatContextCss(items, sel) : "";
+    const inject = [tcss ? `${sel}, ${sel} *{${tcss}}` : "", bcss ? `${sel}{${bcss}}` : "", adv, itemCss, floatCtx, bgShowThroughCss(node, `${sel} .eu-accordion__item`), blockContainmentCss(node, sel)].filter(Boolean).join("");
     // Drag a detached (floating) item on the canvas to reposition it — X/Y (rem) update live.
     // Write several items in one patch (so a grouped drag moves every member together, atomically) — from the
     // freshest items (itemsRef), never the render-time closure, so no other item's position is lost.
     const setItems = (updates: { id: string; float: import("@/lib/box-model").ComponentItem["float"] }[]) =>
       onPatchNode?.({ items: itemsRef.current.map((it) => { const u = updates.find((x) => x.id === it.id); return u ? { ...it, float: u.float } : it; }) });
-    const startItemDrag = (e: React.PointerEvent, it: import("@/lib/box-model").ComponentItem) => {
-      if (!editable || !it.float || !floatsActive) return;
-      if ((e.target as HTMLElement).closest("[contenteditable='true']")) return; // let text editing win
-      e.preventDefault(); e.stopPropagation();
-      const remPx = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
-      const accEl = (e.currentTarget as HTMLElement).closest(".eu-accordion") as HTMLElement | null;
-      const accR = accEl?.getBoundingClientRect();
-      // Move the whole GROUP together (individual item on its own when ungrouped). Capture each member's start
-      // position + how far it may move before its box leaves the accordion, so the rigid group stays contained.
-      const members = (it.group ? items.filter((m) => m.group === it.group && m.float) : [it]).map((m) => {
-        const mel = accEl?.querySelector(`.eu-acc-i-${m.id}`) as HTMLElement | null;
-        const mr = mel?.getBoundingClientRect();
-        const maxX = accR && mr ? Math.max(0, (accR.width - mr.width) / remPx) : Infinity;
-        const maxY = accR && mr ? Math.max(0, (accR.height - mr.height) / remPx) : Infinity;
-        return { id: m.id, f: m.float!, maxX, maxY };
-      });
-      const sx = e.clientX, sy = e.clientY;
-      const move = (ev: PointerEvent) => {
-        let dx = (ev.clientX - sx) / remPx, dy = (ev.clientY - sy) / remPx;
-        for (const mb of members) { // clamp the SHARED delta so no member exits the box (keeps the group rigid)
-          dx = Math.max(-mb.f.x, Math.min(dx, mb.maxX - mb.f.x));
-          dy = Math.max(-mb.f.y, Math.min(dy, mb.maxY - mb.f.y));
-        }
-        setItems(members.map((mb) => ({ id: mb.id, float: { ...mb.f, x: +(mb.f.x + dx).toFixed(1), y: +(mb.f.y + dy).toFixed(1) } })));
-      };
-      const up = () => { window.removeEventListener("pointermove", move); window.removeEventListener("pointerup", up); };
-      window.addEventListener("pointermove", move); window.addEventListener("pointerup", up);
-    };
     return (
       <div className="eu-root" style={{ ...styleVars, position: "relative" }} ref={itemHostRef}>
         {inject ? <style dangerouslySetInnerHTML={{ __html: inject }} /> : null}
@@ -1456,7 +1548,7 @@ function ComponentView({ node, editable, onPatchNode, breakpoint = "base", itemS
             {it.category && it.category !== items[i - 1]?.category ? <div className="eu-accordion__category">{it.category}</div> : null}
             <details id={it.anchor || undefined} data-eu-item={it.id} className={`eu-accordion__item${itemHasOverride(it) ? ` eu-acc-i-${it.id}` : ""}`}
               style={{ ...(itemNumberVars(i) as React.CSSProperties), ...(editable && it.float && floatsActive ? { cursor: "move" } : {}) }}
-              onPointerDown={editable && it.float && floatsActive ? (e) => startItemDrag(e, it) : undefined}
+              onPointerDown={editable && it.float && floatsActive ? (e) => crud.startItemDrag(e, it, floatsActive) : undefined}
               open={editable ? true : it.open} name={node.accMultiOpen ? undefined : `acc-${node.id}`}>
               <summary className="eu-accordion__header" onClick={editable ? (e) => e.preventDefault() : undefined}>
                 {it.icon && iconSvg(it.icon) ? <span className="eu-accordion__icon" aria-hidden="true" dangerouslySetInnerHTML={{ __html: iconSvg(it.icon) }} /> : null}
@@ -1489,11 +1581,12 @@ function ComponentView({ node, editable, onPatchNode, breakpoint = "base", itemS
             </Fragment>
           ))}
         </div>
-        {editable && (
+        {editable && isMultiItemComponent(node.component) && (
           <ItemCrudLayer
             containerRef={itemHostRef}
             selected={crud.selected}
             count={crud.siblingCount}
+            index={crud.siblingIndex}
             onAdd={crud.actions.add}
             onDuplicate={crud.actions.duplicate}
             onDelete={crud.actions.remove}
@@ -1515,17 +1608,20 @@ function ComponentView({ node, editable, onPatchNode, breakpoint = "base", itemS
     const sel = `[data-box-id="${node.id}"] .eu-alert-stack`;
     // Per-ITEM styling/CSS used to ride along inside renderAlertHTML's <style>; the React branch injects it here
     // instead, from the same model helper, so the canvas keeps matching the export exactly.
+    // RULE N — floats apply on desktop/tablet; on the mobile preview items return to the normal stack, exactly
+    // as the export does, so the canvas and the published page agree.
+    const alertFloatsActive = breakpoint !== "mobile";
     const itemStyles: string[] = [];
-    collectAlertItemStyles(node.items, itemStyles);
-    const inject = [tcss ? `${sel} .eu-alert__body, ${sel} .eu-alert__title{${tcss}}` : "", bcss ? `${sel}{${bcss}}` : "", adv ? `${sel}{${adv}}` : "", bgShowThroughCss(node, `${sel} .eu-alert`), hugContainmentCss(node, sel), itemStyles.join("")].filter(Boolean).join("");
+    collectAlertItemStyles(node.items, itemStyles, { skipFloat: !alertFloatsActive });
+    const inject = [tcss ? `${sel} .eu-alert__body, ${sel} .eu-alert__title{${tcss}}` : "", bcss ? `${sel}{${bcss}}` : "", adv ? `${sel}{${adv}}` : "", bgShowThroughCss(node, `${sel} .eu-alert`), blockContainmentCss(node, sel), alertFloatsActive ? itemFloatContextCss(node.items, sel) : "", itemStyles.join("")].filter(Boolean).join("");
     return (
       <div className="eu-root" style={{ ...styleVars, position: "relative" }}>
         {inject ? <style dangerouslySetInnerHTML={{ __html: inject }} /> : null}
         {/* Items render as REACT here (see AlertItemView) so each one's text is directly editable on the canvas,
             exactly like the Accordion's. The EXPORT still comes from renderAlertHTML — same markup, same CSS. */}
         <div ref={itemHostRef} style={COMPONENT_FILL} onMouseDown={editable ? crud.handlers.onMouseDown : undefined}>
-          <div className={`eu-alert-stack eu-alert-stack--${node.alertForm || "inline"}`}>
-            {(node.items ?? []).map((it) => (
+          <div ref={itemBoxRef} className={`eu-alert-stack eu-alert-stack--${node.alertForm || "inline"}`}>
+            {(node.items ?? []).slice(0, 1).map((it) => (
               <AlertItemView
                 key={it.id}
                 item={it}
@@ -1534,15 +1630,18 @@ function ComponentView({ node, editable, onPatchNode, breakpoint = "base", itemS
                 dismiss={!!node.alertDismiss}
                 editable={editable}
                 onEdit={crud.editItem}
+                onFloatDrag={(e, i) => crud.startItemDrag(e, i, alertFloatsActive)}
+                floatsActive={alertFloatsActive}
               />
             ))}
           </div>
         </div>
-        {editable && (
+        {editable && isMultiItemComponent(node.component) && (
           <ItemCrudLayer
             containerRef={itemHostRef}
             selected={crud.selected}
             count={crud.siblingCount}
+            index={crud.siblingIndex}
             onAdd={crud.actions.add}
             onDuplicate={crud.actions.duplicate}
             onDelete={crud.actions.remove}
@@ -1558,7 +1657,7 @@ function ComponentView({ node, editable, onPatchNode, breakpoint = "base", itemS
     const adv = sanitizeCssDeclarations(node.advancedCss);
     const tcss = componentTextCss(node), bcss = componentBoxCss(node);
     const sel = `[data-box-id="${node.id}"] .eu-${node.component}`;
-    const inject = [tcss ? `${sel}, ${sel} *{${tcss}}` : "", bcss ? `${sel}{${bcss}}` : "", adv ? `${sel}{${adv}}` : "", hugContainmentCss(node, sel)].filter(Boolean).join("");
+    const inject = [tcss ? `${sel}, ${sel} *{${tcss}}` : "", bcss ? `${sel}{${bcss}}` : "", adv ? `${sel}{${adv}}` : "", blockContainmentCss(node, sel)].filter(Boolean).join("");
     const html = renderComponent(node.component!, node.componentFields, node.variant);
     return (
       <div className="eu-root" style={styleVars}>

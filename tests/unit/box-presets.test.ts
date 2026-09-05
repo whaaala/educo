@@ -47,11 +47,17 @@ describe("box-presets", () => {
     for (const kind of ["card", "quote", "stat", "badge", "rating"]) expect(hex(blockForKind(kind))).toBe(false);
   });
 
-  it("blockForKind builds a Badge as a single fully-editable text element (pill-styled)", () => {
+  it("blockForKind builds a Badge as a padded pill around an editable text element", () => {
+    // It was a SINGLE text element carrying padding — but `paddingCSS` is only applied by `containerStyle`,
+    // so an element never renders padding. The pill had no breathing room and CLIPPED its own text by 4px
+    // (wrapper hugged to 27px, text needed 31px, overflow hidden). The padding has to live on a container.
     const badge = blockForKind("badge");
-    expect(badge.type).toBe("text");     // one editable element — change text/colour/size/radius directly
-    expect(badge.text).toBeTruthy();
-    expect(badge.radius).toBeGreaterThan(0); // pill
+    expect(badge.type).toBe("container");
+    expect(badge.radius).toBeGreaterThan(0);                 // still a pill
+    expect(badge.paddingLeft ?? badge.padding).toBeGreaterThan(0); // and the padding now actually renders
+    const text = (badge.children ?? [])[0];
+    expect(text?.type).toBe("text");                          // the label is still a fully-editable element
+    expect(text?.text).toBeTruthy();
   });
 
   it("the Accordion stays a component (its items edit inline)", () => {

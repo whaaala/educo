@@ -19,17 +19,19 @@ export type SelectedItem = { id: string; parentId?: string };
 type Box = { top: number; left: number; width: number; height: number };
 type Placement = Box & { barTop: number; barLeft: number; side: "right" | "above" | "below" };
 
-const BAR_W = 168; // the toolbar's own width — used to decide whether it fits beside the item
+const BAR_W = 168; // the toolbar's widest form — used to decide whether it fits beside the item
 const BAR_H = 34;
 const GAP = 8;
 
 export default function ItemCrudLayer({
-  containerRef, selected, count, onAdd, onDuplicate, onDelete, onMoveUp, onMoveDown, onDismiss,
+  containerRef, selected, count, index = -1, onAdd, onDuplicate, onDelete, onMoveUp, onMoveDown, onDismiss,
 }: {
   containerRef: RefObject<HTMLElement | null>;
   selected: SelectedItem | null;
-  /** How many siblings the selected item has, so Delete can be guarded at the last one. */
+  /** How many siblings the selected item has. */
   count: number;
+  /** Where the selected item sits among them, so moves that cannot go anywhere are not offered. */
+  index?: number;
   onAdd: () => void;
   onDuplicate: () => void;
   onDelete: () => void;
@@ -103,7 +105,12 @@ export default function ItemCrudLayer({
 
   if (!selected || !place) return null;
 
-  const canDelete = count > 1; // never let a component be emptied of items
+  // Only offer what can actually act on THIS item. A single-item component (the common case for an Alert) then
+  // shows just "add" and "duplicate" — no dead reorder arrows, no disabled bin. Nothing here is decoration.
+  const canDelete = count > 1;              // never let a component be emptied of items
+  const canMoveUp = index > 0;
+  const canMoveDown = index >= 0 && index < count - 1;
+  const canReorder = canMoveUp || canMoveDown;
   const btn = "grid place-items-center w-7 h-7 rounded-full text-white/75 transition-colors hover:text-white hover:bg-white/15 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-indigo-300 disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-white/75";
 
   return (
@@ -141,30 +148,37 @@ export default function ItemCrudLayer({
         >
           <GripVertical className="w-3.5 h-3.5" aria-hidden="true" />
         </span>
-        <button type="button" className={btn} onClick={onMoveUp} aria-label="Move item up" title="Move up">
-          <ArrowUp className="w-3.5 h-3.5" aria-hidden="true" />
-        </button>
-        <button type="button" className={btn} onClick={onMoveDown} aria-label="Move item down" title="Move down">
-          <ArrowDown className="w-3.5 h-3.5" aria-hidden="true" />
-        </button>
-        <span aria-hidden="true" className="w-px h-4 bg-white/15 mx-0.5" />
+        {canMoveUp && (
+          <button type="button" className={btn} onClick={onMoveUp} aria-label="Move item up" title="Move up">
+            <ArrowUp className="w-3.5 h-3.5" aria-hidden="true" />
+          </button>
+        )}
+        {canMoveDown && (
+          <button type="button" className={btn} onClick={onMoveDown} aria-label="Move item down" title="Move down">
+            <ArrowDown className="w-3.5 h-3.5" aria-hidden="true" />
+          </button>
+        )}
+        {canReorder && <span aria-hidden="true" className="w-px h-4 bg-white/15 mx-0.5" />}
         <button type="button" className={btn} onClick={onAdd} aria-label="Add an item below this one" title="Add item below">
           <Plus className="w-3.5 h-3.5" aria-hidden="true" />
         </button>
         <button type="button" className={btn} onClick={onDuplicate} aria-label="Duplicate this item" title="Duplicate">
           <Copy className="w-3.5 h-3.5" aria-hidden="true" />
         </button>
-        <span aria-hidden="true" className="w-px h-4 bg-white/15 mx-0.5" />
-        <button
-          type="button"
-          className={`${btn} hover:text-rose-300 hover:bg-rose-500/20`}
-          onClick={canDelete ? onDelete : undefined}
-          disabled={!canDelete}
-          aria-label={canDelete ? "Delete this item" : "Can't delete the last item"}
-          title={canDelete ? "Delete" : "Can't delete the last item"}
-        >
-          <Trash2 className="w-3.5 h-3.5" aria-hidden="true" />
-        </button>
+        {canDelete && (
+          <>
+            <span aria-hidden="true" className="w-px h-4 bg-white/15 mx-0.5" />
+            <button
+              type="button"
+              className={`${btn} hover:text-rose-300 hover:bg-rose-500/20`}
+              onClick={onDelete}
+              aria-label="Delete this item"
+              title="Delete"
+            >
+              <Trash2 className="w-3.5 h-3.5" aria-hidden="true" />
+            </button>
+          </>
+        )}
         <span aria-hidden="true" className="w-px h-4 bg-white/15 mx-0.5" />
         {/* Close — the pointer equivalent of Escape, so the toolbar can always be got out of the way. */}
         <button type="button" className={btn} onClick={onDismiss} aria-label="Close this item toolbar" title="Close (Esc)">

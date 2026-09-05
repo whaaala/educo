@@ -1,22 +1,30 @@
 Feature: Alert component (Educo UI)
-  A multi-item message component — a stack of alerts (icon + title + body + meta + image), one item = a
-  single alert, many = a notification list. It MIRRORS the Accordion: it reuses the same item data (accItems),
-  the same item helpers, and the same rich per-item editor, so every item is edited exactly like an accordion
-  item (Rule F). Component 2 of the builder.
+  A SINGLE-MESSAGE notice — icon + title + body (+ meta, image) — in 6 severities and 7 treatments.
+  Scope decision (2026-09-05): the Alert is strictly one message. It is NOT a stack/notification list, so it
+  has no add / duplicate / delete / reorder and no on-canvas item toolbar. Its message still has editable,
+  individually styleable PARTS, so it keeps per-part styling, per-item CSS, positioning and four-sided spacing.
+  Component 2 of the builder.
 
   Background:
-    Given the Alert is a single clean multi-item component added from the Blocks palette
-    And it reuses the Accordion's items (accItems) + helpers, rendered as a stack of .eu-alert rows
+    Given the Alert is a single clean component added from the Blocks palette
+    And it renders one .eu-alert row inside .eu-alert-stack, from one shared function for canvas AND export
     And every colour is a design token so it re-themes in all 4 themes and passes WCAG
 
-  # ── Full item CRUD (Rule F) — mirrors the Accordion, recursively ──
-  Scenario: CRUD on every alert item, and every nested sub-item
-    Then I can Add an alert, Remove one (min-guard keeps at least one), and Reorder ▲▼
-    And for EACH item I can edit: title, body (rich), meta, image + alt, and icon (from the IconPicker)
-    And per item I can set the icon's colour, size, align and free-move (rem)
-    And per item I can point-and-click style the Title and Message parts (text · fill · font · size · align · move)
-    And per item I can write "More CSS" targeting title/body/icon/meta/media
-    And each item can hold NESTED sub-items that get the SAME full editor, recursively — nothing is read-only
+  # ── A single message, not a list ──
+  Scenario: The Alert shows exactly one message
+    Then only the first message is rendered, however many the document happens to store
+    And the inspector offers no Add, Remove or Reorder for it
+    And no on-canvas item toolbar appears when I click the message
+    And an older document holding several messages is not rewritten — the extras simply stop showing
+
+  # ── Editing the message ──
+  Scenario: Every part of the message is editable
+    Then I can edit the title and body directly on the canvas by clicking the text
+    And I can edit title, body, meta, image + alt, and the icon (from the IconPicker) in the inspector
+    And I can set the icon's colour, size, align and free-move (rem)
+    And I can point-and-click style the Title and Message parts (text · fill · font · size · align · move)
+    And I can set the message's spacing on all four sides — space inside (padding) and space around (margin)
+    And I can write "More CSS" targeting title/body/icon/meta/media
 
   # ── The inspector mirrors the Accordion ──
   Scenario: Inspector look, feel and functionality mirror the Accordion

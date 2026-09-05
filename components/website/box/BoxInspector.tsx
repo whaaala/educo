@@ -11,9 +11,10 @@ import { useState, useRef } from "react";
 import { Plus, X, Rows3, Columns3, Upload, AlignLeft, AlignCenter, AlignRight, Layers, Move, BringToFront, SendToBack, ChevronUp, ChevronDown, Italic, Underline, LayoutGrid, Maximize2, Sparkles, Paintbrush, Ruler, Link2, Type as TypeIcon, MonitorSmartphone, Bookmark, Lock, LockOpen } from "lucide-react";
 import type { SiteTheme } from "@/lib/site-storage";
 import type { BoxNode, FlexAlign, FlexJustify, AccPartStyle } from "@/lib/box-model";
-import { isContainer, isFloating, isCssBg, addItem, removeItem, moveItem, updateItem, addChildItem, updateChildItem, removeChildItem, moveChildItem } from "@/lib/box-model";
+import { isContainer, isFloating, isCssBg, addItem, removeItem, moveItem, updateItem, addChildItem, updateChildItem, removeChildItem, moveChildItem , isMultiItemComponent } from "@/lib/box-model";
 import { ACCORDION_DESIGNS, ACCORDION_DESIGN_COUNT } from "@/lib/educo-ui/accordions";
 import { COMPONENT_REGISTRY, isRegistryComponent, defaultComponentFields } from "@/lib/educo-ui/registry";
+import { presetVariants, applyPresetVariant } from "@/lib/component-catalogue";
 import { familyOptions } from "@/lib/educo-ui/fonts";
 import { getPresets, presetKindFor } from "@/lib/box-presets";
 import IconPicker from "@/components/shared/IconPicker";
@@ -135,6 +136,45 @@ function SideSpacing({ title, node, base, sides, onPatch, max = 96 }: {
           <label key={lab} className="flex flex-col items-center gap-0.5">
             <span className="text-[0.5625rem] uppercase tracking-wide text-gray-400">{lab}</span>
             <input type="number" step={0.1} min={0} value={node[key] !== undefined ? toRem(node[key] as number) : ""} placeholder={String(toRem(g))} onChange={(e) => setRem(key, e.target.value)} aria-label={`${title} ${lab.toLowerCase()}`} className="w-full text-xs px-1 py-1 rounded-lg border border-gray-200 dark:border-white/10 bg-transparent text-center outline-none focus:ring-1 focus:ring-indigo-400" />
+          </label>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/**
+ * RULE P — the four-sided spacing of ONE ITEM inside a component: padding (inside the item) and margin
+ * (around it), in rem. Same shape and feel as the block-level `SideSpacing`, so it reads as the same control;
+ * it writes to the shared `ComponentItem` fields, so every component's items get it — a single-message
+ * component's one message included.
+ */
+function ItemSideSpacing({ title, value, ariaPrefix, onChange }: {
+  title: string;
+  value?: import("@/lib/box-model").Side4;
+  ariaPrefix: string;
+  onChange: (next: import("@/lib/box-model").Side4 | undefined) => void;
+}) {
+  const set = (k: "t" | "r" | "b" | "l", raw: string) => {
+    const next = { ...(value ?? {}) };
+    if (raw === "") delete next[k]; else next[k] = Number(raw);
+    onChange(Object.keys(next).length ? next : undefined); // no keys ⇒ drop the field entirely
+  };
+  return (
+    <div className="space-y-1">
+      <span className="text-[0.6875rem] text-muted">{title}</span>
+      <div className="grid grid-cols-4 gap-1">
+        {([["Top", "t"], ["Right", "r"], ["Bottom", "b"], ["Left", "l"]] as const).map(([lab, k]) => (
+          <label key={k} className="flex flex-col items-center gap-0.5">
+            <span className="text-[0.5625rem] uppercase tracking-wide text-gray-400">{lab}</span>
+            <input
+              type="number" step={0.1} min={0}
+              value={value?.[k] ?? ""}
+              placeholder="0"
+              aria-label={`${ariaPrefix} ${title.toLowerCase()} ${lab.toLowerCase()}`}
+              onChange={(e) => set(k, e.target.value)}
+              className="w-full text-xs px-1 py-1 rounded-lg border border-gray-200 dark:border-white/10 bg-transparent text-center outline-none focus:ring-1 focus:ring-indigo-400"
+            />
           </label>
         ))}
       </div>
@@ -304,7 +344,24 @@ export default function BoxInspector({ node, theme, onPatch, onAddChild, onFloat
                   options={[{ value: "start", label: "Left", Icon: AlignLeft }, { value: "center", label: "Center", Icon: AlignCenter }, { value: "end", label: "Right", Icon: AlignRight }]} />
               </div>
             )}
-            <CompactField label="Height" ariaLabel="Height" value={node.height ?? ""} onChange={(v) => onPatch({ height: v || undefined })} placeholder="auto, 300px or 40vh" />
+            {/* Typing a height (or clearing it) also clears any shrink a DRAG applied: the scale exists only to make
+                content fit a box you dragged smaller than it, so a height set by hand starts from full-size text
+                again. Without this the text stayed small with no visible reason once the height was cleared. */}
+            <CompactField label="Height" ariaLabel="Height" value={node.height ?? ""} onChange={(v) => onPatch({ height: v || undefined, contentScale: undefined })} placeholder="auto, 300px or 40vh" />
+            {node.contentScale != null && node.contentScale < 1 && (
+              <div className="flex items-center justify-between gap-2 rounded-lg bg-surface-2 px-2 py-1.5">
+                <span className="text-[0.6875rem] text-muted">
+                  Text scaled to {Math.round(node.contentScale * 100)}% so it fits this size
+                </span>
+                <button
+                  onClick={() => onPatch({ contentScale: undefined })}
+                  aria-label="Reset text size to full"
+                  className="text-[0.6875rem] font-semibold text-brand hover:underline"
+                >
+                  Reset
+                </button>
+              </div>
+            )}
             {!container && (
               <div className="space-y-1">
                 <span className={label}>Content position</span>
@@ -441,6 +498,27 @@ export default function BoxInspector({ node, theme, onPatch, onAddChild, onFloat
             </label>
           </Accordion>
 
+          {/* TREE components (Card/Quote/Stat/Badge/Rating): the design gallery for a node that is
+              structurally just a container. It sits ABOVE the container/element split on purpose — every tree
+              preset IS a container, so inside the element branch this rendered for nothing at all. They are
+              built as editable trees so every inner piece gets the full inspector; this gives them back the
+              design gallery that the registry defined and nothing reachable could apply. */}
+          {presetVariants(node.preset).length > 1 && (
+            <Accordion title="Design" icon={TypeIcon}>
+              <div className="flex flex-wrap gap-1" role="group" aria-label={`${node.preset} designs`}>
+                {presetVariants(node.preset).map((v) => {
+                  const on = (node.variant ?? "") === v.id;
+                  return (
+                    <button key={v.id || "default"} aria-pressed={on} aria-label={`${v.label} design`} title={v.label}
+                      onClick={() => { const { id: _id, type: _type, ...patch } = applyPresetVariant(node, v.id); onPatch(patch); }}
+                      className={chipCls(on)}>
+                      {v.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </Accordion>
+          )}
           {container ? (
             <p className="text-xs text-gray-400 text-center px-2 py-4">This is a container. Drag blocks from the left onto it, or use “Add a block inside”.</p>
           ) : (
@@ -491,6 +569,9 @@ export default function BoxInspector({ node, theme, onPatch, onAddChild, onFloat
                 )}
                 {node.type === "component" && (node.component === "accordion" || node.component === "alert") && (() => {
                   const isAcc = node.component === "accordion";
+                  // An Alert is a single message (user decision, 2026-09-05) — it has item PARTS to style, but
+                  // no list to add to, reorder or delete from, so those controls are not offered for it.
+                  const isList = isMultiItemComponent(node.component);
                   return (
                   <>
                     {isAcc && (<>
@@ -548,12 +629,12 @@ export default function BoxInspector({ node, theme, onPatch, onAddChild, onFloat
                     )}
                     <div className="space-y-2">
                       <span className={label}>Items</span>
-                      {(node.items ?? []).map((it, i) => (
+                      {(isList ? (node.items ?? []) : (node.items ?? []).slice(0, 1)).map((it, i) => (
                         <div key={it.id} className="rounded-lg border border-gray-200 dark:border-white/10 p-2 space-y-1.5">
                           <div className="flex items-center gap-1">
                             <div className="flex-1"><CompactField ariaLabel={`Item ${i + 1} title`} value={it.title} onChange={(v) => onPatch({ items: updateItem(node, it.id, { title: v }).items })} placeholder="Question / title" /></div>
-                            <button onClick={() => onPatch({ items: moveItem(node, it.id, -1).items })} disabled={i === 0} aria-label="Move item up" className="p-1 rounded text-gray-400 hover:text-gray-700 disabled:opacity-30"><ChevronUp className="w-3.5 h-3.5" /></button>
-                            <button onClick={() => onPatch({ items: moveItem(node, it.id, 1).items })} disabled={i === (node.items?.length ?? 0) - 1} aria-label="Move item down" className="p-1 rounded text-gray-400 hover:text-gray-700 disabled:opacity-30"><ChevronDown className="w-3.5 h-3.5" /></button>
+                            {isList && <button onClick={() => onPatch({ items: moveItem(node, it.id, -1).items })} disabled={i === 0} aria-label="Move item up" className="p-1 rounded text-gray-400 hover:text-gray-700 disabled:opacity-30"><ChevronUp className="w-3.5 h-3.5" /></button>}
+                            {isList && <button onClick={() => onPatch({ items: moveItem(node, it.id, 1).items })} disabled={i === (node.items?.length ?? 0) - 1} aria-label="Move item down" className="p-1 rounded text-gray-400 hover:text-gray-700 disabled:opacity-30"><ChevronDown className="w-3.5 h-3.5" /></button>}
                           </div>
                           <CompactTextarea ariaLabel={`Item ${i + 1} body`} value={it.body} onChange={(v) => onPatch({ items: updateItem(node, it.id, { body: v }).items })} rows={2} placeholder="Answer / body — supports **bold**, *italic*, [links](https://…), and - bullet lists" />
                           <div className="grid grid-cols-2 gap-1">
@@ -606,13 +687,14 @@ export default function BoxInspector({ node, theme, onPatch, onAddChild, onFloat
                             onChange={(patch) => onPatch({ items: updateItem(node, it.id, { headerStyle: { ...(it.headerStyle ?? {}), ...patch } }).items })} />
                           <AccPartDesign title={isAcc ? "Content — the answer / text area" : "Message — the body text"} moveLabel="text" ariaPrefix={`Item ${i + 1} content`} style={it.bodyStyle}
                             onChange={(patch) => onPatch({ items: updateItem(node, it.id, { bodyStyle: { ...(it.bodyStyle ?? {}), ...patch } }).items })} />
-                          {/* Detach & float (accordion-only): lift this item out of the stack and place it anywhere. */}
-                          {isAcc && (
+                          {/* RULE N — detach & float: lift this item out of the stack and place it anywhere.
+                              Available on EVERY multi-item component (accordion, alert, and future ones). */}
+                          {(
                           <div className="rounded-lg border border-line p-1.5 space-y-1.5">
                             <label className="flex items-center gap-2 text-xs text-ink">
                               <input type="checkbox" aria-label={`Item ${i + 1} float`} checked={!!it.float}
                                 onChange={(e) => onPatch({ items: updateItem(node, it.id, { float: e.target.checked ? (it.float ?? { x: 4, y: 4, z: 1 }) : undefined }).items })} />
-                              Move freely — position within the accordion
+                              Move freely — position within the {isAcc ? "accordion" : "component"}
                             </label>
                             {it.float && (
                               <>
@@ -626,7 +708,7 @@ export default function BoxInspector({ node, theme, onPatch, onAddChild, onFloat
                                     onChange={(v) => onPatch({ items: updateItem(node, it.id, { float: { ...it.float!, z: v === "front" ? 10 : 1 } }).items })}
                                     options={[{ value: "back", label: "Back" }, { value: "front", label: "Front" }]} />
                                 </div>
-                                <p className="text-[0.625rem] leading-snug text-muted">Drag the item on the canvas to place it. On phones it returns to the stack.</p>
+                                <p className="text-[0.625rem] leading-snug text-muted">Drag the item on the canvas to place it — or type X/Y here. On phones it returns to the stack.</p>
                               </>
                             )}
                             <label className="flex items-center gap-2 text-[0.6875rem] text-muted">
@@ -636,11 +718,18 @@ export default function BoxInspector({ node, theme, onPatch, onAddChild, onFloat
                             </label>
                           </div>
                           )}
+                          {/* RULE P — space inside and around THIS item, four sides each (rem). */}
+                          <div className="rounded-lg border border-line p-1.5 space-y-1.5">
+                            <ItemSideSpacing title="Space inside" ariaPrefix={`Item ${i + 1}`} value={it.pad}
+                              onChange={(v) => onPatch({ items: updateItem(node, it.id, { pad: v }).items })} />
+                            <ItemSideSpacing title="Space around" ariaPrefix={`Item ${i + 1}`} value={it.margin}
+                              onChange={(v) => onPatch({ items: updateItem(node, it.id, { margin: v }).items })} />
+                          </div>
                           <CompactTextarea ariaLabel={`Item ${i + 1} CSS`} value={it.css ?? ""} onChange={(v) => onPatch({ items: updateItem(node, it.id, { css: v || undefined }).items })} rows={3} placeholder={"More CSS for this item — change anything:\ntitle { letter-spacing: .02em; }\nicon { color: #f59e0b; }\nmedia { border-radius: 999px; }"} textareaClassName="font-mono text-[0.6875rem]" />
                           <p className="text-[0.625rem] leading-snug text-muted">The controls above cover colour + font. For anything else, plain lines style the whole item; use <code>title</code>, <code>body</code>, <code>icon</code>, <code>meta</code> or <code>media</code> {"{ … }"} to target one part.</p>
                           <div className="flex items-center justify-between">
                             {isAcc ? <label className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300"><input type="checkbox" checked={!!it.open} onChange={(e) => onPatch({ items: updateItem(node, it.id, { open: e.target.checked || undefined }).items })} /> Open by default</label> : <span />}
-                            <button onClick={() => onPatch({ items: removeItem(node, it.id).items })} disabled={(node.items?.length ?? 0) <= 1} aria-label={`Remove item ${i + 1}`} className="text-xs text-red-500 hover:text-red-600 disabled:opacity-30">Remove</button>
+                            {isList ? <button onClick={() => onPatch({ items: removeItem(node, it.id).items })} disabled={(node.items?.length ?? 0) <= 1} aria-label={`Remove item ${i + 1}`} className="text-xs text-red-500 hover:text-red-600 disabled:opacity-30">Remove</button> : <span />}
                           </div>
                         </div>
                       ))}
@@ -660,7 +749,7 @@ export default function BoxInspector({ node, theme, onPatch, onAddChild, onFloat
                       {accSel.length >= 1 && (node.items ?? []).some((it) => accSel.includes(it.id) && it.group) && (
                         <button aria-label="Ungroup selected items" onClick={() => onPatch({ items: (node.items ?? []).map((it) => accSel.includes(it.id) ? { ...it, group: undefined } : it) })} className="w-full py-2 rounded-lg border border-line text-xs text-ink hover:bg-surface-2">Ungroup selected</button>
                       )}
-                      <button onClick={() => onPatch({ items: addItem(node).items })} className="w-full flex items-center justify-center gap-1.5 py-2 rounded-lg border border-dashed border-gray-300 dark:border-white/15 text-xs text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5"><Plus className="w-3.5 h-3.5" /> Add {isAcc ? "item" : "alert"}</button>
+                      {isList && <button onClick={() => onPatch({ items: addItem(node).items })} className="w-full flex items-center justify-center gap-1.5 py-2 rounded-lg border border-dashed border-gray-300 dark:border-white/15 text-xs text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5"><Plus className="w-3.5 h-3.5" /> Add item</button>}
                     </div>
                   </>
                   );

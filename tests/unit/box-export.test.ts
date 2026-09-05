@@ -385,7 +385,7 @@ describe("box-export — static HTML", () => {
     expect(doc).toContain("html,body{max-width:100%;overflow-x:hidden}");
   });
 
-  it("RESPONSIVE EXPORT: per-device edits become @media rules (tablet ≤1024, mobile ≤480) that override base", () => {
+  it("RESPONSIVE EXPORT is MOBILE-FIRST: the phone layout is the base rule and wider screens add to it", () => {
     // a container whose background is re-styled per device — background serialises literally (easy to assert)
     const sec = createContainer("column", {
       id: "s1", background: "#ff0000",
@@ -394,33 +394,34 @@ describe("box-export — static HTML", () => {
     } as Partial<BoxNode>);
     const root = createContainer("column", { id: "r", children: [sec] } as Partial<BoxNode>);
     const doc = renderPageDocument(root, DEFAULT_THEME, "P");
-    expect(doc).toContain("@media (max-width:1024px)"); // tablet block present
-    expect(doc).toContain("@media (max-width:480px)");  // mobile block present
-    expect(doc).toMatch(/\.bx-s1\{[^}]*background-color:#ff0000/); // base = red
-    // pull out each media block and confirm the per-device override lands in the right one, scoped to .bx-s1
-    const tabletBlock = doc.match(/@media \(max-width:1024px\)\{(.*?)\}\}/s)?.[1] ?? "";
-    const mobileBlock = doc.match(/@media \(max-width:480px\)\{(.*?)\}\}/s)?.[1] ?? "";
+    // Mobile-first: min-width queries, in em, on the documented ladder — never max-width, never px.
+    expect(doc).toContain("@media (min-width:40em)"); // tablet and up
+    expect(doc).toContain("@media (min-width:64em)"); // desktop and up
+    expect(doc).not.toMatch(/@media \([^)]*max-width[^)]*\)/);
+    expect(doc).not.toMatch(/@media \([^)]*\d+px\)/);
+    // the BASE rule is the phone layout; each wider block adds only what changes at that width
+    expect(doc).toMatch(/\.bx-s1\{[^}]*background-color:#0000ff/); // base = blue (mobile)
+    const tabletBlock = doc.match(/@media \(min-width:40em\)\{(.*?)\}\}/s)?.[1] ?? "";
+    const desktopBlock = doc.match(/@media \(min-width:64em\)\{(.*?)\}\}/s)?.[1] ?? "";
     expect(tabletBlock).toMatch(/\.bx-s1\{[^}]*background-color:#00ff00/); // tablet = green
-    expect(mobileBlock).toMatch(/\.bx-s1\{[^}]*background-color:#0000ff/); // mobile = blue
+    expect(desktopBlock).toMatch(/\.bx-s1\{[^}]*background-color:#ff0000/); // desktop = red
   });
 
-  it('STACK on narrow: a floating box drops to full-width flow on mobile (never clips or exceeds its parent)', () => {
+  it('STACK on narrow is the BASE: a floating box is stacked by default and only floats from tablet up', () => {
     const floated = createContainer("column", {
       id: "f", position: "absolute", left: 10, top: 40, width: "50%", height: "300px",
       children: [makeRowBand([createElement("text", { text: "hi" } as Partial<BoxNode>)])],
     } as unknown as Partial<BoxNode>);
     const root = createContainer("column", { id: "r", children: [floated] } as Partial<BoxNode>);
     const doc = renderPageDocument(root, DEFAULT_THEME, "P");
-    // base: the float is absolutely positioned; parent reserves height so it stays contained on desktop
-    expect(doc).toMatch(/\.bx-f\{[^}]*position:absolute/);
-    expect(doc).toMatch(/\.bx-r\{[^}]*min-height:5\d\dpx/); // parent reserves ≈300/(1−0.40)=500px on desktop
-    // mobile: it becomes relative, full-width, auto-height — and the parent drops its reserve (min-height:auto).
-    // (base .bx-f is position:absolute, so a position:relative rule can only be the mobile stack override.)
-    const mobileBlock = doc.match(/@media \(max-width:480px\)\{(.*?)\}\}/s)?.[1] ?? "";
-    expect(mobileBlock).toMatch(/\.bx-f\{[^}]*position:relative/);
-    expect(mobileBlock).toMatch(/\.bx-f\{[^}]*width:100%/);
-    expect(mobileBlock).toMatch(/\.bx-f\{[^}]*height:auto/);
-    expect(mobileBlock).toMatch(/\.bx-r\{[^}]*min-height:auto/);
+    // BASE = the phone layout: stacked, full-width, auto-height, and the parent reserves nothing.
+    expect(doc).toMatch(/\.bx-f\{[^}]*position:relative/);
+    expect(doc).toMatch(/\.bx-f\{[^}]*width:100%/);
+    expect(doc).toMatch(/\.bx-f\{[^}]*height:auto/);
+    // From tablet up it floats, and the parent reserves room for it — in rem, never px (field guide ②).
+    const tabletBlock = doc.match(/@media \(min-width:40em\)\{(.*?)\}\}/s)?.[1] ?? "";
+    expect(tabletBlock).toMatch(/\.bx-f\{[^}]*position:absolute/);
+    expect(tabletBlock).toMatch(/\.bx-r\{[^}]*min-height:3\d(\.\d+)?rem/); // ≈500px / 16 = 31.25rem
   });
 
   it("a float the user PINNED on mobile (explicit position) is NOT auto-stacked", () => {
@@ -431,7 +432,9 @@ describe("box-export — static HTML", () => {
     const root = createContainer("column", { id: "r", children: [floated] } as Partial<BoxNode>);
     const doc = renderPageDocument(root, DEFAULT_THEME, "P");
     // it stays floating on mobile — no forced position:relative / width:100% stack
-    expect(doc).not.toMatch(/@media \(max-width:480px\)\{[^}]*\.bx-f\{[^}]*position:relative/);
+    // Pinned: it stays absolutely positioned at EVERY width, so the base rule is not the stacked one.
+    expect(doc).toMatch(/\.bx-f\{[^}]*position:absolute/);
+    expect(doc).not.toMatch(/\.bx-f\{[^}]*position:relative/);
   });
 
   it("PREVIEW pins base to about:srcdoc so nav links scroll instead of reloading the app; DOWNLOAD does not", () => {

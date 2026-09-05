@@ -13,11 +13,25 @@
 import type { CSSProperties } from "react";
 import { isRegistryComponent, defaultComponentFields, defaultComponentWidth, componentIsColumn } from "@/lib/educo-ui/registry";
 import { iconSvg } from "@/lib/educo-ui/icon-svg";
+import { BREAKPOINTS_EM } from "@/lib/educo-ui/base";
 
 export type BoxType = "container" | "text" | "heading" | "button" | "image" | "video" | "icon" | "divider" | "list" | "embed" | "spacer" | "component";
 
 /** One row of an accordion component (title + body, plus optional media thumbnail / right-aligned meta). */
 /** Point-and-click styling for one PART (the header, or the content/body) of a single accordion item. */
+/** Four optional sides, in rem — used for an item's padding and margin (RULE P). */
+export type Side4 = { t?: number; r?: number; b?: number; l?: number };
+
+/** The CSS for one Side4, or "" when nothing is set. `prop` is "padding" or "margin". */
+export function side4Css(prop: "padding" | "margin", s?: Side4): string {
+  if (!s) return "";
+  const sides: [keyof Side4, string][] = [["t", "top"], ["r", "right"], ["b", "bottom"], ["l", "left"]];
+  return sides
+    .filter(([k]) => s[k] != null)
+    .map(([k, name]) => `${prop}-${name}:${s[k]}rem !important;`)
+    .join("");
+}
+
 export interface AccPartStyle {
   color?: string;        // text colour
   background?: string;   // background colour
@@ -47,6 +61,10 @@ export interface ComponentItem {
   float?: { x: number; y: number; z?: number }; // detached & positioned freely (rem offsets in the accordion box; z = layer)
   group?: string;   // items sharing a group id move together when dragged; individual items move on their own
   children?: ComponentItem[]; // nested sub-accordion inside this item's body (one level of nesting)
+  // RULE P — the space around and inside an item, four sides each, in rem. Applies to every component's
+  // items (and to a single-message component's one message), so spacing is never a CSS-box-only job.
+  pad?: Side4;      // padding INSIDE the item — space between its edge and its text
+  margin?: Side4;   // margin OUTSIDE the item — space between it and its neighbours
   css?: string;     // per-ITEM Advanced CSS declarations (sanitised) — override this one item's styling
   // Dedicated per-item styling for the header + content, set via the Inspector's colour/font controls
   // (no CSS typing). Composed into scoped, !important rules so they win over the chosen design variant.
@@ -150,7 +168,11 @@ export interface BoxNode {
   // ── Educo UI design-system component instance (type === "component") ──
   // A component reads its whole look from CSS tokens (--eu-color-*, --eu-radius-*, …), so a single set of
   // per-instance `tokenOverrides` re-skins ANY component — including ones not built yet — with no extra code.
-  component?: string;                       // which eu-component: "accordion" | "card" | "tabs" | …
+  /** Which catalogue component this TREE was built from ("card" | "quote" | "stat" | "badge" | "rating").
+   *  A tree preset is structurally just a container/element, so this is what lets the inspector recognise it
+   *  and offer that component's design gallery. Absent on hand-built boxes and on `component` nodes. */
+  preset?: string;
+  component?: string;                       // which eu-component: "accordion" | "alert"
   variant?: string;                         // design variant class suffix, e.g. "--panel" ("" = default look)
   items?: ComponentItem[];               // accordion content (component === "accordion")
   accMultiOpen?: boolean;                   // accordion: allow more than one panel open at once
@@ -162,6 +184,7 @@ export interface BoxNode {
   alertForm?: string;                        // alert form factor: inline | banner | callout | toast
   alertDismiss?: boolean;                     // alert: show a per-item dismiss (×) button (opt-in; adds a tiny export script)
   componentFields?: Record<string, string | number>; // registry-component content (card/quote/stat/badge/rating/…)
+  contentScale?: number;                    // component: shrink the text so the content fits a box smaller than it (1 = normal, floors at MIN_CONTENT_SCALE)
   tokenOverrides?: Record<string, string>;  // CSS custom-property overrides, e.g. { "--eu-color-brand": "#5b5bd6" }
   advancedCss?: string;                     // raw CSS declarations applied to the instance (sanitized before export)
 
@@ -302,6 +325,29 @@ export function bgImageLayer(v: string): string {
   return isCssBg(s) ? s : `url("${s.replace(/["\\]/g, "")}")`;
 }
 
+/**
+ * How far a component's text may be shrunk to fit a box smaller than its natural content (RULE G).
+ * Dragging past this stops — text never becomes unreadable, so a component can't be squashed into nothing.
+ */
+export const MIN_CONTENT_SCALE = 0.6;
+
+/**
+ * How many lines of wrapped text still read as "tidy". A component's COMFORTABLE width is the width at which
+ * its content wraps to about this many lines; narrower than that, the text scales down instead of rewrapping
+ * into an ever-taller column (RULE O, width half). Never narrower than the content's longest single word.
+ */
+export const COMFORTABLE_LINES = 2;
+
+/** The width below which a component's text should start scaling, from its one-line and longest-word widths. */
+export function comfortableWidth(maxContentPx: number, minContentPx: number): number {
+  return Math.max(minContentPx, Math.ceil(maxContentPx / COMFORTABLE_LINES));
+}
+
+/** Clamp a requested content scale into the readable range. */
+export function clampContentScale(scale: number): number {
+  return Math.min(1, Math.max(MIN_CONTENT_SCALE, Number.isFinite(scale) ? scale : 1));
+}
+
 export function componentBoxCss(node: BoxNode): string {
   const d: string[] = [];
   // SIZE: the component element FILLS its box when the box is given a definite size (Full / Custom width, or a
@@ -314,9 +360,16 @@ export function componentBoxCss(node: BoxNode): string {
   const sized = (node.width && node.width !== "auto") || node.height || node.minHeight;
   if (node.borderWidth || sized || hasPad) d.push("box-sizing:border-box");
   if (hasPad) d.push(`padding:${u(pt ?? 0)} ${u(pr ?? 0)} ${u(pb ?? 0)} ${u(pl ?? 0)}`);
+  // SHRINK-TO-FIT (RULE G): when the box has been dragged smaller than the component's natural content, the
+  // text scales down to fit rather than being cropped. `em` so every inherited size inside the component
+  // follows proportionally, and it stops at MIN_CONTENT_SCALE so the result is always still readable.
+  if (node.contentScale != null && node.contentScale < 1) d.push(`font-size:${clampContentScale(node.contentScale)}em`);
   if (node.width && node.width !== "auto") d.push("width:100%");
-  if (node.height) d.push("height:100%");
-  if (node.minHeight) d.push("min-height:100%");
+  // RULE O — a resized height is a FLOOR, not a cap: `min-height`, never `height`. A hard height became a
+  // cap the content could outgrow later (narrow the block and the text rewraps taller), and the extra spilled
+  // out below the box — the container's bottom edge sitting ABOVE the component. As a floor the box always
+  // contains its component: shrinking is still possible because the text scales to fit (contentScale).
+  if (node.height || node.minHeight) d.push("height:100%");
   if (node.borderWidth) d.push(`border:${node.borderWidth}px ${node.borderStyle ?? "solid"} ${node.borderColor ?? "rgba(0,0,0,0.15)"}`);
   const br = radiusCSS(node); if (br) d.push(`border-radius:${br}`);
   if (node.shadow) d.push(`box-shadow:${SHADOW_CSS[node.shadow]}`);
@@ -538,7 +591,7 @@ function accPartStyleDecls(s?: AccPartStyle, part?: "header" | "body"): string {
 
 /** True when an item carries ANY override (structured styling, a custom number, a float, OR raw CSS) — needs a scope class. */
 export function itemHasOverride(it: ComponentItem): boolean {
-  return !!(accPartStyleDecls(it.headerStyle, "header") || accPartStyleDecls(it.bodyStyle, "body") || it.headerStyle?.pos || it.bodyStyle?.pos || (it.num && it.num.trim()) || it.iconColor || it.iconSize || it.iconAlign || it.iconDx || it.iconDy || it.float || (it.css && it.css.trim()));
+  return !!it.pad || !!it.margin || !!(accPartStyleDecls(it.headerStyle, "header") || accPartStyleDecls(it.bodyStyle, "body") || it.headerStyle?.pos || it.bodyStyle?.pos || (it.num && it.num.trim()) || it.iconColor || it.iconSize || it.iconAlign || it.iconDx || it.iconDy || it.float || (it.css && it.css.trim()));
 }
 
 /** Is this item detached (floating) — and, for the canvas, is the current breakpoint one where floats apply? */
@@ -605,18 +658,33 @@ export function itemNumberVars(index: number): Record<string, string> {
  * raw per-item CSS override (which can still target any part). `scope` is the item's selector
  * (e.g. `.eu-accordion .eu-acc-i-<id>`). Returns "" when the item has no overrides.
  */
-export function itemOverrideCss(scope: string, it: ComponentItem, opts?: { skipFloat?: boolean; mobileReset?: boolean }): string {
+/** How much of a detached item must always stay inside its component box, however far it is placed (rem). */
+export const FLOAT_MIN_VISIBLE_REM = 8;
+
+export function itemOverrideCss(
+  scope: string,
+  it: ComponentItem,
+  opts?: { skipFloat?: boolean; stackOnNarrow?: boolean; component?: string },
+): string {
+  // RULE N — this emits an ITEM's scoped CSS for EVERY component: the structured selectors and the user-CSS
+  // part vocabulary both come from the named component's maps. Defaults to the Accordion for existing callers.
+  const name = opts?.component ?? "accordion";
+  const P = COMPONENT_ITEM_PARTS[name] ?? COMPONENT_ITEM_PARTS.accordion;
+  const cssParts = COMPONENT_PARTS[name] ?? ACCORDION_CSS_PARTS;
+  const sel = (k: keyof ItemPartSelectors) => (P[k] ? `${scope}${P[k]}` : "");
   const h = accPartStyleDecls(it.headerStyle, "header");
   const b = accPartStyleDecls(it.bodyStyle, "body");
   // Free positioning of the CONTENT: the header's title moves within the header; the body (text area) moves
   // within the item. `transform: translate` keeps layout but shifts visually; the item's overflow keeps it inside.
   const hp = it.headerStyle?.pos, bp = it.bodyStyle?.pos;
+  const titleSel = sel("title"), bodySel = sel("body");
   const pos = [
-    hp ? `${scope} .eu-accordion__title{position:relative !important;transform:translate(${hp.x}rem,${hp.y}rem) !important;}` : "",
-    bp ? `${scope} .eu-accordion__body{position:relative !important;transform:translate(${bp.x}rem,${bp.y}rem) !important;}` : "",
+    hp && titleSel ? `${titleSel}{position:relative !important;transform:translate(${hp.x}rem,${hp.y}rem) !important;}` : "",
+    bp && bodySel ? `${bodySel}{position:relative !important;transform:translate(${bp.x}rem,${bp.y}rem) !important;}` : "",
   ].filter(Boolean).join("");
-  const num = it.num && it.num.trim()
-    ? `${scope} .eu-accordion__header::before{content: ${cssContentString(it.num.trim())} !important;}`
+  const numSel = sel("number");
+  const num = it.num && it.num.trim() && numSel
+    ? `${numSel}{content: ${cssContentString(it.num.trim())} !important;}`
     : "";
   // Per-item icon colour + size + alignment + free-move (the icon is an inline SVG using currentColor at 1em).
   const iconMove = (it.iconDx || it.iconDy) ? `transform: translate(${it.iconDx || 0}rem, ${it.iconDy || 0}rem)` : "";
@@ -626,23 +694,47 @@ export function itemOverrideCss(scope: string, it: ComponentItem, opts?: { skipF
     it.iconSize ? `font-size: ${it.iconSize}` : "",
     iconAlignDecl, iconMove,
   ].filter(Boolean).join("; ")));
-  const iconRule = iconDecls ? `${scope} .eu-accordion__icon{${iconDecls}}` : "";
+  const iconSel = sel("icon");
+  const iconRule = iconDecls && iconSel ? `${iconSel}{${iconDecls}}` : "";
   // Float: detach the item and place it at (x,y) rem. On mobile (export) it returns to the normal stack.
   let float = "";
   if (it.float && !opts?.skipFloat) {
     const { x, y, z } = it.float;
-    float = `${scope}{position:absolute !important;left:${x}rem !important;top:${y}rem !important;${z != null ? `z-index:${Math.round(z)} !important;` : ""}margin:0 !important;width:auto !important;}`;
-    if (opts?.mobileReset) float += `@media (max-width:480px){${scope}{position:static !important;left:auto !important;top:auto !important;}}`;
+    // Two things keep a detached item INSIDE its component box (RULE H, at item level):
+    //  • `container-type:normal` — components set `container-type:inline-size` for their container queries,
+    //    which makes an element's width independent of its contents. On an absolutely-positioned item that
+    //    collapsed it to a narrow column of one-word-per-line text that then spilled out of the box.
+    //  • `max-width: calc(100% - Xrem)` — the item can never be wider than the room left to the right of
+    //    where it was placed, so it cannot overhang the component's edge.
+    // `left` is CLAMPED IN CSS so a placement can never put the item outside the box, whatever X is stored (a
+    // typed-in or older value can exceed the box's width, and `calc(100% - X)` would then go negative and
+    // collapse the item to nothing). `min()` keeps at least FLOAT_MIN_VISIBLE_REM of the item on screen, and
+    // max-width fills exactly the room left beside it — pure CSS, so the export needs no JavaScript.
+    const leftCss = `min(${x}rem, calc(100% - ${FLOAT_MIN_VISIBLE_REM}rem))`;
+    const decls = `position:absolute !important;left:${leftCss} !important;top:${y}rem !important;${z != null ? `z-index:${Math.round(z)} !important;` : ""}margin:0 !important;width:auto !important;max-width:calc(100% - ${leftCss}) !important;container-type:normal !important;`;
+    // MOBILE-FIRST (field guide, ingredient ④): the normal stack is the BASE and free placement is ADDED from
+    // the `sm` rung upward, in `em` so a reader who has raised their browser font keeps the stacked layout for
+    // longer. The previous form was the opposite — a desktop base undone by `@media (max-width:480px)`, which is
+    // desktop-first, in px, and on a width that is not even on the ladder.
+    float = opts?.stackOnNarrow
+      ? `@media (min-width:${BREAKPOINTS_EM.sm}em){${scope}{${decls}}}`
+      : `${scope}{${decls}}`;
   }
+  const headerSel = sel("header") || titleSel;
+  // RULE P — the item's own spacing, four sides each. Emitted on the item scope so it applies whatever the
+  // component is, and marked !important like the rest so it beats the chosen design's defaults.
+  const spacing = side4Css("padding", it.pad) + side4Css("margin", it.margin);
+  const spacingRule = spacing ? `${scope}{${spacing}}` : "";
   const structured = [
+    spacingRule,
     num,
     iconRule,
-    h ? `${scope} .eu-accordion__header{${h}}` : "",
-    b ? `${scope} .eu-accordion__body{${b}}` : "",
+    h && headerSel ? `${headerSel}{${h}}` : "",
+    b && bodySel ? `${bodySel}{${b}}` : "",
     pos,
     float,
   ].filter(Boolean).join("");
-  const raw = expandScopedCss(it.css, scope, ACCORDION_CSS_PARTS);
+  const raw = expandScopedCss(it.css, scope, cssParts);
   return [structured, raw].filter(Boolean).join("");
 }
 
@@ -726,27 +818,109 @@ function alertItemHTML(it: ComponentItem, sev: string, treat: string, dismiss: b
   const cls = ["eu-alert", `eu-alert--${sev}`, treat ? `eu-alert${treat}` : "", `eu-al-${it.id}`].filter(Boolean).join(" ");
   return `<div class="${cls}" role="${role}"${itemRootAttrs(it.id, edit)}>${media}${icon}<div class="eu-alert__content">${title}${body}${meta}${kids}</div>${close}</div>`;
 }
-export function collectAlertItemStyles(items: ComponentItem[] | undefined, out: string[]): void {
-  for (const it of items ?? []) {
-    const s = expandScopedCss(it.css, `.eu-al-${it.id}`, ALERT_CSS_PARTS);
-    if (s) out.push(s);
-    if (it.children) collectAlertItemStyles(it.children, out);
+export function collectAlertItemStyles(items: ComponentItem[] | undefined, out: string[], opts?: { skipFloat?: boolean; stackOnNarrow?: boolean }): void {
+  for (const it of (items ?? []).slice(0, 1)) { // single message — styles for the one that renders
+    // RULE N + per-part styling: the alert's items go through the SAME shared emitter as the accordion's, with
+    // the alert's part map — so float/position, per-part colour/font/size, the icon rules and per-item CSS all
+    // behave identically. Nested sub-items recurse, so no level is less capable than the top.
+    const css = itemOverrideCss(`.eu-al-${it.id}`, it, { ...opts, component: "alert" });
+    if (css) out.push(css);
+    if (it.children) collectAlertItemStyles(it.children, out, opts);
   }
 }
 /** Render the whole Alert component to HTML (shared by the canvas AND the export — one clean node). */
-export function renderAlertHTML(node: BoxNode, edit?: ItemEditOpts): string {
+export function renderAlertHTML(node: BoxNode, edit?: ItemEditOpts, opts?: { skipFloat?: boolean; stackOnNarrow?: boolean }): string {
   const sev = node.alertSeverity || "info";
   const treat = node.variant || "";
   const form = node.alertForm || "inline";
   const dismiss = !!node.alertDismiss;
   const styleOut: string[] = [];
-  collectAlertItemStyles(node.items, styleOut);
+  collectAlertItemStyles(node.items, styleOut, opts);
   const style = styleOut.length ? `<style>${styleOut.join("")}</style>` : "";
-  const items = (node.items ?? []).map((it) => alertItemHTML(it, sev, treat, dismiss, edit)).join("");
+  // An Alert is a SINGLE message (see alertMessage) — only the first entry is rendered.
+  const only = alertMessage(node);
+  const items = only ? alertItemHTML(only, sev, treat, dismiss, edit) : "";
   return `${style}<div class="eu-alert-stack eu-alert-stack--${form}">${items}</div>`;
 }
 /** The item CSS class for each component whose items paint their own surface — so a block background set on the
  *  WHOLE component can be made to show through those items. Add a component here and it inherits the behaviour. */
+/**
+ * The selectors the STRUCTURED per-item emitter writes to, per component. Deliberately separate from the
+ * `*_CSS_PARTS` maps: those name the parts a USER can target in the per-item CSS box (where the accordion's
+ * "icon" means its chevron marker), whereas these are where the point-and-click controls actually write.
+ * A component with no such part simply omits the key — the rule is then skipped.
+ */
+export type ItemPartSelectors = { header?: string; title?: string; body?: string; icon?: string; number?: string };
+export const COMPONENT_ITEM_PARTS: Record<string, ItemPartSelectors> = {
+  accordion: {
+    header: " .eu-accordion__header",
+    title: " .eu-accordion__title",
+    body: " .eu-accordion__body",
+    icon: " .eu-accordion__icon",
+    number: " .eu-accordion__header::before",
+  },
+  // The alert has no separate header row — its title IS the heading, so header and title are the same element.
+  alert: {
+    header: " .eu-alert__title",
+    title: " .eu-alert__title",
+    body: " .eu-alert__body",
+    icon: " .eu-alert__icon",
+  },
+};
+
+/**
+ * RULE N — the per-component PART map, keyed by component name. Everything item-level and generic reads from
+ * here: per-part styling, per-item CSS with part targeting, icon rules, and float/position. A NEW component
+ * joins by adding its parts map here (and its item selector to COMPONENT_ITEM_SEL) — no new float code.
+ */
+export const COMPONENT_PARTS: Record<string, Record<string, string>> = {
+  accordion: ACCORDION_CSS_PARTS,
+  alert: ALERT_CSS_PARTS,
+};
+
+/**
+ * Components that hold a LIST the user manages — they get item CRUD and the on-canvas item toolbar.
+ *
+ * The ALERT is deliberately NOT one (user decision, 2026-09-05): an alert is a single message. It still has
+ * item PARTS (title / body / icon / meta) and so still appears in COMPONENT_PARTS for per-part styling, CSS
+ * targeting and positioning — having parts and holding a list are different questions.
+ */
+export const MULTI_ITEM_COMPONENTS = new Set<string>(["accordion"]);
+
+/** Does this component hold a LIST of items (so it gets add / duplicate / delete / reorder)? */
+export function isMultiItemComponent(component?: string): boolean {
+  return !!component && MULTI_ITEM_COMPONENTS.has(component);
+}
+
+/** Does this component expose editable item PARTS (per-part styling, per-item CSS, positioning)? */
+export function hasItemParts(component?: string): boolean {
+  return !!component && component in COMPONENT_PARTS;
+}
+
+/**
+ * The single message an Alert shows. The model still stores an `items` array — shared with every other
+ * item-bearing component — but only the first entry is ever rendered or edited, so an older document that
+ * holds several is never silently rewritten; the extras simply stop showing.
+ */
+export function alertMessage(node: BoxNode): ComponentItem | null {
+  return (node.items ?? [])[0] ?? null;
+}
+
+/**
+ * RULE N — the positioning context a component's item box needs once ANY of its items float: it becomes the
+ * offset parent and reserves height so a floated item is never clipped. Reverts on mobile, where floats return
+ * to the normal stack. Shared by the canvas and the export so they cannot drift.
+ */
+export function itemFloatContextCss(items: ComponentItem[] | undefined, scope: string, opts?: { stackOnNarrow?: boolean }): string {
+  const reserve = itemFloatReserveRem(items ?? []);
+  if (reserve <= 0) return "";
+  const decls = `position:relative;min-height:${reserve}rem`;
+  // Mobile-first to match the float itself: no reserved space at all until placement actually applies.
+  return opts?.stackOnNarrow
+    ? `@media (min-width:${BREAKPOINTS_EM.sm}em){${scope}{${decls}}}`
+    : `${scope}{${decls}}`;
+}
+
 export const COMPONENT_ITEM_SEL: Record<string, string> = {
   accordion: ".eu-accordion__item",
   alert: ".eu-alert",
@@ -787,15 +961,27 @@ export function hugsContent(node: BoxNode): boolean {
 }
 
 /**
- * REUSABLE across components (RULE G/K — applies to every component we have and every future one):
- * container queries need `container-type: inline-size`, which makes an element's inline size INDEPENDENT of its
- * contents. On a block that must size TO its contents ("Fit") that collapses the component to its padding — the
- * Alert became a 42px column of one-letter-per-line text sitting in a full-width band, which reads as a wrapper
- * around a broken component. So while a block hugs, containment is turned off; a block with a definite width
- * keeps its container queries. `!important` because the component stylesheet's rule is more specific.
+ * REUSABLE across components (RULE G/K/R — applies to every component we have and every future one):
+ * where a block's container-query context lives.
+ *
+ * A component element cannot query its OWN `container-type` — a query resolves against the nearest ANCESTOR
+ * container. So `.eu-alert{container-type:inline-size}` plus `@container{.eu-alert{...}}` silently measured the
+ * PAGE instead of the alert: at a 205px-wide alert the `max-width:22rem` rule never fired. The same defect made
+ * the card's `clamp(...,4cqi,...)` padding track the VIEWPORT rather than the card. Putting the containment on
+ * the block BOX fixes both at once — the component becomes a descendant of a container that is exactly its own
+ * width — with no change to any component's CSS (measured: flex-wrap nowrap -> wrap, alert width unchanged).
+ *
+ * The exception is a block that hugs its contents. Inline-size containment makes an element's width INDEPENDENT
+ * of its contents, so the two cannot coexist on one subtree — measured directly: the same text is 252px wide
+ * without containment and 16px (padding only) with it. That is CSS, not something we can patch, so while a block
+ * hugs, containment is off and its queries fall back to their clamp floor. That degradation is sound: a hug
+ * block is by definition exactly as wide as its content, which is the case those queries exist to handle.
+ * `!important` because the component stylesheet's own rule is more specific.
  */
-export function hugContainmentCss(node: BoxNode, scope: string): string {
-  return hugsContent(node) ? `${scope},${scope} *{container-type:normal !important}` : "";
+export function blockContainmentCss(node: BoxNode, scope: string): string {
+  return hugsContent(node)
+    ? `${scope},${scope} *{container-type:normal !important}`
+    : `${scope}{container-type:inline-size}`;
 }
 
 export function bgShowThroughCss(node: BoxNode, itemSel: string): string {
@@ -1067,7 +1253,7 @@ export function floatBox(root: BoxNode, id: string, targetParentId: string, left
   const hugging = hugsContent(findBox(root, id) ?? { id, type: "container" } as BoxNode);
   const sizing: Partial<BoxNode> = hugging
     ? { minHeight: Math.max(8, Math.round(height)), height: undefined, clip: undefined }
-    : { width: geom.width, height: `${Math.max(8, Math.round(height))}px`, minHeight: undefined, clip: true };
+    : { width: geom.width, height: remLen(Math.max(8, Math.round(height)), rootFontPx()), minHeight: undefined, clip: true };
   let next = moveBox(root, id, targetParentId, tp?.children?.length ?? 0);
   next = updateBox(next, id, {
     // A free-floating layer is a fixed-size CARD: a DEFINITE height (not a min-height floor that content can grow
@@ -1118,7 +1304,7 @@ export function groupBoxes(root: BoxNode, ids: string[], geom: { left: number; t
   const z = floatingZRange(next).max + 1;
   const group = createContainer("column", {
     group: true, position: "absolute", left: geom.left, top: geom.top,
-    width: geom.width, height: `${Math.max(8, Math.round(geom.height))}px`,
+    width: geom.width, height: remLen(Math.max(8, Math.round(geom.height)), rootFontPx()),
     zIndex: z, gap: 12, padding: 0, align: "stretch", wrap: false, children: kids,
   } as Partial<BoxNode>);
   return insertBox(next, next.id, next.children?.length ?? 0, group); // the group floats at the page root
@@ -1271,6 +1457,41 @@ export function flexForWidth(token?: string): string | undefined {
  * = 10px at the browser default). Because it's rem-based, sizes scale with the user's browser font size
  * — WCAG 1.4.4 (resize text) compliant. We never set an absolute px root font-size.
  */
+/**
+ * A CSS length in `rem`, from a pixel measurement (Responsive Design Field Guide, ingredient ②).
+ * Sizes are STORED in rem, not px, so a reader who raises their browser's base font scales the whole design
+ * with their preference instead of having it overridden. `rootPx` is the live root font size (16 by default).
+ */
+/**
+ * A definite CSS length back to px, for layout maths. Understands `rem` (what the editor now writes) and `px`
+ * (older documents), and returns null for anything relative — %, vh, auto — which has no fixed pixel value.
+ * Anything that reasons about a stored size MUST go through this: reading only px silently treated every rem
+ * height as "no height", which stopped a section reserving room for the block floating inside it.
+ */
+export function lenToPx(token: string | undefined, rootPx = 16): number | null {
+  if (!token) return null;
+  const n = parseFloat(token);
+  if (Number.isNaN(n)) return null;
+  if (token.endsWith("rem")) return n * (rootPx || 16);
+  if (token.endsWith("px")) return n;
+  return null;
+}
+
+/** Is this a definite length the layout can reason about (as opposed to %, vh or auto)? */
+export function isDefiniteLen(token?: string): boolean {
+  return lenToPx(token) !== null;
+}
+
+export function remLen(px: number, rootPx = 16): string {
+  return `${Math.round((px / (rootPx || 16)) * 1000) / 1000}rem`;
+}
+
+/** The document's root font size — the basis for every rem the editor writes. */
+export function rootFontPx(): number {
+  if (typeof document === "undefined") return 16;
+  return parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+}
+
 export function u(px: number): string {
   return `calc(var(--box-u, 0.625rem) * ${+(px / 10).toFixed(4)})`;
 }
@@ -1328,7 +1549,7 @@ export function floatingReserve(node: BoxNode, bp: Breakpoint = "base"): number 
     if (bp === "mobile" && floatStacksOnMobile(c)) continue;
     const rc = bp === "base" ? c : resolveResponsive(c, bp); // its effective height/top at this breakpoint
     // A floating card has a DEFINITE `height` (px) — its true rendered height; fall back to minHeight for old data.
-    const h = rc.height && rc.height.endsWith("px") ? parseFloat(rc.height) : (rc.minHeight ?? 0);
+    const h = lenToPx(rc.height) ?? rc.minHeight ?? 0;
     const top = Math.min(Math.max(rc.top ?? 0, 0), 92); // cap so we never divide by ~0
     const n = h / (1 - top / 100);
     if (n > need) need = n;
@@ -1340,7 +1561,10 @@ export function floatingReserve(node: BoxNode, bp: Breakpoint = "base"): number 
 
 /** The container's own layout CSS (flex or grid), as inline style. `bp` makes the floating reserve device-aware. */
 export function containerStyle(node: BoxNode, bp: Breakpoint = "base"): CSSProperties {
-  const minH = Math.max(node.minHeight ?? 0, floatingReserve(node, bp)) || undefined;
+  // Computed in px (measurements are px) but EMITTED in rem, per the field guide: a stored size must never
+  // reach the page as a pixel value, or a reader who has raised their base font gets a box that ignores them.
+  const minHpx = Math.max(node.minHeight ?? 0, floatingReserve(node, bp)) || undefined;
+  const minH = minHpx == null ? undefined : remLen(minHpx);
   if (node.layout === "grid") {
     return {
       display: "grid",
@@ -1408,7 +1632,14 @@ export function childStyle(child: BoxNode, parent: BoxNode): CSSProperties {
   // sections stack (each ~14rem-or-full) instead of cramming into unreadable columns. Doesn't touch resize/grow.
   if (parent.rowBand && isRow && !child.clip && !isEmptyBox(child) && isContainer(child)) s.minWidth = "min(100%, 14rem)"; // only SECTIONS get the reflow floor; elements/components hug their content
   const crossCss = sizeToCSS(crossToken);
-  if (crossCss) { if (isRow) s.height = crossCss; else s.width = crossCss; }
+  // RULE O — inside a ROW a block's height is its CROSS size. For a self-painting block (component/button) that
+  // must be a FLOOR, not a cap: a hard height here is what let the content spill out below the box after the
+  // block was later narrowed and its text rewrapped taller. Shrinking still works — the text scales to fit.
+  const selfSizing = child.type === "component" || child.type === "button";
+  if (crossCss) {
+    if (isRow) { if (selfSizing) s.minHeight = crossCss; else s.height = crossCss; }
+    else s.width = crossCss;
+  }
   // HUG, don't stretch: a BLOCK (element/component) with an auto cross-size ("Fit") must be exactly as big as its
   // content — the parent's default `align-items: stretch` would otherwise blow it up to the full cross axis, which
   // reads as an empty "wrapper" box around a short heading/button. Pin it to the start (or follow an explicit parent

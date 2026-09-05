@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { BASE_CSS, BREAKPOINTS, stylesheet } from "@/lib/educo-ui/base";
+import { BREAKPOINTS_EM, BASE_CSS, BREAKPOINTS, stylesheet } from "@/lib/educo-ui/base";
 import { DEFAULT_THEME } from "@/lib/site-storage";
 
 describe("Educo UI base stylesheet — the four responsive ingredients", () => {
@@ -23,8 +23,11 @@ describe("Educo UI base stylesheet — the four responsive ingredients", () => {
   });
 
   it("4. media queries: mobile-first min-width breakpoints", () => {
-    expect(BASE_CSS).toContain(`@media (min-width: ${BREAKPOINTS.md}px)`);
-    expect(BASE_CSS).toContain(`@media (min-width: ${BREAKPOINTS.lg}px)`);
+    // In `em`, not px: em breakpoints move with a reader who has raised their browser's base font.
+    expect(BASE_CSS).toContain(`@media (min-width: ${BREAKPOINTS_EM.md}em)`);
+    expect(BASE_CSS).toContain(`@media (min-width: ${BREAKPOINTS_EM.lg}em)`);
+    expect(BASE_CSS).not.toMatch(/@media ([^)]*max-width[^)]*)/); // never desktop-first
+    expect(BASE_CSS).not.toMatch(/@media (min-width: d+px)/);      // never a px breakpoint
     expect(BREAKPOINTS.sm).toBeLessThan(BREAKPOINTS.lg);
   });
 

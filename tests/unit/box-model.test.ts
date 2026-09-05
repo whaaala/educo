@@ -223,9 +223,12 @@ describe("box-model — Educo UI component instances", () => {
   it("itemOverrideCss: a FLOATED item is absolutely placed at (x,y) rem; reverts to the stack on mobile export", () => {
     const it = { id: "i", title: "t", body: "b", float: { x: 12, y: 6, z: 10 } };
     expect(itemHasOverride(it)).toBe(true);
-    const out = itemOverrideCss(".it", it, { mobileReset: true });
-    expect(out).toContain(".it{position:absolute !important;left:12rem !important;top:6rem !important;z-index:10 !important;");
-    expect(out).toContain("@media (max-width:480px){.it{position:static !important;left:auto !important;top:auto !important;}}");
+    const out = itemOverrideCss(".it", it, { stackOnNarrow: true });
+    // X goes through a min() clamp so an over-large placement can never push the item out of its component box,
+    // and the whole placement sits INSIDE a mobile-first `min-width` query in `em` — the stack is the base.
+    expect(out).toContain("position:absolute !important;left:min(12rem, calc(100% - 8rem)) !important;top:6rem !important;z-index:10 !important;");
+    expect(out).toContain("@media (min-width:40em){.it{position:absolute");
+    expect(out).not.toContain("max-width:480px");
     // canvas can skip the float (mobile preview) without touching the other overrides
     expect(itemOverrideCss(".it", { ...it, headerStyle: { color: "#111" } }, { skipFloat: true })).toBe(".it .eu-accordion__header{color: #111 !important;}");
   });
@@ -747,7 +750,7 @@ describe("box-model — floating layers (free overlap)", () => {
     expect(a.position).toBe("absolute");
     expect(a.left).toBe(12); expect(a.top).toBe(8);
     expect(a.width).toBe("60%");
-    expect(a.height).toBe("200px");        // a floating card gets a DEFINITE height (not a min-height floor)
+    expect(a.height).toBe("12.5rem");  // in REM, not px (field guide ②) — 200 / 16        // a floating card gets a DEFINITE height (not a min-height floor)
     expect(a.minHeight).toBeUndefined();
     expect(a.zIndex).toBe(1); // first floating child → z 1
     expect(a.marginLeft).toBeUndefined(); expect(a.alignSelf).toBeUndefined(); // flow-only styling cleared
@@ -761,7 +764,9 @@ describe("box-model — floating layers (free overlap)", () => {
     expect(findBox(next, "sec")!.minHeight).toBeUndefined(); // nothing stored
     // …but containerStyle GROWS the parent at render time so it CONTAINS the floating child (never spills out)
     const sec = findBox(next, "sec")!;
-    const mh = containerStyle(sec).minHeight as number;
+    // The reserve is EMITTED in rem (field guide ②), so read it back through the unit rather than assuming px.
+    const mh = parseFloat(containerStyle(sec).minHeight as string) * 16;
+    expect(containerStyle(sec).minHeight as string).toMatch(/rem$/);
     expect(mh).toBeGreaterThanOrEqual(220);                  // ≥ the floated child's height
     // unfloating removes the containment automatically (no floating child → no reserve, no tall gap)
     expect(containerStyle(findBox(unfloatBox(next, "a"), "sec")!).minHeight).toBeUndefined();

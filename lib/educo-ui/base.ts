@@ -18,6 +18,15 @@ import { COMPONENT_CSS } from "./components";
 /** Mobile-first breakpoints (min-width), in px. Blocks prefer container queries; pages use these. */
 export const BREAKPOINTS = { sm: 640, md: 768, lg: 1024, xl: 1280, "2xl": 1536 } as const;
 
+/**
+ * The same ladder in `em`, which is what a media query should use: em breakpoints respect a reader who has
+ * raised their browser's base font, px breakpoints ignore them (Responsive Design Field Guide, ingredient ④).
+ * One source of truth — derived from BREAKPOINTS, never re-typed.
+ */
+export const BREAKPOINTS_EM = Object.fromEntries(
+  Object.entries(BREAKPOINTS).map(([k, px]) => [k, px / 16]),
+) as { [K in keyof typeof BREAKPOINTS]: number };
+
 export const BASE_CSS = `
 /* ── Reset ─────────────────────────────────────────────────────────────────── */
 .eu-root *, .eu-root *::before, .eu-root *::after { box-sizing: border-box; }
@@ -144,9 +153,9 @@ export const BASE_CSS = `
   .eu-root a[href^="http"]::after { content: " (" attr(href) ")"; font-size: 0.85em; color: #555; }
 }
 
-/* ── Mobile-first breakpoints (min-width): build up, never down ─────────────── */
-@media (min-width: ${BREAKPOINTS.md}px) { .eu-md\\:eu-hidden { display: none; } .eu-md\\:show { display: revert; } }
-@media (min-width: ${BREAKPOINTS.lg}px) { .eu-lg\\:cols-3 { grid-template-columns: repeat(3, 1fr); } }
+/* ── Mobile-first breakpoints (min-width), in em so they respect a raised base font ───────── */
+@media (min-width: ${BREAKPOINTS_EM.md}em) { .eu-md\\:eu-hidden { display: none; } .eu-md\\:show { display: revert; } }
+@media (min-width: ${BREAKPOINTS_EM.lg}em) { .eu-lg\\:cols-3 { grid-template-columns: repeat(3, 1fr); } }
 
 /* ── Accessibility: honour reduced-motion ──────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {

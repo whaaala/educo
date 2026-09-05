@@ -26,11 +26,23 @@ describe("BlocksPanel (floating insert palette)", () => {
     }
   });
 
-  it("a composite block (no variations) adds directly on click, and the panel STAYS open (add several)", () => {
+  it("ASK-ON-ADD: a COMPONENT offers its starting points instead of adding a default", () => {
+    // Rule F. Components used to add straight away, because `getPresets` returned [] for every one of them —
+    // the blocks with the most looks to choose from were the only ones that never asked.
     const onPick = vi.fn();
     render(<BlocksPanel theme={DEFAULT_THEME} onPick={onPick} defaultOpen />);
     fireEvent.click(screen.getByLabelText(/Add Card/));
-    expect(onPick).toHaveBeenCalledWith("card"); // no style flyout for composites
+    expect(onPick).not.toHaveBeenCalled();                       // it asks first
+    expect(screen.getByLabelText("Add Card")).toBeInTheDocument(); // the chooser, by its own label
+    fireEvent.click(screen.getByText("Side by side"));
+    expect(onPick).toHaveBeenCalledWith("card", { variant: "horizontal" });
+  });
+
+  it("a block with nothing to choose adds directly, and the panel STAYS open (add several)", () => {
+    const onPick = vi.fn();
+    render(<BlocksPanel theme={DEFAULT_THEME} onPick={onPick} defaultOpen />);
+    fireEvent.click(screen.getByLabelText(/Add Spacer/));
+    expect(onPick).toHaveBeenCalledWith("spacer");
     expect(screen.getByRole("dialog", { name: "Blocks" })).toBeInTheDocument(); // still open
   });
 

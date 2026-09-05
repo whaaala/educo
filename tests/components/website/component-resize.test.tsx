@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from "vitest";
 import { render, cleanup } from "@testing-library/react";
 import BoxCanvas from "@/components/website/box/BoxCanvas";
 import { DEFAULT_THEME } from "@/lib/site-storage";
-import { createContainer, createComponent, componentBoxCss, resizeTopEdge, hugsContent, hugContainmentCss, clampFloatGeom, floatBox, findBox, widthPct, isFloating, PLACEMENT_INSET_PCT, type BoxNode } from "@/lib/box-model";
+import { createContainer, createComponent, componentBoxCss, resizeTopEdge, hugsContent, blockContainmentCss, clampFloatGeom, floatBox, findBox, widthPct, isFloating, isClipped, clampContentScale, MIN_CONTENT_SCALE, comfortableWidth, COMFORTABLE_LINES, PLACEMENT_INSET_PCT, type BoxNode } from "@/lib/box-model";
 import { renderSiteHTML } from "@/lib/box-export";
 import { siteFromRoot } from "@/lib/box-site";
 
@@ -29,7 +29,9 @@ describe("Component sizing — the component itself fills its block (RULE G)", (
       expect(box).toBeTruthy();
       const euRoot = box.querySelector(".eu-root") as HTMLElement;
       expect(euRoot).toBeTruthy();
-      expect(euRoot.style.height).toBe("100%");
+      // It fills by STRETCHING inside the block's column flex, not by a percentage height: a percentage needs a
+      // definite parent, and the block's height is a floor (min-height) so its content can never spill out.
+      expect(euRoot.style.flex).toBe("1 1 auto");
       // Width must NOT be a percentage: a percentage-width child contributes nothing to a shrink-to-fit
       // parent, which collapsed every "Fit" component to its padding. Block-level auto fills AND hugs.
       expect(euRoot.style.width).toBe("");
@@ -42,7 +44,7 @@ describe("Component sizing — the component itself fills its block (RULE G)", (
       while (el) {
         if (el.tagName === "STYLE") { el = el.nextElementSibling as HTMLElement | null; continue; }
         if (/(^| )eu-[a-z-]+( |$)/.test(el.className) && !el.className.includes("eu-root")) break; // reached the component
-        expect(el.style.height, `${component}: wrapper height`).toBe("100%");
+        expect(el.style.height, `${component}: wrapper height`).toBe("100%"); // inside .eu-root, which is stretched
         expect(el.style.width, `${component}: wrapper must not force a % width`).toBe("");
         el = el.firstElementChild as HTMLElement | null;
       }
@@ -133,9 +135,19 @@ describe("A 'Fit' block hugs its content — the component IS the block (RULE K)
     expect(hugsContent(createComponent("alert", { id: "a", width: "50%" }))).toBe(false);
   });
 
-  it("turns containment off while hugging, and leaves it on for a sized block", () => {
-    expect(hugContainmentCss(createComponent("alert", { id: "a", width: "auto" }), ".s")).toBe(`.s,.s *{${HUG_RULE}}`);
-    expect(hugContainmentCss(createComponent("alert", { id: "a", width: "fill" }), ".s")).toBe("");
+  it("puts the query container on the BLOCK BOX, so a component queries its own width and not the page", () => {
+    // A component cannot query its own `container-type` — a query resolves against the nearest ANCESTOR
+    // container. With containment only on `.eu-alert` itself, `@container (max-width:22rem){.eu-alert{...}}`
+    // measured the page, so a 205px alert never wrapped. The container belongs on the box around it.
+    expect(blockContainmentCss(createComponent("alert", { id: "a", width: "fill" }), ".s")).toBe(".s{container-type:inline-size}");
+    expect(blockContainmentCss(createComponent("alert", { id: "a", width: "50%" }), ".s")).toBe(".s{container-type:inline-size}");
+  });
+
+  it("turns containment off while hugging, because intrinsic width and containment cannot coexist", () => {
+    // Measured in a real browser: the same text is 252px wide without containment and 16px (padding only) with
+    // it. So a hug block trades its container queries for being able to size to its contents at all.
+    expect(blockContainmentCss(createComponent("alert", { id: "a", width: "auto" }), ".s")).toBe(`.s,.s *{${HUG_RULE}}`);
+    expect(blockContainmentCss({ id: "a", type: "component" } as BoxNode, ".s")).toBe(`.s,.s *{${HUG_RULE}}`);
   });
 
   for (const component of COMPONENTS) {
@@ -257,5 +269,93 @@ describe("A newly added component sizes to its content (RULE L)", () => {
     const saved = { id: "old", type: "component", component: "card", width: "100%" } as BoxNode;
     expect(hugsContent(saved)).toBe(false);
     expect(componentBoxCss(saved)).toContain("width:100%");
+  });
+});
+
+describe("Resizing a component never crops it (RULE G)", () => {
+  // The bug this guards: a height drag used to write `clip: true` on the node. That is invisible while the
+  // block is selected — the selection needs `overflow: visible` to show its handles — so the component only
+  // appeared cropped the moment you clicked away. A component's height now floors at the height its own
+  // content needs instead, so there is nothing to crop.
+  for (const component of COMPONENTS) {
+    it(`${component}: a height-resized block is not marked as clipped`, () => {
+      const sized = createComponent(component, { id: "tgt", width: "fill", height: "200px" });
+      expect(sized.clip).toBeUndefined();
+      expect(isClipped(sized)).toBe(false);
+    });
+
+    it(`${component}: an explicitly clipped block still clips (the setting is honoured)`, () => {
+      expect(isClipped(createComponent(component, { id: "tgt", clip: true }))).toBe(true);
+    });
+  }
+});
+
+describe("Shrinking a component past its content scales the text, never crops it (RULE G)", () => {
+  // What the user asked for: drag the height (or width) down to the content's own size and the box follows;
+  // drag PAST it and the text scales down so everything still fits, until it reaches the minimum readable
+  // size — then the drag stops. Nothing is ever hidden.
+  it("clamps a requested scale into the readable range", () => {
+    expect(clampContentScale(1)).toBe(1);
+    expect(clampContentScale(0.8)).toBe(0.8);
+    expect(clampContentScale(0.1)).toBe(MIN_CONTENT_SCALE);   // never smaller than the floor
+    expect(clampContentScale(2)).toBe(1);                      // never larger than natural
+    expect(clampContentScale(Number.NaN)).toBe(1);             // a bad value falls back to natural
+  });
+
+  it("the floor is a readable fraction, not an arbitrary tiny number", () => {
+    expect(MIN_CONTENT_SCALE).toBeGreaterThanOrEqual(0.5);
+    expect(MIN_CONTENT_SCALE).toBeLessThan(1);
+  });
+
+  for (const component of COMPONENTS) {
+    it(`${component}: a shrunk block scales its text with em, so every size inside follows`, () => {
+      const css = componentBoxCss(createComponent(component, { id: "t", width: "fill", height: "80px", contentScale: 0.75 }));
+      expect(css).toContain("font-size:0.75em");
+    });
+
+    it(`${component}: a block at natural size carries no scaling at all`, () => {
+      expect(componentBoxCss(createComponent(component, { id: "t", width: "fill", height: "300px" }))).not.toContain("font-size:");
+      expect(componentBoxCss(createComponent(component, { id: "t", width: "fill", contentScale: 1 }))).not.toContain("font-size:");
+    });
+
+    it(`${component}: an out-of-range scale is clamped before it reaches the CSS`, () => {
+      expect(componentBoxCss(createComponent(component, { id: "t", height: "10px", contentScale: 0.05 })))
+        .toContain(`font-size:${MIN_CONTENT_SCALE}em`);
+    });
+
+    it(`${component}: the scale is carried into the exported site too`, () => {
+      const root = createContainer("column", { id: "page", children: [
+        createContainer("row", { id: "row", rowBand: true, children: [createComponent(component, { id: "tgt", width: "fill", height: "80px", contentScale: 0.7 })] }),
+      ] });
+      expect(renderSiteHTML(siteFromRoot(root), DEFAULT_THEME)).toContain("font-size:0.7em");
+    });
+  }
+});
+
+describe("Narrowing a component scales its text once wrapping gets untidy (RULE O, width)", () => {
+  // Wrapping is normal and stays untouched while the text still reads well. Past the COMFORTABLE width — where
+  // it would wrap to more than a tidy couple of lines — the font scales instead, so a narrow component never
+  // becomes the tall one-word-per-line column it used to.
+  it("the comfortable width is the one-line width shared over a tidy number of lines", () => {
+    expect(COMFORTABLE_LINES).toBeGreaterThanOrEqual(2);
+    expect(comfortableWidth(400, 90)).toBe(400 / COMFORTABLE_LINES);
+  });
+
+  it("never proposes a width narrower than the longest unbreakable word", () => {
+    // A long single word (200px) beats the 400/2 = 200 share here, and must win outright when it is larger.
+    expect(comfortableWidth(400, 320)).toBe(320);
+    expect(comfortableWidth(100, 250)).toBe(250);
+  });
+
+  it("rounds up, so the reference is never a fraction of a pixel short", () => {
+    expect(comfortableWidth(401, 10)).toBe(Math.ceil(401 / COMFORTABLE_LINES));
+  });
+
+  it("the scale that follows from it stays in the readable range", () => {
+    const comfy = comfortableWidth(400, 90); // 200
+    expect(clampContentScale(300 / comfy)).toBe(1);              // roomy → no scaling at all
+    expect(clampContentScale(200 / comfy)).toBe(1);              // exactly comfortable → still none
+    expect(clampContentScale(150 / comfy)).toBeCloseTo(0.75, 5); // narrower → scales proportionally
+    expect(clampContentScale(20 / comfy)).toBe(MIN_CONTENT_SCALE); // far too narrow → floors, never vanishes
   });
 });

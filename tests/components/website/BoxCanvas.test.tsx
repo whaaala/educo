@@ -473,7 +473,7 @@ describe("BoxCanvas (box-model editor)", () => {
     fireEvent.mouseMove(document, { clientX: 0, clientY: 120 });
     fireEvent.mouseUp(document);
     const n = findBox(onChange.mock.calls.at(-1)![0], "b1");
-    expect(n?.height).toMatch(/px$/);       // DEFINITE height → the <a>'s height:100% resolves and fills
+    expect(n?.height).toMatch(/rem$/);       // DEFINITE height → the <a>'s height:100% resolves and fills
     expect(n?.minHeight).toBeUndefined();   // NOT a min-height floor
   });
 

@@ -21,8 +21,12 @@ import {
 } from "lucide-react";
 import type { BoxNode } from "@/lib/box-model";
 import type { SiteTheme } from "@/lib/site-storage";
-import { getPresets } from "@/lib/box-presets";
+import { getAddChoices } from "@/lib/box-presets";
+import { COMPONENT_CATALOGUE } from "@/lib/component-catalogue";
 import { PortalMenu, MenuItem, MenuHeader } from "./ui";
+
+/** The catalogue names its icon as a string so it can stay React-free; this maps those names to the icons. */
+export const COMPONENT_ICONS: Record<string, LucideIcon> = { PanelTopOpen, BellRing, LayoutGrid, MessageSquareQuote, Hash, BadgeCheck, Star };
 
 type Block = { kind: string; label: string; Icon: LucideIcon; hint: string };
 const GROUPS: { name: string; Icon: LucideIcon; blocks: Block[] }[] = [
@@ -45,15 +49,11 @@ const GROUPS: { name: string; Icon: LucideIcon; blocks: Block[] }[] = [
     { kind: "icon", label: "Icon", Icon: Shapes, hint: "A small symbol" },
     { kind: "embed", label: "Embed", Icon: CodeXml, hint: "Paste code / an iframe" },
   ] },
-  { name: "Components", Icon: Component, blocks: [
-    { kind: "accordion", label: "Accordion", Icon: PanelTopOpen, hint: "Expandable Q&A / FAQ — 54 designs" },
-    { kind: "alert", label: "Alert", Icon: BellRing, hint: "Message / notice — 6 severities, dismissible" },
-    { kind: "card", label: "Card", Icon: LayoutGrid, hint: "Image + title + text + button" },
-    { kind: "quote", label: "Quote", Icon: MessageSquareQuote, hint: "A testimonial quote" },
-    { kind: "stat", label: "Stat", Icon: Hash, hint: "A big number + label" },
-    { kind: "badge", label: "Badge", Icon: BadgeCheck, hint: "A small pill label" },
-    { kind: "rating", label: "Rating", Icon: Star, hint: "Five stars" },
-  ] },
+  // DERIVED, never re-typed: the Components group comes straight from the catalogue, so adding a component
+  // there lists it here — and a unit test fails if this panel and the catalogue ever disagree.
+  { name: "Components", Icon: Component, blocks: COMPONENT_CATALOGUE.map((c) => ({
+    kind: c.name, label: c.label, hint: c.hint, Icon: COMPONENT_ICONS[c.icon] ?? Component,
+  })) },
 ];
 
 const TABS: { name: string; Icon: LucideIcon }[] = [
@@ -76,7 +76,7 @@ export default function BlocksPanel({ theme, onDragKind, onPick, defaultOpen = f
   const [menu, setMenu] = useState<{ kind: string; label: string; anchor: Anchor } | null>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
-  const variations = menu && theme ? getPresets(menu.kind, theme) : [];
+  const variations = menu && theme ? getAddChoices(menu.kind, theme) : [];
 
   // Enter animation: mount, then flip `shown` on the next frame so the transition runs.
   useEffect(() => {
@@ -121,7 +121,7 @@ export default function BlocksPanel({ theme, onDragKind, onPick, defaultOpen = f
   const showHeaders = tab === "All";
 
   const Tile = (b: Block) => {
-    const hasVariations = !!theme && getPresets(b.kind, theme).length > 0;
+    const hasVariations = !!theme && getAddChoices(b.kind, theme).length > 0;
     const active = menu?.kind === b.kind;
     return (
       <div

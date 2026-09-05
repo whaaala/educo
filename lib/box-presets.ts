@@ -5,7 +5,8 @@
  * Card container — without touching individual properties. Pure + theme-aware.
  */
 
-import { type BoxNode, type BoxType, createContainer, createGrid, createElement, createComponent } from "@/lib/box-model";
+import { type BoxNode, type BoxType, createContainer, createGrid, createElement } from "@/lib/box-model";
+import { buildCatalogueComponent, addChoices, applyPresetVariant } from "@/lib/component-catalogue";
 import type { SiteTheme } from "@/lib/site-storage";
 
 export type Preset = { id: string; label: string; patch: Partial<BoxNode> };
@@ -80,50 +81,35 @@ export function getPresets(kind: string, theme: SiteTheme): Preset[] {
   }
 }
 
-// ── Design-system components as EDITABLE TREES (Card, Quote, Stat, Badge, Rating) ──
-// Each is a ready-made tree whose EVERY inner piece is a real, individually-selectable, fully-editable BoxNode
-// (click a card's heading → the full heading inspector; a badge's text → the full text inspector; …). The
-// component's OWN container is the box (no extra wrapper). EVERY colour is a design token (var(--eu-color-*))
-// so they re-theme with the site + pass WCAG. The Accordion stays a `component` (its items edit inline).
-function makeCard(): BoxNode {
-  return createContainer("column", { width: "100%", padding: 24, gap: 12, radius: 16, shadow: "md", borderWidth: 1, borderColor: "var(--eu-color-border)", background: "var(--eu-color-surface)", align: "stretch", children: [
-    createElement("image", { width: "100%", height: "160px", radius: 12 }),
-    createElement("heading", { text: "Card title", fontSize: 22, bold: true, width: "100%", color: "var(--eu-color-text)" }),
-    createElement("text", { text: "A short description for this card goes right here.", width: "100%", color: "var(--eu-color-muted)" }),
-    createElement("button", { text: "Learn more", background: "var(--eu-color-brand)", color: "var(--eu-color-on-brand)" }),
-  ] });
-}
-function makeQuote(): BoxNode {
-  return createContainer("column", { width: "100%", padding: 20, paddingLeft: 24, gap: 8, borderWidth: 0, align: "start", children: [
-    createElement("text", { text: "“This changed everything for us — we couldn't be happier.”", fontSize: 22, italic: true, width: "100%", color: "var(--eu-color-text)" }),
-    createElement("text", { text: "— Happy Customer", fontSize: 14, width: "100%", color: "var(--eu-color-muted)" }),
-  ] });
-}
-function makeStat(): BoxNode {
-  return createContainer("column", { width: "auto", padding: 16, gap: 4, align: "center", children: [
-    createElement("heading", { text: "1,000+", fontSize: 44, bold: true, textAlign: "center", color: "var(--eu-color-brand)" }),
-    createElement("text", { text: "Happy customers", textAlign: "center", color: "var(--eu-color-muted)" }),
-  ] });
-}
-function makeBadge(): BoxNode {
-  // A single editable text element styled as a pill — click it and change everything (text, colour, size, radius…).
-  return createElement("text", { text: "New", fontSize: 12, bold: true, width: "auto", textAlign: "center", color: "var(--eu-color-brand)", background: "var(--eu-color-primary-50)", radius: 999, paddingTop: 6, paddingBottom: 6, paddingLeft: 12, paddingRight: 12 });
-}
-function makeRating(): BoxNode {
-  const star = (on: boolean) => createElement("icon", { icon: "Star", fontSize: 24, color: on ? "var(--eu-color-warning)" : "var(--eu-color-neutral-300)" });
-  return createContainer("row", { width: "auto", padding: 4, gap: 4, align: "center", justify: "start", wrap: false, children: [star(true), star(true), star(true), star(true), star(false)] });
-}
-const COMPOSITES: Record<string, () => BoxNode> = { card: makeCard, quote: makeQuote, stat: makeStat, badge: makeBadge, rating: makeRating };
+// Design-system components (Card/Quote/Stat/Badge/Rating) and the bespoke ones (Accordion/Alert) are ALL
+// built by the COMPONENT CATALOGUE now — one entry per component, listing it in the palette, building it here
+// and feeding both invariant harnesses. See lib/component-catalogue.ts for why the two construction strategies
+// (editable tree vs `component` node) both exist and are both correct.
 
-/** Build a fresh block for a palette kind. Card/Quote/Stat/Badge/Rating are EDITABLE TREES; the accordion is a
- *  `component` (inline-editable items); everything else is a primitive element / container. */
+/** Build a fresh block for a palette kind — the ONE insertion path the product uses (palette click and drag).
+ *  Components come from the catalogue; everything else is a primitive element / container. */
 export function blockForKind(kind: string, patch: Partial<BoxNode> = {}): BoxNode {
   const base =
-    COMPOSITES[kind] ? COMPOSITES[kind]()
-    : (kind === "accordion" || kind === "alert") ? createComponent(kind)
-    : kind === "row" ? createContainer("row")
+    buildCatalogueComponent(kind) ??
+    (kind === "row" ? createContainer("row")
     : kind === "grid" ? createGrid(3)
     : kind === "container" ? createContainer("column", { width: "100%", padding: 24, gap: 0, align: "stretch" })
-    : createElement(kind as Exclude<BoxType, "container">);
-  return Object.assign(base, patch);
+    : createElement(kind as Exclude<BoxType, "container">));
+  const node = Object.assign(base, patch);
+  // A design picked at add time has to be APPLIED, not just recorded: for a tree component the variant id is
+  // only a label until `applyPresetVariant` restyles the tree. (For `component` nodes the id IS the CSS class
+  // suffix, and applyPresetVariant leaves a node without a `preset` untouched, so this is safe for both.)
+  return node.variant ? applyPresetVariant(node, node.variant) : node;
+}
+
+/**
+ * What the palette offers when adding a block — ASK-ON-ADD (Rule F).
+ *
+ * Components answer from the catalogue, so every component we have and every future one gets this for free;
+ * primitives keep their existing style presets. Before this, `getPresets` returned [] for every component, so
+ * the one kind of block with the most looks to choose from was the only kind that never asked.
+ */
+export function getAddChoices(kind: string, theme: SiteTheme): Preset[] {
+  const fromCatalogue = addChoices(kind);
+  return fromCatalogue.length ? fromCatalogue : getPresets(kind, theme);
 }
