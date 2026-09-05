@@ -17,7 +17,7 @@ import {
   containerStyle, childStyle, marginCSS, sizeToCSS, u, baseUnit, floatingReserve, floatStacksOnMobile, createContainer, createGrid, createElement, createComponent,
   updateBox, removeBox, insertBox, moveBoxStep, duplicateBox, moveBox, cloneBox, findParent, isAncestor, isContainer, isEmptyBox, widthPct,
   isFloating, floatBox, unfloatBox, groupBoxes, ungroupBoxes, bringToFront, sendToBack, bringForward, sendBackward,
-  radiusCSS, isClipped, SHADOW_CSS, videoEmbedSrc, sanitizeCssDeclarations, expandScopedCss, ACCORDION_CSS_PARTS, accItemOverrideCss, accItemHasOverride, accItemNumberVars, accFloatReserveRem, richBody, componentTextCss, componentBoxCss, bgImageLayer,
+  radiusCSS, isClipped, SHADOW_CSS, videoEmbedSrc, sanitizeCssDeclarations, expandScopedCss, ACCORDION_CSS_PARTS, itemOverrideCss, itemHasOverride, itemNumberVars, itemFloatReserveRem, richBody, componentTextCss, componentBoxCss, bgImageLayer, renderAlertHTML, bgShowThroughCss, resizeTopEdge, hugContainmentCss, hugsContent, addItemAfter, duplicateItem, duplicateChildItem, removeItem, removeChildItem, moveItem, moveChildItem, updateItem, updateChildItem, ALERT_SEVERITY_ICON, alertPartInline, alertIconInline, collectAlertItemStyles,
   type Breakpoint, resolveResponsive, updateBoxResponsive,
 } from "@/lib/box-model";
 import { ICON_SET } from "./icons";
@@ -29,6 +29,7 @@ import { iconSvg, onIconsLoaded, warmIcons, hasIcon } from "@/lib/educo-ui/icon-
 import { tokensFromTheme, tokensToCss } from "@/lib/educo-ui/tokens";
 import { isRegistryComponent, renderComponent } from "@/lib/educo-ui/registry";
 import { EditableText, ImageBox } from "@/components/website/sections/SectionKit";
+import ItemCrudLayer, { type SelectedItem } from "@/components/website/box/ItemCrudLayer";
 
 /** Layered background CSS: base fill (colour/gradient) → image → overlay; content renders above. */
 function backgroundStyle(node: BoxNode): React.CSSProperties {
@@ -215,6 +216,10 @@ export default function BoxCanvas({
   const dragPtRef = useRef<{ x: number; y: number } | null>(null); // latest cursor pos (rAF-batched during drag)
   const dragRaf = useRef(0);
   const rootRef = useRef(root); rootRef.current = root; // always-fresh tree for the drag listeners
+  // The item selected INSIDE a component (RULE I). Kept here rather than in ComponentView because selecting the
+  // block re-renders it in a way that remounts the component view — which threw this state away, so the first
+  // click on an item never seemed to register.
+  const [itemSel, setItemSel] = useState<{ boxId: string; id: string; parentId?: string } | null>(null);
   // Non-lucide icons (Brands/Google/Ionicons) load lazily — warm every icon in the tree so the canvas
   // paints them, and repaint when a source finishes loading.
   const [, iconTick] = useReducer((x) => x + 1, 0);
@@ -268,12 +273,15 @@ export default function BoxCanvas({
 
   // Auto-migrate OLD floating blocks (saved before floating cards got a DEFINITE height): measure each one's real
   // rendered height ONCE and store it as `height`, so its parent's reserved space matches and it no longer spills.
+  // A block that HUGS ITS CONTENT is skipped (RULE L): it floats without a frozen height on purpose, so freezing
+  // one here would re-break editing (the box stays at the old size and clips the new text) and would keep
+  // re-triggering this measure→write→render cycle.
   const migratedFloats = useRef<Set<string>>(new Set());
   useEffect(() => {
     if (!editable) return;
     const stale: string[] = [];
     const walk = (n: BoxNode) => {
-      if (isFloating(n) && !(n.height && n.height.endsWith("px")) && !migratedFloats.current.has(n.id)) stale.push(n.id);
+      if (isFloating(n) && !hugsContent(n) && !(n.height && n.height.endsWith("px")) && !migratedFloats.current.has(n.id)) stale.push(n.id);
       (n.children ?? []).forEach(walk);
     };
     walk(rootRef.current);
@@ -666,11 +674,17 @@ export default function BoxCanvas({
     const onMove = (ev: MouseEvent) => {
       const dx = ev.clientX - startX, dy = ev.clientY - startY;
       const patch: Partial<BoxNode> = {};
-      if (hasE) { const w = Math.max(16, bw + dx); patch.width = `${round1((w / cw) * 100)}%`; }
-      if (hasW) { const w = Math.max(16, bw - dx); patch.width = `${round1((w / cw) * 100)}%`; patch.left = round1(((x0 + (bw - w)) / cw) * 100); }
+      // PAGE BOUNDS (RULE — every block, every component, now and in future): a floating box is positioned
+      // freely, so its NEAR edges have to be clamped to its parent's content box: growing left/up stops at
+      // that edge (the size is capped to the room actually there) and growing right stops at the parent's width,
+      // so a floating block can never be resized to somewhere the user can no longer see or grab it.
+      if (hasE) { const w = Math.min(cw - x0, Math.max(16, bw + dx)); patch.width = `${round1((w / cw) * 100)}%`; }
+      if (hasW) { const w = Math.min(x0 + bw, Math.max(16, bw - dx)); patch.width = `${round1((w / cw) * 100)}%`; patch.left = round1(((x0 + (bw - w)) / cw) * 100); }
       // A floating card has a DEFINITE height (px) — so resizing it keeps the parent's reserved space exact.
+      // The BOTTOM is deliberately not capped: the parent reserves height for its floats, so growing down just
+      // makes the section (and the page) taller — nothing is ever hidden, unlike growing past the near edges.
       if (hasS) { const h = Math.max(16, bh + dy); patch.height = `${Math.round(h)}px`; patch.minHeight = undefined; }
-      if (hasN) { const h = Math.max(16, bh - dy); patch.height = `${Math.round(h)}px`; patch.minHeight = undefined; patch.top = round1(((y0 + (bh - h)) / ch) * 100); }
+      if (hasN) { const h = Math.min(y0 + bh, Math.max(16, bh - dy)); patch.height = `${Math.round(h)}px`; patch.minHeight = undefined; patch.top = round1(((y0 + (bh - h)) / ch) * 100); }
       pending = writeBox(rootRef.current, id, patch);
       if (!raf) raf = requestAnimationFrame(flush);
     };
@@ -716,6 +730,20 @@ export default function BoxCanvas({
     const prRect = pEl ? pEl.getBoundingClientRect() : null;
     const contentLeftPx = prRect ? prRect.left + padL : 0;
     const contentTopPx = prRect ? prRect.top + padT : 0;
+
+    // PAGE BOUNDS (RULE — every block and every component, the ones we have and every future one): a resize may
+    // NEVER take a block outside the page canvas. The bottom/left/right edges are already bounded (the bottom
+    // grows the page, which is in flow; the left stops at the flow origin; the right stops at the parent's
+    // content width) — but the TOP edge grows by going NEGATIVE on margin-top, so without this floor it slides
+    // up behind the toolbar and the user can no longer see or grab it. Measured in the same parent-content-box
+    // space as the drag maths; when the page element can't be found we fall back to this block's own flow
+    // origin, which can never escape either.
+    const pageEl = document.querySelector<HTMLElement>(`[data-box-id="${rootRef.current.id}"]`);
+    let pageTopPx: number | null = null;
+    if (pageEl) {
+      const pgRect = pageEl.getBoundingClientRect(), pgCs = getComputedStyle(pageEl);
+      pageTopPx = pgRect.top + (parseFloat(pgCs.paddingTop) || 0) - contentTopPx;
+    }
 
     // Cross-axis anchor: pin alignment + current position/size so a centred/stretched box doesn't jump.
     let base = root, changed = false;
@@ -783,8 +811,13 @@ export default function BoxCanvas({
         // Edge-anchored: the BOTTOM stays put, the TOP moves. Dragging the top UP grows the block — even at the
         // canvas top — by letting margin-top go negative so the block extends upward (was clamped to the flow
         // origin, which pinned the first block and made top-resize do nothing).
-        const top = Math.min(startBotPx - minHpx, startTopPx + dy);
-        const h = Math.round(startBotPx - top);
+        // Clamped to the PAGE TOP (see PAGE BOUNDS above) so growing upward can never push the block — and its
+        // resize handle — off the page. Below the page top it is still free to grow up past its own section.
+        // AT THE WALL the drag must not go dead (a block sitting flush against the page top is the common case
+        // for a first block): whatever you drag past the page top is added to the BOTTOM instead, so the block
+        // still grows by exactly the distance you dragged and still never leaves the page.
+        // `resizeTopEdge` (box-model) owns the maths + the page clamp so the rule is unit-testable.
+        const { top, height: h } = resizeTopEdge(startTopPx, startBotPx, dy, minHpx, pageTopPx ?? flowY);
         const mt = pxU(top - flowY); // may be negative → the block grows upward past its flow origin
         tree = writeBox(tree, id, isComp ? { height: `${h}px`, minHeight: undefined, clip: true, marginTop: mt } : { minHeight: h, height: undefined, marginTop: mt });
       }
@@ -933,7 +966,7 @@ export default function BoxCanvas({
           ...(isDragging ? { opacity: 0.4 } : {}) }}
         className={`${isSel ? "outline outline-2 outline-indigo-500 outline-offset-[-2px]" : editable ? "hover:outline hover:outline-1 hover:outline-indigo-300/70 hover:outline-offset-[-1px]" : ""}`}
       >
-        <ElementView node={node} theme={theme} editable={editable} breakpoint={breakpoint} onText={(v) => onChange(updateBox(root, node.id, { text: v }))} onSrc={(v) => onChange(updateBox(root, node.id, { src: v }))} onPatchNode={(patch) => onChange(updateBox(root, node.id, patch))} />
+        <ElementView node={node} theme={theme} editable={editable} breakpoint={breakpoint} onText={(v) => onChange(updateBox(root, node.id, { text: v }))} onSrc={(v) => onChange(updateBox(root, node.id, { src: v }))} onPatchNode={(patch) => onChange(updateBox(root, node.id, patch))} itemSel={itemSel} setItemSel={setItemSel} />
         {isSolo && <NodeToolbar node={node} isRoot={isRoot} />}
         {resizeHandles}
       </div>
@@ -1101,17 +1134,210 @@ function treeHasComponent(node: BoxNode): boolean {
 }
 
 /**
+ * COMPONENT SIZING RULE (applies to EVERY component we have and every one we add):
+ * a component must be resizable from ALL FOUR SIDES of its block — dragging the LEFT/RIGHT edges changes the
+ * component's WIDTH and dragging the TOP/BOTTOM edges changes its HEIGHT. The drag writes width/height onto the
+ * node; componentBoxCss turns that into width:100% / height:100% on the component's own `.eu-*` element. For
+ * those percentages to resolve, EVERY wrapper between the node box and the component element must itself be a
+ * definite-size box — so any wrapper a component branch introduces MUST carry this style. `display:grid` makes
+ * the single child stretch in BOTH axes when the box is sized, and hug its content when the box is auto.
+ * (Regression-guarded for every component by tests/components/website/component-resize.test.tsx.)
+ */
+const COMPONENT_FILL: React.CSSProperties = { height: "100%", display: "grid" };
+
+/**
  * An Educo UI component instance in the canvas. The wrapper carries `.eu-root` (so the injected component
  * stylesheet + this site's tokens apply) plus any per-instance token overrides as inline CSS variables, and
  * fills the width the section allocated to it. Content is edited INLINE (titles/bodies) via EditableText;
  * structure (add/remove items, variant, colours) is edited in the inspector. In edit mode every panel is
  * shown open so its body is editable; clicking a header doesn't collapse it.
  */
-function ComponentView({ node, editable, onPatchNode, breakpoint = "base" }: { node: BoxNode; editable?: boolean; onPatchNode?: (patch: Partial<BoxNode>) => void; breakpoint?: Breakpoint }) {
-  // Always write item edits from the FRESHEST accItems (a drag's move handler must not replay a stale snapshot
+/** Parse the inline style string the model builds for a part into a React style object. */
+function inlineToStyle(css: string): React.CSSProperties | undefined {
+  if (!css) return undefined;
+  const out: Record<string, string> = {};
+  for (const d of css.split(";")) {
+    const i = d.indexOf(":");
+    if (i < 0) continue;
+    const prop = d.slice(0, i).trim().replace(/-([a-z])/g, (_, c) => c.toUpperCase());
+    if (prop) out[prop] = d.slice(i + 1).trim();
+  }
+  return out as React.CSSProperties;
+}
+
+/**
+ * One alert row ON THE CANVAS, as REACT — deliberately mirroring `alertItemHTML` in lib/box-model.ts, which
+ * still renders the same markup for the EXPORT (canvas === export).
+ *
+ * It is React rather than injected HTML for one reason: a contenteditable inside `dangerouslySetInnerHTML`
+ * cannot reliably take focus from a mouse press inside the canvas, so clicking an item's text did nothing. The
+ * Accordion already solved this by rendering its items as React and editing them with the shared
+ * `EditableText`; this follows exactly that pattern, so both components behave identically (RULE F).
+ * Sub-items recurse through the same component, so no nesting level is less editable than the top (RULE I).
+ */
+function AlertItemView({ item, sev, treat, dismiss, editable, parentId, onEdit }: {
+  item: import("@/lib/box-model").ComponentItem;
+  sev: string; treat: string; dismiss: boolean; editable?: boolean; parentId?: string;
+  onEdit: (id: string, patch: Partial<import("@/lib/box-model").ComponentItem>, parentId?: string) => void;
+}) {
+  const iconName = item.icon || ALERT_SEVERITY_ICON[sev] || "Info";
+  const svg = iconName ? iconSvg(iconName) : "";
+  const cls = ["eu-alert", `eu-alert--${sev}`, treat ? `eu-alert${treat}` : "", `eu-al-${item.id}`].filter(Boolean).join(" ");
+  const role = sev === "danger" || sev === "warning" ? "alert" : "status";
+  const set = (patch: Partial<import("@/lib/box-model").ComponentItem>) => onEdit(item.id, patch, parentId);
+  return (
+    <div className={cls} role={role} data-eu-item={item.id} data-eu-parent={parentId}>
+      {item.media ? <img className="eu-alert__media" src={item.media} alt={item.mediaAlt ?? ""} /> : null}
+      {svg ? <span className="eu-alert__icon" aria-hidden="true" style={inlineToStyle(alertIconInline(item))} dangerouslySetInnerHTML={{ __html: svg }} /> : null}
+      <div className="eu-alert__content">
+        {(item.title || editable) && (
+          <div className="eu-alert__title" style={inlineToStyle(alertPartInline(item.headerStyle))}>
+            <EditableText value={item.title} editable={editable} onChange={(v) => set({ title: v })} placeholder="Title" />
+          </div>
+        )}
+        {(item.body || editable) && (
+          <div className="eu-alert__body" style={inlineToStyle(alertPartInline(item.bodyStyle))}>
+            {editable
+              ? <EditableText value={item.body} editable onChange={(v) => set({ body: v })} placeholder="Message — click to edit" />
+              : <span dangerouslySetInnerHTML={{ __html: richBody(item.body) }} />}
+          </div>
+        )}
+        {(item.meta || editable) && (
+          <span className="eu-alert__meta">
+            <EditableText value={item.meta} editable={editable} onChange={(v) => set({ meta: v })} placeholder="" />
+          </span>
+        )}
+        {(item.children ?? []).length > 0 && (
+          <div className="eu-alert__sub">
+            {(item.children ?? []).map((c) => (
+              <AlertItemView key={c.id} item={c} sev={sev} treat={treat} dismiss={false} editable={editable} parentId={item.id} onEdit={onEdit} />
+            ))}
+          </div>
+        )}
+      </div>
+      {dismiss && <button type="button" className="eu-alert__close" aria-label="Dismiss" onClick={(e) => e.preventDefault()}>×</button>}
+    </div>
+  );
+}
+
+/**
+ * ON-CANVAS ITEM CRUD (RULE I) — the behaviour half, shared by EVERY component (now and in future).
+ *
+ * Works purely off the `data-eu-item` / `data-eu-part` attributes a component's markup stamps in edit mode
+ * (see `itemRootAttrs` in lib/box-model.ts), so it needs to know nothing about any particular component — and
+ * it reaches EVERY nesting level, because those attributes are emitted recursively for sub-items too.
+ *
+ * Text parts are committed on BLUR, never on every keystroke: the item markup is injected as HTML, so writing
+ * on each input would re-render the string under the caret and jump it to the start.
+ */
+function useItemCrud(
+  node: BoxNode,
+  onPatchNode?: (patch: Partial<BoxNode>) => void,
+  itemSel?: { boxId: string; id: string; parentId?: string } | null,
+  setItemSel?: (v: { boxId: string; id: string; parentId?: string } | null) => void,
+) {
+  // The selection lives in BoxCanvas (see itemSel there) so it survives this component being remounted.
+  const selected: SelectedItem | null = itemSel && itemSel.boxId === node.id ? { id: itemSel.id, parentId: itemSel.parentId } : null;
+  const setSelected = (v: SelectedItem | null) => setItemSel?.(v ? { boxId: node.id, ...v } : null);
+  const nodeRef = useRef(node); nodeRef.current = node;
+  // Clicking away from this component clears the item selection, so the toolbar never lingers over work you
+  // have moved on from. Presses INSIDE the component (another item, a text part) or on the toolbar itself are
+  // ignored — the toolbar stops its own presses, and it lives outside the host, hence the explicit check.
+  const hostRef = useRef<HTMLElement | null>(null);
+  useEffect(() => {
+    if (!selected) return;
+    const onDown = (e: MouseEvent) => {
+      const t = e.target as HTMLElement | null;
+      if (!t) return;
+      if (hostRef.current?.contains(t)) return;                       // still inside this component
+      if (t.closest('[role="toolbar"][aria-label="Edit this item"]')) return; // the item toolbar itself
+      setSelected(null);
+    };
+    document.addEventListener("mousedown", onDown, true);
+    return () => document.removeEventListener("mousedown", onDown, true);
+  }, [selected]);
+
+  // Pressing anywhere inside an item selects THAT item (the innermost one, so a sub-item wins over its parent).
+  // This is deliberately MOUSEDOWN, not click: the block's own drag handling means a real click event never
+  // reaches here (a synthetic one does, which is what made this look like it worked in a unit test but not in
+  // the browser). Mousedown also feels better — the item highlights the moment you press it. Propagation is NOT
+  // stopped, so pressing an item still selects/drags the block underneath exactly as before, and the default is
+  // not prevented, so clicking straight into a text part still places the caret.
+  const onMouseDown = (e: React.MouseEvent) => {
+    const el = (e.target as HTMLElement).closest<HTMLElement>("[data-eu-item]");
+    if (!el) return;
+    setSelected({ id: el.dataset.euItem!, parentId: el.dataset.euParent || undefined });
+    // Pressing directly on a TEXT PART must place the caret in it. The block's own mousedown handler arms a
+    // drag and calls preventDefault(), which stops a contenteditable from ever taking focus — so for a text
+    // part we stop the press here (React runs the descendant handler first) and let the default proceed.
+    // Anywhere ELSE in the item the press still reaches the block, so dragging the block is unaffected.
+    if ((e.target as HTMLElement).closest("[data-eu-part]")) e.stopPropagation();
+  };
+
+  // Commit an edited text part when focus leaves it.
+  const onBlur = (e: React.FocusEvent) => {
+    const part = (e.target as HTMLElement).closest<HTMLElement>("[data-eu-part]");
+    if (!part) return;
+    const host = part.closest<HTMLElement>("[data-eu-item]");
+    if (!host) return;
+    const field = part.dataset.euPart as "title" | "body" | "meta";
+    const value = part.textContent ?? "";
+    const id = host.dataset.euItem!, parentId = host.dataset.euParent;
+    const cur = nodeRef.current;
+    const before = parentId
+      ? (cur.items ?? []).find((it) => it.id === parentId)?.children?.find((c) => c.id === id)
+      : (cur.items ?? []).find((it) => it.id === id);
+    if (!before || (before[field] ?? "") === value) return; // nothing actually changed
+    const next = parentId ? updateChildItem(cur, parentId, id, { [field]: value }) : updateItem(cur, id, { [field]: value });
+    onPatchNode?.({ items: next.items });
+  };
+
+  // Enter commits and leaves the field (Shift+Enter still inserts a line break in a body).
+  const onKeyDown = (e: React.KeyboardEvent) => {
+    const part = (e.target as HTMLElement).closest<HTMLElement>("[data-eu-part]");
+    if (part && e.key === "Enter" && !e.shiftKey) { e.preventDefault(); part.blur(); }
+  };
+
+  const apply = (next: BoxNode) => onPatchNode?.({ items: next.items });
+  const sel = selected;
+  const actions = {
+    add: () => { if (sel) apply(addItemAfter(nodeRef.current, sel.parentId ? undefined : sel.id)); },
+    duplicate: () => { if (sel) apply(sel.parentId ? duplicateChildItem(nodeRef.current, sel.parentId, sel.id) : duplicateItem(nodeRef.current, sel.id)); },
+    remove: () => {
+      if (!sel) return;
+      apply(sel.parentId ? removeChildItem(nodeRef.current, sel.parentId, sel.id) : removeItem(nodeRef.current, sel.id));
+      setSelected(null);
+    },
+    up: () => { if (sel) apply(sel.parentId ? moveChildItem(nodeRef.current, sel.parentId, sel.id, -1) : moveItem(nodeRef.current, sel.id, -1)); },
+    down: () => { if (sel) apply(sel.parentId ? moveChildItem(nodeRef.current, sel.parentId, sel.id, 1) : moveItem(nodeRef.current, sel.id, 1)); },
+  };
+  // How many siblings the selection has — the toolbar guards Delete at the last one.
+  const siblingCount = sel?.parentId
+    ? ((node.items ?? []).find((it) => it.id === sel.parentId)?.children ?? []).length
+    : (node.items ?? []).length;
+
+  // Used by a component's React item views to write one field of one item (top-level or nested).
+  const editItem = (id: string, patch: Partial<import("@/lib/box-model").ComponentItem>, parentId?: string) => {
+    const cur = nodeRef.current;
+    const next = parentId ? updateChildItem(cur, parentId, id, patch) : updateItem(cur, id, patch);
+    onPatchNode?.({ items: next.items });
+  };
+  return { selected, setSelected, hostRef, handlers: { onMouseDown, onBlur, onKeyDown }, actions, siblingCount, editItem };
+}
+
+function ComponentView({ node, editable, onPatchNode, breakpoint = "base", itemSel, setItemSel }: {
+  node: BoxNode; editable?: boolean; onPatchNode?: (patch: Partial<BoxNode>) => void; breakpoint?: Breakpoint;
+  itemSel?: { boxId: string; id: string; parentId?: string } | null;
+  setItemSel?: (v: { boxId: string; id: string; parentId?: string } | null) => void;
+}) {
+  // Always write item edits from the FRESHEST items (a drag's move handler must not replay a stale snapshot
   // and wipe positions set by another edit path — the ref updates every render).
-  const accItemsRef = useRef(node.accItems ?? []);
-  accItemsRef.current = node.accItems ?? [];
+  const itemsRef = useRef(node.items ?? []);
+  itemsRef.current = node.items ?? [];
+  // Shared on-canvas item CRUD (RULE I) — every multi-item component uses the same hook + overlay.
+  const crud = useItemCrud(node, onPatchNode, itemSel, setItemSel);
+  const itemHostRef = useRef<HTMLDivElement>(null);
+  crud.hostRef.current = itemHostRef.current; // the click-away check needs this component’s DOM subtree
   // Grow the accordion box to CONTAIN its floated items exactly, so a detached item never spills outside its
   // container (measured after each render → correct even for tall, open items; reverts on the mobile preview).
   const accRef = useRef<HTMLDivElement>(null);
@@ -1119,7 +1345,7 @@ function ComponentView({ node, editable, onPatchNode, breakpoint = "base" }: { n
     const el = accRef.current;
     if (!el || node.component !== "accordion") return;
     // Only relevant when items actually float; skip entirely otherwise (avoids a measure→write→resize loop).
-    const hasFloat = breakpoint !== "mobile" && (node.accItems ?? []).some((it) => it.float);
+    const hasFloat = breakpoint !== "mobile" && (node.items ?? []).some((it) => it.float);
     let target = "";
     if (hasFloat) {
       let maxBottom = 0;
@@ -1145,14 +1371,19 @@ function ComponentView({ node, editable, onPatchNode, breakpoint = "base" }: { n
   // containing block so width/height percentages resolve (display:contents would break % height). The component's
   // own element carries the border/radius/background + fills this box (injected below). `display:grid` so the
   // component stretches to fill in BOTH axes when sized, and hugs when the box is auto.
-  const styleVars = { width: "100%", height: "100%", ...typo, ...(node.tokenOverrides ?? {}) } as React.CSSProperties;
+  // WIDTH IS DELIBERATELY NOT `100%`: a percentage-width child contributes NOTHING to a shrink-to-fit parent, so
+  // `width:100%` here collapsed every "Fit"-width component to its minimum content width (the Alert became a 42px
+  // column of one-letter-per-line text, inside a full-width band that read as a wrapper). A block-level box with
+  // `width:auto` FILLS a definite-width parent and reports its real content width to a shrink-to-fit one — which
+  // is exactly what Full and Fit each need. Same reason `COMPONENT_FILL` sets height only.
+  const styleVars = { height: "100%", display: "grid", ...typo, ...(node.tokenOverrides ?? {}) } as React.CSSProperties;
   if (node.component === "accordion") {
-    const items = node.accItems ?? [];
+    const items = node.items ?? [];
     const cls = "eu-accordion" + (node.variant ? ` eu-accordion${node.variant}` : "");
-    const setItem = (id: string, patch: Partial<import("@/lib/box-model").AccordionItem>) =>
-      onPatchNode?.({ accItems: accItemsRef.current.map((it) => (it.id === id ? { ...it, ...patch } : it)) });
-    const setChild = (pid: string, cid: string, patch: Partial<import("@/lib/box-model").AccordionItem>) =>
-      onPatchNode?.({ accItems: accItemsRef.current.map((it) => (it.id === pid ? { ...it, children: (it.children ?? []).map((c) => (c.id === cid ? { ...c, ...patch } : c)) } : it)) });
+    const setItem = (id: string, patch: Partial<import("@/lib/box-model").ComponentItem>) =>
+      onPatchNode?.({ items: itemsRef.current.map((it) => (it.id === id ? { ...it, ...patch } : it)) });
+    const setChild = (pid: string, cid: string, patch: Partial<import("@/lib/box-model").ComponentItem>) =>
+      onPatchNode?.({ items: itemsRef.current.map((it) => (it.id === pid ? { ...it, children: (it.children ?? []).map((c) => (c.id === cid ? { ...c, ...patch } : c)) } : it)) });
     const tcss = componentTextCss(node), bcss = componentBoxCss(node);
     const sel = `[data-box-id="${node.id}"] .eu-accordion`;
     // Floats apply on desktop/tablet; on the mobile preview items return to the normal stack (matches export).
@@ -1160,16 +1391,16 @@ function ComponentView({ node, editable, onPatchNode, breakpoint = "base" }: { n
     // Whole-component Advanced CSS + per-item CSS both support part blocks (title/body/icon/meta/media),
     // so any text/background/colour of the accordion OR any single item can be overridden — canvas == export.
     const adv = expandScopedCss(node.advancedCss, sel, ACCORDION_CSS_PARTS);
-    const itemCss = items.map((it) => (accItemHasOverride(it) ? accItemOverrideCss(`${sel} .eu-acc-i-${it.id}`, it, { skipFloat: !floatsActive }) : "")).filter(Boolean).join("");
-    const reserve = floatsActive ? accFloatReserveRem(items) : 0;
+    const itemCss = items.map((it) => (itemHasOverride(it) ? itemOverrideCss(`${sel} .eu-acc-i-${it.id}`, it, { skipFloat: !floatsActive }) : "")).filter(Boolean).join("");
+    const reserve = floatsActive ? itemFloatReserveRem(items) : 0;
     const floatCtx = reserve > 0 ? `${sel}{position:relative;min-height:${reserve}rem}` : "";
-    const inject = [tcss ? `${sel}, ${sel} *{${tcss}}` : "", bcss ? `${sel}{${bcss}}` : "", adv, itemCss, floatCtx].filter(Boolean).join("");
+    const inject = [tcss ? `${sel}, ${sel} *{${tcss}}` : "", bcss ? `${sel}{${bcss}}` : "", adv, itemCss, floatCtx, bgShowThroughCss(node, `${sel} .eu-accordion__item`), hugContainmentCss(node, sel)].filter(Boolean).join("");
     // Drag a detached (floating) item on the canvas to reposition it — X/Y (rem) update live.
     // Write several items in one patch (so a grouped drag moves every member together, atomically) — from the
-    // freshest accItems (accItemsRef), never the render-time closure, so no other item's position is lost.
-    const setItems = (updates: { id: string; float: import("@/lib/box-model").AccordionItem["float"] }[]) =>
-      onPatchNode?.({ accItems: accItemsRef.current.map((it) => { const u = updates.find((x) => x.id === it.id); return u ? { ...it, float: u.float } : it; }) });
-    const startItemDrag = (e: React.PointerEvent, it: import("@/lib/box-model").AccordionItem) => {
+    // freshest items (itemsRef), never the render-time closure, so no other item's position is lost.
+    const setItems = (updates: { id: string; float: import("@/lib/box-model").ComponentItem["float"] }[]) =>
+      onPatchNode?.({ items: itemsRef.current.map((it) => { const u = updates.find((x) => x.id === it.id); return u ? { ...it, float: u.float } : it; }) });
+    const startItemDrag = (e: React.PointerEvent, it: import("@/lib/box-model").ComponentItem) => {
       if (!editable || !it.float || !floatsActive) return;
       if ((e.target as HTMLElement).closest("[contenteditable='true']")) return; // let text editing win
       e.preventDefault(); e.stopPropagation();
@@ -1198,9 +1429,11 @@ function ComponentView({ node, editable, onPatchNode, breakpoint = "base" }: { n
       window.addEventListener("pointermove", move); window.addEventListener("pointerup", up);
     };
     return (
-      <div className="eu-root" style={styleVars}>
+      <div className="eu-root" style={{ ...styleVars, position: "relative" }} ref={itemHostRef}>
         {inject ? <style dangerouslySetInnerHTML={{ __html: inject }} /> : null}
-        <div ref={accRef} className={cls} id={node.accShowAll ? `eu-acc-${node.id}` : undefined}>
+        {/* Same shared item CRUD as every other multi-item component — see useItemCrud / ItemCrudLayer. */}
+        <div ref={accRef} className={cls} id={node.accShowAll ? `eu-acc-${node.id}` : undefined}
+          onMouseDown={editable ? crud.handlers.onMouseDown : undefined}>
           {node.variant === "--split" && (
             <div className="eu-accordion__panel" style={node.accSplitMedia && /^(https?:|data:)/.test(node.accSplitMedia) ? { backgroundImage: `url('${node.accSplitMedia.replace(/["'()\\]/g, "")}')` } : undefined} />
           )}
@@ -1214,15 +1447,15 @@ function ComponentView({ node, editable, onPatchNode, breakpoint = "base" }: { n
           )}
           {node.accShowAll && (
             <div className="eu-accordion__controls">
-              <button type="button" data-eu-acc-all="open" onClick={() => onPatchNode?.({ accItems: items.map((it) => ({ ...it, open: true })) })} title="Open every panel by default (visitors can still toggle)">Expand all</button>
-              <button type="button" data-eu-acc-all="close" onClick={() => onPatchNode?.({ accItems: items.map((it) => ({ ...it, open: undefined })) })} title="Collapse every panel by default">Collapse all</button>
+              <button type="button" data-eu-acc-all="open" onClick={() => onPatchNode?.({ items: items.map((it) => ({ ...it, open: true })) })} title="Open every panel by default (visitors can still toggle)">Expand all</button>
+              <button type="button" data-eu-acc-all="close" onClick={() => onPatchNode?.({ items: items.map((it) => ({ ...it, open: undefined })) })} title="Collapse every panel by default">Collapse all</button>
             </div>
           )}
           {items.map((it, i) => (
             <Fragment key={it.id}>
             {it.category && it.category !== items[i - 1]?.category ? <div className="eu-accordion__category">{it.category}</div> : null}
-            <details id={it.anchor || undefined} className={`eu-accordion__item${accItemHasOverride(it) ? ` eu-acc-i-${it.id}` : ""}`}
-              style={{ ...(accItemNumberVars(i) as React.CSSProperties), ...(editable && it.float && floatsActive ? { cursor: "move" } : {}) }}
+            <details id={it.anchor || undefined} data-eu-item={it.id} className={`eu-accordion__item${itemHasOverride(it) ? ` eu-acc-i-${it.id}` : ""}`}
+              style={{ ...(itemNumberVars(i) as React.CSSProperties), ...(editable && it.float && floatsActive ? { cursor: "move" } : {}) }}
               onPointerDown={editable && it.float && floatsActive ? (e) => startItemDrag(e, it) : undefined}
               open={editable ? true : it.open} name={node.accMultiOpen ? undefined : `acc-${node.id}`}>
               <summary className="eu-accordion__header" onClick={editable ? (e) => e.preventDefault() : undefined}>
@@ -1238,7 +1471,7 @@ function ComponentView({ node, editable, onPatchNode, breakpoint = "base" }: { n
                 {(it.children ?? []).length ? (
                   <div className="eu-accordion eu-accordion--nested">
                     {(it.children ?? []).map((c) => (
-                      <details key={c.id} className="eu-accordion__item" open={editable ? true : c.open}>
+                      <details key={c.id} data-eu-item={c.id} data-eu-parent={it.id} className="eu-accordion__item" open={editable ? true : c.open}>
                         <summary className="eu-accordion__header" onClick={editable ? (e) => e.preventDefault() : undefined}>
                           <span className="eu-accordion__title"><EditableText value={c.title} editable={editable} onChange={(v) => setChild(it.id, c.id, { title: v })} placeholder="Sub-question" /></span>
                         </summary>
@@ -1256,35 +1489,96 @@ function ComponentView({ node, editable, onPatchNode, breakpoint = "base" }: { n
             </Fragment>
           ))}
         </div>
+        {editable && (
+          <ItemCrudLayer
+            containerRef={itemHostRef}
+            selected={crud.selected}
+            count={crud.siblingCount}
+            onAdd={crud.actions.add}
+            onDuplicate={crud.actions.duplicate}
+            onDelete={crud.actions.remove}
+            onMoveUp={crud.actions.up}
+            onMoveDown={crud.actions.down}
+            onDismiss={() => crud.setSelected(null)}
+          />
+        )}
       </div>
     );
   }
   // Registry components render as ONE clean node from the SAME HTML the export emits (true WYSIWYG). Content
   // is edited in the inspector (auto-generated from the component's slots), never inline — so a plain injected
   // markup string is exactly right here.
+  // Alert — a multi-item component (mirrors the accordion) rendered from one shared HTML function.
+  if (node.component === "alert") {
+    const adv = sanitizeCssDeclarations(node.advancedCss);
+    const tcss = componentTextCss(node), bcss = componentBoxCss(node);
+    const sel = `[data-box-id="${node.id}"] .eu-alert-stack`;
+    // Per-ITEM styling/CSS used to ride along inside renderAlertHTML's <style>; the React branch injects it here
+    // instead, from the same model helper, so the canvas keeps matching the export exactly.
+    const itemStyles: string[] = [];
+    collectAlertItemStyles(node.items, itemStyles);
+    const inject = [tcss ? `${sel} .eu-alert__body, ${sel} .eu-alert__title{${tcss}}` : "", bcss ? `${sel}{${bcss}}` : "", adv ? `${sel}{${adv}}` : "", bgShowThroughCss(node, `${sel} .eu-alert`), hugContainmentCss(node, sel), itemStyles.join("")].filter(Boolean).join("");
+    return (
+      <div className="eu-root" style={{ ...styleVars, position: "relative" }}>
+        {inject ? <style dangerouslySetInnerHTML={{ __html: inject }} /> : null}
+        {/* Items render as REACT here (see AlertItemView) so each one's text is directly editable on the canvas,
+            exactly like the Accordion's. The EXPORT still comes from renderAlertHTML — same markup, same CSS. */}
+        <div ref={itemHostRef} style={COMPONENT_FILL} onMouseDown={editable ? crud.handlers.onMouseDown : undefined}>
+          <div className={`eu-alert-stack eu-alert-stack--${node.alertForm || "inline"}`}>
+            {(node.items ?? []).map((it) => (
+              <AlertItemView
+                key={it.id}
+                item={it}
+                sev={node.alertSeverity || "info"}
+                treat={node.variant || ""}
+                dismiss={!!node.alertDismiss}
+                editable={editable}
+                onEdit={crud.editItem}
+              />
+            ))}
+          </div>
+        </div>
+        {editable && (
+          <ItemCrudLayer
+            containerRef={itemHostRef}
+            selected={crud.selected}
+            count={crud.siblingCount}
+            onAdd={crud.actions.add}
+            onDuplicate={crud.actions.duplicate}
+            onDelete={crud.actions.remove}
+            onMoveUp={crud.actions.up}
+            onMoveDown={crud.actions.down}
+            onDismiss={() => crud.setSelected(null)}
+          />
+        )}
+      </div>
+    );
+  }
   if (isRegistryComponent(node.component)) {
     const adv = sanitizeCssDeclarations(node.advancedCss);
     const tcss = componentTextCss(node), bcss = componentBoxCss(node);
     const sel = `[data-box-id="${node.id}"] .eu-${node.component}`;
-    const inject = [tcss ? `${sel}, ${sel} *{${tcss}}` : "", bcss ? `${sel}{${bcss}}` : "", adv ? `${sel}{${adv}}` : ""].filter(Boolean).join("");
+    const inject = [tcss ? `${sel}, ${sel} *{${tcss}}` : "", bcss ? `${sel}{${bcss}}` : "", adv ? `${sel}{${adv}}` : "", hugContainmentCss(node, sel)].filter(Boolean).join("");
     const html = renderComponent(node.component!, node.componentFields, node.variant);
     return (
       <div className="eu-root" style={styleVars}>
         {inject ? <style dangerouslySetInnerHTML={{ __html: inject }} /> : null}
-        <div style={{ width: "100%", height: "100%", display: "flex" }} dangerouslySetInnerHTML={{ __html: html }} />
+        <div style={COMPONENT_FILL} dangerouslySetInnerHTML={{ __html: html }} />
       </div>
     );
   }
   return <div className="eu-root" style={styleVars} />;
 }
 
-function ElementView({ node, theme, editable, onText, onSrc, onPatchNode, breakpoint = "base" }: {
+function ElementView({ node, theme, editable, onText, onSrc, onPatchNode, breakpoint = "base", itemSel, setItemSel }: {
   node: BoxNode; theme: SiteTheme; editable?: boolean; onText: (v: string) => void; onSrc: (v: string) => void; onPatchNode?: (patch: Partial<BoxNode>) => void; breakpoint?: Breakpoint;
+  itemSel?: { boxId: string; id: string; parentId?: string } | null;
+  setItemSel?: (v: { boxId: string; id: string; parentId?: string } | null) => void;
 }) {
   const fileRef = useRef<HTMLInputElement>(null);
   const align = node.textAlign ?? "left";
   switch (node.type) {
-    case "component": return <ComponentView node={node} editable={editable} onPatchNode={onPatchNode} breakpoint={breakpoint} />;
+    case "component": return <ComponentView node={node} editable={editable} onPatchNode={onPatchNode} breakpoint={breakpoint} itemSel={itemSel} setItemSel={setItemSel} />;
     case "heading":
       return <h2 style={{ color: node.color || theme.text, fontSize: u(node.fontSize ?? 32), textAlign: align, width: "100%", ...typoStyle(node, theme.headingFont, 600) }}><EditableText value={node.text} editable={editable} onChange={onText} placeholder="Heading" /></h2>;
     case "button": {

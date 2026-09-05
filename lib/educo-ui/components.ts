@@ -89,11 +89,62 @@ export const COMPONENT_CSS = `
 .eu-root .eu-rating__star.is-on { color: var(--eu-color-warning); }
 .eu-root .eu-rating--brand .eu-rating__star.is-on { color: var(--eu-color-brand); }
 
-/* ── Alert ─────────────────────────────────────────────────────────────────── */
-.eu-root .eu-alert { padding: var(--eu-space-4) var(--eu-space-5); border-radius: var(--eu-radius-md); border-left: 4px solid var(--eu-color-info); background: var(--eu-color-surface); color: var(--eu-color-text); }
-.eu-root .eu-alert--success { border-inline-start-color: var(--eu-color-success); }
-.eu-root .eu-alert--warning { border-inline-start-color: var(--eu-color-warning); }
-.eu-root .eu-alert--danger  { border-inline-start-color: var(--eu-color-danger); }
+/* ── Alert (severity × treatment × form factor — all token-driven, re-themes in every theme) ── */
+.eu-root .eu-alert {
+  --al-c: var(--eu-color-info);                                                   /* severity accent */
+  --al-tint: color-mix(in oklab, var(--al-c) 14%, var(--eu-color-surface));       /* soft background */
+  --al-line: color-mix(in oklab, var(--al-c) 34%, var(--eu-color-surface));       /* soft border */
+  container-type: inline-size;
+  display: flex; align-items: flex-start; gap: var(--eu-space-3);
+  padding: var(--eu-space-4) var(--eu-space-5);
+  border-radius: var(--eu-radius-md);
+  background: var(--al-tint); color: var(--eu-color-text); border: 1px solid var(--al-line);
+}
+/* severities set the accent colour only — every treatment reads --al-c */
+.eu-root .eu-alert--info    { --al-c: var(--eu-color-info); }
+.eu-root .eu-alert--success { --al-c: var(--eu-color-success); }
+.eu-root .eu-alert--warning { --al-c: var(--eu-color-warning); }
+.eu-root .eu-alert--danger  { --al-c: var(--eu-color-danger); }
+.eu-root .eu-alert--neutral { --al-c: var(--eu-color-muted); }
+.eu-root .eu-alert--brand   { --al-c: var(--eu-color-brand); }
+/* parts */
+.eu-root .eu-alert__icon { display: inline-flex; flex: none; color: var(--al-c); font-size: 1.3rem; line-height: 1; margin-block-start: 0.05em; }
+.eu-root .eu-alert__icon svg { width: 1em; height: 1em; }
+.eu-root .eu-alert__content { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: var(--eu-space-1); }
+.eu-root .eu-alert__title { font-family: var(--eu-font-heading); font-weight: var(--eu-weight-bold); color: var(--al-c); line-height: 1.2; }
+.eu-root .eu-alert__body { color: var(--eu-color-text); font-size: 0.95em; }
+.eu-root .eu-alert__action { align-self: flex-start; margin-block-start: var(--eu-space-2); }
+.eu-root .eu-alert__close { appearance: none; flex: none; background: transparent; border: 0; color: inherit; opacity: 0.55; cursor: pointer; padding: 0.15rem; line-height: 0; border-radius: var(--eu-radius-sm); }
+.eu-root .eu-alert__close:hover { opacity: 1; background: color-mix(in oklab, currentColor 14%, transparent); }
+.eu-root .eu-alert__close svg { width: 1.1rem; height: 1.1rem; }
+/* ── treatments ── */
+.eu-root .eu-alert--solid { background: var(--al-c); border-color: transparent; }
+.eu-root .eu-alert--solid .eu-alert__icon, .eu-root .eu-alert--solid .eu-alert__title, .eu-root .eu-alert--solid .eu-alert__body { color: var(--eu-color-on-brand); }
+.eu-root .eu-alert--solid .eu-alert__action { background: var(--eu-color-on-brand); color: var(--al-c); border-color: transparent; }
+.eu-root .eu-alert--outline { background: transparent; border: 1.5px solid var(--al-c); }
+.eu-root .eu-alert--accent { background: var(--eu-color-surface); border: 1px solid var(--eu-color-border); border-inline-start: 4px solid var(--al-c); }
+.eu-root .eu-alert--top { background: var(--al-tint); border: 1px solid var(--al-line); border-block-start: 4px solid var(--al-c); }
+.eu-root .eu-alert--card { background: var(--eu-color-surface); border: 1px solid var(--eu-color-border); box-shadow: var(--eu-shadow-lg); }
+.eu-root .eu-alert--glass { background: color-mix(in oklab, var(--eu-color-surface) 55%, transparent); -webkit-backdrop-filter: blur(12px) saturate(1.5); backdrop-filter: blur(12px) saturate(1.5); border: 1px solid color-mix(in oklab, var(--al-c) 30%, transparent); box-shadow: var(--eu-shadow-lg); }
+/* ── form factors ── */
+.eu-root .eu-alert--banner { border-radius: 0; border-inline: 0; }
+.eu-root .eu-alert--callout { background: var(--eu-color-surface); border: 1px solid var(--eu-color-border); border-inline-start: 4px solid var(--al-c); }
+/* responsive: stack the action under the text on very narrow blocks */
+@container (max-width: 22rem) { .eu-root .eu-alert { flex-wrap: wrap; } }
+/* ── multi-item stack + form factors + parts ── */
+.eu-root .eu-alert-stack { display: flex; flex-direction: column; gap: var(--eu-space-3); }
+/* Height resize (COMPONENT SIZING RULE): when the block is given a definite height the stack fills it and the
+   alert rows share the extra space, so dragging the top/bottom edge grows the ALERT itself — not just an empty
+   box around it. With an auto-height stack there is no free space, so the rows keep hugging their content. */
+.eu-root .eu-alert-stack > .eu-alert { flex: 1 1 auto; }
+.eu-root .eu-alert-stack--banner { gap: 0; }
+.eu-root .eu-alert-stack--banner .eu-alert { border-radius: 0; border-inline: 0; }
+.eu-root .eu-alert-stack--toast { align-items: stretch; }
+.eu-root .eu-alert-stack--toast .eu-alert { box-shadow: var(--eu-shadow-lg); }
+.eu-root .eu-alert__meta { margin-inline-start: auto; color: var(--eu-color-muted); font-size: 0.85em; align-self: flex-start; }
+.eu-root .eu-alert__sub { display: flex; flex-direction: column; gap: var(--eu-space-2); margin-block-start: var(--eu-space-2); padding-inline-start: var(--eu-space-3); border-inline-start: 2px solid color-mix(in oklab, var(--al-c) 30%, transparent); }
+.eu-root .eu-alert__sub .eu-alert { padding: var(--eu-space-3) var(--eu-space-4); }
+.eu-root .eu-alert__body a { color: inherit; text-decoration: underline; }
 
 /* ── Link + section ────────────────────────────────────────────────────────── */
 .eu-root .eu-link { color: var(--eu-color-brand); text-decoration: underline; text-underline-offset: .15em; }

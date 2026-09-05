@@ -8,9 +8,9 @@
 import type { CSSProperties } from "react";
 import {
   type BoxNode, type Breakpoint, containerStyle, childStyle, marginCSS, sizeToCSS, radiusCSS, SHADOW_CSS, u, baseUnit,
-  resolveResponsive, floatStacksOnMobile, videoEmbedSrc, isContainer, sanitizeCssDeclarations, expandScopedCss, ACCORDION_CSS_PARTS, accItemOverrideCss, accItemHasOverride, accItemNumberVars, accFloatReserveRem, richBody, plainBody, componentTextCss, componentBoxCss, bgImageLayer,
+  resolveResponsive, floatStacksOnMobile, videoEmbedSrc, isContainer, sanitizeCssDeclarations, expandScopedCss, ACCORDION_CSS_PARTS, ALERT_CSS_PARTS, itemOverrideCss, itemHasOverride, itemNumberVars, itemFloatReserveRem, richBody, plainBody, componentTextCss, componentBoxCss, bgImageLayer, renderAlertHTML, alertDismissScript, bgShowThroughCss, hugContainmentCss, COMPONENT_ITEM_SEL,
 } from "@/lib/box-model";
-import { isRegistryComponent, renderComponent } from "@/lib/educo-ui/registry";
+import { isRegistryComponent, renderComponent, componentScripts } from "@/lib/educo-ui/registry";
 import { iconSvg } from "@/lib/educo-ui/icon-svg";
 import type { BoxSite } from "@/lib/box-site";
 import type { SiteTheme } from "@/lib/site-storage";
@@ -112,20 +112,26 @@ function elementHTML(node: BoxNode, theme: SiteTheme, pageMap: Map<string, strin
 /** The per-instance style that makes the inspector's Design + Typography controls act on the COMPONENT ITSELF
  *  (`.eu-<component>`) rather than its wrapper box — scoped to this instance's export class (`bx-<id>`). */
 function componentInjectCss(node: BoxNode): string {
+  const isAlert = node.component === "alert";
   const name = node.component === "accordion" ? "accordion" : node.component!;
-  const sel = `.${classFor(node.id)} .eu-${name}`;
+  // The alert's "component box" is the .eu-alert-stack (the items are .eu-alert rows inside it).
+  const sel = `.${classFor(node.id)} .eu-${isAlert ? "alert-stack" : name}`;
   const tcss = componentTextCss(node), bcss = componentBoxCss(node);
-  // Whole-component Advanced CSS: bare declarations style the accordion box; `title{…}`/`body{…}`/`icon{…}` etc.
+  // Whole-component Advanced CSS: bare declarations style the component box; `title{…}`/`body{…}`/`icon{…}` etc.
   // restyle that part of EVERY item (text, background, colour — anything).
-  const adv = expandScopedCss(node.advancedCss, sel, node.component === "accordion" ? ACCORDION_CSS_PARTS : undefined);
+  const adv = expandScopedCss(node.advancedCss, sel, node.component === "accordion" ? ACCORDION_CSS_PARTS : isAlert ? ALERT_CSS_PARTS : undefined);
   // When any accordion item is detached (floating), make the accordion a positioning context and reserve
   // height so floats aren't clipped. Reverts on mobile, where floated items return to the normal stack.
   let floatCtx = "";
   if (node.component === "accordion") {
-    const reserve = accFloatReserveRem(node.accItems ?? []);
+    const reserve = itemFloatReserveRem(node.items ?? []);
     if (reserve > 0) floatCtx = `${sel}{position:relative;min-height:${reserve}rem}@media (max-width:480px){${sel}{min-height:0}}`;
   }
-  return [tcss ? `${sel}, ${sel} *{${tcss}}` : "", bcss ? `${sel}{${bcss}}` : "", adv, floatCtx].filter(Boolean).join("");
+  // REUSABLE across components: if the whole component has a block background, let it show through the items.
+  const itemSel = COMPONENT_ITEM_SEL[node.component!];
+  const showThrough = itemSel ? bgShowThroughCss(node, `${sel} ${itemSel}`) : "";
+  // RULE G/K: a hug-to-content block must be able to size to its contents — see hugContainmentCss.
+  return [tcss ? `${sel}, ${sel} *{${tcss}}` : "", bcss ? `${sel}{${bcss}}` : "", adv, floatCtx, showThrough, hugContainmentCss(node, sel)].filter(Boolean).join("");
 }
 
 /** Render an Educo UI component instance to its `.eu-*` markup + a per-instance <style> (so Design/Typography
@@ -139,7 +145,7 @@ function componentHTML(node: BoxNode): string {
     const grp = node.accMultiOpen ? "" : ` name="acc-${esc(node.id)}"`;
     const itemStyles: string[] = []; // per-ITEM Advanced CSS, scoped to that one item
     let lastCat: string | undefined; // category grouping — a heading before the first item of each group
-    const items = (node.accItems ?? []).map((it, i) => {
+    const items = (node.items ?? []).map((it, i) => {
       const catHead = it.category && it.category !== lastCat ? `<div class="eu-accordion__category">${esc(it.category)}</div>` : "";
       lastCat = it.category;
       const icon = it.icon ? `<span class="eu-accordion__icon" aria-hidden="true">${iconSvg(it.icon)}</span>` : "";
@@ -148,13 +154,13 @@ function componentHTML(node: BoxNode): string {
       // Per-ITEM styling: the point-and-click Header/Content colour+font controls, then the raw CSS box
       // (bare declarations style THIS item; `title{…}`/`body{…}`/`icon{…}` blocks target one part).
       let itemCls = "eu-accordion__item";
-      if (accItemHasOverride(it)) {
+      if (itemHasOverride(it)) {
         const ic = `eu-acc-i-${esc(it.id)}`;
-        const rule = accItemOverrideCss(`.eu-accordion .${ic}`, it, { mobileReset: true });
+        const rule = itemOverrideCss(`.eu-accordion .${ic}`, it, { mobileReset: true });
         if (rule) { itemCls += ` ${ic}`; itemStyles.push(rule); }
       }
       // Ordinal (01, 02…) fed to numbered designs as CSS vars — deterministic, matches the editor exactly.
-      const nvars = Object.entries(accItemNumberVars(i)).map(([k, v]) => `${k}:${v}`).join(";");
+      const nvars = Object.entries(itemNumberVars(i)).map(([k, v]) => `${k}:${v}`).join(";");
       // Per-item deep-link: a stable id on the <details> so #slug scrolls to (and, via the script below, opens) it.
       const idAttr = it.anchor ? ` id="${esc(it.anchor)}"` : "";
       // Nested sub-accordion (one level) rendered inside the body — the `.eu-accordion .eu-accordion` CSS indents it.
@@ -165,13 +171,13 @@ function componentHTML(node: BoxNode): string {
       return `${catHead}<details${idAttr} class="${itemCls}" style="${nvars}"${it.open ? " open" : ""}${grp}><summary class="eu-accordion__header">${icon}${media}<span class="eu-accordion__title">${esc(it.title)}</span>${meta}</summary><div class="eu-accordion__body">${richBody(it.body)}${kids}</div></details>`;
     }).join("");
     // FAQ SEO: opt-in schema.org FAQPage JSON-LD (rich results). Each item → Question + Answer (plain text).
-    const faqSchema = node.accFaqSchema && (node.accItems ?? []).length
-      ? `<script type="application/ld+json">${JSON.stringify({ "@context": "https://schema.org", "@type": "FAQPage", mainEntity: (node.accItems ?? []).map((it) => ({ "@type": "Question", name: it.title, acceptedAnswer: { "@type": "Answer", text: plainBody(it.body) } })) }).replace(/</g, "\\u003c")}<\/script>`
+    const faqSchema = node.accFaqSchema && (node.items ?? []).length
+      ? `<script type="application/ld+json">${JSON.stringify({ "@context": "https://schema.org", "@type": "FAQPage", mainEntity: (node.items ?? []).map((it) => ({ "@type": "Question", name: it.title, acceptedAnswer: { "@type": "Answer", text: plainBody(it.body) } })) }).replace(/</g, "\\u003c")}<\/script>`
       : "";
     const istyle = itemStyles.length ? `<style>${itemStyles.join("")}</style>` : "";
     // Deep-link: when any item has an anchor, add a tiny GLOBAL-guarded script that opens + scrolls to the
     // item whose id matches the URL hash (on load + hashchange). Progressive enhancement — links still scroll without JS.
-    const deepScript = (node.accItems ?? []).some((it) => it.anchor)
+    const deepScript = (node.items ?? []).some((it) => it.anchor)
       ? `<script>(function(){if(window.__euAccDeep)return;window.__euAccDeep=1;function o(){var h=location.hash.slice(1);if(!h)return;var e=document.getElementById(h);var d=e&&e.closest?e.closest('details.eu-accordion__item'):null;if(d){d.open=true;d.scrollIntoView();}}addEventListener('hashchange',o);o();})();<\/script>`
       : "";
     // Opt-in interactivity (Expand/Collapse-all + Search). The accordion stays ZERO-JS unless one is enabled;
@@ -189,8 +195,12 @@ function componentHTML(node: BoxNode): string {
     const splitPanel = node.variant === "--split" ? `<div class="eu-accordion__panel"${splitUrl ? ` style="background-image:url('${splitUrl}')"` : ""}></div>` : "";
     return `${style}${istyle}<div class="${cls}"${idPart}>${splitPanel}${searchBox}${controls}${items}</div>${showAllScript}${searchScript}${deepScript}${faqSchema}`;
   }
-  // Every other component renders as ONE clean node straight from the registry (same HTML the canvas shows).
-  if (isRegistryComponent(node.component)) return `${style}${renderComponent(node.component!, node.componentFields, node.variant)}`;
+  // Alert — a multi-item component (mirrors the accordion), rendered from the SAME shared HTML as the canvas,
+  // plus its opt-in zero-JS dismiss script.
+  if (node.component === "alert") return `${style}${renderAlertHTML(node)}${alertDismissScript(node)}`;
+  // Every other component renders as ONE clean node straight from the registry (same HTML the canvas shows),
+  // plus its opt-in progressive-enhancement script (zero-JS unless the component asked for one, e.g. dismiss).
+  if (isRegistryComponent(node.component)) return `${style}${renderComponent(node.component!, node.componentFields, node.variant)}${componentScripts(node.component!, node.componentFields, node.variant, node.id)}`;
   return "";
 }
 

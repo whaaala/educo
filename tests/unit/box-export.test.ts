@@ -128,7 +128,7 @@ describe("box-export — static HTML", () => {
   it("renders an accordion component as native <details> with its variant class + items", () => {
     const acc = createComponent("accordion", {
       variant: "--panel",
-      accItems: [
+      items: [
         { id: "i1", title: "Q one", body: "A one", meta: "$10", open: true },
         { id: "i2", title: "Q two", body: "A two" },
       ],
@@ -145,7 +145,7 @@ describe("box-export — static HTML", () => {
   });
 
   it("accordion is ZERO-JS by default, but 'Expand/Collapse all' adds opt-in controls + a scoped script", () => {
-    const mk = (extra: Partial<BoxNode>) => createContainer("column", { id: "r", children: [makeRowBand([createComponent("accordion", { id: "acc", accItems: [{ id: "i1", title: "Q", body: "A" }], ...extra } as Partial<BoxNode>)])] } as Partial<BoxNode>);
+    const mk = (extra: Partial<BoxNode>) => createContainer("column", { id: "r", children: [makeRowBand([createComponent("accordion", { id: "acc", items: [{ id: "i1", title: "Q", body: "A" }], ...extra } as Partial<BoxNode>)])] } as Partial<BoxNode>);
     // OFF (default): no controls, no script
     const off = renderPageHTML(mk({}), DEFAULT_THEME);
     expect(off).not.toContain("data-eu-acc-all");
@@ -159,7 +159,7 @@ describe("box-export — static HTML", () => {
   });
 
   it("per-ITEM CSS can change ANY part of just that item (text, background, colour) and stays scoped + safe", () => {
-    const acc = createComponent("accordion", { id: "acc", accItems: [
+    const acc = createComponent("accordion", { id: "acc", items: [
       // bare decl → the item; part blocks → that item's title/body/icon; a breakout attempt targeting the page.
       { id: "i1", title: "Q", body: "A", css: "background: #fef3c7; title { color: #b45309 } body { background: #fff7ed } icon { color: #f59e0b } html { display: none }" },
       { id: "i2", title: "Q2", body: "A2" },
@@ -176,18 +176,18 @@ describe("box-export — static HTML", () => {
   });
 
   it("split design: renders a media panel beside the items (safe url) and stacks via container query", () => {
-    const acc = createComponent("accordion", { id: "acc", variant: "--split", accSplitMedia: "https://x.com/p.jpg", accItems: [{ id: "i1", title: "Q", body: "A" }] } as Partial<BoxNode>);
+    const acc = createComponent("accordion", { id: "acc", variant: "--split", accSplitMedia: "https://x.com/p.jpg", items: [{ id: "i1", title: "Q", body: "A" }] } as Partial<BoxNode>);
     const root = createContainer("column", { children: [makeRowBand([acc])] } as Partial<BoxNode>);
     const html = renderPageHTML(root, DEFAULT_THEME);
     expect(html).toContain("eu-accordion eu-accordion--split");
     expect(html).toContain(`<div class="eu-accordion__panel" style="background-image:url('https://x.com/p.jpg')"></div>`);
     // a non-http/js url is rejected (no background-image)
-    const bad = createComponent("accordion", { id: "b", variant: "--split", accSplitMedia: "javascript:alert(1)", accItems: [{ id: "i1", title: "Q", body: "A" }] } as Partial<BoxNode>);
+    const bad = createComponent("accordion", { id: "b", variant: "--split", accSplitMedia: "javascript:alert(1)", items: [{ id: "i1", title: "Q", body: "A" }] } as Partial<BoxNode>);
     expect(renderPageHTML(createContainer("column", { children: [makeRowBand([bad])] } as Partial<BoxNode>), DEFAULT_THEME)).toContain('<div class="eu-accordion__panel"></div>');
   });
 
   it("categories: a heading is emitted before the first item of each category group", () => {
-    const acc = createComponent("accordion", { id: "acc", accItems: [
+    const acc = createComponent("accordion", { id: "acc", items: [
       { id: "i1", title: "A", body: "a", category: "Billing" },
       { id: "i2", title: "B", body: "b", category: "Billing" }, // same group → no second heading
       { id: "i3", title: "C", body: "c", category: "Shipping" }, // new group → heading
@@ -200,7 +200,7 @@ describe("box-export — static HTML", () => {
   });
 
   it("opt-in search: adds a filter box + a scoped filter script (accordion stays zero-JS otherwise)", () => {
-    const mk = (extra: Partial<BoxNode>) => createContainer("column", { children: [makeRowBand([createComponent("accordion", { id: "acc", accItems: [{ id: "i1", title: "Q", body: "A" }], ...extra } as Partial<BoxNode>)])] } as Partial<BoxNode>);
+    const mk = (extra: Partial<BoxNode>) => createContainer("column", { children: [makeRowBand([createComponent("accordion", { id: "acc", items: [{ id: "i1", title: "Q", body: "A" }], ...extra } as Partial<BoxNode>)])] } as Partial<BoxNode>);
     const off = renderPageHTML(mk({}), DEFAULT_THEME);
     expect(off).not.toContain("data-eu-acc-search");
     const on = renderPageHTML(mk({ accSearch: true }), DEFAULT_THEME);
@@ -214,7 +214,7 @@ describe("box-export — static HTML", () => {
   });
 
   it("nested sub-accordion: children render as an indented accordion inside the parent body", () => {
-    const acc = createComponent("accordion", { id: "acc", accItems: [
+    const acc = createComponent("accordion", { id: "acc", items: [
       { id: "p", title: "Billing", body: "Overview.", children: [
         { id: "c1", title: "Refunds?", body: "Yes." }, { id: "c2", title: "Invoices?", body: "Monthly." },
       ] },
@@ -227,7 +227,7 @@ describe("box-export — static HTML", () => {
   });
 
   it("per-item icon renders inline SVG in the header (and the Icon block now exports too)", () => {
-    const acc = createComponent("accordion", { id: "acc", accItems: [{ id: "i1", title: "Fast shipping", body: "…", icon: "Truck" }] } as Partial<BoxNode>);
+    const acc = createComponent("accordion", { id: "acc", items: [{ id: "i1", title: "Fast shipping", body: "…", icon: "Truck" }] } as Partial<BoxNode>);
     const root = createContainer("column", { children: [makeRowBand([acc])] } as Partial<BoxNode>);
     const html = renderPageHTML(root, DEFAULT_THEME);
     expect(html).toContain('<span class="eu-accordion__icon" aria-hidden="true"><svg'); // icon svg in the header
@@ -238,7 +238,7 @@ describe("box-export — static HTML", () => {
   });
 
   it("rich body + FAQ SEO schema: markdown-lite renders to safe HTML, and FAQPage JSON-LD is opt-in", () => {
-    const acc = createComponent("accordion", { id: "acc", accFaqSchema: true, accItems: [
+    const acc = createComponent("accordion", { id: "acc", accFaqSchema: true, items: [
       { id: "i1", title: "Do you ship?", body: "Yes — see [rates](https://x.com/r) and **note** the cutoff." },
     ] } as Partial<BoxNode>);
     const root = createContainer("column", { children: [makeRowBand([acc])] } as Partial<BoxNode>);
@@ -249,12 +249,12 @@ describe("box-export — static HTML", () => {
     expect(html).toContain('"name":"Do you ship?"');
     expect(html).toContain('"text":"Yes — see rates and note the cutoff."'); // answer is PLAIN text in schema
     // schema off by default
-    const off = createComponent("accordion", { id: "a2", accItems: [{ id: "x", title: "T", body: "B" }] } as Partial<BoxNode>);
+    const off = createComponent("accordion", { id: "a2", items: [{ id: "x", title: "T", body: "B" }] } as Partial<BoxNode>);
     expect(renderPageHTML(createContainer("column", { children: [makeRowBand([off])] } as Partial<BoxNode>), DEFAULT_THEME)).not.toContain("FAQPage");
   });
 
   it("per-item deep-link: an item anchor becomes an id on its <details> + a hash-open script", () => {
-    const acc = createComponent("accordion", { id: "acc", accItems: [
+    const acc = createComponent("accordion", { id: "acc", items: [
       { id: "i1", title: "Shipping", body: "…", anchor: "shipping" },
       { id: "i2", title: "Returns", body: "…" },
     ] } as Partial<BoxNode>);
@@ -264,7 +264,7 @@ describe("box-export — static HTML", () => {
     expect(html).toContain("closest('details.eu-accordion__item')");         // the deep-link open+scroll script
     expect(html).toContain("addEventListener('hashchange'");
     // no anchors → no script
-    const plain = createComponent("accordion", { id: "a2", accItems: [{ id: "x", title: "T", body: "B" }] } as Partial<BoxNode>);
+    const plain = createComponent("accordion", { id: "a2", items: [{ id: "x", title: "T", body: "B" }] } as Partial<BoxNode>);
     const html2 = renderPageHTML(createContainer("column", { children: [makeRowBand([plain])] } as Partial<BoxNode>), DEFAULT_THEME);
     expect(html2).not.toContain("__euAccDeep");
   });
@@ -274,7 +274,7 @@ describe("box-export — static HTML", () => {
       accMultiOpen: true,
       tokenOverrides: { "--eu-color-brand": "#ff0088" },
       advancedCss: "letter-spacing: .04em; title { color: #fff } html { display: none } ; @import url(evil.css)",
-      accItems: [{ id: "i1", title: "T", body: "B" }],
+      items: [{ id: "i1", title: "T", body: "B" }],
     } as Partial<BoxNode>);
     const root = createContainer("column", { children: [makeRowBand([acc])] } as Partial<BoxNode>);
     const html = renderPageHTML(root, DEFAULT_THEME);
@@ -289,7 +289,7 @@ describe("box-export — static HTML", () => {
   it("applies component typography (font family + size) to the wrapper so it cascades into items", () => {
     const acc = createComponent("accordion", {
       fontFamily: "Georgia, serif", fontSize: 20, fontWeight: 700, letterSpacing: 1,
-      accItems: [{ id: "i1", title: "T", body: "B" }],
+      items: [{ id: "i1", title: "T", body: "B" }],
     } as Partial<BoxNode>);
     const root = createContainer("column", { children: [makeRowBand([acc])] } as Partial<BoxNode>);
     const html = renderPageHTML(root, DEFAULT_THEME);
@@ -345,7 +345,7 @@ describe("box-export — static HTML", () => {
   });
 
   it("escapes accordion content (no HTML injection through titles/bodies)", () => {
-    const acc = createComponent("accordion", { accItems: [{ id: "i1", title: "<img src=x onerror=alert(1)>", body: "<b>x</b>" }] } as Partial<BoxNode>);
+    const acc = createComponent("accordion", { items: [{ id: "i1", title: "<img src=x onerror=alert(1)>", body: "<b>x</b>" }] } as Partial<BoxNode>);
     const root = createContainer("column", { children: [makeRowBand([acc])] } as Partial<BoxNode>);
     const html = renderPageHTML(root, DEFAULT_THEME);
     expect(html).toContain("&lt;img src=x");
@@ -362,7 +362,7 @@ describe("box-export — static HTML", () => {
   });
 
   it("a background image + quoted font on a node produce a well-formed style attribute", () => {
-    const acc = createComponent("accordion", { fontFamily: '"Playfair Display", serif', accItems: [{ id: "i", title: "T", body: "B" }] } as Partial<BoxNode>);
+    const acc = createComponent("accordion", { fontFamily: '"Playfair Display", serif', items: [{ id: "i", title: "T", body: "B" }] } as Partial<BoxNode>);
     const sec = createContainer("column", { bgImage: "data:image/png;base64,AAAA", children: [makeRowBand([acc])] } as Partial<BoxNode>);
     const html = renderPageHTML(sec, DEFAULT_THEME);
     expect(html).toContain("&quot;Playfair Display&quot;");
@@ -372,7 +372,7 @@ describe("box-export — static HTML", () => {
   });
 
   it("Responsive Field Guide: no box overflows its container (max-width:100%) and the body can't scroll sideways", () => {
-    const acc = createComponent("accordion", { width: "500px", accItems: [{ id: "i", title: "T", body: "B" }] } as Partial<BoxNode>);
+    const acc = createComponent("accordion", { width: "500px", items: [{ id: "i", title: "T", body: "B" }] } as Partial<BoxNode>);
     const root = createContainer("column", { children: [makeRowBand([acc])] } as Partial<BoxNode>);
     const html = renderPageHTML(root, DEFAULT_THEME);
     // styles are class rules (so media queries can override them); every base rule caps at its container

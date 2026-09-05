@@ -11,7 +11,7 @@ import { useState, useRef } from "react";
 import { Plus, X, Rows3, Columns3, Upload, AlignLeft, AlignCenter, AlignRight, Layers, Move, BringToFront, SendToBack, ChevronUp, ChevronDown, Italic, Underline, LayoutGrid, Maximize2, Sparkles, Paintbrush, Ruler, Link2, Type as TypeIcon, MonitorSmartphone, Bookmark, Lock, LockOpen } from "lucide-react";
 import type { SiteTheme } from "@/lib/site-storage";
 import type { BoxNode, FlexAlign, FlexJustify, AccPartStyle } from "@/lib/box-model";
-import { isContainer, isFloating, isCssBg, addAccItem, removeAccItem, moveAccItem, updateAccItem, addAccChild, updateAccChild, removeAccChild, moveAccChild } from "@/lib/box-model";
+import { isContainer, isFloating, isCssBg, addItem, removeItem, moveItem, updateItem, addChildItem, updateChildItem, removeChildItem, moveChildItem } from "@/lib/box-model";
 import { ACCORDION_DESIGNS, ACCORDION_DESIGN_COUNT } from "@/lib/educo-ui/accordions";
 import { COMPONENT_REGISTRY, isRegistryComponent, defaultComponentFields } from "@/lib/educo-ui/registry";
 import { familyOptions } from "@/lib/educo-ui/fonts";
@@ -36,6 +36,19 @@ const fromRem = (rem: number) => Math.round(rem * 10);
 // Plain-language option lists (value = the real CSS token, label = what the user reads).
 const JUSTIFY_OPTS: [FlexJustify, string][] = [["start", "Start"], ["center", "Center"], ["end", "End"], ["between", "Spread out"], ["around", "Even gaps"]];
 const ALIGN_OPTS: [FlexAlign, string][] = [["stretch", "Fill"], ["start", "Start"], ["center", "Center"], ["end", "End"]];
+
+// Alert-component choosers (used in the inspector top + the ask-on-add chooser). Mirror the plan's taxonomy.
+const ALERT_SEVERITIES = [
+  { value: "info", label: "Info" }, { value: "success", label: "Success" }, { value: "warning", label: "Warning" },
+  { value: "danger", label: "Danger" }, { value: "neutral", label: "Neutral" }, { value: "brand", label: "Brand" },
+];
+const ALERT_FORMS = [
+  { value: "inline", label: "Inline" }, { value: "banner", label: "Banner (full width)" }, { value: "callout", label: "Callout" }, { value: "toast", label: "Toast (stacked)" },
+];
+const ALERT_TREATMENTS: { id: string; label: string }[] = [
+  { id: "", label: "Soft" }, { id: "--solid", label: "Solid" }, { id: "--outline", label: "Outline" }, { id: "--accent", label: "Left accent" },
+  { id: "--top", label: "Top accent" }, { id: "--card", label: "Card" }, { id: "--glass", label: "Glass" },
+];
 const WEIGHT_OPTS: [string, string][] = [["", "Auto"], ["300", "Light"], ["400", "Normal"], ["500", "Medium"], ["600", "Semibold"], ["700", "Bold"], ["800", "Extra bold"], ["900", "Black"]];
 const TRANSFORM_OPTS: [NonNullable<BoxNode["textTransform"]>, string][] = [["none", "Normal"], ["uppercase", "UPPERCASE"], ["lowercase", "lowercase"], ["capitalize", "Capitalise"]];
 const SHADOW_OPTS: SegOption<string>[] = [{ value: "none", label: "None" }, { value: "sm", label: "Soft" }, { value: "md", label: "Medium" }, { value: "lg", label: "Strong" }, { value: "xl", label: "Bold" }];
@@ -476,8 +489,11 @@ export default function BoxInspector({ node, theme, onPatch, onAddChild, onFloat
                     <CompactTextarea label="Items (one per line)" ariaLabel="List items" value={(node.listItems ?? []).join("\n")} onChange={(v) => onPatch({ listItems: v.split("\n") })} rows={4} />
                   </>
                 )}
-                {node.type === "component" && node.component === "accordion" && (
+                {node.type === "component" && (node.component === "accordion" || node.component === "alert") && (() => {
+                  const isAcc = node.component === "accordion";
+                  return (
                   <>
+                    {isAcc && (<>
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
                         <span className={label}>Design</span>
@@ -511,38 +527,57 @@ export default function BoxInspector({ node, theme, onPatch, onAddChild, onFloat
                     {node.variant === "--split" && (
                       <CompactField label="Split panel image" ariaLabel="Split panel image" value={node.accSplitMedia ?? ""} onChange={(v) => onPatch({ accSplitMedia: v || undefined })} placeholder="Image URL for the panel beside the items" />
                     )}
+                    </>)}
+                    {!isAcc && (
+                      <>
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between"><span className={label}>Design (treatment)</span><span className="text-[0.5625rem] text-gray-400">tap to apply</span></div>
+                          <div className="grid grid-cols-2 gap-1.5" role="group" aria-label="Alert treatments">
+                            {ALERT_TREATMENTS.map((t) => { const on = (node.variant ?? "") === t.id; return (
+                              <button key={t.id || "soft"} type="button" aria-pressed={on} aria-label={`${t.label} treatment`} onClick={() => onPatch({ variant: t.id })}
+                                className={`rounded-lg border px-2 py-1.5 text-xs font-semibold transition-colors ${on ? "border-brand bg-brand/10 text-brand ring-1 ring-brand/40" : "border-line text-ink hover:border-brand/50 hover:bg-brand/5"}`}>{t.label}</button>
+                            ); })}
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-1.5">
+                          <CompactSelect label="Severity" ariaLabel="Alert severity" value={node.alertSeverity ?? "info"} onChange={(v) => onPatch({ alertSeverity: v })} options={ALERT_SEVERITIES} />
+                          <CompactSelect label="Form factor" ariaLabel="Alert form factor" value={node.alertForm ?? "inline"} onChange={(v) => onPatch({ alertForm: v })} options={ALERT_FORMS} />
+                        </div>
+                        <label className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200"><input type="checkbox" checked={!!node.alertDismiss} onChange={(e) => onPatch({ alertDismiss: e.target.checked })} aria-label="Show a dismiss (×) button" /> Show a dismiss (×) button on each</label>
+                      </>
+                    )}
                     <div className="space-y-2">
                       <span className={label}>Items</span>
-                      {(node.accItems ?? []).map((it, i) => (
+                      {(node.items ?? []).map((it, i) => (
                         <div key={it.id} className="rounded-lg border border-gray-200 dark:border-white/10 p-2 space-y-1.5">
                           <div className="flex items-center gap-1">
-                            <div className="flex-1"><CompactField ariaLabel={`Item ${i + 1} title`} value={it.title} onChange={(v) => onPatch({ accItems: updateAccItem(node, it.id, { title: v }).accItems })} placeholder="Question / title" /></div>
-                            <button onClick={() => onPatch({ accItems: moveAccItem(node, it.id, -1).accItems })} disabled={i === 0} aria-label="Move item up" className="p-1 rounded text-gray-400 hover:text-gray-700 disabled:opacity-30"><ChevronUp className="w-3.5 h-3.5" /></button>
-                            <button onClick={() => onPatch({ accItems: moveAccItem(node, it.id, 1).accItems })} disabled={i === (node.accItems?.length ?? 0) - 1} aria-label="Move item down" className="p-1 rounded text-gray-400 hover:text-gray-700 disabled:opacity-30"><ChevronDown className="w-3.5 h-3.5" /></button>
+                            <div className="flex-1"><CompactField ariaLabel={`Item ${i + 1} title`} value={it.title} onChange={(v) => onPatch({ items: updateItem(node, it.id, { title: v }).items })} placeholder="Question / title" /></div>
+                            <button onClick={() => onPatch({ items: moveItem(node, it.id, -1).items })} disabled={i === 0} aria-label="Move item up" className="p-1 rounded text-gray-400 hover:text-gray-700 disabled:opacity-30"><ChevronUp className="w-3.5 h-3.5" /></button>
+                            <button onClick={() => onPatch({ items: moveItem(node, it.id, 1).items })} disabled={i === (node.items?.length ?? 0) - 1} aria-label="Move item down" className="p-1 rounded text-gray-400 hover:text-gray-700 disabled:opacity-30"><ChevronDown className="w-3.5 h-3.5" /></button>
                           </div>
-                          <CompactTextarea ariaLabel={`Item ${i + 1} body`} value={it.body} onChange={(v) => onPatch({ accItems: updateAccItem(node, it.id, { body: v }).accItems })} rows={2} placeholder="Answer / body — supports **bold**, *italic*, [links](https://…), and - bullet lists" />
+                          <CompactTextarea ariaLabel={`Item ${i + 1} body`} value={it.body} onChange={(v) => onPatch({ items: updateItem(node, it.id, { body: v }).items })} rows={2} placeholder="Answer / body — supports **bold**, *italic*, [links](https://…), and - bullet lists" />
                           <div className="grid grid-cols-2 gap-1">
-                            <CompactField ariaLabel={`Item ${i + 1} meta`} value={it.meta ?? ""} onChange={(v) => onPatch({ accItems: updateAccItem(node, it.id, { meta: v || undefined }).accItems })} placeholder="Meta (e.g. $10)" />
-                            <CompactField ariaLabel={`Item ${i + 1} image`} value={it.media ?? ""} onChange={(v) => onPatch({ accItems: updateAccItem(node, it.id, { media: v || undefined }).accItems })} placeholder="Image URL" />
+                            <CompactField ariaLabel={`Item ${i + 1} meta`} value={it.meta ?? ""} onChange={(v) => onPatch({ items: updateItem(node, it.id, { meta: v || undefined }).items })} placeholder="Meta (e.g. $10)" />
+                            <CompactField ariaLabel={`Item ${i + 1} image`} value={it.media ?? ""} onChange={(v) => onPatch({ items: updateItem(node, it.id, { media: v || undefined }).items })} placeholder="Image URL" />
                           </div>
-                          {it.media ? <CompactField ariaLabel={`Item ${i + 1} image alt text`} value={it.mediaAlt ?? ""} onChange={(v) => onPatch({ accItems: updateAccItem(node, it.id, { mediaAlt: v || undefined }).accItems })} placeholder="Image alt text (describe it for accessibility / SEO; leave blank if decorative)" /> : null}
-                          <IconPicker ariaLabel={`Item ${i + 1} icon`} value={it.icon} onChange={(v) => onPatch({ accItems: updateAccItem(node, it.id, { icon: v }).accItems })} />
+                          {it.media ? <CompactField ariaLabel={`Item ${i + 1} image alt text`} value={it.mediaAlt ?? ""} onChange={(v) => onPatch({ items: updateItem(node, it.id, { mediaAlt: v || undefined }).items })} placeholder="Image alt text (describe it for accessibility / SEO; leave blank if decorative)" /> : null}
+                          <IconPicker ariaLabel={`Item ${i + 1} icon`} value={it.icon} onChange={(v) => onPatch({ items: updateItem(node, it.id, { icon: v }).items })} />
                           {it.icon && (
                             <div className="space-y-1.5 rounded-lg border border-line p-1.5">
                               <div className="text-[0.625rem] font-semibold uppercase tracking-wide text-muted">Icon — colour · size · position</div>
                               <div className="grid grid-cols-2 gap-1.5">
-                                <EducoColorField label="Icon colour" ariaLabel={`Item ${i + 1} icon colour`} value={it.iconColor ?? ""} onChange={(hex) => onPatch({ accItems: updateAccItem(node, it.id, { iconColor: hex }).accItems })} onClear={() => onPatch({ accItems: updateAccItem(node, it.id, { iconColor: undefined }).accItems })} />
-                                <CompactField label="Icon size" ariaLabel={`Item ${i + 1} icon size`} type="number" min={8} max={96} value={it.iconSize ? Math.round(parseFloat(it.iconSize) * (it.iconSize.endsWith("rem") ? 10 : 1)) : ""} placeholder="auto" onChange={(v) => onPatch({ accItems: updateAccItem(node, it.id, { iconSize: v === "" ? undefined : `${toRem(Number(v))}rem` }).accItems })} />
+                                <EducoColorField label="Icon colour" ariaLabel={`Item ${i + 1} icon colour`} value={it.iconColor ?? ""} onChange={(hex) => onPatch({ items: updateItem(node, it.id, { iconColor: hex }).items })} onClear={() => onPatch({ items: updateItem(node, it.id, { iconColor: undefined }).items })} />
+                                <CompactField label="Icon size" ariaLabel={`Item ${i + 1} icon size`} type="number" min={8} max={96} value={it.iconSize ? Math.round(parseFloat(it.iconSize) * (it.iconSize.endsWith("rem") ? 10 : 1)) : ""} placeholder="auto" onChange={(v) => onPatch({ items: updateItem(node, it.id, { iconSize: v === "" ? undefined : `${toRem(Number(v))}rem` }).items })} />
                               </div>
                               <div className="flex items-center justify-between gap-2">
                                 <span className="text-[0.6875rem] text-muted">Align</span>
                                 <Segmented ariaLabel={`Item ${i + 1} icon align`} value={it.iconAlign ?? ""}
-                                  onChange={(v) => onPatch({ accItems: updateAccItem(node, it.id, { iconAlign: (v || undefined) as "start" | "center" | "end" | undefined }).accItems })}
+                                  onChange={(v) => onPatch({ items: updateItem(node, it.id, { iconAlign: (v || undefined) as "start" | "center" | "end" | undefined }).items })}
                                   options={[{ value: "start", Icon: AlignLeft, title: "Top" }, { value: "center", Icon: AlignCenter, title: "Middle" }, { value: "end", Icon: AlignRight, title: "Bottom" }]} />
                               </div>
                               <div className="grid grid-cols-2 gap-1.5">
-                                <CompactField label="Move icon ← → (rem)" ariaLabel={`Item ${i + 1} icon move X`} type="number" step={0.5} value={it.iconDx ?? ""} placeholder="0" onChange={(v) => onPatch({ accItems: updateAccItem(node, it.id, { iconDx: v === "" ? undefined : Number(v) }).accItems })} />
-                                <CompactField label="Move icon ↑ ↓ (rem)" ariaLabel={`Item ${i + 1} icon move Y`} type="number" step={0.5} value={it.iconDy ?? ""} placeholder="0" onChange={(v) => onPatch({ accItems: updateAccItem(node, it.id, { iconDy: v === "" ? undefined : Number(v) }).accItems })} />
+                                <CompactField label="Move icon ← → (rem)" ariaLabel={`Item ${i + 1} icon move X`} type="number" step={0.5} value={it.iconDx ?? ""} placeholder="0" onChange={(v) => onPatch({ items: updateItem(node, it.id, { iconDx: v === "" ? undefined : Number(v) }).items })} />
+                                <CompactField label="Move icon ↑ ↓ (rem)" ariaLabel={`Item ${i + 1} icon move Y`} type="number" step={0.5} value={it.iconDy ?? ""} placeholder="0" onChange={(v) => onPatch({ items: updateItem(node, it.id, { iconDy: v === "" ? undefined : Number(v) }).items })} />
                               </div>
                             </div>
                           )}
@@ -552,42 +587,43 @@ export default function BoxInspector({ node, theme, onPatch, onAddChild, onFloat
                             {(it.children ?? []).map((c, ci) => (
                               <div key={c.id} className="space-y-1 rounded-md border border-line p-1.5">
                                 <div className="flex items-center gap-1">
-                                  <div className="flex-1"><CompactField ariaLabel={`Item ${i + 1} sub-item ${ci + 1} title`} value={c.title} onChange={(v) => onPatch({ accItems: updateAccChild(node, it.id, c.id, { title: v }).accItems })} placeholder="Sub-question" /></div>
-                                  <button onClick={() => onPatch({ accItems: moveAccChild(node, it.id, c.id, -1).accItems })} disabled={ci === 0} aria-label={`Move sub-item ${ci + 1} up`} className="p-1 rounded text-gray-400 hover:text-gray-700 disabled:opacity-30"><ChevronUp className="w-3.5 h-3.5" /></button>
-                                  <button onClick={() => onPatch({ accItems: moveAccChild(node, it.id, c.id, 1).accItems })} disabled={ci === (it.children?.length ?? 0) - 1} aria-label={`Move sub-item ${ci + 1} down`} className="p-1 rounded text-gray-400 hover:text-gray-700 disabled:opacity-30"><ChevronDown className="w-3.5 h-3.5" /></button>
-                                  <button onClick={() => onPatch({ accItems: removeAccChild(node, it.id, c.id).accItems })} aria-label={`Remove sub-item ${ci + 1}`} className="p-1 rounded text-red-500 hover:text-red-600"><X className="w-3.5 h-3.5" /></button>
+                                  <div className="flex-1"><CompactField ariaLabel={`Item ${i + 1} sub-item ${ci + 1} title`} value={c.title} onChange={(v) => onPatch({ items: updateChildItem(node, it.id, c.id, { title: v }).items })} placeholder="Sub-question" /></div>
+                                  <button onClick={() => onPatch({ items: moveChildItem(node, it.id, c.id, -1).items })} disabled={ci === 0} aria-label={`Move sub-item ${ci + 1} up`} className="p-1 rounded text-gray-400 hover:text-gray-700 disabled:opacity-30"><ChevronUp className="w-3.5 h-3.5" /></button>
+                                  <button onClick={() => onPatch({ items: moveChildItem(node, it.id, c.id, 1).items })} disabled={ci === (it.children?.length ?? 0) - 1} aria-label={`Move sub-item ${ci + 1} down`} className="p-1 rounded text-gray-400 hover:text-gray-700 disabled:opacity-30"><ChevronDown className="w-3.5 h-3.5" /></button>
+                                  <button onClick={() => onPatch({ items: removeChildItem(node, it.id, c.id).items })} aria-label={`Remove sub-item ${ci + 1}`} className="p-1 rounded text-red-500 hover:text-red-600"><X className="w-3.5 h-3.5" /></button>
                                 </div>
-                                <CompactTextarea ariaLabel={`Item ${i + 1} sub-item ${ci + 1} body`} value={c.body} onChange={(v) => onPatch({ accItems: updateAccChild(node, it.id, c.id, { body: v }).accItems })} rows={2} placeholder="Answer — supports **bold**, [links](https://…)" />
+                                <CompactTextarea ariaLabel={`Item ${i + 1} sub-item ${ci + 1} body`} value={c.body} onChange={(v) => onPatch({ items: updateChildItem(node, it.id, c.id, { body: v }).items })} rows={2} placeholder="Answer — supports **bold**, [links](https://…)" />
                               </div>
                             ))}
-                            <button aria-label={`Add sub-item to item ${i + 1}`} onClick={() => onPatch({ accItems: addAccChild(node, it.id).accItems })} className="w-full flex items-center justify-center gap-1.5 py-1.5 rounded-md border border-dashed border-line text-[0.6875rem] text-muted hover:bg-surface-2"><Plus className="w-3 h-3" /> Add sub-item</button>
+                            <button aria-label={`Add sub-item to item ${i + 1}`} onClick={() => onPatch({ items: addChildItem(node, it.id).items })} className="w-full flex items-center justify-center gap-1.5 py-1.5 rounded-md border border-dashed border-line text-[0.6875rem] text-muted hover:bg-surface-2"><Plus className="w-3 h-3" /> Add sub-item</button>
                           </div>
                           <div className="grid grid-cols-2 gap-1">
-                            <CompactField ariaLabel={`Item ${i + 1} number`} value={it.num ?? ""} onChange={(v) => onPatch({ accItems: updateAccItem(node, it.id, { num: v || undefined }).accItems })} placeholder="Number / badge (e.g. 1, A, ★)" />
-                            <CompactField ariaLabel={`Item ${i + 1} link name`} value={it.anchor ?? ""} onChange={(v) => onPatch({ accItems: updateAccItem(node, it.id, { anchor: v.replace(/\s+/g, "-").toLowerCase() || undefined }).accItems })} placeholder="Link name → #anchor (deep-link)" />
+                            <CompactField ariaLabel={`Item ${i + 1} number`} value={it.num ?? ""} onChange={(v) => onPatch({ items: updateItem(node, it.id, { num: v || undefined }).items })} placeholder="Number / badge (e.g. 1, A, ★)" />
+                            <CompactField ariaLabel={`Item ${i + 1} link name`} value={it.anchor ?? ""} onChange={(v) => onPatch({ items: updateItem(node, it.id, { anchor: v.replace(/\s+/g, "-").toLowerCase() || undefined }).items })} placeholder="Link name → #anchor (deep-link)" />
                           </div>
-                          <CompactField ariaLabel={`Item ${i + 1} category`} value={it.category ?? ""} onChange={(v) => onPatch({ accItems: updateAccItem(node, it.id, { category: v || undefined }).accItems })} placeholder="Category — a heading groups items (e.g. Billing, Shipping)" />
-                          <AccPartDesign title="Header — the title row" moveLabel="title" ariaPrefix={`Item ${i + 1} header`} style={it.headerStyle}
-                            onChange={(patch) => onPatch({ accItems: updateAccItem(node, it.id, { headerStyle: { ...(it.headerStyle ?? {}), ...patch } }).accItems })} />
-                          <AccPartDesign title="Content — the answer / text area" moveLabel="text" ariaPrefix={`Item ${i + 1} content`} style={it.bodyStyle}
-                            onChange={(patch) => onPatch({ accItems: updateAccItem(node, it.id, { bodyStyle: { ...(it.bodyStyle ?? {}), ...patch } }).accItems })} />
-                          {/* Detach & float: lift this item out of the stack and place it anywhere (drag on canvas or type X/Y). */}
+                          {isAcc && <CompactField ariaLabel={`Item ${i + 1} category`} value={it.category ?? ""} onChange={(v) => onPatch({ items: updateItem(node, it.id, { category: v || undefined }).items })} placeholder="Category — a heading groups items (e.g. Billing, Shipping)" />}
+                          <AccPartDesign title={isAcc ? "Header — the title row" : "Title — the heading row"} moveLabel="title" ariaPrefix={`Item ${i + 1} header`} style={it.headerStyle}
+                            onChange={(patch) => onPatch({ items: updateItem(node, it.id, { headerStyle: { ...(it.headerStyle ?? {}), ...patch } }).items })} />
+                          <AccPartDesign title={isAcc ? "Content — the answer / text area" : "Message — the body text"} moveLabel="text" ariaPrefix={`Item ${i + 1} content`} style={it.bodyStyle}
+                            onChange={(patch) => onPatch({ items: updateItem(node, it.id, { bodyStyle: { ...(it.bodyStyle ?? {}), ...patch } }).items })} />
+                          {/* Detach & float (accordion-only): lift this item out of the stack and place it anywhere. */}
+                          {isAcc && (
                           <div className="rounded-lg border border-line p-1.5 space-y-1.5">
                             <label className="flex items-center gap-2 text-xs text-ink">
                               <input type="checkbox" aria-label={`Item ${i + 1} float`} checked={!!it.float}
-                                onChange={(e) => onPatch({ accItems: updateAccItem(node, it.id, { float: e.target.checked ? (it.float ?? { x: 4, y: 4, z: 1 }) : undefined }).accItems })} />
+                                onChange={(e) => onPatch({ items: updateItem(node, it.id, { float: e.target.checked ? (it.float ?? { x: 4, y: 4, z: 1 }) : undefined }).items })} />
                               Move freely — position within the accordion
                             </label>
                             {it.float && (
                               <>
                                 <div className="grid grid-cols-2 gap-1.5">
-                                  <CompactField label="X (rem)" ariaLabel={`Item ${i + 1} float X`} type="number" step={0.5} value={it.float.x} onChange={(v) => onPatch({ accItems: updateAccItem(node, it.id, { float: { ...it.float!, x: v === "" ? 0 : Number(v) } }).accItems })} />
-                                  <CompactField label="Y (rem)" ariaLabel={`Item ${i + 1} float Y`} type="number" step={0.5} value={it.float.y} onChange={(v) => onPatch({ accItems: updateAccItem(node, it.id, { float: { ...it.float!, y: v === "" ? 0 : Number(v) } }).accItems })} />
+                                  <CompactField label="X (rem)" ariaLabel={`Item ${i + 1} float X`} type="number" step={0.5} value={it.float.x} onChange={(v) => onPatch({ items: updateItem(node, it.id, { float: { ...it.float!, x: v === "" ? 0 : Number(v) } }).items })} />
+                                  <CompactField label="Y (rem)" ariaLabel={`Item ${i + 1} float Y`} type="number" step={0.5} value={it.float.y} onChange={(v) => onPatch({ items: updateItem(node, it.id, { float: { ...it.float!, y: v === "" ? 0 : Number(v) } }).items })} />
                                 </div>
                                 <div className="flex items-center justify-between gap-2">
                                   <span className="text-[0.6875rem] text-muted">Layer</span>
                                   <Segmented ariaLabel={`Item ${i + 1} layer`} value={(it.float.z ?? 1) >= 5 ? "front" : "back"}
-                                    onChange={(v) => onPatch({ accItems: updateAccItem(node, it.id, { float: { ...it.float!, z: v === "front" ? 10 : 1 } }).accItems })}
+                                    onChange={(v) => onPatch({ items: updateItem(node, it.id, { float: { ...it.float!, z: v === "front" ? 10 : 1 } }).items })}
                                     options={[{ value: "back", label: "Back" }, { value: "front", label: "Front" }]} />
                                 </div>
                                 <p className="text-[0.625rem] leading-snug text-muted">Drag the item on the canvas to place it. On phones it returns to the stack.</p>
@@ -599,11 +635,12 @@ export default function BoxInspector({ node, theme, onPatch, onAddChild, onFloat
                               Select for group{it.group ? " · grouped" : ""}
                             </label>
                           </div>
-                          <CompactTextarea ariaLabel={`Item ${i + 1} CSS`} value={it.css ?? ""} onChange={(v) => onPatch({ accItems: updateAccItem(node, it.id, { css: v || undefined }).accItems })} rows={3} placeholder={"More CSS for this item — change anything:\ntitle { letter-spacing: .02em; }\nicon { color: #f59e0b; }\nmedia { border-radius: 999px; }"} textareaClassName="font-mono text-[0.6875rem]" />
+                          )}
+                          <CompactTextarea ariaLabel={`Item ${i + 1} CSS`} value={it.css ?? ""} onChange={(v) => onPatch({ items: updateItem(node, it.id, { css: v || undefined }).items })} rows={3} placeholder={"More CSS for this item — change anything:\ntitle { letter-spacing: .02em; }\nicon { color: #f59e0b; }\nmedia { border-radius: 999px; }"} textareaClassName="font-mono text-[0.6875rem]" />
                           <p className="text-[0.625rem] leading-snug text-muted">The controls above cover colour + font. For anything else, plain lines style the whole item; use <code>title</code>, <code>body</code>, <code>icon</code>, <code>meta</code> or <code>media</code> {"{ … }"} to target one part.</p>
                           <div className="flex items-center justify-between">
-                            <label className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300"><input type="checkbox" checked={!!it.open} onChange={(e) => onPatch({ accItems: updateAccItem(node, it.id, { open: e.target.checked || undefined }).accItems })} /> Open by default</label>
-                            <button onClick={() => onPatch({ accItems: removeAccItem(node, it.id).accItems })} disabled={(node.accItems?.length ?? 0) <= 1} aria-label={`Remove item ${i + 1}`} className="text-xs text-red-500 hover:text-red-600 disabled:opacity-30">Remove</button>
+                            {isAcc ? <label className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300"><input type="checkbox" checked={!!it.open} onChange={(e) => onPatch({ items: updateItem(node, it.id, { open: e.target.checked || undefined }).items })} /> Open by default</label> : <span />}
+                            <button onClick={() => onPatch({ items: removeItem(node, it.id).items })} disabled={(node.items?.length ?? 0) <= 1} aria-label={`Remove item ${i + 1}`} className="text-xs text-red-500 hover:text-red-600 disabled:opacity-30">Remove</button>
                           </div>
                         </div>
                       ))}
@@ -611,7 +648,7 @@ export default function BoxInspector({ node, theme, onPatch, onAddChild, onFloat
                         <button aria-label="Group selected items" onClick={() => {
                           const gid = "g-" + Math.random().toString(36).slice(2, 8);
                           let stagger = 0; // cascade newly-floated members so they don't all land on the same spot
-                          onPatch({ accItems: (node.accItems ?? []).map((it) => {
+                          onPatch({ items: (node.items ?? []).map((it) => {
                             if (!accSel.includes(it.id)) return it;
                             const float = it.float ?? { x: 4, y: 4 + stagger * 5, z: 1 }; // keep existing positions; stagger fresh ones
                             if (!it.float) stagger++;
@@ -620,13 +657,14 @@ export default function BoxInspector({ node, theme, onPatch, onAddChild, onFloat
                           setAccSel([]);
                         }} className="w-full py-2 rounded-lg bg-brand text-brand-fg text-xs font-semibold hover:bg-brand-600">Group {accSel.length} items &amp; float together</button>
                       )}
-                      {accSel.length >= 1 && (node.accItems ?? []).some((it) => accSel.includes(it.id) && it.group) && (
-                        <button aria-label="Ungroup selected items" onClick={() => onPatch({ accItems: (node.accItems ?? []).map((it) => accSel.includes(it.id) ? { ...it, group: undefined } : it) })} className="w-full py-2 rounded-lg border border-line text-xs text-ink hover:bg-surface-2">Ungroup selected</button>
+                      {accSel.length >= 1 && (node.items ?? []).some((it) => accSel.includes(it.id) && it.group) && (
+                        <button aria-label="Ungroup selected items" onClick={() => onPatch({ items: (node.items ?? []).map((it) => accSel.includes(it.id) ? { ...it, group: undefined } : it) })} className="w-full py-2 rounded-lg border border-line text-xs text-ink hover:bg-surface-2">Ungroup selected</button>
                       )}
-                      <button onClick={() => onPatch({ accItems: addAccItem(node).accItems })} className="w-full flex items-center justify-center gap-1.5 py-2 rounded-lg border border-dashed border-gray-300 dark:border-white/15 text-xs text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5"><Plus className="w-3.5 h-3.5" /> Add item</button>
+                      <button onClick={() => onPatch({ items: addItem(node).items })} className="w-full flex items-center justify-center gap-1.5 py-2 rounded-lg border border-dashed border-gray-300 dark:border-white/15 text-xs text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5"><Plus className="w-3.5 h-3.5" /> Add {isAcc ? "item" : "alert"}</button>
                     </div>
                   </>
-                )}
+                  );
+                })()}
                 {/* Registry components (Card/Quote/Stat/Badge/Rating/…): design variants + content fields, both
                     auto-generated from the component's registry entry — a future component needs NO inspector code. */}
                 {node.type === "component" && isRegistryComponent(node.component) && (() => {
@@ -663,6 +701,12 @@ export default function BoxInspector({ node, theme, onPatch, onAddChild, onFloat
                             ? <div key={s.key} className="space-y-1"><span className={label}>{s.label}</span>
                                 <IconPicker ariaLabel={`${def.label} ${s.label}`} value={String(fields[s.key] ?? "") || undefined} onChange={(v) => setField(s.key, v ?? "")} />
                               </div>
+                            : s.type === "select"
+                            ? <CompactSelect key={s.key} label={s.label} ariaLabel={s.label} value={String(fields[s.key] ?? s.default)} onChange={(v) => setField(s.key, v)} options={s.options ?? []} />
+                            : s.type === "boolean"
+                            ? <label key={s.key} className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200">
+                                <input type="checkbox" checked={!!Number(fields[s.key] ?? 0)} onChange={(e) => setField(s.key, e.target.checked ? 1 : 0)} aria-label={s.label} className="accent-indigo-600" /> {s.label}
+                              </label>
                             : <CompactField key={s.key} label={s.label} ariaLabel={s.label} value={String(fields[s.key] ?? "")} onChange={(v) => setField(s.key, v)} placeholder={s.type === "url" ? "https://…" : undefined} />
                         ))}
                       </div>

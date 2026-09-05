@@ -12,6 +12,7 @@
 
 import type { CSSProperties } from "react";
 import { isRegistryComponent, defaultComponentFields, defaultComponentWidth, componentIsColumn } from "@/lib/educo-ui/registry";
+import { iconSvg } from "@/lib/educo-ui/icon-svg";
 
 export type BoxType = "container" | "text" | "heading" | "button" | "image" | "video" | "icon" | "divider" | "list" | "embed" | "spacer" | "component";
 
@@ -26,7 +27,7 @@ export interface AccPartStyle {
   pos?: { x: number; y: number };      // free nudge (rem) of the content up/down/left/right within its area
 }
 
-export interface AccordionItem {
+export interface ComponentItem {
   id: string;
   title: string;
   body: string;
@@ -45,7 +46,7 @@ export interface AccordionItem {
   num?: string;     // custom leading number / badge (overrides the auto-counter in numbered/big-number/step designs)
   float?: { x: number; y: number; z?: number }; // detached & positioned freely (rem offsets in the accordion box; z = layer)
   group?: string;   // items sharing a group id move together when dragged; individual items move on their own
-  children?: AccordionItem[]; // nested sub-accordion inside this item's body (one level of nesting)
+  children?: ComponentItem[]; // nested sub-accordion inside this item's body (one level of nesting)
   css?: string;     // per-ITEM Advanced CSS declarations (sanitised) — override this one item's styling
   // Dedicated per-item styling for the header + content, set via the Inspector's colour/font controls
   // (no CSS typing). Composed into scoped, !important rules so they win over the chosen design variant.
@@ -151,12 +152,15 @@ export interface BoxNode {
   // per-instance `tokenOverrides` re-skins ANY component — including ones not built yet — with no extra code.
   component?: string;                       // which eu-component: "accordion" | "card" | "tabs" | …
   variant?: string;                         // design variant class suffix, e.g. "--panel" ("" = default look)
-  accItems?: AccordionItem[];               // accordion content (component === "accordion")
+  items?: ComponentItem[];               // accordion content (component === "accordion")
   accMultiOpen?: boolean;                   // accordion: allow more than one panel open at once
   accShowAll?: boolean;                      // accordion: show "Expand all / Collapse all" controls (opt-in; adds a tiny script to the export)
   accFaqSchema?: boolean;                    // accordion: emit schema.org FAQPage JSON-LD on export (SEO rich results)
   accSearch?: boolean;                       // accordion: show a live search/filter box above the items (opt-in; small script)
   accSplitMedia?: string;                    // accordion "--split" design: the beside-the-items media/visual panel image URL
+  alertSeverity?: string;                    // alert: info | success | warning | danger | neutral | brand (accent + default icon + role)
+  alertForm?: string;                        // alert form factor: inline | banner | callout | toast
+  alertDismiss?: boolean;                     // alert: show a per-item dismiss (×) button (opt-in; adds a tiny export script)
   componentFields?: Record<string, string | number>; // registry-component content (card/quote/stat/badge/rating/…)
   tokenOverrides?: Record<string, string>;  // CSS custom-property overrides, e.g. { "--eu-color-brand": "#5b5bd6" }
   advancedCss?: string;                     // raw CSS declarations applied to the instance (sanitized before export)
@@ -244,7 +248,7 @@ export function createElement(type: Exclude<BoxType, "container">, overrides: Pa
 // ── Educo UI components ──────────────────────────────────────────────────────
 
 /** Three starter rows for a fresh accordion. */
-export function defaultAccordionItems(): AccordionItem[] {
+export function defaultAccordionItems(): ComponentItem[] {
   return [
     { id: newBoxId(), title: "What is your return policy?", body: "Answer — click to edit. Returns are accepted within 30 days of purchase.", open: true },
     { id: newBoxId(), title: "How long does shipping take?", body: "Answer — click to edit. Most orders arrive within 3–5 business days." },
@@ -256,8 +260,10 @@ export function defaultAccordionItems(): AccordionItem[] {
  *  Accordion keeps its bespoke item model; every other component draws its default content fields from the
  *  registry, so ADDING a future component needs no change here — just a registry entry + its CSS. */
 export function createComponent(component: string, overrides: Partial<BoxNode> = {}): BoxNode {
-  const base: BoxNode = { id: newBoxId(), type: "component", component, variant: "", width: "100%" };
-  if (component === "accordion") return { ...base, accItems: defaultAccordionItems(), accMultiOpen: false, ...overrides };
+  // RULE L: a newly added component sizes to its content (see defaultComponentWidth). Full/Custom stay opt-in.
+  const base: BoxNode = { id: newBoxId(), type: "component", component, variant: "", width: "auto" };
+  if (component === "accordion") return { ...base, items: defaultAccordionItems(), accMultiOpen: false, ...overrides };
+  if (component === "alert") return { ...base, items: defaultAlertItems(), alertSeverity: "info", alertForm: "inline", alertDismiss: false, ...overrides };
   if (isRegistryComponent(component)) return { ...base, width: defaultComponentWidth(component), componentFields: defaultComponentFields(component), ...overrides };
   return { ...base, ...overrides };
 }
@@ -335,47 +341,83 @@ export function componentBoxCss(node: BoxNode): string {
   return d.join(";");
 }
 
+/**
+ * Insert a NEW item directly after `afterId` (or at the end when it is missing/unknown). Used by the on-canvas
+ * "add item" action so a new row appears next to the one you are working on rather than at the bottom.
+ * Shared by every multi-item component (RULE I).
+ */
+export function addItemAfter(node: BoxNode, afterId?: string): BoxNode {
+  const items = [...(node.items ?? [])];
+  const item: ComponentItem = { id: newBoxId(), title: "New item", body: "Click to edit." };
+  const i = afterId ? items.findIndex((it) => it.id === afterId) : -1;
+  if (i < 0) items.push(item); else items.splice(i + 1, 0, item);
+  return { ...node, items };
+}
+
+/** Copy an item (fresh ids for it and every sub-item) and place the copy right after the original. */
+export function duplicateItem(node: BoxNode, itemId: string): BoxNode {
+  const items = [...(node.items ?? [])];
+  const i = items.findIndex((it) => it.id === itemId);
+  if (i < 0) return node;
+  const freshIds = (it: ComponentItem): ComponentItem => ({
+    ...it, id: newBoxId(), children: it.children?.map(freshIds),
+  });
+  items.splice(i + 1, 0, freshIds(items[i]));
+  return { ...node, items };
+}
+
+/** Duplicate a SUB-item under its parent — sub-items are never less editable than the top level (RULE F). */
+export function duplicateChildItem(node: BoxNode, parentId: string, childId: string): BoxNode {
+  return mapChildren(node, parentId, (kids) => {
+    const i = kids.findIndex((c) => c.id === childId);
+    if (i < 0) return kids;
+    const out = [...kids];
+    out.splice(i + 1, 0, { ...kids[i], id: newBoxId(), children: kids[i].children?.map((c) => ({ ...c, id: newBoxId() })) });
+    return out;
+  });
+}
+
 /** Immutably patch one accordion item on a component node. */
-export function updateAccItem(node: BoxNode, itemId: string, patch: Partial<AccordionItem>): BoxNode {
-  return { ...node, accItems: (node.accItems ?? []).map((it) => (it.id === itemId ? { ...it, ...patch } : it)) };
+export function updateItem(node: BoxNode, itemId: string, patch: Partial<ComponentItem>): BoxNode {
+  return { ...node, items: (node.items ?? []).map((it) => (it.id === itemId ? { ...it, ...patch } : it)) };
 }
 /** Append a fresh accordion item. */
-export function addAccItem(node: BoxNode): BoxNode {
-  const item: AccordionItem = { id: newBoxId(), title: "New question", body: "Answer — click to edit." };
-  return { ...node, accItems: [...(node.accItems ?? []), item] };
+export function addItem(node: BoxNode): BoxNode {
+  const item: ComponentItem = { id: newBoxId(), title: "New question", body: "Answer — click to edit." };
+  return { ...node, items: [...(node.items ?? []), item] };
 }
 /** Remove an accordion item (keeps at least zero; UI guards the last one). */
-export function removeAccItem(node: BoxNode, itemId: string): BoxNode {
-  return { ...node, accItems: (node.accItems ?? []).filter((it) => it.id !== itemId) };
+export function removeItem(node: BoxNode, itemId: string): BoxNode {
+  return { ...node, items: (node.items ?? []).filter((it) => it.id !== itemId) };
 }
 /** Move an accordion item one step up (-1) or down (+1). */
-export function moveAccItem(node: BoxNode, itemId: string, dir: -1 | 1): BoxNode {
-  const items = [...(node.accItems ?? [])];
+export function moveItem(node: BoxNode, itemId: string, dir: -1 | 1): BoxNode {
+  const items = [...(node.items ?? [])];
   const i = items.findIndex((it) => it.id === itemId);
   const j = i + dir;
   if (i < 0 || j < 0 || j >= items.length) return node;
   [items[i], items[j]] = [items[j], items[i]];
-  return { ...node, accItems: items };
+  return { ...node, items: items };
 }
 
 // ── Nested sub-item CRUD (one level): operate on a parent item's `children` array ──
-function mapChildren(node: BoxNode, parentId: string, fn: (kids: AccordionItem[]) => AccordionItem[]): BoxNode {
-  return { ...node, accItems: (node.accItems ?? []).map((it) => (it.id === parentId ? { ...it, children: fn(it.children ?? []) } : it)) };
+function mapChildren(node: BoxNode, parentId: string, fn: (kids: ComponentItem[]) => ComponentItem[]): BoxNode {
+  return { ...node, items: (node.items ?? []).map((it) => (it.id === parentId ? { ...it, children: fn(it.children ?? []) } : it)) };
 }
 /** Append a fresh sub-item to a parent item. */
-export function addAccChild(node: BoxNode, parentId: string): BoxNode {
+export function addChildItem(node: BoxNode, parentId: string): BoxNode {
   return mapChildren(node, parentId, (kids) => [...kids, { id: newBoxId(), title: "Sub-question", body: "Answer — click to edit." }]);
 }
 /** Update one sub-item. */
-export function updateAccChild(node: BoxNode, parentId: string, childId: string, patch: Partial<AccordionItem>): BoxNode {
+export function updateChildItem(node: BoxNode, parentId: string, childId: string, patch: Partial<ComponentItem>): BoxNode {
   return mapChildren(node, parentId, (kids) => kids.map((c) => (c.id === childId ? { ...c, ...patch } : c)));
 }
 /** Remove one sub-item. */
-export function removeAccChild(node: BoxNode, parentId: string, childId: string): BoxNode {
+export function removeChildItem(node: BoxNode, parentId: string, childId: string): BoxNode {
   return mapChildren(node, parentId, (kids) => kids.filter((c) => c.id !== childId));
 }
 /** Move a sub-item one step up (-1) or down (+1). */
-export function moveAccChild(node: BoxNode, parentId: string, childId: string, dir: -1 | 1): BoxNode {
+export function moveChildItem(node: BoxNode, parentId: string, childId: string, dir: -1 | 1): BoxNode {
   return mapChildren(node, parentId, (kids) => {
     const arr = [...kids]; const i = arr.findIndex((c) => c.id === childId); const j = i + dir;
     if (i < 0 || j < 0 || j >= arr.length) return kids;
@@ -495,18 +537,18 @@ function accPartStyleDecls(s?: AccPartStyle, part?: "header" | "body"): string {
 }
 
 /** True when an item carries ANY override (structured styling, a custom number, a float, OR raw CSS) — needs a scope class. */
-export function accItemHasOverride(it: AccordionItem): boolean {
+export function itemHasOverride(it: ComponentItem): boolean {
   return !!(accPartStyleDecls(it.headerStyle, "header") || accPartStyleDecls(it.bodyStyle, "body") || it.headerStyle?.pos || it.bodyStyle?.pos || (it.num && it.num.trim()) || it.iconColor || it.iconSize || it.iconAlign || it.iconDx || it.iconDy || it.float || (it.css && it.css.trim()));
 }
 
 /** Is this item detached (floating) — and, for the canvas, is the current breakpoint one where floats apply? */
-export function accItemIsFloating(it: AccordionItem): boolean {
+export function itemIsFloating(it: ComponentItem): boolean {
   return !!it.float;
 }
 
 /** Height (rem) an accordion must reserve so its floated items aren't clipped / don't overlap what follows.
  *  Approximate: the lowest floated top + a nominal item height. 0 when nothing floats. */
-export function accFloatReserveRem(items: AccordionItem[]): number {
+export function itemFloatReserveRem(items: ComponentItem[]): number {
   let max = 0;
   for (const it of items) if (it.float) max = Math.max(max, it.float.y + 6);
   return max;
@@ -553,7 +595,7 @@ function cssContentString(v: string): string {
  * instead of a CSS counter, so numbering is deterministic and identical in the editor AND the export
  * (CSS counters silently fail to accumulate in the editor's DOM). Returns { "--eu-n": "'1'", ... }.
  */
-export function accItemNumberVars(index: number): Record<string, string> {
+export function itemNumberVars(index: number): Record<string, string> {
   const n = index + 1;
   return { "--eu-n": `'${n}'`, "--eu-n0": `'${n < 10 ? `0${n}` : n}'` };
 }
@@ -563,7 +605,7 @@ export function accItemNumberVars(index: number): Record<string, string> {
  * raw per-item CSS override (which can still target any part). `scope` is the item's selector
  * (e.g. `.eu-accordion .eu-acc-i-<id>`). Returns "" when the item has no overrides.
  */
-export function accItemOverrideCss(scope: string, it: AccordionItem, opts?: { skipFloat?: boolean; mobileReset?: boolean }): string {
+export function itemOverrideCss(scope: string, it: ComponentItem, opts?: { skipFloat?: boolean; mobileReset?: boolean }): string {
   const h = accPartStyleDecls(it.headerStyle, "header");
   const b = accPartStyleDecls(it.bodyStyle, "body");
   // Free positioning of the CONTENT: the header's title moves within the header; the body (text area) moves
@@ -602,6 +644,169 @@ export function accItemOverrideCss(scope: string, it: AccordionItem, opts?: { sk
   ].filter(Boolean).join("");
   const raw = expandScopedCss(it.css, scope, ACCORDION_CSS_PARTS);
   return [structured, raw].filter(Boolean).join("");
+}
+
+// ── Alert component (multi-item, mirrors the Accordion — reuses items + the item helpers) ──────────────
+/** Per-item "More CSS" part targets for the ALERT (title/body/icon/meta/media → the alert's own class names). */
+/**
+ * ON-CANVAS ITEM CRUD (RULE I) — shared by EVERY component, the ones we have and every future one.
+ *
+ * A component's item markup opts in by stamping two things while the canvas is in edit mode:
+ *   • `data-eu-item="<id>"` on each item's root element (plus `data-eu-parent` for a nested sub-item), and
+ *   • `data-eu-part="title|body|meta"` + `contenteditable` on each editable text part.
+ * The canvas then handles select / edit / add / duplicate / delete / reorder generically off those attributes,
+ * so a new component gets full item CRUD on the page just by emitting them — nothing per-component to write.
+ * Both attributes are EDITOR-ONLY: pass no `edit` and the exported markup is unchanged.
+ */
+export type ItemEditOpts = { parentId?: string };
+
+/** `data-eu-item` (and `data-eu-parent` for a sub-item) for an item's root element — editor only. */
+export function itemRootAttrs(id: string, edit?: ItemEditOpts): string {
+  if (!edit) return "";
+  return ` data-eu-item="${escAttr(id)}"${edit.parentId ? ` data-eu-parent="${escAttr(edit.parentId)}"` : ""}`;
+}
+
+/** `data-eu-part` + contenteditable for one editable text part of an item — editor only. */
+export function itemPartAttrs(part: string, edit?: ItemEditOpts): string {
+  return edit ? ` data-eu-part="${part}" contenteditable="true" spellcheck="false"` : "";
+}
+
+export const ALERT_CSS_PARTS: Record<string, string> = {
+  item: "", root: "",
+  title: " .eu-alert__title", heading: " .eu-alert__title",
+  body: " .eu-alert__body", content: " .eu-alert__body", message: " .eu-alert__body",
+  icon: " .eu-alert__icon", meta: " .eu-alert__meta", media: " .eu-alert__media",
+};
+/** Default icon (lucide name) per severity when the item hasn't chosen a custom one. */
+export const ALERT_SEVERITY_ICON: Record<string, string> = {
+  info: "Info", success: "CircleCheck", warning: "TriangleAlert", danger: "CircleX", neutral: "Bell", brand: "Megaphone",
+};
+function defaultAlertItems(): ComponentItem[] {
+  return [{ id: newBoxId(), title: "Heads up", body: "This is an alert — say something useful here." }];
+}
+const ALERT_CLOSE_SVG = `<svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>`;
+/** AccPartStyle → an inline `style="…"` value for an alert part (colour/fill/font/size/align + free-move). */
+export function alertPartInline(s?: AccPartStyle): string {
+  if (!s) return "";
+  const d: string[] = [];
+  if (s.color) d.push(`color:${s.color}`);
+  if (s.background) d.push(`background:${s.background}`);
+  if (s.fontFamily) d.push(`font-family:${s.fontFamily}`);
+  if (s.fontSize) d.push(`font-size:${s.fontSize}`);
+  if (s.align) d.push(`text-align:${s.align}`);
+  if (s.pos && (s.pos.x || s.pos.y)) d.push(`position:relative;transform:translate(${s.pos.x || 0}rem,${s.pos.y || 0}rem)`);
+  return sanitizeCssDeclarations(d.join(";"));
+}
+/** Per-item icon inline style (colour/size/align/free-move) — same fields as the accordion icon controls. */
+export function alertIconInline(it: ComponentItem): string {
+  const d: string[] = [];
+  if (it.iconColor) d.push(`color:${it.iconColor}`);
+  if (it.iconSize) d.push(`font-size:${it.iconSize}`);
+  if (it.iconAlign) d.push(`align-self:${it.iconAlign}`);
+  if (it.iconDx || it.iconDy) d.push(`transform:translate(${it.iconDx || 0}rem,${it.iconDy || 0}rem)`);
+  return sanitizeCssDeclarations(d.join(";"));
+}
+const escAttr = (t: string) => t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+/** One alert item → an `.eu-alert` row (recurses into children as nested `.eu-alert__sub` rows — Rule F). */
+function alertItemHTML(it: ComponentItem, sev: string, treat: string, dismiss: boolean, edit?: ItemEditOpts): string {
+  const iconName = it.icon || ALERT_SEVERITY_ICON[sev] || "Info";
+  const icon = iconName ? `<span class="eu-alert__icon" aria-hidden="true"${alertIconInline(it) ? ` style="${alertIconInline(it)}"` : ""}>${iconSvg(iconName)}</span>` : "";
+  const ts = alertPartInline(it.headerStyle), bs = alertPartInline(it.bodyStyle);
+  // In the editor every text part is directly editable ON THE CANVAS (RULE I) — the body drops its rich markup
+  // while editing so what you type is what you edit. Outside the editor these attributes are absent, so the
+  // exported markup is exactly what it always was.
+  const title = it.title || edit ? `<div class="eu-alert__title"${ts ? ` style="${ts}"` : ""}${itemPartAttrs("title", edit)}>${escAttr(it.title)}</div>` : "";
+  const body = it.body || edit ? `<div class="eu-alert__body"${bs ? ` style="${bs}"` : ""}${itemPartAttrs("body", edit)}>${edit ? escAttr(it.body) : richBody(it.body)}</div>` : "";
+  const meta = it.meta ? `<span class="eu-alert__meta"${itemPartAttrs("meta", edit)}>${escAttr(it.meta)}</span>` : "";
+  const media = it.media ? `<img class="eu-alert__media" src="${escAttr(it.media)}" alt="${escAttr(it.mediaAlt ?? "")}" />` : "";
+  // Sub-items get the SAME treatment, recursively — no level is less editable than the top (RULE F/I).
+  const kids = (it.children && it.children.length) ? `<div class="eu-alert__sub">${it.children.map((c) => alertItemHTML(c, sev, treat, false, edit ? { ...edit, parentId: it.id } : undefined)).join("")}</div>` : "";
+  const close = dismiss ? `<button type="button" class="eu-alert__close" data-eu-dismiss aria-label="Dismiss">${ALERT_CLOSE_SVG}</button>` : "";
+  const role = sev === "danger" || sev === "warning" ? "alert" : "status";
+  const cls = ["eu-alert", `eu-alert--${sev}`, treat ? `eu-alert${treat}` : "", `eu-al-${it.id}`].filter(Boolean).join(" ");
+  return `<div class="${cls}" role="${role}"${itemRootAttrs(it.id, edit)}>${media}${icon}<div class="eu-alert__content">${title}${body}${meta}${kids}</div>${close}</div>`;
+}
+export function collectAlertItemStyles(items: ComponentItem[] | undefined, out: string[]): void {
+  for (const it of items ?? []) {
+    const s = expandScopedCss(it.css, `.eu-al-${it.id}`, ALERT_CSS_PARTS);
+    if (s) out.push(s);
+    if (it.children) collectAlertItemStyles(it.children, out);
+  }
+}
+/** Render the whole Alert component to HTML (shared by the canvas AND the export — one clean node). */
+export function renderAlertHTML(node: BoxNode, edit?: ItemEditOpts): string {
+  const sev = node.alertSeverity || "info";
+  const treat = node.variant || "";
+  const form = node.alertForm || "inline";
+  const dismiss = !!node.alertDismiss;
+  const styleOut: string[] = [];
+  collectAlertItemStyles(node.items, styleOut);
+  const style = styleOut.length ? `<style>${styleOut.join("")}</style>` : "";
+  const items = (node.items ?? []).map((it) => alertItemHTML(it, sev, treat, dismiss, edit)).join("");
+  return `${style}<div class="eu-alert-stack eu-alert-stack--${form}">${items}</div>`;
+}
+/** The item CSS class for each component whose items paint their own surface — so a block background set on the
+ *  WHOLE component can be made to show through those items. Add a component here and it inherits the behaviour. */
+export const COMPONENT_ITEM_SEL: Record<string, string> = {
+  accordion: ".eu-accordion__item",
+  alert: ".eu-alert",
+};
+/** REUSABLE (all components + future ones): when the user gives a component a block background (gradient/pattern/
+ *  photo/colour), let it SHOW by making its items' own surface transparent so the component background is visible
+ *  behind the (still-styled) text. `itemSel` is the node-scoped selector for the items. "" when no block bg. */
+/**
+ * BLOCK SIZING RULE — the edge-anchored TOP resize, clamped to the page.
+ *
+ * Applies to EVERY block and EVERY component, the ones we have and every future one. A block must be resizable
+ * from all four sides, and it must NEVER be resized to somewhere the user can no longer see it — dragging the
+ * top edge upward grows the block by going negative on margin-top, so without a floor it slides up behind the
+ * toolbar and both the block's top and its resize handle become unreachable.
+ *
+ * All coordinates are px in ONE space (the parent's content box). Behaviour:
+ *  - normal: the TOP moves to follow the pointer and the BOTTOM stays exactly where it was (edge-anchored);
+ *  - at the wall: once the top reaches `topFloorPx` (the page canvas top) it stops there, and the rest of the
+ *    drag is added to the BOTTOM instead — so the block still grows by the full distance dragged rather than
+ *    going dead, which matters because a block sitting flush against the page top is the common case;
+ *  - shrinking is floored at `minHpx` so a block can never be collapsed away.
+ */
+export function resizeTopEdge(
+  startTopPx: number, startBotPx: number, dy: number, minHpx: number, topFloorPx: number,
+): { top: number; height: number } {
+  const wantedTop = Math.min(startBotPx - minHpx, startTopPx + dy); // where the pointer asks the top to be
+  const top = Math.max(topFloorPx, wantedTop);                      // …clamped to the page
+  const overshoot = Math.max(0, topFloorPx - wantedTop);            // how far past the page top it asked for
+  return { top, height: Math.round(startBotPx + overshoot - top) };
+}
+
+/**
+ * Does this block HUG its content ("Fit" width) rather than being given a definite width?
+ * Shared by the canvas + the export so both agree on when a component sizes to its contents.
+ */
+export function hugsContent(node: BoxNode): boolean {
+  return !node.width || node.width === "auto";
+}
+
+/**
+ * REUSABLE across components (RULE G/K — applies to every component we have and every future one):
+ * container queries need `container-type: inline-size`, which makes an element's inline size INDEPENDENT of its
+ * contents. On a block that must size TO its contents ("Fit") that collapses the component to its padding — the
+ * Alert became a 42px column of one-letter-per-line text sitting in a full-width band, which reads as a wrapper
+ * around a broken component. So while a block hugs, containment is turned off; a block with a definite width
+ * keeps its container queries. `!important` because the component stylesheet's rule is more specific.
+ */
+export function hugContainmentCss(node: BoxNode, scope: string): string {
+  return hugsContent(node) ? `${scope},${scope} *{container-type:normal !important}` : "";
+}
+
+export function bgShowThroughCss(node: BoxNode, itemSel: string): string {
+  const hasBg = !!(node.bgImage || node.background || node.bgOverlay);
+  return hasBg ? `${itemSel}{background:transparent !important;border-color:transparent !important;}` : "";
+}
+/** The opt-in dismiss script for the export (guarded global; canvas doesn't need it). */
+export function alertDismissScript(node: BoxNode): string {
+  return node.alertDismiss
+    ? `<script>(function(){if(window.__euAlertDismiss)return;window.__euAlertDismiss=1;document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-eu-dismiss]');if(!b)return;var a=b.closest('.eu-alert');if(a){a.style.transition='opacity .18s,transform .18s';a.style.opacity='0';setTimeout(function(){a.remove();},180);}});})();<\/script>`
+    : "";
 }
 
 /** Turn a YouTube/Vimeo URL into an embeddable iframe src; null for a direct video file (use <video>). */
@@ -815,17 +1020,60 @@ export function floatingZRange(parent: BoxNode | null): { min: number; max: numb
  *  given width token (% of parent) and height floor (px). It becomes a DIRECT child of the positioning
  *  parent (above its flow content), gets a zIndex over any floating siblings, and sheds its flow-only
  *  styling (alignSelf + margins). Pure. */
+/**
+ * RULE M — the gap (in % of the parent) a newly placed block keeps from its parent's left and top edges, so a
+ * component added to the page never sits flush on the section's border. Sections themselves are exempt — they
+ * ARE the band, so they start at the edge.
+ */
+export const PLACEMENT_INSET_PCT = 2;
+
+/**
+ * Clamp a float's geometry to its positioning parent (RULE H — applies to EVERY block and component, the ones we
+ * have and every future one). A block may never be floated to somewhere outside the page: the width is capped at
+ * the parent's width, then left/top are pulled back so the whole box stays inside. Percent in, percent out.
+ */
+export function clampFloatGeom(left: number, top: number, width: string, minInset = 0): { left: number; top: number; width: string } {
+  const w = Math.min(100, widthPct(width));
+  const isPct = !width || width === "fill" || width === "auto" || width.endsWith("%");
+  // RULE M — a block placed onto the page is never flush against its parent's top-left corner: it keeps a small
+  // gap so it reads as sitting IN the section rather than on its border. The inset is only ever applied when
+  // there is room for it (a full-width block still starts at 0), and only at placement time — dragging a float
+  // afterwards can still take it right to the edge.
+  const inset = Math.max(0, Math.min(minInset, 100 - w));
+  return {
+    left: round1(Math.max(inset, Math.min(left, 100 - w))),
+    top: round1(Math.max(minInset, top)),
+    // Only a percentage width can be capped against the parent; a px/rem width is left exactly as measured.
+    width: isPct ? `${round1(w)}%` : width,
+  };
+}
+
 export function floatBox(root: BoxNode, id: string, targetParentId: string, left: number, top: number, width: string, height: number): BoxNode {
   if (id === targetParentId || isAncestor(root, id, targetParentId)) return root;
   const tp = findBox(root, targetParentId);
   const z = floatingZRange(tp).max + 1;
+  // PAGE BOUNDS (RULE H — every block, every component, now and in future): floating must never put a block
+  // outside its positioning parent. A full-width block measures ~100% wide (plus the +1px safety margin), so
+  // floating it at any left offset used to hang it off the right of the page. Cap the width to the parent, then
+  // slide the offsets back inside — the block keeps its size and simply can't be placed out of view.
+  const geom = clampFloatGeom(left, top, width, PLACEMENT_INSET_PCT);
+  // RULE L — a block that SIZES TO ITS CONTENT keeps doing so once it floats. Freezing it into a fixed-size card
+  // (definite width + height + clip) sized to the content it had AT THE MOMENT IT FLOATED is what made editing a
+  // floated text block cut the text off: the box stayed 69x25 while the new text overflowed. So a hugging block
+  // floats with NO frozen width, NO clip, and its measured height as a min-height FLOOR (which floatingReserve
+  // already understands) instead of a hard height — the parent still reserves the right space, and the box grows
+  // with whatever you type. A block the user has explicitly sized still becomes a fixed card, so its resize
+  // handles can shrink it below its content as before.
+  const hugging = hugsContent(findBox(root, id) ?? { id, type: "container" } as BoxNode);
+  const sizing: Partial<BoxNode> = hugging
+    ? { minHeight: Math.max(8, Math.round(height)), height: undefined, clip: undefined }
+    : { width: geom.width, height: `${Math.max(8, Math.round(height))}px`, minHeight: undefined, clip: true };
   let next = moveBox(root, id, targetParentId, tp?.children?.length ?? 0);
   next = updateBox(next, id, {
     // A free-floating layer is a fixed-size CARD: a DEFINITE height (not a min-height floor that content can grow
     // past) so the box, its parent's reserved height, and the export all agree on exactly how tall it is. `clip`
     // lets the width AND height handles shrink it below its content.
-    position: "absolute", left: round1(left), top: round1(top), width, height: `${Math.max(8, Math.round(height))}px`, minHeight: undefined, zIndex: z,
-    clip: true,
+    position: "absolute", left: geom.left, top: geom.top, zIndex: z, ...sizing,
     alignSelf: undefined, margin: undefined, marginTop: undefined, marginRight: undefined, marginBottom: undefined, marginLeft: undefined,
   });
   return next;

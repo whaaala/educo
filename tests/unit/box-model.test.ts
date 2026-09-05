@@ -1,12 +1,13 @@
 import { describe, it, expect } from "vitest";
+import { coerceSite } from "@/lib/box-site";
 import {
   createContainer, createGrid, createElement, createRoot, createComponent,
-  addAccItem, removeAccItem, moveAccItem, updateAccItem, addAccChild, updateAccChild, removeAccChild, moveAccChild, sanitizeCssDeclarations, expandScopedCss, ACCORDION_CSS_PARTS, accItemOverrideCss, accItemHasOverride, accFloatReserveRem, richBody, plainBody, isEmptyBox,
+  addItem, removeItem, moveItem, updateItem, addChildItem, updateChildItem, removeChildItem, moveChildItem, sanitizeCssDeclarations, expandScopedCss, ACCORDION_CSS_PARTS, itemOverrideCss, itemHasOverride, itemFloatReserveRem, richBody, plainBody, isEmptyBox,
   findBox, findParent, isAncestor, updateBox, insertBox, removeBox, moveBoxStep, moveBox,
   containerStyle, childStyle, paddingCSS, marginCSS, sizeToCSS, flexForWidth, fillMainAxis, u, newBoxId, dropIndexAmong,
   makeRowBand, normalizeRowBands, clampRowWidths, widthPct,
   isFloating, floatBox, unfloatBox, groupBoxes, ungroupBoxes, alignInRow, alignInRowOf, bringToFront, sendToBack, bringForward, sendBackward, floatingZRange, cloneBox,
-  isCssBg, bgImageLayer,
+  isCssBg, bgImageLayer, renderAlertHTML, bgShowThroughCss,
   radiusCSS, isClipped, SHADOW_CSS, videoEmbedSrc,
   resolveResponsive, updateBoxResponsive, hasOverride, clearOverride,
   type BoxNode,
@@ -18,26 +19,26 @@ describe("box-model — Educo UI component instances", () => {
     expect(acc.type).toBe("component");
     expect(acc.component).toBe("accordion");
     expect(acc.variant).toBe("");
-    expect(acc.width).toBe("100%");                 // fills the section it's dropped into
-    expect((acc.accItems ?? []).length).toBeGreaterThanOrEqual(3);
+    expect(acc.width).toBe("auto");                 // RULE L: sizes to its content; Full/Custom are opt-in
+    expect((acc.items ?? []).length).toBeGreaterThanOrEqual(3);
     expect(isEmptyBox(acc)).toBe(false);            // never treated as an empty (shrinkable) box
   });
 
   it("accordion item helpers add / remove / move / update immutably", () => {
-    const a = createComponent("accordion", { accItems: [{ id: "x", title: "one", body: "b1" }] } as Partial<BoxNode>);
-    const added = addAccItem(a);
-    expect(added.accItems!.length).toBe(2);
-    expect(a.accItems!.length).toBe(1);             // original untouched
+    const a = createComponent("accordion", { items: [{ id: "x", title: "one", body: "b1" }] } as Partial<BoxNode>);
+    const added = addItem(a);
+    expect(added.items!.length).toBe(2);
+    expect(a.items!.length).toBe(1);             // original untouched
 
-    const renamed = updateAccItem(added, "x", { title: "ONE", meta: "$5" });
-    expect(renamed.accItems![0]).toMatchObject({ title: "ONE", meta: "$5" });
-    expect(added.accItems![0].title).toBe("one");   // immutable
+    const renamed = updateItem(added, "x", { title: "ONE", meta: "$5" });
+    expect(renamed.items![0]).toMatchObject({ title: "ONE", meta: "$5" });
+    expect(added.items![0].title).toBe("one");   // immutable
 
-    const moved = moveAccItem(renamed, renamed.accItems![1].id, -1);
-    expect(moved.accItems![0].id).toBe(renamed.accItems![1].id);
+    const moved = moveItem(renamed, renamed.items![1].id, -1);
+    expect(moved.items![0].id).toBe(renamed.items![1].id);
 
-    const removed = removeAccItem(moved, "x");
-    expect(removed.accItems!.some((it) => it.id === "x")).toBe(false);
+    const removed = removeItem(moved, "x");
+    expect(removed.items!.some((it) => it.id === "x")).toBe(false);
   });
 
   it("sanitizeCssDeclarations keeps safe declarations and rejects breakouts / remote urls", () => {
@@ -109,28 +110,28 @@ describe("box-model — Educo UI component instances", () => {
   });
 
   it("nested sub-item CRUD: add / update / move / remove children under a parent item", () => {
-    let n = createComponent("accordion", { id: "a", accItems: [{ id: "p", title: "Parent", body: "" }] } as Partial<BoxNode>);
-    n = addAccChild(n, "p"); n = addAccChild(n, "p");
-    expect(n.accItems![0].children).toHaveLength(2);
-    const [c1, c2] = n.accItems![0].children!;
-    n = updateAccChild(n, "p", c1.id, { title: "First" });
-    expect(n.accItems![0].children![0].title).toBe("First");
-    n = moveAccChild(n, "p", c1.id, 1); // c1 down → order c2, c1
-    expect(n.accItems![0].children!.map((c) => c.id)).toEqual([c2.id, c1.id]);
-    n = removeAccChild(n, "p", c2.id);
-    expect(n.accItems![0].children!.map((c) => c.id)).toEqual([c1.id]);
+    let n = createComponent("accordion", { id: "a", items: [{ id: "p", title: "Parent", body: "" }] } as Partial<BoxNode>);
+    n = addChildItem(n, "p"); n = addChildItem(n, "p");
+    expect(n.items![0].children).toHaveLength(2);
+    const [c1, c2] = n.items![0].children!;
+    n = updateChildItem(n, "p", c1.id, { title: "First" });
+    expect(n.items![0].children![0].title).toBe("First");
+    n = moveChildItem(n, "p", c1.id, 1); // c1 down → order c2, c1
+    expect(n.items![0].children!.map((c) => c.id)).toEqual([c2.id, c1.id]);
+    n = removeChildItem(n, "p", c2.id);
+    expect(n.items![0].children!.map((c) => c.id)).toEqual([c1.id]);
   });
 
-  it("accItemHasOverride: true when the item has header/body styling OR raw CSS, false when bare", () => {
-    expect(accItemHasOverride({ id: "i", title: "t", body: "b" })).toBe(false);
-    expect(accItemHasOverride({ id: "i", title: "t", body: "b", headerStyle: { color: "#111" } })).toBe(true);
-    expect(accItemHasOverride({ id: "i", title: "t", body: "b", bodyStyle: { background: "#eee" } })).toBe(true);
-    expect(accItemHasOverride({ id: "i", title: "t", body: "b", css: "color: red;" })).toBe(true);
-    expect(accItemHasOverride({ id: "i", title: "t", body: "b", headerStyle: {} })).toBe(false); // empty style = nothing
+  it("itemHasOverride: true when the item has header/body styling OR raw CSS, false when bare", () => {
+    expect(itemHasOverride({ id: "i", title: "t", body: "b" })).toBe(false);
+    expect(itemHasOverride({ id: "i", title: "t", body: "b", headerStyle: { color: "#111" } })).toBe(true);
+    expect(itemHasOverride({ id: "i", title: "t", body: "b", bodyStyle: { background: "#eee" } })).toBe(true);
+    expect(itemHasOverride({ id: "i", title: "t", body: "b", css: "color: red;" })).toBe(true);
+    expect(itemHasOverride({ id: "i", title: "t", body: "b", headerStyle: {} })).toBe(false); // empty style = nothing
   });
 
-  it("accItemOverrideCss: point-and-click Header/Content colour+font compile to scoped !important rules", () => {
-    const out = accItemOverrideCss(".it", {
+  it("itemOverrideCss: point-and-click Header/Content colour+font compile to scoped !important rules", () => {
+    const out = itemOverrideCss(".it", {
       id: "i", title: "t", body: "b",
       headerStyle: { color: "#b45309", background: "#fef3c7", fontFamily: "Georgia, serif", fontSize: "26px" },
       bodyStyle: { color: "#334155", background: "#fff7ed" },
@@ -143,18 +144,41 @@ describe("box-model — Educo UI component instances", () => {
     expect(out).toContain(".it .eu-accordion__body{color: #334155 !important; background: #fff7ed !important;}");
   });
 
-  it("accItemOverrideCss: content ALIGN — header aligns via flex (justify-content), body via text-align", () => {
-    expect(accItemHasOverride({ id: "i", title: "t", body: "b", headerStyle: { align: "center" } })).toBe(true);
-    const out = accItemOverrideCss(".it", { id: "i", title: "t", body: "b", headerStyle: { align: "right" }, bodyStyle: { align: "center" } });
+  it("itemOverrideCss: content ALIGN — header aligns via flex (justify-content), body via text-align", () => {
+    expect(itemHasOverride({ id: "i", title: "t", body: "b", headerStyle: { align: "center" } })).toBe(true);
+    const out = itemOverrideCss(".it", { id: "i", title: "t", body: "b", headerStyle: { align: "right" }, bodyStyle: { align: "center" } });
     expect(out).toContain(".it .eu-accordion__header{text-align: right !important; justify-content: flex-end !important;}");
     expect(out).toContain(".it .eu-accordion__body{text-align: center !important;}");
   });
 
-  it("accItemOverrideCss: FREE positioning — header moves the title, content moves the text area (rem, gap kept)", () => {
-    expect(accItemHasOverride({ id: "i", title: "t", body: "b", headerStyle: { pos: { x: 1, y: 1 } } })).toBe(true);
-    const out = accItemOverrideCss(".it", { id: "i", title: "t", body: "b", headerStyle: { pos: { x: 2, y: -1 } }, bodyStyle: { pos: { x: 0, y: 3 } } });
+  it("itemOverrideCss: FREE positioning — header moves the title, content moves the text area (rem, gap kept)", () => {
+    expect(itemHasOverride({ id: "i", title: "t", body: "b", headerStyle: { pos: { x: 1, y: 1 } } })).toBe(true);
+    const out = itemOverrideCss(".it", { id: "i", title: "t", body: "b", headerStyle: { pos: { x: 2, y: -1 } }, bodyStyle: { pos: { x: 0, y: 3 } } });
     expect(out).toContain(".it .eu-accordion__title{position:relative !important;transform:translate(2rem,-1rem) !important;}");
     expect(out).toContain(".it .eu-accordion__body{position:relative !important;transform:translate(0rem,3rem) !important;}");
+  });
+
+  it("renderAlertHTML: multi-item, severity accent + role, recursive sub-items, dismiss opt-in", () => {
+    const node = createComponent("alert", { alertSeverity: "danger", alertDismiss: true, variant: "--solid",
+      items: [{ id: "a", title: "Oops", body: "Broke.", children: [{ id: "a1", title: "Detail", body: "more" }] }] } as Partial<BoxNode>);
+    const html = renderAlertHTML(node);
+    expect(html).toContain("eu-alert eu-alert--danger eu-alert--solid eu-al-a");
+    expect(html).toContain('role="alert"');            // danger → assertive
+    expect(html).toContain("eu-alert__title");
+    expect(html).toContain("eu-alert__sub");            // recursive sub-item (Rule F)
+    expect(html).toContain("data-eu-dismiss");
+    const info = createComponent("alert", { alertSeverity: "info", alertDismiss: false } as Partial<BoxNode>);
+    expect(renderAlertHTML(info)).toContain('role="status"'); // info → polite
+    expect(renderAlertHTML(info)).not.toContain("data-eu-dismiss");
+  });
+
+  it("bgShowThroughCss (reusable, all components): a block background makes items transparent so it shows through", () => {
+    const withBg = createComponent("alert", { bgImage: "linear-gradient(90deg,#f00,#00f)" } as Partial<BoxNode>);
+    expect(bgShowThroughCss(withBg, ".s .eu-alert")).toContain("background:transparent");
+    expect(bgShowThroughCss(createComponent("alert", {} as Partial<BoxNode>), ".s .eu-alert")).toBe(""); // no bg → no override
+    // works the same for the accordion (any component in COMPONENT_ITEM_SEL)
+    const acc = createComponent("accordion", { background: "#eee" } as Partial<BoxNode>);
+    expect(bgShowThroughCss(acc, ".s .eu-accordion__item")).toContain("background:transparent");
   });
 
   it("bgImageLayer: gradients/patterns pass through raw; image URLs get url(\"…\") wrapping", () => {
@@ -168,10 +192,10 @@ describe("box-model — Educo UI component instances", () => {
     expect(bgImageLayer('a"b\\c')).toBe('url("abc")'); // sanitises quotes/backslashes
   });
 
-  it("accItemOverrideCss: per-item ICON — colour, size, align and free-move all compile onto .eu-accordion__icon", () => {
-    expect(accItemHasOverride({ id: "i", title: "t", body: "b", iconDx: 2 })).toBe(true);
-    expect(accItemHasOverride({ id: "i", title: "t", body: "b", iconAlign: "end" })).toBe(true);
-    const out = accItemOverrideCss(".it", { id: "i", title: "t", body: "b", icon: "Star", iconColor: "#f0f", iconSize: "1.4rem", iconAlign: "end", iconDx: 2, iconDy: -1 });
+  it("itemOverrideCss: per-item ICON — colour, size, align and free-move all compile onto .eu-accordion__icon", () => {
+    expect(itemHasOverride({ id: "i", title: "t", body: "b", iconDx: 2 })).toBe(true);
+    expect(itemHasOverride({ id: "i", title: "t", body: "b", iconAlign: "end" })).toBe(true);
+    const out = itemOverrideCss(".it", { id: "i", title: "t", body: "b", icon: "Star", iconColor: "#f0f", iconSize: "1.4rem", iconAlign: "end", iconDx: 2, iconDy: -1 });
     expect(out).toContain(".it .eu-accordion__icon{");
     expect(out).toContain("color: #f0f !important");
     expect(out).toContain("font-size: 1.4rem !important");
@@ -179,36 +203,36 @@ describe("box-model — Educo UI component instances", () => {
     expect(out).toContain("transform: translate(2rem, -1rem) !important");
   });
 
-  it("accItemOverrideCss: structured styling AND the raw CSS box both apply (structured first)", () => {
-    const out = accItemOverrideCss(".it", { id: "i", title: "t", body: "b", headerStyle: { color: "#111" }, css: "icon { color: #0f0 }" });
+  it("itemOverrideCss: structured styling AND the raw CSS box both apply (structured first)", () => {
+    const out = itemOverrideCss(".it", { id: "i", title: "t", body: "b", headerStyle: { color: "#111" }, css: "icon { color: #0f0 }" });
     expect(out.indexOf(".eu-accordion__header{color: #111")).toBeGreaterThanOrEqual(0);
     expect(out).toContain(".it .eu-accordion__header::after{color: #0f0 !important;}");
     expect(out.indexOf("header{color: #111")).toBeLessThan(out.indexOf("::after")); // structured emitted before raw
   });
 
-  it("accItemOverrideCss: a custom per-item number overrides the auto-counter (::before content), safely quoted", () => {
-    expect(accItemHasOverride({ id: "i", title: "t", body: "b", num: "7" })).toBe(true);
-    const out = accItemOverrideCss(".it", { id: "i", title: "t", body: "b", num: "A1" });
+  it("itemOverrideCss: a custom per-item number overrides the auto-counter (::before content), safely quoted", () => {
+    expect(itemHasOverride({ id: "i", title: "t", body: "b", num: "7" })).toBe(true);
+    const out = itemOverrideCss(".it", { id: "i", title: "t", body: "b", num: "A1" });
     expect(out).toBe('.it .eu-accordion__header::before{content: "A1" !important;}');
     // quotes/backslashes in the value are escaped → the `"` can't close the string and start a new rule
-    const evil = accItemOverrideCss(".it", { id: "i", title: "t", body: "b", num: '3" } html { display:none' });
+    const evil = itemOverrideCss(".it", { id: "i", title: "t", body: "b", num: '3" } html { display:none' });
     expect(evil).toBe('.it .eu-accordion__header::before{content: "3\\" } html { display:none" !important;}');
     expect((evil.match(/::before\{/g) || []).length).toBe(1);   // exactly ONE rule — no breakout rule created
   });
 
-  it("accItemOverrideCss: a FLOATED item is absolutely placed at (x,y) rem; reverts to the stack on mobile export", () => {
+  it("itemOverrideCss: a FLOATED item is absolutely placed at (x,y) rem; reverts to the stack on mobile export", () => {
     const it = { id: "i", title: "t", body: "b", float: { x: 12, y: 6, z: 10 } };
-    expect(accItemHasOverride(it)).toBe(true);
-    const out = accItemOverrideCss(".it", it, { mobileReset: true });
+    expect(itemHasOverride(it)).toBe(true);
+    const out = itemOverrideCss(".it", it, { mobileReset: true });
     expect(out).toContain(".it{position:absolute !important;left:12rem !important;top:6rem !important;z-index:10 !important;");
     expect(out).toContain("@media (max-width:480px){.it{position:static !important;left:auto !important;top:auto !important;}}");
     // canvas can skip the float (mobile preview) without touching the other overrides
-    expect(accItemOverrideCss(".it", { ...it, headerStyle: { color: "#111" } }, { skipFloat: true })).toBe(".it .eu-accordion__header{color: #111 !important;}");
+    expect(itemOverrideCss(".it", { ...it, headerStyle: { color: "#111" } }, { skipFloat: true })).toBe(".it .eu-accordion__header{color: #111 !important;}");
   });
 
-  it("accFloatReserveRem: reserves the lowest float + a nominal item height; 0 when nothing floats", () => {
-    expect(accFloatReserveRem([{ id: "a", title: "", body: "" }])).toBe(0);
-    expect(accFloatReserveRem([
+  it("itemFloatReserveRem: reserves the lowest float + a nominal item height; 0 when nothing floats", () => {
+    expect(itemFloatReserveRem([{ id: "a", title: "", body: "" }])).toBe(0);
+    expect(itemFloatReserveRem([
       { id: "a", title: "", body: "", float: { x: 2, y: 10 } },
       { id: "b", title: "", body: "", float: { x: 2, y: 4 } },
     ])).toBe(16); // max y (10) + 6
@@ -340,9 +364,10 @@ describe("box-model — mutations are immutable and correct", () => {
     expect(normalizeRowBands(norm, 0)).toEqual(norm);          // idempotent
   });
 
-  it("adding SEVERAL blocks to the page (append + normalize) stacks each in its OWN full-width row — never grouped", () => {
+  it("adding SEVERAL blocks to the page (append + normalize) stacks each in its OWN row — never grouped", () => {
     // Mirrors the builder's add path: append bare items to the root, then normalize. Every block must land in
-    // its own row band at 100% (no shared parent, no width-clamping) — the guarantee behind race-safe adds.
+    // its OWN row band (no shared parent, no width-clamping) — the guarantee behind race-safe adds — keeping the
+    // content-sized width RULE L gives it.
     let root = createContainer("column", { id: "root", children: [] } as Partial<BoxNode>);
     for (const id of ["a", "b", "c", "d"]) {
       root = insertBox(root, "root", root.children?.length ?? 0, createComponent("card", { id } as Partial<BoxNode>));
@@ -353,7 +378,7 @@ describe("box-model — mutations are immutable and correct", () => {
       expect(row.rowBand).toBe(true);
       expect(row.children!.length).toBe(1);                                 // one block per row — never grouped
       expect(row.children![0].type).toBe("component");
-      expect(row.children![0].width).toBe("100%");                          // full width — never clamped
+      expect(row.children![0].width).toBe("auto");                          // RULE L: content-sized, never clamped
       expect(row.children![0].children).toBeUndefined();                    // the component is a single node
     }
   });
@@ -828,5 +853,47 @@ describe("box-model — floating layers (free overlap)", () => {
       createContainer("column", {}), // flow child ignored
     ] } as Partial<BoxNode>);
     expect(floatingZRange(p)).toEqual({ min: 3, max: 7 });
+  });
+});
+
+describe("accItems → items rename: old documents still open with their content (migration)", () => {
+  // The field is shared by every multi-item component now, so it is just `items`. Documents saved under the old
+  // name must still load — without the migration an older page would open with no items at all.
+  it("renames accItems to items anywhere in a saved site", () => {
+    const saved = {
+      homeId: "p1",
+      pages: [{ id: "p1", name: "Home", path: "/", root: {
+        id: "root", type: "container", children: [
+          { id: "a", type: "component", component: "accordion", accItems: [{ id: "i1", title: "Q", body: "A" }] },
+          { id: "b", type: "container", children: [
+            { id: "c", type: "component", component: "alert", accItems: [{ id: "i2", title: "Heads up", body: "M" }] },
+          ] },
+        ],
+      } }],
+    };
+    const site = coerceSite(JSON.parse(JSON.stringify(saved)))!;
+    expect(site).not.toBeNull();
+    const acc = site.pages[0].root.children![0];
+    const alert = site.pages[0].root.children![1].children![0];
+    expect(acc.items?.[0].title).toBe("Q");
+    expect(alert.items?.[0].title).toBe("Heads up");
+    expect((acc as unknown as Record<string, unknown>).accItems).toBeUndefined();
+    expect((alert as unknown as Record<string, unknown>).accItems).toBeUndefined();
+  });
+
+  it("migrates nested sub-items too, and leaves new documents untouched", () => {
+    const withKids = { homeId: "p1", pages: [{ id: "p1", name: "H", path: "/", root: {
+      id: "root", type: "container", children: [
+        { id: "a", type: "component", component: "accordion",
+          accItems: [{ id: "i1", title: "Q", body: "A", children: [{ id: "k1", title: "Sub", body: "B" }] }] },
+      ] } }] };
+    const migrated = coerceSite(JSON.parse(JSON.stringify(withKids)))!;
+    expect(migrated.pages[0].root.children![0].items?.[0].children?.[0].title).toBe("Sub");
+
+    const modern = { homeId: "p1", pages: [{ id: "p1", name: "H", path: "/", root: {
+      id: "root", type: "container", children: [
+        { id: "a", type: "component", component: "alert", items: [{ id: "i1", title: "New", body: "A" }] },
+      ] } }] };
+    expect(coerceSite(modern)!.pages[0].root.children![0].items?.[0].title).toBe("New");
   });
 });

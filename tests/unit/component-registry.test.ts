@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { COMPONENT_REGISTRY, isRegistryComponent, defaultComponentFields, renderComponent } from "@/lib/educo-ui/registry";
+import { COMPONENT_REGISTRY, isRegistryComponent, defaultComponentFields, renderComponent, componentScripts } from "@/lib/educo-ui/registry";
 
 describe("component registry (single-node design-system components)", () => {
   it("registers Card/Quote/Stat/Badge/Rating", () => {
@@ -38,6 +38,10 @@ describe("component registry (single-node design-system components)", () => {
     expect(card).toContain("Card title");        // default title
     expect(card).toContain("Learn more");        // default button
     expect(card).not.toContain("eu-card__icon");  // no icon by default (empty)
+  });
+
+  it("componentScripts returns '' for components without a script (opt-in only)", () => {
+    expect(componentScripts("card", {}, "", "c1")).toBe("");
   });
 
   it("Card / Stat / Badge render an inline-SVG icon when their icon field is set (IconPicker-driven)", () => {

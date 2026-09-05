@@ -12,8 +12,8 @@
 
 import { iconSvg } from "./icon-svg";
 
-export type SlotType = "text" | "textarea" | "url" | "number" | "icon";
-export type Slot = { key: string; label: string; type: SlotType; default: string | number; min?: number; max?: number };
+export type SlotType = "text" | "textarea" | "url" | "number" | "icon" | "select" | "boolean";
+export type Slot = { key: string; label: string; type: SlotType; default: string | number; min?: number; max?: number; options?: { value: string; label: string }[] };
 export type ComponentVariant = { id: string; label: string }; // id is the class SUFFIX, e.g. "--raised" ("" = default)
 export type ComponentDef = {
   name: string;
@@ -22,14 +22,21 @@ export type ComponentDef = {
   variants: ComponentVariant[];
   /** Small-content components (badge, rating, stat) HUG their content by default — a wide full-width box around
    *  a pill / stars / a number reads as an unwanted "container". Block components (card/quote) stay full-width. */
-  hug?: boolean;
   /** Pure: content fields + variant suffix → the component's inner `.eu-*` HTML. */
   render: (f: Record<string, string | number>, variant: string) => string;
+  /** Optional per-instance progressive-enhancement script for the EXPORT (zero-JS by default; canvas ignores it).
+   *  Returns a `<script>…</script>` string or "". Guard globals so multiple instances init once. Reusable. */
+  scripts?: (f: Record<string, string | number>, variant: string, id: string) => string;
 };
 
-/** The default width token for a component: hugging ones size to content, the rest fill the row. */
-export function defaultComponentWidth(name: string): string {
-  return COMPONENT_REGISTRY[name]?.hug ? "auto" : "100%";
+/**
+ * RULE L — a component added to the page SIZES TO ITS CONTENT (its own padding gives it the breathing room);
+ * full-width and fixed widths are opt-in via the inspector's Full / Custom. This is the default for every
+ * component we have and every future one, so there is no longer a per-component "hug" flag: they all hug.
+ * (Existing saved documents are untouched — they keep whatever width they were built with.)
+ */
+export function defaultComponentWidth(_name: string): string {
+  return "auto";
 }
 
 /** Escape HTML so user content can't break the markup (this string is injected into the canvas AND the export). */
@@ -80,7 +87,7 @@ export const COMPONENT_REGISTRY: Record<string, ComponentDef> = {
       `${f.author ? `<figcaption class="eu-quote__author">— ${esc(f.author)}</figcaption>` : ""}</figure>`,
   },
   stat: {
-    name: "stat", label: "Stat", hug: true,
+    name: "stat", label: "Stat",
     slots: [
       { key: "icon", label: "Icon", type: "icon", default: "" },
       { key: "value", label: "Value", type: "text", default: "1,000+" },
@@ -95,7 +102,7 @@ export const COMPONENT_REGISTRY: Record<string, ComponentDef> = {
     },
   },
   badge: {
-    name: "badge", label: "Badge", hug: true,
+    name: "badge", label: "Badge",
     slots: [
       { key: "icon", label: "Icon", type: "icon", default: "" },
       { key: "text", label: "Text", type: "text", default: "New" },
@@ -110,7 +117,7 @@ export const COMPONENT_REGISTRY: Record<string, ComponentDef> = {
     },
   },
   rating: {
-    name: "rating", label: "Rating", hug: true,
+    name: "rating", label: "Rating",
     slots: [
       { key: "value", label: "Stars", type: "number", default: 4, min: 0, max: 10 },
       { key: "max", label: "Out of", type: "number", default: 5, min: 1, max: 10 },
@@ -149,4 +156,13 @@ export function renderComponent(name: string, fields: Record<string, string | nu
   if (!def) return "";
   const merged = { ...defaultComponentFields(name), ...(fields ?? {}) };
   return def.render(merged, variant ?? "");
+}
+
+
+/** A registry component's opt-in progressive-enhancement script for the EXPORT (or "" if none). Canvas ignores it. */
+export function componentScripts(name: string, fields: Record<string, string | number> | undefined, variant: string | undefined, id: string): string {
+  const def = COMPONENT_REGISTRY[name];
+  if (!def?.scripts) return "";
+  const merged = { ...defaultComponentFields(name), ...(fields ?? {}) };
+  return def.scripts(merged, variant ?? "", id);
 }

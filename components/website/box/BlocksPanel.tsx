@@ -16,7 +16,7 @@ import {
   LayoutPanelTop, Columns3, Rows3, MoveVertical, Minus,
   Heading as HeadingIcon, Pilcrow, MousePointerClick, ListOrdered,
   Image as ImageIcon, Film, Shapes, CodeXml,
-  PanelTopOpen, LayoutGrid, MessageSquareQuote, Hash, BadgeCheck, Star,
+  PanelTopOpen, LayoutGrid, MessageSquareQuote, Hash, BadgeCheck, Star, BellRing,
   Blocks, LayoutTemplate, Type, Images, Component, Search, X, Plus, Sparkles, type LucideIcon,
 } from "lucide-react";
 import type { BoxNode } from "@/lib/box-model";
@@ -47,6 +47,7 @@ const GROUPS: { name: string; Icon: LucideIcon; blocks: Block[] }[] = [
   ] },
   { name: "Components", Icon: Component, blocks: [
     { kind: "accordion", label: "Accordion", Icon: PanelTopOpen, hint: "Expandable Q&A / FAQ — 54 designs" },
+    { kind: "alert", label: "Alert", Icon: BellRing, hint: "Message / notice — 6 severities, dismissible" },
     { kind: "card", label: "Card", Icon: LayoutGrid, hint: "Image + title + text + button" },
     { kind: "quote", label: "Quote", Icon: MessageSquareQuote, hint: "A testimonial quote" },
     { kind: "stat", label: "Stat", Icon: Hash, hint: "A big number + label" },

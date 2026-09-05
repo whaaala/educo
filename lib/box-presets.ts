@@ -120,7 +120,7 @@ const COMPOSITES: Record<string, () => BoxNode> = { card: makeCard, quote: makeQ
 export function blockForKind(kind: string, patch: Partial<BoxNode> = {}): BoxNode {
   const base =
     COMPOSITES[kind] ? COMPOSITES[kind]()
-    : kind === "accordion" ? createComponent(kind)
+    : (kind === "accordion" || kind === "alert") ? createComponent(kind)
     : kind === "row" ? createContainer("row")
     : kind === "grid" ? createGrid(3)
     : kind === "container" ? createContainer("column", { width: "100%", padding: 24, gap: 0, align: "stretch" })

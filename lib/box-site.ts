@@ -99,9 +99,37 @@ export function normalizeSite(site: BoxSite, gap = 0): BoxSite {
   return { ...site, pages: site.pages.map((p) => ({ ...p, root: normalizeRowBands(p.root, gap) })) };
 }
 
+/**
+ * Documents saved before the multi-item field was renamed store their component items under `accItems` (the
+ * name it had when only the Accordion used it). The field is now shared by every multi-item component, so it is
+ * simply `items` — rename it on load, everywhere in the tree, or an older document would open with no items at
+ * all. Kept forever: it costs one pass and there is no other migration hook.
+ */
+function hasLegacyItemsField(value: unknown): boolean {
+  if (Array.isArray(value)) return value.some(hasLegacyItemsField);
+  if (!value || typeof value !== "object") return false;
+  const o = value as Record<string, unknown>;
+  return "accItems" in o || Object.values(o).some(hasLegacyItemsField);
+}
+
+function migrateItemsField(value: unknown): unknown {
+  if (Array.isArray(value)) return value.map(migrateItemsField);
+  if (!value || typeof value !== "object") return value;
+  const o = { ...(value as Record<string, unknown>) };
+  if ("accItems" in o) {
+    if (o.items === undefined) o.items = o.accItems; // never clobber a newer `items` if both somehow exist
+    delete o.accItems;
+  }
+  for (const k of Object.keys(o)) o[k] = migrateItemsField(o[k]);
+  return o;
+}
+
 /** Load a persisted value that may be a legacy single BoxNode tree OR a BoxSite → always a BoxSite. */
-export function coerceSite(raw: unknown): BoxSite | null {
-  if (!raw || typeof raw !== "object") return null;
+export function coerceSite(rawInput: unknown): BoxSite | null {
+  if (!rawInput || typeof rawInput !== "object") return null;
+  // Only rewrite when there is actually something to migrate — a modern document is passed straight through,
+  // so loading never deep-copies the whole site (and callers keep the identity they had).
+  const raw = hasLegacyItemsField(rawInput) ? migrateItemsField(rawInput) : rawInput;
   const o = raw as Record<string, unknown>;
   if (Array.isArray(o.pages) && typeof o.homeId === "string") return o as unknown as BoxSite; // already a site
   if (o.type === "container" && Array.isArray(o.children)) return siteFromRoot(raw as BoxNode); // legacy single tree

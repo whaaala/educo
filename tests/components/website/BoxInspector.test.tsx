@@ -13,7 +13,7 @@ const openContent = () => fireEvent.click(screen.getByRole("tab", { name: "Conte
 const openDevice = () => fireEvent.click(screen.getByRole("tab", { name: "Per-device" }));
 
 describe("BoxInspector — Accordion component editing (Content tab)", () => {
-  const acc = () => createComponent("accordion", { id: "a", accItems: [
+  const acc = () => createComponent("accordion", { id: "a", items: [
     { id: "i1", title: "Q1", body: "A1" }, { id: "i2", title: "Q2", body: "A2" },
   ] } as Partial<BoxNode>);
 
@@ -33,7 +33,7 @@ describe("BoxInspector — Accordion component editing (Content tab)", () => {
     fireEvent.click(screen.getByLabelText("Allow more than one open at once"));
     expect(onPatch).toHaveBeenCalledWith({ accMultiOpen: true });
     fireEvent.click(screen.getByRole("button", { name: "Add item" }));
-    expect(onPatch).toHaveBeenCalledWith(expect.objectContaining({ accItems: expect.arrayContaining([expect.objectContaining({ title: "New question" })]) }));
+    expect(onPatch).toHaveBeenCalledWith(expect.objectContaining({ items: expect.arrayContaining([expect.objectContaining({ title: "New question" })]) }));
   });
 
   it("toggles the opt-in 'Expand all / Collapse all' controls", () => {
@@ -47,7 +47,7 @@ describe("BoxInspector — Accordion component editing (Content tab)", () => {
     const onPatch = renderFor(acc());
     openContent();
     fireEvent.change(screen.getByLabelText("Item 1 title"), { target: { value: "Changed" } });
-    expect(onPatch).toHaveBeenCalledWith(expect.objectContaining({ accItems: expect.arrayContaining([expect.objectContaining({ title: "Changed" })]) }));
+    expect(onPatch).toHaveBeenCalledWith(expect.objectContaining({ items: expect.arrayContaining([expect.objectContaining({ title: "Changed" })]) }));
     expect(screen.getByLabelText("Remove item 1")).not.toBeDisabled();
   });
 
@@ -55,11 +55,11 @@ describe("BoxInspector — Accordion component editing (Content tab)", () => {
     const onPatch = renderFor(acc());
     openContent();
     fireEvent.change(screen.getByLabelText("Item 1 CSS"), { target: { value: "background: #fef3c7;" } });
-    expect(onPatch).toHaveBeenCalledWith(expect.objectContaining({ accItems: expect.arrayContaining([expect.objectContaining({ css: "background: #fef3c7;" })]) }));
+    expect(onPatch).toHaveBeenCalledWith(expect.objectContaining({ items: expect.arrayContaining([expect.objectContaining({ css: "background: #fef3c7;" })]) }));
   });
 
   it("cannot remove the last remaining item", () => {
-    renderFor(createComponent("accordion", { id: "a2", accItems: [{ id: "i1", title: "only", body: "b" }] } as Partial<BoxNode>));
+    renderFor(createComponent("accordion", { id: "a2", items: [{ id: "i1", title: "only", body: "b" }] } as Partial<BoxNode>));
     openContent();
     expect(screen.getByLabelText("Remove item 1")).toBeDisabled();
   });
@@ -436,7 +436,7 @@ describe("BoxInspector — functionality audit (every remaining control)", () =>
 
 // ══ ACCORDION — FINAL AUDIT: every control in all THREE tabs acts on the component AND its items ══
 describe("Accordion — full three-tab audit (Design · Content · Per-device)", () => {
-  const acc = () => createComponent("accordion", { id: "a", accItems: [
+  const acc = () => createComponent("accordion", { id: "a", items: [
     { id: "i1", title: "Q1", body: "A1" }, { id: "i2", title: "Q2", body: "A2" }, { id: "i3", title: "Q3", body: "A3" },
   ] } as Partial<BoxNode>);
 
@@ -487,7 +487,7 @@ describe("Accordion — full three-tab audit (Design · Content · Per-device)",
   it("CONTENT › Items — EVERY per-item field works on ANY item (title, body, meta, image, CSS, open)", () => {
     const onPatch = renderFor(acc());
     openContent();
-    const hasItem = (m: Record<string, unknown>) => expect.objectContaining({ accItems: expect.arrayContaining([expect.objectContaining(m)]) });
+    const hasItem = (m: Record<string, unknown>) => expect.objectContaining({ items: expect.arrayContaining([expect.objectContaining(m)]) });
     fireEvent.change(screen.getByLabelText("Item 2 title"), { target: { value: "New Q" } });           expect(onPatch).toHaveBeenCalledWith(hasItem({ id: "i2", title: "New Q" }));
     fireEvent.change(screen.getByLabelText("Item 2 body"), { target: { value: "New A" } });            expect(onPatch).toHaveBeenCalledWith(hasItem({ id: "i2", body: "New A" }));
     fireEvent.change(screen.getByLabelText("Item 2 meta"), { target: { value: "$5" } });               expect(onPatch).toHaveBeenCalledWith(hasItem({ id: "i2", meta: "$5" }));
@@ -500,12 +500,12 @@ describe("Accordion — full three-tab audit (Design · Content · Per-device)",
     const onPatch = renderFor(acc());
     openContent();
     fireEvent.click(screen.getByRole("button", { name: "Add item" }));
-    expect(onPatch).toHaveBeenCalledWith(expect.objectContaining({ accItems: expect.arrayContaining([expect.objectContaining({ title: "New question" })]) }));
+    expect(onPatch).toHaveBeenCalledWith(expect.objectContaining({ items: expect.arrayContaining([expect.objectContaining({ title: "New question" })]) }));
     fireEvent.click(screen.getByLabelText("Remove item 2"));
-    expect(onPatch).toHaveBeenCalledWith(expect.objectContaining({ accItems: expect.not.arrayContaining([expect.objectContaining({ id: "i2" })]) }));
+    expect(onPatch).toHaveBeenCalledWith(expect.objectContaining({ items: expect.not.arrayContaining([expect.objectContaining({ id: "i2" })]) }));
     fireEvent.click(screen.getAllByLabelText("Move item down")[0]);
-    const reordered = onPatch.mock.calls.map((c) => c[0]).reverse().find((p) => p.accItems);
-    expect(reordered.accItems[0].id).toBe("i2");
+    const reordered = onPatch.mock.calls.map((c) => c[0]).reverse().find((p) => p.items);
+    expect(reordered.items[0].id).toBe("i2");
   });
 
   it("CONTENT › Typography — size, boldness, capitalisation, line/letter spacing (cascade into items)", () => {
@@ -533,7 +533,7 @@ describe("Accordion — full three-tab audit (Design · Content · Per-device)",
     expect(onPatch).toHaveBeenCalledWith({ hidden: true });
   });
 
-  const hasItem = (m: Record<string, unknown>) => expect.objectContaining({ accItems: expect.arrayContaining([expect.objectContaining(m)]) });
+  const hasItem = (m: Record<string, unknown>) => expect.objectContaining({ items: expect.arrayContaining([expect.objectContaining(m)]) });
 
   it("CONTENT › Float — the toggle detaches an item (gives it a default position)", () => {
     const onPatch = renderFor(acc());
@@ -543,7 +543,7 @@ describe("Accordion — full three-tab audit (Design · Content · Per-device)",
   });
 
   it("CONTENT › Float — X/Y inputs drive a floated item's position (rem)", () => {
-    const floated = createComponent("accordion", { id: "a", accItems: [
+    const floated = createComponent("accordion", { id: "a", items: [
       { id: "i1", title: "Q1", body: "A1", float: { x: 4, y: 4, z: 1 } }, { id: "i2", title: "Q2", body: "A2" },
     ] } as Partial<BoxNode>);
     const onPatch = renderFor(floated);
@@ -557,12 +557,12 @@ describe("Accordion — full three-tab audit (Design · Content · Per-device)",
   // ── EVERY design variant: the controls are variant-independent, so the audit holds for ALL 54 looks ──
   it("holds for EVERY accordion design variant (a control + an item edit fire regardless of the look)", () => {
     for (const v of ["", "--panel", "--flush", "--invert", "--timeline", "--glass", "--numbered", "--pill", "--horizontal"]) {
-      const onPatch = renderFor(createComponent("accordion", { id: "a", variant: v, accItems: [{ id: "i1", title: "Q", body: "A" }] } as Partial<BoxNode>));
+      const onPatch = renderFor(createComponent("accordion", { id: "a", variant: v, items: [{ id: "i1", title: "Q", body: "A" }] } as Partial<BoxNode>));
       fireEvent.change(screen.getByLabelText("Rounded corners"), { target: { value: "8" } });
       expect(onPatch).toHaveBeenCalledWith({ radius: 8 });
       openContent();
       fireEvent.change(screen.getByLabelText("Item 1 title"), { target: { value: "Z" } });
-      expect(onPatch).toHaveBeenCalledWith(expect.objectContaining({ accItems: expect.arrayContaining([expect.objectContaining({ title: "Z" })]) }));
+      expect(onPatch).toHaveBeenCalledWith(expect.objectContaining({ items: expect.arrayContaining([expect.objectContaining({ title: "Z" })]) }));
       cleanup();
     }
   });
