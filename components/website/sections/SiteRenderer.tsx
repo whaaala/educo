@@ -11,6 +11,7 @@ import type { Site, Page, SiteTheme } from "@/lib/site-storage";
 import SectionRenderer from "./SectionRenderer";
 import { Container, tint, EditableText } from "./SectionKit";
 import { HeaderMenu, MobileMenu, navItemHref } from "./Menu";
+import { PAGE_Z } from "@/lib/educo-ui/stacking";
 
 export function SiteNav({ site, theme, editable, onEditName, onEditCta }: {
   site: Site; theme: SiteTheme; editable?: boolean; onEditName?: (v: string) => void; onEditCta?: (v: string) => void;
@@ -20,8 +21,9 @@ export function SiteNav({ site, theme, editable, onEditName, onEditCta }: {
   const showCta = header.showCta !== false;
   return (
     <header
-      className="sticky top-0 z-20 backdrop-blur-md"
-      style={{ background: tint(theme.background, 0.85), borderBottom: `1px solid ${tint(theme.text, 0.08)}` }}
+      className="sticky top-0 backdrop-blur-md"
+      // The page ladder, never a bare number — see lib/educo-ui/stacking.ts.
+      style={{ zIndex: PAGE_Z.sticky, background: tint(theme.background, 0.85), borderBottom: `1px solid ${tint(theme.text, 0.08)}` }}
     >
       <Container className="h-16 flex items-center">
         <div className="flex items-center gap-2">

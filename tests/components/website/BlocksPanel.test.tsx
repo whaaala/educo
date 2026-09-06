@@ -2,6 +2,7 @@ import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 import BlocksPanel from "@/components/website/box/BlocksPanel";
 import { DEFAULT_THEME } from "@/lib/site-storage";
+import { CHROME_Z, CHROME_Z_FLOOR } from "@/lib/educo-ui/stacking";
 
 describe("BlocksPanel (floating insert palette)", () => {
   it("is CLOSED by default — only a launcher shows, no tiles", () => {
@@ -84,9 +85,14 @@ describe("BlocksPanel (floating insert palette)", () => {
     expect(screen.queryByRole("dialog", { name: "Blocks" })).not.toBeInTheDocument();
   });
 
-  it("the open panel sits ABOVE the canvas block toolbars (z-50 > toolbar z-40) so nothing pokes through", () => {
+  it("the open panel sits ABOVE the canvas block toolbars, and both are on the CHROME ladder", () => {
+    // This used to read `z-50 > z-40`, which was true and yet was the bug: those are the numbers a PAGE uses,
+    // so a float raised far enough covered the panel and the toolbars alike. The relationship still has to
+    // hold — it just has to hold above everything a visitor can ever render. See lib/educo-ui/stacking.ts.
     render(<BlocksPanel theme={DEFAULT_THEME} defaultOpen />);
-    expect(screen.getByRole("dialog", { name: "Blocks" }).className).toMatch(/\bz-50\b/);
+    expect(screen.getByRole("dialog", { name: "Blocks" })).toHaveStyle({ zIndex: String(CHROME_Z.panel) });
+    expect(CHROME_Z.panel).toBeGreaterThan(CHROME_Z.toolbar);
+    expect(CHROME_Z.toolbar).toBeGreaterThanOrEqual(CHROME_Z_FLOOR);
   });
 
   it("keyboard: B toggles the panel open and closed", () => {

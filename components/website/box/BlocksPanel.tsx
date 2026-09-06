@@ -24,6 +24,7 @@ import type { SiteTheme } from "@/lib/site-storage";
 import { getAddChoices } from "@/lib/box-presets";
 import { COMPONENT_CATALOGUE } from "@/lib/component-catalogue";
 import { PortalMenu, MenuItem, MenuHeader } from "./ui";
+import { CHROME_Z } from "@/lib/educo-ui/stacking";
 
 /** The catalogue names its icon as a string so it can stay React-free; this maps those names to the icons. */
 export const COMPONENT_ICONS: Record<string, LucideIcon> = { PanelTopOpen, BellRing, LayoutGrid, MessageSquareQuote, Hash, BadgeCheck, Star };
@@ -160,7 +161,8 @@ export default function BlocksPanel({ theme, onDragKind, onPick, defaultOpen = f
           aria-label="Open blocks panel"
           aria-expanded={false}
           title="Add blocks (B)"
-          className="absolute top-4 left-3 z-40 grid place-items-center w-11 h-11 rounded-2xl bg-gradient-to-br from-brand to-brand-600 text-brand-fg shadow-lg ring-1 ring-black/5 hover:shadow-xl hover:scale-105 transition"
+          style={{ zIndex: CHROME_Z.panel }}
+          className="absolute top-4 left-3 grid place-items-center w-11 h-11 rounded-2xl bg-gradient-to-br from-brand to-brand-600 text-brand-fg shadow-lg ring-1 ring-black/5 hover:shadow-xl hover:scale-105 transition"
         >
           <Blocks className="w-5 h-5" strokeWidth={1.9} />
         </button>
@@ -172,7 +174,8 @@ export default function BlocksPanel({ theme, onDragKind, onPick, defaultOpen = f
           ref={panelRef}
           role="dialog"
           aria-label="Blocks"
-          className={`absolute top-4 left-3 z-50 flex w-[20rem] max-w-[calc(100%-1.5rem)] max-h-[calc(100%-2rem)] flex-col rounded-2xl border border-line bg-surface shadow-2xl shadow-black/10 overflow-hidden transition duration-200 ease-out motion-reduce:transition-none ${shown ? "opacity-100 translate-x-0 scale-100" : "opacity-0 -translate-x-2 scale-[0.98]"}`}
+          style={{ zIndex: CHROME_Z.panel }}
+          className={`absolute top-4 left-3 flex w-[20rem] max-w-[calc(100%-1.5rem)] max-h-[calc(100%-2rem)] flex-col rounded-2xl border border-line bg-surface shadow-2xl shadow-black/10 overflow-hidden transition duration-200 ease-out motion-reduce:transition-none ${shown ? "opacity-100 translate-x-0 scale-100" : "opacity-0 -translate-x-2 scale-[0.98]"}`}
         >
           {/* Header */}
           <div className="flex items-center gap-2.5 px-4 pt-3.5 pb-3">

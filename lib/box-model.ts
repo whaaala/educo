@@ -15,6 +15,7 @@ import { isRegistryComponent, defaultComponentFields, defaultComponentWidth, com
 import { iconSvg } from "@/lib/educo-ui/icon-svg";
 import { BREAKPOINTS_EM } from "@/lib/educo-ui/base";
 import { hasItemEffects, itemEffectsCss } from "@/lib/interactions";
+import { PAGE_Z, clampPageZ } from "@/lib/educo-ui/stacking";
 
 export type BoxType = "container" | "text" | "heading" | "button" | "image" | "video" | "icon" | "divider" | "list" | "embed" | "spacer" | "component";
 
@@ -1286,7 +1287,7 @@ export function alertToastCss(node: BoxNode, scope: string): string {
     `inset-inline-${inline === "left" ? "start" : "end"}:var(--eu-space-4, 1rem) !important;` +
     `inset-inline-${inline === "left" ? "end" : "start"}:auto !important;` +
     `width:min(24rem, calc(100% - var(--eu-space-8, 2rem))) !important;` +
-    `z-index:60 !important;margin:0 !important;}`
+    `z-index:${PAGE_Z.toast} !important;margin:0 !important;}`
   );
 }
 
@@ -1556,6 +1557,19 @@ export function fillMainAxis(root: BoxNode, parentId: string, exceptId?: string)
 // that parent's flow content and overlap its siblings. Geometry (left/top/width/height) is measured in
 // the DOM by the canvas and passed in here; these ops stay pure so they're testable + undo-safe.
 
+/**
+ * The stacking order a FLOATING block actually renders at.
+ *
+ * Both renderers used to read `node.zIndex ?? 1` themselves, which is two copies of one decision — the shape
+ * of every canvas ≠ export bug this project has met. It is also where the clamp has to live: clamping only
+ * inside "Bring to front" protects the button and nothing else, so a tree that arrived by paste, import or a
+ * hand-edited store still emitted its raw number. A guard caught exactly that, with a stored 40000 reaching
+ * the published stylesheet. Here, every path in is covered by construction.
+ */
+export function floatZIndex(node: BoxNode): number {
+  return clampPageZ(node.zIndex, PAGE_Z.raised);
+}
+
 /** Highest / lowest zIndex among a parent's FLOATING children (0 when there are none). */
 export function floatingZRange(parent: BoxNode | null): { min: number; max: number } {
   const zs = (parent?.children ?? []).filter(isFloating).map((c) => c.zIndex ?? 1);
@@ -1597,7 +1611,7 @@ export function clampFloatGeom(left: number, top: number, width: string, minInse
 export function floatBox(root: BoxNode, id: string, targetParentId: string, left: number, top: number, width: string, height: number): BoxNode {
   if (id === targetParentId || isAncestor(root, id, targetParentId)) return root;
   const tp = findBox(root, targetParentId);
-  const z = floatingZRange(tp).max + 1;
+  const z = clampPageZ(floatingZRange(tp).max + 1);
   // PAGE BOUNDS (RULE H — every block, every component, now and in future): floating must never put a block
   // outside its positioning parent. A full-width block measures ~100% wide (plus the +1px safety margin), so
   // floating it at any left offset used to hang it off the right of the page. Cap the width to the parent, then
@@ -1661,7 +1675,7 @@ export function groupBoxes(root: BoxNode, ids: string[], geom: { left: number; t
   const kids = ordered.map((id) => ({ ...byId.get(id)!, position: undefined, left: undefined, top: undefined, zIndex: undefined, width: "100%" }));
   let next = root;
   for (const id of ordered) next = removeBox(next, id); // pull each out of wherever it lives
-  const z = floatingZRange(next).max + 1;
+  const z = clampPageZ(floatingZRange(next).max + 1);
   const group = createContainer("column", {
     group: true, position: "absolute", left: geom.left, top: geom.top,
     width: geom.width, height: remLen(Math.max(8, Math.round(geom.height)), rootFontPx()),
@@ -1726,14 +1740,17 @@ export function pageBandOf(root: BoxNode, id: string): BoxNode | null {
 export function bringToFront(root: BoxNode, id: string): BoxNode {
   const info = findParent(root, id);
   if (!info) return root;
-  return updateBox(root, id, { zIndex: floatingZRange(info.parent).max + 1 });
+  // Clamped, because `max + 1` climbs without limit: repeated presses on a page that already had a high float
+  // used to walk the value up into the EDITOR's range, and a block sitting over its own resize handles and
+  // toolbar cannot be recovered with the mouse. See lib/educo-ui/stacking.ts.
+  return updateBox(root, id, { zIndex: clampPageZ(floatingZRange(info.parent).max + 1) });
 }
 
 /** Lower a floating box beneath all its floating siblings. */
 export function sendToBack(root: BoxNode, id: string): BoxNode {
   const info = findParent(root, id);
   if (!info) return root;
-  return updateBox(root, id, { zIndex: floatingZRange(info.parent).min - 1 });
+  return updateBox(root, id, { zIndex: clampPageZ(floatingZRange(info.parent).min - 1) });
 }
 
 /** Swap a floating box ONE step up/down its floating siblings' stack (presentation "bring forward" /

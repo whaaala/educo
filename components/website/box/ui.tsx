@@ -9,6 +9,7 @@
 import { useState, useEffect, useLayoutEffect, useRef, type ReactNode, type CSSProperties } from "react";
 import { createPortal } from "react-dom";
 import { ChevronDown, type LucideIcon } from "lucide-react";
+import { CHROME_Z } from "@/lib/educo-ui/stacking";
 
 /** A quiet ghost button (icon and/or text) with an optional active state + tooltip. `primary` = the one CTA. */
 export function ToolBtn({ onClick, title, ariaLabel, active, disabled, primary, children }: {
@@ -106,10 +107,10 @@ export function PortalMenu({ anchor, onClose, width = 200, ariaLabel, children }
       ref={ref}
       role="menu"
       aria-label={ariaLabel}
-      style={style}
+      style={{ ...style, zIndex: CHROME_Z.menu }}
       onMouseDown={(e) => e.stopPropagation()}
       onClick={(e) => e.stopPropagation()}
-      className="z-[9999] overflow-y-auto overscroll-contain rounded-xl border border-line bg-surface shadow-2xl ring-1 ring-black/5 p-1.5"
+      className="overflow-y-auto overscroll-contain rounded-xl border border-line bg-surface shadow-2xl ring-1 ring-black/5 p-1.5"
     >{children}</div>,
     document.body,
   );

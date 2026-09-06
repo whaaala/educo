@@ -8,7 +8,7 @@
  * onChange(root); selection via selectedId/onSelectId.
  */
 
-import { Fragment, useEffect, useLayoutEffect, useReducer, useRef, useState } from "react";
+import { Fragment, useEffect, useLayoutEffect, useReducer, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { Plus, ChevronUp, ChevronDown, Copy, Scissors, ClipboardPaste, Trash2, Upload, GripVertical, MoreVertical, Rows3, Columns3, Grid3x3, Type, Heading as HeadingIcon, MousePointerClick, Image as ImageIcon, Layers, BringToFront, SendToBack, Video as VideoIcon, Sparkles, Minus as MinusIcon, List as ListIcon, Code2, Star, Lock, LockOpen, Ungroup } from "lucide-react";
 import type { SiteTheme } from "@/lib/site-storage";
@@ -18,7 +18,7 @@ import {
   updateBox, removeBox, insertBox, moveBoxStep, duplicateBox, moveBox, cloneBox, findParent, isAncestor, isContainer, widthPct,
   isFloating, floatBox, unfloatBox, groupBoxes, ungroupBoxes, bringToFront, sendToBack, bringForward, sendBackward,
   radiusCSS, isClipped, SHADOW_CSS, videoEmbedSrc, sanitizeCssDeclarations, expandScopedCss, ACCORDION_CSS_PARTS, itemOverrideCss, itemHasOverride, itemNumberVars, richBody, componentTextCss, componentBoxCss, bgImageLayer, bgShowThroughCss, resizeTopEdge, blockContainmentCss, alertToastCss, treeHasToast, accordionClasses, bandClasses, advancedCssStyle, alertActionsHTML, hugsContent, itemFloatContextCss, COMPONENT_ITEM_SEL, clampContentScale, MIN_CONTENT_SCALE, isMultiItemComponent, comfortableWidth, remLen, rootFontPx, isDefiniteLen, addItemAfter, duplicateItem, duplicateChildItem, removeItem, removeChildItem, moveItem, moveChildItem, updateItem, updateChildItem, ALERT_SEVERITY_ICON, alertPartInline, alertIconInline, collectAlertItemStyles,
-  type Breakpoint, resolveResponsive, updateBoxResponsive, imageSizing, measureImage, treeItemEffectsCss, itemNeedsClass,
+  type Breakpoint, resolveResponsive, updateBoxResponsive, imageSizing, measureImage, treeItemEffectsCss, itemNeedsClass, floatZIndex,
 } from "@/lib/box-model";
 import { ICON_SET } from "./icons";
 import { PortalMenu, MenuItem, MenuHeader, MenuSep } from "./ui";
@@ -27,6 +27,7 @@ import { treeHoverCss, treeRevealCss } from "@/lib/interactions";
 import { colorToCSS } from "@/components/shared/ColorPalettePicker";
 import { COMPONENT_CSS } from "@/lib/educo-ui/components";
 import { layoutCss } from "@/lib/educo-ui/layout";
+import { CHROME_Z } from "@/lib/educo-ui/stacking";
 import { iconSvg, onIconsLoaded, warmIcons, hasIcon } from "@/lib/educo-ui/icon-svg";
 import { tokensFromTheme, tokensToCss } from "@/lib/educo-ui/tokens";
 import { isRegistryComponent, renderComponent } from "@/lib/educo-ui/registry";
@@ -942,7 +943,7 @@ export default function BoxCanvas({
       // Floating: free-position on its own layer. Stacked (mobile): plain full-width flow block. Flow: fill+divide
       // per childStyle. Root: fill the canvas + define the global base unit (--box-u, rem-based).
       ...(floating
-        ? { left: `${node.left ?? 0}%`, top: `${node.top ?? 0}%`, width: sizeToCSS(node.width), height: node.height ? sizeToCSS(node.height) : undefined, minHeight: node.minHeight, zIndex: node.zIndex ?? 1 } // no width ⇒ auto ⇒ hug content (never a wide default box)
+        ? { left: `${node.left ?? 0}%`, top: `${node.top ?? 0}%`, width: sizeToCSS(node.width), height: node.height ? sizeToCSS(node.height) : undefined, minHeight: node.minHeight, zIndex: floatZIndex(node) } // no width ⇒ auto ⇒ hug content (never a wide default box)
         : stacked
         ? { width: "100%" } // content-height (no fixed height/minHeight) so nothing is clipped
         : parent ? childStyle(node, parent) : {
@@ -966,7 +967,7 @@ export default function BoxCanvas({
     const resizeHandles = isSolo && editable && !isRoot && !node.locked ? (
       <>
         {HANDLES.map((h) => (
-          <div key={h.edge} onMouseDown={(e) => startResize(e, node.id, h.edge)} aria-label={`Resize ${h.label}`} title={h.title} className={`absolute ${h.pos} ${h.cursor} bg-indigo-500 border-2 border-white shadow z-30`} />
+          <div key={h.edge} onMouseDown={(e) => startResize(e, node.id, h.edge)} aria-label={`Resize ${h.label}`} title={h.title} className={`absolute ${h.pos} ${h.cursor} bg-indigo-500 border-2 border-white shadow`} style={{ zIndex: CHROME_Z.handle, pointerEvents: "auto" }} />
         ))}
       </>
     ) : null;
@@ -1016,8 +1017,7 @@ export default function BoxCanvas({
               Drag a block here
             </div>
           )}
-          {isSolo && <NodeToolbar node={node} isRoot={isRoot} />}
-          {resizeHandles}
+          {isSolo && <ChromeMirror blockId={node.id}><NodeToolbar node={node} isRoot={isRoot} />{resizeHandles}</ChromeMirror>}
         </div>
       );
     }
@@ -1047,11 +1047,62 @@ export default function BoxCanvas({
         className={`${isSel ? "outline outline-2 outline-indigo-500 outline-offset-[-2px]" : editable ? "hover:outline hover:outline-1 hover:outline-indigo-300/70 hover:outline-offset-[-1px]" : ""}`}
       >
         <ElementView node={node} theme={theme} editable={editable} breakpoint={breakpoint} onText={(v) => onChange(updateBox(root, node.id, { text: v }))} onSrc={(v) => onChange(updateBox(root, node.id, { src: v }))} onPatchNode={(patch) => onChange(updateBox(root, node.id, patch))} itemSel={itemSel} setItemSel={setItemSel} />
-        {isSolo && <NodeToolbar node={node} isRoot={isRoot} />}
-        {resizeHandles}
+        {isSolo && <ChromeMirror blockId={node.id}><NodeToolbar node={node} isRoot={isRoot} />{resizeHandles}</ChromeMirror>}
       </div>
     );
   };
+
+  /**
+   * A fixed MIRROR of a block's box, portaled above the page, holding that block's own chrome.
+   *
+   * The toolbar and the resize handles used to render INSIDE the block's wrapper, which put them down in the
+   * page's stacking world — and there the chrome ladder has no say at all, because a wrapper with a z-index
+   * creates a stacking context and everything inside it is trapped underneath. So a second floating block
+   * raised above the first covered the FIRST one's controls: you could see the block you had selected and
+   * could not reach the toolbar that deletes it or the handles that resize it. The z-index on the handles was
+   * present, correct, and completely inert — the failure this project keeps meeting.
+   *
+   * The mirror is a `position: fixed` box at the block's exact rect, so every child keeps the offsets it
+   * already had (`-top-1`, `top-full`, `left-1/2`) and the markup did not have to change. It carries no
+   * pointer events itself, so the page underneath stays clickable; each child takes them back.
+   *
+   * It exists only for the SELECTED block, so a page of two hundred blocks pays for one.
+   */
+  function ChromeMirror({ blockId, children }: { blockId: string; children: ReactNode }) {
+    const [box, setBox] = useState<{ left: number; top: number; width: number; height: number } | null>(null);
+    const [, remeasure] = useReducer((n: number) => n + 1, 0);
+
+    // Scrolling and window resizing move the block without re-rendering anything here, so they have to ask.
+    useEffect(() => {
+      const onMove = () => remeasure();
+      window.addEventListener("scroll", onMove, true);
+      window.addEventListener("resize", onMove);
+      return () => { window.removeEventListener("scroll", onMove, true); window.removeEventListener("resize", onMove); };
+    }, []);
+
+    // Deliberately NO dependency array: a block's geometry changes without any prop of this component changing
+    // (typing a longer heading, a reflow, a resize gesture in progress). It therefore MUST only call setBox
+    // when something actually moved — a fresh object every pass would re-render, re-run this, and loop.
+    useEffect(() => {
+      const el = document.querySelector<HTMLElement>(`[data-box-id="${CSS.escape(blockId)}"]`);
+      const r = el?.getBoundingClientRect();
+      const next = r ? { left: r.left, top: r.top, width: r.width, height: r.height } : null;
+      setBox((prev) => {
+        if (!prev || !next) return prev === next ? prev : next;
+        const near = (a: number, b: number) => Math.abs(a - b) < 0.5;
+        return near(prev.left, next.left) && near(prev.top, next.top)
+          && near(prev.width, next.width) && near(prev.height, next.height) ? prev : next;
+      });
+    });
+
+    if (!box) return null;
+    return createPortal(
+      <div
+        style={{ position: "fixed", ...box, pointerEvents: "none", zIndex: CHROME_Z.handle }}
+      >{children}</div>,
+      document.body,
+    );
+  }
 
   // Small floating structure toolbar for the selected node.
   function NodeToolbar({ node, isRoot }: { node: BoxNode; isRoot: boolean }) {
@@ -1072,8 +1123,11 @@ export default function BoxCanvas({
       const canvasTop = document.querySelector(`[data-box-id="${rootRef.current.id}"]`)?.getBoundingClientRect().top ?? 0;
       setBelow(box.getBoundingClientRect().top < canvasTop + 36); // within 36px of the canvas top → drop the bar below the box instead of over the app header
     });
+    // A group of controls needs to say so: without a role and a name a screen-reader user meets a run of
+    // loose buttons with no indication they belong to the block that was just selected. The item CRUD bar
+    // next door already got this right — this one had nothing.
     return (
-      <div ref={barRef} className={`absolute left-0 w-max max-w-none ${below ? "top-full mt-1" : "bottom-full mb-1"} z-40 flex items-center gap-0.5 rounded-xl bg-gray-900/95 dark:bg-gray-800/95 backdrop-blur-sm px-1 py-1 shadow-lg ring-1 ring-white/10`} onClick={(e) => e.stopPropagation()} onMouseDown={(e) => e.stopPropagation()}>
+      <div ref={barRef} role="toolbar" aria-label="Block toolbar" style={{ zIndex: CHROME_Z.toolbar, pointerEvents: "auto" }} className={`absolute left-0 w-max max-w-none ${below ? "top-full mt-1" : "bottom-full mb-1"} flex items-center gap-0.5 rounded-xl bg-gray-900/95 dark:bg-gray-800/95 backdrop-blur-sm px-1 py-1 shadow-lg ring-1 ring-white/10`} onClick={(e) => e.stopPropagation()} onMouseDown={(e) => e.stopPropagation()}>
         {!isRoot && !node.locked && (
           <span
             onMouseDown={(e) => startDrag(e, node)}
@@ -1183,13 +1237,13 @@ export default function BoxCanvas({
       {renderNode(root, null)}
       {/* Marquee (rubber-band) selection rectangle. Portaled so it's never clipped. */}
       {marquee && createPortal(
-        <div aria-hidden="true" style={{ position: "fixed", left: Math.min(marquee.x0, marquee.x), top: Math.min(marquee.y0, marquee.y), width: Math.abs(marquee.x - marquee.x0), height: Math.abs(marquee.y - marquee.y0), pointerEvents: "none", zIndex: 9996 }} className="border-2 border-dashed border-indigo-500 bg-indigo-500/10 rounded" />,
+        <div aria-hidden="true" style={{ position: "fixed", left: Math.min(marquee.x0, marquee.x), top: Math.min(marquee.y0, marquee.y), width: Math.abs(marquee.x - marquee.x0), height: Math.abs(marquee.y - marquee.y0), pointerEvents: "none", zIndex: CHROME_Z.marquee }} className="border-2 border-dashed border-indigo-500 bg-indigo-500/10 rounded" />,
         document.body,
       )}
       {/* While resizing, a transparent full-viewport overlay holds the resize cursor so it stays crisp and
           never disappears as the box reflows under the pointer. */}
       {resizing && resizeCursor && createPortal(
-        <div aria-hidden="true" style={{ position: "fixed", inset: 0, zIndex: 10001, cursor: resizeCursor }} />,
+        <div aria-hidden="true" style={{ position: "fixed", inset: 0, zIndex: CHROME_Z.veil, cursor: resizeCursor }} />,
         document.body,
       )}
       {/* Drop indicator: a bright insertion line between siblings, or a dashed highlight over an empty
@@ -1197,14 +1251,14 @@ export default function BoxCanvas({
       {dropRect && createPortal(
         <div
           aria-hidden="true"
-          style={{ position: "fixed", left: dropRect.left, top: dropRect.top, width: dropRect.width, height: dropRect.height, pointerEvents: "none", zIndex: 9998 }}
+          style={{ position: "fixed", left: dropRect.left, top: dropRect.top, width: dropRect.width, height: dropRect.height, pointerEvents: "none", zIndex: CHROME_Z.dropZone }}
           className={dropRect.inside ? "rounded-lg outline outline-2 outline-dashed outline-indigo-500 bg-indigo-500/10" : "rounded-full bg-indigo-500 shadow-[0_0_10px_rgba(99,102,241,0.9)]"}
         />,
         document.body,
       )}
       {/* Alignment guides while free-dragging a floating box (snap to sibling / parent edges + centres). */}
       {snapLines.length > 0 && createPortal(
-        <div aria-hidden="true" style={{ position: "fixed", inset: 0, pointerEvents: "none", zIndex: 9997 }}>
+        <div aria-hidden="true" style={{ position: "fixed", inset: 0, pointerEvents: "none", zIndex: CHROME_Z.snapGuide }}>
           {snapLines.map((g, i) => (
             <div key={i} style={{ position: "absolute", left: g.left, top: g.top, width: g.width, height: g.height, background: "#ec4899", boxShadow: "0 0 4px rgba(236,72,153,0.8)" }} />
           ))}
@@ -1215,7 +1269,7 @@ export default function BoxCanvas({
       {dragGhost && createPortal(
         <div
           aria-hidden="true"
-          style={{ position: "fixed", left: dragGhost.x + 14, top: dragGhost.y + 14, width: dragGhost.w, pointerEvents: "none", zIndex: 10000 }}
+          style={{ position: "fixed", left: dragGhost.x + 14, top: dragGhost.y + 14, width: dragGhost.w, pointerEvents: "none", zIndex: CHROME_Z.dragGhost }}
           className="flex items-center gap-1.5 rounded-lg bg-indigo-600 px-2.5 py-1.5 text-xs font-medium text-white opacity-90 shadow-2xl ring-1 ring-white/30"
         ><GripVertical className="w-3 h-3 shrink-0 opacity-80" /><span className="truncate">{dragGhost.label}</span></div>,
         document.body,

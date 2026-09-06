@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, type RefObject } from "react";
 import { ArrowUp, ArrowDown, Plus, Copy, Trash2, GripVertical, X } from "lucide-react";
+import { CHROME_Z } from "@/lib/educo-ui/stacking";
 
 /**
  * ON-CANVAS ITEM CRUD (RULE I) — shared by EVERY component, the ones we have and every future one.
@@ -120,13 +121,13 @@ export default function ItemCrudLayer({
       <div
         aria-hidden="true"
         className="absolute pointer-events-none rounded-[inherit] ring-2 ring-indigo-500/60 ring-offset-0"
-        style={{ top: place.top, left: place.left, width: place.width, height: place.height, zIndex: 20, borderRadius: 10 }}
+        style={{ top: place.top, left: place.left, width: place.width, height: place.height, zIndex: CHROME_Z.itemBox, borderRadius: 10 }}
       />
       <div
         role="toolbar"
         aria-label="Edit this item"
         className="absolute flex items-center gap-0.5 rounded-full p-1 bg-slate-900/85 dark:bg-slate-800/85 midnight:bg-slate-900/85 purple:bg-purple-950/85 backdrop-blur-md shadow-xl shadow-black/25 ring-1 ring-white/15"
-        style={{ top: place.barTop + nudge.dy, left: place.barLeft + nudge.dx, zIndex: 21 }}
+        style={{ top: place.barTop + nudge.dy, left: place.barLeft + nudge.dx, zIndex: CHROME_Z.itemBar }}
         onMouseDown={(e) => e.stopPropagation()}
         onClick={(e) => e.stopPropagation()}
       >

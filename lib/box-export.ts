@@ -10,7 +10,7 @@
 import type { CSSProperties } from "react";
 import {
   type BoxNode, type Breakpoint, containerStyle, childStyle, marginCSS, sizeToCSS, radiusCSS, SHADOW_CSS, u, baseUnit,
-  resolveResponsive, floatStacksOnMobile, alertToastCss, accordionClasses, bandClasses, videoEmbedSrc, isContainer, sanitizeCssDeclarations, expandScopedCss, COMPONENT_PARTS, itemFloatContextCss, itemOverrideCss, itemNumberVars, richBody, plainBody, componentTextCss, componentBoxCss, bgImageLayer, renderAlertHTML, alertDismissScript, bgShowThroughCss, blockContainmentCss, COMPONENT_ITEM_SEL, remLen, imageSizing, hasIntrinsicSize, itemNeedsClass, itemScope,
+  resolveResponsive, floatStacksOnMobile, alertToastCss, accordionClasses, bandClasses, videoEmbedSrc, isContainer, sanitizeCssDeclarations, expandScopedCss, COMPONENT_PARTS, itemFloatContextCss, itemOverrideCss, itemNumberVars, richBody, plainBody, componentTextCss, componentBoxCss, bgImageLayer, renderAlertHTML, alertDismissScript, bgShowThroughCss, blockContainmentCss, COMPONENT_ITEM_SEL, remLen, imageSizing, hasIntrinsicSize, itemNeedsClass, itemScope, floatZIndex,
 } from "@/lib/box-model";
 import { isRegistryComponent, renderComponent, componentScripts } from "@/lib/educo-ui/registry";
 import { iconSvg } from "@/lib/educo-ui/icon-svg";
@@ -20,6 +20,7 @@ import { colorToCSS } from "@/components/shared/ColorPalettePicker";
 import { BREAKPOINTS_EM, BASE_CSS } from "@/lib/educo-ui/base";
 import { COMPONENT_CSS } from "@/lib/educo-ui/components";
 import { tokensFromTheme, tokensToCss } from "@/lib/educo-ui/tokens";
+import { PAGE_Z } from "@/lib/educo-ui/stacking";
 import { subsetCss, usedEuClasses, stripComments } from "@/lib/educo-ui/subset";
 import { familiesInUse } from "@/lib/educo-ui/font-embed";
 import { zipSync, strToU8 } from "fflate";
@@ -301,7 +302,7 @@ function styleAt(node: BoxNode, rawParent: BoxNode | null, bp: Breakpoint): CSSP
     opacity: !isComp && r.opacity !== undefined ? r.opacity / 100 : undefined,
     overflow: stacked ? "visible" : (!selfPaint && (r.clip || radiusCSS(r))) ? "hidden" : undefined,
     ...(floating
-      ? { left: `${r.left ?? 0}%`, top: `${r.top ?? 0}%`, width: sizeToCSS(r.width), height: r.height ? sizeToCSS(r.height) : undefined, minHeight: r.minHeight, zIndex: r.zIndex ?? 1 } // no width ⇒ auto ⇒ hug content (never a wide default box)
+      ? { left: `${r.left ?? 0}%`, top: `${r.top ?? 0}%`, width: sizeToCSS(r.width), height: r.height ? sizeToCSS(r.height) : undefined, minHeight: r.minHeight, zIndex: floatZIndex(r) } // no width ⇒ auto ⇒ hug content (never a wide default box)
       : stacked
       ? { position: "relative", width: "100%", height: "auto", minHeight: "auto", zIndex: "auto" } // full-width flow, grows with content
       : parent ? childStyle(r, parent) : { width: "100%", ["--box-u" as string]: baseUnit(r.baseFont ?? 10) }),
@@ -562,7 +563,7 @@ function sharedCss(theme: SiteTheme): string {
 
 /** The nav's own styling — part of the shared sheet because it appears on every page. */
 const SITE_CHROME_CSS = `html,body{max-width:100%;overflow-x:hidden}
-.eu-site-nav{position:sticky;top:0;z-index:30;display:flex;gap:4px;padding:8px 16px;background:var(--eu-color-surface);border-bottom:1px solid var(--eu-color-border)}
+.eu-site-nav{position:sticky;top:0;z-index:${PAGE_Z.sticky};display:flex;gap:4px;padding:8px 16px;background:var(--eu-color-surface);border-bottom:1px solid var(--eu-color-border)}
 .eu-site-nav a{color:var(--eu-color-text);text-decoration:none;padding:8px 12px;border-radius:var(--eu-radius-md)}
 .eu-site-nav a:hover{background:var(--eu-color-surface-2)}
 .eu-site-nav a[aria-current="page"]{background:var(--eu-color-surface-2);font-weight:600}

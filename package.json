@@ -34,7 +34,8 @@
     "test:item-effects": "playwright test tests/e2e/item-effects.spec.ts --project=desktop-chrome --workers=1",
     "test:watch:ui": "playwright test --project=desktop-chrome --workers=1 --headed",
     "test:playwright:ui": "playwright test --ui",
-    "test:invariants": "npm run test:layout && npm run test:layout:export && npm run test:interactions && npm run test:distinct && npm run test:alert && npm run test:multipage && npm run test:export && npm run test:layout:bands && npm run test:advanced-css && npm run test:fonts && npm run test:images && npm run test:item-effects"
+    "test:invariants": "npm run test:layout && npm run test:layout:export && npm run test:interactions && npm run test:distinct && npm run test:alert && npm run test:multipage && npm run test:export && npm run test:layout:bands && npm run test:advanced-css && npm run test:fonts && npm run test:images && npm run test:item-effects && npm run test:stacking",
+    "test:stacking": "playwright test tests/e2e/stacking.spec.ts --project=desktop-chrome --workers=1"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
