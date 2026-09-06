@@ -60,7 +60,8 @@ These are ready‑made, themed pieces. **Each one is a fully editable tree** —
 
 | Component | What it is |
 |-----------|-----------|
-| **Accordion** | Expandable Q&A / FAQ. 54 built‑in designs; edit each item's title/body inline. |
+| **Accordion** | Expandable Q&A / FAQ. **29 designs** plus six settings that combine with any of them; edit each item inline. |
+| **Alert** | One message that matters — closure notice, open day, fees deadline. **23 designs**, six severities, four forms (inline · banner · callout · toast), and up to two action buttons. |
 | **Card** | Image + heading + text + button — the classic content card. |
 | **Quote** | A testimonial with an author line. |
 | **Stat** | A big number + label (e.g. "1,000+ Happy families"). |
@@ -151,7 +152,7 @@ Sometimes you want to place things freely (overlap a badge on an image, arrange 
 
 The builder is responsive by design, and you can fine‑tune per size.
 
-1. Use the **device switcher** (top‑right) to view **Mobile (375)**, **Tablet (768)**, **Laptop (1024)**, **Desktop (1280)**, **Wide (1536)** or **Full**.
+1. Use the **device switcher** (top‑right) to view **Mobile (375)**, **Tablet (768)**, **Laptop (1024)**, **Desktop (1280)**, **Wide (1920)** or **Full**. Each one sits in a different size band, so switching between them always shows you a genuinely different layout rather than the same one twice.
 2. Any edit you make while a device is selected is saved as a **per‑device override** — it only applies at that size (and cascades down). The base (desktop) design is never disturbed.
 3. On narrow screens, side‑by‑side items **stack automatically** and nothing forces a horizontal scrollbar.
 
@@ -174,8 +175,32 @@ The builder is responsive by design, and you can fine‑tune per size.
 ## 10. Multiple pages, Preview and Export
 
 - **Pages:** use the Pages control (top‑left) to add pages, rename them, set the **Home** page, and duplicate. Buttons can **link to a page** so your nav works.
-- **Preview:** a true, isolated preview of the exported site. Switch devices inside preview. Nav links scroll to the right page (they won't reload the builder).
-- **Export:** downloads the whole site as **one self‑contained HTML file** — all styles inlined, responsive media queries included, nothing external. Open it anywhere.
+- **Preview:** a true, isolated preview of the exported site — **one real page at a time**, not every page stacked together. Switch devices inside preview, and click your own nav to walk from page to page exactly as a visitor will.
+- **Export:** downloads your site as a **ZIP of real pages** — `index.html` for the home page and one `.html` per page, plus a shared `styles.css`.
+
+### What you get in the ZIP, and why it's built that way
+
+| | |
+|---|---|
+| **One file per page** | Each page has its own address, so it can be found, bookmarked, shared and printed on its own. Your home page is `index.html`, which is what every web host looks for. |
+| **Links are relative** | Unzip it onto a laptop, a USB stick or a web host and every link still works. Nothing assumes a domain. |
+| **One shared `styles.css`** | A visitor downloads it once, then it is cached — every page after the first arrives faster. |
+| **Each page carries only the styles it uses** | A term‑dates page of text and a table doesn't download the accordion, the alert or the rating. In practice this is around a 90% cut in styling for a simple page. |
+
+There is **still nothing external** — no fonts, scripts or trackers fetched from anywhere else — so the site works offline and there is nothing to break later.
+
+---
+
+## 10b. Sections: edge to edge, or a centred column
+
+Every section sits in a full‑width band across the page. Select the section → **Design** tab → **Arrange** → **Content width**:
+
+- **Edge to edge** — the section and its content run the full width of the page. Right for a photo strip or a colour banner.
+- **Centred column** — the **background still spans the whole page**, but the words sit in a centred column. Right for almost everything else.
+
+That second one is the setting that makes a page look professionally made. A heading stretched across a 27‑inch monitor is genuinely hard to read — the eye loses its place coming back to the start of the next line — so the text is capped at a comfortable measure that **widens by one step** as the screen grows: a phone gets the full width less a margin, a tablet ~34rem, a large tablet ~52rem, a desktop ~68rem, a very large screen ~76rem.
+
+On a phone the column always keeps a margin, so text never touches the edge of the screen.
 
 ---
 
@@ -201,45 +226,133 @@ The builder is responsive by design, and you can fine‑tune per size.
 
 ## 12. Component guide — Accordion
 
-The **Accordion** is a stack of expandable panels (FAQ, product specs, pricing details, help topics). It's built on native `<details>`/`<summary>`, so it's **zero‑JavaScript**, works in the exported HTML, and is **keyboard‑ and screen‑reader‑accessible out of the box**.
+The **Accordion** is a stack of expandable panels (FAQ, term dates, policies, help topics). It's built on native `<details>`/`<summary>`, so it's **zero‑JavaScript**, works in the exported site, and is **keyboard‑ and screen‑reader‑accessible out of the box**.
 
-**Add one:** Blocks panel → **Accordion**. It arrives with three starter items.
+**Add one:** Blocks panel → **Accordion**. You'll be asked what it's for, and it arrives ready to edit.
 
-**Pick a look — the design gallery.** Select the accordion → **Content** tab → **Design**. You get a **visual gallery of 54 designs** (live mini‑previews you can tap), grouped into families:
-- **Signature** (22) — Horizontal, Solid panel, Index tile, Big number, Ring step, Chat bubble, Q&A, Callout, Float, Folder tabs, Editorial, Menu pills, Enclosed card, Dark glossy, Two‑column, Quote, Glass, Timeline, Alternating, Colour stripe, Spotlight, Folded corner.
-- **Indicator** (6) — Chevron, Arrow, Plus‑circle, Tag dot, Switch, Left‑aligned.
-- **Shape & border** (9) — Boxed (default), **Flush**, Separated, Pill, Square, Divided, Outline, Elevated, Dashed.
-- **Open‑state colour** (6) — Filled, Accent, Brand header, Body tint, Gradient, Gradient bars.
-- **Numbered** (2), **Quiet & minimal** (5), **Density & rhythm** (4).
+### Pick a design, then fine‑tune it
 
-**Edit the items (full CRUD on every item).** Each item has a **Title**, **Body**, optional **Meta** (a right‑aligned price/badge), an **Image** thumbnail, a **Number/badge** (for numbered designs), and an **Open by default** toggle. You can **add, remove, reorder (▲/▼), and replace** every item — the last item can't be removed so the accordion is never empty. You can also click a panel's **title or body directly on the canvas** to edit the text in place.
+Select the accordion → **Content** tab. You'll see two things:
 
-**Numbers you control.** Numbered designs (Big number, Numbered, Ring step, Index tile, Stepper) show **01, 02, 03…** automatically. To override one, type your own value in an item's **Number/badge** field (e.g. `1`, `A`, `★`) — it's per item and works across every numbered design.
+**1. Design — 29 looks, shown as live previews.** Not names in a list: each tile renders a real miniature accordion, so you pick what you can see. Two families:
+- **Signature (24)** — Boxed (the default), Horizontal, Solid panel, Index tile, Big number, Ring step, Chat bubble, Q&A, Callout, Float, Folder tabs, Editorial, Menu pills, Enclosed card, Dark glossy, Two‑column, Quote, Glass, Timeline, Alternating, Colour stripe, Spotlight, Folded corner, Split (media panel).
+- **Quiet & minimal (5)** — Ghost, Line, Minimal, Underline, Soft.
 
-**Style each item's Header and Content — no CSS needed.** Every item has dedicated point‑and‑click controls for both its **Header** and its **Content** area:
-- **Text colour** and **Background (Fill) colour** — from the OKLCH palette picker.
-- **Font** — any face from the font library.
-- **Size** — scales with your base size (uses rem, so it stays readable when zoomed).
-- **Align** — Left / Centre / Right.
-- **Move ← → / ↑ ↓** — nudge the content freely up, down, left or right (in rem): **Move title** shifts the header's title; **Move text** shifts the answer / text area. The spacing between the pieces in the row is kept, and each control says exactly what it moves.
+**2. Fine tuning — six settings that combine with *any* design.** This is the important part: they're **independent**, so "Timeline" *and* "Numbered" *and* "Compact" can all be true at once.
 
-These win over the chosen design, so a single item can look completely different from the rest (e.g. a highlighted "featured" row).
+| Setting | What it changes | Choices |
+|---------|-----------------|---------|
+| **Indicator** | The marker that says a row opens | Chevron · Arrow · Plus circle · Tag dot · Switch · On the left |
+| **Frame** | How each row is framed | Outline · Elevated · Dashed · Pill · Square |
+| **Rhythm** | Spacing and separators between rows | Flush · Separated · Divided · Zebra · Rail |
+| **Open colour** | What an open row looks like | Filled · Accent edge · Brand header · Body tint · Gradient · Gradient bars |
+| **Numbering** | Row numbers | Numbered · Stepper |
+| **Density** | Room per row | Large · Compact |
 
-**Move an item freely — position it anywhere in the accordion.** Each item has a **"Move freely — position within the accordion"** toggle. Turn it on and the item lifts out of the stack so you can place it exactly where you want — **drag it on the canvas**, or type an exact **X / Y** (in rem). It's **kept inside the accordion's box** (it can't spill outside), the box grows to hold it, and it applies to **every item in any accordion**. On phones the item returns to the normal stack so the page stays readable. (You can also **select several items and group them** so they move together as one unit.)
+The panel shows **how many you've changed** and gives you one **Reset** to put them all back. A changed setting is marked with a dot as well as a colour, so it reads without relying on colour alone.
 
-**One open, or many.** By default only **one panel is open at a time** (opening another closes the current one). Tick **"Allow more than one open at once"** to let several stay open.
+> **Why it's built this way:** these used to be mixed into one list of 54 "designs", which meant picking Timeline *replaced* Numbered instead of combining with it. Splitting them means the gallery only contains things that genuinely look different, and the combinations you actually want are reachable.
 
-**Expand / Collapse all (optional).** Tick **"Show 'Expand all / Collapse all' controls"** to add two buttons above the panels. This is the one feature that adds a *tiny* script to your exported site (opt‑in) — the accordion stays fully usable without it.
+### Everything else
 
-**Style anything — including per item.**
-- **Whole accordion:** Design tab controls (spacing, borders, radius, shadow, background), **Component colours** (design tokens), **Typography**, and an **Advanced CSS** box. The Advanced CSS understands **parts**: plain lines style the whole accordion, and `title { … }`, `body { … }`, `icon { … }`, `meta { … }` or `media { … }` blocks restyle that part of **every** item.
-- **One specific item:** use the point‑and‑click **Header/Content** controls above, plus a per‑item CSS box that takes the same **part** blocks (`title`/`body`/`icon`/`meta`/`media`) — so you can change *anything* (text, background, colour, borders, the icon, the image) on just that one panel. Every override is scoped to that item and always wins over the design.
+**Full CRUD on every item.** Title, Body, optional Meta (a right‑aligned price or badge), an Image thumbnail, a Number/badge, and **Open by default**. Add, remove, reorder (▲/▼) and replace any item — the last one can't be removed, so it's never empty. Click a panel's title or body **directly on the canvas** to edit in place.
 
-**Themes & accessibility.** Every design is **token‑driven** — no hardcoded colours — so it re‑skins automatically for Light, Dark, Midnight, Purple, and any future theme. Panels are keyboard‑focusable with a visible focus ring, and animations respect the OS **"reduce motion"** setting.
+**Numbers you control.** Numbered designs count `01, 02, 03…` automatically; type your own value in an item's **Number/badge** field to override just that one.
+
+**Style each item's Header and Content — no CSS needed.** Text colour, fill, font, size, **weight, letter spacing, capitals, corner radius, padding, border**, alignment, and free **Move ← → / ↑ ↓** nudging in rem. These win over the chosen design, so one item can look completely different — a highlighted "featured" row, for instance.
+
+**Move an item freely.** Toggle **"Move freely"** on any item to lift it out of the stack and place it exactly where you want — drag on the canvas or type X/Y. It stays inside the accordion's box, and on phones it returns to the normal stack so the page stays readable.
+
+**One open, or many.** By default one panel opens at a time; tick **"Allow more than one open at once"** to change that.
+
+**Expand / Collapse all (optional).** Adds two buttons above the panels. This is the one feature that adds a *tiny* opt‑in script to your exported site — the accordion is fully usable without it.
 
 ---
 
-## 13. Tips, gotchas & FAQ
+## 13. Component guide — Alert
+
+The **Alert** carries one message that matters: a closure notice, an open day, a fees deadline, a "we've moved" banner. It's a **single message** by design — a list of notifications is a different thing, and mixing the two makes both worse.
+
+**Add one:** Blocks panel → **Alert**. You'll be asked what it's for — **Information · Success · Warning · Error · Announcement bar · Docs callout** — and it arrives already looking like that job, rather than as a blank you have to configure.
+
+### Severity — what kind of message it is
+
+Six: **Information · Success · Warning · Danger · Neutral · Brand**. The severity chooses the colour, the default icon, *and* how a screen reader announces it — warnings and errors interrupt, the rest wait their turn. Nothing depends on colour alone.
+
+### Form — where it sits
+
+| Form | Where it appears |
+|------|------------------|
+| **Inline** | In the flow, next to what it refers to |
+| **Banner** | Edge to edge across a section |
+| **Callout** | A persistent note that loads with the page |
+| **Toast** | Floats in a **corner** — pick top‑left, top‑right, bottom‑left or bottom‑right |
+
+### Design — 23 looks, and six things that combine with them
+
+Same shape as the Accordion. **Design** is a visual gallery in four families:
+- **Filled & tinted (6)** — Soft, Solid, Gradient, Duotone, Inset, Quiet
+- **Outlined & ruled (7)** — Outline, Framed, Left accent, Top accent, Underline, Bracket, Striped edge
+- **Raised & layered (5)** — Card, Elevated, Hard shadow, Glass, Sticky note
+- **Shaped & characterful (5)** — Icon panel, Ribbon, Ticket, Speech bubble, Terminal
+
+**Fine tuning** — six independent settings: **Shape** (6) · **Border** (8) · **Icon** (8) · **Density** (3) · **Emphasis** (5) · **Layout** (6). Every one combines with every design.
+
+### Actions — buttons and links on the message
+
+Add up to **two** actions ("Read the letter", "Pay now", "Book a place"). Each has:
+- **Label**, and where it **goes to** — a web address, a bookmark on the page, or another page
+- **Style** — Filled, Outlined, or a Text link with an arrow
+- **Open in a new tab**
+- Full styling: colour, fill, font, size, weight, spacing, capitals, corners, padding, border, and free placement anywhere in the alert
+
+**Where they sit:** under the message, or on the right. On a phone they always stack underneath, so a button is never pushed off the side.
+
+> A **toast** takes only **one** action. A message that hides itself is the worst place to put a decision, and two buttons in a corner is how people miss both.
+
+### Behaviour — all optional, all off by default
+
+- **Dismiss (×)** — lets a visitor close it
+- **Hide itself after N seconds** — shows a countdown bar, and **pauses while a visitor hovers or tabs into it**, so nobody loses a message mid‑read
+- **Stay dismissed on the next visit** — remembers, per visitor
+
+Leave all three off and the exported alert contains **no JavaScript at all**.
+
+### Everything else
+
+The message's **title, body, icon, meta and image** are each individually stylable, positionable and freely placeable — the same controls as the Accordion's items, plus per‑item Advanced CSS.
+
+---
+
+## 14. Movement — hover, entrance and arrival
+
+Every block on the page — a section, a component, a button, an image — can be given movement. It's all **pure CSS**: nothing is added to your exported site, and what you see while editing is what a visitor gets.
+
+Select any block → **Design** tab → **Outline & effects**.
+
+### Hover & focus — how it reacts
+
+Eight effects, shown as previews: **Lift · Grow · Press · Glow · Outline · Brighten · Soften**, and None.
+
+Each one also applies when a visitor **tabs to it with a keyboard**, and to a card when a button *inside* it takes focus — so someone not using a mouse gets the same feedback.
+
+### Entrance — how it arrives
+
+Eight effects: **Fade in · Rise up · Drop down · From the left · From the right · Zoom in · Sharpen**, and None.
+
+Two options go with them:
+- **Play when it scrolls into view** — instead of on load
+- **Bring the blocks inside in one after another** — on a section, its children arrive in sequence. This is how you get a row of three cards rising one after the other as a visitor scrolls to it.
+
+### Two promises
+
+**Nothing can hide your content.** Every entrance animates *from* hidden *to* the block's normal appearance — so if the animation never runs (an old browser, a printer, a slow connection), the content is simply there. An animation can never leave a page blank.
+
+**Reduced motion is respected.** A visitor whose device asks for less motion gets the meaning without the movement — a Lift keeps its shadow, an entrance shows the content immediately.
+
+---
+
+## 15. Tips, gotchas & FAQ
 
 - **"There's an empty container/row wrapping my block."** There isn't — the structural row and the page itself are invisible scaffolding: they're never selectable and never highlight on hover, so nothing empty appears around your block. Click your block (or anywhere in its row) and you select the block itself; the only highlight you see is the block's own selection box, hugging its content.
 - **"Dragging my block made it full-width."** Fixed — moving a hugging (**Fit**) block in the layout keeps it hugging wherever it lands. Only a block you've set to **Full** or **Custom** fills the row. (Nothing changes its width just by being moved.)

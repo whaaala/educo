@@ -110,8 +110,10 @@ describe("BoxInspector — styling primitives (Design tab)", () => {
   });
 
   it("shows a Styles gallery of variations that apply a whole look in one tap", () => {
+    // Style presets moved onto the shared DesignGallery (RULE S), so tiles are named the same way in every
+    // gallery — "<name> design" — instead of "Style <name>" here and something else elsewhere.
     const onPatch = renderFor(createElement("button", { id: "b", text: "Go" } as Partial<BoxNode>));
-    fireEvent.click(screen.getByLabelText("Style Outline"));
+    fireEvent.click(screen.getByLabelText("Outline style"));
     expect(onPatch).toHaveBeenCalledWith(expect.objectContaining({ borderWidth: expect.any(Number), borderColor: expect.any(String) }));
   });
 
@@ -254,7 +256,7 @@ describe("BoxInspector — functionality audit (controls act)", () => {
 
   it("a Style preset applies its whole patch (Heading → Display)", () => {
     const onPatch = renderFor(heading());
-    fireEvent.click(screen.getByRole("button", { name: "Style Display" }));
+    fireEvent.click(screen.getByRole("button", { name: "Display style" }));
     expect(onPatch).toHaveBeenCalled();
   });
 

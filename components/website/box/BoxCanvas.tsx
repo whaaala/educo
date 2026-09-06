@@ -17,14 +17,16 @@ import {
   containerStyle, childStyle, marginCSS, sizeToCSS, u, baseUnit, floatingReserve, floatStacksOnMobile, createContainer, createGrid, createElement, createComponent,
   updateBox, removeBox, insertBox, moveBoxStep, duplicateBox, moveBox, cloneBox, findParent, isAncestor, isContainer, isEmptyBox, widthPct,
   isFloating, floatBox, unfloatBox, groupBoxes, ungroupBoxes, bringToFront, sendToBack, bringForward, sendBackward,
-  radiusCSS, isClipped, SHADOW_CSS, videoEmbedSrc, sanitizeCssDeclarations, expandScopedCss, ACCORDION_CSS_PARTS, itemOverrideCss, itemHasOverride, itemNumberVars, itemFloatReserveRem, richBody, componentTextCss, componentBoxCss, bgImageLayer, renderAlertHTML, bgShowThroughCss, resizeTopEdge, blockContainmentCss, hugsContent, itemFloatContextCss, COMPONENT_ITEM_SEL, clampContentScale, MIN_CONTENT_SCALE, isMultiItemComponent, comfortableWidth, remLen, rootFontPx, isDefiniteLen, addItemAfter, duplicateItem, duplicateChildItem, removeItem, removeChildItem, moveItem, moveChildItem, updateItem, updateChildItem, ALERT_SEVERITY_ICON, alertPartInline, alertIconInline, collectAlertItemStyles,
+  radiusCSS, isClipped, SHADOW_CSS, videoEmbedSrc, sanitizeCssDeclarations, expandScopedCss, ACCORDION_CSS_PARTS, itemOverrideCss, itemHasOverride, itemNumberVars, itemFloatReserveRem, richBody, componentTextCss, componentBoxCss, bgImageLayer, renderAlertHTML, bgShowThroughCss, resizeTopEdge, blockContainmentCss, alertToastCss, treeHasToast, accordionClasses, bandClasses, advancedCssStyle, alertActionsHTML, hugsContent, itemFloatContextCss, COMPONENT_ITEM_SEL, clampContentScale, MIN_CONTENT_SCALE, isMultiItemComponent, comfortableWidth, remLen, rootFontPx, isDefiniteLen, addItemAfter, duplicateItem, duplicateChildItem, removeItem, removeChildItem, moveItem, moveChildItem, updateItem, updateChildItem, ALERT_SEVERITY_ICON, alertPartInline, alertIconInline, collectAlertItemStyles,
   type Breakpoint, resolveResponsive, updateBoxResponsive,
 } from "@/lib/box-model";
 import { ICON_SET } from "./icons";
 import { PortalMenu, MenuItem, MenuHeader, MenuSep } from "./ui";
 import { blockForKind } from "@/lib/box-presets";
+import { treeHoverCss, treeRevealCss } from "@/lib/interactions";
 import { colorToCSS } from "@/components/shared/ColorPalettePicker";
 import { COMPONENT_CSS } from "@/lib/educo-ui/components";
+import { layoutCss } from "@/lib/educo-ui/layout";
 import { iconSvg, onIconsLoaded, warmIcons, hasIcon } from "@/lib/educo-ui/icon-svg";
 import { tokensFromTheme, tokensToCss } from "@/lib/educo-ui/tokens";
 import { isRegistryComponent, renderComponent } from "@/lib/educo-ui/registry";
@@ -943,8 +945,21 @@ export default function BoxCanvas({
         ? { left: `${node.left ?? 0}%`, top: `${node.top ?? 0}%`, width: sizeToCSS(node.width), height: node.height ? sizeToCSS(node.height) : undefined, minHeight: node.minHeight, zIndex: node.zIndex ?? 1 } // no width ⇒ auto ⇒ hug content (never a wide default box)
         : stacked
         ? { width: "100%" } // content-height (no fixed height/minHeight) so nothing is clipped
-        : parent ? childStyle(node, parent) : { width: "100%", minHeight: Math.max(minHeight, floatingReserve(node, breakpoint)), ["--box-u" as string]: baseUnit(node.baseFont ?? 10) }),
+        : parent ? childStyle(node, parent) : {
+            width: "100%", minHeight: Math.max(minHeight, floatingReserve(node, breakpoint)),
+            ["--box-u" as string]: baseUnit(node.baseFont ?? 10),
+            // A TOAST is `position:fixed`, the same rule the export emits. A transform on this page root makes
+            // it the containing block for fixed descendants, so the toast pins to the PAGE frame here and to the
+            // viewport on the published site — identical CSS, and it can never float over the editor chrome.
+            // Applied only when the page actually has a toast, so nothing else changes rendering.
+            ...(treeHasToast(node) ? { transform: "translate(0)" } : {}),
+          }),
       ...(selfPaint ? {} : backgroundStyle(node)), // a component/button's background styles the block element, not this wrapper
+      // Advanced CSS goes LAST, so it beats the generated styles above — which is exactly what the export does
+      // (it appends the same declarations to the end of the node's own rule). Until this line, the canvas
+      // applied Advanced CSS only inside the component branches: on a section, heading or text it did nothing
+      // while you edited and then appeared on the published site.
+      ...advancedCssStyle(node),
     };
 
     // Visible drag-to-resize handles on every edge + corner, so you can resize from any side.
@@ -985,7 +1000,10 @@ export default function BoxCanvas({
           // Structural boxes (a row BAND, the page ROOT) are invisible scaffolding — never selectable — so they must
           // NOT show a hover outline: an indigo box around a full-width band/page reads as an empty "container wrapper".
           // Real, user-added containers (sections) still highlight on hover as drop targets.
-          className={`${editable ? "transition-shadow" : ""} ${isSel ? "outline outline-2 outline-indigo-500 outline-offset-[-2px]" : (editable && !node.rowBand && !isRoot) ? "hover:outline hover:outline-1 hover:outline-indigo-300/70 hover:outline-offset-[-1px]" : ""}`}
+          // `bandClasses` is the SAME function the export calls, so a contained band is contained here too —
+          // canvas = export for layout, not only for styling. Only a band directly under the page root is a
+          // SECTION: normalizeRowBands also makes bands inside every component, and they are not sections.
+          className={`${bandClasses(node, parent === root)} ${editable ? "transition-shadow" : ""} ${isSel ? "outline outline-2 outline-indigo-500 outline-offset-[-2px]" : (editable && !node.rowBand && !isRoot) ? "hover:outline hover:outline-1 hover:outline-indigo-300/70 hover:outline-offset-[-1px]" : ""}`}
         >
           {kids.map((c) => (
             <Fragment key={c.id}>{renderNode(c, node)}</Fragment>
@@ -1133,11 +1151,30 @@ export default function BoxCanvas({
   }
 
   return (
-    <div onMouseDown={(e) => { if (editable) { select(null); startMarqueeArm(e); } }} onDragOver={onCanvasDragOver} onDrop={onCanvasDrop} onDragLeave={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setDropRect(null); }} className="w-full">
-      {/* Educo UI component styles + this site's tokens, injected once so any placed component (accordion, …)
-          renders exactly as it will in the exported site. COMPONENT_CSS is scoped to `.eu-root`; each component
-          wrapper carries that class, so styles never leak into the editor chrome. */}
-      {treeHasComponent(root) && <style dangerouslySetInnerHTML={{ __html: tokensToCss(tokensFromTheme(theme), ".eu-root") + COMPONENT_CSS }} />}
+    <div onMouseDown={(e) => { if (editable) { select(null); startMarqueeArm(e); } }} onDragOver={onCanvasDragOver} onDrop={onCanvasDrop} onDragLeave={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setDropRect(null); }} className="w-full eu-tokens">
+      {/* Educo UI component styles + this site's tokens, injected once so any placed block renders exactly as it
+          will in the exported site.
+
+          THE TOKENS AND THE COMPONENT STYLES NEED DIFFERENT SCOPES, and conflating them broke canvas = export.
+          COMPONENT_CSS must stay on `.eu-root` (only component wrappers carry it) or component styling would
+          leak into the editor chrome. The TOKENS must reach further: the design-system trees (Card, Quote, Stat,
+          Badge, Rating) are ordinary containers that paint themselves with `var(--eu-color-*)`, and they never
+          carry `.eu-root`. Scoped to `.eu-root` alone, a Tinted card measured `rgba(0,0,0,0)` on the canvas
+          while the EXPORT rendered it correctly — the export emits its tokens at `:root`. So the canvas root
+          carries `.eu-tokens` and the variables are defined for both. */}
+      {treeUsesEducoUi(root) && <style dangerouslySetInnerHTML={{ __html: tokensToCss(tokensFromTheme(theme), ".eu-root, .eu-tokens") + COMPONENT_CSS }} />}
+      {/* The LAYOUT layer, and unlike the component styles it is NOT gated on the tree using Educo UI: a band is
+          a structural container, so a page made only of plain sections still needs it. Scoped to both roots for
+          the same reason the tokens are — the canvas root carries `.eu-tokens`, never `.eu-root`. */}
+      <style dangerouslySetInnerHTML={{ __html: layoutCss(".eu-root, .eu-tokens") }} />
+      {/* Hover & focus (Interactions 1a). One stylesheet for the whole tree, scoped per block by its
+          `data-box-id`, because a hover cannot be expressed as an inline style. The rules come from the SAME
+          emitter the export uses, so what you hover in the builder is what a visitor gets. */}
+      {(() => {
+        const css = treeHoverCss(root, (id) => `[data-box-id="${id}"]`)
+          + treeRevealCss(root, (id) => `[data-box-id="${id}"]`);
+        return css ? <style dangerouslySetInnerHTML={{ __html: css }} /> : null;
+      })()}
       {renderNode(root, null)}
       {/* Marquee (rubber-band) selection rectangle. Portaled so it's never clipped. */}
       {marquee && createPortal(
@@ -1190,9 +1227,18 @@ function findByIdLocal(node: BoxNode, id: string): BoxNode | null {
 }
 
 /** Does the tree contain any Educo UI component instance? (gates the one-time stylesheet injection) */
-function treeHasComponent(node: BoxNode): boolean {
-  if (node.type === "component") return true;
-  return (node.children ?? []).some(treeHasComponent);
+/**
+ * Does anything on this page need the Educo UI stylesheet?
+ *
+ * This used to ask only "is there a `component` node", which was too narrow: the design-system TREES (Card,
+ * Quote, Stat, Badge, Rating) are containers, and they paint themselves with `var(--eu-color-*)` tokens. On a
+ * page holding only trees the stylesheet was never injected, so the ramp tokens did not exist — measured in the
+ * browser, `--eu-color-primary-50` came back empty and a Tinted card rendered with no background at all. Only
+ * the handful of tokens that globals.css happens to define were resolving.
+ */
+function treeUsesEducoUi(node: BoxNode): boolean {
+  if (node.type === "component" || node.preset) return true;
+  return (node.children ?? []).some(treeUsesEducoUi);
 }
 
 /**
@@ -1237,9 +1283,11 @@ function inlineToStyle(css: string): React.CSSProperties | undefined {
  * `EditableText`; this follows exactly that pattern, so both components behave identically (RULE F).
  * Sub-items recurse through the same component, so no nesting level is less editable than the top (RULE I).
  */
-function AlertItemView({ item, sev, treat, dismiss, editable, parentId, onEdit, onFloatDrag, floatsActive }: {
+function AlertItemView({ item, sev, treat, dismiss, editable, parentId, onEdit, onFloatDrag, floatsActive, axes = [], form = "inline" }: {
   item: import("@/lib/box-model").ComponentItem;
   sev: string; treat: string; dismiss: boolean; editable?: boolean; parentId?: string;
+  /** The look axes and the form factor, so the canvas renders the SAME classes and rules as the export. */
+  axes?: string[]; form?: string;
   onEdit: (id: string, patch: Partial<import("@/lib/box-model").ComponentItem>, parentId?: string) => void;
   /** RULE N — drag a detached item to position it (the inspector's X/Y inputs are the keyboard path). */
   onFloatDrag?: (e: React.PointerEvent, item: import("@/lib/box-model").ComponentItem) => void;
@@ -1247,7 +1295,9 @@ function AlertItemView({ item, sev, treat, dismiss, editable, parentId, onEdit, 
 }) {
   const iconName = item.icon || ALERT_SEVERITY_ICON[sev] || "Info";
   const svg = iconName ? iconSvg(iconName) : "";
-  const cls = ["eu-alert", `eu-alert--${sev}`, treat ? `eu-alert${treat}` : "", `eu-al-${item.id}`].filter(Boolean).join(" ");
+  // The axes belong here too. Leaving them out meant a fine-tuned alert looked right in the export and plain
+  // in the builder — the exact canvas-vs-export drift this component has been bitten by three times.
+  const cls = ["eu-alert", `eu-alert--${sev}`, treat ? `eu-alert${treat}` : "", ...axes.map((a) => `eu-alert${a}`), `eu-al-${item.id}`].filter(Boolean).join(" ");
   const role = sev === "danger" || sev === "warning" ? "alert" : "status";
   const set = (patch: Partial<import("@/lib/box-model").ComponentItem>) => onEdit(item.id, patch, parentId);
   return (
@@ -1285,11 +1335,16 @@ function AlertItemView({ item, sev, treat, dismiss, editable, parentId, onEdit, 
         {(item.children ?? []).length > 0 && (
           <div className="eu-alert__sub">
             {(item.children ?? []).map((c) => (
-              <AlertItemView key={c.id} item={c} sev={sev} treat={treat} dismiss={false} editable={editable} parentId={item.id} onEdit={onEdit} onFloatDrag={onFloatDrag} floatsActive={floatsActive} />
+              <AlertItemView key={c.id} item={c} sev={sev} treat={treat} dismiss={false} editable={editable} parentId={item.id} onEdit={onEdit} onFloatDrag={onFloatDrag} floatsActive={floatsActive} axes={axes} form={form} />
             ))}
           </div>
         )}
       </div>
+      {/* Actions come from the SHARED emitter the export uses, so the builder cannot drift from the page. */}
+      {(() => {
+        const html = alertActionsHTML(item.actions, form);
+        return html ? <div dangerouslySetInnerHTML={{ __html: html }} /> : null;
+      })()}
       {dismiss && <button type="button" className="eu-alert__close" aria-label="Dismiss" onClick={(e) => e.preventDefault()}>×</button>}
     </div>
   );
@@ -1500,7 +1555,7 @@ function ComponentView({ node, editable, onPatchNode, breakpoint = "base", itemS
   const styleVars = { flex: "1 1 auto", minHeight: 0, display: "grid", ...typo, ...(node.tokenOverrides ?? {}) } as React.CSSProperties;
   if (node.component === "accordion") {
     const items = node.items ?? [];
-    const cls = "eu-accordion" + (node.variant ? ` eu-accordion${node.variant}` : "");
+    const cls = accordionClasses(node);
     const setItem = (id: string, patch: Partial<import("@/lib/box-model").ComponentItem>) =>
       onPatchNode?.({ items: itemsRef.current.map((it) => (it.id === id ? { ...it, ...patch } : it)) });
     const setChild = (pid: string, cid: string, patch: Partial<import("@/lib/box-model").ComponentItem>) =>
@@ -1613,7 +1668,9 @@ function ComponentView({ node, editable, onPatchNode, breakpoint = "base", itemS
     const alertFloatsActive = breakpoint !== "mobile";
     const itemStyles: string[] = [];
     collectAlertItemStyles(node.items, itemStyles, { skipFloat: !alertFloatsActive });
-    const inject = [tcss ? `${sel} .eu-alert__body, ${sel} .eu-alert__title{${tcss}}` : "", bcss ? `${sel}{${bcss}}` : "", adv ? `${sel}{${adv}}` : "", bgShowThroughCss(node, `${sel} .eu-alert`), blockContainmentCss(node, sel), alertFloatsActive ? itemFloatContextCss(node.items, sel) : "", itemStyles.join("")].filter(Boolean).join("");
+    // TOAST: the same `position:fixed` rule the export uses — the page root below becomes its container.
+    const toastCss = alertToastCss(node, sel);
+    const inject = [tcss ? `${sel} .eu-alert__body, ${sel} .eu-alert__title{${tcss}}` : "", bcss ? `${sel}{${bcss}}` : "", adv ? `${sel}{${adv}}` : "", bgShowThroughCss(node, `${sel} .eu-alert`), blockContainmentCss(node, sel), alertFloatsActive ? itemFloatContextCss(node.items, sel) : "", itemStyles.join(""), toastCss].filter(Boolean).join("");
     return (
       <div className="eu-root" style={{ ...styleVars, position: "relative" }}>
         {inject ? <style dangerouslySetInnerHTML={{ __html: inject }} /> : null}
@@ -1627,6 +1684,9 @@ function ComponentView({ node, editable, onPatchNode, breakpoint = "base", itemS
                 item={it}
                 sev={node.alertSeverity || "info"}
                 treat={node.variant || ""}
+                axes={[node.alertShape, node.alertBorder, node.alertIconStyle, node.alertDensity, node.alertEmphasis, node.alertLayout,
+                       node.alertActionPlacement === "right" ? "--actions-right" : ""].filter(Boolean) as string[]}
+                form={node.alertForm || "inline"}
                 dismiss={!!node.alertDismiss}
                 editable={editable}
                 onEdit={crud.editItem}

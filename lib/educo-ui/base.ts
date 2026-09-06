@@ -14,18 +14,15 @@
 import type { SiteTheme } from "@/lib/site-storage";
 import { tokensFromTheme, tokensToCss } from "./tokens";
 import { COMPONENT_CSS } from "./components";
-
-/** Mobile-first breakpoints (min-width), in px. Blocks prefer container queries; pages use these. */
-export const BREAKPOINTS = { sm: 640, md: 768, lg: 1024, xl: 1280, "2xl": 1536 } as const;
+import { LAYOUT_CSS, RUNG_PX, RUNG_EM, RUNG_MEASURE } from "./layout";
 
 /**
- * The same ladder in `em`, which is what a media query should use: em breakpoints respect a reader who has
- * raised their browser's base font, px breakpoints ignore them (Responsive Design Field Guide, ingredient ④).
- * One source of truth — derived from BREAKPOINTS, never re-typed.
+ * The breakpoint ladder now lives in `layout.ts`, named for what each rung IS rather than for a t-shirt size.
+ * These two are re-exported so the rest of the app has one import site, but there is only ONE ladder — the
+ * Tailwind-shaped 640/768/1024/1280/1536 that used to live here is gone, along with the second and third
+ * ladders that had grown up beside it.
  */
-export const BREAKPOINTS_EM = Object.fromEntries(
-  Object.entries(BREAKPOINTS).map(([k, px]) => [k, px / 16]),
-) as { [K in keyof typeof BREAKPOINTS]: number };
+export { RUNG_PX as BREAKPOINTS, RUNG_EM as BREAKPOINTS_EM };
 
 export const BASE_CSS = `
 /* ── Reset ─────────────────────────────────────────────────────────────────── */
@@ -64,37 +61,22 @@ export const BASE_CSS = `
 
 /* ── Flexible images / media ───────────────────────────────────────────────── */
 .eu-root img, .eu-root picture, .eu-root video, .eu-root svg { max-width: 100%; height: auto; display: block; }
-.eu-media { width: 100%; object-fit: cover; aspect-ratio: 16 / 9; border-radius: var(--eu-radius-md); }
 
 /* ── Fluid layout primitives ───────────────────────────────────────────────── */
-/* Container: full width, capped, centred, with fluid side padding. */
-.eu-container { width: 100%; max-width: var(--eu-container-max, 1200px); margin-inline: auto; padding-inline: clamp(1rem, 4vw, 3rem); }
-/* Intrinsic responsive grid: columns wrap on their own — zero media queries. */
-.eu-grid { display: grid; gap: var(--eu-space-6); grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--eu-col-min, 16rem)), 1fr)); }
-/* Vertical rhythm (fluid layout, the flow way). */
-.eu-stack > * + * { margin-block-start: var(--eu-space-4); }
-/* Wrapping row of items. */
-.eu-cluster { display: flex; flex-wrap: wrap; gap: var(--eu-space-3); align-items: center; }
-/* Center a thing with a max measure. */
-.eu-center { box-sizing: content-box; max-width: 65ch; margin-inline: auto; padding-inline: var(--eu-space-4); }
+/* Containers, bands and the space tiers live in the layout layer — see layout.ts. */
+${LAYOUT_CSS}
 
-/* ── Container queries: blocks respond to THEIR container, not the viewport ──── */
-.eu-container-ctx { container-type: inline-size; }
-@container (min-width: 34rem) {
-  .eu-cq-row { display: flex; gap: var(--eu-space-4); align-items: center; }
-  .eu-cq-2   { grid-template-columns: repeat(2, 1fr); }
-}
-@container (min-width: 52rem) {
-  .eu-cq-3   { grid-template-columns: repeat(3, 1fr); }
-}
-
-/* ── A few token-driven utilities (0.3 adds full component styles) ──────────── */
-.eu-surface { background: var(--eu-color-surface); border: 1px solid var(--eu-color-border); border-radius: var(--eu-radius-lg); }
-.eu-muted { color: var(--eu-color-muted); }
-.eu-p-4 { padding: var(--eu-space-4); } .eu-p-6 { padding: var(--eu-space-6); } .eu-p-8 { padding: var(--eu-space-8); }
-.eu-round { border-radius: var(--eu-radius-lg); }
-.eu-shadow { box-shadow: var(--eu-shadow-md); }
-.eu-hidden { display: none; }
+/* A whole utility layer used to sit here — .eu-grid, .eu-stack, .eu-cluster, .eu-center, .eu-media,
+ * .eu-surface, .eu-p-*, .eu-round, .eu-shadow, .eu-hidden, .eu-truncate, .eu-clamp-*, .eu-text-*, .eu-upper,
+ * .eu-underline, .eu-list-reset, .eu-table, .eu-scroll-x, .eu-columns, .eu-ratio-*, .eu-cover, .eu-contain,
+ * .eu-full, .eu-transition, .eu-safe, .eu-no-print, .eu-visually-hidden and the .eu-cq-* container-query
+ * scaffolding. Thirty-six classes, and NOTHING could apply any of them: the builder emits markup from the
+ * node tree, and a user cannot type a class name anywhere in the product. They shipped in styles.css to
+ * every page of every school site and could not affect one pixel.
+ *
+ * The rules worth keeping were the ones addressed by ELEMENT rather than by class (tables, images, links),
+ * and those are still here, scoped under .eu-root. The rest return when a control emits them.
+ */
 
 /* ── Basic user interface + accessibility ──────────────────────────────────── */
 .eu-root :focus-visible { outline: 2px solid var(--eu-color-brand); outline-offset: 2px; border-radius: 3px; }
@@ -102,8 +84,6 @@ export const BASE_CSS = `
 .eu-root ::selection { background: var(--eu-color-primary-200); color: var(--eu-color-text); }
 .eu-root ::placeholder { color: var(--eu-color-muted); opacity: 1; }
 .eu-root :is(button, [role="button"], summary, label[for]) { cursor: pointer; }
-/* Screen-reader-only (visually hidden but accessible). */
-.eu-visually-hidden { position: absolute !important; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; border: 0; }
 
 /* ── Forms & embedded content: inherit type, never overflow ────────────────── */
 .eu-root button, .eu-root input, .eu-root select, .eu-root textarea { font: inherit; color: inherit; letter-spacing: inherit; }
@@ -113,49 +93,28 @@ export const BASE_CSS = `
 /* ── Responsive text: never let a long word cause horizontal scroll ────────── */
 .eu-root { overflow-wrap: break-word; }
 .eu-root :is(h1, h2, h3, h4) { overflow-wrap: break-word; }
-.eu-truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.eu-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-.eu-clamp-3 { display: -webkit-box; -webkit-line-clamp: 3; line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
-.eu-text-center { text-align: center; } .eu-text-right { text-align: right; }
-.eu-upper { text-transform: uppercase; letter-spacing: var(--eu-tracking-wide); }
-.eu-underline { text-decoration: underline; text-underline-offset: 0.15em; }
 
-/* ── Lists & tables ────────────────────────────────────────────────────────── */
-.eu-list-reset { list-style: none; padding: 0; margin: 0; }
-.eu-table { width: 100%; border-collapse: collapse; }
-.eu-table :is(th, td) { padding: var(--eu-space-2) var(--eu-space-3); border-bottom: 1px solid var(--eu-color-border); text-align: start; }
-.eu-table th { font-weight: var(--eu-weight-semibold); color: var(--eu-color-muted); }
-/* Wide content (tables, code) scrolls inside its own box — the page never scrolls sideways. */
-.eu-scroll-x { overflow-x: auto; overscroll-behavior-x: contain; }
-
-/* ── Multi-column text ─────────────────────────────────────────────────────── */
-.eu-columns { column-width: 18rem; column-gap: var(--eu-space-8); }
-.eu-columns > * { break-inside: avoid; }
-
-/* ── Ratios & sizing helpers ───────────────────────────────────────────────── */
-.eu-ratio-square { aspect-ratio: 1; } .eu-ratio-video { aspect-ratio: 16 / 9; } .eu-ratio-portrait { aspect-ratio: 3 / 4; }
-.eu-cover { object-fit: cover; } .eu-contain { object-fit: contain; }
-.eu-full { width: 100%; } .eu-full-h { block-size: 100%; }
+/* ── Tables ────────────────────────────────────────────────────────────────── */
+/* Addressed by ELEMENT, not by a class: a table block emits a plain table tag, so an .eu-table class would
+   never be on it. Scoped under .eu-root so it cannot reach the editor chrome. */
+.eu-root table { width: 100%; border-collapse: collapse; }
+.eu-root :is(th, td) { padding: var(--eu-space-2) var(--eu-space-3); border-bottom: 1px solid var(--eu-color-border); text-align: start; }
+.eu-root th { font-weight: var(--eu-weight-semibold); color: var(--eu-color-muted); }
 
 /* ── Motion (token-driven; respects reduced-motion below) ──────────────────── */
-.eu-transition { transition: color, background-color, border-color, box-shadow, transform, opacity; transition-duration: var(--eu-dur-base); transition-timing-function: var(--eu-ease-standard); }
-.eu-root :is(a, button, .eu-transition) { transition-property: color, background-color, border-color, box-shadow, transform, opacity; transition-duration: var(--eu-dur-fast); transition-timing-function: var(--eu-ease-standard); }
-
-/* ── Mobile safe-area (notches) — opt-in ───────────────────────────────────── */
-.eu-safe { padding-inline: max(clamp(1rem, 4vw, 3rem), env(safe-area-inset-left)) max(clamp(1rem, 4vw, 3rem), env(safe-area-inset-right)); }
+.eu-root :is(a, button) { transition-property: color, background-color, border-color, box-shadow, transform, opacity; transition-duration: var(--eu-dur-fast); transition-timing-function: var(--eu-ease-standard); }
 
 /* ── Print ─────────────────────────────────────────────────────────────────── */
 @media print {
   .eu-root { background: #fff; color: #000; }
-  .eu-no-print { display: none !important; }
   .eu-root :is(h1, h2, h3) { break-after: avoid; }
   .eu-root :is(img, table, figure) { break-inside: avoid; }
   .eu-root a[href^="http"]::after { content: " (" attr(href) ")"; font-size: 0.85em; color: #555; }
 }
 
-/* ── Mobile-first breakpoints (min-width), in em so they respect a raised base font ───────── */
-@media (min-width: ${BREAKPOINTS_EM.md}em) { .eu-md\\:eu-hidden { display: none; } .eu-md\\:show { display: revert; } }
-@media (min-width: ${BREAKPOINTS_EM.lg}em) { .eu-lg\\:cols-3 { grid-template-columns: repeat(3, 1fr); } }
+/* (Two breakpoint utilities used to sit here, prefixed eu-md and eu-lg. No renderer ever emitted them, so they
+   were bytes on every page that could not affect one — removed with the second ladder they belonged to. The
+   real breakpoints are the rungs in layout.ts, applied by the container measures above.) */
 
 /* ── Accessibility: honour reduced-motion ──────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {

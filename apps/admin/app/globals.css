@@ -89,7 +89,10 @@ body { overflow-wrap: break-word; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
 }
-.eu-container { width: 100%; max-width: var(--eu-container-max, 1200px); margin-inline: auto; padding-inline: clamp(1rem, 4vw, 3rem); }
+/* The rung ladder and the per-rung measures live in lib/educo-ui/layout.ts; this is the same
+   container for app chrome, which does not load that layer. It reads --eu-measure so the two agree —
+   it used to read --eu-container-max, a variable no code anywhere ever set. */
+.eu-container { width: 100%; max-width: var(--eu-measure, 68rem); margin-inline: auto; padding-inline: var(--eu-gutter-page, clamp(1rem, 4vw, 3rem)); }
 .eu-grid { display: grid; gap: var(--eu-space-6, 1.5rem); grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--eu-col-min, 16rem)), 1fr)); }
 .eu-stack > * + * { margin-block-start: var(--eu-space-4, 1rem); }
 .eu-cluster { display: flex; flex-wrap: wrap; gap: var(--eu-space-3, .75rem); align-items: center; }

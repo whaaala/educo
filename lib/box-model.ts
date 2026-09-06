@@ -39,6 +39,35 @@ export interface AccPartStyle {
   fontSize?: string;     // rem string, e.g. "1.8rem" (scales with base size; legacy "18px" still honoured)
   align?: "left" | "center" | "right"; // horizontal alignment within the header / content area
   pos?: { x: number; y: number };      // free nudge (rem) of the content up/down/left/right within its area
+  // RULE A — a capability built for one part is the baseline for every part. These arrived for action buttons
+  // and apply to titles, bodies and metas too, because there is no reason a heading should be less styleable
+  // than a button sitting beneath it.
+  fontWeight?: number;                 // 100–900
+  letterSpacing?: string;              // rem/em string
+  textTransform?: "none" | "uppercase" | "lowercase" | "capitalize";
+  radius?: string;                     // corner rounding, rem string ("999rem" for a pill)
+  padding?: string;                    // shorthand, e.g. "0.6rem 1.2rem"
+  border?: string;                     // shorthand, e.g. "1px solid #888"
+}
+
+/**
+ * A button or link on a message. The galleries we studied are full of these — cookie consent (Manage /
+ * Accept), a promo bar with a code, "Update information", "Learn more →", "Try again / Dismiss" — and the
+ * Alert had no way to carry one at all, which was the single biggest gap in the component.
+ *
+ * `kind` is the emphasis, not the colour: the severity still supplies the colour, so an action inherits the
+ * meaning of the message it sits on.
+ */
+export interface ItemAction {
+  id: string;
+  label: string;
+  href?: string;        // external URL, "#anchor", or "page:<id>" — same vocabulary as a button block
+  newTab?: boolean;
+  kind?: "primary" | "secondary" | "link"; // filled · outlined · plain text with an arrow
+  /** Point-and-click styling — colour, background, font, weight, size, shape, padding, border. */
+  style?: AccPartStyle;
+  /** Anything the controls do not cover, as sanitised declarations. */
+  css?: string;
 }
 
 export interface ComponentItem {
@@ -65,6 +94,8 @@ export interface ComponentItem {
   // items (and to a single-message component's one message), so spacing is never a CSS-box-only job.
   pad?: Side4;      // padding INSIDE the item — space between its edge and its text
   margin?: Side4;   // margin OUTSIDE the item — space between it and its neighbours
+  /** Buttons or links on this message. Carbon limits a TOAST to one; a banner or inline may carry two. */
+  actions?: ItemAction[];
   css?: string;     // per-ITEM Advanced CSS declarations (sanitised) — override this one item's styling
   // Dedicated per-item styling for the header + content, set via the Inspector's colour/font controls
   // (no CSS typing). Composed into scoped, !important rules so they win over the chosen design variant.
@@ -127,6 +158,10 @@ export interface BoxNode {
   clip?: boolean;           // allow sizing SMALLER than content (min:0) and hide overflow; default off = hug content
   baseFont?: number;        // page root only: the global base unit in px (default 10); rendered as rem so it scales with the browser font size (WCAG)
   rowBand?: boolean;        // structural ROW band: a direct child of the page root that lays its sections out side-by-side (the page is a vertical stack of these)
+  // Does this band run edge to edge, or sit its content on the page's measure? "band" (the default) is what
+  // every band did before this existed. "contained" keeps the background full-bleed and insets only the
+  // content — a full-width colour or photo with the text still on the measure, which is most school sections.
+  sectionWidth?: "band" | "contained";
 
   // ── free / floating position (escape the flow: lift a section onto its OWN layer to OVERLAP others) ──
   position?: "flow" | "absolute"; // default "flow" (in the row-band stack); "absolute" = free-floating layer
@@ -137,6 +172,16 @@ export interface BoxNode {
   group?: boolean;          // this container is a GROUP (created via "Group") — moves/locks as one unit; ungroup dissolves it.
   contentX?: "start" | "center" | "end"; // component only: horizontal position of the content inside the component
   contentY?: "start" | "center" | "end"; // component only: vertical position of the content inside the component
+
+  // ── interactions (Round 1a: hover & focus) ──
+  /** Named hover/focus effect from HOVER_EFFECTS — every block and component can have one. Pure CSS. */
+  hoverEffect?: string;
+  /** Named entrance effect from REVEAL_EFFECTS — how the block arrives. Pure CSS. */
+  revealEffect?: string;
+  /** Play the entrance when the block scrolls into view, rather than on load. */
+  revealScroll?: boolean;
+  /** Apply the entrance to this container's direct CHILDREN, each a beat later. */
+  revealStagger?: boolean;
 
   // ── responsive ──
   hidden?: boolean;         // hide this box (per breakpoint via `responsive`, or everywhere at the base)
@@ -175,6 +220,18 @@ export interface BoxNode {
   component?: string;                       // which eu-component: "accordion" | "alert"
   variant?: string;                         // design variant class suffix, e.g. "--panel" ("" = default look)
   items?: ComponentItem[];               // accordion content (component === "accordion")
+  /**
+   * The Accordion's look is several orthogonal axes, exactly like the Alert's (RULE T). `variant` carries the
+   * DESIGN; these carry the modifiers, so "Timeline" and "Numbered" can both be true — which one exclusive
+   * field made impossible. See lib/educo-ui/accordions.ts.
+   */
+  accIndicator?: string;
+  accFrame?: string;
+  accRhythm?: string;
+  accOpenColour?: string;
+  accNumbering?: string;
+  accDensity?: string;
+
   accMultiOpen?: boolean;                   // accordion: allow more than one panel open at once
   accShowAll?: boolean;                      // accordion: show "Expand all / Collapse all" controls (opt-in; adds a tiny script to the export)
   accFaqSchema?: boolean;                    // accordion: emit schema.org FAQPage JSON-LD on export (SEO rich results)
@@ -183,6 +240,26 @@ export interface BoxNode {
   alertSeverity?: string;                    // alert: info | success | warning | danger | neutral | brand (accent + default icon + role)
   alertForm?: string;                        // alert form factor: inline | banner | callout | toast
   alertDismiss?: boolean;                     // alert: show a per-item dismiss (×) button (opt-in; adds a tiny export script)
+  /**
+   * The Alert's look is SEVERAL orthogonal axes, not one exclusive list. `variant` carries the DESIGN (the
+   * overall look); these carry the modifiers, so "Ticket" and "Compact" can both be true — which one exclusive
+   * field made impossible. See lib/educo-ui/alerts.ts for why, and RULE T for the rule it produced.
+   */
+  /** Where the actions sit: under the message (default) or on the right, vertically centred. */
+  alertActionPlacement?: "below" | "right";
+  alertShape?: string;
+  alertBorder?: string;
+  alertIconStyle?: string;
+  alertDensity?: string;
+  alertEmphasis?: string;
+  alertLayout?: string;
+
+  /** Alert TOAST form: which corner it floats in. Ignored unless `alertForm === "toast"`. */
+  alertToast?: "top-left" | "top-right" | "bottom-left" | "bottom-right";
+  /** Alert: hide itself after N seconds (0/undefined = stays until dismissed). Opt-in; adds a small script. */
+  alertAutoSeconds?: number;
+  /** Alert: once dismissed, stay dismissed on this visitor's next visit. Opt-in; adds a small script. */
+  alertPersist?: boolean;
   componentFields?: Record<string, string | number>; // registry-component content (card/quote/stat/badge/rating/…)
   contentScale?: number;                    // component: shrink the text so the content fits a box smaller than it (1 = normal, floors at MIN_CONTENT_SCALE)
   tokenOverrides?: Record<string, string>;  // CSS custom-property overrides, e.g. { "--eu-color-brand": "#5b5bd6" }
@@ -484,6 +561,64 @@ export function moveChildItem(node: BoxNode, parentId: string, childId: string, 
  * context or fetch remotely: braces/at-rules/selectors, `</…>`, `expression()`, `javascript:` and any `url(…)`
  * that isn't a `data:` URL. Returns a normalized "prop: val; prop: val;" string (never null).
  */
+/**
+ * Properties whose animation forces the browser through LAYOUT on every frame.
+ *
+ * Animating `width`, `height`, `top` or `margin` makes the browser recompute the position of everything
+ * around the element, repaint it, and only then composite — sixty times a second. `transform`, `opacity` and
+ * `filter` skip layout and paint entirely and run on the compositor thread.
+ *
+ * This is not a matter of taste. It is what protects <b>INP</b> (Interaction to Next Paint) and <b>CLS</b>, two
+ * Core Web Vitals, and it is most visible on the cheap laptops and older phones a school's audience actually
+ * uses. The built-in effect catalogue only ever offers compositor-friendly properties — but it does so by
+ * convention, and Advanced CSS is a free-text box, so the rule needs a gate rather than a good intention.
+ */
+const LAYOUT_ANIMATION_PROPS = new Set([
+  "all",
+  "width", "height", "min-width", "min-height", "max-width", "max-height", "inline-size", "block-size",
+  "top", "right", "bottom", "left", "inset", "inset-inline", "inset-block",
+  "margin", "margin-top", "margin-right", "margin-bottom", "margin-left", "margin-inline", "margin-block",
+  "padding", "padding-top", "padding-right", "padding-bottom", "padding-left", "padding-inline", "padding-block",
+  "border-width", "border-top-width", "border-right-width", "border-bottom-width", "border-left-width",
+  "font-size", "line-height", "letter-spacing",
+  "flex", "flex-basis", "flex-grow", "flex-shrink",
+  "gap", "row-gap", "column-gap", "grid-template-columns", "grid-template-rows",
+]);
+
+/** Does this `transition`/`animation` value name a property that would be animated through layout? */
+export function animatesLayout(property: string, value: string): boolean {
+  const p = property.toLowerCase();
+  if (!/^(transition|transition-property|animation|animation-name)$/.test(p)) return false;
+  // Values are space- and comma-separated: "transform 0.3s, opacity .2s". Splitting on those and comparing
+  // whole tokens is exact — a substring match would flag "transform" for containing "for".
+  return value.toLowerCase().split(/[ ,]+/).some((tok) => LAYOUT_ANIMATION_PROPS.has(tok));
+}
+
+/**
+ * A node's Advanced CSS as a style OBJECT, for the React canvas.
+ *
+ * The export appends these declarations to every node's own rule, so they beat the node's generated styles.
+ * The canvas writes those generated styles INLINE, and an inline style beats any stylesheet rule — so the
+ * canvas could not apply Advanced CSS the way the component branches do (a scoped style tag). Outside those
+ * branches it did not apply it at all: typing `padding: 2rem` on a section did nothing while you edited it,
+ * then appeared on the published site. Returning an object lets the canvas merge it into the same inline
+ * style, last, which reproduces the export's precedence exactly.
+ *
+ * Custom properties keep their `--name`; standard properties are camel-cased, which is what React expects.
+ */
+export function advancedCssStyle(node: BoxNode): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const decl of sanitizeCssDeclarations(node.advancedCss).split(";")) {
+    const i = decl.indexOf(":");
+    if (i <= 0) continue;
+    const prop = decl.slice(0, i).trim();
+    const value = decl.slice(i + 1).trim();
+    if (!prop || !value) continue;
+    out[prop.startsWith("--") ? prop : prop.replace(/-([a-z])/g, (_m, c: string) => c.toUpperCase())] = value;
+  }
+  return out;
+}
+
 export function sanitizeCssDeclarations(raw?: string): string {
   if (!raw) return "";
   return raw
@@ -497,7 +632,11 @@ export function sanitizeCssDeclarations(raw?: string): string {
       const idx = decl.indexOf(":");
       if (idx <= 0) return false;                            // must be property: value
       const prop = decl.slice(0, idx).trim();
-      return /^-{0,2}[a-zA-Z][a-zA-Z0-9-]*$/.test(prop);     // a plausible CSS property / custom property
+      if (!/^-{0,2}[a-zA-Z][a-zA-Z0-9-]*$/.test(prop)) return false; // a plausible CSS property / custom property
+      // Refuse to animate a LAYOUT property — see LAYOUT_ANIMATION_PROPS. `transition: all` is refused too:
+      // it sweeps in every layout property by definition, which is exactly the trap.
+      if (animatesLayout(prop, decl.slice(idx + 1))) return false;
+      return true;
     })
     .map((decl) => decl + ";")
     .join(" ");
@@ -717,7 +856,7 @@ export function itemOverrideCss(
     // longer. The previous form was the opposite — a desktop base undone by `@media (max-width:480px)`, which is
     // desktop-first, in px, and on a width that is not even on the ladder.
     float = opts?.stackOnNarrow
-      ? `@media (min-width:${BREAKPOINTS_EM.sm}em){${scope}{${decls}}}`
+      ? `@media (min-width:${BREAKPOINTS_EM.tabletPortrait}em){${scope}{${decls}}}`
       : `${scope}{${decls}}`;
   }
   const headerSel = sel("header") || titleSel;
@@ -786,6 +925,12 @@ export function alertPartInline(s?: AccPartStyle): string {
   if (s.fontFamily) d.push(`font-family:${s.fontFamily}`);
   if (s.fontSize) d.push(`font-size:${s.fontSize}`);
   if (s.align) d.push(`text-align:${s.align}`);
+  if (s.fontWeight) d.push(`font-weight:${s.fontWeight}`);
+  if (s.letterSpacing) d.push(`letter-spacing:${s.letterSpacing}`);
+  if (s.textTransform && s.textTransform !== "none") d.push(`text-transform:${s.textTransform}`);
+  if (s.radius) d.push(`border-radius:${s.radius}`);
+  if (s.padding) d.push(`padding:${s.padding}`);
+  if (s.border) d.push(`border:${s.border}`);
   if (s.pos && (s.pos.x || s.pos.y)) d.push(`position:relative;transform:translate(${s.pos.x || 0}rem,${s.pos.y || 0}rem)`);
   return sanitizeCssDeclarations(d.join(";"));
 }
@@ -800,7 +945,36 @@ export function alertIconInline(it: ComponentItem): string {
 }
 const escAttr = (t: string) => t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 /** One alert item → an `.eu-alert` row (recurses into children as nested `.eu-alert__sub` rows — Rule F). */
-function alertItemHTML(it: ComponentItem, sev: string, treat: string, dismiss: boolean, edit?: ItemEditOpts): string {
+/**
+ * The actions on a message, as real links or buttons.
+ *
+ * ACCESSIBILITY is the whole job here. An action with a destination is an <a> so it can be opened in a new tab,
+ * copied, and read as a link; one without is a <button>, because a link that goes nowhere is a lie to a screen
+ * reader. Every one is in the tab order by construction, and each label is the visible text, so nothing depends
+ * on an aria- attribute that could drift from what is on screen.
+ *
+ * A TOAST gets at most ONE action (Carbon's rule): a floating message that auto-hides is the worst place to put
+ * a decision, and two buttons in a corner toast is how people miss both.
+ */
+export function alertActionsHTML(actions: ItemAction[] | undefined, form: string): string {
+  const list = (actions ?? []).filter((a) => a.label?.trim()).slice(0, form === "toast" ? 1 : 2);
+  if (!list.length) return "";
+  const one = (a: ItemAction) => {
+    const kind = a.kind ?? "primary";
+    const cls = `eu-alert__action eu-alert__action--${kind}`;
+    const label = escAttr(a.label);
+    // The controls first, then the user's own declarations — so Advanced CSS is the last word, as everywhere
+    // else in the builder. Both go through the sanitiser: no selectors, no at-rules, no script.
+    const inline = [alertPartInline(a.style), sanitizeCssDeclarations(a.css)].filter(Boolean).join(";");
+    const styleAttr = inline ? ` style="${escAttr(inline)}"` : "";
+    if (!a.href) return `<button type="button" class="${cls}"${styleAttr}>${label}</button>`;
+    const tab = a.newTab ? ` target="_blank" rel="noopener noreferrer"` : "";
+    return `<a class="${cls}" href="${escAttr(a.href)}"${tab}${styleAttr}>${label}</a>`;
+  };
+  return `<div class="eu-alert__actions">${list.map(one).join("")}</div>`;
+}
+
+function alertItemHTML(it: ComponentItem, sev: string, treat: string, dismiss: boolean, edit?: ItemEditOpts, auto = 0, persist = false, axes: string[] = [], form = "inline"): string {
   const iconName = it.icon || ALERT_SEVERITY_ICON[sev] || "Info";
   const icon = iconName ? `<span class="eu-alert__icon" aria-hidden="true"${alertIconInline(it) ? ` style="${alertIconInline(it)}"` : ""}>${iconSvg(iconName)}</span>` : "";
   const ts = alertPartInline(it.headerStyle), bs = alertPartInline(it.bodyStyle);
@@ -812,11 +986,21 @@ function alertItemHTML(it: ComponentItem, sev: string, treat: string, dismiss: b
   const meta = it.meta ? `<span class="eu-alert__meta"${itemPartAttrs("meta", edit)}>${escAttr(it.meta)}</span>` : "";
   const media = it.media ? `<img class="eu-alert__media" src="${escAttr(it.media)}" alt="${escAttr(it.mediaAlt ?? "")}" />` : "";
   // Sub-items get the SAME treatment, recursively — no level is less editable than the top (RULE F/I).
-  const kids = (it.children && it.children.length) ? `<div class="eu-alert__sub">${it.children.map((c) => alertItemHTML(c, sev, treat, false, edit ? { ...edit, parentId: it.id } : undefined)).join("")}</div>` : "";
+  const kids = (it.children && it.children.length) ? `<div class="eu-alert__sub">${it.children.map((c) => alertItemHTML(c, sev, treat, false, edit ? { ...edit, parentId: it.id } : undefined, 0, false, axes)).join("")}</div>` : "";
   const close = dismiss ? `<button type="button" class="eu-alert__close" data-eu-dismiss aria-label="Dismiss">${ALERT_CLOSE_SVG}</button>` : "";
+  // The countdown is a pure-CSS animation — no script needed to SHOW the time passing, only to act at the end.
+  // It is `aria-hidden` because the remaining time is announced by nothing useful; the pause-on-hover behaviour
+  // is what actually makes an auto-dismissing message usable (WCAG 2.2.1, Timing Adjustable).
+  const progress = auto > 0 && !edit ? `<span class="eu-alert__progress" aria-hidden="true"></span>` : "";
   const role = sev === "danger" || sev === "warning" ? "alert" : "status";
-  const cls = ["eu-alert", `eu-alert--${sev}`, treat ? `eu-alert${treat}` : "", `eu-al-${it.id}`].filter(Boolean).join(" ");
-  return `<div class="${cls}" role="${role}"${itemRootAttrs(it.id, edit)}>${media}${icon}<div class="eu-alert__content">${title}${body}${meta}${kids}</div>${close}</div>`;
+  // design + every axis the user has set; each is its own class, so they compose instead of replacing.
+  const cls = ["eu-alert", `eu-alert--${sev}`, treat ? `eu-alert${treat}` : "", ...axes.map((a) => `eu-alert${a}`), `eu-al-${it.id}`].filter(Boolean).join(" ");
+  // The script's hooks are EXPORT-ONLY: an alert that auto-hides while you are editing it would be unusable,
+  // and a persisted dismissal in the builder would make a block vanish with no way to bring it back.
+  const behaviour = edit ? "" :
+    `${auto > 0 ? ` data-eu-auto="${auto}"` : ""}${persist ? ` data-eu-persist` : ""}${auto > 0 || persist ? ` data-eu-id="${escAttr(it.id)}"` : ""}`;
+  const actions = alertActionsHTML(it.actions, form);
+  return `<div class="${cls}" role="${role}"${itemRootAttrs(it.id, edit)}${behaviour}>${media}${icon}<div class="eu-alert__content">${title}${body}${meta}${kids}</div>${actions}${close}${progress}</div>`;
 }
 export function collectAlertItemStyles(items: ComponentItem[] | undefined, out: string[], opts?: { skipFloat?: boolean; stackOnNarrow?: boolean }): void {
   for (const it of (items ?? []).slice(0, 1)) { // single message — styles for the one that renders
@@ -839,8 +1023,16 @@ export function renderAlertHTML(node: BoxNode, edit?: ItemEditOpts, opts?: { ski
   const style = styleOut.length ? `<style>${styleOut.join("")}</style>` : "";
   // An Alert is a SINGLE message (see alertMessage) — only the first entry is rendered.
   const only = alertMessage(node);
-  const items = only ? alertItemHTML(only, sev, treat, dismiss, edit) : "";
-  return `${style}<div class="eu-alert-stack eu-alert-stack--${form}">${items}</div>`;
+  const auto = Math.max(0, Math.round(node.alertAutoSeconds ?? 0));
+  // Each axis is optional; an unset one contributes nothing, so a default alert has exactly the classes it
+  // had before this existed.
+  const axes = [node.alertShape, node.alertBorder, node.alertIconStyle, node.alertDensity, node.alertEmphasis, node.alertLayout,
+    node.alertActionPlacement === "right" ? "--actions-right" : ""]
+    .filter((a): a is string => !!a);
+  const items = only ? alertItemHTML(only, sev, treat, dismiss, edit, auto, !!node.alertPersist, axes, form) : "";
+  // The duration is a CSS variable so the bar and the script agree on one number.
+  const autoVar = auto > 0 ? ` style="--al-auto:${auto}s"` : "";
+  return `${style}<div class="eu-alert-stack eu-alert-stack--${form}"${autoVar}>${items}</div>`;
 }
 /** The item CSS class for each component whose items paint their own surface — so a block background set on the
  *  WHOLE component can be made to show through those items. Add a component here and it inherits the behaviour. */
@@ -917,7 +1109,7 @@ export function itemFloatContextCss(items: ComponentItem[] | undefined, scope: s
   const decls = `position:relative;min-height:${reserve}rem`;
   // Mobile-first to match the float itself: no reserved space at all until placement actually applies.
   return opts?.stackOnNarrow
-    ? `@media (min-width:${BREAKPOINTS_EM.sm}em){${scope}{${decls}}}`
+    ? `@media (min-width:${BREAKPOINTS_EM.tabletPortrait}em){${scope}{${decls}}}`
     : `${scope}{${decls}}`;
 }
 
@@ -988,11 +1180,104 @@ export function bgShowThroughCss(node: BoxNode, itemSel: string): string {
   const hasBg = !!(node.bgImage || node.background || node.bgOverlay);
   return hasBg ? `${itemSel}{background:transparent !important;border-color:transparent !important;}` : "";
 }
+/**
+ * TOAST placement — the thing "Toast" promised and did not do.
+ *
+ * The form factor was selectable in the inspector and its entire implementation was `align-items:stretch` plus
+ * a shadow: no corner, no floating, nothing that makes a toast a toast. (Its label even said "stacked", left
+ * over from the multi-item Alert that was dropped.) A control that offers a layout and silently does not
+ * produce it is the same class of defect as the dead container queries.
+ *
+ * CANVAS = EXPORT, exactly: the rule is `position:fixed` in both. What differs is only which element counts
+ * as "the viewport", and that is arranged without changing a single declaration — the canvas gives its PAGE ROOT
+ * a transform, which makes it the containing block for fixed descendants (CSS Transforms §3). So on the
+ * published page the toast pins to the viewport corner, and in the builder it pins to the page-frame corner,
+ * from identical CSS. Positioning it `absolute` instead would have pinned it to the alert's OWN box, since every
+ * block wrapper on the canvas is `position:relative` — a toast in the corner of itself.
+ */
+export const TOAST_CORNERS = ["top-left", "top-right", "bottom-left", "bottom-right"] as const;
+export type ToastCorner = (typeof TOAST_CORNERS)[number];
+
+export function alertToastCss(node: BoxNode, scope: string): string {
+  if (node.alertForm !== "toast") return "";
+  const corner: ToastCorner = (node.alertToast as ToastCorner) ?? "bottom-right";
+  const [block, inline] = corner.split("-");
+  const pos = "fixed";
+  // `min()` keeps a toast readable on a phone without ever reaching the opposite edge.
+  return (
+    `${scope}{position:${pos} !important;` +
+    `inset-block-${block === "top" ? "start" : "end"}:var(--eu-space-4, 1rem) !important;` +
+    `inset-block-${block === "top" ? "end" : "start"}:auto !important;` +
+    `inset-inline-${inline === "left" ? "start" : "end"}:var(--eu-space-4, 1rem) !important;` +
+    `inset-inline-${inline === "left" ? "end" : "start"}:auto !important;` +
+    `width:min(24rem, calc(100% - var(--eu-space-8, 2rem))) !important;` +
+    `z-index:60 !important;margin:0 !important;}`
+  );
+}
+
+/**
+ * The class list for an accordion: its design plus every axis the user has set. One helper for the canvas AND
+ * the export — two copies of this logic is exactly how a builder stops matching the site it publishes.
+ */
+/**
+ * The layout classes a structural band carries.
+ *
+ * Lives here rather than in either renderer because the canvas and the export must agree — every time a class
+ * has been computed twice in this codebase, the two copies have drifted and the builder has shown something
+ * the exported site did not.
+ *
+ * `isPageSection` is not optional decoration. `rowBand` does NOT mean "a section of the page": normalizeRowBands
+ * wraps the children of EVERY content container in a band, so the four items inside a Card are bands too. Without
+ * this gate the layout classes landed on internal wrappers throughout every component — a Card's image, heading,
+ * body and button each came out marked as a page-wide band. Only a band whose parent is the page root is a
+ * section, and only a section can be told to run edge to edge or sit on the measure.
+ */
+export function bandClasses(node: BoxNode, isPageSection = false): string {
+  if (!node.rowBand || !isPageSection) return "";
+  return node.sectionWidth === "contained" ? "eu-band eu-band--contained" : "eu-band";
+}
+
+export function accordionClasses(node: BoxNode): string {
+  const axes = [node.accIndicator, node.accFrame, node.accRhythm, node.accOpenColour, node.accNumbering, node.accDensity];
+  return ["eu-accordion", node.variant ? `eu-accordion${node.variant}` : "", ...axes.filter(Boolean).map((a) => `eu-accordion${a}`)]
+    .filter(Boolean).join(" ");
+}
+
+/** Does this tree contain a toast? The canvas uses this to make the PAGE the containing block for it. */
+export function treeHasToast(node: BoxNode): boolean {
+  if (node.component === "alert" && node.alertForm === "toast") return true;
+  return (node.children ?? []).some(treeHasToast);
+}
+
 /** The opt-in dismiss script for the export (guarded global; canvas doesn't need it). */
 export function alertDismissScript(node: BoxNode): string {
-  return node.alertDismiss
-    ? `<script>(function(){if(window.__euAlertDismiss)return;window.__euAlertDismiss=1;document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-eu-dismiss]');if(!b)return;var a=b.closest('.eu-alert');if(a){a.style.transition='opacity .18s,transform .18s';a.style.opacity='0';setTimeout(function(){a.remove();},180);}});})();<\/script>`
-    : "";
+  const auto = Math.max(0, Math.round(node.alertAutoSeconds ?? 0));
+  const persist = !!node.alertPersist;
+  if (!node.alertDismiss && !auto && !persist) return "";
+
+  // ONE guarded global for every alert on the page, in the established pattern (`window.__euAlert`), so ten
+  // alerts still ship one copy. Zero-JS stays the default: nothing here is emitted unless the user opted into
+  // dismiss, auto-dismiss or persistence.
+  //
+  // Auto-dismiss PAUSES while the pointer is over the alert or focus is inside it, matching the CSS countdown —
+  // a message that vanishes mid-read is the classic WCAG 2.2.1 (Timing Adjustable) failure.
+  // Persistence remembers per alert id in localStorage, wrapped in try/catch because a private window or
+  // blocked storage must not take the page down with it.
+  return `<script>(function(){if(window.__euAlert)return;window.__euAlert=1;
+var K='eu-alert-dismissed:';
+function hide(a,remember){if(remember){try{localStorage.setItem(K+(a.dataset.euId||''),'1');}catch(e){}}
+a.style.transition='opacity .18s,transform .18s';a.style.opacity='0';setTimeout(function(){a.remove();},180);}
+document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-eu-dismiss]');if(!b)return;
+var a=b.closest('.eu-alert');if(a)hide(a,a.hasAttribute('data-eu-persist'));});
+document.querySelectorAll('.eu-alert[data-eu-persist]').forEach(function(a){
+try{if(localStorage.getItem(K+(a.dataset.euId||'')))a.remove();}catch(e){}});
+document.querySelectorAll('.eu-alert[data-eu-auto]').forEach(function(a){
+var ms=(parseFloat(a.getAttribute('data-eu-auto'))||0)*1000;if(!ms)return;var left=ms,t=null,at=0;
+function go(){at=Date.now();t=setTimeout(function(){hide(a,a.hasAttribute('data-eu-persist'));},left);}
+function hold(){if(t){clearTimeout(t);t=null;left-=Date.now()-at;}}
+a.addEventListener('mouseenter',hold);a.addEventListener('focusin',hold);
+a.addEventListener('mouseleave',go);a.addEventListener('focusout',go);go();});
+})();</script>`;
 }
 
 /** Turn a YouTube/Vimeo URL into an embeddable iframe src; null for a direct video file (use <video>). */
@@ -1333,6 +1618,33 @@ export function alignInRow(root: BoxNode, id: string, justify: FlexJustify): Box
 /** The block's current position within its container (its parent row's justify-content). */
 export function alignInRowOf(root: BoxNode, id: string): FlexJustify {
   return findParent(root, id)?.parent.justify ?? "start";
+}
+
+/**
+ * Set whether the SECTION at `id` runs edge to edge or sits on the page's measure.
+ *
+ * The setting belongs to the parent band, but a band is invisible scaffolding a user can never select —
+ * clicking one selects the section inside it. So the control lives on the section and writes to the band,
+ * exactly as `alignInRow` does. Returns the tree unchanged unless the parent really is a page-level band, so
+ * a section nested inside a component can never rewrite a page section by accident.
+ */
+export function setSectionWidth(root: BoxNode, id: string, value: "band" | "contained"): BoxNode {
+  const band = pageBandOf(root, id);
+  if (!band) return root;
+  return updateBox(root, band.id, { sectionWidth: value === "contained" ? "contained" : undefined });
+}
+
+/** What the section at `id` is currently set to — "band" unless its page-level band says otherwise. */
+export function sectionWidthOf(root: BoxNode, id: string): "band" | "contained" {
+  return pageBandOf(root, id)?.sectionWidth === "contained" ? "contained" : "band";
+}
+
+/** The PAGE-LEVEL band directly holding `id`, or null. Bands exist inside components too; those are not it. */
+export function pageBandOf(root: BoxNode, id: string): BoxNode | null {
+  const info = findParent(root, id);
+  if (!info?.parent.rowBand) return null;
+  const grand = findParent(root, info.parent.id);
+  return grand && grand.parent.id === root.id ? info.parent : null;
 }
 
 /** Raise a floating box above all its floating siblings. */

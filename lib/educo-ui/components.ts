@@ -139,6 +139,152 @@ export const COMPONENT_CSS = `
 .eu-root .eu-alert-stack > .eu-alert { flex: 1 1 auto; }
 .eu-root .eu-alert-stack--banner { gap: 0; }
 .eu-root .eu-alert-stack--banner .eu-alert { border-radius: 0; border-inline: 0; }
+
+/* ── Alert designs ─────────────────────────────────────────────────────────────────────────────────
+   Every design paints with --al-c (the severity colour), --al-tint and --al-line, so ONE rule serves all six
+   severities and re-themes with the site. Nothing here hardcodes a colour — the no-hex guard in
+   tests/unit/educo-components.test.ts fails the build if it does.
+
+   WHY THERE ARE SO MANY: the Alert is the block a school reaches for most (a closure notice, an open day, a
+   fees deadline) and it shipped with 7 designs while the Accordion had 54. The sources the plan studied —
+   Bootstrap's spec and 28 real-world designs from Colorlib among them — carry far more variety than 7. */
+
+/* Signature */
+.eu-root .eu-alert--split { padding: 0; overflow: hidden; align-items: stretch; gap: 0; }
+.eu-root .eu-alert--split .eu-alert__icon { display: grid; place-items: center; background: var(--al-c); color: var(--eu-color-on-brand); padding: var(--eu-space-4); align-self: stretch; }
+.eu-root .eu-alert--split .eu-alert__content { padding: var(--eu-space-4) var(--eu-space-5); }
+.eu-root .eu-alert--ribbon { background: var(--eu-color-surface); border: 1px solid var(--eu-color-border); position: relative; overflow: hidden; }
+.eu-root .eu-alert--ribbon::before { content: ""; position: absolute; inset-block-start: 0; inset-inline-start: 0; border-block-start: 2.2rem solid var(--al-c); border-inline-end: 2.2rem solid transparent; }
+.eu-root .eu-alert--ticket { background: var(--al-tint); border: 1px dashed var(--al-line); position: relative; }
+.eu-root .eu-alert--ticket::before, .eu-root .eu-alert--ticket::after { content: ""; position: absolute; inline-size: 0.9rem; block-size: 0.9rem; border-radius: var(--eu-radius-full); background: var(--eu-color-bg); inset-block-start: calc(50% - 0.45rem); }
+.eu-root .eu-alert--ticket::before { inset-inline-start: -0.5rem; }
+.eu-root .eu-alert--ticket::after { inset-inline-end: -0.5rem; }
+.eu-root .eu-alert--note { background: var(--al-tint); border: 0; border-radius: var(--eu-radius-sm); box-shadow: var(--eu-shadow-md); border-block-end: 3px solid var(--al-c); }
+.eu-root .eu-alert--terminal { background: var(--eu-color-neutral-900); border: 1px solid var(--al-c); border-radius: var(--eu-radius-sm); font-family: var(--eu-font-mono); }
+.eu-root .eu-alert--terminal .eu-alert__title, .eu-root .eu-alert--terminal .eu-alert__icon { color: var(--al-c); }
+.eu-root .eu-alert--terminal .eu-alert__body { color: var(--eu-color-neutral-200); }
+.eu-root .eu-alert--bubble { background: var(--al-tint); border: 1px solid var(--al-line); border-radius: var(--eu-radius-lg); position: relative; }
+.eu-root .eu-alert--bubble::after { content: ""; position: absolute; inset-block-end: -0.55rem; inset-inline-start: var(--eu-space-6); inline-size: 0.9rem; block-size: 0.9rem; background: var(--al-tint); border-inline-end: 1px solid var(--al-line); border-block-end: 1px solid var(--al-line); transform: rotate(45deg); }
+.eu-root .eu-alert--stripe { background: var(--eu-color-surface); border: 1px solid var(--eu-color-border); position: relative; overflow: hidden; padding-inline-start: var(--eu-space-6); }
+.eu-root .eu-alert--stripe::before { content: ""; position: absolute; inset-block: 0; inset-inline-start: 0; inline-size: 0.5rem; background: repeating-linear-gradient(45deg, var(--al-c) 0 0.28rem, transparent 0.28rem 0.56rem); }
+.eu-root .eu-alert--inset { background: var(--al-tint); border: 0; box-shadow: inset 0 2px 6px color-mix(in oklab, var(--al-c) 25%, transparent); }
+.eu-root .eu-alert--underline { background: transparent; border: 0; border-block-end: 2px solid var(--al-c); border-radius: 0; padding-inline: 0; }
+.eu-root .eu-alert--bracket { background: transparent; border: 0; border-inline-start: 2px solid var(--al-c); border-block-start: 2px solid var(--al-c); border-block-end: 2px solid var(--al-c); border-start-start-radius: var(--eu-radius-md); border-end-start-radius: var(--eu-radius-md); }
+.eu-root .eu-alert--frame { background: var(--eu-color-surface); border: 2px solid var(--al-c); outline: 1px solid var(--al-line); outline-offset: 3px; }
+.eu-root .eu-alert--shadowed { background: var(--eu-color-surface); border: 1px solid var(--al-line); box-shadow: 0.35rem 0.35rem 0 color-mix(in oklab, var(--al-c) 30%, transparent); }
+.eu-root .eu-alert--elevated { background: var(--eu-color-surface); border: 0; border-radius: var(--eu-radius-lg); box-shadow: var(--eu-shadow-lg); }
+.eu-root .eu-alert--gradient { background: linear-gradient(135deg, var(--al-c), color-mix(in oklab, var(--al-c) 45%, var(--eu-color-surface))); border-color: transparent; }
+.eu-root .eu-alert--gradient .eu-alert__title, .eu-root .eu-alert--gradient .eu-alert__body, .eu-root .eu-alert--gradient .eu-alert__icon { color: var(--eu-color-on-brand); }
+.eu-root .eu-alert--duotone { background: linear-gradient(90deg, var(--al-c) 0 0.4rem, var(--al-tint) 0.4rem); border: 1px solid var(--al-line); padding-inline-start: var(--eu-space-6); }
+
+/* Icon treatment */
+.eu-root .eu-alert.eu-alert--icon-square .eu-alert__icon { background: var(--al-c); color: var(--eu-color-on-brand); padding: var(--eu-space-2); border-radius: var(--eu-radius-sm); }
+.eu-root .eu-alert.eu-alert--icon-circle .eu-alert__icon { background: var(--al-c); color: var(--eu-color-on-brand); padding: var(--eu-space-2); border-radius: var(--eu-radius-full); }
+.eu-root .eu-alert.eu-alert--icon-outline .eu-alert__icon { border: 1.5px solid var(--al-c); padding: var(--eu-space-2); border-radius: var(--eu-radius-full); }
+.eu-root .eu-alert.eu-alert--icon-top { flex-direction: column; align-items: flex-start; }
+.eu-root .eu-alert.eu-alert--icon-right { flex-direction: row-reverse; }
+.eu-root .eu-alert.eu-alert--icon-big .eu-alert__icon { font-size: 1.75em; }
+.eu-root .eu-alert.eu-alert--no-icon .eu-alert__icon { display: none; }
+
+/* Shape */
+.eu-root .eu-alert.eu-alert--sharp { border-radius: 0; }
+.eu-root .eu-alert.eu-alert--round { border-radius: var(--eu-radius-xl); }
+.eu-root .eu-alert.eu-alert--pill { border-radius: var(--eu-radius-full); padding-inline: var(--eu-space-6); }
+.eu-root .eu-alert.eu-alert--cut { border-radius: 0; clip-path: polygon(0.7rem 0, 100% 0, 100% calc(100% - 0.7rem), calc(100% - 0.7rem) 100%, 0 100%, 0 0.7rem); }
+.eu-root .eu-alert.eu-alert--lean { border-start-start-radius: var(--eu-radius-xl); border-end-end-radius: var(--eu-radius-xl); border-start-end-radius: var(--eu-radius-sm); border-end-start-radius: var(--eu-radius-sm); }
+
+/* Border and rule */
+.eu-root .eu-alert.eu-alert--dashed {  border: 1.5px dashed var(--al-c); }
+.eu-root .eu-alert.eu-alert--dotted {  border: 2px dotted var(--al-c); }
+.eu-root .eu-alert.eu-alert--double {  border: 4px double var(--al-c); }
+.eu-root .eu-alert.eu-alert--thick-left {  border: 1px solid var(--eu-color-border); border-inline-start: 0.5rem solid var(--al-c); }
+.eu-root .eu-alert.eu-alert--thick-top {  border: 1px solid var(--eu-color-border); border-block-start: 0.4rem solid var(--al-c); }
+.eu-root .eu-alert.eu-alert--thick-bottom {  border: 1px solid var(--eu-color-border); border-block-end: 0.4rem solid var(--al-c); }
+.eu-root .eu-alert.eu-alert--hairline { border-width: 1px; border-style: solid; border-color: color-mix(in oklab, var(--al-c) 16%, transparent); }
+
+/* Density and emphasis */
+.eu-root .eu-alert.eu-alert--compact { padding: var(--eu-space-2) var(--eu-space-3); gap: var(--eu-space-2); font-size: var(--eu-text-sm); }
+.eu-root .eu-alert.eu-alert--spacious { padding: var(--eu-space-6); gap: var(--eu-space-4); }
+.eu-root .eu-alert.eu-alert--large { font-size: var(--eu-text-lg); }
+.eu-root .eu-alert.eu-alert--large .eu-alert__title { font-size: var(--eu-text-xl); }
+.eu-root .eu-alert--quiet { background: transparent; border-color: transparent; }
+.eu-root .eu-alert--quiet .eu-alert__title, .eu-root .eu-alert--quiet .eu-alert__icon { color: var(--eu-color-muted); }
+.eu-root .eu-alert.eu-alert--loud { background: var(--al-c); border-color: transparent; box-shadow: var(--eu-shadow-lg); }
+.eu-root .eu-alert.eu-alert--loud .eu-alert__title, .eu-root .eu-alert.eu-alert--loud .eu-alert__body, .eu-root .eu-alert.eu-alert--loud .eu-alert__icon { color: var(--eu-color-on-brand); }
+.eu-root .eu-alert.eu-alert--loud .eu-alert__title { font-weight: var(--eu-weight-bold); }
+.eu-root .eu-alert.eu-alert--strong-title .eu-alert__title { font-weight: var(--eu-weight-bold); letter-spacing: var(--eu-tracking-tight); }
+.eu-root .eu-alert.eu-alert--caps-title .eu-alert__title { text-transform: uppercase; letter-spacing: var(--eu-tracking-wide); font-size: var(--eu-text-sm); }
+
+/* Layout */
+.eu-root .eu-alert.eu-alert--centred { flex-direction: column; align-items: center; text-align: center; }
+.eu-root .eu-alert.eu-alert--end { flex-direction: row-reverse; text-align: end; }
+.eu-root .eu-alert.eu-alert--inline-title { align-items: center; }
+.eu-root .eu-alert.eu-alert--inline-title .eu-alert__content { display: flex; align-items: baseline; gap: var(--eu-space-2); flex-wrap: wrap; }
+.eu-root .eu-alert.eu-alert--narrow { max-inline-size: 32rem; }
+.eu-root .eu-alert.eu-alert--flush { border-inline: 0; border-radius: 0; padding-inline: var(--eu-space-6); }
+
+/* ── Alert actions ─────────────────────────────────────────────────────────────────────────────────
+   Buttons and links ON a message: cookie consent (Manage / Accept), a promo bar, "Update information",
+   "Learn more". The severity still supplies the colour through --al-c, so an action inherits the meaning of
+   the message it sits on rather than introducing a second one.
+   Focus is styled explicitly and never removed: these are the only interactive things inside an alert. */
+.eu-root .eu-alert__actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--eu-space-2); margin-block-start: var(--eu-space-3); }
+.eu-root .eu-alert__action {
+  display: inline-flex; align-items: center; gap: var(--eu-space-1);
+  padding: var(--eu-space-2) var(--eu-space-4); border-radius: var(--eu-radius-md);
+  font: inherit; font-weight: var(--eu-weight-semibold); font-size: var(--eu-text-sm);
+  line-height: var(--eu-leading-snug); text-decoration: none; cursor: pointer; border: 1px solid transparent;
+  transition: background-color var(--eu-dur-fast) var(--eu-ease-standard), color var(--eu-dur-fast) var(--eu-ease-standard), border-color var(--eu-dur-fast) var(--eu-ease-standard);
+}
+.eu-root .eu-alert__action--primary { background: var(--al-c); color: var(--eu-color-on-brand); }
+.eu-root .eu-alert__action--secondary { background: transparent; color: var(--al-c); border-color: var(--al-c); }
+.eu-root .eu-alert__action--link { background: transparent; color: var(--al-c); padding-inline: 0; text-decoration: underline; text-underline-offset: 0.2em; }
+.eu-root .eu-alert__action--link::after { content: " →"; }
+.eu-root .eu-alert__action:hover { filter: brightness(1.06); }
+.eu-root .eu-alert__action--secondary:hover { background: color-mix(in oklab, var(--al-c) 12%, transparent); }
+.eu-root .eu-alert__action:focus-visible { outline: 2px solid var(--al-c); outline-offset: 2px; }
+
+/* On a SOLID or LOUD alert the surface is already the severity colour, so an action painted in it would vanish.
+   These flip to the on-brand colour instead — checked per design rather than assumed. */
+.eu-root .eu-alert--solid .eu-alert__action--primary,
+.eu-root .eu-alert.eu-alert--loud .eu-alert__action--primary,
+.eu-root .eu-alert--gradient .eu-alert__action--primary { background: var(--eu-color-on-brand); color: var(--al-c); }
+.eu-root .eu-alert--solid .eu-alert__action--secondary,
+.eu-root .eu-alert.eu-alert--loud .eu-alert__action--secondary,
+.eu-root .eu-alert--gradient .eu-alert__action--secondary { color: var(--eu-color-on-brand); border-color: var(--eu-color-on-brand); }
+.eu-root .eu-alert--solid .eu-alert__action--link,
+.eu-root .eu-alert.eu-alert--loud .eu-alert__action--link,
+.eu-root .eu-alert--gradient .eu-alert__action--link { color: var(--eu-color-on-brand); }
+.eu-root .eu-alert--terminal .eu-alert__action--primary { background: var(--al-c); color: var(--eu-color-neutral-900); }
+
+/* Actions ON THE RIGHT — written MOBILE-FIRST (RULE R). The base is the stacked layout a phone gets, and the
+   side-by-side arrangement is ADDED from the sm rung up. Writing it the other way round (side-by-side by
+   default, undone by a max-width query) is the inversion the Responsive Field Guide warns against, and a button
+   pushed off the side of a phone is worse than one sitting below the text. */
+.eu-root .eu-alert--actions-right { align-items: flex-start; flex-wrap: wrap; }
+.eu-root .eu-alert--actions-right .eu-alert__actions { margin-inline-start: 0; margin-block-start: var(--eu-space-3); flex-basis: 100%; }
+@media (min-width: 40em) {
+  .eu-root .eu-alert--actions-right { align-items: center; flex-wrap: nowrap; }
+  .eu-root .eu-alert--actions-right .eu-alert__actions { margin-block-start: 0; margin-inline-start: auto; flex: none; flex-basis: auto; }
+}
+
+/* AUTO-DISMISS countdown. Pure CSS: the bar shows the time passing without a line of script, and the script
+   is needed only to act when it runs out. It PAUSES on hover and on keyboard focus inside the alert — an
+   auto-dismissing message the reader cannot hold still is a WCAG 2.2.1 failure, and it is also just rude. */
+.eu-root .eu-alert { position: relative; }
+.eu-root .eu-alert__progress {
+  position: absolute; inset-inline: 0; inset-block-end: 0; block-size: 0.1875rem;
+  transform-origin: left center; background: var(--al-c); opacity: .55;
+  animation: eu-alert-countdown var(--al-auto, 5s) linear forwards;
+}
+.eu-root .eu-alert:hover .eu-alert__progress,
+.eu-root .eu-alert:focus-within .eu-alert__progress { animation-play-state: paused; }
+@keyframes eu-alert-countdown { from { transform: scaleX(1); } to { transform: scaleX(0); } }
+/* Reduced motion keeps the bar (it is information, not decoration) but stops it sliding. */
+@media (prefers-reduced-motion: reduce) {
+  .eu-root .eu-alert__progress { animation: none; transform: scaleX(1); opacity: .3; }
+}
+
 .eu-root .eu-alert-stack--toast { align-items: stretch; }
 .eu-root .eu-alert-stack--toast .eu-alert { box-shadow: var(--eu-shadow-lg); }
 .eu-root .eu-alert__meta { margin-inline-start: auto; color: var(--eu-color-muted); font-size: 0.85em; align-self: flex-start; }

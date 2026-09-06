@@ -13,7 +13,7 @@ import { Plus, Smartphone, Tablet, Laptop, Monitor, Tv, Maximize2, Undo2, Redo2,
 import { DEFAULT_THEME, resolveSiteTheme } from "@/lib/site-storage";
 import { THEMES, type ThemeId } from "@/lib/theme-config";
 import {
-  type BoxNode, type Breakpoint, createContainer, findBox, findParent, updateBox, insertBox, removeBox, duplicateBox, widthPct, makeRowBand, normalizeRowBands, groupBoxes, alignInRow, alignInRowOf,
+  type BoxNode, type Breakpoint, createContainer, findBox, findParent, updateBox, insertBox, removeBox, duplicateBox, widthPct, makeRowBand, normalizeRowBands, groupBoxes, alignInRow, alignInRowOf, setSectionWidth, sectionWidthOf, pageBandOf,
   floatBox, unfloatBox, bringToFront, bringForward, sendBackward, sendToBack,
   resolveResponsive, updateBoxResponsive, clearOverride, hasOverride, isContainer,
 } from "@/lib/box-model";
@@ -21,7 +21,7 @@ import { blockForKind } from "@/lib/box-presets";
 import {
   type BoxSite, siteFromRoot, coerceSite, normalizeSite, setPageRoot, addPage, deletePage, renamePage, setHomePage, duplicatePage, emptyPageRoot, setSiteTheme,
 } from "@/lib/box-site";
-import { renderSiteHTML, downloadHTML } from "@/lib/box-export";
+import { renderSitePage, renderSiteFiles, siteFileMap, downloadSite } from "@/lib/box-export";
 import { warmIcons, hasIcon } from "@/lib/educo-ui/icon-svg";
 import BoxCanvas, { measureFloatGeom, measureGroupGeom } from "@/components/website/box/BoxCanvas";
 import BoxInspector from "@/components/website/box/BoxInspector";
@@ -40,12 +40,20 @@ const ROW_GAP = 0;
 const SECTION_TINTS = ["#eef2ff", "#faf5ff", "#ecfeff", "#fef2f2", "#f0fdf4", "#fffbeb"];
 
 type Device = "mobile" | "tablet" | "laptop" | "desktop" | "wide" | "full";
+/**
+ * Each chip previews a width that sits INSIDE exactly one rung of the ladder, so switching chips shows you a
+ * genuinely different layout rather than two chips that happen to render identically. The widths themselves are
+ * representative rather than the rung's first pixel — nobody's screen is exactly 600px, and a preview pinned to
+ * a boundary shows the one width where a rounding error is visible.
+ *
+ * Wide was 1536, which under this ladder is still the desktop rung — so it and Desktop drew the same page.
+ */
 const DEVICES: { id: Device; label: string; w: number | null; Icon: typeof Smartphone }[] = [
-  { id: "mobile", label: "Mobile", w: 375, Icon: Smartphone },
-  { id: "tablet", label: "Tablet", w: 768, Icon: Tablet },
-  { id: "laptop", label: "Laptop", w: 1024, Icon: Laptop },
-  { id: "desktop", label: "Desktop", w: 1280, Icon: Monitor },
-  { id: "wide", label: "Wide", w: 1536, Icon: Tv },
+  { id: "mobile", label: "Mobile", w: 375, Icon: Smartphone }, // phone rung
+  { id: "tablet", label: "Tablet", w: 768, Icon: Tablet }, // tablet portrait (600+)
+  { id: "laptop", label: "Laptop", w: 1024, Icon: Laptop }, // tablet landscape (900+)
+  { id: "desktop", label: "Desktop", w: 1280, Icon: Monitor }, // desktop (1200+)
+  { id: "wide", label: "Wide", w: 1920, Icon: Tv }, // big desktop (1800+)
   { id: "full", label: "Full width", w: null, Icon: Maximize2 },
 ];
 
@@ -156,12 +164,45 @@ export default function BoxDemoPage() {
   // ── Isolated preview (Phase 0.4): render the ACTUAL export HTML in a sandboxed iframe, so the
   // preview is a true WYSIWYG of the exported, self-contained site — no editor styles bleed in. ──
   const previewFrameRef = useRef<HTMLIFrameElement>(null);
-  const previewHTML = useMemo(() => (preview && site ? renderSiteHTML(site, renderTheme, { preview: true }) : ""), [preview, site, renderTheme]);
-  const scrollPreviewToPage = useCallback((path: string) => {
-    const win = previewFrameRef.current?.contentWindow;
-    if (win) win.location.hash = `#${path}`;
-  }, []);
+  // The preview shows the REAL exported page — same markup, same nav, same links — one page at a time, exactly
+  // as a visitor meets it. (It inlines the shared stylesheet because a srcdoc document has no styles.css to
+  // fetch; that is the only difference between this and the file on disk.)
+  const previewHTML = useMemo(
+    () => (preview && site && activePage ? renderSitePage(site, renderTheme, activePage.id, { inlineShared: true }) : ""),
+    [preview, site, activePage, renderTheme],
+  );
 
+
+
+  const switchPage = (id: string) => { setActivePageId(id); setSelectedIds([]); setPageMenu(false); };
+
+  // Inside the iframe the site's nav points at real files (`admissions.html`), which a srcdoc document cannot
+  // navigate to. Intercepting the click and switching the previewed page keeps the markup honest — the preview
+  // shows the exact link a visitor will click — while still letting you walk the whole site.
+  const fileToPage = useMemo(() => {
+    const m = new Map<string, string>();
+    if (site) for (const [id, file] of siteFileMap(site)) m.set(file, id);
+    return m;
+  }, [site]);
+
+  const wirePreviewNav = useCallback(() => {
+    const doc = previewFrameRef.current?.contentDocument;
+    if (!doc) return;
+    doc.addEventListener("click", (e) => {
+      const a = (e.target as HTMLElement | null)?.closest?.("a[href]") as HTMLAnchorElement | null;
+      if (!a) return;
+      const href = a.getAttribute("href") ?? "";
+      const pageId = fileToPage.get(href);
+      if (!pageId) return;              // external or in-page link — leave it alone
+      e.preventDefault();
+      switchPage(pageId);
+    });
+  }, [fileToPage, switchPage]);
+
+  // NOTE: every hook above runs on EVERY render. React counts hooks by call order, so a `useMemo` or
+  // `useCallback` placed AFTER this guard is called only sometimes — which crashes the whole builder with
+  // "Rendered more hooks than during the previous render". That is precisely what happened when the preview
+  // callback was first written next to `switchPage` below the guard; `switchPage` moved up instead.
   if (!site || !activePage || !root) return <PageLoader isLoading loadingText="Box Builder" subText="Preparing your canvas…" />;
 
   const selected = selectedIds.length === 1 ? findBox(root, selectedIds[0]) : null;
@@ -179,7 +220,6 @@ export default function BoxDemoPage() {
   };
 
   // ── Page management ──
-  const switchPage = (id: string) => { setActivePageId(id); setSelectedIds([]); setPageMenu(false); };
   const onAddPage = () => { const { site: s, id } = addPage(site, `Page ${site.pages.length + 1}`, emptyPageRoot()); pushSite(s); setActivePageId(id); setSelectedIds([]); };
   const onDuplicatePage = () => { const { site: s, id } = duplicatePage(site, activePage.id); pushSite(s); setActivePageId(id); setPageMenu(false); };
   const onRenamePage = (name: string) => pushSite(renamePage(site, activePage.id, name));
@@ -229,7 +269,8 @@ export default function BoxDemoPage() {
     };
     walk(site);
     await warmIcons(names);
-    downloadHTML(renderSiteHTML(site, renderTheme), "site.html");
+    // A multi-page site is several files, so it arrives as a ZIP to unzip and upload.
+    downloadSite(renderSiteFiles(site, renderTheme), "site.zip");
   };
 
   // Click-to-add from the palette: insert into the selected container (or the page) with an optional style.
@@ -263,7 +304,7 @@ export default function BoxDemoPage() {
           <button onClick={() => setPreview(false)} className="inline-flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700"><X className="w-3.5 h-3.5" /> Exit preview</button>
           <nav className="flex items-center gap-1 overflow-x-auto" aria-label="Pages">
             {site.pages.map((p) => (
-              <button key={p.id} onClick={() => { switchPage(p.id); scrollPreviewToPage(p.path); }} aria-current={p.id === activePage.id} className={`text-xs px-2.5 py-1 rounded-md whitespace-nowrap ${p.id === activePage.id ? "bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 font-semibold" : "text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100 dark:hover:bg-gray-800 midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5"}`}>{p.name}{p.id === site.homeId ? " ·" : ""}</button>
+              <button key={p.id} onClick={() => switchPage(p.id)} aria-current={p.id === activePage.id} className={`text-xs px-2.5 py-1 rounded-md whitespace-nowrap ${p.id === activePage.id ? "bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 font-semibold" : "text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100 dark:hover:bg-gray-800 midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5"}`}>{p.name}{p.id === site.homeId ? " ·" : ""}</button>
             ))}
           </nav>
           <div className="ml-auto flex items-center rounded-lg border border-gray-300 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 p-0.5" role="group" aria-label="Preview screen size">
@@ -275,6 +316,7 @@ export default function BoxDemoPage() {
             ref={previewFrameRef}
             title="Site preview"
             srcDoc={previewHTML}
+            onLoad={wirePreviewNav}
             sandbox="allow-same-origin allow-scripts allow-popups"
             className="bg-white shadow-2xl rounded-xl ring-1 ring-black/10 shrink-0 border-0"
             style={{ width: frameW ?? "100%", maxWidth: frameW ? undefined : "64rem", height: "100%" }}
@@ -362,7 +404,7 @@ export default function BoxDemoPage() {
               {bulk ? (
                 <BulkInspector count={selectedIds.length} theme={renderTheme} sample={(() => { const f = findBox(root, selectedIds[0]); return f ? resolveResponsive(f, bp) : null; })()} onStepWidth={bulkStepWidth} onStepHeight={bulkStepHeight} onPatch={bulkPatch} onDuplicate={bulkDuplicate} onDelete={bulkDelete} onFloatAll={bulkFloat} onGroup={bulkGroup} />
               ) : selected ? (
-                <BoxInspector node={bp === "base" ? selected : resolveResponsive(selected, bp)} theme={renderTheme} onPatch={onPatch} onAddChild={addChildSection} onFloat={floatSelected} onUnfloat={unfloatSelected} onLayer={layerSelected} onAlignInRow={(j) => commit(alignInRow(root, selected.id, j))} rowJustify={alignInRowOf(root, selected.id)} canFloat={selected.id !== root.id} inGrid={findParent(root, selected.id)?.parent.layout === "grid"} breakpoint={bp} overridden={hasOverride(selected, bp)} onResetOverride={resetOverride} pages={pageList} currentPageId={activePage.id} />
+                <BoxInspector node={bp === "base" ? selected : resolveResponsive(selected, bp)} theme={renderTheme} onPatch={onPatch} onAddChild={addChildSection} onFloat={floatSelected} onUnfloat={unfloatSelected} onLayer={layerSelected} onAlignInRow={(j) => commit(alignInRow(root, selected.id, j))} rowJustify={alignInRowOf(root, selected.id)} onSectionWidth={pageBandOf(root, selected.id) ? (v) => commit(setSectionWidth(root, selected.id, v)) : undefined} sectionWidth={sectionWidthOf(root, selected.id)} canFloat={selected.id !== root.id} inGrid={findParent(root, selected.id)?.parent.layout === "grid"} breakpoint={bp} overridden={hasOverride(selected, bp)} onResetOverride={resetOverride} pages={pageList} currentPageId={activePage.id} />
               ) : (
                 <div className="p-6 text-xs text-gray-400 text-center mt-6">Click a block to edit it — or drag a box on empty canvas to select several at once.</div>
               )}

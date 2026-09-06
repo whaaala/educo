@@ -1,7 +1,17 @@
 import { describe, it, expect } from "vitest";
 import { createContainer, createElement, createComponent, makeRowBand, type BoxNode } from "@/lib/box-model";
 import { siteFromRoot, addPage, emptyPageRoot } from "@/lib/box-site";
-import { styleString, renderPageHTML, renderSiteHTML, renderPageDocument, downloadHTML } from "@/lib/box-export";
+import { styleString, renderPageHTML, renderSiteFiles, renderSitePage, downloadSite } from "@/lib/box-export";
+import { BREAKPOINTS_EM } from "@/lib/educo-ui/base";
+
+/** The ladder, never a literal: a test that re-types `40em` stops testing the ladder the moment it moves. */
+const atRungRe = (em: number) => new RegExp(`@media \\(min-width:${em}em\\)\\{(.*?)\\}\\}`, "s");
+
+/** A single page as a finished document, through the shipping path. */
+const pageDoc = (root: BoxNode, title = "Page") => {
+  const site = siteFromRoot(root, title);
+  return renderSitePage(site, DEFAULT_THEME, site.homeId, { inlineShared: true });
+};
 import { DEFAULT_THEME } from "@/lib/site-storage";
 
 describe("box-export — static HTML", () => {
@@ -90,35 +100,26 @@ describe("box-export — static HTML", () => {
     expect(renderPageHTML(root, DEFAULT_THEME)).not.toContain("secret");
   });
 
-  it("renderSiteHTML emits one doc with a nav + a <section> per page, and resolves page: links to #slug", () => {
-    let site = siteFromRoot(emptyPageRoot(), "Home");
-    const about = addPage(site, "About", emptyPageRoot()); site = about.site;
-    // a button on Home linking to the About page
-    const home = site.pages[0];
-    const btn = createElement("button", { text: "About us", href: `page:${about.id}` } as Partial<BoxNode>);
-    home.root.children = [makeRowBand([createContainer("column", { children: [makeRowBand([btn])] } as Partial<BoxNode>)])];
-
-    const html = renderSiteHTML(site, DEFAULT_THEME);
-    expect(html).toContain("<!doctype html>");
-    expect(html).toContain('<nav class="eu-site-nav">');
-    expect(html).toContain('<section id="home">');
-    expect(html).toContain('<section id="about">');
-    expect(html).toContain('href="#about"'); // the page: link resolved to the About slug
-  });
-
-  it("Phase 0.4 — export is self-contained: Educo UI stylesheet inlined + body scoped under .eu-root", () => {
+  it("the export is self-contained — the design system ships in the shared sheet, the page is scoped", () => {
+    // Still self-contained, but SPLIT: the design system is identical on every page so it lives in styles.css
+    // and caches once; only the page's own rules are inlined. Inlining it per page would repeat ~74 KB in
+    // every file and defeat caching entirely.
     const site = siteFromRoot(emptyPageRoot(), "Home");
-    const html = renderSiteHTML(site, DEFAULT_THEME);
-    expect(html).toContain('<body class="eu-root">'); // scoped so styles never leak
-    expect(html).toContain("--eu-color-primary-500:#"); // tokens inlined
-    expect(html).toContain(".eu-container");            // base stylesheet inlined
-    expect(html).toContain(".eu-btn");                  // component styles inlined
+    const files = renderSiteFiles(site, DEFAULT_THEME);
+    const html = files["index.html"];
+    expect(html).toContain('<body class="eu-root">');  // scoped so styles never leak
+    expect(html).toContain('<link rel="stylesheet" href="styles.css">');
+    expect(files["styles.css"]).toContain("--eu-color-primary-500:#"); // tokens
+    expect(files["styles.css"]).toContain(".eu-band");            // base
+    // Components are NOT in the shared sheet: they are subsetted into each page, so a page ships only the
+    // rules it uses. An empty page needs none of them.
+    expect(files["styles.css"]).not.toContain(".eu-btn");
     expect(html).not.toMatch(/https?:\/\/[^"']*\.css/); // no external stylesheet links
   });
 
-  it("renderPageDocument wraps a single page as a self-contained document", () => {
+  it("a single page renders as a self-contained document", () => {
     const root = createContainer("column", { children: [makeRowBand([createElement("heading", { text: "Solo" } as Partial<BoxNode>)])] } as Partial<BoxNode>);
-    const doc = renderPageDocument(root, DEFAULT_THEME, "My Page");
+    const doc = pageDoc(root, "My Page");
     expect(doc).toContain("<!doctype html>");
     expect(doc).toContain("<title>My Page</title>");
     expect(doc).toContain('<body class="eu-root">');
@@ -381,7 +382,7 @@ describe("box-export — static HTML", () => {
     for (const m of html.matchAll(/\sstyle="([^"]*)"/g))
       for (const decl of m[1].split(";").filter(Boolean)) expect(decl.trim().startsWith("--")).toBe(true);
     // the exported document body never scrolls horizontally
-    const doc = renderPageDocument(createContainer("column", {} as Partial<BoxNode>), DEFAULT_THEME, "P");
+    const doc = pageDoc(createContainer("column", {} as Partial<BoxNode>), "P");
     expect(doc).toContain("html,body{max-width:100%;overflow-x:hidden}");
   });
 
@@ -393,16 +394,16 @@ describe("box-export — static HTML", () => {
       children: [makeRowBand([createElement("text", { text: "x" } as Partial<BoxNode>)])],
     } as Partial<BoxNode>);
     const root = createContainer("column", { id: "r", children: [sec] } as Partial<BoxNode>);
-    const doc = renderPageDocument(root, DEFAULT_THEME, "P");
+    const doc = pageDoc(root, "P");
     // Mobile-first: min-width queries, in em, on the documented ladder — never max-width, never px.
-    expect(doc).toContain("@media (min-width:40em)"); // tablet and up
-    expect(doc).toContain("@media (min-width:64em)"); // desktop and up
+    expect(doc).toContain(`@media (min-width:${BREAKPOINTS_EM.tabletPortrait}em)`); // tablet and up
+    expect(doc).toContain(`@media (min-width:${BREAKPOINTS_EM.desktop}em)`); // desktop and up
     expect(doc).not.toMatch(/@media \([^)]*max-width[^)]*\)/);
     expect(doc).not.toMatch(/@media \([^)]*\d+px\)/);
     // the BASE rule is the phone layout; each wider block adds only what changes at that width
     expect(doc).toMatch(/\.bx-s1\{[^}]*background-color:#0000ff/); // base = blue (mobile)
-    const tabletBlock = doc.match(/@media \(min-width:40em\)\{(.*?)\}\}/s)?.[1] ?? "";
-    const desktopBlock = doc.match(/@media \(min-width:64em\)\{(.*?)\}\}/s)?.[1] ?? "";
+    const tabletBlock = doc.match(atRungRe(BREAKPOINTS_EM.tabletPortrait))?.[1] ?? "";
+    const desktopBlock = doc.match(atRungRe(BREAKPOINTS_EM.desktop))?.[1] ?? "";
     expect(tabletBlock).toMatch(/\.bx-s1\{[^}]*background-color:#00ff00/); // tablet = green
     expect(desktopBlock).toMatch(/\.bx-s1\{[^}]*background-color:#ff0000/); // desktop = red
   });
@@ -413,13 +414,13 @@ describe("box-export — static HTML", () => {
       children: [makeRowBand([createElement("text", { text: "hi" } as Partial<BoxNode>)])],
     } as unknown as Partial<BoxNode>);
     const root = createContainer("column", { id: "r", children: [floated] } as Partial<BoxNode>);
-    const doc = renderPageDocument(root, DEFAULT_THEME, "P");
+    const doc = pageDoc(root, "P");
     // BASE = the phone layout: stacked, full-width, auto-height, and the parent reserves nothing.
     expect(doc).toMatch(/\.bx-f\{[^}]*position:relative/);
     expect(doc).toMatch(/\.bx-f\{[^}]*width:100%/);
     expect(doc).toMatch(/\.bx-f\{[^}]*height:auto/);
     // From tablet up it floats, and the parent reserves room for it — in rem, never px (field guide ②).
-    const tabletBlock = doc.match(/@media \(min-width:40em\)\{(.*?)\}\}/s)?.[1] ?? "";
+    const tabletBlock = doc.match(atRungRe(BREAKPOINTS_EM.tabletPortrait))?.[1] ?? "";
     expect(tabletBlock).toMatch(/\.bx-f\{[^}]*position:absolute/);
     expect(tabletBlock).toMatch(/\.bx-r\{[^}]*min-height:3\d(\.\d+)?rem/); // ≈500px / 16 = 31.25rem
   });
@@ -430,24 +431,32 @@ describe("box-export — static HTML", () => {
       responsive: { mobile: { top: 5 } }, // user deliberately repositioned it on mobile
     } as unknown as Partial<BoxNode>);
     const root = createContainer("column", { id: "r", children: [floated] } as Partial<BoxNode>);
-    const doc = renderPageDocument(root, DEFAULT_THEME, "P");
+    const doc = pageDoc(root, "P");
     // it stays floating on mobile — no forced position:relative / width:100% stack
     // Pinned: it stays absolutely positioned at EVERY width, so the base rule is not the stacked one.
     expect(doc).toMatch(/\.bx-f\{[^}]*position:absolute/);
     expect(doc).not.toMatch(/\.bx-f\{[^}]*position:relative/);
   });
 
-  it("PREVIEW pins base to about:srcdoc so nav links scroll instead of reloading the app; DOWNLOAD does not", () => {
+  it("PREVIEW shows the real page — same links as the export, with the shared sheet inlined", () => {
+    // The old preview put every page in one document and pinned <base> so `#home` stayed an in-page scroll.
+    // There are no hash links between pages any more: preview renders the REAL file, and the builder
+    // intercepts clicks on its nav. The one difference is that a srcdoc document has no styles.css to fetch,
+    // so the shared sheet is inlined instead of linked.
     const site = siteFromRoot(emptyPageRoot(), "Home");
-    // preview variant (srcdoc iframe): base is pinned so `#home` stays an in-page fragment
-    expect(renderSiteHTML(site, DEFAULT_THEME, { preview: true })).toContain('<base href="about:srcdoc">');
-    // standalone download: NO srcdoc base (its own file URL is the correct base for the real file)
-    expect(renderSiteHTML(site, DEFAULT_THEME)).not.toContain("about:srcdoc");
-    // the nav link itself is still a same-document hash
-    expect(renderSiteHTML(site, DEFAULT_THEME, { preview: true })).toContain('href="#home"');
+    const shipped = renderSiteFiles(site, DEFAULT_THEME)["index.html"];
+    const previewed = renderSitePage(site, DEFAULT_THEME, site.homeId, { inlineShared: true });
+
+    expect(previewed).toContain("--eu-color-primary-500:#");        // inlined, because nothing can be fetched
+    expect(previewed).not.toContain('<link rel="stylesheet"');
+    expect(shipped).toContain('<link rel="stylesheet" href="styles.css">'); // linked, so it caches
+    // the LINKS are identical — that is what makes the preview trustworthy
+    expect(previewed).toContain('href="index.html"');
+    expect(shipped).toContain('href="index.html"');
   });
 
-  it("downloadHTML is a safe no-op when the DOM/URL APIs are unavailable", () => {
-    expect(() => downloadHTML("<html></html>")).not.toThrow();
+  it("downloadSite is a safe no-op when the DOM/URL APIs are unavailable", () => {
+    // It runs during SSR too, where there is no document to append a link to.
+    expect(() => downloadSite({ "index.html": "<html></html>" })).not.toThrow();
   });
 });

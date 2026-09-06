@@ -3,8 +3,14 @@ import { render, cleanup } from "@testing-library/react";
 import BoxCanvas from "@/components/website/box/BoxCanvas";
 import { DEFAULT_THEME } from "@/lib/site-storage";
 import { createContainer, createComponent, componentBoxCss, resizeTopEdge, hugsContent, blockContainmentCss, clampFloatGeom, floatBox, findBox, widthPct, isFloating, isClipped, clampContentScale, MIN_CONTENT_SCALE, comfortableWidth, COMFORTABLE_LINES, PLACEMENT_INSET_PCT, type BoxNode } from "@/lib/box-model";
-import { renderSiteHTML } from "@/lib/box-export";
+import { renderSitePage } from "@/lib/box-export";
 import { siteFromRoot } from "@/lib/box-site";
+
+/** One page through the SHIPPING export path — the app no longer emits the single-document shape. */
+const exportDoc = (root: BoxNode) => {
+  const site = siteFromRoot(root);
+  return renderSitePage(site, DEFAULT_THEME, site.homeId, { inlineShared: true });
+};
 
 // Every component offered in the Blocks palette. A new component MUST be added here — the rule it guards
 // (RULE G: the component itself resizes from all four sides) applies to every component we add.
@@ -61,7 +67,7 @@ describe("Component sizing — the component itself fills its block (RULE G)", (
     });
 
     it(`${component}: the exported HTML carries the same fill, so canvas === export`, () => {
-      const html = renderSiteHTML(siteFromRoot(pageWith(component)), DEFAULT_THEME);
+      const html = exportDoc(pageWith(component));
       expect(html).toMatch(/height:\s*100%/);
       expect(html).toContain("200px");
     });
@@ -160,7 +166,7 @@ describe("A 'Fit' block hugs its content — the component IS the block (RULE K)
       const canvasCss = [...box.querySelectorAll("style")].map((s) => s.textContent ?? "").join("");
       expect(canvasCss, `${component}: canvas hug rule`).toContain(HUG_RULE);
 
-      const html = renderSiteHTML(siteFromRoot(root), DEFAULT_THEME);
+      const html = exportDoc(root);
       expect(html, `${component}: export hug rule`).toContain(HUG_RULE);
     });
 
@@ -168,7 +174,7 @@ describe("A 'Fit' block hugs its content — the component IS the block (RULE K)
       const root = createContainer("column", { id: "page", children: [
         createContainer("row", { id: "row", children: [createComponent(component, { id: "tgt", width: "fill" })] }),
       ] });
-      expect(renderSiteHTML(siteFromRoot(root), DEFAULT_THEME)).not.toContain(HUG_RULE);
+      expect(exportDoc(root)).not.toContain(HUG_RULE);
     });
   }
 });
@@ -327,7 +333,7 @@ describe("Shrinking a component past its content scales the text, never crops it
       const root = createContainer("column", { id: "page", children: [
         createContainer("row", { id: "row", rowBand: true, children: [createComponent(component, { id: "tgt", width: "fill", height: "80px", contentScale: 0.7 })] }),
       ] });
-      expect(renderSiteHTML(siteFromRoot(root), DEFAULT_THEME)).toContain("font-size:0.7em");
+      expect(exportDoc(root)).toContain("font-size:0.7em");
     });
   }
 });

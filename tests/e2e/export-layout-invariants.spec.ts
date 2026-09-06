@@ -3,8 +3,20 @@ import { type BoxNode } from "@/lib/box-model";
 import { ALL_COMPONENTS } from "@/lib/component-catalogue";
 import { blockForKind } from "@/lib/box-presets";
 import { siteFromRoot } from "@/lib/box-site";
-import { renderSiteHTML } from "@/lib/box-export";
+import { renderSitePage } from "@/lib/box-export";
 import { DEFAULT_THEME } from "@/lib/site-storage";
+
+/**
+ * One page, rendered through the SHIPPING export path.
+ *
+ * These used to call `renderSiteHTML`, which put every page in one document. The app no longer emits that
+ * shape — so the tests were validating a code path that could not reach a user, which is exactly the failure
+ * these invariants exist to catch. `inlineShared` is set because `setContent` has no styles.css to fetch.
+ */
+const exportDoc = (root: BoxNode) => {
+  const site = siteFromRoot(root);
+  return renderSitePage(site, DEFAULT_THEME, site.homeId, { inlineShared: true });
+};
 
 /**
  * EXPORT LAYOUT INVARIANTS — the same geometric guarantees as component-layout-invariants.spec.ts, but on the
@@ -52,7 +64,7 @@ async function renderExport(page: Page, node: BoxNode, viewport: { width: number
     id: "root", type: "container", direction: "column",
     children: [{ id: "band", type: "container", direction: "row", rowBand: true, width: "fill", children: [node] }],
   } as BoxNode;
-  const html = renderSiteHTML(siteFromRoot(root), DEFAULT_THEME);
+  const html = exportDoc(root);
   await page.setViewportSize(viewport);
   // `domcontentloaded`, not `load`: the export links Google Fonts and this suite must not depend on the
   // network. Fallback faces are enough — nothing here measures a glyph, only box geometry and font-size.

@@ -79,12 +79,24 @@ describe("Educo UI component styles", () => {
   });
 
   it("is scoped under .eu-root so it never leaks into the editor", () => {
-    // every rule block is prefixed with .eu-root
+    // Every rule block is prefixed with .eu-root — the guard that stops component styling bleeding into the
+    // editor chrome. The ONE exemption is a @keyframes step (`from`, `to`, `50%`): those name a point in an
+    // animation, not an element, and CSS has nowhere to put a scope on them. The @keyframes rule ITSELF is
+    // still checked for a scoped name below, so an unscoped animation cannot sneak in behind this.
     const selectors = COMPONENT_CSS.split("{").slice(0, -1).map((s) => s.split("}").pop()!.trim()).filter(Boolean);
+    const isKeyframeStep = (sel: string) => /^(from|to|d+%)(s*,s*(from|to|d+%))*$/.test(sel);
     for (const sel of selectors) {
-      if (sel.startsWith("/*") || sel.startsWith("@")) continue;
-      expect(sel.includes(".eu-root")).toBe(true);
+      if (sel.startsWith("/*") || sel.startsWith("@") || isKeyframeStep(sel)) continue;
+      expect(sel.includes(".eu-root"), `unscoped selector: "${sel}"`).toBe(true);
     }
+  });
+
+  it("names every animation after the component that owns it, so nothing collides globally", () => {
+    // @keyframes names are GLOBAL — they are the one thing in this stylesheet that cannot be scoped by a
+    // selector, so the convention is the guard: every animation is prefixed `eu-`.
+    const names = [...COMPONENT_CSS.matchAll(/@keyframess+([w-]+)/g)].map((m) => m[1]);
+    for (const n of names) expect(n.startsWith("eu-"), `animation "${n}" must be namespaced`).toBe(true);
+    expect(new Set(names).size, "no duplicate animation names").toBe(names.length);
   });
 
   it("uses states + motion tokens (hover/disabled/transition)", () => {

@@ -8,14 +8,19 @@
 import type { CSSProperties } from "react";
 import {
   type BoxNode, type Breakpoint, containerStyle, childStyle, marginCSS, sizeToCSS, radiusCSS, SHADOW_CSS, u, baseUnit,
-  resolveResponsive, floatStacksOnMobile, videoEmbedSrc, isContainer, sanitizeCssDeclarations, expandScopedCss, ACCORDION_CSS_PARTS, ALERT_CSS_PARTS, COMPONENT_PARTS, itemFloatContextCss, itemOverrideCss, itemHasOverride, itemNumberVars, itemFloatReserveRem, richBody, plainBody, componentTextCss, componentBoxCss, bgImageLayer, renderAlertHTML, alertDismissScript, bgShowThroughCss, blockContainmentCss, COMPONENT_ITEM_SEL, remLen,
+  resolveResponsive, floatStacksOnMobile, alertToastCss, accordionClasses, bandClasses, videoEmbedSrc, isContainer, sanitizeCssDeclarations, expandScopedCss, ACCORDION_CSS_PARTS, ALERT_CSS_PARTS, COMPONENT_PARTS, itemFloatContextCss, itemOverrideCss, itemHasOverride, itemNumberVars, itemFloatReserveRem, richBody, plainBody, componentTextCss, componentBoxCss, bgImageLayer, renderAlertHTML, alertDismissScript, bgShowThroughCss, blockContainmentCss, COMPONENT_ITEM_SEL, remLen,
 } from "@/lib/box-model";
 import { isRegistryComponent, renderComponent, componentScripts } from "@/lib/educo-ui/registry";
 import { iconSvg } from "@/lib/educo-ui/icon-svg";
 import type { BoxSite } from "@/lib/box-site";
 import type { SiteTheme } from "@/lib/site-storage";
 import { colorToCSS } from "@/components/shared/ColorPalettePicker";
-import { BREAKPOINTS_EM, stylesheet } from "@/lib/educo-ui/base";
+import { BREAKPOINTS_EM, BASE_CSS } from "@/lib/educo-ui/base";
+import { COMPONENT_CSS } from "@/lib/educo-ui/components";
+import { tokensFromTheme, tokensToCss } from "@/lib/educo-ui/tokens";
+import { subsetCss, usedEuClasses, stripComments } from "@/lib/educo-ui/subset";
+import { zipSync, strToU8 } from "fflate";
+import { hoverCss, revealCss, revealKeyframes } from "@/lib/interactions";
 
 const UNITLESS = new Set(["opacity", "zIndex", "lineHeight", "fontWeight", "flexGrow", "flexShrink", "order", "flex"]);
 
@@ -80,9 +85,15 @@ function typoCss(node: BoxNode, family: string, weight: number): CSSProperties {
   };
 }
 
+/**
+ * A link's destination. `page:<id>` is resolved through the page map, and the map holds the FINAL href — a
+ * filename (`about.html`) for the multi-page export, a fragment (`#about`) for the single-document preview.
+ * Keeping the shape in the map rather than in this function means one resolver serves both, and neither can
+ * drift from the other.
+ */
 const hrefFor = (node: BoxNode, pageMap: Map<string, string>): string => {
   const h = node.href ?? "#";
-  if (h.startsWith("page:")) { const path = pageMap.get(h.slice(5)); return path ? `#${path}` : "#"; }
+  if (h.startsWith("page:")) return pageMap.get(h.slice(5)) ?? "#";
   return h;
 };
 
@@ -127,7 +138,9 @@ function componentInjectCss(node: BoxNode): string {
   const itemSel = COMPONENT_ITEM_SEL[node.component!];
   const showThrough = itemSel ? bgShowThroughCss(node, `${sel} ${itemSel}`) : "";
   // RULE G/K/R: the block box carries the container-query context (and drops it while hugging) — see blockContainmentCss.
-  return [tcss ? `${sel}, ${sel} *{${tcss}}` : "", bcss ? `${sel}{${bcss}}` : "", adv, floatCtx, showThrough, blockContainmentCss(node, sel)].filter(Boolean).join("");
+  // TOAST floats in a viewport corner on the published page (the canvas pins it to the page frame instead).
+  const toast = alertToastCss(node, sel);
+  return [tcss ? `${sel}, ${sel} *{${tcss}}` : "", bcss ? `${sel}{${bcss}}` : "", adv, floatCtx, showThrough, blockContainmentCss(node, sel), toast].filter(Boolean).join("");
 }
 
 /** Render an Educo UI component instance to its `.eu-*` markup + a per-instance <style> (so Design/Typography
@@ -136,7 +149,7 @@ function componentHTML(node: BoxNode): string {
   const inject = componentInjectCss(node);
   const style = inject ? `<style>${inject}</style>` : "";
   if (node.component === "accordion") {
-    const cls = "eu-accordion" + (node.variant ? ` eu-accordion${node.variant}` : "");
+    const cls = accordionClasses(node);
     // A shared `name` groups <details> so only one opens at a time (native exclusive accordion); omitted when multi-open.
     const grp = node.accMultiOpen ? "" : ` name="acc-${esc(node.id)}"`;
     const itemStyles: string[] = []; // per-ITEM Advanced CSS, scoped to that one item
@@ -235,9 +248,12 @@ function overridesCss(node: BoxNode): string {
 // (Previously the base was DESKTOP and narrow screens undid it with `max-width` px queries — the exact
 // inversion the guide warns against. The editor's per-device DATA model is unchanged: a page still stores a
 // base plus tablet/mobile overrides; only the CSS that comes out of it is now built up instead of torn down.)
-const TABLET_MIN_EM = BREAKPOINTS_EM.sm; // 40em / 640px — tablet layout and up
-const DESKTOP_MIN_EM = BREAKPOINTS_EM.lg; // 64em / 1024px — desktop layout and up
-type Sheet = { base: string[]; tablet: string[]; desktop: string[] };
+// The editor stores three layers (a base, plus tablet and mobile overrides); the ladder has five rungs. These
+// two lines are where the one maps onto the other, and they are the ONLY place that mapping is decided.
+// Tablet overrides therefore cover BOTH tablet orientations, and the desktop layer starts at the desktop rung.
+const TABLET_MIN_EM = BREAKPOINTS_EM.tabletPortrait; // 37.5em / 600px — tablet layout and up
+const DESKTOP_MIN_EM = BREAKPOINTS_EM.desktop; // 75em / 1200px — desktop layout and up
+type Sheet = { base: string[]; tablet: string[]; desktop: string[]; reveals: Set<string> };
 const classFor = (id: string) => "bx-" + id.replace(/[^A-Za-z0-9_-]/g, "-");
 // When a property is set at BASE but dropped at a breakpoint, we must actively neutralise it (the base rule
 // still applies at every width) — reset it to its layout initial rather than leaving the desktop value.
@@ -318,7 +334,7 @@ function diffStyle(base: CSSProperties, bp: CSSProperties): string {
 }
 
 /** Render a node (and subtree) to HTML, pushing its base + per-breakpoint rules into `sheet`. */
-function renderNode(node: BoxNode, rawParent: BoxNode | null, theme: SiteTheme, pageMap: Map<string, string>, sheet: Sheet): string {
+function renderNode(node: BoxNode, rawParent: BoxNode | null, theme: SiteTheme, pageMap: Map<string, string>, sheet: Sheet, isPageSection = false): string {
   const r = resolveResponsive(node, "base");
   if (r.hidden && !node.responsive) return ""; // hidden at base with no per-device un-hide → skip entirely
   const cls = classFor(node.id);
@@ -329,21 +345,34 @@ function renderNode(node: BoxNode, rawParent: BoxNode | null, theme: SiteTheme, 
   const desktopObj = styleAt(node, rawParent, "base");
   const ov = overridesCss(r);
   sheet.base.push(`.${cls}{${[styleString(phoneObj), ov].filter(Boolean).join(";")}}`);
+  // Hover & focus (Interactions 1a) — the SAME emitter the canvas uses, so the builder shows exactly what a
+  // visitor gets. Pure CSS: a page with no effects ships nothing extra.
+  const hov = hoverCss(`.${cls}`, r.hoverEffect);
+  if (hov) sheet.base.push(hov);
+  // Entrance (Round 1b). The keyframes are global, so the ids used are collected and emitted ONCE at assembly.
+  const rev = revealCss(`.${cls}`, r);
+  if (rev) { sheet.base.push(rev); if (r.revealEffect) sheet.reveals.add(r.revealEffect); }
   const tDiff = diffStyle(phoneObj, tabletObj);
   if (tDiff) sheet.tablet.push(`.${cls}{${tDiff}}`);
   const dDiff = diffStyle(tabletObj, desktopObj);
   if (dDiff) sheet.desktop.push(`.${cls}{${dDiff}}`);
   const idAttr = r.anchor ? ` id="${esc(r.anchor)}"` : "";
+  // A structural band also carries its layout classes — computed by box-model, so the canvas gets the same ones.
+  const allCls = [cls, bandClasses(r, isPageSection)].filter(Boolean).join(" ");
   if (isContainer(r)) {
-    const kids = (r.children ?? []).map((c) => renderNode(c, node, theme, pageMap, sheet)).join("");
-    return `<div${idAttr} class="${cls}">${kids}</div>`;
+    // Children of the PAGE ROOT (the only call with no parent) are the page's sections; nothing deeper is.
+    const kidsAreSections = rawParent === null;
+    const kids = (r.children ?? []).map((c) => renderNode(c, node, theme, pageMap, sheet, kidsAreSections)).join("");
+    return `<div${idAttr} class="${allCls}">${kids}</div>`;
   }
-  return `<div${idAttr} class="${cls}">${elementHTML(r, theme, pageMap)}</div>`;
+  return `<div${idAttr} class="${allCls}">${elementHTML(r, theme, pageMap)}</div>`;
 }
 
 /** Turn the collected rules into a stylesheet: the phone layout first, then each wider screen adds to it. */
 function sheetCss(sheet: Sheet): string {
   return [
+    // One copy of each entrance's keyframes, for the effects this page actually uses.
+    revealKeyframes(sheet.reveals),
     sheet.base.join(""),
     sheet.tablet.length ? `@media (min-width:${TABLET_MIN_EM}em){${sheet.tablet.join("")}}` : "",
     sheet.desktop.length ? `@media (min-width:${DESKTOP_MIN_EM}em){${sheet.desktop.join("")}}` : "",
@@ -354,53 +383,173 @@ function sheetCss(sheet: Sheet): string {
  *  `<style>` block (a passed `sheet` instead accumulates into a shared document-level sheet, no inline block). */
 export function renderPageHTML(root: BoxNode, theme: SiteTheme, pageMap: Map<string, string> = new Map(), sheet?: Sheet): string {
   if (sheet) return renderNode(root, null, theme, pageMap, sheet); // shared sheet → caller emits the CSS
-  const own: Sheet = { base: [], tablet: [], desktop: [] };
+  const own: Sheet = { base: [], tablet: [], desktop: [], reveals: new Set<string>() };
   const body = renderNode(root, null, theme, pageMap, own);
   return `<style>${sheetCss(own)}</style>${body}`;
 }
 
+
+// ── MULTI-PAGE EXPORT ────────────────────────────────────────────────────────────────────────────
 /**
- * Wrap page/site body HTML in a full, SELF-CONTAINED document: the Educo UI stylesheet (tokens + reset +
- * responsive base + component styles) is inlined and the body is scoped under `.eu-root`, so the exported
- * file renders identically anywhere with no external CSS. Phase 0.4 — the isolated preview/export shell.
+ * A finished site: filename → file contents. `index.html` is always the home page.
+ *
+ * WHY THIS REPLACED THE SINGLE-FILE EXPORT (decided 2026-09-06). The old exporter emitted ONE document with
+ * every page as a `<section id="slug">`, linked by `#fragment`. That is one file to host, but it costs the
+ * things a school actually needs:
+ *   • a page cannot be found by search — engines index pages, not fragments;
+ *   • a parent cannot be sent to Term Dates, or bookmark it;
+ *   • every visitor downloads the whole site to read one page;
+ *   • printing anything prints everything.
+ * Real files fix all four. Page-to-page view transitions become possible as a by-product, but they are not
+ * the reason.
  */
-function documentShell(theme: SiteTheme, title: string, body: string, responsiveCss = "", preview = false): string {
-  // In the srcdoc PREVIEW iframe the document's base URL is inherited from the parent app, so a nav link like
-  // `#home` would resolve to the app's own URL and reload the whole builder INSIDE the iframe. Pinning the base
-  // to `about:srcdoc` keeps hash links as in-page fragment scrolls. The standalone DOWNLOAD omits this (its own
-  // file URL is the correct base there).
-  const base = preview ? `<base href="about:srcdoc">` : "";
+export type SiteFiles = Record<string, string>;
+
+/** The stylesheet every page links. Shared, so a visitor downloads it once and the second page is free. */
+export const SHARED_STYLESHEET = "styles.css";
+
+/** A page's filename. The home page is `index.html` so a plain folder or a static host just works. */
+export function fileNameFor(page: { id: string; path: string }, homeId: string): string {
+  if (page.id === homeId) return "index.html";
+  const slug = (page.path || page.id).replace(/^\/+|\/+$/g, "").replace(/[^A-Za-z0-9_-]/g, "-").toLowerCase();
+  return `${slug || page.id}.html`;
+}
+
+/** Every page's filename, keyed by id — this is what `page:<id>` links resolve through. */
+export function siteFileMap(site: BoxSite): Map<string, string> {
+  return new Map(site.pages.map((p) => [p.id, fileNameFor(p, site.homeId)]));
+}
+
+/**
+ * The nav, rendered into EVERY page.
+ *
+ * `aria-current="page"` marks where the visitor is — without it a screen-reader user has no way to tell which
+ * of five links is the page they are on. Links are RELATIVE (`about.html`, never `/about`) so the export still
+ * works opened from a folder, a USB stick, or a subdirectory on a host.
+ */
+function siteNav(site: BoxSite, files: Map<string, string>, currentId: string): string {
+  const ordered = orderedPages(site);
+  const links = ordered.map((p) => {
+    const href = files.get(p.id) ?? "index.html";
+    const current = p.id === currentId ? ` aria-current="page"` : "";
+    return `<a href="${esc(href)}"${current}>${esc(p.name)}</a>`;
+  }).join("");
+  return `<nav class="eu-site-nav">${links}</nav>`;
+}
+
+/** Home first, then the rest in their existing order — the nav reads the way a visitor expects. */
+function orderedPages(site: BoxSite) {
+  return [...site.pages].sort((a, b) => (a.id === site.homeId ? -1 : b.id === site.homeId ? 1 : 0));
+}
+
+/**
+ * Render the whole site as separate files.
+ *
+ * The CSS is SPLIT deliberately: the design system (tokens, base, components) is identical on every page, so it
+ * goes in one `styles.css` the browser caches once — the second page costs nothing. Only the page's own block
+ * rules are inlined, because those are unique per page and there is nothing to cache.
+ */
+/**
+ * ONE page of the site, rendered exactly as the export renders it — same nav, same links, same markup.
+ *
+ * This is what the PREVIEW shows, so a user previews the real file rather than an approximation of it.
+ *
+ * The single deliberate difference is `inlineShared`. The exported page LINKS `styles.css`; inside the
+ * preview's `srcdoc` iframe there is no such file to fetch, so the shared sheet is inlined instead. Same CSS,
+ * same result — only how it arrives differs, and it has to, because a srcdoc document has nothing to resolve a
+ * relative URL against.
+ */
+export function renderSitePage(site: BoxSite, theme: SiteTheme, pageId: string, opts: { inlineShared?: boolean } = {}): string {
+  const files = siteFileMap(site);
+  const page = site.pages.find((p) => p.id === pageId) ?? orderedPages(site)[0];
+  if (!page) return "";
+  const sheet: Sheet = { base: [], tablet: [], desktop: [], reveals: new Set<string>() };
+  const body = renderPageHTML(page.root, theme, files, sheet);
+  const nav = siteNav(site, files, page.id);
+  const markup = `${nav}\n${body}`;
+  const components = subsetCss(COMPONENT_CSS, usedEuClasses(markup));
+  const shared = opts.inlineShared ? `${sharedCss(theme)}\n${SITE_CHROME_CSS}` : undefined;
+  return pageDocument(theme, page.name, markup, [components, sheetCss(sheet)].filter(Boolean).join("\n"), shared);
+}
+
+export function renderSiteFiles(site: BoxSite, theme: SiteTheme): SiteFiles {
+  const files = siteFileMap(site);
+  const out: SiteFiles = {};
+
+  for (const page of orderedPages(site)) {
+    // Each page gets its own sheet, so a page carries only the rules for the blocks actually on it.
+    const sheet: Sheet = { base: [], tablet: [], desktop: [], reveals: new Set<string>() };
+    const body = renderPageHTML(page.root, theme, files, sheet);
+    const nav = siteNav(site, files, page.id);
+    const markup = `${nav}\n${body}`;
+    // Only the component rules this page's markup actually uses — read from the RENDERED HTML, so it
+    // cannot disagree with what the page contains.
+    const components = subsetCss(COMPONENT_CSS, usedEuClasses(markup));
+    out[files.get(page.id)!] = pageDocument(theme, page.name, markup, [components, sheetCss(sheet)].filter(Boolean).join("\n"));
+  }
+
+  // The SHARED sheet is only what is identical everywhere — tokens, base, site chrome. The component
+  // library is deliberately absent: 65 KB of which a page uses a fraction, so it is subsetted into each
+  // page instead. What remains here is small, and it is the part worth caching.
+  out[SHARED_STYLESHEET] = `${sharedCss(theme)}\n${SITE_CHROME_CSS}`;
+  return out;
+}
+
+/**
+ * The shared half: tokens and the base layer, which every page needs whole. `stylesheet()` also bundles the
+ * component library — this takes the same two pieces without it, because components are subsetted per page.
+ */
+function sharedCss(theme: SiteTheme): string {
+  // Comments are for whoever maintains this stylesheet, not for a parent loading it on a phone. The component
+  // half already drops them; the shared half was shipping every one of its own to every visitor of every page.
+  return stripComments(`${tokensToCss(tokensFromTheme(theme))}\n${BASE_CSS}`);
+}
+
+/** The nav's own styling — part of the shared sheet because it appears on every page. */
+const SITE_CHROME_CSS = `html,body{max-width:100%;overflow-x:hidden}
+.eu-site-nav{position:sticky;top:0;z-index:30;display:flex;gap:4px;padding:8px 16px;background:var(--eu-color-surface);border-bottom:1px solid var(--eu-color-border)}
+.eu-site-nav a{color:var(--eu-color-text);text-decoration:none;padding:8px 12px;border-radius:var(--eu-radius-md)}
+.eu-site-nav a:hover{background:var(--eu-color-surface-2)}
+.eu-site-nav a[aria-current="page"]{background:var(--eu-color-surface-2);font-weight:600}
+.eu-site-nav a:focus-visible{outline:2px solid var(--eu-color-brand);outline-offset:2px}`;
+
+/**
+ * One page of a multi-page site.
+ *
+ * The shared sheet is a `<link>`, not inlined: inlining it would repeat the whole design system in every file
+ * and defeat caching entirely. `rel="prefetch"` on the nav is deliberately NOT added here — it belongs with the
+ * links, and is a later optimisation.
+ */
+function pageDocument(theme: SiteTheme, title: string, body: string, pageCss: string, inlineShared?: string): string {
+  // Linked for the real export so it caches across pages; inlined only for the preview iframe, which has no
+  // file to link to.
+  const shared = inlineShared !== undefined
+    ? `<style>${inlineShared}</style>`
+    : `<link rel="stylesheet" href="${SHARED_STYLESHEET}">`;
   return `<!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">${base}
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${esc(title)}</title>
-<style>${stylesheet(theme)}</style>
-<style>html,body{max-width:100%;overflow-x:hidden}.eu-site-nav{position:sticky;top:0;z-index:1000;display:flex;gap:4px;padding:8px 16px;background:var(--eu-color-surface);border-bottom:1px solid var(--eu-color-border)}.eu-site-nav a{color:var(--eu-color-text);text-decoration:none;padding:8px 12px;border-radius:var(--eu-radius-md)}.eu-site-nav a:hover{background:var(--eu-color-surface-2)}</style>
-<style>${responsiveCss}</style>
+${shared}
+${pageCss ? `<style>${pageCss}</style>` : ""}
 </head><body class="eu-root">${body}</body></html>`;
 }
 
-/** Render ONE page to a self-contained document (used by the isolated iframe preview). */
-export function renderPageDocument(root: BoxNode, theme: SiteTheme, title = "Page", pageMap: Map<string, string> = new Map(), opts: { preview?: boolean } = {}): string {
-  const sheet: Sheet = { base: [], tablet: [], desktop: [] };
-  const body = renderPageHTML(root, theme, pageMap, sheet);
-  return documentShell(theme, title, body, sheetCss(sheet), opts.preview);
-}
-
-/** Render the whole site to ONE self-contained HTML document (each page a section + a sticky nav).
- *  `opts.preview` targets the srcdoc iframe (pins the base URL so nav links scroll instead of reloading). */
-export function renderSiteHTML(site: BoxSite, theme: SiteTheme, opts: { preview?: boolean } = {}): string {
-  const pageMap = new Map(site.pages.map((p) => [p.id, p.path]));
-  const ordered = [...site.pages].sort((a, b) => (a.id === site.homeId ? -1 : b.id === site.homeId ? 1 : 0));
-  const sheet: Sheet = { base: [], tablet: [], desktop: [] };
-  const nav = ordered.map((p) => `<a href="#${esc(p.path)}">${esc(p.name)}</a>`).join("");
-  const sections = ordered.map((p) => `<section id="${esc(p.path)}">${renderPageHTML(p.root, theme, pageMap, sheet)}</section>`).join("\n");
-  return documentShell(theme, ordered[0]?.name ?? "Site", `<nav class="eu-site-nav">${nav}</nav>\n${sections}`, sheetCss(sheet), opts.preview);
-}
-
-/** Trigger a browser download of an HTML string (no-op outside the browser). */
-export function downloadHTML(html: string, filename = "site.html"): void {
+/**
+ * Download a whole site as a ZIP.
+ *
+ * A multi-page export is several files, and a browser cannot hand over a folder — so the site arrives as one
+ * archive the school unzips and uploads. This is the most visible change to how a site is received, which is
+ * why the guide has to say so.
+ */
+export function downloadSite(files: SiteFiles, filename = "site.zip"): void {
+  // `document` alone is not enough: jsdom and some SSR shims provide a document but no object-URL support,
+  // and calling through then throws. The old single-file download checked all three; dropping two of them
+  // when this replaced it is what the no-op test caught.
   if (typeof document === "undefined" || typeof URL === "undefined" || !URL.createObjectURL) return;
-  const blob = new Blob([html], { type: "text/html" });
+  const zipped = zipSync(Object.fromEntries(Object.entries(files).map(([name, text]) => [name, strToU8(text)])));
+  // Copy into a plain ArrayBuffer — a Uint8Array view can be a slice of a larger buffer, and Blob would then
+  // carry bytes that are not part of this archive.
+  const blob = new Blob([zipped.slice().buffer as ArrayBuffer], { type: "application/zip" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url; a.download = filename; document.body.appendChild(a); a.click(); a.remove();

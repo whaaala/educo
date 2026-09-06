@@ -5,10 +5,22 @@ import {
   COMPONENT_ITEM_PARTS, COMPONENT_PARTS, COMPONENT_ITEM_SEL, createComponent, createContainer, FLOAT_MIN_VISIBLE_REM,
   type ComponentItem, type BoxNode,
 } from "@/lib/box-model";
-import { renderSiteHTML } from "@/lib/box-export";
+import { renderSitePage } from "@/lib/box-export";
 import { siteFromRoot } from "@/lib/box-site";
 import { DEFAULT_THEME } from "@/lib/site-storage";
 import { BREAKPOINTS_EM } from "@/lib/educo-ui/base";
+
+/**
+ * One page, rendered through the SHIPPING export path.
+ *
+ * These used to call `renderSiteHTML`, which put every page in one document. The app no longer emits that
+ * shape — so the tests were validating a code path that could not reach a user, which is exactly the failure
+ * these tests exist to catch. `inlineShared` is set because there is no styles.css to fetch here.
+ */
+const exportDoc = (root: BoxNode) => {
+  const site = siteFromRoot(root);
+  return renderSitePage(site, DEFAULT_THEME, site.homeId, { inlineShared: true });
+};
 
 // RULE N — float / position / group items and their inner parts is a CROSS-COMPONENT baseline, not an
 // accordion feature. Every component with item PARTS inherits it, so these loop the registry: a new component
@@ -60,7 +72,7 @@ describe("RULE N — every multi-item component can float and place its items", 
       // MOBILE-FIRST: the stack is the BASE and placement is ADDED from the `sm` rung up, in `em` (field guide
       // ingredient ④). There is deliberately no "undo it on phones" rule — there is nothing to undo.
       const css = itemOverrideCss(".it", floated(), { component, stackOnNarrow: true });
-      expect(css).toContain(`@media (min-width:${BREAKPOINTS_EM.sm}em)`);
+      expect(css).toContain(`@media (min-width:${BREAKPOINTS_EM.tabletPortrait}em)`);
       expect(css).not.toContain("max-width:480px");   // never desktop-first
       expect(css).not.toMatch(/@media \([^)]*\d+px\)/); // never a px breakpoint
       expect(css.indexOf("position:absolute")).toBeGreaterThan(css.indexOf("@media")); // placement is INSIDE the query
@@ -100,7 +112,7 @@ describe("RULE N — every multi-item component can float and place its items", 
 
   it("no space is reserved until placement actually applies (mobile-first)", () => {
     const ctx = itemFloatContextCss([floated()], ".box", { stackOnNarrow: true });
-    expect(ctx).toBe(`@media (min-width:${BREAKPOINTS_EM.sm}em){.box{position:relative;min-height:9rem}}`);
+    expect(ctx).toBe(`@media (min-width:${BREAKPOINTS_EM.tabletPortrait}em){.box{position:relative;min-height:9rem}}`);
   });
 });
 
@@ -121,15 +133,15 @@ describe("RULE N — the exported site carries the placement, with no JavaScript
 
   for (const component of MULTI_ITEM) {
     it(`${component}: export places the floated item and reserves room for it`, () => {
-      const html = renderSiteHTML(siteFromRoot(pageWith(component)), DEFAULT_THEME);
+      const html = exportDoc(pageWith(component));
       expect(html).toContain("position:absolute !important");
       expect(html).toContain(`left:min(6rem, calc(100% - ${FLOAT_MIN_VISIBLE_REM}rem)) !important`);
       expect(html).toMatch(/position:relative;min-height:\d+(\.\d+)?rem/);
     });
 
     it(`${component}: the export keeps the stack as its base and adds placement above \`sm\``, () => {
-      const html = renderSiteHTML(siteFromRoot(pageWith(component)), DEFAULT_THEME);
-      expect(html).toContain(`@media (min-width:${BREAKPOINTS_EM.sm}em)`);
+      const html = exportDoc(pageWith(component));
+      expect(html).toContain(`@media (min-width:${BREAKPOINTS_EM.tabletPortrait}em)`);
       expect(html).not.toContain("max-width:480px");
     });
   }

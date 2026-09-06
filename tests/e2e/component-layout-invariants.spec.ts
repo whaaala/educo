@@ -206,6 +206,34 @@ test.describe("Component layout invariants", () => {
   }
 
   /**
+   * DESIGN TOKENS reach the design-system TREES, not just `.eu-root` components.
+   *
+   * The tokens are injected scoped to a selector, and only COMPONENT wrappers carry `.eu-root`. The trees
+   * (Card, Quote, Stat, Badge, Rating) are ordinary containers that paint themselves with `var(--eu-color-*)`,
+   * so a Tinted card measured `rgba(0,0,0,0)` on the canvas while the EXPORT rendered it correctly — the export
+   * emits its tokens at `:root`. Canvas = export was quietly broken for every tree preset using a ramp colour.
+   *
+   * Only a browser can see this: to a unit test the stored node still says `background: var(--eu-color-primary-50)`
+   * and looks perfectly correct.
+   */
+  test("a ramp token painted on a design-system tree actually resolves on the canvas", async ({ page }) => {
+    await page.goto("/website/box-demo");
+    await seed(page, {
+      id: "tgt", type: "container", preset: "card", direction: "column", width: "100%",
+      padding: 24, gap: 12, radius: 16, borderWidth: 0,
+      background: "var(--eu-color-primary-50)",
+      children: [{ id: "h", type: "heading", text: "Card title", fontSize: 22, bold: true, color: "var(--eu-color-text)" }],
+    });
+    const seen = await page.evaluate(() => {
+      const el = document.querySelector('[data-box-id="tgt"]') as HTMLElement;
+      const cs = getComputedStyle(el);
+      return { token: cs.getPropertyValue("--eu-color-primary-50").trim(), background: cs.backgroundColor };
+    });
+    expect(seen.token, "the colour ramp must be defined where the tree can see it").not.toBe("");
+    expect(seen.background, "a tinted tree must not render transparent").not.toBe("rgba(0, 0, 0, 0)");
+  });
+
+  /**
    * CONTAINER QUERIES fire against the COMPONENT's own width, not the page's.
    *
    * This is a geometric guarantee like the rest, and it needs a real browser: an element cannot query its own

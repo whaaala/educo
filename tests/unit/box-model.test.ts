@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { coerceSite } from "@/lib/box-site";
+import { BREAKPOINTS_EM } from "@/lib/educo-ui/base";
 import {
   createContainer, createGrid, createElement, createRoot, createComponent,
   addItem, removeItem, moveItem, updateItem, addChildItem, updateChildItem, removeChildItem, moveChildItem, sanitizeCssDeclarations, expandScopedCss, ACCORDION_CSS_PARTS, itemOverrideCss, itemHasOverride, itemFloatReserveRem, richBody, plainBody, isEmptyBox,
@@ -227,7 +228,7 @@ describe("box-model — Educo UI component instances", () => {
     // X goes through a min() clamp so an over-large placement can never push the item out of its component box,
     // and the whole placement sits INSIDE a mobile-first `min-width` query in `em` — the stack is the base.
     expect(out).toContain("position:absolute !important;left:min(12rem, calc(100% - 8rem)) !important;top:6rem !important;z-index:10 !important;");
-    expect(out).toContain("@media (min-width:40em){.it{position:absolute");
+    expect(out).toContain(`@media (min-width:${BREAKPOINTS_EM.tabletPortrait}em){.it{position:absolute`);
     expect(out).not.toContain("max-width:480px");
     // canvas can skip the float (mobile preview) without touching the other overrides
     expect(itemOverrideCss(".it", { ...it, headerStyle: { color: "#111" } }, { skipFloat: true })).toBe(".it .eu-accordion__header{color: #111 !important;}");

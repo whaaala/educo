@@ -11,10 +11,14 @@ import { useState, useRef } from "react";
 import { Plus, X, Rows3, Columns3, Upload, AlignLeft, AlignCenter, AlignRight, Layers, Move, BringToFront, SendToBack, ChevronUp, ChevronDown, Italic, Underline, LayoutGrid, Maximize2, Sparkles, Paintbrush, Ruler, Link2, Type as TypeIcon, MonitorSmartphone, Bookmark, Lock, LockOpen } from "lucide-react";
 import type { SiteTheme } from "@/lib/site-storage";
 import type { BoxNode, FlexAlign, FlexJustify, AccPartStyle } from "@/lib/box-model";
-import { isContainer, isFloating, isCssBg, addItem, removeItem, moveItem, updateItem, addChildItem, updateChildItem, removeChildItem, moveChildItem , isMultiItemComponent } from "@/lib/box-model";
-import { ACCORDION_DESIGNS, ACCORDION_DESIGN_COUNT } from "@/lib/educo-ui/accordions";
-import { COMPONENT_REGISTRY, isRegistryComponent, defaultComponentFields } from "@/lib/educo-ui/registry";
-import { presetVariants, applyPresetVariant } from "@/lib/component-catalogue";
+import { type ItemAction, TOAST_CORNERS, isContainer, isFloating, isCssBg, addItem, removeItem, moveItem, updateItem, addChildItem, updateChildItem, removeChildItem, moveChildItem , isMultiItemComponent } from "@/lib/box-model";
+import { ACCORDION_DESIGNS, ACCORDION_DESIGN_COUNT, ACCORDION_AXES } from "@/lib/educo-ui/accordions";
+import { ALERT_DESIGNS, ALERT_DESIGN_COUNT, ALERT_AXES } from "@/lib/educo-ui/alerts";
+import { COMPONENT_REGISTRY, isRegistryComponent, defaultComponentFields, renderComponent } from "@/lib/educo-ui/registry";
+import { presetVariants, applyPresetVariant, catalogueEntry } from "@/lib/component-catalogue";
+import DesignGallery, { HtmlThumb, NodeThumb, type ThumbSize } from "./DesignGallery";
+import OptionAxes from "./OptionAxes";
+import { HOVER_EFFECTS, REVEAL_EFFECTS, type HoverEffect, type RevealEffect } from "@/lib/interactions";
 import { familyOptions } from "@/lib/educo-ui/fonts";
 import { getPresets, presetKindFor } from "@/lib/box-presets";
 import IconPicker from "@/components/shared/IconPicker";
@@ -44,12 +48,9 @@ const ALERT_SEVERITIES = [
   { value: "danger", label: "Danger" }, { value: "neutral", label: "Neutral" }, { value: "brand", label: "Brand" },
 ];
 const ALERT_FORMS = [
-  { value: "inline", label: "Inline" }, { value: "banner", label: "Banner (full width)" }, { value: "callout", label: "Callout" }, { value: "toast", label: "Toast (stacked)" },
+  { value: "inline", label: "Inline" }, { value: "banner", label: "Banner (full width)" }, { value: "callout", label: "Callout" }, { value: "toast", label: "Toast (floats in a corner)" },
 ];
-const ALERT_TREATMENTS: { id: string; label: string }[] = [
-  { id: "", label: "Soft" }, { id: "--solid", label: "Solid" }, { id: "--outline", label: "Outline" }, { id: "--accent", label: "Left accent" },
-  { id: "--top", label: "Top accent" }, { id: "--card", label: "Card" }, { id: "--glass", label: "Glass" },
-];
+
 const WEIGHT_OPTS: [string, string][] = [["", "Auto"], ["300", "Light"], ["400", "Normal"], ["500", "Medium"], ["600", "Semibold"], ["700", "Bold"], ["800", "Extra bold"], ["900", "Black"]];
 const TRANSFORM_OPTS: [NonNullable<BoxNode["textTransform"]>, string][] = [["none", "Normal"], ["uppercase", "UPPERCASE"], ["lowercase", "lowercase"], ["capitalize", "Capitalise"]];
 const SHADOW_OPTS: SegOption<string>[] = [{ value: "none", label: "None" }, { value: "sm", label: "Soft" }, { value: "md", label: "Medium" }, { value: "lg", label: "Strong" }, { value: "xl", label: "Bold" }];
@@ -82,6 +83,30 @@ function AccPartDesign({ title, ariaPrefix, style, onChange, moveLabel = "conten
         <CompactSelect label="Font" ariaLabel={`${ariaPrefix} font`} value={s.fontFamily ?? ""} onChange={(v) => onChange({ fontFamily: v || undefined })} options={[{ value: "", label: "Default" }, ...familyOptions()]} />
         {/* Size in REM (scales with the base size — Responsive Field Guide), entered as px-like number */}
         <CompactField label="Size" ariaLabel={`${ariaPrefix} size`} type="number" min={8} max={96} value={s.fontSize ? Math.round(parseFloat(s.fontSize) * (s.fontSize.endsWith("rem") ? 10 : 1)) : ""} placeholder="auto" onChange={(v) => onChange({ fontSize: v === "" ? undefined : `${toRem(Number(v))}rem` })} />
+      </div>
+      {/* Weight, spacing and case — asked for on action buttons, given to EVERY part, because there is no
+          reason a heading should be less styleable than a button underneath it (RULE A). */}
+      <div className="grid grid-cols-2 gap-1.5">
+        <CompactSelect label="Weight" ariaLabel={`${ariaPrefix} weight`} value={String(s.fontWeight ?? "")}
+          onChange={(v) => onChange({ fontWeight: v ? Number(v) : undefined })}
+          options={[{ value: "", label: "Default" }, { value: "300", label: "Light" }, { value: "400", label: "Normal" }, { value: "500", label: "Medium" }, { value: "600", label: "Semibold" }, { value: "700", label: "Bold" }, { value: "800", label: "Extra bold" }]} />
+        <CompactSelect label="Capitals" ariaLabel={`${ariaPrefix} capitalisation`} value={s.textTransform ?? ""}
+          onChange={(v) => onChange({ textTransform: (v || undefined) as AccPartStyle["textTransform"] })}
+          options={[{ value: "", label: "Default" }, { value: "uppercase", label: "UPPERCASE" }, { value: "lowercase", label: "lowercase" }, { value: "capitalize", label: "Capitalise" }]} />
+      </div>
+      <div className="grid grid-cols-2 gap-1.5">
+        <CompactField label="Letter spacing (rem)" ariaLabel={`${ariaPrefix} letter spacing`} type="number" step={0.01}
+          value={s.letterSpacing ? parseFloat(s.letterSpacing) : ""} placeholder="0"
+          onChange={(v) => onChange({ letterSpacing: v === "" ? undefined : `${v}rem` })} />
+        <CompactField label="Corners (rem)" ariaLabel={`${ariaPrefix} corner radius`} type="number" step={0.1} min={0}
+          value={s.radius ? parseFloat(s.radius) : ""} placeholder="auto"
+          onChange={(v) => onChange({ radius: v === "" ? undefined : `${v}rem` })} />
+      </div>
+      <div className="grid grid-cols-2 gap-1.5">
+        <CompactField label="Padding" ariaLabel={`${ariaPrefix} padding`} value={s.padding ?? ""} placeholder="0.6rem 1.2rem"
+          onChange={(v) => onChange({ padding: v || undefined })} />
+        <CompactField label="Border" ariaLabel={`${ariaPrefix} border`} value={s.border ?? ""} placeholder="1px solid …"
+          onChange={(v) => onChange({ border: v || undefined })} />
       </div>
       <div className="flex items-center justify-between gap-2">
         <span className="text-[0.6875rem] text-muted">Align</span>
@@ -186,10 +211,84 @@ const iconBtn = (on: boolean) => `p-1.5 rounded-lg transition-colors ${on ? "bg-
 
 /** A tiny LIVE preview of one accordion design — the real `.eu-accordion` CSS, rendered small, so the design
  *  gallery is WYSIWYG. Non-interactive; scaled down so a 2-item accordion fits inside a picker tile. */
-function AccPreview({ id }: { id: string }) {
+/**
+ * RULE S — a design is a LOOK, so every component shows its designs instead of naming them. These build the
+ * thumbnails; <DesignGallery> lays them out. Real component markup wherever the component renders to `.eu-*`,
+ * so a thumbnail cannot drift from the thing it previews.
+ */
+/**
+ * A hover effect previewed by SHOWING its hovered state on a small block. A hover cannot be demonstrated in a
+ * static tile any other way, and a tile that just says "Lift" is the thing RULE S exists to prevent.
+ */
+/**
+ * An entrance previewed by showing where it STARTS — faded, offset, scaled or blurred — with a ghost of the
+ * resting position behind it, so the tile reads as "it arrives from here" rather than a static swatch.
+ */
+function RevealPreview({ effect }: { effect: RevealEffect }) {
   return (
-    <span className="eu-root" aria-hidden="true" style={{ display: "block", width: "250%", transform: "scale(0.4)", transformOrigin: "top left", pointerEvents: "none", fontSize: "11px" }}>
-      <span className={`eu-accordion eu-accordion${id}`} style={{ display: "grid", gap: "5px" }}>
+    <span className="eu-root" aria-hidden="true"
+      style={{ position: "relative", display: "grid", placeItems: "center", width: "100%", height: "100%", padding: "0.4rem", overflow: "hidden" }}>
+      <span style={{
+        position: "absolute", width: "62%", height: "50%", borderRadius: "0.4rem",
+        border: "1px dashed var(--eu-color-border, #e2e7ee)", opacity: 0.6,
+      }} />
+      <span style={{
+        position: "relative", display: "block", width: "62%", height: "50%", borderRadius: "0.4rem",
+        background: "var(--eu-color-brand, #4f46e5)", opacity: 0.9,
+        ...declsToStyle(effect.from || "opacity:1"),
+      }} />
+    </span>
+  );
+}
+
+function HoverPreview({ effect }: { effect: HoverEffect }) {
+  return (
+    <span className="eu-root" aria-hidden="true"
+      style={{ display: "grid", placeItems: "center", width: "100%", height: "100%", padding: "0.4rem" }}>
+      <span style={{
+        display: "block", width: "72%", height: "58%", borderRadius: "0.4rem",
+        background: "var(--eu-color-surface, #fff)", border: "1px solid var(--eu-color-border, #e2e7ee)",
+        // the effect's own declarations, shown as its resting look so the tile IS the result
+        ...declsToStyle(effect.decls),
+      }} />
+    </span>
+  );
+}
+
+/** Turn an effect's CSS declaration string into React inline style — the same declarations the page will use. */
+function declsToStyle(decls: string): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const d of decls.split(";")) {
+    const i = d.indexOf(":");
+    if (i <= 0) continue;
+    const prop = d.slice(0, i).trim().replace(/-([a-z])/g, (_m, ch) => ch.toUpperCase());
+    out[prop] = d.slice(i + 1).trim();
+  }
+  return out;
+}
+
+function AlertPreview({ treat, severity, size, axes = [] }: { treat: string; severity: string; size: ThumbSize; axes?: string[] }) {
+  // Scales measured in the browser, not guessed: 0.6 fills 93% of a 48px tile, 1.0 fills 94% of the 80px panel.
+  return (
+    <HtmlThumb scale={size === "hero" ? 1 : 0.6} fontSize={14} html={
+      `<div class="eu-alert eu-alert--${severity}${treat ? " eu-alert" + treat : ""}${axes.map((a) => " eu-alert" + a).join("")}">` +
+      `<span class="eu-alert__icon" aria-hidden="true">●</span>` +
+      `<div class="eu-alert__content"><div class="eu-alert__title">Heads up</div>` +
+      `<div class="eu-alert__body">A short message.</div></div></div>`
+    } />
+  );
+}
+
+/** A registry component (Card/Quote/Stat/Badge/Rating as a `component` node) rendered at thumbnail size. */
+function RegistryPreview({ component, variant, size }: { component: string; variant: string; size: ThumbSize }) {
+  return <HtmlThumb scale={size === "hero" ? 0.58 : 0.34} html={renderComponent(component, defaultComponentFields(component), variant)} />;
+}
+
+function AccPreview({ id, size, axes = [] }: { id: string; size: ThumbSize; axes?: string[] }) {
+  const scale = size === "hero" ? 0.68 : 0.4;
+  return (
+    <span className="eu-root" aria-hidden="true" style={{ display: "block", width: `${100 / scale}%`, transform: `scale(${scale})`, transformOrigin: "top left", pointerEvents: "none", fontSize: "11px" }}>
+      <span className={`eu-accordion eu-accordion${id}${axes.map((a) => ` eu-accordion${a}`).join("")}`} style={{ display: "grid", gap: "5px" }}>
         <details className="eu-accordion__item" open><summary className="eu-accordion__header">Question<span className="eu-accordion__meta">FAQ</span></summary><div className="eu-accordion__body">A short answer.</div></details>
         <details className="eu-accordion__item"><summary className="eu-accordion__header">Another question</summary></details>
       </span>
@@ -197,7 +296,7 @@ function AccPreview({ id }: { id: string }) {
   );
 }
 
-export default function BoxInspector({ node, theme, onPatch, onAddChild, onFloat, onUnfloat, onLayer, onAlignInRow, rowJustify, canFloat = true, inGrid = false, breakpoint = "base", overridden = false, onResetOverride, pages, currentPageId }: {
+export default function BoxInspector({ node, theme, onPatch, onAddChild, onFloat, onUnfloat, onLayer, onAlignInRow, rowJustify, onSectionWidth, sectionWidth, canFloat = true, inGrid = false, breakpoint = "base", overridden = false, onResetOverride, pages, currentPageId }: {
   node: BoxNode;
   theme: SiteTheme;
   onPatch: (patch: Partial<BoxNode>) => void;
@@ -206,7 +305,11 @@ export default function BoxInspector({ node, theme, onPatch, onAddChild, onFloat
   onUnfloat?: () => void;
   onLayer?: (dir: "front" | "forward" | "backward" | "back") => void;
   onAlignInRow?: (justify: FlexJustify) => void; // position this block within its row (start/center/end)
-  rowJustify?: FlexJustify;                        // its current position (parent row's justify-content)
+  rowJustify?: FlexJustify;
+  // Band or centred column. Present only when this block is a SECTION of the page, because only then is there
+  // a band to write to — the setting lives on the parent, which the user can never select.
+  onSectionWidth?: (v: "band" | "contained") => void;
+  sectionWidth?: "band" | "contained";                        // its current position (parent row's justify-content)
   canFloat?: boolean;
   inGrid?: boolean;
   breakpoint?: "base" | "tablet" | "mobile";
@@ -223,7 +326,14 @@ export default function BoxInspector({ node, theme, onPatch, onAddChild, onFloat
   const isGrid = node.layout === "grid";
   const floating = isFloating(node);
   const textual = node.type === "text" || node.type === "heading" || node.type === "button" || node.type === "list";
-  const typeLabel = container ? (isGrid ? "Grid" : node.direction === "row" ? "Row" : "Section") : node.type;
+  // A design-system TREE (Card, Quote, Stat, Badge, Rating) is structurally a container, so it used to say
+  // "Editing: Section" — telling a user they had selected something they had not. `preset` knows what it
+  // really is, and a `component` node knows its own name, so both say what the user actually picked.
+  const presetEntry = catalogueEntry(node.preset);
+  const componentEntry = catalogueEntry(node.component);
+  const typeLabel = presetEntry?.label
+    ?? componentEntry?.label
+    ?? (container ? (isGrid ? "Grid" : node.direction === "row" ? "Row" : "Section") : node.type);
   const align = (["left", "center", "right"] as const);
   const bpLabel = breakpoint === "mobile" ? "Mobile" : breakpoint === "tablet" ? "Tablet" : "";
 
@@ -263,9 +373,19 @@ export default function BoxInspector({ node, theme, onPatch, onAddChild, onFloat
             <span className="grid place-items-center w-6 h-6 rounded-lg bg-gray-100 dark:bg-white/5 text-muted"><Sparkles className="w-3.5 h-3.5" strokeWidth={2} /></span>
             Styles
           </div>
-          <div className="flex flex-wrap gap-1.5">
-            {presets.map((p) => <button key={p.id} onClick={() => onPatch(p.patch)} aria-label={`Style ${p.label}`} className={chipCls(false)}>{p.label}</button>)}
-          </div>
+          {/* RULE S applies here too: a style preset is a LOOK. The hero shows the block as it is right now and
+              each tile shows what that style would make of it — derived from the node the patch produces, so a
+              tile cannot promise something the canvas will not do. A preset is a one-shot patch with nothing
+              recording which one is on, hence value={null}. */}
+          <DesignGallery
+            label="" hint="tap to apply" ariaLabel="Style presets" itemNoun="style"
+            value={null} currentPreview={<NodeThumb node={node} />}
+            onPick={(id) => { const p = presets.find((x) => x.id === id); if (p) onPatch(p.patch); }}
+            groups={[{ items: presets.map((p) => ({
+              id: p.id, label: p.label,
+              preview: () => <NodeThumb node={{ ...node, ...p.patch }} />,
+            })) }]}
+          />
         </div>
       )}
 
@@ -309,6 +429,24 @@ export default function BoxInspector({ node, theme, onPatch, onAddChild, onFloat
 
           {container && (
             <Accordion title="Arrange" icon={LayoutGrid}>
+              {/* The setting lives on the parent BAND, but a band is scaffolding a user can never select — so
+                  the control sits on the section and writes upward, the same shape as "Position in row" above.
+                  It only appears for a section of the PAGE; a container inside a component has no such choice.
+                  Wording is what a teacher would say: "edge to edge" beats "full-bleed", and the hint explains
+                  the half that is not obvious — the background still spans. */}
+              {onSectionWidth && (
+                <div className="space-y-1">
+                  <span className={label}>Content width</span>
+                  <Segmented full ariaLabel="Content width" value={sectionWidth ?? "band"}
+                    onChange={(v) => onSectionWidth(v === "contained" ? "contained" : "band")}
+                    options={[{ value: "band", label: "Edge to edge" }, { value: "contained", label: "Centred column" }]} />
+                  <p className="text-[11px] leading-snug text-gray-500 dark:text-gray-400">
+                    {sectionWidth === "contained"
+                      ? "The background still spans the page; the content sits on a centred column."
+                      : "This section and its content run the full width of the page."}
+                  </p>
+                </div>
+              )}
               <Segmented full ariaLabel="Arrange as" value={isGrid ? "grid" : "flex"} onChange={(v) => onPatch({ layout: v as "flex" | "grid" })}
                 options={[{ value: "flex", label: "Free arrange" }, { value: "grid", label: "Grid" }]} />
               {isGrid ? (
@@ -391,6 +529,44 @@ export default function BoxInspector({ node, theme, onPatch, onAddChild, onFloat
           </Accordion>
 
           <Accordion title="Outline & effects" icon={Sparkles}>
+            {/* HOVER & FOCUS (Interactions 1a) — every block and component, existing and future, because it
+                lives on the node. Named effects only: they cannot reach an invalid state, and a fixed list is
+                one the browser invariants can assert every member of. Each also applies on keyboard focus. */}
+            <DesignGallery
+              label="Hover & focus" hint="how it reacts to a pointer or keyboard" ariaLabel="Hover effects" itemNoun="hover effect"
+              value={node.hoverEffect ?? ""}
+              onPick={(id) => onPatch({ hoverEffect: id || undefined })}
+              groups={[{ items: HOVER_EFFECTS.map((fx) => ({
+                id: fx.id, label: fx.label,
+                preview: () => <HoverPreview effect={fx} />,
+              })) }]}
+            />
+            {/* ENTRANCE (Interactions 1b) — how the block ARRIVES. Also a field on the node, so every block and
+                component gets it. The animation runs from hidden to the block's natural look, so if it never
+                runs the content is simply there — a reveal must never be able to leave a page blank. */}
+            <DesignGallery
+              label="Entrance" hint="how it arrives" ariaLabel="Entrance effects" itemNoun="entrance"
+              value={node.revealEffect ?? ""}
+              onPick={(id) => onPatch({ revealEffect: id || undefined })}
+              groups={[{ items: REVEAL_EFFECTS.map((fx) => ({
+                id: fx.id, label: fx.label,
+                preview: () => <RevealPreview effect={fx} />,
+              })) }]}
+            />
+            {!!node.revealEffect && (
+              <>
+                <label className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200">
+                  <input type="checkbox" checked={!!node.revealScroll} onChange={(e) => onPatch({ revealScroll: e.target.checked || undefined })} aria-label="Play when it scrolls into view" />
+                  Play when it scrolls into view
+                </label>
+                {container && (
+                  <label className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200">
+                    <input type="checkbox" checked={!!node.revealStagger} onChange={(e) => onPatch({ revealStagger: e.target.checked || undefined })} aria-label="Bring the blocks inside in one after another" />
+                    Bring the blocks inside in one after another
+                  </label>
+                )}
+              </>
+            )}
             <Range title="Rounded corners" value={node.radius} min={0} max={64} fallback={0} onChange={(n) => onPatch({ radius: n })} />
             <div className="grid grid-cols-4 gap-1">
               {([["TL", "radiusTopLeft", "top-left"], ["TR", "radiusTopRight", "top-right"], ["BR", "radiusBottomRight", "bottom-right"], ["BL", "radiusBottomLeft", "bottom-left"]] as const).map(([lab, key, full]) => (
@@ -505,18 +681,17 @@ export default function BoxInspector({ node, theme, onPatch, onAddChild, onFloat
               design gallery that the registry defined and nothing reachable could apply. */}
           {presetVariants(node.preset).length > 1 && (
             <Accordion title="Design" icon={TypeIcon}>
-              <div className="flex flex-wrap gap-1" role="group" aria-label={`${node.preset} designs`}>
-                {presetVariants(node.preset).map((v) => {
-                  const on = (node.variant ?? "") === v.id;
-                  return (
-                    <button key={v.id || "default"} aria-pressed={on} aria-label={`${v.label} design`} title={v.label}
-                      onClick={() => { const { id: _id, type: _type, ...patch } = applyPresetVariant(node, v.id); onPatch(patch); }}
-                      className={chipCls(on)}>
-                      {v.label}
-                    </button>
-                  );
-                })}
-              </div>
+              <DesignGallery
+                label="Design" hint="tap to apply" ariaLabel={`${node.preset} designs`}
+                value={node.variant ?? ""}
+                onPick={(id) => { const { id: _id, type: _type, ...patch } = applyPresetVariant(node, id); onPatch(patch); }}
+                groups={[{ items: presetVariants(node.preset).map((v) => ({
+                  id: v.id, label: v.label,
+                  // Derived from the node the design ACTUALLY produces, so the tile cannot promise a look the
+                  // canvas will not deliver.
+                  preview: () => <NodeThumb node={applyPresetVariant(node, v.id)} />,
+                })) }]}
+              />
             </Accordion>
           )}
           {container ? (
@@ -575,32 +750,25 @@ export default function BoxInspector({ node, theme, onPatch, onAddChild, onFloat
                   return (
                   <>
                     {isAcc && (<>
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <span className={label}>Design</span>
-                        <span className="text-[0.5625rem] text-gray-400">{ACCORDION_DESIGN_COUNT} styles · tap to apply</span>
-                      </div>
-                      {ACCORDION_DESIGNS.map((g) => (
-                        <div key={g.group} className="space-y-1.5">
-                          <div className="text-[0.5625rem] font-bold uppercase tracking-wider text-muted px-0.5">{g.group}</div>
-                          <div className="grid grid-cols-2 gap-2" role="group" aria-label={`${g.group} accordion designs`}>
-                            {g.items.map((v) => {
-                              const on = (node.variant ?? "") === v.id;
-                              return (
-                                <button key={v.id || "boxed"} aria-pressed={on} aria-label={`${v.label} design`} title={v.label}
-                                  onClick={() => onPatch({ variant: v.id })}
-                                  className={`group flex flex-col gap-1 rounded-xl border p-1.5 text-left transition-colors ${on ? "border-brand bg-brand/10 ring-1 ring-brand/40" : "border-line hover:border-brand/50 hover:bg-brand/5"}`}>
-                                  <span className="block h-12 overflow-hidden rounded-lg border border-line bg-surface-2">
-                                    <AccPreview id={v.id} />
-                                  </span>
-                                  <span className={`block text-[0.6875rem] font-semibold text-center truncate ${on ? "text-brand" : "text-ink"}`}>{v.label}</span>
-                                </button>
-                              );
-                            })}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
+                      {(() => {
+                        // Every axis rides along in the tiles, so the gallery shows the real result.
+                        const axes = ACCORDION_AXES.map((a) => node[a.key] as string | undefined).filter(Boolean) as string[];
+                        return (
+                          <DesignGallery
+                            label="Design" hint={`${ACCORDION_DESIGN_COUNT} designs · tap to apply`} ariaLabel="Accordion designs"
+                            value={node.variant ?? ""} onPick={(id) => onPatch({ variant: id })}
+                            groups={ACCORDION_DESIGNS.map((g) => ({ group: g.group, items: g.items.map((v) => ({
+                              id: v.id, label: v.label, preview: (size) => <AccPreview id={v.id} size={size} axes={axes} />,
+                            })) }))}
+                          />
+                        );
+                      })()}
+                      <OptionAxes
+                        axes={ACCORDION_AXES}
+                        values={Object.fromEntries(ACCORDION_AXES.map((a) => [a.key, node[a.key] as string | undefined]))}
+                        onChange={(key, value) => onPatch({ [key]: value || undefined } as Partial<BoxNode>)}
+                        onReset={() => onPatch(Object.fromEntries(ACCORDION_AXES.map((a) => [a.key, undefined])) as Partial<BoxNode>)}
+                      />
                     <label className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300"><input type="checkbox" checked={!!node.accMultiOpen} onChange={(e) => onPatch({ accMultiOpen: e.target.checked })} /> Allow more than one open at once</label>
                     <label className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300"><input type="checkbox" checked={!!node.accShowAll} onChange={(e) => onPatch({ accShowAll: e.target.checked })} /> Show “Expand all / Collapse all” controls</label>
                     <label className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300"><input type="checkbox" aria-label="Search box" checked={!!node.accSearch} onChange={(e) => onPatch({ accSearch: e.target.checked })} /> Show a search / filter box</label>
@@ -611,20 +779,113 @@ export default function BoxInspector({ node, theme, onPatch, onAddChild, onFloat
                     </>)}
                     {!isAcc && (
                       <>
-                        <div className="space-y-2">
-                          <div className="flex items-center justify-between"><span className={label}>Design (treatment)</span><span className="text-[0.5625rem] text-gray-400">tap to apply</span></div>
-                          <div className="grid grid-cols-2 gap-1.5" role="group" aria-label="Alert treatments">
-                            {ALERT_TREATMENTS.map((t) => { const on = (node.variant ?? "") === t.id; return (
-                              <button key={t.id || "soft"} type="button" aria-pressed={on} aria-label={`${t.label} treatment`} onClick={() => onPatch({ variant: t.id })}
-                                className={`rounded-lg border px-2 py-1.5 text-xs font-semibold transition-colors ${on ? "border-brand bg-brand/10 text-brand ring-1 ring-brand/40" : "border-line text-ink hover:border-brand/50 hover:bg-brand/5"}`}>{t.label}</button>
-                            ); })}
-                          </div>
-                        </div>
+                        {(() => {
+                          // The other axes ride along in every tile, so the gallery shows what the alert would
+                          // ACTUALLY look like with this design — not a design in isolation.
+                          const axes = [node.alertShape, node.alertBorder, node.alertIconStyle, node.alertDensity, node.alertEmphasis, node.alertLayout].filter(Boolean) as string[];
+                          return (
+                            <DesignGallery
+                              label="Design" hint={`${ALERT_DESIGN_COUNT} designs · tap to apply`} ariaLabel="Alert designs"
+                              value={node.variant ?? ""} onPick={(id) => onPatch({ variant: id })}
+                              groups={ALERT_DESIGNS.map((g) => ({ group: g.group, items: g.items.map((t) => ({
+                                id: t.id, label: t.label,
+                                preview: (size) => <AlertPreview treat={t.id} severity={node.alertSeverity ?? "info"} size={size} axes={axes} />,
+                              })) }))}
+                            />
+                          );
+                        })()}
+                        <OptionAxes
+                          axes={ALERT_AXES}
+                          values={Object.fromEntries(ALERT_AXES.map((a) => [a.key, node[a.key] as string | undefined]))}
+                          onChange={(key, value) => onPatch({ [key]: value || undefined } as Partial<BoxNode>)}
+                          onReset={() => onPatch(Object.fromEntries(ALERT_AXES.map((a) => [a.key, undefined])) as Partial<BoxNode>)}
+                        />
                         <div className="grid grid-cols-2 gap-1.5">
                           <CompactSelect label="Severity" ariaLabel="Alert severity" value={node.alertSeverity ?? "info"} onChange={(v) => onPatch({ alertSeverity: v })} options={ALERT_SEVERITIES} />
                           <CompactSelect label="Form factor" ariaLabel="Alert form factor" value={node.alertForm ?? "inline"} onChange={(v) => onPatch({ alertForm: v })} options={ALERT_FORMS} />
                         </div>
-                        <label className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200"><input type="checkbox" checked={!!node.alertDismiss} onChange={(e) => onPatch({ alertDismiss: e.target.checked })} aria-label="Show a dismiss (×) button" /> Show a dismiss (×) button on each</label>
+                        {node.alertForm === "toast" && (
+                          <CompactSelect label="Corner" ariaLabel="Toast corner"
+                            value={node.alertToast ?? "bottom-right"}
+                            onChange={(v) => onPatch({ alertToast: v as BoxNode["alertToast"] })}
+                            options={TOAST_CORNERS.map((corner: string) => ({ value: corner, label: corner.replace("-", " ").replace(/^./, (ch: string) => ch.toUpperCase()) }))} />
+                        )}
+                        {/* ACTIONS — the biggest gap the galleries showed. A cookie banner, a promo bar, a
+                            "Pay now" notice: nearly every real-world alert carries one, and the Alert could not.
+                            A TOAST is capped at one (Carbon's rule): a floating message that hides itself is the
+                            worst place to put a decision, and two buttons in a corner is how people miss both. */}
+                        {(() => {
+                          const msg = (node.items ?? [])[0];
+                          if (!msg) return null;
+                          const actions = msg.actions ?? [];
+                          const cap = node.alertForm === "toast" ? 1 : 2;
+                          const write = (next: ItemAction[]) =>
+                            onPatch({ items: (node.items ?? []).map((it, i) => (i === 0 ? { ...it, actions: next } : it)) });
+                          return (
+                            <div className="space-y-2 rounded-xl border border-line bg-surface-2 p-2">
+                              <div className="flex items-baseline justify-between">
+                                <span className="text-[0.6875rem] font-semibold uppercase tracking-wide text-muted">Actions</span>
+                                <span className="text-[0.5625rem] text-gray-400">{node.alertForm === "toast" ? "one on a toast" : "up to two"}</span>
+                              </div>
+                              {actions.map((a, i) => (
+                                <div key={a.id} className="space-y-1.5 rounded-lg border border-line bg-surface p-1.5">
+                                  <div className="grid grid-cols-2 gap-1.5">
+                                    <CompactField label="Label" ariaLabel={`Action ${i + 1} label`} value={a.label}
+                                      onChange={(v) => write(actions.map((x) => (x.id === a.id ? { ...x, label: v } : x)))} />
+                                    <CompactSelect label="Style" ariaLabel={`Action ${i + 1} style`} value={a.kind ?? "primary"}
+                                      onChange={(v) => write(actions.map((x) => (x.id === a.id ? { ...x, kind: v as ItemAction["kind"] } : x)))}
+                                      options={[{ value: "primary", label: "Filled" }, { value: "secondary", label: "Outlined" }, { value: "link", label: "Text link" }]} />
+                                  </div>
+                                  <CompactField label="Goes to" ariaLabel={`Action ${i + 1} link`} value={a.href ?? ""}
+                                    placeholder="https://… or #bookmark"
+                                    onChange={(v) => write(actions.map((x) => (x.id === a.id ? { ...x, href: v || undefined } : x)))} />
+                                  {/* The SAME part editor the title and body use — colour, fill, font, weight,
+                                      size, spacing, capitals, corners, padding, border, alignment and free
+                                      X/Y placement anywhere inside the alert. Reused, not rebuilt (RULE A). */}
+                                  <AccPartDesign title="Look" moveLabel="button" ariaPrefix={`Action ${i + 1}`}
+                                    style={a.style}
+                                    onChange={(patch) => write(actions.map((x) => (x.id === a.id ? { ...x, style: { ...(x.style ?? {}), ...patch } } : x)))} />
+                                  <CompactTextarea label="Advanced CSS" ariaLabel={`Action ${i + 1} advanced CSS`} rows={2}
+                                    value={a.css ?? ""} placeholder="box-shadow: 0 2px 8px #0003;"
+                                    onChange={(v) => write(actions.map((x) => (x.id === a.id ? { ...x, css: v || undefined } : x)))} />
+                                  <div className="flex items-center justify-between">
+                                    <label className="flex items-center gap-1.5 text-[0.6875rem] text-gray-600 dark:text-gray-300">
+                                      <input type="checkbox" checked={!!a.newTab} aria-label={`Action ${i + 1} opens in a new tab`}
+                                        onChange={(e) => write(actions.map((x) => (x.id === a.id ? { ...x, newTab: e.target.checked || undefined } : x)))} />
+                                      Open in a new tab
+                                    </label>
+                                    <button type="button" aria-label={`Remove action ${i + 1}`}
+                                      onClick={() => write(actions.filter((x) => x.id !== a.id))}
+                                      className="text-[0.6875rem] text-red-500 hover:text-red-600">Remove</button>
+                                  </div>
+                                </div>
+                              ))}
+                              {actions.length < cap && (
+                                <button type="button" aria-label="Add an action"
+                                  onClick={() => write([...actions, { id: `a${Math.random().toString(36).slice(2, 8)}`, label: "Learn more", kind: actions.length ? "secondary" : "primary" }])}
+                                  className="w-full flex items-center justify-center gap-1.5 py-2 rounded-lg border border-dashed border-line text-xs text-gray-600 dark:text-gray-300 hover:bg-brand/5">
+                                  <Plus className="w-3.5 h-3.5" /> Add an action
+                                </button>
+                              )}
+                              {actions.length > 0 && (
+                                <CompactSelect label="Where they sit" ariaLabel="Action placement"
+                                  value={node.alertActionPlacement ?? "below"}
+                                  onChange={(v) => onPatch({ alertActionPlacement: v as BoxNode["alertActionPlacement"] })}
+                                  options={[{ value: "below", label: "Under the message" }, { value: "right", label: "On the right" }]} />
+                              )}
+                            </div>
+                          );
+                        })()}
+                        <label className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200"><input type="checkbox" checked={!!node.alertDismiss} onChange={(e) => onPatch({ alertDismiss: e.target.checked })} aria-label="Show a dismiss (×) button" /> Show a dismiss (×) button</label>
+                        {/* Auto-dismiss: a countdown bar appears and the message hides itself. It PAUSES while
+                            the reader hovers or tabs into it — an auto-hiding message that cannot be held still
+                            is a WCAG 2.2.1 failure. Zero is off, and off ships no script. */}
+                        <Range title="Hide itself after" value={node.alertAutoSeconds} min={0} max={30} fallback={0}
+                          unit="s" onChange={(n) => onPatch({ alertAutoSeconds: n || undefined })} />
+                        {!!node.alertAutoSeconds && (
+                          <p className="text-[0.625rem] text-gray-500 dark:text-gray-400">Shows a countdown bar. Pauses while a visitor hovers or tabs into it.</p>
+                        )}
+                        <label className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200"><input type="checkbox" checked={!!node.alertPersist} onChange={(e) => onPatch({ alertPersist: e.target.checked })} aria-label="Stay dismissed on the next visit" /> Once dismissed, stay dismissed on the next visit</label>
                       </>
                     )}
                     <div className="space-y-2">
@@ -763,21 +1024,14 @@ export default function BoxInspector({ node, theme, onPatch, onAddChild, onFloat
                   return (
                     <>
                       {def.variants.length > 1 && (
-                        <div className="space-y-2">
-                          <span className={label}>Design</span>
-                          <div className="flex flex-wrap gap-1" role="group" aria-label={`${def.label} designs`}>
-                            {def.variants.map((v) => {
-                              const on = (node.variant ?? "") === v.id;
-                              return (
-                                <button key={v.id || "default"} aria-pressed={on} aria-label={`${v.label} design`} title={v.label}
-                                  onClick={() => onPatch({ variant: v.id })}
-                                  className={chipCls(on)}>
-                                  {v.label}
-                                </button>
-                              );
-                            })}
-                          </div>
-                        </div>
+                        <DesignGallery
+                          label="Design" hint="tap to apply" ariaLabel={`${def.label} designs`}
+                          value={node.variant ?? ""} onPick={(id) => onPatch({ variant: id })}
+                          groups={[{ items: def.variants.map((v) => ({
+                            id: v.id, label: v.label,
+                            preview: (size) => <RegistryPreview component={node.component!} variant={v.id} size={size} />,
+                          })) }]}
+                        />
                       )}
                       <div className="space-y-2">
                         <span className={label}>Content</span>

@@ -9,6 +9,9 @@ export default defineConfig({
   reporter: [["html", { open: "never" }], ["list"]],
   use: {
     baseURL: "http://localhost:3000",
+    // SLOW_MO=400 npm run test:watch:ui — paces a headed run so a person can follow what it is doing.
+    // Zero by default, so a normal run is not slowed at all.
+    launchOptions: { slowMo: Number(process.env.SLOW_MO ?? 0) },
     trace: "on-first-retry",
     screenshot: "only-on-failure",
   },
