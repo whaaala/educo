@@ -9,7 +9,7 @@
  * Both DocEditor and SlideEditor use the same component — just pass different config.
  */
 
-import { useState, useRef, useEffect, useLayoutEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { type EditorMenuItem, MENU_DIVIDER as D } from "@/components/shared/EditorMenus";
 import {

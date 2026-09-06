@@ -6,7 +6,7 @@
  */
 
 import React, { useState } from "react";
-import { SHAPE_DEFS, getShapesByCategory, type ShapeDef } from "@/components/shared/SlideEditor/shapes";
+import { getShapesByCategory, type ShapeDef } from "@/components/shared/SlideEditor/shapes";
 import { EditorDialog } from "@/components/shared/EditorDialogs";
 
 interface ShapePickerDialogProps {

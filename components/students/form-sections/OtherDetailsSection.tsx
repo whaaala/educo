@@ -6,7 +6,6 @@ import {
   FileText,
   AlertCircle,
   ChevronUp,
-  ChevronDown,
   Building2,
   User,
   CreditCard,
@@ -19,13 +18,10 @@ import FormInput from "@/components/shared/FormInput";
 import FormDropdown from "@/components/shared/FormDropdown";
 import FormTextarea from "@/components/shared/FormTextarea";
 import { getBanks, getIdTypes } from "@/lib/mockBanks";
-import { ValidationErrors } from "@/lib/validation";
+import type { FormSectionProps } from "@/components/shared/form-section-types";
+import type { StudentFormData } from "./types";
 
-interface OtherDetailsSectionProps {
-  formData: any;
-  onChange: (field: string, value: any) => void;
-  errors?: ValidationErrors;
-}
+type OtherDetailsSectionProps = FormSectionProps<StudentFormData>;
 
 export default function OtherDetailsSection({
   formData,

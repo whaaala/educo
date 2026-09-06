@@ -29,7 +29,7 @@ describe("SiteCard", () => {
 
   it("exposes Open and Delete in the actions menu", async () => {
     const user = userEvent.setup();
-    const { site, onOpen, onDelete } = renderCard();
+    const { site, onDelete } = renderCard();
     await user.click(screen.getByLabelText("Actions for Greenfield Academy"));
     const menu = screen.getByRole("menu");
     await user.click(within(menu).getByText("Delete"));

@@ -182,9 +182,7 @@ export default function ValidationErrorsModal({
           
           // Function to scroll with proper offset ensuring entire field is visible and stays in viewport
           const scrollToElement = () => {
-            const elementRect = errorElement!.getBoundingClientRect();
-            const elementHeight = elementRect.height;
-            
+            const elementRect = errorElement!.getBoundingClientRect();            
             // Get viewport dimensions
             const viewportHeight = scrollableParent 
               ? scrollableParent.clientHeight 
@@ -456,7 +454,7 @@ export default function ValidationErrorsModal({
                onClick={onClose}
                className="px-5 py-2 rounded-lg font-semibold text-xs text-white bg-blue-600 dark:bg-blue-500 midnight:bg-cyan-600 purple:bg-pink-600 hover:bg-blue-700 dark:hover:bg-blue-600 midnight:hover:bg-cyan-700 purple:hover:bg-pink-700 transition-all duration-200 active:scale-95 shadow-lg hover:shadow-xl cursor-pointer"
              >
-               I'll Complete These Fields
+               I&apos;ll Complete These Fields
              </button>
            </div>
         </div>

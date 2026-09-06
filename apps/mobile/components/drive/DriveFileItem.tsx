@@ -1,7 +1,11 @@
+import type { ComponentProps } from "react";
 import { memo } from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../contexts/ThemeContext';
+
+/** Ionicons' own set of icon names. A name outside it renders nothing, so it is worth checking. */
+type IoniconName = ComponentProps<typeof Ionicons>["name"];
 import {
   type DriveItem,
   getFileTypeConfig,
@@ -18,7 +22,7 @@ const FONTS = {
 };
 
 function FileIcon({ config, size, color }: { config: { icon: string; color: string }; size: number; color?: string }) {
-  return <Ionicons name={config.icon as any} size={size} color={color || config.color} />;
+  return <Ionicons name={config.icon as IoniconName} size={size} color={color || config.color} />;
 }
 
 interface DriveFileItemProps {
@@ -222,7 +226,7 @@ function DriveFileItemInner({ item, onPress, onLongPress, layout, isTablet }: Dr
     >
       {/* Icon with colored bg */}
       <View style={[styles.listIconBoxMobile, { backgroundColor: config.bgColor }]}>
-        <Ionicons name={config.icon as any} size={22} color={config.color} />
+        <Ionicons name={config.icon as IoniconName} size={22} color={config.color} />
       </View>
 
       {/* Center */}

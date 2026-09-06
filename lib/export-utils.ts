@@ -128,7 +128,7 @@ export function exportLeaveRequestsToExcel(requests: LeaveRequest[], filename: s
 /**
  * Export leave requests data to PDF format (using print)
  */
-export function exportLeaveRequestsToPDF(requests: LeaveRequest[], filename: string = "leave-requests") {
+export function exportLeaveRequestsToPDF(requests: LeaveRequest[], _filename: string = "leave-requests") {
   // Create a printable HTML structure
   const printContent = `
     <!DOCTYPE html>
@@ -423,7 +423,7 @@ export function exportTransfersToExcel(transfers: TransferRequest[], filename: s
 /**
  * Export transfer requests data to PDF format (using print)
  */
-export function exportTransfersToPDF(transfers: TransferRequest[], filename: string = "transfer-requests") {
+export function exportTransfersToPDF(transfers: TransferRequest[], _filename: string = "transfer-requests") {
   // Create a printable HTML structure
   const printContent = `
     <!DOCTYPE html>
@@ -706,7 +706,7 @@ export function exportFeeStructureToExcel(
  */
 export function exportFeeStructureToPDF(
   fees: FeeStructureItem[],
-  filename: string = "fee-structure",
+  _filename: string = "fee-structure",
   formatCurrency?: (amount: number) => string,
   schoolName: string = "School Management System"
 ) {
@@ -1058,7 +1058,7 @@ export function exportReceiptsToExcel(
  */
 export function exportReceiptsToPDF(
   receipts: Receipt[],
-  filename: string = "receipts",
+  _filename: string = "receipts",
   formatCurrency?: (amount: number) => string,
   schoolName: string = "School Management System"
 ) {
@@ -1375,7 +1375,7 @@ export function exportBooksToExcel(
  */
 export function exportBooksToPDF(
   books: Book[],
-  filename: string = "book-catalog",
+  _filename: string = "book-catalog",
   formatCurrency?: (amount: number) => string,
   schoolName: string = "School Management System"
 ) {
@@ -1396,7 +1396,6 @@ export function exportBooksToPDF(
     return acc;
   }, {} as Record<string, { count: number; copies: number }>);
 
-  const formatAmount = (amount: number) => formatCurrency ? formatCurrency(amount) : `NGN ${amount.toLocaleString()}`;
 
   // Create a printable HTML structure
   const printContent = `
@@ -1774,7 +1773,7 @@ export function exportLoansToExcel(
  */
 export function exportLoansToPDF(
   loans: BookLoan[],
-  filename: string = "borrowing-records",
+  _filename: string = "borrowing-records",
   formatCurrency?: (amount: number) => string,
   schoolName: string = "School Management System"
 ) {
@@ -2174,7 +2173,7 @@ export function exportMembersToExcel(
  */
 export function exportMembersToPDF(
   members: LibraryMember[],
-  filename: string = "library-members",
+  _filename: string = "library-members",
   formatCurrency?: (amount: number) => string,
   schoolName: string = "School Management System"
 ) {
@@ -2570,7 +2569,7 @@ export function exportFinesToExcel(
  */
 export function exportFinesToPDF(
   fines: LibraryFine[],
-  filename: string = "library-fines",
+  _filename: string = "library-fines",
   formatCurrency?: (amount: number) => string,
   schoolName: string = "School Management System"
 ) {

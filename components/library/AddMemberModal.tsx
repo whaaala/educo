@@ -36,6 +36,11 @@ interface AddMemberModalProps {
   isAdding?: boolean;
 }
 
+/** Someone who can be added as a borrower: a student (who has a class) or a teacher / member of staff (who
+ *  has a department). Naming the union is what lets the search, the summary line and the select handler read
+ *  `department` without a cast — each of those used `as any`, which unchecked the property name too. */
+type BorrowablePerson = (typeof MOCK_PEOPLE.students)[number] & { department?: string };
+
 interface FormData {
   type: BorrowerType;
   name: string;
@@ -229,7 +234,7 @@ export default function AddMemberModal({
 
   // Filter people based on type, education level, class, and search
   const filteredPeople = useMemo(() => {
-    let people: typeof MOCK_PEOPLE.students = [];
+    let people: BorrowablePerson[] = [];
 
     if (formData.type === "student") {
       people = [...MOCK_PEOPLE.students];
@@ -259,7 +264,7 @@ export default function AddMemberModal({
           person.name.toLowerCase().includes(query) ||
           person.email?.toLowerCase().includes(query) ||
           person.class?.toLowerCase().includes(query) ||
-          (person as any).department?.toLowerCase().includes(query)
+          person.department?.toLowerCase().includes(query)
       );
     }
 
@@ -362,7 +367,7 @@ export default function AddMemberModal({
     setCurrentStep("person");
   };
 
-  const handleSelectPerson = (person: typeof MOCK_PEOPLE.students[0]) => {
+  const handleSelectPerson = (person: BorrowablePerson) => {
     setSelectedPerson(person);
     setFormData((prev) => ({
       ...prev,
@@ -370,7 +375,7 @@ export default function AddMemberModal({
       email: person.email,
       phone: person.phone,
       class: person.class || "",
-      department: (person as any).department || "",
+      department: person.department || "",
     }));
     setErrors({});
     setCurrentStep("settings");
@@ -842,7 +847,7 @@ export default function AddMemberModal({
                         {person.name}
                       </p>
                       <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 truncate">
-                        {person.class || (person as any).department} {person.email && `• ${person.email}`}
+                        {person.class || person.department} {person.email && `• ${person.email}`}
                       </p>
                     </div>
                     <CheckCircle2 className="w-5 h-5 text-gray-300 dark:text-gray-600 midnight:text-cyan-500 purple:text-pink-500 group-hover:text-purple-500 dark:group-hover:text-purple-400 flex-shrink-0 transition-colors" />

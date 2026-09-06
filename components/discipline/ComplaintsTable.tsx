@@ -18,7 +18,7 @@ export default function ComplaintsTable({
   onViewDetails,
   filterKey = "",
 }: ComplaintsTableProps) {
-  const [animationTrigger, setAnimationTrigger] = useState(0);
+  const [_animationTrigger, setAnimationTrigger] = useState(0);
   const [prevFilterKey, setPrevFilterKey] = useState(filterKey);
 
   useEffect(() => {

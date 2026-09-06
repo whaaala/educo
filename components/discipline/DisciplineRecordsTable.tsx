@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { DisciplineIncident } from "@/types/discipline";
-import { Eye, Trash2, Edit2, MapPin, Tag } from "lucide-react";
+import { Eye, Trash2, Edit2, Tag } from "lucide-react";
 import SeverityBadge from "./SeverityBadge";
 import IncidentStatusBadge from "./IncidentStatusBadge";
 import ResponsiveListTable, { type ColumnConfig } from "@/components/shared/ResponsiveListTable";

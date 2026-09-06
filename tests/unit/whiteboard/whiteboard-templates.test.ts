@@ -3,11 +3,6 @@ import {
   TEMPLATES,
   TEMPLATE_CATEGORIES,
 } from "@/components/shared/Whiteboard/whiteboard-templates";
-import type {
-  WhiteboardTemplate,
-  TemplateCategory,
-} from "@/components/shared/Whiteboard/whiteboard-templates";
-
 // Feature: Whiteboard template definitions and category structure
 describe("whiteboard-templates", () => {
   // ─── TEMPLATE_CATEGORIES ─────────────────────

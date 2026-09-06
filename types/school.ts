@@ -85,7 +85,7 @@ export interface SchoolConfiguration {
   storage?: TenantStorageConfig;
 
   // Additional Settings
-  customSettings?: Record<string, any>; // For school-specific configurations
+  customSettings?: Record<string, unknown>; // For school-specific configurations
 }
 
 // Translation providers:

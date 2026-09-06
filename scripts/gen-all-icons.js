@@ -1,4 +1,4 @@
-/* eslint-disable */
+ 
 /**
  * Generates per-source icon SVG maps + a lightweight names index, so the IconPicker can browse
  * EVERY free icon across libraries (lucide + Simple Icons + Material Symbols + Ionicons) while the

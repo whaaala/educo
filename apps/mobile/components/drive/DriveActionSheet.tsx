@@ -1,3 +1,4 @@
+import type { ComponentProps } from "react";
 import { useState } from 'react';
 import {
   View,
@@ -10,6 +11,9 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../contexts/ThemeContext';
 import { type DriveItem, getFileTypeConfig, formatFileSize, timeAgo } from './driveMockData';
+
+/** Ionicons' own set of icon names. A name outside it renders nothing, so it is worth checking. */
+type IoniconName = ComponentProps<typeof Ionicons>["name"];
 
 const FONTS = {
   regular: 'Inter_400Regular',
@@ -96,7 +100,7 @@ export function DriveActionSheet({ visible, onClose, item, onAction }: DriveActi
             {item && config && (
               <View style={s.hdr}>
                 <View style={[s.hdrIcon, { backgroundColor: config.previewBg }]}>
-                  <Ionicons name={config.icon as any} size={24} color={config.color} />
+                  <Ionicons name={config.icon as IoniconName} size={24} color={config.color} />
                 </View>
                 <View style={s.hdrInfo}>
                   <Text style={[s.hdrName, { color: colors.text }]} numberOfLines={1}>{item.name}</Text>
@@ -123,7 +127,7 @@ export function DriveActionSheet({ visible, onClose, item, onAction }: DriveActi
                     style={({ pressed }) => [s.tile, pressed && { opacity: 0.6 }]}
                   >
                     <View style={[s.tileIcon, { backgroundColor: bg }]}>
-                      <Ionicons name={action.icon as any} size={22} color={c} />
+                      <Ionicons name={action.icon as IoniconName} size={22} color={c} />
                     </View>
                     <Text style={[s.tileLabel, { color: action.destructive ? colors.error : colors.textSecondary }]}>{action.label}</Text>
                   </Pressable>

@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo, useCallback, useRef, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import ResponsiveListTable from "./ResponsiveListTable";
-import { MoreVertical, type LucideIcon } from "lucide-react";
-import type { ColumnConfig, RowAction, FilterValues } from "@/types/components";
+import { MoreVertical } from "lucide-react";
+import type { ColumnConfig, RowAction } from "@/types/components";
 
 export interface EntityTableProps<T> {
   /** Data array to display */
@@ -97,11 +96,9 @@ export default function EntityTable<T>({
   isLoading = false,
   loadingMessage,
   emptyMessage,
-  title,
+  title: _title,
   className = "",
 }: EntityTableProps<T>) {
-  const router = useRouter();
-
   // Internal selection state for uncontrolled mode
   const [internalSelectedIds, setInternalSelectedIds] = useState<Set<string>>(new Set());
   const selectedIds = externalSelectedIds ?? internalSelectedIds;

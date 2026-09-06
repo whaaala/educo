@@ -85,7 +85,7 @@ export default function EducoTokensPage() {
     try { await navigator.clipboard.writeText(css); setCopied(true); setTimeout(() => setCopied(false), 1500); } catch { /* clipboard blocked */ }
   }, [css]);
 
-  if (!mounted) return <PageLoader />;
+  if (!mounted) return <PageLoader isLoading />;
 
   const colorFields: { key: keyof SiteTheme; label: string; contrastAgainst?: keyof SiteTheme }[] = [
     { key: "primary", label: "Primary" }, { key: "accent", label: "Accent" },

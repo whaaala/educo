@@ -30,13 +30,7 @@ export default function LeaveNotificationDropdown({
   const menuRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
 
-  const {
-    notifications,
-    getUnreadNotifications,
-    markNotificationAsRead,
-    clearNotifications,
-    getLeaveById,
-  } = useChildLeaves();
+  const { notifications, markNotificationAsRead, clearNotifications, getLeaveById } = useChildLeaves();
 
   // Get relevant notifications based on role
   const relevantNotifications = parentId

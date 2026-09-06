@@ -10,13 +10,10 @@ import {
 } from "lucide-react";
 import FormDropdown from "@/components/shared/FormDropdown";
 import TagInput from "@/components/shared/TagInput";
-import { ValidationErrors } from "@/lib/validation";
+import type { FormSectionProps } from "@/components/shared/form-section-types";
+import type { TeacherFormData } from "./types";
 
-interface RolePermissionsSectionProps {
-  formData: any;
-  onChange: (field: string, value: any) => void;
-  errors?: ValidationErrors;
-}
+type RolePermissionsSectionProps = FormSectionProps<TeacherFormData>;
 
 export default function RolePermissionsSection({
   formData,

@@ -1,3 +1,4 @@
+import type { ComponentProps } from "react";
 import { useState } from 'react';
 import {
   View,
@@ -12,6 +13,9 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../contexts/ThemeContext';
 import { PageHeader } from '../components/ui/PageHeader';
 import { getItem, getFileTypeConfig, formatFileSize, timeAgo } from '../components/drive/driveMockData';
+
+/** Ionicons' own set of icon names. A name outside it renders nothing, so it is worth checking. */
+type IoniconName = ComponentProps<typeof Ionicons>["name"];
 
 const FONTS = {
   regular: 'Inter_400Regular',
@@ -172,7 +176,7 @@ export default function FilePreviewScreen() {
 
       {/* File info bar */}
       <View style={[s.infoBar, { backgroundColor: config.previewBg }]}>
-        <Ionicons name={config.icon as any} size={20} color={config.color} />
+        <Ionicons name={config.icon as IoniconName} size={20} color={config.color} />
         <Text style={[s.infoType, { color: config.color }]}>{config.label}</Text>
         {item.size && <Text style={[s.infoMeta, { color: colors.textMuted }]}>{formatFileSize(item.size)}</Text>}
         <Text style={[s.infoMeta, { color: colors.textMuted }]}>·</Text>

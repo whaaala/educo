@@ -89,24 +89,16 @@ export function PayFeesModal({
   const [selectedAmount, setSelectedAmount] = useState<number>(0);
   const [selectedFeeName, setSelectedFeeName] = useState<string>('');
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(payment.defaultMethod);
-  const [showPaymentOptions, setShowPaymentOptions] = useState(true);
+  const [_showPaymentOptions, setShowPaymentOptions] = useState(true);
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
-  const [customAmountInput, setCustomAmountInput] = useState<string>('');
+  const [_customAmountInput, setCustomAmountInput] = useState<string>('');
   const [maxPayableAmount, setMaxPayableAmount] = useState<number>(0);
   // Per-fee allocation amounts
   const [feeAllocations, setFeeAllocations] = useState<Record<string, number>>({});
   const [feeAllocationInputs, setFeeAllocationInputs] = useState<Record<string, string>>({});
   const scrollRef = useRef<ScrollView>(null);
-
-  // Calculate total from individual fee allocations
-  const totalFromAllocations = Object.values(feeAllocations).reduce((sum, val) => sum + val, 0);
-
   // Calculate total - fee.amount is already the remaining balance when passed from fees.tsx
   const totalOutstanding = fees.reduce((sum, fee) => sum + fee.amount, 0);
-
-  // Track if a specific fee is selected (null means "Pay All")
-  const isPayingAll = selectedFee === null;
-
   // Auto-show payment options when modal opens with fees - default to "Pay All"
   useEffect(() => {
     if (resolvedVisible && fees.length > 0) {
@@ -169,63 +161,6 @@ export function PayFeesModal({
         };
     }
   };
-
-  const handlePayNow = (feeId: string, amount: number, feeName: string) => {
-    setSelectedFee(feeId);
-    setSelectedAmount(amount);
-    setMaxPayableAmount(amount);
-    setCustomAmountInput(amount.toString());
-    setSelectedFeeName(feeName);
-    setShowPaymentOptions(true);
-    // Auto-scroll to payment methods section after a short delay
-    setTimeout(() => {
-      scrollRef.current?.scrollToEnd({ animated: true });
-    }, 100);
-  };
-
-  const handlePayAll = () => {
-    setSelectedFee(null);
-    setSelectedAmount(totalOutstanding);
-    setMaxPayableAmount(totalOutstanding);
-    setCustomAmountInput(totalOutstanding.toString());
-    setSelectedFeeName('All Outstanding Fees');
-    setShowPaymentOptions(true);
-    // Auto-scroll to payment methods section
-    setTimeout(() => {
-      scrollRef.current?.scrollToEnd({ animated: true });
-    }, 100);
-  };
-
-  // Handle custom amount input change
-  const handleCustomAmountChange = (text: string) => {
-    // Remove any non-numeric characters (only allow digits)
-    const cleanedText = text.replace(/[^0-9]/g, '');
-
-    // Prevent empty or zero-leading inputs (except single "0")
-    const sanitizedText = cleanedText.replace(/^0+/, '') || '';
-    setCustomAmountInput(sanitizedText);
-
-    const numValue = parseInt(sanitizedText, 10) || 0;
-
-    // Ensure amount is positive and doesn't exceed max payable
-    if (numValue > 0 && numValue <= maxPayableAmount) {
-      setSelectedAmount(numValue);
-    } else if (numValue > maxPayableAmount) {
-      setSelectedAmount(maxPayableAmount);
-      setCustomAmountInput(maxPayableAmount.toString());
-    } else {
-      // For 0 or empty, set selectedAmount to 0
-      setSelectedAmount(0);
-    }
-  };
-
-  // Quick amount selection (percentage-based)
-  const handleQuickAmount = (percentage: number) => {
-    const amount = Math.floor(maxPayableAmount * (percentage / 100));
-    setSelectedAmount(amount);
-    setCustomAmountInput(amount.toString());
-  };
-
   // Handle per-fee allocation input change
   const handleFeeAllocationChange = (feeId: string, text: string, feeMaxAmount: number) => {
     // Remove any non-numeric characters (only allow digits)
@@ -449,8 +384,6 @@ export function PayFeesModal({
             const currentAllocation = feeAllocations[fee.id] || 0;
             const currentInputValue = feeAllocationInputs[fee.id] || '';
             const isFullFee = currentAllocation === remainingAmount;
-            const isPartialFee = currentAllocation > 0 && currentAllocation < remainingAmount;
-
             return (
               <View
                 key={fee.id}

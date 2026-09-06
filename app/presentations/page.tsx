@@ -4,10 +4,10 @@ import { useState, useMemo, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import MainLayout from "@/components/layout/MainLayout";
 import { slideStorage, type StoredPresentation } from "@/lib/slide-storage";
-import { SLIDE_TEMPLATES, SLIDE_TEMPLATE_CATEGORIES, SLIDE_CATEGORY_COLORS } from "@/lib/slide-templates";
+import { SLIDE_TEMPLATES, SLIDE_CATEGORY_COLORS } from "@/lib/slide-templates";
 import {
   Plus, Search, LayoutGrid, List, Clock, ChevronDown,
-  MoreVertical, Star, Trash2, Copy, ExternalLink, FolderOpen, Presentation,
+  MoreVertical, Star, Trash2, ExternalLink, FolderOpen, Presentation,
 } from "lucide-react";
 
 function timeAgo(dateStr: string): string {

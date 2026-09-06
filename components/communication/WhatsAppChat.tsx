@@ -5,8 +5,6 @@ import {
   Send,
   Paperclip,
   Image as ImageIcon,
-  Phone,
-  Video,
   Search,
   ArrowLeft,
   Check,

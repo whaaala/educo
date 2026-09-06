@@ -6,24 +6,27 @@ import {
   Hash,
   Globe,
   Phone,
-  ChevronUp,
-  ChevronDown
+  ChevronUp
 } from "lucide-react";
 import FormInput from "@/components/shared/FormInput";
 import FormDropdown from "@/components/shared/FormDropdown";
 import { getAvailableCountries } from "@/config/countries";
-import { ValidationErrors } from "@/lib/validation";
+import type { FormSectionProps } from "@/components/shared/form-section-types";
+import type { StudentFormData } from "./types";
+/** The seven address fields that copy across when "same as current" is ticked, and their counterparts. */
+type CurrentAddressField =
+  | "currentAddressLine1" | "currentAddressLine2" | "currentCity" | "currentState"
+  | "currentPostalCode" | "currentCountry" | "currentAddressPhone";
+type PermanentAddressField =
+  | "permanentAddressLine1" | "permanentAddressLine2" | "permanentCity" | "permanentState"
+  | "permanentPostalCode" | "permanentCountry" | "permanentAddressPhone";
 
-interface AddressSectionProps {
-  formData: any;
-  onChange: (field: string, value: any) => void;
-  errors?: ValidationErrors;
-}
+type AddressSectionProps = FormSectionProps<StudentFormData>;
 
 export default function AddressSection({
   formData,
   onChange,
-  errors = {},
+  errors: _errors = {},
 }: AddressSectionProps) {
   const [isExpanded, setIsExpanded] = useState(true);
   const countries = getAvailableCountries();
@@ -42,22 +45,23 @@ export default function AddressSection({
     }
   };
 
-  // Update permanent address when current address changes if checkbox is checked
-  const handleCurrentAddressChange = (field: string, value: any) => {
+  // Update permanent address when current address changes if checkbox is checked.
+  // The map is typed both ways round, so a field renamed on one side of it stops compiling rather than
+  // quietly copying nothing.
+  const PERMANENT_FIELD: Record<CurrentAddressField, PermanentAddressField> = {
+    currentAddressLine1: "permanentAddressLine1",
+    currentAddressLine2: "permanentAddressLine2",
+    currentCity: "permanentCity",
+    currentState: "permanentState",
+    currentPostalCode: "permanentPostalCode",
+    currentCountry: "permanentCountry",
+    currentAddressPhone: "permanentAddressPhone",
+  };
+
+  const handleCurrentAddressChange = (field: CurrentAddressField, value: string) => {
     onChange(field, value);
     if (formData.sameAsCurrentAddress) {
-      const permanentFieldMap: Record<string, string> = {
-        currentAddressLine1: "permanentAddressLine1",
-        currentAddressLine2: "permanentAddressLine2",
-        currentCity: "permanentCity",
-        currentState: "permanentState",
-        currentPostalCode: "permanentPostalCode",
-        currentCountry: "permanentCountry",
-        currentAddressPhone: "permanentAddressPhone",
-      };
-      if (permanentFieldMap[field]) {
-        onChange(permanentFieldMap[field], value);
-      }
+      onChange(PERMANENT_FIELD[field], value);
     }
   };
 

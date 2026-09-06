@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -7,12 +7,9 @@ import {
   StyleSheet,
   Modal,
   ScrollView,
-  Dimensions,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../contexts/ThemeContext';
-
-const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 // Shared fonts
 const FONTS = {

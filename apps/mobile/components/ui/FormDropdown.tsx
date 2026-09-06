@@ -66,9 +66,7 @@ export function FormDropdown({
   const containerRef = useRef<View>(null);
 
   const selectedOption = options.find((opt) => opt.value === value);
-
-  // Calculate the estimated height of the options list
-  const optionsHeight = Math.min(options.length * 48, 200); // 48px per option, max 200px
+// 48px per option, max 200px
 
   useEffect(() => {
     Animated.timing(rotateAnim, {
@@ -83,8 +81,9 @@ export function FormDropdown({
 
     // Measure the container position relative to the scroll view
     containerRef.current.measureLayout(
-      parentScrollRef.current as any,
-      (x, y, width, height) => {
+      // measureLayout takes the host view's node; a ScrollView ref is not that type, but is what RN accepts.
+      parentScrollRef.current as unknown as number,
+      (x, y, _width, _height) => {
         // Always scroll to show the dropdown label/button at the top of the visible area
         // This ensures users can see what they're selecting from
         const targetScrollY = Math.max(0, y - 16); // 16px padding from top

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, ReactNode } from "react";
-import { ChevronLeft, ChevronRight, Loader2, Search, SearchX, FileX } from "lucide-react";
+import { ChevronLeft, ChevronRight, Loader2, SearchX, FileX } from "lucide-react";
 import SearchBar from "./SearchBar";
 import EmptyState from "@/components/pages/components/EmptyState";
 import Tooltip from "./Tooltip";
@@ -104,7 +104,7 @@ export default function DataTable<T>({
  if (column.sortValue) {
  value = String(column.sortValue(item));
  } else {
- value = String((item as any)[column.key] || "");
+ value = String((item as Record<string, unknown>)[column.key] ?? "");
  }
 
  if (value.toLowerCase().includes(searchData)) {
@@ -127,8 +127,8 @@ export default function DataTable<T>({
  firstValue = column.sortValue(a);
  secondValue = column.sortValue(b);
  } else {
- firstValue = String((a as any)[column.key] || "");
- secondValue = String((b as any)[column.key] || "");
+ firstValue = String((a as Record<string, unknown>)[column.key] ?? "");
+ secondValue = String((b as Record<string, unknown>)[column.key] ?? "");
  }
 
  // Handle string comparison
@@ -293,9 +293,7 @@ export default function DataTable<T>({
  <tr className="bg-gray-50/80 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]/60 border-b border-gray-200/60 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/20">
  {columns.map((column, index) => {
  // Determine alignment from className
- const isLeftAligned = column.className?.includes('text-left');
- const isCenterAligned = column.className?.includes('text-center') || !isLeftAligned;
- const justifyClass = isLeftAligned ? 'justify-start' : 'justify-center';
+ const isLeftAligned = column.className?.includes('text-left'); const justifyClass = isLeftAligned ? 'justify-start' : 'justify-center';
 
  // Make first N columns sticky on mobile - first column needs higher z-index than second
  const stickyClass =
@@ -425,7 +423,7 @@ export default function DataTable<T>({
  >
  {column.render ? column.render(item, index) : (
  <span className="text-[0.75rem] font-medium text-gray-900 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100 block truncate">
- {String((item as any)[column.key] || "")}
+ {String((item as Record<string, unknown>)[column.key] ?? "")}
  </span>
  )}
  </td>

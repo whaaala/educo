@@ -1,36 +1,31 @@
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import {
   View,
   Text,
   Pressable,
   TouchableOpacity,
-  TouchableWithoutFeedback,
   StyleSheet,
   ScrollView,
   Dimensions,
-  Image,
   TextInput,
   LayoutAnimation,
   Platform,
   UIManager,
-  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../contexts/ThemeContext';
 import { useTenantSettings } from '../contexts/TenantSettingsContext';
 import { ProfileAvatar } from '../components/ui/ProfileAvatar';
 import { ChildSwitcher, type ChildData } from '../components/ui/ChildSwitcher';
-import { ViewReceiptModal, PaymentReceiptData } from '../components/modals/ViewReceiptModal';
+import { ViewReceiptModal } from '../components/modals/ViewReceiptModal';
+import type { ThemeColors } from "@/contexts/ThemeContext";
 
 // Enable LayoutAnimation on Android
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
-
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 // Shared fonts
 const FONTS = {
@@ -264,7 +259,7 @@ function useIsTablet() {
   return isTablet;
 }
 
-function getStatusConfig(status: PaymentHistoryItem['status'], colors: any) {
+function getStatusConfig(status: PaymentHistoryItem['status'], colors: ThemeColors) {
   switch (status) {
     case 'completed':
       return {
@@ -304,7 +299,7 @@ function getStatusConfig(status: PaymentHistoryItem['status'], colors: any) {
   }
 }
 
-function getMethodConfig(method: PaymentHistoryItem['paymentMethod'], colors: any) {
+function getMethodConfig(method: PaymentHistoryItem['paymentMethod'], colors: ThemeColors) {
   switch (method) {
     case 'card':
       return {
@@ -333,15 +328,6 @@ function getMethodConfig(method: PaymentHistoryItem['paymentMethod'], colors: an
   }
 }
 
-function formatDate(dateString: string) {
-  const date = new Date(dateString);
-  return date.toLocaleDateString('en-NG', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-  });
-}
-
 function formatShortDate(dateString: string) {
   const date = new Date(dateString);
   return date.toLocaleDateString('en-NG', {
@@ -360,7 +346,7 @@ function PaymentCard({
   onViewReceipt,
 }: {
   payment: PaymentHistoryItem;
-  colors: any;
+  colors: ThemeColors;
   isDark: boolean;
   isTablet: boolean;
   currencySymbol: string;
@@ -770,7 +756,7 @@ export default function PaymentHistoryScreen() {
               {MOCK_CHILDREN.length > 1 && (
                 <View style={styles.childSwitcherContainer}>
                   <ChildSwitcher
-                    children={MOCK_CHILDREN}
+                    childList={MOCK_CHILDREN}
                     selectedChildId={selectedChildId}
                     onSelectChild={handleSelectChild}
                     variant="compact"
@@ -808,7 +794,7 @@ export default function PaymentHistoryScreen() {
               {MOCK_CHILDREN.length > 1 && (
                 <View style={styles.mobileChildSwitcherContainer}>
                   <ChildSwitcher
-                    children={MOCK_CHILDREN}
+                    childList={MOCK_CHILDREN}
                     selectedChildId={selectedChildId}
                     onSelectChild={handleSelectChild}
                     variant="compact"

@@ -14,8 +14,6 @@ import {
   Share2,
   Trash2,
   MoreVertical,
-  Table2,
-  ArrowUpDown,
   Bold,
   Italic,
   Underline,
@@ -31,7 +29,6 @@ import {
   Mail,
   MoreHorizontal,
   Star,
-  Download,
   Printer,
   Image as ImageIcon,
   Table as TableIcon,
@@ -44,11 +41,8 @@ import {
   File as FileIcon,
   Bookmark,
   Copy,
-  Scissors,
-  ClipboardPaste,
   Search,
   Eye,
-  MessageSquare,
   Minus,
   ChevronDown,
   ArrowUp,
@@ -78,19 +72,13 @@ import {
   Package,
   Circle,
   Square,
-  Diamond,
   Check,
-  Globe,
-  UserPlus,
   RotateCw,
   Maximize2,
   Palette,
   X,
   Minimize2,
-  PanelLeftClose,
   Pilcrow,
-  SpellCheck as SpellCheckIcon,
-  BookOpen,
   ZoomIn,
   MessageCircle,
   Reply,
@@ -102,7 +90,6 @@ import {
   PanelRightClose,
   FolderInput,
   Tag,
-  FilePlus2,
   FileSpreadsheet,
   Presentation,
   FormInput as FormInputIcon,
@@ -118,20 +105,13 @@ import {
   Crop,
   Replace,
   SlidersHorizontal,
-  GripHorizontal,
-  Move as MoveIcon,
-  WrapText,
   AlertTriangle,
   RefreshCw,
-  LogOut,
-  Settings,
-  LayoutGrid,
-  Home,
 } from "lucide-react";
 import { DOC_LANGUAGES } from "./languages";
 import DrawingCanvas from "./DrawingCanvas";
 import { EditorFileMenuPanel } from "@/components/shared/EditorFileMenu";
-import { EditorViewMenuPanel, type ViewMenuConfig } from "@/components/shared/EditorViewMenu";
+import { EditorViewMenuPanel } from "@/components/shared/EditorViewMenu";
 import Tooltip from "@/components/shared/Tooltip";
 import Button from "@/components/shared/Button";
 import ShareDialog from "@/components/shared/ShareDialog";
@@ -139,7 +119,7 @@ import type { ShareTarget } from "@/components/shared/ShareDialog";
 import PublishDialog from "@/components/shared/PublishDialog";
 import type { PublishScope, PublishAttachment } from "@/components/shared/PublishDialog";
 import EmailDialog, { type EmailMode } from "@/components/shared/EmailDialog";
-import DownloadDialog, { type DownloadFormat } from "@/components/shared/DownloadDialog";
+import DownloadDialog, {  } from "@/components/shared/DownloadDialog";
 import MoveDialog from "@/components/shared/MoveDialog";
 import { EditorDialog, EditorDialogButton } from "@/components/shared/EditorDialogs";
 import { driveStorage } from "@/lib/drive-storage";
@@ -152,7 +132,7 @@ function useSafeUser() {
 function useSafeNotifications() {
   try { return _useNotifications(); } catch { return { addNotification: () => "" }; }
 }
-import { ColorGrid, TabbedColorPalette, SOLID_COLORS, TEXT_COLORS_MATRIX, TEXT_GRADIENT_COLORS, GLOSSY_COLORS, BORDER_COLORS, CELL_BG_COLORS, colorToCSS, isNativeColorPickerOpen } from "@/components/shared/ColorPalettePicker";
+import { ColorGrid, TabbedColorPalette, TEXT_COLORS_MATRIX, TEXT_GRADIENT_COLORS, GLOSSY_COLORS, BORDER_COLORS, CELL_BG_COLORS, colorToCSS, isNativeColorPickerOpen } from "@/components/shared/ColorPalettePicker";
 import FormDropdown from "@/components/shared/FormDropdown";
 import FormInput from "@/components/shared/FormInput";
 import { FONT_FAMILY_CATEGORIES, FONT_SIZES, LINE_SPACINGS } from "@/components/shared/Whiteboard/whiteboard-types";
@@ -257,11 +237,7 @@ async function convertImageToWebSafe(file: File): Promise<string> {
     }
   }
   return dataUrl;
-}
-
-// ── Section Break ──
-const DOC_SECTION_BREAK_REGEX = /<div[^>]*data-doc-section-break="true"[^>]*data-section-setup='([^']*)'[^>]*><\/div>/gi;
-function makeSectionBreakMarker(setup: PageSetup): string {
+}function makeSectionBreakMarker(setup: PageSetup): string {
   return `<div data-doc-section-break="true" data-section-setup='${JSON.stringify(setup)}'></div>`;
 }
 
@@ -832,8 +808,6 @@ function createTableWidgetModel(rows: number, cols: number): TableWidgetModel {
 /** Render a static preview of the table (no contenteditable — just for display in the document). */
 function renderTableWidgetHtml(model: TableWidgetModel): string {
   const bg = model.cellBg && model.cellBg !== "transparent" ? model.cellBg : "";
-  const border = `${Math.max(0.5, model.border.widthPx)}px ${model.border.style} ${model.border.color}`;
-
   const colgroup =
     model.colWidthsPx && model.colWidthsPx.length
       ? `<colgroup>${model.colWidthsPx
@@ -1106,19 +1080,6 @@ export default function DocEditor({
 
   // pageSetup = the active section's setup (for ruler, toolbar, and backward compat)
   const pageSetup = sectionInfos[Math.min(activeSectionIdx, sectionInfos.length - 1)]?.pageSetup || DEFAULT_PAGE_SETUP;
-
-  // Custom setter: updates the active section's pageSetup
-  const setPageSetup = useCallback((updater: PageSetup | ((prev: PageSetup) => PageSetup)) => {
-    setSectionInfos(prev => {
-      const idx = Math.min(activeSectionIdxRef.current, prev.length - 1);
-      const currentSetup = prev[idx].pageSetup;
-      const newSetup = typeof updater === 'function' ? updater(currentSetup) : updater;
-      const updated = [...prev];
-      updated[idx] = { ...updated[idx], pageSetup: newSetup };
-      return updated;
-    });
-  }, []);
-
   // Helpers: map flat page index ↔ section
   const getSectionForPage = useCallback((flatIdx: number): number => {
     let cumulative = 0;
@@ -1137,12 +1098,12 @@ export default function DocEditor({
 
   const pageDimensions = useMemo(() => computeSectionDimensions(pageSetup), [pageSetup]);
 
-  const { pageWidthPx, pageHeightPx, marginTopPx, marginBottomPx, marginLeftPx, marginRightPx } = pageDimensions;
+  const { pageWidthPx, marginLeftPx, marginRightPx } = pageDimensions;
   const showPrintLayout = !pageSetup.pageless;
   const [showComments, setShowComments] = useState(false);
   const [showFloatingComments, setShowFloatingComments] = useState(false);
   const [floatingCommentsDismissed, setFloatingCommentsDismissed] = useState(false);
-  const [sidebarManuallyDismissed, setSidebarManuallyDismissed] = useState(false);
+  const [_sidebarManuallyDismissed, setSidebarManuallyDismissed] = useState(false);
   const [showEquationToolbar, setShowEquationToolbar] = useState(false);
   // ── Insert Image state ──
   const [showImageUrlModal, setShowImageUrlModal] = useState(false);
@@ -1469,8 +1430,6 @@ export default function DocEditor({
   }>({ show: false, x: 0, y: 0, selectedText: "", range: null });
   const [commentText, setCommentText] = useState("");
   const commentInputRef = useRef<HTMLTextAreaElement>(null);
-  const replyInputRef = useRef<HTMLTextAreaElement>(null);
-
   // Persist comments to localStorage when they change
   useEffect(() => {
     if (onCommentsChange) {
@@ -1495,38 +1454,6 @@ export default function DocEditor({
       role: currentUser.role,
     };
   }, [currentUser]);
-
-  // Get XPath-like path from page root to a node
-  const getNodePath = useCallback((root: Node, target: Node): string => {
-    if (target === root) return "";
-    const parts: string[] = [];
-    let node: Node | null = target;
-    while (node && node !== root) {
-      const parent: Node | null = node.parentNode;
-      if (!parent) break;
-      let idx = 0;
-      for (let i = 0; i < parent.childNodes.length; i++) {
-        if (parent.childNodes[i] === node) { idx = i; break; }
-      }
-      parts.unshift(String(idx));
-      node = parent;
-    }
-    return parts.join("/");
-  }, []);
-
-  // Resolve a path back to a node
-  const resolveNodePath = useCallback((root: Node, path: string): Node | null => {
-    if (!path) return null;
-    const parts = path.split("/");
-    let node: Node = root;
-    for (const p of parts) {
-      const idx = parseInt(p, 10);
-      if (isNaN(idx) || !node.childNodes[idx]) return null;
-      node = node.childNodes[idx];
-    }
-    return node;
-  }, []);
-
   // Add a new comment from the current selection
   const addComment = useCallback((text: string, mentions: CommentMention[] = []) => {
     if (!commentPopover.range || !commentPopover.selectedText) return;
@@ -2153,8 +2080,6 @@ export default function DocEditor({
       return (a.highlightRange.textOffset ?? Infinity) - (b.highlightRange.textOffset ?? Infinity);
     });
   }, [openComments]);
-  const resolvedComments = useMemo(() => docComments.filter((c) => (c.status === "resolved" || c.status === "rejected") && (!c.tabId || c.tabId === activeTabId)), [docComments, activeTabId]);
-
   // Default: show floating comments if unresolved comments exist (Mode A)
   const hasAutoOpened = useRef(false);
   useEffect(() => {
@@ -2175,7 +2100,7 @@ export default function DocEditor({
   }, [showComments, openComments.length, floatingCommentsDismissed]);
 
   // Compute floating pill positions — vertical offset relative to the editor root
-  const [floatingPillPositions, setFloatingPillPositions] = useState<Record<string, number>>({});
+  const [_floatingPillPositions, setFloatingPillPositions] = useState<Record<string, number>>({});
   useEffect(() => {
     if (!showFloatingComments || showComments) { setFloatingPillPositions({}); return; }
     const timer = setTimeout(() => {
@@ -2291,10 +2216,7 @@ export default function DocEditor({
   }, []);
 
   // Refs for contentEditable cells in the React editor panel
-  const cellEditRefs = useRef<Map<string, HTMLDivElement | null>>(new Map());
-  // Drag-to-select state for cell merging
-  const cellSelectDragRef = useRef<{ active: boolean; anchorR: number; anchorC: number }>({ active: false, anchorR: 0, anchorC: 0 });
-  // Ref for the panel element itself (to measure its actual height for positioning)
+  const cellEditRefs = useRef<Map<string, HTMLDivElement | null>>(new Map());  // Ref for the panel element itself (to measure its actual height for positioning)
   const tablePanelElRef = useRef<HTMLDivElement>(null);
   // Revision counter — increments on structural changes to force React to re-create cell elements
   const [tableRevision, setTableRevision] = useState(0);
@@ -2636,7 +2558,7 @@ export default function DocEditor({
         const pageEl = pageRefs.current[i];
         if (!pageEl) continue;
         while (pageEl.scrollHeight > pageEl.clientHeight + 2) {
-          let nextEl = pageRefs.current[i + 1];
+          const nextEl = pageRefs.current[i + 1];
           if (!nextEl) {
             const nextPages = [...pagesRef.current, "<p></p>"];
             pagesRef.current = nextPages;
@@ -3207,22 +3129,6 @@ export default function DocEditor({
       handleLineSpacingChange(v);
     }
   }, [handleLineSpacingChange]);
-
-  const getOverlayForElement = useCallback((el: HTMLElement) => {
-    const wrapper = rootRef.current;
-    if (!wrapper) return null;
-    const r = el.getBoundingClientRect();
-    const wRect = wrapper.getBoundingClientRect();
-    return {
-      x: Math.max(8, r.left - wRect.left),
-      y: Math.max(8, r.top - wRect.top),
-      w: Math.max(40, r.width),
-      h: Math.max(24, r.height),
-      wrapperW: Math.max(1, wRect.width),
-      wrapperH: Math.max(1, wRect.height),
-    };
-  }, []);
-
   /** Write model back to the DOM element as encoded data + static preview HTML. */
   const maxContentWidth = pageWidthPx - marginLeftPx - marginRightPx - 2;
   const commitTableWidget = useCallback((el: HTMLElement, model: TableWidgetModel) => {
@@ -3363,10 +3269,10 @@ export default function DocEditor({
       }
     };
 
-    document.addEventListener("pointerdown", onDocPointerDown as any, true);
+    document.addEventListener("pointerdown", onDocPointerDown, true);
     window.addEventListener("keydown", onKeyDown);
     return () => {
-      document.removeEventListener("pointerdown", onDocPointerDown as any, true);
+      document.removeEventListener("pointerdown", onDocPointerDown, true);
       window.removeEventListener("keydown", onKeyDown);
     };
   }, [closeTableWidgetEditor, tableWidgetEditor]);
@@ -3920,11 +3826,11 @@ export default function DocEditor({
       }
     };
 
-    root.addEventListener("pointerdown", onPointerDown as any, true);
-    root.addEventListener("click", onClickGap as any);
+    root.addEventListener("pointerdown", onPointerDown, true);
+    root.addEventListener("click", onClickGap);
     return () => {
-      root.removeEventListener("pointerdown", onPointerDown as any, true);
-      root.removeEventListener("click", onClickGap as any);
+      root.removeEventListener("pointerdown", onPointerDown, true);
+      root.removeEventListener("click", onClickGap);
     };
   }, [canEdit, openTableWidgetEditor, closeTableWidgetEditor, commitTableWidget, emitChange]);
 
@@ -4170,7 +4076,7 @@ export default function DocEditor({
                 showToast("PDF downloaded");
               }
             },
-          } as any);
+          } as Parameters<typeof doc.html>[1]);
         } catch {
           showToast("PDF export failed");
         } finally {
@@ -4251,7 +4157,7 @@ export default function DocEditor({
       case "file:versionHistory": setDialog("versions"); break;
       case "file:details": setDialog("details"); break;
       case "file:security": setDialog("security"); break;
-      case "file:language": setDialog("language" as any); break;
+      case "file:language": setDialog("language"); break;
       case "file:pageSetup": setDialog("pageSetup"); break;
       case "file:printPreview": {
         // Open print preview page in new tab (same pattern as SlideEditor)
@@ -4449,7 +4355,7 @@ export default function DocEditor({
       }
       mark.scrollIntoView?.({ behavior: "smooth", block: "center", inline: "nearest" });
     } catch (err) {
-      // eslint-disable-next-line no-console
+       
       console.error("[DocEditor findNextAndHighlight] failed to insert mark:", err);
     }
     setFindMatchCount({ current: Math.max(1, current), total });
@@ -4577,14 +4483,6 @@ export default function DocEditor({
     const kind: SmartChip["kind"] = label === "Person" ? "person" : label === "File" ? "file" : label === "Place" ? "place" : "variable";
     insertSmartChip({ kind, value: valueText, label: kind === "variable" ? label : undefined });
   };
-
-  const insertSvg = (svg: string) => {
-    if (!canEdit) return;
-    focusEditor();
-    exec("insertHTML", `<div style="margin:12px 0;">${svg}</div>`);
-    emitChange();
-  };
-
   /**
    * Insert a REAL chart using the shared <Chart> component (the same one the presentation
    * editor renders). The ChartSpec is embedded in the HTML so the chart stays live data —
@@ -4815,24 +4713,6 @@ export default function DocEditor({
     };
     probe.src = url.trim();
   };
-
-  // Helper: get image overlay position relative to the content area container,
-  // accounting for scroll offset within the page surface.
-  const getImageOverlayPos = useCallback((imgRect: DOMRect) => {
-    const container = contentAreaRef.current;
-    if (!container) return { top: 0, left: 0, width: imgRect.width, height: imgRect.height };
-    const containerRect = container.getBoundingClientRect();
-    const scrollEl = scrollContainerRef.current;
-    const scrollTop = scrollEl ? scrollEl.scrollTop : 0;
-    const scrollLeft = scrollEl ? scrollEl.scrollLeft : 0;
-    return {
-      top: imgRect.top - containerRect.top + scrollTop,
-      left: imgRect.left - containerRect.left + scrollLeft,
-      width: imgRect.width,
-      height: imgRect.height,
-    };
-  }, []);
-
   // Helper: apply text wrapping mode to an image
   const applyImageWrapMode = useCallback((img: HTMLImageElement, mode: "inline" | "wrapLeft" | "wrapRight" | "breakText") => {
     // Clear previous wrapping styles from both image and its container
@@ -6360,7 +6240,8 @@ export default function DocEditor({
                       const input = document.createElement("input");
                       input.type = "file";
                       input.accept = IMAGE_ACCEPT_ATTR;
-                      (input as any).capture = "environment";
+                      // `capture` is a real <input type=file> attribute — it asks a phone for the camera rather than the gallery.
+    (input as HTMLInputElement & { capture?: string }).capture = "environment";
                       input.onchange = async () => {
                         const file = input.files?.[0];
                         if (!file) return;
@@ -10145,8 +10026,6 @@ export default function DocEditor({
             const rect = canvas.getBoundingClientRect();
             const x = e.clientX - rect.left;
             const y = e.clientY - rect.top;
-            const { lastX, lastY } = drawingRef.current;
-
             // Draw shapes on mouse up using start point
             const sx = drawingRef.current.startX;
             const sy = drawingRef.current.startY;
@@ -10302,39 +10181,6 @@ function ToolbarDropdown({
     </div>
   );
 }
-
-function DocDialog({
-  title,
-  children,
-  onClose,
-}: {
-  title: string;
-  children: React.ReactNode;
-  onClose: () => void;
-}) {
-  return (
-    <div
-      data-doc-dialog
-      className="absolute inset-0 z-[210] flex items-center justify-center bg-black/25 backdrop-blur-[2px] p-4"
-    >
-      <div className="w-full max-w-[520px] rounded-2xl border border-line bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] shadow-2xl p-4">
-        <div className="flex items-center justify-between mb-3">
-          <div className="text-[13px] font-bold text-gray-800 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50">
-            {title}
-          </div>
-          <button
-            className="px-2 py-1 rounded-lg text-[12px] text-gray-500 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5"
-            onClick={onClose}
-          >
-            Close
-          </button>
-        </div>
-        {children}
-      </div>
-    </div>
-  );
-}
-
 function DialogButton({
   children,
   onClick,
@@ -10657,18 +10503,6 @@ function MenuRoot({
     </div>
   );
 }
-
-function MenuPanel({ children }: { children: React.ReactNode }) {
-  return (
-    <div
-      data-doc-menu-panel
-      className="absolute z-[120] mt-2 left-0 w-[260px] rounded-2xl border border-gray-200/60 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-white/95 dark:bg-[#0f1115] midnight:bg-[#0a0e27]/95 purple:bg-[#1a0b2e]/95 backdrop-blur-xl shadow-xl shadow-black/8 dark:shadow-black/30 overflow-visible"
-    >
-      <div className="py-1 max-h-[calc(100vh-120px)] overflow-y-auto">{children}</div>
-    </div>
-  );
-}
-
 function SubmenuPanel({
   children,
   className = "",
@@ -10740,131 +10574,6 @@ function SubmenuPanel({
     document.body,
   );
 }
-
-function MenuDivider() {
-  return <div className="my-1 h-px bg-gray-100 dark:bg-[#1a1d24] midnight:bg-cyan-500/10 purple:bg-pink-500/10" />;
-}
-
-function MenuItem({
-  label,
-  shortcut,
-  onClick,
-  disabled,
-  hasSubmenu,
-  submenu,
-  onHover,
-  onLeave,
-  isSubmenuOpen,
-  icon: Icon,
-  isChecked,
-}: {
-  label: string;
-  shortcut?: string;
-  onClick?: () => void;
-  disabled?: boolean;
-  hasSubmenu?: boolean;
-  submenu?: React.ReactNode;
-  onHover?: () => void;
-  onLeave?: () => void;
-  isSubmenuOpen?: boolean;
-  icon?: React.ComponentType<{ className?: string }>;
-  isChecked?: boolean;
-}) {
-  const requestCloseMenus = useContext(MenuCloseContext);
-  const closeSubmenus = useContext(SubmenuCloseContext);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const isSubmenuOpenRef = useRef(isSubmenuOpen);
-  isSubmenuOpenRef.current = isSubmenuOpen;
-  const onLeaveRef = useRef(onLeave);
-  onLeaveRef.current = onLeave;
-
-  useEffect(() => {
-    return () => {
-      if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
-    };
-  }, []);
-
-  // Stable timer callbacks shared with the portalled SubmenuPanel via context.
-  const timerCallbacks = useMemo(() => ({
-    cancelClose: () => {
-      if (closeTimerRef.current) {
-        clearTimeout(closeTimerRef.current);
-        closeTimerRef.current = null;
-      }
-    },
-    scheduleClose: () => {
-      closeTimerRef.current = setTimeout(() => {
-        if (!isSubmenuOpenRef.current) return;
-        onLeaveRef.current?.();
-      }, 350);
-    },
-  }), []);
-
-  const handleClick = () => {
-    if (disabled) return;
-    onClick?.();
-    if (!hasSubmenu) requestCloseMenus?.();
-  };
-
-  const content = (
-    <div
-      ref={containerRef}
-      className="relative"
-      onMouseEnter={() => {
-        // Cancel any pending close timer (mouse returned to this item)
-        timerCallbacks.cancelClose();
-        if (hasSubmenu) {
-          // Open this submenu (implicitly closes any other open submenu via state)
-          onHover?.();
-        } else {
-          // Non-submenu item: close any open submenu at this menu level
-          closeSubmenus?.();
-        }
-      }}
-      onMouseLeave={() => {
-        // Only run close logic for items with an open submenu
-        if (!hasSubmenu || !isSubmenuOpen || !onLeave) return;
-        // Schedule close — the portalled SubmenuPanel's onMouseEnter will cancel if mouse goes there
-        timerCallbacks.scheduleClose();
-      }}
-    >
-      <button
-        type="button"
-        disabled={disabled}
-        onClick={handleClick}
-        className={`w-full flex items-center gap-2 px-3 py-1.5 text-left text-[12px] transition-colors ${
-          disabled
-            ? "text-gray-300 dark:text-gray-600 midnight:text-cyan-500 purple:text-pink-500 cursor-not-allowed"
-            : "text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-50/80 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 cursor-pointer"
-        }`}
-      >
-        <span className="w-4 flex-shrink-0 flex items-center justify-center">
-          {isChecked ? (
-            <span className="text-[12px] font-bold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400">✓</span>
-          ) : Icon ? (
-            <Icon className="w-4 h-4 text-muted" />
-          ) : null}
-        </span>
-        <span className="flex-1 min-w-0 truncate">{label}</span>
-        {shortcut && <span className="text-[12px] text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400">{shortcut}</span>}
-        {hasSubmenu && <ChevronRight className="w-4 h-4 text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400" />}
-      </button>
-      <SubmenuTimerContext.Provider value={hasSubmenu ? timerCallbacks : null}>
-        <SubmenuAnchorContext.Provider value={containerRef}>
-          {submenu && isSubmenuOpen && submenu}
-        </SubmenuAnchorContext.Provider>
-      </SubmenuTimerContext.Provider>
-    </div>
-  );
-
-  return (
-    <Tooltip content={label} block delay={500}>
-      {content}
-    </Tooltip>
-  );
-}
-
 /* ═══════════════════════════════════════════════════════════════════════════
  *  MODERNIZED VIEW MENU COMPONENTS — 2026 Design System
  *  Glassmorphism surface · iOS pill toggles · Micro-interactions · WCAG 2.1
@@ -11062,68 +10771,6 @@ function ViewMenuItem({
 
   return content;
 }
-
-function ViewMenuToggle({
-  label,
-  description,
-  shortcut,
-  isOn,
-  onToggle,
-}: {
-  label: string;
-  description?: string;
-  shortcut?: string;
-  isOn: boolean;
-  onToggle: () => void;
-}) {
-  const requestCloseMenus = useContext(MenuCloseContext);
-
-  return (
-    <button
-      type="button"
-      onClick={() => {
-        onToggle();
-        // Keep menu open so user can toggle multiple items without re-opening
-      }}
-      className={[
-        "w-full flex items-center gap-2.5 px-3 text-left transition-all duration-150 min-h-[44px] cursor-pointer",
-        "font-[420] hover:font-[520]",
-        "text-gray-700 dark:text-gray-200 midnight:text-cyan-50 purple:text-pink-50",
-        "hover:bg-gray-100/60 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/8 purple:hover:bg-pink-500/8",
-      ].join(" ")}
-      role="switch"
-      aria-checked={isOn}
-      aria-label={label}
-    >
-      <div className="flex-1 min-w-0 flex items-center gap-2.5">
-        <div className="min-w-0">
-          <span className="block text-[13px] leading-tight truncate">{label}</span>
-          {description && (
-            <span className="block text-[11px] leading-tight text-gray-400 dark:text-gray-500 midnight:text-cyan-300/40 purple:text-pink-300/40 mt-0.5 truncate">{description}</span>
-          )}
-        </div>
-      </div>
-      {shortcut && <span className="text-[11px] text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400 tabular-nums mr-2">{shortcut}</span>}
-      {/* iOS-style pill toggle switch */}
-      <div
-        className={[
-          "relative w-[38px] h-[22px] rounded-full flex-shrink-0 transition-colors duration-200",
-          isOn
-            ? "bg-blue-500 dark:bg-blue-500 midnight:bg-cyan-500 purple:bg-pink-500"
-            : "bg-gray-300 dark:bg-[#2a2d35] midnight:bg-gray-600 purple:bg-gray-600",
-        ].join(" ")}
-      >
-        <div
-          className={[
-            "absolute top-[2px] w-[18px] h-[18px] rounded-full bg-white shadow-sm transition-transform duration-200",
-            isOn ? "translate-x-[18px]" : "translate-x-[2px]",
-          ].join(" ")}
-        />
-      </div>
-    </button>
-  );
-}
-
 /* ═══════════════════════════════════════════════════════════════════════════
  *  FULLSCREEN FLOATING PILL MENU
  *  Appears when cursor nears the top of the screen in fullscreen mode.
@@ -12101,86 +11748,3 @@ function CommentCard({
     </div>
   );
 }
-
-// ─── Doc User Menu (compact avatar + dropdown for doc editor header) ────
-
-function DocUserMenu({ user }: { user: { firstName?: string; lastName?: string; avatar?: string; role?: string } | null }) {
-  const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!open) return;
-    const handler = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, [open]);
-
-  const name = user ? `${user.firstName || ""} ${user.lastName || ""}`.trim() : "User";
-  const initials = name.split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2) || "U";
-  const roleLabel = user?.role === "super_admin" ? "Admin" : user?.role === "teacher" ? "Teacher" : user?.role === "student" ? "Student" : user?.role === "parent" ? "Parent" : user?.role || "User";
-
-  return (
-    <div ref={ref} className="relative">
-      <Tooltip content={name} delay={400}>
-        <button
-          type="button"
-          onClick={() => setOpen(!open)}
-          className="w-8 h-8 rounded-full overflow-hidden cursor-pointer ring-2 ring-transparent hover:ring-blue-500/30 transition-all"
-        >
-          {user?.avatar ? (
-            <img src={user.avatar} alt={name} className="w-full h-full object-cover" />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-500 to-indigo-600 text-white text-[11px] font-bold">
-              {initials}
-            </div>
-          )}
-        </button>
-      </Tooltip>
-      {open && (
-        <div className="absolute z-[200] top-full mt-2 right-0 w-[220px] rounded-xl bg-white dark:bg-[#0f1115] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] shadow-2xl border border-gray-200/80 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 overflow-hidden">
-          {/* Profile card */}
-          <div className="px-3 py-3 border-b border-gray-100 dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10 bg-gradient-to-br from-gray-50 to-white dark:from-gray-800/40 dark:to-gray-900">
-            <div className="flex items-center gap-2.5">
-              <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0">
-                {user?.avatar ? (
-                  <img src={user.avatar} alt={name} className="w-full h-full object-cover" />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-500 to-indigo-600 text-white text-sm font-bold">
-                    {initials}
-                  </div>
-                )}
-              </div>
-              <div className="min-w-0">
-                <div className="text-[13px] font-semibold text-ink truncate">{name}</div>
-                <div className="text-[11px] text-muted">{roleLabel}</div>
-              </div>
-            </div>
-          </div>
-          {/* Menu items */}
-          <div className="py-1">
-            <button type="button" onClick={() => { setOpen(false); window.location.href = "/"; }}
-              className="w-full px-3 py-2 text-left text-[12px] text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors cursor-pointer flex items-center gap-2.5">
-              <Home className="w-3.5 h-3.5 text-gray-400" /> Home
-            </button>
-            <button type="button" onClick={() => { setOpen(false); window.location.href = "/dashboard"; }}
-              className="w-full px-3 py-2 text-left text-[12px] text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors cursor-pointer flex items-center gap-2.5">
-              <LayoutGrid className="w-3.5 h-3.5 text-gray-400" /> Dashboard
-            </button>
-            <button type="button" onClick={() => setOpen(false)}
-              className="w-full px-3 py-2 text-left text-[12px] text-gray-700 dark:text-gray-200 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors cursor-pointer flex items-center gap-2.5">
-              <Settings className="w-3.5 h-3.5 text-gray-400" /> Settings
-            </button>
-            <div className="my-1 border-t border-gray-100 dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10" />
-            <button type="button" onClick={() => setOpen(false)}
-              className="w-full px-3 py-2 text-left text-[12px] text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 midnight:hover:bg-red-900/20 purple:hover:bg-red-900/20 transition-colors cursor-pointer flex items-center gap-2.5">
-              <LogOut className="w-3.5 h-3.5" /> Sign out
-            </button>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-

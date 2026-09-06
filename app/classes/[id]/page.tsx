@@ -1,8 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { useParams, useRouter } from "next/navigation";
-import { useSchoolSettings } from "@/contexts/SchoolSettingsContext";
+import { useParams } from "next/navigation";
 import Link from "next/link";
 import { DashboardPage } from "@/components/pages";
 import {
@@ -12,16 +11,13 @@ import {
   Users,
   UserPlus,
   MapPin,
-  Calendar,
   TrendingUp,
   Target,
   BookOpen,
-  GraduationCap,
   MoreVertical,
   Download,
   Mail,
   Phone,
-  Building2,
 } from "lucide-react";
 
 interface Teacher {
@@ -75,10 +71,7 @@ interface ClassData {
 }
 
 export default function ClassDetailsPage() {
-  const params = useParams();
-  const router = useRouter();
-  const { settings } = useSchoolSettings();
-  const classId = params.id as string;
+  const params = useParams();  const classId = params.id as string;
 
   const [activeTab, setActiveTab] = useState<"overview" | "students" | "subjects" | "performance">("overview");
   const [showActions, setShowActions] = useState(false);

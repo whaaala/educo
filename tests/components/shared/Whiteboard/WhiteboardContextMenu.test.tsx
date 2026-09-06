@@ -1,9 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
 import { buildContextMenuActions } from "@/components/shared/Whiteboard/WhiteboardContextMenu";
-import type { ContextMenuAction } from "@/components/shared/Whiteboard/WhiteboardContextMenu";
-
 // Test the action builder function (pure logic, no portal needed)
 const noop = vi.fn();
 

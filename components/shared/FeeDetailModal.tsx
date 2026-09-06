@@ -6,7 +6,6 @@ import {
   Receipt,
   User,
   GraduationCap,
-  Calendar,
   Clock,
   CreditCard,
   CheckCircle2,
@@ -15,7 +14,6 @@ import {
   FileText,
   Mail,
   Phone,
-  Hash,
   type LucideIcon,
 } from "lucide-react";
 import { type ReactNode } from "react";

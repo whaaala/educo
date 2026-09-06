@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useEffect, useRef } from "react";
 import {
-  Folder, FileText, Image, Film, Music, Archive, File,
+  Folder, FileText, Image as ImageIcon, Film, Music, Archive, File,
   Upload, Download, Share2, Trash2, FolderPlus, Search,
   ChevronRight, Grid, List, ArrowLeft, RefreshCw, X,
   MoreVertical, Link2, AlertTriangle, Cloud,
@@ -39,7 +39,7 @@ function getFileIcon(name: string, type: "file" | "folder") {
 
   const ext = name.split(".").pop()?.toLowerCase() || "";
   if (["jpg", "jpeg", "png", "gif", "svg", "webp", "bmp"].includes(ext))
-    return <Image className="w-5 h-5 text-green-500" />;
+    return <ImageIcon className="w-5 h-5 text-green-500" />;
   if (["mp4", "mov", "avi", "mkv", "webm"].includes(ext))
     return <Film className="w-5 h-5 text-purple-500" />;
   if (["mp3", "wav", "ogg", "flac", "aac"].includes(ext))
@@ -114,7 +114,7 @@ export default function StorageBrowser({
   const [error, setError] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<"grid" | "list">("list");
   const [searchQuery, setSearchQuery] = useState("");
-  const [isSearching, setIsSearching] = useState(false);
+  const [_isSearching, setIsSearching] = useState(false);
   const [showNewFolder, setShowNewFolder] = useState(false);
   const [newFolderName, setNewFolderName] = useState("");
   const [contextMenu, setContextMenu] = useState<{ item: StorageItem; x: number; y: number } | null>(null);

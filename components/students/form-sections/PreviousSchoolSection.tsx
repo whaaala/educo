@@ -6,7 +6,6 @@ import {
   MapPin,
   LogOut,
   ChevronUp,
-  ChevronDown,
   Info,
   BookOpen,
   Calendar,
@@ -17,18 +16,15 @@ import {
 } from "lucide-react";
 import FormInput from "@/components/shared/FormInput";
 import FormTextarea from "@/components/shared/FormTextarea";
-import { ValidationErrors } from "@/lib/validation";
+import type { FormSectionProps } from "@/components/shared/form-section-types";
+import type { StudentFormData } from "./types";
 
-interface PreviousSchoolSectionProps {
-  formData: any;
-  onChange: (field: string, value: any) => void;
-  errors?: ValidationErrors;
-}
+type PreviousSchoolSectionProps = FormSectionProps<StudentFormData>;
 
 export default function PreviousSchoolSection({
   formData,
   onChange,
-  errors = {},
+  errors: _errors = {},
 }: PreviousSchoolSectionProps) {
   const [isExpanded, setIsExpanded] = useState(true);
 

@@ -12,6 +12,8 @@ import { useSidebar } from "@/contexts/SidebarContext";
 import { useNotifications } from "@/contexts/NotificationContext";
 import { ValidationErrors } from "@/lib/validation";
 import dynamic from "next/dynamic";
+import { emptyParentForm, type ParentFormData } from "@/components/admin/parents/form-sections/types";
+import type { FormFieldSetter } from "@/components/shared/form-section-types";
 
 const ValidationErrorsModal = dynamic(
   () => import("@/components/shared/ValidationErrorsModal"),
@@ -81,45 +83,7 @@ function AddParentForm() {
   }, []);
 
   // Form state
-  const [formData, setFormData] = useState({
-    // Personal Information
-    profilePhoto: null as File | null,
-    firstName: "",
-    lastName: "",
-    middleName: "",
-    gender: "",
-    dateOfBirth: "",
-    relationship: isGuardian ? "Guardian" : "",
-    nationalId: "",
-
-    // Contact Information
-    primaryPhone: "",
-    secondaryPhone: "",
-    email: "",
-    preferredContactMethod: "Phone",
-
-    // Address Information
-    addressLine1: "",
-    addressLine2: "",
-    city: "",
-    state: "",
-    postalCode: "",
-    country: "Nigeria",
-
-    // Employment Information
-    occupation: "",
-    employer: "",
-    workPhone: "",
-    workEmail: "",
-    annualIncome: "",
-
-    // Guardian-specific fields
-    guardianType: isGuardian ? "Legal Guardian" : "",
-    relationshipDetails: "",
-
-    // Link Students
-    linkedStudents: [] as string[],
-  });
+  const [formData, setFormData] = useState<ParentFormData>(emptyParentForm(isGuardian));
 
   // Update relationship default when type changes
   useEffect(() => {
@@ -132,7 +96,7 @@ function AddParentForm() {
     }
   }, [isGuardian]);
 
-  const handleChange = (field: string, value: any) => {
+  const handleChange: FormFieldSetter<ParentFormData> = (field, value) => {
     setFormData((prev) => ({
       ...prev,
       [field]: value,

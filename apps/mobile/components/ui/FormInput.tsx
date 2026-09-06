@@ -60,7 +60,7 @@ export function FormInput({
   label,
   icon,
   iconBgColor = COLORS.blue100,
-  iconColor = COLORS.blue600,
+  iconColor: _iconColor = COLORS.blue600,
   value,
   onChangeText,
   placeholder = '',

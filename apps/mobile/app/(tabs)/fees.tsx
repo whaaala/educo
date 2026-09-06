@@ -21,13 +21,12 @@ import { ContactBursaryModal } from '../../components/modals/ContactBursaryModal
 import { DownloadStatementModal } from '../../components/modals/DownloadStatementModal';
 import { ProfileAvatar } from '../../components/ui/ProfileAvatar';
 import { ChildSwitcher, type ChildData } from '../../components/ui/ChildSwitcher';
+import type { ThemeColors } from "@/contexts/ThemeContext";
 
 // Enable LayoutAnimation on Android
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
-
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 // Shared fonts
 const FONTS = {
@@ -187,7 +186,7 @@ function FeeCard({
   onPayNow,
 }: {
   fee: FeeRecord;
-  colors: any;
+  colors: ThemeColors;
   isDark: boolean;
   isTablet: boolean;
   currencySymbol: string;
@@ -615,7 +614,7 @@ export default function FeesScreen() {
             {MOCK_CHILDREN.length > 1 && (
               <View style={styles.childSwitcherContainer}>
                 <ChildSwitcher
-                  children={MOCK_CHILDREN}
+                  childList={MOCK_CHILDREN}
                   selectedChildId={selectedChildId}
                   onSelectChild={handleSelectChild}
                   variant="compact"

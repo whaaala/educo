@@ -1,6 +1,10 @@
+import type { ComponentProps } from "react";
 import { View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../contexts/ThemeContext';
+
+/** Ionicons' own set of icon names. A name outside it renders nothing, so it is worth checking. */
+type IoniconName = ComponentProps<typeof Ionicons>["name"];
 
 const FONTS = {
   regular: 'Inter_400Regular',
@@ -25,7 +29,7 @@ export function DriveEmptyState({
   return (
     <View style={styles.container}>
       <View style={[styles.iconCircle, { backgroundColor: colors.primaryLight }]}>
-        <Ionicons name={icon as any} size={40} color={colors.primary} />
+        <Ionicons name={icon as IoniconName} size={40} color={colors.primary} />
       </View>
       <Text style={[styles.title, { color: colors.text }]}>{title}</Text>
       {subtitle && (

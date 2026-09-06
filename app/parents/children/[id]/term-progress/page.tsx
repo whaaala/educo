@@ -13,11 +13,8 @@ import {
   Calendar,
   Award,
   BarChart3,
-  FileText,
-  CheckCircle,
   PieChart,
   Info,
-  Activity,
   BookOpen,
 } from "lucide-react";
 

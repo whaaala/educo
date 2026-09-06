@@ -9,7 +9,6 @@ import BulkDeleteModal, { BulkDeleteItem } from "@/components/shared/BulkDeleteM
 import Tooltip from "@/components/shared/Tooltip";
 import NameLabel from "@/components/shared/NameLabel";
 import { useSchoolSettings } from "@/contexts/SchoolSettingsContext";
-import { useSidebar } from "@/contexts/SidebarContext";
 import { getEducationLevelColor } from "@/utils/educationLevel";
 import {
   BookOpen,

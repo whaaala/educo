@@ -2,14 +2,10 @@
 
 import { useState, useMemo, useEffect } from "react";
 import {
-  DollarSign,
   TrendingUp,
   TrendingDown,
   AlertCircle,
-  Download,
-  Filter,
   Calendar,
-  CreditCard,
   Banknote,
   Wallet,
   Building2,
@@ -37,15 +33,14 @@ import { getStudentById } from "@/lib/mockStudents";
 import {
   EducationLevel,
   SchoolType,
-  getFeesByEducationLevel,
-  getFeesBySchoolType,
   getFeeCategoriesForSchoolType,
   FEE_CATEGORIES
 } from "@/lib/feeConfigNew";
 import { useCountry } from "@/contexts/CountryContext";
+import type { LucideIcon } from "lucide-react";
 
 // Icon mapping
-const iconMap: Record<string, any> = {
+const iconMap: Record<string, LucideIcon> = {
   GraduationCap,
   FileCheck,
   Building2,
@@ -288,7 +283,7 @@ const MOCK_FEE_RECORDS: FeeRecord[] = [
 ];
 
 export default function FeesManagement({
-  educationLevel = "primary",
+  educationLevel: _educationLevel = "primary",
   schoolType: propSchoolType,
   studentId
 }: FeesManagementProps) {
@@ -320,8 +315,11 @@ export default function FeesManagement({
 
   // Listen for School Profile changes
   useEffect(() => {
-    const handleSchoolProfileChange = (event: CustomEvent<{ educationLevel: string; institutionType: string }>) => {
-      const { educationLevel: settingsEducationLevel, institutionType } = event.detail;
+    const handleSchoolProfileChange = (event: WindowEventMap["schoolProfileChanged"]) => {
+      // `educationLevels` is an ARRAY. This read a singular `educationLevel` that is never dispatched, so the
+      // tertiary branch below could never be reached.
+      const { educationLevels, institutionType } = event.detail;
+      const settingsEducationLevel = (educationLevels ?? []).length === 1 ? educationLevels[0] : "multi-level";
 
       // Map institutionType to schoolType
       if (institutionType === "public") {
@@ -333,8 +331,8 @@ export default function FeesManagement({
       }
     };
 
-    window.addEventListener("schoolProfileChanged" as any, handleSchoolProfileChange);
-    return () => window.removeEventListener("schoolProfileChanged" as any, handleSchoolProfileChange);
+    window.addEventListener("schoolProfileChanged", handleSchoolProfileChange);
+    return () => window.removeEventListener("schoolProfileChanged", handleSchoolProfileChange);
   }, []);
 
   // Get categories applicable to the school type
@@ -577,39 +575,6 @@ export default function FeesManagement({
       <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[0.75rem] font-semibold border ${style.bg} ${style.text} ${style.border}`}>
         <span className={`w-1.5 h-1.5 rounded-full ${style.dot} animate-pulse`}></span>
         {status}
-      </span>
-    );
-  };
-
-  // Get category icon and color
-  const getCategoryBadge = (categoryId: string) => {
-    const category = FEE_CATEGORIES[categoryId];
-    if (!category) return null;
-
-    const Icon = iconMap[category.icon];
-    const colorClasses: Record<string, string> = {
-      blue: "bg-blue-50 dark:bg-blue-950/20 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-800/50",
-      green: "bg-green-50 dark:bg-green-950/20 text-green-700 dark:text-green-400 border-green-200 dark:border-green-800/50",
-      purple: "bg-purple-50 dark:bg-purple-950/20 text-purple-700 dark:text-purple-400 border-purple-200 dark:border-purple-800/50",
-      indigo: "bg-indigo-50 dark:bg-indigo-950/20 text-indigo-700 dark:text-indigo-400 border-indigo-200 dark:border-indigo-800/50",
-      amber: "bg-amber-50 dark:bg-amber-950/20 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-800/50",
-      rose: "bg-rose-50 dark:bg-rose-950/20 text-rose-700 dark:text-rose-400 border-rose-200 dark:border-rose-800/50",
-      cyan: "bg-cyan-50 dark:bg-cyan-950/20 text-cyan-700 dark:text-cyan-400 border-cyan-200 dark:border-cyan-800/50",
-      orange: "bg-orange-50 dark:bg-orange-950/20 text-orange-700 dark:text-orange-400 border-orange-200 dark:border-orange-800/50",
-      gray: "bg-gray-50 dark:bg-[#1a1d24]/20 text-gray-700 dark:text-gray-400 border-gray-200 dark:border-gray-700/50",
-      violet: "bg-violet-50 dark:bg-violet-950/20 text-violet-700 dark:text-violet-400 border-violet-200 dark:border-violet-800/50",
-      emerald: "bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800/50",
-      sky: "bg-sky-50 dark:bg-sky-950/20 text-sky-700 dark:text-sky-400 border-sky-200 dark:border-sky-800/50",
-      lime: "bg-lime-50 dark:bg-lime-950/20 text-lime-700 dark:text-lime-400 border-lime-200 dark:border-lime-800/50",
-      slate: "bg-slate-50 dark:bg-slate-950/20 text-slate-700 dark:text-slate-400 border-slate-200 dark:border-slate-800/50",
-      yellow: "bg-yellow-50 dark:bg-yellow-950/20 text-yellow-700 dark:text-yellow-400 border-yellow-200 dark:border-yellow-800/50",
-      pink: "bg-pink-50 dark:bg-pink-950/20 text-pink-700 dark:text-pink-400 border-pink-200 dark:border-pink-800/50",
-    };
-
-    return (
-      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[0.75rem] font-medium border ${colorClasses[category.color]}`}>
-        {Icon && <Icon className="w-3.5 h-3.5" />}
-        {category.name}
       </span>
     );
   };

@@ -1,6 +1,6 @@
 "use client";
 
-import { Clock, CheckCircle, XCircle, AlertCircle, TrendingUp, Users } from "lucide-react";
+import { Clock, CheckCircle, XCircle, Users } from "lucide-react";
 import { LeaveRequest } from "@/types/leave";
 import StatCard, { StatCardColor } from "@/components/shared/StatCard";
 

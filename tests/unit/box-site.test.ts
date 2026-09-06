@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { createContainer, type BoxNode } from "@/lib/box-model";
 import {
   slugify, uniquePath, siteFromRoot, findPage, setPageRoot, addPage, duplicatePage, renamePage,
-  deletePage, setHomePage, coerceSite, pageIdFromHref, emptyPageRoot, setSiteTheme, type BoxSite,
+  deletePage, setHomePage, coerceSite, pageIdFromHref, emptyPageRoot, setSiteTheme,
 } from "@/lib/box-site";
 
 const root = () => createContainer("column", { id: "r", children: [] } as Partial<BoxNode>);

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
-import { Trash2, X, ChevronDown } from "lucide-react";
+import { X, ChevronDown } from "lucide-react";
 import FilterButton from "@/components/shared/FilterButton";
 import SortButton from "@/components/shared/SortButton";
 import ViewToggle from "@/components/shared/ViewToggle";
@@ -12,7 +12,7 @@ import type {
   BulkAction,
   DateRange,
 } from "@/types/components";
-import type { FilterField as FilterButtonField, FilterValues } from "@/components/shared/FilterButton";
+import type { FilterValues } from "@/components/shared/FilterButton";
 
 export interface ActionBarProps {
   // Filter props
@@ -66,10 +66,10 @@ export interface ActionBarProps {
 export default function ActionBar({
   // Filter props
   filterFields,
-  filters = {},
+  filters: _filters = {},
   onFilterChange,
   filterResetKey,
-  hasActiveFilters,
+  hasActiveFilters: _hasActiveFilters,
 
   // Sort props
   sortOptions,
@@ -80,7 +80,7 @@ export default function ActionBar({
   enableDateRange,
   dateRange,
   onDateRangeChange,
-  dateRangeLabel = "Date Range",
+  dateRangeLabel: _dateRangeLabel = "Date Range",
 
   // View toggle props
   enableViewToggle = true,

@@ -9,9 +9,7 @@ import {
   CheckCircle2,
   User,
   Calendar,
-  AlertTriangle,
   Clock,
-  ArrowRight,
   Sparkles,
   DollarSign,
 } from "lucide-react";

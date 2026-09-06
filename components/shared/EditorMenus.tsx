@@ -8,8 +8,24 @@
 import React, { useState, useRef, useEffect, useCallback, useLayoutEffect, createContext, useContext, useMemo } from "react";
 import { createPortal } from "react-dom";
 import { ChevronRight, Check } from "lucide-react";
-import Tooltip from "@/components/shared/Tooltip";
+/**
+ * One menu's panel, lazily loaded.
+ *
+ * The panels are pulled in with `require` at render time to break a genuine import cycle, so their types
+ * cannot come along with them. Typing the panel by the props THIS file passes — which is the part that has to
+ * agree — recovers the checking that `FileMenuPanel: any` threw away, and keeps each menu tied to its own
+ * config type rather than to "anything".
+ */
+type EditorMenuPanel<TConfig> = React.ComponentType<{
+  config: TConfig;
+  onClose: () => void;
+  anchorRef: React.RefObject<HTMLButtonElement | null>;
+}>;
 
+type FileMenuConfig = import("@/components/shared/EditorFileMenu").FileMenuConfig;
+type EditMenuConfig = import("@/components/shared/EditorEditMenu").EditMenuConfig;
+type ViewMenuConfig = import("@/components/shared/EditorViewMenu").ViewMenuConfig;
+type InsertMenuConfig = import("@/components/shared/EditorInsertMenu").InsertMenuConfig;
 // ── Contexts (same as DocEditor) ──
 export const MenuCloseContext = createContext<(() => void) | null>(null);
 export const SubmenuCloseContext = createContext<(() => void) | null>(null);
@@ -306,11 +322,15 @@ export function EditorMenuBar({ menus, fileMenuConfig, editMenuConfig, viewMenuC
     return () => document.removeEventListener("mousedown", handler);
   }, [openMenu, close]);
 
-  // Lazy imports to avoid circular dependency
+  // Lazy imports to avoid a circular dependency: each of these panels imports back from this module, so a
+  // top-level `import` would leave one side of the cycle undefined at evaluation time. `require` here defers
+  // the resolution to render, by which point both modules are fully initialised.
+  /* eslint-disable @typescript-eslint/no-require-imports -- see above: breaking a genuine import cycle. */
   const FileMenuPanel = fileMenuConfig ? require("@/components/shared/EditorFileMenu").EditorFileMenuPanel : null;
   const EditMenuPanel = editMenuConfig ? require("@/components/shared/EditorEditMenu").EditorEditMenuPanel : null;
   const ViewMenuPanel_Shared = viewMenuConfig ? require("@/components/shared/EditorViewMenu").EditorViewMenuPanel : null;
   const InsertMenuPanel = insertMenuConfig ? require("@/components/shared/EditorInsertMenu").EditorInsertMenuPanel : null;
+  /* eslint-enable @typescript-eslint/no-require-imports */
 
   return (
     <MenuCloseContext.Provider value={close}>
@@ -360,7 +380,7 @@ export function EditorMenuBar({ menus, fileMenuConfig, editMenuConfig, viewMenuC
 // ── FileMenuRoot (manages button ref for portal positioning) ──
 function FileMenuRoot({ isOpen, onOpen, onClose, openMenu, fileMenuConfig, FileMenuPanel }: {
   isOpen: boolean; onOpen: () => void; onClose: () => void; openMenu: string | null;
-  fileMenuConfig: any; FileMenuPanel: any;
+  fileMenuConfig: FileMenuConfig; FileMenuPanel: EditorMenuPanel<FileMenuConfig>;
 }) {
   const btnRef = useRef<HTMLButtonElement>(null);
   return (
@@ -386,7 +406,7 @@ function FileMenuRoot({ isOpen, onOpen, onClose, openMenu, fileMenuConfig, FileM
 // ── EditMenuRoot (manages button ref for portal positioning) ──
 function EditMenuRoot({ isOpen, onOpen, onClose, openMenu, editMenuConfig, EditMenuPanel }: {
   isOpen: boolean; onOpen: () => void; onClose: () => void; openMenu: string | null;
-  editMenuConfig: any; EditMenuPanel: any;
+  editMenuConfig: EditMenuConfig; EditMenuPanel: EditorMenuPanel<EditMenuConfig>;
 }) {
   const btnRef = useRef<HTMLButtonElement>(null);
   return (
@@ -412,7 +432,7 @@ function EditMenuRoot({ isOpen, onOpen, onClose, openMenu, editMenuConfig, EditM
 // ── ViewMenuRoot (manages button ref for portal positioning) ──
 function ViewMenuRoot({ isOpen, onOpen, onClose, openMenu, viewMenuConfig, ViewMenuPanel }: {
   isOpen: boolean; onOpen: () => void; onClose: () => void; openMenu: string | null;
-  viewMenuConfig: any; ViewMenuPanel: any;
+  viewMenuConfig: ViewMenuConfig; ViewMenuPanel: EditorMenuPanel<ViewMenuConfig>;
 }) {
   const btnRef = useRef<HTMLButtonElement>(null);
   return (
@@ -438,7 +458,7 @@ function ViewMenuRoot({ isOpen, onOpen, onClose, openMenu, viewMenuConfig, ViewM
 // ── InsertMenuRoot ──
 function InsertMenuRoot({ isOpen, onOpen, onClose, openMenu, insertMenuConfig, InsertMenuPanel }: {
   isOpen: boolean; onOpen: () => void; onClose: () => void; openMenu: string | null;
-  insertMenuConfig: any; InsertMenuPanel: any;
+  insertMenuConfig: InsertMenuConfig; InsertMenuPanel: EditorMenuPanel<InsertMenuConfig>;
 }) {
   const btnRef = useRef<HTMLButtonElement>(null);
   return (

@@ -74,6 +74,44 @@ export interface InstallmentAmountOverride {
   amount: string; // User-entered amount (string for form input)
 }
 
+/** The life-cycle of a plan. Defined here because this modal is what creates one. */
+export type InstallmentPlanStatus = "active" | "completed" | "defaulted" | "cancelled";
+
+/**
+ * What the modal hands back on save — NOT the same shape as the form state below.
+ *
+ * The prop was typed `any`, so nobody noticed the two had diverged: the payload carries isBulkPlan,
+ * targetType, affectedStudents and a computed schedule that the form state has no idea about.
+ */
+export interface InstallmentPlanSavePayload {
+  feeTypeName: string;
+  totalAmount: number;
+  paidAmount: number;
+  remainingAmount: number;
+  installmentCount: number;
+  frequency: "monthly" | "quarterly" | "custom";
+  startDate: string;
+  endDate: string;
+  status: InstallmentPlanStatus;
+  installments: Installment[];
+  academicYear: string;
+  term: string;
+  planType: PlanType;
+  isBulkPlan: boolean;
+  /** Bulk plans only. */
+  targetType?: "class" | "course";
+  classLevel?: string;
+  courseName?: string;
+  affectedStudents?: number;
+  termConfigMode?: TermConfigMode;
+  terms?: string[];
+  termConfigs?: TermConfig[];
+  /** Custom (single-student) plans only. */
+  studentId?: string;
+  studentName?: string;
+  studentNumber?: string;
+}
+
 export interface InstallmentPlanFormData {
   planType: PlanType;
   // For Per-Term/Semester (bulk - all students)
@@ -104,7 +142,7 @@ export interface InstallmentPlanFormData {
 interface InstallmentPlanModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (data: any) => void;
+  onSave: (data: InstallmentPlanSavePayload) => void;
   isEditing: boolean;
   editingPlan: InstallmentPlan | null;
   isSaving: boolean;
@@ -772,10 +810,10 @@ export default function InstallmentPlanModal({
         paidAmount: 0,
         remainingAmount: totalAmount,
         installmentCount: installments.length,
-        frequency: formData.planType === "custom" ? "custom" : "monthly",
+        frequency: (formData.planType === "custom" ? "custom" : "monthly") as "monthly" | "quarterly" | "custom",
         startDate: formData.startDate || schedule[0]?.dueDate || new Date().toISOString().split("T")[0],
         endDate,
-        status: "active",
+        status: "active" as InstallmentPlanStatus,
         installments,
         academicYear: formData.academicYear,
         term: formData.selectedPeriod,

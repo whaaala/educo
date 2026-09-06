@@ -10,7 +10,7 @@ import ScheduleMeetingModal, {
   MeetingParticipant,
 } from "@/components/shared/ScheduleMeetingModal";
 import MeetingDetailsModal, { MeetingDetails, RescheduleMeetingData } from "@/components/shared/MeetingDetailsModal";
-import { useMeetings, Meeting as ContextMeeting, MeetingPlatform as ContextPlatform } from "@/contexts/MeetingsContext";
+import { useMeetings } from "@/contexts/MeetingsContext";
 import { useCall } from "@/hooks/useCall";
 import { useCommunication } from "@/contexts/CommunicationContext";
 import {
@@ -28,7 +28,6 @@ import {
   AlertCircle,
   Copy,
   PhoneCall,
-  VideoIcon,
   Eye,
   MessageSquare,
 } from "lucide-react";
@@ -115,118 +114,6 @@ const AVAILABLE_TEACHERS: MeetingParticipant[] = [
   { id: "tch-005", name: "Dr. Amaka Obi", type: "teacher", role: "Principal", photo: "https://i.pravatar.cc/150?u=principal" },
   { id: "tch-006", name: "Mrs. Funke Adeleke", type: "teacher", role: "Academic Counselor", photo: "https://i.pravatar.cc/150?u=counselor-funke" },
   { id: "tch-007", name: "Mrs. Ada Nwosu", type: "teacher", role: "Science Teacher", photo: "https://i.pravatar.cc/150?u=teacher-ada" },
-];
-
-const MOCK_MEETINGS: Meeting[] = [
-  {
-    id: "meet-001",
-    title: "Parent-Teacher Conference",
-    description: "Discuss Adaeze's academic progress and areas for improvement",
-    platform: "zoom",
-    hostName: "Mrs. Nkechi Eze",
-    hostRole: "Class Teacher",
-    hostPhoto: "https://i.pravatar.cc/150?u=teacher-nkechi",
-    scheduledDate: "2024-01-25",
-    scheduledTime: "10:00 AM",
-    duration: 30,
-    status: "scheduled",
-    meetingLink: "https://zoom.us/j/1234567890",
-    meetingId: "123 456 7890",
-    passcode: "abc123",
-    childName: "Adaeze Okonkwo",
-    participants: 2,
-  },
-  {
-    id: "meet-002",
-    title: "Chemistry Lab Discussion",
-    description: "Review lab safety and upcoming experiments",
-    platform: "google-meet",
-    hostName: "Mr. Chidi Okoro",
-    hostRole: "Chemistry Teacher",
-    hostPhoto: "https://i.pravatar.cc/150?u=teacher-chidi",
-    scheduledDate: "2024-01-26",
-    scheduledTime: "2:00 PM",
-    duration: 45,
-    status: "scheduled",
-    meetingLink: "https://meet.google.com/abc-defg-hij",
-    childName: "Chukwuemeka Okonkwo",
-    participants: 3,
-  },
-  {
-    id: "meet-003",
-    title: "Quick Check-in Call",
-    description: "Follow up on homework submission",
-    platform: "whatsapp-voice",
-    hostName: "Mr. Tunde Adeyemi",
-    hostRole: "Mathematics Teacher",
-    hostPhoto: "https://i.pravatar.cc/150?u=teacher-tunde",
-    scheduledDate: "2024-01-24",
-    scheduledTime: "4:30 PM",
-    duration: 15,
-    status: "completed",
-    childName: "Adaeze Okonkwo",
-  },
-  {
-    id: "meet-004",
-    title: "Sports Day Planning",
-    description: "Discuss student participation in upcoming sports day",
-    platform: "whatsapp-video",
-    hostName: "Coach Emeka",
-    hostRole: "Physical Education",
-    hostPhoto: "https://i.pravatar.cc/150?u=coach-emeka",
-    scheduledDate: "2024-01-27",
-    scheduledTime: "11:00 AM",
-    duration: 20,
-    status: "scheduled",
-    childName: "Chukwuemeka Okonkwo",
-  },
-  {
-    id: "meet-005",
-    title: "Term Review Meeting",
-    description: "End of term performance review with principal",
-    platform: "zoom",
-    hostName: "Dr. Amaka Obi",
-    hostRole: "Principal",
-    hostPhoto: "https://i.pravatar.cc/150?u=principal",
-    scheduledDate: "2024-01-20",
-    scheduledTime: "9:00 AM",
-    duration: 60,
-    status: "completed",
-    meetingLink: "https://zoom.us/j/9876543210",
-    meetingId: "987 654 3210",
-    childName: "Adaeze Okonkwo",
-    participants: 4,
-  },
-  {
-    id: "meet-007",
-    title: "Academic Counseling Session",
-    description: "Discuss career guidance and subject selection for next term",
-    platform: "educo-meet",
-    hostName: "Mrs. Funke Adeleke",
-    hostRole: "Academic Counselor",
-    hostPhoto: "https://i.pravatar.cc/150?u=counselor-funke",
-    scheduledDate: "2024-01-28",
-    scheduledTime: "3:00 PM",
-    duration: 40,
-    status: "scheduled",
-    meetingLink: "/meetings/room/educo-meet-abc123",
-    childName: "Adaeze Okonkwo",
-    participants: 2,
-  },
-  {
-    id: "meet-006",
-    title: "Cancelled - Science Fair Planning",
-    description: "Was scheduled to discuss science fair project",
-    platform: "google-meet",
-    hostName: "Mrs. Ada Nwosu",
-    hostRole: "Science Teacher",
-    hostPhoto: "https://i.pravatar.cc/150?u=teacher-ada",
-    scheduledDate: "2024-01-22",
-    scheduledTime: "3:00 PM",
-    duration: 30,
-    status: "cancelled",
-    childName: "Adaeze Okonkwo",
-  },
 ];
 
 // ============================================
@@ -346,7 +233,7 @@ export default function ParentMeetingsPage() {
   const [isMeetingDetailsModalOpen, setIsMeetingDetailsModalOpen] = useState(false);
 
   // Use the call hook for WebRTC calls
-  const { startVideoCall, startVoiceCall, startChat, startCall } = useCall();
+  const { startVideoCall, startVoiceCall, startChat } = useCall();
 
   // Use the communication context for tenant configuration
   const { getAvailablePlatforms, isConfigured, settings: commSettings } = useCommunication();
@@ -1009,7 +896,7 @@ export default function ParentMeetingsPage() {
           onSchedule={handleScheduleMeeting}
           context="parent"
           primaryParticipant={MOCK_PARENT}
-          children={MOCK_CHILDREN}
+          childList={MOCK_CHILDREN}
           availableTeachers={AVAILABLE_TEACHERS}
         />
 

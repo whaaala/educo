@@ -9,7 +9,7 @@ export interface ValidationRule {
   minLength?: number;
   maxLength?: number;
   pattern?: RegExp;
-  custom?: (value: any, formData?: any) => string | null;
+  custom?: (value: unknown, formData?: Record<string, unknown>) => string | null;
   email?: boolean;
   phone?: boolean;
   date?: boolean;
@@ -30,7 +30,7 @@ const DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/;
 
 export function validateField(
   fieldName: string,
-  value: any,
+  value: unknown,
   rules: ValidationRule
 ): string | null {
   const fieldLabel = getFieldLabel(fieldName);
@@ -97,7 +97,7 @@ export function validateField(
 }
 
 export function validateForm(
-  formData: Record<string, any>,
+  formData: Record<string, unknown>,
   validationRules: ValidationRules
 ): ValidationErrors {
   const errors: ValidationErrors = {};

@@ -1,14 +1,16 @@
 /**
- * Static HTML export for the box builder — the publish GROUNDWORK. Renders a BoxSite to one self-contained
- * HTML document: every page becomes a <section id="slug">, a sticky nav links between them, and "page:<id>"
- * links resolve to "#slug" so navigation works in the exported file. Styles are inlined from the same pure
- * box-model helpers the editor uses (desktop / base breakpoint). Hosting + per-breakpoint CSS come later.
+ * Static HTML export for the box builder — the publish GROUNDWORK.
+ *
+ * A BoxSite becomes a FOLDER of files, delivered as a ZIP: one `.html` per page plus a shared `styles.css`
+ * the browser caches once. A sticky nav appears on every page and `page:<id>` links resolve to the other
+ * page's relative filename, so the site works opened from a folder or a USB stick as well as from a host.
+ * Styles come from the same pure box-model helpers the editor uses, so the canvas and the export agree.
  */
 
 import type { CSSProperties } from "react";
 import {
   type BoxNode, type Breakpoint, containerStyle, childStyle, marginCSS, sizeToCSS, radiusCSS, SHADOW_CSS, u, baseUnit,
-  resolveResponsive, floatStacksOnMobile, alertToastCss, accordionClasses, bandClasses, videoEmbedSrc, isContainer, sanitizeCssDeclarations, expandScopedCss, ACCORDION_CSS_PARTS, ALERT_CSS_PARTS, COMPONENT_PARTS, itemFloatContextCss, itemOverrideCss, itemHasOverride, itemNumberVars, itemFloatReserveRem, richBody, plainBody, componentTextCss, componentBoxCss, bgImageLayer, renderAlertHTML, alertDismissScript, bgShowThroughCss, blockContainmentCss, COMPONENT_ITEM_SEL, remLen,
+  resolveResponsive, floatStacksOnMobile, alertToastCss, accordionClasses, bandClasses, videoEmbedSrc, isContainer, sanitizeCssDeclarations, expandScopedCss, COMPONENT_PARTS, itemFloatContextCss, itemOverrideCss, itemHasOverride, itemNumberVars, richBody, plainBody, componentTextCss, componentBoxCss, bgImageLayer, renderAlertHTML, alertDismissScript, bgShowThroughCss, blockContainmentCss, COMPONENT_ITEM_SEL, remLen, imageSizing, hasIntrinsicSize,
 } from "@/lib/box-model";
 import { isRegistryComponent, renderComponent, componentScripts } from "@/lib/educo-ui/registry";
 import { iconSvg } from "@/lib/educo-ui/icon-svg";
@@ -111,7 +113,15 @@ function elementHTML(node: BoxNode, theme: SiteTheme, pageMap: Map<string, strin
     }
     // `loading`/`decoding` are set from the block's own settings: a hero must load eagerly or the page opens
     // blank at the top, while a photo further down should wait until it is nearly on screen.
-    case "image": return node.src ? `<img src="${esc(node.src)}" alt="${esc(node.alt ?? "")}" loading="${node.eager ? "eager" : "lazy"}" decoding="async" style="${styleString({ width: "100%", height: sizeToCSS(node.height) ?? "260px", objectFit: "cover", display: "block" })}" />` : "";
+    // The intrinsic `width`/`height` attributes are what let the browser reserve the right box before a single
+    // byte of the photo has arrived — without them the page reflows as each picture lands and the reader's
+    // line of text jumps out from under them (Cumulative Layout Shift).
+    case "image": {
+      if (!node.src) return "";
+      const { height, aspectRatio } = imageSizing(node);
+      const dims = hasIntrinsicSize(node) ? ` width="${node.imgW}" height="${node.imgH}"` : "";
+      return `<img src="${esc(node.src)}" alt="${esc(node.alt ?? "")}"${dims} loading="${node.eager ? "eager" : "lazy"}" decoding="async" style="${styleString({ width: "100%", height, aspectRatio, objectFit: "cover", display: "block" })}" />`;
+    }
     case "video": { const embed = videoEmbedSrc(node.src); const h = sizeToCSS(node.height) ?? "315px"; if (embed) return `<iframe src="${esc(embed)}" title="Video" allowfullscreen style="${styleString({ width: "100%", height: h, border: "0" })}"></iframe>`; return node.src ? `<video src="${esc(node.src)}" controls style="${styleString({ width: "100%", height: h })}"></video>` : ""; }
     case "divider": return `<div aria-hidden="true" style="${styleString({ width: "100%", borderTopWidth: node.borderWidth || 2, borderTopStyle: node.borderStyle ?? "solid", borderTopColor: node.color ? colorToCSS(node.color) : node.borderColor ? colorToCSS(node.borderColor) : theme.textMuted })}"></div>`;
     case "list": { const items = (node.listItems ?? []).map((it) => `<li>${esc(it)}</li>`).join(""); const st = styleString({ color: node.color || theme.text, fontSize: u(node.fontSize ?? 16), textAlign: align, width: "100%", paddingLeft: u(22), ...typoCss(node, theme.bodyFont, 400) }); return node.listStyle === "number" ? `<ol style="${st}">${items}</ol>` : `<ul style="${st}">${items}</ul>`; }
@@ -161,7 +171,10 @@ function componentHTML(node: BoxNode): string {
       const catHead = it.category && it.category !== lastCat ? `<div class="eu-accordion__category">${esc(it.category)}</div>` : "";
       lastCat = it.category;
       const icon = it.icon ? `<span class="eu-accordion__icon" aria-hidden="true">${iconSvg(it.icon)}</span>` : "";
-      const media = it.media ? `<img class="eu-accordion__media" src="${esc(it.media)}" alt="${esc(it.mediaAlt ?? "")}" />` : "";
+      // Same loading policy as an image block. The thumbnail's box is already reserved by CSS (a fixed em
+      // square), so there is nothing to shift — but a list of twenty items should not fetch twenty pictures
+      // before the visitor has scrolled to any of them.
+      const media = it.media ? `<img class="eu-accordion__media" src="${esc(it.media)}" alt="${esc(it.mediaAlt ?? "")}" loading="lazy" decoding="async" />` : "";
       const meta = it.meta ? `<span class="eu-accordion__meta">${esc(it.meta)}</span>` : "";
       // Per-ITEM styling: the point-and-click Header/Content colour+font controls, then the raw CSS box
       // (bare declarations style THIS item; `title{…}`/`body{…}`/`icon{…}` blocks target one part).
@@ -515,7 +528,7 @@ export function renderSiteFiles(site: BoxSite, theme: SiteTheme, fontCss = ""): 
     // Only the component rules this page's markup actually uses — read from the RENDERED HTML, so it
     // cannot disagree with what the page contains.
     const components = subsetCss(COMPONENT_CSS, usedEuClasses(markup));
-    out[files.get(page.id)!] = pageDocument(theme, page.name, markup, [components, sheetCss(sheet)].filter(Boolean).join("\n"));
+    out[files.get(page.id)!] = pageDocument(theme, page.name, markup, [components, sheetCss(sheet)].filter(Boolean).join("\n"), undefined, prefetchLinks(files, page.id));
   }
 
   // The SHARED sheet is only what is identical everywhere — tokens, base, site chrome. The component
@@ -548,13 +561,34 @@ const SITE_CHROME_CSS = `html,body{max-width:100%;overflow-x:hidden}
 .eu-site-nav a:focus-visible{outline:2px solid var(--eu-color-brand);outline-offset:2px}`;
 
 /**
+ * Fetch the site's OTHER pages while the browser is idle, so following a nav link opens instantly.
+ *
+ * The plan called for `rel="prefetch"` on the nav anchors themselves. That does nothing: `prefetch` is a
+ * `<link>` relationship, and no browser acts on it when it appears on an `<a>` — it would have looked done
+ * and changed nothing. The head link is the form that actually works.
+ *
+ * Every sibling page is prefetched rather than some capped number of them: a page is only its own markup here
+ * (the design system lives in the already-cached `styles.css`), a school site is a handful of pages, and
+ * prefetch is the lowest priority the browser has — it yields to everything the current page still needs.
+ */
+function prefetchLinks(files: Map<string, string>, currentId: string): string {
+  return [...files.entries()]
+    .filter(([id]) => id !== currentId)
+    .map(([, href]) => `<link rel="prefetch" href="${esc(href)}">`)
+    .join("");
+}
+
+/**
  * One page of a multi-page site.
  *
  * The shared sheet is a `<link>`, not inlined: inlining it would repeat the whole design system in every file
- * and defeat caching entirely. `rel="prefetch"` on the nav is deliberately NOT added here — it belongs with the
- * links, and is a later optimisation.
+ * and defeat caching entirely.
+ *
+ * `prefetch` is passed only for the REAL export. Inside the preview's `srcdoc` iframe there is no base URL to
+ * resolve `about.html` against, so the same links would resolve to nothing and log a failed request for every
+ * page in the site — noise that says a bug exists where none does.
  */
-function pageDocument(theme: SiteTheme, title: string, body: string, pageCss: string, inlineShared?: string): string {
+function pageDocument(theme: SiteTheme, title: string, body: string, pageCss: string, inlineShared?: string, prefetch = ""): string {
   // Linked for the real export so it caches across pages; inlined only for the preview iframe, which has no
   // file to link to.
   const shared = inlineShared !== undefined
@@ -563,7 +597,7 @@ function pageDocument(theme: SiteTheme, title: string, body: string, pageCss: st
   return `<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${esc(title)}</title>
-${shared}
+${shared}${prefetch}
 ${pageCss ? `<style>${pageCss}</style>` : ""}
 </head><body class="eu-root">${body}</body></html>`;
 }

@@ -29,7 +29,7 @@ describe('DriveEmptyState', () => {
   });
 
   it('renders without subtitle', () => {
-    const { getByText, queryByText } = render(
+    const { getByText } = render(
       <DriveEmptyState title="No items" />
     );
     expect(getByText('No items')).toBeTruthy();

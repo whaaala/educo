@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo, useEffect, useCallback, useRef } from "react";
-import { useRouter } from "next/navigation";
 import MainLayout from "@/components/layout/MainLayout";
 import FileBrowser, { type FileBrowserItem } from "@/components/shared/FileBrowser/FileBrowser";
 import MoveDialog from "@/components/shared/MoveDialog";
@@ -24,13 +23,11 @@ import {
   Upload, FileText, Presentation, FolderUp,
 } from "lucide-react";
 
-export default function DrivePage() {
-  const router = useRouter();
-  const { user } = useUser();
+export default function DrivePage() {  const { user } = useUser();
   const [mounted, setMounted] = useState(false);
   const [currentFolderId, setCurrentFolderId] = useState("folder-my-drive");
   const [activeSection, setActiveSection] = useState("home");
-  const [peopleFilter, setPeopleFilter] = useState<PersonItem | null>(null);
+  const [_peopleFilter, setPeopleFilter] = useState<PersonItem | null>(null);
   const [mediaViewer, setMediaViewer] = useState<{ type: MediaType; src: string; fileName: string; fileSize?: string } | null>(null);
   const [downloadItem, setDownloadItem] = useState<FileBrowserItem | null>(null);
   const [shareItem, setShareItem] = useState<FileBrowserItem | null>(null);
@@ -364,7 +361,7 @@ export default function DrivePage() {
       const id = slideStorage.create({});
       window.open(`/presentations/editor?id=${id}`, "_blank");
     }},
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+   
   ], []);
 
   const handleNavigate = (folderId: string) => {

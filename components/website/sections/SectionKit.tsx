@@ -124,14 +124,21 @@ export function BrandButton({
   );
 }
 
-/** A tasteful image placeholder that uses the brand gradient when no image is set. */
+/** A tasteful image placeholder that uses the brand gradient when no image is set.
+ *  `width`/`height` are the picture's INTRINSIC pixel size when it is known — they tell the browser what shape
+ *  to hold while the bytes arrive, exactly as the exported page does, and are ignored when it is not. */
 export function ImageBox({
-  theme, src, alt = "", className = "", rounded = true,
-}: { theme: SiteTheme; src?: string; alt?: string; className?: string; rounded?: boolean }) {
+  theme, src, alt = "", className = "", rounded = true, width, height,
+}: { theme: SiteTheme; src?: string; alt?: string; className?: string; rounded?: boolean; width?: number; height?: number }) {
   const radius = rounded ? theme.radius * 1.25 : 0;
   if (src) {
-    // eslint-disable-next-line @next/next/no-img-element
-    return <img src={src} alt={alt} className={`w-full h-full object-cover ${className}`} style={{ borderRadius: radius }} />;
+    // The size is INLINE, not `w-full h-full`, because those classes never reached an <img>: globals.css
+    // carries an unlayered `img, picture, video, svg { height: auto }` (the Responsive Field Guide's flexible
+    // media rule), and unlayered CSS beats anything inside @layer — including every Tailwind utility. The
+    // symptom was an image with a set height rendering at its natural ratio and spilling out of its box on
+    // the canvas, while the export cropped it correctly: canvas ≠ export, in the direction where the editor
+    // lies to you. The exported <img> has always carried its size inline, so this is the same mechanism.
+    return <img src={src} alt={alt} width={width} height={height} className={`object-cover ${className}`} style={{ width: "100%", height: "100%", borderRadius: radius }} />;
   }
   return (
     <div

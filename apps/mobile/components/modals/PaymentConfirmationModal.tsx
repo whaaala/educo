@@ -37,22 +37,18 @@ export function PaymentConfirmationModal({
 }: PaymentConfirmationModalProps) {
   const { colors } = useTheme();
   const { settings } = useTenantSettings();
-  const { payment, currencySymbol, schoolName } = settings;
+  const { payment, currencySymbol } = settings;
   const resolvedVisible = isOpen ?? visible ?? false;
 
   const formatCurrency = (value: number) => `${currencySymbol}${value.toLocaleString()}`;
 
-  const handleCopyToClipboard = (text: string) => {
+  const handleCopyToClipboard = (_text: string) => {
     // In a real app, use Clipboard API
     // Clipboard.setString(text);
   };
 
   const handleCall = (phone: string) => {
     Linking.openURL(`tel:${phone}`);
-  };
-
-  const handleEmail = (email: string) => {
-    Linking.openURL(`mailto:${email}`);
   };
 
   const getModalConfig = () => {
@@ -256,7 +252,7 @@ export function PaymentConfirmationModal({
         <View style={[styles.infoCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
           <View style={styles.infoRow}>
             <Ionicons name="receipt-outline" size={18} color={colors.primary} />
-            <Text style={[styles.infoText, { color: colors.text }]}>You'll receive an official receipt</Text>
+            <Text style={[styles.infoText, { color: colors.text }]}>You&apos;ll receive an official receipt</Text>
           </View>
           <Text style={[styles.instructionsText, { color: colors.textMuted }]}>
             {cashPayment.instructions}

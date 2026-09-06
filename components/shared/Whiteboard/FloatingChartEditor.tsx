@@ -25,9 +25,6 @@ import TextFormatToolbar from "../TextFormatToolbar";
 
 // Re-export for backwards compatibility
 export { colorToCSS, colorToSolid };
-
-const TITLE_FONT_SIZES = [10, 12, 14, 16, 18, 20, 24, 28, 32, 36];
-
 // Default palette used for auto-assigning
 const CHART_COLOR_PALETTE = SOLID_COLORS.slice(0, 12);
 

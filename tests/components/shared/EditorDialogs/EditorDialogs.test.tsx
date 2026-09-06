@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 import fs from "fs";
 import path from "path";
 
@@ -11,21 +11,6 @@ const sourcePath = path.resolve(
 const source = fs.readFileSync(sourcePath, "utf-8");
 
 // ── Helpers ──
-
-/** Splits a className string into individual classes for checking. */
-function classesOf(el: Element | null): string[] {
-  if (!el) return [];
-  const raw = el.getAttribute("class") ?? "";
-  return raw.split(/\s+/).filter(Boolean);
-}
-
-/** Assert that every class in `expected` is present in the element's class list. */
-function expectClasses(el: Element | null, expected: string[]) {
-  const classes = classesOf(el);
-  for (const cls of expected) {
-    expect(classes).toContain(cls);
-  }
-}
 
 // ═══════════════════════════════════════════════════════════════════════════
 //  EditorDialog

@@ -21,13 +21,11 @@ import { useNotifications } from "@/contexts/NotificationContext";
 import { useSchoolSettings } from "@/contexts/SchoolSettingsContext";
 import {
   getAllFeeRecords,
-  getFeeStats,
   addFeeReminder,
   getReminderCountByFeeRecordId,
   getRemindersByFeeRecordId,
   type AdminFeeRecord,
   type ReminderChannel,
-  type FeeReminderRecord,
 } from "@/lib/mockParents";
 import type { ColumnConfig, GridCardProps } from "@/types/components";
 import {
@@ -36,7 +34,6 @@ import {
   AlertCircle,
   FileCheck,
   Eye,
-  Receipt,
   Send,
   History,
   FileText,
@@ -99,7 +96,7 @@ export default function AdminParentFeesPage() {
 
   // Currency formatter
   const currencyCode = settings.currency || "NGN";
-  const { money, currencySymbol } = useMemo(() => {
+  const { money } = useMemo(() => {
     const formatter = new Intl.NumberFormat(undefined, {
       style: "currency",
       currency: currencyCode,
@@ -259,10 +256,6 @@ export default function AdminParentFeesPage() {
 
   const handleRemoveFromReminderList = (recordId: string) => {
     setRecordsToRemind((prev) => prev.filter((record) => record.id !== recordId));
-  };
-
-  const handleAddFee = () => {
-    router.push("/admin/parents/fees/add");
   };
 
   // Action handlers for fee records

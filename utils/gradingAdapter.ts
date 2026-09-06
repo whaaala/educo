@@ -1,6 +1,6 @@
 // Grading System Adapter - Converts between different grading systems
 
-import { EducationLevel, GradeRange, GradingScale } from "@/types/transcript";
+import { EducationLevel, GradingScale } from "@/types/transcript";
 
 // Primary Grading Scale (0-100 Numeric)
 export const primaryGradingScale: GradingScale = {

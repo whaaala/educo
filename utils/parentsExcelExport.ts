@@ -1,6 +1,9 @@
 import * as XLSX from "xlsx";
 import type { AdminParent } from "@/lib/mockParents";
 
+/** One cell of a worksheet row. Blank cells are written as an empty string. */
+type ExcelCell = string | number;
+
 interface ExportOptions {
   currencySymbol?: string;
   schoolName?: string;
@@ -182,7 +185,7 @@ export function exportParentsToExcel(
   }
 
   // Create children details sheet
-  const childrenData: any[][] = [
+  const childrenData: ExcelCell[][] = [
     ["Parent ID", "Parent Name", "Child ID", "Child Name", "Class", "Section", "Gender", "Status", "Relationship"],
   ];
 

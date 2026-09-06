@@ -12,7 +12,7 @@ interface EmploymentDetailsCardProps {
 
 export default function EmploymentDetailsCard({
   employmentType,
-  employmentStatus,
+  employmentStatus: _employmentStatus,
   joinDate,
   department,
 }: EmploymentDetailsCardProps) {

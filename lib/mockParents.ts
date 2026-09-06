@@ -754,7 +754,7 @@ const generateFeeRecords = (): AdminFeeRecord[] => {
       for (let i = 0; i < numRecords; i++) {
         // Randomly select fee type and term
         let feeType = feeTypes[Math.floor(Math.random() * feeTypes.length)];
-        let term = terms[Math.floor(Math.random() * terms.length)];
+        const term = terms[Math.floor(Math.random() * terms.length)];
         const combo = `${feeType}-${term}`;
 
         // Ensure unique combination per child

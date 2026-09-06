@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { X, CheckCircle2, ArrowRightLeft, User, School, BookOpen, Calendar, FileText } from "lucide-react";
+import { X, CheckCircle2 } from "lucide-react";
 
 interface TransferSuccessField {
   icon: React.ReactNode;

@@ -164,7 +164,7 @@ export default function GradingSystemConfig({
       );
 
       setTimeout(() => setSaveStatus("idle"), 3000);
-    } catch (error) {
+    } catch  {
       setSaveStatus("error");
       setTimeout(() => setSaveStatus("idle"), 3000);
     }

@@ -104,7 +104,7 @@ const statColors: Record<ColorVariant, string> = {
  */
 export default function EntityCard<T>({
   item,
-  getKey,
+  getKey: _getKey,
   avatar,
   avatarColor,
   initials,

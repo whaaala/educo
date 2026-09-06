@@ -27,9 +27,6 @@ import {
   Award,
   FileText,
   CreditCard,
-  Mail,
-  Phone,
-  MapPin,
   User,
   ArrowLeft,
   Download,
@@ -47,16 +44,13 @@ import {
   Hash,
   Loader2,
   Eye,
-  Receipt,
-  Search,
-  XCircle,
   Banknote,
 } from "lucide-react";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { getTenantById } from "@/lib/mockTenants";
-import ResponsiveListTable, { type ColumnConfig } from "@/components/shared/ResponsiveListTable";
-import type { ParentChild, ChildAcademicSummary, ParentAttendanceRecord } from "@/types/parent";
+import ResponsiveListTable, {  } from "@/components/shared/ResponsiveListTable";
+import type { ParentChild, ChildAcademicSummary } from "@/types/parent";
 
 // Mock Data
 const MOCK_CHILDREN: Record<string, ParentChild> = {
@@ -694,17 +688,6 @@ export default function ChildDetailPage() {
 
       // Prepare table data with score visualization
       const tableData = academicData.subjectPerformance.map((subject) => {
-        const gradeColor =
-          subject.grade === "A"
-            ? "#16a34a"
-            : subject.grade === "B"
-            ? "#2563eb"
-            : subject.grade === "C"
-            ? "#ca8a04"
-            : subject.grade === "D"
-            ? "#ea580c"
-            : "#dc2626";
-
         return [subject.subject, `${subject.score}`, subject.grade, subject.teacherRemarks || "-"];
       });
 

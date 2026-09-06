@@ -1,10 +1,9 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
-import { render, screen, fireEvent, within, act } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 import React from "react";
 import {
   EditorMenuBar,
   EditorMenuItemRow,
-  EditorMenuDivider,
   ViewMenuPanel,
   ViewMenuItem,
   ViewMenuToggle,
@@ -63,7 +62,7 @@ describe("EditorMenuBar", () => {
   });
 
   it("closes dropdown when clicking outside the menu", () => {
-    const { container } = render(
+    render(
       <div>
         <div data-testid="outside">Outside</div>
         <EditorMenuBar menus={makeMenus()} />

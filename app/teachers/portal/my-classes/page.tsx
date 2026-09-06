@@ -10,9 +10,7 @@ import {
   Clock,
   MapPin,
   ChevronRight,
-  Filter,
   Search,
-  TrendingUp,
   ClipboardCheck,
 } from "lucide-react";
 import Link from "next/link";
@@ -85,7 +83,7 @@ export default function MyClassesPage() {
   const [classes] = useState(mockClasses);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedSubject, setSelectedSubject] = useState<string>("all");
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [_viewMode, _setViewMode] = useState<"grid" | "list">("grid");
 
   // Get unique subjects
   const subjects = useMemo(() => {

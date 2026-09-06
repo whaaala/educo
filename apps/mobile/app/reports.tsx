@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState } from 'react';
 import {
   View,
   Text,
@@ -6,9 +6,7 @@ import {
   StyleSheet,
   ScrollView,
   Dimensions,
-  Image,
   TextInput,
-  Animated,
   LayoutAnimation,
   Platform,
   UIManager,
@@ -20,6 +18,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../contexts/ThemeContext';
 import { ProfileAvatar } from '../components/ui/ProfileAvatar';
 import { ChildSwitcher, type ChildData } from '../components/ui/ChildSwitcher';
+import type { ThemeColors } from "@/contexts/ThemeContext";
 
 // Enable LayoutAnimation on Android
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
@@ -155,31 +154,10 @@ function useIsTablet() {
   return isTablet;
 }
 
-function getScoreColor(percentage: number) {
-  if (percentage >= 70) return '#10b981';
-  if (percentage >= 50) return '#f59e0b';
-  return '#ef4444';
-}
-
 function getScoreGradient(percentage: number): readonly [string, string] {
   if (percentage >= 70) return ['#10b981', '#059669'] as const;
   if (percentage >= 50) return ['#f59e0b', '#d97706'] as const;
   return ['#ef4444', '#dc2626'] as const;
-}
-
-function getScoreBgColor(percentage: number) {
-  if (percentage >= 70) return '#ecfdf5';
-  if (percentage >= 50) return '#fffbeb';
-  return '#fef2f2';
-}
-
-function formatDate(dateString: string) {
-  const date = new Date(dateString);
-  return date.toLocaleDateString('en-NG', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-  });
 }
 
 function formatShortDate(dateString: string) {
@@ -188,44 +166,6 @@ function formatShortDate(dateString: string) {
     day: 'numeric',
     month: 'short',
   });
-}
-
-// Filter Chip Component
-function FilterChip({
-  label,
-  selected,
-  onPress,
-  colors,
-}: {
-  label: string;
-  selected: boolean;
-  onPress: () => void;
-  colors: any;
-}) {
-  return (
-    <Pressable
-      onPress={onPress}
-      style={[
-        styles.filterChip,
-        {
-          backgroundColor: selected ? colors.primary : colors.backgroundTertiary,
-          borderColor: selected ? colors.primary : colors.border,
-        },
-      ]}
-    >
-      <Text
-        style={[
-          styles.filterChipText,
-          { color: selected ? '#ffffff' : colors.textSecondary },
-        ]}
-      >
-        {label}
-      </Text>
-      {selected && (
-        <Ionicons name="checkmark" size={14} color="#ffffff" style={{ marginLeft: 4 }} />
-      )}
-    </Pressable>
-  );
 }
 
 // Modern Filter Dropdown Component - Inline expansion style
@@ -244,7 +184,7 @@ function FilterDropdown({
   onSelect: (value: string) => void;
   isOpen: boolean;
   onToggle: () => void;
-  colors: any;
+  colors: ThemeColors;
 }) {
   const isSelected = value !== options[0];
 
@@ -338,10 +278,6 @@ export default function ReportsHistoryScreen() {
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const [summaryExpanded, setSummaryExpanded] = useState(false);
 
-  // Animation values
-  const filterHeight = useRef(new Animated.Value(0)).current;
-  const searchFocused = useRef(new Animated.Value(0)).current;
-
   // Handle child selection
   const handleSelectChild = (childId: string) => {
     setSelectedChildId(childId);
@@ -413,18 +349,6 @@ export default function ReportsHistoryScreen() {
   }, {} as Record<string, ReportHistoryItem[]>);
 
   const years = Object.keys(reportsByYear).sort((a, b) => Number(b) - Number(a));
-
-  // Calculate summary stats
-  const avgScore = Math.round(
-    MOCK_REPORT_HISTORY.reduce((sum, r) => sum + r.totalPercentage, 0) /
-      MOCK_REPORT_HISTORY.length
-  );
-  const avgRank = Math.round(
-    MOCK_REPORT_HISTORY.reduce((sum, r) => sum + r.rank, 0) / MOCK_REPORT_HISTORY.length
-  );
-  const passCount = MOCK_REPORT_HISTORY.filter((r) => r.status === 'pass').length;
-  const totalReports = MOCK_REPORT_HISTORY.length;
-
   const handleViewReport = (report: ReportHistoryItem) => {
     router.push({
       pathname: '/report-details',
@@ -500,7 +424,7 @@ export default function ReportsHistoryScreen() {
               {MOCK_CHILDREN.length > 1 && (
                 <View style={styles.childSwitcherContainer}>
                   <ChildSwitcher
-                    children={MOCK_CHILDREN}
+                    childList={MOCK_CHILDREN}
                     selectedChildId={selectedChildId}
                     onSelectChild={handleSelectChild}
                     variant="compact"
@@ -539,7 +463,7 @@ export default function ReportsHistoryScreen() {
               {MOCK_CHILDREN.length > 1 && (
                 <View style={styles.mobileChildSwitcherContainer}>
                   <ChildSwitcher
-                    children={MOCK_CHILDREN}
+                    childList={MOCK_CHILDREN}
                     selectedChildId={selectedChildId}
                     onSelectChild={handleSelectChild}
                     variant="compact"
@@ -990,7 +914,7 @@ export default function ReportsHistoryScreen() {
 
               {/* Report Cards Grid */}
               <View style={[styles.reportsGrid, isTablet && styles.reportsGridTablet]}>
-                {reportsByYear[year].map((report, index) => (
+                {reportsByYear[year].map((report, _index) => (
                   <Pressable
                     key={report.id}
                     style={[

@@ -1,11 +1,9 @@
 "use client";
 
-import React, { useState, useRef, useMemo } from "react";
-import { useSchoolSettings, type EducationLevel } from "@/contexts/SchoolSettingsContext";
+import React, { useState, useMemo } from "react";
+import { useOptionalSchoolSettings } from "@/contexts/SchoolSettingsContext";
 import {
-  X, Send, Paperclip, Mail, Users, FileText, Image as ImageIcon,
-  ChevronDown, ChevronRight, AtSign, Search, Building2, GraduationCap,
-  BookOpen, User, Check, School,
+  X, Send, Mail, Users, FileText, ChevronRight, Search, Building2, BookOpen, Check, School,
 } from "lucide-react";
 
 // ── Types ──
@@ -135,19 +133,17 @@ export default function EmailDialog({
   recipients: initialRecipients = [], groups: customGroups,
   attachments: availableAttachments = [], onSend,
 }: EmailDialogProps) {
-  // Read school level from context, fall back to prop or "secondary"
-  let contextLevel: SchoolLevel = "secondary";
-  try {
-    const { settings } = useSchoolSettings();
-    const levelMap: Record<string, SchoolLevel> = {
-      "Primary": "primary",
-      "Secondary": "secondary",
-      "Tertiary": "university",
-    };
-    contextLevel = levelMap[settings.defaultEducationLevel] || "secondary";
-  } catch {
-    // Context not available — use prop or default
-  }
+  // Read the school level from context when there IS one, falling back to the prop or "secondary".
+  // Asked without throwing, and OUTSIDE any try/catch: a hook that may throw part-way through a render
+  // shifts every hook after it, which is what React's rules-of-hooks forbids.
+  const schoolSettings = useOptionalSchoolSettings();
+  const levelMap: Record<string, SchoolLevel> = {
+    "Primary": "primary",
+    "Secondary": "secondary",
+    "Tertiary": "university",
+  };
+  const contextLevel: SchoolLevel =
+    (schoolSettings && levelMap[schoolSettings.settings.defaultEducationLevel]) || "secondary";
   const schoolLevel = schoolLevelProp || contextLevel;
   const groups = customGroups || getDefaultGroups(schoolLevel);
   const [selectedEmails, setSelectedEmails] = useState<Set<string>>(new Set(initialRecipients.map(r => r.email)));
@@ -440,7 +436,7 @@ export default function EmailDialog({
                       {availableAttachments.map(att => {
                         const on = selectedAttachments.has(att.name);
                         return (
-                          <button key={att.name} onClick={() => setSelectedAttachments(prev => { const n = new Set(prev); on ? n.delete(att.name) : n.add(att.name); return n; })}
+                          <button key={att.name} onClick={() => setSelectedAttachments(prev => { const n = new Set(prev); if (on) n.delete(att.name); else n.add(att.name); return n; })}
                             className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left transition-all cursor-pointer ${on ? "bg-blue-50 dark:bg-blue-900/15 border border-blue-200/60 dark:border-blue-800/40" : "bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/30 border border-gray-100 dark:border-[#1a1d24] midnight:border-cyan-500/10 purple:border-pink-500/10 hover:border-gray-200"}`}>
                             <AttachIcon type={att.type} />
                             <span className="flex-1 text-[0.75rem] font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 truncate">{att.name}</span>

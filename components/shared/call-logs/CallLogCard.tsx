@@ -7,7 +7,6 @@ import {
   Phone,
   PhoneIncoming,
   PhoneOutgoing,
-  PhoneMissed,
   Clock,
   Trash2,
   Play,

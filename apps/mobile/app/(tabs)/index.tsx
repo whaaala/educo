@@ -7,12 +7,12 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  TextInput,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Link, useRouter } from 'expo-router';
+import type { Href } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { LeaveRequestModal } from '../../components/modals/LeaveRequestModal';
 import { MessageTeacherModal } from '../../components/modals/MessageTeacherModal';
@@ -165,7 +165,7 @@ function formatMoney(amount: number, currency: string = 'NGN') {
 }
 
 function useIsTablet() {
-  const [isTablet, setIsTablet] = useState(() => Dimensions.get('window').width >= 768);
+  const [isTablet] = useState(() => Dimensions.get('window').width >= 768);
   return isTablet;
 }
 
@@ -190,17 +190,6 @@ function Card({ children, style }: { children: ReactNode; style?: object }) {
   const { colors } = useTheme();
   return <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }, style]}>{children}</View>;
 }
-
-function Pill({ icon, text }: { icon: ComponentProps<typeof Ionicons>['name']; text: string }) {
-  const { colors } = useTheme();
-  return (
-    <View style={[styles.pill, { backgroundColor: colors.backgroundSecondary }]}>
-      <Ionicons name={icon} size={14} color={colors.textSecondary} />
-      <Text style={[styles.pillText, { color: colors.textSecondary }]}>{text}</Text>
-    </View>
-  );
-}
-
 function RowHeader({ title, icon, right }: { title: string; icon: ComponentProps<typeof Ionicons>['name']; right?: ReactNode }) {
   const { colors } = useTheme();
   return (
@@ -257,44 +246,11 @@ function StatTile({ label, value, subtitle, icon, tint, bg, border }: {
     </View>
   );
 }
-
-// ============================================================================
-// Mobile-specific Components
-// ============================================================================
-
-function MobileStatCard({ label, value, subtitle, icon, color }: {
-  label: string;
-  value: string;
-  subtitle?: string;
-  icon: ComponentProps<typeof Ionicons>['name'];
-  color: 'blue' | 'emerald' | 'violet' | 'amber';
-}) {
-  const colorMap = {
-    blue: { bg: COLORS.blue50, border: COLORS.blue200, tint: COLORS.blue600, iconBg: COLORS.blue100 },
-    emerald: { bg: COLORS.emerald50, border: COLORS.emerald200, tint: COLORS.emerald600, iconBg: COLORS.emerald100 },
-    violet: { bg: COLORS.violet50, border: COLORS.violet200, tint: COLORS.violet600, iconBg: COLORS.violet100 },
-    amber: { bg: COLORS.amber50, border: COLORS.amber200, tint: COLORS.amber600, iconBg: COLORS.amber100 },
-  };
-  const colors = colorMap[color];
-
-  return (
-    <View style={[mobileStyles.statCard, { backgroundColor: colors.bg, borderColor: colors.border }]}>
-      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-        <Text style={{ fontSize: 10, fontFamily: FONTS.semiBold, color: COLORS.slate600 }}>{label}</Text>
-        <View style={{ height: 26, width: 26, borderRadius: 7, backgroundColor: colors.iconBg, alignItems: 'center', justifyContent: 'center' }}>
-          <Ionicons name={icon} size={14} color={colors.tint} />
-        </View>
-      </View>
-      <Text style={{ marginTop: 4, fontSize: 18, fontFamily: FONTS.bold, color: COLORS.slate900 }}>{value}</Text>
-      {subtitle && <Text style={{ marginTop: 1, fontSize: 9, fontFamily: FONTS.medium, color: COLORS.slate500 }}>{subtitle}</Text>}
-    </View>
-  );
-}
-
 function MobileWidgetCard({ title, icon, linkHref, linkText, children }: {
   title: string;
   icon: ComponentProps<typeof Ionicons>['name'];
-  linkHref: string;
+  /** Typed as expo-router does, so a route that does not exist stops compiling. */
+  linkHref: Href;
   linkText: string;
   children: ReactNode;
 }) {
@@ -308,7 +264,7 @@ function MobileWidgetCard({ title, icon, linkHref, linkText, children }: {
           </View>
           <Text style={[styles.rowHeaderTitle, { color: colors.text }]}>{title}</Text>
         </View>
-        <Link href={linkHref as any}>
+        <Link href={linkHref}>
           <Text style={[styles.linkText, { color: colors.primary }]}>{linkText}</Text>
         </Link>
       </View>
@@ -732,7 +688,7 @@ export default function ParentHomeScreen() {
           >
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                <Text style={{ fontSize: 13, fontFamily: FONTS.bold, color: colors.text }}>{selectedChild.name.split(' ')[0]}'s Stats</Text>
+                <Text style={{ fontSize: 13, fontFamily: FONTS.bold, color: colors.text }}>{selectedChild.name.split(' ')[0]}&apos;s Stats</Text>
                 <View style={{ backgroundColor: isDark ? colors.primaryLight : '#eef2ff', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 10, flexDirection: 'row', alignItems: 'center', gap: 4 }}>
                   <Ionicons name="pulse" size={10} color={colors.primary} />
                   <Text style={{ fontSize: 9, fontFamily: FONTS.semiBold, color: colors.primary }}>In Progress</Text>
@@ -1247,7 +1203,7 @@ export default function ParentHomeScreen() {
           >
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-                <Text style={{ fontSize: 15, fontFamily: FONTS.bold, color: colors.text }}>{selectedChild.name.split(' ')[0]}'s Current Term</Text>
+                <Text style={{ fontSize: 15, fontFamily: FONTS.bold, color: colors.text }}>{selectedChild.name.split(' ')[0]}&apos;s Current Term</Text>
                 <View style={{ backgroundColor: isDark ? colors.primaryLight : '#eef2ff', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12, flexDirection: 'row', alignItems: 'center', gap: 5 }}>
                   <Ionicons name="pulse" size={12} color={colors.primary} />
                   <Text style={{ fontSize: 11, fontFamily: FONTS.semiBold, color: colors.primary }}>In Progress</Text>

@@ -1,17 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { Users, ChevronDown, ChevronUp, User, Mail, Phone, Briefcase, MapPin, Heart, Hash, Globe, Info } from "lucide-react";
+import { Users, ChevronUp, User, Mail, Phone, Briefcase, MapPin, Heart, Hash, Globe, Info } from "lucide-react";
 import FileUpload from "@/components/shared/FileUpload";
 import FormInput from "@/components/shared/FormInput";
 import FormDropdown from "@/components/shared/FormDropdown";
-import { ValidationErrors } from "@/lib/validation";
+import type { FormSectionProps } from "@/components/shared/form-section-types";
+import type { StudentFormData } from "./types";
 
-interface ParentsGuardianSectionProps {
-  formData: any;
-  onChange: (field: string, value: any) => void;
-  errors?: ValidationErrors;
-}
+type ParentsGuardianSectionProps = FormSectionProps<StudentFormData>;
 
 export default function ParentsGuardianSection({
   formData,

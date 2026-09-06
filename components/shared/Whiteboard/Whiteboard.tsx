@@ -28,7 +28,6 @@ export default function Whiteboard({
   className = "",
   readOnly = false,
   initialData,
-  onSave,
   onChange,
 }: WhiteboardProps) {
   // Element state
@@ -43,7 +42,7 @@ export default function Whiteboard({
   const [activeTool, setActiveTool] = useState<WhiteboardTool>("pen");
   const [activeColor, setActiveColor] = useState("#000000");
   const [activeStrokeWidth, setActiveStrokeWidth] = useState(2);
-  const [activeOpacity, setActiveOpacity] = useState(1);
+  const [activeOpacity] = useState(1);
   const [activeFontSize, setActiveFontSize] = useState(16);
   const [activeFillColor, setActiveFillColor] = useState<string | null>(null);
   const [activeStickyColor, setActiveStickyColor] = useState(STICKY_COLORS[0]);
@@ -135,17 +134,6 @@ export default function Whiteboard({
     },
     [pushUndo]
   );
-
-  // Update single element (used by commitText)
-  const handleUpdateElement = useCallback(
-    (id: string, updates: Partial<WhiteboardElement>) => {
-      setElements((prev) =>
-        prev.map((el) => (el.id === id ? { ...el, ...updates } : el))
-      );
-    },
-    []
-  );
-
   // Batch update multiple elements at once (used for multi-element drag)
   const handleBatchUpdate = useCallback(
     (updates: Map<string, Partial<WhiteboardElement>>) => {
@@ -267,7 +255,7 @@ export default function Whiteboard({
       const hasRichFormatting = richHTML !== currentText && /<[a-z][\s\S]*>/i.test(richHTML);
 
       // Capture editor dimensions before committing
-      let finalEl = {
+      const finalEl = {
         ...editingText,
         text: currentText,
         richText: hasRichFormatting ? richHTML : undefined,
@@ -499,10 +487,7 @@ export default function Whiteboard({
 
   const handlePaste = useCallback(() => {
     if (clipboardRef.current.length === 0) return;
-    pushUndo(elementsRef.current);
-
-    const v = viewportRef.current;
-    const offsetX = 20;
+    pushUndo(elementsRef.current);    const offsetX = 20;
     const offsetY = 20;
 
     const newElements = clipboardRef.current.map((el) => {
@@ -1098,13 +1083,6 @@ export default function Whiteboard({
     },
     [viewport, pushUndo]
   );
-
-  // ── Save / Export ─────────────────────────────────────────────────────
-
-  const handleSave = useCallback(() => {
-    onSave?.({ elements, viewport });
-  }, [elements, viewport, onSave]);
-
   const handleExportPNG = useCallback(() => {
     // Find the static canvas and export it
     const canvas = document.querySelector<HTMLCanvasElement>(

@@ -42,7 +42,7 @@ export default function TransferRequestModal({
   studentAvatar,
   currentClass,
   currentSection,
-  currentBranchId,
+  currentBranchId: _currentBranchId,
   currentBranchName,
   onSubmit,
   isSubmitting = false,
@@ -105,7 +105,8 @@ export default function TransferRequestModal({
     },
   ];
 
-  const priorities = [
+  // Tied to the request type, so an option value that is not a real priority stops compiling.
+  const priorities: { value: NonNullable<CreateTransferRequest["priority"]>; label: string }[] = [
     { value: "low", label: "Low" },
     { value: "normal", label: "Normal" },
     { value: "high", label: "High" },
@@ -142,7 +143,7 @@ export default function TransferRequestModal({
     { value: "D", label: "D" },
   ];
 
-  const handleChange = (field: keyof CreateTransferRequest, value: any) => {
+  const handleChange = <K extends keyof CreateTransferRequest>(field: K, value: CreateTransferRequest[K]) => {
     setFormData((prev) => ({
       ...prev,
       [field]: value,

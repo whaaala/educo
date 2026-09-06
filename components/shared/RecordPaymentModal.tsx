@@ -81,9 +81,9 @@ export default function RecordPaymentModal({
   onClose,
   feeRecordId,
   parentName,
-  parentId,
+  parentId: _parentId,
   childName,
-  childId,
+  childId: _childId,
   feeType,
   amount,
   paidAmount,
@@ -232,11 +232,6 @@ export default function RecordPaymentModal({
         return newErrors;
       });
     }
-  };
-
-  const getMethodColor = (methodId: string) => {
-    const method = PAYMENT_METHODS.find((m) => m.id === methodId);
-    return method?.color || "gray";
   };
 
   // Success state

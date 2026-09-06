@@ -2,7 +2,7 @@
 
 import React, { forwardRef } from "react";
 import Image from "next/image";
-import { MicOff, VideoOff, Monitor, Pin, MoreVertical } from "lucide-react";
+import { MicOff, Monitor, Pin, MoreVertical } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export interface VideoTileProps {

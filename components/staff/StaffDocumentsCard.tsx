@@ -1,8 +1,6 @@
 "use client";
 
 import { Download, FileText, Eye } from "lucide-react";
-import { useState } from "react";
-
 export default function StaffDocumentsCard() {
   // Mock documents data
   const documents = [
@@ -15,7 +13,7 @@ export default function StaffDocumentsCard() {
     console.log("Viewing document:", doc.name);
   };
 
-  const handleDownload = (doc: typeof documents[0], index: number) => {
+  const handleDownload = (doc: typeof documents[0], _index: number) => {
     console.log("Downloading document:", doc.name);
   };
 

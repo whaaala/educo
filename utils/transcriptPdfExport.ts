@@ -1,3 +1,4 @@
+import { withPlugins } from "./jspdf-types";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -201,7 +202,7 @@ export function exportTranscriptDataToPDF(
   ];
 
   // Draw student info with proper spacing
-  infoData.forEach((row, index) => {
+  infoData.forEach((row, _index) => {
     pdf.setFont("helvetica", "bold");
     pdf.setTextColor(40, 40, 40);
     pdf.text(row[0], 20, yPos);
@@ -248,7 +249,7 @@ export function exportTranscriptDataToPDF(
     yPos += 8;
 
     // Add each term's records
-    academicRecords.forEach((term, termIndex) => {
+    academicRecords.forEach((term, _termIndex) => {
       // Check if we need a new page
       if (yPos > 240) {
         pdf.addPage();
@@ -327,7 +328,7 @@ export function exportTranscriptDataToPDF(
         margin: { left: 20, right: 20 },
       });
 
-      yPos = (pdf as any).lastAutoTable.finalY + 3;
+      yPos = (withPlugins(pdf).lastAutoTable?.finalY ?? yPos) + 3;
 
       // Term summary - professional format
       pdf.setFontSize(8);
@@ -362,11 +363,7 @@ export function exportTranscriptDataToPDF(
     pdf.setTextColor(150, 150, 150);
     pdf.text("No academic records available for this period.", 20, yPos);
     yPos += 10;
-  }
-
-  // Add grading scale legend (on last page or new page if needed)
-  const currentPage = (pdf as any).internal.getCurrentPageInfo().pageNumber;
-  if (yPos > 215) {
+  }  if (yPos > 215) {
     pdf.addPage();
 
     // Re-add borders on new page
@@ -427,7 +424,7 @@ export function exportTranscriptDataToPDF(
     tableWidth: 85,
   });
 
-  yPos = (pdf as any).lastAutoTable.finalY + 12;
+  yPos = (withPlugins(pdf).lastAutoTable?.finalY ?? yPos) + 12;
 
   // Signatures section
   if (yPos > 235) {
@@ -532,7 +529,7 @@ export function exportTranscriptDataToPDF(
   pdf.text(`Document Verification Code: ${request.verificationCode || "N/A"}`, 105, yPos, { align: "center" });
 
   // Footer with page numbers and generation timestamp
-  const pageCount = (pdf as any).internal.getNumberOfPages();
+  const pageCount = withPlugins(pdf).internal.getNumberOfPages();
   for (let i = 1; i <= pageCount; i++) {
     pdf.setPage(i);
 
@@ -618,7 +615,7 @@ export async function generateTranscriptPDF(
  */
 export async function printTranscriptPDF(
   request: TranscriptRequest,
-  tenantId?: string
+  _tenantId?: string
 ): Promise<void> {
   try {
     // Show loading cursor
@@ -801,7 +798,7 @@ export async function printTranscriptPDF(
           margin: { left: 20, right: 20 },
         });
 
-        yPos = (pdf as any).lastAutoTable.finalY + 3;
+        yPos = (withPlugins(pdf).lastAutoTable?.finalY ?? yPos) + 3;
 
         let summaryText = "";
         if (term.termAverage) summaryText += `Term Average: ${term.termAverage.toFixed(1)}%`;
@@ -878,7 +875,7 @@ export async function printTranscriptPDF(
       tableWidth: 85,
     });
 
-    yPos = (pdf as any).lastAutoTable.finalY + 12;
+    yPos = (withPlugins(pdf).lastAutoTable?.finalY ?? yPos) + 12;
 
     // Signatures section
     if (yPos > 235) {
@@ -960,7 +957,7 @@ export async function printTranscriptPDF(
     pdf.text(`Document Verification Code: ${request.verificationCode || "N/A"}`, 105, yPos, { align: "center" });
 
     // Footer
-    const pageCount = (pdf as any).internal.getNumberOfPages();
+    const pageCount = withPlugins(pdf).internal.getNumberOfPages();
     for (let i = 1; i <= pageCount; i++) {
       pdf.setPage(i);
       pdf.setDrawColor(180, 180, 180);

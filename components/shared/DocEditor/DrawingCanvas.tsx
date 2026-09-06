@@ -1,7 +1,7 @@
 "use client";
 import React, { useRef, useState, useCallback, useEffect } from "react";
 import {
-  X, Check, Minus, ArrowRight, Square, Circle, Type, ImagePlus,
+  Check, Minus, ArrowRight, Square, Circle, Type, ImagePlus,
   RotateCw, Trash2, MousePointer2, Pentagon,
 } from "lucide-react";
 
@@ -41,7 +41,7 @@ export default function DrawingCanvas({ onSave, onCancel }: { onSave: (dataUrl: 
   const drawStart = useRef<{ x: number; y: number } | null>(null);
   const [pendingShape, setPendingShape] = useState<Shape | null>(null);
   const [dragOffset, setDragOffset] = useState<{ dx: number; dy: number } | null>(null);
-  const [resizeHandle, setResizeHandle] = useState<string | null>(null);
+  const [_resizeHandle, _setResizeHandle] = useState<string | null>(null);
   const [editingTextId, setEditingTextId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -98,7 +98,7 @@ export default function DrawingCanvas({ onSave, onCancel }: { onSave: (dataUrl: 
           const a = (Math.PI * 2 * i) / sides - Math.PI / 2;
           const px = cx + rx * Math.cos(a);
           const py = cy + ry * Math.sin(a);
-          i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+          if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
         }
         ctx.closePath();
         ctx.fill();

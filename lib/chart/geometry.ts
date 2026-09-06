@@ -61,7 +61,7 @@ export function smoothPath(pts: { x: number; y: number }[], tension = 0.5): stri
  */
 export function axisTicks(min: number, max: number, step?: number): { min: number; max: number; ticks: number[] } {
   const MAX = 200;
-  let lo = Number.isFinite(min) ? min : 0;
+  const lo = Number.isFinite(min) ? min : 0;
   let hi = Number.isFinite(max) ? max : lo + 1;
   if (!(hi > lo)) hi = lo + 1;                       // ensure a positive range
   let s = step && step > 0 ? step : (hi - lo) / 4;

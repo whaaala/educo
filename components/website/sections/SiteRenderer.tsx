@@ -26,7 +26,6 @@ export function SiteNav({ site, theme, editable, onEditName, onEditCta }: {
       <Container className="h-16 flex items-center">
         <div className="flex items-center gap-2">
           {header.logoUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
             <img src={header.logoUrl} alt={`${site.name} logo`} className="w-9 h-9 rounded-xl object-contain bg-white" />
           ) : (
             <span className="w-9 h-9 rounded-xl flex items-center justify-center text-white font-bold" style={{ background: `linear-gradient(135deg, ${theme.primary}, ${theme.accent})` }}>

@@ -29,7 +29,7 @@ export default function FloatingTextToolbar({
   activeFontSize,
   activeFontWeight,
   activeFontStyle,
-  activeTextDecoration,
+  activeTextDecoration: _activeTextDecoration,
   activeTextAlign,
   onFontFamilyChange,
   onFontSizeChange,

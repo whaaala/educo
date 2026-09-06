@@ -7,6 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p apps/mobile/tsconfig.json",
+    "check": "npm run typecheck && npm run lint && npm run test",
     "dev:admin": "cd apps/admin && next dev --turbopack -p 3001",
     "build:admin": "cd apps/admin && next build",
     "test": "vitest run",
@@ -28,9 +30,10 @@
     "test:layout:bands": "playwright test tests/e2e/layout-bands.spec.ts --project=desktop-chrome --workers=1",
     "test:advanced-css": "playwright test tests/e2e/advanced-css.spec.ts --project=desktop-chrome --workers=1",
     "test:fonts": "playwright test tests/e2e/export-fonts.spec.ts --project=desktop-chrome --workers=1",
+    "test:images": "playwright test tests/e2e/image-intrinsic.spec.ts --project=desktop-chrome --workers=1",
     "test:watch:ui": "playwright test --project=desktop-chrome --workers=1 --headed",
     "test:playwright:ui": "playwright test --ui",
-    "test:invariants": "npm run test:layout && npm run test:layout:export && npm run test:interactions && npm run test:distinct && npm run test:alert && npm run test:multipage && npm run test:export && npm run test:layout:bands && npm run test:advanced-css && npm run test:fonts"
+    "test:invariants": "npm run test:layout && npm run test:layout:export && npm run test:interactions && npm run test:distinct && npm run test:alert && npm run test:multipage && npm run test:export && npm run test:layout:bands && npm run test:advanced-css && npm run test:fonts && npm run test:images"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

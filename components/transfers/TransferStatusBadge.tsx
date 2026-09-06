@@ -1,5 +1,5 @@
 import { TransferStatus } from "@/types/transfer";
-import { Clock, CheckCircle, XCircle, AlertCircle, Ban, Loader } from "lucide-react";
+import { Clock, CheckCircle, XCircle, Ban, Loader } from "lucide-react";
 
 interface TransferStatusBadgeProps {
   status: TransferStatus;

@@ -48,7 +48,7 @@ export default function SchoolProfileSettings() {
       try {
         const levels = JSON.parse(savedLevels) as EducationLevelOption[];
         setSelectedLevels(levels);
-      } catch (e) {
+      } catch  {
         // Fallback for old single-value format
         const oldValue = localStorage.getItem("educationLevel");
         if (oldValue === "primary") setSelectedLevels(["Primary"]);
@@ -298,17 +298,17 @@ export default function SchoolProfileSettings() {
                 Multi-Level Institution Configuration
               </p>
               <p className="text-xs text-green-800 dark:text-green-400 midnight:text-green-400 purple:text-green-400 mt-1">
-                Your institution has {selectedLevels.join(", ")} sections. The system will automatically determine each student's education level based on their class:
+                Your institution has {selectedLevels.join(", ")} sections. The system will automatically determine each student&apos;s education level based on their class:
               </p>
               <ul className="text-xs text-green-800 dark:text-green-400 midnight:text-green-400 purple:text-green-400 mt-2 space-y-1 list-disc list-inside ml-2">
                 {selectedLevels.includes("Primary") && (
-                  <li>Students in "Primary 1-6", "Grade 1-6", "Year 1-6", "Kindergarten" → <span className="font-semibold">Primary Level</span></li>
+                  <li>Students in &quot;Primary 1-6&quot;, &quot;Grade 1-6&quot;, &quot;Year 1-6&quot;, &quot;Kindergarten&quot; → <span className="font-semibold">Primary Level</span></li>
                 )}
                 {selectedLevels.includes("Secondary") && (
-                  <li>Students in "JSS/SSS 1-3", "Year 7-13", "Form 1-4", "Grade 7-12" → <span className="font-semibold">Secondary Level</span></li>
+                  <li>Students in &quot;JSS/SSS 1-3&quot;, &quot;Year 7-13&quot;, &quot;Form 1-4&quot;, &quot;Grade 7-12&quot; → <span className="font-semibold">Secondary Level</span></li>
                 )}
                 {selectedLevels.includes("Tertiary") && (
-                  <li>Students in "100-800 Level", "ND/HND", "Undergraduate/Postgraduate" → <span className="font-semibold">Tertiary Level</span></li>
+                  <li>Students in &quot;100-800 Level&quot;, &quot;ND/HND&quot;, &quot;Undergraduate/Postgraduate&quot; → <span className="font-semibold">Tertiary Level</span></li>
                 )}
               </ul>
             </div>

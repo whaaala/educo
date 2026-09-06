@@ -2,8 +2,7 @@
 
 import { useRef, useEffect, useLayoutEffect, useCallback } from "react";
 import type { WhiteboardElement, WhiteboardTool, Point, Viewport, FontFamily, TextAlign, StrokeDashPattern } from "./whiteboard-types";
-import { BBOX_SHAPE_TOOLS, LINE_TOOLS } from "./whiteboard-types";
-import { drawElement, screenToCanvas, hitTest, generateId, getBoundingBox, drawGroupOutlines, getResizeHandles, drawResizeHandles, hitTestResizeHandle } from "./whiteboard-utils";
+import { drawElement, screenToCanvas, hitTest, generateId, getBoundingBox, drawGroupOutlines, drawResizeHandles, hitTestResizeHandle } from "./whiteboard-utils";
 import type { ResizeHandle } from "./whiteboard-utils";
 
 interface ContextMenuEvent {

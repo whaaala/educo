@@ -9,12 +9,10 @@ import {
 } from "lucide-react";
 import FormDropdown from "@/components/shared/FormDropdown";
 import FormInput from "@/components/shared/FormInput";
+import type { FormSectionProps } from "@/components/shared/form-section-types";
+import type { ClassFormData } from "./types";
 
-interface SecondaryTrackSectionProps {
-  formData: any;
-  onChange: (field: string, value: any) => void;
-  errors?: any;
-}
+type SecondaryTrackSectionProps = FormSectionProps<ClassFormData>;
 
 export default function SecondaryTrackSection({
   formData,
@@ -28,7 +26,8 @@ export default function SecondaryTrackSection({
     return null;
   }
 
-  const academicTracks = [
+  // Tied to the form field's own type, so an option value that is not a real track stops compiling.
+  const academicTracks: { value: ClassFormData["academicTrack"]; label: string }[] = [
     { value: "Science", label: "Science" },
     { value: "Arts", label: "Arts" },
     { value: "Commercial", label: "Commercial" },

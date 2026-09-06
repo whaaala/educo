@@ -1,6 +1,6 @@
 "use client";
 
-import { ReactNode, useState, useEffect, useRef } from "react";
+import { ReactNode, useState, useRef } from "react";
 import { Calendar as CalendarIcon, Clock } from "lucide-react";
 import ModernCalendar from "./ModernCalendar";
 import ModernTimePicker from "./ModernTimePicker";

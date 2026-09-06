@@ -12,7 +12,6 @@ import {
   GraduationCap,
   Users,
   Briefcase,
-  X,
 } from "lucide-react";
 import Image from "next/image";
 import Modal from "@/components/shared/Modal";

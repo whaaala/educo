@@ -20,7 +20,7 @@ import {
 } from "lucide-react";
 import {
   type Site, type Page, type Section, type SectionType, type SiteTheme, type NavItem, type HeaderEl,
-  SECTION_CATALOG, createSection, createPage, createPageFromTemplate, pageNavItem, makeNavItem, slugify, siteStorage, resolveSiteTheme,
+  SECTION_CATALOG, createSection, createPageFromTemplate, pageNavItem, makeNavItem, slugify, siteStorage, resolveSiteTheme,
 } from "@/lib/site-storage";
 import { useTheme } from "@/contexts/ThemeContext";
 import { resolveIcon } from "@/components/website/sections/icons";
@@ -85,6 +85,12 @@ export default function SiteBuilder({ value, onChange, onExit }: SiteBuilderProp
   const [secDropIdx, setSecDropIdx] = useState<number | null>(null); // insertion index (0..len) for the drop-between line
 
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  /** The edit waiting on the debounce, so leaving the page can still write it. */
+  const pendingSave = useRef<Site | null>(null);
+  /** The unmount handler registers once, so it reads onChange through a ref rather than closing over the
+   *  value it had on the first render (the same reason the keyboard handlers use refs). */
+  const onChangeRef = useRef(onChange);
+  onChangeRef.current = onChange;
   const sectionRefs = useRef<Record<string, HTMLElement | null>>({});
   useEffect(() => { setSite(value); }, [value.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -110,9 +116,23 @@ export default function SiteBuilder({ value, onChange, onExit }: SiteBuilderProp
   const commit = useCallback((next: Site) => {
     setSite(next);
     setSavedAt("saving");
+    pendingSave.current = next;
     if (saveTimer.current) clearTimeout(saveTimer.current);
-    saveTimer.current = setTimeout(() => { siteStorage.save(next); onChange(next); setSavedAt("saved"); }, 700);
+    saveTimer.current = setTimeout(() => {
+      pendingSave.current = null;
+      siteStorage.save(next); onChange(next); setSavedAt("saved");
+    }, 700);
   }, [onChange]);
+
+  // Leaving the builder within the debounce window must not throw the edit away: the 700 ms exists to avoid
+  // writing on every keystroke, not to make the LAST keystroke optional. So the pending site is written
+  // immediately on unmount rather than cancelled — and the timer is cleared, which it never was, so a save
+  // could previously fire into a component that no longer existed.
+  useEffect(() => () => {
+    if (saveTimer.current) { clearTimeout(saveTimer.current); saveTimer.current = null; }
+    const pending = pendingSave.current;
+    if (pending) { pendingSave.current = null; siteStorage.save(pending); onChangeRef.current(pending); }
+  }, []);
 
   const activePage: Page | undefined = useMemo(() => site.pages.find((p) => p.id === activePageId) ?? site.pages[0], [site.pages, activePageId]);
   const activeSection = activePage?.sections.find((s) => s.id === activeSectionId) ?? null;

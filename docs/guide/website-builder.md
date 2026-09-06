@@ -55,6 +55,14 @@ Build and maintain your school's public website by dragging blocks onto a page �
 ### Media
 **Image**, **Video** (YouTube/Vimeo/MP4), **Icon** (searchable symbol), **Embed** (paste an iframe/HTML).
 
+**Photographs** — select an Image block and open the **Content** tab:
+
+- **Describe this image** — what the picture shows, read aloud to visitors who cannot see it and used by search engines. Leave it blank only when the picture is purely decorative (a divider, a texture).
+- **Load straight away** — off by default, which is right for anything below the fold. Turn it on for a picture at the very top of the page, or the top of the page opens briefly empty.
+- **Show the whole picture (don't crop it)** — appears once you have uploaded a photograph, because the builder then knows what shape it is. Ticked, the block takes the photograph's own proportions; unticked, it is cropped to the **Height** you set in the Design tab. Cropping is often what you want for a neat row of equal cards — this is the choice, not an accident.
+
+The builder measures a photograph when you upload it and tells the browser its size up front, so **the space is reserved before the picture arrives**. Without that, text jumps down the page as each photo loads and readers lose their place — the single most irritating thing a photo-heavy site can do.
+
 ### Components (design‑system pieces)
 These are ready‑made, themed pieces. **Each one is a fully editable tree** — click any inner part (a card's title, its button, a rating's star) and you get that part's full controls.
 
@@ -185,7 +193,8 @@ The builder is responsive by design, and you can fine‑tune per size.
 | **One file per page** | Each page has its own address, so it can be found, bookmarked, shared and printed on its own. Your home page is `index.html`, which is what every web host looks for. |
 | **Links are relative** | Unzip it onto a laptop, a USB stick or a web host and every link still works. Nothing assumes a domain. |
 | **One shared `styles.css`** | A visitor downloads it once, then it is cached — every page after the first arrives faster. |
-| **Each page carries only the styles it uses** | A term‑dates page of text and a table doesn't download the accordion, the alert or the rating. In practice this is around a 90% cut in styling for a simple page. |
+| **Each page carries only the styles it uses** | A term‑dates page of text and a table doesn't download the accordion, the alert or the rating — and a page with one accordion doesn't download the other twenty‑eight accordion designs either. A page of text ends up around 1.4 KB; a busy page with an alert, an accordion, a card and a photo, around 10 KB. |
+| **The next page is already on its way** | While a visitor reads one page, the browser quietly fetches the others in the background. Clicking a link then feels instant. |
 
 **Your fonts travel with the site.** The typefaces you chose are built into `styles.css` itself, so the published site looks exactly like the one you designed. They are *not* loaded from Google: that would mean every visitor's IP address is sent to a third party, which is a data-protection question no school should be handed without being asked. Nothing is fetched from anywhere else either — no scripts, no trackers — so the site works offline, opens from a USB stick, and there is nothing to break later.
 

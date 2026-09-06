@@ -300,15 +300,6 @@ const MOCK_EVENTS: Record<string, SchoolEvent> = {
 // HELPER FUNCTIONS
 // ============================================
 
-function formatDate(dateStr: string) {
-  return new Date(dateStr).toLocaleDateString("en-GB", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
-}
-
 function formatShortDate(dateStr: string) {
   return new Date(dateStr).toLocaleDateString("en-GB", { day: "2-digit", month: "short" });
 }

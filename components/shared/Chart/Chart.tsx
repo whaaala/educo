@@ -771,7 +771,7 @@ export default function Chart({
     const maxV = Math.max(...data.map(d => Number(d.value) || 0), 1);
     const cx = VW / 2;
     const fullW = Math.min(VW * 0.6, VW - F * 8);
-    const x0 = cx - fullW / 2, x1 = cx + fullW / 2;
+    const x0 = cx - fullW / 2;
     const h = (bottom - top - F) / data.length, gap = h * 0.16;
     const cols = mono(spec.accent, data.length);
     const total = data.reduce((s, d) => s + (Number(d.value) || 0), 0) || 1;

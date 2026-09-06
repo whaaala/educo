@@ -11,18 +11,15 @@ import {
 import TagInput from "@/components/shared/TagInput";
 import FormTextarea from "@/components/shared/FormTextarea";
 import FileUpload from "@/components/shared/FileUpload";
-import { ValidationErrors } from "@/lib/validation";
+import type { FormSectionProps } from "@/components/shared/form-section-types";
+import type { TeacherFormData } from "./types";
 
-interface MedicalInformationSectionProps {
-  formData: any;
-  onChange: (field: string, value: any) => void;
-  errors?: ValidationErrors;
-}
+type MedicalInformationSectionProps = FormSectionProps<TeacherFormData>;
 
 export default function MedicalInformationSection({
   formData,
   onChange,
-  errors = {},
+  errors: _errors = {},
 }: MedicalInformationSectionProps) {
   const [isExpanded, setIsExpanded] = useState(true);
 

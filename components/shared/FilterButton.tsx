@@ -2,8 +2,6 @@
 
 import { useState, useEffect, useRef } from "react";
 import { Filter, ChevronDown, X, RotateCcw, Check } from "lucide-react";
-import CustomDropdown from "./CustomDropdown";
-
 export interface FilterField {
   id: string;
   label: string;

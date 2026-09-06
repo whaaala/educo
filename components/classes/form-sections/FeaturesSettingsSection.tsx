@@ -13,12 +13,25 @@ import {
 } from "lucide-react";
 import FormInput from "@/components/shared/FormInput";
 import FormDropdown from "@/components/shared/FormDropdown";
+import type { FormSectionProps } from "@/components/shared/form-section-types";
+import type { ClassFormData } from "./types";
+/** The switches this section offers, named from the form's own shape so the list and the state cannot drift. */
+type FeatureKey = keyof ClassFormData["enabledFeatures"];
 
-interface FeaturesSettingsSectionProps {
-  formData: any;
-  onChange: (field: string, value: any) => void;
-  errors?: any;
-}
+/** Typed rather than inline: a key that is not a real feature now fails to compile, instead of silently
+ *  toggling a property nothing reads. */
+const FEATURE_SWITCHES: { key: FeatureKey; label: string }[] = [
+  { key: "lms", label: "Learning Management System (LMS)" },
+  { key: "digitalDiary", label: "Digital Diary" },
+  { key: "transport", label: "Transport Management" },
+  { key: "hostel", label: "Hostel Management" },
+  { key: "rfid", label: "RFID Attendance" },
+  { key: "onlineClasses", label: "Online Classes" },
+  { key: "library", label: "Library Access" },
+  { key: "gradebook", label: "Digital Gradebook" },
+];
+
+type FeaturesSettingsSectionProps = FormSectionProps<ClassFormData>;
 
 export default function FeaturesSettingsSection({
   formData,
@@ -28,9 +41,7 @@ export default function FeaturesSettingsSection({
   const [isExpanded, setIsExpanded] = useState(true);
 
   const isTertiary = formData.educationLevel === "Tertiary";
-  const isNursery = formData.educationLevel === "Nursery" || formData.educationLevel === "Kindergarten";
-  const isPrimary = formData.educationLevel === "Primary";
-  const isSecondary = formData.educationLevel === "Secondary" || formData.educationLevel === "Junior Secondary";
+  const isNursery = formData.educationLevel === "Nursery" || formData.educationLevel === "Kindergarten";  const isSecondary = formData.educationLevel === "Secondary" || formData.educationLevel === "Junior Secondary";
 
   // Feature availability based on education level
   const availableFeatures = {
@@ -69,8 +80,8 @@ export default function FeaturesSettingsSection({
     { value: "Branch 2", label: "Branch 2 - Lekki" },
   ];
 
-  const handleFeatureToggle = (feature: string) => {
-    const currentFeatures = formData.enabledFeatures || {};
+  const handleFeatureToggle = (feature: FeatureKey) => {
+    const currentFeatures = formData.enabledFeatures;
     onChange("enabledFeatures", {
       ...currentFeatures,
       [feature]: !currentFeatures[feature],
@@ -135,16 +146,7 @@ export default function FeaturesSettingsSection({
             </label>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {[
-                { key: "lms", label: "Learning Management System (LMS)" },
-                { key: "digitalDiary", label: "Digital Diary" },
-                { key: "transport", label: "Transport Management" },
-                { key: "hostel", label: "Hostel Management" },
-                { key: "rfid", label: "RFID Attendance" },
-                { key: "onlineClasses", label: "Online Classes" },
-                { key: "library", label: "Library Access" },
-                { key: "gradebook", label: "Digital Gradebook" },
-              ]
+              {FEATURE_SWITCHES
                 .filter((feature) => availableFeatures[feature.key as keyof typeof availableFeatures])
                 .map((feature) => (
                 <label

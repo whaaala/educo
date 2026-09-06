@@ -141,15 +141,10 @@ describe("WhiteboardBottomBar — Visual / CSS", () => {
   describe("clear confirmation dialog styling", () => {
     it("dialog has theme-aware background and border", async () => {
       const user = userEvent.setup();
-      const { container } = render(
+      render(
         <WhiteboardBottomBar {...defaultProps} />
       );
       await user.click(screen.getByTitle("Clear all"));
-
-      // Find the dialog popup
-      const dialog = container.querySelector(
-        ".bg-white.dark\\:bg-gray-800"
-      );
       // The dialog exists somewhere in the container
       const dialogText = screen.getByText("Clear all elements?");
       const dialogParent = dialogText.closest("div.absolute");

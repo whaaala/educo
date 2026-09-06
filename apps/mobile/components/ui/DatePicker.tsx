@@ -6,13 +6,9 @@ import {
   Pressable,
   StyleSheet,
   Modal,
-  Dimensions,
-  ScrollView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../contexts/ThemeContext';
-
-const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 // Shared fonts
 const FONTS = {
@@ -53,8 +49,8 @@ export function DatePicker({
   disabled = false,
   required = false,
   error,
-  minDate,
-  maxDate,
+  minDate: _minDate,
+  maxDate: _maxDate,
 }: DatePickerProps) {
   const { colors } = useTheme();
   const [isOpen, setIsOpen] = useState(false);

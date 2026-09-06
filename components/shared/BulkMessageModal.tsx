@@ -1,6 +1,6 @@
 "use client";
 
-import { X, Send, Search, ArrowUpAZ, ArrowDownZA, Undo2, Mail, MessageSquare, Bell, Phone, ChevronDown, ChevronUp, Edit2, Check, LucideIcon } from "lucide-react";
+import { X, Send, Search, ArrowUpAZ, ArrowDownZA, Undo2, Mail, MessageSquare, Bell, Phone, Edit2, Check, LucideIcon } from "lucide-react";
 import { useEffect, useState, useRef, ReactNode } from "react";
 import Image from "next/image";
 
@@ -394,9 +394,6 @@ export default function BulkMessageModal({
   const hasCustomMessage = (recipientId: string) => {
     return !!customMessages[recipientId];
   };
-
-  // Get enabled channels (non-coming soon)
-  const enabledChannels = channels.filter((c) => !c.comingSoon);
 
   return (
     <div className="fixed inset-0 z-[100000] flex items-center justify-center p-4 sm:p-6 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">

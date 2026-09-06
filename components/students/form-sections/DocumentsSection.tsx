@@ -4,7 +4,6 @@ import { useState } from "react";
 import {
   FileText,
   ChevronUp,
-  ChevronDown,
   Info,
   FileCheck,
   File,
@@ -18,7 +17,8 @@ import {
 } from "lucide-react";
 import FileUpload from "@/components/shared/FileUpload";
 import FormInput from "@/components/shared/FormInput";
-import { ValidationErrors } from "@/lib/validation";
+import type { FormSectionProps } from "@/components/shared/form-section-types";
+import type { StudentFormData } from "./types";
 
 interface AdditionalDocument {
   id: string;
@@ -26,16 +26,12 @@ interface AdditionalDocument {
   file: File | null;
 }
 
-interface DocumentsSectionProps {
-  formData: any;
-  onChange: (field: string, value: any) => void;
-  errors?: ValidationErrors;
-}
+type DocumentsSectionProps = FormSectionProps<StudentFormData>;
 
 export default function DocumentsSection({
   formData,
   onChange,
-  errors = {},
+  errors: _errors = {},
 }: DocumentsSectionProps) {
   const [isExpanded, setIsExpanded] = useState(true);
   const [additionalDocuments, setAdditionalDocuments] = useState<
@@ -369,7 +365,7 @@ export default function DocumentsSection({
               <div className="pl-2">
                 <div className="text-center py-8 border-2 border-dashed border-line rounded-lg">
                   <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70">
-                    No additional documents added yet. Click "Add Document" to
+                    No additional documents added yet. Click &quot;Add Document&quot; to
                     add more.
                   </p>
                 </div>

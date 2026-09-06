@@ -292,7 +292,7 @@ describe("ToolbarDropdown", () => {
   // Scenario: ToolbarDropdown closes on outside click
   describe("closes on outside click", () => {
     it("should call onToggle when clicking outside the dropdown", () => {
-      const { container } = render(
+      render(
         <div>
           <ToolbarDropdown
             label="Font"

@@ -1,3 +1,4 @@
+import type { Href } from 'expo-router';
 import { useState, useEffect, useRef } from 'react';
 import {
   View,
@@ -154,7 +155,9 @@ const MoreIcon = ({ color, size, filled }: { color: string; size: number; filled
 
 interface TabItem {
   name: string;
-  route: string;
+  /** A route path — the STRING half of expo-router's Href, so it can both be pushed and compared against
+   *  the current pathname. Typed rather than cast, so a tab pointing nowhere stops compiling. */
+  route: Extract<Href, string>;
   label: string;
   icon: typeof HomeIcon;
 }
@@ -247,7 +250,7 @@ export default function BottomTabBar() {
     ]).start();
 
     setLastTabIndex(index);
-    router.push(route as any);
+    router.push(route);
   };
 
   // Get gradient colors based on theme
@@ -278,8 +281,6 @@ export default function BottomTabBar() {
 
   const inactiveColor = isDark ? colors.textSecondary : colors.textTertiary;
   const inactiveIconBg = 'transparent';
-  const inactiveIconBorder = 'transparent';
-
   return (
     <View
       style={[

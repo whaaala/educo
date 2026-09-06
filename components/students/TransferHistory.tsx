@@ -69,7 +69,7 @@ interface TransferRecordCardProps {
   isLast: boolean;
 }
 
-function TransferRecordCard({ transfer, isFirst, isLast }: TransferRecordCardProps) {
+function TransferRecordCard({ transfer, isFirst: _isFirst, isLast: _isLast }: TransferRecordCardProps) {
   const getStatusConfig = (status: TransferRecord["status"]) => {
     switch (status) {
       case "completed":

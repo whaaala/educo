@@ -3,14 +3,51 @@
 import React, { useState, useRef, useCallback, useEffect } from "react";
 import { createPortal } from "react-dom";
 import {
-  Plus, Play, Trash2, Copy, Palette, LayoutGrid, X, ArrowLeft, Presentation,
-  Bold, Italic, Underline, AlignLeft, AlignCenter, AlignRight,
-  Strikethrough, Superscript as SuperscriptIcon, Subscript as SubscriptIcon,
-  Image as ImageIcon, Type, Table2, Paintbrush, MessageCircle, Shapes,
-  Share2, Undo2, Redo2, ZoomIn, ZoomOut, Minimize2, Minus, ChevronLeft, ChevronRight, ChevronUp, ChevronDown, Check, Upload, Eye, PenLine,
-  Bookmark, ShieldCheck, Globe, Tag, FolderPlus, Lock, AlertTriangle, Send, Mail,
+  Plus,
+  Play,
+  Trash2,
+  Copy,
+  Palette,
+  LayoutGrid,
+  X,
+  ArrowLeft,
+  Presentation,
+  Bold,
+  Italic,
+  Underline,
+  AlignLeft,
+  AlignCenter,
+  AlignRight,
+  Strikethrough,
+  Image as ImageIcon,
+  Type,
+  Table2,
+  MessageCircle,
+  Shapes,
+  Share2,
+  Undo2,
+  Redo2,
+  ZoomIn,
+  ZoomOut,
+  Minimize2,
+  ChevronLeft,
+  ChevronRight,
+  ChevronUp,
+  ChevronDown,
+  Check,
+  Upload,
+  Eye,
+  PenLine,
+  ShieldCheck,
+  Globe,
+  Tag,
+  FolderPlus,
+  Lock,
+  AlertTriangle,
+  Send,
+  Mail,
 } from "lucide-react";
-import { slideStorage, type SlideData, type SlideObject, type TableObject, type ChartType, type PresentationPermissions, DEFAULT_PERMISSIONS, createTextBox, createImageObj, createShapeObj, createDrawingObj, fitDrawingToStroke, createTableObj, createChartObj, createMediaObj, makeDefaultTitleObjects, makeDefaultContentObjects, makeDefaultClosingObjects } from "@/lib/slide-storage";
+import { slideStorage, type SlideData, type SlideObject, type ChartType, type PresentationPermissions, DEFAULT_PERMISSIONS, createTextBox, createImageObj, createShapeObj, createDrawingObj, fitDrawingToStroke, createTableObj, createChartObj, createMediaObj, makeDefaultTitleObjects, makeDefaultContentObjects, makeDefaultClosingObjects } from "@/lib/slide-storage";
 import { driveStorage, type DriveItem } from "@/lib/drive-storage";
 import { permissionRequests } from "@/lib/permission-requests";
 import { useNotifications } from "@/contexts/NotificationContext";
@@ -31,7 +68,7 @@ import { SHAPE_DEFS } from "./shapes";
 import { ToolbarButton, ToolbarDivider, ToolbarDropdown } from "@/components/shared/EditorToolbar";
 import { EditorDialog, EditorDialogButton, TableGridPicker, EditingModeButton, type EditingMode } from "@/components/shared/EditorDialogs";
 import { ShortcutsDialog, UpdatesDialog, TrainingDialog, AccessibilityDialog, DictionaryDialog, LinkedObjectsDialog, ExploreDialog, MenuSearchDialog, FormatOptionsDialog, MediaUrlDialog, applyA11y, loadA11y } from "./SlideToolsDialogs";
-import { CommentAvatar, CommentCard, FloatingCommentPill, useMention, type DocComment, type CommentAuthor } from "@/components/shared/EditorComments";
+import { CommentCard, type DocComment, type CommentAuthor } from "@/components/shared/EditorComments";
 import Button from "@/components/shared/Button";
 import ShareDialog from "@/components/shared/ShareDialog";
 import PublishDialog from "@/components/shared/PublishDialog";
@@ -39,6 +76,19 @@ import EmailDialog, { type EmailMode } from "@/components/shared/EmailDialog";
 import DownloadDialog from "@/components/shared/DownloadDialog";
 import ConvertToVideoDialog from "@/components/shared/ConvertToVideoDialog";
 import MoveDialog from "@/components/shared/MoveDialog";
+
+/**
+ *  — a non-standard but widely supported browser search, used here to jump the selection to the
+ * next match. It is absent from the DOM lib, which is why every call went through a cast; naming it once
+ * keeps the ARGUMENTS checked, and they are easy to get wrong (seven positional booleans).
+ */
+function windowFind(
+  text: string, caseSensitive: boolean, backwards: boolean, wrapAround: boolean,
+  wholeWord: boolean, searchInFrames: boolean, showDialog: boolean,
+): boolean {
+  const find = (window as unknown as { find?: (...args: unknown[]) => boolean }).find;
+  return find ? find(text, caseSensitive, backwards, wrapAround, wholeWord, searchInFrames, showDialog) : false;
+}
 
 // ── Types ──
 export interface SlideEditorValue {
@@ -58,39 +108,6 @@ interface ThemeDef {
   category: "light" | "dark" | "gradient";
   layout: "center" | "left" | "split";
 }
-
-// ── Slide template builders ──
-
-function slideHTML_Title(title: string, subtitle: string, a: string, t: string, layout: "center" | "left" | "split") {
-  const bar = `<div style="width:80px;height:4px;border-radius:4px;background:${a};margin:${layout === "center" ? "0 auto 24px" : "0 0 24px"}"></div>`;
-  const h1 = `<h1 style="font-size:2.4em;font-weight:800;letter-spacing:-0.02em;line-height:1.15;color:${t};margin:0 0 8px">${title}</h1>`;
-  const sub = `<p style="font-size:1em;font-weight:400;opacity:0.5;color:${t};margin:0">${subtitle}</p>`;
-  if (layout === "center") return `<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;text-align:center">${bar}${h1}${sub}</div>`;
-  if (layout === "left") return `<div style="display:flex;flex-direction:column;justify-content:center;height:100%;padding-left:5%">${bar}${h1}${sub}</div>`;
-  return `<div style="display:flex;height:100%"><div style="width:8px;background:${a};flex-shrink:0;border-radius:0 4px 4px 0"></div><div style="display:flex;flex-direction:column;justify-content:center;padding-left:8%">${bar}${h1}${sub}</div></div>`;
-}
-
-function slideHTML_Content(a: string, t: string) {
-  return `<div style="display:flex;flex-direction:column;height:100%"><div style="width:60px;height:3px;border-radius:3px;background:${a};margin-bottom:16px"></div><h2 style="font-size:1.6em;font-weight:700;color:${t};margin:0 0 20px;letter-spacing:-0.01em">Section Title</h2><ul style="font-size:0.95em;color:${t};opacity:0.7;line-height:2;list-style:none;padding:0;margin:0"><li style="padding-left:20px;position:relative"><span style="position:absolute;left:0;color:${a}">&#x2022;</span>Key point one — describe your idea</li><li style="padding-left:20px;position:relative"><span style="position:absolute;left:0;color:${a}">&#x2022;</span>Key point two — provide evidence</li><li style="padding-left:20px;position:relative"><span style="position:absolute;left:0;color:${a}">&#x2022;</span>Key point three — explain the impact</li></ul></div>`;
-}
-
-function slideHTML_TwoColumn(a: string, t: string) {
-  const col = (title: string, items: string[]) => `<div style="flex:1;min-width:0"><h3 style="font-size:1.2em;font-weight:700;color:${t};margin:0 0 12px">${title}</h3><ul style="font-size:0.85em;color:${t};opacity:0.7;line-height:1.9;list-style:none;padding:0;margin:0">${items.map(i => `<li style="padding-left:16px;position:relative"><span style="position:absolute;left:0;color:${a}">&#x2013;</span>${i}</li>`).join("")}</ul></div>`;
-  return `<div style="display:flex;flex-direction:column;height:100%"><div style="width:60px;height:3px;border-radius:3px;background:${a};margin-bottom:16px"></div><h2 style="font-size:1.5em;font-weight:700;color:${t};margin:0 0 24px">Comparison</h2><div style="display:flex;gap:32px">${col("Option A", ["First advantage", "Second advantage", "Third advantage"])}${col("Option B", ["First advantage", "Second advantage", "Third advantage"])}</div></div>`;
-}
-
-function slideHTML_SectionDivider(title: string, a: string, t: string) {
-  return `<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;text-align:center"><div style="width:48px;height:48px;border-radius:50%;background:${a};opacity:0.15;margin-bottom:20px"></div><div style="width:60px;height:3px;border-radius:3px;background:${a};margin:0 auto 20px"></div><h2 style="font-size:2em;font-weight:800;color:${t};margin:0;letter-spacing:-0.02em">${title}</h2></div>`;
-}
-
-function slideHTML_Quote(a: string, t: string) {
-  return `<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;text-align:center;padding:0 10%"><div style="font-size:3em;color:${a};opacity:0.3;line-height:1;margin-bottom:8px">&ldquo;</div><p style="font-size:1.4em;font-weight:500;color:${t};line-height:1.6;margin:0 0 16px;font-style:italic">The best way to predict the future is to create it.</p><p style="font-size:0.85em;color:${t};opacity:0.5;margin:0">&mdash; Peter Drucker</p></div>`;
-}
-
-function slideHTML_Closing(a: string, t: string) {
-  return `<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;text-align:center"><div style="width:80px;height:4px;border-radius:4px;background:${a};margin:0 auto 24px"></div><h1 style="font-size:2.6em;font-weight:800;color:${t};margin:0 0 12px;letter-spacing:-0.02em">Thank You</h1><p style="font-size:1em;color:${t};opacity:0.5;margin:0 0 24px">Questions &amp; Discussion</p><p style="font-size:0.85em;color:${a};margin:0">your.email@example.com</p></div>`;
-}
-
 const THEMES: Record<string, ThemeDef> = {
   // Light
   default:  { bg: "#ffffff", text: "#1a1a2e", accent: "#3b82f6", label: "Default", category: "light", layout: "center" },
@@ -128,16 +145,6 @@ function buildThemedSlides(t: ThemeDef, title: string, existingSlides: SlideData
     return { ...slide, background: bg, objects: makeDefaultContentObjects(a, tx), content: "" };
   });
 }
-
-// ── Transitions ──
-const TRANSITION_STYLES: Record<string, string> = {
-  none: "",
-  fade: "transition-opacity duration-500",
-  dissolve: "transition-all duration-700",
-  flip: "transition-transform duration-500 [transform-style:preserve-3d]",
-  cube: "transition-transform duration-600",
-};
-
 function makeSlide(content = "", bg = "#ffffff"): SlideData {
   return { id: `slide-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`, content, notes: "", background: bg, transition: "fade" };
 }
@@ -296,20 +303,6 @@ function SlideContentPreview({ slide, themeTextColor, scale = 1 }: { slide: Slid
   // Legacy HTML fallback
   return <div className="w-full h-full" style={{ color: themeTextColor }} dangerouslySetInnerHTML={{ __html: slide.content || "" }} />;
 }
-
-function ShapeSVGPreview({ shape }: { shape: string }) {
-  return (
-    <svg viewBox="0 0 32 32" className="w-full h-full">
-      {shape === "rect" && <rect x="2" y="6" width="28" height="20" rx="2" fill="#3b82f6" opacity="0.7" />}
-      {shape === "circle" && <ellipse cx="16" cy="16" rx="14" ry="12" fill="#3b82f6" opacity="0.7" />}
-      {shape === "triangle" && <polygon points="16,4 30,28 2,28" fill="#3b82f6" opacity="0.7" />}
-      {shape === "arrow-right" && <polygon points="4,10 20,10 20,4 28,16 20,28 20,22 4,22" fill="#3b82f6" opacity="0.7" />}
-      {shape === "star" && <polygon points="16,2 19,12 30,12 21,18 25,28 16,22 7,28 11,18 2,12 13,12" fill="#3b82f6" opacity="0.7" />}
-      {shape === "line-h" && <line x1="2" y1="16" x2="30" y2="16" stroke="#3b82f6" strokeWidth="2" />}
-    </svg>
-  );
-}
-
 // ── Slide Canvas with rulers and proper fit ──
 function SlideCanvasArea({ zoom, activeSlide, canEdit, editorRef, contentRef, onInput, slideRatio = { w: 16, h: 9 }, showRuler = true, showGuides = false, guides = [], snapToGrid = false, snapToGuides = false, onClick, isSuggesting = false, themeTextColor, themeAccent, onGuideMove, onGuideDelete, selectedObjectId, onSelectObject, onObjectsChange, drawingMode, drawingColor, drawingWidth, onDrawingComplete, onAddComment, onActivateLink, onSelectionChange }: {
   zoom: number;
@@ -612,7 +605,7 @@ function SlidePickerModal({ title: modalTitle, subtitle, slides: slideList, defa
 }
 
 // ── Copy Selected Modal (uses SlidePickerModal) ──
-function CopySelectedModal({ slides, title, theme, activeSlideIdx, onClose }: {
+function CopySelectedModal({ slides, title, theme, activeSlideIdx: _activeSlideIdx, onClose }: {
   slides: SlideData[]; title: string; theme: string; activeSlideIdx: number; onClose: () => void;
 }) {
   return (
@@ -861,7 +854,7 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
   const recorder = useScreenRecorder({ title }); // shared screen recorder
   const [showThemes, setShowThemes] = useState(false);
   const [showTransitions, setShowTransitions] = useState(false);
-  const [showShapeDropdown, setShowShapeDropdown] = useState(false);
+  const [_showShapeDropdown, _setShowShapeDropdown] = useState(false);
   const [showImageDropdown, setShowImageDropdown] = useState(false);
   const [editingMode, setEditingMode] = useState<EditingMode>("editing");
   const [showShareDialog, setShowShareDialog] = useState(false);
@@ -978,7 +971,7 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
   const [linkDialog, setLinkDialog] = useState<{ mode: "text" | "object"; objId?: string; url: string; targetId?: string } | null>(null);
   const savedRangeRef = useRef<Range | null>(null);
   const [showImageSearchDialog, setShowImageSearchDialog] = useState(false);
-  const [imageSearchQuery, setImageSearchQuery] = useState("");
+  const [_imageSearchQuery, _setImageSearchQuery] = useState("");
   const [showDrivePickerDialog, setShowDrivePickerDialog] = useState(false);
   const [showShapePickerDialog, setShowShapePickerDialog] = useState<string | null>(null); // category or null
   const [showCameraCapture, setShowCameraCapture] = useState(false);
@@ -1079,7 +1072,7 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
   /** Get position for a new object — stacks below existing real content (ignoring
    *  placeholders). May return a y past the content area; the caller's fit check
    *  then moves it to a fresh slide. */
-  const getInsertPosition = useCallback((objWidth: number, objHeight: number): { x: number; y: number } => {
+  const getInsertPosition = useCallback((objWidth: number, _objHeight: number): { x: number; y: number } => {
     const area = getContentArea();
     const content = currentObjects.filter(o => !isLayoutPlaceholder(o) && o.y + o.height > area.y);
     let y = area.y;
@@ -1090,19 +1083,6 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
     const x = area.x + (area.w - objWidth) / 2; // centered horizontally
     return { x: Math.max(2, x), y: Math.max(area.y, y) };
   }, [getContentArea, currentObjects, isLayoutPlaceholder]);
-
-  /** Does the given object group fit on the current slide — i.e. it neither
-   *  overflows the content area nor overlaps existing real content? */
-  const fitsOnCurrentSlide = useCallback((objs: SlideObject[]): boolean => {
-    const area = getContentArea();
-    const newBottom = Math.max(...objs.map(o => o.y + o.height));
-    if (newBottom > area.y + area.h + 1) return false; // would run off the slide
-    const content = currentObjects.filter(o => !isLayoutPlaceholder(o));
-    const overlaps = (a: SlideObject, b: SlideObject) =>
-      a.x < b.x + b.width && a.x + a.width > b.x && a.y < b.y + b.height && a.y + a.height > b.y;
-    return !content.some(c => objs.some(o => overlaps(o, c)));
-  }, [getContentArea, currentObjects, isLayoutPlaceholder]);
-
   /**
    * Try to PACK a new object group into the free space on the current slide. Returns the
    * group repositioned (and uniformly shrunk if needed) into an empty region that doesn't
@@ -1365,12 +1345,8 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
     if (!findQuery || !editorRef.current) return;
     const content = editorRef.current;
     const sel = window.getSelection();
-    // Start searching from current cursor position
-    const startNode = sel?.focusNode || content;
-    const startOffset = sel?.focusOffset || 0;
-
     // Use window.find for browser-native search
-    const found = (window as any).find(findQuery, false, false, true, false, false, false);
+    const found = windowFind(findQuery, false, false, true, false, false, false);
     if (!found) {
       // Wrap around: move to beginning and try again
       sel?.removeAllRanges();
@@ -1378,7 +1354,7 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
       range.setStart(content, 0);
       range.collapse(true);
       sel?.addRange(range);
-      const foundWrap = (window as any).find(findQuery, false, false, true, false, false, false);
+      const foundWrap = windowFind(findQuery, false, false, true, false, false, false);
       if (!foundWrap) {
         // Not found at all
         return;
@@ -1408,7 +1384,7 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
     range.collapse(true);
     sel?.addRange(range);
     // Find and replace all
-    while ((window as any).find(findQuery, false, false, true, false, false, false)) {
+    while (windowFind(findQuery, false, false, true, false, false, false)) {
       document.execCommand("insertText", false, replaceQuery);
       count++;
       if (count > 1000) break; // safety limit
@@ -1453,9 +1429,7 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
     sel.addRange(range);
   }, []);
 
-  const insertTable = useCallback((rows: number, cols: number) => {
-    const th = THEMES[theme] || THEMES.default;
-    const tableHeight = Math.min(60, 8 + rows * 8);
+  const insertTable = useCallback((rows: number, cols: number) => {    const tableHeight = Math.min(60, 8 + rows * 8);
     const tableObj = createTableObj(rows, cols, {
       x: 10, y: 20, width: 80, height: tableHeight,
       zIndex: 1,
@@ -1906,7 +1880,7 @@ export default function SlideEditor({ value, onChange }: SlideEditorProps) {
 
       {/* Print-only slides (hidden on screen, visible when printing) */}
       <div data-print-slides="" className="hidden print:block">
-        {slides.map((slide, i) => (
+        {slides.map((slide, _i) => (
           <div key={slide.id} data-print-slide="" style={{ background: slide.background || "#fff" }}>
             <div style={{ width: "100%", maxWidth: 900, aspectRatio: `${slideRatio.w}/${slideRatio.h}` }}><SlideContentPreview slide={slide} themeTextColor={THEMES[theme]?.text} /></div>
           </div>
@@ -4238,9 +4212,7 @@ function SlideshowPresenter({ slides, activeSlideIdx, setActiveSlideIdx, slideRa
         })()}
         {/* Current slide (front, animating in) */}
         {(() => {
-          const t = transitionType;
-          const isNext = direction === "next";
-          const inStyle: React.CSSProperties = { transition: "all 550ms cubic-bezier(0.4, 0, 0.2, 1)" };
+          const t = transitionType;          const inStyle: React.CSSProperties = { transition: "all 550ms cubic-bezier(0.4, 0, 0.2, 1)" };
           if (prevSlideIdx === null) { /* idle — no transform */ }
           else if (t === "none") { inStyle.transition = "none"; }
           return (
@@ -4458,7 +4430,7 @@ function ImageSearchDialog({ onInsert, onClose }: { onInsert: (src: string) => v
 function DrivePickerDialog({ onInsert, onClose }: { onInsert: (src: string) => void; onClose: () => void }) {
   const [currentFolder, setCurrentFolder] = useState("root");
   const [breadcrumb, setBreadcrumb] = useState<{ id: string; name: string }[]>([{ id: "root", name: "My Drive" }]);
-  const [refreshKey, setRefreshKey] = useState(0);
+  const [_refreshKey, setRefreshKey] = useState(0);
 
   const items = driveStorage.getChildren(currentFolder);
   const folders = items.filter(i => i.type === "folder");

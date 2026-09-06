@@ -10,7 +10,6 @@ import {
   Share,
   Alert,
   ActivityIndicator,
-  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -19,8 +18,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
 import { useTheme } from '../contexts/ThemeContext';
-
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
+import type { ThemeColors } from "@/contexts/ThemeContext";
 
 const FONTS = {
   regular: 'Inter_400Regular',
@@ -153,12 +151,6 @@ function getGradeBgColor(grade: string) {
   }
 }
 
-function getScoreColor(score: number) {
-  if (score >= 70) return '#10b981';
-  if (score >= 50) return '#f59e0b';
-  return '#ef4444';
-}
-
 function formatDate(dateString: string) {
   const date = new Date(dateString);
   return date.toLocaleDateString('en-NG', {
@@ -169,7 +161,7 @@ function formatDate(dateString: string) {
 }
 
 // Subject Card Component
-function SubjectCard({ subject, colors, isTablet }: { subject: SubjectResult; colors: any; isTablet: boolean }) {
+function SubjectCard({ subject, colors, isTablet: _isTablet }: { subject: SubjectResult; colors: ThemeColors; isTablet: boolean }) {
   const isAboveAverage = subject.score > subject.classAverage;
   const diff = subject.score - subject.classAverage;
 
@@ -428,8 +420,10 @@ export default function ReportDetailsScreen() {
         message: shareMessage,
         title: `Report Card - ${childName}`,
       });
-    } catch (error: any) {
-      if (error.message !== 'User did not share') {
+    } catch (error) {
+      // A caught value is unknown — cancelling the share sheet throws, and that is not an error to report.
+      const message = error instanceof Error ? error.message : String(error);
+      if (message !== 'User did not share') {
         Alert.alert('Error', 'Failed to share report. Please try again.');
       }
     } finally {

@@ -125,8 +125,6 @@ export default function MessageTeacherModal({
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const selectedTeacher = teachers.find((t) => t.id === selectedTeacherId);
-  const selectedCategory = MESSAGE_CATEGORIES.find((c) => c.value === category);
-
   const filteredTeachers = teachers.filter(
     (t) =>
       t.name.toLowerCase().includes(teacherSearch.toLowerCase()) ||

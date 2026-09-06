@@ -43,7 +43,6 @@ export default function TranscriptTemplatePrintable({
   };
 
   const primaryRgb = hexToRgb(design.primaryColor);
-  const secondaryRgb = design.secondaryColor ? hexToRgb(design.secondaryColor) : primaryRgb;
 
   return (
     <div

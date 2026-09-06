@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Download, Printer, X, FileText, School } from "lucide-react";
+import { Download, Printer, FileText, School } from "lucide-react";
 import { TranscriptRequest } from "@/types/transcript";
 import Modal from "@/components/shared/Modal";
 import TranscriptTemplate from "./TranscriptTemplate";

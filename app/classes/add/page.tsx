@@ -13,12 +13,14 @@ import FeaturesSettingsSection from "@/components/classes/form-sections/Features
 import { useSidebar } from "@/contexts/SidebarContext";
 import { useSchoolSettings } from "@/contexts/SchoolSettingsContext";
 import type { EducationLevel } from "@/utils/educationLevel";
+import type { ClassFormData } from "@/components/classes/form-sections/types";
+import type { FormFieldSetter } from "@/components/shared/form-section-types";
 
 export default function AddClassPage() {
   const router = useRouter();
   const { settings } = useSchoolSettings();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errors, setErrors] = useState<any>({});
+  const [errors, setErrors] = useState<Partial<Record<keyof ClassFormData, string>>>({});
   const { isCollapsed } = useSidebar();
   const [isLargeScreen, setIsLargeScreen] = useState(false);
   const [isSticky, setIsSticky] = useState(true);
@@ -68,7 +70,7 @@ export default function AddClassPage() {
   }, []);
 
   // Form state
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<ClassFormData>({
     // Basic Information
     educationLevel: "" as EducationLevel,
     className: "",
@@ -188,7 +190,9 @@ export default function AddClassPage() {
     return "";
   }, [formData]);
 
-  const handleChange = (field: string, value: any) => {
+  // Generic over the field, so the value has to be the right kind for the field being set — a mismatch is a
+  // compile error rather than a shape that quietly reaches the form's state.
+  const handleChange: FormFieldSetter<ClassFormData> = (field, value) => {
     setFormData((prev) => ({
       ...prev,
       [field]: value,
@@ -196,7 +200,7 @@ export default function AddClassPage() {
 
     // Clear error for this field
     if (errors[field]) {
-      setErrors((prev: any) => {
+      setErrors((prev) => {
         const newErrors = { ...prev };
         delete newErrors[field];
         return newErrors;
@@ -205,7 +209,7 @@ export default function AddClassPage() {
   };
 
   const validateFormData = (): boolean => {
-    const newErrors: any = {};
+    const newErrors: Partial<Record<keyof ClassFormData, string>> = {};
 
     // Basic validation
     if (!formData.educationLevel) newErrors.educationLevel = "Education level is required";

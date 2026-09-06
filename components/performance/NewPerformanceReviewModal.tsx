@@ -5,7 +5,6 @@ import { Star, X, Calendar, User, Clock, Plus, Trash2, FileText, BarChart3, User
 import FormInput from "@/components/shared/FormInput";
 import FormDropdown from "@/components/shared/FormDropdown";
 import FormTextarea from "@/components/shared/FormTextarea";
-import FormButton from "@/components/shared/FormButton";
 import { usePerformance } from "@/contexts/PerformanceContext";
 import { ReviewPeriod, OverallRating } from "@/types/performance";
 
@@ -136,7 +135,7 @@ export default function NewPerformanceReviewModal({
     reviewNotes: "",
   });
 
-  const [selectedStaff, setSelectedStaff] = useState<typeof mockStaffList[0] | null>(null);
+  const [_selectedStaff, setSelectedStaff] = useState<typeof mockStaffList[0] | null>(null);
   const [filters, setFilters] = useState({
     year: new Date().getFullYear().toString(),
     department: "",
@@ -533,7 +532,7 @@ export default function NewPerformanceReviewModal({
             {formData.reviewers.length === 0 ? (
               <div className="p-4 text-center border-2 border-dashed border-gray-300 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-lg">
                 <p className="text-sm text-gray-500 dark:text-gray-400">
-                  No reviewers added yet. Click "Add Reviewer" to add one.
+                  No reviewers added yet. Click &quot;Add Reviewer&quot; to add one.
                 </p>
               </div>
             ) : (

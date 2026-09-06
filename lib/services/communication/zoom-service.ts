@@ -11,7 +11,9 @@ import {
 } from "./types";
 
 // Zoom SDK types (these would come from '@zoom/videosdk' when installed)
-interface ZoomVideo {
+/** The Video SDK client's shape, for the branch below that detects it. Exported because it is the documented
+ *  contract this service will use once '@zoom/videosdk' is installed — not dead code, just not wired yet. */
+export interface ZoomVideo {
   init(signature: string, meetingNumber: string, userName: string): Promise<void>;
   join(sessionName: string, sessionPasscode: string, userName: string): Promise<void>;
   leave(): Promise<void>;
@@ -94,7 +96,7 @@ export class ZoomService implements ICommunicationService {
       // In production, install '@zoom/videosdk' or '@zoom/meetingsdk' package
 
       // Check if Zoom SDK is available globally
-      if (typeof window !== "undefined" && (window as unknown as { ZoomMtg?: { init: Function } }).ZoomMtg) {
+      if (typeof window !== "undefined" && (window as unknown as { ZoomMtg?: { init: (...args: unknown[]) => unknown } }).ZoomMtg) {
         // Web SDK (for browser-based meetings)
         const ZoomMtg = (window as unknown as { ZoomMtg: ZoomClient }).ZoomMtg;
         await ZoomMtg.init({
@@ -105,7 +107,7 @@ export class ZoomService implements ICommunicationService {
         this.client = ZoomMtg;
         this.setupEventListeners();
         this.isInit = true;
-      } else if (typeof window !== "undefined" && (window as unknown as { ZoomVideo?: { createClient: Function } }).ZoomVideo) {
+      } else if (typeof window !== "undefined" && (window as unknown as { ZoomVideo?: { createClient: (...args: unknown[]) => unknown } }).ZoomVideo) {
         // Video SDK (for custom video experiences)
         console.log("Zoom Video SDK detected");
         this.isInit = true;

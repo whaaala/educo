@@ -130,7 +130,7 @@ export function ListWidget({
 }: ListWidgetProps) {
   const displayItems = items.slice(0, maxItems);
 
-  const renderItem = (item: ListWidgetItem, index: number) => {
+  const renderItem = (item: ListWidgetItem, _index: number) => {
     const itemContent = (
       <div
         className={cn(

@@ -9,14 +9,12 @@ import { getAllParents, type AdminParent } from "@/lib/mockParents";
 import {
   Send,
   Paperclip,
-  X,
   XCircle,
   Search,
   User,
   Users,
   FileText,
   Image as ImageIcon,
-  CheckCircle2,
   MessageCircle,
   Circle,
   ArrowLeft,
@@ -34,7 +32,7 @@ export default function ComposeNewChatPage() {
 
   // UI state
   const [isSending, setIsSending] = useState(false);
-  const [showParentDropdown, setShowParentDropdown] = useState(true);
+  const [_showParentDropdown, setShowParentDropdown] = useState(true);
   const [parentSearch, setParentSearch] = useState("");
 
   // Get all parents
@@ -83,14 +81,6 @@ export default function ComposeNewChatPage() {
     if (file.type.includes("pdf")) return <FileText className="w-4 h-4 text-red-500" />;
     return <FileText className="w-4 h-4" />;
   };
-
-  // Format file size
-  const formatFileSize = (bytes: number) => {
-    if (bytes < 1024) return bytes + " B";
-    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
-    return (bytes / (1024 * 1024)).toFixed(1) + " MB";
-  };
-
   // Handle emoji selection
   const handleEmojiSelect = (emoji: string) => {
     const textarea = messageInputRef.current;

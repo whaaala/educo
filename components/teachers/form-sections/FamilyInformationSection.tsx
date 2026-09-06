@@ -11,25 +11,22 @@ import {
   Baby,
 } from "lucide-react";
 import FormInput from "@/components/shared/FormInput";
-import { ValidationErrors } from "@/lib/validation";
+import type { FormSectionProps } from "@/components/shared/form-section-types";
+import type { TeacherFormData } from "./types";
 
-interface Dependent {
+export interface Dependent {
   id: string;
   name: string;
   age: string;
   school: string;
 }
 
-interface FamilyInformationSectionProps {
-  formData: any;
-  onChange: (field: string, value: any) => void;
-  errors?: ValidationErrors;
-}
+type FamilyInformationSectionProps = FormSectionProps<TeacherFormData>;
 
 export default function FamilyInformationSection({
   formData,
   onChange,
-  errors = {},
+  errors: _errors = {},
 }: FamilyInformationSectionProps) {
   const [isExpanded, setIsExpanded] = useState(true);
 

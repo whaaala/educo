@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { StaffTransferRequest } from "@/types/staffTransfer";
-import { Eye, CheckCircle, XCircle, Play, FileText, AlertTriangle } from "lucide-react";
+import { Eye, CheckCircle, XCircle, Play, FileText } from "lucide-react";
 import StaffTransferStatusBadge from "./StaffTransferStatusBadge";
 import StaffTransferTypeBadge from "./StaffTransferTypeBadge";
 import ResponsiveListTable, { type ColumnConfig } from "@/components/shared/ResponsiveListTable";
@@ -22,7 +22,7 @@ interface StaffTransferTableProps {
 
 export default function StaffTransferTable({
   requests,
-  onViewDetails,
+  onViewDetails: _onViewDetails,
   onApprove,
   onReject,
   onProcess,

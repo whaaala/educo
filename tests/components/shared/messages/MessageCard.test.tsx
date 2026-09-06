@@ -7,8 +7,8 @@ import type { AdminMessage } from "@/components/shared/messages/types";
 // Mock next/image
 vi.mock("next/image", () => ({
   default: (props: Record<string, unknown>) => {
-    const { fill, unoptimized, ...rest } = props;
-    return <img {...rest} />;
+    const { fill, unoptimized, alt, ...rest } = props;
+    return <img alt={typeof alt === "string" ? alt : ""} {...rest} />;
   },
 }));
 

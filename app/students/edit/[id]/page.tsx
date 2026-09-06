@@ -19,6 +19,8 @@ import { validateForm, ValidationErrors } from "@/lib/validation";
 import { studentFormValidationRules } from "@/lib/studentFormValidation";
 import dynamic from "next/dynamic";
 import { getExtendedStudentDataById } from "@/lib/mockStudents";
+import { emptyStudentForm, type StudentFormData } from "@/components/students/form-sections/types";
+import type { FormFieldSetter } from "@/components/shared/form-section-types";
 
 const ValidationErrorsModal = dynamic(
   () => import("@/components/shared/ValidationErrorsModal"),
@@ -32,7 +34,7 @@ export default function EditStudentPage() {
   const { selectedYear } = useAcademicYear();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<ValidationErrors>({});
-  const [touchedFields, setTouchedFields] = useState<Set<string>>(new Set());
+  const [_touchedFields, setTouchedFields] = useState<Set<string>>(new Set());
   const [showValidationModal, setShowValidationModal] = useState(false);
   const [isLoadingData, setIsLoadingData] = useState(true);
   const { isCollapsed } = useSidebar();
@@ -87,153 +89,9 @@ export default function EditStudentPage() {
   }, []);
 
   // Form state
-  const [formData, setFormData] = useState({
-    // Personal Information
-    profilePhoto: null as File | string | null,
-    academicYear: selectedYear || "",
-    studentNumber: "",
-    admissionNumber: "",
-    admissionDate: new Date().toISOString().split("T")[0],
-    rollNumber: "",
-    status: "Active",
-
-    // NEW: Education Level & Institution Type (PRD Requirements)
-    educationLevel: "" as "Primary" | "Secondary" | "Tertiary" | "",
-    institutionType: "" as "Public" | "Private" | "International" | "",
-    schoolType: "",
-    branchId: "",
-
-    // NEW: National Exam Numbers (PRD Requirements)
-    waecNumber: "",
-    necoNumber: "",
-    jambNumber: "",
-    matricNumber: "",
-    nationalExamNumber: "",
-
-    firstName: "",
-    lastName: "",
-    middleName: "",
-    class: "",
-    section: "",
-    gender: "",
-    dateOfBirth: "",
-    bloodGroup: "",
-    house: "",
-    religion: "",
-    category: "",
-    primaryContact: "",
-    secondaryContact: "",
-    email: "",
-    ethnicGroup: "",
-    motherTongue: "",
-    languagesKnown: [] as string[],
-    caste: "",
-
-    // Primary Address Information
-    addressLine1: "",
-    addressLine2: "",
-    city: "",
-    state: "",
-    postalCode: "",
-    country: "Nigeria",
-    addressPhone: "",
-
-    // Secondary Address Information
-    secondaryAddressLine1: "",
-    secondaryAddressLine2: "",
-    secondaryCity: "",
-    secondaryState: "",
-    secondaryPostalCode: "",
-    secondaryCountry: "Nigeria",
-    secondaryAddressPhone: "",
-
-    // Father's Info
-    fatherPhoto: null as File | string | null,
-    fatherFirstName: "",
-    fatherLastName: "",
-    fatherMiddleName: "",
-    fatherEmail: "",
-    fatherPhone: "",
-    fatherOccupation: "",
-    fatherAddressLine1: "",
-    fatherAddressLine2: "",
-    fatherCity: "",
-    fatherState: "",
-    fatherPostalCode: "",
-    fatherCountry: "Nigeria",
-
-    // Mother's Info
-    motherPhoto: null as File | string | null,
-    motherFirstName: "",
-    motherLastName: "",
-    motherMiddleName: "",
-    motherEmail: "",
-    motherPhone: "",
-    motherOccupation: "",
-    motherAddressLine1: "",
-    motherAddressLine2: "",
-    motherCity: "",
-    motherState: "",
-    motherPostalCode: "",
-    motherCountry: "Nigeria",
-
-    // Guardian Info
-    guardianIs: "Father",
-    guardianPhoto: null as File | string | null,
-    guardianFirstName: "",
-    guardianLastName: "",
-    guardianMiddleName: "",
-    guardianGender: "",
-    guardianRelation: "",
-    guardianPhone: "",
-    guardianEmail: "",
-    guardianOccupation: "",
-    guardianAddressLine1: "",
-    guardianAddressLine2: "",
-    guardianCity: "",
-    guardianState: "",
-    guardianPostalCode: "",
-    guardianCountry: "Nigeria",
-
-    // Siblings
-    siblings: [] as any[],
-    isSiblingStudyingHere: false,
-
-    // Address
-    currentAddress: "",
-    permanentAddress: "",
-    sameAsCurrent: false,
-
-    // Transport
-    route: "",
-    vehicleNumber: "",
-    pickupPoint: "",
-
-    // Hostel
-    hostelName: "",
-    roomNumber: "",
-
-    // Documents
-    birthCertificate: null as File | null,
-    transferCertificate: null as File | null,
-    immunizationCard: null as File | null,
-    studentIdProof: null as File | null,
-
-    // Medical History
-    medicalCondition: "Good",
-    allergies: [] as string[],
-    medications: [] as string[],
-
-    // Previous School
-    previousSchoolName: "",
-    previousSchoolAddress: "",
-
-    // Other Details
-    bankName: "",
-    branch: "",
-    ifscNumber: "",
-    otherInformation: "",
-  });
+  // The SAME shape the add form uses — one factory, so the two pages cannot drift apart. They already had:
+  // this page declared 44 fields fewer than the sections write to.
+  const [formData, setFormData] = useState<StudentFormData>(emptyStudentForm(selectedYear || ""));
 
   // Load student data when component mounts or studentId changes
   useEffect(() => {
@@ -311,7 +169,7 @@ export default function EditStudentPage() {
     }
   }, [selectedYear]);
 
-  const handleChange = (field: string, value: any) => {
+  const handleChange: FormFieldSetter<StudentFormData> = (field, value) => {
     setFormData((prev) => ({
       ...prev,
       [field]: value,
@@ -329,18 +187,6 @@ export default function EditStudentPage() {
     // Mark field as touched
     setTouchedFields((prev) => new Set(prev).add(field));
   };
-
-  const validateFormData = (): ValidationErrors => {
-    const validationErrors = validateForm(formData, studentFormValidationRules);
-    setErrors(validationErrors);
-
-    // Mark all fields as touched
-    const allFields = Object.keys(studentFormValidationRules);
-    setTouchedFields(new Set(allFields));
-
-    return validationErrors;
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 

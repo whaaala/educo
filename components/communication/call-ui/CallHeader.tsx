@@ -4,8 +4,6 @@ import React from "react";
 import {
   X,
   Share2,
-  Search,
-  Bell,
   MoreVertical,
   Settings,
   Copy,
@@ -13,8 +11,6 @@ import {
   PhoneOff,
   Video,
   Phone,
-  Users,
-  LogIn,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -40,17 +36,17 @@ export function CallHeader({
   title,
   callType,
   duration,
-  participantCount,
-  invitedCount = 0,
+  participantCount: _participantCount,
+  invitedCount: _invitedCount = 0,
   isRecording = false,
   primaryColor = "#2563eb",
-  secondaryColor = "#1e40af",
+  secondaryColor: _secondaryColor = "#1e40af",
   onClose,
   onSettings,
   onCopyRoomId,
   onAddParticipant,
   onShare,
-  roomId,
+  roomId: _roomId,
   className,
 }: CallHeaderProps) {
   const [showMenu, setShowMenu] = React.useState(false);

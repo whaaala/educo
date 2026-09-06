@@ -13,14 +13,13 @@ import {
 import FileUpload from "@/components/shared/FileUpload";
 import FormInput from "@/components/shared/FormInput";
 import FormDropdown from "@/components/shared/FormDropdown";
-import { ValidationErrors } from "@/lib/validation";
+import type { FormSectionProps } from "@/components/shared/form-section-types";
+import type { ParentFormData } from "./types";
 
-interface PersonalInformationSectionProps {
-  formData: any;
-  onChange: (field: string, value: any) => void;
-  errors?: ValidationErrors;
+/** The shared section contract, plus the flag that switches this section between parent and guardian. */
+type PersonalInformationSectionProps = FormSectionProps<ParentFormData> & {
   isGuardian?: boolean;
-}
+};
 
 export default function PersonalInformationSection({
   formData,

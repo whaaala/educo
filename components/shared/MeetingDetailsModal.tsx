@@ -23,7 +23,6 @@ import {
   Copy,
   Edit,
   Save,
-  X,
   CalendarClock,
   Ban,
   Check,
@@ -276,11 +275,6 @@ function getStatusInfo(status: MeetingStatus) {
   }
 }
 
-function formatDate(dateStr: string) {
-  const date = new Date(dateStr);
-  return date.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short", year: "numeric" });
-}
-
 function formatShortDate(dateStr: string) {
   const date = new Date(dateStr);
   return date.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
@@ -292,8 +286,8 @@ export default function MeetingDetailsModal({
   meeting,
   viewContext,
   currentUserName = "User",
-  currentUserId,
-  currentUserAvatar,
+  currentUserId: _currentUserId,
+  currentUserAvatar: _currentUserAvatar,
   initialAction = "view",
   onUpdate,
   onCancel,

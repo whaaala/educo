@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState, useEffect, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { DashboardPage } from "@/components/pages";
@@ -12,7 +13,6 @@ import {
   KeyRound,
   Clock,
   Trash2,
-  Shield,
   Edit,
   GraduationCap,
   MapPin,
@@ -40,6 +40,9 @@ import PayslipsTable, { Payslip } from "@/components/staff/PayslipsTable";
 import StaffPerformanceReviews from "@/components/staff/StaffPerformanceReviews";
 import ApplyLeaveModal from "@/components/students/ApplyLeaveModal";
 import { useLeaves } from "@/contexts/LeaveContext";
+/** A tab's icon: usually a lucide icon, sometimes a small local component (the currency glyph), so the
+ *  type is what both of them ARE — a component taking a className. */
+type TabIcon = React.ComponentType<{ className?: string }>;
 
 type TabType = "details" | "timetable" | "attendance" | "payroll" | "performance";
 
@@ -51,7 +54,7 @@ export default function ViewStaffPage() {
   const [isLoadingData, setIsLoadingData] = useState(true);
   const [activeTab, setActiveTab] = useState<TabType>("details");
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [isLoginDetailsModalOpen, setIsLoginDetailsModalOpen] = useState(false);
+  const [_isLoginDetailsModalOpen, setIsLoginDetailsModalOpen] = useState(false);
 
   useEffect(() => {
     if (staffId) {
@@ -119,13 +122,13 @@ export default function ViewStaffPage() {
                 Staff Details
               </h1>
               <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70 flex-wrap">
-                <a href="/" className="hover:text-gray-700 dark:hover:text-gray-300 midnight:hover:text-cyan-200 purple:hover:text-pink-200 cursor-pointer transition-colors">
+                <Link href="/" className="hover:text-gray-700 dark:hover:text-gray-300 midnight:hover:text-cyan-200 purple:hover:text-pink-200 cursor-pointer transition-colors">
                   Dashboard
-                </a>
+                </Link>
                 <span>/</span>
-                <a href="/staff?view=grid" className="hover:text-gray-700 dark:hover:text-gray-300 midnight:hover:text-cyan-200 purple:hover:text-pink-200 cursor-pointer transition-colors">
+                <Link href="/staff?view=grid" className="hover:text-gray-700 dark:hover:text-gray-300 midnight:hover:text-cyan-200 purple:hover:text-pink-200 cursor-pointer transition-colors">
                   Staff
-                </a>
+                </Link>
                 <span>/</span>
                 <span className="text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 font-medium">
                   Staff Details
@@ -259,7 +262,7 @@ function StaffTabs({
   activeTab,
   setActiveTab,
 }: {
-  tabs: { id: TabType; label: string; icon: any }[];
+  tabs: { id: TabType; label: string; icon: TabIcon }[];
   activeTab: TabType;
   setActiveTab: (tab: TabType) => void;
 }) {
@@ -340,7 +343,7 @@ function StaffTabs({
 // Staff Details Tab Component
 function StaffDetailsTab({
   staffData,
-  staffId,
+  staffId: _staffId,
 }: {
   staffData: Teacher;
   staffId: string;
@@ -471,40 +474,6 @@ interface StaffLeaveApplication {
   status: "Approved" | "Pending" | "Rejected";
   reason?: string;
 }
-
-// Mock Leave Applications Data for Staff
-const MOCK_STAFF_LEAVE_APPLICATIONS: StaffLeaveApplication[] = [
-  {
-    id: "1",
-    leaveType: "Annual Leave",
-    startDate: "15 Jan 2024",
-    endDate: "19 Jan 2024",
-    numberOfDays: 5,
-    appliedOn: "05 Jan 2024",
-    status: "Approved",
-    reason: "Family vacation",
-  },
-  {
-    id: "2",
-    leaveType: "Medical Leave",
-    startDate: "22 Feb 2024",
-    endDate: "23 Feb 2024",
-    numberOfDays: 2,
-    appliedOn: "22 Feb 2024",
-    status: "Approved",
-    reason: "Medical checkup",
-  },
-  {
-    id: "3",
-    leaveType: "Casual Leave",
-    startDate: "10 Mar 2024",
-    endDate: "10 Mar 2024",
-    numberOfDays: 1,
-    appliedOn: "08 Mar 2024",
-    status: "Pending",
-    reason: "Personal work",
-  },
-];
 
 function AttendanceTab({ staffData }: { staffData: Teacher }) {
   const [activeSubTab, setActiveSubTab] = useState<"leaves" | "attendance">("leaves");

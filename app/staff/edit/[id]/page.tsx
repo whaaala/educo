@@ -13,6 +13,8 @@ import PayrollSection from "@/components/teachers/form-sections/PayrollSection";
 import RolePermissionsSection from "@/components/teachers/form-sections/RolePermissionsSection";
 import DocumentsSection from "@/components/teachers/form-sections/DocumentsSection";
 import { useSidebar } from "@/contexts/SidebarContext";
+import { emptyTeacherForm, type TeacherFormData } from "@/components/teachers/form-sections/types";
+import type { FormFieldSetter } from "@/components/shared/form-section-types";
 
 export default function EditStaffPage() {
   const params = useParams();
@@ -71,117 +73,9 @@ export default function EditStaffPage() {
   }, []);
 
   // Form state
-  const [formData, setFormData] = useState({
-    // School Level Information
-    educationLevel: "" as "Primary" | "Secondary" | "Tertiary" | "",
-    institutionType: "" as "Public" | "Private" | "International" | "",
-
-    // Personal Information
-    profilePhoto: null as File | string | null,
-    staffId: "",
-    employeeNumber: "",
-    firstName: "",
-    middleName: "",
-    lastName: "",
-    gender: "",
-    dateOfBirth: "",
-    bloodGroup: "",
-    religion: "",
-    maritalStatus: "",
-    nationality: "Nigeria",
-    stateOfOrigin: "",
-    lga: "",
-    phone: "",
-    secondaryPhone: "",
-    email: "",
-    residentialAddress: "",
-    permanentAddress: "",
-    emergencyContactName: "",
-    emergencyContactPhone: "",
-    emergencyContactRelationship: "",
-
-    // Employment Information
-    jobCategory: "",
-    role: "",
-    position: "",
-    department: "",
-    branch: "",
-    reportingManager: "",
-    employmentType: "",
-    employmentStatus: "Active",
-    joinDate: "",
-    confirmationDate: "",
-    previousEmployer: "",
-    trcnNumber: "",
-    licenseExpiryDate: "",
-    baseSalary: "",
-
-    // Qualifications & Professional Data
-    highestQualification: "",
-    discipline: "",
-    institution: "",
-    graduationYear: "",
-    professionalCertifications: [] as string[],
-    yearsOfExperience: "",
-    resumeCV: null as File | null,
-    degreeCertificate: null as File | null,
-
-    // Teaching-Specific Data (for Academic Staff)
-    subjects: [] as string[],
-    classes: [] as string[],
-    isHomeroomTeacher: false,
-    hasLMSAccess: false,
-    canEnterCA: false,
-    canInvigilateExams: false,
-
-    // Family Information
-    spouseName: "",
-    spousePhone: "",
-    dependents: [] as Array<{ name: string; age: string; school: string }>,
-
-    // Medical Information
-    medicalConditions: [] as string[],
-    allergies: [] as string[],
-    disabilityInfo: "",
-    doctorsNote: null as File | null,
-
-    // Payroll & Financial Details
-    salaryStructure: "",
-    housingAllowance: "",
-    transportAllowance: "",
-    otherAllowances: "",
-    pensionDeduction: "",
-    taxDeduction: "",
-    pensionNumber: "",
-    taxId: "",
-    bankName: "",
-    accountName: "",
-    accountNumber: "",
-    sortCode: "",
-
-    // Role & Permissions
-    systemRole: "",
-    moduleAccess: [] as string[],
-    dataAccessLevel: "",
-    mobileAppAccess: false,
-    allowApprovals: false,
-
-    // Documents
-    appointmentLetter: null as File | null,
-    acceptanceLetter: null as File | null,
-    offerLetter: null as File | null,
-    nationalId: null as File | null,
-    passportPhoto: null as File | null,
-    otherCertificates: null as File | null,
-    trcnCertificate: null as File | null,
-    teachingLicense: null as File | null,
-    policeClearance: null as File | null,
-    medicalCertificate: null as File | null,
-    cvDocument: null as File | null,
-    referenceLetters: null as File | null,
-    bankStatement: null as File | null,
-    otherDocuments: null as File | null,
-  });
+  // The SAME shape every staff/teacher form section expects. Four pages used to declare this literal
+  // separately and they had drifted badly — two listed 109 fields, two listed barely thirty.
+  const [formData, setFormData] = useState<TeacherFormData>(emptyTeacherForm());
 
   // Load staff data when component mounts or staffId changes
   useEffect(() => {
@@ -289,7 +183,7 @@ export default function EditStaffPage() {
     );
   }
 
-  const handleChange = (field: string, value: any) => {
+  const handleChange: FormFieldSetter<TeacherFormData> = (field, value) => {
     setFormData((prev) => ({
       ...prev,
       [field]: value,

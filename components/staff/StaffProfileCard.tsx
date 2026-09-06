@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { Briefcase, User } from "lucide-react";
+import { Briefcase } from "lucide-react";
 import { Teacher } from "@/lib/mockTeachers";
 
 interface StaffProfileCardProps {

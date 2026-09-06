@@ -24,7 +24,7 @@ describe("MessageCard — Visual / CSS", () => {
 
   const defaultProps = {
     message: mockMessage,
-    formatTime: (t: string) => "10:00 AM",
+    formatTime: (_t: string) => "10:00 AM",
     isSelected: false,
     onSelect: vi.fn(),
     onView: vi.fn(),

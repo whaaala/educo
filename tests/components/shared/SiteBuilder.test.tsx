@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, vi } from "vitest";
 import { render, screen, within, fireEvent } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import SiteBuilder from "@/components/shared/SiteBuilder/SiteBuilder";
-import { createSite, createPageFromTemplate, pageNavItem, makeNavItem, defaultHeaderLayout, DEFAULT_THEME } from "@/lib/site-storage";
+import { createSite, createPageFromTemplate, pageNavItem, makeNavItem, defaultHeaderLayout, DEFAULT_THEME, siteStorage } from "@/lib/site-storage";
 import { SiteNav } from "@/components/website/sections/SiteRenderer";
 
 beforeEach(() => localStorage.clear());
@@ -240,5 +240,54 @@ describe("SiteBuilder — preview + device", () => {
   it("Publish is disabled (publishing deferred)", () => {
     renderBuilder();
     expect(screen.getByLabelText("Publish (coming soon)")).toBeDisabled();
+  });
+});
+
+describe("SiteBuilder — saving", () => {
+  /**
+   * Edits are debounced by 700 ms so a name being typed does not write to storage on every keystroke.
+   * The timer was never cleared on unmount, which cost two things: it fired into a component that no longer
+   * existed (an unhandled error in every run of this file), and an edit made in the last 700 ms before
+   * leaving the builder was written by accident rather than by design.
+   */
+  it("writes an edit that was still waiting on the debounce when the builder closes", () => {
+    vi.useFakeTimers();
+    try {
+      const site = createSite("Test School");
+      const onChange = vi.fn();
+      const { unmount } = render(<SiteBuilder value={site} onChange={onChange} />);
+
+      fireEvent.change(screen.getByLabelText("Site name"), { target: { value: "Riverside Primary" } });
+      expect(onChange, "still inside the debounce window").not.toHaveBeenCalled();
+
+      unmount();
+
+      // Flushed, not cancelled: the debounce exists to avoid writing on every keystroke, not to make the
+      // last one optional.
+      expect(onChange).toHaveBeenCalledTimes(1);
+      expect(onChange.mock.calls[0][0].name).toBe("Riverside Primary");
+      // …and it reached durable storage, which is the half that actually survives leaving the page.
+      expect(siteStorage.get(site.id)?.name).toBe("Riverside Primary");
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("leaves no timer running after the builder closes", () => {
+    vi.useFakeTimers();
+    try {
+      const site = createSite("Test School");
+      const onChange = vi.fn();
+      const { unmount } = render(<SiteBuilder value={site} onChange={onChange} />);
+      fireEvent.change(screen.getByLabelText("Site name"), { target: { value: "Riverside" } });
+      unmount();
+      onChange.mockClear();
+
+      // If the debounce were still armed it would fire here, into a component that has gone.
+      vi.advanceTimersByTime(5000);
+      expect(onChange).not.toHaveBeenCalled();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

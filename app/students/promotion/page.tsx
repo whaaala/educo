@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowRight, TrendingUp, CheckCircle2, AlertCircle, RotateCcw } from "lucide-react";
+import { ArrowRight, CheckCircle2, AlertCircle, RotateCcw } from "lucide-react";
 import { DashboardPage } from "@/components/pages";
 import Button from "@/components/shared/Button";
 import ResponsiveListTable, { type ColumnConfig } from "@/components/shared/ResponsiveListTable";

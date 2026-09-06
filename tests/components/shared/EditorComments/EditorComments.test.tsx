@@ -5,9 +5,9 @@
  * Scenarios match 1:1 with tests/features/components/shared/EditorComments/EditorComments.feature
  */
 
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import React from "react";
-import { render, screen, fireEvent, within, act } from "@testing-library/react";
+import { render, fireEvent, act } from "@testing-library/react";
 import fs from "fs";
 import path from "path";
 

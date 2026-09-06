@@ -5,19 +5,26 @@ import { ChevronRight } from "lucide-react";
 import ErrorMessage from "./ErrorMessage";
 import Tooltip from "./Tooltip";
 
-interface FormDropdownOption {
-  value: string;
+interface FormDropdownOption<T extends string = string> {
+  value: T;
   label: string;
 }
 
-export interface FormDropdownProps {
+/**
+ * Generic over the VALUE, defaulting to string so every existing call site is unchanged.
+ *
+ * A dropdown whose field is a union — an education level, an academic track — was handing back a bare
+ * `string`, so the page had to widen the field to `any` to accept it. Carrying the type through means the
+ * options and the field have to agree, and a stray option value stops compiling.
+ */
+export interface FormDropdownProps<T extends string = string> {
   label: string;
   icon?: ReactNode;
   iconBgColor?: string;
   iconColor?: string;
-  value: string;
-  onChange: (value: string) => void;
-  options: FormDropdownOption[];
+  value: T;
+  onChange: (value: T) => void;
+  options: FormDropdownOption<T>[];
   placeholder?: string;
   disabled?: boolean;
   required?: boolean;
@@ -25,7 +32,7 @@ export interface FormDropdownProps {
   helpText?: string;
 }
 
-export default function FormDropdown({
+export default function FormDropdown<T extends string = string>({
   label,
   icon,
   iconBgColor = "bg-blue-100 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30",
@@ -37,7 +44,7 @@ export default function FormDropdown({
   disabled = false,
   required = false,
   error,
-}: FormDropdownProps) {
+}: FormDropdownProps<T>) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);

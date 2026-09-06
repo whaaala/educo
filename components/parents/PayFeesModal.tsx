@@ -44,7 +44,7 @@ interface PayFeesModalProps {
   selectedFeeId?: string | null;
 }
 
-interface PaymentDetails {
+export interface PaymentDetails {
   feeIds: string[];
   totalAmount: number;
   allocations: Record<string, number>;

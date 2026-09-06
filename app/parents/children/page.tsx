@@ -25,7 +25,6 @@ import {
   Globe,
   Monitor,
   Palette,
-  Hash,
   Bus,
   MapPin,
   Bell,

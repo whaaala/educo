@@ -89,7 +89,7 @@ export default function CallModal({
 
   // Eagerly loaded VideoCallRoom component (bypasses next/dynamic loading fallback)
   const eagerVideoCallRoomRef = useRef<React.ComponentType<VideoCallRoomProps> | null>(null);
-  const [eagerVideoLoaded, setEagerVideoLoaded] = useState(false);
+  const [_eagerVideoLoaded, setEagerVideoLoaded] = useState(false);
 
   // Preload VideoCallRoom when modal opens so it's ready instantly for voice→video upgrade
   useEffect(() => {

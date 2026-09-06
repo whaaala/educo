@@ -112,6 +112,25 @@ Run through this checklist BEFORE telling the user it's done:
 - Never say "done" without personally verifying every interaction
 - When a feature has permissions/toggles, test with each state ON and OFF
 
+### 9. Clean Code — lint & typecheck (MANDATORY)
+- **`npm run typecheck` and `npm run lint` must BOTH be at ZERO ERRORS before any change is reported done.**
+  Not "no new errors" — zero. `npm run check` runs typecheck + lint + tests together.
+- **Never silence a rule to make a number go down.** A rule is relaxed only when it is *wrong about this
+  codebase*, the relaxation lives in `eslint.config.mjs` with a comment saying why, and it is scoped as
+  narrowly as the problem. Every current relaxation there carries its reason — read them before adding one.
+- **Every inline `eslint-disable` needs a `-- reason` on the same line.** No bare disables.
+- **No `any`. Anywhere.** `@typescript-eslint/no-explicit-any` is an **error** across the whole repo and the
+  count is **zero** — 227 were typed properly rather than suppressed. If a value genuinely is not knowable,
+  use `unknown`: it forces the check that `any` skips. A cast is acceptable only when it names a real type
+  (`as ImportedCell`, `as Partial<SlideObject>`), never `as any`.
+- **Warnings are triaged, not ignored.** One category is knowingly accepted and documented in the config:
+  `react-hooks/exhaustive-deps` (the refs + `[]` pattern rule 2 above prescribes). Anything else needs fixing
+  or a written reason.
+- **Fix debt in batches BY RULE, not by file** — one rule at a time has one justification and is reviewable.
+- **If a tool cannot run, that is the bug to fix first.** `npm run lint` crashed on a config error from the
+  initial commit until 2026-09-06, so 4,755 problems — including real dead code and three conditional-hook
+  bugs — were invisible. A tool that cannot start looks exactly like a tool that passes.
+
 ---
 
 ## Project Structure

@@ -5,7 +5,8 @@ import DataManagementPageBase, {
   type DataManagementPageBaseProps,
 } from "@/components/pages/DataManagementPageBase";
 
-export interface AdminDataManagementPageProps<T> extends DataManagementPageBaseProps<T> {}
+// An alias, not an extension — see components/pages/DataManagementPage.tsx.
+export type AdminDataManagementPageProps<T> = DataManagementPageBaseProps<T>;
 
 export default function AdminDataManagementPage<T>(props: AdminDataManagementPageProps<T>) {
   return (

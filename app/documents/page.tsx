@@ -4,7 +4,7 @@ import { useState, useMemo, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import MainLayout from "@/components/layout/MainLayout";
 import { docStorage, type StoredDocument } from "@/lib/doc-storage";
-import { DOC_TEMPLATES, TEMPLATE_CATEGORIES, CATEGORY_COLORS } from "@/lib/doc-templates";
+import { DOC_TEMPLATES, CATEGORY_COLORS } from "@/lib/doc-templates";
 import {
   Plus, Search, FileText, LayoutGrid, List, Clock, ChevronDown,
   MoreVertical, Star, Trash2, Copy, ExternalLink, FolderOpen,

@@ -8,10 +8,9 @@
 
 import React, { useState, useRef, useCallback, useEffect, useLayoutEffect } from "react";
 import { createPortal } from "react-dom";
-import type { SlideObject, TextBoxObject, ImageObject, ShapeObject, DrawingObject, TableObject, TableCell, MediaObject } from "@/lib/slide-storage";
+import type { SlideObject, ImageObject, ShapeObject, TableObject, TableCell, MediaObject } from "@/lib/slide-storage";
 import { SHAPE_DEFS } from "./shapes";
-import { ColorGrid, TabbedColorPalette, ColorPickerPopover, isNativeColorPickerOpen, SOLID_COLORS, GRADIENT_COLORS, GLOSSY_COLORS, BORDER_COLORS, TEXT_COLORS, colorToCSS } from "@/components/shared/ColorPalettePicker";
-import CustomDropdown from "@/components/shared/CustomDropdown";
+import { ColorGrid, TabbedColorPalette, isNativeColorPickerOpen, GLOSSY_COLORS, BORDER_COLORS, TEXT_COLORS } from "@/components/shared/ColorPalettePicker";
 import TextFormatToolbar from "@/components/shared/TextFormatToolbar";
 import SlideChart, { SlideChartEditor } from "./SlideChart";
 import { Link2 as LinkIcon, ImagePlus } from "lucide-react";
@@ -20,6 +19,9 @@ import { setSlideClipboard, getSlideClipboard, hasSlideClipboard, packIntoFreeSp
 import { insertRow, insertCol, deleteRow, deleteCol, distributeRows, distributeCols } from "./table-ops";
 import Tooltip from "@/components/shared/Tooltip";
 import TableStylePanel from "@/components/shared/TableStylePanel";
+/** An element the canvas marks once, so a one-time DOM setup does not run again on every render. Naming the
+ *  markers keeps the rest of the expression checked — a cast to any would not. */
+type InitMarked = HTMLElement & { __tbInit?: boolean; __shapeInit?: boolean };
 
 // ══════════════════════════════════════════════════
 // Types
@@ -122,12 +124,6 @@ const ShapeSVG = React.memo(function ShapeSVG({ shape, fill, stroke, strokeWidth
 
 const HANDLES = ["nw", "n", "ne", "e", "se", "s", "sw", "w"] as const;
 type HandleDir = typeof HANDLES[number];
-
-const HANDLE_CURSORS: Record<HandleDir, string> = {
-  nw: "nw-resize", n: "n-resize", ne: "ne-resize", e: "e-resize",
-  se: "se-resize", s: "s-resize", sw: "sw-resize", w: "w-resize",
-};
-
 function getHandlePosition(dir: HandleDir): React.CSSProperties {
   const m = -5;
   const s = 10;
@@ -148,7 +144,7 @@ function getHandlePosition(dir: HandleDir): React.CSSProperties {
 // SubmenuItem — positions submenu left/right based on available space
 // ══════════════════════════════════════════════════
 
-function SubmenuItem({ item, menuBtnClass, menuPanelClass, arrowIcon, submenus, openSubmenu, onOpen, onScheduleClose, menuLeft, onAction }: {
+function SubmenuItem({ item, menuBtnClass, menuPanelClass, arrowIcon, submenus, openSubmenu, onOpen, onScheduleClose, menuLeft: _menuLeft, onAction }: {
   item: { label: string; icon?: React.ReactNode; submenu?: string };
   menuBtnClass: string; menuPanelClass: string; arrowIcon: React.ReactNode;
   submenus: Record<string, { label: string; icon?: React.ReactNode; action: () => void }[]>;
@@ -218,7 +214,7 @@ function SubmenuItem({ item, menuBtnClass, menuPanelClass, arrowIcon, submenus, 
 // ══════════════════════════════════════════════════
 
 export default function SlideCanvas({
-  objects, onChange, selectedId, onSelect, onSelectionChange, background, themeTextColor, themeAccent,
+  objects, onChange, selectedId, onSelect, onSelectionChange, background, themeTextColor: _themeTextColor, themeAccent: _themeAccent,
   canEdit, showGuides = false, guides = [], snapToGrid = false, snapToGuides = false,
   onGuideMove, onGuideDelete, drawingMode = false, drawingColor = "#1a1a2e", drawingWidth = 2, onDrawingComplete,
   onAddComment,
@@ -305,7 +301,7 @@ export default function SlideCanvas({
     const file = e.target.files?.[0]; const id = replaceTargetRef.current;
     if (file && id) {
       const reader = new FileReader();
-      reader.onload = () => updateObj(id, { src: reader.result as string } as Partial<SlideObject>);
+      reader.onload = () => updateObj(id, { src: reader.result as string });
       reader.readAsDataURL(file);
     }
     e.target.value = "";
@@ -467,7 +463,7 @@ export default function SlideCanvas({
   // ── Group / Ungroup (supports nested groups) ──
   // Each object can have groupIds: string[] — a stack of group memberships.
   // The last entry is the most recent group. Ungrouping pops the latest group.
-  const getGroupIds = (o: SlideObject): string[] => (o as any).groupIds || ((o as any).groupId ? [(o as any).groupId] : []);
+  const getGroupIds = (o: SlideObject): string[] => o.groupIds ?? (o.groupId ? [o.groupId] : []);
   const getTopGroupId = (o: SlideObject): string | null => { const ids = getGroupIds(o); return ids.length > 0 ? ids[ids.length - 1] : null; };
 
   const groupSelected = useCallback(() => {
@@ -478,7 +474,7 @@ export default function SlideCanvas({
     const grouped = objects.map(o => {
       if (!ids.has(o.id)) return o;
       const existing = getGroupIds(o);
-      return { ...o, groupIds: [...existing, newGroupId] } as unknown as SlideObject;
+      return { ...o, groupIds: [...existing, newGroupId] };
     });
     onChange(grouped);
     setMultiSelectedIds(ids);
@@ -500,7 +496,7 @@ export default function SlideCanvas({
       const gids = getGroupIds(o);
       if (gids.length > 0 && gids[gids.length - 1] === latestGroupId) {
         const newGids = gids.slice(0, -1);
-        const updated = { ...o, groupIds: newGids } as any;
+        const updated = { ...o, groupIds: newGids };
         // Clean up legacy groupId field
         delete updated.groupId;
         delete updated.groupOffsetX;
@@ -966,8 +962,8 @@ export default function SlideCanvas({
                   }
                 }}
                 ref={(el) => {
-                  if (el && !(el as any).__tbInit) {
-                    (el as any).__tbInit = true;
+                  if (el && !(el as InitMarked).__tbInit) {
+                    (el as InitMarked).__tbInit = true;
                     el.innerHTML = obj.content || "";
                     setTimeout(() => {
                       el.focus();
@@ -1128,8 +1124,8 @@ export default function SlideCanvas({
                   }
                 }}
                 ref={(el) => {
-                  if (el && !(el as any).__shapeInit) {
-                    (el as any).__shapeInit = true;
+                  if (el && !(el as InitMarked).__shapeInit) {
+                    (el as InitMarked).__shapeInit = true;
                     el.innerHTML = obj.text || "";
                     setTimeout(() => {
                       el.focus();
@@ -1356,7 +1352,7 @@ export default function SlideCanvas({
               onItalic={() => document.execCommand("italic")}
               onAlignChange={(v) => updateObj(obj.id, { align: v })}
               onVerticalAlignChange={(v) => updateObj(obj.id, { verticalAlign: v })}
-              onWrapToggle={() => updateObj(obj.id, { noWrap: !obj.noWrap } as any)}
+              onWrapToggle={() => updateObj(obj.id, { noWrap: !obj.noWrap } as Partial<SlideObject>)}
               onTextColorChange={(c) => updateObj(obj.id, { color: c })}
               onFillColorChange={(c) => updateObj(obj.id, { backgroundColor: c })}
               onClose={() => setEditingTextId(null)}
@@ -1812,7 +1808,7 @@ function TableResizeHandles({ containerRef, obj, startColResize, startRowResize,
             const newHeights = startHeights.map((h, i) => i === lastIdx ? h : h * ratio);
             const usedPct = newHeights.reduce((a, b, i) => i === lastIdx ? a : a + b, 0);
             newHeights[lastIdx] = Math.max(3, 100 - usedPct);
-            onUpdateTableRef.current?.({ height: newObjH, rowHeights: newHeights } as any);
+            onUpdateTableRef.current?.({ height: newObjH, rowHeights: newHeights });
           };
           const handleUp = () => { document.removeEventListener("mousemove", handleMove); document.removeEventListener("mouseup", handleUp); };
           document.addEventListener("mousemove", handleMove);
@@ -1848,7 +1844,7 @@ function TableResizeHandles({ containerRef, obj, startColResize, startRowResize,
             const newHeights = startHeights.map((h, i) => i === 0 ? h : h * ratio);
             const usedPct = newHeights.reduce((a, b, i) => i === 0 ? a : a + b, 0);
             newHeights[0] = Math.max(3, 100 - usedPct);
-            onUpdateTableRef.current?.({ height: newObjH, y: newObjY, rowHeights: newHeights } as any);
+            onUpdateTableRef.current?.({ height: newObjH, y: newObjY, rowHeights: newHeights });
           };
           const handleUp = () => { document.removeEventListener("mousemove", handleMove); document.removeEventListener("mouseup", handleUp); };
           document.addEventListener("mousemove", handleMove);
@@ -1884,7 +1880,7 @@ function TableResizeHandles({ containerRef, obj, startColResize, startRowResize,
             const newWidths = startWidths.map((w, i) => i === 0 ? w : w * ratio);
             const usedPct = newWidths.reduce((a, b, i) => i === 0 ? a : a + b, 0);
             newWidths[0] = Math.max(3, 100 - usedPct);
-            onUpdateTableRef.current?.({ width: newObjW, x: newObjX, colWidths: newWidths } as any);
+            onUpdateTableRef.current?.({ width: newObjW, x: newObjX, colWidths: newWidths });
           };
           const handleUp = () => { document.removeEventListener("mousemove", handleMove); document.removeEventListener("mouseup", handleUp); };
           document.addEventListener("mousemove", handleMove);
@@ -1919,7 +1915,7 @@ function TableResizeHandles({ containerRef, obj, startColResize, startRowResize,
             const newWidths = startWidths.map((w, i) => i === lastIdx ? w : w * ratio);
             const usedPct = newWidths.reduce((a, b, i) => i === lastIdx ? a : a + b, 0);
             newWidths[lastIdx] = Math.max(3, 100 - usedPct);
-            onUpdateTableRef.current?.({ width: newObjW, colWidths: newWidths } as any);
+            onUpdateTableRef.current?.({ width: newObjW, colWidths: newWidths });
           };
           const handleUp = () => { document.removeEventListener("mousemove", handleMove); document.removeEventListener("mouseup", handleUp); };
           document.addEventListener("mousemove", handleMove);
@@ -1930,92 +1926,7 @@ function TableResizeHandles({ containerRef, obj, startColResize, startRowResize,
       </div>
     </>
   );
-}
-
-// ══════════════════════════════════════════════════
-// FontSizeCombo — Editable input with dropdown for font sizes
-// ══════════════════════════════════════════════════
-
-const FONT_SIZES = [8, 9, 10, 11, 12, 14, 16, 18, 20, 24, 28, 32, 36, 48, 60, 72];
-
-function FontSizeCombo({ value, onChange }: { value: number; onChange: (v: number) => void }) {
-  const [isOpen, setIsOpen] = useState(false);
-  const [inputVal, setInputVal] = useState(String(value));
-  const ref = useRef<HTMLDivElement>(null);
-  const idRef = useRef(`fontsize-${Math.random().toString(36).slice(2)}`);
-
-  // Sync input when value changes externally
-  useEffect(() => { setInputVal(String(value)); }, [value]);
-
-  // Close when another dropdown/popover opens
-  useEffect(() => {
-    const handleOtherOpen = (e: Event) => {
-      if ((e as CustomEvent).detail !== idRef.current) setIsOpen(false);
-    };
-    window.addEventListener("dropdown-open", handleOtherOpen);
-    return () => window.removeEventListener("dropdown-open", handleOtherOpen);
-  }, []);
-
-  // Close on outside click
-  useEffect(() => {
-    if (!isOpen) return;
-    const handler = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setIsOpen(false);
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, [isOpen]);
-
-  const applyValue = (v: string) => {
-    const n = parseInt(v, 10);
-    if (!isNaN(n) && n >= 1 && n <= 200) onChange(n);
-  };
-
-  return (
-    <div className="relative" ref={ref}>
-      <div className="flex items-center h-[30px] rounded-lg border border-gray-200 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-gray-700 dark:to-gray-700/50 overflow-hidden">
-        <input
-          type="text"
-          inputMode="numeric"
-          value={inputVal}
-          onChange={(e) => { setInputVal(e.target.value); applyValue(e.target.value); }}
-          onKeyDown={(e) => {
-            e.stopPropagation();
-            if (e.key === "Enter") { applyValue(inputVal); (e.target as HTMLInputElement).blur(); setIsOpen(false); }
-            if (e.key === "Escape") setIsOpen(false);
-          }}
-          onFocus={() => setIsOpen(false)}
-          className="w-[36px] h-full px-1 bg-transparent text-[12px] font-semibold text-gray-700 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-center outline-none"
-        />
-        <button
-          type="button"
-          onClick={() => {
-            const opening = !isOpen;
-            if (opening) window.dispatchEvent(new CustomEvent("dropdown-open", { detail: idRef.current }));
-            setIsOpen(opening);
-          }}
-          className="h-full px-1 flex items-center justify-center cursor-pointer hover:bg-blue-100 dark:hover:bg-[#2a2d35] midnight:hover:bg-cyan-500/15 purple:hover:bg-pink-500/15 transition-colors"
-        >
-          <svg viewBox="0 0 10 6" className={`w-2.5 h-2.5 text-muted transition-transform ${isOpen ? "rotate-180" : ""}`} fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><polyline points="1,1 5,5 9,1" /></svg>
-        </button>
-      </div>
-      {isOpen && (
-        <div className="absolute top-full mt-1 left-0 min-w-full w-fit bg-surface rounded-lg shadow-xl border border-line z-[10000] py-1 max-h-[200px] overflow-y-auto">
-          {FONT_SIZES.map(s => (
-            <button key={s} type="button"
-              onClick={() => { onChange(s); setInputVal(String(s)); setIsOpen(false); }}
-              className={`w-full text-left px-3 py-1.5 text-[12px] font-semibold whitespace-nowrap cursor-pointer transition-colors ${
-                value === s ? "bg-blue-100 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" : "text-gray-700 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"
-              }`}
-            >{s}</button>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ══════════════════════════════════════════════════
+}// ══════════════════════════════════════════════════
 // SlideTableRenderer — Renders an editable table inside a canvas object
 // ══════════════════════════════════════════════════
 
@@ -2056,7 +1967,7 @@ function SlideTableRenderer({ obj, isEditing, isSelected, canEdit, onCellChange,
     let top = objRect.top - toolbarH - 8;
     if (top < 8) top = objRect.bottom + 8;
     // Clamp left so toolbar stays in viewport
-    let left = Math.max(8, Math.min(objRect.left, window.innerWidth - 500));
+    const left = Math.max(8, Math.min(objRect.left, window.innerWidth - 500));
     setToolbarPos({ top, left });
   }, [editingCell, canvasRef, objId]);
 

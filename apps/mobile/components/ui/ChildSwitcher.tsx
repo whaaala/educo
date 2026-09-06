@@ -35,7 +35,9 @@ export interface ChildData {
 }
 
 interface ChildSwitcherProps {
-  children: ChildData[];
+  /** The pupils to switch between. Named childList, not `children`: React reserves `children` for JSX
+   *  content, so a domain list passed under that name is silently overridden by anything between the tags. */
+  childList: ChildData[];
   selectedChildId: string;
   onSelectChild: (childId: string) => void;
   variant?: 'compact' | 'full';
@@ -48,24 +50,24 @@ function useIsTablet() {
 }
 
 export function ChildSwitcher({
-  children,
+  childList,
   selectedChildId,
   onSelectChild,
   variant = 'compact',
   showClass = true,
 }: ChildSwitcherProps) {
-  const { colors, isDark } = useTheme();
+  const { colors } = useTheme();
   const isTablet = useIsTablet();
   const [isOpen, setIsOpen] = useState(false);
 
-  const selectedChild = children.find((c) => c.id === selectedChildId) || children[0];
+  const selectedChild = childList.find((c) => c.id === selectedChildId) || childList[0];
 
-  if (!selectedChild || children.length === 0) {
+  if (!selectedChild || childList.length === 0) {
     return null;
   }
 
   // If only one child, just show info without dropdown
-  if (children.length === 1) {
+  if (childList.length === 1) {
     return (
       <View style={[styles.singleChildContainer, { backgroundColor: colors.surface, borderColor: colors.border }]}>
         <View style={[styles.childAvatar, { backgroundColor: colors.primaryLight }]}>
@@ -164,7 +166,7 @@ export function ChildSwitcher({
 
               {/* Child Options */}
               <View style={styles.mobileDropdownOptions}>
-                {children.map((child, index) => {
+                {childList.map((child, _index) => {
                   const isSelected = child.id === selectedChildId;
                   return (
                     <Pressable
@@ -304,7 +306,7 @@ export function ChildSwitcher({
             </View>
 
             {/* Options */}
-            {children.map((child, index) => {
+            {childList.map((child, index) => {
               const isSelected = child.id === selectedChildId;
               return (
                 <Pressable

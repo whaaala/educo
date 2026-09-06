@@ -3,12 +3,10 @@
 import React from "react";
 import Image from "next/image";
 import {
-  X,
   UserPlus,
   MicOff,
   VideoOff,
   Monitor,
-  Crown,
   MoreHorizontal,
 } from "lucide-react";
 import { cn } from "@/lib/utils";

@@ -20,7 +20,6 @@ import { useCommunication } from "@/contexts/CommunicationContext";
 import {
   getCommunicationManager,
   ChatMessage,
-  ChatRoom as ChatRoomType,
 } from "@/lib/services/communication";
 
 interface ChatRoomProps {

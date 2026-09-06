@@ -25,8 +25,6 @@ import { useSchoolSettings } from "@/contexts/SchoolSettingsContext";
 import { useGrading } from "@/contexts/GradingContext";
 import { useCurrentTenant } from "@/hooks/useTenant";
 import { useReactToPrint } from "react-to-print";
-import jsPDF from "jspdf";
-import html2canvas from "html2canvas";
 import ActionModal from "@/components/shared/ActionModal";
 
 type EducationLevel = "Primary" | "Secondary" | "Tertiary";
@@ -117,8 +115,6 @@ const getTermsByLevel = (level: EducationLevel): Term[] => {
 
 // Generate academic years (current year - 5 to current year + 1)
 const currentYear = new Date().getFullYear();
-const ACADEMIC_YEARS = Array.from({ length: 7 }, (_, i) => (currentYear - 5 + i).toString());
-
 // Generate mock subjects based on education level
 const generateMockSubjects = (educationLevel: EducationLevel, classLevel: string): SubjectGrade[] => {
   if (educationLevel === "Primary") {
@@ -433,10 +429,10 @@ export default function CumulativeReportPage() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <h3 className="text-base sm:text-lg font-semibold text-neutral-900 dark:text-neutral-100 mb-2">
-                    What's Included in This Report
+                    What&apos;s Included in This Report
                   </h3>
                   <p className="text-xs sm:text-sm text-neutral-600 dark:text-neutral-400 mb-3">
-                    This comprehensive report shows a student's complete academic journey including:
+                    This comprehensive report shows a student&apos;s complete academic journey including:
                   </p>
                   <ul className="text-xs sm:text-sm text-neutral-600 dark:text-neutral-400 space-y-1 ml-4">
                     <li>• All completed terms/semesters with detailed subject performance</li>
@@ -878,11 +874,11 @@ export default function CumulativeReportPage() {
                       {/* Remarks */}
                       <div className="space-y-2">
                         <div className="p-3 bg-neutral-50 rounded">
-                          <p className="text-xs font-semibold text-neutral-700 mb-1">Teacher's Remarks</p>
+                          <p className="text-xs font-semibold text-neutral-700 mb-1">Teacher&apos;s Remarks</p>
                           <p className="text-sm text-neutral-900">{report.teacherRemarks}</p>
                         </div>
                         <div className="p-3 bg-neutral-50 rounded">
-                          <p className="text-xs font-semibold text-neutral-700 mb-1">Principal's Remarks</p>
+                          <p className="text-xs font-semibold text-neutral-700 mb-1">Principal&apos;s Remarks</p>
                           <p className="text-sm text-neutral-900">{report.principalRemarks}</p>
                         </div>
                       </div>

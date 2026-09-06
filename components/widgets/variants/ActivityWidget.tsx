@@ -126,7 +126,7 @@ export function ActivityWidget({
 }: ActivityWidgetProps) {
   const displayItems = items.slice(0, maxItems);
 
-  const renderItem = (item: ActivityItem, index: number) => {
+  const renderItem = (item: ActivityItem, _index: number) => {
     const colorStyle = iconColorStyles[item.iconColor || "blue"];
     const IconComponent = item.icon;
 

@@ -1,4 +1,4 @@
-import type { WhiteboardElement, Point, WhiteboardTool, StrokeDashPattern, TextAlign } from "./whiteboard-types";
+import type { WhiteboardElement, Point, StrokeDashPattern, TextAlign } from "./whiteboard-types";
 import { BBOX_SHAPE_TOOLS, LINE_TOOLS } from "./whiteboard-types";
 
 // ---------------------------------------------------------------------------
@@ -1247,18 +1247,6 @@ function drawRichTextFormatted(
 
   ctx.textAlign = oldAlign;
 }
-
-function wrapText(
-  ctx: CanvasRenderingContext2D,
-  text: string,
-  x: number,
-  y: number,
-  maxWidth: number,
-  lineHeight: number
-) {
-  wrapTextFormatted(ctx, text, x, y, maxWidth, lineHeight, "left", false, 16);
-}
-
 function wrapTextFormatted(
   ctx: CanvasRenderingContext2D,
   text: string,

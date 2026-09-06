@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { PerformanceReview } from "@/types/performance";
 import DataManagementPage from "@/components/pages/DataManagementPage";
 import PerformanceReviewsTable from "@/components/performance/PerformanceReviewsTable";
@@ -149,7 +149,7 @@ const mockReviews: PerformanceReview[] = [
 ];
 
 export default function PerformanceReviewsPage() {
-  const { reviews: contextReviews, updateReview, deleteReview } = usePerformance();
+  const { reviews: contextReviews, deleteReview } = usePerformance();
   const [reviews, setReviews] = useState<PerformanceReview[]>(mockReviews);
   const [selectedReview, setSelectedReview] = useState<PerformanceReview | null>(null);
   const [isNewReviewModalOpen, setIsNewReviewModalOpen] = useState(false);

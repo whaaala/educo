@@ -3,12 +3,18 @@
 import { useState, useRef, useEffect, cloneElement, ReactElement } from "react";
 import { createPortal } from "react-dom";
 
+/** What TruncateTooltip clones onto its child. */
+type TooltipTriggerProps = {
+  onMouseEnter?: (e: React.MouseEvent) => void;
+  onMouseLeave?: (e: React.MouseEvent) => void;
+  ref?: React.Ref<HTMLElement>;
+};
+
 interface TruncateTooltipProps {
   content: string;
-  children: ReactElement<{
-    onMouseEnter?: (e: React.MouseEvent) => void;
-    onMouseLeave?: (e: React.MouseEvent) => void;
-  }>;
+  /** The element to attach the tooltip to. It is cloned with a ref and hover handlers, so the type has to
+   *  admit both — the ref in particular, which React carries alongside the props. */
+  children: ReactElement<TooltipTriggerProps>;
   delay?: number;
 }
 
@@ -104,7 +110,8 @@ export default function TruncateTooltip({ content, children, delay = 300 }: Trun
     ref: (node: HTMLElement) => {
       triggerRef.current = node;
       // Preserve original ref if it exists
-      const { ref } = children as any;
+      // React puts a forwarded ref alongside the props on the element; it is not in the public type.
+      const { ref } = children as { ref?: React.Ref<HTMLElement> };
       if (typeof ref === 'function') {
         ref(node);
       } else if (ref && typeof ref === 'object') {
@@ -125,7 +132,7 @@ export default function TruncateTooltip({ content, children, delay = 300 }: Trun
         children.props.onMouseLeave(e);
       }
     },
-  } as any);
+  } as TooltipTriggerProps);
 
   return (
     <>

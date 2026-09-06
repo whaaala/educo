@@ -620,7 +620,7 @@ export default function ParentsTable({
             email: activeParent.email,
             photo: activeParent.profilePhoto,
           }}
-          children={activeParent.children.map((child) => ({
+          childList={activeParent.children.map((child) => ({
             id: child.id,
             name: `${child.firstName} ${child.lastName}`,
             classLevel: child.classLevel,

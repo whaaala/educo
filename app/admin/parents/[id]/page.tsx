@@ -6,7 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import jsPDF from "jspdf";
 import DashboardPage from "@/components/shared/DashboardPage";
-import ResponsiveListTable, { type ColumnConfig } from "@/components/shared/ResponsiveListTable";
+import ResponsiveListTable, {  } from "@/components/shared/ResponsiveListTable";
 import ActionButton from "@/components/shared/ActionButton";
 import SecondaryButton from "@/components/shared/SecondaryButton";
 import ActionModal from "@/components/shared/ActionModal";
@@ -22,7 +22,6 @@ import {
   getLeaveRequestsByParentId,
   getMeetingsByParentId,
   getRemindersByParentId,
-  getReminderStatsByParentId,
   type AdminParent,
   type AdminFeeRecord,
   type PaymentRecord,
@@ -80,7 +79,6 @@ import {
   TrendingUp,
   TrendingDown,
   DollarSign,
-  History,
   ExternalLink,
   Wallet,
   BadgeCheck,
@@ -99,8 +97,11 @@ import CustomDropdown from "@/components/shared/CustomDropdown";
 import EmojiPickerPopover from "@/components/shared/EmojiPickerPopover";
 import MeetingDetailsModal, { MeetingDetails, CancelMeetingData, RescheduleMeetingData, AdditionalParticipant } from "@/components/shared/MeetingDetailsModal";
 import ChildLeaveRequestDetailsModal from "@/components/shared/ChildLeaveRequestDetailsModal";
-import { useMeetings, Meeting as ContextMeeting } from "@/contexts/MeetingsContext";
+import { useMeetings } from "@/contexts/MeetingsContext";
 import { useCall } from "@/hooks/useCall";
+/** A tab's icon: usually a lucide icon, sometimes a small local component (the currency glyph), so the
+ *  type is what both of them ARE — a component taking a className. */
+type TabIcon = React.ComponentType<{ className?: string }>;
 
 // Tab type definition for parent detail page
 type ParentTabType = "details" | "meetings" | "leave" | "fees" | "support" | "events";
@@ -126,7 +127,7 @@ export default function AdminParentDetailPage() {
   const { meetings: contextMeetings, addMeeting, getMeetingsByParent } = useMeetings();
 
   // Use the call hook for WebRTC calls
-  const { startVideoCall, startVoiceCall, startChat, startCall } = useCall();
+  const { startVideoCall, startVoiceCall, startChat } = useCall();
 
   const searchParams = useSearchParams();
 
@@ -826,7 +827,7 @@ export default function AdminParentDetailPage() {
           email: parent.email,
           photo: parent.profilePhoto,
         }}
-        children={meetingChildrenData}
+        childList={meetingChildrenData}
       />
 
       {/* Edit Parent Modal */}
@@ -1132,7 +1133,7 @@ function ParentTabs({
   activeTab,
   setActiveTab,
 }: {
-  tabs: { id: ParentTabType; label: string; icon: any }[];
+  tabs: { id: ParentTabType; label: string; icon: TabIcon }[];
   activeTab: ParentTabType;
   setActiveTab: (tab: ParentTabType) => void;
 }) {
@@ -1568,8 +1569,6 @@ function FeesSection({
     const menuHeight = record.status === "paid" ? 44 : 176; // Approximate height based on options
     const menuWidth = 192;
     const viewportHeight = window.innerHeight;
-    const viewportWidth = window.innerWidth;
-
     // Calculate position - show above if not enough space below
     let top = rect.bottom + 4;
     if (top + menuHeight > viewportHeight - 10) {
@@ -2903,7 +2902,7 @@ function PaymentHistorySection({
           <>
             {/* Scrollable Payment List - Fixed height for 4 items */}
             <div className="max-h-[400px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-transparent p-3 space-y-2">
-              {displayPayments.map((payment, index) => {
+              {displayPayments.map((payment, _index) => {
                 const relatedFee = getRelatedFeeRecord(payment);
                 return (
                   <div
@@ -7875,7 +7874,7 @@ function LoginDetailsModal({
   parent: AdminParent;
   parentName: string;
 }) {
-  const [showPassword, setShowPassword] = useState(false);
+  const [_showPassword, _setShowPassword] = useState(false);
   const [isResetting, setIsResetting] = useState(false);
   const [isResetSuccess, setIsResetSuccess] = useState(false);
   const [copiedField, setCopiedField] = useState<string | null>(null);

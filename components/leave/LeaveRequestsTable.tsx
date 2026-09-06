@@ -22,7 +22,7 @@ export default function LeaveRequestsTable({
   onReject,
   filterKey = "",
 }: LeaveRequestsTableProps) {
-  const [animationTrigger, setAnimationTrigger] = useState(0);
+  const [_animationTrigger, setAnimationTrigger] = useState(0);
   const [prevFilterKey, setPrevFilterKey] = useState(filterKey);
 
   // Trigger animation when filterKey changes

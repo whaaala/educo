@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { Plus, AlertTriangle, MessageSquare } from "lucide-react";
+import { AlertTriangle, MessageSquare } from "lucide-react";
 import { DisciplinaryAction, Complaint } from "@/types/discipline";
 import DataManagementPage from "@/components/pages/DataManagementPage";
 import { useDiscipline } from "@/contexts/DisciplineContext";
@@ -279,23 +279,18 @@ const mockComplaints: Complaint[] = [
 ];
 
 export default function DisciplinePage() {
-  const {
-    disciplinaryActions: contextActions,
-    complaints: contextComplaints,
-    updateDisciplinaryAction,
-    updateComplaint,
-  } = useDiscipline();
+  const { disciplinaryActions: contextActions, complaints: contextComplaints } = useDiscipline();
 
   const [activeTab, setActiveTab] = useState<"discipline" | "complaints">("discipline");
   const [disciplinaryActions, setDisciplinaryActions] = useState<DisciplinaryAction[]>(mockDisciplinaryActions);
   const [complaints, setComplaints] = useState<Complaint[]>(mockComplaints);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [filterStatus, setFilterStatus] = useState<string>("all");
-  const [filterSeverity, setFilterSeverity] = useState<string>("all");
-  const [filterPriority, setFilterPriority] = useState<string>("all");
+  const [searchQuery, _setSearchQuery] = useState("");
+  const [filterStatus, _setFilterStatus] = useState<string>("all");
+  const [filterSeverity, _setFilterSeverity] = useState<string>("all");
+  const [filterPriority, _setFilterPriority] = useState<string>("all");
   const [isNewIncidentModalOpen, setIsNewIncidentModalOpen] = useState(false);
   const [selectedAction, setSelectedAction] = useState<DisciplinaryAction | null>(null);
-  const [selectedComplaint, setSelectedComplaint] = useState<Complaint | null>(null);
+  const [_selectedComplaint, setSelectedComplaint] = useState<Complaint | null>(null);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -400,11 +395,6 @@ export default function DisciplinePage() {
       setActionToDelete(null);
     }
   };
-
-  // Use a union type since the page manages both disciplines and complaints
-  // We pass disciplines as the data to DataManagementPage, but use customListComponent to render both
-  const currentData = activeTab === "discipline" ? disciplinaryActions : [];
-
   // Filter function for the ActionBar filters (handles discipline tab filters via DataManagementPage)
   const filterDisciplineData = (data: DisciplinaryAction[], filters: FilterValues) => {
     return data.filter((action) => {

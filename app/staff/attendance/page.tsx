@@ -163,11 +163,6 @@ export default function StaffAttendancePage() {
     }
     setSelectedStaff(newSelected);
   };
-
-  const handleExport = () => {
-    console.log("Exporting attendance data...");
-  };
-
   return (
     <DataManagementPage<StaffAttendanceRecord>
       title="Staff Attendance"

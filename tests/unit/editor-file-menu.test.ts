@@ -22,7 +22,6 @@ import {
   fileManagementItems,
   infoItems,
   printItems,
-  type FileMenuAction,
 } from "@/components/shared/EditorFileMenu";
 
 const mockAction = vi.fn();

@@ -1,9 +1,9 @@
 "use client";
 
+import type { LucideIcon } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import {
-  ArrowLeft,
   Edit,
   Trash2,
   Building2,
@@ -15,9 +15,7 @@ import {
   CreditCard,
   Settings,
   Users,
-  Calendar,
   DollarSign,
-  FileText,
   Video,
   MessageSquare,
   CheckCircle2,
@@ -29,13 +27,19 @@ import ActionModal from "@/components/shared/ActionModal";
 import { getTenantById, deleteTenant } from "@/lib/mockTenants";
 import { Tenant } from "@/types/school";
 
+/** The page's tabs, named once so the tab list and the state cannot disagree. */
+type TenantTab = "overview" | "config" | "communication" | "branding" | "subscription";
+
+/** Typed from the tenant config, so a type that is not a real communication channel stops compiling. */
+const COMMUNICATION_TYPES = ["video", "voice", "chat"] as const;
+
 export default function TenantDetailsPage() {
   const router = useRouter();
   const params = useParams();
   const tenantId = params.id as string;
 
   const [tenant, setTenant] = useState<Tenant | null>(null);
-  const [activeTab, setActiveTab] = useState<"overview" | "config" | "communication" | "branding" | "subscription">("overview");
+  const [activeTab, setActiveTab] = useState<TenantTab>("overview");
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -171,16 +175,16 @@ export default function TenantDetailsPage() {
         <div className="bg-white dark:bg-neutral-800 rounded-lg shadow-sm">
           <div className="border-b border-neutral-200 dark:border-neutral-700">
             <div className="flex">
-              {[
+              {([
                 { id: "overview", label: "Overview", icon: Building2 },
                 { id: "config", label: "Configuration", icon: Settings },
                 { id: "communication", label: "Communication", icon: Video },
                 { id: "branding", label: "Branding", icon: Palette },
                 { id: "subscription", label: "Subscription", icon: CreditCard },
-              ].map((tab) => (
+              ] satisfies { id: TenantTab; label: string; icon: LucideIcon }[]).map((tab) => (
                 <button
                   key={tab.id}
-                  onClick={() => setActiveTab(tab.id as any)}
+                  onClick={() => setActiveTab(tab.id)}
                   className={`flex items-center gap-2 px-6 py-4 text-sm font-medium border-b-2 transition-colors ${
                     activeTab === tab.id
                       ? "border-blue-600 text-blue-600 dark:border-blue-400 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400"
@@ -497,9 +501,9 @@ export default function TenantDetailsPage() {
                     Enabled Communication Types
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    {["video", "voice", "chat"].map((type) => {
+                    {COMMUNICATION_TYPES.map((type) => {
                       const isEnabled =
-                        tenant.config.communication?.enabledTypes?.includes(type as any) ??
+                        tenant.config.communication?.enabledTypes?.includes(type) ??
                         (type === "video" || type === "voice");
                       return (
                         <div

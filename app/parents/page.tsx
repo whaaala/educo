@@ -35,12 +35,10 @@ import {
   Award,
   Percent,
   BarChart3,
-  ChevronDown,
   ChevronRight,
   RotateCcw,
   TrendingUp,
   Users,
-  MessageSquare,
   Search,
   Bell,
   HelpCircle,
@@ -477,7 +475,7 @@ export default function ParentDashboardPage() {
     {
       id: "my-children",
       title: "My Children",
-      content: <MyChildrenCard children={MOCK_CHILDREN} selectedChild={selectedChild} onSelectChild={setSelectedChild} />,
+      content: <MyChildrenCard childList={MOCK_CHILDREN} selectedChild={selectedChild} onSelectChild={setSelectedChild} />,
     },
     {
       id: "quick-actions",

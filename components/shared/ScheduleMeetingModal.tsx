@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo, useRef } from "react";
-import { Calendar, Clock, MapPin, Users, FileText, User, GraduationCap, Briefcase, Video, Mic, Building2, Link2 } from "lucide-react";
+import { Calendar, Clock, MapPin, Users, FileText, GraduationCap, Briefcase, Video, Mic, Building2, Link2 } from "lucide-react";
 import Modal from "./Modal";
 import FormDropdown from "./FormDropdown";
 import FormInput from "./FormInput";
@@ -39,7 +39,9 @@ export interface ScheduleMeetingModalProps {
   context: MeetingContext;
   // Pre-filled data based on context
   primaryParticipant?: MeetingParticipant;
-  children?: MeetingChildReference[];
+  /** The pupils this meeting can be about. Named childList, not `children`: React reserves that name for
+   *  JSX content, so anything placed between the tags would silently replace this list. */
+  childList?: MeetingChildReference[];
   // Available options for dropdowns
   availableTeachers?: MeetingParticipant[];
   availableStaff?: MeetingParticipant[];
@@ -148,9 +150,9 @@ export default function ScheduleMeetingModal({
   onSchedule,
   context,
   primaryParticipant,
-  children = [],
+  childList = [],
   availableTeachers = DEFAULT_TEACHERS,
-  availableStaff = [],
+  availableStaff: _availableStaff = [],
   availableLocations = DEFAULT_IN_PERSON_LOCATIONS,
 }: ScheduleMeetingModalProps) {
   // Form state
@@ -190,12 +192,12 @@ export default function ScheduleMeetingModal({
       setTime("");
       setDuration("30");
       setLocation("");
-      setSelectedChildId(children.length === 1 ? children[0].id : "");
+      setSelectedChildId(childList.length === 1 ? childList[0].id : "");
       setSelectedTeacherId("");
       setNotes("");
       setErrors({});
     }
-  }, [isOpen, children]);
+  }, [isOpen, childList]);
 
   // Reset location when meeting format changes
   useEffect(() => {
@@ -228,11 +230,11 @@ export default function ScheduleMeetingModal({
 
   // Prepare child options for dropdown
   const childOptions = useMemo(() => {
-    return children.map((child) => ({
+    return childList.map((child) => ({
       value: child.id,
       label: `${child.name} (${child.classLevel})`,
     }));
-  }, [children]);
+  }, [childList]);
 
   // Prepare teacher options for dropdown
   const teacherOptions = useMemo(() => {
@@ -252,8 +254,8 @@ export default function ScheduleMeetingModal({
 
   // Get selected child details
   const selectedChild = useMemo(() => {
-    return children.find((c) => c.id === selectedChildId);
-  }, [children, selectedChildId]);
+    return childList.find((c) => c.id === selectedChildId);
+  }, [childList, selectedChildId]);
 
   // Get selected teacher details
   const selectedTeacher = useMemo(() => {
@@ -323,7 +325,7 @@ export default function ScheduleMeetingModal({
       }
     }
 
-    if (context === "parent" && children.length > 0 && !selectedChildId) {
+    if (context === "parent" && childList.length > 0 && !selectedChildId) {
       newErrors.child = "Please select a child for this meeting";
     }
 
@@ -503,7 +505,7 @@ export default function ScheduleMeetingModal({
         </div>
 
         {/* Child Selection (for parent context with multiple children) */}
-        {context === "parent" && children.length > 0 && (
+        {context === "parent" && childList.length > 0 && (
           <div ref={(el) => { formFieldRefs.current.child = el; }}>
             <FormDropdown
               label="Regarding Child"

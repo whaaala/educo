@@ -13,9 +13,7 @@ import {
   Paperclip,
   Search,
   User,
-  Circle,
   CheckCheck,
-  Check,
   Plus,
   ArrowLeft,
   Phone,
@@ -24,7 +22,6 @@ import {
   XCircle,
   FileText,
   Image as ImageIcon,
-  Smile,
 } from "lucide-react";
 
 // Chat contact type
@@ -121,8 +118,6 @@ export default function ParentChatPage() {
   useEffect(() => {
     const chatId = searchParams.get("chatId");
     const fromAdmin = searchParams.get("from") === "admin";
-    const parentName = searchParams.get("parentName");
-
     if (chatId || fromAdmin) {
       // If coming from admin, select first contact as demo
       const contact = MOCK_CONTACTS[0];
@@ -217,12 +212,6 @@ export default function ParentChatPage() {
     if (file.type.startsWith("image/")) return <ImageIcon className="w-4 h-4" />;
     if (file.type.includes("pdf")) return <FileText className="w-4 h-4 text-red-500" />;
     return <FileText className="w-4 h-4" />;
-  };
-
-  const formatFileSize = (bytes: number) => {
-    if (bytes < 1024) return bytes + " B";
-    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
-    return (bytes / (1024 * 1024)).toFixed(1) + " MB";
   };
 
   // Format time

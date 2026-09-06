@@ -5,7 +5,6 @@ import Image from "next/image";
 import Modal from "@/components/shared/Modal";
 import Button from "@/components/shared/Button";
 import FormInput from "@/components/shared/FormInput";
-import FormDropdown from "@/components/shared/FormDropdown";
 import {
   AlertTriangle,
   Clock,
@@ -31,13 +30,6 @@ interface IssueFineModalProps {
   damagedBookPercentage?: number;
   isLoading?: boolean;
 }
-
-const FINE_TYPE_OPTIONS = [
-  { value: "overdue", label: "Overdue Fine" },
-  { value: "lost", label: "Lost Book" },
-  { value: "damaged", label: "Damaged Book" },
-];
-
 export default function IssueFineModal({
   isOpen,
   onClose,

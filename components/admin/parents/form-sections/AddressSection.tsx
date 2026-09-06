@@ -4,13 +4,10 @@ import { useState } from "react";
 import { MapPin, Building, ChevronUp, Globe } from "lucide-react";
 import FormInput from "@/components/shared/FormInput";
 import FormDropdown from "@/components/shared/FormDropdown";
-import { ValidationErrors } from "@/lib/validation";
+import type { FormSectionProps } from "@/components/shared/form-section-types";
+import type { ParentFormData } from "./types";
 
-interface AddressSectionProps {
-  formData: any;
-  onChange: (field: string, value: any) => void;
-  errors?: ValidationErrors;
-}
+type AddressSectionProps = FormSectionProps<ParentFormData>;
 
 // Nigerian states
 const NIGERIAN_STATES = [

@@ -63,7 +63,7 @@ export function useScreenRecorder(opts: UseScreenRecorderOptions = {}): ScreenRe
 
   const stop = useCallback(() => {
     // Stopping the recorder fires onstop, which assembles + downloads the file.
-    recorderRef.current?.state !== "inactive" && recorderRef.current?.stop();
+    if (recorderRef.current && recorderRef.current.state !== "inactive") recorderRef.current.stop();
   }, []);
 
   const start = useCallback(async () => {

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import DashboardPage from "@/components/shared/DashboardPage";
 import {
@@ -19,7 +19,6 @@ import {
   ArrowLeft,
   User,
   Mail,
-  Calendar,
 } from "lucide-react";
 import { getAllParents, type AdminParent } from "@/lib/mockParents";
 import { useCall } from "@/hooks/useCall";
@@ -73,9 +72,7 @@ const generateMockMessages = (parentName: string, parentId: string): ChatMessage
 
 export default function ParentChatPage() {
   const params = useParams();
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const parentId = params.id as string;
+  const router = useRouter();  const parentId = params.id as string;
   const { startVideoCall, startVoiceCall } = useCall();
 
   // Get parent data

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, useEffect, useCallback } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Search, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -268,7 +268,7 @@ export function EmojiReactionBar({
   onReaction,
   onGiphy,
   reactions = DEFAULT_REACTIONS,
-  primaryColor = "#2563eb",
+  primaryColor: _primaryColor = "#2563eb",
   giphyApiKey = DEFAULT_GIPHY_API_KEY,
 }: EmojiReactionBarProps) {
   const [showGiphy, setShowGiphy] = useState(false);

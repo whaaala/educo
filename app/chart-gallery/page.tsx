@@ -7,6 +7,7 @@
 
 import React from "react";
 import Chart from "@/components/shared/Chart/Chart";
+import type { ChartSpec } from "@/lib/chart/types";
 import {
   type ChartType, CHART_TYPE_GROUPS, CHART_TYPE_LABELS,
   defaultChartData, defaultChartOptions,
@@ -47,7 +48,9 @@ export default function ChartGalleryPage() {
           <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-400 mb-3">{group.group}</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {group.types.map((t: ChartType) => {
-              const spec = {
+              // Annotated rather than cast at the use site: a spread that produces the wrong shape now fails
+              // here, where the mistake is, instead of being waved through at the <Chart>.
+              const spec: ChartSpec = {
                 chartType: t, data: [], accent, title: CHART_TYPE_LABELS[t],
                 threeD, ...defaultChartOptions(t), ...defaultChartData(t),
               };
@@ -55,7 +58,7 @@ export default function ChartGalleryPage() {
                 <div key={t} className="bg-white dark:bg-[#11151c] rounded-xl p-3 shadow-sm">
                   <div className="text-[0.6875rem] uppercase tracking-wide text-slate-400 mb-1 px-1">{CHART_TYPE_LABELS[t]}</div>
                   <div style={{ aspectRatio: "16 / 10" }}>
-                    <Chart spec={spec as any} aspect={16 / 10} />
+                    <Chart spec={spec} aspect={16 / 10} />
                   </div>
                 </div>
               );

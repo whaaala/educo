@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { ChevronDown, TrendingUp, TrendingDown, Star, Award, Target, Users } from "lucide-react";
+import React, { useState } from "react";
+import { Star, Award, Target, Users } from "lucide-react";
 import CustomDropdown from "@/components/shared/CustomDropdown";
 import ResponsiveListTable, { type ColumnConfig } from "@/components/shared/ResponsiveListTable";
 
@@ -97,10 +97,10 @@ const MOCK_PERFORMANCE_REVIEWS: PerformanceReview[] = [
   },
 ];
 
-export default function StaffPerformanceReviews({ staffName }: StaffPerformanceReviewsProps) {
+export default function StaffPerformanceReviews({ staffName: _staffName }: StaffPerformanceReviewsProps) {
   const [selectedYear, setSelectedYear] = useState("2024");
-  const [reviewsData, setReviewsData] = useState<PerformanceReview[]>(MOCK_PERFORMANCE_REVIEWS);
-  const [expandedReview, setExpandedReview] = useState<string | null>(null);
+  const [reviewsData] = useState<PerformanceReview[]>(MOCK_PERFORMANCE_REVIEWS);
+  const [_expandedReview, _setExpandedReview] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<"all" | "Completed" | "Pending" | "In Progress">("all");
 
   const yearOptions = [

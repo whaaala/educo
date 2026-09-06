@@ -1,12 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { useSchoolSettings } from "@/contexts/SchoolSettingsContext";
 import {
-  Users,
-  MapPin,
   BookOpen,
-  GraduationCap,
   ChevronRight,
   Building2,
 } from "lucide-react";
@@ -48,6 +44,9 @@ interface ClassData {
   programme?: string;
   courseLevel?: string;
   semester?: string;
+  /** Tertiary equivalent of a class teacher. The card read this through `as any`, which meant a typo here
+   *  would have shown an empty name rather than failing to compile. */
+  levelAdviser?: Teacher;
   // New fields from master list
   branch?: string;
   classTeacher?: Teacher;
@@ -89,20 +88,16 @@ interface ClassCardProps {
 export default function ClassCard({
   classData,
   educationLevel,
-  onClick,
+  onClick: _onClick,
   isSelected = false,
   onSelectionChange,
   adviserImage,
-}: ClassCardProps) {
-  const { settings } = useSchoolSettings();
-  const [showDetailsModal, setShowDetailsModal] = useState(false);
+}: ClassCardProps) {  const [showDetailsModal, setShowDetailsModal] = useState(false);
   const isTertiary = educationLevel === "Tertiary";
-  const isPrimary = educationLevel === "Primary";
-
   // For tertiary, get level adviser (not class teacher)
   // For non-tertiary, get class teacher
   const primaryTeacher = isTertiary
-    ? (classData as any).levelAdviser
+    ? classData.levelAdviser
     : classData.classTeacher || classData.teachers?.[0];
 
   // Determine terminology based on education level

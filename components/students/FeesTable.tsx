@@ -2,8 +2,6 @@
 
 import { useState } from "react";
 import {
-  ChevronLeft,
-  ChevronRight,
   Search,
   GraduationCap,
   FileText,

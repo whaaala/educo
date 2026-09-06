@@ -1,8 +1,12 @@
+import type { ComponentProps } from "react";
 import { memo } from 'react';
-import { View, Text, Pressable, ScrollView, StyleSheet } from 'react-native';
+import { Text, Pressable, ScrollView, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../contexts/ThemeContext';
 import { type DriveSection, type SidebarSection } from './driveMockData';
+
+/** Ionicons' own set of icon names. A name outside it renders nothing, so it is worth checking. */
+type IoniconName = ComponentProps<typeof Ionicons>["name"];
 
 const FONTS = {
   medium: 'Inter_500Medium',
@@ -43,7 +47,7 @@ export const DriveSectionPills = memo(function DriveSectionPills({
             ]}
           >
             <Ionicons
-              name={section.icon as any}
+              name={section.icon as IoniconName}
               size={15}
               color={isActive ? '#ffffff' : colors.textMuted}
             />

@@ -12,12 +12,10 @@ import {
 } from "lucide-react";
 import FormInput from "@/components/shared/FormInput";
 import FormDropdown from "@/components/shared/FormDropdown";
+import type { FormSectionProps } from "@/components/shared/form-section-types";
+import type { ClassFormData } from "./types";
 
-interface TertiaryDetailsSectionProps {
-  formData: any;
-  onChange: (field: string, value: any) => void;
-  errors?: any;
-}
+type TertiaryDetailsSectionProps = FormSectionProps<ClassFormData>;
 
 export default function TertiaryDetailsSection({
   formData,
@@ -31,7 +29,8 @@ export default function TertiaryDetailsSection({
     return null;
   }
 
-  const programmes = [
+  // Tied to the form field's own type, so an option value that is not a real programme stops compiling.
+  const programmes: { value: ClassFormData["programme"]; label: string }[] = [
     { value: "B.Sc", label: "B.Sc (Bachelor of Science)" },
     { value: "B.Eng", label: "B.Eng (Bachelor of Engineering)" },
     { value: "B.A", label: "B.A (Bachelor of Arts)" },

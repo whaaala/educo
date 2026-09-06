@@ -3,7 +3,6 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import {
   Mic,
-  MicOff,
   Video,
   VideoOff,
   Volume2,
@@ -13,7 +12,6 @@ import {
   X,
   Play,
   Square,
-  RefreshCw,
   Image as ImageIcon,
   Sparkles,
 } from "lucide-react";
@@ -344,8 +342,6 @@ export default function CallSettings({
   // Speaker testing
   const testSpeaker = async () => {
     setIsTestingSpeaker(true);
-    const audio = new Audio("/sounds/test-tone.mp3");
-
     // Create a simple test tone using Web Audio API
     const audioContext = new AudioContext();
     const oscillator = audioContext.createOscillator();

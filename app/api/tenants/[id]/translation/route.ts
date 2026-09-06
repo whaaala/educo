@@ -79,7 +79,8 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
     return Response.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
-  const next = normalizeConfig((body as any)?.translation, tenant.config.translation);
+  // A parsed request body is unknown until something checks it — this reads one optional field from it.
+  const next = normalizeConfig((body as { translation?: unknown })?.translation, tenant.config.translation);
   const updated = updateTenant(id, {
     config: {
       ...tenant.config,

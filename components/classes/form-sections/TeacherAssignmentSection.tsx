@@ -10,12 +10,10 @@ import {
   BookOpen,
 } from "lucide-react";
 import FormDropdown from "@/components/shared/FormDropdown";
+import type { FormSectionProps } from "@/components/shared/form-section-types";
+import type { ClassFormData } from "./types";
 
-interface TeacherAssignmentSectionProps {
-  formData: any;
-  onChange: (field: string, value: any) => void;
-  errors?: any;
-}
+type TeacherAssignmentSectionProps = FormSectionProps<ClassFormData>;
 
 export default function TeacherAssignmentSection({
   formData,
@@ -25,13 +23,7 @@ export default function TeacherAssignmentSection({
   const [isExpanded, setIsExpanded] = useState(true);
 
   const isTertiary = formData.educationLevel === "Tertiary";
-  const isNursery = formData.educationLevel === "Nursery" || formData.educationLevel === "Kindergarten";
-  const isPrimary = formData.educationLevel === "Primary";
-  const isSecondary = formData.educationLevel === "Secondary" || formData.educationLevel === "Junior Secondary";
-
-  // Nursery and Primary need class teacher + optional assistant, Secondary needs class tutor, Tertiary doesn't need class teacher
-  const needsClassTeacher = !isTertiary;
-  const canHaveAssistant = isNursery; // Only Nursery can have assistant teacher
+  const isNursery = formData.educationLevel === "Nursery" || formData.educationLevel === "Kindergarten";  const isSecondary = formData.educationLevel === "Secondary" || formData.educationLevel === "Junior Secondary";  const canHaveAssistant = isNursery; // Only Nursery can have assistant teacher
 
   // Mock teacher data - should come from API
   const mockTeachers = [
@@ -82,7 +74,7 @@ export default function TeacherAssignmentSection({
     const currentAssignments = formData.subjectTeacherAssignments || [];
     onChange(
       "subjectTeacherAssignments",
-      currentAssignments.filter((_: any, i: number) => i !== index)
+      currentAssignments.filter((_, i) => i !== index)
     );
   };
 
@@ -189,7 +181,7 @@ export default function TeacherAssignmentSection({
             formData.subjectTeacherAssignments.length > 0 ? (
               <div className="space-y-3">
                 {formData.subjectTeacherAssignments.map(
-                  (assignment: any, index: number) => (
+                  (assignment, index) => (
                     <div
                       key={index}
                       className="grid grid-cols-1 md:grid-cols-2 gap-3 p-4 bg-gray-50 dark:bg-[#22262e]/50 midnight:bg-[#0f1330]/50 purple:bg-[#251340]/50 rounded-lg border border-gray-200 dark:border-gray-600 midnight:border-cyan-500/10 purple:border-pink-500/10"

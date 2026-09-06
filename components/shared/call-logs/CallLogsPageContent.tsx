@@ -33,7 +33,6 @@ import {
   Phone,
   PhoneIncoming,
   PhoneOutgoing,
-  Eye,
   Trash2,
   RotateCcw,
   Play,

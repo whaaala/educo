@@ -3,7 +3,7 @@
 import { useState, useMemo } from "react";
 import Image from "next/image";
 import { DashboardPage } from "@/components/pages";
-import { useMeetings, Meeting as ContextMeeting } from "@/contexts/MeetingsContext";
+import { useMeetings } from "@/contexts/MeetingsContext";
 import { useCall } from "@/hooks/useCall";
 import ScheduleMeetingModal, {
   ScheduledMeetingData,
@@ -892,7 +892,7 @@ export default function TeacherMeetingsPage() {
           onSchedule={handleScheduleMeeting}
           context="teacher"
           primaryParticipant={MOCK_TEACHER}
-          children={MOCK_STUDENTS}
+          childList={MOCK_STUDENTS}
         />
 
         {/* Meeting Details Modal */}

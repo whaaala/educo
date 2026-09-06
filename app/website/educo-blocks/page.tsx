@@ -85,7 +85,7 @@ export default function EducoBlocksPage() {
   );
   const frameW = WIDTHS.find((w) => w.id === width)!.w;
 
-  if (!mounted) return <PageLoader />;
+  if (!mounted) return <PageLoader isLoading />;
 
   return (
     <div className="min-h-screen bg-canvas text-ink">
@@ -93,7 +93,7 @@ export default function EducoBlocksPage() {
       <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
         <header className="mb-5">
           <h1 className="text-2xl font-bold tracking-tight">Educo UI — Blocks gallery</h1>
-          <p className="mt-1 text-sm text-muted">Live, interactive test surface for the Phase 1 blocks. Switch theme, drag the width — this is exactly how each block renders in the builder's output.</p>
+          <p className="mt-1 text-sm text-muted">Live, interactive test surface for the Phase 1 blocks. Switch theme, drag the width — this is exactly how each block renders in the builder&apos;s output.</p>
         </header>
 
         {/* Controls */}
@@ -156,7 +156,7 @@ export default function EducoBlocksPage() {
               <div className="eu-field" style={{ maxWidth: "22rem" }}>
                 <label className="eu-label" htmlFor="demo-email">Email</label>
                 <input id="demo-email" className="eu-input" placeholder="you@example.com" />
-                <span className="eu-help">We'll never share it.</span>
+                <span className="eu-help">We&apos;ll never share it.</span>
               </div>
             </Block>
 
@@ -227,7 +227,7 @@ export default function EducoBlocksPage() {
             </Block>
 
             <Block title="Forms" status="soon"><p style={{ color: "var(--eu-color-muted)" }}>Full form block (inputs, selects, validation) — next up.</p></Block>
-            <Block title="Gallery · Social · Map · Charts/Tables · Rich-text" status="soon"><p style={{ color: "var(--eu-color-muted)" }}>Queued — each will appear here, testable, as it's built.</p></Block>
+            <Block title="Gallery · Social · Map · Charts/Tables · Rich-text" status="soon"><p style={{ color: "var(--eu-color-muted)" }}>Queued — each will appear here, testable, as it&apos;s built.</p></Block>
           </div>
         </div>
       </div>

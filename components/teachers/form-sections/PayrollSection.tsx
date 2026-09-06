@@ -11,13 +11,10 @@ import {
 } from "lucide-react";
 import FormInput from "@/components/shared/FormInput";
 import FormDropdown from "@/components/shared/FormDropdown";
-import { ValidationErrors } from "@/lib/validation";
+import type { FormSectionProps } from "@/components/shared/form-section-types";
+import type { TeacherFormData } from "./types";
 
-interface PayrollSectionProps {
-  formData: any;
-  onChange: (field: string, value: any) => void;
-  errors?: ValidationErrors;
-}
+type PayrollSectionProps = FormSectionProps<TeacherFormData>;
 
 export default function PayrollSection({
   formData,

@@ -12,15 +12,12 @@ import Modal from "@/components/shared/Modal";
 import ActionModal from "@/components/shared/ActionModal";
 import {
   GraduationCap,
-  BookOpen,
   Plus,
   Edit,
   Trash2,
   Save,
   X,
   AlertCircle,
-  TrendingUp,
-  Award,
   BarChart3,
   BookMarked,
 } from "lucide-react";
@@ -28,20 +25,9 @@ import {
 // Re-export type from context for consistency
 import type { EducationLevel } from "@/contexts/GradingContext";
 
-// Class lists for each education level
-const PRIMARY_CLASSES = [
-  "Nursery 1", "Nursery 2", "KG 1", "KG 2",
-  "Primary 1", "Primary 2", "Primary 3", "Primary 4", "Primary 5", "Primary 6"
-];
-
-const SECONDARY_CLASSES = [
-  "JSS 1", "JSS 2", "JSS 3",
-  "SSS 1", "SSS 2", "SSS 3"
-];
-
-const TERTIARY_CLASSES = [
-  "Year 1", "Year 2", "Year 3", "Year 4", "Year 5"
-];
+/** The grading tables stash their scroll-listener teardown on the element itself, so a later effect can find
+ *  and call it. Naming the property keeps that contract visible instead of hiding it behind a cast. */
+type ScrollCleanupHost = Element & { _scrollCleanup?: () => void };
 
 // Subject lists for each education level
 const PRIMARY_SUBJECTS = [
@@ -91,18 +77,6 @@ const TERTIARY_SUBJECTS = [
   "Research Methods",
   "Final Year Project",
 ];
-
-// Helper function to get classes for education level
-const getClassesForLevel = (level: EducationLevel): string[] => {
-  switch (level) {
-    case "Primary":
-      return PRIMARY_CLASSES;
-    case "Tertiary":
-      return TERTIARY_CLASSES;
-    default:
-      return SECONDARY_CLASSES;
-  }
-};
 
 // Helper function to get subjects for education level
 const getSubjectsForLevel = (level: EducationLevel): string[] => {
@@ -243,7 +217,7 @@ export default function GradingPage() {
         };
 
         // Store cleanup in the container's dataset for later cleanup
-        (container as any)._scrollCleanup = cleanup;
+        (container as ScrollCleanupHost)._scrollCleanup = cleanup;
       });
     };
 
@@ -255,9 +229,7 @@ export default function GradingPage() {
       // Cleanup all scroll listeners
       const containers = document.querySelectorAll('.grading-table-container');
       containers.forEach((container) => {
-        if ((container as any)._scrollCleanup) {
-          (container as any)._scrollCleanup();
-        }
+        (container as ScrollCleanupHost)._scrollCleanup?.();
       });
     };
   }, [groupedSchemes]); // Re-run when grading schemes change
@@ -605,7 +577,7 @@ export default function GradingPage() {
               <p className="text-xs text-blue-800 dark:text-blue-200 midnight:text-cyan-200 purple:text-pink-200">
                 Configure grading schemes for each class and subject. Each scheme defines grade boundaries,
                 grade points for GPA/CGPA calculation, and remarks. Different classes and subjects can have
-                different grading scales based on your institution's requirements.
+                different grading scales based on your institution&apos;s requirements.
               </p>
             </div>
           </div>

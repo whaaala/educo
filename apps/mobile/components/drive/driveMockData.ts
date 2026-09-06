@@ -35,13 +35,11 @@ export const SIDEBAR_SECTIONS: SidebarSection[] = [
   { id: "starred", label: "Starred", icon: "star-outline" },
   { id: "bin", label: "Bin", icon: "trash-outline" },
 ];
-
-const now = new Date().toISOString();
 const daysAgo = (d: number) => new Date(Date.now() - d * 86400000).toISOString();
 const hoursAgo = (h: number) => new Date(Date.now() - h * 3600000).toISOString();
 
 // Mutable so actions can modify items
-export let MOCK_DRIVE_ITEMS: DriveItem[] = [
+export const MOCK_DRIVE_ITEMS: DriveItem[] = [
   // ── System folders ──
   { id: "folder-my-drive", parentId: "root", name: "My Drive", type: "folder", readOnly: true, createdAt: daysAgo(30), updatedAt: daysAgo(0), owner: "Me" },
   { id: "folder-bin", parentId: "root", name: "Bin", type: "folder", readOnly: true, createdAt: daysAgo(30), updatedAt: daysAgo(0), owner: "System" },
@@ -175,7 +173,13 @@ export interface FileTypeConfig {
   label: string;
 }
 
-export function getFileTypeConfig(item: DriveItem): FileTypeConfig {
+/**
+ * Narrowed to the three fields it actually reads, rather than a whole DriveItem.
+ *
+ * Every caller in the tests was passing a partial item through `as any` because the full type demanded a
+ * dozen unrelated fields. Asking for only what is used removes the cast AND makes the contract honest.
+ */
+export function getFileTypeConfig(item: Pick<DriveItem, "type" | "name" | "sourceType">): FileTypeConfig {
   if (item.type === "folder") {
     return { icon: "folder", color: "#f59e0b", bgColor: "#fef3c7", previewBg: "#fffbeb", label: "Folder" };
   }

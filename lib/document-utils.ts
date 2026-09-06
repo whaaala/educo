@@ -548,7 +548,6 @@ export function downloadDocumentAsPDF(
   options: DocumentOptions
 ): void {
   const html = generateDocumentHTML(sections, options);
-  const filename = options.filename || options.title.toLowerCase().replace(/\s+/g, "-");
 
   const printWindow = window.open("", "_blank");
   if (printWindow) {

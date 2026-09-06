@@ -1,6 +1,7 @@
+import { withPlugins } from "./jspdf-types";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-import { TranscriptRequest, TranscriptStatus, TranscriptType, PaymentStatus } from "@/types/transcript";
+import { TranscriptRequest } from "@/types/transcript";
 
 export function exportTranscriptRequestsToPDF(
   requests: TranscriptRequest[],
@@ -34,11 +35,7 @@ export function exportTranscriptRequestsToPDF(
   doc.text(`Total Requests: ${requests.length}`, 14, 27);
 
   // Calculate totals
-  const totalFees = requests.reduce((sum, r) => sum + r.payment.amount, 0);
-  const totalPaid = requests.reduce((sum, r) =>
-    r.payment.status === "paid" || r.payment.status === "waived" ? sum + r.payment.amount : sum, 0
-  );
-  const pendingRequests = requests.filter((r) => r.status === "pending").length;
+  const totalFees = requests.reduce((sum, r) => sum + r.payment.amount, 0);  const pendingRequests = requests.filter((r) => r.status === "pending").length;
   const processingRequests = requests.filter((r) => r.status === "processing").length;
   const readyRequests = requests.filter((r) => r.status === "ready").length;
 
@@ -154,7 +151,7 @@ export function exportTranscriptRequestsToPDF(
   });
 
   // Add page numbers
-  const pageCount = (doc as any).internal.getNumberOfPages();
+  const pageCount = withPlugins(doc).internal.getNumberOfPages();
   for (let i = 1; i <= pageCount; i++) {
     doc.setPage(i);
     doc.setFontSize(9);

@@ -6,7 +6,6 @@ import {
   Receipt,
   Download,
   Printer,
-  Share2,
   CheckCircle2,
   Clock,
   XCircle,
@@ -22,8 +21,6 @@ import {
 } from "lucide-react";
 import Modal from "../shared/Modal";
 import { useSchoolSettings } from "@/contexts/SchoolSettingsContext";
-import type { ParentPayment } from "@/types/parent";
-
 export interface PaymentReceiptData {
   id: string;
   childName: string;
@@ -58,7 +55,7 @@ export default function ViewReceiptModal({
   const [isDownloading, setIsDownloading] = useState(false);
   const printRef = useRef<HTMLDivElement>(null);
 
-  const { money, currencySymbol } = useMemo(() => {
+  const { money } = useMemo(() => {
     const formatter = new Intl.NumberFormat(undefined, {
       style: "currency",
       currency: currencyCode,

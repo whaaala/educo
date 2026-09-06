@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import {
-  Building2,
   DollarSign,
   CreditCard,
   CheckCircle2,
@@ -11,8 +10,6 @@ import {
 } from "lucide-react";
 import {
   SchoolType,
-  PAYMENT_CHANNELS,
-  FEE_CATEGORIES,
   getFeeCategoriesForSchoolType,
   getPaymentChannelsForSchoolType
 } from "@/lib/feeConfigNew";

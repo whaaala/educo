@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { X, Save, Calendar, Clock, Plus, Trash2, Settings as SettingsIcon } from "lucide-react";
-import type { TimetableConfig, CalendarType, WeekStructure, FreePeriod, DayScheduleOverride } from "@/lib/timetableConfig";
+import type { TimetableConfig, CalendarType, WeekStructure, FreePeriod } from "@/lib/timetableConfig";
 
 interface TimetableSettingsModalProps {
   isOpen: boolean;
@@ -98,7 +98,7 @@ export default function TimetableSettingsModal({
                 Timetable Settings
               </h2>
               <p className="text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70">
-                Configure your school's timetable calendar
+                Configure your school&apos;s timetable calendar
               </p>
             </div>
           </div>
@@ -288,7 +288,7 @@ export default function TimetableSettingsModal({
                             breakSchedule: {
                               ...config.breakSchedule,
                               morningBreak: {
-                                ...config.breakSchedule?.morningBreak!,
+                                ...(config.breakSchedule?.morningBreak ?? { start: "", end: "" }),
                                 start: e.target.value,
                               },
                             },
@@ -306,7 +306,7 @@ export default function TimetableSettingsModal({
                             breakSchedule: {
                               ...config.breakSchedule,
                               morningBreak: {
-                                ...config.breakSchedule?.morningBreak!,
+                                ...(config.breakSchedule?.morningBreak ?? { start: "", end: "" }),
                                 end: e.target.value,
                               },
                             },
@@ -333,7 +333,7 @@ export default function TimetableSettingsModal({
                             breakSchedule: {
                               ...config.breakSchedule,
                               lunch: {
-                                ...config.breakSchedule?.lunch!,
+                                ...(config.breakSchedule?.lunch ?? { start: "", end: "" }),
                                 start: e.target.value,
                               },
                             },
@@ -351,7 +351,7 @@ export default function TimetableSettingsModal({
                             breakSchedule: {
                               ...config.breakSchedule,
                               lunch: {
-                                ...config.breakSchedule?.lunch!,
+                                ...(config.breakSchedule?.lunch ?? { start: "", end: "" }),
                                 end: e.target.value,
                               },
                             },

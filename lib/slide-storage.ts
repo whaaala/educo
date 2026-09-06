@@ -3,8 +3,7 @@
  */
 
 import {
-  type ChartSpec, type ChartType, type ChartDatum, type ChartTextStyle, type ChartLabelOverride,
-  defaultChartData, defaultChartOptions,
+  type ChartSpec, type ChartType, defaultChartData, defaultChartOptions,
 } from "./chart-types";
 
 export type { ChartSpec, ChartType, ChartDatum, ChartTextStyle, ChartLabelOverride } from "./chart-types";
@@ -27,6 +26,14 @@ export interface SlideObjectBase {
   locked?: boolean;
   link?: string;    // optional hyperlink — opens in the slideshow / on click
   altText?: string; // optional accessibility description
+  /** Group membership, outermost first — an object can be grouped, and that group grouped again. The canvas
+   *  has always written this; it just was never declared, so every read went through a cast. */
+  groupIds?: string[];
+  /** Legacy single-group field from before nesting was supported. Read when loading old slides, never written. */
+  groupId?: string;
+  /** Legacy per-object offset within its group. Deleted on ungroup; never written by the current canvas. */
+  groupOffsetX?: number;
+  groupOffsetY?: number;
 }
 
 export interface TextBoxObject extends SlideObjectBase {
@@ -204,8 +211,8 @@ export function fitDrawingToStroke(
   const xs: number[] = [], ys: number[] = [];
   for (let i = 0; i + 1 < nums.length; i += 2) { xs.push(nums[i]); ys.push(nums[i + 1]); }
   if (xs.length === 0) return { paths, x: 0, y: 0, width: 100, height: 100 };
-  let minX = Math.max(0, Math.min(...xs) - pad);
-  let minY = Math.max(0, Math.min(...ys) - pad);
+  const minX = Math.max(0, Math.min(...xs) - pad);
+  const minY = Math.max(0, Math.min(...ys) - pad);
   const maxX = Math.min(100, Math.max(...xs) + pad);
   const maxY = Math.min(100, Math.max(...ys) + pad);
   const width = Math.max(0.5, maxX - minX);

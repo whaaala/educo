@@ -9,14 +9,14 @@
  * Both DocEditor and SlideEditor use the same component — just pass different config.
  */
 
-import { useState, useRef, useEffect, useLayoutEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { type EditorMenuItem, MENU_DIVIDER as D } from "@/components/shared/EditorMenus";
 import {
   ViewMenuItem, ViewMenuDivider, SubmenuPanel, MenuCloseContext,
 } from "@/components/shared/EditorViewMenus";
 import {
-  FilePlus, FolderOpen, Upload, Copy, CopyPlus, Share2, ExternalLink,
+  FilePlus, FolderOpen, Copy, Share2, ExternalLink,
   Mail, Download, Video, PencilLine, Move, Star, FolderSymlink, Trash2,
   History, Tag, Clock, Info, ShieldCheck, Globe, Settings, Eye, Printer,
 } from "lucide-react";

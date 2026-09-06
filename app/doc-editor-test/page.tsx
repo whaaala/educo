@@ -9,7 +9,7 @@ import PageLoader from "@/components/shared/PageLoader";
 import { docStorage } from "@/lib/doc-storage";
 
 // Lazy-load the DocEditor (~12k lines) so this route compiles/loads fast; the editor streams in after.
-const DocEditor = dynamic(() => import("@/components/shared/DocEditor/DocEditor"), { ssr: false, loading: () => <PageLoader /> });
+const DocEditor = dynamic(() => import("@/components/shared/DocEditor/DocEditor"), { ssr: false, loading: () => <PageLoader isLoading /> });
 
 const defaultTemplates: DocTemplate[] = [
   {

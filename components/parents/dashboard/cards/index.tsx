@@ -90,11 +90,12 @@ export function ParentProfileCard({ parent }: { parent: ParentProfile }) {
 }
 
 export function MyChildrenCard({
-  children,
+  childList,
   selectedChild,
   onSelectChild,
 }: {
-  children: Child[];
+  /** The parent's pupils. Named childList, not `children`: React reserves that name for JSX content. */
+  childList: Child[];
   selectedChild: Child;
   onSelectChild: (child: Child) => void;
 }) {
@@ -113,13 +114,13 @@ export function MyChildrenCard({
         </div>
         <div className="flex items-center gap-2 shrink-0">
           <span className="text-[0.625rem] font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 midnight:from-cyan-500 midnight:to-indigo-500 purple:from-pink-500 purple:to-purple-500 px-3 py-1.5 rounded-full shadow-md">
-            {children.length}
+            {childList.length}
           </span>
           <DashboardDragHandle />
         </div>
       </div>
       <div className="space-y-2">
-        {children.map((child) => {
+        {childList.map((child) => {
           const isSelected = selectedChild.id === child.id;
           return (
             <button

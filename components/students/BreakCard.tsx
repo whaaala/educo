@@ -12,7 +12,7 @@ interface BreakCardProps {
 export default function BreakCard({
   label,
   time,
-  icon: Icon,
+  icon: _Icon,
   variant = "blue",
 }: BreakCardProps) {
   const getVariantStyles = () => {

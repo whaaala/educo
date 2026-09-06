@@ -214,7 +214,11 @@ export interface WhiteboardProps {
   className?: string;
   readOnly?: boolean;
   initialData?: WhiteboardState;
-  onSave?: (state: WhiteboardState) => void;
+  // NOTE: there is deliberately no `onSave`. One existed, and a `handleSave` that called it existed, but no
+  // control in the toolbar was ever wired to that handler and no caller ever passed the prop — so a host that
+  // supplied `onSave` would simply never be called. A prop that promises a callback and cannot fire is worse
+  // than no prop. Saving today is the toolbar's PNG / JSON / Copy actions; a host-app save needs a control
+  // adding first, and then the prop back.
   onChange?: (state: WhiteboardState) => void;
 }
 

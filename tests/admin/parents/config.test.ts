@@ -1,7 +1,30 @@
+import type { ParentChild } from "@/types/parent";
 import { describe, expect, it } from "vitest";
 
 import type { AdminParent } from "@/lib/mockParents";
 import { filterParents, getCurrencySymbol, hasActiveFilters, sortParents } from "@/app/admin/parents/config";
+/**
+ * A complete ParentChild, so a fixture does not have to be cast.
+ *
+ * These tests only ever read `children.length`, which is why the fixtures used to be `[{ id: "c1" }] as any`.
+ * A cast there is not free: it stops the compiler noticing when ParentChild changes, and these fixtures are
+ * exactly what should notice.
+ */
+function makeChild(id: string): ParentChild {
+  return {
+    id,
+    studentId: `s-${id}`,
+    firstName: "Child",
+    lastName: id.toUpperCase(),
+    fullName: `Child ${id.toUpperCase()}`,
+    admissionNumber: `ADM-${id}`,
+    classLevel: "Primary 1",
+    dateOfBirth: "2015-01-01",
+    gender: "Female",
+    status: "Active",
+    relationship: "Mother",
+  };
+}
 
 function makeParent(overrides: Partial<AdminParent> & Pick<AdminParent, "id">): AdminParent {
   return overrides as AdminParent;
@@ -16,7 +39,7 @@ const parents: AdminParent[] = [
     status: "Active",
     createdAt: "2024-01-01T00:00:00Z",
     totalOutstandingFees: 0,
-    children: [{ id: "c1" }] as any,
+    children: [makeChild("c1")],
   }),
   makeParent({
     id: "p2",
@@ -26,7 +49,7 @@ const parents: AdminParent[] = [
     status: "Inactive",
     createdAt: "2024-02-01T00:00:00Z",
     totalOutstandingFees: 200_000,
-    children: [{ id: "c1" }, { id: "c2" }, { id: "c3" }] as any,
+    children: [makeChild("c1"), makeChild("c2"), makeChild("c3")],
   }),
   makeParent({
     id: "p3",
@@ -36,7 +59,7 @@ const parents: AdminParent[] = [
     status: "Active",
     createdAt: "2023-12-01T00:00:00Z",
     totalOutstandingFees: 75_000,
-    children: [{ id: "c1" }, { id: "c2" }] as any,
+    children: [makeChild("c1"), makeChild("c2")],
   }),
 ];
 

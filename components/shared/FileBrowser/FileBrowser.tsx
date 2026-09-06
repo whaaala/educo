@@ -4,9 +4,8 @@ import React, { useState, useEffect } from "react";
 import {
   Folder, FolderOpen, FolderPlus, FileText, Presentation, Table2,
   Image as ImageIcon, File, MoreVertical, ChevronDown,
-  LayoutGrid, List, Trash2, Pencil, X, FolderInput, Clock,
-  Star, Users, HardDrive, Cloud, ArrowUp, LucideIcon,
-  Download, Copy, Share2, Info, ExternalLink, Home, Search, Menu,
+  Trash2, Pencil, X, FolderInput, Users, LucideIcon,
+  Download, Copy, Share2, ExternalLink, Search, Menu,
 } from "lucide-react";
 import SearchBar from "@/components/shared/SearchBar";
 import CustomDropdown from "@/components/shared/CustomDropdown";
@@ -114,17 +113,6 @@ function getItemIcon(item: FileBrowserItem, size = "w-5 h-5") {
   }
 }
 
-function getTypeColor(item: FileBrowserItem): string {
-  if (item.type === "folder") return "#9ca3af";
-  switch (item.sourceType) {
-    case "document": return "#3b82f6";
-    case "presentation": return "#f59e0b";
-    case "spreadsheet": return "#16a34a";
-    case "upload": return "#ef4444";
-    default: return "#9ca3af";
-  }
-}
-
 function formatSize(bytes?: number): string {
   if (!bytes) return "—";
   if (bytes < 1024) return `${bytes} B`;
@@ -134,7 +122,7 @@ function formatSize(bytes?: number): string {
 
 // ── Context Menu ──
 
-function ItemContextMenu({ item, onRename, onMove, onDelete, onDownload, onCopy, onShare, onInfo, onClose }: {
+function ItemContextMenu({ item, onRename, onMove, onDelete, onDownload, onCopy, onShare, onInfo: _onInfo, onClose }: {
   item: FileBrowserItem; onRename: () => void; onMove: () => void; onDelete: () => void; onClose: () => void;
   onDownload?: () => void; onCopy?: () => void; onShare?: () => void; onInfo?: () => void;
 }) {
@@ -192,7 +180,7 @@ function ItemContextMenu({ item, onRename, onMove, onDelete, onDownload, onCopy,
 // ── Main Component ──
 
 export default function FileBrowser({
-  title, subtitle, icon: Icon, iconGradient = "from-blue-500 to-blue-600",
+  title, subtitle: _subtitle, icon: _Icon, iconGradient: _iconGradient = "from-blue-500 to-blue-600",
   breadcrumbs, items, allItems, recentFiles, sidebarItems, storageUsed, storageTotal, storagePercent,
   headerActions, titleMenuItems, people, onPeopleFilter, onNavigate, onFileOpen, onRename, onMove, onDelete, onDownload, onCopy, onShare, onInfo, onCreateFolder,
   onSidebarNavigate, newFolderMode = false, onNewFolderModeChange,
@@ -208,8 +196,8 @@ export default function FileBrowser({
   const [typeFilter, setTypeFilter] = useState("");
   const [modifiedFilter, setModifiedFilter] = useState("");
   const [selectedPerson, setSelectedPerson] = useState<PersonItem | null>(null);
-  const [sortField, setSortField] = useState<"name" | "modified" | "size">("name");
-  const [sortAsc, setSortAsc] = useState(true);
+  const [sortField, _setSortField] = useState<"name" | "modified" | "size">("name");
+  const [sortAsc, _setSortAsc] = useState(true);
 
   // When searching or filtering by person, search across ALL items in the drive
   const isSearching = searchQuery.length > 0;
@@ -262,8 +250,6 @@ export default function FileBrowser({
   const startRename = (item: FileBrowserItem) => { setRenamingId(item.id); setRenameValue(item.name); setMenuOpenId(null); };
   const submitRename = () => { if (renamingId && renameValue.trim()) onRename?.(renamingId, renameValue.trim()); setRenamingId(null); setRenameValue(""); };
   const handleCreateFolder = () => { if (!newFolderName.trim()) return; onCreateFolder?.(newFolderName.trim()); setNewFolderName(""); onNewFolderModeChange?.(false); };
-  const toggleSort = (field: "name" | "modified" | "size") => { if (sortField === field) setSortAsc(!sortAsc); else { setSortField(field); setSortAsc(true); } };
-
   return (
     <div className={`flex gap-0 ${className}`}>
       {/* ══════ LEFT SIDEBAR — desktop only (lg+), fixed position ══════ */}

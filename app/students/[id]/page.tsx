@@ -1,27 +1,21 @@
 "use client";
 
+import Link from "next/link";
 import { useState, useEffect, useMemo } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useAttendance } from "@/contexts/AttendanceContext";
 import { DashboardPage } from "@/components/pages";
 import { getExtendedStudentDataById } from "@/lib/mockStudents";
 import { useTranscripts } from "@/contexts/TranscriptContext";
-import Image from "next/image";
 import {
   GraduationCap,
   Calendar,
   FileText,
   BookOpen,
-  Phone,
-  Mail,
-  Lock,
-  Download,
   Clock,
   KeyRound,
   Search,
-  ExternalLink,
   Trash2,
-  FileSpreadsheet,
 } from "lucide-react";
 import type { ExtendedStudentData } from "@/lib/mockStudents";
 import StudentProfileCard from "@/components/students/StudentProfileCard";
@@ -54,7 +48,7 @@ import MobileDropdown from "@/components/shared/MobileDropdown";
 import CustomDropdown from "@/components/shared/CustomDropdown";
 import ExamResults from "@/components/students/ExamResults";
 import { getAttendanceMode } from "@/components/settings/AttendanceSettings";
-import { Edit, UserCheck, CheckCircle2, Shield } from "lucide-react";
+import { Edit, Shield } from "lucide-react";
 import StudentDisciplineManagement from "@/components/students/StudentDisciplineManagement";
 import RequestTranscriptButton from "@/components/shared/RequestTranscriptButton";
 import TranscriptPaymentModal from "@/components/transcript/TranscriptPaymentModal";
@@ -67,6 +61,9 @@ import { TRANSFER_REASONS } from "@/types/transfer";
 import { ArrowRightLeft, School } from "lucide-react";
 import { useTransfers } from "@/contexts/TransferContext";
 import TransferHistoryCard from "@/components/students/TransferHistoryCard";
+/** A tab's icon: usually a lucide icon, sometimes a small local component (the currency glyph), so the
+ *  type is what both of them ARE — a component taking a className. */
+type TabIcon = React.ComponentType<{ className?: string }>;
 
 type TabType = "details" | "timetable" | "attendance" | "fees" | "exam" | "library" | "discipline";
 
@@ -307,26 +304,26 @@ export default function ViewStudentPage() {
                 Student Details
               </h1>
               <div className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70 flex-wrap">
-                <a href="/" className="hover:text-gray-700 dark:hover:text-gray-300 midnight:hover:text-cyan-200 purple:hover:text-pink-200 cursor-pointer transition-colors">
+                <Link href="/" className="hover:text-gray-700 dark:hover:text-gray-300 midnight:hover:text-cyan-200 purple:hover:text-pink-200 cursor-pointer transition-colors">
                   Dashboard
-                </a>
+                </Link>
                 <span>/</span>
                 {fromSource === "parent" && parentId ? (
                   <>
-                    <a href="/admin/parents" className="hover:text-gray-700 dark:hover:text-gray-300 midnight:hover:text-cyan-200 purple:hover:text-pink-200 cursor-pointer transition-colors">
+                    <Link href="/admin/parents" className="hover:text-gray-700 dark:hover:text-gray-300 midnight:hover:text-cyan-200 purple:hover:text-pink-200 cursor-pointer transition-colors">
                       Parents
-                    </a>
+                    </Link>
                     <span>/</span>
-                    <a href={`/admin/parents/${parentId}`} className="hover:text-gray-700 dark:hover:text-gray-300 midnight:hover:text-cyan-200 purple:hover:text-pink-200 cursor-pointer transition-colors max-w-[120px] sm:max-w-none truncate inline-block">
+                    <Link href={`/admin/parents/${parentId}`} className="hover:text-gray-700 dark:hover:text-gray-300 midnight:hover:text-cyan-200 purple:hover:text-pink-200 cursor-pointer transition-colors max-w-[120px] sm:max-w-none truncate inline-block">
                       {parentName || "Parent Details"}
-                    </a>
+                    </Link>
                     <span>/</span>
                   </>
                 ) : (
                   <>
-                    <a href="/students" className="hover:text-gray-700 dark:hover:text-gray-300 midnight:hover:text-cyan-200 purple:hover:text-pink-200 cursor-pointer transition-colors">
+                    <Link href="/students" className="hover:text-gray-700 dark:hover:text-gray-300 midnight:hover:text-cyan-200 purple:hover:text-pink-200 cursor-pointer transition-colors">
                       Students
-                    </a>
+                    </Link>
                     <span>/</span>
                   </>
                 )}
@@ -648,7 +645,7 @@ function StudentTabs({
   activeTab,
   setActiveTab,
 }: {
-  tabs: { id: TabType; label: string; icon: any }[];
+  tabs: { id: TabType; label: string; icon: TabIcon }[];
   activeTab: TabType;
   setActiveTab: (tab: TabType) => void;
 }) {

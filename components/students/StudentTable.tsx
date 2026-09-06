@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Student } from "./StudentCard";
-import { MoreVertical, MessageCircle, Phone, Video, Mail, Eye, Edit, Lock, TrendingUp, Trash2, Plus, ArrowRight } from "lucide-react";
+import { MoreVertical, MessageCircle, Phone, Video, Mail, Eye, Edit, Lock, TrendingUp, Trash2, ArrowRight } from "lucide-react";
 import ResponsiveListTable, { type ColumnConfig } from "@/components/shared/ResponsiveListTable";
 import CollectFeesModal from "@/components/shared/CollectFeesModal";
 import DeleteConfirmationModal from "@/components/shared/DeleteConfirmationModal";
@@ -12,7 +12,7 @@ import Tooltip from "@/components/shared/Tooltip";
 import AddFeesButton from "@/components/shared/AddFeesButton";
 import NameLabel from "@/components/shared/NameLabel";
 import { useSidebar } from "@/contexts/SidebarContext";
-import { detectEducationLevelFromClass, getEducationLevelColor, getInstitutionTypeColor } from "@/utils/educationLevel";
+import { detectEducationLevelFromClass, getEducationLevelColor } from "@/utils/educationLevel";
 import { useFeatureFlags } from "@/hooks/useFeatureFlags";
 import { useCall } from "@/hooks/useCall";
 import { CreateTransferRequest } from "@/types/transfer";
@@ -177,16 +177,6 @@ export default function StudentTable({ students, isLoading = false, loadingMessa
     setIsDeleteModalOpen(false);
     setStudentToDelete(null);
   };
-
-  const handleDeleteAll = () => {
-    if (selectedIds.size > 0) {
-      console.log('Deleting students:', Array.from(selectedIds));
-      // Add your bulk delete logic here
-      // After deletion, clear the selected IDs
-      updateSelectedIds(new Set());
-    }
-  };
-
   // Close menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {

@@ -6,24 +6,20 @@ import {
   Building2,
   Hash,
   ChevronUp,
-  ChevronDown,
   Info,
 } from "lucide-react";
 import FormInput from "@/components/shared/FormInput";
 import FormDropdown from "@/components/shared/FormDropdown";
 import { getHostels } from "@/lib/mockHostel";
-import { ValidationErrors } from "@/lib/validation";
+import type { FormSectionProps } from "@/components/shared/form-section-types";
+import type { StudentFormData } from "./types";
 
-interface HostelSectionProps {
-  formData: any;
-  onChange: (field: string, value: any) => void;
-  errors?: ValidationErrors;
-}
+type HostelSectionProps = FormSectionProps<StudentFormData>;
 
 export default function HostelSection({
   formData,
   onChange,
-  errors = {},
+  errors: _errors = {},
 }: HostelSectionProps) {
   const [isExpanded, setIsExpanded] = useState(true);
 

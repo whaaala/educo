@@ -6,30 +6,21 @@ import { DashboardPage } from "@/components/pages";
 import { getTeacherById, Teacher } from "@/lib/mockTeachers";
 import Image from "next/image";
 import {
-  Users,
   Calendar,
   FileText,
   BookOpen,
   Phone,
   Mail,
   Download,
-  Clock,
-  KeyRound,
   Trash2,
   Edit,
   Briefcase,
-  GraduationCap,
   Award,
-  Building2,
-  MapPin,
-  CreditCard,
 } from "lucide-react";
 import ActionButton from "@/components/shared/ActionButton";
 import SecondaryButton from "@/components/shared/SecondaryButton";
 import ActionModal from "@/components/shared/ActionModal";
 import MobileDropdown from "@/components/shared/MobileDropdown";
-import CustomDropdown from "@/components/shared/CustomDropdown";
-
 type TabType = "details" | "classes" | "attendance" | "performance" | "documents";
 
 export default function ViewTeacherPage() {

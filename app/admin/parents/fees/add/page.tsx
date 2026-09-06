@@ -8,7 +8,7 @@ import { useSidebar } from "@/contexts/SidebarContext";
 import { useNotifications } from "@/contexts/NotificationContext";
 import { useSchoolSettings } from "@/contexts/SchoolSettingsContext";
 import { ValidationErrors } from "@/lib/validation";
-import { getAllParents, AdminParent, AdminFeeRecord } from "@/lib/mockParents";
+import { getAllParents, AdminFeeRecord } from "@/lib/mockParents";
 import ParentStudentSelectionSection from "@/components/admin/parents/fees/form-sections/ParentStudentSelectionSection";
 import FeeDetailsSection from "@/components/admin/parents/fees/form-sections/FeeDetailsSection";
 import dynamic from "next/dynamic";

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Save, Building2, Globe, Mail, Phone, MapPin, Palette, Languages, Cloud } from "lucide-react";
+import { ArrowLeft, Save, Building2, Globe, Mail, Palette, Languages, Cloud } from "lucide-react";
 import AdminPageShell from "@admin/components/pages/AdminPageShell";
 import Button from "@/components/shared/Button";
 import { createTenant } from "@/lib/mockTenants";
@@ -116,7 +116,7 @@ export default function CreateTenantPage() {
     storageConfigMode: "platform",
   });
 
-  const handleInputChange = (field: keyof CreateTenantForm, value: any) => {
+  const handleInputChange = <K extends keyof CreateTenantForm>(field: K, value: CreateTenantForm[K]) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
     // Clear error for this field
     if (errors[field]) {
@@ -500,7 +500,7 @@ export default function CreateTenantPage() {
                   <select
                     value={formData.termSystem}
                     onChange={(e) =>
-                      handleInputChange("termSystem", e.target.value as any)
+                      handleInputChange("termSystem", e.target.value as CreateTenantForm["termSystem"])
                     }
                     className="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700 text-neutral-900 dark:text-neutral-100"
                   >

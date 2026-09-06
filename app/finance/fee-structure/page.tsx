@@ -144,6 +144,21 @@ const MOCK_FEE_STRUCTURES: FeeStructureItem[] = [
   },
 ];
 
+/** The values FeeStructureModal collects and hands back on save. The modal owns this state; the page only
+ *  needs to describe its shape. It was previously described as `typeof formData`, which kept a dead piece of
+ *  page state alive purely to be a type. */
+type FeeFormValues = {
+  feeTypeId: string;
+  classLevel: string;
+  amount: string;
+  dueDate: string;
+  term: string;
+  allowInstallments: boolean;
+  installmentCount: string;
+  lateFee: string;
+  lateFeeType: "fixed" | "percentage";
+};
+
 function getClassesForLevel(level: EducationLevel): string[] {
   switch (level) {
     case "primary":
@@ -198,18 +213,8 @@ export default function FeeStructurePage() {
   const filterKey = `${searchQuery}-${selectedYear}-${selectedLevel}-${selectedClass}-${selectedCategory}`;
   const [prevFilterKey, setPrevFilterKey] = useState(filterKey);
 
-  // Form state
-  const [formData, setFormData] = useState({
-    feeTypeId: "",
-    classLevel: "",
-    amount: "",
-    dueDate: "",
-    term: "first-term",
-    allowInstallments: false,
-    installmentCount: "3",
-    lateFee: "",
-    lateFeeType: "fixed" as "fixed" | "percentage",
-  });
+  // No form state here on purpose: FeeStructureModal holds its own fields and hands them back to
+  // handleModalSave. The page used to keep a parallel copy that was written on open/edit and never read once.
 
   // Get applicable categories and fee types
   const applicableCategories = useMemo(() => {
@@ -290,20 +295,6 @@ export default function FeeStructurePage() {
     }
   }, [animationTrigger]);
 
-  // Reset form
-  const resetForm = () => {
-    setFormData({
-      feeTypeId: "",
-      classLevel: "",
-      amount: "",
-      dueDate: "",
-      term: "first-term",
-      allowInstallments: false,
-      installmentCount: "3",
-      lateFee: "",
-      lateFeeType: "fixed",
-    });
-  };
 
   // Handle refresh
   const handleRefresh = () => {
@@ -332,29 +323,18 @@ export default function FeeStructurePage() {
 
   // Open add modal
   const handleAddNew = () => {
-    resetForm();
     setIsAddModalOpen(true);
   };
 
   // Open edit modal
   const handleEdit = (item: FeeStructureItem) => {
+    // The modal reads `editingItem` for its initial values, so setting a second copy here changed nothing.
     setEditingItem(item);
-    setFormData({
-      feeTypeId: item.feeTypeId,
-      classLevel: item.classLevel,
-      amount: item.amount.toString(),
-      dueDate: item.dueDate,
-      term: item.term,
-      allowInstallments: item.allowInstallments,
-      installmentCount: item.installmentCount?.toString() || "3",
-      lateFee: item.lateFee?.toString() || "",
-      lateFeeType: item.lateFeeType || "fixed",
-    });
     setIsEditModalOpen(true);
   };
 
   // Handle modal save (for both add and edit)
-  const handleModalSave = async (modalFormData: typeof formData) => {
+  const handleModalSave = async (modalFormData: FeeFormValues) => {
     setIsSaving(true);
 
     const feeType = applicableFeeTypes.find((f) => f.id === modalFormData.feeTypeId);
@@ -416,7 +396,6 @@ export default function FeeStructurePage() {
       setIsAddModalOpen(false);
     }
 
-    resetForm();
     setIsSaving(false);
   };
 
@@ -788,7 +767,6 @@ export default function FeeStructurePage() {
           setIsAddModalOpen(false);
           setIsEditModalOpen(false);
           setEditingItem(null);
-          resetForm();
         }}
         onSave={handleModalSave}
         isEditing={isEditModalOpen}

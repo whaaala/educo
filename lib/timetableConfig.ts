@@ -239,8 +239,6 @@ export function generateTimeSlots(config: TimetableConfig): string[] {
     const endHours = Math.floor(endTime / 60);
     const endMins = endTime % 60;
 
-    const startFormatted = `${String(startHours).padStart(2, "0")}:${String(startMins).padStart(2, "0")}`;
-    const endFormatted = `${String(endHours).padStart(2, "0")}:${String(endMins).padStart(2, "0")}`;
 
     const startPeriod = startHours >= 12 ? "PM" : "AM";
     const endPeriod = endHours >= 12 ? "PM" : "AM";
@@ -344,8 +342,9 @@ export function getCalendarTypeLabel(type: CalendarType): string {
   return labels[type];
 }
 
-// Default export for easy access
-export default {
+// Default export for easy access. Named, not an anonymous object literal: a named default gives the value an
+// identity in stack traces and devtools, and lets an importer be renamed consistently.
+const timetableConfig = {
   CALENDAR_CONFIGS,
   SCHOOL_CONFIGS,
   getSchoolConfig,
@@ -353,3 +352,5 @@ export default {
   getBreakPeriods,
   getCalendarTypeLabel,
 };
+
+export default timetableConfig;

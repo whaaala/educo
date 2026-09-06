@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { createContainer, createElement, createComponent, makeRowBand, type BoxNode } from "@/lib/box-model";
-import { siteFromRoot, addPage, emptyPageRoot } from "@/lib/box-site";
+import { siteFromRoot, emptyPageRoot } from "@/lib/box-site";
 import { styleString, renderPageHTML, renderSiteFiles, renderSitePage, downloadSite } from "@/lib/box-export";
 import { BREAKPOINTS_EM } from "@/lib/educo-ui/base";
 

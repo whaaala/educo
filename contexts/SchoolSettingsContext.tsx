@@ -123,7 +123,7 @@ export function SchoolSettingsProvider({ children }: { children: ReactNode }) {
       if (savedLevels) {
         try {
           userSupportedLevels = JSON.parse(savedLevels) as EducationLevel[];
-        } catch (e) {
+        } catch  {
           // Ignore parse errors
         }
       }
@@ -181,7 +181,7 @@ export function SchoolSettingsProvider({ children }: { children: ReactNode }) {
           const levels = JSON.parse(savedLevels) as EducationLevel[];
           supportedLevels = levels;
           supportsMultipleLevels = levels.length > 1;
-        } catch (e) {
+        } catch  {
           // Fallback to old single-value format
           const oldValue = localStorage.getItem("educationLevel");
           if (oldValue) {
@@ -217,7 +217,7 @@ export function SchoolSettingsProvider({ children }: { children: ReactNode }) {
       if (savedBankAccount) {
         try {
           bankAccount = JSON.parse(savedBankAccount);
-        } catch (e) {
+        } catch  {
           // Use default if parsing fails
         }
       }
@@ -312,4 +312,16 @@ export function useSchoolSettings() {
     throw new Error("useSchoolSettings must be used within a SchoolSettingsProvider");
   }
   return context;
+}
+
+/**
+ * The settings if a provider is above us, `undefined` if not — for components that can work either way.
+ *
+ * The throwing version above is right for a screen that genuinely requires the settings. But a shared dialog
+ * used both inside and outside the provider was calling it in a `try/catch` to get this behaviour, which is a
+ * conditional hook: React compares hook COUNT between renders, so a hook that may throw part-way shifts every
+ * hook after it. Asking the question without throwing is the fix — the caller then handles `undefined`.
+ */
+export function useOptionalSchoolSettings() {
+  return useContext(SchoolSettingsContext);
 }

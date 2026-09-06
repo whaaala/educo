@@ -104,7 +104,7 @@ export default function TransferHistoryCard({ studentId }: TransferHistoryCardPr
 
       {/* Timeline */}
       <div className="space-y-3 sm:space-y-4">
-        {sortedTransfers.map((transfer, index) => (
+        {sortedTransfers.map((transfer, _index) => (
           <div
             key={transfer.id}
             className="relative pl-6 sm:pl-8 pb-3 sm:pb-4 border-l-2 border-gray-200/60 dark:border-gray-700/60 midnight:border-cyan-500/20 purple:border-pink-500/20 last:border-l-0 last:pb-0"

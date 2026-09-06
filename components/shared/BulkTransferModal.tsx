@@ -97,17 +97,6 @@ const headerColorConfig = {
     infoSubtext: "text-purple-700 dark:text-purple-400 midnight:text-violet-400 purple:text-violet-400",
   },
 };
-
-// Badge color configurations
-const badgeColorConfig = {
-  red: "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400",
-  green: "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400",
-  blue: "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400",
-  orange: "bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400",
-  purple: "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400",
-  gray: "bg-gray-100 dark:bg-[#22262e] text-gray-700 dark:text-gray-300",
-};
-
 export interface BulkTransferModalProps {
   isOpen: boolean;
   onClose: () => void;

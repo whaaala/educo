@@ -6,12 +6,9 @@ import {
   CheckCircle,
   XCircle,
   Clock,
-  Calendar,
   Users,
   Save,
-  Download,
   Search,
-  Filter,
 } from "lucide-react";
 
 type AttendanceStatus = "present" | "absent" | "late" | "excused";

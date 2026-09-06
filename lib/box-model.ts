@@ -201,6 +201,12 @@ export interface BoxNode {
   // Load this image immediately rather than when it nears the viewport. Off by default (lazy), which is right
   // for everything below the fold; a HERO image needs it on, or the top of the page is briefly empty.
   eager?: boolean;
+  // The image's INTRINSIC pixel size, measured once when it is uploaded. It is not a size control — the user
+  // never sets these — it is what the file actually is, which the browser otherwise only learns once the bytes
+  // have arrived. Emitted as the `width`/`height` attributes and (when the height is "auto") as an
+  // `aspect-ratio`, so the box is reserved before the photo loads and the text beneath it never jumps.
+  imgW?: number;
+  imgH?: number;
   icon?: string;          // lucide icon name (icon element)
   html?: string;          // raw HTML/iframe (embed element)
   listItems?: string[];   // list element items
@@ -992,7 +998,9 @@ function alertItemHTML(it: ComponentItem, sev: string, treat: string, dismiss: b
   const title = it.title || edit ? `<div class="eu-alert__title"${ts ? ` style="${ts}"` : ""}${itemPartAttrs("title", edit)}>${escAttr(it.title)}</div>` : "";
   const body = it.body || edit ? `<div class="eu-alert__body"${bs ? ` style="${bs}"` : ""}${itemPartAttrs("body", edit)}>${edit ? escAttr(it.body) : richBody(it.body)}</div>` : "";
   const meta = it.meta ? `<span class="eu-alert__meta"${itemPartAttrs("meta", edit)}>${escAttr(it.meta)}</span>` : "";
-  const media = it.media ? `<img class="eu-alert__media" src="${escAttr(it.media)}" alt="${escAttr(it.mediaAlt ?? "")}" />` : "";
+  // Same loading policy as every other image: the thumbnail's box is fixed in CSS so nothing shifts, but a
+  // stack of messages should not fetch a picture for each one before the visitor has scrolled to them.
+  const media = it.media ? `<img class="eu-alert__media" src="${escAttr(it.media)}" alt="${escAttr(it.mediaAlt ?? "")}" loading="lazy" decoding="async" />` : "";
   // Sub-items get the SAME treatment, recursively — no level is less editable than the top (RULE F/I).
   const kids = (it.children && it.children.length) ? `<div class="eu-alert__sub">${it.children.map((c) => alertItemHTML(c, sev, treat, false, edit ? { ...edit, parentId: it.id } : undefined, 0, false, axes)).join("")}</div>` : "";
   const close = dismiss ? `<button type="button" class="eu-alert__close" data-eu-dismiss aria-label="Dismiss">${ALERT_CLOSE_SVG}</button>` : "";
@@ -1760,6 +1768,68 @@ export function sizeToCSS(token?: string): string | undefined {
   if (!token || token === "auto") return undefined;
   if (token === "fill") return "100%";
   return token; // already "<n>%" or "<n>px"
+}
+
+/** Does this image know what shape it really is? Both dimensions must be real pixels — an SVG with no
+ *  intrinsic size reports 0 in some browsers and a made-up 300×150 in others, so 0 is the only safe reject. */
+export function hasIntrinsicSize(node: BoxNode): boolean {
+  return (node.imgW ?? 0) > 0 && (node.imgH ?? 0) > 0;
+}
+
+/**
+ * How tall an image block is, and what shape to hold for it while it loads.
+ *
+ * An image has always been given a fixed height (260px unless the user typed one), because until now the
+ * builder had no idea what shape the photo was — so "auto" in the Height field silently did nothing and every
+ * picture was cropped to a letterbox. With the intrinsic size measured at upload, "auto" finally means
+ * something: the box takes the photo's OWN shape, held open by `aspect-ratio` from the first paint, so nothing
+ * below it moves when the bytes land (Cumulative Layout Shift).
+ *
+ * The fixed height still wins whenever one is set — cropping to a deliberate shape is a design choice, and
+ * `object-fit: cover` is what makes it look right.
+ */
+export function imageSizing(node: BoxNode): { height: string; aspectRatio?: string } {
+  const explicit = sizeToCSS(node.height);
+  if (explicit) return { height: explicit };
+  // No height asked for. Take the photo's own shape if we know it; otherwise fall back to the letterbox,
+  // because an image of unknown shape with `height:auto` and `object-fit:cover` collapses to nothing.
+  if (hasIntrinsicSize(node)) return { height: "auto", aspectRatio: `${node.imgW} / ${node.imgH}` };
+  return { height: "260px" };
+}
+
+/** How long to wait for a decode before giving up and letting the picture through unmeasured. */
+export const MEASURE_TIMEOUT_MS = 8000;
+
+/**
+ * Measure a picture's natural size, once, at the moment it is added.
+ *
+ * Done here rather than by reading the file's bytes because the browser already decodes every format it can
+ * display — JPEG, PNG, WebP, AVIF, GIF — and a hand-written header parser would understand fewer of them and
+ * be wrong about more. Resolves to `{}` rather than rejecting: an unmeasurable image is not an error, it just
+ * keeps the fixed-height behaviour that existed before.
+ */
+export function measureImage(src: string): Promise<{ imgW?: number; imgH?: number }> {
+  if (!src || typeof Image === "undefined") return Promise.resolve({});
+  return new Promise((resolve) => {
+    const img = new Image();
+    let settled = false;
+    // The upload WAITS on this before it puts the picture on the page, so the promise has to be total: a
+    // decode that never finishes and never errors would mean a photo the user chose simply never appearing.
+    // Measuring is an optimisation; showing the picture is not.
+    const timer = setTimeout(() => done({}), MEASURE_TIMEOUT_MS);
+    function done(v: { imgW?: number; imgH?: number }) {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      img.onload = null; img.onerror = null;
+      resolve(v);
+    }
+    img.onload = () => done(img.naturalWidth > 0 && img.naturalHeight > 0
+      ? { imgW: img.naturalWidth, imgH: img.naturalHeight }
+      : {});
+    img.onerror = () => done({});
+    img.src = src;
+  });
 }
 
 /** flex behaviour for a child inside a flex parent, derived from its main-size token.

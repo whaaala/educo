@@ -12,8 +12,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../../contexts/ThemeContext';
 
-const { height: SCREEN_HEIGHT } = Dimensions.get('window');
-
 function useIsTablet() {
   const [isTablet] = useState(() => Dimensions.get('window').width >= 768);
   return isTablet;

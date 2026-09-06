@@ -6,7 +6,6 @@ import {
   ChevronUp,
   Award,
   BookOpen,
-  Upload,
   FileText,
   Calendar,
 } from "lucide-react";
@@ -14,13 +13,10 @@ import FormInput from "@/components/shared/FormInput";
 import FormDropdown from "@/components/shared/FormDropdown";
 import FileUpload from "@/components/shared/FileUpload";
 import TagInput from "@/components/shared/TagInput";
-import { ValidationErrors } from "@/lib/validation";
+import type { FormSectionProps } from "@/components/shared/form-section-types";
+import type { TeacherFormData } from "./types";
 
-interface QualificationsSectionProps {
-  formData: any;
-  onChange: (field: string, value: any) => void;
-  errors?: ValidationErrors;
-}
+type QualificationsSectionProps = FormSectionProps<TeacherFormData>;
 
 export default function QualificationsSection({
   formData,

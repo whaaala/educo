@@ -521,7 +521,7 @@ export default function ChildLeaveRequestDetailsModal({
                 {/* Timeline line */}
                 <div className="absolute left-2 top-2 bottom-2 w-0.5 bg-gray-200 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]" />
 
-                {leaveHistory.map((entry, idx) => {
+                {leaveHistory.map((entry, _idx) => {
                   const getActionConfig = (action: string) => {
                     switch (action) {
                       case "submitted":

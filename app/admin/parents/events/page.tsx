@@ -10,7 +10,6 @@ import { getAllParents } from "@/lib/mockParents";
 import type { ColumnConfig, GridCardProps } from "@/types/components";
 import {
   Calendar,
-  CalendarDays,
   Clock,
   MapPin,
   Users,
@@ -61,8 +60,6 @@ const generateAdminEvents = (): AdminEvent[] => {
   ];
 
   const audiences: AdminEvent["targetAudience"][] = ["All", "Primary", "Secondary", "Specific Classes"];
-  const statuses: EventStatus[] = ["upcoming", "upcoming", "upcoming", "ongoing", "completed"];
-
   eventData.forEach((data, idx) => {
     const daysOffset = idx * 7 - 14;
     const eventDate = new Date(BASE_DATE);

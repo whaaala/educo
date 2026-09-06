@@ -1,4 +1,4 @@
-/* eslint-disable */
+ 
 /**
  * Regenerate lib/educo-ui/stock-photos-curated.generated.ts — the bundled no-key photo library — from the
  * official Unsplash API. This is the repeatable/CI-friendly path (the initial set was crawled from the site).

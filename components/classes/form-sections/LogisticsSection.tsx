@@ -8,12 +8,10 @@ import {
   Users,
 } from "lucide-react";
 import FormInput from "@/components/shared/FormInput";
+import type { FormSectionProps } from "@/components/shared/form-section-types";
+import type { ClassFormData } from "./types";
 
-interface LogisticsSectionProps {
-  formData: any;
-  onChange: (field: string, value: any) => void;
-  errors?: any;
-}
+type LogisticsSectionProps = FormSectionProps<ClassFormData>;
 
 export default function LogisticsSection({
   formData,

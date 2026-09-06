@@ -25,7 +25,7 @@ import {
   chartTheme, categorical, css, hexToHsl, lighten, darken, type HSL, type ChartThemeName,
 } from "./palette";
 import {
-  sectorPath, arcPath, smoothPath, roundedTopRect, axisTicks, niceCeil, polar,
+  sectorPath, smoothPath, roundedTopRect, axisTicks, niceCeil, polar,
 } from "./geometry";
 
 export interface ChartSvgOptions {

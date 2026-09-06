@@ -1,7 +1,11 @@
+import type { ComponentProps } from "react";
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../contexts/ThemeContext';
 import { type DriveSection, SIDEBAR_SECTIONS } from './driveMockData';
+
+/** Ionicons' own set of icon names. A name outside it renders nothing, so it is worth checking. */
+type IoniconName = ComponentProps<typeof Ionicons>["name"];
 
 const FONTS = {
   regular: 'Inter_400Regular',
@@ -42,7 +46,7 @@ export function DriveSidebar({ activeSection, onSectionChange }: DriveSidebarPro
           { backgroundColor: isActive ? colors.primary + '18' : 'transparent' },
         ]}>
           <Ionicons
-            name={section.icon as any}
+            name={section.icon as IoniconName}
             size={18}
             color={isActive ? colors.primary : colors.textMuted}
           />

@@ -10,8 +10,6 @@ import {
   Clock,
   AlertTriangle,
   Eye,
-  BookOpen,
-  ClipboardList,
   Calendar,
   FileText,
 } from "lucide-react";
@@ -204,37 +202,6 @@ const MOCK_HOMEWORK: Homework[] = [
     maxScore: 20,
     feedback: "Excellent visual representation. Great attention to detail.",
   },
-];
-
-// Filter Options
-const CHILD_OPTIONS = [
-  { value: "all", label: "All Children" },
-  { value: "child-001", label: "Adaeze Okonkwo" },
-  { value: "child-002", label: "Chukwuemeka Okonkwo" },
-];
-
-const SUBJECT_OPTIONS = [
-  { value: "all", label: "All Subjects" },
-  { value: "Physics", label: "Physics" },
-  { value: "Chemistry", label: "Chemistry" },
-  { value: "Mathematics", label: "Mathematics" },
-  { value: "English Language", label: "English Language" },
-  { value: "Biology", label: "Biology" },
-  { value: "Social Studies", label: "Social Studies" },
-];
-
-const STATUS_OPTIONS = [
-  { value: "all", label: "All Status" },
-  { value: "pending", label: "Pending" },
-  { value: "submitted", label: "Submitted" },
-  { value: "graded", label: "Graded" },
-  { value: "overdue", label: "Overdue" },
-];
-
-const YEAR_OPTIONS = [
-  { value: "all", label: "All Years" },
-  { value: "2024", label: "2024" },
-  { value: "2023", label: "2023" },
 ];
 
 function formatDate(dateStr: string) {

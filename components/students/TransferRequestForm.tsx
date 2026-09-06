@@ -36,7 +36,7 @@ export default function TransferRequestForm({
   studentAdmissionNumber,
   currentClass,
   currentSection,
-  currentBranchId,
+  currentBranchId: _currentBranchId,
   currentBranchName,
   onSubmit,
   onCancel,
@@ -80,7 +80,8 @@ export default function TransferRequestForm({
     },
   ];
 
-  const priorities = [
+  // Tied to the request type, so an option value that is not a real priority stops compiling.
+  const priorities: { value: NonNullable<CreateTransferRequest["priority"]>; label: string }[] = [
     { value: "low", label: "Low" },
     { value: "normal", label: "Normal" },
     { value: "high", label: "High" },
@@ -117,7 +118,7 @@ export default function TransferRequestForm({
     { value: "D", label: "D" },
   ];
 
-  const handleChange = (field: keyof CreateTransferRequest, value: any) => {
+  const handleChange = <K extends keyof CreateTransferRequest>(field: K, value: CreateTransferRequest[K]) => {
     setFormData((prev) => ({
       ...prev,
       [field]: value,

@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useMemo } from "react";
 import ResponsiveListTable, { type ColumnConfig } from "@/components/shared/ResponsiveListTable";
-import RefreshButton from "@/components/shared/RefreshButton";
 import CustomDropdown from "@/components/shared/CustomDropdown";
 import WeekNavigator from "@/components/shared/WeekNavigator";
 import AttendanceStatusBadge from "@/components/shared/AttendanceStatusBadge";
@@ -35,7 +34,7 @@ const generateWeekOptions = (startYear: number = new Date().getFullYear()) => {
 
   // Start from the first Monday of the selected year
   // January 1st might not be a Monday, so we need to adjust
-  let weekStartDate = new Date(startYear, 0, 1); // Jan 1
+  const weekStartDate = new Date(startYear, 0, 1); // Jan 1
   const dayOfWeek = weekStartDate.getDay(); // 0 = Sunday, 1 = Monday, etc.
 
   // If Jan 1 is not Monday, move to the first Monday
@@ -75,14 +74,6 @@ const generateWeekOptions = (startYear: number = new Date().getFullYear()) => {
     const year = date.getFullYear();
     return `${day} ${month} ${year}`;
   };
-
-  // Format date helper - very compact format (DD Mon)
-  const formatCompactDate = (date: Date) => {
-    const day = String(date.getDate()).padStart(2, '0');
-    const month = months[date.getMonth()];
-    return `${day} ${month}`;
-  };
-
   for (let weekNum = 1; weekNum <= totalWeeks; weekNum++) {
     const weekStart = new Date(weekStartDate);
     const weekEnd = new Date(weekStartDate);
@@ -156,7 +147,7 @@ const getCurrentWeekNumber = (startYear: number): number => {
   }
 
   // Find the first Monday of the year (same logic as generateWeekOptions)
-  let firstMonday = new Date(startYear, 0, 1); // Jan 1
+  const firstMonday = new Date(startYear, 0, 1); // Jan 1
   const dayOfWeek = firstMonday.getDay(); // 0 = Sunday, 1 = Monday, etc.
 
   // Adjust to get the first Monday
@@ -182,7 +173,7 @@ export default function AttendanceByClass({ year = new Date().getFullYear(), onY
   const [selectedYear, setSelectedYear] = useState(year);
   const [config, setConfig] = useState<TimetableConfig>(getTimetableConfig());
   const [attendanceData, setAttendanceData] = useState<ClassAttendanceData[]>([]);
-  const [lastUpdated, setLastUpdated] = useState("25 May 2024");
+  const [_lastUpdated, _setLastUpdated] = useState("25 May 2024");
   const [enrolledSubjects, setEnrolledSubjects] = useState<string[]>([]);
   const [selectedWeek, setSelectedWeek] = useState(() => getCurrentWeekNumber(year));
 
@@ -253,27 +244,6 @@ export default function AttendanceByClass({ year = new Date().getFullYear(), onY
 
     onYearChange?.(newYear);
   };
-
-  const handleRefresh = async () => {
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    const now = new Date();
-    setLastUpdated(now.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }));
-
-    // Reload config in case it changed
-    const loadedConfig = getTimetableConfig();
-    setConfig(loadedConfig);
-
-    // Regenerate student-specific attendance data with selected year (full year)
-    const studentIdToUse = studentId || "default-student";
-    setAttendanceData(getStudentAttendanceData(studentIdToUse, loadedConfig.periodsPerDay, 365, selectedYear));
-
-    // Reload enrolled subjects if student is specified
-    if (studentId) {
-      const subjects = getStudentEnrolledSubjects(studentId);
-      setEnrolledSubjects(subjects);
-    }
-  };
-
   const getStatusIndicator = (status: AttendanceStatus) => {
     const colors = {
       present: "bg-green-500 dark:bg-green-600",
@@ -447,10 +417,6 @@ export default function AttendanceByClass({ year = new Date().getFullYear(), onY
     const startDay = parseInt(startParts[0]);
     const startMonth = months.indexOf(startParts[1]);
     const startYear = parseInt(startParts[2]);
-
-    // Get configured school days (e.g., ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"])
-    const schoolDays = config.daysOfWeek || ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
-
     // Filter attendance data to only include dates within this week (include ALL days, even blocked ones)
     return attendanceData.filter(item => {
       const dateParts = item.date.split(' ');
@@ -466,11 +432,6 @@ export default function AttendanceByClass({ year = new Date().getFullYear(), onY
       return itemDate >= weekStart && itemDate <= weekEnd;
     }).slice(0, 7); // Ensure we only get 7 days max
   }, [attendanceData, selectedWeek, weekOptions]);
-
-  const handleWeekChange = (value: string | number) => {
-    setSelectedWeek(Number(value));
-  };
-
   const handlePreviousWeek = () => {
     if (selectedWeek > 1) {
       setSelectedWeek(selectedWeek - 1);

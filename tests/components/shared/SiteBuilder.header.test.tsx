@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import { render, screen, within, fireEvent } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import SiteBuilder from "@/components/shared/SiteBuilder/SiteBuilder";
 import { createSite, defaultHeaderLayout } from "@/lib/site-storage";

@@ -1,6 +1,6 @@
 // Mock Tenant Data (Educo v4.0 Multi-Tenant System)
 
-import { Tenant, TenantSummary, ReportCardConfig, TranscriptConfig } from "@/types/school";
+import { Tenant, TenantSummary } from "@/types/school";
 
 /**
  * Mock Tenants - Represents different schools using the Educo system

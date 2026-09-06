@@ -3239,14 +3239,7 @@ describe("DocEditor — Comprehensive Look & Feel", () => {
     it("comments panel is docked to the right edge (not floating)", () => {
       const { container } = render(
         <DocEditor value={defaultValue} onChange={onChange} />
-      );
-      // Open comments panel
-      const commentsIcon = container.querySelector('button[aria-label*="comment" i]') ||
-        Array.from(container.querySelectorAll("button")).find((b) =>
-          b.querySelector("svg") && b.className.includes("rounded-full") &&
-          b.parentElement?.querySelector('[class*="MessageCircle"]')
-        );
-      // Toggle comments via the header icon
+      );      // Toggle comments via the header icon
       const headerBtns = Array.from(container.querySelectorAll("button"));
       const commentBtn = headerBtns.find(b => b.textContent?.includes("") && b.querySelector('svg'));
       if (commentBtn) fireEvent.click(commentBtn);
@@ -3502,14 +3495,7 @@ describe("DocEditor — Comprehensive Look & Feel", () => {
     it("comment creation popover textarea has mention placeholder text", () => {
       const { container } = render(
         <DocEditor value={defaultValue} onChange={onChange} />
-      );
-      // The popover textarea should exist when a comment is being created
-      // Check that the component renders with mention support placeholder
-      const textareas = container.querySelectorAll("textarea");
-      const mentionTextarea = Array.from(textareas).find(
-        (ta) => ta.placeholder?.includes("@ to mention") || ta.placeholder?.includes("use @ to mention")
-      );
-      // Popover is not visible by default (no selection), so just verify the component loaded
+      );// Popover is not visible by default (no selection), so just verify the component loaded
       expect(container.querySelector("[data-doc-editor-root]")).not.toBeNull();
     });
 
@@ -3621,10 +3607,7 @@ describe("DocEditor — Comprehensive Look & Feel", () => {
     it("margin bubble comment button has onMouseDown preventDefault", () => {
       const { container } = render(
         <DocEditor value={defaultValue} onChange={onChange} />
-      );
-      // The margin bubble button should have aria-label "Add comment to selection"
-      const bubbleBtn = container.querySelector('[aria-label="Add comment to selection"]');
-      // Not visible without text selection, but verify the component rendered
+      );      // Not visible without text selection, but verify the component rendered
       expect(container.querySelector("[data-doc-editor-root]")).not.toBeNull();
     });
 
@@ -3905,10 +3888,7 @@ describe("DocEditor — Comprehensive Look & Feel", () => {
         <DocEditor value={defaultValue} onChange={onChange} />
       );
       const toolbar = container.querySelector("[data-doc-toolbar]");
-      expect(toolbar).not.toBeNull();
-      // The More button should exist (visible only on small screens via CSS)
-      const moreBtn = toolbar!.querySelector('button[aria-label="More formatting options"]');
-      // It may not have aria-label, check by tooltip content instead
+      expect(toolbar).not.toBeNull();      // It may not have aria-label, check by tooltip content instead
       // The button is wrapped in a Tooltip, so look for the ellipsis icon container
       const allBtns = toolbar!.querySelectorAll("button");
       let found = false;
@@ -4131,11 +4111,7 @@ describe("DocEditor — Comprehensive Look & Feel", () => {
       expect(fileInput.accept).toContain(".avif");
     });
 
-    it("MIME type validation: rejects non-image files disguised with image extension", () => {
-      // The isValidImageFile function should reject files with wrong MIME types
-      // This tests the security aspect — a .exe renamed to .jpg should be caught
-      const fakeFile = new File(["not-an-image"], "malicious.jpg", { type: "application/x-msdownload" });
-      // We test the exported validation indirectly through the component behavior
+    it("MIME type validation: rejects non-image files disguised with image extension", () => {      // We test the exported validation indirectly through the component behavior
       const { container } = render(<DocEditor value={defaultValue} onChange={onChange} />);
       const fileInput = container.querySelector('input[type="file"]') as HTMLInputElement;
       expect(fileInput).not.toBeNull();
@@ -4144,10 +4120,7 @@ describe("DocEditor — Comprehensive Look & Feel", () => {
 
   describe("Image toolbar and tools", () => {
     it("image contextual toolbar has Rotate 90° button", () => {
-      const { container } = render(<DocEditor value={defaultValue} onChange={onChange} />);
-      // The toolbar appears when an image is selected — verify aria-label exists in the component
-      const rotateBtn = container.querySelector('[aria-label="Rotate 90 degrees"]');
-      // Button is conditionally rendered when an image is selected, so it won't be present without a selected image
+      const { container } = render(<DocEditor value={defaultValue} onChange={onChange} />);      // Button is conditionally rendered when an image is selected, so it won't be present without a selected image
       // But we verify the component can render without errors
       expect(container.querySelector('[data-doc-editor-root]')).not.toBeNull();
     });

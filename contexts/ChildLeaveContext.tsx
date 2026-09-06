@@ -78,12 +78,6 @@ const STORAGE_KEY = "educo_child_leave_requests";
 const NOTIFICATIONS_KEY = "educo_leave_notifications";
 const DATA_VERSION = "1.0";
 
-// Generate initial mock data
-function generateInitialLeaveRequests(): ChildLeaveRequest[] {
-  // This will be populated from existing mock data or created fresh
-  return [];
-}
-
 export function ChildLeaveProvider({ children }: { children: ReactNode }) {
   const [leaveRequests, setLeaveRequests] = useState<ChildLeaveRequest[]>([]);
   const [notifications, setNotifications] = useState<LeaveNotification[]>([]);

@@ -4,13 +4,10 @@ import { useState } from "react";
 import { Briefcase, Building2, Phone, Mail, DollarSign, ChevronUp } from "lucide-react";
 import FormInput from "@/components/shared/FormInput";
 import FormDropdown from "@/components/shared/FormDropdown";
-import { ValidationErrors } from "@/lib/validation";
+import type { FormSectionProps } from "@/components/shared/form-section-types";
+import type { ParentFormData } from "./types";
 
-interface EmploymentSectionProps {
-  formData: any;
-  onChange: (field: string, value: any) => void;
-  errors?: ValidationErrors;
-}
+type EmploymentSectionProps = FormSectionProps<ParentFormData>;
 
 export default function EmploymentSection({
   formData,

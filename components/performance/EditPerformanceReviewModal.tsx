@@ -13,14 +13,6 @@ interface EditPerformanceReviewModalProps {
   onClose: () => void;
   review: PerformanceReview;
 }
-
-interface Reviewer {
-  id: string;
-  name: string;
-  position: string;
-  department: string;
-}
-
 interface EditFormData {
   reviewPeriod: ReviewPeriod | "";
   reviewYear: string;

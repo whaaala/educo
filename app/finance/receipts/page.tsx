@@ -28,7 +28,6 @@ import {
   XCircle,
   FileText,
   TrendingUp,
-  CreditCard,
 } from "lucide-react";
 import { RECEIPT_ACADEMIC_YEARS, RECEIPT_TERMS, CLASS_OPTIONS, RECEIPT_STATUS_OPTIONS } from "../config";
 
@@ -1013,8 +1012,8 @@ function ReceiptViewModal({
   onClose,
   receipt,
   countryCode,
-  currencySymbol,
-  getStatusBadge,
+  currencySymbol: _currencySymbol,
+  getStatusBadge: _getStatusBadge,
   getPaymentMethodLabel,
   onPrint,
   onDownload,

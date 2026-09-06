@@ -147,7 +147,7 @@ const mockTransferRequests: StaffTransferRequest[] = [
 
 export default function StaffTransfersPage() {
   const [requests, setRequests] = useState<StaffTransferRequest[]>(mockTransferRequests);
-  const [selectedRequest, setSelectedRequest] = useState<StaffTransferRequest | null>(null);
+  const [_selectedRequest, setSelectedRequest] = useState<StaffTransferRequest | null>(null);
   const [isNewRequestModalOpen, setIsNewRequestModalOpen] = useState(false);
 
   const handleApprove = (requestId: string) => {

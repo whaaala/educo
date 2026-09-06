@@ -6,7 +6,7 @@ import { ChevronRight, Search, Loader2 } from "lucide-react";
 interface SearchableDropdownOption {
   value: string;
   label: string;
-  [key: string]: any; // Allow additional properties
+  [key: string]: unknown; // Allow additional properties
 }
 
 interface SearchableDropdownProps {

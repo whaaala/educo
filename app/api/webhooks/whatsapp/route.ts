@@ -111,7 +111,7 @@ export async function POST(request: NextRequest) {
 async function handleIncomingMessage(
   message: WhatsAppIncomingMessage,
   contacts: WhatsAppContact[],
-  metadata: WhatsAppMetadata
+  _metadata: WhatsAppMetadata
 ) {
   const contact = contacts?.find((c) => c.wa_id === message.from);
 
@@ -205,7 +205,7 @@ async function handleIncomingMessage(
 // Handle status updates
 async function handleStatusUpdate(
   status: WhatsAppStatusUpdate,
-  metadata: WhatsAppMetadata
+  _metadata: WhatsAppMetadata
 ) {
   console.log("[WhatsApp Webhook] Status update:", {
     messageId: status.id,
@@ -240,7 +240,7 @@ async function handleStatusUpdate(
 // Handle webhook errors
 function handleWebhookError(
   error: WhatsAppWebhookError,
-  metadata: WhatsAppMetadata
+  _metadata: WhatsAppMetadata
 ) {
   console.error("[WhatsApp Webhook] Error received:", {
     code: error.code,

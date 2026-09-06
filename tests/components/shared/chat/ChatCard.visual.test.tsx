@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render } from "@testing-library/react";
 import ChatCard from "@/components/shared/chat/ChatCard";
 import { ChatConversation } from "@/components/shared/chat/types";
 
@@ -19,7 +19,7 @@ describe("ChatCard — Visual / CSS", () => {
 
   const defaultProps = {
     chat: mockChat,
-    formatTime: (t: string) => "10:00 AM",
+    formatTime: (_t: string) => "10:00 AM",
     isSelected: false,
     onSelect: vi.fn(),
     onView: vi.fn(),

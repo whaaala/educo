@@ -12,7 +12,7 @@
 
 import { useState, useRef, useLayoutEffect, useEffect, useMemo } from "react";
 import { createPortal } from "react-dom";
-import { ChevronDown, Search, X, Paintbrush, Check, Image as ImageIcon, Loader2 } from "lucide-react";
+import { ChevronDown, Search, X, Paintbrush, Check, Image as ImageIcon } from "lucide-react";
 import { BG_PRESETS, BG_CATEGORIES, type BgPreset } from "@/lib/educo-ui/backgrounds";
 import { searchStockPhotos, hasUnsplashKey, setUnsplashKey, PHOTO_TOPICS, type StockPhoto } from "@/lib/educo-ui/stock-photos";
 

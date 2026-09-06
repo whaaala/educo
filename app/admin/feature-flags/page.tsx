@@ -2,11 +2,9 @@
 
 import { useState, useEffect } from "react";
 import { DashboardPage } from "@/components/pages";
-import { Settings, Save, RotateCcw, Search, Filter } from "lucide-react";
+import { Save, RotateCcw, Search, Filter } from "lucide-react";
 import { useFeatureFlags } from "@/hooks/useFeatureFlags";
 import { DEFAULT_FEATURE_FLAGS, type FeatureFlagKey } from "@/lib/featureFlags";
-import type { EducationLevel, InstitutionType } from "@/contexts/SchoolSettingsContext";
-
 export default function FeatureFlagsAdminPage() {
   const { tenantContext } = useFeatureFlags();
   const [searchQuery, setSearchQuery] = useState("");

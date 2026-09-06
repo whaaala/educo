@@ -6,13 +6,10 @@ import {
   ChevronUp,
 } from "lucide-react";
 import FileUpload from "@/components/shared/FileUpload";
-import { ValidationErrors } from "@/lib/validation";
+import type { FormSectionProps } from "@/components/shared/form-section-types";
+import type { TeacherFormData } from "./types";
 
-interface DocumentsSectionProps {
-  formData: any;
-  onChange: (field: string, value: any) => void;
-  errors?: ValidationErrors;
-}
+type DocumentsSectionProps = FormSectionProps<TeacherFormData>;
 
 export default function DocumentsSection({
   formData,

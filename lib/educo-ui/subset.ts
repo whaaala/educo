@@ -45,14 +45,37 @@ function topLevelBlocks(css: string): string[] {
   return blocks;
 }
 
-/** Does this selector name a class the page does not have? */
+/**
+ * A functional pseudo-class holds an ALTERNATIVE list, not a chain: `:is(.eu-a, .eu-b) .eu-c` matches with
+ * only ONE of a and b on the page. The all-must-be-present test below would wrongly drop it, so a selector
+ * using one is not attributed at all — back to "when in doubt, keep".
+ *
+ * The component sheet contains no such selector today (only `:not(:disabled)`, which names no class). This
+ * exists so that the day someone writes one, it degrades to over-shipping rather than to a broken page.
+ */
+function hasAlternativeList(selector: string): boolean {
+  return /:(?:is|where|has|not)\([^)]*\.eu-/.test(selector);
+}
+
+/**
+ * Does this selector name a class the page does not have?
+ *
+ * ALL of a selector's classes must be present, not merely one of them. `.eu-root .eu-accordion--invert
+ * .eu-accordion__item` is a CHAIN: it can only ever match if the page has an element with each class in it.
+ * Keeping it because `eu-accordion__item` happens to be present shipped every accordion variant's rules to
+ * every page with any accordion on it — more than half of a busy page's CSS was rules that could not match.
+ *
+ * This is still only a NECESSARY condition (the classes could be on unrelated elements), so it stays on the
+ * safe side of the subsetter's rule: it may keep a rule that cannot match, never drop one that can.
+ */
 function selectorIsUnused(selector: string, used: Set<string>): boolean {
+  if (hasAlternativeList(selector)) return false;
   const classes = [...selector.matchAll(/\.(eu-[A-Za-z0-9_-]+)/g)].map((m) => m[1]);
   if (classes.length === 0) return false;          // names no eu- class → cannot attribute → keep
   // `.eu-root .eu-alert` is only needed if the page HAS an alert; `.eu-root` alone is always needed.
   const specific = classes.filter((c) => c !== "eu-root");
   if (specific.length === 0) return false;
-  return !specific.some((c) => used.has(c));
+  return !specific.every((c) => used.has(c));
 }
 
 /**

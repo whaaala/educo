@@ -16,15 +16,14 @@ import {
   CheckCircle2,
   Clock,
   AlertCircle,
-  FileText,
   History,
   FileCheck,
   Phone,
   Download,
   HelpCircle,
 } from "lucide-react";
-import CurrencyIcon from "@/components/shared/CurrencyIcon";
 import type { ParentFeeRecord } from "@/types/parent";
+import type { PaymentDetails } from "@/components/parents/PayFeesModal";
 import {
   feeSortOptions,
   filterFees,
@@ -158,7 +157,7 @@ export default function ParentFeesPage() {
   const searchParams = useSearchParams();
   const { settings } = useSchoolSettings();
   const currencyCode = settings.currency || "NGN";
-  const { money, currencySymbol } = useMemo(() => {
+  const { money } = useMemo(() => {
     const formatter = new Intl.NumberFormat(undefined, {
       style: "currency",
       currency: currencyCode,
@@ -328,7 +327,7 @@ export default function ParentFeesPage() {
     setPayFeesModalOpen(true);
   }
 
-  const handlePaymentComplete = (paymentDetails: any) => {
+  const handlePaymentComplete = (paymentDetails: PaymentDetails) => {
     console.log("Payment completed:", paymentDetails);
     setPayFeesModalOpen(false);
     // In production, this would refresh the data

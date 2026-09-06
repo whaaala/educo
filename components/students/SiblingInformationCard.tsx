@@ -5,6 +5,10 @@ interface Sibling {
   photo?: string | File | null;
   class?: string;
   section?: string;
+  /** Older records use `avatar` for the photo and `classNum` for the class. The card already reads both —
+   *  it just did so through `as any`, which meant a typo in either name would have shown a blank silently. */
+  avatar?: string;
+  classNum?: string;
 }
 
 interface SiblingInformationCardProps {
@@ -37,8 +41,8 @@ export default function SiblingInformationCard({
           // Check multiple possible field names for photo
           const siblingPhotoUrl = typeof sibling?.photo === "string"
             ? sibling.photo
-            : typeof (sibling as any)?.avatar === "string"
-            ? (sibling as any).avatar
+            : typeof sibling?.avatar === "string"
+            ? sibling.avatar
             : null;
 
           // Debug: Log for first sibling only
@@ -49,7 +53,7 @@ export default function SiblingInformationCard({
           }
 
           const siblingName = sibling?.name || "Unknown";
-          const siblingClass = sibling?.class || (sibling as any)?.classNum || "-";
+          const siblingClass = sibling?.class || sibling?.classNum || "-";
           const siblingSection = sibling?.section || "-";
 
           return (

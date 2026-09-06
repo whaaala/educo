@@ -1,3 +1,4 @@
+import { withPlugins } from "./jspdf-types";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import type { AdminParent } from "@/lib/mockParents";
@@ -159,7 +160,7 @@ export function exportParentsToPDF(
   });
 
   // Add page numbers and footer
-  const pageCount = (doc as any).internal.getNumberOfPages();
+  const pageCount = withPlugins(doc).internal.getNumberOfPages();
   for (let i = 1; i <= pageCount; i++) {
     doc.setPage(i);
     doc.setFontSize(8);

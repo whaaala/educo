@@ -27,7 +27,6 @@ import {
   ChevronRight,
   ChevronLeft,
   MapPin,
-  Layers,
   ArrowRight,
   FolderOpen,
 } from "lucide-react";
@@ -51,21 +50,6 @@ interface FormData {
 
 // Education level type for filtering (lowercase for internal use)
 type EducationLevel = "primary" | "secondary" | "tertiary";
-
-// Map context education levels to modal format
-const mapContextLevelToLocal = (level: ContextEducationLevel): EducationLevel => {
-  switch (level) {
-    case "Primary":
-      return "primary";
-    case "Secondary":
-      return "secondary";
-    case "Tertiary":
-      return "tertiary";
-    default:
-      return "secondary";
-  }
-};
-
 // All possible education levels for mapping
 const ALL_EDUCATION_LEVELS: { value: EducationLevel; label: string; contextLevel: ContextEducationLevel }[] = [
   { value: "primary", label: "Primary School", contextLevel: "Primary" },
@@ -1683,7 +1667,7 @@ export default function IssueLoanModal({
                 <div>
                   <p className="text-sm font-semibold text-green-700 dark:text-green-300">Ready to issue</p>
                   <p className="text-xs text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400 mt-1">
-                    "{selectedBook.title}" will be issued to {selectedMember.name} until{" "}
+                    &quot;{selectedBook.title}&quot; will be issued to {selectedMember.name} until{" "}
                     {formData.dueDate && new Date(formData.dueDate).toLocaleDateString("en-US", {
                       year: "numeric",
                       month: "long",

@@ -1,3 +1,4 @@
+import type { ComponentProps } from "react";
 import { useState } from 'react';
 import {
   View,
@@ -14,6 +15,9 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../contexts/ThemeContext';
 import Tooltip from '../components/ui/Tooltip';
+
+/** Ionicons' own set of icon names. A name outside it renders nothing, so it is worth checking. */
+type IoniconName = ComponentProps<typeof Ionicons>["name"];
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -491,7 +495,7 @@ export default function TermProgressScreen() {
                         <View style={styles.subjectStatCardTop}>
                           <Text style={[styles.subjectStatCardLabel, { color: trendInfo.color }]}>Trend</Text>
                           <View style={[styles.subjectStatCardIcon, { backgroundColor: isDark ? trendInfo.color + '30' : trendInfo.color + '30' }]}>
-                            <Ionicons name={trendInfo.icon as any} size={isTablet ? 12 : 10} color={trendInfo.color} />
+                            <Ionicons name={trendInfo.icon as IoniconName} size={isTablet ? 12 : 10} color={trendInfo.color} />
                           </View>
                         </View>
                         <Text style={[styles.subjectStatCardValue, { color: trendInfo.color }, isTablet && styles.subjectStatCardValueTablet]}>

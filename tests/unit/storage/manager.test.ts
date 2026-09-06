@@ -86,8 +86,6 @@ const mockSettings: StorageSettings = {
 // Feature: StorageManager singleton for managing storage providers
 describe("StorageManager", () => {
   let getStorageManager: typeof import("@/lib/services/storage").getStorageManager;
-  let resetStorageManager: typeof import("@/lib/services/storage").resetStorageManager;
-
   beforeEach(async () => {
     // Re-establish mock return values (vitest mockReset clears them between tests)
     mockIsSupabaseConfigured.mockReturnValue(true);
@@ -107,7 +105,6 @@ describe("StorageManager", () => {
     vi.resetModules();
     const mod = await import("@/lib/services/storage");
     getStorageManager = mod.getStorageManager;
-    resetStorageManager = mod.resetStorageManager;
   });
 
   describe("singleton pattern", () => {

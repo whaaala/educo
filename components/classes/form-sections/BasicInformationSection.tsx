@@ -14,12 +14,10 @@ import {
 import FormInput from "@/components/shared/FormInput";
 import FormDropdown from "@/components/shared/FormDropdown";
 import { useSchoolSettings } from "@/contexts/SchoolSettingsContext";
+import type { FormSectionProps } from "@/components/shared/form-section-types";
+import type { ClassFormData } from "./types";
 
-interface BasicInformationSectionProps {
-  formData: any;
-  onChange: (field: string, value: any) => void;
-  errors?: any;
-}
+type BasicInformationSectionProps = FormSectionProps<ClassFormData>;
 
 export default function BasicInformationSection({
   formData,
@@ -29,12 +27,7 @@ export default function BasicInformationSection({
   const [isExpanded, setIsExpanded] = useState(true);
   const { settings } = useSchoolSettings();
 
-  const isTertiary = formData.educationLevel === "Tertiary";
-  const isSecondary = formData.educationLevel === "Secondary";
-  const isPrimary = formData.educationLevel === "Primary";
-  const isNursery = formData.educationLevel === "Nursery" || formData.educationLevel === "Kindergarten";
-  const isJuniorSecondary = formData.educationLevel === "Junior Secondary";
-
+  const isTertiary = formData.educationLevel === "Tertiary";  const isNursery = formData.educationLevel === "Nursery" || formData.educationLevel === "Kindergarten";
   // Section/Stream is optional for Nursery, required for others (except Tertiary)
   const isSectionOptional = isNursery;
 

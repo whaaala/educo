@@ -3,10 +3,19 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { DisciplinaryAction, Complaint, CreateDisciplinaryAction, CreateComplaint } from "@/types/discipline";
 
+/** The five fields a disciplinary record copies from the member of staff it is about. */
+export interface DisciplinedStaff {
+  staffName: string;
+  staffEmail: string;
+  staffDepartment: string;
+  staffPosition: string;
+  profilePhoto?: string;
+}
+
 interface DisciplineContextType {
   // Disciplinary Actions
   disciplinaryActions: DisciplinaryAction[];
-  addDisciplinaryAction: (staffData: any, actionData: CreateDisciplinaryAction) => void;
+  addDisciplinaryAction: (staffData: DisciplinedStaff, actionData: CreateDisciplinaryAction) => void;
   updateDisciplinaryAction: (actionId: string, updates: Partial<DisciplinaryAction>) => void;
   deleteDisciplinaryAction: (actionId: string) => void;
   getStaffDisciplinaryActions: (staffId: string) => DisciplinaryAction[];
@@ -89,7 +98,7 @@ export function DisciplineProvider({ children }: { children: ReactNode }) {
   }, [complaints, isHydrated]);
 
   // Disciplinary Action Functions
-  const addDisciplinaryAction = (staffData: any, actionData: CreateDisciplinaryAction) => {
+  const addDisciplinaryAction = (staffData: DisciplinedStaff, actionData: CreateDisciplinaryAction) => {
     const timestamp = Date.now();
     const random = Math.floor(Math.random() * 1000);
     const uniqueId = `DA${timestamp}${random}`;

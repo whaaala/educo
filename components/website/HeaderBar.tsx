@@ -174,7 +174,6 @@ export default function HeaderBar({
         const src = el.src || site.header?.logoUrl;
         const transparent = el.bg === "transparent";
         if (src) {
-          // eslint-disable-next-line @next/next/no-img-element
           return <img src={src} alt="logo" className="rounded-xl object-contain pointer-events-none" style={{ width: w, height: h, background: transparent ? "transparent" : el.bg ? colorToCSS(el.bg) : "#fff" }} />;
         }
         const initial = (site.name || "S").charAt(0);

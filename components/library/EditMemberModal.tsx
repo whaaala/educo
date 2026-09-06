@@ -16,8 +16,6 @@ import {
   GraduationCap,
   Briefcase,
   School,
-  CreditCard,
-  Hash,
   UserCheck,
   UserX,
   Loader2,

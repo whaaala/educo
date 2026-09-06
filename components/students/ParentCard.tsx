@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { Lock, Phone, Mail, Video, MessageSquare } from "lucide-react";
+import { Phone, Mail, Video, MessageSquare } from "lucide-react";
 import Tooltip from "@/components/shared/Tooltip";
 import { useCall } from "@/hooks/useCall";
 

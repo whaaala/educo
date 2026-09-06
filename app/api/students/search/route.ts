@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
     const allStudents = getAllStudents();
 
     // Filter and transform students
-    let filteredStudents = allStudents.filter((student: StudentData) => {
+    const filteredStudents = allStudents.filter((student: StudentData) => {
       // Exclude current student
       if (currentStudentId && student.id === currentStudentId) return false;
       

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { SearchX, type LucideIcon } from "lucide-react";
+import { SearchX } from "lucide-react";
 import type { EmptyStateConfig } from "@/types/components";
 
 export interface EmptyStateProps extends Partial<EmptyStateConfig> {

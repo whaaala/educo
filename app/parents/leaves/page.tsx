@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo, useRef, useEffect } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { DataManagementPage } from "@/components/pages";
 import type { ColumnConfig } from "@/types/components";
@@ -151,15 +151,6 @@ const MOCK_LEAVE_REQUESTS: ChildLeaveRequest[] = [
 // HELPER FUNCTIONS
 // ============================================
 
-function formatDate(dateStr: string) {
-  return new Date(dateStr).toLocaleDateString("en-GB", {
-    weekday: "short",
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
-}
-
 function formatShortDate(dateStr: string) {
   return new Date(dateStr).toLocaleDateString("en-GB", { day: "2-digit", month: "short" });
 }
@@ -281,7 +272,6 @@ export default function ParentLeavesPage() {
         render: (leave) => (
           <div className="flex items-center gap-3">
             <div className="relative w-9 h-9 rounded-full overflow-hidden bg-gray-200 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] flex-shrink-0">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={leave.childPhoto || "https://i.pravatar.cc/100?u=" + leave.childId}
                 alt={leave.childName}
@@ -454,7 +444,7 @@ export default function ParentLeavesPage() {
       {/* Apply Leave Modal */}
       {showApplyModal && (
         <ApplyLeaveModal
-          children={MOCK_CHILDREN}
+          childList={MOCK_CHILDREN}
           onClose={() => setShowApplyModal(false)}
           onSubmit={handleAddLeave}
         />
@@ -469,16 +459,17 @@ export default function ParentLeavesPage() {
 // ============================================
 
 function ApplyLeaveModal({
-  children,
+  childList,
   onClose,
   onSubmit,
 }: {
-  children: Child[];
+  /** The parent's pupils. Named childList, not `children` — React reserves that name for JSX content. */
+  childList: Child[];
   onClose: () => void;
   onSubmit: (leave: ChildLeaveRequest) => void;
 }) {
   const [mounted, setMounted] = useState(false);
-  const [selectedChildId, setSelectedChildId] = useState(children[0]?.id || "");
+  const [selectedChildId, setSelectedChildId] = useState(childList[0]?.id || "");
   const [leaveType, setLeaveType] = useState<LeaveType>("Medical");
   const [customLeaveType, setCustomLeaveType] = useState("");
   const [fromDate, setFromDate] = useState("");
@@ -493,7 +484,7 @@ function ApplyLeaveModal({
   const isLeaveTypeValid = leaveType !== "Other" || customLeaveType.trim().length > 0;
 
   // Get selected child info
-  const selectedChild = children.find((c) => c.id === selectedChildId);
+  const selectedChild = childList.find((c) => c.id === selectedChildId);
 
   useEffect(() => {
     setMounted(true);
@@ -583,7 +574,7 @@ function ApplyLeaveModal({
               <div>
                 <label className="block text-xs font-medium text-muted uppercase tracking-wider mb-2">Select Child</label>
                 <div className="grid grid-cols-1 xs:grid-cols-2 gap-2">
-                  {children.map((child) => (
+                  {childList.map((child) => (
                     <button
                       key={child.id}
                       onClick={() => setSelectedChildId(child.id)}

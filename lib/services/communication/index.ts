@@ -11,7 +11,7 @@ import { CallOptions, CallSession, ICommunicationService } from "./types";
 import { getWebRTCService, resetWebRTCService } from "./webrtc-service";
 import { getAgoraService, resetAgoraService, AgoraConfig } from "./agora-service";
 import { getZoomService, resetZoomService, ZoomConfig } from "./zoom-service";
-import { getWhatsAppService, resetWhatsAppService, WhatsAppConfig } from "./whatsapp-service";
+import { resetWhatsAppService } from "./whatsapp-service";
 
 // Communication Manager - Handles platform switching and service management
 // Supports both platform-wide (single App ID) and per-tenant (per-school App ID) configurations
@@ -81,8 +81,8 @@ export class CommunicationManager {
 
         // Determine App ID based on config mode
         let appId = this.settings.agora.appId;
-        let appCertificate = this.settings.agora.appCertificate;
-        let tokenServerUrl = this.settings.agora.tokenServerUrl || this.getTokenServerUrl();
+        const appCertificate = this.settings.agora.appCertificate;
+        const tokenServerUrl = this.settings.agora.tokenServerUrl || this.getTokenServerUrl();
 
         // If platform mode and no tenant-specific credentials, use platform credentials
         if (this.settings.agora.configMode === "platform" && !appId) {

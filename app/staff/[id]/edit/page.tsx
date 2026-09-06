@@ -7,7 +7,9 @@ import PersonalInformationSection from "@/components/teachers/form-sections/Pers
 import EmploymentInformationSection from "@/components/teachers/form-sections/EmploymentInformationSection";
 import DocumentsSection from "@/components/teachers/form-sections/DocumentsSection";
 import { useSidebar } from "@/contexts/SidebarContext";
-import { getTeacherById, Teacher } from "@/lib/mockTeachers";
+import { getTeacherById } from "@/lib/mockTeachers";
+import { emptyTeacherForm, type TeacherFormData } from "@/components/teachers/form-sections/types";
+import type { FormFieldSetter } from "@/components/shared/form-section-types";
 
 export default function EditStaffPage() {
   const params = useParams();
@@ -65,42 +67,9 @@ export default function EditStaffPage() {
   }, []);
 
   // Form state
-  const [formData, setFormData] = useState({
-    // Personal Information
-    profilePhoto: null as File | null,
-    staffId: "",
-    employeeNumber: "",
-    firstName: "",
-    middleName: "",
-    lastName: "",
-    gender: "",
-    dateOfBirth: "",
-    bloodGroup: "",
-    phone: "",
-    email: "",
-    emergencyContact: "",
-    address: "",
-
-    // Employment Information
-    role: "",
-    department: "",
-    branch: "",
-    employmentType: "",
-    employmentStatus: "Active",
-    joinDate: "",
-    experience: "",
-    salary: "",
-    qualification: "",
-    specialization: "",
-
-    // Documents
-    cvDocument: null as File | null,
-    degreeCertificate: null as File | null,
-    teachingCertificate: null as File | null,
-    idProof: null as File | null,
-    policeClearance: null as File | null,
-    otherDocuments: null as File | null,
-  });
+  // The SAME shape every staff/teacher form section expects. Four pages used to declare this literal
+  // separately and they had drifted badly — two listed 109 fields, two listed barely thirty.
+  const [formData, setFormData] = useState<TeacherFormData>(emptyTeacherForm());
 
   // Load staff data
   useEffect(() => {
@@ -110,6 +79,9 @@ export default function EditStaffPage() {
         // Verify it's actually a staff member
         if (data && ["Admin", "Support", "Management"].includes(data.role)) {
           setFormData({
+            // Merged ONTO the defaults: hydration fills the fields the record knows about and leaves the rest at
+            // their empty values. Replacing the object outright left every other field undefined.
+            ...emptyTeacherForm(),
             profilePhoto: null,
             staffId: data.staffId,
             employeeNumber: data.staffId,
@@ -121,8 +93,10 @@ export default function EditStaffPage() {
             bloodGroup: "",
             phone: data.phone,
             email: data.email,
-            emergencyContact: "",
-            address: data.address,
+            // The section's inputs bind to residentialAddress / highestQualification, not address / qualification.
+            // Hydrating the record into the latter meant those fields opened BLANK on the edit form, and the
+            // validation below then checked a value the user's typing could never reach.
+            residentialAddress: data.address,
             role: data.role,
             department: data.department,
             branch: data.branch || "",
@@ -131,12 +105,10 @@ export default function EditStaffPage() {
             joinDate: data.joinDate,
             experience: data.experience.toString(),
             salary: data.salary.toString(),
-            qualification: data.qualification,
+            highestQualification: data.qualification,
             specialization: data.specialization || "",
             cvDocument: null,
             degreeCertificate: null,
-            teachingCertificate: null,
-            idProof: null,
             policeClearance: null,
             otherDocuments: null,
           });
@@ -149,7 +121,7 @@ export default function EditStaffPage() {
     }
   }, [staffId]);
 
-  const handleChange = (field: string, value: any) => {
+  const handleChange: FormFieldSetter<TeacherFormData> = (field, value) => {
     setFormData((prev) => ({
       ...prev,
       [field]: value,
@@ -175,13 +147,13 @@ export default function EditStaffPage() {
     if (!formData.dateOfBirth) newErrors.dateOfBirth = "Date of birth is required";
     if (!formData.phone) newErrors.phone = "Phone number is required";
     if (!formData.email) newErrors.email = "Email is required";
-    if (!formData.address) newErrors.address = "Address is required";
+    if (!formData.residentialAddress) newErrors.residentialAddress = "Address is required";
     if (!formData.role) newErrors.role = "Role is required";
     if (!formData.department) newErrors.department = "Department is required";
     if (!formData.employmentType) newErrors.employmentType = "Employment type is required";
     if (!formData.employmentStatus) newErrors.employmentStatus = "Employment status is required";
     if (!formData.joinDate) newErrors.joinDate = "Join date is required";
-    if (!formData.qualification) newErrors.qualification = "Qualification is required";
+    if (!formData.highestQualification) newErrors.highestQualification = "Qualification is required";
 
     // Validate that role is non-teaching
     if (formData.role && !["Admin", "Support", "Management"].includes(formData.role)) {

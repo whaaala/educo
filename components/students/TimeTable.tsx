@@ -257,7 +257,7 @@ function generateDynamicTimetable(week: number, year: string, schoolId: string =
   });
 }
 
-export default function TimeTable({ timetable: propTimetable, schoolId = "school-1" }: TimeTableProps) {
+export default function TimeTable({ timetable: _propTimetable, schoolId = "school-1" }: TimeTableProps) {
   const [selectedYear, setSelectedYear] = useState("this-year");
   const [currentWeek, setCurrentWeek] = useState(1);
   const [customConfig, setCustomConfig] = useState<TimetableConfig | null>(null);
@@ -310,8 +310,11 @@ export default function TimeTable({ timetable: propTimetable, schoolId = "school
 
   // Listen for School Profile changes
   useEffect(() => {
-    const handleSchoolProfileChange = (event: CustomEvent<{ educationLevel: string; institutionType: string }>) => {
-      const { educationLevel: settingsEducationLevel } = event.detail;
+    const handleSchoolProfileChange = (event: WindowEventMap["schoolProfileChanged"]) => {
+      // `educationLevels` is an ARRAY. This read a singular `educationLevel` that is never dispatched, so
+      // none of the branches below ever ran and the timetable ignored a school-profile change entirely.
+      const levels = event.detail.educationLevels ?? [];
+      const settingsEducationLevel = levels.length === 1 ? levels[0] : "multi-level";
 
       if (settingsEducationLevel === "tertiary") setEducationLevel("tertiary");
       else if (settingsEducationLevel === "secondary") setEducationLevel("secondary");
@@ -319,8 +322,8 @@ export default function TimeTable({ timetable: propTimetable, schoolId = "school
       else if (settingsEducationLevel === "multi-level") setEducationLevel("secondary"); // Default multi-level to secondary
     };
 
-    window.addEventListener("schoolProfileChanged" as any, handleSchoolProfileChange);
-    return () => window.removeEventListener("schoolProfileChanged" as any, handleSchoolProfileChange);
+    window.addEventListener("schoolProfileChanged", handleSchoolProfileChange);
+    return () => window.removeEventListener("schoolProfileChanged", handleSchoolProfileChange);
   }, []);
 
   // Get school config (use custom if available, otherwise use default)

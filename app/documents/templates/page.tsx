@@ -116,7 +116,7 @@ export default function TemplateGalleryPage() {
             <p className="text-[0.75rem] text-muted mb-4">
               {filtered.length} template{filtered.length !== 1 ? "s" : ""} found
               {activeCategory && <span> in <strong>{activeCategory}</strong></span>}
-              {searchQuery && <span> matching "<strong>{searchQuery}</strong>"</span>}
+              {searchQuery && <span> matching &quot;<strong>{searchQuery}</strong>&quot;</span>}
             </p>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
               {filtered.map(tpl => (

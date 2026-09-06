@@ -33,7 +33,7 @@ interface TokenPayload {
 
 // Simple token generator for development/testing
 // For production, install and use: npm install agora-access-token
-function generateRtcToken(payload: TokenPayload): string {
+function generateRtcToken(_payload: TokenPayload): string {
   // This is a placeholder - in production use the official Agora token library
   // The actual token generation requires complex cryptographic operations
 
@@ -53,7 +53,7 @@ function generateRtcToken(payload: TokenPayload): string {
   return "";
 }
 
-function generateRtmToken(appId: string, appCertificate: string, uid: string, privilegeExpireTime: number): string {
+function generateRtmToken(_appId: string, _appCertificate: string, _uid: string, _privilegeExpireTime: number): string {
   // This is a placeholder - in production use the official Agora token library
   // Real implementation:
   // const { RtmTokenBuilder, RtmRole } = require('agora-access-token');

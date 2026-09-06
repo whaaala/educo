@@ -7,8 +7,6 @@ import * as XLSX from "xlsx";
 import { DashboardPage } from "@/components/pages";
 import Button from "@/components/shared/Button";
 import ResponsiveListTable, { type ColumnConfig } from "@/components/shared/ResponsiveListTable";
-import { Student } from "@/components/students/StudentCard";
-
 type ImportStep = "upload" | "mapping" | "preview" | "validation" | "progress" | "complete";
 
 interface ColumnMapping {
@@ -22,8 +20,11 @@ interface ValidationError {
   message: string;
 }
 
+/** One cell as XLSX hands it over. Empty cells come back undefined, so that is part of the type. */
+type ImportedCell = string | number | boolean | null | undefined;
+
 interface ImportedRow {
-  [key: string]: any;
+  [key: string]: ImportedCell | ValidationError[];
   _rowNumber: number;
   _errors: ValidationError[];
 }
@@ -77,7 +78,7 @@ export default function BulkImportPage() {
       const workbook = XLSX.read(data, { type: "binary" });
       const sheetName = workbook.SheetNames[0];
       const worksheet = workbook.Sheets[sheetName];
-      const json = XLSX.utils.sheet_to_json(worksheet, { header: 1 }) as any[][];
+      const json = XLSX.utils.sheet_to_json(worksheet, { header: 1 }) as ImportedCell[][];
 
       if (json.length > 0) {
         const headers = json[0] as string[];
@@ -100,7 +101,7 @@ export default function BulkImportPage() {
 
         // Parse data rows
         const dataRows = json.slice(1).map((row, index) => {
-          const rowData: any = { _rowNumber: index + 2, _errors: [] };
+          const rowData: ImportedRow = { _rowNumber: index + 2, _errors: [] };
           headers.forEach((header, colIndex) => {
             rowData[header] = row[colIndex];
           });
@@ -145,7 +146,7 @@ export default function BulkImportPage() {
 
     // Apply mappings to imported data
     const mappedData = importedData.map((row) => {
-      const mappedRow: any = { _rowNumber: row._rowNumber, _errors: [] };
+      const mappedRow: ImportedRow = { _rowNumber: row._rowNumber, _errors: [] };
       columnMappings.forEach((mapping) => {
         mappedRow[mapping.systemField] = row[mapping.excelColumn];
       });
@@ -159,12 +160,12 @@ export default function BulkImportPage() {
   const validateData = () => {
     const errors: ValidationError[] = [];
 
-    importedData.forEach((row, index) => {
+    importedData.forEach((row, _index) => {
       const rowErrors: ValidationError[] = [];
 
       // Validate required fields
       REQUIRED_FIELDS.forEach((field) => {
-        if (!row[field.field] || row[field.field].toString().trim() === "") {
+        if (!row[field.field] || String(row[field.field] ?? "").trim() === "") {
           rowErrors.push({
             row: row._rowNumber,
             field: field.field,
@@ -174,7 +175,7 @@ export default function BulkImportPage() {
       });
 
       // Validate email format
-      if (row.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(row.email)) {
+      if (row.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(row.email))) {
         rowErrors.push({
           row: row._rowNumber,
           field: "email",
@@ -183,7 +184,7 @@ export default function BulkImportPage() {
       }
 
       // Validate gender
-      if (row.gender && !["Male", "Female", "Other"].includes(row.gender)) {
+      if (row.gender && !["Male", "Female", "Other"].includes(String(row.gender))) {
         rowErrors.push({
           row: row._rowNumber,
           field: "gender",
@@ -192,7 +193,7 @@ export default function BulkImportPage() {
       }
 
       // Validate education level
-      if (row.educationLevel && !["Primary", "Secondary", "Tertiary"].includes(row.educationLevel)) {
+      if (row.educationLevel && !["Primary", "Secondary", "Tertiary"].includes(String(row.educationLevel))) {
         rowErrors.push({
           row: row._rowNumber,
           field: "educationLevel",
@@ -264,7 +265,7 @@ export default function BulkImportPage() {
       sortable: false,
       render: (row: ImportedRow) => (
         <span className={row._errors.some((e) => e.field === mapping.systemField) ? "text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400" : ""}>
-          {row[mapping.systemField] || "-"}
+          {String(row[mapping.systemField] ?? "") || "-"}
         </span>
       ),
     })),

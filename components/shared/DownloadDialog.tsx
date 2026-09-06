@@ -325,7 +325,7 @@ export default function DownloadDialog({
 }
 
 // ── Format Row ──
-function FormatRow({ format, filename, estimatedSize, isDownloading, isCompleted, onDownload }: {
+function FormatRow({ format, filename: _filename, estimatedSize, isDownloading, isCompleted, onDownload }: {
   format: DownloadFormat; filename: string; estimatedSize: string;
   isDownloading: boolean; isCompleted: boolean; onDownload: () => void;
 }) {

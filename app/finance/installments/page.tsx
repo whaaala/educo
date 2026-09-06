@@ -33,9 +33,11 @@ import {
 import { exportInstallmentPlansToPDF } from "@/utils/installmentPdfExport";
 import { exportInstallmentPlansToExcel } from "@/utils/installmentExcelExport";
 import { ACADEMIC_YEARS, TERMS_WITH_ALL, CLASS_OPTIONS, INSTALLMENT_STATUS_OPTIONS } from "../config";
+import type { InstallmentPlanSavePayload } from "@/components/finance/InstallmentPlanModal";
 
 // Installment Plan Status
-type InstallmentPlanStatus = "active" | "completed" | "defaulted" | "cancelled";
+// Defined by the modal that creates plans — imported so the two cannot drift.
+import type { InstallmentPlanStatus } from "@/components/finance/InstallmentPlanModal";
 
 // Individual Installment Status
 type InstallmentStatus = "pending" | "paid" | "overdue" | "partially_paid" | "waived";
@@ -433,7 +435,7 @@ export default function InstallmentPlansPage() {
   };
 
   // Handle save (add/edit)
-  const handleSave = async (data: any) => {
+  const handleSave = async (data: InstallmentPlanSavePayload) => {
     setIsSaving(true);
 
     await new Promise((resolve) => setTimeout(resolve, 500));
@@ -452,6 +454,13 @@ export default function InstallmentPlansPage() {
       const newPlan: InstallmentPlan = {
         id: `ip-${Date.now()}`,
         ...data,
+        // A BULK plan covers a whole class or course, so it carries no single student. The record requires
+        // these, so they are explicitly empty rather than quietly undefined — which is what the `any` on this
+        // handler used to allow through.
+        studentId: data.studentId ?? "",
+        studentName: data.studentName ?? "",
+        studentNumber: data.studentNumber ?? "",
+        classLevel: data.classLevel ?? "",
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };

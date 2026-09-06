@@ -15,10 +15,10 @@ import type { SiteTheme } from "@/lib/site-storage";
 import {
   type BoxNode, type BoxType,
   containerStyle, childStyle, marginCSS, sizeToCSS, u, baseUnit, floatingReserve, floatStacksOnMobile, createContainer, createGrid, createElement, createComponent,
-  updateBox, removeBox, insertBox, moveBoxStep, duplicateBox, moveBox, cloneBox, findParent, isAncestor, isContainer, isEmptyBox, widthPct,
+  updateBox, removeBox, insertBox, moveBoxStep, duplicateBox, moveBox, cloneBox, findParent, isAncestor, isContainer, widthPct,
   isFloating, floatBox, unfloatBox, groupBoxes, ungroupBoxes, bringToFront, sendToBack, bringForward, sendBackward,
-  radiusCSS, isClipped, SHADOW_CSS, videoEmbedSrc, sanitizeCssDeclarations, expandScopedCss, ACCORDION_CSS_PARTS, itemOverrideCss, itemHasOverride, itemNumberVars, itemFloatReserveRem, richBody, componentTextCss, componentBoxCss, bgImageLayer, renderAlertHTML, bgShowThroughCss, resizeTopEdge, blockContainmentCss, alertToastCss, treeHasToast, accordionClasses, bandClasses, advancedCssStyle, alertActionsHTML, hugsContent, itemFloatContextCss, COMPONENT_ITEM_SEL, clampContentScale, MIN_CONTENT_SCALE, isMultiItemComponent, comfortableWidth, remLen, rootFontPx, isDefiniteLen, addItemAfter, duplicateItem, duplicateChildItem, removeItem, removeChildItem, moveItem, moveChildItem, updateItem, updateChildItem, ALERT_SEVERITY_ICON, alertPartInline, alertIconInline, collectAlertItemStyles,
-  type Breakpoint, resolveResponsive, updateBoxResponsive,
+  radiusCSS, isClipped, SHADOW_CSS, videoEmbedSrc, sanitizeCssDeclarations, expandScopedCss, ACCORDION_CSS_PARTS, itemOverrideCss, itemHasOverride, itemNumberVars, richBody, componentTextCss, componentBoxCss, bgImageLayer, bgShowThroughCss, resizeTopEdge, blockContainmentCss, alertToastCss, treeHasToast, accordionClasses, bandClasses, advancedCssStyle, alertActionsHTML, hugsContent, itemFloatContextCss, COMPONENT_ITEM_SEL, clampContentScale, MIN_CONTENT_SCALE, isMultiItemComponent, comfortableWidth, remLen, rootFontPx, isDefiniteLen, addItemAfter, duplicateItem, duplicateChildItem, removeItem, removeChildItem, moveItem, moveChildItem, updateItem, updateChildItem, ALERT_SEVERITY_ICON, alertPartInline, alertIconInline, collectAlertItemStyles,
+  type Breakpoint, resolveResponsive, updateBoxResponsive, imageSizing, measureImage,
 } from "@/lib/box-model";
 import { ICON_SET } from "./icons";
 import { PortalMenu, MenuItem, MenuHeader, MenuSep } from "./ui";
@@ -1309,7 +1309,9 @@ function AlertItemView({ item, sev, treat, dismiss, editable, parentId, onEdit, 
       style={editable && item.float && floatsActive ? { cursor: "move" } : undefined}
       onPointerDown={editable && item.float && floatsActive && onFloatDrag ? (e) => onFloatDrag(e, item) : undefined}
     >
-      {item.media ? <img className="eu-alert__media" src={item.media} alt={item.mediaAlt ?? ""} /> : null}
+      {/* A plain <img>, deliberately: this is a user upload, often a data: URL that next/image cannot
+          process, and the export emits a plain <img> too — which canvas = export requires us to match. */}
+      {item.media ? <img className="eu-alert__media" src={item.media} alt={item.mediaAlt ?? ""} loading="lazy" decoding="async" /> : null}
       {svg ? <span className="eu-alert__icon" aria-hidden="true" style={inlineToStyle(alertIconInline(item))} dangerouslySetInnerHTML={{ __html: svg }} /> : null}
       <div className="eu-alert__content">
         {(item.title || editable) && (
@@ -1571,10 +1573,6 @@ function ComponentView({ node, editable, onPatchNode, breakpoint = "base", itemS
     const floatCtx = floatsActive ? itemFloatContextCss(items, sel) : "";
     const inject = [tcss ? `${sel}, ${sel} *{${tcss}}` : "", bcss ? `${sel}{${bcss}}` : "", adv, itemCss, floatCtx, bgShowThroughCss(node, `${sel} .eu-accordion__item`), blockContainmentCss(node, sel)].filter(Boolean).join("");
     // Drag a detached (floating) item on the canvas to reposition it — X/Y (rem) update live.
-    // Write several items in one patch (so a grouped drag moves every member together, atomically) — from the
-    // freshest items (itemsRef), never the render-time closure, so no other item's position is lost.
-    const setItems = (updates: { id: string; float: import("@/lib/box-model").ComponentItem["float"] }[]) =>
-      onPatchNode?.({ items: itemsRef.current.map((it) => { const u = updates.find((x) => x.id === it.id); return u ? { ...it, float: u.float } : it; }) });
     return (
       <div className="eu-root" style={{ ...styleVars, position: "relative" }} ref={itemHostRef}>
         {inject ? <style dangerouslySetInnerHTML={{ __html: inject }} /> : null}
@@ -1607,7 +1605,8 @@ function ComponentView({ node, editable, onPatchNode, breakpoint = "base", itemS
               open={editable ? true : it.open} name={node.accMultiOpen ? undefined : `acc-${node.id}`}>
               <summary className="eu-accordion__header" onClick={editable ? (e) => e.preventDefault() : undefined}>
                 {it.icon && iconSvg(it.icon) ? <span className="eu-accordion__icon" aria-hidden="true" dangerouslySetInnerHTML={{ __html: iconSvg(it.icon) }} /> : null}
-                {it.media ? <img className="eu-accordion__media" src={it.media} alt={it.mediaAlt ?? ""} /> : null}
+                {/* A plain <img>, as above: a user upload, matched to what the export emits. */}
+                {it.media ? <img className="eu-accordion__media" src={it.media} alt={it.mediaAlt ?? ""} loading="lazy" decoding="async" /> : null}
                 <span className="eu-accordion__title"><EditableText value={it.title} editable={editable} onChange={(v) => setItem(it.id, { title: v })} placeholder="Question" /></span>
                 {it.meta ? <span className="eu-accordion__meta">{it.meta}</span> : null}
               </summary>
@@ -1753,17 +1752,24 @@ function ElementView({ node, theme, editable, onText, onSrc, onPatchNode, breakp
           ...deco, borderRadius: deco.borderRadius ?? "9999px", ...typoStyle(node, theme.bodyFont, 600) }}>
         <EditableText value={node.text} editable={editable} onChange={onText} placeholder="Button" /></a>;
     }
-    case "image":
+    case "image": {
+      // Identical sizing to the export — same helper, so "auto" takes the photo's own shape in both places
+      // and a height set by hand crops it in both places.
+      const sizing = imageSizing(node);
       return (
-        <div className="relative w-full" style={{ height: sizeToCSS(node.height) ?? 260 }}>
-          {/* alt is passed here too, so what a screen reader gets while editing matches the published page. */}
-          <ImageBox theme={theme} src={node.src} alt={node.alt ?? ""} />
+        <div className="relative w-full" style={{ height: sizing.height, aspectRatio: sizing.aspectRatio }}>
+          {/* alt is passed here too, so what a screen reader gets while editing matches the published page.
+              So are the intrinsic dimensions, which is what holds the box open before the photo arrives. */}
+          <ImageBox theme={theme} src={node.src} alt={node.alt ?? ""} width={node.imgW} height={node.imgH} />
           {editable && (<>
             <button onClick={() => fileRef.current?.click()} className="absolute bottom-2 right-2 inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium bg-gray-900/80 text-white shadow-lg hover:bg-gray-900"><Upload className="w-3.5 h-3.5" /> {node.src ? "Replace" : "Upload"}</button>
-            <input ref={fileRef} type="file" accept="image/*" className="hidden" aria-label="Upload image" onChange={(e) => { const f = e.target.files?.[0]; if (!f) return; const r = new FileReader(); r.onload = () => onSrc(String(r.result)); r.readAsDataURL(f); e.target.value = ""; }} />
+            {/* The natural size is measured BEFORE the patch, so the picture and its shape land in one undo
+                step — and so replacing a photo can never leave the previous one's dimensions behind. */}
+            <input ref={fileRef} type="file" accept="image/*" className="hidden" aria-label="Upload image" onChange={(e) => { const f = e.target.files?.[0]; if (!f) return; const r = new FileReader(); r.onload = async () => { const src = String(r.result); const dims = await measureImage(src); if (onPatchNode) onPatchNode({ src, imgW: dims.imgW, imgH: dims.imgH }); else onSrc(src); }; r.readAsDataURL(f); e.target.value = ""; }} />
           </>)}
         </div>
       );
+    }
     case "video": {
       const embed = videoEmbedSrc(node.src);
       return (

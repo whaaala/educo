@@ -1,12 +1,22 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { Trash2, Users2, User, School, ChevronDown, ChevronUp, GraduationCap, MapPin, Plus } from "lucide-react";
+import { Trash2, Users2, User, School, ChevronUp, GraduationCap, MapPin, Plus } from "lucide-react";
 import FormInput from "@/components/shared/FormInput";
 import SearchableDropdown from "@/components/shared/SearchableDropdown";
-import { ValidationErrors } from "@/lib/validation";
+import type { FormSectionProps } from "@/components/shared/form-section-types";
+import type { StudentFormData } from "./types";
 
-interface SiblingAtSchool {
+/** One row from the students endpoint used to populate the sibling picker. */
+interface StudentOption {
+  value: string;
+  label?: string;
+  firstName?: string;
+  lastName?: string;
+  class?: string;
+}
+
+export interface SiblingAtSchool {
   id: string;
   studentId: string;
   firstName: string;
@@ -14,7 +24,7 @@ interface SiblingAtSchool {
   class: string;
 }
 
-interface SiblingAtOtherSchool {
+export interface SiblingAtOtherSchool {
   id: string;
   firstName: string;
   lastName: string;
@@ -22,24 +32,17 @@ interface SiblingAtOtherSchool {
   schoolName: string;
   schoolAddress: string;
 }
-
-interface FormData {
-  siblingsAtSchool: SiblingAtSchool[];
-  siblingsAtOtherSchools: SiblingAtOtherSchool[];
-}
-
-interface SiblingsSectionProps {
-  formData: any;
-  onChange: (field: string, value: any) => void;
-  currentStudentId?: string; // ID of the current student being edited (to exclude from sibling list)
-  errors?: ValidationErrors;
-}
+/** The shared section contract, plus the one prop only this section needs. */
+type SiblingsSectionProps = FormSectionProps<StudentFormData> & {
+  /** ID of the student being edited, so they are not offered as their own sibling. */
+  currentStudentId?: string;
+};
 
 export default function SiblingsSection({
   formData,
   onChange,
   currentStudentId,
-  errors = {},
+  errors: _errors = {},
 }: SiblingsSectionProps) {
   const [isExpanded, setIsExpanded] = useState(true);
   const [selectedStudentId, setSelectedStudentId] = useState("");
@@ -88,7 +91,7 @@ export default function SiblingsSection({
         
         // Cache student details for later use
         const cache: Record<string, { firstName: string; lastName: string; class: string }> = {};
-        data.students.forEach((student: any) => {
+        data.students.forEach((student: StudentOption) => {
           if (student.firstName && student.lastName && student.class) {
             cache[student.value] = {
               firstName: student.firstName,

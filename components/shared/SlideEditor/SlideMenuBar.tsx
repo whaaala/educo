@@ -7,12 +7,9 @@ import type { InsertMenuConfig } from "@/components/shared/EditorInsertMenu";
 import { defaultImageItems, defaultShapeItems, defaultDiagramItems, defaultChartItems, defaultLineItems } from "@/components/shared/EditorInsertMenu";
 
 import {
-  FilePlus, FolderOpen, Upload, Copy, Share2, Download, Printer,
-  FileText, Trash2, Settings,
+  Upload, Copy, FileText, Trash2, Settings,
   Search, PencilLine, MessageSquare, Eye, Play, Wand2, LayoutGrid,
-  Ruler, Compass, Magnet, Monitor, ZoomIn, Maximize, Image, Shapes, Table2,
-  GitBranch, BarChart3, Minus, Type, Sparkles, MessageCircle, PlusSquare,
-  Bold, Italic, Underline, Strikethrough, Superscript, Subscript, CaseSensitive,
+  Compass, Magnet, Maximize, Minus, Type, Bold, Italic, Underline, Strikethrough, Superscript, Subscript, CaseSensitive,
   AlignLeft, AlignCenter, AlignRight, AlignJustify, IndentIncrease, IndentDecrease,
   List, ListOrdered, CheckSquare, Square, Palette,
   Plus, CopyPlus, EyeOff, MoveVertical, PaintBucket, Layout, Layers, Brush,
@@ -20,8 +17,7 @@ import {
   AlignHorizontalDistributeCenter, AlignVerticalDistributeCenter,
   RotateCw, FlipHorizontal2, FlipVertical2, Group, Ungroup,
   SpellCheck, Book, Link2, Mic, Accessibility,
-  Keyboard, GraduationCap, Bell, Presentation, CircleDot, ArrowRight,
-  PenTool, Hexagon, SlidersHorizontal, X as XIcon,
+  Keyboard, GraduationCap, Bell, Presentation, SlidersHorizontal, X as XIcon,
 } from "lucide-react";
 
 interface SlideMenuBarProps {

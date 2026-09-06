@@ -1,6 +1,6 @@
 "use client";
 
-import { FileText, Download, X } from "lucide-react";
+import { FileText, Download } from "lucide-react";
 import { useEffect } from "react";
 import ModalHeader from "@/components/shared/ModalHeader";
 

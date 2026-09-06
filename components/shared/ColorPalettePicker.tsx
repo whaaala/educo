@@ -2,8 +2,6 @@
 
 import { useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { Check } from "lucide-react";
-
 // ─── Shared Color Palettes ──────────────────────────────────────────────
 
 /** 30 solid colors (6 columns × 5 rows) */

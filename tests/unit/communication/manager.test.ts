@@ -4,10 +4,7 @@ import {
   getCommunicationManager,
   resetCommunicationManager,
 } from "@/lib/services/communication";
-import { getWebRTCService, resetWebRTCService } from "@/lib/services/communication/webrtc-service";
-import { resetAgoraService } from "@/lib/services/communication/agora-service";
-import { resetZoomService } from "@/lib/services/communication/zoom-service";
-import { resetWhatsAppService } from "@/lib/services/communication/whatsapp-service";
+import { getWebRTCService } from "@/lib/services/communication/webrtc-service";
 import type { CommunicationSettings } from "@/contexts/CommunicationContext";
 
 // Mock all service modules

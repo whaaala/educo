@@ -3,13 +3,11 @@
 import React, { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import {
-  X,
   Send,
   Smile,
   MoreHorizontal,
   Heart,
   ThumbsUp,
-  ArrowDown,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 

@@ -5,7 +5,6 @@ import {
   DollarSign,
   CheckCircle,
   FileText,
-  Save,
 } from "lucide-react";
 import {
   PayrollRecord,
@@ -326,11 +325,6 @@ export default function PayrollManagementPage() {
   const handleGeneratePayslips = () => {
     console.log("Generating payslips...");
   };
-
-  const handleExport = () => {
-    console.log("Exporting payroll data...");
-  };
-
   return (
     <DataManagementPage<PayrollRecord>
       title="Payroll Management"

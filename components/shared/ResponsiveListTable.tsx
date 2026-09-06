@@ -1,7 +1,7 @@
 "use client";
 
 import React, { forwardRef } from "react";
-import DataTable, { type ColumnConfig, type DataTableProps } from "./DataTable";
+import DataTable, { type ColumnConfig } from "./DataTable";
 
 // Re-export ColumnConfig for consumers
 export type { ColumnConfig };

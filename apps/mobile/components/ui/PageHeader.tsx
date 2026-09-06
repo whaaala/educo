@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { View, Text, Pressable, StyleSheet, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, Dimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -24,7 +24,8 @@ interface PageHeaderProps {
   showBackButton?: boolean;
   onBackPress?: () => void;
   // Child-related props
-  children?: ChildData[];
+  /** The pupils for the switcher. Named childList, not `children` — see ChildSwitcher. */
+  childList?: ChildData[];
   selectedChildId?: string;
   onSelectChild?: (childId: string) => void;
   showChildSwitcher?: boolean;
@@ -44,7 +45,7 @@ export function PageHeader({
   title,
   showBackButton = true,
   onBackPress,
-  children,
+  childList,
   selectedChildId,
   onSelectChild,
   showChildSwitcher = true,
@@ -68,7 +69,7 @@ export function PageHeader({
     }
   };
 
-  const selectedChild = children?.find((c) => c.id === selectedChildId) || children?.[0];
+  const selectedChild = childList?.find((c) => c.id === selectedChildId) || childList?.[0];
 
   return (
     <View style={[styles.container, isTablet && styles.containerTablet, { backgroundColor: colors.background }]}>
@@ -94,7 +95,7 @@ export function PageHeader({
       </View>
 
       {/* Profile Row: Avatar + Info + Child Switcher */}
-      {(showAvatar || (showChildSwitcher && children && children.length > 0)) && (
+      {(showAvatar || (showChildSwitcher && childList && childList.length > 0)) && (
         <View style={[styles.profileRow, isTablet && styles.profileRowTablet]}>
           {/* Left side: Avatar and info */}
           <View style={styles.profileLeft}>
@@ -135,10 +136,10 @@ export function PageHeader({
           </View>
 
           {/* Right side: Child Switcher */}
-          {showChildSwitcher && children && children.length > 1 && onSelectChild && selectedChildId && (
+          {showChildSwitcher && childList && childList.length > 1 && onSelectChild && selectedChildId && (
             <View style={styles.childSwitcherContainer}>
               <ChildSwitcher
-                children={children}
+                childList={childList}
                 selectedChildId={selectedChildId}
                 onSelectChild={onSelectChild}
                 variant="compact"

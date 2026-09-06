@@ -22,7 +22,7 @@ export default function DisciplinaryActionsTable({
   onDelete,
   filterKey = "",
 }: DisciplinaryActionsTableProps) {
-  const [animationTrigger, setAnimationTrigger] = useState(0);
+  const [_animationTrigger, setAnimationTrigger] = useState(0);
   const [prevFilterKey, setPrevFilterKey] = useState(filterKey);
 
   useEffect(() => {

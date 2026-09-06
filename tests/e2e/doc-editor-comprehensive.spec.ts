@@ -56,10 +56,7 @@ async function insertTableViaMenu(page: Page) {
   const cell = submenu.locator('button[aria-label="2x2"]');
   if (await cell.isVisible().catch(() => false)) {
     await cell.click();
-  } else {
-    // Fallback: click any grid cell button
-    const gridButtons = submenu.locator("button").filter({ has: page.locator("[aria-label]") });
-    const firstBtn = submenu.locator("button").nth(1);
+  } else {    const firstBtn = submenu.locator("button").nth(1);
     if (await firstBtn.isVisible().catch(() => false)) {
       await firstBtn.click();
     }

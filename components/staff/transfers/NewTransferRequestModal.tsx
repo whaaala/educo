@@ -7,10 +7,13 @@ import FormDropdown from "@/components/shared/FormDropdown";
 import FormInput from "@/components/shared/FormInput";
 import FormTextarea from "@/components/shared/FormTextarea";
 
+type TransferRequestFormData = typeof INITIAL_FORM;
+
 interface NewTransferRequestModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit?: (data: any) => void;
+  /** The modal hands back its own form state — named below so the caller sees the real shape. */
+  onSubmit?: (data: TransferRequestFormData) => void;
 }
 
 // Mock staff data
@@ -57,12 +60,9 @@ const mockStaff = [
   },
 ];
 
-export default function NewTransferRequestModal({
-  isOpen,
-  onClose,
-  onSubmit,
-}: NewTransferRequestModalProps) {
-  const [formData, setFormData] = useState({
+/** The form's starting values. Hoisted so its TYPE can name the payload onSubmit hands back — that prop
+ *  was typed `any`, so the caller had no idea what it was receiving. */
+const INITIAL_FORM = {
     staffId: "",
     transferType: "department" as TransferType,
     newDepartment: "",
@@ -82,7 +82,14 @@ export default function NewTransferRequestModal({
     terminationReason: "",
     lastWorkingDay: "",
     severancePackage: "",
-  });
+};
+
+export default function NewTransferRequestModal({
+  isOpen,
+  onClose,
+  onSubmit,
+}: NewTransferRequestModalProps) {
+  const [formData, setFormData] = useState(INITIAL_FORM);
 
   const [filters, setFilters] = useState({
     department: "",
@@ -514,7 +521,7 @@ export default function NewTransferRequestModal({
                       label="Termination Type"
                       icon={<AlertTriangle className="w-4 h-4" />}
                       value={formData.terminationType}
-                      onChange={(value) => setFormData({ ...formData, terminationType: value as any })}
+                      onChange={(value) => setFormData({ ...formData, terminationType: value as TransferRequestFormData["terminationType"] })}
                       options={[
                         { label: "Resignation", value: "resignation" },
                         { label: "Dismissal", value: "dismissal" },

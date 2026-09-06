@@ -135,7 +135,7 @@ export const searchBooks = (data: Book[], query: string): Book[] => {
   );
 };
 
-export const getBookStats = (formatCurrencyFn?: (amount: number) => string): StatCardConfig<Book>[] => [
+export const getBookStats = (_formatCurrencyFn?: (amount: number) => string): StatCardConfig<Book>[] => [
   {
     icon: Library,
     label: "Total Books",

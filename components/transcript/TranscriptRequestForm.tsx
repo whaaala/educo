@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
-import { FileText, User, Settings, MapPin, CreditCard, School, GraduationCap, Users, Mail, Phone, Building2, Calendar } from "lucide-react";
+import { FileText, User, Settings, MapPin, CreditCard, School, GraduationCap, Users, Mail, Building2, Calendar } from "lucide-react";
 import { TranscriptRequest, TranscriptType, DeliveryMethod, TranscriptPurpose } from "@/types/transcript";
 import Modal from "@/components/shared/Modal";
 import FormWizard, { FormSection } from "@/components/shared/FormWizard";
@@ -108,48 +108,6 @@ export default function TranscriptRequestForm({ isOpen, onClose, onSubmit }: Tra
     }
     return filtered;
   }, [formData.tenantId, formData.selectedLevel]);
-
-  const handleTenantChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setFormData({
-      ...formData,
-      tenantId: e.target.value,
-      selectedLevel: "",
-      studentId: "",
-      studentName: "",
-      studentAdmissionNumber: "",
-      studentClass: "",
-    });
-    if (errors.tenantId) setErrors({ ...errors, tenantId: "" });
-  };
-
-  const handleLevelChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setFormData({
-      ...formData,
-      selectedLevel: e.target.value,
-      studentId: "",
-      studentName: "",
-      studentAdmissionNumber: "",
-      studentClass: "",
-    });
-    if (errors.selectedLevel) setErrors({ ...errors, selectedLevel: "" });
-  };
-
-  const handleStudentSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const studentId = e.target.value;
-    const student = studentOptions.find((s) => s.id === studentId);
-
-    if (student) {
-      setFormData({
-        ...formData,
-        studentId: student.id,
-        studentName: student.name,
-        studentAdmissionNumber: student.admissionNumber,
-        studentClass: student.class,
-      });
-      if (errors.studentId) setErrors({ ...errors, studentId: "" });
-    }
-  };
-
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target;
     const checked = (e.target as HTMLInputElement).checked;

@@ -2,8 +2,8 @@
 
 import React from "react";
 import {
-  Folder, FileText, Presentation, Table2, Image as ImageIcon, File,
-  Clock, Film, Music, FileArchive, FileSpreadsheet, Play, Headphones,
+  FileText, Presentation, Table2, Image as ImageIcon, File,
+  Clock, Music, FileArchive, Play,
 } from "lucide-react";
 import Tooltip from "@/components/shared/Tooltip";
 import AvatarHover from "@/components/shared/AvatarHover";
@@ -175,13 +175,6 @@ function getPreviewConfig(category: FileCategory): { bg: string; icon: React.Rea
         icon: <File className="w-8 h-8 text-gray-300 dark:text-gray-600 midnight:text-cyan-500 purple:text-pink-500" />,
       };
   }
-}
-
-function getAvatarColor(name: string): string {
-  const colors = ["bg-violet-500", "bg-blue-500", "bg-green-500", "bg-amber-500", "bg-red-500", "bg-pink-500", "bg-cyan-500", "bg-indigo-500"];
-  let hash = 0;
-  for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
-  return colors[Math.abs(hash) % colors.length];
 }
 
 // ── Component ──

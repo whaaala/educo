@@ -7,8 +7,8 @@ import type { JoinRequest } from "@/components/communication/call-ui/JoinRequest
 // Mock next/image
 vi.mock("next/image", () => ({
   default: (props: Record<string, unknown>) => {
-    const { fill, unoptimized, ...rest } = props;
-    return <img {...rest} />;
+    const { fill, unoptimized, alt, ...rest } = props;
+    return <img alt={typeof alt === "string" ? alt : ""} {...rest} />;
   },
 }));
 

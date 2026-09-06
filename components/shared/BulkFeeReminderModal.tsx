@@ -1,6 +1,6 @@
 "use client";
 
-import { X, Send, Search, ArrowUpAZ, ArrowDownZA, Undo2, Mail, MessageSquare, Bell, ChevronDown, ChevronUp, Edit2, Check } from "lucide-react";
+import { X, Send, Search, ArrowUpAZ, ArrowDownZA, Undo2, Mail, MessageSquare, Bell, Edit2, Check } from "lucide-react";
 import { useEffect, useState, useRef } from "react";
 import Image from "next/image";
 
@@ -137,13 +137,6 @@ export default function BulkFeeReminderModal({
       }
       return newSet;
     });
-  };
-
-  // Toggle channel message editor
-  const toggleChannelExpand = (channel: string) => {
-    if (selectedChannels.has(channel)) {
-      setExpandedChannel(expandedChannel === channel ? null : channel);
-    }
   };
 
   // Update channel message

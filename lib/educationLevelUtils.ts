@@ -26,12 +26,9 @@ export function getEducationLevelFromClass(
 
   const classLower = studentClass.toLowerCase();
 
-  // Check for evening/weekend program indicators
-  // These programs exist across all levels (PRD Section 4.6)
-  const isEveningWeekend = classLower.includes("evening") ||
-                           classLower.includes("weekend") ||
-                           classLower.includes("part-time") ||
-                           classLower.includes("part time");
+  // NOT YET IMPLEMENTED: evening / weekend / part-time programmes exist across all levels (PRD Section 4.6),
+  // but nothing here treats them differently yet. The detection this line used to compute was never read, so
+  // it is gone rather than sitting as dead code that looks like working support.
 
   // Tertiary/University patterns
   const tertiaryPatterns = [

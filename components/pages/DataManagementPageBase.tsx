@@ -254,7 +254,7 @@ export default function DataManagementPageBase<T>({
   onExportExcel: customExportExcel,
 
   // Page Actions
-  pageActions,
+  pageActions: _pageActions,
   addButtonConfig,
   onRefresh,
 

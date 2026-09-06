@@ -264,6 +264,12 @@ test.describe("Alert actions", () => {
       localStorage.setItem("educo_box_site_cleaned_v1", "1");
     }, node);
     await page.reload();
+    // Wait for the BUILDER first, then for the alert inside it. A single wait on the alert conflates two very
+    // different things — "the dev server has not finished serving the page yet" and "the alert rendered but
+    // without its axis classes" — and it made this test time out once in a full invariants run, where it sits
+    // eight minutes deep and the server is under load. Staging the wait removes the race and makes a genuine
+    // failure say which half broke.
+    await page.waitForSelector('[data-box-id="root"]', { timeout: 30000 });
     await page.waitForSelector('[data-box-id="tgt"] .eu-alert', { timeout: 20000 });
     const canvasClasses = (await page.locator('[data-box-id="tgt"] .eu-alert').getAttribute("class")) ?? "";
     for (const c of expected) expect(canvasClasses, `the CANVAS is missing ${c}`).toContain(c);

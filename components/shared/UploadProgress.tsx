@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { X, ChevronDown, ChevronUp, Check, File, Folder, Loader2, AlertCircle, AlertTriangle } from "lucide-react";
 import Portal from "@/components/shared/Portal";
 

@@ -100,10 +100,6 @@ export default function PublishDialog({
     ? (schoolSettings.tertiaryType === "University" ? "Departments" : "Courses")
     : "Classes";
 
-  const singularLabel = isTertiary
-    ? (schoolSettings.tertiaryType === "University" ? "department" : "course")
-    : "class";
-
   // ── Data sources ──
   const tenantClasses = useMemo(() => classes || DEFAULT_CLASSES, [classes]);
   const tenantGroups = useMemo(() => groups || DEFAULT_GROUPS, [groups]);

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { AlertTriangle, UserMinus, GraduationCap, X, Check } from "lucide-react";
+import { AlertTriangle, UserMinus, GraduationCap, Check } from "lucide-react";
 import Modal from "@/components/shared/Modal";
 import FormButton from "@/components/shared/FormButton";
 import type { AdminParent } from "@/lib/mockParents";

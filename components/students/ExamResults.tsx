@@ -10,13 +10,7 @@ import {
 import GradingSystemConfig from "@/components/settings/GradingSystemConfig";
 import {
   type EducationLevel,
-  type GradingComponentConfig,
-  loadSubjectGradingConfig,
-  getDefaultComponentsForLevel,
 } from "@/lib/gradingConfig";
-
-type EducationLevelType = "primary" | "secondary" | "tertiary";
-
 // Assessment Component based on PRD Section 4.11
 interface GradingComponent {
   id: string;
@@ -386,7 +380,7 @@ export default function ExamResults({
   const [expandedSubjects, setExpandedSubjects] = useState<string[]>([]); // Track expanded subjects
   const [configModalOpen, setConfigModalOpen] = useState(false);
   const [selectedSubjectForConfig, setSelectedSubjectForConfig] = useState<SubjectModule | null>(null);
-  const [configRefresh, setConfigRefresh] = useState(0); // Force refresh when config changes
+  const [_configRefresh, setConfigRefresh] = useState(0); // Force refresh when config changes
 
   // Determine education level from props, student class, or school settings
   const [educationLevel, setEducationLevel] = useState<EducationLevel>(() => {
@@ -405,13 +399,18 @@ export default function ExamResults({
 
   // Listen for school profile changes
   useEffect(() => {
-    const handleSchoolProfileChange = (event: CustomEvent<{ educationLevel: string; institutionType: string }>) => {
-      const { educationLevel: settingsEducationLevel } = event.detail;
+    const handleSchoolProfileChange = (event: WindowEventMap["schoolProfileChanged"]) => {
+      // The event carries `educationLevels` — an ARRAY of every level the school supports. This handler used
+      // to read a singular `educationLevel` that is never sent, so it was always undefined and none of the
+      // branches below ever ran: the view simply did not respond to a profile change.
+      const levels = event.detail.educationLevels ?? [];
 
       if (studentClass) {
         const detectedLevel = getEducationLevelFromClass(studentClass);
         setEducationLevel(detectedLevel);
       } else {
+        // A school supporting several levels shows the secondary view, which is the widest of the three.
+        const settingsEducationLevel = levels.length === 1 ? levels[0] : "multi-level";
         if (settingsEducationLevel === "tertiary") setEducationLevel("tertiary");
         else if (settingsEducationLevel === "secondary") setEducationLevel("secondary");
         else if (settingsEducationLevel === "primary") setEducationLevel("primary");
@@ -419,8 +418,8 @@ export default function ExamResults({
       }
     };
 
-    window.addEventListener("schoolProfileChanged" as any, handleSchoolProfileChange);
-    return () => window.removeEventListener("schoolProfileChanged" as any, handleSchoolProfileChange);
+    window.addEventListener("schoolProfileChanged", handleSchoolProfileChange);
+    return () => window.removeEventListener("schoolProfileChanged", handleSchoolProfileChange);
   }, [studentClass]);
 
   // Listen for grading configuration updates
@@ -1250,7 +1249,7 @@ export default function ExamResults({
                                       )}
                                       {component.feedback && (
                                         <p className="text-[0.75rem] text-gray-500 dark:text-gray-400 mt-1 italic">
-                                          "{component.feedback}"
+                                          &quot;{component.feedback}&quot;
                                         </p>
                                       )}
                                     </div>

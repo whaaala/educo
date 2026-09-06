@@ -11,9 +11,10 @@ import {
   AlertCircle,
   Filter,
 } from "lucide-react";
-import { ValidationErrors } from "@/lib/validation";
 import { useSchoolSettings, EducationLevel } from "@/contexts/SchoolSettingsContext";
 import FormDropdown from "@/components/shared/FormDropdown";
+import type { FormSectionProps } from "@/components/shared/form-section-types";
+import type { ParentFormData } from "./types";
 
 interface Student {
   id: string;
@@ -25,11 +26,7 @@ interface Student {
   educationLevel: EducationLevel; // Added to filter by level
 }
 
-interface LinkStudentsSectionProps {
-  formData: any;
-  onChange: (field: string, value: any) => void;
-  errors?: ValidationErrors;
-}
+type LinkStudentsSectionProps = FormSectionProps<ParentFormData>;
 
 // Mock student data - In a real app, this would come from an API
 const MOCK_STUDENTS: Student[] = [
@@ -122,7 +119,7 @@ const MOCK_STUDENTS: Student[] = [
 export default function LinkStudentsSection({
   formData,
   onChange,
-  errors = {},
+  errors: _errors = {},
 }: LinkStudentsSectionProps) {
   const [isExpanded, setIsExpanded] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");

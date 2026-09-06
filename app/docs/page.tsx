@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { DashboardPage } from "@/components/pages";
-import { Book, FileText, CheckCircle, Zap, Code, Settings } from "lucide-react";
+import { Book, CheckCircle, Zap, Code, Settings } from "lucide-react";
 import { useFeatureFlags } from "@/hooks/useFeatureFlags";
 
 export default function DocsPage() {
@@ -541,7 +541,14 @@ function TenantInfoDoc({
   tenantContext,
   enabledFeatures,
 }: {
-  tenantContext: any;
+  /** Only the four values this section prints — asking for a whole tenant would be more than it needs. */
+  tenantContext: {
+    tenantId?: string;
+    region?: string;
+    subdomain?: string;
+    educationLevel: string;
+    institutionType: string;
+  };
   enabledFeatures: string[];
 }) {
   return (

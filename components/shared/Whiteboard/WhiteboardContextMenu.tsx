@@ -222,7 +222,7 @@ function SubmenuItem({
 
 export function buildContextMenuActions({
   hasSelection,
-  selectionCount,
+  selectionCount: _selectionCount,
   canGroup,
   canUngroup,
   onBringToFront,

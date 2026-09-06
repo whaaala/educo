@@ -2,14 +2,8 @@
 
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import {
-  Mic,
   MicOff,
   PhoneOff,
-  Volume2,
-  VolumeX,
-  Video,
-  Phone,
-  Users,
   Copy,
   Monitor,
   MonitorOff,
@@ -72,9 +66,7 @@ export default function VoiceCallRoom({
 
   // Get tenant branding
   const primaryColor = currentTenant?.branding.primaryColor || "#2563eb";
-  const secondaryColor = currentTenant?.branding.secondaryColor || "#1e40af";
-  const tenantLogo = currentTenant?.branding.logo;
-  const tenantName = currentTenant?.name || schoolSettings.schoolName;
+  const secondaryColor = currentTenant?.branding.secondaryColor || "#1e40af";  const tenantName = currentTenant?.name || schoolSettings.schoolName;
 
   // State
   const [session, setSession] = useState<CallSession | null>(null);
@@ -84,7 +76,7 @@ export default function VoiceCallRoom({
 
   // Audio controls
   const [isMuted, setIsMuted] = useState(false);
-  const [isSpeakerOff, setIsSpeakerOff] = useState(false);
+  const [_isSpeakerOff, _setIsSpeakerOff] = useState(false);
 
   // UI panels
   const [showChat, setShowChat] = useState(false);

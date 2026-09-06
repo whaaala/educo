@@ -70,7 +70,7 @@ export interface TenantTranscriptConfig {
   design: TranscriptDesignConfig;
   signatures: SignatureConfig;
   verificationUrl?: string;
-  customFields?: Record<string, any>;
+  customFields?: Record<string, unknown>;
 }
 
 export interface ReportCardDesignConfig {

@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import {
-  buildChipHtml, formatChipDate, nextDropdownValue, statusChip, CHIP_CLASS, type SmartChip,
+  buildChipHtml, formatChipDate, nextDropdownValue, statusChip, CHIP_CLASS,
 } from "@/lib/smartchip/chips";
 
 describe("smartchip — buildChipHtml", () => {

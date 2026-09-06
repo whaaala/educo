@@ -7,7 +7,6 @@ import ResponsiveListTable, { type ColumnConfig } from "@/components/shared/Resp
 import DeleteConfirmationModal from "@/components/shared/DeleteConfirmationModal";
 import Tooltip from "@/components/shared/Tooltip";
 import NameLabel from "@/components/shared/NameLabel";
-import { useSidebar } from "@/contexts/SidebarContext";
 import { getEducationLevelColor } from "@/utils/educationLevel";
 
 interface Teacher {
@@ -84,9 +83,7 @@ export default function ClassTable({
   selectedIds: externalSelectedIds,
   onSelectionChange
 }: ClassTableProps) {
-  const router = useRouter();
-  const { isCollapsed } = useSidebar();
-  const [internalSelectedIds, setInternalSelectedIds] = useState<Set<string>>(new Set());
+  const router = useRouter();  const [internalSelectedIds, setInternalSelectedIds] = useState<Set<string>>(new Set());
   const [openMenuClassId, setOpenMenuClassId] = useState<string | null>(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [classToDelete, setClassToDelete] = useState<ClassData | null>(null);

@@ -12,7 +12,6 @@ import {
   User,
 } from "lucide-react";
 import { AdminParent } from "@/lib/mockParents";
-import { ParentChild } from "@/types/parent";
 import ErrorMessage from "@/components/shared/ErrorMessage";
 import Tooltip from "@/components/shared/Tooltip";
 

@@ -9,7 +9,7 @@ import ChatRoom from "@/components/communication/ChatRoom";
 import { DashboardPage } from "@/components/pages";
 
 export default function CommunicationTestPage() {
-  const { isConfigured, getAvailablePlatforms, getBestAvailablePlatform } = useCommunication();
+  const { isConfigured, getBestAvailablePlatform } = useCommunication();
 
   const [activeTest, setActiveTest] = useState<"none" | "video" | "voice" | "chat">("none");
   const [roomId, setRoomId] = useState("");

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { renderSiteFiles, fileNameFor, siteFileMap, SHARED_STYLESHEET } from "@/lib/box-export";
+import { renderSiteFiles, renderSitePage, fileNameFor, siteFileMap, SHARED_STYLESHEET } from "@/lib/box-export";
 import { DEFAULT_THEME } from "@/lib/site-storage";
 import type { BoxSite } from "@/lib/box-site";
 import type { BoxNode } from "@/lib/box-model";
@@ -120,5 +120,33 @@ describe("multi-page export", () => {
     const m = siteFileMap(site());
     expect(m.get("p1")).toBe("index.html");
     expect(m.get("p2")).toBe("admissions.html");
+  });
+
+  describe("prefetching the rest of the site", () => {
+    it("fetches the sibling pages while the browser is idle, so the next click is instant", () => {
+      const home = renderSiteFiles(site(), DEFAULT_THEME)["index.html"];
+      expect(home).toContain('<link rel="prefetch" href="admissions.html">');
+      expect(home).toContain('<link rel="prefetch" href="term-dates.html">');
+    });
+
+    it("never prefetches the page the visitor is already reading", () => {
+      const files = renderSiteFiles(site(), DEFAULT_THEME);
+      expect(files["index.html"]).not.toContain('prefetch" href="index.html"');
+      expect(files["admissions.html"]).not.toContain('prefetch" href="admissions.html"');
+    });
+
+    it("uses a <link>, because rel=prefetch on an <a> does nothing at all", () => {
+      // The plan said to put it on the nav anchors. No browser acts on that — it would have looked shipped
+      // and changed nothing. This asserts the form that actually works.
+      const home = renderSiteFiles(site(), DEFAULT_THEME)["index.html"];
+      expect(home).not.toMatch(/<a[^>]*rel="prefetch"/);
+      expect(home.slice(0, home.indexOf("</head>"))).toContain('rel="prefetch"');
+    });
+
+    it("stays out of the PREVIEW, which has no base URL to resolve a filename against", () => {
+      // Inside a srcdoc iframe every one of these would resolve to nothing and log a failed request per page
+      // — noise that reports a bug where there is none.
+      expect(renderSitePage(site(), DEFAULT_THEME, "p1", { inlineShared: true })).not.toContain('rel="prefetch"');
+    });
   });
 });

@@ -40,7 +40,6 @@ import {
   AlignLeft,
   AlignCenter,
   AlignRight,
-  ChevronsUpDown,
 } from "lucide-react";
 import type { WhiteboardTool, WhiteboardElement, FontFamily, TextAlign, StrokeDashPattern } from "./whiteboard-types";
 import {
@@ -53,7 +52,6 @@ import {
   FONT_SIZES,
   LINE_SPACINGS,
   STROKE_DASH_PATTERNS,
-  EXTENDED_STROKE_WIDTHS,
   LINE_TOOLS,
   BBOX_SHAPE_TOOLS,
 } from "./whiteboard-types";
@@ -314,7 +312,7 @@ export default function WhiteboardToolbar({
   const sidebarRef = useRef<HTMLDivElement>(null);
 
   // Hover flyout state for collapsed mode
-  const [hoveredSection, setHoveredSection] = useState<string | null>(null);
+  const [_hoveredSection, setHoveredSection] = useState<string | null>(null);
   const hoverTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Color flyout state for collapsed mode
@@ -342,6 +340,22 @@ export default function WhiteboardToolbar({
       if (colorPickerTimeoutRef.current) clearTimeout(colorPickerTimeoutRef.current);
     };
   }, []);
+
+  // Above the early return, with the other hooks: `useCallback` after `if (readOnly) return null` runs on some
+  // renders and not others, so flipping readOnly on a mounted toolbar changes the hook count and React throws
+  // "Rendered more hooks than during the previous render".
+  const loadTemplate = useCallback(
+    (elements: WhiteboardElement[]) => {
+      const cloned = elements.map((el, i) => ({
+        ...el,
+        id: `tpl-${Date.now()}-${i}`,
+        points: el.points ? el.points.map((p) => ({ ...p })) : undefined,
+      }));
+      onLoadTemplate?.(cloned);
+      setShowTemplates(false);
+    },
+    [onLoadTemplate]
+  );
 
   if (readOnly) return null;
 
@@ -373,30 +387,6 @@ export default function WhiteboardToolbar({
     }
   };
 
-  const loadTemplate = useCallback(
-    (elements: WhiteboardElement[]) => {
-      const cloned = elements.map((el, i) => ({
-        ...el,
-        id: `tpl-${Date.now()}-${i}`,
-        points: el.points ? el.points.map((p) => ({ ...p })) : undefined,
-      }));
-      onLoadTemplate?.(cloned);
-      setShowTemplates(false);
-    },
-    [onLoadTemplate]
-  );
-
-  // Flyout hover handlers
-  const handleFlyoutEnter = (sectionId: string) => {
-    if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
-    setHoveredSection(sectionId);
-  };
-
-  const handleFlyoutLeave = () => {
-    hoverTimeoutRef.current = setTimeout(() => {
-      setHoveredSection(null);
-    }, 150);
-  };
 
   // Check if active tool is in a section
   const getActiveSection = () => {
@@ -999,7 +989,7 @@ function ColorPickerFlyout({
   onFillColorChange,
   onStrokeWidthChange,
   onFontSizeChange,
-  onClose,
+  onClose: _onClose,
 }: {
   hasSelection: boolean;
   activeColor: string;

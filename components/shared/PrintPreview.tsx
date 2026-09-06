@@ -132,7 +132,8 @@ function DownloadPdfButton({ title, html, slides, type, layout }: {
         windowWidth: container.scrollWidth,
         autoPaging: "text",
         html2canvas: { scale: 2, useCORS: true, backgroundColor: "#ffffff" },
-        callback: (d: any) => {
+        // html2canvas/jsPDF hands the finished document back here.
+        callback: (d: { output: (kind: string) => Blob; save: (name?: string) => void }) => {
           try {
             const blob = d.output("blob") as Blob;
             const url = URL.createObjectURL(blob);
@@ -148,7 +149,7 @@ function DownloadPdfButton({ title, html, slides, type, layout }: {
             d.save(`${title || "document"}.pdf`);
           }
         },
-      } as any);
+      } as Parameters<typeof doc.html>[1]);
 
       container.remove();
     } catch {

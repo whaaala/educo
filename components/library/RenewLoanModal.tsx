@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState } from "react";
 import Image from "next/image";
 import Modal from "@/components/shared/Modal";
 import Button from "@/components/shared/Button";
@@ -11,9 +11,7 @@ import {
   Calendar,
   AlertTriangle,
   Clock,
-  CheckCircle2,
   ArrowRight,
-  Sparkles,
   Info,
 } from "lucide-react";
 import type { BookLoan, BorrowerType } from "@/types/library";

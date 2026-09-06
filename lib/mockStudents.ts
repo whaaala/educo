@@ -18,6 +18,25 @@ export interface Period {
   type?: "class" | "break";
 }
 
+/** A brother or sister on a student's record — the shape this file actually builds. */
+export interface StudentSibling {
+  name: string;
+  relationship: string;
+  age: number;
+  class: string;
+  section: string;
+  photo: string;
+  classNum: string;
+  school: string;
+}
+
+/** A file attached to a student's record. */
+export interface StudentDocument {
+  name: string;
+  type: string;
+  url: string;
+}
+
 // Extended student data interface matching the form structure
 export interface ExtendedStudentData {
   // Personal Information
@@ -138,7 +157,7 @@ export interface ExtendedStudentData {
   guardianCountry?: string;
   
   // Siblings
-  siblings?: any[];
+  siblings?: StudentSibling[];
   isSiblingStudyingHere?: boolean;
   
   // Address
@@ -186,7 +205,7 @@ export interface ExtendedStudentData {
   transferCertificate?: File | null;
   immunizationCard?: File | null;
   studentIdProof?: File | null;
-  documents?: any[];
+  documents?: StudentDocument[];
   
      // Medical History
    medicalConditions?: string[];
@@ -248,7 +267,7 @@ function parseDate(dateStr: string): string {
       const year = parts[2];
       return `${year}-${month}-${day}`;
     }
-  } catch (e) {
+  } catch  {
     // Fallback to current date if parsing fails
   }
   return new Date().toISOString().split("T")[0];
@@ -487,7 +506,7 @@ function generateExtendedStudentData(student: Student, academicYear: string = "2
        }
        
        return siblings;
-     })() : ([] as any[]),
+     })() : ([] as StudentSibling[]),
      isSiblingStudyingHere: studentIndex % 2 === 0 && studentIndex % 3 === 0,
     
     // Address
@@ -539,7 +558,7 @@ function generateExtendedStudentData(student: Student, academicYear: string = "2
        { name: "Birth Certificate", type: "pdf", url: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf" },
        { name: "Medical Certificate", type: "pdf", url: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf" },
        { name: "Previous School Transcript", type: "pdf", url: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf" }
-     ] : ([] as any[]),
+     ] : ([] as StudentDocument[]),
      
           // Medical History (ensure all array fields are always arrays)
      medicalCondition: studentIndex % 10 === 0 ? "Asthma (mild)" : "Good",
@@ -682,7 +701,9 @@ function generateStudentAttendance(
     const month = months[currentDate.getMonth()];
     const year = currentDate.getFullYear();
 
-    const row: any = {
+    // Built key-by-key because the period columns are dynamic (`period1`…`periodN`), so the finished shape
+    // only becomes ClassAttendanceData once the loop below has filled them in.
+    const row: Record<string, string> = {
       date: `${day} ${month} ${year}`,
       day: dayName,
     };
@@ -702,7 +723,7 @@ function generateStudentAttendance(
       row[`period${p}`] = status;
     }
 
-    data.push(row as ClassAttendanceData);
+    data.push(row as unknown as ClassAttendanceData);
 
     // Move to next day
     currentDate.setDate(currentDate.getDate() + 1);

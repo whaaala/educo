@@ -85,7 +85,7 @@ export function UpdatesDialog() {
   ];
   return (
     <div className="text-[12px] text-gray-700 dark:text-gray-200 space-y-2">
-      <p className="font-semibold text-green-600 dark:text-green-400">You're on the latest version.</p>
+      <p className="font-semibold text-green-600 dark:text-green-400">You&apos;re on the latest version.</p>
       <div className={sectionTitle}>Recently added</div>
       <ul className="list-disc pl-5 space-y-1.5">{items.map((t, i) => <li key={i}>{t}</li>)}</ul>
     </div>
@@ -166,7 +166,7 @@ export function DictionaryDialog() {
   const add = () => { const w = input.trim(); if (w && !words.includes(w)) save([...words, w]); setInput(""); };
   return (
     <div className="text-[12px]">
-      <p className="text-gray-500 dark:text-gray-400 mb-2">Words added here won't be flagged by spell check.</p>
+      <p className="text-gray-500 dark:text-gray-400 mb-2">Words added here won&apos;t be flagged by spell check.</p>
       <div className="flex gap-1 mb-2">
         <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === "Enter" && add()} placeholder="Add a word…"
           className="flex-1 px-2 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-[#1a1d24] outline-none focus:ring-2 focus:ring-blue-400" />

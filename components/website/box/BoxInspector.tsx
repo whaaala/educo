@@ -8,10 +8,10 @@
  */
 
 import { useState, useRef } from "react";
-import { Plus, X, Rows3, Columns3, Upload, AlignLeft, AlignCenter, AlignRight, Layers, Move, BringToFront, SendToBack, ChevronUp, ChevronDown, Italic, Underline, LayoutGrid, Maximize2, Sparkles, Paintbrush, Ruler, Link2, Type as TypeIcon, MonitorSmartphone, Bookmark, Lock, LockOpen } from "lucide-react";
+import { Plus, X, Rows3, Columns3, Upload, AlignLeft, AlignCenter, AlignRight, Layers, Move, BringToFront, SendToBack, ChevronUp, ChevronDown, Italic, Underline, LayoutGrid, Maximize2, Sparkles, Paintbrush, Ruler, Type as TypeIcon, MonitorSmartphone, Bookmark, Lock, LockOpen } from "lucide-react";
 import type { SiteTheme } from "@/lib/site-storage";
 import type { BoxNode, FlexAlign, FlexJustify, AccPartStyle } from "@/lib/box-model";
-import { type ItemAction, TOAST_CORNERS, isContainer, isFloating, isCssBg, addItem, removeItem, moveItem, updateItem, addChildItem, updateChildItem, removeChildItem, moveChildItem , isMultiItemComponent } from "@/lib/box-model";
+import { type ItemAction, TOAST_CORNERS, isContainer, isFloating, isCssBg, addItem, removeItem, moveItem, updateItem, addChildItem, updateChildItem, removeChildItem, moveChildItem , isMultiItemComponent, hasIntrinsicSize, sizeToCSS } from "@/lib/box-model";
 import { ACCORDION_DESIGNS, ACCORDION_DESIGN_COUNT, ACCORDION_AXES } from "@/lib/educo-ui/accordions";
 import { ALERT_DESIGNS, ALERT_DESIGN_COUNT, ALERT_AXES } from "@/lib/educo-ui/alerts";
 import { COMPONENT_REGISTRY, isRegistryComponent, defaultComponentFields, renderComponent } from "@/lib/educo-ui/registry";
@@ -27,13 +27,11 @@ import GradientEditor, { parseGradient } from "@/components/shared/GradientEdito
 import { Tabs, Accordion, Segmented, type SegOption } from "./ui";
 import EducoColorField from "@/components/shared/EducoColorField";
 import Slider from "@/components/shared/Slider";
-import CompactField, { COMPACT_INPUT_CLS } from "@/components/shared/CompactField";
+import CompactField from "@/components/shared/CompactField";
 import CompactSelect from "@/components/shared/CompactSelect";
 import CompactTextarea from "@/components/shared/CompactTextarea";
 
 const label = "text-[0.6875rem] font-semibold text-muted";
-// A clean, token-driven selectable chip (Styles / design variations) — re-skins with every theme.
-const chipCls = (on: boolean) => `px-2.5 py-1.5 text-xs font-medium rounded-lg border transition-colors ${on ? "border-brand bg-brand/10 text-brand" : "border-line text-ink hover:border-brand/50 hover:bg-brand/5 hover:text-brand"}`;
 
 const toRem = (px: number) => +(px / 10).toFixed(2);
 const fromRem = (rem: number) => Math.round(rem * 10);
@@ -334,7 +332,7 @@ export default function BoxInspector({ node, theme, onPatch, onAddChild, onFloat
   const typeLabel = presetEntry?.label
     ?? componentEntry?.label
     ?? (container ? (isGrid ? "Grid" : node.direction === "row" ? "Row" : "Section") : node.type);
-  const align = (["left", "center", "right"] as const);
+
   const bpLabel = breakpoint === "mobile" ? "Mobile" : breakpoint === "tablet" ? "Tablet" : "";
 
   const AlignRow = () => (
@@ -404,7 +402,7 @@ export default function BoxInspector({ node, theme, onPatch, onAddChild, onFloat
                 className={`w-full flex items-center justify-center gap-2 py-2 rounded-lg text-xs font-medium border transition-colors ${node.locked ? "bg-amber-500 border-transparent text-white" : "border-gray-200 dark:border-white/10 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-white/10"}`}
                 title={node.locked ? "Unlock (Ctrl+L)" : "Lock position & size (Ctrl+L)"}
               >{node.locked ? <><LockOpen className="w-3.5 h-3.5" /> Unlock position &amp; size</> : <><Lock className="w-3.5 h-3.5" /> Lock position &amp; size</>}</button>
-              {node.locked && <p className="text-[0.625rem] text-gray-400 flex items-start gap-1"><Lock className="w-3 h-3 mt-0.5 shrink-0" /> Frozen — can't be moved or resized. Content &amp; colours stay editable.</p>}
+              {node.locked && <p className="text-[0.625rem] text-gray-400 flex items-start gap-1"><Lock className="w-3 h-3 mt-0.5 shrink-0" /> Frozen — can&rsquo;t be moved or resized. Content &amp; colours stay editable.</p>}
               {floating && (
                 <>
                   <p className="text-[0.625rem] text-gray-400 flex items-start gap-1"><Move className="w-3 h-3 mt-0.5 shrink-0" /> Drag it anywhere to overlap other blocks. Arrow keys nudge it.</p>
@@ -725,6 +723,20 @@ export default function BoxInspector({ node, theme, onPatch, onAddChild, onFloat
                       <input type="checkbox" checked={!!node.eager} onChange={(e) => onPatch({ eager: e.target.checked || undefined })} />
                       Load straight away (for an image at the top of the page)
                     </label>
+                    {/* Only shown once we know what shape the photo actually is. Offering it for an image of
+                        unknown size would be a control that silently does nothing — the renderer has to keep
+                        the fixed height in that case, or `object-fit: cover` collapses the box to nothing. */}
+                    {hasIntrinsicSize(node) && (
+                      <>
+                        <label className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300">
+                          <input type="checkbox" checked={!sizeToCSS(node.height)} onChange={(e) => onPatch({ height: e.target.checked ? "auto" : "260px" })} />
+                          Show the whole picture (don&apos;t crop it)
+                        </label>
+                        <p className="text-[0.6875rem] text-gray-500 dark:text-gray-400">
+                          This photo is {node.imgW} × {node.imgH} pixels. Its shape is held open while it loads, so nothing below it jumps.
+                        </p>
+                      </>
+                    )}
                   </>
                 )}
                 {node.type === "video" && (

@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { View, Text, Linking, Platform } from 'react-native';
+import { Linking, Platform } from 'react-native';
 import * as Clipboard from 'expo-clipboard';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../contexts/ThemeContext';

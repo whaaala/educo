@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Star, X, FileText, BarChart3, Target, CheckCircle, User } from "lucide-react";
+import { Star, X, FileText, BarChart3, Target, CheckCircle } from "lucide-react";
 import FormTextarea from "@/components/shared/FormTextarea";
 import FormDropdown from "@/components/shared/FormDropdown";
 import { usePerformance } from "@/contexts/PerformanceContext";
@@ -66,14 +66,6 @@ export default function CompletePerformanceReviewModal({
     );
     setFormData({ ...formData, criteria: newCriteria });
   };
-
-  const handleCriteriaCommentChange = (id: string, comments: string) => {
-    const newCriteria = formData.criteria.map((c) =>
-      c.id === id ? { ...c, comments } : c
-    );
-    setFormData({ ...formData, criteria: newCriteria });
-  };
-
   const calculateAverageScore = () => {
     if (formData.criteria.length === 0) return 0;
     const sum = formData.criteria.reduce((acc, c) => acc + c.rating, 0);

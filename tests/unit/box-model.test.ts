@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { coerceSite } from "@/lib/box-site";
 import { BREAKPOINTS_EM } from "@/lib/educo-ui/base";
 import {
-  createContainer, createGrid, createElement, createRoot, createComponent,
+  createContainer, createGrid, createElement, createComponent,
   addItem, removeItem, moveItem, updateItem, addChildItem, updateChildItem, removeChildItem, moveChildItem, sanitizeCssDeclarations, expandScopedCss, ACCORDION_CSS_PARTS, itemOverrideCss, itemHasOverride, itemFloatReserveRem, richBody, plainBody, isEmptyBox,
   findBox, findParent, isAncestor, updateBox, insertBox, removeBox, moveBoxStep, moveBox,
   containerStyle, childStyle, paddingCSS, marginCSS, sizeToCSS, flexForWidth, fillMainAxis, u, newBoxId, dropIndexAmong,

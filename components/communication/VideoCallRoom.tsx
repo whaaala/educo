@@ -3,34 +3,17 @@
 import React, { useState, useEffect, useLayoutEffect, useRef, useCallback, useMemo } from "react";
 import Image from "next/image";
 import {
-  Video,
-  VideoOff,
-  Mic,
   MicOff,
   PhoneOff,
   Monitor,
   MonitorOff,
-  MessageSquare,
-  Users,
-  Settings,
-  Maximize2,
-  Minimize2,
-  MoreVertical,
-  X,
   Copy,
-  UserPlus,
-  Grid,
-  Sparkles,
-  Circle,
-  Pin,
-  Check,
 } from "lucide-react";
 import { useCommunication } from "@/contexts/CommunicationContext";
 import { useSchoolSettings } from "@/contexts/SchoolSettingsContext";
 import {
   getCommunicationManager,
   CallSession,
-  CallParticipant,
   ChatMessage,
 } from "@/lib/services/communication";
 import { stopAllMediaTracks } from "@/lib/utils/stopAllMedia";
@@ -97,9 +80,7 @@ export default function VideoCallRoom({
 
   // Get tenant branding
   const primaryColor = currentTenant?.branding.primaryColor || "#2563eb";
-  const secondaryColor = currentTenant?.branding.secondaryColor || "#1e40af";
-  const tenantLogo = currentTenant?.branding.logo;
-  const tenantName = currentTenant?.name || schoolSettings.schoolName;
+  const secondaryColor = currentTenant?.branding.secondaryColor || "#1e40af";  const tenantName = currentTenant?.name || schoolSettings.schoolName;
 
   // State
   const [session, setSession] = useState<CallSession | null>(null);
@@ -113,7 +94,7 @@ export default function VideoCallRoom({
   const [isScreenSharing, setIsScreenSharing] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
-  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [isSpeaking] = useState(false);
 
   // UI panels
   const [showChat, setShowChat] = useState(false);
@@ -130,7 +111,7 @@ export default function VideoCallRoom({
 
   // Reactions
   const { reactions: floatingReactions, addReaction } = useReactionOverlay();
-  const [pinnedParticipant, setPinnedParticipant] = useState<string | null>(null);
+  const [_pinnedParticipant, _setPinnedParticipant] = useState<string | null>(null);
 
   // Video settings
   const [selectedBackground, setSelectedBackground] = useState<VirtualBackground>(VIRTUAL_BACKGROUNDS[0]);

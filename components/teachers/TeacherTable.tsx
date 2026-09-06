@@ -7,7 +7,6 @@ import { MoreVertical, MessageCircle, Phone, Video, Mail, Eye, Edit, Lock, Trash
 import ResponsiveListTable, { type ColumnConfig } from "@/components/shared/ResponsiveListTable";
 import DeleteConfirmationModal from "@/components/shared/DeleteConfirmationModal";
 import Tooltip from "@/components/shared/Tooltip";
-import { useSidebar } from "@/contexts/SidebarContext";
 import { useCall } from "@/hooks/useCall";
 
 interface TeacherTableProps {
@@ -25,15 +24,13 @@ export default function TeacherTable({
   teachers,
   isLoading = false,
   loadingMessage = "Loading...",
-  onClearFilters,
-  hasActiveFilters = false,
-  totalTeachersCount,
+  onClearFilters: _onClearFilters,
+  hasActiveFilters: _hasActiveFilters = false,
+  totalTeachersCount: _totalTeachersCount,
   selectedIds: externalSelectedIds,
   onSelectionChange
 }: TeacherTableProps) {
-  const router = useRouter();
-  const { isCollapsed } = useSidebar();
-  const { startVideoCall, startVoiceCall } = useCall();
+  const router = useRouter();  const { startVideoCall, startVoiceCall } = useCall();
   const [internalSelectedIds, setInternalSelectedIds] = useState<Set<string>>(new Set());
   const [openMenuTeacherId, setOpenMenuTeacherId] = useState<string | null>(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);

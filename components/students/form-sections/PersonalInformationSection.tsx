@@ -16,7 +16,6 @@ import {
   Mail,
   Languages,
   ChevronUp,
-  ChevronDown,
   Building2
 } from "lucide-react";
 import FileUpload from "@/components/shared/FileUpload";
@@ -29,13 +28,10 @@ import { useCountry } from "@/contexts/CountryContext";
 import { useAcademicYear } from "@/contexts/AcademicYearContext";
 import { detectEducationLevelFromClass, getEducationLevelColor, getInstitutionTypeColor } from "@/utils/educationLevel";
 import { useSchoolSettings } from "@/contexts/SchoolSettingsContext";
-import { ValidationErrors } from "@/lib/validation";
+import type { FormSectionProps } from "@/components/shared/form-section-types";
+import type { StudentFormData } from "./types";
 
-interface PersonalInformationSectionProps {
-  formData: any;
-  onChange: (field: string, value: any) => void;
-  errors?: ValidationErrors;
-}
+type PersonalInformationSectionProps = FormSectionProps<StudentFormData>;
 
 export default function PersonalInformationSection({
   formData,
@@ -57,7 +53,9 @@ export default function PersonalInformationSection({
   // Auto-detect education level when class changes
   useEffect(() => {
     if (formData.class) {
-      let educationLevel = "";
+      // Typed as the FORM's education level, not a bare string: the detector and the school setting both
+      // return one of these, and saying so means a fourth value could never be written into the field.
+      let educationLevel: StudentFormData["educationLevel"] = "";
 
       if (schoolSettings.supportsMultipleLevels) {
         // Multi-level school: detect from class name

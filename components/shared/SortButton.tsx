@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { ArrowUpDown, ChevronDown, ArrowUpAZ, ArrowDownAZ, Eye, Clock } from "lucide-react";
+import { ChevronDown, ArrowUpAZ, ArrowDownAZ, Eye, Clock } from "lucide-react";
 
 interface SortOption {
   label: string;

@@ -12,12 +12,10 @@ import {
 } from "lucide-react";
 import FormInput from "@/components/shared/FormInput";
 import FormDropdown from "@/components/shared/FormDropdown";
+import type { FormSectionProps } from "@/components/shared/form-section-types";
+import type { ClassFormData } from "./types";
 
-interface SubjectCourseSectionProps {
-  formData: any;
-  onChange: (field: string, value: any) => void;
-  errors?: any;
-}
+type SubjectCourseSectionProps = FormSectionProps<ClassFormData>;
 
 export default function SubjectCourseSection({
   formData,
@@ -65,7 +63,7 @@ export default function SubjectCourseSection({
     const currentSubjects = formData.subjects || [];
     onChange(
       "subjects",
-      currentSubjects.filter((_: any, i: number) => i !== index)
+      currentSubjects.filter((_, i) => i !== index)
     );
   };
 
@@ -123,7 +121,7 @@ export default function SubjectCourseSection({
           {/* List of subjects/courses */}
           {formData.subjects && formData.subjects.length > 0 ? (
             <div className="space-y-4">
-              {formData.subjects.map((subject: any, index: number) => (
+              {formData.subjects.map((subject, index) => (
                 <div
                   key={index}
                   className="p-4 bg-gray-50 dark:bg-[#22262e]/50 midnight:bg-[#0f1330]/50 purple:bg-[#251340]/50 rounded-lg border border-gray-200 dark:border-gray-600 midnight:border-cyan-500/10 purple:border-pink-500/10"
@@ -188,7 +186,7 @@ export default function SubjectCourseSection({
                     {isTertiary && (
                       <FormInput
                         label="Credit Units"
-                        value={subject.creditUnits}
+                        value={subject.creditUnits ?? ""}
                         onChange={(value) =>
                           handleSubjectChange(index, "creditUnits", value)
                         }

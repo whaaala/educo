@@ -12,7 +12,6 @@ import {
   FileText,
   ArrowRight,
   TrendingUp,
-  DollarSign,
   Clock,
   CheckCircle,
   XCircle,

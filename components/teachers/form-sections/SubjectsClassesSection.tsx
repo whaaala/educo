@@ -12,22 +12,15 @@ import {
 } from "lucide-react";
 import FormDropdown from "@/components/shared/FormDropdown";
 import TagInput from "@/components/shared/TagInput";
-import { ValidationErrors } from "@/lib/validation";
-import { useSchoolSettings } from "@/contexts/SchoolSettingsContext";
-
-interface SubjectsClassesSectionProps {
-  formData: any;
-  onChange: (field: string, value: any) => void;
-  errors?: ValidationErrors;
-}
+import type { FormSectionProps } from "@/components/shared/form-section-types";
+import type { TeacherFormData } from "./types";
+type SubjectsClassesSectionProps = FormSectionProps<TeacherFormData>;
 
 export default function SubjectsClassesSection({
   formData,
   onChange,
 }: SubjectsClassesSectionProps) {
   const [isExpanded, setIsExpanded] = useState(true);
-  const { settings: schoolSettings } = useSchoolSettings();
-
   // Only show for Academic Staff
   const isAcademicStaff = formData.jobCategory === "Academic Staff";
 

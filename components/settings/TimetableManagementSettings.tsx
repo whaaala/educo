@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Calendar, Clock, Plus, Edit2, Trash2, Save, User, FileText, Settings as SettingsIcon } from "lucide-react";
+import { Calendar, Plus, Edit2, Trash2, FileText, Settings as SettingsIcon } from "lucide-react";
 import TimetableSettingsModal from "./TimetableSettingsModal";
 import EventManagementModal from "../students/EventManagementModal";
 import {
@@ -256,7 +256,7 @@ export default function TimetableManagementSettings() {
                 Using default calendar configuration
               </p>
               <p className="text-xs text-gray-500 dark:text-gray-400">
-                Click "Configure Calendar" to create a custom configuration
+                Click &quot;Configure Calendar&quot; to create a custom configuration
               </p>
             </div>
           )}
@@ -336,7 +336,7 @@ export default function TimetableManagementSettings() {
             <div className="text-center py-8">
               <FileText className="w-12 h-12 text-gray-400 mx-auto mb-3" />
               <p className="text-sm text-gray-500 dark:text-gray-400">
-                No custom events yet. Click "Add Event" to create one.
+                No custom events yet. Click &quot;Add Event&quot; to create one.
               </p>
             </div>
           )}

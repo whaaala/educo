@@ -21,6 +21,30 @@ describe("subsetCss", () => {
     expect(out).toContain(".eu-btn");
   });
 
+  it("drops a chained selector when any LINK in the chain is missing", () => {
+    // `.eu-accordion--invert .eu-accordion__item` is a chain: it cannot match unless BOTH classes are on the
+    // page. Keeping it because the second one is present shipped every accordion, alert and card VARIANT to
+    // every page carrying any of those components — 27 KB of unmatchable rules on a four-component page.
+    const css = ".eu-accordion--invert .eu-accordion__item{border:0}";
+    expect(subsetCss(css, new Set(["eu-accordion__item"]))).toBe("");
+    expect(subsetCss(css, new Set(["eu-accordion__item", "eu-accordion--invert"]))).toContain("border:0");
+  });
+
+  it("still keeps a chain whose links are ALL on the page", () => {
+    const css = ".eu-root .eu-accordion .eu-accordion__header{font-weight:600}";
+    expect(subsetCss(css, new Set(["eu-accordion", "eu-accordion__header"]))).toContain("font-weight:600");
+  });
+
+  it("keeps a selector using :is()/:where(), because those are alternatives and not a chain", () => {
+    // `:is(.eu-a, .eu-b) .eu-c` matches with only ONE of a and b present, so the all-links-required test
+    // would wrongly drop it. The sheet has no such selector today; this is what stops the day it gains one
+    // from silently un-styling a page.
+    const css = ":is(.eu-alert, .eu-callout) .eu-btn{color:red}";
+    expect(subsetCss(css, new Set(["eu-alert", "eu-btn"]))).toContain("color:red");
+    const negated = ".eu-btn:not(.eu-btn--ghost){padding:1em}";
+    expect(subsetCss(negated, new Set(["eu-btn"]))).toContain("padding:1em");
+  });
+
   it("keeps a selector list when ANY part of it is needed", () => {
     // Dropping the whole list because one part is unused would unstyle an element that IS on the page.
     const css = ".eu-alert__title,.eu-card__title{font-weight:700}";

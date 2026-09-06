@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
-import { MoreVertical, MoreHorizontal, ChevronDown, type LucideIcon } from "lucide-react";
+import { MoreVertical, MoreHorizontal, ChevronDown } from "lucide-react";
 import type { ActionConfig } from "@/types/components";
 
 export interface ActionsDropdownProps<T> {
@@ -103,7 +103,7 @@ export default function ActionsDropdown<T>({
     }
 
     // Coordinates for portal
-    let top = pos === "bottom" ? rect.bottom + 4 : rect.top - menuHeight - 4;
+    const top = pos === "bottom" ? rect.bottom + 4 : rect.top - menuHeight - 4;
     let left = align === "right" ? rect.right - menuWidthPx : rect.left;
 
     // Ensure menu stays within viewport

@@ -1,8 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { useParams, useRouter } from "next/navigation";
-import { useSchoolSettings } from "@/contexts/SchoolSettingsContext";
+import { useParams } from "next/navigation";
 import Link from "next/link";
 import { DashboardPage } from "@/components/pages";
 import {
@@ -38,14 +37,11 @@ interface Subject {
 }
 
 export default function SubjectsManagementPage() {
-  const params = useParams();
-  const router = useRouter();
-  const { settings } = useSchoolSettings();
-  const classId = params.id as string;
+  const params = useParams();  const classId = params.id as string;
 
   const [searchQuery, setSearchQuery] = useState("");
   const [showAddModal, setShowAddModal] = useState(false);
-  const [selectedSubject, setSelectedSubject] = useState<Subject | null>(null);
+  const [_selectedSubject, _setSelectedSubject] = useState<Subject | null>(null);
   const [showActionsMenu, setShowActionsMenu] = useState<string | null>(null);
 
   // Mock data - In production, fetch from API

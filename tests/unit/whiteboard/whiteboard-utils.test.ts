@@ -1,4 +1,4 @@
-import { describe, expect, it, vi, beforeEach } from "vitest";
+import { describe, expect, it } from "vitest";
 import {
   generateId,
   buildFontString,
@@ -10,7 +10,7 @@ import {
   hitTestResizeHandle,
   parseRichText,
 } from "@/components/shared/Whiteboard/whiteboard-utils";
-import type { WhiteboardElement, Point } from "@/components/shared/Whiteboard/whiteboard-types";
+import type { WhiteboardElement } from "@/components/shared/Whiteboard/whiteboard-types";
 
 // ─── Helper factory ────────────────────────────────────────
 

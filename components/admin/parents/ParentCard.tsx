@@ -475,7 +475,7 @@ export default function ParentCard({
           email: parent.email,
           photo: parent.profilePhoto,
         }}
-        children={parent.children.map((child) => ({
+        childList={parent.children.map((child) => ({
           id: child.id,
           name: `${child.firstName} ${child.lastName}`,
           classLevel: child.classLevel,

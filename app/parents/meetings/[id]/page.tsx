@@ -8,11 +8,8 @@ import {
   DetailPageHeader,
   DetailCard,
   PersonCard,
-  InfoRow,
-  InfoGrid,
   StatusBadge,
   ActionButton,
-  CopyableField,
   type StatusType,
 } from "@/components/detail-page";
 import { useMeetings } from "@/contexts/MeetingsContext";

@@ -1,5 +1,4 @@
 import {
-  MOCK_DRIVE_ITEMS,
   getChildren,
   getItem,
   getBreadcrumbPath,
@@ -167,46 +166,46 @@ describe('driveMockData — Helper Functions', () => {
 
   describe('getFileTypeConfig', () => {
     it('returns folder config for folders', () => {
-      const config = getFileTypeConfig({ type: 'folder', name: 'Test' } as any);
+      const config = getFileTypeConfig({ type: 'folder', name: 'Test' });
       expect(config.icon).toBe('folder');
       expect(config.label).toBe('Folder');
     });
 
     it('returns PDF config for .pdf files', () => {
-      const config = getFileTypeConfig({ type: 'file', name: 'report.pdf' } as any);
+      const config = getFileTypeConfig({ type: 'file', name: 'report.pdf' });
       expect(config.label).toBe('PDF');
       expect(config.color).toBe('#dc2626');
     });
 
     it('returns Document config for .docx files', () => {
-      const config = getFileTypeConfig({ type: 'file', name: 'notes.docx' } as any);
+      const config = getFileTypeConfig({ type: 'file', name: 'notes.docx' });
       expect(config.label).toBe('Document');
     });
 
     it('returns Spreadsheet config for .xlsx files', () => {
-      const config = getFileTypeConfig({ type: 'file', name: 'data.xlsx' } as any);
+      const config = getFileTypeConfig({ type: 'file', name: 'data.xlsx' });
       expect(config.label).toBe('Spreadsheet');
       expect(config.icon).toBe('grid');
     });
 
     it('returns Slides config for .pptx files', () => {
-      const config = getFileTypeConfig({ type: 'file', name: 'deck.pptx' } as any);
+      const config = getFileTypeConfig({ type: 'file', name: 'deck.pptx' });
       expect(config.label).toBe('Slides');
     });
 
     it('returns Video config for .mp4 files', () => {
-      const config = getFileTypeConfig({ type: 'file', name: 'video.mp4' } as any);
+      const config = getFileTypeConfig({ type: 'file', name: 'video.mp4' });
       expect(config.label).toBe('Video');
       expect(config.icon).toBe('videocam');
     });
 
     it('returns Image config for .jpg files', () => {
-      const config = getFileTypeConfig({ type: 'file', name: 'photo.jpg' } as any);
+      const config = getFileTypeConfig({ type: 'file', name: 'photo.jpg' });
       expect(config.label).toBe('Image');
     });
 
     it('falls back to sourceType when extension not recognized', () => {
-      const config = getFileTypeConfig({ type: 'file', name: 'unknown', sourceType: 'spreadsheet' } as any);
+      const config = getFileTypeConfig({ type: 'file', name: 'unknown', sourceType: 'spreadsheet' });
       expect(config.label).toBe('Spreadsheet');
     });
   });

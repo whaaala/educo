@@ -1,14 +1,12 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import {
   View,
   Text,
   Pressable,
   StyleSheet,
-  Platform,
 } from 'react-native';
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
-import * as FileSystem from 'expo-file-system';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -659,7 +657,7 @@ export function ViewReceiptModal({
           <View style={[styles.infoBanner, { backgroundColor: isDark ? colors.primaryLight : '#eff6ff' }]}>
             <Ionicons name="information-circle" size={16} color={colors.primary} />
             <Text style={[styles.infoText, { color: colors.primary }]}>
-              Use "Print" to preview and print, or "Share" to send via email/WhatsApp.
+              Use &quot;Print&quot; to preview and print, or &quot;Share&quot; to send via email/WhatsApp.
             </Text>
           </View>
         </View>

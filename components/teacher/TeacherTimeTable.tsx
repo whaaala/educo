@@ -113,7 +113,7 @@ function generateTeacherTimetable(
 
 export default function TeacherTimeTable({
   timetable: propTimetable,
-  teacherName,
+  teacherName: _teacherName,
   schoolId = "school-1"
 }: TeacherTimeTableProps) {
   const [selectedYear, setSelectedYear] = useState("this-year");

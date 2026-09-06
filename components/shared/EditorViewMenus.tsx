@@ -7,7 +7,7 @@
  * Used as the standard rendering layer for all editor menus.
  */
 
-import { useState, useRef, useEffect, useLayoutEffect, useCallback, useContext, useMemo, createContext } from "react";
+import { useState, useRef, useEffect, useLayoutEffect, useContext, useMemo, createContext } from "react";
 import { createPortal } from "react-dom";
 import { ChevronRight, Check } from "lucide-react";
 

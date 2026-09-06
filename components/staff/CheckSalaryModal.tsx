@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { X, DollarSign, Calendar, TrendingUp, FileText, Briefcase, User, Edit2, Check } from "lucide-react";
+import { X, Calendar, TrendingUp, FileText, Briefcase, User, Edit2, Check } from "lucide-react";
 import { Teacher } from "@/lib/mockTeachers";
 import { getCountryConfig } from "@/config/countries";
 

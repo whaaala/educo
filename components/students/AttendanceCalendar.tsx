@@ -49,7 +49,7 @@ export default function AttendanceCalendar({ year = 2024, onYearChange, studentI
   const { getStudentAttendance } = useAttendance();
   const [lastUpdated, setLastUpdated] = useState(new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }));
   const [viewMode, setViewMode] = useState<ViewMode>("day");
-  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [selectedDate] = useState(new Date());
 
   // Get attendance data from context and transform to class-based records
   const classAttendanceData = useMemo(() => {

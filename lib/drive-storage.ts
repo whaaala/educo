@@ -58,7 +58,7 @@ function generateId(prefix = "drv"): string {
 
 /** Seed default folders on first use */
 function ensureDefaults(): DriveItem[] {
-  let items = getAll();
+  const items = getAll();
   if (items.length > 0) return items;
 
   const now = new Date().toISOString();

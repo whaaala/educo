@@ -24,7 +24,7 @@ export default function EventManagementModal({
   event,
   dayOfWeek,
   periodIndex,
-  periodTime,
+  periodTime: _periodTime,
   userPermissions,
   onSave,
   onDelete,
@@ -120,7 +120,7 @@ export default function EventManagementModal({
               Permission Denied
             </h3>
             <p className="text-gray-600 dark:text-gray-400 mb-4">
-              You don't have permission to edit calendar events.
+              You don&apos;t have permission to edit calendar events.
             </p>
             <button
               onClick={onClose}
@@ -146,7 +146,7 @@ export default function EventManagementModal({
               Permission Denied
             </h3>
             <p className="text-gray-600 dark:text-gray-400 mb-4">
-              You don't have permission to create calendar events.
+              You don&apos;t have permission to create calendar events.
             </p>
             <button
               onClick={onClose}

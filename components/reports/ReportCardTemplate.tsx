@@ -1,7 +1,7 @@
 "use client";
 
 import React, { forwardRef } from "react";
-import { ReportCardConfig, DEFAULT_REPORT_CARD_CONFIG, GradeScaleItem } from "@/types/school";
+import { ReportCardConfig, DEFAULT_REPORT_CARD_CONFIG } from "@/types/school";
 
 // Unified subject grade interface
 export interface SubjectGrade {
@@ -99,37 +99,7 @@ export interface ReportCardTemplateProps {
 
 const ReportCardTemplate = forwardRef<HTMLDivElement, ReportCardTemplateProps>(
   (props, ref) => {
-    const {
-      schoolName,
-      schoolMotto,
-      schoolLogo,
-      schoolAddress,
-      schoolContact,
-      primaryColor = "#2563eb",
-      principalName = "Principal",
-      principalTitle = "Principal",
-      classTeacherTitle = "Class Teacher",
-      studentName,
-      studentPhoto,
-      admissionNumber,
-      classLevel,
-      section,
-      gender,
-      dateOfBirth,
-      term,
-      academicYear,
-      subjects,
-      classPosition,
-      totalStudents,
-      classAverage,
-      attendance,
-      conduct,
-      teacherRemarks,
-      principalRemarks,
-      customRemarks,
-      config: propConfig,
-      highlightedSubject,
-    } = props;
+    const { schoolName, schoolMotto, schoolLogo, schoolAddress, schoolContact, primaryColor = "#2563eb", principalName = "Principal", principalTitle = "Principal", classTeacherTitle = "Class Teacher", studentName, admissionNumber, classLevel, section, gender, term, academicYear, subjects, classPosition, totalStudents, classAverage, attendance, conduct, teacherRemarks, principalRemarks, customRemarks, config: propConfig, highlightedSubject } = props;
 
     // Merge provided config with defaults
     const config: ReportCardConfig = {

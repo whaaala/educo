@@ -19,18 +19,6 @@ function isStoredDashboardLayoutV1(value: unknown): value is StoredDashboardLayo
   );
 }
 
-function safeParseJsonArray(value: string | null): string[] | null {
-  if (!value) return null;
-  try {
-    const parsed = JSON.parse(value) as unknown;
-    if (!Array.isArray(parsed)) return null;
-    const strings = parsed.filter((x): x is string => typeof x === "string");
-    return strings.length ? strings : [];
-  } catch {
-    return null;
-  }
-}
-
 function safeParseJsonUnknown(value: string | null): unknown {
   if (!value) return null;
   try {
@@ -116,7 +104,6 @@ export function useDashboardLayout(
     setCustomized(legacyCustomized);
     setOrder(legacyCustomized ? legacyResolved : reconcileOrder(null, stableAvailableIds, stableDefaultOrder));
     setIsHydrated(true);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [storageKey, stableAvailableIds, stableDefaultOrder, stableLegacyDefaultOrder, defaultVersion]);
 
   useEffect(() => {

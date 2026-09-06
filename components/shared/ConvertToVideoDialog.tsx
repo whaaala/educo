@@ -2,8 +2,7 @@
 
 import React, { useState, useRef } from "react";
 import {
-  X, Video, Play, Clock, Monitor, Smartphone, Check, Loader2,
-  ChevronDown, Download, Share2, Mail,
+  X, Video, Play, Clock, Monitor, Check, ChevronDown, Download, Share2, Mail,
 } from "lucide-react";
 
 // ── Types ──
@@ -38,7 +37,7 @@ export interface ConvertToVideoDialogProps {
 
 // ── Component ──
 export default function ConvertToVideoDialog({
-  isOpen, onClose, title, slides, activeSlideIndex = 0, totalSlides, onConvert,
+  isOpen, onClose, title, slides, activeSlideIndex: _activeSlideIndex = 0, totalSlides, onConvert,
 }: ConvertToVideoDialogProps) {
   const [scope, setScope] = useState<ExportScope>("all");
   const [quality, setQuality] = useState<VideoQuality>("1080p");
@@ -51,6 +50,12 @@ export default function ConvertToVideoDialog({
   const [progress, setProgress] = useState(0);
   const [isComplete, setIsComplete] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false);
+  // Above the early return, with the other hooks: a hook after `if (!isOpen) return null` is called on some
+  // renders and not others, and React compares hook COUNT against the previous render. Today the only call
+  // site mounts this conditionally and passes isOpen={true}, so the early return never fires and nothing
+  // breaks — which is exactly what makes it a landmine. Keep it mounted and toggle isOpen, as the prop's name
+  // invites, and it throws "Rendered more hooks than during the previous render".
+  const videoRef = useRef<Blob | null>(null);
 
   if (!isOpen) return null;
 
@@ -67,7 +72,6 @@ export default function ConvertToVideoDialog({
     return m > 0 ? `${m}m ${s}s` : `${s}s`;
   };
 
-  const videoRef = useRef<Blob | null>(null);
 
   const renderSlideToCanvas = (ctx: CanvasRenderingContext2D, w: number, h: number, slide: SlideForVideo, slideNum: number, total: number) => {
     const bg = slide.background || "#ffffff";
@@ -119,9 +123,7 @@ export default function ConvertToVideoDialog({
       });
 
       const fps = 30;
-      const framesPerSlide = slideDuration * fps;
-      const totalFrames = slidesToConvert.length * framesPerSlide;
-      let frameIndex = 0;
+      const framesPerSlide = slideDuration * fps;      let frameIndex = 0;
 
       const encoder = new VideoEncoder({
         output: (chunk, meta) => muxer.addVideoChunk(chunk, meta),

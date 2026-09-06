@@ -17,6 +17,8 @@ import { useSchoolSettings } from "@/contexts/SchoolSettingsContext";
 import { validateForm, ValidationErrors } from "@/lib/validation";
 import { teacherFormValidationRules } from "@/lib/teacherFormValidation";
 import dynamic from "next/dynamic";
+import { emptyTeacherForm, type TeacherFormData } from "@/components/teachers/form-sections/types";
+import type { FormFieldSetter } from "@/components/shared/form-section-types";
 
 const ValidationErrorsModal = dynamic(
   () => import("@/components/shared/ValidationErrorsModal"),
@@ -28,7 +30,7 @@ export default function AddTeacherPage() {
   const { settings } = useSchoolSettings();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<ValidationErrors>({});
-  const [touchedFields, setTouchedFields] = useState<Set<string>>(new Set());
+  const [_touchedFields, setTouchedFields] = useState<Set<string>>(new Set());
   const [showValidationModal, setShowValidationModal] = useState(false);
   const { isCollapsed } = useSidebar();
   const [isLargeScreen, setIsLargeScreen] = useState(false);
@@ -82,112 +84,7 @@ export default function AddTeacherPage() {
   }, []);
 
   // Form state
-  const [formData, setFormData] = useState({
-    // Personal Information
-    profilePhoto: null as File | null,
-    staffId: "",
-    employeeNumber: "",
-    firstName: "",
-    middleName: "",
-    lastName: "",
-    gender: "",
-    dateOfBirth: "",
-    bloodGroup: "",
-    religion: "",
-    maritalStatus: "",
-    nationality: "Nigeria",
-    stateOfOrigin: "",
-    lga: "",
-    phone: "",
-    secondaryPhone: "",
-    email: "",
-    residentialAddress: "",
-    permanentAddress: "",
-    emergencyContactName: "",
-    emergencyContactPhone: "",
-    emergencyContactRelationship: "",
-
-    // Employment Information
-    jobCategory: "",
-    role: "",
-    position: "",
-    department: "",
-    branch: "",
-    reportingManager: "",
-    employmentType: "",
-    employmentStatus: "Active",
-    joinDate: new Date().toISOString().split("T")[0],
-    confirmationDate: "",
-    previousEmployer: "",
-    trcnNumber: "",
-    licenseExpiryDate: "",
-    baseSalary: "",
-
-    // Qualifications & Professional Data
-    highestQualification: "",
-    discipline: "",
-    institution: "",
-    graduationYear: "",
-    professionalCertifications: [] as string[],
-    yearsOfExperience: "",
-    resumeCV: null as File | null,
-    degreeCertificate: null as File | null,
-
-    // Teaching-Specific Data
-    subjects: [] as string[],
-    classes: [] as string[],
-    isHomeroomTeacher: false,
-    hasLMSAccess: false,
-    canEnterCA: false,
-    canInvigilateExams: false,
-
-    // Family Information
-    spouseName: "",
-    spousePhone: "",
-    dependents: [] as Array<{ name: string; age: string; school: string }>,
-
-    // Medical Information
-    medicalConditions: [] as string[],
-    allergies: [] as string[],
-    disabilityInfo: "",
-    doctorsNote: null as File | null,
-
-    // Payroll & Financial Details
-    salaryStructure: "",
-    housingAllowance: "",
-    transportAllowance: "",
-    otherAllowances: "",
-    pensionDeduction: "",
-    taxDeduction: "",
-    pensionNumber: "",
-    taxId: "",
-    bankName: "",
-    accountName: "",
-    accountNumber: "",
-    sortCode: "",
-
-    // Role & Permissions
-    systemRole: "",
-    moduleAccess: [] as string[],
-    dataAccessLevel: "",
-    mobileAppAccess: false,
-    allowApprovals: false,
-
-    // Documents
-    appointmentLetter: null as File | null,
-    acceptanceLetter: null as File | null,
-    offerLetter: null as File | null,
-    nationalId: null as File | null,
-    passportPhoto: null as File | null,
-    otherCertificates: null as File | null,
-    trcnCertificate: null as File | null,
-    teachingLicense: null as File | null,
-    policeClearance: null as File | null,
-    medicalCertificate: null as File | null,
-    referenceLetters: null as File | null,
-    bankStatement: null as File | null,
-    otherDocuments: null as File | null,
-  });
+  const [formData, setFormData] = useState<TeacherFormData>(emptyTeacherForm());
 
   // Generate staff ID
   const generateStaffID = (): string => {
@@ -203,7 +100,7 @@ export default function AddTeacherPage() {
     return `EMP-${year}-${randomNum.toString().padStart(5, '0')}`;
   };
 
-  const handleChange = (field: string, value: any) => {
+  const handleChange: FormFieldSetter<TeacherFormData> = (field, value) => {
     setFormData((prev) => {
       const updated = {
         ...prev,
@@ -235,18 +132,6 @@ export default function AddTeacherPage() {
     // Mark field as touched
     setTouchedFields((prev) => new Set(prev).add(field));
   };
-
-  const validateFormData = (): ValidationErrors => {
-    const validationErrors = validateForm(formData, teacherFormValidationRules);
-    setErrors(validationErrors);
-
-    // Mark all fields as touched
-    const allFields = Object.keys(teacherFormValidationRules);
-    setTouchedFields(new Set(allFields));
-
-    return validationErrors;
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 

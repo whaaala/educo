@@ -4,7 +4,6 @@ import { useState } from "react";
 import {
   Activity,
   ChevronUp,
-  ChevronDown,
   Info,
   Heart,
   Pill,
@@ -18,18 +17,15 @@ import {
 import TagInput from "@/components/shared/TagInput";
 import FormInput from "@/components/shared/FormInput";
 import FormTextarea from "@/components/shared/FormTextarea";
-import { ValidationErrors } from "@/lib/validation";
+import type { FormSectionProps } from "@/components/shared/form-section-types";
+import type { StudentFormData } from "./types";
 
-interface MedicalHistorySectionProps {
-  formData: any;
-  onChange: (field: string, value: any) => void;
-  errors?: ValidationErrors;
-}
+type MedicalHistorySectionProps = FormSectionProps<StudentFormData>;
 
 export default function MedicalHistorySection({
   formData,
   onChange,
-  errors = {},
+  errors: _errors = {},
 }: MedicalHistorySectionProps) {
   const [isExpanded, setIsExpanded] = useState(true);
 

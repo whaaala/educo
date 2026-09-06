@@ -23,16 +23,13 @@ import FormInput from "@/components/shared/FormInput";
 import FormDropdown from "@/components/shared/FormDropdown";
 import FormTextarea from "@/components/shared/FormTextarea";
 import FormBadge from "@/components/shared/FormBadge";
-import { ValidationErrors } from "@/lib/validation";
 import { getAvailableCountries, getReligions } from "@/config/countries";
 import { useSchoolSettings } from "@/contexts/SchoolSettingsContext";
 import { getInstitutionTypeColor, getEducationLevelColor } from "@/utils/educationLevel";
+import type { FormSectionProps } from "@/components/shared/form-section-types";
+import type { TeacherFormData } from "./types";
 
-interface PersonalInformationSectionProps {
-  formData: any;
-  onChange: (field: string, value: any) => void;
-  errors?: ValidationErrors;
-}
+type PersonalInformationSectionProps = FormSectionProps<TeacherFormData>;
 
 export default function PersonalInformationSection({
   formData,

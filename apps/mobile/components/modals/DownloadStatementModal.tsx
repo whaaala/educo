@@ -4,8 +4,6 @@ import {
   Text,
   Pressable,
   StyleSheet,
-  Platform,
-  Alert,
 } from 'react-native';
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
@@ -724,7 +722,7 @@ export function DownloadStatementModal({
   };
 
   // Store the generated PDF URI for sharing after preview
-  const [generatedPdfUri, setGeneratedPdfUri] = useState<string | null>(null);
+  const [_generatedPdfUri, setGeneratedPdfUri] = useState<string | null>(null);
 
   const handlePreview = async () => {
     setIsGenerating(true);
@@ -985,7 +983,7 @@ export function DownloadStatementModal({
         <View style={[styles.infoBanner, { backgroundColor: isDark ? colors.primaryLight : '#eff6ff' }]}>
           <Ionicons name="information-circle" size={16} color={colors.primary} />
           <Text style={[styles.infoText, { color: colors.primary }]}>
-            Tap "Preview & Print" to see and print the statement, or "Share PDF" to send it via email/WhatsApp.
+            Tap &quot;Preview & Print&quot; to see and print the statement, or &quot;Share PDF&quot; to send it via email/WhatsApp.
           </Text>
         </View>
       </View>

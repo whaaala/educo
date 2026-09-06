@@ -8,7 +8,6 @@ import FormTextarea from "@/components/shared/FormTextarea";
 import FormDropdown from "@/components/shared/FormDropdown";
 import {
   Ticket,
-  Clock,
   CheckCircle2,
   XCircle,
   AlertTriangle,
@@ -47,22 +46,9 @@ type TicketStatus = CommunicationRecord["status"];
 type TicketType = CommunicationRecord["type"];
 type TicketPriority = CommunicationRecord["priority"];
 
-interface Child {
-  id: string;
-  name: string;
-  classLevel: string;
-  section: string;
-  photo: string;
-}
-
 // ============================================
 // MOCK DATA
 // ============================================
-
-const MOCK_CHILDREN: Child[] = [
-  { id: "child-001", name: "Adaeze Okonkwo", classLevel: "JSS 2", section: "A", photo: "https://images.unsplash.com/photo-1595152772835-219674b2a8a6?w=100&h=100&fit=crop&crop=face" },
-  { id: "child-002", name: "Chukwuemeka Okonkwo", classLevel: "SS 1", section: "B", photo: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face" },
-];
 
 // Mock parent ID (in real app, this would come from auth context)
 const MOCK_PARENT_ID = "parent-001";

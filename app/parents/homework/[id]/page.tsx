@@ -13,7 +13,6 @@ import {
   CheckCircle2,
   Clock,
   AlertTriangle,
-  User,
   FileText,
   MessageSquare,
   Award,
@@ -21,9 +20,6 @@ import {
   Download,
   GraduationCap,
   Eye,
-  ExternalLink,
-  ChevronDown,
-  ChevronUp,
   X,
   FileImage,
   File,
@@ -602,8 +598,6 @@ export default function HomeworkDetailPage() {
   }
 
   const statusConfig = getStatusConfig(homework.status);
-  const StatusIcon = statusConfig.icon;
-
   return (
     <DashboardPage
       title="Homework Details"

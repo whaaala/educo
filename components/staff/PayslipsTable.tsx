@@ -94,7 +94,7 @@ const columns: ColumnConfig<Payslip>[] = [
     label: "Actions",
     sortable: false,
     className: "text-center",
-    render: (item) => (
+    render: (_item) => (
       <div className="flex items-center gap-2 justify-center">
         <button className="px-2 py-1 text-xs font-medium text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 midnight:hover:bg-cyan-900/20 purple:hover:bg-pink-900/20 rounded-lg transition-colors flex items-center gap-1">
           <Eye className="w-3 h-3" />
