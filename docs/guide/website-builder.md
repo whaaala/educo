@@ -351,7 +351,15 @@ Eight effects: **Fade in · Rise up · Drop down · From the left · From the ri
 
 Two options go with them:
 - **Play when it scrolls into view** — instead of on load
-- **Bring the blocks inside in one after another** — on a section, its children arrive in sequence. This is how you get a row of three cards rising one after the other as a visitor scrolls to it.
+- **Bring the blocks inside in one after another** — the contents arrive in sequence rather than together. On a section, that's its blocks: a row of three cards rising one after the other as a visitor scrolls to it. On a component that holds a list — an accordion of questions, a stack of alert messages — it's the **rows**, so the list reads as a set of things rather than one lump.
+
+### Movement on a single row
+
+The same two choices are offered **per item** on a component that holds a list. Select the accordion or the alert → **Content** tab → open a row → **Hover & focus** and **Entrance**.
+
+They're the same effects, from the same catalogue — a row's Lift *is* a block's Lift. Use them to make one FAQ row respond on its own, or to have a single urgent message rise in while the rest of the stack sits still.
+
+One difference worth knowing: an item's entrance never staggers its own parts. A row's title and body arrive together, because an item is one thing — its title and body are its parts, not a list.
 
 ### Two promises
 

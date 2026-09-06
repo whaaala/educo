@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import { render, screen, fireEvent, cleanup } from "@testing-library/react";
+import { render, screen, fireEvent, cleanup, within } from "@testing-library/react";
 import BoxInspector from "@/components/website/box/BoxInspector";
 import DesignGallery from "@/components/website/box/DesignGallery";
 import { DEFAULT_THEME } from "@/lib/site-storage";
@@ -154,6 +154,12 @@ describe("RULE S — every component shows its designs", () => {
     renderFor(createComponent("alert", { id: "n", alertSeverity: "info", variant: "--solid",
       items: [{ id: "i1", title: "Heads up", body: "A message." }] } as Partial<BoxNode>));
     openContent();
-    expect(screen.getByText("Applied")).toBeInTheDocument();
+    // Scoped to the DESIGN gallery specifically. A component's inspector now carries several galleries — its
+    // design, plus each item's hover and entrance — and every gallery marks its current choice "Applied", so
+    // an unscoped lookup finds more than one and says nothing about the design.
+    // The alert's designs are split into named groups, so each carries "<group> — Alert designs".
+    const designGroups = screen.getAllByRole("group", { name: /Alert designs/ });
+    const applied = designGroups.filter((g) => within(g).queryByText("Applied"));
+    expect(applied, "exactly one design is marked as the applied one").toHaveLength(1);
   });
 });

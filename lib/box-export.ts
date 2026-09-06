@@ -10,7 +10,7 @@
 import type { CSSProperties } from "react";
 import {
   type BoxNode, type Breakpoint, containerStyle, childStyle, marginCSS, sizeToCSS, radiusCSS, SHADOW_CSS, u, baseUnit,
-  resolveResponsive, floatStacksOnMobile, alertToastCss, accordionClasses, bandClasses, videoEmbedSrc, isContainer, sanitizeCssDeclarations, expandScopedCss, COMPONENT_PARTS, itemFloatContextCss, itemOverrideCss, itemHasOverride, itemNumberVars, richBody, plainBody, componentTextCss, componentBoxCss, bgImageLayer, renderAlertHTML, alertDismissScript, bgShowThroughCss, blockContainmentCss, COMPONENT_ITEM_SEL, remLen, imageSizing, hasIntrinsicSize,
+  resolveResponsive, floatStacksOnMobile, alertToastCss, accordionClasses, bandClasses, videoEmbedSrc, isContainer, sanitizeCssDeclarations, expandScopedCss, COMPONENT_PARTS, itemFloatContextCss, itemOverrideCss, itemNumberVars, richBody, plainBody, componentTextCss, componentBoxCss, bgImageLayer, renderAlertHTML, alertDismissScript, bgShowThroughCss, blockContainmentCss, COMPONENT_ITEM_SEL, remLen, imageSizing, hasIntrinsicSize, itemNeedsClass, itemScope,
 } from "@/lib/box-model";
 import { isRegistryComponent, renderComponent, componentScripts } from "@/lib/educo-ui/registry";
 import { iconSvg } from "@/lib/educo-ui/icon-svg";
@@ -23,7 +23,7 @@ import { tokensFromTheme, tokensToCss } from "@/lib/educo-ui/tokens";
 import { subsetCss, usedEuClasses, stripComments } from "@/lib/educo-ui/subset";
 import { familiesInUse } from "@/lib/educo-ui/font-embed";
 import { zipSync, strToU8 } from "fflate";
-import { hoverCss, revealCss, revealKeyframes } from "@/lib/interactions";
+import { hoverCss, revealCss, revealKeyframes, itemEffectsCss } from "@/lib/interactions";
 
 const UNITLESS = new Set(["opacity", "zIndex", "lineHeight", "fontWeight", "flexGrow", "flexShrink", "order", "flex"]);
 
@@ -179,10 +179,12 @@ function componentHTML(node: BoxNode): string {
       // Per-ITEM styling: the point-and-click Header/Content colour+font controls, then the raw CSS box
       // (bare declarations style THIS item; `title{…}`/`body{…}`/`icon{…}` blocks target one part).
       let itemCls = "eu-accordion__item";
-      if (itemHasOverride(it)) {
+      if (itemNeedsClass(it)) {
         const ic = `eu-acc-i-${esc(it.id)}`;
         const rule = itemOverrideCss(`.eu-accordion .${ic}`, it, { stackOnNarrow: true });
-        if (rule) { itemCls += ` ${ic}`; itemStyles.push(rule); }
+        // This row's own hover / entrance, at its own scope — the same emitters a block uses.
+        const fx = itemEffectsCss(itemScope("accordion", it.id), it);
+        if (rule || fx) { itemCls += ` ${ic}`; itemStyles.push(rule + fx); }
       }
       // Ordinal (01, 02…) fed to numbered designs as CSS vars — deterministic, matches the editor exactly.
       const nvars = Object.entries(itemNumberVars(i)).map(([k, v]) => `${k}:${v}`).join(";");
@@ -366,8 +368,14 @@ function renderNode(node: BoxNode, rawParent: BoxNode | null, theme: SiteTheme, 
   const hov = hoverCss(`.${cls}`, r.hoverEffect);
   if (hov) sheet.base.push(hov);
   // Entrance (Round 1b). The keyframes are global, so the ids used are collected and emitted ONCE at assembly.
-  const rev = revealCss(`.${cls}`, r);
+  // A COMPONENT passes its item selector, so "arrive one after another" staggers the accordion rows or the
+  // alert messages — its wrapper's direct children are a <style> tag and the component itself.
+  const rev = revealCss(`.${cls}`, r, { staggerSelector: r.component ? COMPONENT_ITEM_SEL[r.component] : undefined });
   if (rev) { sheet.base.push(rev); if (r.revealEffect) sheet.reveals.add(r.revealEffect); }
+  // An ITEM's entrance needs its keyframes on the page too. They are emitted once, at assembly, from this
+  // set — so an item effect whose id never reached it would animate to a name that does not exist, which is
+  // silently nothing at all.
+  for (const it of r.items ?? []) if (it.revealEffect) sheet.reveals.add(it.revealEffect);
   const tDiff = diffStyle(phoneObj, tabletObj);
   if (tDiff) sheet.tablet.push(`.${cls}{${tDiff}}`);
   const dDiff = diffStyle(tabletObj, desktopObj);

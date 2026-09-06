@@ -14,6 +14,7 @@ import type { CSSProperties } from "react";
 import { isRegistryComponent, defaultComponentFields, defaultComponentWidth, componentIsColumn } from "@/lib/educo-ui/registry";
 import { iconSvg } from "@/lib/educo-ui/icon-svg";
 import { BREAKPOINTS_EM } from "@/lib/educo-ui/base";
+import { hasItemEffects, itemEffectsCss } from "@/lib/interactions";
 
 export type BoxType = "container" | "text" | "heading" | "button" | "image" | "video" | "icon" | "divider" | "list" | "embed" | "spacer" | "component";
 
@@ -96,6 +97,16 @@ export interface ComponentItem {
   margin?: Side4;   // margin OUTSIDE the item — space between it and its neighbours
   /** Buttons or links on this message. Carbon limits a TOAST to one; a banner or inline may carry two. */
   actions?: ItemAction[];
+  // ── Interactions, per ITEM (RULE A) ──
+  // Hover and entrance shipped for every BLOCK. An accordion row or an alert message could carry neither, so
+  // five announcements had to react and arrive as one lump. Same named effects, same emitters — see
+  // lib/interactions.ts — so an item's Lift is the block's Lift.
+  /** Named hover/focus effect from HOVER_EFFECTS. */
+  hoverEffect?: string;
+  /** Named entrance effect from REVEAL_EFFECTS — how this one item arrives. */
+  revealEffect?: string;
+  /** Play this item's entrance when it scrolls into view, rather than on load. */
+  revealScroll?: boolean;
   css?: string;     // per-ITEM Advanced CSS declarations (sanitised) — override this one item's styling
   // Dedicated per-item styling for the header + content, set via the Inspector's colour/font controls
   // (no CSS typing). Composed into scoped, !important rules so they win over the chosen design variant.
@@ -747,6 +758,17 @@ export function itemHasOverride(it: ComponentItem): boolean {
   return !!it.pad || !!it.margin || !!(accPartStyleDecls(it.headerStyle, "header") || accPartStyleDecls(it.bodyStyle, "body") || it.headerStyle?.pos || it.bodyStyle?.pos || (it.num && it.num.trim()) || it.iconColor || it.iconSize || it.iconAlign || it.iconDx || it.iconDy || it.float || (it.css && it.css.trim()));
 }
 
+/**
+ * Does this item need its own class in the markup?
+ *
+ * Styling overrides are one reason; an EFFECT is another, and it arrived later. The accordion only stamped
+ * `eu-acc-i-<id>` when `itemHasOverride` was true, so an item whose only setting was a hover effect had no
+ * selector for the rule to attach to — the effect would have been emitted and then matched nothing.
+ */
+export function itemNeedsClass(it: ComponentItem): boolean {
+  return itemHasOverride(it) || hasItemEffects(it);
+}
+
 /** Is this item detached (floating) — and, for the canvas, is the current breakpoint one where floats apply? */
 export function itemIsFloating(it: ComponentItem): boolean {
   return !!it.float;
@@ -1025,6 +1047,10 @@ export function collectAlertItemStyles(items: ComponentItem[] | undefined, out: 
     // behave identically. Nested sub-items recurse, so no level is less capable than the top.
     const css = itemOverrideCss(`.eu-al-${it.id}`, it, { ...opts, component: "alert" });
     if (css) out.push(css);
+    // This message's own hover / entrance. Emitted alongside the styling so both arrive in the same sheet,
+    // and through the shared emitters so a message's Lift is identical to a block's Lift.
+    const fx = itemEffectsCss(itemScope("alert", it.id), it);
+    if (fx) out.push(fx);
     if (it.children) collectAlertItemStyles(it.children, out, opts);
   }
 }
@@ -1133,6 +1159,39 @@ export const COMPONENT_ITEM_SEL: Record<string, string> = {
   accordion: ".eu-accordion__item",
   alert: ".eu-alert",
 };
+
+/**
+ * The selector ONE item's own rules attach to.
+ *
+ * Written once because both renderers stamp the same per-item class, and the whole value of that is lost if
+ * the canvas and the export each spell the selector themselves. A component joins by adding a line here.
+ */
+export const COMPONENT_ITEM_SCOPE: Record<string, (id: string) => string> = {
+  accordion: (id) => `.eu-accordion .eu-acc-i-${id}`,
+  alert: (id) => `.eu-al-${id}`,
+};
+
+export function itemScope(component: string | undefined, itemId: string): string {
+  return component ? (COMPONENT_ITEM_SCOPE[component]?.(itemId) ?? "") : "";
+}
+
+/**
+ * Every ITEM effect in a tree, as one stylesheet — what the canvas injects.
+ *
+ * The export emits these alongside each component's other item rules; the canvas has one sheet for the whole
+ * page, so it needs a walker. Both call `itemEffectsCss` at `itemScope`, so an item's hover is identical in
+ * the builder and on the published page.
+ */
+export function treeItemEffectsCss(node: BoxNode): string {
+  const self = (node.items ?? [])
+    .map((it) => {
+      const scope = itemScope(node.component, it.id);
+      return scope ? itemEffectsCss(scope, it) : "";
+    })
+    .join("");
+  const kids = (node.children ?? []).map(treeItemEffectsCss).join("");
+  return self + kids;
+}
 /** REUSABLE (all components + future ones): when the user gives a component a block background (gradient/pattern/
  *  photo/colour), let it SHOW by making its items' own surface transparent so the component background is visible
  *  behind the (still-styled) text. `itemSel` is the node-scoped selector for the items. "" when no block bg. */

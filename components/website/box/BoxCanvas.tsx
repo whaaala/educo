@@ -18,7 +18,7 @@ import {
   updateBox, removeBox, insertBox, moveBoxStep, duplicateBox, moveBox, cloneBox, findParent, isAncestor, isContainer, widthPct,
   isFloating, floatBox, unfloatBox, groupBoxes, ungroupBoxes, bringToFront, sendToBack, bringForward, sendBackward,
   radiusCSS, isClipped, SHADOW_CSS, videoEmbedSrc, sanitizeCssDeclarations, expandScopedCss, ACCORDION_CSS_PARTS, itemOverrideCss, itemHasOverride, itemNumberVars, richBody, componentTextCss, componentBoxCss, bgImageLayer, bgShowThroughCss, resizeTopEdge, blockContainmentCss, alertToastCss, treeHasToast, accordionClasses, bandClasses, advancedCssStyle, alertActionsHTML, hugsContent, itemFloatContextCss, COMPONENT_ITEM_SEL, clampContentScale, MIN_CONTENT_SCALE, isMultiItemComponent, comfortableWidth, remLen, rootFontPx, isDefiniteLen, addItemAfter, duplicateItem, duplicateChildItem, removeItem, removeChildItem, moveItem, moveChildItem, updateItem, updateChildItem, ALERT_SEVERITY_ICON, alertPartInline, alertIconInline, collectAlertItemStyles,
-  type Breakpoint, resolveResponsive, updateBoxResponsive, imageSizing, measureImage,
+  type Breakpoint, resolveResponsive, updateBoxResponsive, imageSizing, measureImage, treeItemEffectsCss, itemNeedsClass,
 } from "@/lib/box-model";
 import { ICON_SET } from "./icons";
 import { PortalMenu, MenuItem, MenuHeader, MenuSep } from "./ui";
@@ -1171,8 +1171,13 @@ export default function BoxCanvas({
           `data-box-id`, because a hover cannot be expressed as an inline style. The rules come from the SAME
           emitter the export uses, so what you hover in the builder is what a visitor gets. */}
       {(() => {
-        const css = treeHoverCss(root, (id) => `[data-box-id="${id}"]`)
-          + treeRevealCss(root, (id) => `[data-box-id="${id}"]`);
+        const scopeFor = (id: string) => `[data-box-id="${id}"]`;
+        // A COMPONENT staggers its ITEMS, not its wrapper's direct children — those are a <style> tag and the
+        // component itself. Same map the export uses, so the builder staggers what the published page does.
+        const staggerFor = (n: { component?: string }) => (n.component ? COMPONENT_ITEM_SEL[n.component] : undefined);
+        const css = treeHoverCss(root, scopeFor)
+          + treeRevealCss(root, scopeFor, staggerFor)
+          + treeItemEffectsCss(root);
         return css ? <style dangerouslySetInnerHTML={{ __html: css }} /> : null;
       })()}
       {renderNode(root, null)}
@@ -1599,7 +1604,7 @@ function ComponentView({ node, editable, onPatchNode, breakpoint = "base", itemS
           {items.map((it, i) => (
             <Fragment key={it.id}>
             {it.category && it.category !== items[i - 1]?.category ? <div className="eu-accordion__category">{it.category}</div> : null}
-            <details id={it.anchor || undefined} data-eu-item={it.id} className={`eu-accordion__item${itemHasOverride(it) ? ` eu-acc-i-${it.id}` : ""}`}
+            <details id={it.anchor || undefined} data-eu-item={it.id} className={`eu-accordion__item${itemNeedsClass(it) ? ` eu-acc-i-${it.id}` : ""}`}
               style={{ ...(itemNumberVars(i) as React.CSSProperties), ...(editable && it.float && floatsActive ? { cursor: "move" } : {}) }}
               onPointerDown={editable && it.float && floatsActive ? (e) => crud.startItemDrag(e, it, floatsActive) : undefined}
               open={editable ? true : it.open} name={node.accMultiOpen ? undefined : `acc-${node.id}`}>

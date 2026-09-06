@@ -160,6 +160,40 @@ export function revealKeyframes(ids: Iterable<string>): string {
 
 export type RevealNode = { revealEffect?: string; revealScroll?: boolean; revealStagger?: boolean };
 
+export type RevealOpts = {
+  /** What "arrive one after another" should stagger, when it is NOT the scope's direct children — a
+   *  component passes its item selector (`.eu-accordion__item`, `.eu-alert`). */
+  staggerSelector?: string;
+};
+
+/**
+ * The effects one ITEM inside a component can carry.
+ *
+ * RULE A — a capability built for one thing is the baseline for everything it can apply to. Hover and
+ * entrance shipped for every BLOCK; an accordion row or an alert message could not have either, so a list of
+ * five announcements had to arrive and react as one lump. The emitters below are the same ones blocks use, so
+ * an effect cannot look different depending on what carries it.
+ */
+export type ItemEffects = { hoverEffect?: string; revealEffect?: string; revealScroll?: boolean };
+
+/** Does this item carry any effect? Used to decide whether it needs its own class in the markup. */
+export function hasItemEffects(it: ItemEffects): boolean {
+  return !!(hasHover(it.hoverEffect) || revealEffect(it.revealEffect));
+}
+
+/**
+ * One item's hover + entrance rules, at the item's own scope.
+ *
+ * Deliberately the SAME `hoverCss` / `revealCss` a block uses: an item's Lift has to be the block's Lift, and
+ * routing both through one emitter is what makes that true rather than hoped for. Entrances never stagger
+ * here — an item is one thing, and its own children are its title and body, which should not arrive
+ * separately from each other.
+ */
+export function itemEffectsCss(scope: string, it: ItemEffects): string {
+  return hoverCss(scope, it.hoverEffect)
+    + revealCss(scope, { revealEffect: it.revealEffect, revealScroll: it.revealScroll });
+}
+
 /**
  * One block's entrance.
  *
@@ -168,18 +202,29 @@ export type RevealNode = { revealEffect?: string; revealScroll?: boolean; reveal
  * nothing. STAGGER applies the effect to the container's direct CHILDREN, each a beat later, which is what
  * people actually mean by it: a row of cards arriving one after another.
  */
-export function revealCss(scope: string, node: RevealNode): string {
+export function revealCss(scope: string, node: RevealNode, opts: RevealOpts = {}): string {
   const fx = revealEffect(node.revealEffect);
   if (!fx || !fx.from) return "";
 
-  const target = node.revealStagger ? `${scope} > *` : scope;
+  // WHAT STAGGER ACTUALLY STAGGERS.
+  //
+  // `> *` is right for a plain container, whose children are the boxes on the page. It is WRONG for a
+  // COMPONENT: an accordion's block wrapper contains a <style> tag and one `.eu-accordion` div, so "arrive one
+  // after another" animated the whole component as a single block and gave the invisible <style> the first
+  // beat. The items — the things a person means when they tick that box — never staggered at all.
+  //
+  // So a component passes its own item selector and the delays land on the items.
+  const staggerScope = opts.staggerSelector ? `${scope} ${opts.staggerSelector}` : `${scope} > *`;
+  const target = node.revealStagger ? staggerScope : scope;
   const dur = "var(--eu-dur-slow, .55s)";
   const ease = "var(--eu-ease-standard, cubic-bezier(.2,0,0,1))";
   let css = `${target}{animation:eu-reveal-${fx.id} ${dur} ${ease} both}`;
 
   if (node.revealStagger) {
-    // A beat per child. Ten is plenty — past that the last one would arrive uncomfortably late anyway.
-    for (let i = 2; i <= 10; i++) css += `${scope} > *:nth-child(${i}){animation-delay:${(i - 1) * 90}ms}`;
+    // A beat per item. Ten is plenty — past that the last one would arrive uncomfortably late anyway.
+    // `nth-child` counts every sibling, so an accordion with category headings between its items simply
+    // skips a beat or two; the arrival order is still first-to-last, which is the point.
+    for (let i = 2; i <= 10; i++) css += `${staggerScope}:nth-child(${i}){animation-delay:${(i - 1) * 90}ms}`;
   }
 
   if (node.revealScroll) {
@@ -192,13 +237,21 @@ export function revealCss(scope: string, node: RevealNode): string {
 }
 
 /** Every reveal rule in a tree, plus one copy of each keyframes it needs. */
-type RevealTree = RevealNode & { id: string; children?: RevealTree[] };
+type RevealTree = RevealNode & { id: string; component?: string; items?: ItemEffects[]; children?: RevealTree[] };
 
-export function treeRevealCss(node: RevealTree, scopeFor: (id: string) => string): string {
+export function treeRevealCss(
+  node: RevealTree,
+  scopeFor: (id: string) => string,
+  /** What a COMPONENT node should stagger, given its component name — the canvas passes its item-selector map
+   *  so the builder staggers the same things the exported page does. */
+  staggerSelectorFor?: (n: RevealTree) => string | undefined,
+): string {
   const used = new Set<string>();
   const walk = (n: RevealTree): string => {
     if (n.revealEffect) used.add(n.revealEffect);
-    const self = revealCss(scopeFor(n.id), n);
+    const self = revealCss(scopeFor(n.id), n, { staggerSelector: staggerSelectorFor?.(n) });
+    // An ITEM's own entrance counts towards the keyframes this page needs, or the animation names nothing.
+    for (const it of n.items ?? []) if (it.revealEffect) used.add(it.revealEffect);
     const kids = (n.children ?? []).map(walk).join("");
     return self + kids;
   };

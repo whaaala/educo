@@ -557,10 +557,15 @@ export default function BoxInspector({ node, theme, onPatch, onAddChild, onFloat
                   <input type="checkbox" checked={!!node.revealScroll} onChange={(e) => onPatch({ revealScroll: e.target.checked || undefined })} aria-label="Play when it scrolls into view" />
                   Play when it scrolls into view
                 </label>
-                {container && (
+                {/* Offered for a CONTAINER (its blocks) and for a multi-item COMPONENT (its rows or messages).
+                    A component was excluded before, and the emitter would have staggered its wrapper's direct
+                    children — a <style> tag and the component itself — rather than the items. Both halves are
+                    fixed together: there is no point offering a control that does the wrong thing. */}
+                {(container || isMultiItemComponent(node.component)) && (
                   <label className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200">
-                    <input type="checkbox" checked={!!node.revealStagger} onChange={(e) => onPatch({ revealStagger: e.target.checked || undefined })} aria-label="Bring the blocks inside in one after another" />
-                    Bring the blocks inside in one after another
+                    <input type="checkbox" checked={!!node.revealStagger} onChange={(e) => onPatch({ revealStagger: e.target.checked || undefined })}
+                      aria-label={container ? "Bring the blocks inside in one after another" : "Bring the items in one after another"} />
+                    {container ? "Bring the blocks inside in one after another" : "Bring the items in one after another"}
                   </label>
                 )}
               </>
@@ -975,6 +980,32 @@ export default function BoxInspector({ node, theme, onPatch, onAddChild, onFloat
                             onChange={(patch) => onPatch({ items: updateItem(node, it.id, { headerStyle: { ...(it.headerStyle ?? {}), ...patch } }).items })} />
                           <AccPartDesign title={isAcc ? "Content — the answer / text area" : "Message — the body text"} moveLabel="text" ariaPrefix={`Item ${i + 1} content`} style={it.bodyStyle}
                             onChange={(patch) => onPatch({ items: updateItem(node, it.id, { bodyStyle: { ...(it.bodyStyle ?? {}), ...patch } }).items })} />
+                          {/* RULE A — this ITEM's own hover and entrance. The same named effects a whole block
+                              can carry, from the same emitters, so a row's Lift is the block's Lift. Before
+                              this, five announcements could only react and arrive as one lump. */}
+                          <div className="rounded-lg border border-line p-1.5 space-y-1.5">
+                            <DesignGallery
+                              label="Hover & focus" hint={`how ${isAcc ? "this row" : "this message"} reacts on its own`}
+                              ariaLabel={`Item ${i + 1} hover effect`} itemNoun="hover effect"
+                              value={it.hoverEffect ?? ""}
+                              onPick={(id) => onPatch({ items: updateItem(node, it.id, { hoverEffect: id || undefined }).items })}
+                              groups={[{ items: HOVER_EFFECTS.map((fx) => ({ id: fx.id, label: fx.label, preview: () => <HoverPreview effect={fx} /> })) }]}
+                            />
+                            <DesignGallery
+                              label="Entrance" hint={`how ${isAcc ? "this row" : "this message"} arrives`}
+                              ariaLabel={`Item ${i + 1} entrance effect`} itemNoun="entrance"
+                              value={it.revealEffect ?? ""}
+                              onPick={(id) => onPatch({ items: updateItem(node, it.id, { revealEffect: id || undefined }).items })}
+                              groups={[{ items: REVEAL_EFFECTS.map((fx) => ({ id: fx.id, label: fx.label, preview: () => <RevealPreview effect={fx} /> })) }]}
+                            />
+                            {!!it.revealEffect && (
+                              <label className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200">
+                                <input type="checkbox" aria-label={`Item ${i + 1} play on scroll`} checked={!!it.revealScroll}
+                                  onChange={(e) => onPatch({ items: updateItem(node, it.id, { revealScroll: e.target.checked || undefined }).items })} />
+                                Play when it scrolls into view
+                              </label>
+                            )}
+                          </div>
                           {/* RULE N — detach & float: lift this item out of the stack and place it anywhere.
                               Available on EVERY multi-item component (accordion, alert, and future ones). */}
                           {(

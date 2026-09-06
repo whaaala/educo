@@ -199,7 +199,11 @@ export default function DesignGallery({
   const hero = value == null ? currentPreview : current?.preview("hero");
 
   return (
-    <div className="space-y-2">
+    // The whole gallery is one named group: its heading, the "Applied" hero and the option grids belong
+    // together, and a screen-reader user entering it should hear what it is. It also gives the inspector's
+    // several galleries — a component's designs, and each item's hover and entrance — distinct identities,
+    // which they did not have when only the option grids were labelled.
+    <div className="space-y-2" role="group" aria-label={ariaLabel}>
       <div className="flex items-baseline justify-between gap-2">
         <span className="text-[0.6875rem] font-semibold uppercase tracking-wide text-muted">{label}</span>
         {hint && <span className="text-[0.5625rem] text-gray-400 dark:text-gray-500">{hint}</span>}
@@ -223,7 +227,13 @@ export default function DesignGallery({
           {g.group && (
             <div className="px-0.5 text-[0.5625rem] font-bold uppercase tracking-wider text-muted">{g.group}</div>
           )}
-          <div className="grid grid-cols-2 gap-2" role="group" aria-label={g.group ? `${g.group} — ${ariaLabel}` : ariaLabel}>
+          {/* Only a NAMED subdivision is a group of its own. An unnamed one would repeat the gallery's own
+              name, leaving two nested groups with the same label and nothing to tell them apart. */}
+          <div
+            className="grid grid-cols-2 gap-2"
+            role={g.group ? "group" : undefined}
+            aria-label={g.group ? `${g.group} — ${ariaLabel}` : undefined}
+          >
             {g.items.map((it) => {
               const on = it.id === value;
               return (
