@@ -712,6 +712,21 @@ export default function BoxInspector({ node, theme, onPatch, onAddChild, onFloat
                     <label className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300"><input type="checkbox" checked={!!node.newTab} onChange={(e) => onPatch({ newTab: e.target.checked })} /> Open in a new tab</label>
                   </>
                 )}
+                {node.type === "image" && (
+                  <>
+                    {/* Without this the export sent alt="" for every photo, which tells a screen reader the
+                        picture is decorative and to skip it. Empty stays available — it is the RIGHT answer for
+                        a divider or a texture — but it has to be a choice, not the only possibility. */}
+                    <CompactField label="Describe this image" ariaLabel="Image alt text" value={node.alt ?? ""}
+                      onChange={(v) => onPatch({ alt: v || undefined })}
+                      placeholder="e.g. Pupils planting in the school garden"
+                      helpText="Read aloud to visitors who cannot see it, and used by search engines. Leave blank only if the image is purely decorative." />
+                    <label className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300">
+                      <input type="checkbox" checked={!!node.eager} onChange={(e) => onPatch({ eager: e.target.checked || undefined })} />
+                      Load straight away (for an image at the top of the page)
+                    </label>
+                  </>
+                )}
                 {node.type === "video" && (
                   <CompactField label="Video link" ariaLabel="Video URL" value={node.src ?? ""} onChange={(v) => onPatch({ src: v })} placeholder="YouTube, Vimeo or .mp4 link" helpText="YouTube/Vimeo links play automatically; a direct .mp4 plays inline." />
                 )}

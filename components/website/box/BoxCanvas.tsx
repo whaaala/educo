@@ -1756,7 +1756,8 @@ function ElementView({ node, theme, editable, onText, onSrc, onPatchNode, breakp
     case "image":
       return (
         <div className="relative w-full" style={{ height: sizeToCSS(node.height) ?? 260 }}>
-          <ImageBox theme={theme} src={node.src} />
+          {/* alt is passed here too, so what a screen reader gets while editing matches the published page. */}
+          <ImageBox theme={theme} src={node.src} alt={node.alt ?? ""} />
           {editable && (<>
             <button onClick={() => fileRef.current?.click()} className="absolute bottom-2 right-2 inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium bg-gray-900/80 text-white shadow-lg hover:bg-gray-900"><Upload className="w-3.5 h-3.5" /> {node.src ? "Replace" : "Upload"}</button>
             <input ref={fileRef} type="file" accept="image/*" className="hidden" aria-label="Upload image" onChange={(e) => { const f = e.target.files?.[0]; if (!f) return; const r = new FileReader(); r.onload = () => onSrc(String(r.result)); r.readAsDataURL(f); e.target.value = ""; }} />

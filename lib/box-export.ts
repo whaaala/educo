@@ -19,6 +19,7 @@ import { BREAKPOINTS_EM, BASE_CSS } from "@/lib/educo-ui/base";
 import { COMPONENT_CSS } from "@/lib/educo-ui/components";
 import { tokensFromTheme, tokensToCss } from "@/lib/educo-ui/tokens";
 import { subsetCss, usedEuClasses, stripComments } from "@/lib/educo-ui/subset";
+import { familiesInUse } from "@/lib/educo-ui/font-embed";
 import { zipSync, strToU8 } from "fflate";
 import { hoverCss, revealCss, revealKeyframes } from "@/lib/interactions";
 
@@ -108,7 +109,9 @@ function elementHTML(node: BoxNode, theme: SiteTheme, pageMap: Map<string, strin
       const deco = decorCss(node);
       return `<a href="${esc(hrefFor(node, pageMap))}"${node.newTab ? ' target="_blank" rel="noopener noreferrer"' : ""} style="${styleString({ display: "flex", width: "100%", height: "100%", boxSizing: "border-box", alignItems: fp(node.contentY ?? "center"), justifyContent: fp(node.contentX ?? "center"), gap: "8px", background: node.background ? colorToCSS(node.background) : colorToCSS(theme.primary), color: node.color || "#fff", fontSize: u(node.fontSize ?? 14), padding: `${u(12)} ${u(24)}`, textDecoration: "none", ...deco, borderRadius: deco.borderRadius ?? "9999px", ...typoCss(node, theme.bodyFont, 600) })}">${esc(node.text ?? "")}</a>`;
     }
-    case "image": return node.src ? `<img src="${esc(node.src)}" alt="" style="${styleString({ width: "100%", height: sizeToCSS(node.height) ?? "260px", objectFit: "cover", display: "block" })}" />` : "";
+    // `loading`/`decoding` are set from the block's own settings: a hero must load eagerly or the page opens
+    // blank at the top, while a photo further down should wait until it is nearly on screen.
+    case "image": return node.src ? `<img src="${esc(node.src)}" alt="${esc(node.alt ?? "")}" loading="${node.eager ? "eager" : "lazy"}" decoding="async" style="${styleString({ width: "100%", height: sizeToCSS(node.height) ?? "260px", objectFit: "cover", display: "block" })}" />` : "";
     case "video": { const embed = videoEmbedSrc(node.src); const h = sizeToCSS(node.height) ?? "315px"; if (embed) return `<iframe src="${esc(embed)}" title="Video" allowfullscreen style="${styleString({ width: "100%", height: h, border: "0" })}"></iframe>`; return node.src ? `<video src="${esc(node.src)}" controls style="${styleString({ width: "100%", height: h })}"></video>` : ""; }
     case "divider": return `<div aria-hidden="true" style="${styleString({ width: "100%", borderTopWidth: node.borderWidth || 2, borderTopStyle: node.borderStyle ?? "solid", borderTopColor: node.color ? colorToCSS(node.color) : node.borderColor ? colorToCSS(node.borderColor) : theme.textMuted })}"></div>`;
     case "list": { const items = (node.listItems ?? []).map((it) => `<li>${esc(it)}</li>`).join(""); const st = styleString({ color: node.color || theme.text, fontSize: u(node.fontSize ?? 16), textAlign: align, width: "100%", paddingLeft: u(22), ...typoCss(node, theme.bodyFont, 400) }); return node.listStyle === "number" ? `<ol style="${st}">${items}</ol>` : `<ul style="${st}">${items}</ul>`; }
@@ -472,7 +475,34 @@ export function renderSitePage(site: BoxSite, theme: SiteTheme, pageId: string, 
   return pageDocument(theme, page.name, markup, [components, sheetCss(sheet)].filter(Boolean).join("\n"), shared);
 }
 
-export function renderSiteFiles(site: BoxSite, theme: SiteTheme): SiteFiles {
+/**
+ * Every CSS font stack a site asks for — the theme's three, plus every per-block and per-item override.
+ *
+ * Walked from the model rather than the rendered HTML because a font can be set on a block that renders no
+ * text of its own, and because the stack is what names the family.
+ */
+export function fontStacksInSite(site: BoxSite, theme: SiteTheme): string[] {
+  const out: string[] = [theme.headingFont, theme.bodyFont];
+  const walk = (n: BoxNode | undefined) => {
+    if (!n) return;
+    if (n.fontFamily) out.push(n.fontFamily);
+    for (const it of n.items ?? []) {
+      const item = it as unknown as { fontFamily?: string; children?: { fontFamily?: string }[] };
+      if (item.fontFamily) out.push(item.fontFamily);
+      for (const c of item.children ?? []) if (c.fontFamily) out.push(c.fontFamily);
+    }
+    for (const c of n.children ?? []) walk(c);
+  };
+  for (const p of site.pages) walk(p.root);
+  return out;
+}
+
+/** The families a site needs loading, ready to hand to `embedFontCss`. */
+export function fontFamiliesInSite(site: BoxSite, theme: SiteTheme): string[] {
+  return familiesInUse(fontStacksInSite(site, theme));
+}
+
+export function renderSiteFiles(site: BoxSite, theme: SiteTheme, fontCss = ""): SiteFiles {
   const files = siteFileMap(site);
   const out: SiteFiles = {};
 
@@ -491,7 +521,11 @@ export function renderSiteFiles(site: BoxSite, theme: SiteTheme): SiteFiles {
   // The SHARED sheet is only what is identical everywhere — tokens, base, site chrome. The component
   // library is deliberately absent: 65 KB of which a page uses a fraction, so it is subsetted into each
   // page instead. What remains here is small, and it is the part worth caching.
-  out[SHARED_STYLESHEET] = `${sharedCss(theme)}\n${SITE_CHROME_CSS}`;
+  // Fonts go FIRST, so a face is defined before any rule asks for it. They are embedded as data: URIs by the
+  // caller, which is the only asynchronous part of an export — see lib/educo-ui/font-embed.ts for why they are
+  // self-hosted rather than linked. An empty string here is a deliberate, survivable outcome: the stack's
+  // fallback still applies, so the page reads in a near-enough typeface instead of failing to download.
+  out[SHARED_STYLESHEET] = [fontCss, sharedCss(theme), SITE_CHROME_CSS].filter(Boolean).join("\n");
   return out;
 }
 

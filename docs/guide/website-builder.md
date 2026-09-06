@@ -187,7 +187,7 @@ The builder is responsive by design, and you can fine‑tune per size.
 | **One shared `styles.css`** | A visitor downloads it once, then it is cached — every page after the first arrives faster. |
 | **Each page carries only the styles it uses** | A term‑dates page of text and a table doesn't download the accordion, the alert or the rating. In practice this is around a 90% cut in styling for a simple page. |
 
-There is **still nothing external** — no fonts, scripts or trackers fetched from anywhere else — so the site works offline and there is nothing to break later.
+**Your fonts travel with the site.** The typefaces you chose are built into `styles.css` itself, so the published site looks exactly like the one you designed. They are *not* loaded from Google: that would mean every visitor's IP address is sent to a third party, which is a data-protection question no school should be handed without being asked. Nothing is fetched from anywhere else either — no scripts, no trackers — so the site works offline, opens from a USB stick, and there is nothing to break later.
 
 ---
 

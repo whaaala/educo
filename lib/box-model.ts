@@ -193,6 +193,14 @@ export interface BoxNode {
   newTab?: boolean;       // open the link in a new tab
   anchor?: string;        // a named anchor on ANY box — rendered as its id so links can scroll to it
   src?: string;           // image / video URL (data URL for uploads)
+  // What the image SAYS, for someone who cannot see it — and for search engines. The export hardcoded alt="",
+  // which tells a screen reader the picture is decorative and to skip it, so every photo a school added was
+  // silently invisible to those readers (WCAG 1.1.1). Empty is still correct for a genuinely decorative image,
+  // but it must be the user's choice rather than the only possibility.
+  alt?: string;
+  // Load this image immediately rather than when it nears the viewport. Off by default (lazy), which is right
+  // for everything below the fold; a HERO image needs it on, or the top of the page is briefly empty.
+  eager?: boolean;
   icon?: string;          // lucide icon name (icon element)
   html?: string;          // raw HTML/iframe (embed element)
   listItems?: string[];   // list element items
