@@ -6,7 +6,7 @@
  * Theme-safe via `dark:` (which also applies under midnight/purple, since those carry the `dark` class).
  */
 
-import { useState, useEffect, useLayoutEffect, useRef, type ReactNode, type CSSProperties } from "react";
+import { useState, useEffect, useLayoutEffect, useRef, type ReactNode, type CSSProperties, type KeyboardEvent as ReactKeyboardEvent } from "react";
 import { createPortal } from "react-dom";
 import { ChevronDown, type LucideIcon } from "lucide-react";
 import { CHROME_Z } from "@/lib/educo-ui/stacking";
@@ -44,6 +44,75 @@ export function Segmented<T extends string>({ value, onChange, options, ariaLabe
           </button>
         );
       })}
+    </div>
+  );
+}
+
+/**
+ * THE TABLE PICKER — choose a layout by pointing at its shape.
+ *
+ * The same gesture as inserting a table in a word processor: sweep across the little grid and the cells light
+ * up, click and you get that many across and that many down. It is the front door to the layout system,
+ * because "four across, three down" is a shape a person can see, while "each block spans three of twelve" is
+ * one they have to work out.
+ *
+ * Only the column counts that divide the twelve are offered — five across cannot be twelfths (12/5 is 2.4),
+ * and a row of five where two are quietly wider is worse than not offering five at all. `columns` is passed
+ * in rather than assumed here so the ladder stays in one place.
+ *
+ * Keyboard-reachable as a real grid: arrows move the size, Enter picks it, so it is never a mouse-only
+ * control (WCAG 2.1.1). The live region says the current shape out loud for a screen reader.
+ */
+export function TablePicker({ columns, maxRows = 6, onPick, label = "Choose a layout" }: {
+  columns: number[]; maxRows?: number; onPick: (cols: number, rows: number) => void; label?: string;
+}) {
+  const maxCols = columns[columns.length - 1] ?? 1;
+  const [hover, setHover] = useState<{ c: number; r: number }>({ c: 2, r: 1 });
+  // The picker draws every column up to the widest offered, but only the ones that divide the twelve can be
+  // CHOSEN — so sweeping past a five snaps back to the four it can actually build, rather than silently
+  // rounding after the click.
+  const snap = (c: number) => [...columns].reverse().find((x) => x <= c) ?? 1;
+  const choose = (c: number, r: number) => onPick(snap(c), r);
+  const onKey = (e: ReactKeyboardEvent) => {
+    const k = e.key;
+    if (k === "Enter" || k === " ") { e.preventDefault(); choose(hover.c, hover.r); return; }
+    const d = k === "ArrowRight" ? [1, 0] : k === "ArrowLeft" ? [-1, 0] : k === "ArrowDown" ? [0, 1] : k === "ArrowUp" ? [0, -1] : null;
+    if (!d) return;
+    e.preventDefault();
+    setHover((h) => ({ c: Math.min(maxCols, Math.max(1, h.c + d[0])), r: Math.min(maxRows, Math.max(1, h.r + d[1])) }));
+  };
+  const shown = snap(hover.c);
+  return (
+    <div className="p-2">
+      <div
+        role="grid"
+        aria-label={label}
+        tabIndex={0}
+        onKeyDown={onKey}
+        onMouseLeave={() => setHover({ c: 2, r: 1 })}
+        className="inline-grid gap-[3px] rounded-lg p-1 outline-none focus-visible:ring-2 focus-visible:ring-brand"
+        style={{ gridTemplateColumns: `repeat(${maxCols}, 1rem)` }}
+      >
+        {Array.from({ length: maxRows * maxCols }, (_, i) => {
+          const c = (i % maxCols) + 1, r = Math.floor(i / maxCols) + 1;
+          const on = c <= shown && r <= hover.r;
+          return (
+            <button
+              key={i}
+              role="gridcell"
+              aria-label={`${c} across, ${r} down`}
+              aria-selected={on}
+              onMouseEnter={() => setHover({ c, r })}
+              onClick={() => choose(c, r)}
+              className={`h-4 w-4 rounded-[3px] border transition-colors ${on ? "border-brand bg-brand/70" : "border-line bg-surface-2 hover:border-brand/40"}`}
+            />
+          );
+        })}
+      </div>
+      <p aria-live="polite" className="mt-1 text-[0.6875rem] font-semibold text-muted">
+        {shown} across × {hover.r} down
+        <span className="font-normal"> — {shown * hover.r} cell{shown * hover.r === 1 ? "" : "s"}</span>
+      </p>
     </div>
   );
 }

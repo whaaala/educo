@@ -9,8 +9,8 @@
 
 import type { CSSProperties } from "react";
 import {
-  type BoxNode, type Breakpoint, containerStyle, childStyle, marginCSS, sizeToCSS, radiusCSS, SHADOW_CSS, u, baseUnit,
-  resolveResponsive, floatStacksOnMobile, alertToastCss, accordionClasses, bandClasses, videoEmbedSrc, isContainer, sanitizeCssDeclarations, expandScopedCss, COMPONENT_PARTS, itemFloatContextCss, itemOverrideCss, itemNumberVars, richBody, plainBody, componentTextCss, componentBoxCss, bgImageLayer, renderAlertHTML, alertDismissScript, bgShowThroughCss, blockContainmentCss, COMPONENT_ITEM_SEL, remLen, imageSizing, hasIntrinsicSize, itemNeedsClass, itemScope, floatZIndex,
+  type BoxNode, type Breakpoint, BP_ORDER, containerStyle, childStyle, marginCSS, sizeToCSS, radiusCSS, SHADOW_CSS, u, baseUnit,
+  resolveResponsive, floatStacksOnMobile, alertToastCss, accordionClasses, bandClasses, videoEmbedSrc, isContainer, sanitizeCssDeclarations, expandScopedCss, COMPONENT_PARTS, itemFloatContextCss, itemOverrideCss, itemNumberVars, richBody, plainBody, componentTextCss, componentBoxCss, bgImageLayer, renderAlertHTML, alertDismissScript, bgShowThroughCss, blockContainmentCss, COMPONENT_ITEM_SEL, remLen, imageSizing, hasIntrinsicSize, itemNeedsClass, itemScope, floatZIndex, typoRole, typoRootVars, typoCascadeCss,
 } from "@/lib/box-model";
 import { isRegistryComponent, renderComponent, componentScripts } from "@/lib/educo-ui/registry";
 import { iconSvg } from "@/lib/educo-ui/icon-svg";
@@ -77,10 +77,17 @@ function decorCss(node: BoxNode): CSSProperties {
   return s;
 }
 
-function typoCss(node: BoxNode, family: string, weight: number): CSSProperties {
+/**
+ * A block's own typography, with every default expressed as an INHERITED role rather than a theme constant.
+ *
+ * `node.fontFamily || theme.bodyFont` looks harmless and is the whole reason a font set on a section reached
+ * nothing inside it: the child wrote a real value, and a real value beats an inherited one every time. The
+ * role vars (see TYPO_VAR) carry the same defaults while still letting any ancestor redefine them.
+ */
+function typoCss(node: BoxNode, role: "heading" | "body", weight: number): CSSProperties {
   return {
-    fontFamily: node.fontFamily || family,
-    fontWeight: node.fontWeight ?? (node.bold ? 800 : weight),
+    fontFamily: node.fontFamily || typoRole.font(role),
+    fontWeight: node.fontWeight ?? (node.bold ? 800 : typoRole.weight(role, weight)),
     lineHeight: node.lineHeight,
     letterSpacing: node.letterSpacing != null ? `${node.letterSpacing}px` : undefined,
     fontStyle: node.italic ? "italic" : undefined,
@@ -103,14 +110,16 @@ const hrefFor = (node: BoxNode, pageMap: Map<string, string>): string => {
 
 /** Render a single element's inner HTML (its wrapper div is added by renderNode). */
 function elementHTML(node: BoxNode, theme: SiteTheme, pageMap: Map<string, string>): string {
-  const align = node.textAlign ?? "left";
+  // Emitted only when the block itself sets one — a hard-coded "left" is an explicit value, and an explicit
+  // value on the child beats the alignment its container was told to have.
+  const align = node.textAlign;
   switch (node.type) {
-    case "heading": return `<h2 style="${styleString({ color: node.color || theme.text, fontSize: u(node.fontSize ?? 32), textAlign: align, width: "100%", ...typoCss(node, theme.headingFont, 600) })}">${esc(node.text ?? "")}</h2>`;
-    case "text": return `<p style="${styleString({ color: node.color || theme.textMuted, fontSize: u(node.fontSize ?? 16), textAlign: align, width: "100%", ...typoCss(node, theme.bodyFont, 400) })}">${esc(node.text ?? "")}</p>`;
+    case "heading": return `<h2 style="${styleString({ color: node.color || typoRole.color("text"), fontSize: node.fontSize != null ? u(node.fontSize) : typoRole.size(2), textAlign: align, width: "100%", ...typoCss(node, "heading", 600) })}">${esc(node.text ?? "")}</h2>`;
+    case "text": return `<p style="${styleString({ color: node.color || typoRole.color("muted"), fontSize: node.fontSize != null ? u(node.fontSize) : typoRole.size(1), textAlign: align, width: "100%", ...typoCss(node, "body", 400) })}">${esc(node.text ?? "")}</p>`;
     case "button": { // fills its box + paints its own visual + centres its label (matches the editor) — one shape when resized
       const fp = (v?: string) => (v === "center" ? "center" : v === "end" ? "flex-end" : "flex-start");
       const deco = decorCss(node);
-      return `<a href="${esc(hrefFor(node, pageMap))}"${node.newTab ? ' target="_blank" rel="noopener noreferrer"' : ""} style="${styleString({ display: "flex", width: "100%", height: "100%", boxSizing: "border-box", alignItems: fp(node.contentY ?? "center"), justifyContent: fp(node.contentX ?? "center"), gap: "8px", background: node.background ? colorToCSS(node.background) : colorToCSS(theme.primary), color: node.color || "#fff", fontSize: u(node.fontSize ?? 14), padding: `${u(12)} ${u(24)}`, textDecoration: "none", ...deco, borderRadius: deco.borderRadius ?? "9999px", ...typoCss(node, theme.bodyFont, 600) })}">${esc(node.text ?? "")}</a>`;
+      return `<a href="${esc(hrefFor(node, pageMap))}"${node.newTab ? ' target="_blank" rel="noopener noreferrer"' : ""} style="${styleString({ display: "flex", width: "100%", height: "100%", boxSizing: "border-box", alignItems: fp(node.contentY ?? "center"), justifyContent: fp(node.contentX ?? "center"), gap: "8px", background: node.background ? colorToCSS(node.background) : colorToCSS(theme.primary), color: node.color || "#fff", fontSize: node.fontSize != null ? u(node.fontSize) : typoRole.size(0.875), padding: `${u(12)} ${u(24)}`, textDecoration: "none", ...deco, borderRadius: deco.borderRadius ?? "9999px", ...typoCss(node, "body", 600) })}">${esc(node.text ?? "")}</a>`;
     }
     // `loading`/`decoding` are set from the block's own settings: a hero must load eagerly or the page opens
     // blank at the top, while a photo further down should wait until it is nearly on screen.
@@ -124,11 +133,11 @@ function elementHTML(node: BoxNode, theme: SiteTheme, pageMap: Map<string, strin
       return `<img src="${esc(node.src)}" alt="${esc(node.alt ?? "")}"${dims} loading="${node.eager ? "eager" : "lazy"}" decoding="async" style="${styleString({ width: "100%", height, aspectRatio, objectFit: "cover", display: "block" })}" />`;
     }
     case "video": { const embed = videoEmbedSrc(node.src); const h = sizeToCSS(node.height) ?? "315px"; if (embed) return `<iframe src="${esc(embed)}" title="Video" allowfullscreen style="${styleString({ width: "100%", height: h, border: "0" })}"></iframe>`; return node.src ? `<video src="${esc(node.src)}" controls style="${styleString({ width: "100%", height: h })}"></video>` : ""; }
-    case "divider": return `<div aria-hidden="true" style="${styleString({ width: "100%", borderTopWidth: node.borderWidth || 2, borderTopStyle: node.borderStyle ?? "solid", borderTopColor: node.color ? colorToCSS(node.color) : node.borderColor ? colorToCSS(node.borderColor) : theme.textMuted })}"></div>`;
-    case "list": { const items = (node.listItems ?? []).map((it) => `<li>${esc(it)}</li>`).join(""); const st = styleString({ color: node.color || theme.text, fontSize: u(node.fontSize ?? 16), textAlign: align, width: "100%", paddingLeft: u(22), ...typoCss(node, theme.bodyFont, 400) }); return node.listStyle === "number" ? `<ol style="${st}">${items}</ol>` : `<ul style="${st}">${items}</ul>`; }
+    case "divider": return `<div aria-hidden="true" style="${styleString({ width: "100%", borderTopWidth: node.borderWidth || 2, borderTopStyle: node.borderStyle ?? "solid", borderTopColor: node.color ? colorToCSS(node.color) : node.borderColor ? colorToCSS(node.borderColor) : typoRole.color("muted") })}"></div>`;
+    case "list": { const items = (node.listItems ?? []).map((it) => `<li>${esc(it)}</li>`).join(""); const st = styleString({ color: node.color || typoRole.color("text"), fontSize: node.fontSize != null ? u(node.fontSize) : typoRole.size(1), textAlign: align, width: "100%", paddingLeft: u(22), ...typoCss(node, "body", 400) }); return node.listStyle === "number" ? `<ol style="${st}">${items}</ol>` : `<ul style="${st}">${items}</ul>`; }
     case "embed": return node.html ?? "";
     case "spacer": return `<div aria-hidden="true" style="${styleString({ width: "100%", height: sizeToCSS(node.height) ?? "48px" })}"></div>`;
-    case "icon": { const svg = iconSvg(node.icon ?? "Star"); return svg ? `<span aria-hidden="true" style="${styleString({ display: "inline-flex", color: node.color ? colorToCSS(node.color) : theme.text, fontSize: u(node.fontSize ?? 24) })}">${svg}</span>` : ""; }
+    case "icon": { const svg = iconSvg(node.icon ?? "Star"); return svg ? `<span aria-hidden="true" style="${styleString({ display: "inline-flex", color: node.color ? colorToCSS(node.color) : typoRole.color("text"), fontSize: node.fontSize != null ? u(node.fontSize) : typoRole.size(1.5) })}">${svg}</span>` : ""; }
     case "component": return componentHTML(node);
     default: return "";
   }
@@ -267,28 +276,45 @@ function overridesCss(node: BoxNode): string {
 // (Previously the base was DESKTOP and narrow screens undid it with `max-width` px queries — the exact
 // inversion the guide warns against. The editor's per-device DATA model is unchanged: a page still stores a
 // base plus tablet/mobile overrides; only the CSS that comes out of it is now built up instead of torn down.)
-// The editor stores three layers (a base, plus tablet and mobile overrides); the ladder has five rungs. These
-// two lines are where the one maps onto the other, and they are the ONLY place that mapping is decided.
-// Tablet overrides therefore cover BOTH tablet orientations, and the desktop layer starts at the desktop rung.
-const TABLET_MIN_EM = BREAKPOINTS_EM.tabletPortrait; // 37.5em / 600px — tablet layout and up
-const DESKTOP_MIN_EM = BREAKPOINTS_EM.desktop; // 75em / 1200px — desktop layout and up
-type Sheet = { base: string[]; tablet: string[]; desktop: string[]; reveals: Set<string> };
+// The editor's rungs and the ladder are now the SAME five, so there is no mapping left to get wrong. Each rung
+// past the phone gets its own `min-width` query, in `em`, straight off the documented ladder — this table is
+// the only place that correspondence is stated.
+const RUNG_MIN_EM: Record<Exclude<Breakpoint, "phone">, number> = {
+  tabletPortrait: BREAKPOINTS_EM.tabletPortrait, // 600px
+  tabletLandscape: BREAKPOINTS_EM.tabletLandscape, // 900px
+  base: BREAKPOINTS_EM.desktop, // 1200px — `base` IS the desktop rung
+  wide: BREAKPOINTS_EM.wide, // 1800px
+};
+/** One bucket of rules per rung. The phone rung is the unqualified base of a mobile-first sheet. */
+type Sheet = { rungs: Record<Breakpoint, string[]>; reveals: Set<string> };
+export const emptySheet = (): Sheet => ({
+  rungs: { phone: [], tabletPortrait: [], tabletLandscape: [], base: [], wide: [] },
+  reveals: new Set<string>(),
+});
 const classFor = (id: string) => "bx-" + id.replace(/[^A-Za-z0-9_-]/g, "-");
 // When a property is set at BASE but dropped at a breakpoint, we must actively neutralise it (the base rule
 // still applies at every width) — reset it to its layout initial rather than leaving the desktop value.
 const RESET: Record<string, string> = {
   minHeight: "auto", height: "auto", width: "auto", left: "auto", top: "auto", right: "auto", bottom: "auto",
   position: "static", zIndex: "auto", margin: "0", marginTop: "0", marginRight: "0", marginBottom: "0", marginLeft: "0",
+  // The twelve-column placement (Phase 2). A span/start/order set at ONE rung and not at a wider one has to be
+  // actively taken back there, or the narrow value leaks upward through the base rule and a block that should
+  // be full width on a desktop stays a third of it. `revert` is not usable for these: it would restore the
+  // stylesheet's value, and the stylesheet's value is the rule we are trying to undo.
+  order: "0", gridColumn: "auto", gridRow: "auto", justifySelf: "auto", alignSelf: "auto", justifyItems: "normal",
+  // A per-axis gap set at one rung and not at the next has to be taken back, or the narrow value leaks upward
+  // through the base rule — and the shorthand `gap` at the wider rung would not neutralise the longhands.
+  columnGap: "normal", rowGap: "normal",
 };
 
 /** The full style object for a node at a breakpoint — mirrors BoxCanvas's wrapStyle so editor == export. */
-function styleAt(node: BoxNode, rawParent: BoxNode | null, bp: Breakpoint): CSSProperties {
+function styleAt(node: BoxNode, rawParent: BoxNode | null, bp: Breakpoint, theme: SiteTheme): CSSProperties {
   const r = resolveResponsive(node, bp);
   const parent = rawParent ? resolveResponsive(rawParent, bp) : null;
   const isRoot = rawParent === null;
   // "STACK on narrow": on mobile a non-pinned float returns to normal flow (full-width, content-height) so it
   // can never clip its content or exceed its parent on a phone.
-  const stacked = bp === "mobile" && !isRoot && floatStacksOnMobile(node);
+  const stacked = bp === "phone" && !isRoot && floatStacksOnMobile(node);
   const floating = r.position === "absolute" && !isRoot && !stacked;
   const isComp = r.type === "component";
   // Self-painting blocks (components AND buttons) draw bg/border/radius/shadow on the block element itself and fill
@@ -305,7 +331,11 @@ function styleAt(node: BoxNode, rawParent: BoxNode | null, bp: Breakpoint): CSSP
       ? { left: `${r.left ?? 0}%`, top: `${r.top ?? 0}%`, width: sizeToCSS(r.width), height: r.height ? sizeToCSS(r.height) : undefined, minHeight: r.minHeight, zIndex: floatZIndex(r) } // no width ⇒ auto ⇒ hug content (never a wide default box)
       : stacked
       ? { position: "relative", width: "100%", height: "auto", minHeight: "auto", zIndex: "auto" } // full-width flow, grows with content
-      : parent ? childStyle(r, parent) : { width: "100%", ["--box-u" as string]: baseUnit(r.baseFont ?? 10) }),
+      // The PAGE ROOT publishes the theme's typography as the role defaults everything below inherits — which
+      // is what lets a block stop hard-coding them and a section start overriding them.
+      : parent ? childStyle(r, parent, bp) : { width: "100%", ["--box-u" as string]: baseUnit(r.baseFont ?? 10), ...typoRootVars(theme) }),
+    // A CONTAINER hands its typography down to everything inside it (see typoCascadeCss).
+    ...(isContainer(r) ? typoCascadeCss(r) : {}),
     ...(selfPaint ? {} : bgCss(r)), // background styles the block element (component/button), not this wrapper
     ...(isComp ? componentTypoCss(r) : {}),
   };
@@ -357,30 +387,29 @@ function renderNode(node: BoxNode, rawParent: BoxNode | null, theme: SiteTheme, 
   const r = resolveResponsive(node, "base");
   if (r.hidden && !node.responsive) return ""; // hidden at base with no per-device un-hide → skip entirely
   const cls = classFor(node.id);
-  // Build UP: the phone layout is the base rule, tablet adds what changes at `sm`, desktop adds what changes
-  // again at `lg`. Each block is diffed against the one BELOW it, which is the order the cascade applies them.
-  const phoneObj = styleAt(node, rawParent, "mobile");
-  const tabletObj = styleAt(node, rawParent, "tablet");
-  const desktopObj = styleAt(node, rawParent, "base");
+  // Build UP: the phone layout is the unqualified rule and every wider rung adds only what CHANGES from the
+  // rung below it. Diffing against the neighbour rather than the base is what keeps the sheet small — a rung
+  // that changes nothing emits nothing at all.
+  const byRung = BP_ORDER.map((bp) => styleAt(node, rawParent, bp, theme));
   const ov = overridesCss(r);
-  sheet.base.push(`.${cls}{${[styleString(phoneObj), ov].filter(Boolean).join(";")}}`);
+  sheet.rungs.phone.push(`.${cls}{${[styleString(byRung[0]), ov].filter(Boolean).join(";")}}`);
   // Hover & focus (Interactions 1a) — the SAME emitter the canvas uses, so the builder shows exactly what a
   // visitor gets. Pure CSS: a page with no effects ships nothing extra.
   const hov = hoverCss(`.${cls}`, r.hoverEffect);
-  if (hov) sheet.base.push(hov);
+  if (hov) sheet.rungs.phone.push(hov);
   // Entrance (Round 1b). The keyframes are global, so the ids used are collected and emitted ONCE at assembly.
   // A COMPONENT passes its item selector, so "arrive one after another" staggers the accordion rows or the
   // alert messages — its wrapper's direct children are a <style> tag and the component itself.
   const rev = revealCss(`.${cls}`, r, { staggerSelector: r.component ? COMPONENT_ITEM_SEL[r.component] : undefined });
-  if (rev) { sheet.base.push(rev); if (r.revealEffect) sheet.reveals.add(r.revealEffect); }
+  if (rev) { sheet.rungs.phone.push(rev); if (r.revealEffect) sheet.reveals.add(r.revealEffect); }
   // An ITEM's entrance needs its keyframes on the page too. They are emitted once, at assembly, from this
   // set — so an item effect whose id never reached it would animate to a name that does not exist, which is
   // silently nothing at all.
   for (const it of r.items ?? []) if (it.revealEffect) sheet.reveals.add(it.revealEffect);
-  const tDiff = diffStyle(phoneObj, tabletObj);
-  if (tDiff) sheet.tablet.push(`.${cls}{${tDiff}}`);
-  const dDiff = diffStyle(tabletObj, desktopObj);
-  if (dDiff) sheet.desktop.push(`.${cls}{${dDiff}}`);
+  for (let i = 1; i < BP_ORDER.length; i++) {
+    const diff = diffStyle(byRung[i - 1], byRung[i]);
+    if (diff) sheet.rungs[BP_ORDER[i]].push(`.${cls}{${diff}}`);
+  }
   const idAttr = r.anchor ? ` id="${esc(r.anchor)}"` : "";
   // A structural band also carries its layout classes — computed by box-model, so the canvas gets the same ones.
   const allCls = [cls, bandClasses(r, isPageSection)].filter(Boolean).join(" ");
@@ -398,9 +427,11 @@ function sheetCss(sheet: Sheet): string {
   return [
     // One copy of each entrance's keyframes, for the effects this page actually uses.
     revealKeyframes(sheet.reveals),
-    sheet.base.join(""),
-    sheet.tablet.length ? `@media (min-width:${TABLET_MIN_EM}em){${sheet.tablet.join("")}}` : "",
-    sheet.desktop.length ? `@media (min-width:${DESKTOP_MIN_EM}em){${sheet.desktop.join("")}}` : "",
+    sheet.rungs.phone.join(""),
+    // In ladder order, so a wider rung's rules come later and win on the cascade — which is the whole reason
+    // a mobile-first sheet needs no specificity tricks.
+    ...BP_ORDER.slice(1).map((bp) =>
+      sheet.rungs[bp].length ? `@media (min-width:${RUNG_MIN_EM[bp as Exclude<Breakpoint, "phone">]}em){${sheet.rungs[bp].join("")}}` : ""),
   ].filter(Boolean).join("");
 }
 
@@ -408,7 +439,7 @@ function sheetCss(sheet: Sheet): string {
  *  `<style>` block (a passed `sheet` instead accumulates into a shared document-level sheet, no inline block). */
 export function renderPageHTML(root: BoxNode, theme: SiteTheme, pageMap: Map<string, string> = new Map(), sheet?: Sheet): string {
   if (sheet) return renderNode(root, null, theme, pageMap, sheet); // shared sheet → caller emits the CSS
-  const own: Sheet = { base: [], tablet: [], desktop: [], reveals: new Set<string>() };
+  const own: Sheet = emptySheet();
   const body = renderNode(root, null, theme, pageMap, own);
   return `<style>${sheetCss(own)}</style>${body}`;
 }
@@ -488,7 +519,7 @@ export function renderSitePage(site: BoxSite, theme: SiteTheme, pageId: string, 
   const files = siteFileMap(site);
   const page = site.pages.find((p) => p.id === pageId) ?? orderedPages(site)[0];
   if (!page) return "";
-  const sheet: Sheet = { base: [], tablet: [], desktop: [], reveals: new Set<string>() };
+  const sheet: Sheet = emptySheet();
   const body = renderPageHTML(page.root, theme, files, sheet);
   const nav = siteNav(site, files, page.id);
   const markup = `${nav}\n${body}`;
@@ -530,7 +561,7 @@ export function renderSiteFiles(site: BoxSite, theme: SiteTheme, fontCss = ""): 
 
   for (const page of orderedPages(site)) {
     // Each page gets its own sheet, so a page carries only the rules for the blocks actually on it.
-    const sheet: Sheet = { base: [], tablet: [], desktop: [], reveals: new Set<string>() };
+    const sheet: Sheet = emptySheet();
     const body = renderPageHTML(page.root, theme, files, sheet);
     const nav = siteNav(site, files, page.id);
     const markup = `${nav}\n${body}`;

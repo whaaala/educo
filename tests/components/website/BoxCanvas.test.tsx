@@ -802,7 +802,7 @@ describe("BoxCanvas (box-model editor)", () => {
     const base = render(<BoxCanvas root={t} theme={DEFAULT_THEME} breakpoint="base" onChange={() => {}} />);
     expect(base.container.querySelector<HTMLElement>('[data-box-id="s"]')!.style.backgroundColor).toBe("rgb(17, 17, 17)");
     base.unmount();
-    const mob = render(<BoxCanvas root={t} theme={DEFAULT_THEME} breakpoint="mobile" onChange={() => {}} />);
+    const mob = render(<BoxCanvas root={t} theme={DEFAULT_THEME} breakpoint="phone" onChange={() => {}} />);
     expect(mob.container.querySelector<HTMLElement>('[data-box-id="s"]')!.style.backgroundColor).toBe("rgb(255, 0, 0)");
   });
 
@@ -811,10 +811,10 @@ describe("BoxCanvas (box-model editor)", () => {
       id: "root",
       children: [createContainer("column", { id: "h", responsive: { mobile: { hidden: true } } } as Partial<BoxNode>)],
     } as Partial<BoxNode>);
-    const live = render(<BoxCanvas root={t} theme={DEFAULT_THEME} breakpoint="mobile" editable={false} onChange={() => {}} />);
+    const live = render(<BoxCanvas root={t} theme={DEFAULT_THEME} breakpoint="phone" editable={false} onChange={() => {}} />);
     expect(live.container.querySelector('[data-box-id="h"]')).toBeNull(); // not rendered live
     live.unmount();
-    const edit = render(<BoxCanvas root={t} theme={DEFAULT_THEME} breakpoint="mobile" editable onChange={() => {}} />);
+    const edit = render(<BoxCanvas root={t} theme={DEFAULT_THEME} breakpoint="phone" editable onChange={() => {}} />);
     const el = edit.container.querySelector<HTMLElement>('[data-box-id="h"]')!;
     expect(el).toBeTruthy();
     expect(el.style.opacity).toBe("0.35"); // faint in the editor so you can still select + un-hide it
@@ -826,16 +826,16 @@ describe("BoxCanvas (box-model editor)", () => {
       id: "root",
       children: [createContainer("column", { id: "a", width: "100%" } as Partial<BoxNode>)],
     } as Partial<BoxNode>);
-    const { container } = render(<BoxCanvas root={initial} theme={DEFAULT_THEME} selectedId="a" breakpoint="mobile" onChange={onChange} />);
+    const { container } = render(<BoxCanvas root={initial} theme={DEFAULT_THEME} selectedId="a" breakpoint="phone" onChange={onChange} />);
     const rootEl = container.querySelector<HTMLElement>('[data-box-id="root"]')!;
     stubRect(rootEl, { top: 0, left: 0, width: 600, height: 200 }); stubClientWidth(rootEl, 600);
     stubRect(container.querySelector<HTMLElement>('[data-box-id="a"]')!, { top: 0, left: 0, width: 600, height: 100 });
     fireEvent.mouseDown(screen.getByLabelText("Resize right edge"), { clientX: 0, clientY: 0 });
-    fireEvent.mouseMove(document, { clientX: -180, clientY: 0 }); // shrink at mobile
+    fireEvent.mouseMove(document, { clientX: -180, clientY: 0 }); // shrink at the phone rung
     fireEvent.mouseUp(document);
     const a = findBox(onChange.mock.calls.at(-1)![0], "a")!;
     expect(a.width).toBe("100%");                    // base preserved
-    expect(a.responsive?.mobile?.width).toMatch(/%$/); // override written for mobile
+    expect(a.responsive?.phone?.width).toMatch(/%$/); // the override lands in the PHONE rung
   });
 
   it("applies per-element typography (font family, weight, line-height, letter-spacing, italic, underline, transform)", () => {

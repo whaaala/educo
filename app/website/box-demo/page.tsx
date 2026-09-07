@@ -16,6 +16,7 @@ import {
   type BoxNode, type Breakpoint, createContainer, findBox, findParent, updateBox, insertBox, removeBox, duplicateBox, widthPct, makeRowBand, normalizeRowBands, groupBoxes, alignInRow, alignInRowOf, setSectionWidth, sectionWidthOf, pageBandOf,
   floatBox, unfloatBox, bringToFront, bringForward, sendBackward, sendToBack,
   resolveResponsive, updateBoxResponsive, clearOverride, hasOverride, isContainer,
+  gridColumns, retrackGrid, setColumnFraction,
 } from "@/lib/box-model";
 import { blockForKind } from "@/lib/box-presets";
 import {
@@ -41,6 +42,16 @@ const ROW_GAP = 0;
 const SECTION_TINTS = ["#eef2ff", "#faf5ff", "#ecfeff", "#fef2f2", "#f0fdf4", "#fffbeb"];
 
 type Device = "mobile" | "tablet" | "laptop" | "desktop" | "wide" | "full";
+
+/** Which layer each preview width edits. One table, so the chips and the model can never drift apart again. */
+const DEVICE_RUNG: Record<Device, Breakpoint> = {
+  mobile: "phone",
+  tablet: "tabletPortrait",
+  laptop: "tabletLandscape",
+  desktop: "base",
+  wide: "wide",
+  full: "base",
+};
 /**
  * Each chip previews a width that sits INSIDE exactly one rung of the ladder, so switching chips shows you a
  * genuinely different layout rather than two chips that happen to render identically. The widths themselves are
@@ -208,7 +219,13 @@ export default function BoxDemoPage() {
 
   const selected = selectedIds.length === 1 ? findBox(root, selectedIds[0]) : null;
   const bulk = selectedIds.length > 1;
-  const bp: Breakpoint = device === "mobile" ? "mobile" : device === "tablet" ? "tablet" : "base";
+  // Each preview width edits its OWN layer. This line used to read
+  //   device === "mobile" ? "mobile" : device === "tablet" ? "tablet" : "base"
+  // which sent Laptop, Desktop AND Wide to the same place: switching to Wide to fix how something looked on a
+  // big screen silently rewrote the layer driving every screen from 900px up, including the Desktop view you
+  // had just tuned, with nothing on screen to say so. "Full width" is a preview convenience with no rung of
+  // its own, so it edits the desktop base — the same thing it shows.
+  const bp: Breakpoint = DEVICE_RUNG[device];
   const CONTENT_KEYS = new Set(["text", "href", "newTab", "anchor", "src", "icon", "html", "listItems", "listStyle"]);
   const patchAt = (base: BoxNode, id: string, patch: Partial<BoxNode>): BoxNode => {
     if (bp === "base") return updateBox(base, id, patch);
@@ -230,6 +247,18 @@ export default function BoxDemoPage() {
   const addSection = () => { const sec = makeSection(SECTION_TINTS[countSections(root) % SECTION_TINTS.length]); sec.width = "100%"; commit(insertBox(root, root.id, root.children?.length ?? 0, makeRow([sec]))); };
   const onPatch = (patch: Partial<BoxNode>) => { if (selected) commit(patchAt(root, selected.id, patch)); };
   const resetOverride = () => { if (selected && bp !== "base") commit(clearOverride(root, selected.id, bp)); };
+
+  // ── The twelve-column grid: the three things a block cannot patch on its OWN node ──
+  // A block's width in named fractions and a row's column count both write UPWARD (the row's children move
+  // with it), so they come through here rather than through `onPatch`, the same shape as "Content width".
+  const parentGrid = selected ? findParent(root, selected.id)?.parent : undefined;
+  const gridTrack = parentGrid?.layout === "grid" ? gridColumns(parentGrid) : undefined;
+  const setFraction = (num: number, den: number) => { if (selected) commit(setColumnFraction(root, selected.id, num, den, bp)); };
+  // Only at the BASE: re-cutting a row rescales its CHILDREN's placement, and a rung override carries style,
+  // never structure. At a rung the count is a plain per-rung override and the spans clamp to it instead.
+  const retrackSelected = selected && bp === "base" && selected.layout === "grid"
+    ? (columns: number) => commit(updateBox(root, selected.id, retrackGrid(selected, columns)))
+    : undefined;
   const addChildSection = () => { if (!selected) return; const tint = SECTION_TINTS[(countSections(selected) + 1) % SECTION_TINTS.length]; const child = makeBlock(tint, "100%"); const pid = selected.id; commitWith((cur) => insertBox(cur, pid, findBox(cur, pid)?.children?.length ?? 0, child)); revealBox(child.id); };
 
   const floatSelected = () => { if (!selected) return; const g = measureFloatGeom(root, selected.id); if (g) commit(floatBox(root, selected.id, g.parentId, g.left, g.top, g.width, g.height)); };
@@ -410,7 +439,7 @@ export default function BoxDemoPage() {
               {bulk ? (
                 <BulkInspector count={selectedIds.length} theme={renderTheme} sample={(() => { const f = findBox(root, selectedIds[0]); return f ? resolveResponsive(f, bp) : null; })()} onStepWidth={bulkStepWidth} onStepHeight={bulkStepHeight} onPatch={bulkPatch} onDuplicate={bulkDuplicate} onDelete={bulkDelete} onFloatAll={bulkFloat} onGroup={bulkGroup} />
               ) : selected ? (
-                <BoxInspector node={bp === "base" ? selected : resolveResponsive(selected, bp)} theme={renderTheme} onPatch={onPatch} onAddChild={addChildSection} onFloat={floatSelected} onUnfloat={unfloatSelected} onLayer={layerSelected} onAlignInRow={(j) => commit(alignInRow(root, selected.id, j))} rowJustify={alignInRowOf(root, selected.id)} onSectionWidth={pageBandOf(root, selected.id) ? (v) => commit(setSectionWidth(root, selected.id, v)) : undefined} sectionWidth={sectionWidthOf(root, selected.id)} canFloat={selected.id !== root.id} inGrid={findParent(root, selected.id)?.parent.layout === "grid"} breakpoint={bp} overridden={hasOverride(selected, bp)} onResetOverride={resetOverride} pages={pageList} currentPageId={activePage.id} />
+                <BoxInspector node={bp === "base" ? selected : resolveResponsive(selected, bp)} theme={renderTheme} onPatch={onPatch} onAddChild={addChildSection} onFloat={floatSelected} onUnfloat={unfloatSelected} onLayer={layerSelected} onAlignInRow={(j) => commit(alignInRow(root, selected.id, j))} rowJustify={alignInRowOf(root, selected.id)} onSectionWidth={pageBandOf(root, selected.id) ? (v) => commit(setSectionWidth(root, selected.id, v)) : undefined} sectionWidth={sectionWidthOf(root, selected.id)} canFloat={selected.id !== root.id} inGrid={gridTrack !== undefined} gridTrack={gridTrack} onSetFraction={setFraction} onRetrack={retrackSelected} breakpoint={bp} overridden={hasOverride(selected, bp)} onResetOverride={resetOverride} pages={pageList} currentPageId={activePage.id} />
               ) : (
                 <div className="p-6 text-xs text-gray-400 text-center mt-6">Click a block to edit it — or drag a box on empty canvas to select several at once.</div>
               )}

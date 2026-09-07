@@ -5,7 +5,7 @@
  * Card container — without touching individual properties. Pure + theme-aware.
  */
 
-import { type BoxNode, type BoxType, createContainer, createGrid, createElement } from "@/lib/box-model";
+import { type BoxNode, type BoxType, createContainer, createGrid, createElement, cloneBox, GRID_MAX } from "@/lib/box-model";
 import { buildCatalogueComponent, addChoices, applyPresetVariant } from "@/lib/component-catalogue";
 import type { SiteTheme } from "@/lib/site-storage";
 
@@ -15,7 +15,11 @@ const T = "#00000000"; // transparent
 
 /** Which preset family a selected node uses (grid vs plain container vs the element type). */
 export function presetKindFor(node: BoxNode): string {
-  if (node.type === "container") return node.layout === "grid" ? "grid" : "container";
+  // A grid takes the CONTAINER looks. "Styles" means how a block looks everywhere else in the panel, and a
+  // grid's shape is not a look — it has a dedicated Columns control that re-cuts the row without moving its
+  // blocks. The old grid presets set `columns` straight, so picking one from the Styles gallery would have
+  // left every span pointing at tracks that no longer existed.
+  if (node.type === "container") return "container";
   return node.type;
 }
 
@@ -43,11 +47,11 @@ export function getPresets(kind: string, theme: SiteTheme): Preset[] {
       { id: "caption", label: "Caption", patch: { fontSize: 12, color: theme.textMuted } },
       { id: "quote", label: "Quote", patch: { fontSize: 20, italic: true, borderWidth: 3, borderColor: theme.primary, borderStyle: "solid", paddingLeft: 16 } },
     ];
-    case "grid": return [
-      { id: "c2", label: "2 columns", patch: { columns: 2 } },
-      { id: "c3", label: "3 columns", patch: { columns: 3 } },
-      { id: "c4", label: "4 columns", patch: { columns: 4 } },
-    ];
+    // A GRID has no style presets of its own: its SHAPE is the Arrange panel's Columns control (which re-cuts
+    // the row without moving anything), its COMBINATION is picked when it is added (see GRID_LAYOUTS), and its
+    // LOOK is the container looks — which `presetKindFor` now sends it to. Two controls that both set
+    // `columns`, one of them without carrying the spans across, is precisely how this area drifts.
+    case "grid": return [];
     case "divider": return [
       { id: "solid", label: "Solid", patch: { borderStyle: "solid", borderWidth: 2 } },
       { id: "dashed", label: "Dashed", patch: { borderStyle: "dashed", borderWidth: 2 } },
@@ -86,6 +90,81 @@ export function getPresets(kind: string, theme: SiteTheme): Preset[] {
 // and feeding both invariant harnesses. See lib/component-catalogue.ts for why the two construction strategies
 // (editable tree vs `component` node) both exist and are both correct.
 
+/**
+ * THE LAYOUT COMBINATIONS a row can be added as — the answer to "how do I get a 8/4 split?".
+ *
+ * Before this the palette offered "2 · 3 · 4 columns", all EQUAL, so every unequal layout — a sidebar, a
+ * feature beside two cards, a wide article with a narrow rail — had to be built by adding a row and then
+ * editing each block's width by hand. The most common shapes on a school site were the ones the builder made
+ * hardest, which is backwards.
+ *
+ * Every one is stated in twelfths and every one adds to twelve, so the row is a real twelve-column grid from
+ * the moment it lands and the per-block controls all read the same units. The cells are empty containers —
+ * the same block the "Section" tile adds — so a user fills them exactly as they fill anything else.
+ *
+ * These are ADD-TIME only. Applying one to a row that already has content would replace that content, so they
+ * are deliberately not in `getPresets`, which feeds the inspector's restyle gallery.
+ */
+export const GRID_LAYOUTS: { id: string; label: string; spans: number[] }[] = [
+  { id: "two", label: "Two equal · 6 · 6", spans: [6, 6] },
+  { id: "three", label: "Three equal · 4 · 4 · 4", spans: [4, 4, 4] },
+  { id: "four", label: "Four equal · 3 × 4", spans: [3, 3, 3, 3] },
+  { id: "sidebar-left", label: "Sidebar left · 4 · 8", spans: [4, 8] },
+  { id: "sidebar-right", label: "Sidebar right · 8 · 4", spans: [8, 4] },
+  { id: "feature-two", label: "Feature + two · 6 · 3 · 3", spans: [6, 3, 3] },
+  { id: "wide-narrow", label: "Wide + narrow · 7 · 5", spans: [7, 5] },
+  { id: "narrow-wide", label: "Narrow + wide · 5 · 7", spans: [5, 7] },
+];
+
+/**
+ * One empty cell of a layout preset.
+ *
+ * Full width of its column and no inset, for the same reason the grid itself has none: spacing is a decision
+ * the user makes in one control, not a default they have to discover and undo. A cell that arrived with 24px
+ * of padding made every nested layout narrower than the one holding it, compounding at each level.
+ */
+const gridCell = (colSpan: number): BoxNode =>
+  createContainer("column", { width: "100%", padding: 0, gap: 0, align: "stretch", colSpan });
+
+/**
+ * The LARGEST number of equal columns the twelve can express exactly, at or below `cols`.
+ *
+ * Five across cannot be twelfths — 12/5 is 2.4 — so a pick of five would have to round, and a row of five
+ * where two are slightly wider is worse than a row of four. The picker only offers the counts that divide,
+ * so this never has to round in practice; it exists so a value arriving from anywhere else still lands on a
+ * row the rest of the system can describe.
+ */
+export const fitColumns = (cols: number): number => {
+  const n = Math.min(GRID_MAX, Math.max(1, Math.round(cols)));
+  for (let c = n; c >= 1; c--) if (GRID_MAX % c === 0) return c;
+  return 1;
+};
+
+/** The column counts a table picker can offer exactly: the divisors of twelve. */
+export const PICKER_COLUMNS = Array.from({ length: GRID_MAX }, (_, i) => i + 1).filter((c) => GRID_MAX % c === 0);
+
+/**
+ * Build a layout the way a person inserts a TABLE: pick how many across and how many down.
+ *
+ * This is the front door to the whole layout system. Choosing "4 across, 3 down" gives twelve empty cells in
+ * a real twelve-column grid — each one spanning three of the twelve — so the shape is picked by pointing at
+ * it, and every finer control still applies afterwards: widen one cell to seven twelfths, offset another,
+ * reorder them on a phone. The picker is the easy path; the twelve underneath is the ceiling.
+ *
+ * Rows are the CELL COUNT rather than a track definition: the grid flows into as many rows as it needs, so a
+ * cell later made wider simply pushes the ones after it down, which is what a person expects from a table.
+ */
+export function tableGrid(cols: number, rows: number): BoxNode {
+  const c = fitColumns(cols);
+  const r = Math.max(1, Math.round(rows));
+  const span = GRID_MAX / c;
+  return createGrid(GRID_MAX, { children: Array.from({ length: c * r }, () => gridCell(span)) });
+}
+
+/** The layout combinations as add-time presets. Built fresh each call so two adds never share an id. */
+const gridLayoutChoices = (): Preset[] =>
+  GRID_LAYOUTS.map((l) => ({ id: l.id, label: l.label, patch: { columns: GRID_MAX, children: l.spans.map(gridCell) } }));
+
 /** Build a fresh block for a palette kind — the ONE insertion path the product uses (palette click and drag).
  *  Components come from the catalogue; everything else is a primitive element / container. */
 export function blockForKind(kind: string, patch: Partial<BoxNode> = {}): BoxNode {
@@ -96,6 +175,10 @@ export function blockForKind(kind: string, patch: Partial<BoxNode> = {}): BoxNod
     : kind === "container" ? createContainer("column", { width: "100%", padding: 24, gap: 0, align: "stretch" })
     : createElement(kind as Exclude<BoxType, "container">));
   const node = Object.assign(base, patch);
+  // Children that arrived in a PATCH are re-idded. A preset object is built once per render and can be
+  // clicked twice, so without this the second "Sidebar left" would carry the same cell ids as the first and
+  // the tree would hold duplicates — every lookup by id then finds whichever comes first.
+  if (patch.children) node.children = patch.children.map(cloneBox);
   // A design picked at add time has to be APPLIED, not just recorded: for a tree component the variant id is
   // only a label until `applyPresetVariant` restyles the tree. (For `component` nodes the id IS the CSS class
   // suffix, and applyPresetVariant leaves a node without a `preset` untouched, so this is safe for both.)
@@ -110,6 +193,8 @@ export function blockForKind(kind: string, patch: Partial<BoxNode> = {}): BoxNod
  * the one kind of block with the most looks to choose from was the only kind that never asked.
  */
 export function getAddChoices(kind: string, theme: SiteTheme): Preset[] {
+  // A ROW is the one kind whose add-time choice is a LAYOUT rather than a look — see GRID_LAYOUTS.
+  if (kind === "grid") return gridLayoutChoices();
   const fromCatalogue = addChoices(kind);
   return fromCatalogue.length ? fromCatalogue : getPresets(kind, theme);
 }

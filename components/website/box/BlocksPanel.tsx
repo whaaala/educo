@@ -21,9 +21,10 @@ import {
 } from "lucide-react";
 import type { BoxNode } from "@/lib/box-model";
 import type { SiteTheme } from "@/lib/site-storage";
-import { getAddChoices } from "@/lib/box-presets";
+import { getAddChoices, PICKER_COLUMNS, tableGrid } from "@/lib/box-presets";
 import { COMPONENT_CATALOGUE } from "@/lib/component-catalogue";
-import { PortalMenu, MenuItem, MenuHeader } from "./ui";
+import { PortalMenu, MenuItem, MenuHeader, TablePicker } from "./ui";
+import { GRID_MAX } from "@/lib/box-model";
 import { CHROME_Z } from "@/lib/educo-ui/stacking";
 
 /** The catalogue names its icon as a string so it can stay React-free; this maps those names to the icons. */
@@ -33,7 +34,7 @@ type Block = { kind: string; label: string; Icon: LucideIcon; hint: string };
 const GROUPS: { name: string; Icon: LucideIcon; blocks: Block[] }[] = [
   { name: "Layout", Icon: LayoutTemplate, blocks: [
     { kind: "container", label: "Section", Icon: LayoutPanelTop, hint: "A band you fill with anything" },
-    { kind: "grid", label: "Columns", Icon: Columns3, hint: "Equal columns" },
+    { kind: "grid", label: "Columns", Icon: Columns3, hint: "Pick a split — equal, sidebar, feature" },
     { kind: "row", label: "Row", Icon: Rows3, hint: "Items side by side" },
     { kind: "spacer", label: "Spacer", Icon: MoveVertical, hint: "Empty vertical space" },
     { kind: "divider", label: "Divider", Icon: Minus, hint: "A dividing line" },
@@ -249,10 +250,26 @@ export default function BlocksPanel({ theme, onDragKind, onPick, defaultOpen = f
       )}
 
       {/* Variation picker — portaled so the panel's scroll area can never clip it. */}
-      {menu && variations.length > 0 && (
-        <PortalMenu anchor={menu.anchor} onClose={() => setMenu(null)} width={184} ariaLabel={`Add ${menu.label}`}>
-          <MenuHeader>Add {menu.label} as…</MenuHeader>
-          <MenuItem onClick={() => { onPick?.(menu.kind); setMenu(null); }} Icon={Plus} label="Default" />
+      {menu && (variations.length > 0 || menu.kind === "grid") && (
+        <PortalMenu anchor={menu.anchor} onClose={() => setMenu(null)} width={menu.kind === "grid" ? 232 : 184} ariaLabel={`Add ${menu.label}`}>
+          {/* A ROW is picked by its SHAPE, the way a table is inserted in a word processor — sweep the grid,
+              click, done. The named splits stay underneath for the unequal shapes a sweep cannot express. */}
+          {menu.kind === "grid" ? (
+            <>
+              <MenuHeader>How many across and down?</MenuHeader>
+              <TablePicker
+                columns={PICKER_COLUMNS}
+                onPick={(cols, rows) => { onPick?.("grid", { children: tableGrid(cols, rows).children, columns: GRID_MAX }); setMenu(null); }}
+                label="Choose a layout — columns across, rows down"
+              />
+              <MenuHeader>Or an uneven split</MenuHeader>
+            </>
+          ) : (
+            <>
+              <MenuHeader>Add {menu.label} as…</MenuHeader>
+              <MenuItem onClick={() => { onPick?.(menu.kind); setMenu(null); }} Icon={Plus} label="Default" />
+            </>
+          )}
           {variations.map((p) => <MenuItem key={p.id} onClick={() => { onPick?.(menu.kind, p.patch); setMenu(null); }} Icon={Sparkles} label={p.label} />)}
         </PortalMenu>
       )}

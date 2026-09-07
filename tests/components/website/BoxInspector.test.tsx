@@ -201,21 +201,21 @@ describe("BoxInspector — content types & links (Content tab)", () => {
 describe("BoxInspector — per-device", () => {
   it("shows a breakpoint banner + reset when editing a non-base breakpoint with an override", () => {
     const onReset = vi.fn();
-    renderFor(createContainer("column", { id: "c" } as Partial<BoxNode>), { breakpoint: "mobile", overridden: true, onResetOverride: onReset });
-    expect(screen.getByText(/Editing Mobile/)).toBeInTheDocument();
-    fireEvent.click(screen.getByText(/Reset mobile changes/));
+    renderFor(createContainer("column", { id: "c" } as Partial<BoxNode>), { breakpoint: "phone", overridden: true, onResetOverride: onReset });
+    expect(screen.getByText(/Editing Phone/)).toBeInTheDocument();
+    fireEvent.click(screen.getByText(/Reset phone changes/));
     expect(onReset).toHaveBeenCalled();
   });
 
   it("has no breakpoint banner on the base", () => {
     renderFor(createContainer("column", { id: "c" } as Partial<BoxNode>), { breakpoint: "base" });
-    expect(screen.queryByText(/Editing Mobile|Editing Tablet/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Editing Phone|Editing Tablet/)).not.toBeInTheDocument();
   });
 
   it("toggles hidden (labelled per breakpoint) in the Per-device tab", () => {
-    const onPatch = renderFor(createContainer("column", { id: "c" } as Partial<BoxNode>), { breakpoint: "mobile" });
+    const onPatch = renderFor(createContainer("column", { id: "c" } as Partial<BoxNode>), { breakpoint: "phone" });
     openDevice();
-    fireEvent.click(screen.getByLabelText(/Hidden on mobile/));
+    fireEvent.click(screen.getByLabelText(/Hidden on phone/));
     expect(onPatch).toHaveBeenCalledWith({ hidden: true });
   });
 });
@@ -363,18 +363,80 @@ describe("BoxInspector — functionality audit (every remaining control)", () =>
     expect(onPatch).toHaveBeenCalledWith({ layout: "grid" });
   });
 
-  it("Arrange (grid): Columns slider fires", () => {
-    const onPatch = renderFor(createContainer("column", { id: "g", layout: "grid", columns: 3 } as Partial<BoxNode>));
-    fireEvent.change(screen.getByLabelText("Columns"), { target: { value: "4" } });
+  // ── THE TWELVE-COLUMN GRID (Phase 2) — tests/features/…/box-builder-columns.feature ──
+
+  it("Arrange (grid): the named counts and the raw slider both re-cut the row", () => {
+    const grid = createContainer("column", { id: "g", layout: "grid", columns: 3 } as Partial<BoxNode>);
+    // With no `onRetrack` the count is a plain patch — which is what a per-device edit is.
+    const onPatch = renderFor(grid);
+    fireEvent.change(screen.getByLabelText("Columns in the row"), { target: { value: "4" } });
     expect(onPatch).toHaveBeenCalledWith({ columns: 4 });
+    cleanup();
+    // With one, BOTH controls go through it, so every child's placement comes across and the row does not move.
+    const onRetrack = vi.fn();
+    renderFor(grid, { onRetrack });
+    fireEvent.click(screen.getByRole("button", { name: "Twelve" }));
+    expect(onRetrack).toHaveBeenCalledWith(12);
+    fireEvent.change(screen.getByLabelText("Columns in the row"), { target: { value: "6" } });
+    expect(onRetrack).toHaveBeenCalledWith(6);
   });
 
-  it("Grid cell: Columns wide + Rows tall fire (only when inside a grid)", () => {
-    const onPatch = renderFor(createContainer("column", { id: "gc" } as Partial<BoxNode>), { inGrid: true });
+  it("Arrange (grid): Position blocks writes justifyItems, NOT the flex justify", () => {
+    // `justify-content` cannot move anything in a row of 1fr tracks, so the grid gets its own field. Reusing
+    // `justify` would have read the `justify: "start"` every container is born with as a real choice.
+    const onPatch = renderFor(createContainer("column", { id: "g", layout: "grid", columns: 3 } as Partial<BoxNode>));
+    pickSelect("Position blocks", "Center");
+    expect(onPatch).toHaveBeenCalledWith({ justifyItems: "center" });
+  });
+
+  it("Grid cell: width, offset, rows and per-cell alignment fire (only when inside a grid)", () => {
+    const onPatch = renderFor(createContainer("column", { id: "gc" } as Partial<BoxNode>), { inGrid: true, gridTrack: 12 });
     fireEvent.change(screen.getByLabelText("Columns wide"), { target: { value: "2" } });
     expect(onPatch).toHaveBeenCalledWith({ colSpan: 2 });
     fireEvent.change(screen.getByLabelText("Rows tall"), { target: { value: "3" } });
     expect(onPatch).toHaveBeenCalledWith({ rowSpan: 3 });
+    fireEvent.change(screen.getByLabelText("Start at column"), { target: { value: "5" } });
+    expect(onPatch).toHaveBeenCalledWith({ colStart: 5 });
+    fireEvent.change(screen.getByLabelText("Start at row"), { target: { value: "3" } });
+    expect(onPatch).toHaveBeenCalledWith({ rowStart: 3 });
+    pickSelect("Line up (across)", "Right");
+    expect(onPatch).toHaveBeenCalledWith({ justifySelf: "end" });
+    cleanup();
+    // Emptying the field means auto-place after the block before it — never column 1, which would PIN a block
+    // the user never pinned and quietly stack it on top of whatever already sits there.
+    const cleared = renderFor(createContainer("column", { id: "gc", colStart: 5 } as Partial<BoxNode>), { inGrid: true, gridTrack: 12 });
+    fireEvent.change(screen.getByLabelText("Start at column"), { target: { value: "" } });
+    expect(cleared).toHaveBeenCalledWith({ colStart: undefined });
+  });
+
+  it("Grid cell: the named fractions offer only what the row can express, and report the span", () => {
+    const onSetFraction = vi.fn();
+    renderFor(createContainer("column", { id: "gc", colSpan: 6 } as Partial<BoxNode>), { inGrid: true, gridTrack: 12, onSetFraction });
+    fireEvent.click(screen.getByRole("button", { name: "Half" }));
+    expect(onSetFraction).toHaveBeenCalledWith(1, 2);
+    expect(screen.getByRole("button", { name: "Half" })).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getByText("6 of 12 columns")).toBeInTheDocument();
+    cleanup();
+    // On a DEVICE a row of thirds cannot be re-cut, so a half is not offered rather than silently rounded.
+    renderFor(createContainer("column", { id: "gc" } as Partial<BoxNode>), { inGrid: true, gridTrack: 3, onSetFraction, breakpoint: "phone" });
+    expect(screen.queryByRole("button", { name: "Half" })).toBeNull();
+    expect(screen.getByRole("button", { name: "Third" })).toBeInTheDocument();
+  });
+
+  it("Order & push: order, push and align-self fire for a block in ANY container", () => {
+    const onPatch = renderFor(heading());
+    fireEvent.change(screen.getByLabelText("Order"), { target: { value: "-1" } });
+    expect(onPatch).toHaveBeenCalledWith({ order: -1 });
+    fireEvent.click(screen.getByRole("button", { name: "Right" }));
+    expect(onPatch).toHaveBeenCalledWith({ push: "end" });
+    pickSelect("Line up (down)", "Middle");
+    expect(onPatch).toHaveBeenCalledWith({ alignSelf: "center" });
+    cleanup();
+    // Emptying the order returns the block to document order rather than pinning it at 0, which is a real
+    // position: a sibling with order -1 would still jump ahead of it, but everything at 0 would not.
+    const cleared = renderFor(createElement("heading", { id: "h", text: "Hi", order: -1 } as Partial<BoxNode>));
+    fireEvent.change(screen.getByLabelText("Order"), { target: { value: "" } });
+    expect(cleared).toHaveBeenCalledWith({ order: undefined });
   });
 
   // ── SIZE ──
@@ -486,7 +548,10 @@ describe("Accordion — full three-tab audit (Design · Content · Per-device)",
     fireEvent.click(screen.getByLabelText(/Expand all/));                                         expect(onPatch).toHaveBeenCalledWith({ accShowAll: true });
   });
 
-  it("CONTENT › Items — EVERY per-item field works on ANY item (title, body, meta, image, CSS, open)", () => {
+  // ~13s of real work — it drives every per-item field on several items. That is 43% of the default
+  // budget, so one contended run under the full suite tipped it over and it failed while passing alone.
+  // The headroom goes HERE, where the cost is, rather than widening the timeout for 2,851 fast tests.
+  it("CONTENT › Items — EVERY per-item field works on ANY item (title, body, meta, image, CSS, open)", { timeout: 60_000 }, () => {
     const onPatch = renderFor(acc());
     openContent();
     const hasItem = (m: Record<string, unknown>) => expect.objectContaining({ items: expect.arrayContaining([expect.objectContaining(m)]) });

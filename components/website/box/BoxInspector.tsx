@@ -10,8 +10,9 @@
 import { useState, useRef } from "react";
 import { Plus, X, Rows3, Columns3, Upload, AlignLeft, AlignCenter, AlignRight, Layers, Move, BringToFront, SendToBack, ChevronUp, ChevronDown, Italic, Underline, LayoutGrid, Maximize2, Sparkles, Paintbrush, Ruler, Type as TypeIcon, MonitorSmartphone, Bookmark, Lock, LockOpen } from "lucide-react";
 import type { SiteTheme } from "@/lib/site-storage";
-import type { BoxNode, FlexAlign, FlexJustify, AccPartStyle } from "@/lib/box-model";
-import { type ItemAction, TOAST_CORNERS, isContainer, isFloating, isCssBg, addItem, removeItem, moveItem, updateItem, addChildItem, updateChildItem, removeChildItem, moveChildItem , isMultiItemComponent, hasIntrinsicSize, sizeToCSS } from "@/lib/box-model";
+import type { BoxNode, FlexAlign, FlexJustify, AccPartStyle, Breakpoint } from "@/lib/box-model";
+import { RUNG_LABEL } from "@/lib/educo-ui/layout";
+import { type ItemAction, TOAST_CORNERS, isContainer, isFloating, isCssBg, addItem, removeItem, moveItem, updateItem, addChildItem, updateChildItem, removeChildItem, moveChildItem , isMultiItemComponent, hasIntrinsicSize, sizeToCSS, GRID_MAX, COLUMN_FRACTIONS, columnFractionOf, canSetColumnFraction, gridColumns } from "@/lib/box-model";
 import { ACCORDION_DESIGNS, ACCORDION_DESIGN_COUNT, ACCORDION_AXES } from "@/lib/educo-ui/accordions";
 import { ALERT_DESIGNS, ALERT_DESIGN_COUNT, ALERT_AXES } from "@/lib/educo-ui/alerts";
 import { COMPONENT_REGISTRY, isRegistryComponent, defaultComponentFields, renderComponent } from "@/lib/educo-ui/registry";
@@ -52,6 +53,40 @@ const ALERT_FORMS = [
 const WEIGHT_OPTS: [string, string][] = [["", "Auto"], ["300", "Light"], ["400", "Normal"], ["500", "Medium"], ["600", "Semibold"], ["700", "Bold"], ["800", "Extra bold"], ["900", "Black"]];
 const TRANSFORM_OPTS: [NonNullable<BoxNode["textTransform"]>, string][] = [["none", "Normal"], ["uppercase", "UPPERCASE"], ["lowercase", "lowercase"], ["capitalize", "Capitalise"]];
 const SHADOW_OPTS: SegOption<string>[] = [{ value: "none", label: "None" }, { value: "sm", label: "Soft" }, { value: "md", label: "Medium" }, { value: "lg", label: "Strong" }, { value: "xl", label: "Bold" }];
+
+/**
+ * The named fractions — the layer a teacher actually reads, sitting on top of the twelve columns underneath.
+ *
+ * A fraction the row cannot express is not offered rather than being offered and silently rounding: at the
+ * base the row is refined to twelve first (which does not move anything), and at a rung it is genuinely
+ * unreachable because a rung override cannot change the row's children. `canSetColumnFraction` decides, and it
+ * is imported rather than restated — a local copy of a layout rule is exactly how the device chips and the
+ * rung ladder drifted apart before.
+ */
+function ColumnFractions({ track, span, breakpoint, onSet }: { track: number; span: number; breakpoint: Breakpoint; onSet?: (num: number, den: number) => void }) {
+  if (!onSet) return null;
+  const current = columnFractionOf(span, track);
+  return (
+    <div className="space-y-1">
+      <span className={label}>Width</span>
+      <div role="group" aria-label="Width in columns" className="flex flex-wrap gap-1">
+        {COLUMN_FRACTIONS.filter((f) => canSetColumnFraction(track, f.den, breakpoint)).map((f) => {
+          const on = !!current && current.num === f.num && current.den === f.den;
+          return (
+            <button key={f.label} onClick={() => onSet(f.num, f.den)} aria-pressed={on} title={`${f.label} of the row`}
+              className={`rounded-lg px-2 py-1 text-[11px] font-medium transition-colors ${on ? "bg-brand text-brand-fg" : "bg-surface-2 text-muted hover:text-ink"}`}>
+              {f.label}
+            </button>
+          );
+        })}
+      </div>
+      <p className="text-[11px] leading-snug text-gray-500 dark:text-gray-400">
+        {span} of {track} column{track === 1 ? "" : "s"}
+        {breakpoint !== "base" && " — at this device only"}
+      </p>
+    </div>
+  );
+}
 
 // Reuses the shared <Slider> (labelled range control) instead of a raw <input type="range">.
 function Range({ title, value, min, max, fallback, onChange, unit = "px" }: { title: string; value?: number; min: number; max: number; fallback: number; onChange: (n: number) => void; unit?: string }) {
@@ -294,7 +329,7 @@ function AccPreview({ id, size, axes = [] }: { id: string; size: ThumbSize; axes
   );
 }
 
-export default function BoxInspector({ node, theme, onPatch, onAddChild, onFloat, onUnfloat, onLayer, onAlignInRow, rowJustify, onSectionWidth, sectionWidth, canFloat = true, inGrid = false, breakpoint = "base", overridden = false, onResetOverride, pages, currentPageId }: {
+export default function BoxInspector({ node, theme, onPatch, onAddChild, onFloat, onUnfloat, onLayer, onAlignInRow, rowJustify, onSectionWidth, sectionWidth, canFloat = true, inGrid = false, gridTrack, onSetFraction, onRetrack, breakpoint = "base", overridden = false, onResetOverride, pages, currentPageId }: {
   node: BoxNode;
   theme: SiteTheme;
   onPatch: (patch: Partial<BoxNode>) => void;
@@ -310,7 +345,14 @@ export default function BoxInspector({ node, theme, onPatch, onAddChild, onFloat
   sectionWidth?: "band" | "contained";                        // its current position (parent row's justify-content)
   canFloat?: boolean;
   inGrid?: boolean;
-  breakpoint?: "base" | "tablet" | "mobile";
+  /** How many columns the PARENT row is cut into — the denominator every named fraction is measured against. */
+  gridTrack?: number;
+  /** Set this block to a named fraction of its row. Refines the row to twelve first when it has to (base only,
+   *  since that changes the row's children) — which is why it writes upward instead of through `onPatch`. */
+  onSetFraction?: (num: number, den: number) => void;
+  /** Re-cut THIS row into `columns`, carrying every child's placement across so the row does not move. */
+  onRetrack?: (columns: number) => void;
+  breakpoint?: Breakpoint;
   overridden?: boolean;
   onResetOverride?: () => void;
   pages?: { id: string; name: string }[];
@@ -333,7 +375,10 @@ export default function BoxInspector({ node, theme, onPatch, onAddChild, onFloat
     ?? componentEntry?.label
     ?? (container ? (isGrid ? "Grid" : node.direction === "row" ? "Row" : "Section") : node.type);
 
-  const bpLabel = breakpoint === "mobile" ? "Mobile" : breakpoint === "tablet" ? "Tablet" : "";
+  // The ladder names the rungs; repeating them here is how the chips and the model drifted apart before.
+  // The `?? ""` is not decoration: an unrecognised rung used to reach `.toLowerCase()` on undefined and take
+  // the ENTIRE inspector down, so a stale value anywhere upstream would cost the user every control at once.
+  const bpLabel = breakpoint === "base" ? "" : RUNG_LABEL[breakpoint] ?? "";
 
   const AlignRow = () => (
     <div className="flex items-center justify-between">
@@ -344,6 +389,46 @@ export default function BoxInspector({ node, theme, onPatch, onAddChild, onFloat
         ))}
       </div>
     </div>
+  );
+
+  /**
+   * The typography panel, shared by a TEXT block and by any CONTAINER.
+   *
+   * On a container it is the cascade: what the box is told here, every block inside it follows — headings,
+   * paragraphs, lists, buttons and components alike — and any one of them can still be given its own and win
+   * (see `typoCascadeCss`). One definition serves both, because two copies of a control this size is how the
+   * two halves of a feature drift apart.
+   *
+   * On a container it lives on the DESIGN tab, where a person looks for styling; on a text block it stays with
+   * the rest of that block's content controls, which is where it has always been.
+   */
+  const TextStyle = () => (
+    <Accordion title={container ? "Text style (everything inside)" : "Text style"} icon={TypeIcon}>
+      {container && (
+        <p className="text-[11px] leading-snug text-gray-500 dark:text-gray-400">
+          Applies to every block in this box — headings, text, lists, buttons and components. Anything you
+          style on its own keeps its own look.
+        </p>
+      )}
+      <Range title="Text size" value={node.fontSize} min={10} max={72} fallback={node.type === "heading" ? 32 : 16} onChange={(n) => onPatch({ fontSize: n })} unit="rem" />
+      <ColorRow title="Text colour" value={node.color} fallback={theme.text} onSelect={(c) => onPatch({ color: c })} />
+      <CompactSelect label="Font" ariaLabel="Font" value={node.fontFamily ?? ""} onChange={(v) => onPatch({ fontFamily: v || undefined })}
+        options={[{ value: "", label: "Theme default" }, ...familyOptions()]} />
+      <div className="grid grid-cols-2 gap-2">
+        <CompactSelect label="Boldness" ariaLabel="Boldness" value={node.fontWeight?.toString() ?? ""} onChange={(v) => onPatch({ fontWeight: v === "" ? undefined : Number(v) })} options={WEIGHT_OPTS.map(([v, l]) => ({ value: v, label: l }))} />
+        <CompactSelect label="Capitalisation" ariaLabel="Capitalisation" value={node.textTransform ?? "none"} onChange={(v) => onPatch({ textTransform: v as BoxNode["textTransform"] })} options={TRANSFORM_OPTS.map(([v, l]) => ({ value: v, label: l }))} />
+      </div>
+      <div className="grid grid-cols-2 gap-2">
+        <CompactField label="Line spacing" ariaLabel="Line spacing" type="number" step={0.05} min={0.8} max={3} value={node.lineHeight ?? ""} placeholder="auto" onChange={(v) => onPatch({ lineHeight: v === "" ? undefined : Number(v) })} />
+        <CompactField label="Letter spacing" ariaLabel="Letter spacing" type="number" step={0.5} value={node.letterSpacing ?? ""} placeholder="0px" onChange={(v) => onPatch({ letterSpacing: v === "" ? undefined : Number(v) })} />
+      </div>
+      <AlignRow />
+      <div className="flex items-center gap-1">
+        <button onClick={() => onPatch({ bold: !(node.bold ?? (node.type === "heading")) })} aria-label="Bold" aria-pressed={node.bold ?? (node.type === "heading")} className={`px-2 py-1 rounded-md font-bold text-sm ${(node.bold ?? (node.type === "heading")) ? "bg-indigo-100 dark:bg-indigo-500/20 text-indigo-700 dark:text-indigo-300" : "text-gray-500 hover:bg-gray-100 dark:hover:bg-white/10"}`}>B</button>
+        <button onClick={() => onPatch({ italic: !node.italic })} aria-label="Italic" aria-pressed={!!node.italic} className={iconBtn(!!node.italic)}><Italic className="w-4 h-4" /></button>
+        <button onClick={() => onPatch({ underline: !node.underline })} aria-label="Underline" aria-pressed={!!node.underline} className={iconBtn(!!node.underline)}><Underline className="w-4 h-4" /></button>
+      </div>
+    </Accordion>
   );
 
   return (
@@ -360,7 +445,7 @@ export default function BoxInspector({ node, theme, onPatch, onAddChild, onFloat
       {breakpoint !== "base" && (
         <div className="rounded-xl border border-amber-300 dark:border-amber-500/30 bg-amber-50 dark:bg-amber-500/10 p-2.5 space-y-1.5">
           <div className="text-[0.6875rem] font-semibold text-amber-700 dark:text-amber-300 flex items-center gap-1.5"><MonitorSmartphone className="w-3.5 h-3.5" /> Editing {bpLabel} — size &amp; layout only change here.</div>
-          {overridden && onResetOverride && <button onClick={onResetOverride} className="text-[0.6875rem] text-amber-700 dark:text-amber-300 underline hover:no-underline">Reset {breakpoint} changes to default</button>}
+          {overridden && onResetOverride && <button onClick={onResetOverride} className="text-[0.6875rem] text-amber-700 dark:text-amber-300 underline hover:no-underline">Reset {bpLabel.toLowerCase()} changes to default</button>}
         </div>
       )}
 
@@ -448,7 +533,28 @@ export default function BoxInspector({ node, theme, onPatch, onAddChild, onFloat
               <Segmented full ariaLabel="Arrange as" value={isGrid ? "grid" : "flex"} onChange={(v) => onPatch({ layout: v as "flex" | "grid" })}
                 options={[{ value: "flex", label: "Free arrange" }, { value: "grid", label: "Grid" }]} />
               {isGrid ? (
-                <Range title="Columns" value={node.columns} min={1} max={6} fallback={3} onChange={(n) => onPatch({ columns: n })} unit="" />
+                <div className="space-y-1">
+                  {/* Named fractions on top, the raw twelve underneath — the plan's decision, made visible.
+                      Both write through `onRetrack` when there is one, which carries every child's placement
+                      across so re-cutting a row of thirds into twelfths does not MOVE anything. At a rung
+                      there is no retrack (a rung holds style, never the row's children), so the count is a
+                      plain override and the spans clamp to it. */}
+                  <span className={label}>Columns</span>
+                  <Segmented full ariaLabel="Columns" value={String(gridColumns(node))}
+                    onChange={(v) => (onRetrack ?? ((n: number) => onPatch({ columns: n })))(Number(v))}
+                    options={[{ value: "2", label: "Halves" }, { value: "3", label: "Thirds" }, { value: "4", label: "Quarters" }, { value: "6", label: "Sixths" }, { value: "12", label: "Twelve" }]} />
+                  <Range title="Columns in the row" value={node.columns} min={1} max={GRID_MAX} fallback={3}
+                    onChange={(n) => (onRetrack ?? ((c: number) => onPatch({ columns: c })))(n)} unit="" />
+                  <p className="text-[11px] leading-snug text-gray-500 dark:text-gray-400">
+                    Twelve divides by 2, 3, 4 and 6 — pick it when blocks in the same row need different widths.
+                    Narrow screens stack this row unless you set a count here with a device selected.
+                  </p>
+                  {/* A grid's own "Position blocks". The flex one distributes leftover space between tracks,
+                      and 1fr tracks leave none — so it was inert here. This one places each block in its CELL. */}
+                  <CompactSelect label="Position blocks" ariaLabel="Position blocks" value={node.justifyItems ?? "stretch"}
+                    onChange={(v) => onPatch({ justifyItems: v as NonNullable<BoxNode["justifyItems"]> })}
+                    options={[{ value: "stretch", label: "Fill the cell" }, { value: "start", label: "Left" }, { value: "center", label: "Center" }, { value: "end", label: "Right" }]} />
+                </div>
               ) : (
                 <>
                   <Segmented full ariaLabel="Direction" value={node.direction === "row" ? "row" : "column"} onChange={(v) => onPatch({ direction: v as "row" | "column" })}
@@ -458,15 +564,64 @@ export default function BoxInspector({ node, theme, onPatch, onAddChild, onFloat
                 </>
               )}
               <CompactSelect label="Line up (across)" ariaLabel="Line up" value={node.align ?? "stretch"} onChange={(v) => onPatch({ align: v as FlexAlign })} options={ALIGN_OPTS.map(([v, l]) => ({ value: v, label: l }))} />
-              <Range title="Space between blocks" value={node.gap} min={0} max={64} fallback={16} onChange={(n) => onPatch({ gap: n })} unit="rem" />
+              <Range title="Space between blocks" value={node.gap} min={0} max={64} fallback={16} onChange={(n) => onPatch({ gap: n, gapX: undefined, gapY: undefined })} unit="rem" />
+              {/* Across and down separately — the commonest grid there is wants air between its columns and
+                  less between its rows, and one number cannot say that. Blank means "same as above". */}
+              <div className="grid grid-cols-2 gap-2">
+                <CompactField label="Space across" ariaLabel="Space across" type="number" min={0} max={128} placeholder="same"
+                  value={node.gapX ?? ""} onChange={(v) => onPatch({ gapX: v === "" ? undefined : Math.max(0, Number(v) || 0) })} />
+                <CompactField label="Space down" ariaLabel="Space down" type="number" min={0} max={128} placeholder="same"
+                  value={node.gapY ?? ""} onChange={(v) => onPatch({ gapY: v === "" ? undefined : Math.max(0, Number(v) || 0) })} />
+              </div>
             </Accordion>
           )}
 
           {inGrid && (
             <Accordion title="Grid cell" icon={LayoutGrid}>
+              <ColumnFractions track={gridTrack ?? 3} span={node.colSpan ?? 1} breakpoint={breakpoint} onSet={onSetFraction} />
               <div className="grid grid-cols-2 gap-2">
-                <CompactField label="Columns wide" ariaLabel="Columns wide" type="number" min={1} max={12} value={node.colSpan ?? 1} onChange={(v) => onPatch({ colSpan: Math.max(1, Number(v) || 1) })} />
+                <CompactField label="Columns wide" ariaLabel="Columns wide" type="number" min={1} max={gridTrack ?? GRID_MAX} value={node.colSpan ?? 1} onChange={(v) => onPatch({ colSpan: Math.max(1, Number(v) || 1) })} />
+                {/* The OFFSET control, as an absolute start rather than Bootstrap's relative margin: "leave two
+                    columns empty before this" is "begin at column 3", which is one number a user can read back
+                    off the row and a test can assert. Blank = auto-place after the block before it. */}
+                <CompactField label="Start at column" ariaLabel="Start at column" type="number" min={1} max={gridTrack ?? GRID_MAX} placeholder="auto"
+                  value={node.colStart ?? ""} onChange={(v) => onPatch({ colStart: v === "" ? undefined : Math.max(1, Number(v) || 1) })} />
                 <CompactField label="Rows tall" ariaLabel="Rows tall" type="number" min={1} max={12} value={node.rowSpan ?? 1} onChange={(v) => onPatch({ rowSpan: Math.max(1, Number(v) || 1) })} />
+                {/* The down axis, so a block can be placed rather than only sized. Rows are implicit — the grid
+                    makes as many as the page asks for — so this has no ceiling the way the columns do. */}
+                <CompactField label="Start at row" ariaLabel="Start at row" type="number" min={1} placeholder="auto"
+                  value={node.rowStart ?? ""} onChange={(v) => onPatch({ rowStart: v === "" ? undefined : Math.max(1, Number(v) || 1) })} />
+                <CompactSelect label="Line up (across)" ariaLabel="Line up (across)" value={node.justifySelf ?? "stretch"}
+                  onChange={(v) => onPatch({ justifySelf: v as NonNullable<BoxNode["justifySelf"]> })}
+                  options={[{ value: "stretch", label: "Fill" }, { value: "start", label: "Left" }, { value: "center", label: "Center" }, { value: "end", label: "Right" }]} />
+              </div>
+            </Accordion>
+          )}
+
+          {/* A container's typography is a DESIGN decision — it is the look everything inside it inherits —
+              so it sits here rather than with a text block's content controls. */}
+          {container && <TextStyle />}
+
+          {/* Order and push apply in BOTH engines and to every block that has a parent, so they are their own
+              section rather than a grid-only one. Order is the control that makes "the photo above the words
+              on a phone, beside them on a desktop" possible — pick a device first, then set it. */}
+          {canFloat && !floating && (
+            <Accordion title="Order & push" icon={Columns3}>
+              <div className="grid grid-cols-2 gap-2">
+                <CompactField label="Order" ariaLabel="Order" type="number" placeholder="auto" value={node.order ?? ""}
+                  onChange={(v) => onPatch({ order: v === "" ? undefined : Number(v) || 0 })} />
+                <CompactSelect label="Line up (down)" ariaLabel="Line up (down)" value={node.alignSelf ?? ""}
+                  onChange={(v) => onPatch({ alignSelf: v === "" ? undefined : v as NonNullable<BoxNode["alignSelf"]> })}
+                  options={[{ value: "", label: "Auto" }, { value: "stretch", label: "Fill" }, { value: "flex-start", label: "Top" }, { value: "center", label: "Middle" }, { value: "flex-end", label: "Bottom" }]} />
+              </div>
+              <div className="space-y-1">
+                <span className={label}>Push</span>
+                <Segmented full ariaLabel="Push" value={node.push ?? "none"}
+                  onChange={(v) => onPatch({ push: v === "none" ? undefined : v as NonNullable<BoxNode["push"]> })}
+                  options={[{ value: "none", label: "None" }, { value: "start", label: "Left" }, { value: "both", label: "Centre" }, { value: "end", label: "Right" }]} />
+                <p className="text-[11px] leading-snug text-gray-500 dark:text-gray-400">
+                  Moves just this block, leaving its neighbours where they are — the nav-link-on-the-far-right idiom.
+                </p>
               </div>
             </Accordion>
           )}
@@ -1171,28 +1326,13 @@ export default function BoxInspector({ node, theme, onPatch, onAddChild, onFloat
                 </Accordion>
               )}
 
-              {textual && (
-                <Accordion title="Text style" icon={TypeIcon}>
-                  <Range title="Text size" value={node.fontSize} min={10} max={72} fallback={node.type === "heading" ? 32 : 16} onChange={(n) => onPatch({ fontSize: n })} unit="rem" />
-                  <ColorRow title="Text colour" value={node.color} fallback={theme.text} onSelect={(c) => onPatch({ color: c })} />
-                  <CompactSelect label="Font" ariaLabel="Font" value={node.fontFamily ?? ""} onChange={(v) => onPatch({ fontFamily: v || undefined })}
-                    options={[{ value: "", label: "Theme default" }, ...familyOptions()]} />
-                  <div className="grid grid-cols-2 gap-2">
-                    <CompactSelect label="Boldness" ariaLabel="Boldness" value={node.fontWeight?.toString() ?? ""} onChange={(v) => onPatch({ fontWeight: v === "" ? undefined : Number(v) })} options={WEIGHT_OPTS.map(([v, l]) => ({ value: v, label: l }))} />
-                    <CompactSelect label="Capitalisation" ariaLabel="Capitalisation" value={node.textTransform ?? "none"} onChange={(v) => onPatch({ textTransform: v as BoxNode["textTransform"] })} options={TRANSFORM_OPTS.map(([v, l]) => ({ value: v, label: l }))} />
-                  </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    <CompactField label="Line spacing" ariaLabel="Line spacing" type="number" step={0.05} min={0.8} max={3} value={node.lineHeight ?? ""} placeholder="auto" onChange={(v) => onPatch({ lineHeight: v === "" ? undefined : Number(v) })} />
-                    <CompactField label="Letter spacing" ariaLabel="Letter spacing" type="number" step={0.5} value={node.letterSpacing ?? ""} placeholder="0px" onChange={(v) => onPatch({ letterSpacing: v === "" ? undefined : Number(v) })} />
-                  </div>
-                  <AlignRow />
-                  <div className="flex items-center gap-1">
-                    <button onClick={() => onPatch({ bold: !(node.bold ?? (node.type === "heading")) })} aria-label="Bold" aria-pressed={node.bold ?? (node.type === "heading")} className={`px-2 py-1 rounded-md font-bold text-sm ${(node.bold ?? (node.type === "heading")) ? "bg-indigo-100 dark:bg-indigo-500/20 text-indigo-700 dark:text-indigo-300" : "text-gray-500 hover:bg-gray-100 dark:hover:bg-white/10"}`}>B</button>
-                    <button onClick={() => onPatch({ italic: !node.italic })} aria-label="Italic" aria-pressed={!!node.italic} className={iconBtn(!!node.italic)}><Italic className="w-4 h-4" /></button>
-                    <button onClick={() => onPatch({ underline: !node.underline })} aria-label="Underline" aria-pressed={!!node.underline} className={iconBtn(!!node.underline)}><Underline className="w-4 h-4" /></button>
-                  </div>
-                </Accordion>
-              )}
+              {/* A CONTAINER gets these too, and that is the point: what a box is told here, everything inside
+                  it follows — headings, paragraphs, lists, buttons and components alike — while any one of
+                  them can still be given its own and win. See typoCascadeCss for the mechanism, and the note
+                  below for what a container's "Text size" means (it scales the roles, it does not flatten
+                  them). Before this the controls existed only on text-ish blocks, so a section or a grid cell
+                  had no way to set a font at all. */}
+              {textual && <TextStyle />}
             </>
           )}
         </div>
@@ -1202,7 +1342,7 @@ export default function BoxInspector({ node, theme, onPatch, onAddChild, onFloat
       {tab === "device" && (
         <div className="space-y-3">
           <p className="text-[0.6875rem] text-gray-400 flex items-start gap-1.5"><MonitorSmartphone className="w-3.5 h-3.5 mt-0.5 shrink-0" /> {breakpoint === "base" ? "Switch the screen-size buttons at the top to Tablet or Mobile to fine-tune those sizes. Text and content stay the same everywhere." : `You're editing ${bpLabel}. Size, spacing and layout you change now only apply here.`}</p>
-          <label className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300"><input type="checkbox" checked={!!node.hidden} onChange={(e) => onPatch({ hidden: e.target.checked || undefined })} /> Hidden {breakpoint === "base" ? "everywhere" : `on ${breakpoint}`}</label>
+          <label className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300"><input type="checkbox" checked={!!node.hidden} onChange={(e) => onPatch({ hidden: e.target.checked || undefined })} /> Hidden {breakpoint === "base" ? "everywhere" : `on ${bpLabel.toLowerCase()}`}</label>
         </div>
       )}
     </div>

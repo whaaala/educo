@@ -18,7 +18,7 @@ import {
   updateBox, removeBox, insertBox, moveBoxStep, duplicateBox, moveBox, cloneBox, findParent, isAncestor, isContainer, widthPct,
   isFloating, floatBox, unfloatBox, groupBoxes, ungroupBoxes, bringToFront, sendToBack, bringForward, sendBackward,
   radiusCSS, isClipped, SHADOW_CSS, videoEmbedSrc, sanitizeCssDeclarations, expandScopedCss, ACCORDION_CSS_PARTS, itemOverrideCss, itemHasOverride, itemNumberVars, richBody, componentTextCss, componentBoxCss, bgImageLayer, bgShowThroughCss, resizeTopEdge, blockContainmentCss, alertToastCss, treeHasToast, accordionClasses, bandClasses, advancedCssStyle, alertActionsHTML, hugsContent, itemFloatContextCss, COMPONENT_ITEM_SEL, clampContentScale, MIN_CONTENT_SCALE, isMultiItemComponent, comfortableWidth, remLen, rootFontPx, isDefiniteLen, addItemAfter, duplicateItem, duplicateChildItem, removeItem, removeChildItem, moveItem, moveChildItem, updateItem, updateChildItem, ALERT_SEVERITY_ICON, alertPartInline, alertIconInline, collectAlertItemStyles,
-  type Breakpoint, resolveResponsive, updateBoxResponsive, imageSizing, measureImage, treeItemEffectsCss, itemNeedsClass, floatZIndex,
+  type Breakpoint, resolveResponsive, updateBoxResponsive, imageSizing, measureImage, treeItemEffectsCss, itemNeedsClass, floatZIndex, gridPlacementAt, gridColumnsAt, selectionChain, typoRole, typoRootVars, typoCascadeCss,
 } from "@/lib/box-model";
 import { ICON_SET } from "./icons";
 import { PortalMenu, MenuItem, MenuHeader, MenuSep } from "./ui";
@@ -67,10 +67,11 @@ function decorStyle(node: BoxNode): React.CSSProperties {
 }
 
 /** Typography for a text/heading/button element (falls back to the theme font + type defaults). */
-function typoStyle(node: BoxNode, fallbackFamily: string, defaultWeight: number): React.CSSProperties {
+/** The canvas half of the typography cascade — the SAME role variables the export writes (see TYPO_VAR). */
+function typoStyle(node: BoxNode, role: "heading" | "body", defaultWeight: number): React.CSSProperties {
   return {
-    fontFamily: node.fontFamily || fallbackFamily,
-    fontWeight: node.fontWeight ?? (node.bold ? 800 : defaultWeight),
+    fontFamily: node.fontFamily || typoRole.font(role),
+    fontWeight: node.fontWeight ?? (node.bold ? 800 : typoRole.weight(role, defaultWeight)),
     lineHeight: node.lineHeight,
     letterSpacing: node.letterSpacing != null ? `${node.letterSpacing}px` : undefined,
     fontStyle: node.italic ? "italic" : undefined,
@@ -395,7 +396,13 @@ export default function BoxCanvas({
       else if (e.key === "ArrowDown" && id && !rn.locked) { if (floating) onChange(writeBox(root, id, { top: round1((rn.top ?? 0) + stepPct("y")) })); else onChange(moveBoxStep(root, id, 1)); e.preventDefault(); }
       else if (e.key === "ArrowLeft" && id && floating && !rn.locked) { onChange(writeBox(root, id, { left: round1((rn.left ?? 0) - stepPct("x")) })); e.preventDefault(); }
       else if (e.key === "ArrowRight" && id && floating && !rn.locked) { onChange(writeBox(root, id, { left: round1((rn.left ?? 0) + stepPct("x")) })); e.preventDefault(); }
-      else if (e.key === "Escape") { select(null); }
+      // Escape steps OUT one level — the other half of "click goes inside". From the outermost block (or from
+      // nothing in particular) it clears the selection, so Escape still always ends somewhere predictable.
+      else if (e.key === "Escape") {
+        const chain = id ? selectionChain(root, id) : [];
+        const at = chain.indexOf(id ?? "");
+        select(at > 0 ? chain[at - 1] : null);
+      }
     };
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
@@ -700,10 +707,133 @@ export default function BoxCanvas({
     document.addEventListener("mousemove", onMove); document.addEventListener("mouseup", onUp);
   };
 
+  /**
+   * How narrow a neighbour may be squeezed before it WRAPS instead — a quarter of a twelve-column row.
+   *
+   * Below this a cell is a sliver holding one word per line, which is never what someone dragging a boundary
+   * wanted; they wanted the cell they are holding to get bigger. So the neighbour stops giving ground and
+   * moves down a row, and the dragged cell carries on to the full width of the page.
+   */
+  const NEIGHBOUR_MIN = 3;
+
+  /**
+   * Resize a GRID CELL by dragging its edges — in TRACKS, not pixels.
+   *
+   * A grid item's `width: 60%` is sixty percent of the cell it already sits in, so the generic flow resize
+   * shrank a cell INSIDE its column instead of making it span more of them: the block came away from the grid
+   * lines and every other cell stayed exactly where it was. What a person means by dragging a cell's right
+   * edge is "make this wider by a column", so the drag snaps to the nearest grid line.
+   *
+   * EDGE-ANCHORED, the rule this project has broken twice: the grabbed edge is the only one that moves. The
+   * east edge changes the span alone; the west edge moves the start and grows the span by the same amount, so
+   * the right-hand edge does not budge. Rows behave the same way — and because rows are implicit, dragging the
+   * bottom edge past the last one simply makes another.
+   */
+  const startResizeGridCell = (e: React.MouseEvent, id: string, edge: Edge) => {
+    e.preventDefault(); e.stopPropagation();
+    const el = document.querySelector<HTMLElement>(`[data-box-id="${id}"]`);
+    const gEl = el?.parentElement;
+    if (!el || !gEl) return;
+    const cs = getComputedStyle(gEl), gr = gEl.getBoundingClientRect();
+    /** Where each track STARTS and ENDS, relative to the grid's border box — so unequal tracks still snap. */
+    const lines = (template: string, gap: number, origin: number): number[] => {
+      const sizes = template.split(" ").map(parseFloat).filter((n) => !Number.isNaN(n));
+      const out = [origin];
+      let at = origin;
+      for (const s of sizes) { at += s; out.push(at); at += gap; }
+      return out;
+    };
+    const colLines = lines(cs.gridTemplateColumns, parseFloat(cs.columnGap) || 0, gr.left + (parseFloat(cs.paddingLeft) || 0));
+    /** The 1-based line index nearest a page coordinate. */
+    const nearest = (ls: number[], v: number) =>
+      ls.reduce((best, x, i) => (Math.abs(x - v) < Math.abs(ls[best] - v) ? i : best), 0) + 1;
+    const r = el.getBoundingClientRect();
+    const info = findParent(rootRef.current, id);
+    if (!info) return;
+    // WHICH CELLS SHARE THIS ROW, measured rather than derived. A grid auto-places, so the only thing that
+    // knows where a cell actually ended up is the browser — and the row is what both drags act on.
+    const sibs = (info.parent.children ?? []).map((c) => {
+      const e2 = document.querySelector<HTMLElement>(`[data-box-id="${c.id}"]`);
+      return e2 ? { id: c.id, node: c, rect: e2.getBoundingClientRect() } : null;
+    }).filter((x): x is { id: string; node: BoxNode; rect: DOMRect } => !!x);
+    const sameRow = (a: DOMRect, b: DOMRect) => Math.abs(a.top - b.top) < 2;
+    const row = sibs.filter((s) => sameRow(s.rect, r)).sort((a, b) => a.rect.left - b.rect.left);
+    const above = sibs.filter((s) => Math.abs(s.rect.bottom - r.top) < (parseFloat(cs.rowGap) || 0) + 3);
+    const me = row.findIndex((s) => s.id === id);
+    const spanOf = (n: BoxNode) => gridPlacementAt(info.parent, n, breakpoint).span;
+    const track = colLines.length - 1;
+    const used = row.reduce((sum, s) => sum + spanOf(s.node), 0);
+    const mine = row[me]?.node ?? info.parent.children?.find((c) => c.id === id);
+    if (!mine) return;
+    const mySpan = spanOf(mine);
+    const next = row[me + 1], prev = row[me - 1];
+    const hasE = edge.includes("e"), hasW = edge.includes("w"), hasS = edge.includes("s"), hasN = edge.includes("n");
+    const startX = e.clientX, startY = e.clientY;
+    // The row's height at the start, and every cell in whichever row the vertical drag governs. A row is as
+    // tall as its TALLEST cell, so shrinking one alone does nothing — the height is written to all of them.
+    const vRow = hasN && above.length ? above : row;
+    const vH0 = Math.max(...vRow.map((s) => s.rect.height), 1);
+    setResizeCursor(cursorFor(edge)); setResizing(true);
+    let raf = 0, pending: BoxNode | null = null;
+    const flush = () => { raf = 0; if (pending) { onChange(pending); pending = null; } };
+    const onMove = (ev: MouseEvent) => {
+      let tree = rootRef.current;
+      // ── ACROSS: the boundary between two cells is SHARED, so it takes from the neighbour ──
+      // This is the whole difference from the first attempt, which pinned the dragged cell to an absolute
+      // column: that turned its auto-placed siblings into items that had to flow AROUND it, and they scattered
+      // across the row. Moving a shared boundary keeps the row's twelve at twelve, so only the two cells
+      // either side of the grabbed edge ever move and nothing reflows.
+      if (hasE || hasW) {
+        // Measured as a DELTA from the cell's own edge, never from the pointer's absolute position: a handle
+        // is drawn centred ON the border and is a few pixels wide, so reading the cursor directly made every
+        // drag land one column further than the edge the user was actually holding.
+        const dx = ev.clientX - startX;
+        const want = hasE
+          ? nearest(colLines, r.right + dx) - nearest(colLines, r.left)
+          : nearest(colLines, r.right) - nearest(colLines, r.left + dx);
+        const neighbour = hasE ? next : prev;
+        // The dragged cell follows the pointer all the way to the full width of the row. What its NEIGHBOUR
+        // does depends on how far it has been pushed:
+        //   • free columns in the row are taken first — nothing else moves at all;
+        //   • then the neighbour gives up columns, down to a width still worth reading (NEIGHBOUR_MIN);
+        //   • past that it stops shrinking and WRAPS to the next row, because the row's spans now exceed
+        //     twelve and the grid flows the overflow — which is what a person means by "make this one full
+        //     width", and what the first version got wrong by refusing to grow any further.
+        const span = Math.max(1, Math.min(track, want));
+        const delta = span - mySpan;
+        tree = writeBox(tree, id, { colSpan: span });
+        if (neighbour && delta !== 0) {
+          const nSpan = spanOf(neighbour.node);
+          const give = Math.max(0, delta - (track - used)); // only what the row's free columns could not cover
+          const take = delta < 0 ? delta : Math.min(give, Math.max(0, nSpan - NEIGHBOUR_MIN));
+          if (take !== 0) tree = writeBox(tree, neighbour.id, { colSpan: nSpan - take });
+        }
+      }
+      // ── DOWN: the drag sets the ROW's height, so the row grows as one and the page grows with it ──
+      // A cell alone cannot own its height here: the grid stretches every cell to the tallest, so a shorter
+      // one simply snaps back. The bottom edge governs this row; the top edge governs the row above it, which
+      // is what dragging a horizontal rule in a table has always meant.
+      if (hasS || hasN) {
+        const dy = ev.clientY - startY;
+        const h = Math.max(24, Math.round(hasN && above.length ? vH0 - dy : vH0 + (hasN ? -dy : dy)));
+        for (const s of vRow) tree = writeBox(tree, s.id, { minHeight: h });
+      }
+      pending = tree;
+      if (!raf) raf = requestAnimationFrame(flush);
+    };
+    const onUp = () => {
+      if (raf) { cancelAnimationFrame(raf); flush(); }
+      setResizing(false); setResizeCursor(null);
+      document.removeEventListener("mousemove", onMove); document.removeEventListener("mouseup", onUp);
+    };
+    document.addEventListener("mousemove", onMove); document.addEventListener("mouseup", onUp);
+  };
+
   const startResize = (e: React.MouseEvent, id: string, edge: Edge) => {
     if (!editable) return;
     const node = findByIdLocal(root, id);
     if (node && isFloating(node)) { startResizeAbsolute(e, id, edge); return; } // floating boxes resize freely (no flow walls)
+    if (findParent(root, id)?.parent.layout === "grid") { startResizeGridCell(e, id, edge); return; } // a cell resizes in TRACKS
     e.preventDefault(); e.stopPropagation();
     const el = document.querySelector<HTMLElement>(`[data-box-id="${id}"]`);
     const pEl = el?.parentElement ?? null;
@@ -892,17 +1022,24 @@ export default function BoxCanvas({
     document.addEventListener("mouseup", onUp);
   };
 
-  const addChild = (parentId: string, kind: BoxType | "row" | "grid" | "accordion") => {
+  const addChild = (parentId: string, kind: BoxType | "row" | "grid" | "accordion", patch: Partial<BoxNode> = {}) => {
     const parent = findByIdLocal(root, parentId);
-    const node =
+    const node = Object.assign(
       kind === "row" ? createContainer("row")
       : kind === "grid" ? createGrid(3)
       : kind === "container" ? createContainer("row", { direction: "row", wrap: true, align: "stretch", clip: true, padding: 24 })
       : kind === "accordion" ? createComponent("accordion")
-      : createElement(kind as Exclude<BoxType, "container">);
+      : createElement(kind as Exclude<BoxType, "container">),
+      patch,
+    );
     // If the parent lays its blocks out horizontally (a section / wrapping row), the new block fills the
     // row's leftover width and WRAPS when full — so blocks sit BESIDE each other, never overflowing.
-    if (parent && (parent.direction ?? "column") === "row") {
+    //
+    // NOT in a grid. A grid is built by `createContainer("row", …)`, so it matched this test and every block
+    // added to one was given a leftover-percentage WIDTH — a value a grid child does not use (its span
+    // governs) and which made the block report a width it did not have. What decides a cell's size is
+    // `newCellSpan`, in insertBox.
+    if (parent && parent.layout !== "grid" && (parent.direction ?? "column") === "row") {
       const used = (parent.children ?? []).reduce((s, c) => s + widthPct(c.width), 0);
       node.width = used <= 88 ? `${Math.max(15, Math.round(100 - used))}%` : "100%";
     }
@@ -925,7 +1062,7 @@ export default function BoxCanvas({
     if (node.hidden && !editable) return null;
     // "STACK on narrow": on mobile a (non-pinned) float drops back into normal flow — full-width, content-height —
     // so it can never clip its content or overflow its parent on a phone. Editor MUST match the export here.
-    const stacked = breakpoint === "mobile" && !isRoot && floatStacksOnMobile(rawNode);
+    const stacked = breakpoint === "phone" && !isRoot && floatStacksOnMobile(rawNode);
     const floating = isFloating(node) && !isRoot && !stacked;
     // SELF-PAINTING blocks (components AND buttons) draw their own visual (background/border/radius/shadow) on the
     // block element itself and FILL the box — so the wrapper stays transparent (no duplicate "shape behind" when the
@@ -946,9 +1083,12 @@ export default function BoxCanvas({
         ? { left: `${node.left ?? 0}%`, top: `${node.top ?? 0}%`, width: sizeToCSS(node.width), height: node.height ? sizeToCSS(node.height) : undefined, minHeight: node.minHeight, zIndex: floatZIndex(node) } // no width ⇒ auto ⇒ hug content (never a wide default box)
         : stacked
         ? { width: "100%" } // content-height (no fixed height/minHeight) so nothing is clipped
-        : parent ? childStyle(node, parent) : {
+        : parent ? childStyle(node, parent, breakpoint) : {
             width: "100%", minHeight: Math.max(minHeight, floatingReserve(node, breakpoint)),
             ["--box-u" as string]: baseUnit(node.baseFont ?? 10),
+            // The role defaults everything below inherits — the SAME set the export writes on the page root,
+            // or a font set on a section would cascade while you edit and not on the published site.
+            ...typoRootVars(theme),
             // A TOAST is `position:fixed`, the same rule the export emits. A transform on this page root makes
             // it the containing block for fixed descendants, so the toast pins to the PAGE frame here and to the
             // viewport on the published site — identical CSS, and it can never float over the editor chrome.
@@ -960,6 +1100,9 @@ export default function BoxCanvas({
       // (it appends the same declarations to the end of the node's own rule). Until this line, the canvas
       // applied Advanced CSS only inside the component branches: on a section, heading or text it did nothing
       // while you edited and then appeared on the published site.
+      // A CONTAINER hands its typography down to everything inside it (see typoCascadeCss) — the same
+      // declarations the export writes, so the canvas shows the cascade a visitor will get.
+      ...(isContainer(node) ? typoCascadeCss(node) : {}),
       ...advancedCssStyle(node),
     };
 
@@ -981,8 +1124,17 @@ export default function BoxCanvas({
     const onSelectDown = (e: React.MouseEvent) => {
       if (!editable) return;
       e.stopPropagation();
-      if (node.rowBand) { const kids = node.children ?? []; select(kids.length === 1 ? kids[0].id : null); }
-      else select(node.id);
+      // CLICK SELECTS THE BOX, CLICK AGAIN GOES INSIDE (see `selectionChain`). The handler that runs is the
+      // DEEPEST block's — the click stops propagating there — so this walks back UP and takes the outermost
+      // block first, stepping one level deeper each time the user clicks inside what is already selected.
+      // A ROW BAND is scaffolding the user never created, so it is never itself selectable. With one block in
+      // it the click plainly meant that block; with several it is ambiguous, and clearing is honest.
+      const kids = node.children ?? [];
+      const deepest = node.rowBand ? (kids.length === 1 ? kids[0].id : undefined) : node.id;
+      if (!deepest) { select(null); closeMenu(); startMarqueeArm(e); return; }
+      const chain = selectionChain(rootRef.current, deepest);
+      const at = selSet.size === 1 ? chain.indexOf([...selSet][0]) : -1;
+      select(at >= 0 && at < chain.length - 1 ? chain[at + 1] : (chain[0] ?? deepest));
       closeMenu(); startMarqueeArm(e);
     };
 
@@ -1017,6 +1169,40 @@ export default function BoxCanvas({
               Drag a block here
             </div>
           )}
+          {/* THE LEFTOVER COLUMNS OF A ROW, offered as a place to put something.
+              Widen one cell and its neighbours wrap, which leaves real empty space at the end of the last row
+              — space a user can see and point at, and could do nothing with. This fills it with a ghost cell
+              spanning exactly what is free: click it and a block lands there, already the right width. It is
+              EDITOR-ONLY (never in the tree, never exported) and it disappears the moment the row is full.
+              INVISIBLE UNTIL ASKED FOR: it fades in on hover or while this row is selected, and is otherwise
+              not there. Empty space in a layout is a legitimate design choice — a permanent dashed box in it
+              reads as an error to be fixed, and nags a user into filling a gap they meant to leave. */}
+          {editable && node.layout === "grid" && kids.length > 0 && (() => {
+            const track = gridColumnsAt(node, breakpoint);
+            const used = kids.reduce((n, c) => n + gridPlacementAt(node, c, breakpoint).span, 0);
+            const free = (track - (used % track)) % track;
+            if (!free) return null;
+            return (
+              <button
+                data-ph
+                data-gridghost
+                // Shown while this row is the one being worked on — the row itself selected, or any block
+                // inside it. Hover alone would mean the only way to find the empty space is to sweep the
+                // pointer over it, and a keyboard user would never see it at all.
+                data-armed={isSel || [...selSet].some((sid) => isAncestor(node, node.id, sid)) ? "" : undefined}
+                onMouseDown={(e) => e.stopPropagation()}
+                // Spanning exactly the columns that were empty, so the block lands filling the gap it was
+                // offered — not the width of whatever happened to be added last.
+                onClick={(e) => { e.stopPropagation(); addChild(node.id, "container", { colSpan: free, width: "100%", padding: 0 }); }}
+                aria-label={`Add a block in the empty ${free} column${free === 1 ? "" : "s"}`}
+                style={{ gridColumn: `span ${free}`, fontSize: u(11), opacity: 0 }}
+                className="flex flex-col items-center justify-center gap-1.5 py-6 text-gray-400 dark:text-gray-500 border border-dashed border-gray-300/80 dark:border-white/15 rounded-xl hover:border-brand hover:text-brand"
+              >
+                <span className="flex items-center justify-center rounded-full bg-gray-100 dark:bg-white/5" style={{ width: u(22), height: u(22) }}><Plus className="w-3.5 h-3.5" /></span>
+                Add a block here
+              </button>
+            );
+          })()}
           {isSolo && <ChromeMirror blockId={node.id}><NodeToolbar node={node} isRoot={isRoot} />{resizeHandles}</ChromeMirror>}
         </div>
       );
@@ -1221,6 +1407,17 @@ export default function BoxCanvas({
           a structural container, so a page made only of plain sections still needs it. Scoped to both roots for
           the same reason the tokens are — the canvas root carries `.eu-tokens`, never `.eu-root`. */}
       <style dangerouslySetInnerHTML={{ __html: layoutCss(".eu-root, .eu-tokens") }} />
+      {/* The empty-columns "Add a block here" target, hidden until asked for.
+          Written as a real rule rather than a Tailwind named-group variant: `group-hover/name:` did not make it
+          into the compiled sheet, so the class was on the element and did nothing — the ghost simply sat there
+          permanently, which is the opposite of the behaviour. Editor chrome only; the export never sees it. */}
+      <style dangerouslySetInnerHTML={{ __html:
+        "[data-gridghost]{transition:opacity .15s ease}" +
+        // `!important` because the button carries an INLINE opacity:0 — which it needs, or it shows for a frame
+        // on load, before this stylesheet is mounted. An inline style beats any selector at any specificity, so
+        // the reveal has to out-rank it; the same reason the contained-band padding is marked.
+        "[data-box-id]:hover>[data-gridghost],[data-gridghost]:focus-visible,[data-gridghost][data-armed]{opacity:1 !important}" +
+        "@media (prefers-reduced-motion:reduce){[data-gridghost]{transition:none}}" }} />
       {/* Hover & focus (Interactions 1a). One stylesheet for the whole tree, scoped per block by its
           `data-box-id`, because a hover cannot be expressed as an inline style. The rules come from the SAME
           emitter the export uses, so what you hover in the builder is what a visitor gets. */}
@@ -1580,7 +1777,7 @@ function ComponentView({ node, editable, onPatchNode, breakpoint = "base", itemS
     const itemSel = COMPONENT_ITEM_SEL[node.component ?? ""];
     if (!el || !itemSel) return;
     // Only relevant when items actually float; skip entirely otherwise (avoids a measure→write→resize loop).
-    const hasFloat = breakpoint !== "mobile" && (node.items ?? []).some((it) => it.float);
+    const hasFloat = breakpoint !== "phone" && (node.items ?? []).some((it) => it.float);
     let target = "";
     if (hasFloat) {
       let maxBottom = 0;
@@ -1624,7 +1821,7 @@ function ComponentView({ node, editable, onPatchNode, breakpoint = "base", itemS
     const tcss = componentTextCss(node), bcss = componentBoxCss(node);
     const sel = `[data-box-id="${node.id}"] .eu-accordion`;
     // Floats apply on desktop/tablet; on the mobile preview items return to the normal stack (matches export).
-    const floatsActive = breakpoint !== "mobile";
+    const floatsActive = breakpoint !== "phone";
     // Whole-component Advanced CSS + per-item CSS both support part blocks (title/body/icon/meta/media),
     // so any text/background/colour of the accordion OR any single item can be overridden — canvas == export.
     const adv = expandScopedCss(node.advancedCss, sel, ACCORDION_CSS_PARTS);
@@ -1723,7 +1920,7 @@ function ComponentView({ node, editable, onPatchNode, breakpoint = "base", itemS
     // instead, from the same model helper, so the canvas keeps matching the export exactly.
     // RULE N — floats apply on desktop/tablet; on the mobile preview items return to the normal stack, exactly
     // as the export does, so the canvas and the published page agree.
-    const alertFloatsActive = breakpoint !== "mobile";
+    const alertFloatsActive = breakpoint !== "phone";
     const itemStyles: string[] = [];
     collectAlertItemStyles(node.items, itemStyles, { skipFloat: !alertFloatsActive });
     // TOAST: the same `position:fixed` rule the export uses — the page root below becomes its container.
@@ -1793,11 +1990,13 @@ function ElementView({ node, theme, editable, onText, onSrc, onPatchNode, breakp
   setItemSel?: (v: { boxId: string; id: string; parentId?: string } | null) => void;
 }) {
   const fileRef = useRef<HTMLInputElement>(null);
-  const align = node.textAlign ?? "left";
+  // Emitted only when this block sets one: a hard-coded "left" is an explicit value, and an explicit value on
+  // the child beats the alignment its container was told to have.
+  const align = node.textAlign;
   switch (node.type) {
     case "component": return <ComponentView node={node} editable={editable} onPatchNode={onPatchNode} breakpoint={breakpoint} itemSel={itemSel} setItemSel={setItemSel} />;
     case "heading":
-      return <h2 style={{ color: node.color || theme.text, fontSize: u(node.fontSize ?? 32), textAlign: align, width: "100%", ...typoStyle(node, theme.headingFont, 600) }}><EditableText value={node.text} editable={editable} onChange={onText} placeholder="Heading" /></h2>;
+      return <h2 style={{ color: node.color || typoRole.color("text"), fontSize: node.fontSize != null ? u(node.fontSize) : typoRole.size(2), textAlign: align, width: "100%", ...typoStyle(node, "heading", 600) }}><EditableText value={node.text} editable={editable} onChange={onText} placeholder="Heading" /></h2>;
     case "button": {
       // The button FILLS its box and paints its OWN visual (bg + radius + border/shadow), so resizing the box grows
       // the button itself (one shape — no duplicate wrapper behind it) and the label re-positions inside it. Content
@@ -1807,8 +2006,8 @@ function ElementView({ node, theme, editable, onText, onSrc, onPatchNode, breakp
         style={{ display: "flex", width: "100%", height: "100%", boxSizing: "border-box", gap: u(8),
           alignItems: flexPos(node.contentY ?? "center"), justifyContent: flexPos(node.contentX ?? "center"),
           background: node.background ? colorToCSS(node.background) : colorToCSS(theme.primary), color: node.color || "#fff",
-          fontSize: u(node.fontSize ?? 14), padding: `${u(12)} ${u(24)}`, textDecoration: "none",
-          ...deco, borderRadius: deco.borderRadius ?? "9999px", ...typoStyle(node, theme.bodyFont, 600) }}>
+          fontSize: node.fontSize != null ? u(node.fontSize) : typoRole.size(0.875), padding: `${u(12)} ${u(24)}`, textDecoration: "none",
+          ...deco, borderRadius: deco.borderRadius ?? "9999px", ...typoStyle(node, "body", 600) }}>
         <EditableText value={node.text} editable={editable} onChange={onText} placeholder="Button" /></a>;
     }
     case "image": {
@@ -1857,13 +2056,13 @@ function ElementView({ node, theme, editable, onText, onSrc, onPatchNode, breakp
       );
     }
     case "divider":
-      return <div aria-hidden="true" style={{ width: "100%", borderTopWidth: node.borderWidth || 2, borderTopStyle: node.borderStyle ?? "solid", borderTopColor: node.color ? colorToCSS(node.color) : node.borderColor ? colorToCSS(node.borderColor) : theme.textMuted }} />;
+      return <div aria-hidden="true" style={{ width: "100%", borderTopWidth: node.borderWidth || 2, borderTopStyle: node.borderStyle ?? "solid", borderTopColor: node.color ? colorToCSS(node.color) : node.borderColor ? colorToCSS(node.borderColor) : typoRole.color("muted") }} />;
     case "spacer":
       return <div aria-hidden="true" style={{ width: "100%", height: sizeToCSS(node.height) ?? "48px" }} />;
     case "list": {
       const items = node.listItems ?? [];
       const numbered = node.listStyle === "number";
-      const style: React.CSSProperties = { color: node.color || theme.text, fontSize: u(node.fontSize ?? 16), textAlign: align, width: "100%", paddingLeft: u(22), listStyleType: numbered ? "decimal" : "disc", ...typoStyle(node, theme.bodyFont, 400) };
+      const style: React.CSSProperties = { color: node.color || typoRole.color("text"), fontSize: node.fontSize != null ? u(node.fontSize) : typoRole.size(1), textAlign: align, width: "100%", paddingLeft: u(22), listStyleType: numbered ? "decimal" : "disc", ...typoStyle(node, "body", 400) };
       return numbered
         ? <ol style={style}>{items.map((it, i) => <li key={i} style={{ marginBottom: u(4) }}>{it}</li>)}</ol>
         : <ul style={style}>{items.map((it, i) => <li key={i} style={{ marginBottom: u(4) }}>{it}</li>)}</ul>;
@@ -1873,6 +2072,6 @@ function ElementView({ node, theme, editable, onText, onSrc, onPatchNode, breakp
         ? <div className="w-full" style={{ height: sizeToCSS(node.height) ?? 260, pointerEvents: editable ? "none" : "auto" }} dangerouslySetInnerHTML={{ __html: node.html }} />
         : <div className="w-full flex items-center justify-center gap-1.5 text-gray-400 border border-dashed border-gray-300 dark:border-gray-600 rounded-lg" style={{ height: sizeToCSS(node.height) ?? 120, fontSize: u(12) }}><Code2 className="w-4 h-4" /> Paste HTML / embed code in the inspector</div>;
     default:
-      return <p style={{ color: node.color || theme.textMuted, fontSize: u(node.fontSize ?? 16), textAlign: align, width: "100%", ...typoStyle(node, theme.bodyFont, 400) }}><EditableText value={node.text} editable={editable} onChange={onText} placeholder="Add text" /></p>;
+      return <p style={{ color: node.color || typoRole.color("muted"), fontSize: node.fontSize != null ? u(node.fontSize) : typoRole.size(1), textAlign: align, width: "100%", ...typoStyle(node, "body", 400) }}><EditableText value={node.text} editable={editable} onChange={onText} placeholder="Add text" /></p>;
   }
 }

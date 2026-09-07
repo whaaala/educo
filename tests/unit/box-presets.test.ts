@@ -6,15 +6,20 @@ import { DEFAULT_THEME } from "@/lib/site-storage";
 describe("box-presets", () => {
   it("presetKindFor maps a node to its preset family", () => {
     expect(presetKindFor(createContainer("column"))).toBe("container");
-    expect(presetKindFor(createGrid(3))).toBe("grid");
+    // A GRID takes the container LOOKS. Its shape is the Arrange panel's Columns control, which re-cuts the
+    // row without moving its blocks; a Styles preset that set `columns` straight would leave every span
+    // pointing at tracks that no longer existed. See tests/unit/twelve-columns.test.ts.
+    expect(presetKindFor(createGrid(3))).toBe("container");
     expect(presetKindFor(createElement("button"))).toBe("button");
     expect(presetKindFor(createElement("heading"))).toBe("heading");
   });
 
   it("getPresets returns theme-aware variations for the main block kinds", () => {
-    for (const kind of ["button", "heading", "text", "grid", "divider", "image", "video", "icon", "container"]) {
+    // "grid" is deliberately absent: a row's shape is not a look, so it has no restyle presets of its own.
+    for (const kind of ["button", "heading", "text", "divider", "image", "video", "icon", "container"]) {
       expect(getPresets(kind, DEFAULT_THEME).length).toBeGreaterThan(0);
     }
+    expect(getPresets("grid", DEFAULT_THEME)).toEqual([]);
     expect(getPresets("nonexistent", DEFAULT_THEME)).toEqual([]);
     // an Outline button preset flips to a transparent fill + coloured border
     const outline = getPresets("button", DEFAULT_THEME).find((p) => p.id === "outline")!;

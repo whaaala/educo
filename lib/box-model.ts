@@ -119,11 +119,63 @@ export type FlexDir = "row" | "column";
 export type FlexAlign = "start" | "center" | "end" | "stretch";
 export type FlexJustify = "start" | "center" | "end" | "between" | "around";
 
-/** Responsive breakpoints. "base" = desktop (the default the tree stores); tablet + mobile hold OVERRIDES
- *  that cascade down (mobile inherits tablet inherits base). */
-export type Breakpoint = "base" | "tablet" | "mobile";
+/**
+ * The rungs a block can be styled at (Phase 2).
+ *
+ * `base` IS the desktop rung — it is the node's own properties, which is what every saved page already means
+ * by them. Renaming it would migrate every stored site for no gain, so it keeps the name it has and this
+ * comment carries the fact.
+ *
+ * WHY THIS GREW. The builder's preview already offered five widths — Mobile, Tablet, Laptop, Desktop, Wide —
+ * while the model held three layers, and the mapping collapsed Laptop, Desktop AND Wide onto `base`. So a
+ * teacher who switched to Wide, saw something they wanted to fix and adjusted it was silently editing the
+ * layer that drives every screen from 900px up, including the Desktop view they had just tuned. Nothing said
+ * so. That is the same defect as the dead container queries and the inert z-index: a control that appears to
+ * do one thing and does another.
+ */
+export type Breakpoint = "base" | "phone" | "tabletPortrait" | "tabletLandscape" | "wide";
+
+/** A slot that can hold overrides — every rung except the base, which lives on the node itself. */
+export type OverrideRung = Exclude<Breakpoint, "base">;
+
+/**
+ * The two slots the three-layer model used. They are still READ, so no saved page changes appearance and no
+ * migration runs: `tablet` covered both tablet orientations (it was the only tablet layer there was) and
+ * `mobile` was the phone. New edits write the new names, and a new name wins where both exist.
+ */
+export type LegacyRung = "tablet" | "mobile";
+
+/** Where a rung's overrides are stored, oldest slot first so a newer one wins on merge. */
+const RUNG_SLOTS: Record<OverrideRung, (OverrideRung | LegacyRung)[]> = {
+  wide: ["wide"],
+  tabletLandscape: ["tablet", "tabletLandscape"],
+  tabletPortrait: ["tabletPortrait"],
+  phone: ["mobile", "phone"],
+};
+
+/**
+ * What a rung inherits, in the order the overrides apply.
+ *
+ * The cascade runs from the base OUTWARDS, narrower screens inheriting each other the way they always have —
+ * a phone still starts from the tablet look. `wide` is its own branch off the base: a big desktop is not a
+ * narrowed anything, and making it inherit the tablet chain would have been backwards.
+ */
+const RUNG_CASCADE: Record<Breakpoint, (OverrideRung | LegacyRung)[]> = {
+  base: [],
+  wide: ["wide"],
+  tabletLandscape: ["tablet", "tabletLandscape"],
+  tabletPortrait: ["tablet", "tabletLandscape", "tabletPortrait"],
+  phone: ["tablet", "tabletLandscape", "tabletPortrait", "mobile", "phone"],
+};
+
+/** The rungs in ladder order, narrowest first — the order a mobile-first stylesheet emits them. */
+export const BP_ORDER: Breakpoint[] = ["phone", "tabletPortrait", "tabletLandscape", "base", "wide"];
+
 /** A per-breakpoint style/geometry override — a shallow patch of style props (never structure/children). */
 export type ResponsiveOverride = Partial<Omit<BoxNode, "id" | "type" | "children" | "responsive">>;
+
+/** Every stored override slot, new names and the two legacy ones. */
+export type ResponsiveMap = Partial<Record<OverrideRung | LegacyRung, ResponsiveOverride>>;
 
 export interface BoxNode {
   id: string;
@@ -133,6 +185,11 @@ export interface BoxNode {
   layout?: "flex" | "grid"; // layout engine for children (default flex)
   direction?: FlexDir;      // flex-direction (default column) — flex only
   gap?: number;             // px between children (both engines)
+  // Space ACROSS and DOWN, separately. One number cannot express the commonest grid of all — cards that want
+  // room between the columns and less between the rows — and a person who wants that has no way to say it.
+  // Each falls back to `gap`, so a row that never touches these behaves exactly as it always has.
+  gapX?: number;            // px between COLUMNS (falls back to `gap`)
+  gapY?: number;            // px between ROWS (falls back to `gap`)
   align?: FlexAlign;        // align-items (cross axis)
   alignSelf?: "flex-start" | "flex-end" | "center" | "stretch"; // this box's OWN cross-axis alignment (overrides parent align) — set by edge-anchored resize to pin the far edge
   justify?: FlexJustify;    // justify-content (main axis) — flex only
@@ -167,6 +224,23 @@ export interface BoxNode {
   minHeight?: number;       // px
   colSpan?: number;         // grid child: columns to span
   rowSpan?: number;         // grid child: rows to span
+  // ── the twelve-column grid (Phase 2) ──
+  // Where a block SITS in its row. `colSpan` is how many tracks it covers, `colStart` which track it begins at
+  // — CSS `grid-column-start`, 1-based, which is the OFFSET control. It is deliberately an absolute start
+  // rather than Bootstrap's relative margin trick: a start also gives deliberate overlap for free, and it is
+  // one number a test can assert instead of a margin that depends on what came before it.
+  // Every one of these lives on BoxNode, so `responsive` carries them per rung with no extra machinery — which
+  // is the whole point, because "image above the text on a phone, beside it on a desktop" IS a per-rung order.
+  colStart?: number;        // grid child: 1-based track to begin at (undefined = auto-place after the previous)
+  // The DOWN axis, so placement is explicit on BOTH. Start-and-span on two axes is what makes the model a
+  // superset of rectangular placement: anything you can sketch on graph paper, the grid can express — a card
+  // straddling two rows, a photo bleeding down past its neighbours, a deliberately broken grid. Rows are
+  // IMPLICIT (the grid makes as many as it needs), so there is no row count to clamp against, unlike columns.
+  rowStart?: number;        // grid child: 1-based row to begin at (undefined = auto-place)
+  order?: number;           // BOTH engines: sequence position, lower first (undefined = document order)
+  justifySelf?: "start" | "center" | "end" | "stretch"; // grid child: its own alignment ACROSS its cell
+  justifyItems?: "start" | "center" | "end" | "stretch"; // grid CONTAINER: where every block sits in its cell
+  push?: "start" | "end" | "both"; // auto-margin idiom: shove just THIS one left / right / to the middle
   clip?: boolean;           // allow sizing SMALLER than content (min:0) and hide overflow; default off = hug content
   baseFont?: number;        // page root only: the global base unit in px (default 10); rendered as rem so it scales with the browser font size (WCAG)
   rowBand?: boolean;        // structural ROW band: a direct child of the page root that lays its sections out side-by-side (the page is a vertical stack of these)
@@ -197,7 +271,7 @@ export interface BoxNode {
 
   // ── responsive ──
   hidden?: boolean;         // hide this box (per breakpoint via `responsive`, or everywhere at the base)
-  responsive?: { tablet?: ResponsiveOverride; mobile?: ResponsiveOverride }; // per-breakpoint style overrides
+  responsive?: ResponsiveMap; // per-rung style overrides (see Breakpoint / RUNG_CASCADE)
 
   // ── element content ──
   text?: string;
@@ -319,8 +393,10 @@ export function isFloating(node: BoxNode): boolean {
  */
 export function floatStacksOnMobile(node: BoxNode): boolean {
   if (!isFloating(node)) return false;
-  const m = node.responsive?.mobile;
-  const pinned = !!m && (m.left != null || m.top != null || m.position != null || m.width != null || m.height != null);
+  // Every slot the PHONE rung owns, legacy included — a page pinned under the three-layer model must keep
+  // its explicit placement rather than silently starting to auto-stack.
+  const m = { ...(node.responsive?.mobile ?? {}), ...(node.responsive?.phone ?? {}) };
+  const pinned = m.left != null || m.top != null || m.position != null || m.width != null || m.height != null;
   return !pinned;
 }
 
@@ -350,9 +426,18 @@ export function createContainer(direction: FlexDir = "column", overrides: Partia
   };
 }
 
-/** A grid container with `columns` equal columns. Children can span via colSpan/rowSpan. */
+/**
+ * A grid container with `columns` equal columns. Children can span via colSpan/rowSpan.
+ *
+ * FULL WIDTH, NO PADDING, BY DEFAULT — of the page when it sits on the page, of its cell when it sits inside
+ * one, and the same at every depth. A grid is a way of DIVIDING space, so it should start by occupying all of
+ * the space it was given; the inherited 24px inset made every nested grid narrower than its parent, and a grid
+ * inside a grid inside a grid quietly lost its width three times over with nothing on screen to say why.
+ * Spacing at the top, right, bottom and left is then the user's decision, in Inner spacing — a choice they
+ * make, rather than a default they have to find and undo.
+ */
 export function createGrid(columns = 3, overrides: Partial<BoxNode> = {}): BoxNode {
-  return createContainer("row", { layout: "grid", columns, wrap: false, ...overrides });
+  return createContainer("row", { layout: "grid", columns, wrap: false, width: "100%", padding: 0, ...overrides });
 }
 
 export function createElement(type: Exclude<BoxType, "container">, overrides: Partial<BoxNode> = {}): BoxNode {
@@ -1419,12 +1504,52 @@ export function updateBox(root: BoxNode, id: string, patch: Partial<BoxNode>): B
   return { ...root, children: root.children.map((c) => updateBox(c, id, patch)) };
 }
 
+/**
+ * How wide a block should be when it is dropped into a grid that never told it.
+ *
+ * A grid child with no span is ONE column, and one column of twelve is a 66px sliver on a 1024px page — so
+ * every block added to a twelve-column row landed looking broken, and the more useful the row's shape the
+ * worse it looked. The block matches the LAST cell already there, which is what "another one like those"
+ * means; an empty row gives it the whole width, because a lone block that fills its row is right far more
+ * often than a lone block a twelfth wide.
+ */
+export function newCellSpan(grid: BoxNode): number {
+  const kids = grid.children ?? [];
+  const last = [...kids].reverse().find((k) => k.colSpan != null);
+  return last?.colSpan ?? gridColumns(grid);
+}
+
+/**
+ * The blocks a click could mean, outermost first — the path from the page down to what was actually under the
+ * pointer, with the scaffolding removed.
+ *
+ * CLICK SELECTS THE BOX, CLICK AGAIN GOES INSIDE. The canvas used to select the DEEPEST block under the
+ * pointer, which sounds right and is unusable: a cell with a paragraph in it could only be selected by
+ * hitting its padding, because everywhere else the paragraph was on top. So the thing that owns a page's
+ * layout AND (now) the styling its contents inherit was the hardest thing on the canvas to select. Stepping
+ * down one level per click is what Figma and Canva do, and it makes the outer box — the one people mean far
+ * more often — the easiest to hit.
+ *
+ * The page ROOT and the structural ROW BANDS are left out: they are scaffolding a user never chose to create,
+ * and offering them as a selection step would add a click that lands on nothing they can see.
+ */
+export function selectionChain(root: BoxNode, id: string): string[] {
+  const path: BoxNode[] = [];
+  const walk = (n: BoxNode, trail: BoxNode[]): boolean => {
+    const here = [...trail, n];
+    if (n.id === id) { path.push(...here); return true; }
+    return (n.children ?? []).some((c) => walk(c, here));
+  };
+  walk(root, []);
+  return path.filter((n) => n.id !== root.id && !n.rowBand).map((n) => n.id);
+}
+
 /** Insert `node` into `parentId` at `index` (clamped). No-op if the parent is missing. */
 export function insertBox(root: BoxNode, parentId: string, index: number, node: BoxNode): BoxNode {
   if (root.id === parentId) {
     const children = [...(root.children ?? [])];
     const at = Math.max(0, Math.min(index, children.length));
-    children.splice(at, 0, node);
+    children.splice(at, 0, node.colSpan == null && root.layout === "grid" ? { ...node, colSpan: newCellSpan(root) } : node);
     return { ...root, children };
   }
   if (!root.children) return root;
@@ -1517,6 +1642,16 @@ export function normalizeRowBands(node: BoxNode, gap = 0): BoxNode {
   if (!isContainer(node)) return node; // leaf — nothing to organize
   if (node.rowBand) {
     // A ROW: recurse into its items (each may itself be a content container / leaf).
+    return { ...node, children: (node.children ?? []).map((c) => normalizeRowBands(c, gap)) };
+  }
+  // A GRID's children ARE its cells, so they are never banded.
+  //
+  // Wrapping them put a flex row band between the grid and every block, which meant `grid-column` — the span,
+  // the offset, the per-cell alignment — landed on a node the grid could not see. The panel said "Columns
+  // wide: 4", the data said 4, the class was right, and the block was one track wide: a control that appears
+  // to do one thing and does nothing, exactly like the container queries that sat dead for weeks. Only a
+  // browser could catch it, because every test that builds a tree by hand skips this pass.
+  if (node.layout === "grid") {
     return { ...node, children: (node.children ?? []).map((c) => normalizeRowBands(c, gap)) };
   }
   if (!node.children) return node;
@@ -1778,34 +1913,44 @@ export function sendBackward(root: BoxNode, id: string): BoxNode { return reorde
 // node for the active breakpoint; editing at a breakpoint writes into that breakpoint's override so the
 // base is never disturbed. Structure (children, id, type, position-mode, z) is shared across breakpoints.
 
-/** The effective node at a breakpoint: base merged with tablet (then mobile) overrides. Children unchanged. */
+/** The effective node at a rung: the base, with every slot the rung inherits merged over it in order. */
 export function resolveResponsive(node: BoxNode, bp: Breakpoint): BoxNode {
   if (bp === "base" || !node.responsive) return node;
-  const t = node.responsive.tablet ?? {};
-  const ov = bp === "mobile" ? { ...t, ...(node.responsive.mobile ?? {}) } : t;
+  const ov: ResponsiveOverride = {};
+  for (const slot of RUNG_CASCADE[bp]) Object.assign(ov, node.responsive[slot] ?? {});
   return Object.keys(ov).length ? { ...node, ...ov } : node;
 }
 
-/** Merge `patch` into node `id` — at the BASE, or into the given breakpoint's override when not base. */
+/** Merge `patch` into node `id` — at the BASE, or into the given rung's own slot when not base. */
 export function updateBoxResponsive(root: BoxNode, id: string, patch: Partial<BoxNode>, bp: Breakpoint): BoxNode {
   if (bp === "base") return updateBox(root, id, patch);
   const node = findBox(root, id);
   if (!node) return root;
+  // Always the NEW slot name: it is last in the rung's cascade, so it wins over anything the three-layer
+  // model left behind without having to rewrite that older value.
   const prev = node.responsive?.[bp] ?? {};
   return updateBox(root, id, { responsive: { ...node.responsive, [bp]: { ...prev, ...patch } } });
 }
 
-/** Does this box carry any override for the given breakpoint? */
+/** Does this box carry any override OF ITS OWN at this rung? Inherited ones belong to the rung above. */
 export function hasOverride(node: BoxNode, bp: Breakpoint): boolean {
-  return bp !== "base" && !!node.responsive?.[bp] && Object.keys(node.responsive[bp]!).length > 0;
+  if (bp === "base") return false;
+  return RUNG_SLOTS[bp].some((s) => Object.keys(node.responsive?.[s] ?? {}).length > 0);
 }
 
-/** Drop a breakpoint's overrides (revert this box to the base at that breakpoint). */
+/**
+ * Drop this rung's overrides (revert the box to what it inherits here).
+ *
+ * It clears EVERY slot the rung owns, legacy included. Clearing only the new name would leave a page that had
+ * been edited under the three-layer model looking unchanged after a "revert" — a control that does nothing,
+ * which is the exact failure this whole area keeps producing.
+ */
 export function clearOverride(root: BoxNode, id: string, bp: Breakpoint): BoxNode {
   if (bp === "base") return root;
   const node = findBox(root, id);
   if (!node?.responsive) return root;
-  const next = { ...node.responsive }; delete next[bp];
+  const next: ResponsiveMap = { ...node.responsive };
+  for (const slot of RUNG_SLOTS[bp]) delete next[slot];
   return updateBox(root, id, { responsive: Object.keys(next).length ? next : undefined });
 }
 
@@ -1838,6 +1983,268 @@ const ALIGN_CSS: Record<FlexAlign, string> = { start: "flex-start", center: "cen
 const JUSTIFY_CSS: Record<FlexJustify, string> = {
   start: "flex-start", center: "center", end: "flex-end", between: "space-between", around: "space-around",
 };
+
+// ── Typography that CASCADES (set it on a box, everything inside follows) ────
+//
+// Set a font and a colour on a grid cell and every heading, paragraph, list, button and component inside it
+// follows — and any one of them can still speak for itself and win. That is what CSS inheritance is for, and
+// it did not work here for one reason: every block wrote its colour and family EXPLICITLY, falling back to
+// the theme (`node.color || theme.textMuted`). An explicit value on the child always beats an inherited one,
+// so a colour set on a cell reached nothing, and no amount of new UI would have changed that.
+//
+// It cannot simply be dropped, because the roles have DIFFERENT defaults — a heading is the strong colour, a
+// paragraph the muted one — and a bare `inherit` would flatten them into one. So each role's default is a
+// CUSTOM PROPERTY. Custom properties inherit, so a container that redefines them changes every block beneath
+// it, while a block that writes a real value still wins over both. One mechanism, both behaviours.
+//
+// SIZE is proportional rather than absolute: the roles are multiples of one inherited base, so making a cell's
+// text bigger scales its heading and its body together instead of collapsing them to the same size.
+export const TYPO_VAR = {
+  text: "--bx-text",
+  muted: "--bx-text-muted",
+  headingFont: "--bx-font-heading",
+  bodyFont: "--bx-font-body",
+  size: "--bx-text-size",
+  headingWeight: "--bx-weight-heading",
+  bodyWeight: "--bx-weight-body",
+} as const;
+
+/** A role's inherited default, as a `var()` a block can put straight in its own style. */
+export const typoRole = {
+  color: (role: "text" | "muted") => `var(${role === "muted" ? TYPO_VAR.muted : TYPO_VAR.text})`,
+  font: (role: "heading" | "body") => `var(${role === "heading" ? TYPO_VAR.headingFont : TYPO_VAR.bodyFont})`,
+  weight: (role: "heading" | "body", fallback: number) => `var(${role === "heading" ? TYPO_VAR.headingWeight : TYPO_VAR.bodyWeight}, ${fallback})`,
+  /** `mult` is the role's share of the inherited text size — 2 for a heading, 1 for body, 0.875 for a button. */
+  size: (mult: number) => (mult === 1 ? `var(${TYPO_VAR.size})` : `calc(var(${TYPO_VAR.size}) * ${mult})`),
+} as const;
+
+/** The role defaults a PAGE ROOT publishes, from the site theme. Everything below inherits these. */
+export function typoRootVars(theme: { text: string; textMuted: string; headingFont: string; bodyFont: string }): CSSProperties {
+  return {
+    [TYPO_VAR.text]: theme.text,
+    [TYPO_VAR.muted]: theme.textMuted,
+    [TYPO_VAR.headingFont]: theme.headingFont,
+    [TYPO_VAR.bodyFont]: theme.bodyFont,
+    [TYPO_VAR.size]: u(16),
+    [TYPO_VAR.headingWeight]: 600,
+    [TYPO_VAR.bodyWeight]: 400,
+  } as CSSProperties;
+}
+
+/**
+ * What a CONTAINER hands down when its typography is set — the cascade, from a box to everything inside it.
+ *
+ * A colour or a family redefines BOTH role variables as well as its own property: both, because a cell told
+ * to be green means its headings and its paragraphs, not one of them; and its own property too, so anything
+ * that inherits plainly (a component's internal markup, raw text) follows as well.
+ */
+export function typoCascadeCss(node: BoxNode): CSSProperties {
+  const s: Record<string, string | number> = {};
+  if (node.color) { s[TYPO_VAR.text] = node.color; s[TYPO_VAR.muted] = node.color; s.color = node.color; }
+  if (node.fontFamily) { s[TYPO_VAR.headingFont] = node.fontFamily; s[TYPO_VAR.bodyFont] = node.fontFamily; s.fontFamily = node.fontFamily; }
+  if (node.fontSize != null) s[TYPO_VAR.size] = u(node.fontSize);
+  if (node.fontWeight != null) { s[TYPO_VAR.headingWeight] = node.fontWeight; s[TYPO_VAR.bodyWeight] = node.fontWeight; s.fontWeight = node.fontWeight; }
+  else if (node.bold) { s[TYPO_VAR.headingWeight] = 800; s[TYPO_VAR.bodyWeight] = 800; s.fontWeight = 800; }
+  // These have no per-role default to preserve, so plain inheritance already carries them — they only have to
+  // be emitted here and NOT hard-coded on the blocks below (which is what `textAlign: align` used to do).
+  if (node.lineHeight != null) s.lineHeight = node.lineHeight;
+  if (node.letterSpacing != null) s.letterSpacing = `${node.letterSpacing}px`;
+  if (node.textTransform && node.textTransform !== "none") s.textTransform = node.textTransform;
+  if (node.textAlign) s.textAlign = node.textAlign;
+  if (node.italic) s.fontStyle = "italic";
+  return s as CSSProperties;
+}
+
+// ── The twelve-column grid (Phase 2) ─────────────────────────────────────────
+
+/**
+ * Twelve, because it divides by 2, 3, 4 and 6 — every fraction a page layout actually asks for, which is why
+ * every grid system since the print ones has landed on it. It is the count UNDERNEATH; what a teacher sees is
+ * a named fraction (see `COLUMN_FRACTIONS`).
+ */
+export const GRID_MAX = 12;
+
+/** A grid's stored track count, clamped to something a row can actually be. */
+export const gridColumns = (node: BoxNode): number =>
+  Math.min(GRID_MAX, Math.max(1, Math.round(node.columns ?? 3)));
+
+/** The named fractions on top of the twelve underneath — what the inspector offers before the raw numbers. */
+export const COLUMN_FRACTIONS: { label: string; num: number; den: number }[] = [
+  { label: "Full", num: 1, den: 1 },
+  { label: "Half", num: 1, den: 2 },
+  { label: "Third", num: 1, den: 3 },
+  { label: "Two-thirds", num: 2, den: 3 },
+  { label: "Quarter", num: 1, den: 4 },
+  { label: "Three-quarters", num: 3, den: 4 },
+];
+
+/** Which named fraction a span of `span` out of `track` IS, or null when it is not a named one. */
+export function columnFractionOf(span: number, track: number): { num: number; den: number } | null {
+  const f = COLUMN_FRACTIONS.find((c) => c.num * track === span * c.den);
+  return f ? { num: f.num, den: f.den } : null;
+}
+
+/**
+ * Has the user set this property AT this rung, or anywhere this rung inherits from?
+ *
+ * The resolved node cannot answer it — a value merged down from the base is indistinguishable from one typed
+ * at the rung — but `responsive` survives `resolveResponsive` (it spreads the node), so the slots are still
+ * readable here. Used for defaults that must yield the moment the user states an intent.
+ */
+function setAtRung(node: BoxNode, key: keyof ResponsiveOverride, bp: Breakpoint): boolean {
+  if (bp === "base") return true; // the base IS the node's own value — always "set"
+  return RUNG_CASCADE[bp].some((slot) => node.responsive?.[slot]?.[key] !== undefined);
+}
+
+/**
+ * How many columns this grid actually SHOWS at a rung.
+ *
+ * STACK ON NARROW (Responsive Design Field Guide, ingredient ①). A twelve-column row is unreadable on a 375px
+ * phone — and before this a grid kept every one of its columns at every width, so three cards stayed three
+ * slivers side by side on a phone with nothing the builder could do about it. A grid the user has NOT given a
+ * column count of its own at this rung therefore shows at most ONE column on a phone and TWO on a tablet held
+ * upright, and `childStyle` clamps the spans to match so nothing spills into an implicit column.
+ *
+ * THE ESCAPE HATCH IS THE CONTROL ITSELF: set Columns while a narrow rung is selected and the override turns
+ * the clamp off from that rung down — a two-up phone photo gallery is one click, and it is stated in data
+ * rather than guessed at.
+ */
+export function gridColumnsAt(node: BoxNode, bp: Breakpoint = "base"): number {
+  const cols = gridColumns(node);
+  if (setAtRung(node, "columns", bp)) return cols;
+  if (bp === "phone") return 1;
+  if (bp === "tabletPortrait") return Math.min(cols, 2);
+  return cols;
+}
+
+/**
+ * A child's effective span and start at a rung, in that rung's own track units.
+ *
+ * The subtlety this exists for: when `gridColumnsAt` narrows a row it narrows the TRACK, but the child's span
+ * is still written in the wide row's units. Simply clamping it makes every block as wide as the row — so a
+ * three-card row on a tablet held upright stacked completely, which is the same as not having the rung at all
+ * and made the two-column default worthless. Keeping the PROPORTION instead is what a person means: a third of
+ * twelve is a third of two, which is one column, which is two cards across.
+ *
+ * When the USER has stated the count at this rung they are already speaking in that rung's units, so the span
+ * is taken at face value and only clamped. Rescaling their number would be the builder arguing with them.
+ */
+export function gridPlacementAt(parent: BoxNode, child: BoxNode, bp: Breakpoint = "base"): { track: number; span: number; start: number | null } {
+  const track = gridColumnsAt(parent, bp);
+  const stored = gridColumns(parent);
+  const rescale = track !== stored && !setAtRung(parent, "columns", bp);
+  const fit = (v: number) => (rescale ? Math.max(1, Math.round((v * track) / stored)) : v);
+  const span = Math.min(track, fit(Math.max(1, Math.round(child.colSpan ?? 1))));
+  if (child.colStart == null) return { track, span, start: null };
+  const raw = rescale
+    ? Math.round(((Math.round(child.colStart) - 1) * track) / stored) + 1
+    : Math.round(child.colStart);
+  // Clamped to a track the block can actually FINISH inside, so it never lands in an implicit column and
+  // stretches the row past the edge of the screen.
+  return { track, span, start: Math.min(track - span + 1, Math.max(1, raw)) };
+}
+
+/**
+ * Scale one node's grid placement (and every rung override of it) by `mul / div`. Starts scale about track 1.
+ *
+ * An ABSENT span is materialised on the way up, and that is the whole correctness of refining: a block with no
+ * span stored is one column of whatever the row has, so a row of thirds refined to twelve leaves it meaning
+ * one TWELFTH — the block silently shrinks to a quarter of the third it was. Writing the number down is what
+ * makes "refining does not move anything" true rather than nearly true.
+ *
+ * An absent START stays absent: it means auto-place after the block before it, which lands in the same
+ * relative position at any track count, so materialising it would pin something the user never pinned.
+ */
+function scalePlacement(node: BoxNode, mul: number, div: number): BoxNode {
+  const sp = (v: number) => (v * mul) / div;
+  const one = <T extends { colSpan?: number; colStart?: number }>(o: T, implicitSpan: boolean): T => {
+    const next = { ...o };
+    if (o.colSpan != null) next.colSpan = sp(o.colSpan);
+    else if (implicitSpan && mul > div) next.colSpan = sp(1);
+    if (o.colStart != null) next.colStart = sp(o.colStart - 1) + 1;
+    return next;
+  };
+  const out = one(node, true);
+  if (node.responsive) {
+    const r: ResponsiveMap = { ...node.responsive };
+    for (const slot of Object.keys(r) as (keyof ResponsiveMap)[]) {
+      const ov = r[slot];
+      // A rung slot with no span of its own INHERITS the base's, which the line above has just written down —
+      // materialising it here too would freeze that rung to a value it was only ever borrowing.
+      if (ov) r[slot] = one(ov, false);
+    }
+    out.responsive = r;
+  }
+  return out;
+}
+
+/** Does every stored placement on this node divide cleanly by `k`? (If not, coarsening would MOVE blocks.) */
+function placementDivides(node: BoxNode, k: number): boolean {
+  const ok = (o: { colSpan?: number; colStart?: number }) =>
+    (o.colSpan == null || o.colSpan % k === 0) && (o.colStart == null || (o.colStart - 1) % k === 0);
+  return ok(node) && Object.values(node.responsive ?? {}).every(ok);
+}
+
+/**
+ * Re-cut a grid to a different number of columns WITHOUT moving anything.
+ *
+ * Going from three columns to twelve is not a layout change — it is the SAME layout described more finely — so
+ * every child's span and start multiply by the same factor and the row stays pixel-identical. That is what
+ * makes "make just this one a half" work inside a row of thirds: the row is refined to twelve first, and a
+ * half is six of them.
+ *
+ * Coarsening (twelve back to three) is the exact inverse, and is only applied when every placement divides
+ * cleanly. When it does not, the stored spans are LEFT ALONE and the render clamps them instead — so a round
+ * trip restores the layout rather than quietly losing a column, which is what rewriting them would do.
+ */
+export function retrackGrid(node: BoxNode, columns: number): BoxNode {
+  const from = gridColumns(node);
+  const to = Math.min(GRID_MAX, Math.max(1, Math.round(columns)));
+  if (to === from) return node;
+  const kids = node.children ?? [];
+  if (to % from === 0) return { ...node, columns: to, children: kids.map((c) => scalePlacement(c, to / from, 1)) };
+  const k = from / to;
+  if (from % to === 0 && kids.every((c) => placementDivides(c, k))) {
+    return { ...node, columns: to, children: kids.map((c) => scalePlacement(c, 1, k)) };
+  }
+  return { ...node, columns: to };
+}
+
+/**
+ * Give a grid child a named fraction of its row — the control the twelve columns exist to serve.
+ *
+ * A row of thirds cannot express a half, so at the BASE the row is refined to twelve first (`retrackGrid`,
+ * which leaves it looking exactly as it did) and the half becomes six. That refinement changes the row's
+ * CHILDREN, which a rung override cannot carry — a rung holds style, never structure — so at a rung only a
+ * fraction the row can already express is written, and the inspector offers only those.
+ *
+ * Returns the tree unchanged when the block is not in a grid or the fraction is unreachable, so a caller can
+ * commit the result unconditionally.
+ */
+export function setColumnFraction(root: BoxNode, id: string, num: number, den: number, bp: Breakpoint = "base"): BoxNode {
+  const found = findParent(root, id);
+  if (!found || found.parent.layout !== "grid") return root;
+  let next = root;
+  let track = gridColumns(found.parent);
+  if (!canSetColumnFraction(track, den, bp)) return root;
+  if (track % den !== 0) {
+    next = updateBox(next, found.parent.id, retrackGrid(found.parent, GRID_MAX));
+    track = GRID_MAX;
+  }
+  const colSpan = (track * num) / den;
+  return bp === "base" ? updateBox(next, id, { colSpan }) : updateBoxResponsive(next, id, { colSpan }, bp);
+}
+
+/**
+ * Can a row of `track` columns express this fraction — already, or by being refined to twelve at the base?
+ *
+ * Takes the COUNT rather than the row, so the inspector can ask it without holding the parent node and the
+ * rule lives in exactly one place. A local copy of it in the panel is precisely how the device chips and the
+ * rung ladder drifted apart before.
+ */
+export function canSetColumnFraction(track: number, den: number, bp: Breakpoint = "base"): boolean {
+  return track % den === 0 || (bp === "base" && GRID_MAX % den === 0 && GRID_MAX % track === 0);
+}
 
 /** Convert a width/height token ("auto" | "fill" | "50%" | "200px") to a CSS length or undefined. */
 export function sizeToCSS(token?: string): string | undefined {
@@ -1976,6 +2383,19 @@ export function baseUnit(baseFontPx = 10): string {
   return `clamp(${lo}rem, ${cqw}cqw, ${hi}rem)`;
 }
 
+/**
+ * The space BETWEEN children, across and down.
+ *
+ * Emitted as the single `gap` when both axes agree, so a row that has never been given a per-axis value
+ * produces exactly the declaration it always did. `column-gap`/`row-gap` appear only once someone asks for
+ * them — which is the commonest grid there is: cards with air between the columns and less between the rows.
+ */
+export function gapCSS(node: BoxNode): CSSProperties {
+  const base = node.gap ?? 16;
+  const x = node.gapX ?? base, y = node.gapY ?? base;
+  return x === y ? { gap: u(x) } : { columnGap: u(x), rowGap: u(y) };
+}
+
 /** Per-side padding CSS (responsive rem): a side override falls back to the general `padding`, then 0. */
 export function paddingCSS(node: BoxNode): CSSProperties {
   const p = node.padding ?? 0;
@@ -2012,7 +2432,7 @@ export function floatingReserve(node: BoxNode, bp: Breakpoint = "base"): number 
     if (!isFloating(c)) continue;
     // On MOBILE a float that stacks is back in normal flow — it grows the parent itself, so it needs NO
     // reserve (reserving here would leave a tall empty gap under the now-inline card).
-    if (bp === "mobile" && floatStacksOnMobile(c)) continue;
+    if (bp === "phone" && floatStacksOnMobile(c)) continue;
     const rc = bp === "base" ? c : resolveResponsive(c, bp); // its effective height/top at this breakpoint
     // A floating card has a DEFINITE `height` (px) — its true rendered height; fall back to minHeight for old data.
     const h = lenToPx(rc.height) ?? rc.minHeight ?? 0;
@@ -2034,9 +2454,17 @@ export function containerStyle(node: BoxNode, bp: Breakpoint = "base"): CSSPrope
   if (node.layout === "grid") {
     return {
       display: "grid",
-      gridTemplateColumns: `repeat(${Math.max(1, node.columns ?? 3)}, minmax(0, 1fr))`,
-      gap: u(node.gap ?? 16),
+      // Per RUNG, so a twelve-column row is twelve columns on a desktop and one on a phone (`gridColumnsAt`).
+      gridTemplateColumns: `repeat(${gridColumnsAt(node, bp)}, minmax(0, 1fr))`,
+      ...gapCSS(node),
       alignItems: ALIGN_CSS[node.align ?? "stretch"],
+      // A grid's tracks are `1fr`, so they have already eaten every spare pixel and `justify-content` — which
+      // distributes leftover TRACK space — can never do anything on one: the flex "Position blocks" control
+      // was simply inert on a grid, the same class of defect as the dead container queries. Where a block sits
+      // in its own CELL is `justify-items`, and it gets its own field rather than borrowing `justify`, because
+      // `createContainer` writes `justify: "start"` on every container ever made — reading that as a choice
+      // would have made every saved grid's children stop filling their cells overnight.
+      ...(node.justifyItems ? { justifyItems: node.justifyItems } : {}),
       ...paddingCSS(node),
       minHeight: minH,
     };
@@ -2044,7 +2472,7 @@ export function containerStyle(node: BoxNode, bp: Breakpoint = "base"): CSSPrope
   return {
     display: "flex",
     flexDirection: node.direction ?? "column",
-    gap: u(node.gap ?? 16),
+    ...gapCSS(node),
     alignItems: ALIGN_CSS[node.align ?? "stretch"],
     justifyContent: JUSTIFY_CSS[node.justify ?? "start"],
     // Responsive Field Guide: a ROW BAND always allows wrapping so its sections REFLOW (stack) on narrow
@@ -2064,13 +2492,26 @@ export function containerStyle(node: BoxNode, bp: Breakpoint = "base"): CSSPrope
  *  - flex COLUMN parent: main axis = height → `height` drives flex (division); `width` is the cross size.
  * So a section with the MAIN-axis token set to "fill" divides that axis equally with its siblings.
  */
-export function childStyle(child: BoxNode, parent: BoxNode): CSSProperties {
+export function childStyle(child: BoxNode, parent: BoxNode, bp: Breakpoint = "base"): CSSProperties {
   const s: CSSProperties = {};
   if (parent.layout === "grid") {
-    if (child.colSpan && child.colSpan > 1) s.gridColumn = `span ${child.colSpan}`;
-    if (child.rowSpan && child.rowSpan > 1) s.gridRow = `span ${child.rowSpan}`;
+    // Re-fitted to the track the row actually has AT THIS RUNG (see `gridPlacementAt`). A span of 8 left over
+    // from a twelve-column desktop would otherwise generate implicit columns on a phone and blow the row's
+    // width past the screen — the horizontal-scrollbar bug guarded against in three other places already.
+    const { span, start } = gridPlacementAt(parent, child, bp);
+    const place = start != null ? `${start} / span ${span}` : span > 1 ? `span ${span}` : undefined;
+    if (place) s.gridColumn = place;
+    // The down axis. No rung re-fit and no clamp: rows are implicit, so the grid simply makes as many as the
+    // placement asks for — a block on row 4 of a two-row grid creates rows 3 and 4 rather than overflowing.
+    const rowSpan = Math.max(1, Math.round(child.rowSpan ?? 1));
+    const rowStart = child.rowStart == null ? null : Math.max(1, Math.round(child.rowStart));
+    if (rowStart != null) s.gridRow = `${rowStart} / span ${rowSpan}`;
+    else if (rowSpan > 1) s.gridRow = `span ${rowSpan}`;
+    if (child.justifySelf) s.justifySelf = child.justifySelf;
+    if (child.alignSelf) s.alignSelf = child.alignSelf;
     const h = sizeToCSS(child.height);
     if (h) s.height = h;
+    placeInSequence(s, child);
     return s;
   }
   const isRow = (parent.direction ?? "column") === "row";
@@ -2115,5 +2556,25 @@ export function childStyle(child: BoxNode, parent: BoxNode): CSSProperties {
     const pa = parent.align ?? "stretch";
     s.alignSelf = pa === "stretch" ? "flex-start" : ALIGN_CSS[pa];
   }
+  placeInSequence(s, child);
   return s;
+}
+
+/**
+ * `order` and the PUSH idiom — the two placement controls that mean the same thing in both engines.
+ *
+ * ORDER is what makes "the photo above the words on a phone, beside them on a desktop" possible, and it was
+ * simply not a field before: the only way to reorder anything was to move it in the tree, which moves it on
+ * every screen at once. Set at one rung, it changes the sequence there and nowhere else.
+ *
+ * PUSH is an auto margin — the oldest idiom in flexbox and still the only one that moves a SINGLE item without
+ * touching its siblings. It works inside a grid cell too, so one implementation serves both engines. Physical
+ * sides rather than the logical ones deliberately: they land in the same slots as `marginCSS`, which runs
+ * BEFORE this in both the canvas's wrapStyle and the export's styleAt, so a push cleanly overrides a margin
+ * instead of the two silently coexisting as different properties that resolve to the same edge.
+ */
+function placeInSequence(s: CSSProperties, child: BoxNode): void {
+  if (child.order != null) s.order = Math.round(child.order);
+  if (child.push === "end" || child.push === "both") s.marginLeft = "auto";
+  if (child.push === "start" || child.push === "both") s.marginRight = "auto";
 }

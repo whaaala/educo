@@ -213,6 +213,67 @@ On a phone the column always keeps a margin, so text never touches the edge of t
 
 ---
 
+## 10c. Columns — laying a page out like a table
+
+Most page layouts are a row split into parts: a wide article beside a narrow sidebar, three cards across, a photo next to some words. In the Blocks panel that's **Columns**.
+
+### Pick the shape, don't do the sums
+
+Click **Columns** and you get a little grid. Sweep across it — *4 across, 3 down* — and click. You get twelve empty cells arranged exactly like that, the same way you'd insert a table in a word processor. Underneath the picker are the uneven shapes a sweep can't express: **Sidebar left · 4 · 8**, **Sidebar right · 8 · 4**, **Feature + two · 6 · 3 · 3**, **Wide + narrow · 7 · 5**.
+
+### Twelve columns underneath
+
+Every row is really **twelve columns**, and each block takes a number of them. Twelve because it divides evenly by 2, 3, 4 and 6 — so halves, thirds, quarters and sixths all come out exact.
+
+You never have to think in twelfths. Select a block and the **Grid cell** panel offers the names — **Full, Half, Third, Two‑thirds, Quarter, Three‑quarters** — with the raw number underneath if you want it. Pick a Half inside a row of thirds and the row quietly re‑cuts itself to twelve so it can express one; nothing on the page moves.
+
+| Control | What it does |
+|---|---|
+| **Width** | How much of the row this block takes — by name, or 1–12 |
+| **Start at column** | Leave columns empty before it (an offset) |
+| **Rows tall** / **Start at row** | The same two things going down, so a block can straddle rows |
+| **Line up (across)** | Where the block sits inside its own cell |
+
+### Drag a cell's edge
+
+Select a cell and drag its edge. It behaves like a table: **the boundary between two cells is shared**, so widening one narrows its neighbour and the row stays put — nothing else on the page jumps. Keep going and the neighbour stops shrinking once it's too narrow to read and **wraps to the next row**, letting the cell you're dragging reach the full width of the page.
+
+Dragging the top or bottom edge sets that **whole row's height**, so the row grows as one and the page grows with it.
+
+### Empty space is allowed
+
+If a row has columns left over, hover it (or select something in it) and an **Add a block here** target appears, exactly the width of the gap. It's hidden the rest of the time — empty space in a layout is a legitimate choice, not a mistake to be corrected.
+
+### Grids inside grids
+
+A cell is just a container, so **anything you can do to the page you can do inside a cell** — including adding another Columns block with its own columns and rows, as deep as you like. Each one carries its own spacing: **Space between blocks**, plus **Space across** and **Space down** separately when a row wants more air between its columns than between its rows, and Inner/Outer spacing per side.
+
+Grids start **full width with no padding**, at every level. Spacing is something you add, not something you have to find and remove.
+
+### On a phone
+
+A twelve‑column row **stacks to one column on a phone** and to two on a tablet held upright, with each block keeping its share of the width — so three cards become three full‑width cards rather than three unreadable slivers. If you want something different, pick the device at the top of the screen and set **Columns** there; the row then does what you said from that size down.
+
+Everything in this section is per‑device. Setting **Order** on a phone is what puts the photo above the words there and beside them on a desktop.
+
+---
+
+## 10d. Styling a box and everything in it
+
+Select any container — a section, a grid cell — and open **Text style (everything inside)** on the Design tab.
+
+Whatever you set there — font, colour, size, boldness, line spacing, alignment — **everything inside follows**: headings, paragraphs, lists, buttons and components alike. Style one block on its own afterwards and that block keeps its own look; the box only supplies what a block hasn't decided for itself.
+
+Text size is proportional, not flat: making a cell's text bigger scales its heading and its body together, keeping the heading larger than the body rather than collapsing them to one size.
+
+Backgrounds, borders, corners and padding stay with the box itself — they're the box's own shape rather than something its contents inherit.
+
+### Selecting the box you mean
+
+Click a block and you select the **outermost** box you clicked into — usually the cell. Click again to go one level deeper, and again to reach the text. **Escape** steps back out. This is why a cell is easy to hit even when it's full of content.
+
+---
+
 ## 11. Keyboard shortcuts
 
 | Action | Shortcut |
@@ -229,7 +290,7 @@ On a phone the column always keeps a margin, so text never touches the edge of t
 | Send backward / to back (floating) | Ctrl+[ / Ctrl+Shift+[ |
 | Open / close the Blocks panel | B |
 | Open Blocks panel + focus search | / |
-| Deselect | Escape |
+| Step out of the selected block (then deselect) | Escape |
 
 ---
 

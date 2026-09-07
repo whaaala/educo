@@ -35,16 +35,11 @@ const floatedTree = (zIndex: number): BoxNode => ({
   ],
 } as unknown as BoxNode);
 
-/**
- * The builder route is compiled on first request, which took 35s on a cold dev server and 5s on every run
- * after — so the FIRST test in a file fails and the rest pass, which reads like a flaky assertion and is not
- * one. The navigation gets its own budget rather than borrowing the whole test's.
- */
-const FIRST_COMPILE_MS = 90_000;
-
+// The budget for a first, compiling navigation now lives in playwright.config.ts, where all twelve of them
+// share one reason — see the note there.
 async function openCanvas(page: import("@playwright/test").Page, root: BoxNode) {
   await page.setViewportSize({ width: 1280, height: 900 });
-  await page.goto("/website/box-demo", { timeout: FIRST_COMPILE_MS });
+  await page.goto("/website/box-demo");
   await page.evaluate((tree) => {
     localStorage.setItem("educo_box_site_v1", JSON.stringify({
       homeId: "p1", pages: [{ id: "p1", name: "Home", path: "/", root: tree }],
@@ -55,9 +50,6 @@ async function openCanvas(page: import("@playwright/test").Page, root: BoxNode) 
   await page.waitForSelector('[data-box-id="root"]', { timeout: 30000 });
   await page.waitForSelector('[data-box-id="float"]', { timeout: 20000 });
 }
-
-// A test must be allowed to outlast that first compile, or the budget above has nowhere to spend.
-test.beforeEach(({}, testInfo) => testInfo.setTimeout(FIRST_COMPILE_MS + 30_000));
 
 /** What the browser says is actually on top at a point — the only honest answer. */
 async function topmostAt(page: import("@playwright/test").Page, x: number, y: number): Promise<string> {
@@ -147,7 +139,7 @@ const twoFloats = (overZ: number): BoxNode => ({
 test.describe("a neighbouring block cannot bury the controls of the one being edited", () => {
   test("selecting a covered float still gives reachable controls", async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 900 });
-    await page.goto("/website/box-demo", { timeout: FIRST_COMPILE_MS });
+    await page.goto("/website/box-demo");
     await page.evaluate((tree) => {
       localStorage.setItem("educo_box_site_v1", JSON.stringify({
         homeId: "p1", pages: [{ id: "p1", name: "Home", path: "/", root: tree }],

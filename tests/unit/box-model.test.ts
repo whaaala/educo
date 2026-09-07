@@ -10,7 +10,7 @@ import {
   isFloating, floatBox, unfloatBox, groupBoxes, ungroupBoxes, alignInRow, alignInRowOf, bringToFront, sendToBack, bringForward, sendBackward, floatingZRange, cloneBox,
   isCssBg, bgImageLayer, renderAlertHTML, bgShowThroughCss,
   radiusCSS, isClipped, SHADOW_CSS, videoEmbedSrc,
-  resolveResponsive, updateBoxResponsive, hasOverride, clearOverride,
+  resolveResponsive, updateBoxResponsive, hasOverride, clearOverride, BP_ORDER,
   type BoxNode,
 } from "@/lib/box-model";
 
@@ -654,43 +654,107 @@ describe("box-model — equal division (fillMainAxis)", () => {
   });
 });
 
-describe("box-model — responsive per-breakpoint overrides", () => {
+/**
+ * A page saved under the THREE-LAYER model, which is what every stored site currently is.
+ *
+ * Nothing here may change appearance when the ladder grew to five rungs, and nothing may need a migration:
+ * `tablet` was the only tablet layer there was, so it still covers both orientations, and `mobile` is the
+ * phone. These tests were written for the old model and are kept exactly because of that — they are now the
+ * backward-compatibility suite.
+ */
+describe("box-model — a page saved under the three-layer model still resolves", () => {
   const node = () => createContainer("column", {
     id: "n", width: "100%", direction: "row",
     responsive: { tablet: { width: "80%" }, mobile: { width: "100%", direction: "column" } },
   } as Partial<BoxNode>);
 
-  it("resolveResponsive returns the base at 'base', and cascades tablet→mobile otherwise", () => {
+  it("resolveResponsive returns the base at 'base', and cascades tablet→phone otherwise", () => {
     expect(resolveResponsive(node(), "base").width).toBe("100%");
     expect(resolveResponsive(node(), "base").direction).toBe("row");
-    expect(resolveResponsive(node(), "tablet").width).toBe("80%");
-    expect(resolveResponsive(node(), "tablet").direction).toBe("row"); // tablet didn't override direction → base
-    expect(resolveResponsive(node(), "mobile").width).toBe("100%");
-    expect(resolveResponsive(node(), "mobile").direction).toBe("column"); // mobile override wins
+    expect(resolveResponsive(node(), "tabletLandscape").width).toBe("80%");
+    expect(resolveResponsive(node(), "tabletLandscape").direction).toBe("row"); // tablet didn't override direction → base
+    expect(resolveResponsive(node(), "phone").width).toBe("100%");
+    expect(resolveResponsive(node(), "phone").direction).toBe("column"); // phone override wins
   });
 
-  it("mobile inherits tablet where mobile doesn't override", () => {
+  it("the legacy tablet layer still covers BOTH tablet orientations", () => {
+    // It was the only tablet layer that existed, so narrowing it to one orientation would silently change how
+    // every saved page looks on a portrait tablet.
+    expect(resolveResponsive(node(), "tabletLandscape").width).toBe("80%");
+    expect(resolveResponsive(node(), "tabletPortrait").width).toBe("80%");
+  });
+
+  it("the phone inherits the tablet where the phone doesn't override", () => {
     const n = createContainer("column", { id: "n", gap: 10, responsive: { tablet: { gap: 20 }, mobile: {} } } as Partial<BoxNode>);
-    expect(resolveResponsive(n, "mobile").gap).toBe(20); // from tablet
+    expect(resolveResponsive(n, "phone").gap).toBe(20); // from tablet
   });
 
-  it("updateBoxResponsive writes to the base at 'base', else into that breakpoint's override (base untouched)", () => {
+  it("a new edit at the phone wins over the legacy value, without rewriting it", () => {
+    let t = createContainer("column", { id: "n", width: "100%", responsive: { mobile: { width: "90%" } } } as Partial<BoxNode>);
+    t = updateBoxResponsive(t, "n", { width: "30%" }, "phone");
+    expect(findBox(t, "n")!.responsive!.mobile!.width).toBe("90%"); // untouched
+    expect(resolveResponsive(findBox(t, "n")!, "phone").width).toBe("30%");
+  });
+
+  it("clearing a rung clears its LEGACY slot too, or 'reset' would appear to do nothing", () => {
+    const n = node();
+    const root = { ...createContainer("column", { id: "root" } as Partial<BoxNode>), children: [n] };
+    const cleared = clearOverride(root, "n", "phone");
+    expect(hasOverride(findBox(cleared, "n")!, "phone")).toBe(false);
+    expect(resolveResponsive(findBox(cleared, "n")!, "phone").direction).toBe("row"); // back to the base
+  });
+
+  it("hasOverride + clearOverride manage a rung's overrides", () => {
+    const n = node();
+    expect(hasOverride(n, "base")).toBe(false);
+    expect(hasOverride(n, "tabletLandscape")).toBe(true);
+    const cleared = clearOverride({ ...createContainer("column", { id: "root" } as Partial<BoxNode>), children: [n] }, "n", "tabletLandscape");
+    expect(hasOverride(findBox(cleared, "n")!, "tabletLandscape")).toBe(false);
+    expect(hasOverride(findBox(cleared, "n")!, "phone")).toBe(true); // the phone layer is kept
+  });
+});
+
+describe("box-model — the five-rung ladder", () => {
+  it("every rung has its own layer: editing one does not touch another", () => {
+    // The defect this replaced: Laptop, Desktop and Wide all wrote to `base`, so tuning the Wide view
+    // rewrote every screen from 900px up — including the Desktop view you had just tuned.
+    let t = createContainer("column", { id: "n", width: "100%" } as Partial<BoxNode>);
+    t = updateBoxResponsive(t, "n", { width: "70%" }, "wide");
+    t = updateBoxResponsive(t, "n", { width: "60%" }, "tabletLandscape");
+
+    expect(resolveResponsive(findBox(t, "n")!, "base").width).toBe("100%");          // desktop untouched
+    expect(resolveResponsive(findBox(t, "n")!, "wide").width).toBe("70%");
+    expect(resolveResponsive(findBox(t, "n")!, "tabletLandscape").width).toBe("60%");
+  });
+
+  it("wide branches off the base — it is not a narrowed anything", () => {
+    const n = createContainer("column", {
+      id: "n", gap: 10, responsive: { tabletLandscape: { gap: 4 }, phone: { gap: 2 } },
+    } as Partial<BoxNode>);
+    expect(resolveResponsive(n, "wide").gap).toBe(10); // the base, NOT the tablet chain
+  });
+
+  it("narrower rungs still inherit each other, in ladder order", () => {
+    const n = createContainer("column", {
+      id: "n", gap: 32, responsive: { tabletLandscape: { gap: 16 }, tabletPortrait: { gap: 8 } },
+    } as Partial<BoxNode>);
+    expect(resolveResponsive(n, "tabletLandscape").gap).toBe(16);
+    expect(resolveResponsive(n, "tabletPortrait").gap).toBe(8);
+    expect(resolveResponsive(n, "phone").gap).toBe(8); // inherits tablet portrait
+  });
+
+  it("updateBoxResponsive writes to the base at 'base', else into that rung's own slot", () => {
     let t = createContainer("column", { id: "n", width: "100%" } as Partial<BoxNode>);
     t = updateBoxResponsive(t, "n", { width: "50%" }, "base");
     expect(findBox(t, "n")!.width).toBe("50%");
-    t = updateBoxResponsive(t, "n", { width: "30%" }, "mobile");
-    expect(findBox(t, "n")!.width).toBe("50%");                        // base unchanged
-    expect(findBox(t, "n")!.responsive!.mobile!.width).toBe("30%");    // override stored
-    expect(resolveResponsive(findBox(t, "n")!, "mobile").width).toBe("30%");
+    t = updateBoxResponsive(t, "n", { width: "30%" }, "phone");
+    expect(findBox(t, "n")!.width).toBe("50%");                       // base unchanged
+    expect(findBox(t, "n")!.responsive!.phone!.width).toBe("30%");    // override stored
+    expect(resolveResponsive(findBox(t, "n")!, "phone").width).toBe("30%");
   });
 
-  it("hasOverride + clearOverride manage a breakpoint's overrides", () => {
-    const n = node();
-    expect(hasOverride(n, "base")).toBe(false);
-    expect(hasOverride(n, "tablet")).toBe(true);
-    const cleared = clearOverride({ ...createContainer("column", { id: "root" } as Partial<BoxNode>), children: [n] }, "n", "tablet");
-    expect(hasOverride(findBox(cleared, "n")!, "tablet")).toBe(false);
-    expect(hasOverride(findBox(cleared, "n")!, "mobile")).toBe(true); // mobile kept
+  it("BP_ORDER is the ladder, narrowest first — the order a mobile-first sheet emits", () => {
+    expect(BP_ORDER).toEqual(["phone", "tabletPortrait", "tabletLandscape", "base", "wide"]);
   });
 });
 
