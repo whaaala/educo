@@ -241,6 +241,12 @@ export interface BoxNode {
   justifySelf?: "start" | "center" | "end" | "stretch"; // grid child: its own alignment ACROSS its cell
   justifyItems?: "start" | "center" | "end" | "stretch"; // grid CONTAINER: where every block sits in its cell
   push?: "start" | "end" | "both"; // auto-margin idiom: shove just THIS one left / right / to the middle
+  // WHERE THIS BLOCK SITS IN ITS PARENT, said once and read the same everywhere: nine positions, from
+  // top-left to bottom-right. `placeCSS` turns the pair into whatever the parent's engine and direction
+  // actually need — which is the whole point, because that mapping is what nobody should have to hold in
+  // their head. It supersedes `push` (still read, so no saved page changes).
+  placeX?: "start" | "center" | "end"; // across the parent
+  placeY?: "start" | "center" | "end"; // down the parent
   clip?: boolean;           // allow sizing SMALLER than content (min:0) and hide overflow; default off = hug content
   baseFont?: number;        // page root only: the global base unit in px (default 10); rendered as rem so it scales with the browser font size (WCAG)
   rowBand?: boolean;        // structural ROW band: a direct child of the page root that lays its sections out side-by-side (the page is a vertical stack of these)
@@ -248,6 +254,14 @@ export interface BoxNode {
   // every band did before this existed. "contained" keeps the background full-bleed and insets only the
   // content — a full-width colour or photo with the text still on the measure, which is most school sections.
   sectionWidth?: "band" | "contained";
+  /**
+   * How tall this box is, measured against the SCREEN rather than its contents — the full-screen hero, and
+   * the split-screen that fills the window. Phase 2 of the Layout System.
+   *
+   * A FLOOR, never a cap (`min-height`): a hero whose words outgrow the screen gets taller rather than
+   * hiding them, which on a phone is the difference between a headline and half a headline.
+   */
+  screenHeight?: "half" | "full";
 
   // ── free / floating position (escape the flow: lift a section onto its OWN layer to OVERLAP others) ──
   position?: "flow" | "absolute"; // default "flow" (in the row-band stack); "absolute" = free-floating layer
@@ -2497,7 +2511,7 @@ export function containerStyle(node: BoxNode, bp: Breakpoint = "base"): CSSPrope
   // Computed in px (measurements are px) but EMITTED in rem, per the field guide: a stored size must never
   // reach the page as a pixel value, or a reader who has raised their base font gets a box that ignores them.
   const minHpx = Math.max(node.minHeight ?? 0, floatingReserve(node, bp)) || undefined;
-  const minH = minHpx == null ? undefined : remLen(minHpx);
+  const minH = combineMinHeight(minHpx == null ? undefined : remLen(minHpx), node.screenHeight);
   if (node.layout === "grid") {
     return {
       display: "grid",
@@ -2605,6 +2619,8 @@ export function childStyle(child: BoxNode, parent: BoxNode, bp: Breakpoint = "ba
     const h = sizeToCSS(child.height);
     if (h) s.height = h;
     placeInSequence(s, child);
+    // LAST, so the nine-point position wins over the older per-axis controls it replaces.
+    Object.assign(s, placeCSS(child, parent));
     return s;
   }
   const isRow = (parent.direction ?? "column") === "row";
@@ -2629,7 +2645,10 @@ export function childStyle(child: BoxNode, parent: BoxNode, bp: Breakpoint = "ba
   // By default a box HUGS its content (flex auto-minimum = content) — it can't be sized smaller than
   // what's inside it. When `clip` is on, OR the box is EMPTY (nothing inside), we drop the minimum so
   // it can be shrunk all the way down to ~1px (padding is clipped along with it).
-  if (child.clip || isEmptyBox(child)) { s.minWidth = 0; if (child.minHeight == null) s.minHeight = 0; } // keep an EXPLICIT resize floor; only drop the content-min when there's none
+  // A SCREEN HEIGHT counts as an explicit floor too. Without that clause an empty box lost it — and a hero is
+  // empty right up until you put something in it, so "make this section full screen" appeared to do nothing
+  // at the exact moment a person would try it.
+  if (child.clip || isEmptyBox(child)) { s.minWidth = 0; if (child.minHeight == null && !child.screenHeight) s.minHeight = 0; } // keep an EXPLICIT resize floor; only drop the content-min when there's none
   // ── Responsive Field Guide reflow ──
   // A section inside a ROW BAND keeps a usable minimum width (`min(100%, 14rem)`): its siblings stay side-by-side
   // while they fit, but once the row is too narrow for everyone at that minimum, it WRAPS — so on a phone the
@@ -2654,6 +2673,9 @@ export function childStyle(child: BoxNode, parent: BoxNode, bp: Breakpoint = "ba
     s.alignSelf = pa === "stretch" ? "flex-start" : ALIGN_CSS[pa];
   }
   placeInSequence(s, child);
+  // LAST, so the nine-point position wins over the older per-axis controls it replaces (`push`, and the
+  // hug-to-content `alignSelf` just above): a block told where to sit goes there.
+  Object.assign(s, placeCSS(child, parent));
   return s;
 }
 
@@ -2674,4 +2696,62 @@ function placeInSequence(s: CSSProperties, child: BoxNode): void {
   if (child.order != null) s.order = Math.round(child.order);
   if (child.push === "end" || child.push === "both") s.marginLeft = "auto";
   if (child.push === "start" || child.push === "both") s.marginRight = "auto";
+}
+
+/**
+ * A box measured against the SCREEN — the full-screen hero, and the split-screen that fills the window.
+ *
+ * `svh`, not `vh`. On a phone the browser's own chrome hides as you scroll, and `100vh` is the height WITHOUT
+ * it — so a "full screen" hero is taller than the screen actually is when the page first loads, and its last
+ * line sits below the fold on the one device where that matters most. `svh` is the SMALL viewport height, the
+ * conservative one: the section always fits on arrival, and grows into the extra room afterwards.
+ *
+ * A FLOOR, never a cap. When the box also carries its own minimum, the two are combined with CSS `max()` so
+ * whichever is larger wins — a hero whose words outgrow the screen gets taller rather than hiding them.
+ */
+export function combineMinHeight(own: string | undefined, screen: BoxNode["screenHeight"]): string | undefined {
+  const wanted = screen === "full" ? "100svh" : screen === "half" ? "50svh" : undefined;
+  if (!wanted) return own;
+  return own ? `max(${own}, ${wanted})` : wanted;
+}
+
+/** `align-self` spelt the way flexbox wants it. */
+const SELF_CSS = { start: "flex-start", center: "center", end: "flex-end" } as const;
+
+/**
+ * WHERE A BLOCK SITS IN ITS PARENT — nine positions, one control, whatever the parent happens to be.
+ *
+ * The pair (`placeX`, `placeY`) is what a person means: top-left, centre, bottom-right. Turning that into CSS
+ * is where the confusion lived, because the answer changes with the engine AND, in flex, with the direction:
+ *
+ *   • a GRID cell — `justify-self` across, `align-self` down. Both axes belong to the child. Simple.
+ *   • a flex ROW  — down is the CROSS axis (`align-self`); across is the MAIN axis, which a child can only
+ *                   move itself along with an AUTO MARGIN.
+ *   • a flex COLUMN — the same two facts with the axes swapped.
+ *
+ * That is four different properties for one idea, and picking the right one is not something a person building
+ * a school website should have to reason about. Before this it was four separate controls whose meaning
+ * quietly changed with the parent — one of them ("Line up (down)") was even labelled for the wrong axis in the
+ * commonest case of all.
+ *
+ * Auto margins are used rather than the parent's `justify-content` on purpose: they move THIS block only, and
+ * leave its siblings exactly where they were.
+ */
+export function placeCSS(child: BoxNode, parent: BoxNode): CSSProperties {
+  const { placeX: x, placeY: y } = child;
+  if (x == null && y == null) return {};
+  const s: CSSProperties = {};
+  if (parent.layout === "grid") {
+    if (x) s.justifySelf = x;
+    if (y) s.alignSelf = SELF_CSS[y];
+    return s;
+  }
+  const isRow = (parent.direction ?? "column") === "row";
+  const cross = isRow ? y : x;               // the axis the child owns outright
+  const main = isRow ? x : y;                // the axis it can only move along with an auto margin
+  if (cross) s.alignSelf = SELF_CSS[cross];
+  if (main === "center") { if (isRow) { s.marginLeft = "auto"; s.marginRight = "auto"; } else { s.marginTop = "auto"; s.marginBottom = "auto"; } }
+  else if (main === "end") { if (isRow) s.marginLeft = "auto"; else s.marginTop = "auto"; }
+  else if (main === "start") { if (isRow) s.marginRight = "auto"; else s.marginBottom = "auto"; }
+  return s;
 }

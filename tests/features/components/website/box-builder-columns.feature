@@ -115,6 +115,56 @@ Feature: The twelve-column grid in the Box Builder
     Then it sits at the far right of the row
     And every other link stays where it was
 
+  # ── A section measured against the screen ──────────────────────────────────
+
+  Scenario: A full-screen hero
+    When I set a section's Screen height to Full screen
+    Then it is exactly one screen tall on a desktop and on a phone
+    And it never exceeds the screen, so it fits the moment the page opens
+
+  Scenario: Half a screen
+    When I set a section's Screen height to Half screen
+    Then it is half the height of the visitor's screen
+
+  Scenario: It is a floor, not a cap
+    Given a full-screen section
+    When its content is taller than the screen
+    Then the section grows to fit the content
+    And nothing is cut off
+
+  Scenario: An empty section keeps its screen height while you build
+    Given a new full-screen section with nothing in it yet
+    Then it is still one screen tall
+    Because a hero is empty right up until you fill it
+
+  # ── Where a block sits — nine positions, one control ───────────────────────
+
+  Scenario: Putting a block in a corner
+    When I select a block and choose bottom-right in Position
+    Then the block sits at the bottom right of its parent
+    And its neighbours have not moved
+
+  Scenario: The same nine squares mean the same thing everywhere
+    Given blocks in a section, in a side-by-side row, and in a grid cell
+    When I choose the same position for each
+    Then each one sits in that position within its own parent
+    Because the builder works out which CSS that parent needs
+
+  Scenario: Clearing a position
+    Given a block placed bottom-left
+    When I click bottom-left again
+    Then the block goes back to sitting where the layout puts it
+
+  Scenario: One axis at a time
+    When I set only the across position
+    Then the down position is left alone rather than being guessed
+
+  Scenario: Inside a grid, a block is positioned within its own cell
+    Given a block that takes four of the twelve columns
+    When I choose right in Position
+    Then it sits at the right of those four columns
+    And to move it across the whole row I change its width or its start column
+
   Scenario: Where a block sits inside its own cell
     Given a row of twelve columns
     When I set the row's Position blocks to Center

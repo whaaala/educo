@@ -268,6 +268,34 @@ Text size is proportional, not flat: making a cell's text bigger scales its head
 
 Backgrounds, borders, corners and padding stay with the box itself — they're the box's own shape rather than something its contents inherit.
 
+---
+
+## 10f. A section that fills the screen
+
+Select a section → **Design → Arrange → Screen height**:
+
+- **Fit content** — as tall as whatever is inside it. The default.
+- **Half screen** — half the visitor's screen.
+- **Full screen** — a hero exactly one screen tall, the thing people mean by "make the front page look like a proper website".
+
+It's a **minimum, not a fixed height**. If the words inside outgrow the screen the section gets taller rather than hiding them — so a long headline on a small phone still reads in full.
+
+Two things it handles for you. It uses the *conservative* measure of screen height, so a full-screen section always fits on arrival rather than being pushed under the phone's address bar. And because it's a floor, a section that's still empty while you're building it stays full height instead of collapsing to nothing.
+
+---
+
+## 10e. Putting a block where you want it
+
+Select any block and open **Position** on the Design tab. You get nine squares — top-left, top-centre, top-right, and so on down to bottom-right. Click one and the block goes there. Click the same one again to let it sit wherever the layout puts it.
+
+It **moves only that block**; its neighbours stay exactly where they were.
+
+The nine squares mean the same thing wherever you use them, which is the point — a section, a row, a grid cell, at any depth. Underneath, the builder works out which CSS a given parent needs (that answer changes depending on whether the parent stacks top-to-bottom or side-by-side, which is not something you should have to think about).
+
+**One thing worth knowing about grids.** Inside a grid, a block is positioned within **its own cell**. If you want to move it across the whole row instead, change how many columns it takes or which column it starts at — that's what those controls are for.
+
+If you'd rather place something completely freely, use **Placement → Floating** and drag it anywhere. That lifts it out of the layout onto its own layer.
+
 ### Selecting the box you mean
 
 Click a block and you select the **outermost** box you clicked into — usually the cell. Click again to go one level deeper, and again to reach the text. **Escape** steps back out. This is why a cell is easy to hit even when it's full of content.

@@ -308,6 +308,85 @@ test.describe("twelve columns", () => {
     expect(photoP.top, "above, on a phone").toBeLessThan(wordsP.top);
   });
 
+  test("the nine-point position puts a block where it says, in a grid AND in a section", async ({ page }) => {
+    // Measured rather than read off the CSS. The mapping differs per engine — `justify-self`/`align-self` in a
+    // grid, `align-self` plus an auto margin in flex — so "the right property was emitted" is a weaker claim
+    // than "the block is in the corner a person pointed at".
+    const cell = (id: string, place: Record<string, string>) => ({
+      id, anchor: id, type: "container", layout: "grid", columns: 12, gap: 0, padding: 0, width: "fill",
+      minHeight: 240, colSpan: 12,
+      // The block spans the WHOLE row and is given a fixed size, so its grid area is the container and all
+      // nine positions are observable inside it. (A narrower span would make `justify-self` position it inside
+      // its own cell — correct CSS, and the reason a cell's span is the thing to change when someone means
+      // "move it across the row" rather than "move it inside its cell".)
+      children: [{ id: `${id}b`, anchor: `${id}b`, type: "container", direction: "column", padding: 0,
+        colSpan: 12, width: "120px", height: "60px", background: "#3355ff", children: [], ...place }],
+    });
+    const root = {
+      id: "root", type: "container", direction: "column",
+      children: [{
+        id: "band", type: "container", direction: "row", rowBand: true, width: "fill",
+        children: [{ id: "grid", anchor: "grid", type: "container", layout: "grid", columns: 12, gap: 0, padding: 0, width: "fill",
+          children: [
+            cell("tl", { placeX: "start", placeY: "start" }),
+            cell("br", { placeX: "end", placeY: "end" }),
+            cell("mc", { placeX: "center", placeY: "center" }),
+          ] }],
+      }],
+    } as unknown as BoxNode;
+    const site = siteFromRoot(normalizeRowBands(root));
+    await load(page, renderSitePage(site, DEFAULT_THEME, site.homeId, { inlineShared: true }), DESKTOP);
+    for (const [id, xEdge, yEdge] of [["tl", "left", "top"], ["br", "right", "bottom"], ["mc", "centre", "middle"]] as const) {
+      const outer = await box(page, `#${id}`);
+      const inner = await box(page, `#${id}b`);
+      if (xEdge === "left") expect(Math.abs(inner.left - outer.left), `${id} sits at the left`).toBeLessThan(3);
+      if (xEdge === "right") expect(Math.abs(inner.right - outer.right), `${id} sits at the right`).toBeLessThan(3);
+      if (xEdge === "centre") expect(Math.abs((inner.left - outer.left) - (outer.right - inner.right)), `${id} is centred across`).toBeLessThan(4);
+      if (yEdge === "top") expect(Math.abs(inner.top - outer.top), `${id} sits at the top`).toBeLessThan(3);
+      if (yEdge === "bottom") expect(Math.abs(inner.bottom - outer.bottom), `${id} sits at the bottom`).toBeLessThan(3);
+      if (yEdge === "middle") expect(Math.abs((inner.top - outer.top) - (outer.bottom - inner.bottom)), `${id} is centred down`).toBeLessThan(4);
+    }
+  });
+
+  test("a full-screen section is exactly one screen tall, on a desktop and on a phone", async ({ page }) => {
+    const hero = (screenHeight: string, kids: unknown[] = []) => ({
+      id: "hero", anchor: "hero", type: "container", direction: "column", padding: 0, width: "fill",
+      background: "#3355ff", screenHeight, children: kids,
+    });
+    const pageOf = (node: unknown) => {
+      const root = { id: "root", type: "container", direction: "column", children: [
+        { id: "band", type: "container", direction: "row", rowBand: true, width: "fill", children: [node] },
+      ] } as unknown as BoxNode;
+      const site = siteFromRoot(normalizeRowBands(root));
+      return renderSitePage(site, DEFAULT_THEME, site.homeId, { inlineShared: true });
+    };
+
+    for (const [w, h] of [[DESKTOP, 900], [375, 720]] as const) {
+      await page.setViewportSize({ width: w, height: h });
+      await page.setContent(pageOf(hero("full")), { waitUntil: "domcontentloaded" });
+      await page.waitForSelector("#hero", { state: "attached", timeout: 10_000 });
+      const b = await box(page, "#hero");
+      expect(Math.abs(b.height - h), `full screen at ${w}×${h}`).toBeLessThan(4);
+      // Never TALLER than the screen — the point of `svh`. (That the emitted unit is `svh` rather than `vh`
+      // is asserted in the unit suite: a headless browser reports the two as equal, because it has none of
+      // the collapsing chrome that makes them differ on a real phone.)
+      expect(b.height, "a full-screen section must never exceed the screen").toBeLessThanOrEqual(h + 2);
+    }
+
+    // Half screen is half.
+    await page.setViewportSize({ width: DESKTOP, height: 900 });
+    await page.setContent(pageOf(hero("half")), { waitUntil: "domcontentloaded" });
+    await page.waitForSelector("#hero", { state: "attached", timeout: 10_000 });
+    expect(Math.abs((await box(page, "#hero")).height - 450)).toBeLessThan(4);
+
+    // And it is a FLOOR: content taller than the screen makes the section taller, never cropped.
+    const tall = Array.from({ length: 40 }, (_, i) => ({ id: `t${i}`, type: "text", text: `Line ${i} of a very long hero` }));
+    await page.setContent(pageOf(hero("full", tall)), { waitUntil: "domcontentloaded" });
+    await page.waitForSelector("#hero", { state: "attached", timeout: 10_000 });
+    const grown = await box(page, "#hero");
+    expect(grown.height, "content that outgrows the screen makes the section taller").toBeGreaterThan(900);
+  });
+
   test("push moves one block and leaves its neighbours alone", async ({ page }) => {
     // A flex row, because push is not a grid idea — it is the nav-link-on-the-far-right idiom.
     const root = {

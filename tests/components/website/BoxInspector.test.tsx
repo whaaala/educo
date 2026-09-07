@@ -423,14 +423,20 @@ describe("BoxInspector — functionality audit (every remaining control)", () =>
     expect(screen.getByRole("button", { name: "Third" })).toBeInTheDocument();
   });
 
-  it("Order & push: order, push and align-self fire for a block in ANY container", () => {
+  it("Position: the nine-point positioner and Order fire for a block in ANY container", () => {
     const onPatch = renderFor(heading());
     fireEvent.change(screen.getByLabelText("Order"), { target: { value: "-1" } });
     expect(onPatch).toHaveBeenCalledWith({ order: -1 });
-    fireEvent.click(screen.getByRole("button", { name: "Right" }));
-    expect(onPatch).toHaveBeenCalledWith({ push: "end" });
-    pickSelect("Align this block", "Middle");
-    expect(onPatch).toHaveBeenCalledWith({ alignSelf: "center" });
+    // One control, nine positions — `placeCSS` turns the pair into whatever the parent's engine needs.
+    fireEvent.click(screen.getByRole("button", { name: "Bottom right" }));
+    expect(onPatch).toHaveBeenCalledWith({ placeX: "end", placeY: "end" });
+    fireEvent.click(screen.getByRole("button", { name: "Middle centre" }));
+    expect(onPatch).toHaveBeenCalledWith({ placeX: "center", placeY: "center" });
+    cleanup();
+    // Clicking the CHOSEN square again clears it, so a block can go back to sitting where the layout puts it.
+    const chosen = renderFor(createElement("heading", { id: "h", text: "Hi", placeX: "start", placeY: "end" } as Partial<BoxNode>));
+    fireEvent.click(screen.getByRole("button", { name: "Bottom left" }));
+    expect(chosen).toHaveBeenCalledWith({ placeX: undefined, placeY: undefined });
     cleanup();
     // Emptying the order returns the block to document order rather than pinning it at 0, which is a real
     // position: a sibling with order -1 would still jump ahead of it, but everything at 0 would not.

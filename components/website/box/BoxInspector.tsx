@@ -530,6 +530,19 @@ export default function BoxInspector({ node, theme, onPatch, onAddChild, onFloat
                   </p>
                 </div>
               )}
+              {/* THE FULL-SCREEN HERO. Measured against the screen rather than the contents — and a FLOOR, so
+                  a heading that outgrows the screen makes the section taller instead of being cut off. */}
+              <div className="space-y-1">
+                <span className={label}>Screen height</span>
+                <Segmented full ariaLabel="Screen height" value={node.screenHeight ?? "auto"}
+                  onChange={(v) => onPatch({ screenHeight: v === "auto" ? undefined : v as NonNullable<BoxNode["screenHeight"]> })}
+                  options={[{ value: "auto", label: "Fit content" }, { value: "half", label: "Half screen" }, { value: "full", label: "Full screen" }]} />
+                <p className="text-[11px] leading-snug text-gray-500 dark:text-gray-400">
+                  {node.screenHeight
+                    ? "At least this tall on every device — it grows further if the content needs it."
+                    : "As tall as whatever is inside it."}
+                </p>
+              </div>
               <Segmented full ariaLabel="Arrange as" value={isGrid ? "grid" : "flex"} onChange={(v) => onPatch({ layout: v as "flex" | "grid" })}
                 options={[{ value: "flex", label: "Free arrange" }, { value: "grid", label: "Grid" }]} />
               {isGrid ? (
@@ -606,26 +619,33 @@ export default function BoxInspector({ node, theme, onPatch, onAddChild, onFloat
               section rather than a grid-only one. Order is the control that makes "the photo above the words
               on a phone, beside them on a desktop" possible — pick a device first, then set it. */}
           {canFloat && !floating && (
-            <Accordion title="Order & push" icon={Columns3}>
-              <div className="grid grid-cols-2 gap-2">
-                <CompactField label="Order" ariaLabel="Order" type="number" placeholder="auto" value={node.order ?? ""}
-                  onChange={(v) => onPatch({ order: v === "" ? undefined : Number(v) || 0 })} />
-                {/* `align-self` is the CROSS axis, and which direction that is depends on the parent: across a
-                    top-to-bottom section, down a side-by-side row. Labelling it "down" was wrong half the
-                    time — in the commonest case of all, a block in a section, it lines up left/right. */}
-                <CompactSelect label="Align this block" ariaLabel="Align this block" value={node.alignSelf ?? ""}
-                  onChange={(v) => onPatch({ alignSelf: v === "" ? undefined : v as NonNullable<BoxNode["alignSelf"]> })}
-                  options={[{ value: "", label: "Auto" }, { value: "stretch", label: "Fill" }, { value: "flex-start", label: "Top" }, { value: "center", label: "Middle" }, { value: "flex-end", label: "Bottom" }]} />
-              </div>
+            <Accordion title="Position" icon={Columns3}>
+              {/* NINE POSITIONS, ONE CONTROL. The four separate controls this replaces each meant something
+                  different depending on the parent's engine and direction — `align-self` lines a block up
+                  left/right in a section and top/bottom in a row, which is not something anyone should have
+                  to reason about. `placeCSS` works out the CSS; the user just points at where they want it. */}
               <div className="space-y-1">
-                <span className={label}>Push</span>
-                <Segmented full ariaLabel="Push" value={node.push ?? "none"}
-                  onChange={(v) => onPatch({ push: v === "none" ? undefined : v as NonNullable<BoxNode["push"]> })}
-                  options={[{ value: "none", label: "None" }, { value: "start", label: "Left" }, { value: "both", label: "Centre" }, { value: "end", label: "Right" }]} />
+                <span className={label}>Where this block sits</span>
+                <div role="group" aria-label="Position in its parent" className="inline-grid grid-cols-3 gap-1 rounded-xl bg-surface-2 p-1.5 ring-1 ring-line">
+                  {(["start", "center", "end"] as const).map((y) => (["start", "center", "end"] as const).map((x) => {
+                    const on = node.placeX === x && node.placeY === y;
+                    const name = `${y === "start" ? "Top" : y === "end" ? "Bottom" : "Middle"} ${x === "start" ? "left" : x === "end" ? "right" : "centre"}`;
+                    return (
+                      <button key={`${y}-${x}`} aria-label={name} title={name} aria-pressed={on}
+                        onClick={() => onPatch(on ? { placeX: undefined, placeY: undefined } : { placeX: x, placeY: y })}
+                        className={`grid h-6 w-6 place-items-center rounded-md transition-colors ${on ? "bg-brand text-brand-fg" : "text-muted hover:bg-brand/10 hover:text-brand"}`}>
+                        <span className="block h-2 w-2 rounded-sm bg-current" />
+                      </button>
+                    );
+                  }))}
+                </div>
                 <p className="text-[11px] leading-snug text-gray-500 dark:text-gray-400">
-                  Moves just this block, leaving its neighbours where they are — the nav-link-on-the-far-right idiom.
+                  Moves just this block, leaving its neighbours where they are. Click the chosen square again
+                  to let it sit where the layout puts it.
                 </p>
               </div>
+              <CompactField label="Order" ariaLabel="Order" type="number" placeholder="auto" value={node.order ?? ""}
+                onChange={(v) => onPatch({ order: v === "" ? undefined : Number(v) || 0 })} />
             </Accordion>
           )}
 
