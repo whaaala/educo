@@ -1,5 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
-import { type BoxNode } from "@/lib/box-model";
+import { type BoxNode, normalizeRowBands } from "@/lib/box-model";
 import { siteFromRoot } from "@/lib/box-site";
 import { renderSitePage } from "@/lib/box-export";
 import { DEFAULT_THEME } from "@/lib/site-storage";
@@ -90,6 +90,135 @@ test.describe("twelve columns", () => {
     expect(b.right).toBeLessThanOrEqual(row.right + 1);
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
     expect(overflow, "no horizontal scrollbar").toBeLessThanOrEqual(1);
+  });
+
+  test("the rows share the grid's height evenly, and give it back when it shrinks", async ({ page }) => {
+    // `minmax(min-content, 1fr)` on the rows, measured. Two defaults were tried and both were wrong: `auto`
+    // rows with the browser's `align-content` hand the spare height out unequally, and packing to the start
+    // makes every row hug, which leaves the height a person just dragged sitting unused at the bottom.
+    const gridWith = (minHeight: number) => {
+      const root = {
+        id: "root", type: "container", direction: "column",
+        children: [{
+          id: "band", type: "container", direction: "row", rowBand: true, width: "fill",
+          children: [{
+            id: "grid", anchor: "grid", type: "container", layout: "grid", columns: 12, gap: 0, padding: 0,
+            width: "fill", minHeight,
+            children: [
+              { id: "a", anchor: "a", type: "container", direction: "column", padding: 0, colSpan: 6, background: "#c7d2fe", children: [{ id: "at", anchor: "at", type: "text", text: "One line" }] },
+              // Given content on purpose: an EMPTY cell that paints a colour carries an 8rem floor so it is
+              // visible on the published page (see the visibility test below), and that floor would mask the
+              // one thing this test is measuring — how the rows divide the height between them.
+              { id: "b", anchor: "b", type: "container", direction: "column", padding: 0, colSpan: 6, background: "#bbf7d0", children: [{ id: "bt", type: "text", text: "Beside it" }] },
+              { id: "c", anchor: "c", type: "container", direction: "column", padding: 0, colSpan: 12, background: "#fde68a", children: [{ id: "ct", type: "text", text: "Second row" }] },
+            ],
+          }],
+        }],
+      } as unknown as BoxNode;
+      const site = siteFromRoot(root);
+      return renderSitePage(site, DEFAULT_THEME, site.homeId, { inlineShared: true });
+    };
+
+    // TALL: 600px of grid, two rows — each takes half, and none of it is left over at the bottom.
+    await load(page, gridWith(600), DESKTOP);
+    const grid = await box(page, "#grid");
+    const b = await box(page, "#b");
+    let a = await box(page, "#a"), c = await box(page, "#c");
+    expect(grid.height).toBeGreaterThan(560);
+    expect(Math.abs(a.height - c.height), "the two rows are the same height").toBeLessThan(3);
+    expect(Math.abs(a.height - grid.height / 2), "each row takes half the grid").toBeLessThan(4);
+    expect(Math.abs(c.bottom - grid.bottom), "nothing is left over under the last row").toBeLessThan(3);
+    expect(Math.abs(a.top - b.top), "cells in the same row line up").toBeLessThan(2);
+    expect(Math.abs(a.height - b.height), "…and an empty cell fills its row alongside them").toBeLessThan(3);
+
+    // SHORT: the space is handed straight back — the rows shrink with the grid rather than holding it open.
+    await load(page, gridWith(120), DESKTOP);
+    const small = await box(page, "#grid");
+    a = await box(page, "#a"); c = await box(page, "#c");
+    expect(small.height).toBeLessThan(160);
+    expect(Math.abs(a.height - c.height)).toBeLessThan(3);
+    // …but never past what the content needs to be read: the row still contains its line of text.
+    const textH = await page.locator("#at").evaluate((el) => el.getBoundingClientRect().height);
+    expect(a.height).toBeGreaterThanOrEqual(textH - 1);
+  });
+
+  test("empty coloured cells are VISIBLE on the published page — parent, child and grandchild alike", async ({ page }) => {
+    // The regression this exists to stop, which shipped for about an hour: an empty cell was given no height
+    // in the export, so a grid of empty coloured cells published as a blank white page — while the canvas went
+    // on showing them, because its "drag a block in" hint gave them height there. Canvas ≠ export, in the
+    // direction where the editor lies to you.
+    //
+    // Measured at THREE depths on purpose. The fix lives in one place that runs for every node, so covering
+    // all three costs nothing and proves the claim rather than asserting it.
+    const painted = (id: string, bg: string, kids: unknown[] = []) => ({
+      id, anchor: id, type: "container", direction: "column", padding: 0, colSpan: 6, background: bg, children: kids,
+    });
+    const grid = (id: string, kids: unknown[]) => ({
+      id, anchor: id, type: "container", layout: "grid", columns: 12, gap: 0, padding: 0, width: "fill", children: kids,
+    });
+    const root = {
+      id: "root", type: "container", direction: "column",
+      children: [{
+        id: "band", type: "container", direction: "row", rowBand: true, width: "fill",
+        children: [grid("grid", [
+          painted("p1", "#0f766e", [grid("child", [
+            painted("c1", "#7c2d12", [grid("gchild", [painted("g1", "#0d9488"), painted("g2", "#ca8a04")])]),
+            painted("c2", "#1e3a8a"),
+          ])]),
+          painted("p2", "#b45309"),
+        ])],
+      }],
+    } as unknown as BoxNode;
+    const site = siteFromRoot(root);
+    await load(page, renderSitePage(site, DEFAULT_THEME, site.homeId, { inlineShared: true }), DESKTOP);
+    // Every painted cell, at every depth, has real height AND actually paints.
+    for (const id of ["p1", "p2", "c1", "c2", "g1", "g2"]) {
+      const b = await box(page, `#${id}`);
+      expect(b.height, `${id} must be visible on the published page`).toBeGreaterThan(20);
+      expect(b.width, `${id} must have width`).toBeGreaterThan(20);
+      const bg = await page.locator(`#${id}`).evaluate((el) => getComputedStyle(el).backgroundColor);
+      expect(bg, `${id} must paint its colour`).not.toBe("rgba(0, 0, 0, 0)");
+    }
+    // …and the page itself is not blank.
+    const pageH = await page.evaluate(() => document.body.getBoundingClientRect().height);
+    expect(pageH).toBeGreaterThan(100);
+  });
+
+  test("a grid inside a grid takes the height of the cell it is in", async ({ page }) => {
+    // The bug: the outer cell was full height, the inner grid sat in the top of it at its own content height,
+    // and the gap underneath read as a broken layout. A grid divides the space it is GIVEN — so it fills it.
+    const cell = (id: string, kids: unknown[] = []) => ({
+      id, anchor: id, type: "container", direction: "column", padding: 0, colSpan: 6, children: kids,
+    });
+    const root = {
+      id: "root", type: "container", direction: "column",
+      children: [{
+        id: "band", type: "container", direction: "row", rowBand: true, width: "fill",
+        children: [{
+          id: "outer", anchor: "grid", type: "container", layout: "grid", columns: 12, gap: 0, padding: 0,
+          width: "fill", minHeight: 500,
+          children: [
+            cell("host", [{
+              id: "inner", anchor: "inner", type: "container", layout: "grid", columns: 12, gap: 0, padding: 0,
+              width: "fill", children: [cell("i1"), cell("i2")],
+            }]),
+            cell("side"),
+          ],
+        }],
+      }],
+    } as unknown as BoxNode;
+    // NORMALISED, like the real builder. `normalizeRowBands` inserts a structural band between a cell and
+    // whatever is inside it, so a nested grid is never a cell's direct child. A hand-built tree skips that
+    // step — which is exactly how the first version of this test passed while the app stayed broken.
+    const site = siteFromRoot(normalizeRowBands(root));
+    await load(page, renderSitePage(site, DEFAULT_THEME, site.homeId, { inlineShared: true }), DESKTOP);
+    const host = await box(page, "#host");
+    const inner = await box(page, "#inner");
+    expect(host.height, "the outer cell has real height to give").toBeGreaterThan(400);
+    expect(Math.abs(inner.height - host.height), "the inner grid fills its cell").toBeLessThan(3);
+    // …and the inner grid's own cells then share that height between them, the same rule one level down.
+    const i1 = await box(page, "#i1");
+    expect(Math.abs(i1.height - inner.height), "a single inner row takes the inner grid's height").toBeLessThan(3);
   });
 
   test("a cell's typography cascades into everything inside it, and a block can still differ", async ({ page }) => {

@@ -63,6 +63,20 @@ Run through this checklist BEFORE telling the user it's done:
 - Show keyboard shortcut hints in menus and tooltips
 
 ### 3. UI Standards
+- **Corner radius — EVERY block, every component, the ones we have and every future one (MANDATORY)**
+  - **Nothing is rounded until someone asks.** A grid cell, a section, a row, an element: all start square.
+    The only rounding that may arrive with a block is part of a *design somebody chose* — a Card, or a style
+    preset picked from the gallery — never a default hiding inside a new box.
+  - **Five controls, on every block:** all four corners at once, plus **top-left, top-right, bottom-right,
+    bottom-left** individually. A per-corner value overrides the all-corners one.
+  - Emit it through **`radiusCSS(node)` only** — the single resolver the canvas (`decorStyle`), the export
+    (`decorCss`) and a component's own box (`componentBoxCss`) all call. Never write `border-radius` by hand,
+    or the canvas and the published page will disagree.
+  - A new component is held to this by `tests/unit/corner-radius.test.ts`, which **enumerates the palette and
+    the component catalogue** rather than listing cases — so a component added later is covered the day it
+    appears, instead of relying on someone remembering to write a test for it.
+- **Spacing is a decision, never a default.** Containers are created with `gap: 0` and `padding: 0`; a user
+  adds space through the gap (across/down separately), inner spacing per side, or outer spacing per side.
 - **No `alert()`, `window.confirm()`, `window.prompt()`** — use EditorDialog (desktop) or Modal (mobile)
 - Every interactive element MUST perform its intended action and persist state
 - Follow existing patterns: lucide-react icons on desktop, Ionicons on mobile, Inter fonts, ThemeContext colors

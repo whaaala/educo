@@ -17,13 +17,13 @@ import {
   Heading as HeadingIcon, Pilcrow, MousePointerClick, ListOrdered,
   Image as ImageIcon, Film, Shapes, CodeXml,
   PanelTopOpen, LayoutGrid, MessageSquareQuote, Hash, BadgeCheck, Star, BellRing,
-  Blocks, LayoutTemplate, Type, Images, Component, Search, X, Plus, Sparkles, type LucideIcon,
+  Blocks, LayoutTemplate, Type, Images, Component, Search, X, Plus, Sparkles, ChevronDown, type LucideIcon,
 } from "lucide-react";
 import type { BoxNode } from "@/lib/box-model";
 import type { SiteTheme } from "@/lib/site-storage";
-import { getAddChoices, PICKER_COLUMNS, tableGrid } from "@/lib/box-presets";
+import { getAddChoices, PICKER_COLUMNS, tableGrid, GRID_LAYOUTS } from "@/lib/box-presets";
 import { COMPONENT_CATALOGUE } from "@/lib/component-catalogue";
-import { PortalMenu, MenuItem, MenuHeader, TablePicker } from "./ui";
+import { PortalMenu, MenuItem, MenuHeader, TablePicker, SplitGallery } from "./ui";
 import { GRID_MAX } from "@/lib/box-model";
 import { CHROME_Z } from "@/lib/educo-ui/stacking";
 
@@ -135,15 +135,25 @@ export default function BlocksPanel({ theme, onDragKind, onPick, defaultOpen = f
           if (hasVariations && onPick) { const r = (e.currentTarget as HTMLElement).getBoundingClientRect(); setMenu((m) => (m?.kind === b.kind ? null : { kind: b.kind, label: b.label, anchor: { top: r.top, left: r.left, bottom: r.bottom, right: r.right } })); }
           else onPick?.(b.kind);
         }}
-        title={b.hint}
+        title={hasVariations ? `${b.hint} — click to choose` : b.hint}
         role="button"
-        aria-label={`Add ${b.label} — drag onto the page or click to choose a style`}
-        aria-expanded={active}
-        className={`group flex flex-col gap-2 rounded-xl p-2.5 cursor-grab active:cursor-grabbing transition-colors ${active ? "bg-brand/10 ring-1 ring-brand/40" : "hover:bg-brand/[0.06]"}`}
+        aria-label={hasVariations ? `Add ${b.label} — drag onto the page, or click to choose a layout` : `Add ${b.label}`}
+        aria-haspopup={hasVariations ? "menu" : undefined}
+        aria-expanded={hasVariations ? active : undefined}
+        className={`group relative flex flex-col gap-2 rounded-xl p-2.5 cursor-grab active:cursor-grabbing transition-colors ${active ? "bg-brand/10 ring-1 ring-brand/40" : "hover:bg-brand/[0.06]"}`}
       >
         <span className={`grid place-items-center w-9 h-9 rounded-lg transition-colors ${active ? "bg-brand/15 text-brand" : "bg-surface-2 text-muted group-hover:bg-brand/10 group-hover:text-brand"}`}>
           <b.Icon className="w-[1.15rem] h-[1.15rem]" strokeWidth={1.75} />
         </span>
+        {/* SAYS THAT IT OPENS SOMETHING. A tile that quietly reveals a picker looks identical to one that adds
+            a block outright, so nobody clicks it to see. The caret is the convention for "there is more
+            behind this", it turns and colours when the menu is open, and `aria-haspopup` tells a screen
+            reader the same thing the caret tells everyone else. */}
+        {hasVariations && (
+          <span aria-hidden className={`absolute right-1.5 top-1.5 grid h-4 w-4 place-items-center rounded-md transition-all ${active ? "rotate-180 bg-brand text-brand-fg" : "bg-surface-2 text-muted group-hover:bg-brand/15 group-hover:text-brand"}`}>
+            <ChevronDown className="h-3 w-3" strokeWidth={2.5} />
+          </span>
+        )}
         <span className="min-w-0">
           <span className="block text-[0.8125rem] font-semibold text-ink truncate">{b.label}</span>
           <span className="block text-[0.6875rem] leading-snug text-muted line-clamp-2">{b.hint}</span>
@@ -251,26 +261,35 @@ export default function BlocksPanel({ theme, onDragKind, onPick, defaultOpen = f
 
       {/* Variation picker — portaled so the panel's scroll area can never clip it. */}
       {menu && (variations.length > 0 || menu.kind === "grid") && (
-        <PortalMenu anchor={menu.anchor} onClose={() => setMenu(null)} width={menu.kind === "grid" ? 232 : 184} ariaLabel={`Add ${menu.label}`}>
+        <PortalMenu anchor={menu.anchor} onClose={() => setMenu(null)} width={menu.kind === "grid" ? 268 : 184} ariaLabel={`Add ${menu.label}`}>
           {/* A ROW is picked by its SHAPE, the way a table is inserted in a word processor — sweep the grid,
-              click, done. The named splits stay underneath for the unequal shapes a sweep cannot express. */}
+              click, done. The named splits stay underneath for the unequal shapes a sweep cannot express, and
+              they draw themselves rather than naming two numbers. */}
           {menu.kind === "grid" ? (
-            <>
-              <MenuHeader>How many across and down?</MenuHeader>
+            <div className="p-1.5">
+              <p className="px-0.5 pb-2 text-[0.8125rem] font-semibold text-ink">Choose a layout</p>
               <TablePicker
                 columns={PICKER_COLUMNS}
                 onPick={(cols, rows) => { onPick?.("grid", { children: tableGrid(cols, rows).children, columns: GRID_MAX }); setMenu(null); }}
-                label="Choose a layout — columns across, rows down"
+                label="Sweep to choose columns across and rows down"
               />
-              <MenuHeader>Or an uneven split</MenuHeader>
-            </>
+              <div className="my-2.5 flex items-center gap-2">
+                <span className="h-px flex-1 bg-line" />
+                <span className="text-[0.625rem] font-medium uppercase tracking-wide text-muted">or an uneven split</span>
+                <span className="h-px flex-1 bg-line" />
+              </div>
+              <SplitGallery
+                splits={GRID_LAYOUTS}
+                onPick={(id) => { const p = variations.find((v) => v.id === id); if (p) onPick?.("grid", p.patch); setMenu(null); }}
+              />
+            </div>
           ) : (
             <>
               <MenuHeader>Add {menu.label} as…</MenuHeader>
               <MenuItem onClick={() => { onPick?.(menu.kind); setMenu(null); }} Icon={Plus} label="Default" />
+              {variations.map((p) => <MenuItem key={p.id} onClick={() => { onPick?.(menu.kind, p.patch); setMenu(null); }} Icon={Sparkles} label={p.label} />)}
             </>
           )}
-          {variations.map((p) => <MenuItem key={p.id} onClick={() => { onPick?.(menu.kind, p.patch); setMenu(null); }} Icon={Sparkles} label={p.label} />)}
         </PortalMenu>
       )}
     </>

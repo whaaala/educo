@@ -345,6 +345,13 @@ function styleAt(node: BoxNode, rawParent: BoxNode | null, bp: Breakpoint, theme
     // An EMPTY container that paints a background would collapse to 0px in the exported/preview site (the editor's
     // "Drag a block here" placeholder gives it height, but that's editor-only). Give it a visible band so the
     // background actually shows — unless the user gave it an explicit height/min-height.
+    //
+    // GRID CELLS INCLUDED. This was briefly skipped for them, on the reasoning that a cell takes its height
+    // from its row anyway — which is true only when a SIBLING has content to set that height. A grid of empty
+    // coloured cells then published as a blank page: every row measured zero, while the canvas went on showing
+    // them because its "drag a block in" hint gave them height. Canvas ≠ export, in the direction where the
+    // editor lies to you, which is the worst of the two. The band stays, and the rows sharing the height
+    // evenly (`minmax(min-content, 1fr)`) is what stops it distorting a row that has real content in it.
     const empty = !(r.children && r.children.length);
     const paints = !selfPaint && (r.bgImage || r.background || r.bgOverlay);
     if (empty && paints && r.minHeight == null && r.height == null && cs.minHeight == null && cs.height == null) cs.minHeight = "8rem";

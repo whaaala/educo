@@ -409,17 +409,28 @@ export function isEmptyBox(node: BoxNode): boolean {
 
 // ── Factories ───────────────────────────────────────────────────────────────
 
+/**
+ * A container. NO SPACE OF ANY KIND until someone asks for it.
+ *
+ * `gap: 16` and `padding: 24` used to be born into every container, which meant a grid's rows and columns
+ * arrived with white bands between them that nobody had chosen — and, being real stored values, they showed
+ * up in the controls as though they had been. Space is a decision: the builder offers it three ways (the gap
+ * between blocks, inner spacing per side, outer spacing per side) and all three now start at zero.
+ *
+ * Saved pages are untouched: these were written INTO every node at creation, so an existing box carries its
+ * own 16 and 24 and keeps them. Only newly added blocks start flush.
+ */
 export function createContainer(direction: FlexDir = "column", overrides: Partial<BoxNode> = {}): BoxNode {
   return {
     id: newBoxId(),
     type: "container",
     layout: "flex",
     direction,
-    gap: 16,
+    gap: 0,
     align: "stretch",
     justify: "start",
     wrap: direction === "row",
-    padding: 24,
+    padding: 0,
     width: "fill",
     children: [],
     ...overrides,
@@ -2145,6 +2156,42 @@ export function gridPlacementAt(parent: BoxNode, child: BoxNode, bp: Breakpoint 
 }
 
 /**
+ * An explicit row track list, but ONLY when some row has been given a height by hand.
+ *
+ * Two rules have to hold at once, and they pull against each other:
+ *   • a row a user has dragged taller KEEPS that height;
+ *   • every row they have NOT touched shares what is left, evenly.
+ *
+ * `grid-auto-rows` cannot say that — it is one value for every row, so a dragged row was levelled straight
+ * back down by the `1fr` its neighbours were also claiming, and dragging a cell's edge appeared to do nothing
+ * at all. Naming the tracks separates them: a sized row becomes `auto`, so its cells' own min-height decides
+ * it, and every other row stays `minmax(min-content, 1fr)` — the same even share as before.
+ *
+ * Returns null when nothing has been sized (the uniform `grid-auto-rows` is then both correct and shorter),
+ * and null when any child is placed EXPLICITLY by `rowStart`/`rowSpan` — the row a cell lands in is the
+ * user's choice there, not something this walk can work out, and guessing it would move their blocks.
+ */
+export function gridRowTracks(node: BoxNode, bp: Breakpoint = "base"): string | null {
+  const kids = node.children ?? [];
+  if (!kids.length) return null;
+  if (kids.some((c) => c.rowStart != null || (c.rowSpan ?? 1) > 1)) return null;
+  const track = gridColumnsAt(node, bp);
+  const rows: BoxNode[][] = [];
+  let used = 0;
+  for (const c of kids) {
+    const span = gridPlacementAt(node, c, bp).span;
+    if (!rows.length || used + span > track) { rows.push([]); used = 0; }
+    rows[rows.length - 1].push(c);
+    used += span;
+  }
+  // A row counts as SIZED when any cell in it carries a height of its own — which is what the vertical drag
+  // writes, to every cell in the row at once, so the row grows as one piece.
+  const sized = rows.map((r) => r.some((c) => c.minHeight != null || (c.height != null && c.height !== "auto")));
+  if (!sized.some(Boolean)) return null;
+  return sized.map((s) => (s ? "auto" : "minmax(min-content, 1fr)")).join(" ");
+}
+
+/**
  * Scale one node's grid placement (and every rung override of it) by `mul / div`. Starts scale about track 1.
  *
  * An ABSENT span is materialised on the way up, and that is the whole correctness of refining: a block with no
@@ -2465,6 +2512,26 @@ export function containerStyle(node: BoxNode, bp: Breakpoint = "base"): CSSPrope
       // `createContainer` writes `justify: "start"` on every container ever made — reading that as a choice
       // would have made every saved grid's children stop filling their cells overnight.
       ...(node.justifyItems ? { justifyItems: node.justifyItems } : {}),
+      // THE ROWS SHARE THE HEIGHT EVENLY, AND NEVER CROP WHAT IS IN THEM.
+      //
+      // `minmax(min-content, 1fr)` is both halves of that in one value. The `1fr` gives every row an equal
+      // share, so making the page or the section taller spreads the new space across the rows instead of
+      // leaving a dead band at the bottom — and shrinking it takes the space back the same way. The
+      // `min-content` floor is what stops the sharing ever going too far: a row can give up its share right
+      // down to the height its content needs to be readable and no further, and an empty cell's content
+      // needs nothing, so it collapses to the least it can be.
+      //
+      // Two defaults are wrong here and both were tried. `auto` rows with the browser's own `align-content`
+      // hand ALL the spare height to the rows unequally. Packing them to the start instead makes every row
+      // hug, which is tidy but leaves the height a person just dragged sitting unused underneath.
+      //
+      // (The horizontal axis already behaves: the columns are `minmax(0, 1fr)`, so a cell is its share of the
+      // row, spread evenly, and it tracks the page's width by construction.)
+      gridAutoRows: "minmax(min-content, 1fr)",
+      // …and where a row HAS been given a height by hand, it keeps it while the others share what is left.
+      // `grid-auto-rows` alone cannot express that: it is one value for every row, so a row dragged taller
+      // was immediately levelled back down by the `1fr` its neighbours were also claiming. See `gridRowTracks`.
+      ...(() => { const t = gridRowTracks(node, bp); return t ? { gridTemplateRows: t } : {}; })(),
       ...paddingCSS(node),
       minHeight: minH,
     };
@@ -2478,8 +2545,14 @@ export function containerStyle(node: BoxNode, bp: Breakpoint = "base"): CSSPrope
     // Responsive Field Guide: a ROW BAND always allows wrapping so its sections REFLOW (stack) on narrow
     // screens instead of shrinking to unreadable slivers. On desktop they still sit side-by-side (they fit).
     flexWrap: node.wrap || node.rowBand ? "wrap" : "nowrap",
-    // Pack wrapped lines to the top so they never stretch apart and leave gaps between sections.
-    alignContent: "flex-start",
+    // Pack wrapped lines to the top so they never stretch apart and leave gaps between sections — EXCEPT when
+    // this box exists to hold something that wants the height it is given (a grid, or a band holding one).
+    //
+    // A row band always wraps, and on a wrapping flex container `align-content: flex-start` makes each LINE
+    // hug its content. `align-items: stretch` then stretches the child inside that line — which is already
+    // zero tall — so a nested grid measured 0px inside a band that was itself correctly 500px. Two rules that
+    // are each right on their own, cancelling each other out, and nothing in the class names said so.
+    alignContent: fillsGivenHeight(node) ? "stretch" : "flex-start",
     ...paddingCSS(node),
     minHeight: minH,
   };
@@ -2492,6 +2565,26 @@ export function containerStyle(node: BoxNode, bp: Breakpoint = "base"): CSSPrope
  *  - flex COLUMN parent: main axis = height → `height` drives flex (division); `width` is the cross size.
  * So a section with the MAIN-axis token set to "fill" divides that axis equally with its siblings.
  */
+/**
+ * Does this block want the height it is GIVEN, rather than hugging its own content?
+ *
+ * A grid does: dividing space is the whole job of a grid, so one dropped into a cell should take that cell's
+ * height instead of sitting in the top of it and leaving the rest as a dead band.
+ *
+ * And so does a structural ROW BAND that exists only to hold one. That second clause is the entire bug, and it
+ * is invisible from the tree a person thinks they built: `normalizeRowBands` puts a band between a cell and
+ * whatever is inside it, so a nested grid is never a cell's direct child. Making the grid fill was therefore
+ * not enough — the band above it went on hugging, and the grid dutifully filled a band that was already
+ * collapsed. (It also explains why the first test of this passed while the app stayed broken: the test built
+ * its tree by hand, without the bands the real builder inserts.)
+ */
+function fillsGivenHeight(node: BoxNode): boolean {
+  if (!isContainer(node)) return false;
+  if (node.layout === "grid") return true;
+  const kids = node.children ?? [];
+  return !!node.rowBand && kids.length === 1 && fillsGivenHeight(kids[0]);
+}
+
 export function childStyle(child: BoxNode, parent: BoxNode, bp: Breakpoint = "base"): CSSProperties {
   const s: CSSProperties = {};
   if (parent.layout === "grid") {
@@ -2525,7 +2618,11 @@ export function childStyle(child: BoxNode, parent: BoxNode, bp: Breakpoint = "ba
   // set height), the child FILLS + follows the parent (`1 1 auto`: grow to fill, shrink to fit, content
   // basis) — so shrinking the parent's height shrinks its children. Otherwise it hugs / uses its token
   // (keeps a hug-content parent, like the page, growing with content instead of stretching empty children).
-  s.flex = (!mainToken || mainToken === "auto") && parentDefinite ? "1 1 auto" : flexForWidth(mainToken);
+  // A GRID FILLS WHAT IT IS PUT IN (see `fillsGivenHeight`). Only down the MAIN axis of a column parent —
+  // `!isRow` — because in a row the main axis is width, and a grid should take its share of the width like
+  // anything else, not all of it.
+  const fillsMain = !isRow && fillsGivenHeight(child) && (!mainToken || mainToken === "auto");
+  s.flex = fillsMain || ((!mainToken || mainToken === "auto") && parentDefinite) ? "1 1 auto" : flexForWidth(mainToken);
   // A box can pin its OWN cross-axis alignment (used by edge-anchored resize to keep the far edge fixed
   // even when the parent centres/stretches its children).
   if (child.alignSelf) s.alignSelf = child.alignSelf;

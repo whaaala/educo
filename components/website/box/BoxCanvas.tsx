@@ -716,6 +716,9 @@ export default function BoxCanvas({
    */
   const NEIGHBOUR_MIN = 3;
 
+  /** The least a row may be squeezed to by a drag — below this it is a sliver nobody meant to make. */
+  const MIN_ROW_PX = 24;
+
   /**
    * Resize a GRID CELL by dragging its edges — in TRACKS, not pixels.
    *
@@ -769,10 +772,10 @@ export default function BoxCanvas({
     const next = row[me + 1], prev = row[me - 1];
     const hasE = edge.includes("e"), hasW = edge.includes("w"), hasS = edge.includes("s"), hasN = edge.includes("n");
     const startX = e.clientX, startY = e.clientY;
-    // The row's height at the start, and every cell in whichever row the vertical drag governs. A row is as
-    // tall as its TALLEST cell, so shrinking one alone does nothing — the height is written to all of them.
-    const vRow = hasN && above.length ? above : row;
-    const vH0 = Math.max(...vRow.map((s) => s.rect.height), 1);
+    // The starting heights of THIS row and the one above it. A row is as tall as its TALLEST cell, so a
+    // height has to be written to every cell in the row — setting one alone does nothing at all.
+    const rowH0 = Math.max(...row.map((s) => s.rect.height), 1);
+    const aboveH0 = above.length ? Math.max(...above.map((s) => s.rect.height), 1) : 0;
     setResizeCursor(cursorFor(edge)); setResizing(true);
     let raf = 0, pending: BoxNode | null = null;
     const flush = () => { raf = 0; if (pending) { onChange(pending); pending = null; } };
@@ -809,14 +812,30 @@ export default function BoxCanvas({
           if (take !== 0) tree = writeBox(tree, neighbour.id, { colSpan: nSpan - take });
         }
       }
-      // ── DOWN: the drag sets the ROW's height, so the row grows as one and the page grows with it ──
-      // A cell alone cannot own its height here: the grid stretches every cell to the tallest, so a shorter
-      // one simply snaps back. The bottom edge governs this row; the top edge governs the row above it, which
-      // is what dragging a horizontal rule in a table has always meant.
-      if (hasS || hasN) {
-        const dy = ev.clientY - startY;
-        const h = Math.max(24, Math.round(hasN && above.length ? vH0 - dy : vH0 + (hasN ? -dy : dy)));
-        for (const s of vRow) tree = writeBox(tree, s.id, { minHeight: h });
+      // ── DOWN: the grabbed edge moves, and THIS row is the one that changes size ──
+      // A cell alone cannot own its height: the grid stretches every cell to the tallest, so a height has to
+      // be written to every cell in the row and the row grows as one piece.
+      //
+      // The BOTTOM edge grows this row downward — the top stays put and the page grows underneath.
+      //
+      // The TOP edge grows this row UPWARD, which means the row ABOVE gives back exactly what this one takes,
+      // the way the shared boundary works across. An earlier version resized the row above INSTEAD, on the
+      // "dragging a rule in a table" reading — so grabbing a cell's top edge made a different cell change
+      // size and the one being held never moved. Holding an edge must move that edge.
+      const dy = ev.clientY - startY;
+      if (hasS) {
+        const h = Math.max(MIN_ROW_PX, Math.round(rowH0 + dy));
+        for (const s of row) tree = writeBox(tree, s.id, { minHeight: h });
+      } else if (hasN) {
+        const wanted = Math.max(MIN_ROW_PX, Math.round(rowH0 - dy));
+        // THIS row always becomes the size that was asked for — the edge under the pointer must follow it.
+        for (const s of row) tree = writeBox(tree, s.id, { minHeight: wanted });
+        // The row above then gives back as much of that as it can spare, which is what keeps this row's
+        // BOTTOM edge still. When it has nothing to spare (a row already at its content height) it keeps what
+        // it has and the page grows instead — growing the box being held matters more than pinning its far
+        // edge, and refusing to grow at all was the bug: the handle moved and nothing happened.
+        const take = Math.min(Math.max(0, wanted - rowH0), Math.max(0, aboveH0 - MIN_ROW_PX));
+        if (take > 0) for (const s of above) tree = writeBox(tree, s.id, { minHeight: Math.round(aboveH0 - take) });
       }
       pending = tree;
       if (!raf) raf = requestAnimationFrame(flush);
@@ -1027,7 +1046,7 @@ export default function BoxCanvas({
     const node = Object.assign(
       kind === "row" ? createContainer("row")
       : kind === "grid" ? createGrid(3)
-      : kind === "container" ? createContainer("row", { direction: "row", wrap: true, align: "stretch", clip: true, padding: 24 })
+      : kind === "container" ? createContainer("row", { direction: "row", wrap: true, align: "stretch", clip: true })
       : kind === "accordion" ? createComponent("accordion")
       : createElement(kind as Exclude<BoxType, "container">),
       patch,
@@ -1164,9 +1183,19 @@ export default function BoxCanvas({
           {editable && kids.length === 0 && (
             // An empty block shows a non-interactive hint — drag a block from the palette (or use the ⋯ menu)
             // to fill it. It's a hint only; it does NOT add anything by itself.
-            <div data-ph className="w-full flex flex-col items-center justify-center gap-1.5 py-6 text-gray-400 dark:text-gray-500 border border-dashed border-gray-300/80 dark:border-white/15 rounded-xl pointer-events-none" style={{ fontSize: u(11) }}>
+            //
+            // IT FILLS THE BOX (`flex-1`), and that is not cosmetic. It used to be a fixed-height band at the
+            // top, so its dashed outline stopped well short of the cell's real bottom edge — and that line is
+            // what a person reads as "the cell ends here". A grid whose rows were correctly sharing the height
+            // looked like a grid of short cells floating in dead space, and the layout got blamed for a hint.
+            // Now the dashes ARE the box, so what you see is the cell you have.
+            // `border-radius: inherit`, NOT a radius of its own. A hard `rounded-xl` here put visibly rounded
+            // corners inside every empty cell, which reads as the CELL being rounded — a radius nobody set and
+            // no control could explain. Inheriting means the hint matches whatever box it stands in: square in
+            // a square cell, and rounded exactly as much as a cell the user has actually rounded.
+            <div data-ph className="w-full flex-1 flex flex-col items-center justify-center gap-1.5 py-6 text-gray-400 dark:text-gray-500 border border-dashed border-gray-300/80 dark:border-white/15 pointer-events-none" style={{ fontSize: u(11), borderRadius: "inherit" }}>
               <span className="flex items-center justify-center rounded-full bg-gray-100 dark:bg-white/5" style={{ width: u(22), height: u(22) }}><Plus className="w-3.5 h-3.5" /></span>
-              Drag a block here
+              Empty — drag a block in, or click to add
             </div>
           )}
           {/* THE LEFTOVER COLUMNS OF A ROW, offered as a place to put something.
@@ -1195,8 +1224,8 @@ export default function BoxCanvas({
                 // offered — not the width of whatever happened to be added last.
                 onClick={(e) => { e.stopPropagation(); addChild(node.id, "container", { colSpan: free, width: "100%", padding: 0 }); }}
                 aria-label={`Add a block in the empty ${free} column${free === 1 ? "" : "s"}`}
-                style={{ gridColumn: `span ${free}`, fontSize: u(11), opacity: 0 }}
-                className="flex flex-col items-center justify-center gap-1.5 py-6 text-gray-400 dark:text-gray-500 border border-dashed border-gray-300/80 dark:border-white/15 rounded-xl hover:border-brand hover:text-brand"
+                style={{ gridColumn: `span ${free}`, fontSize: u(11), opacity: 0, borderRadius: "inherit" }}
+                className="flex flex-col items-center justify-center gap-1.5 py-6 text-gray-400 dark:text-gray-500 border border-dashed border-gray-300/80 dark:border-white/15 hover:border-brand hover:text-brand"
               >
                 <span className="flex items-center justify-center rounded-full bg-gray-100 dark:bg-white/5" style={{ width: u(22), height: u(22) }}><Plus className="w-3.5 h-3.5" /></span>
                 Add a block here
@@ -1412,7 +1441,11 @@ export default function BoxCanvas({
           into the compiled sheet, so the class was on the element and did nothing — the ghost simply sat there
           permanently, which is the opposite of the behaviour. Editor chrome only; the export never sees it. */}
       <style dangerouslySetInnerHTML={{ __html:
-        "[data-gridghost]{transition:opacity .15s ease}" +
+        // Hidden means HIDDEN: no pointer events either. An invisible button still takes clicks and drops, so
+        // while faded out this one sat over a row's empty columns and quietly swallowed anything aimed at the
+        // grid underneath — which looks exactly like "I can't add a block here".
+        "[data-gridghost]{transition:opacity .15s ease;pointer-events:none}" +
+        "[data-box-id]:hover>[data-gridghost],[data-gridghost]:focus-visible,[data-gridghost][data-armed]{pointer-events:auto}" +
         // `!important` because the button carries an INLINE opacity:0 — which it needs, or it shows for a frame
         // on load, before this stylesheet is mounted. An inline style beats any selector at any specificity, so
         // the reveal has to out-rank it; the same reason the contained-band padding is marked.

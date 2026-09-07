@@ -66,53 +66,107 @@ export function Segmented<T extends string>({ value, onChange, options, ariaLabe
 export function TablePicker({ columns, maxRows = 6, onPick, label = "Choose a layout" }: {
   columns: number[]; maxRows?: number; onPick: (cols: number, rows: number) => void; label?: string;
 }) {
-  const maxCols = columns[columns.length - 1] ?? 1;
-  const [hover, setHover] = useState<{ c: number; r: number }>({ c: 2, r: 1 });
-  // The picker draws every column up to the widest offered, but only the ones that divide the twelve can be
-  // CHOSEN — so sweeping past a five snaps back to the four it can actually build, rather than silently
-  // rounding after the click.
-  const snap = (c: number) => [...columns].reverse().find((x) => x <= c) ?? 1;
-  const choose = (c: number, r: number) => onPick(snap(c), r);
+  // `hover` holds an INDEX into `columns`, not a column count. That is the point: the first version drew
+  // twelve uniform squares and snapped a sweep back to the nearest count that divides the twelve — so six of
+  // the twelve could never be chosen, and landing on one silently gave you a different layout. One cell per
+  // OFFERED count means every position is reachable and nothing is quietly rounded. The counts are printed
+  // under the columns so a cell's meaning is never something to work out.
+  const [hover, setHover] = useState<{ ci: number; r: number }>({ ci: 1, r: 1 });
+  const cols = columns[Math.min(hover.ci, columns.length - 1)] ?? 1;
+  const rows = hover.r;
+  const total = cols * rows;
   const onKey = (e: ReactKeyboardEvent) => {
     const k = e.key;
-    if (k === "Enter" || k === " ") { e.preventDefault(); choose(hover.c, hover.r); return; }
+    if (k === "Enter" || k === " ") { e.preventDefault(); onPick(cols, rows); return; }
     const d = k === "ArrowRight" ? [1, 0] : k === "ArrowLeft" ? [-1, 0] : k === "ArrowDown" ? [0, 1] : k === "ArrowUp" ? [0, -1] : null;
     if (!d) return;
     e.preventDefault();
-    setHover((h) => ({ c: Math.min(maxCols, Math.max(1, h.c + d[0])), r: Math.min(maxRows, Math.max(1, h.r + d[1])) }));
+    setHover((h) => ({ ci: Math.min(columns.length - 1, Math.max(0, h.ci + d[0])), r: Math.min(maxRows, Math.max(1, h.r + d[1])) }));
   };
-  const shown = snap(hover.c);
   return (
-    <div className="p-2">
+    <div>
+      <p className="mb-1.5 text-[0.6875rem] leading-snug text-muted">
+        Move across the squares to set the columns and rows, then click.
+      </p>
+      {/* FIXED SIZE, ALWAYS. The version before this drew only the chosen cells, so the box grew as you swept
+          downwards — which made the menu's scrollbar appear, which narrowed the content, which moved the cells
+          under the pointer, which changed the row, which resized the box again. It flickered without stopping.
+          A grid that never changes size cannot feed back into the pointer, and it is also the shape everyone
+          already knows from inserting a table: every cell visible, the chosen region lit. */}
       <div
         role="grid"
         aria-label={label}
         tabIndex={0}
         onKeyDown={onKey}
-        onMouseLeave={() => setHover({ c: 2, r: 1 })}
-        className="inline-grid gap-[3px] rounded-lg p-1 outline-none focus-visible:ring-2 focus-visible:ring-brand"
-        style={{ gridTemplateColumns: `repeat(${maxCols}, 1rem)` }}
+        className="inline-grid gap-1 rounded-xl bg-surface-2 p-1.5 outline-none ring-1 ring-line focus-visible:ring-2 focus-visible:ring-brand"
+        style={{ gridTemplateColumns: `repeat(${columns.length}, 2.1rem)`, gridTemplateRows: `repeat(${maxRows}, 1.15rem)` }}
       >
-        {Array.from({ length: maxRows * maxCols }, (_, i) => {
-          const c = (i % maxCols) + 1, r = Math.floor(i / maxCols) + 1;
-          const on = c <= shown && r <= hover.r;
+        {Array.from({ length: columns.length * maxRows }, (_, i) => {
+          const ci = i % columns.length, r = Math.floor(i / columns.length) + 1;
+          const on = ci <= hover.ci && r <= rows;
           return (
             <button
               key={i}
               role="gridcell"
-              aria-label={`${c} across, ${r} down`}
+              aria-label={`${columns[ci]} across, ${r} down`}
               aria-selected={on}
-              onMouseEnter={() => setHover({ c, r })}
-              onClick={() => choose(c, r)}
-              className={`h-4 w-4 rounded-[3px] border transition-colors ${on ? "border-brand bg-brand/70" : "border-line bg-surface-2 hover:border-brand/40"}`}
+              onMouseEnter={() => setHover({ ci, r })}
+              onFocus={() => setHover({ ci, r })}
+              onClick={() => onPick(columns[ci], r)}
+              className={`rounded-[4px] transition-colors ${on ? "bg-brand" : "bg-surface ring-1 ring-line hover:ring-brand/40"}`}
             />
           );
         })}
       </div>
-      <p aria-live="polite" className="mt-1 text-[0.6875rem] font-semibold text-muted">
-        {shown} across × {hover.r} down
-        <span className="font-normal"> — {shown * hover.r} cell{shown * hover.r === 1 ? "" : "s"}</span>
+      {/* What each column actually MEANS. Without this a sweep to the fifth square gives six columns and the
+          jump from 4 to 6 to 12 looks like a bug rather than the only counts twelve divides into. */}
+      <div aria-hidden className="mt-1 inline-grid gap-1 px-1.5" style={{ gridTemplateColumns: `repeat(${columns.length}, 2.1rem)` }}>
+        {columns.map((c, i) => (
+          <span key={c} className={`text-center text-[0.625rem] tabular-nums transition-colors ${i === hover.ci ? "font-bold text-brand" : "text-muted"}`}>{c}</span>
+        ))}
+      </div>
+      <p aria-live="polite" className="mt-1.5 flex items-baseline gap-1.5 text-[0.75rem]">
+        <span className="font-semibold text-ink">{cols} across × {rows} down</span>
+        <span className="text-muted">· {total} cell{total === 1 ? "" : "s"}</span>
       </p>
+    </div>
+  );
+}
+
+/**
+ * The UNEVEN splits, shown as the shapes they are.
+ *
+ * They were a text list — "Sidebar left · 4 · 8" beside a sparkle icon — which asks a person to picture a
+ * layout from two numbers. A layout picker should show layouts (RULE S: every design is a visual preview,
+ * never a text chip), so each one draws its own proportions and the name sits underneath.
+ */
+export function SplitGallery({ splits, onPick }: {
+  splits: { id: string; label: string; spans: number[] }[];
+  onPick: (id: string) => void;
+}) {
+  return (
+    <div role="group" aria-label="Uneven splits" className="grid grid-cols-2 gap-1.5">
+      {splits.map((s) => {
+        // The label carries the proportions after a "·" for the text list; the picture says it better, so the
+        // name alone is shown and the numbers become the tooltip.
+        const name = s.label.split("·")[0].trim();
+        return (
+          <button
+            key={s.id}
+            onClick={() => onPick(s.id)}
+            title={s.label}
+            aria-label={s.label}
+            className="group rounded-lg p-1.5 text-left transition-colors hover:bg-brand/[0.07] focus-visible:outline-2 focus-visible:outline-brand"
+          >
+            <span aria-hidden className="flex h-8 gap-1 rounded-md bg-surface-2 p-1 ring-1 ring-line transition-colors group-hover:ring-brand/40">
+              {s.spans.map((n, i) => (
+                <span key={i} style={{ flex: n }} className="rounded-[3px] bg-brand/70 transition-colors group-hover:bg-brand" />
+              ))}
+            </span>
+            <span className="mt-1 block truncate text-[0.6875rem] font-medium text-muted transition-colors group-hover:text-ink">{name}</span>
+          </button>
+        );
+      })}
     </div>
   );
 }
@@ -179,7 +233,11 @@ export function PortalMenu({ anchor, onClose, width = 200, ariaLabel, children }
       style={{ ...style, zIndex: CHROME_Z.menu }}
       onMouseDown={(e) => e.stopPropagation()}
       onClick={(e) => e.stopPropagation()}
-      className="overflow-y-auto overscroll-contain rounded-xl border border-line bg-surface shadow-2xl ring-1 ring-black/5 p-1.5"
+      /* `scrollbar-gutter: stable` reserves the scrollbar's width whether or not one is showing. Without it,
+         content that grows past the menu's height makes a scrollbar appear, which narrows the content, which
+         moves whatever is under the pointer — and a hover-driven control can then feed back into itself and
+         flicker without stopping. The gutter costs a few pixels and removes the whole class of problem. */
+      className="overflow-y-auto overscroll-contain rounded-xl border border-line bg-surface shadow-2xl ring-1 ring-black/5 p-1.5 [scrollbar-gutter:stable]"
     >{children}</div>,
     document.body,
   );

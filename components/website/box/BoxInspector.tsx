@@ -610,7 +610,10 @@ export default function BoxInspector({ node, theme, onPatch, onAddChild, onFloat
               <div className="grid grid-cols-2 gap-2">
                 <CompactField label="Order" ariaLabel="Order" type="number" placeholder="auto" value={node.order ?? ""}
                   onChange={(v) => onPatch({ order: v === "" ? undefined : Number(v) || 0 })} />
-                <CompactSelect label="Line up (down)" ariaLabel="Line up (down)" value={node.alignSelf ?? ""}
+                {/* `align-self` is the CROSS axis, and which direction that is depends on the parent: across a
+                    top-to-bottom section, down a side-by-side row. Labelling it "down" was wrong half the
+                    time — in the commonest case of all, a block in a section, it lines up left/right. */}
+                <CompactSelect label="Align this block" ariaLabel="Align this block" value={node.alignSelf ?? ""}
                   onChange={(v) => onPatch({ alignSelf: v === "" ? undefined : v as NonNullable<BoxNode["alignSelf"]> })}
                   options={[{ value: "", label: "Auto" }, { value: "stretch", label: "Fill" }, { value: "flex-start", label: "Top" }, { value: "center", label: "Middle" }, { value: "flex-end", label: "Bottom" }]} />
               </div>

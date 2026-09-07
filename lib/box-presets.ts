@@ -172,7 +172,10 @@ export function blockForKind(kind: string, patch: Partial<BoxNode> = {}): BoxNod
     buildCatalogueComponent(kind) ??
     (kind === "row" ? createContainer("row")
     : kind === "grid" ? createGrid(3)
-    : kind === "container" ? createContainer("column", { width: "100%", padding: 24, gap: 0, align: "stretch" })
+    // A Section starts flush too — space is added on the side you want it, not removed from a default. The
+    // Card and Outline STYLE presets still carry their own padding, because there it is part of the look
+    // somebody chose rather than something they have to discover and undo.
+    : kind === "container" ? createContainer("column", { width: "100%", padding: 0, gap: 0, align: "stretch" })
     : createElement(kind as Exclude<BoxType, "container">));
   const node = Object.assign(base, patch);
   // Children that arrived in a PATCH are re-idded. A preset object is built once per render and can be

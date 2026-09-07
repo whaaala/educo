@@ -429,7 +429,7 @@ describe("BoxInspector — functionality audit (every remaining control)", () =>
     expect(onPatch).toHaveBeenCalledWith({ order: -1 });
     fireEvent.click(screen.getByRole("button", { name: "Right" }));
     expect(onPatch).toHaveBeenCalledWith({ push: "end" });
-    pickSelect("Line up (down)", "Middle");
+    pickSelect("Align this block", "Middle");
     expect(onPatch).toHaveBeenCalledWith({ alignSelf: "center" });
     cleanup();
     // Emptying the order returns the block to document order rather than pinning it at 0, which is a real
