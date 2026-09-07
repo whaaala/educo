@@ -120,6 +120,15 @@ export type FlexAlign = "start" | "center" | "end" | "stretch";
 export type FlexJustify = "start" | "center" | "end" | "between" | "around";
 
 /**
+ * The shape of a band's top or bottom edge.
+ *
+ * `slope` cuts a straight diagonal, `curve` an arc. Each has a direction: a slope falls to the right or to the
+ * left, a curve bulges outward or is scooped inward. Five values rather than a shape plus three modifiers,
+ * because a person picks a picture, not a set of parameters — and the gallery can then show five pictures.
+ */
+export type BandEdge = "slope-right" | "slope-left" | "curve-out" | "curve-in";
+
+/**
  * The rungs a block can be styled at (Phase 2).
  *
  * `base` IS the desktop rung — it is the node's own properties, which is what every saved page already means
@@ -262,6 +271,17 @@ export interface BoxNode {
    * hiding them, which on a phone is the difference between a headline and half a headline.
    */
   screenHeight?: "half" | "full";
+  /**
+   * The SHAPE of a section's top and bottom edge — straight, sloped, or curved. Phase 2 of the Layout System.
+   *
+   * The plan called this the clearest case of "the capability exists, only the control is missing": the model
+   * could already do it through per-block Advanced CSS, which in practice means a teacher typing `clip-path`,
+   * which in practice means it never happens.
+   */
+  edgeTop?: BandEdge;
+  edgeBottom?: BandEdge;
+  /** How deep the shape cuts, as a percentage of the band's height. Default 6. */
+  edgeDepth?: number;
 
   // ── free / floating position (escape the flow: lift a section onto its OWN layer to OVERLAP others) ──
   position?: "flow" | "absolute"; // default "flow" (in the row-band stack); "absolute" = free-floating layer
@@ -2713,6 +2733,56 @@ export function combineMinHeight(own: string | undefined, screen: BoxNode["scree
   const wanted = screen === "full" ? "100svh" : screen === "half" ? "50svh" : undefined;
   if (!wanted) return own;
   return own ? `max(${own}, ${wanted})` : wanted;
+}
+
+// ── Band edges: sloped and curved section boundaries ─────────────────────────
+
+/** How many points approximate a curved edge. Sixteen is smooth at any width and still a short declaration. */
+const CURVE_STEPS = 16;
+
+/**
+ * The points along one horizontal edge, left to right, as `[x%, y%]` pairs measured from the band's top.
+ *
+ * `depth` is the deepest the shape cuts, in percent of the band's height, and `base` is the edge it cuts from
+ * (0 for the top, 100 for the bottom). Everything is a PERCENTAGE, which is what makes the shape survive any
+ * width, any height and any breakpoint without a media query — the reason this is one `clip-path` rather than
+ * an SVG the export would have to size.
+ */
+function edgePoints(shape: BandEdge | undefined, depth: number, base: 0 | 100): [number, number][] {
+  const inward = base === 0 ? depth : -depth; // "down" from the top edge, "up" from the bottom one
+  if (!shape) return [[0, base], [100, base]];
+  if (shape === "slope-right") return [[0, base], [100, base + inward]];
+  if (shape === "slope-left") return [[0, base + inward], [100, base]];
+  // A cosine gives a single clean arch — flat at both ends, deepest in the middle — where a circle segment
+  // would meet the sides at an angle and read as a lens rather than a curve.
+  const sign = shape === "curve-out" ? -1 : 1;
+  return Array.from({ length: CURVE_STEPS + 1 }, (_, i) => {
+    const t = i / CURVE_STEPS;
+    const y = base + sign * inward * (1 - Math.cos(t * Math.PI * 2)) / 2;
+    return [t * 100, y] as [number, number];
+  });
+}
+
+/**
+ * A band's shaped top and/or bottom edge, as a single `clip-path`.
+ *
+ * BOTH edges in one polygon on purpose. `clip-path` is one property, so a diagonal top and a curved bottom
+ * cannot be two declarations — and doing curves with `border-radius` instead (the other obvious route) would
+ * collide with the corner-radius control, which owns that property. One polygon, built from percentages, is
+ * the only form that lets the two edges be chosen independently AND stay responsive.
+ *
+ * The band keeps its full height: the shape CUTS the background, it does not move the content. A section that
+ * shrank as you sloped it would be a layout control disguised as a decorative one.
+ */
+export function bandEdgeCSS(node: BoxNode): CSSProperties {
+  if (!node.edgeTop && !node.edgeBottom) return {};
+  const depth = Math.min(50, Math.max(0, node.edgeDepth ?? 6));
+  const pts = [
+    ...edgePoints(node.edgeTop, depth, 0),
+    ...edgePoints(node.edgeBottom, depth, 100).reverse(), // right to left, closing the shape
+  ];
+  const round = (n: number) => Math.round(n * 100) / 100;
+  return { clipPath: `polygon(${pts.map(([x, y]) => `${round(x)}% ${round(y)}%`).join(", ")})` };
 }
 
 /** `align-self` spelt the way flexbox wants it. */

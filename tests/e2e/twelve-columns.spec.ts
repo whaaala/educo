@@ -387,6 +387,37 @@ test.describe("twelve columns", () => {
     expect(grown.height, "content that outgrows the screen makes the section taller").toBeGreaterThan(900);
   });
 
+  test("a shaped band edge is actually cut, and the band keeps its full height", async ({ page }) => {
+    // A `clip-path` string in the stylesheet proves nothing — the browser has to be doing the cutting. This
+    // samples the rendered pixels: a sloped top means the band's colour is ABSENT at the top-right corner and
+    // PRESENT at the top-left, and the box itself is still its full height (the shape cuts the background, it
+    // must not resize the section).
+    const root = {
+      id: "root", type: "container", direction: "column",
+      children: [{
+        id: "band", type: "container", direction: "row", rowBand: true, width: "fill",
+        children: [{ id: "hero", anchor: "grid", type: "container", direction: "column", padding: 0,
+          width: "fill", minHeight: 300, background: "#3355ff", edgeTop: "slope-right", edgeDepth: 20, children: [] }],
+      }],
+    } as unknown as BoxNode;
+    const site = siteFromRoot(normalizeRowBands(root));
+    await load(page, renderSitePage(site, DEFAULT_THEME, site.homeId, { inlineShared: true }), DESKTOP);
+
+    const b = await box(page, "#grid");
+    expect(b.height, "the shape cuts the background — it must not shrink the section").toBeGreaterThan(290);
+
+    const clip = await page.locator("#grid").evaluate((el) => getComputedStyle(el).clipPath);
+    expect(clip, "the browser resolved a real polygon").toContain("polygon");
+
+    // The slope falls to the right, so 4px below the band's top: painted on the left, cut away on the right.
+    const at = (x: number) => page.evaluate(({ x, y }) => {
+      const el = document.elementFromPoint(x, y);
+      return el?.closest("#grid") ? "hero" : "other";
+    }, { x, y: Math.round(b.top + 4) });
+    expect(await at(Math.round(b.left + 8)), "the shallow side is still painted").toBe("hero");
+    expect(await at(Math.round(b.right - 8)), "the deep side has been cut away").toBe("other");
+  });
+
   test("push moves one block and leaves its neighbours alone", async ({ page }) => {
     // A flex row, because push is not a grid idea — it is the nav-link-on-the-far-right idiom.
     const root = {

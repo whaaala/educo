@@ -115,6 +115,29 @@ Feature: The twelve-column grid in the Box Builder
     Then it sits at the far right of the row
     And every other link stays where it was
 
+  # ── Sloped and curved section edges ────────────────────────────────────────
+
+  Scenario: Shaping a section's edge
+    When I open Edge shape on a section
+    Then I can choose Straight, Slope right, Slope left, Curve out or Curve in
+    And each choice is shown as the shape it makes, not named in a list
+    And the top and bottom edges are chosen independently
+
+  Scenario: The shape cuts the background, it does not move the content
+    Given a section with a sloped top
+    Then the section is exactly as tall as it was
+    And its background is cut away on the deep side and painted on the shallow side
+
+  Scenario: A depth that cannot swallow the band
+    When I set the edge depth beyond its limit
+    Then it is clamped, so the section always has a body left
+
+  Scenario: It survives every screen size
+    Given a section with a curved bottom
+    When I view the page at any width or height
+    Then the curve keeps its shape without a single media query
+    Because it is expressed entirely in percentages
+
   # ── A section measured against the screen ──────────────────────────────────
 
   Scenario: A full-screen hero

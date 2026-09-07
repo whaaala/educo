@@ -12,7 +12,7 @@ import { Plus, X, Rows3, Columns3, Upload, AlignLeft, AlignCenter, AlignRight, L
 import type { SiteTheme } from "@/lib/site-storage";
 import type { BoxNode, FlexAlign, FlexJustify, AccPartStyle, Breakpoint } from "@/lib/box-model";
 import { RUNG_LABEL } from "@/lib/educo-ui/layout";
-import { type ItemAction, TOAST_CORNERS, isContainer, isFloating, isCssBg, addItem, removeItem, moveItem, updateItem, addChildItem, updateChildItem, removeChildItem, moveChildItem , isMultiItemComponent, hasIntrinsicSize, sizeToCSS, GRID_MAX, COLUMN_FRACTIONS, columnFractionOf, canSetColumnFraction, gridColumns } from "@/lib/box-model";
+import { type ItemAction, TOAST_CORNERS, isContainer, isFloating, isCssBg, addItem, removeItem, moveItem, updateItem, addChildItem, updateChildItem, removeChildItem, moveChildItem , isMultiItemComponent, hasIntrinsicSize, sizeToCSS, GRID_MAX, COLUMN_FRACTIONS, columnFractionOf, canSetColumnFraction, gridColumns, bandEdgeCSS } from "@/lib/box-model";
 import { ACCORDION_DESIGNS, ACCORDION_DESIGN_COUNT, ACCORDION_AXES } from "@/lib/educo-ui/accordions";
 import { ALERT_DESIGNS, ALERT_DESIGN_COUNT, ALERT_AXES } from "@/lib/educo-ui/alerts";
 import { COMPONENT_REGISTRY, isRegistryComponent, defaultComponentFields, renderComponent } from "@/lib/educo-ui/registry";
@@ -542,6 +542,34 @@ export default function BoxInspector({ node, theme, onPatch, onAddChild, onFloat
                     ? "At least this tall on every device — it grows further if the content needs it."
                     : "As tall as whatever is inside it."}
                 </p>
+              </div>
+              {/* BAND EDGES. Shown as the shapes they are (RULE S) — a slope and a curve are pictures, and
+                  naming them "slope-right" in a dropdown would be asking a teacher to imagine the result. */}
+              <div className="space-y-1">
+                <span className={label}>Edge shape</span>
+                <div className="grid grid-cols-2 gap-2">
+                  {([["edgeTop", "Top"], ["edgeBottom", "Bottom"]] as const).map(([key, side]) => (
+                    <div key={key} className="space-y-1">
+                      <span className="block text-[0.625rem] uppercase tracking-wide text-gray-400">{side}</span>
+                      <div role="group" aria-label={`${side} edge shape`} className="flex flex-wrap gap-1">
+                        {([[undefined, "Straight"], ["slope-right", "Slope right"], ["slope-left", "Slope left"], ["curve-out", "Curve out"], ["curve-in", "Curve in"]] as const).map(([v, name]) => {
+                          const on = (node[key] ?? undefined) === v;
+                          return (
+                            <button key={name} onClick={() => onPatch({ [key]: v } as Partial<BoxNode>)} title={name}
+                              aria-label={`${side} edge: ${name}`} aria-pressed={on}
+                              className={`h-7 w-7 overflow-hidden rounded-md ring-1 transition-colors ${on ? "bg-brand/15 ring-brand" : "bg-surface-2 ring-line hover:ring-brand/40"}`}>
+                              <span aria-hidden className="block h-full w-full bg-brand/70"
+                                style={bandEdgeCSS({ id: "", type: "container", ...(side === "Top" ? { edgeTop: v } : { edgeBottom: v }), edgeDepth: 30 })} />
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                {(node.edgeTop || node.edgeBottom) && (
+                  <Range title="Edge depth" value={node.edgeDepth} min={0} max={30} fallback={6} onChange={(n) => onPatch({ edgeDepth: n })} unit="%" />
+                )}
               </div>
               <Segmented full ariaLabel="Arrange as" value={isGrid ? "grid" : "flex"} onChange={(v) => onPatch({ layout: v as "flex" | "grid" })}
                 options={[{ value: "flex", label: "Free arrange" }, { value: "grid", label: "Grid" }]} />

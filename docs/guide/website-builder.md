@@ -270,6 +270,25 @@ Backgrounds, borders, corners and padding stay with the box itself — they're t
 
 ---
 
+## 10g. Sloped and curved section edges
+
+Sections don't have to meet in a straight line. Select one → **Design → Arrange → Edge shape**, and pick a shape for its **top** and its **bottom** independently:
+
+- **Straight** — the default
+- **Slope right** / **Slope left** — a diagonal cut
+- **Curve out** / **Curve in** — an arch, bulging outward or scooped inward
+
+**Edge depth** controls how far the shape cuts, as a percentage of the section's height. It's capped, so a shape can never swallow the whole band.
+
+Each choice shows you the shape rather than naming it, so you pick a picture.
+
+Two things worth knowing:
+
+- **The shape cuts the background; it doesn't move your content.** A sloped section is exactly as tall as it was — so text stays where you put it and nothing reflows when you change the shape.
+- **It's the section underneath that shows through.** A slope on the bottom of a blue section reveals whatever comes next, so the effect reads best between two sections of different colours.
+
+---
+
 ## 10f. A section that fills the screen
 
 Select a section → **Design → Arrange → Screen height**:
