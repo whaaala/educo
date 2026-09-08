@@ -77,6 +77,32 @@ async function dragHandle(page: Page, label: string, dx: number, dy: number) {
 }
 
 test.describe("resizing a grid cell's height", () => {
+  test("a long drag never spins the render loop", async ({ page }) => {
+    // The crash this guards: every commit re-renders, the selection chrome re-measures the block, and if the
+    // layout has not settled it measures a different value and commits again — until React gives up with
+    // "Maximum update depth exceeded". A resize is exactly where a layout is least settled, and a grid whose
+    // rows are partly `auto` (a row given a height) and partly `1fr` (the rest sharing what is left) is
+    // exactly the layout that can fail to settle.
+    const errors: string[] = [];
+    page.on("pageerror", (e) => errors.push(e.message));
+    page.on("console", (m) => { if (m.type() === "error") errors.push(m.text()); });
+
+    await seedGrid(page, 2, 3, 500);
+    await selectCell(page, "c0");
+    // A long, many-stepped drag in both directions, so the layout is re-solved on every frame.
+    const h = (await page.locator('[aria-label="Resize bottom edge"]').boundingBox())!;
+    const x = h.x + h.width / 2, y = h.y + h.height / 2;
+    await page.mouse.move(x, y);
+    await page.mouse.down();
+    for (const dy of [40, 90, 150, 210, 150, 80, 20, 120, 200]) { await page.mouse.move(x, y + dy); await page.waitForTimeout(40); }
+    await page.mouse.up();
+    await page.waitForTimeout(600);
+
+    expect(errors.filter((e) => /Maximum update depth/i.test(e)), "a resize must never run away").toEqual([]);
+    expect(errors, "and raise no console error at all").toEqual([]);
+  });
+
+
   test("the BOTTOM edge makes the row taller, and the top edge stays put", async ({ page }) => {
     await seedGrid(page, 2, 2);
     await selectCell(page, "c0");

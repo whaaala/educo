@@ -171,7 +171,12 @@ export function blockForKind(kind: string, patch: Partial<BoxNode> = {}): BoxNod
   const base =
     buildCatalogueComponent(kind) ??
     (kind === "row" ? createContainer("row")
-    : kind === "grid" ? createGrid(3)
+    // A grid arrives WITH CELLS. `createGrid(3)` on its own is three columns and nothing in them — an empty
+    // shell with no cell to click, nothing to resize and nowhere to put anything, which is what a DRAGGED
+    // Columns block used to be. (Clicking the tile opens the picker and passes real cells in the patch, so
+    // the two routes produced completely different objects from the same tile.) Two equal columns is the
+    // pickers own first offer, so dragging and clicking now agree.
+    : kind === "grid" ? tableGrid(2, 1)
     // A Section starts flush too — space is added on the side you want it, not removed from a default. The
     // Card and Outline STYLE presets still carry their own padding, because there it is part of the look
     // somebody chose rather than something they have to discover and undo.

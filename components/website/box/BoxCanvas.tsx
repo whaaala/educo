@@ -1299,16 +1299,33 @@ export default function BoxCanvas({
     // Deliberately NO dependency array: a block's geometry changes without any prop of this component changing
     // (typing a longer heading, a reflow, a resize gesture in progress). It therefore MUST only call setBox
     // when something actually moved — a fresh object every pass would re-render, re-run this, and loop.
+    //
+    // AND IT MEASURES INSIDE A FRAME, which is what makes that safe rather than merely careful. The tolerance
+    // below assumes the layout settles; when it does not — and a grid whose rows are partly `auto` and partly
+    // `1fr` can genuinely oscillate by a fraction of a pixel — a synchronous measure-and-set chain runs until
+    // React gives up with "Maximum update depth exceeded". Deferring to `requestAnimationFrame` breaks the
+    // chain: the update lands in a new frame, React's nested-update counter starts over, and the very worst an
+    // unsettled layout can now do is shimmer. A crash becomes a cosmetic bug, which is the right trade.
+    const measured = useRef(false);
     useEffect(() => {
-      const el = document.querySelector<HTMLElement>(`[data-box-id="${CSS.escape(blockId)}"]`);
-      const r = el?.getBoundingClientRect();
-      const next = r ? { left: r.left, top: r.top, width: r.width, height: r.height } : null;
-      setBox((prev) => {
-        if (!prev || !next) return prev === next ? prev : next;
-        const near = (a: number, b: number) => Math.abs(a - b) < 0.5;
-        return near(prev.left, next.left) && near(prev.top, next.top)
-          && near(prev.width, next.width) && near(prev.height, next.height) ? prev : next;
-      });
+      const measure = () => {
+        const el = document.querySelector<HTMLElement>(`[data-box-id="${CSS.escape(blockId)}"]`);
+        const r = el?.getBoundingClientRect();
+        const next = r ? { left: r.left, top: r.top, width: r.width, height: r.height } : null;
+        setBox((prev) => {
+          if (!prev || !next) return prev === next ? prev : next;
+          const near = (a: number, b: number) => Math.abs(a - b) < 0.5;
+          return near(prev.left, next.left) && near(prev.top, next.top)
+            && near(prev.width, next.width) && near(prev.height, next.height) ? prev : next;
+        });
+      };
+      // The FIRST measurement is synchronous, so selecting a block shows its toolbar and handles immediately —
+      // deferring that one put the chrome a frame behind the click, which is exactly the kind of lag that
+      // makes an editor feel loose. Every measurement AFTER it waits for a frame, and that is the one that
+      // matters: a re-measure is the only one that can chain, and a frame boundary is what stops it.
+      if (!measured.current) { measured.current = true; measure(); return; }
+      const raf = requestAnimationFrame(measure);
+      return () => cancelAnimationFrame(raf);
     });
 
     if (!box) return null;
@@ -1333,12 +1350,30 @@ export default function BoxCanvas({
     // their content and can be small. When the box is near the canvas top (no room above), it flips to BELOW.
     const barRef = useRef<HTMLDivElement>(null);
     const [below, setBelow] = useState(false);
+    // MEASURED ON A SIGNAL, NEVER ON EVERY RENDER.
+    //
+    // This ran with no dependency array, so every render measured the box and called `setBelow` — safe only
+    // for as long as the measurement is perfectly stable. It stopped being: React re-rendered, the effect
+    // measured a value half a pixel different, set state, and the whole thing went round again until the
+    // browser gave up with "Maximum update depth exceeded". A layout that settles on the second pass is
+    // normal; an effect that re-runs on every render turns that into an infinite loop.
+    //
+    // The flip only ever needs recomputing when the block is selected, when the page scrolls, or when the
+    // window resizes — so it listens for exactly those and depends on the block, rather than on nothing.
     useEffect(() => {
-      const box = barRef.current?.parentElement;
-      if (!box) return;
-      const canvasTop = document.querySelector(`[data-box-id="${rootRef.current.id}"]`)?.getBoundingClientRect().top ?? 0;
-      setBelow(box.getBoundingClientRect().top < canvasTop + 36); // within 36px of the canvas top → drop the bar below the box instead of over the app header
-    });
+      const measure = () => {
+        const box = barRef.current?.parentElement;
+        if (!box) return;
+        const canvasTop = document.querySelector(`[data-box-id="${rootRef.current.id}"]`)?.getBoundingClientRect().top ?? 0;
+        // Within 36px of the canvas top there is no room above, so the bar drops BELOW the box rather than
+        // sitting over the app header. Only written when it actually changes, so a stable page settles.
+        setBelow((prev) => { const next = box.getBoundingClientRect().top < canvasTop + 36; return next === prev ? prev : next; });
+      };
+      measure();
+      window.addEventListener("scroll", measure, true);
+      window.addEventListener("resize", measure);
+      return () => { window.removeEventListener("scroll", measure, true); window.removeEventListener("resize", measure); };
+    }, [node.id]);
     // A group of controls needs to say so: without a role and a name a screen-reader user meets a run of
     // loose buttons with no indication they belong to the block that was just selected. The item CRUD bar
     // next door already got this right — this one had nothing.
