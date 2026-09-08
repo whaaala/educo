@@ -21,10 +21,10 @@ import {
 } from "lucide-react";
 import type { BoxNode } from "@/lib/box-model";
 import type { SiteTheme } from "@/lib/site-storage";
-import { getAddChoices, PICKER_COLUMNS, tableGrid, GRID_LAYOUTS } from "@/lib/box-presets";
+import { getAddChoices } from "@/lib/box-presets";
 import { COMPONENT_CATALOGUE } from "@/lib/component-catalogue";
-import { PortalMenu, MenuItem, MenuHeader, TablePicker, SplitGallery } from "./ui";
-import { GRID_MAX } from "@/lib/box-model";
+import { PortalMenu, MenuItem, MenuHeader } from "./ui";
+import GridLayoutMenu from "./GridLayoutMenu";
 import { CHROME_Z } from "@/lib/educo-ui/stacking";
 
 /** The catalogue names its icon as a string so it can stay React-free; this maps those names to the icons. */
@@ -259,37 +259,18 @@ export default function BlocksPanel({ theme, onDragKind, onPick, defaultOpen = f
         </div>
       )}
 
-      {/* Variation picker — portaled so the panel's scroll area can never clip it. */}
-      {menu && (variations.length > 0 || menu.kind === "grid") && (
-        <PortalMenu anchor={menu.anchor} onClose={() => setMenu(null)} width={menu.kind === "grid" ? 268 : 184} ariaLabel={`Add ${menu.label}`}>
-          {/* A ROW is picked by its SHAPE, the way a table is inserted in a word processor — sweep the grid,
-              click, done. The named splits stay underneath for the unequal shapes a sweep cannot express, and
-              they draw themselves rather than naming two numbers. */}
-          {menu.kind === "grid" ? (
-            <div className="p-1.5">
-              <p className="px-0.5 pb-2 text-[0.8125rem] font-semibold text-ink">Choose a layout</p>
-              <TablePicker
-                columns={PICKER_COLUMNS}
-                onPick={(cols, rows) => { onPick?.("grid", { children: tableGrid(cols, rows).children, columns: GRID_MAX }); setMenu(null); }}
-                label="Sweep to choose columns across and rows down"
-              />
-              <div className="my-2.5 flex items-center gap-2">
-                <span className="h-px flex-1 bg-line" />
-                <span className="text-[0.625rem] font-medium uppercase tracking-wide text-muted">or an uneven split</span>
-                <span className="h-px flex-1 bg-line" />
-              </div>
-              <SplitGallery
-                splits={GRID_LAYOUTS}
-                onPick={(id) => { const p = variations.find((v) => v.id === id); if (p) onPick?.("grid", p.patch); setMenu(null); }}
-              />
-            </div>
-          ) : (
-            <>
-              <MenuHeader>Add {menu.label} as…</MenuHeader>
-              <MenuItem onClick={() => { onPick?.(menu.kind); setMenu(null); }} Icon={Plus} label="Default" />
-              {variations.map((p) => <MenuItem key={p.id} onClick={() => { onPick?.(menu.kind, p.patch); setMenu(null); }} Icon={Sparkles} label={p.label} />)}
-            </>
-          )}
+      {/* A COLUMNS block is picked by its SHAPE — and by the SAME popup the canvas opens when one is DROPPED
+          onto the page, so the two routes to adding a grid cannot drift apart again (they already did once:
+          clicking asked for a shape while dragging silently chose two equal cells). */}
+      {menu && menu.kind === "grid" && (
+        <GridLayoutMenu anchor={menu.anchor} onClose={() => setMenu(null)} onPick={(patch) => onPick?.("grid", patch)} />
+      )}
+      {/* Everything else picks a LOOK from the list. Portaled so the panel's scroll area can never clip it. */}
+      {menu && menu.kind !== "grid" && variations.length > 0 && (
+        <PortalMenu anchor={menu.anchor} onClose={() => setMenu(null)} width={184} ariaLabel={`Add ${menu.label}`}>
+          <MenuHeader>Add {menu.label} as…</MenuHeader>
+          <MenuItem onClick={() => { onPick?.(menu.kind); setMenu(null); }} Icon={Plus} label="Default" />
+          {variations.map((p) => <MenuItem key={p.id} onClick={() => { onPick?.(menu.kind, p.patch); setMenu(null); }} Icon={Sparkles} label={p.label} />)}
         </PortalMenu>
       )}
     </>

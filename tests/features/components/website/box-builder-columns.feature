@@ -31,6 +31,26 @@ Feature: The twelve-column grid in the Box Builder
     Then Sidebar left, Sidebar right, Feature + two and Wide + narrow are offered underneath
     And every one of them fills the twelve exactly
 
+  Scenario: Dragging a Columns block asks for its shape too
+    # Dragging says WHERE a layout goes. It does not say what the layout IS, and the builder must not
+    # answer that on my behalf — a dropped block used to divide the section into two cells nobody chose.
+    When I drag Columns onto a section
+    Then the same "Choose a layout" picker opens where I dropped it
+    And nothing is added to the page until I choose a shape
+    And choosing 3 across by 2 down gives me six cells, each a third of the twelve
+
+  Scenario: Cancelling a dropped Columns block
+    When I drag Columns onto a section
+    And I press Escape
+    Then the picker closes on the FIRST press
+    And the page is exactly as it was before I dragged
+
+  Scenario: One column across is one undivided cell
+    When I drag Columns onto a section
+    And I choose 1 across by 1 down
+    Then I get a single cell spanning all twelve columns
+    And nothing has been split
+
   # ── The row ────────────────────────────────────────────────────────────────
 
   Scenario: The named counts sit on top of the raw twelve

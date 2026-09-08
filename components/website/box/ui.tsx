@@ -213,17 +213,28 @@ export function PortalMenu({ anchor, onClose, width = 200, ariaLabel, children }
       : { position: "fixed", left, top: anchor.bottom + gap, maxHeight: Math.max(180, below), width });
   }, [anchor.top, anchor.left, anchor.bottom, anchor.right, width]);
 
+  // SUBSCRIBE ONCE, and read the latest `onClose` through a ref (the refs + `[]` pattern this codebase uses
+  // for every global handler). Depending on `onClose` looked harmless and swallowed the FIRST Escape on every
+  // menu the canvas opens: `onClose` is an inline arrow, so it is a new function each render; the canvas has
+  // its own document-level Escape handler which re-renders (Escape also steps the selection out); and a
+  // listener REMOVED while an event is being dispatched is never called for that event, while one ADDED then
+  // is not called either. So the menu's own Escape listener was torn down and rebuilt mid-flight and simply
+  // missed the key. Pressing Escape a second time worked, which is exactly how it looked in use: nothing
+  // happens, then it does. A stable listener cannot be caught in that window.
+  const closeRef = useRef(onClose);
+  closeRef.current = onClose;
   useEffect(() => {
-    const onDown = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) onClose(); };
-    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    const close = () => closeRef.current();
+    const onDown = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) close(); };
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") close(); };
     // Close when the PAGE scrolls (the anchor would go stale) — but IGNORE scrolling INSIDE the menu itself.
-    const onScroll = (e: Event) => { if (ref.current && ref.current.contains(e.target as Node)) return; onClose(); };
+    const onScroll = (e: Event) => { if (ref.current && ref.current.contains(e.target as Node)) return; close(); };
     document.addEventListener("mousedown", onDown);
     document.addEventListener("keydown", onKey);
     window.addEventListener("scroll", onScroll, true);
-    window.addEventListener("resize", onClose);
-    return () => { document.removeEventListener("mousedown", onDown); document.removeEventListener("keydown", onKey); window.removeEventListener("scroll", onScroll, true); window.removeEventListener("resize", onClose); };
-  }, [onClose]);
+    window.addEventListener("resize", close);
+    return () => { document.removeEventListener("mousedown", onDown); document.removeEventListener("keydown", onKey); window.removeEventListener("scroll", onScroll, true); window.removeEventListener("resize", close); };
+  }, []);
 
   return createPortal(
     <div

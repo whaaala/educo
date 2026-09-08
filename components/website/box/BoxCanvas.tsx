@@ -22,6 +22,7 @@ import {
 } from "@/lib/box-model";
 import { ICON_SET } from "./icons";
 import { PortalMenu, MenuItem, MenuHeader, MenuSep } from "./ui";
+import GridLayoutMenu, { type MenuAnchor } from "./GridLayoutMenu";
 import { blockForKind } from "@/lib/box-presets";
 import { treeHoverCss, treeRevealCss } from "@/lib/interactions";
 import { colorToCSS } from "@/components/shared/ColorPalettePicker";
@@ -638,17 +639,36 @@ export default function BoxCanvas({
     const hit = computeDrop(e.clientX, e.clientY, null);
     setDropRect(hit?.rect ?? null);
   };
+  /** Where a dropped Columns block will go, held while the user picks its shape. */
+  const [pendingGrid, setPendingGrid] = useState<{ anchor: MenuAnchor; parentId: string; index: number; moveWidth: string | null } | null>(null);
+
+  /** Put a freshly built block at a recorded slot — the tail of every palette insertion. */
+  const insertAt = (node: BoxNode, parentId: string, index: number, moveWidth: string | null) => {
+    // A new hugging block (Fit / width auto) stays hugging where it lands; only definite-width blocks fill the line.
+    const hugs = !node.width || node.width === "auto";
+    if (moveWidth && !hugs) node.width = moveWidth;
+    onChange(insertBox(rootRef.current, parentId, index, node));
+  };
+
   const onCanvasDrop = (e: React.DragEvent) => {
     if (!editable) return;
     const kind = e.dataTransfer.getData(PALETTE_TYPE);
     if (!kind) return;
     e.preventDefault();
     const hit = computeDrop(e.clientX, e.clientY, null);
-    const node = nodeForKind(kind);
-    // A new hugging block (Fit / width auto) stays hugging where it lands; only definite-width blocks fill the line.
-    if (hit) { const hugs = !node.width || node.width === "auto"; if (hit.moveWidth && !hugs) node.width = hit.moveWidth; onChange(insertBox(rootRef.current, hit.target.parentId, hit.target.index, node)); }
-    else onChange(insertBox(rootRef.current, rootRef.current.id, rootRef.current.children?.length ?? 0, node)); // empty canvas → append to the page
+    const parentId = hit ? hit.target.parentId : rootRef.current.id;
+    const index = hit ? hit.target.index : rootRef.current.children?.length ?? 0; // empty canvas → append to the page
+    const moveWidth = hit?.moveWidth ?? null;
     setDropRect(null);
+    // A COLUMNS block is a SHAPE, and the shape is the user's to choose. Dropping one used to insert whatever
+    // `blockForKind` decided on its own — two equal cells — so the section was divided by the act of dragging.
+    // Now the drop marks the spot and the same picker the palette tile opens asks how it should be cut; the
+    // grid is only inserted once that is answered, and dismissing the picker inserts nothing.
+    if (kind === "grid") {
+      setPendingGrid({ anchor: { top: e.clientY, bottom: e.clientY, left: e.clientX, right: e.clientX }, parentId, index, moveWidth });
+      return;
+    }
+    insertAt(nodeForKind(kind), parentId, index, moveWidth);
   };
 
   // ── Drag-to-resize ───────────────────────────────────────────────────────────────────────────
@@ -1521,6 +1541,14 @@ export default function BoxCanvas({
           className={dropRect.inside ? "rounded-lg outline outline-2 outline-dashed outline-indigo-500 bg-indigo-500/10" : "rounded-full bg-indigo-500 shadow-[0_0_10px_rgba(99,102,241,0.9)]"}
         />,
         document.body,
+      )}
+      {/* "Choose a layout", opened where a Columns block was DROPPED. Same component the palette tile opens. */}
+      {pendingGrid && (
+        <GridLayoutMenu
+          anchor={pendingGrid.anchor}
+          onClose={() => setPendingGrid(null)}
+          onPick={(patch) => insertAt(blockForKind("grid", patch), pendingGrid.parentId, pendingGrid.index, pendingGrid.moveWidth)}
+        />
       )}
       {/* Alignment guides while free-dragging a floating box (snap to sibling / parent edges + centres). */}
       {snapLines.length > 0 && createPortal(

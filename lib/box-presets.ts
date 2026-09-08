@@ -165,18 +165,25 @@ export function tableGrid(cols: number, rows: number): BoxNode {
 const gridLayoutChoices = (): Preset[] =>
   GRID_LAYOUTS.map((l) => ({ id: l.id, label: l.label, patch: { columns: GRID_MAX, children: l.spans.map(gridCell) } }));
 
+/** One named uneven split as a patch, fresh cells each call. Null for an id that no longer exists. */
+export function gridLayoutPatch(id: string): Partial<BoxNode> | null {
+  const l = GRID_LAYOUTS.find((g) => g.id === id);
+  return l ? { columns: GRID_MAX, children: l.spans.map(gridCell) } : null;
+}
+
 /** Build a fresh block for a palette kind — the ONE insertion path the product uses (palette click and drag).
  *  Components come from the catalogue; everything else is a primitive element / container. */
 export function blockForKind(kind: string, patch: Partial<BoxNode> = {}): BoxNode {
   const base =
     buildCatalogueComponent(kind) ??
     (kind === "row" ? createContainer("row")
-    // A grid arrives WITH CELLS. `createGrid(3)` on its own is three columns and nothing in them — an empty
-    // shell with no cell to click, nothing to resize and nowhere to put anything, which is what a DRAGGED
-    // Columns block used to be. (Clicking the tile opens the picker and passes real cells in the patch, so
-    // the two routes produced completely different objects from the same tile.) Two equal columns is the
-    // pickers own first offer, so dragging and clicking now agree.
-    : kind === "grid" ? tableGrid(2, 1)
+    // A grid arrives WITH A CELL, and with exactly ONE. Two things are wrong with any other default:
+    // `createGrid(3)` on its own is three columns and nothing in them — an empty shell with no cell to click,
+    // nothing to resize and nowhere to put anything; and starting at two cells SPLITS the section into a
+    // shape nobody asked for. One full-width cell divides nothing and is still a real cell.
+    // Both palette routes now ask instead of assuming (see GridLayoutMenu), so this is the answer only for a
+    // path that adds a grid without a shape — and the honest answer there is "undivided".
+    : kind === "grid" ? tableGrid(1, 1)
     // A Section starts flush too — space is added on the side you want it, not removed from a default. The
     // Card and Outline STYLE presets still carry their own padding, because there it is part of the look
     // somebody chose rather than something they have to discover and undo.

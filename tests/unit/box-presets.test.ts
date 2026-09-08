@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { getPresets, blockForKind, presetKindFor } from "@/lib/box-presets";
+import { getPresets, blockForKind, presetKindFor, gridLayoutPatch, GRID_LAYOUTS } from "@/lib/box-presets";
 import { createContainer, createGrid, createElement, type BoxNode } from "@/lib/box-model";
 import { DEFAULT_THEME } from "@/lib/site-storage";
 
@@ -67,5 +67,33 @@ describe("box-presets", () => {
 
   it("the Accordion stays a component (its items edit inline)", () => {
     expect(blockForKind("accordion").type).toBe("component");
+  });
+});
+
+describe("a Columns block never chooses its own shape", () => {
+  it("blockForKind('grid') with no shape is ONE undivided cell", () => {
+    // Two bugs came from this default, from opposite directions. `createGrid(3)` had no children at all —
+    // an empty shell with nothing to click, resize or fill. Replacing it with two equal cells fixed that and
+    // broke something else: a dropped Columns block divided the section in two without being asked. The only
+    // honest default is a grid that is undivided but real — one cell, spanning the full twelve.
+    const g = blockForKind("grid");
+    expect(g.layout).toBe("grid");
+    expect(g.children).toHaveLength(1);
+    expect(g.children?.[0].colSpan).toBe(12);
+  });
+
+  it("gridLayoutPatch returns fresh cells, so two picks never share an id", () => {
+    const a = gridLayoutPatch("sidebar-left");
+    const b = gridLayoutPatch("sidebar-left");
+    expect(a?.children?.map((c) => c.colSpan)).toEqual([4, 8]);
+    expect(a?.columns).toBe(12);
+    expect(a?.children?.[0].id).not.toBe(b?.children?.[0].id);
+    expect(gridLayoutPatch("no-such-split")).toBeNull();
+  });
+
+  it("every offered split fills the twelve exactly", () => {
+    for (const l of GRID_LAYOUTS) {
+      expect(l.spans.reduce((s, n) => s + n, 0), `${l.id} must fill the twelve`).toBe(12);
+    }
   });
 });

@@ -221,6 +221,8 @@ Most page layouts are a row split into parts: a wide article beside a narrow sid
 
 Click **Columns** and you get a little grid. Sweep across it — *4 across, 3 down* — and click. You get twelve empty cells arranged exactly like that, the same way you'd insert a table in a word processor. Underneath the picker are the uneven shapes a sweep can't express: **Sidebar left · 4 · 8**, **Sidebar right · 8 · 4**, **Feature + two · 6 · 3 · 3**, **Wide + narrow · 7 · 5**.
 
+**Dragging Columns asks the same question.** Drop the tile where you want the layout and the picker opens right there. Dragging says *where* the layout goes; it doesn't say what the layout *is*, so nothing is added to the page until you've chosen a shape — and pressing Escape (or clicking away) leaves the page exactly as it was.
+
 ### Twelve columns underneath
 
 Every row is really **twelve columns**, and each block takes a number of them. Twelve because it divides evenly by 2, 3, 4 and 6 — so halves, thirds, quarters and sixths all come out exact.

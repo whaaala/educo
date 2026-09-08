@@ -5,9 +5,11 @@ import { test, expect, type Page } from "@playwright/test";
  *
  * Behaviours: tests/features/components/website/box-builder-columns.feature.
  *
- * The palette offers two routes and they run through different code: clicking opens the picker and inserts a
- * grid WITH cells, while dragging inserts whatever `blockForKind` returns on its own. Only the click route had
- * a test, and this is the one a user reached for.
+ * The palette offers two routes to the same tile, and they ran through different code. Clicking opened the
+ * shape picker; dragging inserted whatever `blockForKind` decided on its own. That gap produced two bugs in a
+ * row from opposite directions — first an EMPTY grid with no cells to click, then a grid that arrived already
+ * DIVIDED in two, neither of which anyone chose. Both routes now open the same picker, and these tests hold
+ * them to it: a drop asks, and nothing is inserted until the question is answered.
  */
 
 async function seedSection(page: Page) {
@@ -33,7 +35,6 @@ async function seedSection(page: Page) {
 
 /** The HTML5 drag the palette actually performs, driven end to end with a shared DataTransfer. */
 async function dragKindOnto(page: Page, kind: string, targetId: string) {
-  const b = (await page.locator(`[data-box-id="${targetId}"]`).boundingBox())!;
   await page.evaluate(({ kind, targetId }) => {
     const dt = new DataTransfer();
     dt.setData("application/x-box-block", kind);
@@ -44,7 +45,15 @@ async function dragKindOnto(page: Page, kind: string, targetId: string) {
     el.dispatchEvent(new DragEvent("drop", at));
   }, { kind, targetId });
   await page.waitForTimeout(400);
-  return b;
+}
+
+const layoutMenu = (page: Page) => page.locator('[role="menu"][aria-label="Choose a layout"]');
+
+/** Answer the "Choose a layout" popup by sweeping to a shape and clicking it. */
+async function pickShape(page: Page, cols: number, rows: number) {
+  await expect(layoutMenu(page), "the drop must ASK for a shape").toBeVisible();
+  await layoutMenu(page).locator(`[aria-label="${cols} across, ${rows} down"]`).click();
+  await page.waitForTimeout(400);
 }
 
 /** The grid that was dropped, read from the stored tree. */
@@ -58,7 +67,12 @@ const droppedGrid = (page: Page) =>
     };
     walk(site.pages[0].root);
     const g = found as Record<string, unknown> | null;
-    return g && { id: g.id as string, columns: g.columns as number, cells: ((g.children as unknown[]) ?? []).length };
+    return g && {
+      id: g.id as string,
+      columns: g.columns as number,
+      cells: ((g.children as unknown[]) ?? []).length,
+      spans: ((g.children as Record<string, unknown>[]) ?? []).map((c) => c.colSpan as number),
+    };
   });
 
 test.describe("dragging a Columns block onto a section", () => {
@@ -75,6 +89,7 @@ test.describe("dragging a Columns block onto a section", () => {
 
     await seedSection(page);
     await dragKindOnto(page, "grid", "sec");
+    await pickShape(page, 2, 1);
     const g = (await droppedGrid(page))!;
     const b = (await page.locator(`[data-box-id="${g.id}"]`).boundingBox())!;
     // Select it, then keep clicking around near the top edge — the region where the flip is decided.
@@ -87,20 +102,47 @@ test.describe("dragging a Columns block onto a section", () => {
     expect(errors, "no console errors at all").toEqual([]);
   });
 
-  test("it arrives as a real layout, not an empty shell", async ({ page }) => {
-    // The bug: dragging inserted `createGrid(3)` with NO children — three columns and nothing in them. There
-    // was no cell to click, nothing to resize, and the whole thing read as one empty box. Clicking the tile
-    // and picking a shape gave you cells; dragging the same tile did not.
+  test("the drop asks for a shape, and inserts NOTHING until one is chosen", async ({ page }) => {
+    // The bug: dropping a Columns block divided the section into two cells on its own. Dragging a tile says
+    // WHERE a layout goes; it does not say what the layout IS, and the builder must not answer that for you.
     await seedSection(page);
     await dragKindOnto(page, "grid", "sec");
-    const g = await droppedGrid(page);
-    expect(g, "a grid was inserted").toBeTruthy();
-    expect(g!.cells, "it must arrive with cells you can actually put something in").toBeGreaterThan(0);
+    await expect(layoutMenu(page), "the picker opens at the drop point").toBeVisible();
+    expect(await droppedGrid(page), "…and no grid exists yet").toBeNull();
+  });
+
+  test("dismissing the picker leaves the page exactly as it was", async ({ page }) => {
+    await seedSection(page);
+    await dragKindOnto(page, "grid", "sec");
+    await page.keyboard.press("Escape");
+    await page.waitForTimeout(300);
+    await expect(layoutMenu(page)).toHaveCount(0);
+    expect(await droppedGrid(page), "a cancelled drop adds nothing").toBeNull();
+  });
+
+  test("it arrives in the shape the user picked — no more, no fewer", async ({ page }) => {
+    await seedSection(page);
+    await dragKindOnto(page, "grid", "sec");
+    await pickShape(page, 3, 2);
+    const g = (await droppedGrid(page))!;
+    expect(g.cells, "three across and two down is six cells").toBe(6);
+    expect(g.spans, "each one a third of the twelve").toEqual([4, 4, 4, 4, 4, 4]);
+  });
+
+  test("one column across is ONE undivided cell", async ({ page }) => {
+    // The other half of the same rule: asking for a single column must not hand back a split.
+    await seedSection(page);
+    await dragKindOnto(page, "grid", "sec");
+    await pickShape(page, 1, 1);
+    const g = (await droppedGrid(page))!;
+    expect(g.cells, "one cell").toBe(1);
+    expect(g.spans, "spanning the whole twelve").toEqual([12]);
   });
 
   test("the dropped grid is selectable and has resize handles on every edge", async ({ page }) => {
     await seedSection(page);
     await dragKindOnto(page, "grid", "sec");
+    await pickShape(page, 2, 1);
     const g = (await droppedGrid(page))!;
     const b = (await page.locator(`[data-box-id="${g.id}"]`).boundingBox())!;
     // Click until the grid itself is the selection (the first click takes the outermost block).
@@ -119,6 +161,7 @@ test.describe("dragging a Columns block onto a section", () => {
   test("it follows the height of the section it was dropped into", async ({ page }) => {
     await seedSection(page);
     await dragKindOnto(page, "grid", "sec");
+    await pickShape(page, 2, 1);
     const g = (await droppedGrid(page))!;
     const sec = (await page.locator('[data-box-id="sec"]').boundingBox())!;
     const grid = (await page.locator(`[data-box-id="${g.id}"]`).boundingBox())!;
