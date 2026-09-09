@@ -105,3 +105,36 @@ Feature: A block IS the box — clean selection, sizing and content position
   Scenario: Content position applies to elements and components alike
     Then the Content position control is available for every non-container block
     And it works the same for a heading, a text, a button, a badge and a card
+
+  # ── 4. How small a box can be made ──
+  # The rule in the user's words: an empty box shrinks to the very minimum, because the hint inside it is a
+  # hint and not content; a box with content shrinks to whatever that content permits, and no further.
+
+  Scenario: An empty box shrinks to almost nothing
+    Given an empty section showing the "Empty — drag a block in" hint
+    When I drag its bottom edge all the way up
+    Then it shrinks to a few pixels
+    Because the hint is editor chrome, not content, and must never set the floor
+
+  Scenario: An empty box nobody has sized still shows itself
+    Given a section I have just added and not resized
+    Then it stands about 8rem tall so I can see it, click it and drop into it
+    And that is the same height the exported page gives an empty painted box
+
+  Scenario: A size I set beats the height the editor offered
+    Given an empty section I have dragged down to a few pixels
+    Then it stays at that height
+    And the published page is that height too
+
+  Scenario: A box with content stops where its content stops
+    Given a section holding one line of text
+    When I drag its bottom edge all the way up
+    Then it shrinks to about the height of that line
+    And no further
+
+  Scenario: Empty children never hold a sized parent open
+    Given a section holding a grid whose cells are all empty
+    When I drag the section's bottom edge all the way up
+    Then the section shrinks
+    And the grid inside it shrinks with it
+    Because the courtesy height an unsized empty box gets steps aside once an ancestor has been sized

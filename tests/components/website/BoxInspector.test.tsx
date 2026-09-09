@@ -581,14 +581,42 @@ describe("Accordion — full three-tab audit (Design · Content · Per-device)",
     expect(reordered.items[0].id).toBe("i2");
   });
 
-  it("CONTENT › Typography — size, boldness, capitalisation, line/letter spacing (cascade into items)", () => {
+  // CONTENT › Typography — one control per test, deliberately.
+  //
+  // These were a single test driving all five, and it was the slowest in the suite by a distance: every
+  // control re-renders the whole inspector — every panel, every gallery preview — which costs seconds each
+  // in jsdom. It grew to 23.5s alone and TIMED OUT at 30s in a full run. Raising its timeout only moved the
+  // failure: one test then held its worker for ~25s without yielding and Vitest's own progress channel timed
+  // out instead ("Timeout calling onTaskUpdate"), so the whole run exited non-zero with 2941 tests passing.
+  // Split, each is a few seconds, the worker reports between them, and a failure names the control that broke.
+  it("CONTENT › Typography — text size", () => {
     const onPatch = renderFor(acc());
     openContent();
-    fireEvent.change(screen.getByLabelText("Text size"), { target: { value: "20" } });    expect(onPatch).toHaveBeenCalledWith({ fontSize: 20 });
-    pickSelect("Boldness", "Bold");                                                        expect(onPatch).toHaveBeenCalledWith({ fontWeight: 700 });
-    pickSelect("Capitalisation", "UPPERCASE");                                             expect(onPatch).toHaveBeenCalledWith({ textTransform: "uppercase" });
-    fireEvent.change(screen.getByLabelText("Line spacing"), { target: { value: "1.5" } }); expect(onPatch).toHaveBeenCalledWith({ lineHeight: 1.5 });
-    fireEvent.change(screen.getByLabelText("Letter spacing"), { target: { value: "1" } }); expect(onPatch).toHaveBeenCalledWith({ letterSpacing: 1 });
+    fireEvent.change(screen.getByLabelText("Text size"), { target: { value: "20" } });
+    expect(onPatch).toHaveBeenCalledWith({ fontSize: 20 });
+  });
+
+  it("CONTENT › Typography — boldness", () => {
+    const onPatch = renderFor(acc());
+    openContent();
+    pickSelect("Boldness", "Bold");
+    expect(onPatch).toHaveBeenCalledWith({ fontWeight: 700 });
+  });
+
+  it("CONTENT › Typography — capitalisation", () => {
+    const onPatch = renderFor(acc());
+    openContent();
+    pickSelect("Capitalisation", "UPPERCASE");
+    expect(onPatch).toHaveBeenCalledWith({ textTransform: "uppercase" });
+  });
+
+  it("CONTENT › Typography — line and letter spacing", () => {
+    const onPatch = renderFor(acc());
+    openContent();
+    fireEvent.change(screen.getByLabelText("Line spacing"), { target: { value: "1.5" } });
+    expect(onPatch).toHaveBeenCalledWith({ lineHeight: 1.5 });
+    fireEvent.change(screen.getByLabelText("Letter spacing"), { target: { value: "1" } });
+    expect(onPatch).toHaveBeenCalledWith({ letterSpacing: 1 });
   });
 
   it("CONTENT › whole-component Advanced CSS (sanitised)", () => {

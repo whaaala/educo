@@ -859,14 +859,20 @@ describe("box-model — floating layers (free overlap)", () => {
   });
 
   it("unfloatBox returns the box to the flow (drops position/left/top/z) and undoes the float's side-effects", () => {
-    // even a parent that carries a leaked minHeight (from an older reserve) is released on unfloat → no tall gap
+    // AND TOUCHES NOTHING ELSE. This used to clear the PARENT's min-height too, on the reasoning that the
+    // parent held a reserved height for the float which would otherwise leave a tall gap. No such reservation
+    // is ever stored: `floatingReserve` is DERIVED at render time, so it releases itself the moment nothing
+    // inside is floating. What the clause could actually reach was the height the user had set on the section
+    // themselves — indistinguishable from a leak, and far more likely. Float a grid inside a 400px section and
+    // return it, and the section collapsed to its content: measured in a browser, a grid that had filled 400px
+    // came back at 60. A float round trip has to land where it started.
     const floated = updateBox(floatBox(tree(), "a", "sec", 12, 8, "60%", 200), "sec", { minHeight: 400 });
     const back = unfloatBox(floated, "a");
     const a = findBox(back, "a")!;
     expect(isFloating(a)).toBe(false);
     expect(a.position).toBeUndefined(); expect(a.left).toBeUndefined(); expect(a.top).toBeUndefined(); expect(a.zIndex).toBeUndefined();
     expect(a.clip).toBeUndefined();                                  // the auto float-clip is cleared
-    expect(findBox(back, "sec")!.minHeight).toBeUndefined();         // any leaked parent gap is released
+    expect(findBox(back, "sec")!.minHeight, "the parent's own height is none of un-float's business").toBe(400);
   });
 
   it("unfloatBox restores a COMPONENT to full width (its compact fixed px width was only for the floating card)", () => {

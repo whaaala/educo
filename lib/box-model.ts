@@ -16,6 +16,7 @@ import { iconSvg } from "@/lib/educo-ui/icon-svg";
 import { BREAKPOINTS_EM } from "@/lib/educo-ui/base";
 import { hasItemEffects, itemEffectsCss } from "@/lib/interactions";
 import { PAGE_Z, clampPageZ } from "@/lib/educo-ui/stacking";
+import { colorToCSS } from "@/components/shared/ColorPalettePicker";
 
 export type BoxType = "container" | "text" | "heading" | "button" | "image" | "video" | "icon" | "divider" | "list" | "embed" | "spacer" | "component";
 
@@ -210,7 +211,8 @@ export interface BoxNode {
   marginTop?: number; marginRight?: number; marginBottom?: number; marginLeft?: number;     // per-side overrides
   radius?: number;          // px corner radius (all corners)
   radiusTopLeft?: number; radiusTopRight?: number; radiusBottomRight?: number; radiusBottomLeft?: number; // per-corner overrides
-  opacity?: number;         // 0–100 (%), default 100 (fully opaque)
+  opacity?: number;         // 0–100 (%), default 100 (fully opaque) — the BOX's own paint, not its contents
+  fadeContents?: boolean;   // opt in: fade everything inside this box too (real CSS opacity, from here down)
   rotate?: number;          // rotation in degrees (visual only; doesn't affect flow)
   // ── border + shadow ──
   borderWidth?: number;     // px; 0/undefined = no border
@@ -441,6 +443,81 @@ export function isEmptyBox(node: BoxNode): boolean {
   return (node.children?.length ?? 0) === 0 && !node.text && !node.src && node.type !== "component";
 }
 
+// ── See-through ─────────────────────────────────────────────────────────────
+//
+// CSS `opacity` is a GROUP operation: it fades the element and everything inside it, and a child cannot opt
+// out — no value of `opacity` on a child can undo a parent's. That is not what "make this grid see-through"
+// means to anyone. What they mean is "let the page show through THIS BOX", with the cards and words inside it
+// untouched.
+//
+// So a box's see-through is applied to ITS OWN PAINT — the background, the overlay, the border — by putting
+// the alpha into those colours. Nothing inside is affected, at any depth, and the rule is the same for every
+// box: a child made see-through protects its own content exactly as its parent does.
+//
+// `fadeContents` is the opt-in for the other meaning, and it IS real CSS opacity: fade this box and
+// everything in it, from here down. One box's choice, not something inherited by accident.
+
+/** A box holding CONTENT fades only its own paint; anything else (an element, or `fadeContents`) fades whole. */
+export function fadesPaintOnly(node: BoxNode): boolean {
+  if (node.opacity === undefined || node.opacity === 100) return false;
+  if (node.fadeContents) return false;
+  return isContainer(node) || node.type === "component";
+}
+
+/** The alpha a box's own paint is drawn at: 0–1, and 1 whenever the fade is whole-box or absent. */
+export function paintAlpha(node: BoxNode): number {
+  return fadesPaintOnly(node) ? Math.max(0, Math.min(100, node.opacity ?? 100)) / 100 : 1;
+}
+
+/** The `opacity` a box actually publishes — only when the fade is meant to take the contents with it. */
+export function boxOpacity(node: BoxNode): number | undefined {
+  if (node.opacity === undefined || node.opacity === 100) return undefined;
+  return fadesPaintOnly(node) ? undefined : node.opacity / 100;
+}
+
+/**
+ * One colour, drawn at `alpha`. Handles the three things a colour can be here: a `gradient:a:b` pair, a
+ * token/`var()`/named colour, and a hex.
+ *
+ * `color-mix(in srgb, C x%, transparent)` is the general form and works for a var() or a named colour, which
+ * cannot be picked apart. A hex is converted directly — shorter, and it survives anywhere `color-mix` might
+ * not (a very old browser opening an exported page renders a plain rgba instead of nothing).
+ */
+export function fadeColor(color: string, alpha: number): string {
+  if (alpha >= 1) return color;
+  if (color.startsWith("gradient:")) {
+    const [, a, b] = color.split(":");
+    return `gradient:${fadeColor(a ?? "#000", alpha)}:${fadeColor(b ?? "#000", alpha)}`;
+  }
+  const hex = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(color.trim());
+  if (hex) {
+    const h = hex[1].length === 3 ? hex[1].split("").map((c) => c + c).join("") : hex[1];
+    const n = parseInt(h, 16);
+    return `rgba(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}, ${Math.round(alpha * 1000) / 1000})`;
+  }
+  return `color-mix(in srgb, ${color} ${Math.round(alpha * 1000) / 10}%, transparent)`;
+}
+
+/**
+ * A box's paint colours, already faded — the ONE place both the canvas and the export get them from.
+ *
+ * When the box paints an IMAGE the whole background stack moves to a `::before` layer that carries the
+ * opacity itself (see `paintLayerCss`), so the background and overlay are handed back EMPTY here: leaving
+ * them on the element would paint the stack twice, once faded and once faded again. The border is not part
+ * of the background stack, so it always fades in its own colour.
+ */
+export function fadedPaint(node: BoxNode): { background?: string; bgOverlay?: string; borderColor?: string } {
+  const a = paintAlpha(node);
+  const border = a >= 1 ? node.borderColor : node.borderColor ? fadeColor(node.borderColor, a) : undefined;
+  if (paintsViaLayer(node)) return { background: undefined, bgOverlay: undefined, borderColor: border };
+  if (a >= 1) return { background: node.background, bgOverlay: node.bgOverlay, borderColor: border };
+  return {
+    background: node.background ? fadeColor(node.background, a) : undefined,
+    bgOverlay: node.bgOverlay ? fadeColor(node.bgOverlay, a) : undefined,
+    borderColor: border,
+  };
+}
+
 // ── Factories ───────────────────────────────────────────────────────────────
 
 /**
@@ -559,6 +636,85 @@ export function bgImageLayer(v: string): string {
 }
 
 /**
+ * A box's whole background stack — overlay over image over base fill — as one style object.
+ *
+ * THE ONE COMPOSER. The canvas and the exporter each had their own copy of this, character for character,
+ * which is the shape every canvas≠export bug in this project has taken. It is also what the see-through
+ * PAINT LAYER needs: to fade a background image you have to reproduce the stack exactly, and a third copy
+ * would have been a third thing to keep in step.
+ *
+ * `colors` decides which values are read — the faded ones for the element, the raw ones for a paint layer
+ * that carries its own opacity.
+ */
+export function backgroundCss(node: BoxNode, colors?: { background?: string; bgOverlay?: string }, forLayer = false): CSSProperties {
+  // When the paint has moved to a `::before`, the ELEMENT paints nothing: the image layer is composed from
+  // `node.bgImage` rather than from the colours, so emptying the colours alone left the box still drawing the
+  // photograph at full strength underneath the faded copy on the layer — the same picture, twice.
+  if (!forLayer && paintsViaLayer(node)) return {};
+  const c = colors ?? { background: node.background, bgOverlay: node.bgOverlay };
+  const s: CSSProperties = {};
+  const layers: string[] = [];
+  const asGradient = (v: string) => { const css = colorToCSS(v); return css.startsWith("linear-gradient") ? css : `linear-gradient(${css}, ${css})`; };
+  if (c.bgOverlay) layers.push(asGradient(c.bgOverlay));
+  if (node.bgImage) layers.push(bgImageLayer(node.bgImage)); // gradient/pattern passes through; URL gets url("…")
+  const baseGrad = c.background?.startsWith("gradient:");
+  if (baseGrad && !node.bgImage) layers.push(colorToCSS(c.background!));
+  if (layers.length) {
+    s.backgroundImage = layers.join(", ");
+    if (node.bgImage) {
+      s.backgroundSize = node.bgTile ?? (node.bgSize ?? "cover");       // a pattern tiles at its tile size…
+      s.backgroundPosition = node.bgPosition ?? (node.bgTile ? "0 0" : "center");
+      s.backgroundRepeat = node.bgRepeat ?? (node.bgTile ? "repeat" : "no-repeat"); // …and repeats; a photo covers once
+      if (node.bgAttach) s.backgroundAttachment = node.bgAttach;
+    } else { s.backgroundPosition = "center"; s.backgroundRepeat = "no-repeat"; }
+  }
+  if (c.background && !baseGrad) s.backgroundColor = colorToCSS(c.background);
+  return s;
+}
+
+/**
+ * A background IMAGE cannot be faded by putting alpha in a colour — there is no such thing as a per-layer
+ * opacity in CSS, and every alternative that works on the element itself (`opacity`, `mask`, `filter`) takes
+ * the contents down with it, which is the whole thing we are avoiding.
+ *
+ * So the paint moves off the element and onto its `::before`, which carries the opacity by itself. The
+ * pseudo-element is not a child, so nothing inside the box is touched, and neither renderer needs an extra
+ * `<div>`: both already emit per-node CSS rules (the canvas injects one scoped stylesheet, the export writes
+ * `.bx-…` rules), so this is the same rule text in both places.
+ */
+export function paintsViaLayer(node: BoxNode): boolean {
+  return fadesPaintOnly(node) && !!node.bgImage;
+}
+
+/**
+ * The `::before` rule that carries a see-through box's paint, plus what the box itself needs for it to sit
+ * in the right place. Empty for every box that does not need a layer.
+ *
+ * The layer sits one tier BELOW the flow (`PAGE_Z.behind`), which puts it behind the box's own content;
+ * `isolation:isolate` then makes the box a stacking context, so that tier stops HERE and the layer can never
+ * keep falling until it lands behind some ANCESTOR's background, where it would be invisible. `inset:0` and
+ * `border-radius:inherit` keep it exactly the shape of the box, including rounded corners and any per-corner
+ * radius, and `pointer-events:none` keeps it out of the way of clicks and drags.
+ */
+export function paintLayerCss(selector: string, node: BoxNode): string {
+  if (!paintsViaLayer(node)) return "";
+  const bg = backgroundCss(node, undefined, true); // the RAW colours — the layer own opacity does the fading
+  const decls = Object.entries(bg)
+    .map(([k, v]) => `${k.replace(/[A-Z]/g, (m) => `-${m.toLowerCase()}`)}:${v}`)
+    .join(";");
+  const a = paintAlpha(node);
+  return `${selector}{position:relative;isolation:isolate}`
+    + `${selector}::before{content:"";position:absolute;inset:0;z-index:${PAGE_Z.behind};pointer-events:none;`
+    + `border-radius:inherit;opacity:${a};${decls}}`;
+}
+
+/** Every paint-layer rule in a tree, for the one stylesheet the canvas injects. */
+export function treePaintLayerCss(node: BoxNode, scopeFor: (id: string) => string): string {
+  return paintLayerCss(scopeFor(node.id), node)
+    + (node.children ?? []).map((c) => treePaintLayerCss(c, scopeFor)).join("");
+}
+
+/**
  * How far a component's text may be shrunk to fit a box smaller than its natural content (RULE G).
  * Dragging past this stops — text never becomes unreadable, so a component can't be squashed into nothing.
  */
@@ -615,7 +771,7 @@ export function componentBoxCss(node: BoxNode): string {
     if (node.bgAttach) d.push(`background-attachment:${node.bgAttach}`);
   }
   if (node.rotate) d.push(`transform:rotate(${node.rotate}deg)`);
-  if (node.opacity !== undefined && node.opacity !== 100) d.push(`opacity:${node.opacity / 100}`);
+  const wholeFade = boxOpacity(node); if (wholeFade !== undefined) d.push(`opacity:${wholeFade}`);
   // CONTENT POSITION: place the content inside the component (X = horizontal, Y = vertical) regardless of whether
   // the component stacks in a column or a row — map X/Y to the right flex axis (justify vs align) per component.
   if (node.contentX || node.contentY) {
@@ -1820,22 +1976,23 @@ export function floatBox(root: BoxNode, id: string, targetParentId: string, left
 }
 
 /** Return `id` to the normal flow (drop its floating position); normalizeRowBands re-docks it as a row.
- *  Undoes the float's side-effects so nothing leaks back into the flow: the auto-applied `clip` is cleared, a
- *  COMPONENT returns to full width (its compact fixed px width existed only for the floating card), and — if it
- *  was the parent's LAST floating child — the parent's reserved `minHeight` is dropped so no tall empty gap remains. */
+ *  Undoes the float's side-effects so nothing leaks back into the flow: the auto-applied `clip` is cleared and a
+ *  COMPONENT returns to full width (its compact fixed px width existed only for the floating card).
+ *
+ *  IT TOUCHES NOTHING BUT THIS BOX. Returning a block to the flow used to also wipe its PARENT's `minHeight`,
+ *  to "drop the reserved height so no tall empty gap remains" — but no such reservation is ever stored.
+ *  `floatingReserve` is DERIVED at render time (`max(node.minHeight, floatingReserve(node))`), so the reserve
+ *  disappears by itself the moment nothing inside is floating. What that line actually deleted was the height
+ *  the user had set on the section, months earlier and for their own reasons: float a grid inside a 400px
+ *  section, return it, and the section collapsed to its content — so the grid came back at 60px instead of the
+ *  400 it had filled. Floating and un-floating is a round trip; it has to land where it started. */
 export function unfloatBox(root: BoxNode, id: string): BoxNode {
   const node = findBox(root, id);
-  const info = findParent(root, id);
   // Drop everything the float set: geometry, the auto `clip`, and the card's `minHeight` (so the box hugs its
   // content again). A COMPONENT also returns to full width (its compact fixed px width was only for the card).
   const patch: Partial<BoxNode> = { position: undefined, left: undefined, top: undefined, zIndex: undefined, clip: undefined, minHeight: undefined, height: undefined };
   if (node?.type === "component") patch.width = "100%";
-  let next = updateBox(root, id, patch);
-  if (info) {
-    const stillFloating = (findBox(next, info.parent.id)?.children ?? []).some((c) => c.id !== id && isFloating(c));
-    if (!stillFloating) next = updateBox(next, info.parent.id, { minHeight: undefined });
-  }
-  return next;
+  return updateBox(root, id, patch);
 }
 
 /**

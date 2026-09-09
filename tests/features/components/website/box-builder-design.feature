@@ -105,3 +105,61 @@ Feature: Box Builder — modern look & feel, blocks palette, plain language
     When the picker opens near a screen edge
     Then it flips to whichever side has more room and never runs off-screen
     And its search, category filters, preview grid and footer are all visible
+
+  # ── See-through ────────────────────────────────────────────────────────────
+  # CSS opacity fades an element AND everything inside it, and a child cannot opt out. That is not what
+  # "make this grid see-through" means, so the fade goes into the box's own paint instead.
+
+  Scenario: A see-through box fades, its contents do not
+    Given a grid with a background colour
+    When I set See-through to 30%
+    Then the page shows through the grid's background
+    And every card, heading and photo inside it stays exactly as solid as it was
+
+  Scenario: The rule holds at every depth
+    Given a see-through grid holding a cell holding a heading
+    Then the cell is solid
+    And the heading inside the cell is solid
+    Because a box protects its own contents whether or not its parent is see-through
+
+  Scenario: An individual child can be see-through on its own
+    When I set See-through on one cell of a grid
+    Then only that cell fades
+    And its own contents stay solid, exactly as the grid's did
+
+  Scenario: Fading the contents too is a choice, made per box
+    Given a see-through section
+    When I tick "Fade what's inside too"
+    Then the section and everything in it fades together
+    And that applies from this box down, and nowhere else
+
+  Scenario: A background image fades the same way
+    Given a hero with a photograph as its background
+    When I set See-through to 40%
+    Then the photograph softens
+    And the headline and button on top of it stay crisp
+    Because the picture is painted on a layer of its own, behind the content
+
+  Scenario: The published page fades the same way
+    Then the exported page carries the fade in the colour, not as an opacity on the box
+    Because an opacity there would fade the contents that the canvas showed as solid
+
+  # ── Floating a parent ──────────────────────────────────────────────────────
+
+  Scenario: Floating a box takes its contents with it
+    When I float a grid
+    Then everything inside it floats with it
+    And the cells keep the arrangement they already had
+    And no child is floated in its own right
+
+  Scenario: Un-floating puts everything back exactly where it was
+    When I float a grid and then return it to the layout
+    Then the grid is where it started
+    And every cell in it is where it started
+    And the section's own height is untouched
+    Because floating and returning is a round trip, not an edit
+
+  Scenario: A single child can float on its own
+    When I float one cell of a grid
+    Then only that cell leaves the flow
+    And its siblings and the grid around them do not move

@@ -17,7 +17,7 @@ import {
   containerStyle, childStyle, marginCSS, sizeToCSS, u, baseUnit, floatingReserve, floatStacksOnMobile, createContainer, createGrid, createElement, createComponent,
   updateBox, removeBox, insertBox, moveBoxStep, duplicateBox, moveBox, cloneBox, findParent, isAncestor, isContainer, widthPct,
   isFloating, floatBox, unfloatBox, groupBoxes, ungroupBoxes, bringToFront, sendToBack, bringForward, sendBackward,
-  radiusCSS, isClipped, SHADOW_CSS, videoEmbedSrc, sanitizeCssDeclarations, expandScopedCss, ACCORDION_CSS_PARTS, itemOverrideCss, itemHasOverride, itemNumberVars, richBody, componentTextCss, componentBoxCss, bgImageLayer, bgShowThroughCss, resizeTopEdge, blockContainmentCss, alertToastCss, treeHasToast, accordionClasses, bandClasses, advancedCssStyle, alertActionsHTML, hugsContent, itemFloatContextCss, COMPONENT_ITEM_SEL, clampContentScale, MIN_CONTENT_SCALE, isMultiItemComponent, comfortableWidth, remLen, rootFontPx, isDefiniteLen, addItemAfter, duplicateItem, duplicateChildItem, removeItem, removeChildItem, moveItem, moveChildItem, updateItem, updateChildItem, ALERT_SEVERITY_ICON, alertPartInline, alertIconInline, collectAlertItemStyles,
+  fadedPaint, boxOpacity, backgroundCss, treePaintLayerCss, radiusCSS, isClipped, SHADOW_CSS, videoEmbedSrc, sanitizeCssDeclarations, expandScopedCss, ACCORDION_CSS_PARTS, itemOverrideCss, itemHasOverride, itemNumberVars, richBody, componentTextCss, componentBoxCss, bgShowThroughCss, resizeTopEdge, blockContainmentCss, alertToastCss, treeHasToast, accordionClasses, bandClasses, advancedCssStyle, alertActionsHTML, hugsContent, itemFloatContextCss, COMPONENT_ITEM_SEL, clampContentScale, MIN_CONTENT_SCALE, isMultiItemComponent, comfortableWidth, remLen, rootFontPx, isDefiniteLen, addItemAfter, duplicateItem, duplicateChildItem, removeItem, removeChildItem, moveItem, moveChildItem, updateItem, updateChildItem, ALERT_SEVERITY_ICON, alertPartInline, alertIconInline, collectAlertItemStyles,
   type Breakpoint, resolveResponsive, updateBoxResponsive, imageSizing, measureImage, treeItemEffectsCss, itemNeedsClass, floatZIndex, gridPlacementAt, gridColumnsAt, selectionChain, typoRole, typoRootVars, typoCascadeCss, bandEdgeCSS,
 } from "@/lib/box-model";
 import { ICON_SET } from "./icons";
@@ -37,31 +37,21 @@ import ItemCrudLayer, { type SelectedItem } from "@/components/website/box/ItemC
 
 /** Layered background CSS: base fill (colour/gradient) → image → overlay; content renders above. */
 function backgroundStyle(node: BoxNode): React.CSSProperties {
-  const s: React.CSSProperties = {};
-  const layers: string[] = [];
-  const asGradient = (c: string) => { const css = colorToCSS(c); return css.startsWith("linear-gradient") ? css : `linear-gradient(${css}, ${css})`; };
-  if (node.bgOverlay) layers.push(asGradient(node.bgOverlay));
-  if (node.bgImage) layers.push(bgImageLayer(node.bgImage)); // gradient/pattern passes through; URL gets url("…")
-  const baseGrad = node.background?.startsWith("gradient:");
-  if (baseGrad && !node.bgImage) layers.push(colorToCSS(node.background!));
-  if (layers.length) {
-    s.backgroundImage = layers.join(", ");
-    if (node.bgImage) {
-      s.backgroundSize = node.bgTile ?? (node.bgSize ?? "cover");
-      s.backgroundPosition = node.bgPosition ?? (node.bgTile ? "0 0" : "center");
-      s.backgroundRepeat = node.bgRepeat ?? (node.bgTile ? "repeat" : "no-repeat");
-      if (node.bgAttach) s.backgroundAttachment = node.bgAttach;
-    } else { s.backgroundPosition = "center"; s.backgroundRepeat = "no-repeat"; }
-  }
-  if (node.background && !baseGrad) s.backgroundColor = node.background;
-  return s;
+  // SEE-THROUGH lives in the COLOURS, not in `opacity` — so the box fades and nothing inside it does. And the
+  // stack itself is composed by box-model, which is what the exporter calls too: one composer, so a canvas
+  // that disagrees with the published page is not expressible.
+  //
+  // A box painting an IMAGE gets NOTHING here while it is fading: `fadedPaint` hands back an empty background
+  // because the whole stack has moved to a `::before` layer carrying its own opacity (`paintLayerCss`).
+  return backgroundCss(node, fadedPaint(node));
 }
 
 /** Border, drop shadow, per-corner radius and rotation for any box. */
 function decorStyle(node: BoxNode): React.CSSProperties {
   const s: React.CSSProperties = {};
   const br = radiusCSS(node); if (br) s.borderRadius = br;
-  if (node.borderWidth && node.type !== "divider") s.border = `${node.borderWidth}px ${node.borderStyle ?? "solid"} ${node.borderColor ? colorToCSS(node.borderColor) : "rgba(0,0,0,0.15)"}`; // divider uses borderWidth as its line thickness
+  const bc = fadedPaint(node).borderColor;
+  if (node.borderWidth && node.type !== "divider") s.border = `${node.borderWidth}px ${node.borderStyle ?? "solid"} ${bc ? colorToCSS(bc) : "rgba(0,0,0,0.15)"}`; // divider uses borderWidth as its line thickness
   if (node.shadow) s.boxShadow = SHADOW_CSS[node.shadow];
   if (node.rotate) s.transform = `rotate(${node.rotate}deg)`;
   Object.assign(s, bandEdgeCSS(node)); // sloped / curved top and bottom edges — the SAME helper the export uses
@@ -734,6 +724,11 @@ export default function BoxCanvas({
    * Below this a cell is a sliver holding one word per line, which is never what someone dragging a boundary
    * wanted; they wanted the cell they are holding to get bigger. So the neighbour stops giving ground and
    * moves down a row, and the dragged cell carries on to the full width of the page.
+   *
+   * WRAPPING IS NOT A CHANGE OF SIZE. When the neighbour can no longer fit beside the dragged cell it keeps
+   * the span it already had and simply flows onto the next row. Writing the floor into it instead — which is
+   * what used to happen — destroyed the only record of how wide it was, so bringing the dragged cell back
+   * left the row several columns short with no way to work out how many.
    */
   const NEIGHBOUR_MIN = 3;
 
@@ -786,12 +781,27 @@ export default function BoxCanvas({
     const me = row.findIndex((s) => s.id === id);
     const spanOf = (n: BoxNode) => gridPlacementAt(info.parent, n, breakpoint).span;
     const track = colLines.length - 1;
-    const used = row.reduce((sum, s) => sum + spanOf(s.node), 0);
-    const mine = row[me]?.node ?? info.parent.children?.find((c) => c.id === id);
-    if (!mine) return;
-    const mySpan = spanOf(mine);
-    const next = row[me + 1], prev = row[me - 1];
+    if (!row[me] && !(info.parent.children ?? []).some((c) => c.id === id)) return;
+    // THE PARTNER IS THE NEXT (or previous) SIBLING, in DOCUMENT order — never "the next cell measured on this
+    // row". Once a neighbour has been pushed onto the row below it is no longer on this row by measurement, so
+    // the measured lookup found nothing and shrinking the dragged cell wrote nothing back: the neighbour was
+    // stranded on row two and the row stayed short. The sibling before or after is the cell the shared
+    // boundary belongs to whether or not it currently fits beside this one.
     const hasE = edge.includes("e"), hasW = edge.includes("w"), hasS = edge.includes("s"), hasN = edge.includes("n");
+    const kids = info.parent.children ?? [];
+    const myIndex = kids.findIndex((c) => c.id === id);
+    const sibling = (step: number) => { const k = kids[myIndex + step]; return k ? { id: k.id, node: k } : undefined; };
+    const next = sibling(1), prev = sibling(-1);
+    /**
+     * The tracks THIS PAIR owns: the whole row, less whatever the other cells on it are holding.
+     *
+     * Measured from the row as it stands when the drag begins, and only the cells that are neither the
+     * dragged one nor its partner count — so a wrapped partner contributes nothing and the pair gets the
+     * full twelve back, which is exactly what lets it return to this row at the width the drag frees up.
+     */
+    const partnerAtStart = hasE ? next : prev;
+    const others = row.filter((s) => s.id !== id && s.id !== partnerAtStart?.id).reduce((sum, s) => sum + spanOf(s.node), 0);
+    const pairBudget = Math.max(2, track - others);
     const startX = e.clientX, startY = e.clientY;
     // The starting heights of THIS row and the one above it. A row is as tall as its TALLEST cell, so a
     // height has to be written to every cell in the row — setting one alone does nothing at all.
@@ -816,21 +826,23 @@ export default function BoxCanvas({
           ? nearest(colLines, r.right + dx) - nearest(colLines, r.left)
           : nearest(colLines, r.right) - nearest(colLines, r.left + dx);
         const neighbour = hasE ? next : prev;
-        // The dragged cell follows the pointer all the way to the full width of the row. What its NEIGHBOUR
-        // does depends on how far it has been pushed:
-        //   • free columns in the row are taken first — nothing else moves at all;
-        //   • then the neighbour gives up columns, down to a width still worth reading (NEIGHBOUR_MIN);
-        //   • past that it stops shrinking and WRAPS to the next row, because the row's spans now exceed
-        //     twelve and the grid flows the overflow — which is what a person means by "make this one full
-        //     width", and what the first version got wrong by refusing to grow any further.
+        // The dragged cell follows the pointer all the way to the full width of the row, and THE PAIR SHARES
+        // ITS BUDGET: whatever this cell is not using, its neighbour takes. Push far enough that the
+        // neighbour would be left too narrow to read and it stops sharing — it keeps the span it has and
+        // flows onto the next row instead, which is what a person means by "make this one full width".
+        //
+        // BOTH VALUES ARE A FUNCTION OF THE POINTER ALONE — no running totals, no deltas against a snapshot
+        // of a size that has since changed. That is what makes the drag REVERSIBLE: every position produces
+        // one answer, so dragging out and back lands exactly where it started, and bringing the dragged cell
+        // back in brings a wrapped neighbour up beside it at the width just freed. The version this replaces
+        // accumulated a delta and clamped the neighbour at the floor, so out-and-back left the row four
+        // columns short — and once the neighbour had wrapped nothing was written to it at all.
         const span = Math.max(1, Math.min(track, want));
-        const delta = span - mySpan;
         tree = writeBox(tree, id, { colSpan: span });
-        if (neighbour && delta !== 0) {
+        if (neighbour) {
+          const beside = pairBudget - span;                    // what the neighbour needs to fit alongside
           const nSpan = spanOf(neighbour.node);
-          const give = Math.max(0, delta - (track - used)); // only what the row's free columns could not cover
-          const take = delta < 0 ? delta : Math.min(give, Math.max(0, nSpan - NEIGHBOUR_MIN));
-          if (take !== 0) tree = writeBox(tree, neighbour.id, { colSpan: nSpan - take });
+          tree = writeBox(tree, neighbour.id, { colSpan: beside >= NEIGHBOUR_MIN ? beside : nSpan });
         }
       }
       // ── DOWN: the grabbed edge moves, and THIS row is the one that changes size ──
@@ -1090,7 +1102,12 @@ export default function BoxCanvas({
     closeMenu();
   };
 
-  const renderNode = (rawNode: BoxNode, parent: BoxNode | null): React.ReactNode => {
+  /**
+   * `sizedAbove` — an ancestor has been given an explicit height, so the EDITOR COURTESY HEIGHT that an
+   * unsized empty box normally gets must step aside. Otherwise a box you have just dragged small is held
+   * open from the inside by empty children nobody sized, and the size you set is not the size you get.
+   */
+  const renderNode = (rawNode: BoxNode, parent: BoxNode | null, sizedAbove = false): React.ReactNode => {
     // Resolve the box for the active breakpoint (base merged with tablet/mobile overrides). Same id/type/
     // children as the base, so selection + structure are unaffected — only style/geometry differ.
     const node = resolveResponsive(rawNode, breakpoint);
@@ -1115,7 +1132,11 @@ export default function BoxCanvas({
       // not this wrapper — so the wrapper stays transparent and the controls act on the pill/card/quote directly.
       ...(selfPaint ? {} : decorStyle(node)), // border, shadow, per-corner radius, rotation
       ...(floating ? {} : marginCSS(node)), // margins are a FLOW concept; a floating box uses left/top instead
-      opacity: node.hidden ? 0.35 : node.type === "component" ? undefined : node.opacity !== undefined ? node.opacity / 100 : undefined, // component opacity applies to the component element; hidden shows faint
+      // SEE-THROUGH: only a WHOLE-BOX fade reaches this wrapper. A box that is fading just its own paint
+      // puts the alpha into its background/border colours instead (see `fadedPaint`), so nothing inside it
+      // is touched. A component paints its own element, and `hidden` is the editor showing you a box that
+      // will not be published.
+      opacity: node.hidden ? 0.35 : node.type === "component" ? undefined : boxOpacity(node),
       overflow: stacked || isSolo ? "visible" : isClipped(node) ? "hidden" : undefined, // selected → show the outside toolbar + resize handles (never clip them); stacked → grow with content; else clip only when opted-in/rounded
       // Floating: free-position on its own layer. Stacked (mobile): plain full-width flow block. Flow: fill+divide
       // per childStyle. Root: fill the canvas + define the global base unit (--box-u, rem-based).
@@ -1189,7 +1210,33 @@ export default function BoxCanvas({
           data-box-id={node.id}
           id={node.anchor || undefined}
           onMouseDown={onSelectDown}
-          style={{ ...containerStyle(node, breakpoint), ...wrapStyle, ...(isDragging ? { opacity: 0.4 } : {}) }}
+          // AN EMPTY BOX GETS A COURTESY HEIGHT, NOT A FLOOR IT CANNOT LEAVE. Nothing is inside to give it
+          // height, so an unsized empty box would collapse to 0px — invisible, unclickable, impossible to drop
+          // into. It gets the same 8rem the exporter gives an empty painted box (`decorCss`).
+          //
+          // It is applied AFTER `wrapStyle` on purpose: `childStyle` deliberately writes `min-height: 0` onto
+          // an empty box so it CAN be shrunk to nothing, and that would otherwise cancel this outright.
+          //
+          // Three things switch it off, and between them they are the whole rule — a size the user set always
+          // wins over a size the editor offered:
+          //   • an explicit `minHeight` or `height` on this box — you sized it, you get it;
+          //   • `sizedAbove` — you sized an ANCESTOR, so empty descendants must not hold it open;
+          //   • anything inside it, at which point the content sets the height, which is the real answer.
+          style={{
+            ...containerStyle(node, breakpoint),
+            // `relative` so the out-of-flow hint is measured against THIS box and not some ancestor. Only
+            // when the box is empty, so it can never become a containing block for a child that floats.
+            ...(editable && kids.length === 0 ? { position: "relative" as const } : {}),
+            ...wrapStyle,
+            // NOT the page root and NOT a row band. Both are invisible scaffolding rather than boxes anyone
+            // added: the root carries the PAGE's own minimum height (roughly a viewport) and an 8rem courtesy
+            // band would overrule it, collapsing an empty page to a strip.
+            ...(editable && kids.length === 0 && !isRoot && !node.rowBand && !sizedAbove
+              && node.minHeight == null && node.height == null
+              ? { minHeight: "8rem" }
+              : {}),
+            ...(isDragging ? { opacity: 0.4 } : {}),
+          }}
           // Structural boxes (a row BAND, the page ROOT) are invisible scaffolding — never selectable — so they must
           // NOT show a hover outline: an indigo box around a full-width band/page reads as an empty "container wrapper".
           // Real, user-added containers (sections) still highlight on hover as drop targets.
@@ -1199,7 +1246,7 @@ export default function BoxCanvas({
           className={`${bandClasses(node, parent === root)} ${editable ? "transition-shadow" : ""} ${isSel ? "outline outline-2 outline-indigo-500 outline-offset-[-2px]" : (editable && !node.rowBand && !isRoot) ? "hover:outline hover:outline-1 hover:outline-indigo-300/70 hover:outline-offset-[-1px]" : ""}`}
         >
           {kids.map((c) => (
-            <Fragment key={c.id}>{renderNode(c, node)}</Fragment>
+            <Fragment key={c.id}>{renderNode(c, node, sizedAbove || node.minHeight != null || node.height != null)}</Fragment>
           ))}
           {editable && kids.length === 0 && (
             // An empty block shows a non-interactive hint — drag a block from the palette (or use the ⋯ menu)
@@ -1214,7 +1261,14 @@ export default function BoxCanvas({
             // corners inside every empty cell, which reads as the CELL being rounded — a radius nobody set and
             // no control could explain. Inheriting means the hint matches whatever box it stands in: square in
             // a square cell, and rounded exactly as much as a cell the user has actually rounded.
-            <div data-ph className="w-full flex-1 flex flex-col items-center justify-center gap-1.5 py-6 text-gray-400 dark:text-gray-500 border border-dashed border-gray-300/80 dark:border-white/15 pointer-events-none" style={{ fontSize: u(11), borderRadius: "inherit" }}>
+            // OUT OF FLOW (`absolute inset-0`), and that is the whole point. In flow it was a real child with
+            // real padding, an icon and a line of text, so it MEASURED about 90px — and that became the
+            // smallest an empty box could be. Dragging the height down wrote 8px into the tree and the box
+            // went on rendering 90px: the editor showed a size the user had not chosen and could not remove,
+            // for a hint that is not even part of the page. Absolutely positioned it contributes nothing to
+            // its parent's height, so an empty box is exactly the height it was given, and `overflow-hidden`
+            // lets the hint clip away quietly when that height is smaller than the words.
+            <div data-ph className="absolute inset-0 flex flex-col items-center justify-center gap-1.5 overflow-hidden text-gray-400 dark:text-gray-500 border border-dashed border-gray-300/80 dark:border-white/15 pointer-events-none" style={{ fontSize: u(11), borderRadius: "inherit" }}>
               <span className="flex items-center justify-center rounded-full bg-gray-100 dark:bg-white/5" style={{ width: u(22), height: u(22) }}><Plus className="w-3.5 h-3.5" /></span>
               Empty — drag a block in, or click to add
             </div>
@@ -1515,9 +1569,12 @@ export default function BoxCanvas({
         // A COMPONENT staggers its ITEMS, not its wrapper's direct children — those are a <style> tag and the
         // component itself. Same map the export uses, so the builder staggers what the published page does.
         const staggerFor = (n: { component?: string }) => (n.component ? COMPONENT_ITEM_SEL[n.component] : undefined);
+        // The SEE-THROUGH paint layer for any box fading a background IMAGE — a `::before` cannot be an
+        // inline style, so it rides in this same stylesheet, from the same emitter the export uses.
         const css = treeHoverCss(root, scopeFor)
           + treeRevealCss(root, scopeFor, staggerFor)
-          + treeItemEffectsCss(root);
+          + treeItemEffectsCss(root)
+          + treePaintLayerCss(root, scopeFor);
         return css ? <style dangerouslySetInnerHTML={{ __html: css }} /> : null;
       })()}
       {renderNode(root, null)}

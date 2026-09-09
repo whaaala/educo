@@ -249,6 +249,26 @@ Feature: The twelve-column grid in the Box Builder
     And its neighbours move to the next row at a width still worth reading
     And nothing stops dead partway
 
+  Scenario: Wrapping is not a resize — the neighbour keeps its width
+    # Stamping a minimum width over the neighbour destroys the only record of how wide it was, and there
+    # is then no way to put the row back.
+    Given two cells side by side
+    When I drag the first cell's right edge far enough that the second wraps
+    Then the second cell is on the next row at the width it already had
+
+  Scenario: Shrinking the dragged cell brings a wrapped neighbour back
+    Given a first cell filling the row and its neighbour wrapped below it
+    When I drag the first cell's right edge back to the left
+    Then the neighbour returns to the same row
+    And it widens by exactly what the first cell gave up
+    And the row fills the twelve columns again
+
+  Scenario: Dragging out and back leaves the row exactly as it was
+    # Every pointer position gives ONE answer, whichever direction it was reached from — no running totals.
+    Given two equal cells
+    When I drag the first cell's right edge out past the wrap point and back to where it started
+    Then both cells are the width they began at
+
   Scenario: Dragging a cell's bottom edge sets the whole row's height
     When I drag a cell's bottom edge down
     Then every cell in that row grows to match

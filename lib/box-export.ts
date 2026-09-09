@@ -9,8 +9,8 @@
 
 import type { CSSProperties } from "react";
 import {
-  type BoxNode, type Breakpoint, BP_ORDER, containerStyle, childStyle, marginCSS, sizeToCSS, radiusCSS, SHADOW_CSS, u, baseUnit,
-  resolveResponsive, floatStacksOnMobile, alertToastCss, accordionClasses, bandClasses, videoEmbedSrc, isContainer, sanitizeCssDeclarations, expandScopedCss, COMPONENT_PARTS, itemFloatContextCss, itemOverrideCss, itemNumberVars, richBody, plainBody, componentTextCss, componentBoxCss, bgImageLayer, renderAlertHTML, alertDismissScript, bgShowThroughCss, blockContainmentCss, COMPONENT_ITEM_SEL, remLen, imageSizing, hasIntrinsicSize, itemNeedsClass, itemScope, floatZIndex, typoRole, typoRootVars, typoCascadeCss, bandEdgeCSS,
+  type BoxNode, type Breakpoint, BP_ORDER, containerStyle, childStyle, marginCSS, sizeToCSS, radiusCSS, SHADOW_CSS, u, baseUnit, fadedPaint, boxOpacity, backgroundCss, paintLayerCss,
+  resolveResponsive, floatStacksOnMobile, alertToastCss, accordionClasses, bandClasses, videoEmbedSrc, isContainer, sanitizeCssDeclarations, expandScopedCss, COMPONENT_PARTS, itemFloatContextCss, itemOverrideCss, itemNumberVars, richBody, plainBody, componentTextCss, componentBoxCss, renderAlertHTML, alertDismissScript, bgShowThroughCss, blockContainmentCss, COMPONENT_ITEM_SEL, remLen, imageSizing, hasIntrinsicSize, itemNeedsClass, itemScope, floatZIndex, typoRole, typoRootVars, typoCascadeCss, bandEdgeCSS,
 } from "@/lib/box-model";
 import { isRegistryComponent, renderComponent, componentScripts } from "@/lib/educo-ui/registry";
 import { iconSvg } from "@/lib/educo-ui/icon-svg";
@@ -48,30 +48,17 @@ const esc = (s: string): string => s.replace(/&/g, "&amp;").replace(/</g, "&lt;"
 
 /** Layered background (base fill → image → overlay), mirroring the editor's backgroundStyle. */
 function bgCss(node: BoxNode): CSSProperties {
-  const s: CSSProperties = {};
-  const layers: string[] = [];
-  const asGrad = (c: string) => { const css = colorToCSS(c); return css.startsWith("linear-gradient") ? css : `linear-gradient(${css}, ${css})`; };
-  if (node.bgOverlay) layers.push(asGrad(node.bgOverlay));
-  if (node.bgImage) layers.push(bgImageLayer(node.bgImage)); // gradient/pattern passes through; URL gets url("…")
-  const baseGrad = node.background?.startsWith("gradient:");
-  if (baseGrad && !node.bgImage) layers.push(colorToCSS(node.background!));
-  if (layers.length) {
-    s.backgroundImage = layers.join(", ");
-    if (node.bgImage) {
-      s.backgroundSize = node.bgTile ?? (node.bgSize ?? "cover"); // a pattern tiles at its tile size…
-      s.backgroundPosition = node.bgPosition ?? (node.bgTile ? "0 0" : "center");
-      s.backgroundRepeat = node.bgRepeat ?? (node.bgTile ? "repeat" : "no-repeat"); // …and repeats; a photo/gradient covers once
-      if (node.bgAttach) s.backgroundAttachment = node.bgAttach;
-    } else { s.backgroundPosition = "center"; s.backgroundRepeat = "no-repeat"; }
-  }
-  if (node.background && !baseGrad) s.backgroundColor = node.background;
-  return s;
+  // SEE-THROUGH is baked into the COLOURS, and the stack is composed by box-model — the SAME composer the
+  // canvas calls, so the two cannot drift. A box painting an IMAGE while fading gets nothing here: its stack
+  // has moved to a `::before` layer that carries the opacity (see `paintLayerCss`).
+  return backgroundCss(node, fadedPaint(node));
 }
 
 function decorCss(node: BoxNode): CSSProperties {
   const s: CSSProperties = {};
   const br = radiusCSS(node); if (br) s.borderRadius = br;
-  if (node.borderWidth && node.type !== "divider") s.border = `${node.borderWidth}px ${node.borderStyle ?? "solid"} ${node.borderColor ? colorToCSS(node.borderColor) : "rgba(0,0,0,0.15)"}`;
+  const bc = fadedPaint(node).borderColor;
+  if (node.borderWidth && node.type !== "divider") s.border = `${node.borderWidth}px ${node.borderStyle ?? "solid"} ${bc ? colorToCSS(bc) : "rgba(0,0,0,0.15)"}`;
   if (node.shadow) s.boxShadow = SHADOW_CSS[node.shadow];
   if (node.rotate) s.transform = `rotate(${node.rotate}deg)`;
   Object.assign(s, bandEdgeCSS(node)); // sloped / curved top and bottom edges — the SAME helper the canvas uses
@@ -326,7 +313,7 @@ function styleAt(node: BoxNode, rawParent: BoxNode | null, bp: Breakpoint, theme
     maxWidth: "100%", // never wider than the container → no horizontal scrollbar on a phone
     ...(selfPaint ? {} : decorCss(r)), // a component/button's border/radius/shadow style the block element, not this wrapper
     ...(floating ? {} : marginCSS(r)),
-    opacity: !isComp && r.opacity !== undefined ? r.opacity / 100 : undefined,
+    opacity: !isComp ? boxOpacity(r) : undefined, // paint-only fades live in the colours (fadedPaint), not here
     overflow: stacked ? "visible" : (!selfPaint && (r.clip || radiusCSS(r))) ? "hidden" : undefined,
     ...(floating
       ? { left: `${r.left ?? 0}%`, top: `${r.top ?? 0}%`, width: sizeToCSS(r.width), height: r.height ? sizeToCSS(r.height) : undefined, minHeight: r.minHeight, zIndex: floatZIndex(r) } // no width ⇒ auto ⇒ hug content (never a wide default box)
@@ -405,6 +392,10 @@ function renderNode(node: BoxNode, rawParent: BoxNode | null, theme: SiteTheme, 
   // visitor gets. Pure CSS: a page with no effects ships nothing extra.
   const hov = hoverCss(`.${cls}`, r.hoverEffect);
   if (hov) sheet.rungs.phone.push(hov);
+  // SEE-THROUGH over a background IMAGE: the paint moves to a `::before` that carries the opacity, so the box
+  // fades and its contents do not. Same emitter the canvas injects — canvas = export, including this.
+  const paintLayer = paintLayerCss(`.${cls}`, r);
+  if (paintLayer) sheet.rungs.phone.push(paintLayer);
   // Entrance (Round 1b). The keyframes are global, so the ids used are collected and emitted ONCE at assembly.
   // A COMPONENT passes its item selector, so "arrive one after another" staggers the accordion rows or the
   // alert messages — its wrapper's direct children are a <style> tag and the component itself.

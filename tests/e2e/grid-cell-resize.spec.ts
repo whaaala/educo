@@ -45,6 +45,15 @@ async function seedGrid(page: Page, cells: number, rows: number, minHeight?: num
 
 const heightOf = (page: Page, id: string) =>
   page.locator(`[data-box-id="${id}"]`).evaluate((el) => el.getBoundingClientRect().height);
+/** Every cell's stored column span, in document order — the row's arithmetic, read from the saved tree. */
+const spansOf = (page: Page) =>
+  page.evaluate(() => {
+    const site = JSON.parse(localStorage.getItem("educo_box_site_v1") || "{}");
+    let g: Record<string, unknown> | null = null;
+    const walk = (n: Record<string, unknown>) => { if (!g && n.layout === "grid") g = n; ((n.children as Record<string, unknown>[]) ?? []).forEach(walk); };
+    walk(site.pages[0].root);
+    return (((g as unknown as Record<string, unknown>).children as Record<string, unknown>[]) ?? []).map((c) => c.colSpan as number);
+  });
 const rectOf = (page: Page, id: string) =>
   page.locator(`[data-box-id="${id}"]`).evaluate((el) => { const r = el.getBoundingClientRect(); return { top: r.top, bottom: r.bottom, height: r.height }; });
 
@@ -136,6 +145,44 @@ test.describe("resizing a grid cell's height", () => {
     await dragHandle(page, "Resize bottom edge", 0, 140);
     const a = await heightOf(page, "c0"), b = await heightOf(page, "c1");
     expect(Math.abs(a - b), "a row is one row — its cells share a height").toBeLessThan(3);
+  });
+
+  test("a cell pushed onto the next row COMES BACK when the dragged cell shrinks", async ({ page }) => {
+    // The bug, reported after using it: widen cell A far enough and cell B wraps to row two — correct. Then
+    // shrink A back and B stayed stranded down there while the row sat several columns short, because the
+    // neighbour was looked up by MEASURED position (a wrapped cell is no longer "on this row", so nothing was
+    // written to it) and the wrap had already stamped the 3-column floor over B's real width, so there was
+    // nothing left to reverse. Both halves have to hold: B returns to the row, AND it takes the width A freed.
+    await seedGrid(page, 2, 1);
+    await selectCell(page, "c0");
+    const grid = (await page.locator('[data-box-id="tgt"]').boundingBox())!;
+    const topOf = async (id: string) => (await rectOf(page, id)).top;
+    const rowOne = await topOf("c1");
+
+    await dragHandle(page, "Resize right edge", grid.width * 0.55, 0);
+    expect(await topOf("c1"), "pushed past the readable minimum, the neighbour wraps").toBeGreaterThan(rowOne + 20);
+    expect(await spansOf(page), "and it keeps the width it had — wrapping is not a resize").toEqual([12, 6]);
+
+    await dragHandle(page, "Resize right edge", -grid.width * 0.55, 0);
+    expect(Math.abs((await topOf("c1")) - rowOne), "shrinking brings it back onto the row").toBeLessThan(3);
+    expect((await spansOf(page)).reduce((a, b) => a + b, 0), "and the row fills the twelve again").toBe(12);
+  });
+
+  test("out and back in ONE drag leaves the row exactly as it was", async ({ page }) => {
+    // Every position of the pointer must give one answer, whichever direction it was reached from. It did not:
+    // the neighbour was moved by a delta accumulated against a snapshot, so returning to the starting width
+    // left it two columns narrower than it began.
+    await seedGrid(page, 2, 1);
+    await selectCell(page, "c0");
+    const grid = (await page.locator('[data-box-id="tgt"]').boundingBox())!;
+    const h = (await page.locator('[aria-label="Resize right edge"]').boundingBox())!;
+    const x = h.x + h.width / 2, y = h.y + h.height / 2;
+    await page.mouse.move(x, y);
+    await page.mouse.down();
+    for (const f of [0.2, 0.4, 0.55, 0.4, 0.2, 0]) { await page.mouse.move(x + grid.width * f, y); await page.waitForTimeout(30); }
+    await page.mouse.up();
+    await page.waitForTimeout(250);
+    expect(await spansOf(page), "back where it started").toEqual([6, 6]);
   });
 
   test("the OTHER rows share what is left, evenly", async ({ page }) => {

@@ -117,10 +117,22 @@ Select any block and its settings appear on the right, in three tabs.
 - **Placement** — *In the layout* vs *Floating*, **Lock position & size**, and (when floating) **Front/back order**. See §7.
 - **Size** — **Width** (Fit = hug the content, Full = fill the row, Custom = a % or px), **Position in row** (Left / Centre / Right), **Content position** (a 3×3 grid — where the content sits inside the block when it's bigger than its content), **Height**, and **Trim to size**.
 - **Spacing** — **Inner spacing** (padding, inside the block) and **Outer spacing** (margin, around it).
-- **Outline & effects** — rounded corners (all or per‑corner), border, shadow, tilt, see‑through (opacity).
+- **Outline & effects** — rounded corners (all or per‑corner), border, shadow, tilt, **See-through** (below).
 - **Background** — a colour (with a full OKLCH picker, eyedropper, and *None* for transparent) or a background image.
 - **Typography** — font, size, weight, capitalisation, line/letter spacing (cascades into the block's text).
 - **Advanced CSS** — extra CSS declarations for power users (safely sanitised).
+
+#### See-through — the box fades, not what's in it
+
+Set **See-through** on a section, a grid or a cell and the page shows through **that box** — its background, its border. Everything inside it stays exactly as solid as it was: the cards, the headings, the photographs.
+
+That holds at every depth. A cell inside a see-through grid is solid; a heading inside that cell is solid. Make one cell see-through on its own and only that cell fades — its own contents are protected in just the same way.
+
+When you *do* want the whole thing to fade together, tick **Fade what's inside too**. It appears as soon as you set a See-through value, and applies from that box down and nowhere else.
+
+It works for a **background image** too, not just a colour: fade a photo hero and the photo softens while the headline and button on top of it stay perfectly crisp.
+
+> **Why this needs saying:** in CSS, fading an element fades everything inside it, and there is no setting a child can use to escape. So "make this box see-through" is applied to the box's own paint instead — alpha in the colour, and for a photograph a layer of its own behind the content. Your contents keep their real colours, and the published page does exactly what the canvas showed you.
 
 ### Content tab
 The content that changes per block type — a Button's text + link, a Text's copy, a List's items, an Accordion's items, an Image's source, a Card's title/body/button, and so on.
@@ -148,6 +160,9 @@ Overrides that apply only on the current device size (see §8).
 Sometimes you want to place things freely (overlap a badge on an image, arrange a little cluster).
 
 - **Float a block:** select it → **Placement → Floating** (or **Alt+F**). Now drag it anywhere; arrow keys nudge it. On phones a floating block automatically drops back into a clean stack, so your layout never breaks.
+- **Floating a box takes its contents with it.** Float a grid and every cell goes too, keeping the arrangement it already had — you are moving the whole thing, not scattering it. None of the children become floating in their own right, so they still behave as a grid inside their new position.
+- **Returning it puts everything back.** Switch a floated box back to *In the layout* and it lands exactly where it started, cells and all — and nothing else on the page is altered, including the height you set on the section around it. Floating and returning is a round trip, never an edit.
+- **Or float just one piece.** Float a single cell and only that cell leaves the flow; its siblings and the grid around them do not move.
 - **Group blocks (like slides):** marquee‑select several blocks (drag a box around them on empty canvas), then **Group these N** (or **Ctrl+G**). The group moves and locks as one unit; its contents still reflow responsively. **Ungroup** with **Ctrl+Shift+G** or the block's ⋮ menu.
 - **Lock position & size:** select a block → **Lock position & size** (or **Ctrl+L**). It can't be moved or resized by accident, but its content and colours stay editable. Unlock the same way.
 - **Copy, paste & place a whole group:** select a group and **Ctrl+C**, then **Ctrl+V**. The whole group copies as one unit — every component inside it, with fresh identities (the copy is independent of the original). The pasted copy lands **slightly offset** so it doesn't hide the original, stays **floating and selected**, so you can immediately **drag it or arrow‑nudge it** into the exact position you want. (Copy/paste works the same for any single block.)
@@ -240,7 +255,17 @@ You never have to think in twelfths. Select a block and the **Grid cell** panel 
 
 Select a cell and drag its edge. It behaves like a table: **the boundary between two cells is shared**, so widening one narrows its neighbour and the row stays put — nothing else on the page jumps. Keep going and the neighbour stops shrinking once it's too narrow to read and **wraps to the next row**, letting the cell you're dragging reach the full width of the page.
 
+**And it comes back.** A wrapped neighbour keeps the width it had — wrapping moves it, it doesn't resize it — so when you drag the cell back in, the neighbour returns to the row and widens by exactly what you gave up. Drag out and back and you land precisely where you started. The row always adds up to the full twelve.
+
 Dragging the top or bottom edge sets that **whole row's height**, so the row grows as one and the page grows with it.
+
+### How small a box can go
+
+**An empty box shrinks to almost nothing.** The *"Empty — drag a block in"* message is a hint for you, not content on the page, so it never sets a floor — drag the bottom edge all the way up and the box follows.
+
+A box you haven't sized yet stands about **8rem** tall so you can see it, click it and drop into it — the same height the published page gives an empty coloured box. That's an offer, not a rule: the moment you set a height, your height is what you get, on the canvas and in the published page.
+
+**A box with something in it stops where its content stops.** One line of text shrinks to about one line — the content sets the limit, not a number the builder picked. And empty boxes *inside* a box you've sized never hold it open: squeeze a section holding an empty grid and the grid comes with it.
 
 ### Empty space is allowed
 

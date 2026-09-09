@@ -796,6 +796,29 @@ export default function BoxInspector({ node, theme, onPatch, onAddChild, onFloat
             </div>
             <Range title="Tilt" value={node.rotate} min={-180} max={180} fallback={0} onChange={(n) => onPatch({ rotate: n })} unit="°" />
             <Range title="See-through" value={node.opacity} min={0} max={100} fallback={100} onChange={(n) => onPatch({ opacity: n })} unit="%" />
+            {/* WHAT "SEE-THROUGH" MEANS ON A BOX THAT HOLDS THINGS: this box, not its contents. CSS opacity
+                fades an element AND everything inside it, and no setting on a child can undo it — so a
+                see-through section used to drag every card, heading and photo in it down with the background.
+                The fade now goes into the box's own colours, which leaves the contents alone at every depth,
+                and this is the opt-in for the other meaning. Offered only where there is something inside to
+                protect, and only once a fade has actually been set. */}
+            {(isContainer(node) || node.type === "component") && node.opacity !== undefined && node.opacity !== 100 && (
+              <label className="flex items-start gap-2 text-xs text-gray-600 dark:text-gray-300">
+                <input
+                  type="checkbox"
+                  checked={!!node.fadeContents}
+                  onChange={(e) => onPatch({ fadeContents: e.target.checked || undefined })}
+                  aria-label="Fade what's inside too"
+                  className="mt-0.5"
+                />
+                <span>
+                  Fade what&rsquo;s inside too
+                  <span className="block text-[0.6875rem] text-gray-400 dark:text-gray-500">
+                    Off, only this box fades — everything in it stays solid.
+                  </span>
+                </span>
+              </label>
+            )}
           </Accordion>
 
           <Accordion title="Background" icon={Paintbrush}>

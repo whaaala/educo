@@ -32,6 +32,17 @@
  * renumbering the ones around it.
  */
 export const PAGE_Z = {
+  /**
+   * BEHIND a box's own content, and no further.
+   *
+   * The one tier below the flow. A box that is see-through over a background IMAGE paints that image on its
+   * own `::before` layer, because CSS has no per-layer opacity and fading the element itself would take the
+   * contents down with it. That layer has to sit behind the box's text and cards, so it is negative — and it
+   * must go no further than this box, which is why `paintLayerCss` also makes the box a stacking context
+   * (`isolation: isolate`). Without that, a negative layer keeps falling until it finds one and disappears
+   * behind whichever ancestor happens to be painted.
+   */
+  behind: -1,
   /** Normal flow. Named so that "no z-index" is a choice rather than an omission. */
   base: 0,
   /**
