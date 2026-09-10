@@ -14,6 +14,7 @@ import type { CSSProperties } from "react";
 import { isRegistryComponent, defaultComponentFields, defaultComponentWidth, componentIsColumn } from "@/lib/educo-ui/registry";
 import { iconSvg } from "@/lib/educo-ui/icon-svg";
 import { BREAKPOINTS_EM } from "@/lib/educo-ui/base";
+import { RUNG_MEASURE, type RungName } from "@/lib/educo-ui/layout";
 import { hasItemEffects, itemEffectsCss } from "@/lib/interactions";
 import { PAGE_Z, clampPageZ } from "@/lib/educo-ui/stacking";
 import { colorToCSS } from "@/components/shared/ColorPalettePicker";
@@ -205,6 +206,27 @@ export interface BoxNode {
   justify?: FlexJustify;    // justify-content (main axis) — flex only
   wrap?: boolean;           // flex-wrap — flex only
   columns?: number;         // grid: number of equal columns
+  /**
+   * How the grid's ROWS are measured. Absent (the default) is `Even` — every row shares the height, which is
+   * what every saved page already does and what `gridAutoRows: minmax(min-content, 1fr)` expresses.
+   *
+   * `"masonry"` is the gallery mode: the row track stops being a row and becomes a fine measuring UNIT
+   * (`MASONRY_ROW_REM`), and each cell claims however many of those units its content is tall. That is what
+   * lets a column of photos stagger instead of every picture being letterboxed to its row's height — while
+   * the twelve columns, the spans, the offsets and the reading order all keep working, which is the whole
+   * reason this is a row option rather than CSS `columns`.
+   */
+  rowFlow?: "even" | "masonry";
+  /**
+   * Masonry only, opt IN: measure the real rendered heights on the page and set the spans exactly.
+   *
+   * Off by default, because the default has to be zero JavaScript. With it off the spans are worked out from
+   * what the model already knows (a photo's intrinsic shape, a block's stated height) — which is exact for a
+   * contained band and close for an edge-to-edge one. With it on, a small guarded script corrects them after
+   * layout, on resize, and as fonts and images land. It is progressive enhancement, never a second mechanism:
+   * with scripting off the page still gets the staggered, never-cropped layout underneath.
+   */
+  rowMeasure?: boolean;
   padding?: number;         // px inner padding (all sides)
   paddingTop?: number; paddingRight?: number; paddingBottom?: number; paddingLeft?: number; // per-side overrides
   margin?: number;          // px outer margin (all sides)
@@ -2365,6 +2387,9 @@ export function gridPlacementAt(parent: BoxNode, child: BoxNode, bp: Breakpoint 
 export function gridRowTracks(node: BoxNode, bp: Breakpoint = "base"): string | null {
   const kids = node.children ?? [];
   if (!kids.length) return null;
+  // MASONRY has no rows to name. The track is a fine measuring unit rather than a row, so an explicit list —
+  // one entry per "row", each `auto` or an even share — would both mean nothing and fight the unit.
+  if (isMasonry(node, bp)) return null;
   if (kids.some((c) => c.rowStart != null || (c.rowSpan ?? 1) > 1)) return null;
   const track = gridColumnsAt(node, bp);
   const rows: BoxNode[][] = [];
@@ -2380,6 +2405,235 @@ export function gridRowTracks(node: BoxNode, bp: Breakpoint = "base"): string | 
   const sized = rows.map((r) => r.some((c) => c.minHeight != null || (c.height != null && c.height !== "auto")));
   if (!sized.some(Boolean)) return null;
   return sized.map((s) => (s ? "auto" : "minmax(min-content, 1fr)")).join(" ");
+}
+
+// ── MASONRY (Phase 2, the last item) ─────────────────────────────────────────
+//
+// ONE control, two mechanisms. In Arrange, on a grid: Row heights · (Even) (Follow the picture).
+//
+// `Even` is today's behaviour exactly — a saved page renders through the identical path, because `rowFlow` is
+// absent on every node that exists. `Follow the picture` is masonry, and it is built in two layers:
+//
+//   B — the STATIC spans, always on. The row track becomes a fine measuring unit and each cell claims as many
+//       units as its content is tall. Zero JavaScript, correct reading order, no cropping.
+//   C — `rowMeasure`, opt in. A small script measures the real heights and corrects the spans.
+//
+// WHY NOT CSS `columns`, which is what "masonry" usually means: inside a `columns` container the twelve-column
+// grid stops existing — no `grid-column`, so no spans, no offsets, no order, no edge-dragging. It is not a row
+// option, it is a mode where everything else in Phase 2 switches off. (The reading order is fine, contrary to
+// the usual telling: document order is preserved and reads coherently down each column. The real problem is
+// that people SCAN a gallery left-to-right while the content runs top-to-bottom, so numbered captions and
+// newest-first ordering read wrong.)
+
+/**
+ * The fine unit a masonry grid measures its rows in, in `rem`.
+ *
+ * Small enough that rounding a cell up to a whole number of units is invisible (half a step, ≤4px at the
+ * default root size), large enough that a tall page does not ask the browser for thousands of tracks.
+ * In `rem` rather than px so a reader who has enlarged their browser font gets a grid that enlarges with them
+ * — the same reason the rung ladder is in `em`.
+ */
+export const MASONRY_ROW_REM = 0.5;
+
+/**
+ * The shape assumed for a cell whose height CANNOT be known statically — a card, a caption, any text.
+ *
+ * Something has to be assumed or such a cell claims one unit and renders 8px tall, which is not "approximate",
+ * it is broken. 4:3 is the shape most gallery content actually is. This is exactly the case the inspector
+ * surfaces the "measure on the page" tick-box for: the assumption is a floor to stand on, not an answer.
+ */
+export const MASONRY_DEFAULT_RATIO = 3 / 4;
+
+/** Is this grid running as masonry at this rung? */
+export function isMasonry(node: BoxNode, bp: Breakpoint = "base"): boolean {
+  if (node.layout !== "grid" || node.rowFlow !== "masonry") return false;
+  // A ONE-COLUMN grid has nothing to stagger: masonry is what happens when neighbouring columns can run at
+  // different heights, and with a single column the blocks simply stack — which the even rows already do,
+  // correctly, with no measuring unit and no rounding. So the phone rung (where `gridColumnsAt` collapses to
+  // one) renders a masonry gallery as a plain stack, which is also what a person wants on a phone.
+  return gridColumnsAt(node, bp) > 1;
+}
+
+/**
+ * The page column's width at a rung, in px — the width a contained band's grid actually gets.
+ *
+ * THIS IS WHY B IS EXACT RATHER THAN APPROXIMATE. `RUNG_MEASURE` caps a contained column at 34/52/68/76rem,
+ * and every one of those caps sits BELOW its own rung's starting width (600/900/1200/1800). So above the phone
+ * the container is a CONSTANT within each rung, and a span worked out per rung is precise for every screen in
+ * it. An EDGE-TO-EDGE band is the approximate case — its width tracks the viewport, so the gaps grow with the
+ * window, and that is what `rowMeasure` (C) is for.
+ *
+ * Null on the phone rung, which has no cap; masonry is a plain stack there anyway (see `isMasonry`).
+ */
+export function masonryContainerPx(bp: Breakpoint = "base"): number | null {
+  // `Breakpoint` says `base` where `RungName` says `desktop` — the ONE place that correspondence is written.
+  const rung: RungName = bp === "base" ? "desktop" : bp;
+  const measure = RUNG_MEASURE[rung];
+  if (!measure) return null;
+  return parseFloat(measure) * 16;
+}
+
+/**
+ * What shape this cell's content is, as height ÷ width.
+ *
+ * Read off the first picture found INSIDE the cell, because a grid child is a cell container and the photo
+ * lives in it — `imgW`/`imgH` are measured once at upload, so the shape is already known without loading a
+ * byte. Anything else falls back to `MASONRY_DEFAULT_RATIO`.
+ */
+export function masonryRatio(node: BoxNode): number {
+  const found = firstIntrinsic(node);
+  return found ? (found.imgH ?? 1) / (found.imgW ?? 1) : MASONRY_DEFAULT_RATIO;
+}
+
+function firstIntrinsic(node: BoxNode): BoxNode | null {
+  if (hasIntrinsicSize(node)) return node;
+  for (const c of node.children ?? []) {
+    const f = firstIntrinsic(c);
+    if (f) return f;
+  }
+  return null;
+}
+
+/** How wide one cell of `colSpan` tracks is, in a `track`-column grid `containerPx` wide with `gapX` between. */
+export function masonryCellPx(containerPx: number, track: number, colSpan: number, gapXpx: number): number {
+  const t = Math.max(1, Math.round(track));
+  const s = Math.min(t, Math.max(1, Math.round(colSpan)));
+  const col = (containerPx - (t - 1) * gapXpx) / t;
+  return Math.max(0, col * s + (s - 1) * gapXpx);
+}
+
+/**
+ * How tall this cell is going to be, in px, given the width it will have.
+ *
+ * A STATED height wins over the assumed shape — it is a fact rather than a guess, and it is the commonest
+ * fact there is, because an image block is created with one (260px) until somebody sets it to `auto`. Only a
+ * px height can be used: a percentage is a share of a row height that masonry has deliberately stopped having.
+ */
+export function masonryCellHeightPx(cell: BoxNode, cellPx: number): number {
+  const padV = (cell.paddingTop ?? cell.padding ?? 0) + (cell.paddingBottom ?? cell.padding ?? 0);
+  const stated = statedPx(cell.height) ?? cell.minHeight ?? null;
+  if (stated != null) return Math.max(0, stated + padV);
+  return Math.max(0, cellPx * masonryRatio(cell) + padV);
+}
+
+/** A height token as px, or null when it is not a plain pixel length ("auto", "fill", "50%"). */
+function statedPx(token?: string): number | null {
+  if (!token || token === "auto" || token === "fill") return null;
+  const m = /^(-?[\d.]+)px$/.exec(token.trim());
+  return m ? parseFloat(m[1]) : null;
+}
+
+/**
+ * How many row UNITS a cell of this height claims, with `gapY` of air beneath it.
+ *
+ * The gap is spent as EMPTY UNITS rather than as `row-gap`, and that choice is the whole numerical stability
+ * of B. The textbook recipe keeps the gap on the container and solves `n = ceil((H + G) / (R + G))` — where
+ * the assumed gap appears once per track, so being a few px out about it is multiplied by n and a 300px photo
+ * lands 90px wrong. Here the container's `row-gap` is 0 on masonry, the allotment is exactly `n × R`, and the
+ * gap is one addend that a small error cannot compound. (It has to be an estimate at all because the builder's
+ * spacing unit is deliberately FLUID — `u()` is a `clamp()` that tracks the frame's width.)
+ */
+export function masonrySpanUnits(heightPx: number, gapYpx: number, rowPx = MASONRY_ROW_REM * 16): number {
+  const r = rowPx > 0 ? rowPx : MASONRY_ROW_REM * 16;
+  return Math.max(1, Math.ceil(Math.max(0, heightPx) / r) + Math.ceil(Math.max(0, gapYpx) / r));
+}
+
+/**
+ * The whole pipeline: how many row units this child claims in this masonry parent at this rung.
+ *
+ * Null whenever masonry is not running (so `childStyle` falls straight back to the ordinary `rowSpan` path)
+ * or when the width cannot be known — the phone rung, where there is no measure and no masonry either.
+ */
+export function masonryRowSpan(parent: BoxNode, child: BoxNode, bp: Breakpoint = "base"): number | null {
+  if (!isMasonry(parent, bp)) return null;
+  const containerPx = masonryContainerPx(bp);
+  if (containerPx == null) return null;
+  const padH = (parent.paddingLeft ?? parent.padding ?? 0) + (parent.paddingRight ?? parent.padding ?? 0);
+  const gapX = parent.gapX ?? parent.gap ?? 16;
+  const gapY = parent.gapY ?? parent.gap ?? 16;
+  const { track, span } = gridPlacementAt(parent, child, bp);
+  const cellPx = masonryCellPx(Math.max(0, containerPx - padH), track, span, gapX);
+  return masonrySpanUnits(masonryCellHeightPx(child, cellPx), gapY);
+}
+
+/** The down-gap, expressed in row units — what a cell adds to its own height to leave air beneath it. */
+export function masonryGapUnits(node: BoxNode, rowPx = MASONRY_ROW_REM * 16): number {
+  const r = rowPx > 0 ? rowPx : MASONRY_ROW_REM * 16;
+  return Math.ceil(Math.max(0, node.gapY ?? node.gap ?? 16) / r);
+}
+
+/**
+ * C — "measure on the page". The gap in row units when this grid opted in, null when it did not.
+ *
+ * Both renderers put it on the grid element as `data-eu-masonry`, which is at once the marker the script
+ * looks for and the one number it cannot measure: the down-gap is spent as empty row units rather than as
+ * `row-gap`, so it is not in the computed style to be read back.
+ *
+ * It takes no rung: the marker is the same at every width, and the script works the rest out from the page
+ * itself. (Known small gap, written down rather than left to be found: a Space down set only at ONE rung is
+ * not reflected here, so a measured gallery uses the base rung's spacing allowance at every width. It shifts
+ * a gap by a few pixels and nothing else, because the heights — the part that matters — are measured.)
+ */
+export function masonryMeasureAttr(node: BoxNode): number | null {
+  if (!node.rowMeasure || node.layout !== "grid" || node.rowFlow !== "masonry") return null;
+  return masonryGapUnits(node);
+}
+
+/**
+ * ONE measuring pass over a masonry grid, as plain DOM.
+ *
+ * THE CANVAS CALLS THIS FUNCTION AND THE EXPORT SHIPS ITS SOURCE — literally, via `String(...)` in
+ * `masonryMeasureScript`. That is not a trick for its own sake: the canvas is React and the export is a static
+ * document, so anything they are each "meant to" do the same way is a canvas ≠ export bug waiting to happen,
+ * and this project has paid for that four times. Here there is one algorithm, and changing it changes both.
+ *
+ * It is progressive enhancement over B, never a replacement: with scripting off the static spans already give
+ * a staggered layout that never crops, and this only makes the gaps exact.
+ */
+export function masonryMeasurePass(grid: HTMLElement): void {
+  const kids = Array.from(grid.children) as HTMLElement[];
+  const cs = getComputedStyle(grid);
+  // `grid-template-columns` computes to the USED track sizes, one per track — so this is the real column
+  // count at the real width, not a guess from a breakpoint. Under two columns there is nothing to stagger
+  // (the phone rung), and any spans left over from a wider screen have to be handed back or the stack keeps
+  // a desktop's ruler.
+  const cols = cs.gridTemplateColumns.split(" ").filter(Boolean).length;
+  // The unit is the FLOOR of `minmax(<unit>, auto)`, so it is read out of the value rather than parsed off the
+  // front of it. A grid that is not masonry has no px length there at all (`minmax(min-content, 1fr)`), which
+  // is the second half of the same check.
+  const found = /([0-9.]+)px/.exec(cs.gridAutoRows);
+  const unit = found ? parseFloat(found[1]) : 0;
+  if (cols < 2 || !(unit > 0)) { for (const el of kids) el.style.removeProperty("grid-row"); return; }
+  const gapUnits = parseInt(grid.getAttribute("data-eu-masonry") || "0", 10) || 0;
+  // Release every span BEFORE reading any height: a cell still holding last pass's span would measure the
+  // height that span gave it, and the layout would ratchet instead of settle. The first read below flushes
+  // all of the releases at once, so this costs one reflow rather than one per cell.
+  for (const el of kids) el.style.removeProperty("grid-row");
+  for (const el of kids) {
+    const h = el.getBoundingClientRect().height;
+    el.style.setProperty("grid-row", "span " + Math.max(1, Math.ceil(h / unit) + gapUnits));
+  }
+}
+
+/**
+ * The opt-in script the export ships for C — one guarded global for every measured gallery on the page.
+ *
+ * Zero JS stays the default: nothing here is emitted unless someone ticked "measure on the page". It re-runs
+ * whenever a height it measured could have changed — the window resizing, the web fonts arriving, a photo
+ * decoding — because each of those lands after the first pass and each of them silently invalidates it.
+ */
+export function masonryMeasureScript(): string {
+  return `<script>(function(){if(window.__euMasonry)return;window.__euMasonry=1;
+var pass=${String(masonryMeasurePass)};
+var queued=0;
+function all(){queued=0;var g=document.querySelectorAll('[data-eu-masonry]');for(var i=0;i<g.length;i++){try{pass(g[i]);}catch(e){}}}
+function soon(){if(queued)return;queued=1;requestAnimationFrame(all);}
+soon();
+addEventListener('resize',soon);
+addEventListener('load',soon);
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(soon).catch(function(){});
+document.querySelectorAll('[data-eu-masonry] img').forEach(function(i){if(!i.complete)i.addEventListener('load',soon);i.addEventListener('error',soon);});
+})();</script>`;
 }
 
 /**
@@ -2690,12 +2944,23 @@ export function containerStyle(node: BoxNode, bp: Breakpoint = "base"): CSSPrope
   const minHpx = Math.max(node.minHeight ?? 0, floatingReserve(node, bp)) || undefined;
   const minH = combineMinHeight(minHpx == null ? undefined : remLen(minHpx), node.screenHeight);
   if (node.layout === "grid") {
+    // MASONRY changes exactly three of the declarations below and nothing else — the columns, the spans, the
+    // offsets, the order and the reading order are all untouched, which is the whole reason it is a row option
+    // rather than a mode. See the MASONRY block above `MASONRY_ROW_REM`.
+    const masonry = isMasonry(node, bp);
     return {
       display: "grid",
       // Per RUNG, so a twelve-column row is twelve columns on a desktop and one on a phone (`gridColumnsAt`).
       gridTemplateColumns: `repeat(${gridColumnsAt(node, bp)}, minmax(0, 1fr))`,
-      ...gapCSS(node),
-      alignItems: ALIGN_CSS[node.align ?? "stretch"],
+      // The down-gap on a masonry grid is spent as EMPTY ROW UNITS by each cell's span, not as `row-gap` —
+      // the number the user set still means exactly what it says, but it lands once per cell instead of once
+      // per track, where an estimate of the fluid unit could compound (see `masonrySpanUnits`). Both longhands
+      // are written, never the `gap` shorthand, so the property set matches at every rung and the export's
+      // rung-to-rung diff has something to neutralise when a narrower rung stops being masonry.
+      ...(masonry ? { columnGap: u(node.gapX ?? node.gap ?? 16), rowGap: "0px" } : gapCSS(node)),
+      // A masonry cell HUGS its content. The tracks it spans are a ruler, not a row, so stretching to fill
+      // them would stretch a photo to a number that was only ever a measurement of the photo.
+      alignItems: masonry ? "start" : ALIGN_CSS[node.align ?? "stretch"],
       // A grid's tracks are `1fr`, so they have already eaten every spare pixel and `justify-content` — which
       // distributes leftover TRACK space — can never do anything on one: the flex "Position blocks" control
       // was simply inert on a grid, the same class of defect as the dead container queries. Where a block sits
@@ -2718,7 +2983,19 @@ export function containerStyle(node: BoxNode, bp: Breakpoint = "base"): CSSPrope
       //
       // (The horizontal axis already behaves: the columns are `minmax(0, 1fr)`, so a cell is its share of the
       // row, spread evenly, and it tracks the page's width by construction.)
-      gridAutoRows: "minmax(min-content, 1fr)",
+      //
+      // …unless this grid is a MASONRY gallery, where the row stops being a row: the track becomes a fine
+      // fixed UNIT and a cell claims as many of them as it is tall. That single substitution is what makes the
+      // pictures stagger, and it is why nothing else about the grid has to change.
+      //
+      // `minmax(<unit>, auto)` and NOT the bare unit, and that clause is what makes the static spans SAFE
+      // rather than merely usually right. A fixed track cannot grow, so a cell that turns out taller than its
+      // span simply paints over the one beneath it — and on an EDGE-TO-EDGE band the width is the viewport
+      // rather than the measure, so it will turn out taller. With `auto` as the maximum, a cell that does not
+      // fit makes its own tracks grow instead: an under-estimate costs a little evenness, an over-estimate
+      // costs a little air, and neither can ever crop or overlap. When the span is right (a contained band,
+      // where it is exact) the tracks stay at the unit and nothing about the stagger changes.
+      gridAutoRows: masonry ? `minmax(${MASONRY_ROW_REM}rem, auto)` : "minmax(min-content, 1fr)",
       // …and where a row HAS been given a height by hand, it keeps it while the others share what is left.
       // `grid-auto-rows` alone cannot express that: it is one value for every row, so a row dragged taller
       // was immediately levelled back down by the `1fr` its neighbours were also claiming. See `gridRowTracks`.
@@ -2785,12 +3062,19 @@ export function childStyle(child: BoxNode, parent: BoxNode, bp: Breakpoint = "ba
     const { span, start } = gridPlacementAt(parent, child, bp);
     const place = start != null ? `${start} / span ${span}` : span > 1 ? `span ${span}` : undefined;
     if (place) s.gridColumn = place;
-    // The down axis. No rung re-fit and no clamp: rows are implicit, so the grid simply makes as many as the
-    // placement asks for — a block on row 4 of a two-row grid creates rows 3 and 4 rather than overflowing.
-    const rowSpan = Math.max(1, Math.round(child.rowSpan ?? 1));
-    const rowStart = child.rowStart == null ? null : Math.max(1, Math.round(child.rowStart));
-    if (rowStart != null) s.gridRow = `${rowStart} / span ${rowSpan}`;
-    else if (rowSpan > 1) s.gridRow = `span ${rowSpan}`;
+    // The down axis. On a MASONRY grid it is computed, not stored: the cell claims as many measuring units as
+    // its content is tall (`masonryRowSpan`), which is the mechanism itself. "Rows tall" and "Start at row"
+    // are hidden while masonry is on for exactly this reason — they would be describing a ruler.
+    const masonrySpan = masonryRowSpan(parent, child, bp);
+    if (masonrySpan != null) { s.gridRow = `span ${masonrySpan}`; }
+    else {
+      // No rung re-fit and no clamp: rows are implicit, so the grid simply makes as many as the placement asks
+      // for — a block on row 4 of a two-row grid creates rows 3 and 4 rather than overflowing.
+      const rowSpan = Math.max(1, Math.round(child.rowSpan ?? 1));
+      const rowStart = child.rowStart == null ? null : Math.max(1, Math.round(child.rowStart));
+      if (rowStart != null) s.gridRow = `${rowStart} / span ${rowSpan}`;
+      else if (rowSpan > 1) s.gridRow = `span ${rowSpan}`;
+    }
     if (child.justifySelf) s.justifySelf = child.justifySelf;
     if (child.alignSelf) s.alignSelf = child.alignSelf;
     const h = sizeToCSS(child.height);

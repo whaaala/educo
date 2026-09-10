@@ -277,6 +277,33 @@ A cell is just a container, so **anything you can do to the page you can do insi
 
 Grids start **full width with no padding**, at every level. Spacing is something you add, not something you have to find and remove.
 
+### Row heights — even, or following the picture
+
+A row normally gives every block in it **the same height**: whatever the tallest one needs. That is right for a row of cards, and wrong for a row of photographs — a tall portrait forces everything beside it to stretch, and the wide ones get cropped to match.
+
+Select the grid, open **Arrange**, and you'll find **Row heights**:
+
+| | |
+|---|---|
+| **Even** | Every block in a row is the same height. This is what every page has always done — nothing changes if you never touch it. |
+| **Follow the picture** | Each block is as tall as what's inside it, and the one below fills the first gap that opens up. Photographs of different shapes sit together without any of them being cropped. |
+
+**Everything else keeps working.** Column widths, offsets, order, per‑device settings, corners, spacing, backgrounds — none of it changes. This is a setting on the row, not a different kind of block, which is why you can turn it on and off freely.
+
+**Your blocks still read in the order you put them in.** Left to right, then down — so a caption that says "1, 2, 3" still says 1, 2, 3, and someone using a screen reader hears them in that order too. (The usual trick for this effect runs the content *down* each column instead, which reads wrongly for anything numbered or newest‑first. This doesn't.)
+
+**Spacing.** **Space down** is the air beneath each block; **Space across** separates the columns. They're independent, as they are on any row.
+
+**On a phone** the row stacks into one column, exactly as any row does. There's nothing to stagger with a single column.
+
+#### When your blocks aren't photographs
+
+The builder knows how tall a photograph will be — it measures every picture when you add it. It cannot know how tall a card or a caption will be until the page is actually open in someone's browser, so it assumes a sensible shape and the spacing comes out a little loose.
+
+For those, tick **Measure on the page**. A small script measures the real heights once the page loads and sets the spacing exactly, then does it again when the window is resized, when the fonts arrive and as each photograph loads.
+
+It's off by default because your published pages carry **no JavaScript at all** unless you ask for some. And it only ever improves things: with scripting switched off, the page still staggers and still never crops — the spacing is just less exact.
+
 ### On a phone
 
 A twelve‑column row **stacks to one column on a phone** and to two on a tablet held upright, with each block keeping its share of the width — so three cards become three full‑width cards rather than three unreadable slivers. If you want something different, pick the device at the top of the screen and set **Columns** there; the row then does what you said from that size down.

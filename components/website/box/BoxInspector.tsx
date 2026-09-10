@@ -329,7 +329,7 @@ function AccPreview({ id, size, axes = [] }: { id: string; size: ThumbSize; axes
   );
 }
 
-export default function BoxInspector({ node, theme, onPatch, onAddChild, onFloat, onUnfloat, onLayer, onAlignInRow, rowJustify, onSectionWidth, sectionWidth, canFloat = true, inGrid = false, gridTrack, onSetFraction, onRetrack, breakpoint = "base", overridden = false, onResetOverride, pages, currentPageId }: {
+export default function BoxInspector({ node, theme, onPatch, onAddChild, onFloat, onUnfloat, onLayer, onAlignInRow, rowJustify, onSectionWidth, sectionWidth, canFloat = true, inGrid = false, inMasonry = false, gridTrack, onSetFraction, onRetrack, breakpoint = "base", overridden = false, onResetOverride, pages, currentPageId }: {
   node: BoxNode;
   theme: SiteTheme;
   onPatch: (patch: Partial<BoxNode>) => void;
@@ -345,6 +345,8 @@ export default function BoxInspector({ node, theme, onPatch, onAddChild, onFloat
   sectionWidth?: "band" | "contained";                        // its current position (parent row's justify-content)
   canFloat?: boolean;
   inGrid?: boolean;
+  /** Is the PARENT row a masonry gallery? Its cells have no rows to be tall in or to start at. */
+  inMasonry?: boolean;
   /** How many columns the PARENT row is cut into — the denominator every named fraction is measured against. */
   gridTrack?: number;
   /** Set this block to a named fraction of its row. Refines the row to twelve first when it has to (base only,
@@ -595,6 +597,37 @@ export default function BoxInspector({ node, theme, onPatch, onAddChild, onFloat
                   <CompactSelect label="Position blocks" ariaLabel="Position blocks" value={node.justifyItems ?? "stretch"}
                     onChange={(v) => onPatch({ justifyItems: v as NonNullable<BoxNode["justifyItems"]> })}
                     options={[{ value: "stretch", label: "Fill the cell" }, { value: "start", label: "Left" }, { value: "center", label: "Center" }, { value: "end", label: "Right" }]} />
+                  {/* MASONRY, as ONE control with two words on it. "Even" is not a new mode — it is the
+                      behaviour every saved page already has, finally named, so choosing it can never change
+                      anything. "Follow the picture" keeps the twelve columns, the spans and the reading order
+                      and changes only how the ROW is measured, which is the whole reason it is a row option
+                      here rather than a gallery block of its own. */}
+                  <span className={label}>Row heights</span>
+                  <Segmented full ariaLabel="Row heights" value={node.rowFlow === "masonry" ? "masonry" : "even"}
+                    onChange={(v) => onPatch({ rowFlow: v === "masonry" ? "masonry" : undefined, rowMeasure: v === "masonry" ? node.rowMeasure : undefined })}
+                    options={[{ value: "even", label: "Even" }, { value: "masonry", label: "Follow the picture" }]} />
+                  {node.rowFlow === "masonry" && (
+                    <>
+                      <p className="text-[11px] leading-snug text-gray-500 dark:text-gray-400">
+                        Each block is as tall as what is in it, so pictures of different shapes stagger instead of
+                        being cropped to match. Blocks still read in the order you put them in. On a phone the row
+                        stacks, as it always does.
+                      </p>
+                      <label className="flex items-start gap-2 text-xs text-gray-600 dark:text-gray-300">
+                        <input type="checkbox" className="mt-0.5" checked={!!node.rowMeasure}
+                          aria-label="Measure on the page"
+                          onChange={(e) => onPatch({ rowMeasure: e.target.checked || undefined })} />
+                        <span>
+                          Measure on the page — adds a small script.
+                          <span className="block text-[11px] text-gray-500 dark:text-gray-400">
+                            Turn this on when the blocks hold text or cards rather than photos: their real height
+                            can only be known once the page is open. Without it the layout still staggers and never
+                            crops; the spacing is just less exact.
+                          </span>
+                        </span>
+                      </label>
+                    </>
+                  )}
                 </div>
               ) : (
                 <>
@@ -627,11 +660,20 @@ export default function BoxInspector({ node, theme, onPatch, onAddChild, onFloat
                     off the row and a test can assert. Blank = auto-place after the block before it. */}
                 <CompactField label="Start at column" ariaLabel="Start at column" type="number" min={1} max={gridTrack ?? GRID_MAX} placeholder="auto"
                   value={node.colStart ?? ""} onChange={(v) => onPatch({ colStart: v === "" ? undefined : Math.max(1, Number(v) || 1) })} />
-                <CompactField label="Rows tall" ariaLabel="Rows tall" type="number" min={1} max={12} value={node.rowSpan ?? 1} onChange={(v) => onPatch({ rowSpan: Math.max(1, Number(v) || 1) })} />
+                {/* HIDDEN INSIDE A MASONRY ROW, both of them. There, the row track is a fine measuring unit
+                    rather than a row, and each cell's span is worked out from its own height — so "3 rows
+                    tall" would be describing a ruler, and the number a person typed would be silently
+                    ignored. A control that appears to do one thing and does nothing is the defect this area
+                    keeps making; not offering it is the honest answer. */}
+                {!inMasonry && (
+                  <CompactField label="Rows tall" ariaLabel="Rows tall" type="number" min={1} max={12} value={node.rowSpan ?? 1} onChange={(v) => onPatch({ rowSpan: Math.max(1, Number(v) || 1) })} />
+                )}
                 {/* The down axis, so a block can be placed rather than only sized. Rows are implicit — the grid
                     makes as many as the page asks for — so this has no ceiling the way the columns do. */}
-                <CompactField label="Start at row" ariaLabel="Start at row" type="number" min={1} placeholder="auto"
-                  value={node.rowStart ?? ""} onChange={(v) => onPatch({ rowStart: v === "" ? undefined : Math.max(1, Number(v) || 1) })} />
+                {!inMasonry && (
+                  <CompactField label="Start at row" ariaLabel="Start at row" type="number" min={1} placeholder="auto"
+                    value={node.rowStart ?? ""} onChange={(v) => onPatch({ rowStart: v === "" ? undefined : Math.max(1, Number(v) || 1) })} />
+                )}
                 <CompactSelect label="Line up (across)" ariaLabel="Line up (across)" value={node.justifySelf ?? "stretch"}
                   onChange={(v) => onPatch({ justifySelf: v as NonNullable<BoxNode["justifySelf"]> })}
                   options={[{ value: "stretch", label: "Fill" }, { value: "start", label: "Left" }, { value: "center", label: "Center" }, { value: "end", label: "Right" }]} />

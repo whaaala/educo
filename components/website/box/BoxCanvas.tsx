@@ -8,7 +8,7 @@
  * onChange(root); selection via selectedId/onSelectId.
  */
 
-import { Fragment, useEffect, useLayoutEffect, useReducer, useRef, useState, type ReactNode } from "react";
+import { Fragment, useEffect, useLayoutEffect, useReducer, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { Plus, ChevronUp, ChevronDown, Copy, Scissors, ClipboardPaste, Trash2, Upload, GripVertical, MoreVertical, Rows3, Columns3, Grid3x3, Type, Heading as HeadingIcon, MousePointerClick, Image as ImageIcon, Layers, BringToFront, SendToBack, Video as VideoIcon, Sparkles, Minus as MinusIcon, List as ListIcon, Code2, Star, Lock, LockOpen, Ungroup } from "lucide-react";
 import type { SiteTheme } from "@/lib/site-storage";
@@ -18,7 +18,7 @@ import {
   updateBox, removeBox, insertBox, moveBoxStep, duplicateBox, moveBox, cloneBox, findParent, isAncestor, isContainer, widthPct,
   isFloating, floatBox, unfloatBox, groupBoxes, ungroupBoxes, bringToFront, sendToBack, bringForward, sendBackward,
   fadedPaint, boxOpacity, backgroundCss, treePaintLayerCss, radiusCSS, isClipped, SHADOW_CSS, videoEmbedSrc, sanitizeCssDeclarations, expandScopedCss, ACCORDION_CSS_PARTS, itemOverrideCss, itemHasOverride, itemNumberVars, richBody, componentTextCss, componentBoxCss, bgShowThroughCss, resizeTopEdge, blockContainmentCss, alertToastCss, treeHasToast, accordionClasses, bandClasses, advancedCssStyle, alertActionsHTML, hugsContent, itemFloatContextCss, COMPONENT_ITEM_SEL, clampContentScale, MIN_CONTENT_SCALE, isMultiItemComponent, comfortableWidth, remLen, rootFontPx, isDefiniteLen, addItemAfter, duplicateItem, duplicateChildItem, removeItem, removeChildItem, moveItem, moveChildItem, updateItem, updateChildItem, ALERT_SEVERITY_ICON, alertPartInline, alertIconInline, collectAlertItemStyles,
-  type Breakpoint, resolveResponsive, updateBoxResponsive, imageSizing, measureImage, treeItemEffectsCss, itemNeedsClass, floatZIndex, gridPlacementAt, gridColumnsAt, selectionChain, typoRole, typoRootVars, typoCascadeCss, bandEdgeCSS,
+  type Breakpoint, resolveResponsive, updateBoxResponsive, imageSizing, measureImage, treeItemEffectsCss, itemNeedsClass, floatZIndex, gridPlacementAt, gridColumnsAt, masonryMeasureAttr, masonryMeasurePass, selectionChain, typoRole, typoRootVars, typoCascadeCss, bandEdgeCSS,
 } from "@/lib/box-model";
 import { ICON_SET } from "./icons";
 import { PortalMenu, MenuItem, MenuHeader, MenuSep } from "./ui";
@@ -27,7 +27,7 @@ import { blockForKind } from "@/lib/box-presets";
 import { treeHoverCss, treeRevealCss } from "@/lib/interactions";
 import { colorToCSS } from "@/components/shared/ColorPalettePicker";
 import { COMPONENT_CSS } from "@/lib/educo-ui/components";
-import { layoutCss } from "@/lib/educo-ui/layout";
+import { layoutCss, RUNG_MEASURE } from "@/lib/educo-ui/layout";
 import { CHROME_Z } from "@/lib/educo-ui/stacking";
 import { iconSvg, onIconsLoaded, warmIcons, hasIcon } from "@/lib/educo-ui/icon-svg";
 import { tokensFromTheme, tokensToCss } from "@/lib/educo-ui/tokens";
@@ -212,6 +212,7 @@ export default function BoxCanvas({
   const dragPtRef = useRef<{ x: number; y: number } | null>(null); // latest cursor pos (rAF-batched during drag)
   const dragRaf = useRef(0);
   const rootRef = useRef(root); rootRef.current = root; // always-fresh tree for the drag listeners
+  const canvasRef = useRef<HTMLDivElement | null>(null); // the canvas surface — the masonry measure searches it
   // The item selected INSIDE a component (RULE I). Kept here rather than in ComponentView because selecting the
   // block re-renders it in a way that remounts the component view — which threw this state away, so the first
   // click on an item never seemed to register.
@@ -351,6 +352,29 @@ export default function BoxCanvas({
     else onChange(insertBox(root, root.id, root.children?.length ?? 0, node));
     select(node.id);
   };
+
+  // MASONRY, measured (C). The canvas calls the very function whose SOURCE the exported page ships
+  // (`masonryMeasurePass` / `masonryMeasureScript`), so the editor cannot drift from the published site — the
+  // trap this project has paid for four times. Only galleries that opted in carry the marker, so a canvas with
+  // none does nothing but one querySelectorAll.
+  //
+  // No dependency array on purpose: the spans have to be re-taken after ANY render that could have changed a
+  // height. It is safe to do that here because the pass writes inline styles and never calls setState — the
+  // render-loop hazard this file guards against elsewhere needs a setState to exist at all.
+  useEffect(() => {
+    const host = canvasRef.current;
+    if (!host) return;
+    const run = () => host.querySelectorAll<HTMLElement>("[data-eu-masonry]").forEach((g) => masonryMeasurePass(g));
+    run();
+    // A ResizeObserver catches what a render does not: a photo decoding, a web font landing, the device frame
+    // being dragged. The pass is idempotent, so a re-run that changes nothing writes the same spans and the
+    // observer settles instead of looping. Guarded because jsdom has no ResizeObserver and a missing browser
+    // API must never take the editor down in a test.
+    if (typeof ResizeObserver === "undefined") return;
+    const ro = new ResizeObserver(run);
+    ro.observe(host);
+    return () => ro.disconnect();
+  });
 
   // Keyboard operations on the selected box (WCAG): copy/cut/paste, duplicate, delete, reorder, deselect.
   useEffect(() => {
@@ -1208,6 +1232,8 @@ export default function BoxCanvas({
         <div
           key={node.id}
           data-box-id={node.id}
+          // The SAME marker the exported page carries, carrying the same number — see `masonryMeasureAttr`.
+          data-eu-masonry={masonryMeasureAttr(node) ?? undefined}
           id={node.anchor || undefined}
           onMouseDown={onSelectDown}
           // AN EMPTY BOX GETS A COURTESY HEIGHT, NOT A FLOOR IT CANNOT LEAVE. Nothing is inside to give it
@@ -1530,7 +1556,22 @@ export default function BoxCanvas({
   }
 
   return (
-    <div onMouseDown={(e) => { if (editable) { select(null); startMarqueeArm(e); } }} onDragOver={onCanvasDragOver} onDrop={onCanvasDrop} onDragLeave={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setDropRect(null); }} className="w-full eu-tokens">
+    <div ref={canvasRef} onMouseDown={(e) => { if (editable) { select(null); startMarqueeArm(e); } }} onDragOver={onCanvasDragOver} onDrop={onCanvasDrop} onDragLeave={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setDropRect(null); }} className="w-full eu-tokens"
+      // THE PAGE MEASURE COMES FROM THE DEVICE CHIP, NOT FROM THE EDITOR'S WINDOW.
+      //
+      // `layoutCss` publishes `--eu-measure` per rung through MEDIA queries, and a media query reads the
+      // browser window — which in the editor is the whole screen, not the frame the page is being previewed
+      // in. So on a wide monitor, picking Desktop (1280) drew every CONTAINED band at the WIDE rung's 76rem
+      // cap: the column came out 1184px where a real visitor at 1280 gets 1088. The class names were all
+      // correct and the export was right; only the editor was wrong, which is the worse direction.
+      //
+      // Setting it here fixes it for the frame in one place: an inline style beats the stylesheet at any
+      // width, and it is the rung the user actually chose. The phone rung has no cap, so it is left unset and
+      // the `var(--eu-measure, 100%)` fallback keeps the page gutter, exactly as the media queries do.
+      style={RUNG_MEASURE[breakpoint === "base" ? "desktop" : breakpoint]
+        ? ({ ["--eu-measure" as string]: RUNG_MEASURE[breakpoint === "base" ? "desktop" : breakpoint] } as CSSProperties)
+        : undefined}
+    >
       {/* Educo UI component styles + this site's tokens, injected once so any placed block renders exactly as it
           will in the exported site.
 

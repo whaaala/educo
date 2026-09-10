@@ -334,3 +334,72 @@ Feature: The twelve-column grid in the Box Builder
     And each wider rung adds only what changes from the rung below it
     And a width or order set only on a phone is actively taken back at the rung above
     And the canvas and the exported page place every block identically
+
+  # ── Row heights: even, or following the picture (masonry) ──────────────────
+
+  Scenario: Every row that exists is unchanged
+    Given a grid saved before Row heights existed
+    Then it renders exactly as it always has
+    And the control shows "Even", because that is what it has always been doing
+
+  Scenario: Pictures of different shapes stagger instead of being cropped
+    Given a row of photographs of different shapes
+    When I set Row heights to "Follow the picture"
+    Then each block is as tall as what is inside it
+    And a block below fills the first gap that opens up rather than waiting for the tallest
+    And nothing is cropped and no two blocks in a column overlap
+
+  Scenario: The columns keep working
+    When Row heights is "Follow the picture"
+    Then column widths, offsets, order and per-device settings all behave as before
+    And the blocks still read in the order I put them in
+
+  Scenario: There are no rows to be tall in
+    When Row heights is "Follow the picture"
+    Then "Rows tall" and "Start at row" are not offered on a cell in that row
+    And the row's height cannot be dragged, because the track is a measuring unit
+
+  Scenario: The space I asked for is the space I get
+    Given Row heights is "Follow the picture"
+    When I set Space down
+    Then that is the space beneath each block
+    And Space across still separates the columns independently
+
+  Scenario: On a phone it is a plain stack
+    Given Row heights is "Follow the picture"
+    When I look at the page on a phone
+    Then the blocks stack in one column, as any row does
+    And no measuring unit is used, because one column has nothing to stagger
+
+  Scenario: Blocks whose height cannot be known
+    Given a row of cards or captions rather than photographs
+    When Row heights is "Follow the picture"
+    Then each block is given a sensible shape rather than collapsing to a sliver
+    And the panel offers "Measure on the page" for an exact result
+
+  Scenario: Measuring on the page
+    Given "Measure on the page" is ticked
+    When I publish the site
+    Then a small script measures the real heights and sets the spacing exactly
+    And it re-measures when the window resizes, the fonts load and the photographs arrive
+    And with scripting switched off the page still staggers and still never crops
+
+  Scenario: Nothing is published unless it was asked for
+    Given "Measure on the page" is not ticked
+    When I publish the site
+    Then no script is included at all
+
+  Scenario: Going back to Even puts every pixel back
+    When I set Row heights to "Follow the picture" and then back to "Even"
+    Then the layout is exactly what it was
+    And the saved page carries no trace of the setting
+
+  # ── What masonry uncovered ────────────────────────────────────────────────
+
+  Scenario: The editor's page column is the width the device chip asks for
+    Given my browser window is much wider than the size I am previewing
+    When I pick a preview size and look at a section set to the page column
+    Then the column is the width a visitor at that size gets, not the width of my window
+
+  Scenario: An icon-only button says what it is
+    Then every preview-size button has a name a screen reader can announce

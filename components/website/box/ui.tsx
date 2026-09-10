@@ -38,7 +38,14 @@ export function Segmented<T extends string>({ value, onChange, options, ariaLabe
       {options.map((o) => {
         const on = o.value === value;
         return (
-          <button key={o.value} onClick={() => onChange(o.value)} title={o.title ?? o.label} aria-pressed={on}
+          // AN ICON-ONLY OPTION HAS NO NAME WITHOUT THIS. Every segment carried a `title` and nothing else, and
+          // a `title` is only the LAST fallback an accessible name is computed from — a tooltip that a screen
+          // reader may announce, may truncate, and that a keyboard user never sees at all. The device chips
+          // (Mobile / Tablet / Laptop / Desktop / Wide) are the whole toolbar's worth of icon-only buttons in
+          // this app, so "the preview width" was effectively unnamed. Labelled segments already have their text
+          // as the name and are unaffected.
+          <button key={o.value} onClick={() => onChange(o.value)} title={o.title ?? o.label}
+            aria-label={o.label ? undefined : (o.title ?? o.value)} aria-pressed={on}
             className={`inline-flex items-center justify-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-medium transition-all ${full ? "flex-1" : ""} ${on ? "bg-surface text-ink shadow-sm" : "text-muted hover:text-ink"}`}>
             {o.Icon && <o.Icon className="w-3.5 h-3.5" />}{o.label && <span>{o.label}</span>}
           </button>

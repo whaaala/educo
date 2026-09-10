@@ -10,7 +10,7 @@
 import type { CSSProperties } from "react";
 import {
   type BoxNode, type Breakpoint, BP_ORDER, containerStyle, childStyle, marginCSS, sizeToCSS, radiusCSS, SHADOW_CSS, u, baseUnit, fadedPaint, boxOpacity, backgroundCss, paintLayerCss,
-  resolveResponsive, floatStacksOnMobile, alertToastCss, accordionClasses, bandClasses, videoEmbedSrc, isContainer, sanitizeCssDeclarations, expandScopedCss, COMPONENT_PARTS, itemFloatContextCss, itemOverrideCss, itemNumberVars, richBody, plainBody, componentTextCss, componentBoxCss, renderAlertHTML, alertDismissScript, bgShowThroughCss, blockContainmentCss, COMPONENT_ITEM_SEL, remLen, imageSizing, hasIntrinsicSize, itemNeedsClass, itemScope, floatZIndex, typoRole, typoRootVars, typoCascadeCss, bandEdgeCSS,
+  resolveResponsive, floatStacksOnMobile, alertToastCss, accordionClasses, bandClasses, videoEmbedSrc, isContainer, sanitizeCssDeclarations, expandScopedCss, COMPONENT_PARTS, itemFloatContextCss, itemOverrideCss, itemNumberVars, richBody, plainBody, componentTextCss, componentBoxCss, renderAlertHTML, alertDismissScript, masonryMeasureAttr, masonryMeasureScript, bgShowThroughCss, blockContainmentCss, COMPONENT_ITEM_SEL, remLen, imageSizing, hasIntrinsicSize, itemNeedsClass, itemScope, floatZIndex, typoRole, typoRootVars, typoCascadeCss, bandEdgeCSS,
 } from "@/lib/box-model";
 import { isRegistryComponent, renderComponent, componentScripts } from "@/lib/educo-ui/registry";
 import { iconSvg } from "@/lib/educo-ui/icon-svg";
@@ -416,6 +416,12 @@ function renderNode(node: BoxNode, rawParent: BoxNode | null, theme: SiteTheme, 
     // Children of the PAGE ROOT (the only call with no parent) are the page's sections; nothing deeper is.
     const kidsAreSections = rawParent === null;
     const kids = (r.children ?? []).map((c) => renderNode(c, node, theme, pageMap, sheet, kidsAreSections)).join("");
+    // MASONRY, measured (C). The marker and the script ride WITH the gallery, in the same shape the Alert's
+    // dismiss script uses: one guarded global, so ten measured galleries still run one copy, and a page with
+    // none ships no script at all. The attribute's value is the down-gap in row units — the one number the
+    // script cannot read back, because masonry spends that gap as empty units rather than as `row-gap`.
+    const mGap = masonryMeasureAttr(r);
+    if (mGap != null) return `<div${idAttr} class="${allCls}" data-eu-masonry="${mGap}">${kids}${masonryMeasureScript()}</div>`;
     return `<div${idAttr} class="${allCls}">${kids}</div>`;
   }
   return `<div${idAttr} class="${allCls}">${elementHTML(r, theme, pageMap)}</div>`;
