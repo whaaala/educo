@@ -2,7 +2,18 @@ import { describe, it, expect } from "vitest";
 import * as fs from "fs";
 import * as path from "path";
 
-const read = (p: string) => fs.readFileSync(path.resolve(__dirname, "../../", p), "utf-8");
+/**
+ * Source read with its line endings NORMALISED to `\n`.
+ *
+ * These assertions match snippets of real source, and some of them span a line break. Git checks this
+ * repository out with CRLF on Windows, so a `toContain("immersive\n  ? …")` compares `\n` against `\r\n`
+ * and fails — on a file nobody has touched, for a reason that has nothing to do with the behaviour being
+ * asserted. It surfaced the day the branch changed and the working tree was re-normalised.
+ *
+ * Normalising at the point of READING fixes every assertion in this file at once, including ones added
+ * later, rather than patching each multi-line string as it breaks.
+ */
+const read = (p: string) => fs.readFileSync(path.resolve(__dirname, "../../", p), "utf-8").replace(/\r\n/g, "\n");
 
 describe("Immersive workspace mode — MainLayout", () => {
   const layout = read("components/layout/MainLayout.tsx");

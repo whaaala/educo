@@ -8,7 +8,10 @@ import { resolve } from "node:path";
  * and define those variables for all four app themes. This is what makes the whole app token-driven.
  */
 const FILES = ["app/globals.css", "apps/admin/app/globals.css"];
-const read = (f: string) => readFileSync(resolve(process.cwd(), f), "utf8");
+/** Line endings normalised at the point of READING: git checks this repo out with CRLF on Windows, so an
+ *  assertion spanning a line break otherwise fails on a file nobody has touched. Doing it here immunises
+ *  every assertion in this file, including ones added later. Guarded by `source-reading-tests.test.ts`. */
+const read = (f: string) => readFileSync(resolve(process.cwd(), f), "utf8").replace(/\r\n/g, "\n");
 
 describe("Educo UI token bridge (globals.css)", () => {
   for (const f of FILES) {

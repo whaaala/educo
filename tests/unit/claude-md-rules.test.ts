@@ -17,7 +17,9 @@ import { resolve } from "node:path";
  * Adding a rule? Put it in `CLAUDE.md` and add its key below. Never the other way round.
  */
 
-const CLAUDE = readFileSync(resolve(process.cwd(), "CLAUDE.md"), "utf8");
+// Line endings normalised at the point of READING — a CRLF checkout otherwise fails any assertion that
+// spans a line break. Guarded by `source-reading-tests.test.ts`.
+const CLAUDE = readFileSync(resolve(process.cwd(), "CLAUDE.md"), "utf8").replace(/\r\n/g, "\n");
 
 /** Each standing rule, and a phrase that can only appear if the rule is actually stated. */
 const RULES: [name: string, mustSay: RegExp][] = [

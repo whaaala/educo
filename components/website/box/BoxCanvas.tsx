@@ -1453,8 +1453,14 @@ export default function BoxCanvas({
             // NOT the page root and NOT a row band. Both are invisible scaffolding rather than boxes anyone
             // added: the root carries the PAGE's own minimum height (roughly a viewport) and an 8rem courtesy
             // band would overrule it, collapsing an empty page to a strip.
+            //   • `screenHeight` — you asked for half or a whole screen, and that IS a height you set.
+            //     It was missing from this list, so "Screen height → Full screen" was STORED AND IGNORED on
+            //     an empty box: measured at 128px with `screenHeight: "full"` on the node, and 900px the
+            //     moment one line of text went in. Empty is precisely when a person sets it — you lay the
+            //     band out, then fill it — so the control did nothing at the only time it was reached for.
+            //     `childStyle` already guarded for this (`!child.screenHeight`); the canvas did not.
             ...(editable && kids.length === 0 && !isRoot && !node.rowBand && !sizedAbove
-              && node.minHeight == null && node.height == null
+              && node.minHeight == null && node.height == null && !node.screenHeight
               ? { minHeight: "8rem" }
               : {}),
             ...(isDragging ? { opacity: 0.4 } : {}),

@@ -375,9 +375,36 @@ export function blockForKind(kind: string, patch: Partial<BoxNode> = {}): BoxNod
  * primitives keep their existing style presets. Before this, `getPresets` returned [] for every component, so
  * the one kind of block with the most looks to choose from was the only kind that never asked.
  */
+/**
+ * BLOCKS THAT ARE ADDED, NOT ASKED ABOUT.
+ *
+ * Asking at add-time earns its place when the answer is STRUCTURAL, SUPPLIES THE CONTENT, or names the
+ * block's ROLE — Columns' shape (changing three cells to four later means redoing the content), a
+ * gallery's photographs (without them it is an empty shell), an Alert's job (it sets the icon, the colour
+ * AND the screen-reader role), a heading's Display-vs-Eyebrow (its place in the document).
+ *
+ * It does NOT earn its place for a LOOK on an empty box. Adding a Section put a menu in the way of the
+ * commonest action in the palette, to ask which of four styles an empty, invisible container should wear —
+ * with nothing inside it to judge the answer against. And it was the WORSE copy of a control that already
+ * existed: the inspector shows the same four presets through `DesignGallery`, each tile rendering the
+ * block AS IT IS, with the user's own content wearing that style.
+ *
+ * The duplication had already produced a bug. At add-time "Default" and "Plain" were pixel-identical,
+ * because "Plain" exists to CLEAR a background, border and radius somebody applied — and on a box that
+ * has none, clearing nothing is doing nothing. In the inspector, where there is something to clear, it is
+ * a real and useful choice. The option was never wrong; its position was.
+ */
+const ADD_WITHOUT_ASKING = new Set([
+  "container", // Section / Stack — a look on an empty box
+  "row",       // the same box turned sideways, same reasoning
+  "image",     // Square / Rounded / Circle / Shadow, chosen before there is a picture
+  "icon",      // sizes and a colour; nothing structural
+]);
+
 export function getAddChoices(kind: string, theme: SiteTheme): Preset[] {
   // A ROW is the one kind whose add-time choice is a LAYOUT rather than a look — see GRID_LAYOUTS.
   if (kind === "grid") return gridLayoutChoices();
+  if (ADD_WITHOUT_ASKING.has(kind)) return [];
   const fromCatalogue = addChoices(kind);
   return fromCatalogue.length ? fromCatalogue : getPresets(kind, theme);
 }

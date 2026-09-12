@@ -182,7 +182,9 @@ describe("no bare stacking number survives in the builder", () => {
 
   for (const file of sources) {
     it(`${file} takes its stacking order from the ladder`, () => {
-      const src = fs.readFileSync(path.join(process.cwd(), file), "utf8");
+      // Line endings normalised — see the note in immersive-layout.test.ts; a CRLF checkout otherwise
+      // fails an assertion that spans a line break, on a file nobody has touched.
+      const src = fs.readFileSync(path.join(process.cwd(), file), "utf8").replace(/\r\n/g, "\n");
       const offenders = [
         ...src.matchAll(/zIndex\s*:\s*(-?\d+)/g),
         ...src.matchAll(/z-index\s*:\s*(-?\d+)/g),
