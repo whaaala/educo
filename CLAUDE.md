@@ -130,13 +130,21 @@ Run through this checklist BEFORE telling the user it's done:
 - Closing a line as NOT A BUG requires the **measurement**, not an opinion
 - **It is never your decision to skip one.** State it plainly and let the user choose
 
-### 9. Verification
+### 9. Branching & merging (MANDATORY)
+- **One branch per AREA of work, and it starts from a fresh `master`.** Never carry on down a branch because it is already checked out.
+- **Name the branch for the AREA, never the audience** — `builder/pager`, `admin/fees`, `mobile/drive`. "teacher" or "student" is an audience: everything can plausibly belong to one, so such a branch drifts until its name describes nothing. `feature/teacher` ran to **213 commits** and ended up holding the entire website builder.
+- **Keep a branch SHORT.** A branch that outlives its area has become a second master, and nothing on it can be reviewed.
+- **Merge through a PULL REQUEST**, matching the existing history — not a local push to `master`.
+- **The full gate must be green at the commit being merged**: typecheck · eslint · vitest · test:layout · test:invariants:rest (see rule 14).
+- **After the merge, delete the branch** and cut the next one from `master`.
+
+### 10. Verification
 - After ANY code change, verify app loads without errors on ALL target devices
 - Check Metro/dev server logs for errors before reporting success
 - Never say "done" without personally verifying every interaction
 - When a feature has permissions/toggles, test with each state ON and OFF
 
-### 10. Clean Code — lint & typecheck (MANDATORY)
+### 11. Clean Code — lint & typecheck (MANDATORY)
 - **`npm run typecheck` and `npm run lint` must BOTH be at ZERO ERRORS before any change is reported done.**
   Not "no new errors" — zero. `npm run check` runs typecheck + lint + tests together.
 - **Never silence a rule to make a number go down.** A rule is relaxed only when it is *wrong about this
@@ -155,46 +163,46 @@ Run through this checklist BEFORE telling the user it's done:
   initial commit until 2026-09-06, so 4,755 problems — including real dead code and three conditional-hook
   bugs — were invisible. A tool that cannot start looks exactly like a tool that passes.
 
-### 11. The lettered rules — S · T · U · V · W (MANDATORY, every component)
+### 12. The lettered rules — S · T · U · V · W (MANDATORY, every component)
 - **RULE S — Design galleries you can SEE.** Every component SHOWS its designs as live visual previews through the shared `DesignGallery`, never a list of text chips. A tile renders the real thing, so it can never promise a look the canvas will not deliver.
 - **RULE T — Variations must be visibly different, AND combine.** Every design and every fine-tuning option is asserted **in a browser** to render differently from every other, and the axes are independent so they combine rather than replace one another. One flat exclusive list is the bug this exists to prevent.
 - **RULE U — Playwright-test EVERYTHING, from the user's point of view.** Every component, every function, every item, the look and feel, and every rule above — driven in a real browser, not sampled. Unit tests alone are never sufficient.
 - **RULE V — Fix what you find.** See rule 8 above and [docs/FIX_WHAT_YOU_FIND.md](docs/FIX_WHAT_YOU_FIND.md).
 - **RULE W — Clean code always.** See rule 10 below.
 
-### 12. Capability parity & the component workflow (MANDATORY)
+### 13. Capability parity & the component workflow (MANDATORY)
 - **Rule A — capability parity.** Every capability built for ONE component becomes the baseline for **every** component where it applies: editable items, part-CSS overrides, per-item/part colour + font + size + position, editable numbers, detach / float / group / position, no clipping.
 - **Rule B — full CRUD on every item**, plus live user-POV Playwright testing for every component.
 - **The workflow for adding or upgrading any builder component**, in order: study links → publish a plan artifact → **get approval** → build (tokens only) → Definition of Done per variation → test one-by-one → audit → update the living docs and every affected artifact.
 
-### 13. Artifacts & living documentation stay TRUE (MANDATORY)
+### 14. Artifacts & living documentation stay TRUE (MANDATORY)
 - **Every artifact a change touches is updated in the SAME change** — the Hub, the Guide, the plan and the audits. An artifact describing a state the code left behind is worse than no artifact: it is trusted and wrong.
 - **The living guide (`docs/guide/`) AND the published Artifact are updated in the same change that ships or changes any feature.**
 - When the build diverges from the plan, **the plan is corrected** — never left describing something we chose not to build.
 - Current register: Builder Hub · Website Builder Guide · Layout System · Builder Parity Audit · Interactions & Effects · the per-component plans and audits.
 
-### 14. When to run tests (MANDATORY — operational)
+### 15. When to run tests (MANDATORY — operational)
 - **Full suite before a COMMIT, not after every fix.** During a change run only `npm run typecheck` plus the specs related to the files you touched.
 - **NEVER run vitest and Playwright at the same time.** A 30s timeout under that load is contention, not a failure.
 - Gate before any commit: `npm run typecheck` · `npx eslint .` · `npx vitest run` · `npm run test:layout` · `npm run test:invariants:rest` — all green, zero errors.
 
-### 15. Responsive Field Guide — the four ingredients (MANDATORY, everywhere)
+### 16. Responsive Field Guide — the four ingredients (MANDATORY, everywhere)
 Every content item and component, existing and future, across the whole app:
 - **Fluid layouts** — intrinsic auto-fit grids that STACK on narrow, never crammed columns
 - **`rem` / `clamp()` units** — never a stored pixel reaching the page
 - **Flexible media** — `max-width: 100%`, intrinsic dimensions set so nothing jumps as it loads
 - **Container queries** — a component adapts to ITS OWN box, never the viewport
 
-### 16. Token system (MANDATORY, everywhere)
+### 17. Token system (MANDATORY, everywhere)
 - Every item and component is **token-driven** per `/website/educo-tokens`: OKLCH colour tokens, **no hardcoded hex anywhere**, WCAG contrast checked, rem type scale, spacing / radius / shadow tokens, the full font library.
 - **Contrast is ASSERTED, not assumed** — especially text over a photograph the user chose.
 
-### 17. The five-rung responsive model (this project's ladder)
+### 18. The five-rung responsive model (this project's ladder)
 - **`base` IS desktop.** The cascade runs to NARROWER screens; `wide` branches off.
 - Legacy `tablet` / `mobile` slots are still read, so no saved page migrates.
 - Rungs: phone · tablet portrait (600) · tablet landscape (900) · desktop (1200) · big desktop (1800), in `em`.
 
-### 18. Edge-anchored resize (broken on three separate occasions — never again)
+### 19. Edge-anchored resize (broken on three separate occasions — never again)
 - **The edge you grab is the ONLY one that moves; the opposite edge stays fixed.** All four sides, every layout, every depth.
 - A drag is clamped to what the partner on the far side can actually give — **never write a size and hope something absorbs it**. Where the partner cannot give, the edge stops; it does not grow out of the far side.
 - **Test an edge at the width where the partner RUNS OUT**, not where it is comfortable. The grid cell never had this rule, and the guard asserting it passed the whole time because it only ever built a two-cell row — where the partner always has room.

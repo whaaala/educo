@@ -54,6 +54,12 @@ const RULES: [name: string, mustSay: RegExp][] = [
   ["Verify on both emulators", /emulator/i],
   ["Session continuity — save state at the end", /project_last_session/],
   ["Reuse-first component architecture", /components\/shared\//],
+  ["One branch per AREA, named for the area", /One branch per AREA/],
+  ["…and named for the area, not the audience", /never the audience/i],
+  ["Branches stay short", /Keep a branch SHORT/],
+  ["Merge through a pull request", /PULL REQUEST/],
+  ["The gate is green at the merged commit", /green at the commit being merged/i],
+  ["Delete the branch after merging", /delete the branch/i],
 ];
 
 describe("CLAUDE.md is the complete rule register", () => {
