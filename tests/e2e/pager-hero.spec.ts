@@ -301,3 +301,64 @@ test.describe("the hero", () => {
     for (const h of r.heights) expect(h, "each page is its own full screen").toBeGreaterThanOrEqual(r.vh * 0.8);
   });
 });
+
+test.describe("the navigation is reachable", () => {
+  test("the dots are ON the box, so a full-screen hero does not put them below the fold", async ({ page }) => {
+    // The defect this guards, seen in a screenshot: the nav sat AFTER the strip in normal flow, so on a
+    // hero one whole screen tall the only visible control was off the bottom of the screen.
+    await page.goto("/website/box-demo");
+    await page.evaluate(() => {
+      const hero = (i: number) => ({
+        id: `h${i}`, type: "container", layout: "flex", direction: "column", width: "100%", padding: 48, gap: 12,
+        align: "center", justify: "center", screenHeight: "full", background: ["#234", "#432", "#343"][i],
+        children: [{ id: `t${i}`, type: "heading", text: `Hero ${i + 1}`, width: "100%", color: "#fff" }],
+      });
+      const site = { pages: [{ id: "p1", name: "Home", path: "/", root: { id: "root", type: "container", direction: "column", padding: 0, gap: 0, children: [
+        { id: "band", type: "container", direction: "row", rowBand: true, width: "fill", gap: 0, padding: 0, children: [
+          { id: "rh", type: "container", layout: "flex", direction: "column", width: "100%", padding: 0, gap: 0, pager: true, children: [hero(0), hero(1), hero(2)] }] }] } }], homeId: "p1" };
+      localStorage.setItem("educo_box_site_v1", JSON.stringify(site));
+      localStorage.setItem("educo_box_site_cleaned_v1", "1");
+    });
+    await page.reload();
+    await page.waitForSelector("[data-eu-pager-nav]", { timeout: 20000 });
+    // MEASURED ON THE PUBLISHED PAGE, not on the canvas. In the builder the page starts below the
+    // toolbar, so a 100svh hero legitimately ends a toolbar's height past the bottom of the visible
+    // canvas — an artifact of the frame, not a defect a visitor would ever meet.
+    const f = await published(page);
+    await f.waitForTimeout(900);
+    // The invariant is about the BOX, not the viewport — it holds whatever sits above the hero on the
+    // page, and a published page does put a site nav there. Stacked after the strip, the nav's top would
+    // be at or past the strip's bottom; over it, the nav sits inside the strip's own box.
+    const r = await f.evaluate(() => {
+      const nav = document.querySelector("[data-eu-pager-nav]")!.getBoundingClientRect();
+      const strip = document.querySelector("[data-eu-pager]")!.getBoundingClientRect();
+      return {
+        navTop: Math.round(nav.top), navBottom: Math.round(nav.bottom),
+        stripTop: Math.round(strip.top), stripBottom: Math.round(strip.bottom),
+      };
+    });
+    expect(r.navBottom, "the dots sit ON the pages, not stacked after them").toBeLessThan(r.stripBottom);
+    expect(r.navTop, "…and inside the strip, so a full-screen page cannot push them off").toBeGreaterThan(r.stripTop);
+
+    // AND THE PROMISE THAT ACTUALLY MATTERS: a visitor who has not scrolled can SEE them. Measured on the
+    // real published document at a real viewport, with the site nav above the hero exactly as a school
+    // gets it — flush against the bottom edge they were 65px below the fold and invisible.
+    const visible = await f.evaluate(() => {
+      const n = document.querySelector("[data-eu-pager-nav]")!.getBoundingClientRect();
+      return { onScreen: n.top < window.innerHeight && n.bottom > 0, belowFold: Math.round(n.bottom - window.innerHeight) };
+    });
+    expect(visible.onScreen, `the dots must be on the first screen; they were ${visible.belowFold}px past it`).toBe(true);
+  });
+
+  test("the nav lets clicks through to the page underneath it", async ({ page }) => {
+    // It covers the full width of the box now, so everything except the controls themselves must be
+    // transparent to the pointer — otherwise it becomes an invisible strip that eats clicks on the slide.
+    await seedPager(page);
+    const r = await page.locator("[data-eu-pager-nav]").evaluate((n) => ({
+      nav: getComputedStyle(n).pointerEvents,
+      dot: getComputedStyle(n.querySelector("[data-eu-pager-dot]")!).pointerEvents,
+    }));
+    expect(r.nav).toBe("none");
+    expect(r.dot, "the dots themselves still take clicks").not.toBe("none");
+  });
+});

@@ -154,3 +154,36 @@ describe("the tiles that use it", () => {
     expect(s.radius).toBeUndefined();
   });
 });
+
+describe("the controls read over any photograph", () => {
+  // They sit ON the pages now, and a school chooses the photograph — so nothing the theme knows can
+  // predict what is behind them. `currentColor` is actively wrong here: a dot is an `<a>`, so it takes
+  // the LINK colour, which came out indigo on a dark navy hero.
+  const nav3 = () => {
+    const n = createContainer("column", { pager: true, pagerNav: "both" });
+    n.children = [createContainer("column"), createContainer("column"), createContainer("column")];
+    return pagerNavHTML(n);
+  };
+
+  it("never leans on currentColor, which on a link is the link colour", () => {
+    expect(nav3()).not.toContain("currentColor");
+  });
+
+  it("pairs a light mark with a dark edge, so it survives a dark photo AND a pale one", () => {
+    const html = nav3();
+    expect(html, "white fill for a dark picture").toContain("background:#fff");
+    expect(html, "and a dark ring for a pale one").toContain("rgba(0,0,0,.45)");
+  });
+
+  it("sits clear of the bottom edge, so a full-screen page does not hide it under the fold", () => {
+    // Measured on a real published page: flush against the bottom, a 100svh page under a 57px site nav
+    // put the only control 65px past the fold and entirely out of sight.
+    expect(nav3()).toContain("bottom:clamp(1rem,9vh,5rem)");
+  });
+
+  it("lets clicks through everywhere except the controls themselves", () => {
+    const html = nav3();
+    expect(html, "the bar spans the whole box, so it must not eat clicks on the page under it").toContain("pointer-events:none");
+    expect(html, "…while the controls still take them").toContain("pointer-events:auto");
+  });
+});

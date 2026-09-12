@@ -2547,8 +2547,14 @@ export function pagerNavHTML(node: BoxNode): string {
   const dots = wants("dots") || wants("arrows")
     ? `<div${fallbackOnly ? " data-eu-pager-dots-fallback" : ""} style="display:flex;gap:.5rem;align-items:center">`
       + slides.map((s, i) =>
+        // WHITE WITH A DARK RING, not `currentColor`, and not a theme token. These sit over a photograph
+        // the user chose, so nothing the theme knows can predict what is behind them — and `currentColor`
+        // is worse than it sounds here: a dot is an `<a>`, so it inherits the LINK colour, which came out
+        // indigo on a dark navy hero. White reads on a dark photograph, the ring reads on a pale one, and
+        // between them the pair is legible on any picture at all.
         `<a href="#${pagerSlideId(s)}" data-eu-pager-dot="${i}" aria-label="Show ${i + 1} of ${slides.length}"`
-        + ` style="width:.7rem;height:.7rem;border-radius:999px;background:currentColor;opacity:.3"></a>`).join("")
+        + ` style="width:.7rem;height:.7rem;border-radius:999px;background:#fff;opacity:.55;`
+        + `box-shadow:0 0 0 1px rgba(0,0,0,.45)"></a>`).join("")
       + `</div>`
     : "";
 
@@ -2560,15 +2566,34 @@ export function pagerNavHTML(node: BoxNode): string {
   // rule, so the thing would be hidden in name and visible on the page.
   const arrow = (dir: "prev" | "next") =>
     `<a href="#" hidden data-eu-pager-${dir} aria-label="${dir === "prev" ? "Show the previous one" : "Show the next one"}"`
-    + ` style="width:2.25rem;height:2.25rem;border-radius:999px;border:1px solid currentColor;opacity:.55;`
-    + `text-align:center;line-height:2.15rem;text-decoration:none;color:inherit">`
+    // Same reasoning as the dots: white on a soft dark disc, so it reads over any photograph, rather
+    // than `currentColor` — which on an `<a>` is the link colour and came out indigo on a navy hero.
+    + ` style="width:2.25rem;height:2.25rem;border-radius:999px;border:1px solid rgba(255,255,255,.7);`
+    + `background:rgba(0,0,0,.3);text-align:center;line-height:2.15rem;text-decoration:none;color:#fff">`
     + `${dir === "prev" ? "&#8249;" : "&#8250;"}</a>`;
   const body = wants("arrows") ? `${arrow("prev")}${dots}${arrow("next")}` : dots;
 
   // `<nav>` rather than a bare div: it is a set of links between the parts of one thing, which is what the
   // landmark is for, and it gives a screen-reader user a way to skip past it.
+  //
+  // POSITIONED OVER THE BOTTOM OF THE BOX, not stacked underneath it. In flow it sat after the strip, so
+  // on a FULL-SCREEN hero — the case this was built for — the strip was one whole screen tall and the dots
+  // landed below the fold: a pager whose only visible control was off the screen. Over the box it works
+  // for both shapes, and it is also simply what a carousel looks like. The box is `position: relative`
+  // (see `containerStyle`), so this is its bottom edge and not the page's.
+  // INSET FROM THE BOTTOM, and the number is not taste. A full-screen page is `100svh` measured from the
+  // top of the VIEWPORT, but it starts below whatever the page puts above it — and the export puts a site
+  // nav there. Measured on a real published page at 1280×800: the nav is 57px, so the page's bottom edge
+  // lands 65px past the fold and controls flush against it were entirely INVISIBLE to a visitor who had
+  // not scrolled. A rotating hero whose only control is off the screen is not a rotating hero.
+  //
+  // `clamp(1rem, 9vh, 5rem)` is 72px at 800 tall, 97px at 1080 and 36px on a phone — it clears a header
+  // at every size, scales instead of being tuned to one, and floating the dots above the edge is what a
+  // carousel looks like anyway.
   return `<nav data-eu-pager-nav aria-label="Choose which one to show"`
-    + ` style="display:flex;gap:.75rem;justify-content:center;align-items:center;padding:.75rem 0">${body}</nav>`;
+    + ` style="position:absolute;left:0;right:0;bottom:clamp(1rem,9vh,5rem);display:flex;gap:.75rem;`
+    + `justify-content:center;align-items:center;pointer-events:none">`
+    + `<span style="display:flex;gap:.75rem;align-items:center;pointer-events:auto">${body}</span></nav>`;
 }
 
 /**
@@ -2620,7 +2645,7 @@ export function pagerWire(strip: HTMLElement): void {
       const now = at();
       nav.querySelectorAll("[data-eu-pager-dot]").forEach((a, i) => {
         const on = i === now;
-        (a as HTMLElement).style.opacity = on ? "1" : "0.3";
+        (a as HTMLElement).style.opacity = on ? "1" : "0.55";
         if (on) a.setAttribute("aria-current", "true"); else a.removeAttribute("aria-current");
       });
     };
