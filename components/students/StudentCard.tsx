@@ -13,6 +13,7 @@ export interface Student {
   id: string;
   name: string;
   rollNo: string;
+  admissionNo?: string; // Alias for rollNo
   class: string;
   gender: "Male" | "Female";
   joinedOn: string;
@@ -22,6 +23,7 @@ export interface Student {
   educationLevel?: "Primary" | "Secondary" | "Tertiary" | "";
   institutionType?: "Public" | "Private" | "International" | "";
   tenantId?: string; // Schema-per-tenant identifier (Educo v4.0)
+  branch?: string; // Multi-campus branch/location (PRD: Multi-branch support)
 }
 
 interface StudentCardProps {

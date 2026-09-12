@@ -4,11 +4,11 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { flushSync, createPortal } from "react-dom";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
-interface ModernCalendarProps {
+export interface ModernCalendarProps {
   value: string;
   onChange: (date: string) => void;
   onClose: () => void;
-  triggerRef?: React.RefObject<HTMLElement>;
+  triggerRef?: React.RefObject<HTMLElement | null>;
 }
 
 export default function ModernCalendar({ value, onChange, onClose, triggerRef }: ModernCalendarProps) {
@@ -494,14 +494,14 @@ export default function ModernCalendar({ value, onChange, onClose, triggerRef }:
     <div
       ref={calendarRef}
       style={calendarStyle}
-      className="fixed bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 p-4 overflow-y-auto animate-in fade-in slide-in-from-top-2 duration-200"
+      className="fixed bg-surface rounded-xl shadow-2xl border border-line p-4 overflow-y-auto animate-in fade-in slide-in-from-top-2 duration-200"
     >
       {/* Header */}
-      <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+      <div className="flex items-center justify-between mb-4 pb-3 border-b border-line">
         <button
           type="button"
           onClick={handlePrevMonth}
-          className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer"
+          className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer"
         >
           <ChevronLeft className="w-5 h-5 text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400" />
         </button>
@@ -514,7 +514,7 @@ export default function ModernCalendar({ value, onChange, onClose, triggerRef }:
                  setIsMonthDropdownOpen(!isMonthDropdownOpen);
                  setIsYearDropdownOpen(false);
                }}
-                                                               className={`appearance-none text-base font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-gray-700 dark:to-gray-700/50 midnight:from-cyan-900/30 midnight:to-cyan-800/20 purple:from-pink-900/30 purple:to-pink-800/20 hover:from-blue-100 hover:to-blue-100 dark:hover:from-gray-600 dark:hover:to-gray-600 midnight:hover:from-cyan-900/40 midnight:hover:to-cyan-800/30 purple:hover:from-pink-900/40 purple:hover:to-pink-800/30 rounded-lg px-3 py-1.5 pr-8 cursor-pointer outline-none focus:ring-2 focus:ring-blue-500/40 dark:focus:ring-blue-400/40 midnight:focus:ring-cyan-500/40 purple:focus:ring-pink-500/40 transition-all shadow-sm border border-blue-200/50 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 ${isMonthDropdownOpen ? 'ring-2 ring-blue-500/50 dark:ring-blue-400/50' : ''}`}
+                                                               className={`appearance-none text-base font-bold text-ink bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-gray-700 dark:to-gray-700/50 midnight:from-cyan-900/30 midnight:to-cyan-800/20 purple:from-pink-900/30 purple:to-pink-800/20 hover:from-blue-100 hover:to-blue-100 dark:hover:from-gray-600 dark:hover:to-gray-600 midnight:hover:from-cyan-900/40 midnight:hover:to-cyan-800/30 purple:hover:from-pink-900/40 purple:hover:to-pink-800/30 rounded-lg px-3 py-1.5 pr-8 cursor-pointer outline-none focus:ring-2 focus:ring-blue-500/40 dark:focus:ring-blue-400/40 midnight:focus:ring-cyan-500/40 purple:focus:ring-pink-500/40 transition-all shadow-sm border border-blue-200/50 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 ${isMonthDropdownOpen ? 'ring-2 ring-blue-500/50 dark:ring-blue-400/50' : ''}`}
                  key={`month-${displayMonth}-${displayYear}`}
                >
                  {monthNames[displayMonth]}
@@ -530,7 +530,7 @@ export default function ModernCalendar({ value, onChange, onClose, triggerRef }:
                  setIsYearDropdownOpen(!isYearDropdownOpen);
                  setIsMonthDropdownOpen(false);
                }}
-                                                               className={`appearance-none text-base font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 bg-gradient-to-br from-purple-50 to-purple-100/50 dark:from-gray-700 dark:to-gray-700/50 midnight:from-purple-900/30 midnight:to-purple-800/20 purple:from-pink-900/30 purple:to-pink-800/20 hover:from-purple-100 hover:to-purple-100 dark:hover:from-gray-600 dark:hover:to-gray-600 midnight:hover:from-purple-900/40 midnight:hover:to-purple-800/30 purple:hover:from-pink-900/40 purple:hover:to-pink-800/30 rounded-lg px-3 py-1.5 pr-8 cursor-pointer outline-none focus:ring-2 focus:ring-purple-500/40 dark:focus:ring-purple-400/40 midnight:focus:ring-cyan-500/40 purple:focus:ring-pink-500/40 transition-all shadow-sm border border-purple-200/50 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 ${isYearDropdownOpen ? 'ring-2 ring-purple-500/50 dark:ring-purple-400/50' : ''}`}
+                                                               className={`appearance-none text-base font-bold text-ink bg-gradient-to-br from-purple-50 to-purple-100/50 dark:from-gray-700 dark:to-gray-700/50 midnight:from-purple-900/30 midnight:to-purple-800/20 purple:from-pink-900/30 purple:to-pink-800/20 hover:from-purple-100 hover:to-purple-100 dark:hover:from-gray-600 dark:hover:to-gray-600 midnight:hover:from-purple-900/40 midnight:hover:to-purple-800/30 purple:hover:from-pink-900/40 purple:hover:to-pink-800/30 rounded-lg px-3 py-1.5 pr-8 cursor-pointer outline-none focus:ring-2 focus:ring-purple-500/40 dark:focus:ring-purple-400/40 midnight:focus:ring-cyan-500/40 purple:focus:ring-pink-500/40 transition-all shadow-sm border border-purple-200/50 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 ${isYearDropdownOpen ? 'ring-2 ring-purple-500/50 dark:ring-purple-400/50' : ''}`}
                  key={`year-${displayYear}-${displayMonth}`}
                >
                  {displayYear}
@@ -542,7 +542,7 @@ export default function ModernCalendar({ value, onChange, onClose, triggerRef }:
         <button
           type="button"
           onClick={handleNextMonth}
-          className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer"
+          className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer"
         >
           <ChevronRight className="w-5 h-5 text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400" />
         </button>
@@ -568,7 +568,7 @@ export default function ModernCalendar({ value, onChange, onClose, triggerRef }:
                 className={`h-12 w-full flex items-center justify-center text-sm font-medium rounded-lg transition-all duration-150 cursor-pointer ${
                   currentDate.getMonth() === index
                     ? 'bg-blue-500 dark:bg-blue-600 midnight:bg-blue-600 purple:bg-blue-500 text-white font-semibold shadow-md'
-                    : 'text-gray-700 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-100 dark:hover:bg-gray-700 midnight:hover:bg-cyan-900/20 purple:hover:bg-pink-900/20'
+                    : 'text-gray-700 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-900/20 purple:hover:bg-pink-900/20'
                 }`}
               >
                 {month}
@@ -596,7 +596,7 @@ export default function ModernCalendar({ value, onChange, onClose, triggerRef }:
                 className={`h-10 w-full flex items-center justify-center text-sm font-medium rounded-lg transition-all duration-150 cursor-pointer ${
                   currentDate.getFullYear() === year
                     ? 'bg-purple-500 dark:bg-purple-600 midnight:bg-purple-600 purple:bg-pink-500 text-white font-semibold shadow-md'
-                    : 'text-gray-700 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-100 dark:hover:bg-gray-700 midnight:hover:bg-cyan-900/20 purple:hover:bg-pink-900/20'
+                    : 'text-gray-700 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-900/20 purple:hover:bg-pink-900/20'
                 }`}
               >
                 {year}
@@ -635,12 +635,12 @@ export default function ModernCalendar({ value, onChange, onClose, triggerRef }:
                    className={`
                     relative h-9 w-full flex items-center justify-center text-sm font-medium rounded-full transition-all duration-150 cursor-pointer
                     ${!dayInfo.isCurrentMonth
-                      ? "text-gray-300 dark:text-gray-600 midnight:text-cyan-300/30 purple:text-pink-300/30 hover:bg-gray-50 dark:hover:bg-gray-800"
+                      ? "text-gray-300 dark:text-gray-600 midnight:text-cyan-300/30 purple:text-pink-300/30 hover:bg-gray-50 dark:hover:bg-[#22262e]"
                       : "text-gray-700 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100"
                     }
                     ${selected
                       ? "bg-blue-500 dark:bg-blue-600 midnight:bg-cyan-500 purple:bg-pink-500 text-white font-semibold shadow-md hover:bg-blue-600 dark:hover:bg-blue-700"
-                      : "hover:bg-gray-100 dark:hover:bg-gray-700 midnight:hover:bg-cyan-900/20 purple:hover:bg-pink-900/20"
+                      : "hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-900/20 purple:hover:bg-pink-900/20"
                     }
                     ${today && !selected
                       ? "ring-1 ring-blue-500 dark:ring-blue-400 midnight:ring-cyan-400 purple:ring-pink-400"
@@ -657,7 +657,7 @@ export default function ModernCalendar({ value, onChange, onClose, triggerRef }:
       )}
 
       {/* Quick actions */}
-      <div className="flex items-center justify-end gap-2 mt-3 pt-3 border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+      <div className="flex items-center justify-end gap-2 mt-3 pt-3 border-t border-line">
         <button
           type="button"
           onClick={(e) => {
@@ -686,7 +686,7 @@ export default function ModernCalendar({ value, onChange, onClose, triggerRef }:
             onChange(""); // Clear the date value
             onClose(); // Close the calendar
           }}
-          className="px-3 py-1.5 text-xs font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 rounded-lg transition-colors cursor-pointer"
+          className="px-3 py-1.5 text-xs font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 rounded-lg transition-colors cursor-pointer"
         >
           Clear
         </button>

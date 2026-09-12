@@ -66,25 +66,25 @@ export const studentFormValidationRules: ValidationRules = {
 
   // Custom validation: At least one parent/guardian must be complete
   _parentGuardianValidation: {
-    custom: (value: any, formData: any) => {
+    custom: (_value: unknown, formData?: Record<string, unknown>) => {
       // Check if at least one parent/guardian has all required fields
       const isFatherComplete =
-        formData.fatherFirstName &&
-        formData.fatherLastName &&
-        formData.fatherEmail &&
-        formData.fatherPhone;
+        formData?.fatherFirstName &&
+        formData?.fatherLastName &&
+        formData?.fatherEmail &&
+        formData?.fatherPhone;
 
       const isMotherComplete =
-        formData.motherFirstName &&
-        formData.motherLastName &&
-        formData.motherEmail &&
-        formData.motherPhone;
+        formData?.motherFirstName &&
+        formData?.motherLastName &&
+        formData?.motherEmail &&
+        formData?.motherPhone;
 
       const isGuardianComplete =
-        formData.guardianFirstName &&
-        formData.guardianLastName &&
-        formData.guardianEmail &&
-        formData.guardianPhone;
+        formData?.guardianFirstName &&
+        formData?.guardianLastName &&
+        formData?.guardianEmail &&
+        formData?.guardianPhone;
 
       if (!isFatherComplete && !isMotherComplete && !isGuardianComplete) {
         return "At least one parent or guardian must have complete information (First Name, Last Name, Email Address, and Phone Number)";

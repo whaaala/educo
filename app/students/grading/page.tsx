@@ -1,27 +1,23 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
-import MainLayout from "@/components/layout/MainLayout";
-import PageLoader from "@/components/shared/PageLoader";
-import { usePageLoad } from "@/hooks/usePageLoad";
+import { DashboardPage } from "@/components/pages";
 import { useSchoolSettings } from "@/contexts/SchoolSettingsContext";
 import { useGrading, GradeScheme } from "@/contexts/GradingContext";
 import Button from "@/components/shared/Button";
 import FormDropdown from "@/components/shared/FormDropdown";
 import FormInput from "@/components/shared/FormInput";
-import DataTable, { ColumnConfig } from "@/components/shared/DataTable";
+import ResponsiveListTable, { type ColumnConfig } from "@/components/shared/ResponsiveListTable";
 import Modal from "@/components/shared/Modal";
+import ActionModal from "@/components/shared/ActionModal";
 import {
   GraduationCap,
-  BookOpen,
   Plus,
   Edit,
   Trash2,
   Save,
   X,
   AlertCircle,
-  TrendingUp,
-  Award,
   BarChart3,
   BookMarked,
 } from "lucide-react";
@@ -29,20 +25,9 @@ import {
 // Re-export type from context for consistency
 import type { EducationLevel } from "@/contexts/GradingContext";
 
-// Class lists for each education level
-const PRIMARY_CLASSES = [
-  "Nursery 1", "Nursery 2", "KG 1", "KG 2",
-  "Primary 1", "Primary 2", "Primary 3", "Primary 4", "Primary 5", "Primary 6"
-];
-
-const SECONDARY_CLASSES = [
-  "JSS 1", "JSS 2", "JSS 3",
-  "SSS 1", "SSS 2", "SSS 3"
-];
-
-const TERTIARY_CLASSES = [
-  "Year 1", "Year 2", "Year 3", "Year 4", "Year 5"
-];
+/** The grading tables stash their scroll-listener teardown on the element itself, so a later effect can find
+ *  and call it. Naming the property keeps that contract visible instead of hiding it behind a cast. */
+type ScrollCleanupHost = Element & { _scrollCleanup?: () => void };
 
 // Subject lists for each education level
 const PRIMARY_SUBJECTS = [
@@ -93,18 +78,6 @@ const TERTIARY_SUBJECTS = [
   "Final Year Project",
 ];
 
-// Helper function to get classes for education level
-const getClassesForLevel = (level: EducationLevel): string[] => {
-  switch (level) {
-    case "Primary":
-      return PRIMARY_CLASSES;
-    case "Tertiary":
-      return TERTIARY_CLASSES;
-    default:
-      return SECONDARY_CLASSES;
-  }
-};
-
 // Helper function to get subjects for education level
 const getSubjectsForLevel = (level: EducationLevel): string[] => {
   switch (level) {
@@ -118,7 +91,6 @@ const getSubjectsForLevel = (level: EducationLevel): string[] => {
 };
 
 export default function GradingPage() {
-  const isPageLoading = usePageLoad(600);
   const { settings } = useSchoolSettings();
   const { gradeSchemes, saveGradeScheme, updateGradeScheme, deleteGradeScheme } = useGrading();
 
@@ -131,6 +103,8 @@ export default function GradingPage() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingScheme, setEditingScheme] = useState<GradeScheme | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [deletingScheme, setDeletingScheme] = useState<GradeScheme | null>(null);
 
   // Form state for add/edit
   const [formData, setFormData] = useState({
@@ -190,7 +164,7 @@ export default function GradingPage() {
           return;
         }
 
-        let scrollTimeout: NodeJS.Timeout;
+        let scrollTimeout: ReturnType<typeof setTimeout>;
         let isScrolling = false;
 
         const handleScroll = () => {
@@ -243,7 +217,7 @@ export default function GradingPage() {
         };
 
         // Store cleanup in the container's dataset for later cleanup
-        (container as any)._scrollCleanup = cleanup;
+        (container as ScrollCleanupHost)._scrollCleanup = cleanup;
       });
     };
 
@@ -255,9 +229,7 @@ export default function GradingPage() {
       // Cleanup all scroll listeners
       const containers = document.querySelectorAll('.grading-table-container');
       containers.forEach((container) => {
-        if ((container as any)._scrollCleanup) {
-          (container as any)._scrollCleanup();
-        }
+        (container as ScrollCleanupHost)._scrollCleanup?.();
       });
     };
   }, [groupedSchemes]); // Re-run when grading schemes change
@@ -299,11 +271,16 @@ export default function GradingPage() {
     setIsEditModalOpen(true);
   };
 
-  // Handle delete grade
-  const handleDeleteGrade = (id: string) => {
-    if (confirm("Are you sure you want to delete this grade?")) {
-      deleteGradeScheme(id);
-    }
+  const requestDeleteGrade = (scheme: GradeScheme) => {
+    setDeletingScheme(scheme);
+    setIsDeleteModalOpen(true);
+  };
+
+  const confirmDeleteGrade = () => {
+    if (!deletingScheme) return;
+    deleteGradeScheme(deletingScheme.id);
+    setIsDeleteModalOpen(false);
+    setDeletingScheme(null);
   };
 
   // Handle save (add or edit)
@@ -374,7 +351,7 @@ export default function GradingPage() {
   const getGradeColorClass = (color: string) => {
     const colors: { [key: string]: string } = {
       green: "bg-green-100 dark:bg-green-950/30 text-green-700 dark:text-green-300 border-green-200 dark:border-green-800",
-      blue: "bg-blue-100 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800",
+      blue: "bg-blue-100 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300 border-blue-200 dark:border-blue-800",
       cyan: "bg-cyan-100 dark:bg-cyan-950/30 text-cyan-700 dark:text-cyan-300 border-cyan-200 dark:border-cyan-800",
       yellow: "bg-yellow-100 dark:bg-yellow-950/30 text-yellow-700 dark:text-yellow-300 border-yellow-200 dark:border-yellow-800",
       orange: "bg-orange-100 dark:bg-orange-950/30 text-orange-700 dark:text-orange-300 border-orange-200 dark:border-orange-800",
@@ -392,7 +369,7 @@ export default function GradingPage() {
       sortable: true,
       className: "text-left min-w-[100px]",
       render: (item) => (
-        <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-[11px] sm:text-xs md:text-sm font-bold border ${getGradeColorClass(item.color)}`}>
+        <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-[0.6875rem] sm:text-xs md:text-sm font-bold border ${getGradeColorClass(item.color)}`}>
           {item.gradeName}
         </span>
       ),
@@ -403,7 +380,7 @@ export default function GradingPage() {
       sortable: true,
       className: "text-left min-w-[90px]",
       render: (item) => (
-        <span className="text-[11px] sm:text-xs md:text-sm font-semibold text-gray-900 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50">
+        <span className="text-[0.6875rem] sm:text-xs md:text-sm font-semibold text-gray-900 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50">
           {item.minScore}
         </span>
       ),
@@ -414,7 +391,7 @@ export default function GradingPage() {
       sortable: true,
       className: "text-left min-w-[90px]",
       render: (item) => (
-        <span className="text-[11px] sm:text-xs md:text-sm font-semibold text-gray-900 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50">
+        <span className="text-[0.6875rem] sm:text-xs md:text-sm font-semibold text-gray-900 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50">
           {item.maxScore}
         </span>
       ),
@@ -425,7 +402,7 @@ export default function GradingPage() {
       sortable: true,
       className: "text-left min-w-[110px]",
       render: (item) => (
-        <span className="text-[11px] sm:text-xs md:text-sm font-bold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400">
+        <span className="text-[0.6875rem] sm:text-xs md:text-sm font-bold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400">
           {item.gradePoint.toFixed(1)}
         </span>
       ),
@@ -436,7 +413,7 @@ export default function GradingPage() {
       sortable: true,
       className: "text-left min-w-[120px]",
       render: (item) => (
-        <span className="text-[11px] sm:text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300">
+        <span className="text-[0.6875rem] sm:text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300">
           {item.remark}
         </span>
       ),
@@ -455,8 +432,8 @@ export default function GradingPage() {
             <Edit className="w-4 h-4" />
           </button>
           <button
-            onClick={() => handleDeleteGrade(item.id)}
-            className="p-1.5 text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-950/30 midnight:hover:bg-red-500/10 purple:hover:bg-red-500/10 rounded transition-colors"
+            onClick={() => requestDeleteGrade(item)}
+            className="p-1.5 text-red-600 hover:text-red-700 dark:text-red-400 midnight:text-red-400 purple:text-red-400 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-950/30 midnight:hover:bg-red-500/10 purple:hover:bg-red-500/10 rounded transition-colors"
             title="Delete"
           >
             <Trash2 className="w-4 h-4" />
@@ -575,48 +552,44 @@ export default function GradingPage() {
         }
       `}</style>
 
-    <MainLayout>
-      <PageLoader isLoading={isPageLoading} loadingText="Loading Grading Schemes" />
-
-      <div className="space-y-5 sm:space-y-6">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
-          <div>
-            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
-              Grading Schemes
-            </h1>
-            <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-200/70 purple:text-pink-200/70 mt-1">
-              Manage grading schemes per class and subject
-            </p>
-          </div>
-        </div>
+    <DashboardPage
+      title="Grading Schemes"
+      description="Manage grading schemes per class and subject"
+      breadcrumbs={[
+        { label: "Dashboard", href: "/" },
+        { label: "Students", href: "/students" },
+        { label: "Grading", isActive: true },
+      ]}
+      loadingText="Loading Grading Schemes"
+    >
+      <div className="mt-6 space-y-5 sm:space-y-6">
 
         {/* Info Card */}
         <div className="bg-blue-50 dark:bg-blue-950/20 midnight:bg-blue-950/30 purple:bg-blue-950/30 border border-blue-200 dark:border-blue-800 midnight:border-blue-700 purple:border-blue-700 rounded-xl p-4">
           <div className="flex items-start gap-3">
-            <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex-shrink-0">
-              <AlertCircle className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+            <div className="p-2 bg-blue-100 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 rounded-lg flex-shrink-0">
+              <AlertCircle className="w-5 h-5 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
             </div>
             <div className="flex-1 min-w-0">
               <h3 className="text-sm font-semibold text-blue-900 dark:text-blue-100 mb-1">
                 Grading System Information
               </h3>
-              <p className="text-xs text-blue-800 dark:text-blue-200">
+              <p className="text-xs text-blue-800 dark:text-blue-200 midnight:text-cyan-200 purple:text-pink-200">
                 Configure grading schemes for each class and subject. Each scheme defines grade boundaries,
                 grade points for GPA/CGPA calculation, and remarks. Different classes and subjects can have
-                different grading scales based on your institution's requirements.
+                different grading scales based on your institution&apos;s requirements.
               </p>
             </div>
           </div>
         </div>
 
         {/* Filters */}
-        <div className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-gray-800 purple:border-gray-800 shadow-sm">
+        <div className="bg-surface rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-gray-800 purple:border-gray-800 shadow-sm">
           <div className="border-b border-gray-200 dark:border-gray-700 midnight:border-gray-800 purple:border-gray-800 px-4 sm:px-6 py-4">
-            <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+            <h3 className="text-base sm:text-lg font-semibold text-ink">
               Select Subject
             </h3>
-            <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-1">
+            <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mt-1">
               Choose the subject to view or add grading schemes
             </p>
           </div>
@@ -629,8 +602,8 @@ export default function GradingPage() {
                   <FormDropdown
                     label="Education Level"
                     icon={<GraduationCap className="w-full h-full" />}
-                    iconBgColor="bg-blue-100 dark:bg-blue-900/30"
-                    iconColor="text-blue-600 dark:text-blue-400"
+                    iconBgColor="bg-blue-100 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30"
+                    iconColor="text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400"
                     value={educationLevel}
                     onChange={handleEducationLevelChange}
                     options={settings?.supportedLevels?.map((level) => ({
@@ -672,16 +645,16 @@ export default function GradingPage() {
               return (
                 <div
                   key={subjectName}
-                  className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-gray-800 purple:border-gray-800 shadow-sm grading-table-container"
+                  className="bg-surface rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-gray-800 purple:border-gray-800 shadow-sm grading-table-container"
                   data-subject={subjectName}
                 >
                   <div className="border-b border-gray-200 dark:border-gray-700 midnight:border-gray-800 purple:border-gray-800 px-4 sm:px-6 py-4">
                     <div className="flex items-center justify-between">
                       <div>
-                        <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                        <h3 className="text-base sm:text-lg font-semibold text-ink">
                           {subjectName}
                         </h3>
-                        <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-1">
+                        <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mt-1">
                           {schemes.length} grade(s) configured
                         </p>
                       </div>
@@ -698,7 +671,7 @@ export default function GradingPage() {
                   </div>
 
                   {/* Table matching attendance page design */}
-                  <div className="bg-gray-50 dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 px-4 sm:px-5 md:px-6 py-2.5 sm:py-3 flex flex-row items-center justify-between gap-2 sm:gap-3 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/30 purple:border-pink-500/30">
+                  <div className="bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] px-4 sm:px-5 md:px-6 py-2.5 sm:py-3 flex flex-row items-center justify-between gap-2 sm:gap-3 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/30 purple:border-pink-500/30">
                     <h2 className="text-xs sm:text-sm font-bold text-gray-800 dark:text-gray-100 midnight:text-cyan-300 purple:text-pink-300 tracking-tight whitespace-nowrap">
                       Records
                     </h2>
@@ -709,7 +682,7 @@ export default function GradingPage() {
                     <div className="absolute left-0 top-0 bottom-0 w-4 bg-gradient-to-r from-white/80 to-transparent dark:from-gray-800/80 midnight:from-gray-900/80 purple:from-gray-900/80 pointer-events-none z-20 rounded-l-xl opacity-0 transition-opacity duration-300" id={`scroll-left-indicator-${subjectName}`}></div>
                     <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white/80 to-transparent dark:from-gray-800/80 midnight:from-gray-900/80 purple:from-gray-900/80 pointer-events-none z-20 rounded-r-xl opacity-100 transition-opacity duration-300 lg:opacity-0" id={`scroll-right-indicator-${subjectName}`}></div>
 
-                    <DataTable<GradeScheme>
+                    <ResponsiveListTable<GradeScheme> variant="contained" showColumnHeaders={true}
                       data={schemes}
                       columns={columns}
                       getRowKey={(item) => item.id}
@@ -723,15 +696,15 @@ export default function GradingPage() {
             })}
           </div>
         ) : (
-          <div className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-gray-800 purple:border-gray-800 shadow-sm p-8 sm:p-12">
+          <div className="bg-surface rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-gray-800 purple:border-gray-800 shadow-sm p-8 sm:p-12">
             <div className="text-center">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-700 mb-4">
-                <BarChart3 className="w-8 h-8 text-gray-400 dark:text-gray-500" />
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-surface-2 mb-4">
+                <BarChart3 className="w-8 h-8 text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400" />
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+              <h3 className="text-lg font-semibold text-ink mb-2">
                 No Grading Schemes Found
               </h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
+              <p className="text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 mb-6">
                 {!selectedSubject
                   ? "Please select a subject to view or add grading schemes"
                   : "No grading schemes configured for the selected subject"}
@@ -759,7 +732,7 @@ export default function GradingPage() {
       >
         <div className="space-y-4">
           <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
-            <p className="text-xs text-blue-800 dark:text-blue-200">
+            <p className="text-xs text-blue-800 dark:text-blue-200 midnight:text-cyan-200 purple:text-pink-200">
               <span className="font-semibold">
                 {selectedSubject}
               </span>
@@ -859,7 +832,31 @@ export default function GradingPage() {
           </div>
         </div>
       </Modal>
-    </MainLayout>
+
+      <ActionModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => {
+          setIsDeleteModalOpen(false);
+          setDeletingScheme(null);
+        }}
+        title="Delete Grade"
+        subtitle={deletingScheme ? `${deletingScheme.gradeName} (${deletingScheme.subject})` : undefined}
+        variant="danger"
+        message="Are you sure you want to delete this grade scheme? This action cannot be undone."
+        details={
+          deletingScheme
+            ? [
+                { label: "Grade", value: deletingScheme.gradeName },
+                { label: "Range", value: `${deletingScheme.minScore} - ${deletingScheme.maxScore}` },
+                { label: "Point", value: deletingScheme.gradePoint.toFixed(1) },
+              ]
+            : undefined
+        }
+        confirmLabel="Delete"
+        cancelLabel="Cancel"
+        onConfirm={confirmDeleteGrade}
+      />
+    </DashboardPage>
     </>
   );
 }

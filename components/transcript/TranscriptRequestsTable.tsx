@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { Eye, Download, Edit2, Trash2 } from "lucide-react";
 import { TranscriptRequest, TranscriptStatus, PaymentStatus } from "@/types/transcript";
-import DataTable, { ColumnConfig } from "@/components/shared/DataTable";
+import ResponsiveListTable, { type ColumnConfig } from "@/components/shared/ResponsiveListTable";
 import Tooltip from "@/components/shared/Tooltip";
 
 interface TranscriptRequestsTableProps {
@@ -53,7 +53,7 @@ export default function TranscriptRequestsTable({
     };
 
     return (
-      <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full font-semibold border whitespace-nowrap ${styles[status]}`} style={{ fontSize: '11.8px' }}>
+      <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full font-semibold border whitespace-nowrap ${styles[status]}`} style={{ fontSize: '0.7375rem' }}>
         <span className="w-1.5 h-1.5 rounded-full bg-current"></span>
         {status.charAt(0).toUpperCase() + status.slice(1)}
       </span>
@@ -65,11 +65,11 @@ export default function TranscriptRequestsTable({
       paid: "bg-green-100 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800",
       unpaid: "bg-red-100 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800",
       partial: "bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-800",
-      waived: "bg-gray-100 text-gray-700 border-gray-200 dark:bg-gray-900/30 dark:text-gray-400 dark:border-gray-800",
+      waived: "bg-gray-100 text-gray-700 border-gray-200 dark:bg-[#0f1115]/30 dark:text-gray-400 dark:border-[#1a1d24]",
     };
 
     return (
-      <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full font-semibold border whitespace-nowrap ${styles[status]}`} style={{ fontSize: '11.8px' }}>
+      <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full font-semibold border whitespace-nowrap ${styles[status]}`} style={{ fontSize: '0.7375rem' }}>
         {status.charAt(0).toUpperCase() + status.slice(1)}
       </span>
     );
@@ -83,7 +83,7 @@ export default function TranscriptRequestsTable({
       sortable: true,
       className: "text-left",
       render: (request) => (
-        <div className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 whitespace-nowrap" style={{ fontSize: '11.8px' }}>
+        <div className="font-semibold text-ink whitespace-nowrap" style={{ fontSize: '0.7375rem' }}>
           {request.requestNumber}
         </div>
       ),
@@ -98,18 +98,23 @@ export default function TranscriptRequestsTable({
         return (
           <Tooltip content={studentInfo}>
             <div className="flex items-center gap-2.5">
-              {request.profilePhoto ? (
-                <img
-                  src={request.profilePhoto}
-                  alt={request.studentName}
-                  className="w-9 h-9 rounded-full ring-2 ring-gray-200 dark:ring-gray-700 midnight:ring-cyan-500/20 purple:ring-pink-500/20 object-cover flex-shrink-0"
-                />
-              ) : (
-                <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold shadow-sm ring-2 ring-blue-200 dark:ring-blue-900/30 flex-shrink-0" style={{ fontSize: '11.8px' }}>
-                  {request.studentName.charAt(0)}
-                </div>
-              )}
-              <div className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate max-w-[140px]" style={{ fontSize: '11.8px' }}>
+              <div className="relative cursor-pointer group/avatar flex-shrink-0">
+                {request.profilePhoto ? (
+                  <img
+                    src={request.profilePhoto}
+                    alt={request.studentName}
+                    className="w-9 h-9 rounded-full ring-2 ring-white/80 dark:ring-gray-700/50 midnight:ring-cyan-500/30 purple:ring-pink-500/30 object-cover shadow-lg transition-all duration-500 ease-out group-hover/avatar:scale-150 group-hover/avatar:shadow-2xl group-hover/avatar:ring-blue-500/90 dark:group-hover/avatar:ring-blue-400/90 midnight:group-hover/avatar:ring-cyan-400/90 purple:group-hover/avatar:ring-pink-400/90 group-hover/avatar:z-[100]"
+                    style={{ position: 'relative', transformOrigin: 'center center' }}
+                  />
+                ) : (
+                  <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold shadow-lg ring-2 ring-white/80 dark:ring-gray-700/50 midnight:ring-cyan-500/30 purple:ring-pink-500/30 transition-all duration-500 ease-out group-hover/avatar:scale-150 group-hover/avatar:shadow-2xl group-hover/avatar:ring-blue-500/90 dark:group-hover/avatar:ring-blue-400/90 midnight:group-hover/avatar:ring-cyan-400/90 purple:group-hover/avatar:ring-pink-400/90 group-hover/avatar:z-[100]"
+                    style={{ position: 'relative', transformOrigin: 'center center', fontSize: '0.7375rem' }}>
+                    {request.studentName.charAt(0)}
+                  </div>
+                )}
+                <div className="absolute -inset-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 rounded-full opacity-0 group-hover/avatar:opacity-40 blur-md transition-all duration-500 ease-out pointer-events-none -z-10" />
+              </div>
+              <div className="font-semibold text-ink truncate max-w-[140px]" style={{ fontSize: '0.7375rem' }}>
                 {request.studentName}
               </div>
             </div>
@@ -124,10 +129,10 @@ export default function TranscriptRequestsTable({
       className: "text-left",
       render: (request) => (
         <div>
-          <div className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 capitalize" style={{ fontSize: '11.8px' }}>
+          <div className="font-semibold text-ink capitalize" style={{ fontSize: '0.7375rem' }}>
             {request.transcriptType}
           </div>
-          <div className="text-gray-500 dark:text-gray-400 midnight:text-cyan-400/60 purple:text-pink-400/60 capitalize" style={{ fontSize: '10px' }}>
+          <div className="text-gray-500 dark:text-gray-400 midnight:text-cyan-400/60 purple:text-pink-400/60 capitalize" style={{ fontSize: '0.625rem' }}>
             {request.deliveryMethod}
           </div>
         </div>
@@ -139,9 +144,11 @@ export default function TranscriptRequestsTable({
       sortable: true,
       className: "text-left",
       render: (request) => (
-        <div className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 capitalize truncate max-w-[150px]" style={{ fontSize: '11.8px' }}>
-          {request.purpose.replace(/-/g, " ")}
-        </div>
+        <Tooltip content={request.purpose.replace(/-/g, " ")} block>
+          <div className="font-semibold text-ink capitalize truncate max-w-[150px]" style={{ fontSize: '0.7375rem' }}>
+            {request.purpose.replace(/-/g, " ")}
+          </div>
+        </Tooltip>
       ),
     },
     {
@@ -153,7 +160,7 @@ export default function TranscriptRequestsTable({
       render: (request) => (
         <div className="flex flex-col gap-1">
           {getPaymentBadge(request.payment.status)}
-          <div className="text-gray-600 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70 font-medium" style={{ fontSize: '10px' }}>
+          <div className="text-gray-600 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70 font-medium" style={{ fontSize: '0.625rem' }}>
             {request.payment.currency} {request.payment.amount.toLocaleString()}
           </div>
         </div>
@@ -173,7 +180,7 @@ export default function TranscriptRequestsTable({
       className: "text-left",
       sortValue: (request) => new Date(request.requestDate).getTime(),
       render: (request) => (
-        <div className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 whitespace-nowrap" style={{ fontSize: '11.8px' }}>
+        <div className="font-semibold text-ink whitespace-nowrap" style={{ fontSize: '0.7375rem' }}>
           {formatDate(request.requestDate)}
         </div>
       ),
@@ -278,10 +285,9 @@ export default function TranscriptRequestsTable({
       {/* Mobile Scroll Indicator */}
       <div className="md:hidden absolute top-0 right-0 z-20 bg-gradient-to-l from-blue-500/20 to-transparent w-8 h-full pointer-events-none" />
 
-      <DataTable
+      <ResponsiveListTable variant="contained" showColumnHeaders={true}
         data={requests}
         columns={columns}
-        title=""
         showSearch={false}
         defaultItemsPerPage={10}
         itemsPerPageOptions={[5, 10, 15, 20, 25]}

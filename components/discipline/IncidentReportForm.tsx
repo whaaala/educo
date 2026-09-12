@@ -6,8 +6,18 @@ import {
   DisciplineIncident,
   IncidentCategory,
   IncidentSeverity,
-  DisciplinaryActionType,
 } from "@/types/discipline";
+
+// Action type for discipline incidents
+type DisciplinaryActionType =
+  | "verbal-warning"
+  | "written-warning"
+  | "detention"
+  | "suspension"
+  | "parent-conference"
+  | "counseling"
+  | "other"
+  | "";
 import SearchableDropdown from "@/components/shared/SearchableDropdown";
 import { getAllStudents } from "@/lib/mockStudents";
 import Modal from "@/components/shared/Modal";
@@ -84,13 +94,13 @@ export default function IncidentReportForm({
       setFormData({
         selectedStudentId: initialData.studentId,
         selectedStudentName: initialData.studentName,
-        selectedStudentAdmissionNumber: initialData.studentAdmissionNumber,
+        selectedStudentAdmissionNumber: initialData.studentAdmissionNumber || "",
         selectedStudentClass: initialData.studentClass,
-        selectedStudentSection: initialData.studentSection,
+        selectedStudentSection: initialData.studentSection || "",
         selectedStudentProfilePhoto: initialData.profilePhoto || "",
         incidentDate: initialData.incidentDate,
-        incidentTime: initialData.incidentTime,
-        location: initialData.location,
+        incidentTime: initialData.incidentTime || "",
+        location: initialData.location || "",
         category: initialData.category,
         severity: initialData.severity,
         title: initialData.title,
@@ -232,7 +242,7 @@ export default function IncidentReportForm({
       <button
         type="button"
         onClick={onClose}
-        className="px-5 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 hover:bg-gray-50 dark:hover:bg-gray-700 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-all duration-200 text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 font-medium hover:scale-105 active:scale-95 cursor-pointer"
+        className="px-5 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-all duration-200 text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 font-medium hover:scale-105 active:scale-95 cursor-pointer"
       >
         Cancel
       </button>
@@ -270,7 +280,7 @@ export default function IncidentReportForm({
                 <AlertTriangle className="w-5 h-5 sm:w-6 sm:h-6 text-white" strokeWidth={2.5} />
               </div>
               <div className="flex-1 min-w-0">
-                <h2 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate">
+                <h2 className="text-lg sm:text-xl font-bold text-ink truncate">
                   {initialData ? "Edit Incident" : "Report Incident"}
                 </h2>
                 <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70 mt-0.5">
@@ -293,8 +303,8 @@ export default function IncidentReportForm({
         </div>
 
         {/* Student Information Section - Also Fixed */}
-        <div className="px-4 sm:px-6 pt-4 pb-3 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-white/95 dark:bg-[#1a1d23]/95 midnight:bg-[#0f1729]/95 purple:bg-[#2a1a3e]/95 backdrop-blur-sm">
-          <h3 className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 flex items-center gap-2">
+        <div className="px-4 sm:px-6 pt-4 pb-3 border-b border-line bg-white/95 dark:bg-[#1a1d23]/95 midnight:bg-[#0f1729]/95 purple:bg-[#2a1a3e]/95 backdrop-blur-sm">
+          <h3 className="text-sm font-semibold text-ink flex items-center gap-2">
             <User className="w-4 h-4" />
             Student Information
           </h3>
@@ -344,7 +354,7 @@ export default function IncidentReportForm({
                       </div>
                     )}
                     <div className="min-w-0 flex-1">
-                      <p className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate">
+                      <p className="font-semibold text-ink truncate">
                         {formData.selectedStudentName}
                       </p>
                       <p className="text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70 truncate">
@@ -370,8 +380,8 @@ export default function IncidentReportForm({
                     className="w-full"
                   />
                   {formData.selectedStudentId && (
-                    <div className="mt-3 p-3 bg-gray-50 dark:bg-gray-700/50 midnight:bg-gray-800/50 purple:bg-gray-800/50 rounded-xl border border-gray-200 dark:border-gray-600 midnight:border-cyan-500/20 purple:border-pink-500/20">
-                      <p className="text-sm font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                    <div className="mt-3 p-3 bg-gray-50 dark:bg-[#22262e]/50 midnight:bg-[#0f1330]/50 purple:bg-[#251340]/50 rounded-xl border border-gray-200 dark:border-gray-600 midnight:border-cyan-500/20 purple:border-pink-500/20">
+                      <p className="text-sm font-medium text-ink">
                         {formData.selectedStudentName}
                       </p>
                       <p className="text-xs text-gray-600 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70">
@@ -390,7 +400,7 @@ export default function IncidentReportForm({
 
         {/* Incident Details */}
         <div className="space-y-4">
-          <h3 className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 flex items-center gap-2 pb-2 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+          <h3 className="text-sm font-semibold text-ink flex items-center gap-2 pb-2 border-b border-line">
             <FileText className="w-4 h-4" />
             Incident Details
           </h3>
@@ -421,7 +431,7 @@ export default function IncidentReportForm({
                 required
                 value={formData.incidentTime}
                 onChange={(e) => setFormData({ ...formData, incidentTime: e.target.value })}
-                className="w-full h-[46px] px-4 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 text-sm font-normal focus:ring-1 focus:ring-blue-500/10 dark:focus:ring-blue-400/10 midnight:focus:ring-cyan-500/10 purple:focus:ring-pink-500/10 focus:border-blue-400 dark:focus:border-blue-500 midnight:focus:border-cyan-500 purple:focus:border-pink-500 outline-none transition-all duration-200 hover:border-gray-400 dark:hover:border-gray-500 cursor-pointer"
+                className="w-full h-[46px] px-4 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-surface text-ink text-sm font-normal focus:ring-1 focus:ring-blue-500/10 dark:focus:ring-blue-400/10 midnight:focus:ring-cyan-500/10 purple:focus:ring-pink-500/10 focus:border-blue-400 dark:focus:border-blue-500 midnight:focus:border-cyan-500 purple:focus:border-pink-500 outline-none transition-all duration-200 hover:border-gray-400 dark:hover:border-gray-500 cursor-pointer"
               />
             </div>
           </div>
@@ -495,8 +505,8 @@ export default function IncidentReportForm({
         </div>
 
         {/* Disciplinary Action */}
-        <div className="space-y-4 pt-4 border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
-          <h3 className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+        <div className="space-y-4 pt-4 border-t border-line">
+          <h3 className="text-sm font-semibold text-ink">
             Disciplinary Action <span className="text-gray-400 text-xs font-normal">(Optional)</span>
           </h3>
 
@@ -525,7 +535,7 @@ export default function IncidentReportForm({
         </div>
 
         {/* Checkboxes */}
-        <div className="space-y-3 pt-4 border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+        <div className="space-y-3 pt-4 border-t border-line">
           <label className="flex items-center gap-3 cursor-pointer group">
             <input
               type="checkbox"

@@ -7,13 +7,14 @@ interface TooltipProps {
   content: string;
   children: ReactNode;
   delay?: number;
+  block?: boolean;
 }
 
-export default function Tooltip({ content, children, delay = 300 }: TooltipProps) {
+export default function Tooltip({ content, children, delay = 300, block = false }: TooltipProps) {
   const [isVisible, setIsVisible] = useState(false);
   const [position, setPosition] = useState<'top' | 'bottom'>('top');
   const [coords, setCoords] = useState({ top: 0, left: 0 });
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLDivElement>(null);
   const [mounted, setMounted] = useState(false);
@@ -99,7 +100,7 @@ export default function Tooltip({ content, children, delay = 300 }: TooltipProps
     <>
       <div
         ref={triggerRef}
-        className="relative inline-block"
+        className={block ? "relative block" : "relative inline-block"}
         onMouseEnter={showTooltip}
         onMouseLeave={hideTooltip}
       >
@@ -113,7 +114,7 @@ export default function Tooltip({ content, children, delay = 300 }: TooltipProps
             bg-gray-900 dark:bg-gray-950 midnight:bg-gray-950 purple:bg-gray-950
             text-white text-sm font-medium rounded-lg shadow-2xl
             whitespace-nowrap pointer-events-none
-            border border-gray-700 dark:border-gray-800 midnight:border-cyan-500/30 purple:border-pink-500/30
+            border border-gray-700 dark:border-[#1a1d24] midnight:border-cyan-500/30 purple:border-pink-500/30
             backdrop-blur-sm
             transition-opacity duration-200
           `}
@@ -133,7 +134,7 @@ export default function Tooltip({ content, children, delay = 300 }: TooltipProps
             className={`
               absolute left-1/2 -translate-x-1/2 w-2 h-2 rotate-45
               bg-gray-900 dark:bg-gray-950 midnight:bg-gray-950 purple:bg-gray-950
-              border-gray-700 dark:border-gray-800 midnight:border-cyan-500/30 purple:border-pink-500/30
+              border-gray-700 dark:border-[#1a1d24] midnight:border-cyan-500/30 purple:border-pink-500/30
               ${position === 'top'
                 ? 'bottom-[-4px] border-r border-b'
                 : 'top-[-4px] border-l border-t'

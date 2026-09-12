@@ -347,10 +347,11 @@ export default function StudentDisciplineManagement({
         <div className="flex items-center gap-3 flex-wrap">
           <ActionButton
             onClick={() => setShowReportForm(true)}
-            icon={Plus}
-            label="Report Incident"
+            icon={<Plus className="w-full h-full" />}
             variant="primary"
-          />
+          >
+            Report Incident
+          </ActionButton>
         </div>
         <ExportButton
           onExportPDF={handleExportPDF}

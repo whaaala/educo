@@ -5,29 +5,205 @@
   --color-foreground: #171717;
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  /* ── Educo UI semantic tokens → Tailwind utilities ──────────────────────────
+   * These map utility classes (bg-surface, text-ink, text-muted, border-line,
+   * bg-brand, …) onto the --eu-color-* variables defined per theme below. Adopt
+   * these instead of hand-typed `bg-white dark:bg-[#1a1d24] midnight:… purple:…`
+   * so one token change re-themes the whole app. Purely additive. */
+  --color-canvas: var(--eu-color-bg);
+  --color-surface: var(--eu-color-surface);
+  --color-surface-2: var(--eu-color-surface-2);
+  --color-ink: var(--eu-color-text);
+  --color-muted: var(--eu-color-muted);
+  --color-line: var(--eu-color-border);
+  --color-brand: var(--eu-color-brand);
+  --color-brand-fg: var(--eu-color-on-brand);
+  --color-brand-600: var(--eu-color-brand-600);
 }
 
+/* Theme variant definitions (Tailwind CSS v4)
+ * These tell Tailwind how to resolve dark:, midnight:, purple: prefixes.
+ * To add a new theme: add @variant <name> (&:where(.<name>, .<name> *));
+ */
 @variant dark (&:where(.dark, .dark *));
 @variant midnight (&:where(.midnight, .midnight *));
 @variant purple (&:where(.purple, .purple *));
 
 :root {
-  --background: #ffffff;
+  --background: #f9fafb;
   --foreground: #171717;
+  color-scheme: light;
+}
+
+/* Dark theme variables */
+html.dark {
+  --background: #0f1115;
+  --foreground: #ededed;
+  color-scheme: dark;
+}
+
+/* Midnight theme variables - Deep blue with cyan accents */
+html.midnight {
+  --background: #0a0e27;
+  --foreground: #e2e8f0;
+  color-scheme: dark;
+}
+
+/* Purple theme variables - Deep purple with pink accents */
+html.purple {
+  --background: #1a0b2e;
+  --foreground: #f3e8ff;
+  color-scheme: dark;
+}
+
+/* ── Educo UI semantic tokens (per theme) ─────────────────────────────────────
+ * Single source of truth for chrome colours. Values match the app's EXISTING
+ * surfaces, so replacing `bg-white dark:bg-[#1a1d24] midnight:bg-[#0f1330]
+ * purple:bg-[#251340]` with `bg-surface` looks identical — but is now themed
+ * from one place. Utilities are wired in the @theme block above. */
+:root {
+  --eu-color-bg: #f9fafb;
+  --eu-color-surface: #ffffff;
+  --eu-color-surface-2: #f3f4f6;
+  --eu-color-text: #111827;       /* gray-900 — primary/heading text */
+  --eu-color-muted: #6b7280;
+  --eu-color-border: #e5e7eb;
+  --eu-color-brand: #3b82f6;
+  --eu-color-brand-600: #2563eb;
+  --eu-color-on-brand: #ffffff;
+
+  /* Educo UI non-colour tokens (theme-independent) — power the app-wide layout utilities below */
+  --eu-space-1: .25rem; --eu-space-2: .5rem; --eu-space-3: .75rem; --eu-space-4: 1rem; --eu-space-5: 1.25rem;
+  --eu-space-6: 1.5rem; --eu-space-8: 2rem; --eu-space-10: 2.5rem; --eu-space-12: 3rem; --eu-space-16: 4rem; --eu-space-20: 5rem; --eu-space-24: 6rem;
+  --eu-radius-sm: 6px; --eu-radius-md: 12px; --eu-radius-lg: 16px; --eu-radius-xl: 24px; --eu-radius-full: 9999px;
+  --eu-text-xs: .75rem; --eu-text-sm: .875rem; --eu-text-base: 1rem; --eu-text-lg: 1.125rem; --eu-text-xl: 1.25rem;
+  --eu-text-2xl: 1.5rem; --eu-text-3xl: 1.875rem; --eu-text-4xl: 2.25rem; --eu-text-5xl: 3rem; --eu-text-6xl: 3.75rem;
+}
+html.dark {
+  --eu-color-bg: #0f1115;
+  --eu-color-surface: #1a1d24;
+  --eu-color-surface-2: #22262e;
+  --eu-color-text: #ffffff;       /* dark: headings = white */
+  --eu-color-muted: #9ca3af;
+  --eu-color-border: #374151;
+  --eu-color-brand: #3b82f6;
+  --eu-color-brand-600: #60a5fa;
+  --eu-color-on-brand: #ffffff;
+}
+html.midnight {
+  --eu-color-bg: #0a0e27;
+  --eu-color-surface: #0f1729;    /* raised card — stands out from the page bg (unified Family A+B) */
+  --eu-color-surface-2: #0f1330;  /* nested/hover surface */
+  --eu-color-text: #ecfeff;       /* midnight headings = cyan-50 */
+  --eu-color-muted: #67e8f9;      /* midnight muted text = cyan-300 (matches app convention) */
+  --eu-color-border: rgba(6, 182, 212, 0.2);
+  --eu-color-brand: #06b6d4;
+  --eu-color-brand-600: #22d3ee;
+  --eu-color-on-brand: #04121a;
+}
+html.purple {
+  --eu-color-bg: #1a0b2e;
+  --eu-color-surface: #2a1a3e;    /* raised card — stands out from the page bg (unified Family A+B) */
+  --eu-color-surface-2: #251340;  /* nested/hover surface */
+  --eu-color-text: #fdf2f8;       /* purple headings = pink-50 */
+  --eu-color-muted: #f9a8d4;      /* purple muted text = pink-300 (matches app convention) */
+  --eu-color-border: rgba(236, 72, 153, 0.2);
+  --eu-color-brand: #ec4899;
+  --eu-color-brand-600: #f472b6;
+  --eu-color-on-brand: #2a0a1e;
+}
+
+/* ══════════ Educo UI — responsive foundation + layout utilities (APP-WIDE) ══════════
+ * The four responsive ingredients + the token-driven layout primitives, available on EVERY page.
+ * (The full .eu-root component stylesheet still powers the website builder's isolated iframe output.) */
+
+/* ① Responsive units — respect the user's browser font size (percentage, never fixed px). */
+:root { font-size: 100%; }
+
+/* ③ Flexible media — never overflow, never force a horizontal scrollbar. */
+img, picture, video, svg, iframe, embed, object { max-width: 100%; }
+img, picture, video, svg { height: auto; }
+
+/* Responsive text — a long word can never cause sideways scroll. */
+body { overflow-wrap: break-word; }
+
+/* Accessibility — honour reduced-motion everywhere. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
+}
+
+/* ① Fluid layout primitives (token-driven; usable on any page). */
+/* The rung ladder and the per-rung measures live in lib/educo-ui/layout.ts; this is the same
+   container for app chrome, which does not load that layer. It reads --eu-measure so the two agree —
+   it used to read --eu-container-max, a variable no code anywhere ever set. */
+.eu-container { width: 100%; max-width: var(--eu-measure, 68rem); margin-inline: auto; padding-inline: var(--eu-gutter-page, clamp(1rem, 4vw, 3rem)); }
+.eu-grid { display: grid; gap: var(--eu-space-6, 1.5rem); grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--eu-col-min, 16rem)), 1fr)); }
+.eu-stack > * + * { margin-block-start: var(--eu-space-4, 1rem); }
+.eu-cluster { display: flex; flex-wrap: wrap; gap: var(--eu-space-3, .75rem); align-items: center; }
+/* Used by the educo-blocks showcase page. It previously had no rule anywhere that page loads —
+   the page injects tokens + COMPONENT_CSS only, and .eu-muted lived in BASE_CSS, which it never loads. */
+.eu-muted { color: var(--eu-color-muted, #64748b); }
+.eu-center { box-sizing: content-box; max-width: 65ch; margin-inline: auto; padding-inline: var(--eu-space-4, 1rem); }
+.eu-media { width: 100%; object-fit: cover; aspect-ratio: 16 / 9; border-radius: var(--eu-radius-md, 12px); }
+.eu-columns { column-width: 18rem; column-gap: var(--eu-space-8, 2rem); }
+.eu-columns > * { break-inside: avoid; }
+/* Wide content (tables/code/diagrams) scrolls inside its own box — the page never scrolls sideways. */
+.eu-scroll-x { overflow-x: auto; overscroll-behavior-x: contain; }
+
+/* ④ Container queries — a component responds to ITS container, not just the viewport. */
+.eu-container-ctx { container-type: inline-size; }
+@container (min-width: 34rem) { .eu-cq-2 { grid-template-columns: repeat(2, 1fr); } }
+@container (min-width: 52rem) { .eu-cq-3 { grid-template-columns: repeat(3, 1fr); } }
+
+/* Spacing / ratio / truncate / a11y helpers. */
+.eu-p-4 { padding: var(--eu-space-4, 1rem); } .eu-p-6 { padding: var(--eu-space-6, 1.5rem); } .eu-p-8 { padding: var(--eu-space-8, 2rem); }
+.eu-ratio-square { aspect-ratio: 1; } .eu-ratio-video { aspect-ratio: 16 / 9; } .eu-ratio-portrait { aspect-ratio: 3 / 4; }
+.eu-cover { object-fit: cover; } .eu-contain { object-fit: contain; }
+.eu-truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.eu-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.eu-visually-hidden { position: absolute !important; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; border: 0; }
+
+@media print {
+  .eu-no-print { display: none !important; }
+  :is(h1, h2, h3) { break-after: avoid; }
+  :is(img, table, figure) { break-inside: avoid; }
+}
+
+/* Interactive elements show a pointer cursor — native <button> defaults to an arrow otherwise.
+ * Disabled / aria-disabled controls keep a not-allowed cursor. */
+button:not(:disabled),
+[role="button"]:not([aria-disabled="true"]),
+a[href],
+label[for],
+summary,
+select:not(:disabled) {
+  cursor: pointer;
+}
+button:disabled,
+[aria-disabled="true"] {
+  cursor: not-allowed;
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not(.light):not(.midnight):not(.purple) {
     --background: #0a0a0a;
     --foreground: #ededed;
+    color-scheme: dark;
   }
 }
 
 body {
-  background: var(--background);
+  background-color: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
   letter-spacing: 0.02em;
+  min-height: 100vh;
+}
+
+/* Ensure theme transitions are smooth */
+html, body {
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 /* Modern Custom Scrollbar Styles */
@@ -65,6 +241,7 @@ body {
 .midnight {
   --midnight-glow: #00d4ff;
   --midnight-border: rgba(6, 182, 212, 0.2);
+  color-scheme: dark;
 }
 
 .midnight * {
@@ -83,6 +260,7 @@ body {
 .purple {
   --purple-glow: #ff00ff;
   --purple-border: rgba(236, 72, 153, 0.2);
+  color-scheme: dark;
 }
 
 .purple * {
@@ -406,4 +584,582 @@ tbody tr.sorting-animate-desc {
   .purple .smooth-scroll::-webkit-scrollbar-thumb:hover {
     background: rgba(236, 72, 153, 0.6);
   }
+}
+
+/* Custom scrollbar for card course list */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 100px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(99, 102, 241, 0.2);
+  border-radius: 100px;
+  transition: background 0.2s ease;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(99, 102, 241, 0.4);
+}
+
+.dark .custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(129, 140, 248, 0.3);
+}
+
+.dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(129, 140, 248, 0.5);
+}
+
+.midnight .custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(6, 182, 212, 0.25);
+}
+
+.midnight .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(6, 182, 212, 0.4);
+}
+
+.purple .custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(236, 72, 153, 0.25);
+}
+
+.purple .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(236, 72, 153, 0.4);
+}
+
+/* Drive file list scrollbar — invisible until scrolling */
+.drive-scroll-area {
+  overflow-y: auto;
+  overflow-x: clip;
+  scroll-behavior: smooth;
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+}
+.drive-scroll-area:hover {
+  scrollbar-color: rgba(0, 0, 0, 0.15) transparent;
+}
+.drive-scroll-area::-webkit-scrollbar {
+  width: 5px;
+  background: transparent;
+}
+.drive-scroll-area::-webkit-scrollbar-track {
+  background: transparent;
+}
+.drive-scroll-area::-webkit-scrollbar-thumb {
+  background: transparent;
+  border-radius: 100px;
+}
+.drive-scroll-area:hover::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.12);
+}
+.drive-scroll-area::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.22);
+}
+.dark .drive-scroll-area:hover {
+  scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+}
+.dark .drive-scroll-area:hover::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+}
+.dark .drive-scroll-area::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.18);
+}
+.midnight .drive-scroll-area:hover {
+  scrollbar-color: rgba(6, 182, 212, 0.15) transparent;
+}
+.midnight .drive-scroll-area:hover::-webkit-scrollbar-thumb {
+  background: rgba(6, 182, 212, 0.15);
+}
+.midnight .drive-scroll-area::-webkit-scrollbar-thumb:hover {
+  background: rgba(6, 182, 212, 0.3);
+}
+.purple .drive-scroll-area:hover {
+  scrollbar-color: rgba(236, 72, 153, 0.15) transparent;
+}
+.purple .drive-scroll-area:hover::-webkit-scrollbar-thumb {
+  background: rgba(236, 72, 153, 0.15);
+}
+.purple .drive-scroll-area::-webkit-scrollbar-thumb:hover {
+  background: rgba(236, 72, 153, 0.3);
+}
+
+/* Shimmer animation for progress bars */
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.animate-shimmer {
+  animation: shimmer 2s infinite;
+}
+
+/* ── Print styles for DocEditor ── */
+/* When the user prints via the toolbar print button (window.print()),
+   hide all UI chrome and show only the document pages. */
+@media print {
+  /* ═══ HIDE ALL NON-DOCUMENT UI ═══ */
+
+  /* Hide the entire app sidebar and header */
+  nav, aside, header, banner,
+  [role="complementary"],
+  [role="banner"],
+  [role="status"],
+  [role="alert"] {
+    display: none !important;
+  }
+
+  /* Remove sidebar margin offset from MainLayout */
+  .lg\:ml-72, .lg\:ml-20 {
+    margin-left: 0 !important;
+  }
+
+  /* Hide doc editor chrome: header, menus, toolbars, sidebar, ruler, tabs */
+  [data-doc-header],
+  [data-doc-menubar],
+  [data-doc-toolbar],
+  [data-doc-toolbar-restore],
+  [data-doc-sidebar],
+  [data-doc-table-editor-panel],
+  [data-doc-dialog],
+  [data-doc-menu-root],
+  [data-doc-menu-panel],
+  [data-doc-page-label],
+  [data-doc-section-indicator],
+  [data-doc-ruler],
+  [data-doc-ruler-container],
+  [data-doc-equation-toolbar],
+  [data-doc-floating-pill],
+  [data-doc-comments-panel],
+  [data-editing-mode] {
+    display: none !important;
+  }
+
+  /* Hide Document tabs sidebar and expand button */
+  [data-doc-editor-root] > .flex > .flex-shrink-0 {
+    display: none !important;
+  }
+
+  /* Hide all fixed/sticky positioned elements (toasts, floating pills) */
+  .fixed, .sticky {
+    position: static !important;
+  }
+  .fixed.bottom-4, .fixed.top-4, .fixed.top-3 {
+    display: none !important;
+  }
+
+  /* Remove decorative styling from the editor root */
+  [data-doc-editor-root] {
+    border: none !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    background: white !important;
+    position: static !important;
+    overflow: visible !important;
+  }
+
+  /* Force white background on ALL editor containers for print */
+  [data-doc-editor-root],
+  [data-doc-editor-root] > div,
+  [data-doc-editor-root] > div > div,
+  [data-doc-editor-root] .bg-gray-50,
+  [data-doc-editor-root] .bg-gray-950,
+  [data-doc-editor-root] .bg-white,
+  [data-doc-editor-root] [class*="bg-[#06101f]"],
+  [data-doc-editor-root] [class*="bg-[#12061f]"],
+  [data-doc-editor-root] [class*="bg-[#0b1220]"],
+  [data-doc-editor-root] [class*="bg-[#170a27]"],
+  [data-doc-editor-root] [class*="bg-[#0d1526]"],
+  [data-doc-editor-root] [class*="bg-[#1f1035]"] {
+    background: white !important;
+    background-color: white !important;
+  }
+
+  /* Remove all borders on page wrappers for clean print */
+  [data-doc-editor-root] .border {
+    border-color: transparent !important;
+  }
+
+  /* Remove page shadows, borders, and rounding */
+  [data-doc-editor-root] .shadow-md,
+  [data-doc-editor-root] .shadow-sm {
+    box-shadow: none !important;
+  }
+
+  [data-doc-editor-root] .rounded-sm,
+  [data-doc-editor-root] .rounded-xl {
+    border-radius: 0 !important;
+  }
+
+  /* Pages should fill the printed page */
+  [data-doc-editor-root] [contenteditable] {
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  /* Hide template chip overlays */
+  [data-doc-editor-root] .pointer-events-none:has(button) {
+    display: none !important;
+  }
+
+  /* Hide the equation toolbar and ruler */
+  [data-doc-editor-root] .h-7.rounded-sm {
+    display: none !important;
+  }
+
+  /* Remove zoom transforms */
+  [data-doc-editor-root] [style*="transform: scale"] {
+    transform: none !important;
+    width: 100% !important;
+  }
+
+  /* Remove gap between pages in print mode */
+  [data-doc-editor-root] .flex.flex-col.items-center {
+    gap: 0 !important;
+  }
+
+  /* Each page wrapper becomes a printed page */
+  [data-doc-editor-root] .flex.flex-col.items-center > div {
+    page-break-after: always;
+    break-after: page;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  [data-doc-editor-root] .flex.flex-col.items-center > div:last-child {
+    page-break-after: avoid;
+    break-after: avoid;
+  }
+
+  /* Pages fill the printed page width, no border/shadow */
+  [data-doc-editor-root] .flex.flex-col.items-center > div > div {
+    max-width: 100% !important;
+    width: 100% !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+
+  /* Ensure content is visible and black on white */
+  [data-doc-editor-root] [contenteditable] {
+    color: black !important;
+    background: white !important;
+  }
+
+  /* Keep page colors if user set a custom one */
+  [data-doc-editor-root] [contenteditable][style*="backgroundColor"] {
+    color: black !important;
+  }
+
+  /* Hide the fullscreen exit button */
+  [data-doc-editor-root] > .absolute.top-3.right-3 {
+    display: none !important;
+  }
+
+  /* Set proper print margins */
+  @page {
+    margin: 0.5in;
+    size: auto;
+  }
+
+  /* Avoid breaking inside paragraphs and headings */
+  [data-doc-editor-root] p,
+  [data-doc-editor-root] h1,
+  [data-doc-editor-root] h2,
+  [data-doc-editor-root] h3 {
+    orphans: 3;
+    widows: 3;
+  }
+
+  /* Don't break after headings */
+  [data-doc-editor-root] h1,
+  [data-doc-editor-root] h2,
+  [data-doc-editor-root] h3 {
+    page-break-after: avoid;
+    break-after: avoid;
+  }
+
+  /* Tables: avoid breaking inside rows */
+  [data-doc-editor-root] tr {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  /* Images: avoid breaking */
+  [data-doc-editor-root] img {
+    page-break-inside: avoid;
+    break-inside: avoid;
+    max-width: 100% !important;
+  }
+
+  /* Make links show URL for print (optional, keeps doc clean) */
+  [data-doc-editor-root] a {
+    color: black !important;
+    text-decoration: underline !important;
+  }
+
+  /* Hide any open toasts */
+  [role="status"],
+  .fixed.bottom-4,
+  .fixed.top-4 {
+    display: none !important;
+  }
+
+  /* Ensure the main flex container fills the page */
+  [data-doc-editor-root] > .flex.flex-1 {
+    display: block !important;
+  }
+
+  /* The page surface (scroll container) should not scroll in print */
+  [data-doc-editor-root] .overflow-auto,
+  [data-doc-editor-root] .overflow-y-auto,
+  [data-doc-editor-root] .overflow-hidden {
+    overflow: visible !important;
+  }
+
+  /* Main content area: remove all padding for clean print */
+  main, [role="main"] {
+    padding: 0 !important;
+    margin: 0 !important;
+    overflow: visible !important;
+  }
+
+  /* Remove negative margin hacks from the doc editor wrapper */
+  main > div {
+    margin: 0 !important;
+    padding: 0 !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  /* Ensure h-screen containers don't constrain print */
+  .h-screen, .h-\[calc\(100vh-64px\)\] {
+    height: auto !important;
+    overflow: visible !important;
+  }
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+ *  DocEditor View Menu — 2026 Micro-Interactions & Animations
+ * ════════════════════════════════════════════════════════════════════════════ */
+
+/* Spring slide-in for ruler / outline when toggled visible */
+@keyframes doc-slide-in-down {
+  from { opacity: 0; transform: translateY(-8px) scaleY(0.95); }
+  to   { opacity: 1; transform: translateY(0) scaleY(1); }
+}
+@keyframes doc-slide-in-left {
+  from { opacity: 0; transform: translateX(-12px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes doc-fade-in-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+[data-doc-ruler-container] {
+  animation: doc-slide-in-down 200ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+[data-doc-outline-panel] {
+  animation: doc-slide-in-left 200ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* View menu panel entrance */
+[data-doc-view-menu-panel] {
+  animation: doc-fade-in-up 150ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Fullscreen floating pill menu */
+@keyframes doc-pill-slide-down {
+  from { opacity: 0; transform: translateX(-50%) translateY(-100%); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+@keyframes doc-pill-slide-up {
+  from { opacity: 1; transform: translateX(-50%) translateY(0); }
+  to   { opacity: 0; transform: translateX(-50%) translateY(-100%); }
+}
+[data-doc-floating-pill] {
+  animation: doc-pill-slide-down 250ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+[data-doc-floating-pill].hiding {
+  animation: doc-pill-slide-up 200ms ease-in forwards;
+}
+
+/* Mobile bottom sheet entrance */
+@keyframes doc-sheet-up {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+[data-doc-view-bottom-sheet] {
+  animation: doc-sheet-up 300ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Mobile bottom sheet backdrop */
+@keyframes doc-sheet-backdrop {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+[data-doc-view-sheet-backdrop] {
+  animation: doc-sheet-backdrop 200ms ease;
+}
+
+/* Comment system animations */
+@keyframes doc-comment-slide-in {
+  from { opacity: 0; transform: translateX(12px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+@keyframes doc-comment-popover-in {
+  from { opacity: 0; transform: scale(0.95) translateY(-4px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+[data-doc-comments-panel] {
+  animation: doc-comment-slide-in 200ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+[data-doc-comment-popover] {
+  animation: doc-comment-popover-in 150ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+[data-doc-comment-card] {
+  animation: doc-fade-in-up 200ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+mark[data-doc-comment-highlight] {
+  transition: background-color 0.2s ease;
+}
+mark[data-doc-comment-highlight]:hover {
+  background-color: rgba(59, 130, 246, 0.35) !important;
+}
+
+/* Equation toolbar slide-down animation */
+@keyframes doc-equation-slide-down {
+  from { opacity: 0; transform: translateY(-8px); max-height: 0; }
+  to { opacity: 1; transform: translateY(0); max-height: 100px; }
+}
+[data-doc-equation-toolbar] {
+  animation: doc-equation-slide-down 200ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Floating margin bubble pop-in */
+@keyframes doc-bubble-pop {
+  from { opacity: 0; transform: scale(0.5); }
+  to { opacity: 1; transform: scale(1); }
+}
+[data-doc-margin-bubble] {
+  animation: doc-bubble-pop 150ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Comment card glass-morphism hover glow */
+[data-doc-comment-card]:hover {
+  border-color: rgba(59, 130, 246, 0.2);
+  box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.05), 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+/* Mobile comments bottom sheet slide-up */
+@keyframes doc-comments-sheet-up {
+  from { opacity: 0; transform: translateY(100%); }
+  to { opacity: 1; transform: translateY(0); }
+}
+[data-doc-comments-mobile-sheet] {
+  animation: doc-comments-sheet-up 300ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Resolved comment fade-out animation — only in open filter (collapses card after resolve) */
+@keyframes doc-comment-resolve-fade {
+  0% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(0.98); }
+  100% { opacity: 0.4; transform: scale(0.96); max-height: 0; padding: 0; margin: 0; overflow: hidden; }
+}
+[data-doc-comment-card][data-resolved="true"][data-filter-fade="true"] {
+  animation: doc-comment-resolve-fade 400ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* Comment card active/focused state glow */
+[data-doc-comment-card][data-active="true"] {
+  border-color: rgba(59, 130, 246, 0.4);
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1), 0 4px 12px rgba(59, 130, 246, 0.08);
+}
+
+/* Floating comment cards — Mode A animations */
+@keyframes doc-floating-card-in {
+  from { opacity: 0; transform: translateX(8px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+[data-doc-floating-pill] {
+  animation: doc-floating-card-in 250ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Floating comments panel slide-in */
+@keyframes doc-floating-panel-in {
+  from { opacity: 0; transform: translateX(16px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+[data-doc-floating-comments] {
+  animation: doc-floating-panel-in 300ms cubic-bezier(0.22, 1, 0.36, 1);
+  border-left: 1px solid rgba(229, 231, 235, 0.6);
+  background: linear-gradient(180deg, rgba(249, 250, 251, 0.5) 0%, rgba(255, 255, 255, 0.3) 100%);
+}
+:is(.dark) [data-doc-floating-comments] {
+  border-left-color: rgba(55, 65, 81, 0.4);
+  background: linear-gradient(180deg, rgba(17, 24, 39, 0.3) 0%, rgba(17, 24, 39, 0.1) 100%);
+}
+
+/* ── Doc editor images: always fit within page bounds ── */
+[data-doc-editor-root] [contenteditable] img {
+  max-width: 100% !important;
+  height: auto !important;
+  object-fit: contain;
+  display: block;
+}
+
+/* ── Ensure image wrapper paragraphs don't clip their content ── */
+[data-doc-editor-root] [contenteditable] p:has(> img) {
+  max-width: 100%;
+  overflow: visible;
+}
+
+/* ── Image upload spinner keyframe (used by inline SVG in ghost placeholder) ── */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Electric Indigo pulsating glow for selected images ── */
+@keyframes image-select-pulse {
+  0%, 100% { box-shadow: 0 0 0 2px rgba(99,102,241,0.25), 0 0 12px 2px rgba(99,102,241,0.15); }
+  50% { box-shadow: 0 0 0 3px rgba(99,102,241,0.35), 0 0 20px 4px rgba(99,102,241,0.2); }
+}
+
+/* ── Spring entrance for image contextual toolbar ── */
+@keyframes image-toolbar-spring {
+  from { opacity: 0; transform: translateY(8px) scale(0.95); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ── Smooth fade-in for newly inserted images ── */
+@keyframes image-fade-in {
+  from { opacity: 0; transform: scale(0.97); }
+  to { opacity: 1; transform: scale(1); }
+}
+img[data-doc-image] {
+  animation: image-fade-in 0.3s ease-out both;
+}
+
+/* ── Neon-pulse border for drag-and-drop zone ── */
+@keyframes drop-zone-pulse {
+  0%, 100% { border-color: rgba(99,102,241,0.6); box-shadow: 0 0 16px 2px rgba(99,102,241,0.15); }
+  50% { border-color: rgba(99,102,241,1); box-shadow: 0 0 24px 4px rgba(99,102,241,0.3); }
+}
+
+/* ── Accessibility preferences (Tools → Accessibility) ── */
+.a11y-large-text { font-size: 108%; }
+.a11y-high-contrast { filter: contrast(1.18) saturate(1.05); }
+.a11y-reduce-motion *,
+.a11y-reduce-motion *::before,
+.a11y-reduce-motion *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+  scroll-behavior: auto !important;
 }

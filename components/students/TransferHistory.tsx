@@ -34,7 +34,7 @@ export default function TransferHistory({ history }: TransferHistoryProps) {
     <div className="space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
-        <h3 className="text-lg font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+        <h3 className="text-lg font-bold text-ink">
           Transfer History
         </h3>
         <span className="px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300">
@@ -45,7 +45,7 @@ export default function TransferHistory({ history }: TransferHistoryProps) {
       {/* Timeline */}
       <div className="relative">
         {/* Vertical line */}
-        <div className="absolute left-[21px] top-[28px] bottom-[28px] w-0.5 bg-gray-200 dark:bg-gray-700 midnight:bg-cyan-500/20 purple:bg-pink-500/20" />
+        <div className="absolute left-[21px] top-[28px] bottom-[28px] w-0.5 bg-gray-200 dark:bg-[#22262e] midnight:bg-cyan-500/20 purple:bg-pink-500/20" />
 
         {/* Transfer records */}
         <div className="space-y-6">
@@ -69,7 +69,7 @@ interface TransferRecordCardProps {
   isLast: boolean;
 }
 
-function TransferRecordCard({ transfer, isFirst, isLast }: TransferRecordCardProps) {
+function TransferRecordCard({ transfer, isFirst: _isFirst, isLast: _isLast }: TransferRecordCardProps) {
   const getStatusConfig = (status: TransferRecord["status"]) => {
     switch (status) {
       case "completed":
@@ -116,7 +116,7 @@ function TransferRecordCard({ transfer, isFirst, isLast }: TransferRecordCardPro
         return {
           icon: AlertCircle,
           color: "text-gray-600 dark:text-gray-400",
-          bg: "bg-gray-100 dark:bg-gray-900/30",
+          bg: "bg-gray-100 dark:bg-[#0f1115]/30",
           border: "border-gray-300 dark:border-gray-700",
           label: "Cancelled",
         };
@@ -124,7 +124,7 @@ function TransferRecordCard({ transfer, isFirst, isLast }: TransferRecordCardPro
         return {
           icon: AlertCircle,
           color: "text-gray-600 dark:text-gray-400",
-          bg: "bg-gray-100 dark:bg-gray-900/30",
+          bg: "bg-gray-100 dark:bg-[#0f1115]/30",
           border: "border-gray-300 dark:border-gray-700",
           label: status,
         };
@@ -155,20 +155,20 @@ function TransferRecordCard({ transfer, isFirst, isLast }: TransferRecordCardPro
     <div className="relative pl-14">
       {/* Status Icon */}
       <div
-        className={`absolute left-0 top-2 w-11 h-11 rounded-full ${statusConfig.bg} border-4 border-white dark:border-gray-800 midnight:border-gray-900 purple:border-gray-900 flex items-center justify-center shadow-md`}
+        className={`absolute left-0 top-2 w-11 h-11 rounded-full ${statusConfig.bg} border-4 border-white dark:border-[#1a1d24] midnight:border-gray-900 purple:border-gray-900 flex items-center justify-center shadow-md`}
       >
         <StatusIcon className={`w-5 h-5 ${statusConfig.color}`} />
       </div>
 
       {/* Card */}
       <div
-        className={`p-4 rounded-lg border-2 ${statusConfig.border} bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 hover:shadow-md transition-all`}
+        className={`p-4 rounded-lg border-2 ${statusConfig.border} bg-surface hover:shadow-md transition-all`}
       >
         {/* Header */}
         <div className="flex items-start justify-between mb-3">
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <h4 className="font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+              <h4 className="font-semibold text-ink">
                 {getTransferTypeLabel(transfer.transferType)}
               </h4>
               <span
@@ -251,7 +251,7 @@ function TransferRecordCard({ transfer, isFirst, isLast }: TransferRecordCardPro
         </div>
 
         {/* Reason */}
-        <div className="p-3 rounded-lg bg-gray-50 dark:bg-gray-700 midnight:bg-gray-800 purple:bg-gray-800 border border-gray-200 dark:border-gray-600 midnight:border-cyan-500/20 purple:border-pink-500/20">
+        <div className="p-3 rounded-lg bg-gray-50 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] border border-gray-200 dark:border-gray-600 midnight:border-cyan-500/20 purple:border-pink-500/20">
           <div className="flex items-start gap-2">
             <FileText className="w-4 h-4 text-gray-500 dark:text-gray-400 mt-0.5 flex-shrink-0" />
             <p className="text-sm text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300">
@@ -261,7 +261,7 @@ function TransferRecordCard({ transfer, isFirst, isLast }: TransferRecordCardPro
         </div>
 
         {/* Footer Info */}
-        <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+        <div className="mt-3 pt-3 border-t border-line">
           <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
             <div className="flex items-center gap-2">
               <User className="w-3 h-3" />

@@ -1,8 +1,9 @@
 "use client";
 
 import Image from "next/image";
-import { Lock, Phone, Mail } from "lucide-react";
+import { Phone, Mail, Video, MessageSquare } from "lucide-react";
 import Tooltip from "@/components/shared/Tooltip";
+import { useCall } from "@/hooks/useCall";
 
 interface ParentCardProps {
   name: string;
@@ -10,6 +11,7 @@ interface ParentCardProps {
   phone: string;
   email: string;
   photoUrl: string | null;
+  parentId?: string; // Optional ID for the parent
 }
 
 export default function ParentCard({
@@ -18,9 +20,40 @@ export default function ParentCard({
   phone,
   email,
   photoUrl,
+  parentId,
 }: ParentCardProps) {
+  const { startVideoCall, startVoiceCall, startChat } = useCall();
+
   // Clean phone number for tel: link (remove spaces and special chars except +)
   const cleanPhoneNumber = phone?.replace(/\s+/g, "").replace(/[^\d+]/g, "") || "";
+
+  // Create participant object for calls
+  const parentParticipant = {
+    id: parentId || `parent-${name.replace(/\s/g, "-").toLowerCase()}`,
+    name,
+    avatar: photoUrl || undefined,
+    role,
+    phone,
+    email,
+  };
+
+  const handleVideoCall = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    startVideoCall(parentParticipant, { callContext: `Video call with ${name}` });
+  };
+
+  const handleVoiceCall = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    startVoiceCall(parentParticipant, { callContext: `Voice call with ${name}` });
+  };
+
+  const handleChat = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    startChat(parentParticipant, { callContext: `Chat with ${name}` });
+  };
 
   return (
     <div className="group bg-gradient-to-br from-white to-gray-50/30 dark:from-gray-800 dark:to-gray-800/50 midnight:from-gray-800 midnight:to-gray-900/50 purple:from-gray-800 purple:to-gray-900/50 rounded-xl sm:rounded-2xl shadow-sm border border-gray-200/60 dark:border-gray-700/60 midnight:border-cyan-500/30 purple:border-pink-500/30 p-3 sm:p-5 transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/10 dark:hover:shadow-blue-500/20 midnight:hover:shadow-cyan-500/20 purple:hover:shadow-pink-500/20 hover:border-blue-300/60 dark:hover:border-blue-600/60 midnight:hover:border-cyan-400/60 purple:hover:border-pink-400/60 hover:-translate-y-0.5">
@@ -46,16 +79,37 @@ export default function ParentCard({
             </div>
           )}
           <div className="flex flex-col flex-1 min-w-0">
-            <span className="text-xs sm:text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 leading-tight truncate">
+            <span className="text-xs sm:text-sm font-bold text-ink leading-tight truncate">
               {name}
             </span>
-            <span className="text-[10px] sm:text-xs font-medium text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 leading-tight mt-0.5">
+            <span className="text-[0.625rem] sm:text-xs font-medium text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 leading-tight mt-0.5">
               {role}
             </span>
           </div>
-          <button className="w-7 h-7 sm:w-9 sm:h-9 bg-gradient-to-br from-blue-600 to-blue-700 dark:from-blue-500 dark:to-blue-600 midnight:from-cyan-600 midnight:to-cyan-700 purple:from-pink-600 purple:to-pink-700 rounded-xl flex items-center justify-center flex-shrink-0 hover:from-blue-700 hover:to-blue-800 dark:hover:from-blue-600 dark:hover:to-blue-700 midnight:hover:from-cyan-700 midnight:hover:to-cyan-800 purple:hover:from-pink-700 purple:hover:to-pink-800 shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/50 dark:shadow-blue-500/40 dark:hover:shadow-blue-500/60 midnight:shadow-cyan-500/30 midnight:hover:shadow-cyan-500/50 purple:shadow-pink-500/30 purple:hover:shadow-pink-500/50 active:scale-95 transition-all duration-300 cursor-pointer group/lock">
-            <Lock className="w-3 h-3 sm:w-4 sm:h-4 text-white transition-transform duration-300 group-hover/lock:scale-110" />
-          </button>
+          {/* Call Action Buttons */}
+          <div className="flex items-center gap-1">
+            <button
+              onClick={handleVideoCall}
+              className="w-7 h-7 sm:w-8 sm:h-8 bg-gradient-to-br from-blue-600 to-blue-700 dark:from-blue-500 dark:to-blue-600 midnight:from-cyan-600 midnight:to-cyan-700 purple:from-pink-600 purple:to-pink-700 rounded-lg flex items-center justify-center flex-shrink-0 hover:from-blue-700 hover:to-blue-800 dark:hover:from-blue-600 dark:hover:to-blue-700 midnight:hover:from-cyan-700 midnight:hover:to-cyan-800 purple:hover:from-pink-700 purple:hover:to-pink-800 shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/50 dark:shadow-blue-500/40 dark:hover:shadow-blue-500/60 midnight:shadow-cyan-500/30 midnight:hover:shadow-cyan-500/50 purple:shadow-pink-500/30 purple:hover:shadow-pink-500/50 active:scale-95 transition-all duration-300 cursor-pointer"
+              title="Video Call"
+            >
+              <Video className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-white" />
+            </button>
+            <button
+              onClick={handleVoiceCall}
+              className="w-7 h-7 sm:w-8 sm:h-8 bg-gradient-to-br from-emerald-600 to-emerald-700 dark:from-emerald-500 dark:to-emerald-600 midnight:from-emerald-600 midnight:to-emerald-700 purple:from-emerald-600 purple:to-emerald-700 rounded-lg flex items-center justify-center flex-shrink-0 hover:from-emerald-700 hover:to-emerald-800 dark:hover:from-emerald-600 dark:hover:to-emerald-700 shadow-lg shadow-emerald-500/30 hover:shadow-xl hover:shadow-emerald-500/50 active:scale-95 transition-all duration-300 cursor-pointer"
+              title="Voice Call"
+            >
+              <Phone className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-white" />
+            </button>
+            <button
+              onClick={handleChat}
+              className="w-7 h-7 sm:w-8 sm:h-8 bg-gradient-to-br from-purple-600 to-purple-700 dark:from-purple-500 dark:to-purple-600 midnight:from-purple-600 midnight:to-purple-700 purple:from-pink-600 purple:to-pink-700 rounded-lg flex items-center justify-center flex-shrink-0 hover:from-purple-700 hover:to-purple-800 dark:hover:from-purple-600 dark:hover:to-purple-700 shadow-lg shadow-purple-500/30 hover:shadow-xl hover:shadow-purple-500/50 active:scale-95 transition-all duration-300 cursor-pointer"
+              title="Chat"
+            >
+              <MessageSquare className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-white" />
+            </button>
+          </div>
         </div>
 
         {/* Contact Information: Two Columns - Compact */}
@@ -69,11 +123,11 @@ export default function ParentCard({
               <div className="w-4 h-4 sm:w-6 sm:h-6 rounded-lg bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-900/40 dark:to-blue-900/20 midnight:from-blue-900/40 midnight:to-blue-900/20 purple:from-blue-900/40 purple:to-blue-900/20 flex items-center justify-center flex-shrink-0 group-hover/phone:from-blue-200 group-hover/phone:to-blue-300 dark:group-hover/phone:from-blue-900/60 dark:group-hover/phone:to-blue-900/40 transition-all duration-300 group-hover/phone:scale-110 shadow-sm">
                 <Phone className="w-2 h-2 sm:w-3 sm:h-3 text-blue-600 dark:text-blue-400 midnight:text-blue-400 purple:text-blue-400 transition-transform duration-300 group-hover/phone:scale-110" />
               </div>
-              <span className="text-[10px] sm:text-xs font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-300/80 purple:text-pink-300/80">
+              <span className="text-[0.625rem] sm:text-xs font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-300/80 purple:text-pink-300/80">
                 Phone
               </span>
             </div>
-            <span className="text-[10px] sm:text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 break-words leading-tight group-hover/phone:text-blue-600 dark:group-hover/phone:text-blue-400 midnight:group-hover/phone:text-cyan-400 purple:group-hover/phone:text-pink-400 transition-colors duration-300">
+            <span className="text-[0.625rem] sm:text-sm font-semibold text-ink break-words leading-tight group-hover/phone:text-blue-600 dark:group-hover/phone:text-blue-400 midnight:group-hover/phone:text-cyan-400 purple:group-hover/phone:text-pink-400 transition-colors duration-300">
               {phone}
             </span>
           </a>
@@ -87,12 +141,12 @@ export default function ParentCard({
               <div className="w-4 h-4 sm:w-6 sm:h-6 rounded-lg bg-gradient-to-br from-purple-100 to-purple-200 dark:from-purple-900/40 dark:to-purple-900/20 midnight:from-purple-900/40 midnight:to-purple-900/20 purple:from-purple-900/40 purple:to-purple-900/20 flex items-center justify-center flex-shrink-0 group-hover/email:from-purple-200 group-hover/email:to-purple-300 dark:group-hover/email:from-purple-900/60 dark:group-hover/email:to-purple-900/40 transition-all duration-300 group-hover/email:scale-110 shadow-sm">
                 <Mail className="w-2 h-2 sm:w-3 sm:h-3 text-purple-600 dark:text-purple-400 midnight:text-purple-400 purple:text-purple-400 transition-transform duration-300 group-hover/email:scale-110" />
               </div>
-              <span className="text-[10px] sm:text-xs font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-300/80 purple:text-pink-300/80">
+              <span className="text-[0.625rem] sm:text-xs font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-300/80 purple:text-pink-300/80">
                 Email
               </span>
             </div>
             <Tooltip content={email}>
-              <span className="text-[10px] sm:text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate leading-tight group-hover/email:text-purple-600 dark:group-hover/email:text-purple-400 midnight:group-hover/email:text-purple-400 purple:group-hover/email:text-pink-400 transition-colors duration-300 block">
+              <span className="text-[0.625rem] sm:text-sm font-semibold text-ink truncate leading-tight group-hover/email:text-purple-600 dark:group-hover/email:text-purple-400 midnight:group-hover/email:text-purple-400 purple:group-hover/email:text-pink-400 transition-colors duration-300 block">
                 {email}
               </span>
             </Tooltip>
@@ -122,10 +176,10 @@ export default function ParentCard({
             </div>
           )}
           <div className="flex flex-col min-w-0 flex-1">
-            <span className="text-xs lg:text-sm xl:text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 leading-tight truncate">
+            <span className="text-xs lg:text-sm xl:text-sm font-bold text-ink leading-tight truncate">
               {name}
             </span>
-            <span className="text-[10px] lg:text-xs xl:text-xs font-medium text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 leading-tight mt-0.5">
+            <span className="text-[0.625rem] lg:text-xs xl:text-xs font-medium text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 leading-tight mt-0.5">
               {role}
             </span>
           </div>
@@ -141,11 +195,11 @@ export default function ParentCard({
               <div className="w-5 h-5 lg:w-6 lg:h-6 rounded-lg bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-900/40 dark:to-blue-900/20 midnight:from-blue-900/40 midnight:to-blue-900/20 purple:from-blue-900/40 purple:to-blue-900/20 flex items-center justify-center flex-shrink-0 group-hover/phone:from-blue-200 group-hover/phone:to-blue-300 dark:group-hover/phone:from-blue-900/60 dark:group-hover/phone:to-blue-900/40 transition-all duration-300 group-hover/phone:scale-110 shadow-sm">
                 <Phone className="w-2.5 h-2.5 lg:w-3 lg:h-3 text-blue-600 dark:text-blue-400 midnight:text-blue-400 purple:text-blue-400 transition-transform duration-300 group-hover/phone:scale-110" />
               </div>
-              <span className="text-[10px] lg:text-xs xl:text-xs font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-300/80 purple:text-pink-300/80">
+              <span className="text-[0.625rem] lg:text-xs xl:text-xs font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-300/80 purple:text-pink-300/80">
                 Phone
               </span>
             </div>
-            <span className="text-xs lg:text-sm xl:text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 break-words leading-tight group-hover/phone:text-blue-600 dark:group-hover/phone:text-blue-400 midnight:group-hover/phone:text-cyan-400 purple:group-hover/phone:text-pink-400 transition-colors duration-300">
+            <span className="text-xs lg:text-sm xl:text-sm font-semibold text-ink break-words leading-tight group-hover/phone:text-blue-600 dark:group-hover/phone:text-blue-400 midnight:group-hover/phone:text-cyan-400 purple:group-hover/phone:text-pink-400 transition-colors duration-300">
               {phone}
             </span>
           </a>
@@ -161,19 +215,40 @@ export default function ParentCard({
               <div className="w-5 h-5 lg:w-6 lg:h-6 rounded-lg bg-gradient-to-br from-purple-100 to-purple-200 dark:from-purple-900/40 dark:to-purple-900/20 midnight:from-purple-900/40 midnight:to-purple-900/20 purple:from-purple-900/40 purple:to-purple-900/20 flex items-center justify-center flex-shrink-0 group-hover/email:from-purple-200 group-hover/email:to-purple-300 dark:group-hover/email:from-purple-900/60 dark:group-hover/email:to-purple-900/40 transition-all duration-300 group-hover/email:scale-110 shadow-sm">
                 <Mail className="w-2.5 h-2.5 lg:w-3 lg:h-3 text-purple-600 dark:text-purple-400 midnight:text-purple-400 purple:text-purple-400 transition-transform duration-300 group-hover/email:scale-110" />
               </div>
-              <span className="text-[10px] lg:text-xs xl:text-xs font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-300/80 purple:text-pink-300/80">
+              <span className="text-[0.625rem] lg:text-xs xl:text-xs font-medium text-gray-600 dark:text-gray-400 midnight:text-cyan-300/80 purple:text-pink-300/80">
                 Email
               </span>
             </div>
             <Tooltip content={email}>
-              <span className="text-xs lg:text-sm xl:text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 truncate leading-tight group-hover/email:text-purple-600 dark:group-hover/email:text-purple-400 midnight:group-hover/email:text-purple-400 purple:group-hover/email:text-pink-400 transition-colors duration-300 block">
+              <span className="text-xs lg:text-sm xl:text-sm font-semibold text-ink truncate leading-tight group-hover/email:text-purple-600 dark:group-hover/email:text-purple-400 midnight:group-hover/email:text-purple-400 purple:group-hover/email:text-pink-400 transition-colors duration-300 block">
                 {email}
               </span>
             </Tooltip>
           </a>
-          <button className="w-7 h-7 lg:w-9 lg:h-9 bg-gradient-to-br from-blue-600 to-blue-700 dark:from-blue-500 dark:to-blue-600 midnight:from-cyan-600 midnight:to-cyan-700 purple:from-pink-600 purple:to-pink-700 rounded-xl flex items-center justify-center flex-shrink-0 hover:from-blue-700 hover:to-blue-800 dark:hover:from-blue-600 dark:hover:to-blue-700 midnight:hover:from-cyan-700 midnight:hover:to-cyan-800 purple:hover:from-pink-700 purple:hover:to-pink-800 shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/50 dark:shadow-blue-500/40 dark:hover:shadow-blue-500/60 midnight:shadow-cyan-500/30 midnight:hover:shadow-cyan-500/50 purple:shadow-pink-500/30 purple:hover:shadow-pink-500/50 active:scale-95 transition-all duration-300 cursor-pointer self-start mt-2 lg:mt-2.5 group/lock">
-            <Lock className="w-3.5 h-3.5 lg:w-4 lg:h-4 text-white transition-transform duration-300 group-hover/lock:scale-110" />
-          </button>
+          {/* Call Action Buttons */}
+          <div className="flex flex-col gap-1.5 self-start mt-2 lg:mt-2.5">
+            <button
+              onClick={handleVideoCall}
+              className="w-8 h-8 lg:w-9 lg:h-9 bg-gradient-to-br from-blue-600 to-blue-700 dark:from-blue-500 dark:to-blue-600 midnight:from-cyan-600 midnight:to-cyan-700 purple:from-pink-600 purple:to-pink-700 rounded-xl flex items-center justify-center flex-shrink-0 hover:from-blue-700 hover:to-blue-800 dark:hover:from-blue-600 dark:hover:to-blue-700 midnight:hover:from-cyan-700 midnight:hover:to-cyan-800 purple:hover:from-pink-700 purple:hover:to-pink-800 shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/50 dark:shadow-blue-500/40 dark:hover:shadow-blue-500/60 midnight:shadow-cyan-500/30 midnight:hover:shadow-cyan-500/50 purple:shadow-pink-500/30 purple:hover:shadow-pink-500/50 active:scale-95 transition-all duration-300 cursor-pointer"
+              title="Video Call"
+            >
+              <Video className="w-4 h-4 lg:w-4.5 lg:h-4.5 text-white" />
+            </button>
+            <button
+              onClick={handleVoiceCall}
+              className="w-8 h-8 lg:w-9 lg:h-9 bg-gradient-to-br from-emerald-600 to-emerald-700 dark:from-emerald-500 dark:to-emerald-600 rounded-xl flex items-center justify-center flex-shrink-0 hover:from-emerald-700 hover:to-emerald-800 dark:hover:from-emerald-600 dark:hover:to-emerald-700 shadow-lg shadow-emerald-500/30 hover:shadow-xl hover:shadow-emerald-500/50 active:scale-95 transition-all duration-300 cursor-pointer"
+              title="Voice Call"
+            >
+              <Phone className="w-4 h-4 lg:w-4.5 lg:h-4.5 text-white" />
+            </button>
+            <button
+              onClick={handleChat}
+              className="w-8 h-8 lg:w-9 lg:h-9 bg-gradient-to-br from-purple-600 to-purple-700 dark:from-purple-500 dark:to-purple-600 rounded-xl flex items-center justify-center flex-shrink-0 hover:from-purple-700 hover:to-purple-800 dark:hover:from-purple-600 dark:hover:to-purple-700 shadow-lg shadow-purple-500/30 hover:shadow-xl hover:shadow-purple-500/50 active:scale-95 transition-all duration-300 cursor-pointer"
+              title="Chat"
+            >
+              <MessageSquare className="w-4 h-4 lg:w-4.5 lg:h-4.5 text-white" />
+            </button>
+          </div>
         </div>
       </div>
     </div>

@@ -1,12 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import MainLayout from "@/components/layout/MainLayout";
-import { Settings, Save, RotateCcw, Search, Filter } from "lucide-react";
+import { DashboardPage } from "@/components/pages";
+import { Save, RotateCcw, Search, Filter } from "lucide-react";
 import { useFeatureFlags } from "@/hooks/useFeatureFlags";
 import { DEFAULT_FEATURE_FLAGS, type FeatureFlagKey } from "@/lib/featureFlags";
-import type { EducationLevel, InstitutionType } from "@/contexts/SchoolSettingsContext";
-
 export default function FeatureFlagsAdminPage() {
   const { tenantContext } = useFeatureFlags();
   const [searchQuery, setSearchQuery] = useState("");
@@ -84,40 +82,37 @@ export default function FeatureFlagsAdminPage() {
 
   if (!isMounted) {
     return (
-      <MainLayout>
-        <div className="flex items-center justify-center h-full">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <p className="text-gray-600 dark:text-gray-400">Loading feature flags...</p>
-          </div>
-        </div>
-      </MainLayout>
+      <DashboardPage
+        title="Feature Flags"
+        description="Enable or disable features for this tenant"
+        breadcrumbs={[
+          { label: "Admin", href: "/admin" },
+          { label: "Feature Flags", isActive: true },
+        ]}
+        loadingText="Loading feature flags..."
+      />
     );
   }
 
   return (
-    <MainLayout>
-      <div className="flex flex-col h-full">
-        {/* Header */}
-        <div className="w-full lg:w-auto lg:flex-shrink-0 p-6 pb-4 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/30 purple:border-pink-500/30">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-3">
-              <Settings className="w-8 h-8 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
-              <div>
-                <h1 className="text-xl lg:text-2xl font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
-                  Feature Flags Management
-                </h1>
-                <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70">
-                  Enable or disable features for this tenant
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-3">
+    <DashboardPage
+      title="Feature Flags"
+      description="Enable or disable features for this tenant"
+      breadcrumbs={[
+        { label: "Admin", href: "/admin" },
+        { label: "Feature Flags", isActive: true },
+      ]}
+      loadingText="Loading feature flags..."
+      afterStats={
+        <div className="mt-6 flex flex-col h-full">
+          {/* Actions + Tenant Info */}
+          <div className="w-full lg:w-auto lg:flex-shrink-0 p-6 pb-4 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/30 purple:border-pink-500/30">
+            <div className="flex items-center justify-end mb-4">
+              <div className="flex items-center gap-3">
               {hasChanges && (
                 <button
                   onClick={handleReset}
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 transition-all cursor-pointer"
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm text-gray-700 dark:text-gray-300 bg-white dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 hover:bg-gray-50 dark:hover:bg-[#2a2d35] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-all cursor-pointer"
                 >
                   <RotateCcw className="w-4 h-4" />
                   Reset
@@ -145,7 +140,7 @@ export default function FeatureFlagsAdminPage() {
                 <p className="text-xs text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70 font-semibold mb-1">
                   Tenant ID
                 </p>
-                <p className="text-sm font-mono text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                <p className="text-sm font-mono text-ink">
                   {tenantContext.tenantId}
                 </p>
               </div>
@@ -153,7 +148,7 @@ export default function FeatureFlagsAdminPage() {
                 <p className="text-xs text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70 font-semibold mb-1">
                   Region
                 </p>
-                <p className="text-sm font-mono text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                <p className="text-sm font-mono text-ink">
                   {tenantContext.region}
                 </p>
               </div>
@@ -161,7 +156,7 @@ export default function FeatureFlagsAdminPage() {
                 <p className="text-xs text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70 font-semibold mb-1">
                   Education Level
                 </p>
-                <p className="text-sm font-mono text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                <p className="text-sm font-mono text-ink">
                   {tenantContext.educationLevel}
                 </p>
               </div>
@@ -169,12 +164,12 @@ export default function FeatureFlagsAdminPage() {
                 <p className="text-xs text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70 font-semibold mb-1">
                   Institution Type
                 </p>
-                <p className="text-sm font-mono text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                <p className="text-sm font-mono text-ink">
                   {tenantContext.institutionType}
                 </p>
               </div>
             </div>
-            <div className="text-center px-4 py-2 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+            <div className="text-center px-4 py-2 bg-surface rounded-lg border border-line">
               <p className="text-2xl font-bold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400">
                 {enabledCount}/{totalCount}
               </p>
@@ -195,7 +190,7 @@ export default function FeatureFlagsAdminPage() {
                 placeholder="Search feature flags..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
             <div className="flex items-center gap-2">
@@ -203,7 +198,7 @@ export default function FeatureFlagsAdminPage() {
               <select
                 value={categoryFilter}
                 onChange={(e) => setCategoryFilter(e.target.value)}
-                className="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent cursor-pointer"
+                className="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 focus:ring-2 focus:ring-blue-500 focus:border-transparent cursor-pointer"
               >
                 <option value="all">All Categories</option>
                 {Object.keys(categories).map((cat) => (
@@ -233,7 +228,7 @@ export default function FeatureFlagsAdminPage() {
 
               return (
                 <div key={category}>
-                  <h2 className="text-lg font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-4 flex items-center justify-between">
+                  <h2 className="text-lg font-bold text-ink mb-4 flex items-center justify-between">
                     <span>{category}</span>
                     <span className="text-sm font-normal text-gray-500 dark:text-gray-400">
                       {categoryFlags.filter((f) => localFlags[f]).length}/{categoryFlags.length} enabled
@@ -251,7 +246,7 @@ export default function FeatureFlagsAdminPage() {
                           className={`p-4 rounded-lg border transition-all ${
                             isEnabled
                               ? "bg-green-50 dark:bg-green-900/10 border-green-300 dark:border-green-700 midnight:bg-green-900/10 midnight:border-green-700 purple:bg-green-900/10 purple:border-green-700"
-                              : "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 midnight:bg-gray-800 midnight:border-gray-700 purple:bg-gray-800 purple:border-gray-700"
+                              : "bg-white dark:bg-[#1a1d24] border-gray-200 dark:border-gray-700 midnight:bg-[#0f1330] midnight:border-gray-700 purple:bg-[#251340] purple:border-gray-700"
                           }`}
                         >
                           <div className="flex items-start justify-between gap-4">
@@ -284,7 +279,7 @@ export default function FeatureFlagsAdminPage() {
                             <button
                               onClick={() => toggleFlag(flagKey)}
                               className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 cursor-pointer ${
-                                isEnabled ? "bg-green-600" : "bg-gray-300 dark:bg-gray-600"
+                                isEnabled ? "bg-green-600" : "bg-gray-300 dark:bg-[#2a2d35] midnight:bg-[#0f1330] purple:bg-[#251340]"
                               }`}
                             >
                               <span
@@ -314,7 +309,7 @@ export default function FeatureFlagsAdminPage() {
               <div className="flex gap-3">
                 <button
                   onClick={handleReset}
-                  className="px-4 py-2 rounded-lg font-medium text-sm text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 transition-all cursor-pointer"
+                  className="px-4 py-2 rounded-lg font-medium text-sm text-gray-700 dark:text-gray-300 bg-white dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 hover:bg-gray-50 dark:hover:bg-[#2a2d35] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-all cursor-pointer"
                 >
                   Cancel
                 </button>
@@ -328,7 +323,8 @@ export default function FeatureFlagsAdminPage() {
             </div>
           </div>
         )}
-      </div>
-    </MainLayout>
+        </div>
+      }
+    />
   );
 }

@@ -1,12 +1,22 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { Trash2, Users2, User, School, ChevronDown, ChevronUp, GraduationCap, MapPin, Plus } from "lucide-react";
+import { Trash2, Users2, User, School, ChevronUp, GraduationCap, MapPin, Plus } from "lucide-react";
 import FormInput from "@/components/shared/FormInput";
 import SearchableDropdown from "@/components/shared/SearchableDropdown";
-import { ValidationErrors } from "@/lib/validation";
+import type { FormSectionProps } from "@/components/shared/form-section-types";
+import type { StudentFormData } from "./types";
 
-interface SiblingAtSchool {
+/** One row from the students endpoint used to populate the sibling picker. */
+interface StudentOption {
+  value: string;
+  label?: string;
+  firstName?: string;
+  lastName?: string;
+  class?: string;
+}
+
+export interface SiblingAtSchool {
   id: string;
   studentId: string;
   firstName: string;
@@ -14,7 +24,7 @@ interface SiblingAtSchool {
   class: string;
 }
 
-interface SiblingAtOtherSchool {
+export interface SiblingAtOtherSchool {
   id: string;
   firstName: string;
   lastName: string;
@@ -22,24 +32,17 @@ interface SiblingAtOtherSchool {
   schoolName: string;
   schoolAddress: string;
 }
-
-interface FormData {
-  siblingsAtSchool: SiblingAtSchool[];
-  siblingsAtOtherSchools: SiblingAtOtherSchool[];
-}
-
-interface SiblingsSectionProps {
-  formData: any;
-  onChange: (field: string, value: any) => void;
-  currentStudentId?: string; // ID of the current student being edited (to exclude from sibling list)
-  errors?: ValidationErrors;
-}
+/** The shared section contract, plus the one prop only this section needs. */
+type SiblingsSectionProps = FormSectionProps<StudentFormData> & {
+  /** ID of the student being edited, so they are not offered as their own sibling. */
+  currentStudentId?: string;
+};
 
 export default function SiblingsSection({
   formData,
   onChange,
   currentStudentId,
-  errors = {},
+  errors: _errors = {},
 }: SiblingsSectionProps) {
   const [isExpanded, setIsExpanded] = useState(true);
   const [selectedStudentId, setSelectedStudentId] = useState("");
@@ -88,7 +91,7 @@ export default function SiblingsSection({
         
         // Cache student details for later use
         const cache: Record<string, { firstName: string; lastName: string; class: string }> = {};
-        data.students.forEach((student: any) => {
+        data.students.forEach((student: StudentOption) => {
           if (student.firstName && student.lastName && student.class) {
             cache[student.value] = {
               firstName: student.firstName,
@@ -190,19 +193,19 @@ export default function SiblingsSection({
   };
 
   return (
-    <section className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm hover:shadow-md transition-shadow duration-200">
+    <section className="bg-surface rounded-xl border border-line shadow-sm hover:shadow-md transition-shadow duration-200">
       {/* Collapsible Header */}
       <button
         type="button"
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full bg-green-50/50 dark:bg-green-900/10 midnight:bg-green-900/10 purple:bg-green-900/10 hover:bg-green-50 dark:hover:bg-green-900/20 midnight:hover:bg-green-900/20 purple:hover:bg-green-900/20 px-6 py-3 flex items-center justify-between transition-all duration-200 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20"
+        className="w-full bg-green-50/50 dark:bg-green-900/10 midnight:bg-green-900/10 purple:bg-green-900/10 hover:bg-green-50 dark:hover:bg-green-900/20 midnight:hover:bg-green-900/20 purple:hover:bg-green-900/20 px-6 py-3 flex items-center justify-between transition-all duration-200 border-b border-line"
       >
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-lg bg-green-100 dark:bg-green-900/30 midnight:bg-green-900/30 purple:bg-green-900/30 flex items-center justify-center">
             <Users2 className="w-4 h-4 text-green-600 dark:text-green-400 midnight:text-green-400 purple:text-green-400" />
           </div>
           <div className="text-left">
-            <h2 className="text-base font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+            <h2 className="text-base font-semibold text-ink">
               Siblings Information
             </h2>
             <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70">
@@ -225,7 +228,7 @@ export default function SiblingsSection({
           isExpanded ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
         }`}
       >
-        <div className="overflow-hidden">
+        <div className={isExpanded ? "overflow-visible" : "overflow-hidden"}>
           <div className="p-4 sm:p-6 space-y-6 sm:space-y-8 lg:space-y-10">
           {/* Siblings at This School */}
           <div className="space-y-6">
@@ -233,7 +236,7 @@ export default function SiblingsSection({
               <div className="w-7 h-7 rounded-lg bg-green-100 dark:bg-green-900/20 midnight:bg-green-900/20 purple:bg-green-900/20 flex items-center justify-center flex-shrink-0">
                 <School className="w-4 h-4 text-green-600 dark:text-green-400 midnight:text-green-400 purple:text-green-400" />
               </div>
-              <h3 className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+              <h3 className="text-sm font-semibold text-ink">
                 Siblings at This School
               </h3>
             </div>
@@ -263,11 +266,11 @@ export default function SiblingsSection({
                 {/* List of Selected Siblings */}
                 <div className="flex-1">
                   {siblingsAtSchool.length > 0 ? (
-                    <div className="border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-lg overflow-hidden overflow-x-auto">
+                    <div className="border border-line rounded-lg overflow-hidden overflow-x-auto">
                       <table className="w-full">
                         {/* Table Header */}
                         <thead>
-                          <tr className="bg-gray-50 dark:bg-gray-800/50 midnight:bg-gray-800/50 purple:bg-gray-800/50 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+                          <tr className="bg-gray-50 dark:bg-[#1a1d24]/50 midnight:bg-[#0f1330]/50 purple:bg-[#251340]/50 border-b border-line">
                             <th className="text-left text-xs font-semibold text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 uppercase tracking-wider px-4 py-3">
                               First Name
                             </th>
@@ -288,15 +291,15 @@ export default function SiblingsSection({
                           {siblingsAtSchool.map((sibling) => (
                             <tr
                               key={sibling.id}
-                              className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800/50 midnight:hover:bg-gray-800/50 purple:hover:bg-gray-800/50 transition-colors"
+                              className="bg-surface hover:bg-gray-50 dark:hover:bg-[#22262e]/50 midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors"
                             >
-                              <td className="text-sm text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 px-4 py-3">
+                              <td className="text-sm text-ink px-4 py-3">
                                 {sibling.firstName}
                               </td>
-                              <td className="text-sm text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 px-4 py-3">
+                              <td className="text-sm text-ink px-4 py-3">
                                 {sibling.lastName}
                               </td>
-                              <td className="text-sm text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 px-4 py-3">
+                              <td className="text-sm text-ink px-4 py-3">
                                 {sibling.class}
                               </td>
                               <td className="text-right px-4 py-3">
@@ -315,7 +318,7 @@ export default function SiblingsSection({
                       </table>
                     </div>
                   ) : (
-                    <div className="text-center py-8 border-2 border-dashed border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-lg">
+                    <div className="text-center py-8 border-2 border-dashed border-line rounded-lg">
                       <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70">
                         No siblings at this school added yet
                       </p>
@@ -332,7 +335,7 @@ export default function SiblingsSection({
               <div className="w-7 h-7 rounded-lg bg-teal-100 dark:bg-teal-900/20 midnight:bg-teal-900/20 purple:bg-teal-900/20 flex items-center justify-center flex-shrink-0">
                 <GraduationCap className="w-4 h-4 text-teal-600 dark:text-teal-400 midnight:text-teal-400 purple:text-teal-400" />
               </div>
-              <h3 className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+              <h3 className="text-sm font-semibold text-ink">
                 Siblings at Other Schools
               </h3>
             </div>
@@ -343,7 +346,7 @@ export default function SiblingsSection({
                   {siblingsAtOtherSchools.map((sibling, index) => (
                     <div
                       key={sibling.id}
-                      className="p-4 rounded-lg border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 shadow-sm"
+                      className="p-4 rounded-lg border border-line bg-surface shadow-sm"
                     >
                       {/* Sibling Header */}
                       <div className="flex items-center justify-between mb-4">
@@ -426,7 +429,7 @@ export default function SiblingsSection({
                   ))}
                 </div>
               ) : (
-                <div className="text-center py-8 border-2 border-dashed border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-lg">
+                <div className="text-center py-8 border-2 border-dashed border-line rounded-lg">
                   <p className="text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70 mb-4">
                     No siblings at other schools added yet
                   </p>

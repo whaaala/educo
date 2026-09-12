@@ -1,5 +1,5 @@
 import { IncidentStatus } from "@/types/discipline";
-import { Clock, Search, CheckCircle, Scale, XCircle } from "lucide-react";
+import { Clock, Search, CheckCircle, Scale, XCircle, FileSearch } from "lucide-react";
 
 interface IncidentStatusBadgeProps {
   status: IncidentStatus;
@@ -23,17 +23,22 @@ export default function IncidentStatusBadge({ status, size = "md" }: IncidentSta
     reported: {
       icon: Clock,
       label: "Reported",
-      className: "bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800",
+      className: "bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900/20 midnight:bg-cyan-900/20 purple:bg-pink-900/20 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 dark:border-blue-800",
     },
     "under-review": {
       icon: Search,
       label: "Under Review",
       className: "bg-yellow-100 text-yellow-700 border-yellow-200 dark:bg-yellow-900/20 dark:text-yellow-400 dark:border-yellow-800",
     },
+    investigating: {
+      icon: FileSearch,
+      label: "Investigating",
+      className: "bg-orange-100 text-orange-700 border-orange-200 dark:bg-orange-900/20 dark:text-orange-400 dark:border-orange-800",
+    },
     resolved: {
       icon: CheckCircle,
       label: "Resolved",
-      className: "bg-green-100 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800",
+      className: "bg-green-100 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400 dark:border-green-800",
     },
     appealed: {
       icon: Scale,
@@ -43,7 +48,7 @@ export default function IncidentStatusBadge({ status, size = "md" }: IncidentSta
     closed: {
       icon: XCircle,
       label: "Closed",
-      className: "bg-gray-100 text-gray-700 border-gray-200 dark:bg-gray-900/20 dark:text-gray-400 dark:border-gray-800",
+      className: "bg-gray-100 text-gray-700 border-gray-200 dark:bg-[#0f1115]/20 midnight:bg-[#0a0e27]/20 purple:bg-[#1a0b2e]/20 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 dark:border-[#1a1d24]",
     },
   };
 
@@ -53,7 +58,7 @@ export default function IncidentStatusBadge({ status, size = "md" }: IncidentSta
   return (
     <span
       className={`inline-flex items-center gap-1.5 font-semibold rounded-full border ${sizeClasses[size]} ${config.className}`}
-      style={size === "sm" ? { fontSize: '11.8px' } : {}}
+      style={size === "sm" ? { fontSize: '0.7375rem' } : {}}
     >
       <Icon className={iconSizes[size]} />
       {config.label}

@@ -31,7 +31,7 @@ export default function AttendanceStatusBadge({
   };
 
   const labelSizes = {
-    sm: "text-[10px] sm:text-xs",
+    sm: "text-[0.625rem] sm:text-xs",
     md: "text-xs sm:text-sm",
     lg: "text-sm sm:text-base",
   };
@@ -59,12 +59,12 @@ export default function AttendanceStatusBadge({
       label: "E",
     },
     "not-attended": {
-      bg: "bg-gray-200 dark:bg-gray-700 midnight:bg-gray-800 purple:bg-gray-800",
+      bg: "bg-gray-200 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340]",
       text: "text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70",
       label: "",
     },
     "blocked": {
-      bg: "bg-gray-300 dark:bg-gray-600 midnight:bg-gray-700 purple:bg-gray-700",
+      bg: "bg-gray-300 dark:bg-[#2a2d35] midnight:bg-gray-700 purple:bg-gray-700",
       text: "text-gray-600 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70",
       label: "—",
     },

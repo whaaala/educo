@@ -6,12 +6,12 @@ import { ChevronRight, Search, Loader2 } from "lucide-react";
 interface SearchableDropdownOption {
   value: string;
   label: string;
-  [key: string]: any; // Allow additional properties
+  [key: string]: unknown; // Allow additional properties
 }
 
 interface SearchableDropdownProps {
-  label: string;
-  icon: ReactNode;
+  label?: string;
+  icon?: ReactNode;
   iconBgColor?: string;
   iconColor?: string;
   value: string;
@@ -22,7 +22,10 @@ interface SearchableDropdownProps {
   searchPlaceholder?: string;
   excludeIds?: string[];
   loading?: boolean;
+  className?: string;
 }
+
+export type { SearchableDropdownProps };
 
 export default function SearchableDropdown({
   label,
@@ -37,6 +40,7 @@ export default function SearchableDropdown({
   searchPlaceholder = "Search...",
   excludeIds = [],
   loading = false,
+  className = "",
 }: SearchableDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -44,7 +48,7 @@ export default function SearchableDropdown({
   const [isSearching, setIsSearching] = useState(false);
   const [asyncOptions, setAsyncOptions] = useState<SearchableDropdownOption[]>([]);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const searchTimeoutRef = useRef<NodeJS.Timeout>();
+  const searchTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const lastSearchQueryRef = useRef<string>("");
 
   // Debounced search for async fetching
@@ -184,19 +188,23 @@ export default function SearchableDropdown({
   const displayOptions = onSearch ? filteredOptions : filteredOptions;
 
   return (
-    <div className="group">
-      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 mb-2 flex items-center gap-1.5">
-        <div className={`w-4 h-4 rounded ${iconBgColor} flex items-center justify-center flex-shrink-0 opacity-70`}>
-          <div className={`w-2.5 h-2.5 ${iconColor}`}>{icon}</div>
-        </div>
-        <span>{label}</span>
-      </label>
+    <div className={`group ${className}`}>
+      {label && (
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 mb-2 flex items-center gap-1.5">
+          {icon && (
+            <div className={`w-4 h-4 rounded ${iconBgColor} flex items-center justify-center flex-shrink-0 opacity-70`}>
+              <div className={`w-2.5 h-2.5 ${iconColor}`}>{icon}</div>
+            </div>
+          )}
+          <span>{label}</span>
+        </label>
+      )}
       <div className="relative" ref={dropdownRef}>
         {/* Custom Dropdown Button */}
         <button
           type="button"
           onClick={() => setIsOpen(!isOpen)}
-          className="appearance-none w-full text-sm font-normal text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 hover:border-gray-400 dark:hover:border-gray-500 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 midnight:focus:ring-cyan-500/20 purple:focus:ring-pink-500/20 focus:border-blue-500 dark:focus:border-blue-400 midnight:focus:border-cyan-500 purple:focus:border-pink-500 rounded-xl px-4 py-2.5 pr-10 cursor-pointer outline-none focus:ring-2 transition-all duration-200 border text-left"
+          className="appearance-none w-full text-sm font-normal text-ink bg-surface border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 hover:border-gray-400 dark:hover:border-gray-500 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 midnight:focus:ring-cyan-500/20 purple:focus:ring-pink-500/20 focus:border-blue-500 dark:focus:border-blue-400 midnight:focus:border-cyan-500 purple:focus:border-pink-500 rounded-xl px-4 py-2.5 pr-10 cursor-pointer outline-none focus:ring-2 transition-all duration-200 border text-left"
         >
           {selectedOption?.label || (
             <span className="text-gray-400/70 dark:text-gray-500/70 midnight:text-cyan-400/50 purple:text-pink-400/50 italic font-normal">
@@ -214,9 +222,9 @@ export default function SearchableDropdown({
 
         {/* Custom Dropdown Menu */}
         {isOpen && (
-          <div className="absolute top-full mt-1 left-0 w-full bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 z-[10000] flex flex-col max-h-80">
+          <div className="absolute top-full mt-1 left-0 w-full bg-surface rounded-xl shadow-xl border border-line z-[10000] flex flex-col max-h-80">
             {/* Search Input */}
-            <div className="p-2 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+            <div className="p-2 border-b border-line">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500 midnight:text-cyan-400/50 purple:text-pink-400/50 pointer-events-none" />
                 <input
@@ -233,7 +241,7 @@ export default function SearchableDropdown({
                     }
                   }}
                   placeholder={searchPlaceholder}
-                  className="w-full pl-10 pr-8 py-2 text-sm bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 rounded-lg text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 midnight:focus:ring-cyan-500/20 purple:focus:ring-pink-500/20 focus:border-blue-500 dark:focus:border-blue-400 midnight:focus:border-cyan-500 purple:focus:border-pink-500"
+                  className="w-full pl-10 pr-8 py-2 text-sm bg-surface border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 rounded-lg text-ink placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 midnight:focus:ring-cyan-500/20 purple:focus:ring-pink-500/20 focus:border-blue-500 dark:focus:border-blue-400 midnight:focus:border-cyan-500 purple:focus:border-pink-500"
                   autoFocus
                   onKeyDown={(e) => {
                     // Prevent dropdown from closing on Escape if searching
@@ -271,7 +279,7 @@ export default function SearchableDropdown({
                     className={`w-full text-left px-4 py-2.5 text-sm font-medium transition-colors cursor-pointer ${
                       value === option.value
                         ? "bg-blue-600 text-white"
-                        : "text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-100 dark:hover:bg-gray-700 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"
+                        : "text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"
                     }`}
                   >
                     {option.label}

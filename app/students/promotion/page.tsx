@@ -2,11 +2,10 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowRight, TrendingUp, CheckCircle2, AlertCircle, RotateCcw } from "lucide-react";
-import MainLayout from "@/components/layout/MainLayout";
+import { ArrowRight, CheckCircle2, AlertCircle, RotateCcw } from "lucide-react";
+import { DashboardPage } from "@/components/pages";
 import Button from "@/components/shared/Button";
-import PageHeader from "@/components/shared/PageHeader";
-import DataTable, { ColumnConfig } from "@/components/shared/DataTable";
+import ResponsiveListTable, { type ColumnConfig } from "@/components/shared/ResponsiveListTable";
 import { Student } from "@/components/students/StudentCard";
 import { useStudentsByTenant } from "@/hooks/useStudentsByTenant";
 import NameLabel from "@/components/shared/NameLabel";
@@ -185,7 +184,7 @@ export default function PromotionPage() {
           className="w-4 h-4 rounded border-neutral-300 dark:border-neutral-600"
         />
       ),
-      isSortable: false,
+      sortable: false,
       render: (student) => (
         <input
           type="checkbox"
@@ -198,7 +197,7 @@ export default function PromotionPage() {
     {
       key: "name",
       label: "Student Name",
-      isSortable: true,
+      sortable: true,
       render: (student) => (
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center text-white text-sm font-semibold">
@@ -211,22 +210,22 @@ export default function PromotionPage() {
     {
       key: "rollNo",
       label: "Admission No",
-      isSortable: true,
+      sortable: true,
     },
     {
       key: "class",
       label: "Current Class",
-      isSortable: true,
+      sortable: true,
     },
     {
       key: "gender",
       label: "Gender",
-      isSortable: true,
+      sortable: true,
     },
     {
       key: "status",
       label: "Status",
-      isSortable: true,
+      sortable: true,
       render: (student) => (
         <span
           className={`px-2 py-1 rounded-full text-xs font-medium ${
@@ -245,7 +244,7 @@ export default function PromotionPage() {
     {
       key: "student",
       label: "Student Name",
-      isSortable: false,
+      sortable: false,
       render: (record) => (
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center text-white text-sm font-semibold">
@@ -263,7 +262,7 @@ export default function PromotionPage() {
     {
       key: "currentClass",
       label: "Current Class",
-      isSortable: false,
+      sortable: false,
       render: (record) => (
         <span className="font-medium text-neutral-700 dark:text-neutral-300">
           {record.currentClass}
@@ -273,7 +272,7 @@ export default function PromotionPage() {
     {
       key: "arrow",
       label: "",
-      isSortable: false,
+      sortable: false,
       render: () => (
         <ArrowRight className="w-5 h-5 text-neutral-400 dark:text-neutral-500" />
       ),
@@ -281,7 +280,7 @@ export default function PromotionPage() {
     {
       key: "newClass",
       label: "New Class",
-      isSortable: false,
+      sortable: false,
       render: (record) => (
         <span className="font-medium text-purple-700 dark:text-purple-300">
           {record.newClass}
@@ -292,19 +291,19 @@ export default function PromotionPage() {
     {
       key: "status",
       label: "Status",
-      isSortable: false,
+      sortable: false,
       render: (record) => (
         <div className="flex items-center gap-2">
           {record.status === "success" && (
             <>
-              <CheckCircle2 className="w-4 h-4 text-green-600 dark:text-green-400" />
-              <span className="text-xs text-green-600 dark:text-green-400">Success</span>
+              <CheckCircle2 className="w-4 h-4 text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400" />
+              <span className="text-xs text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400">Success</span>
             </>
           )}
           {record.status === "failed" && (
             <>
-              <AlertCircle className="w-4 h-4 text-red-600 dark:text-red-400" />
-              <span className="text-xs text-red-600 dark:text-red-400">Failed</span>
+              <AlertCircle className="w-4 h-4 text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400" />
+              <span className="text-xs text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400">Failed</span>
             </>
           )}
           {record.status === "pending" && (
@@ -316,18 +315,16 @@ export default function PromotionPage() {
   ];
 
   return (
-    <MainLayout>
-      <div className="p-6 space-y-6">
-        {/* Header */}
-      <PageHeader
-        title="Student Promotion"
-        breadcrumbs={[
-          { label: "Dashboard", href: "/" },
-          { label: "Peoples", href: "#" },
-          { label: "Students", href: "/students" },
-          { label: "Promotion", isActive: true }
-        ]}
-      />
+    <DashboardPage
+      title="Student Promotion"
+      breadcrumbs={[
+        { label: "Dashboard", href: "/" },
+        { label: "Peoples", href: "#" },
+        { label: "Students", href: "/students" },
+        { label: "Promotion", isActive: true },
+      ]}
+      afterStats={
+        <div className="mt-6 p-6 space-y-6">
 
       {/* Progress Steps */}
       <div className="flex items-center justify-between bg-white dark:bg-neutral-800 rounded-lg p-6 shadow-sm">
@@ -426,7 +423,7 @@ export default function PromotionPage() {
 
           {/* Student List */}
           <div className="bg-white dark:bg-neutral-800 rounded-lg p-6 shadow-sm">
-            <DataTable
+            <ResponsiveListTable variant="contained" showColumnHeaders={true}
               data={filteredStudents}
               columns={studentColumns}
               getRowKey={(student) => student.id}
@@ -592,7 +589,7 @@ export default function PromotionPage() {
 
           {/* Preview Table */}
           <div className="bg-white dark:bg-neutral-800 rounded-lg p-6 shadow-sm">
-            <DataTable
+            <ResponsiveListTable variant="contained" showColumnHeaders={true}
               data={promotionRecords}
               columns={previewColumns}
               getRowKey={(record) => record.student.id}
@@ -643,7 +640,7 @@ export default function PromotionPage() {
         <div className="bg-white dark:bg-neutral-800 rounded-lg p-12 shadow-sm">
           <div className="max-w-2xl mx-auto text-center space-y-6">
             <div className="w-16 h-16 mx-auto bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
-              <CheckCircle2 className="w-10 h-10 text-green-600 dark:text-green-400" />
+              <CheckCircle2 className="w-10 h-10 text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400" />
             </div>
             <div>
               <h2 className="text-2xl font-semibold text-neutral-900 dark:text-neutral-100 mb-2">
@@ -661,7 +658,7 @@ export default function PromotionPage() {
                   {promotionRecords.filter((r) => r.status === "success").length}
                 </p>
               </div>
-              <div className="p-4 bg-red-50 dark:bg-red-900/20 rounded-lg">
+              <div className="p-4 bg-red-50 dark:bg-red-900/20 midnight:bg-red-900/20 purple:bg-red-900/20 rounded-lg">
                 <p className="text-sm text-red-700 dark:text-red-300">Failed</p>
                 <p className="text-3xl font-bold text-red-900 dark:text-red-100">
                   {promotionRecords.filter((r) => r.status === "failed").length}
@@ -681,7 +678,8 @@ export default function PromotionPage() {
           </div>
         </div>
       )}
-      </div>
-    </MainLayout>
+        </div>
+      }
+    />
   );
 }

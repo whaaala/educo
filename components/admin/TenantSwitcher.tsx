@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { createPortal } from "react-dom";
 import { Building2, Check, ChevronDown } from "lucide-react";
 import { useSchoolSettings } from "@/contexts/SchoolSettingsContext";
 import { getAllTenants } from "@/lib/mockTenants";
@@ -11,11 +12,36 @@ export default function TenantSwitcher() {
   const { currentTenant, switchTenant } = useSchoolSettings();
   const [tenants, setTenants] = useState<Tenant[]>([]);
   const [isOpen, setIsOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0, width: 0, showAbove: false });
+  const buttonRef = useRef<HTMLButtonElement>(null);
   const router = useRouter();
 
   useEffect(() => {
     setTenants(getAllTenants());
+    setMounted(true);
   }, []);
+
+  // Update dropdown position when opened
+  useEffect(() => {
+    if (isOpen && buttonRef.current) {
+      const rect = buttonRef.current.getBoundingClientRect();
+      const viewportHeight = window.innerHeight;
+      const maxDropdownHeight = viewportHeight * 0.7; // 70vh
+      const spaceBelow = viewportHeight - rect.bottom - 8;
+      const spaceAbove = rect.top - 8;
+
+      // Decide whether to show dropdown above or below
+      const showAbove = spaceBelow < maxDropdownHeight && spaceAbove > spaceBelow;
+
+      setDropdownPosition({
+        top: showAbove ? rect.top - 8 : rect.bottom + 8,
+        left: rect.left,
+        width: rect.width,
+        showAbove
+      });
+    }
+  }, [isOpen]);
 
   const handleSwitchTenant = (tenantId: string) => {
     switchTenant(tenantId);
@@ -30,6 +56,7 @@ export default function TenantSwitcher() {
   return (
     <div className="relative">
       <button
+        ref={buttonRef}
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center gap-3 w-full px-4 py-3 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors"
       >
@@ -49,16 +76,25 @@ export default function TenantSwitcher() {
         />
       </button>
 
-      {isOpen && (
+      {mounted && isOpen && createPortal(
         <>
           {/* Backdrop */}
           <div
-            className="fixed inset-0 z-10"
+            className="fixed inset-0 z-[9998]"
             onClick={() => setIsOpen(false)}
           />
 
           {/* Dropdown */}
-          <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg shadow-lg z-20 max-h-96 overflow-y-auto">
+          <div
+            className="fixed bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg shadow-xl z-[9999] max-h-[70vh] overflow-y-auto"
+            style={{
+              [dropdownPosition.showAbove ? 'bottom' : 'top']: dropdownPosition.showAbove
+                ? `${window.innerHeight - dropdownPosition.top}px`
+                : `${dropdownPosition.top}px`,
+              left: `${dropdownPosition.left}px`,
+              width: `${dropdownPosition.width}px`
+            }}
+          >
             <div className="p-2">
               <div className="px-3 py-2 text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase">
                 Switch School
@@ -100,7 +136,8 @@ export default function TenantSwitcher() {
               </button>
             </div>
           </div>
-        </>
+        </>,
+        document.body
       )}
     </div>
   );

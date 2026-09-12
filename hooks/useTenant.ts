@@ -97,7 +97,7 @@ export function useTenantBranding() {
       mission: tenant.branding.mission,
       vision: tenant.branding.vision,
       theme: tenant.branding.theme,
-      logoUrl: tenant.branding.logoUrl,
+      logoUrl: tenant.branding.logo,
       transcriptDesign: tenant.branding.transcriptDesign,
       signatures: tenant.branding.signatures,
     };

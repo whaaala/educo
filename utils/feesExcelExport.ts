@@ -1,5 +1,8 @@
 import * as XLSX from "xlsx";
 
+/** One cell of a worksheet row. Blank cells are written as an empty string. */
+type ExcelCell = string | number;
+
 interface FeeRecord {
   feeType: string;
   feeCode: string;
@@ -23,7 +26,7 @@ interface StudentInfo {
 
 export function exportFeesToExcel(fees: FeeRecord[], filename: string = "fees.xlsx", studentInfo?: StudentInfo) {
   // Build the worksheet with header section
-  const worksheetData: any[][] = [];
+  const worksheetData: ExcelCell[][] = [];
 
   // Title row
   worksheetData.push(["FEE RECORDS REPORT"]);

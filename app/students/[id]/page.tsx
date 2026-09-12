@@ -1,29 +1,21 @@
 "use client";
 
+import Link from "next/link";
 import { useState, useEffect, useMemo } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useAttendance } from "@/contexts/AttendanceContext";
-import MainLayout from "@/components/layout/MainLayout";
-import PageLoader from "@/components/shared/PageLoader";
-import { usePageLoad } from "@/hooks/usePageLoad";
+import { DashboardPage } from "@/components/pages";
 import { getExtendedStudentDataById } from "@/lib/mockStudents";
 import { useTranscripts } from "@/contexts/TranscriptContext";
-import Image from "next/image";
 import {
   GraduationCap,
   Calendar,
   FileText,
   BookOpen,
-  Phone,
-  Mail,
-  Lock,
-  Download,
   Clock,
   KeyRound,
   Search,
-  ExternalLink,
   Trash2,
-  FileSpreadsheet,
 } from "lucide-react";
 import type { ExtendedStudentData } from "@/lib/mockStudents";
 import StudentProfileCard from "@/components/students/StudentProfileCard";
@@ -38,7 +30,7 @@ import MedicalHistoryCard from "@/components/students/MedicalHistoryCard";
 import BankDetailsCard from "@/components/students/BankDetailsCard";
 import OtherInfoCard from "@/components/students/OtherInfoCard";
 import CollectFeesModal from "@/components/shared/CollectFeesModal";
-import DeleteConfirmationModal from "@/components/shared/DeleteConfirmationModal";
+import ActionModal from "@/components/shared/ActionModal";
 import ActionButton from "@/components/shared/ActionButton";
 import SecondaryButton from "@/components/shared/SecondaryButton";
 import CurrencyIcon from "@/components/shared/CurrencyIcon";
@@ -46,7 +38,7 @@ import TimeTable from "@/components/students/TimeTable";
 import LoginDetailsModal from "@/components/students/LoginDetailsModal";
 import LeaveStatsCard from "@/components/students/LeaveStatsCard";
 import ApplyLeaveModal from "@/components/students/ApplyLeaveModal";
-import DataTable, { ColumnConfig } from "@/components/shared/DataTable";
+import ResponsiveListTable, { type ColumnConfig } from "@/components/shared/ResponsiveListTable";
 import AddButton from "@/components/shared/AddButton";
 import AttendanceStatsCard from "@/components/students/AttendanceStatsCard";
 import AttendanceCalendar from "@/components/students/AttendanceCalendar";
@@ -56,7 +48,7 @@ import MobileDropdown from "@/components/shared/MobileDropdown";
 import CustomDropdown from "@/components/shared/CustomDropdown";
 import ExamResults from "@/components/students/ExamResults";
 import { getAttendanceMode } from "@/components/settings/AttendanceSettings";
-import { Edit, UserCheck, CheckCircle2, Shield } from "lucide-react";
+import { Edit, Shield } from "lucide-react";
 import StudentDisciplineManagement from "@/components/students/StudentDisciplineManagement";
 import RequestTranscriptButton from "@/components/shared/RequestTranscriptButton";
 import TranscriptPaymentModal from "@/components/transcript/TranscriptPaymentModal";
@@ -69,6 +61,9 @@ import { TRANSFER_REASONS } from "@/types/transfer";
 import { ArrowRightLeft, School } from "lucide-react";
 import { useTransfers } from "@/contexts/TransferContext";
 import TransferHistoryCard from "@/components/students/TransferHistoryCard";
+/** A tab's icon: usually a lucide icon, sometimes a small local component (the currency glyph), so the
+ *  type is what both of them ARE — a component taking a className. */
+type TabIcon = React.ComponentType<{ className?: string }>;
 
 type TabType = "details" | "timetable" | "attendance" | "fees" | "exam" | "library" | "discipline";
 
@@ -77,7 +72,12 @@ export default function ViewStudentPage() {
   const params = useParams();
   const studentId = params?.id as string;
   const router = useRouter();
-  const isLoading = usePageLoad(600);
+  const searchParams = useSearchParams();
+
+  // Get navigation source from query params
+  const fromSource = searchParams.get("from");
+  const parentId = searchParams.get("parentId");
+  const parentName = searchParams.get("parentName");
   const { addTransferRequest } = useTransfers();
   const { addTranscriptRequest } = useTranscripts();
   const [studentData, setStudentData] = useState<ExtendedStudentData | null>(null);
@@ -180,11 +180,17 @@ export default function ViewStudentPage() {
     setIsTransferSuccessModalOpen(true);
   };
 
-  if (isLoading || isLoadingData || !studentData) {
+  if (isLoadingData || !studentData) {
     return (
-      <MainLayout>
-        <PageLoader isLoading={true} loadingText="Loading Student Details" />
-      </MainLayout>
+      <DashboardPage
+        title="Student Details"
+        breadcrumbs={[
+          { label: "Dashboard", href: "/" },
+          { label: "Students", href: "/students" },
+          { label: "Student Details", isActive: true },
+        ]}
+        loadingText="Loading Student Details"
+      />
     );
   }
 
@@ -280,28 +286,49 @@ export default function ViewStudentPage() {
   ];
 
   return (
-    <MainLayout>
-      <PageLoader isLoading={isLoading} loadingText="Loading Student Details" />
-      
-      <div className={`transition-opacity duration-500 ${isLoading ? 'opacity-0' : 'opacity-100'}`}>
-        {/* Header */}
-        <div className="mb-6 mt-6">
+    <DashboardPage
+      title="Student Details"
+      breadcrumbs={[
+        { label: "Dashboard", href: "/" },
+        { label: "Students", href: "/students" },
+        { label: "Student Details", isActive: true },
+      ]}
+      loadingText="Loading Student Details"
+      afterStats={
+        <div className="mt-6">
+          {/* Header */}
+          <div className="mb-6">
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
             <div>
-              <h1 className="text-xl lg:text-2xl font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-1">
+              <h1 className="text-xl lg:text-2xl font-bold text-ink mb-1">
                 Student Details
               </h1>
-              <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70 flex-wrap">
-                <a href="/" className="hover:text-gray-700 dark:hover:text-gray-300 midnight:hover:text-cyan-200 purple:hover:text-pink-200 cursor-pointer transition-colors">
+              <div className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-gray-500 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70 flex-wrap">
+                <Link href="/" className="hover:text-gray-700 dark:hover:text-gray-300 midnight:hover:text-cyan-200 purple:hover:text-pink-200 cursor-pointer transition-colors">
                   Dashboard
-                </a>
+                </Link>
                 <span>/</span>
-                <a href="/students" className="hover:text-gray-700 dark:hover:text-gray-300 midnight:hover:text-cyan-200 purple:hover:text-pink-200 cursor-pointer transition-colors">
-                  Student
-                </a>
-                <span>/</span>
-                <span className="text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 font-medium">
-                  Student Details
+                {fromSource === "parent" && parentId ? (
+                  <>
+                    <Link href="/admin/parents" className="hover:text-gray-700 dark:hover:text-gray-300 midnight:hover:text-cyan-200 purple:hover:text-pink-200 cursor-pointer transition-colors">
+                      Parents
+                    </Link>
+                    <span>/</span>
+                    <Link href={`/admin/parents/${parentId}`} className="hover:text-gray-700 dark:hover:text-gray-300 midnight:hover:text-cyan-200 purple:hover:text-pink-200 cursor-pointer transition-colors max-w-[120px] sm:max-w-none truncate inline-block">
+                      {parentName || "Parent Details"}
+                    </Link>
+                    <span>/</span>
+                  </>
+                ) : (
+                  <>
+                    <Link href="/students" className="hover:text-gray-700 dark:hover:text-gray-300 midnight:hover:text-cyan-200 purple:hover:text-pink-200 cursor-pointer transition-colors">
+                      Students
+                    </Link>
+                    <span>/</span>
+                  </>
+                )}
+                <span className="text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 font-medium max-w-[100px] sm:max-w-none truncate inline-block">
+                  {studentData ? `${studentData.firstName} ${studentData.lastName}` : "Student Details"}
                 </span>
               </div>
             </div>
@@ -388,6 +415,8 @@ export default function ViewStudentPage() {
           </div>
         </div>
       </div>
+      }
+    >
 
       {/* Collect Fees Modal */}
       {studentData && getStudentForModal() && (
@@ -439,15 +468,16 @@ export default function ViewStudentPage() {
 
       {/* Delete Confirmation Modal */}
       {studentData && (
-        <DeleteConfirmationModal
+        <ActionModal
           isOpen={isDeleteModalOpen}
           onClose={() => setIsDeleteModalOpen(false)}
-          onConfirm={handleDeleteStudent}
           title="Delete Student"
-          itemName={fullName}
-          itemId={studentData.admissionNumber || studentId}
-          warningMessage="This will permanently remove this student and all associated data including attendance records, fees, exam results, and documents. This action cannot be undone."
-          confirmButtonText="Delete Student"
+          subtitle={`${fullName} • ${studentData.admissionNumber || studentId}`}
+          variant="danger"
+          message="This will permanently remove this student and all associated data including attendance records, fees, exam results, and documents. This action cannot be undone."
+          confirmLabel="Delete Student"
+          cancelLabel="Cancel"
+          onConfirm={handleDeleteStudent}
         />
       )}
 
@@ -553,7 +583,7 @@ export default function ViewStudentPage() {
           ]}
         />
       )}
-    </MainLayout>
+    </DashboardPage>
   );
 }
 
@@ -615,7 +645,7 @@ function StudentTabs({
   activeTab,
   setActiveTab,
 }: {
-  tabs: { id: TabType; label: string; icon: any }[];
+  tabs: { id: TabType; label: string; icon: TabIcon }[];
   activeTab: TabType;
   setActiveTab: (tab: TabType) => void;
 }) {
@@ -638,7 +668,7 @@ function StudentTabs({
       </div>
 
       {/* Desktop Horizontal Tabs */}
-      <div className="hidden md:block relative bg-gradient-to-br from-gray-50/50 to-gray-100/30 dark:from-[#1a1d23]/30 dark:to-[#14161b]/50 midnight:from-[#0f1729]/30 midnight:to-[#0a0f1c]/50 purple:from-[#2a1a3e]/30 purple:to-[#1f1330]/50 backdrop-blur-sm rounded-2xl shadow-sm border border-gray-200/30 dark:border-gray-800/30 midnight:border-cyan-500/10 purple:border-pink-500/10 p-1.5 overflow-x-auto overflow-y-hidden scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-700 scrollbar-track-transparent">
+      <div className="hidden md:block relative bg-gradient-to-br from-gray-50/50 to-gray-100/30 dark:from-[#1a1d23]/30 dark:to-[#14161b]/50 midnight:from-[#0f1729]/30 midnight:to-[#0a0f1c]/50 purple:from-[#2a1a3e]/30 purple:to-[#1f1330]/50 backdrop-blur-sm rounded-2xl shadow-sm border border-gray-200/30 dark:border-[#1a1d24]/30 midnight:border-cyan-500/10 purple:border-pink-500/10 p-1.5 overflow-x-auto overflow-y-hidden scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-700 scrollbar-track-transparent">
         {/* Animated background gradient */}
         <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 via-purple-500/5 to-pink-500/5 dark:from-blue-400/5 dark:via-purple-400/5 dark:to-pink-400/5 midnight:from-cyan-400/5 midnight:via-blue-400/5 midnight:to-cyan-400/5 purple:from-pink-400/5 purple:via-purple-400/5 purple:to-pink-400/5 opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
 
@@ -656,7 +686,7 @@ function StudentTabs({
                 className={`relative flex items-center justify-center gap-1.5 px-3 sm:px-4 py-2 rounded-xl transition-all duration-300 ease-out whitespace-nowrap group overflow-hidden ${
                   isActive
                     ? "bg-blue-50/80 dark:bg-blue-950/20 midnight:bg-cyan-950/20 purple:bg-pink-950/20 text-blue-700 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300 shadow-sm border border-blue-100/50 dark:border-blue-900/30 midnight:border-cyan-900/30 purple:border-pink-900/30"
-                    : "text-gray-700 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70 hover:bg-white/40 dark:hover:bg-gray-800/30 midnight:hover:bg-gray-800/30 purple:hover:bg-gray-800/30 hover:text-gray-900 dark:hover:text-gray-200 midnight:hover:text-cyan-200 purple:hover:text-pink-200 hover:shadow-sm"
+                    : "text-gray-700 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70 hover:bg-white/40 dark:hover:bg-[#22262e]/30 midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 hover:text-gray-900 dark:hover:text-gray-200 midnight:hover:text-cyan-200 purple:hover:text-pink-200 hover:shadow-sm"
                 } cursor-pointer active:scale-95 animate-fadeIn`}
               >
                 {/* Shine effect on active tab */}
@@ -674,7 +704,7 @@ function StudentTabs({
                     ? "text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400"
                     : "text-gray-600 dark:text-gray-500 midnight:text-cyan-300/70 purple:text-pink-300/70 group-hover:scale-110 group-hover:rotate-6"
                 }`} />
-                <span className={`relative text-[11.75px] sm:text-xs font-semibold transition-all duration-300 ${
+                <span className={`relative text-[0.7344rem] sm:text-xs font-semibold transition-all duration-300 ${
                   isActive ? "tracking-wide" : "group-hover:tracking-wide"
                 }`}>
                   {tab.label}
@@ -985,9 +1015,9 @@ function AttendanceTab({ studentId }: { studentId: string }) {
   return (
     <div className="space-y-4 sm:space-y-5 lg:space-y-6">
       {/* Main Content Card */}
-      <div className="bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-xl sm:rounded-2xl shadow-sm border border-gray-200/40 dark:border-gray-800/40 midnight:border-cyan-500/20 purple:border-pink-500/20 overflow-hidden">
+      <div className="bg-surface rounded-xl sm:rounded-2xl shadow-sm border border-gray-200/40 dark:border-[#1a1d24]/40 midnight:border-cyan-500/20 purple:border-pink-500/20 overflow-hidden">
         {/* Header with Tabs */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 p-2 sm:p-3 border-b border-gray-200/40 dark:border-gray-800/40 midnight:border-cyan-500/20 purple:border-pink-500/20">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 p-2 sm:p-3 border-b border-gray-200/40 dark:border-[#1a1d24]/40 midnight:border-cyan-500/20 purple:border-pink-500/20">
           {/* Sub Tabs */}
           <div className="flex gap-2">
             <button
@@ -995,7 +1025,7 @@ function AttendanceTab({ studentId }: { studentId: string }) {
               className={`cursor-pointer px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all duration-200 ${
                 activeSubTab === "leaves"
                   ? "bg-blue-600 dark:bg-blue-500 midnight:bg-cyan-500 purple:bg-pink-500 text-white shadow-md"
-                  : "bg-gray-100 dark:bg-gray-800 midnight:bg-gray-800 purple:bg-gray-800 text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-200 dark:hover:bg-gray-700 midnight:hover:bg-gray-700 purple:hover:bg-gray-700"
+                  : "bg-gray-100 dark:bg-[#1a1d24] midnight:bg-[#0f1330] purple:bg-[#251340] text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-200 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"
               }`}
             >
               Leaves
@@ -1005,7 +1035,7 @@ function AttendanceTab({ studentId }: { studentId: string }) {
               className={`cursor-pointer px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all duration-200 ${
                 activeSubTab === "attendance"
                   ? "bg-blue-600 dark:bg-blue-500 midnight:bg-cyan-500 purple:bg-pink-500 text-white shadow-md"
-                  : "bg-gray-100 dark:bg-gray-800 midnight:bg-gray-800 purple:bg-gray-800 text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-200 dark:hover:bg-gray-700 midnight:hover:bg-gray-700 purple:hover:bg-gray-700"
+                  : "bg-gray-100 dark:bg-[#1a1d24] midnight:bg-[#0f1330] purple:bg-[#251340] text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-200 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"
               }`}
             >
               Attendance
@@ -1053,7 +1083,7 @@ function AttendanceTab({ studentId }: { studentId: string }) {
               <div className="space-y-3 sm:space-y-4">
                 {/* Header with Apply Leave Button */}
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                  <h3 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                  <h3 className="text-base sm:text-lg font-bold text-ink">
                     Leave Applications
                   </h3>
                   <AddButton
@@ -1064,7 +1094,7 @@ function AttendanceTab({ studentId }: { studentId: string }) {
                 </div>
 
                 {/* DataTable */}
-                <DataTable<LeaveApplication>
+                <ResponsiveListTable<LeaveApplication> variant="contained" showColumnHeaders={true}
                   data={MOCK_LEAVE_APPLICATIONS}
                   columns={leaveColumns}
                   title="Leave Applications"
@@ -1110,7 +1140,7 @@ function AttendanceTab({ studentId }: { studentId: string }) {
 
 function FeesTab({ studentId }: { studentId: string }) {
   return (
-    <div className="bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-2xl shadow-sm border border-gray-200/40 dark:border-gray-800/40 midnight:border-cyan-500/20 purple:border-pink-500/20 p-6 lg:p-8 transition-all duration-200 hover:shadow-md hover:border-gray-300/60 dark:hover:border-gray-700/60 midnight:hover:border-cyan-500/30 purple:hover:border-pink-500/30">
+    <div className="bg-surface rounded-2xl shadow-sm border border-gray-200/40 dark:border-[#1a1d24]/40 midnight:border-cyan-500/20 purple:border-pink-500/20 p-6 lg:p-8 transition-all duration-200 hover:shadow-md hover:border-gray-300/60 dark:hover:border-gray-700/60 midnight:hover:border-cyan-500/30 purple:hover:border-pink-500/30">
       <FeesManagement educationLevel="primary" schoolType="private" studentId={studentId} />
     </div>
   );
@@ -1118,7 +1148,7 @@ function FeesTab({ studentId }: { studentId: string }) {
 
 function ExamResultsTab({ studentClass }: { studentClass: string }) {
   return (
-    <div className="bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-2xl shadow-sm border border-gray-200/40 dark:border-gray-800/40 midnight:border-cyan-500/20 purple:border-pink-500/20 p-6 lg:p-8 transition-all duration-200 hover:shadow-md hover:border-gray-300/60 dark:hover:border-gray-700/60 midnight:hover:border-cyan-500/30 purple:hover:border-pink-500/30">
+    <div className="bg-surface rounded-2xl shadow-sm border border-gray-200/40 dark:border-[#1a1d24]/40 midnight:border-cyan-500/20 purple:border-pink-500/20 p-6 lg:p-8 transition-all duration-200 hover:shadow-md hover:border-gray-300/60 dark:hover:border-gray-700/60 midnight:hover:border-cyan-500/30 purple:hover:border-pink-500/30">
       <ExamResults studentClass={studentClass} />
     </div>
   );
@@ -1210,10 +1240,10 @@ function LibraryTab() {
   };
 
   return (
-    <div className="bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-2xl shadow-sm border border-gray-200/40 dark:border-gray-800/40 midnight:border-cyan-500/20 purple:border-pink-500/20">
+    <div className="bg-surface rounded-2xl shadow-sm border border-gray-200/40 dark:border-[#1a1d24]/40 midnight:border-cyan-500/20 purple:border-pink-500/20">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 p-2.5 sm:p-3 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
-        <h2 className="text-sm sm:text-base font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 flex items-center gap-1.5">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 p-2.5 sm:p-3 border-b border-line">
+        <h2 className="text-sm sm:text-base font-bold text-ink flex items-center gap-1.5">
           <BookOpen className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
           Library
           {searchQuery && (
@@ -1230,7 +1260,7 @@ function LibraryTab() {
               placeholder="Search books..."
               value={searchQuery}
               onChange={(e) => handleSearchChange(e.target.value)}
-              className="w-full sm:w-64 pl-8 pr-2.5 py-1 sm:py-1.5 text-xs bg-gray-50 dark:bg-gray-800 midnight:bg-gray-800 purple:bg-gray-800 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 midnight:focus:ring-cyan-400 purple:focus:ring-pink-400 text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 placeholder:text-gray-400 dark:placeholder:text-gray-500"
+              className="w-full sm:w-64 pl-8 pr-2.5 py-1 sm:py-1.5 text-xs bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0f1330] purple:bg-[#251340] border border-line rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 midnight:focus:ring-cyan-400 purple:focus:ring-pink-400 text-ink placeholder:text-gray-400 dark:placeholder:text-gray-500"
             />
           </div>
           <CustomDropdown
@@ -1255,7 +1285,7 @@ function LibraryTab() {
                     ? `fadeSlideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1) ${index * 0.05}s both`
                     : undefined,
                 }}
-                className="group bg-gradient-to-br from-white to-gray-50/50 dark:from-gray-800 dark:to-gray-800/50 midnight:from-gray-800 midnight:to-gray-900/50 purple:from-gray-800 purple:to-gray-900/50 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 overflow-hidden hover:shadow-xl hover:shadow-blue-500/10 dark:hover:shadow-blue-500/20 midnight:hover:shadow-cyan-500/20 purple:hover:shadow-pink-500/20 transition-all duration-300 hover:scale-[1.02] hover:-translate-y-1 hover:border-blue-300 dark:hover:border-blue-600 midnight:hover:border-cyan-400 purple:hover:border-pink-400"
+                className="group bg-gradient-to-br from-white to-gray-50/50 dark:from-gray-800 dark:to-gray-800/50 midnight:from-gray-800 midnight:to-gray-900/50 purple:from-gray-800 purple:to-gray-900/50 rounded-xl border border-line overflow-hidden hover:shadow-xl hover:shadow-blue-500/10 dark:hover:shadow-blue-500/20 midnight:hover:shadow-cyan-500/20 purple:hover:shadow-pink-500/20 transition-all duration-300 hover:scale-[1.02] hover:-translate-y-1 hover:border-blue-300 dark:hover:border-blue-600 midnight:hover:border-cyan-400 purple:hover:border-pink-400"
               >
                 {/* Book Cover */}
                 <div className="relative">
@@ -1281,14 +1311,14 @@ function LibraryTab() {
                 {/* Book Details */}
                 <div className="p-4">
                   {/* Book Title */}
-                  <h3 className="text-base font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-3 line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 midnight:group-hover:text-cyan-400 purple:group-hover:text-pink-400 transition-colors">
+                  <h3 className="text-base font-bold text-ink mb-3 line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 midnight:group-hover:text-cyan-400 purple:group-hover:text-pink-400 transition-colors">
                     {book.title}
                   </h3>
 
                   {/* Dates */}
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1">
-                      <p className="text-[10px] font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 midnight:text-cyan-400/60 purple:text-pink-400/60">
+                      <p className="text-[0.625rem] font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 midnight:text-cyan-400/60 purple:text-pink-400/60">
                         Book taken on
                       </p>
                       <p className="text-xs font-semibold text-gray-900 dark:text-white midnight:text-cyan-100 purple:text-pink-100 flex items-center gap-1">
@@ -1297,7 +1327,7 @@ function LibraryTab() {
                       </p>
                     </div>
                     <div className="space-y-1">
-                      <p className="text-[10px] font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 midnight:text-cyan-400/60 purple:text-pink-400/60">
+                      <p className="text-[0.625rem] font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 midnight:text-cyan-400/60 purple:text-pink-400/60">
                         Last Date
                       </p>
                       <p className="text-xs font-semibold text-gray-900 dark:text-white midnight:text-cyan-100 purple:text-pink-100 flex items-center gap-1">
@@ -1315,10 +1345,10 @@ function LibraryTab() {
           </div>
         ) : (
           <div className="text-center py-16">
-            <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gray-100 dark:bg-gray-800 midnight:bg-gray-800 purple:bg-gray-800 mb-4">
+            <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gray-100 dark:bg-[#1a1d24] midnight:bg-[#0f1330] purple:bg-[#251340] mb-4">
               <Search className="w-10 h-10 text-gray-400 dark:text-gray-500" />
             </div>
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 mb-2">
+            <h3 className="text-lg font-semibold text-ink mb-2">
               No books found
             </h3>
             <p className="text-gray-500 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70">

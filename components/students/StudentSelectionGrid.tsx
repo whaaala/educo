@@ -4,10 +4,17 @@ import { useState } from "react";
 import { Users, CheckCircle2, UserCheck, ChevronLeft, ChevronRight } from "lucide-react";
 import SearchBar from "@/components/shared/SearchBar";
 
+/**
+ * The minimum an item needs to be selectable. Callers pass richer types — a Student, a Teacher — and the
+ * generic `T` below carries their real shape, which is what `displayFields` indexes into.
+ *
+ * Deliberately NO index signature: one used to sit here "to allow any additional properties", but a plain
+ * interface like `Student` is not assignable to a type that has one, so it rejected exactly the types this
+ * grid exists to display. The generic constraint already allows extra properties.
+ */
 interface SelectionGridItem {
   id: string;
   name: string;
-  [key: string]: any; // Allow any additional properties
 }
 
 interface StudentSelectionGridProps<T extends SelectionGridItem> {

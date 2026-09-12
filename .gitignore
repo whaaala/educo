@@ -7,8 +7,8 @@ node_modules/
 /coverage
 
 # Next.js
-/.next/
-/out/
+.next/
+out/
 
 # Production
 /build
@@ -44,3 +44,20 @@ next-env.d.ts
 Thumbs.db
 nul
 con
+
+# Android APKs (downloaded/generated)
+*.apk
+
+# Playwright MCP debug artifacts (screenshots, snapshots, console logs)
+.playwright-mcp/
+
+# Playwright test output (regenerated on each run)
+playwright-report/
+test-results/
+
+# Stray debug/research screenshots at the repo root (e2e snapshot baselines live in subdirs)
+/*.png
+/*.jpeg
+/*.jpg
+/*.gif
+/*.webp

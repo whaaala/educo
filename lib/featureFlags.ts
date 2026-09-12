@@ -81,6 +81,9 @@ export interface FeatureFlagConfig {
     educationLevels?: Array<'Primary' | 'Secondary' | 'Tertiary'>;
     institutionTypes?: Array<'Public' | 'Private' | 'International'>;
     regions?: string[];
+    // If true, feature is enabled if ANY constraint matches (OR logic)
+    // If false/undefined, ALL constraints must match (AND logic)
+    matchAny?: boolean;
   };
 }
 
@@ -96,7 +99,14 @@ export const DEFAULT_FEATURE_FLAGS: Record<FeatureFlagKey, FeatureFlagConfig> = 
   },
   FF_Branch_Hierarchy: {
     enabled: true,
-    description: 'Regional grading and exam templates',
+    description: 'Multi-branch/campus management - for school networks, universities, and international schools',
+    enabledFor: {
+      // Enable for International schools (any level) OR Tertiary institutions (any type)
+      institutionTypes: ['International'], // International schools often have multiple campuses
+      educationLevels: ['Tertiary'], // Universities typically have multiple campuses
+      matchAny: true, // OR logic: enabled if International OR Tertiary
+      // Note: School networks (chains) would override this via tenant-specific config
+    },
   },
 
   // Student Management
@@ -312,28 +322,43 @@ export function isFeatureEnabled(
     return false;
   }
 
-  // Check education level constraint
-  if (config.enabledFor?.educationLevels && context?.educationLevel) {
-    if (!config.enabledFor.educationLevels.includes(context.educationLevel)) {
-      return false;
-    }
+  // If no constraints defined, feature is enabled
+  if (!config.enabledFor) {
+    return true;
   }
 
-  // Check institution type constraint
-  if (config.enabledFor?.institutionTypes && context?.institutionType) {
-    if (!config.enabledFor.institutionTypes.includes(context.institutionType)) {
-      return false;
-    }
+  const { educationLevels, institutionTypes, regions, matchAny } = config.enabledFor;
+
+  // Check if any constraints are defined
+  const hasEducationConstraint = educationLevels && educationLevels.length > 0;
+  const hasInstitutionConstraint = institutionTypes && institutionTypes.length > 0;
+  const hasRegionConstraint = regions && regions.length > 0;
+
+  // If no constraints defined, feature is enabled
+  if (!hasEducationConstraint && !hasInstitutionConstraint && !hasRegionConstraint) {
+    return true;
   }
 
-  // Check region constraint
-  if (config.enabledFor?.regions && context?.region) {
-    if (!config.enabledFor.regions.includes(context.region)) {
-      return false;
-    }
-  }
+  // Check each constraint
+  const matchesEducation: boolean = !hasEducationConstraint ||
+    Boolean(context?.educationLevel && educationLevels!.includes(context.educationLevel));
+  const matchesInstitution: boolean = !hasInstitutionConstraint ||
+    Boolean(context?.institutionType && institutionTypes!.includes(context.institutionType));
+  const matchesRegion: boolean = !hasRegionConstraint ||
+    Boolean(context?.region && regions!.includes(context.region));
 
-  return true;
+  if (matchAny) {
+    // OR logic: enabled if ANY constraint matches
+    // Only check constraints that are defined
+    const matches: boolean[] = [];
+    if (hasEducationConstraint) matches.push(matchesEducation);
+    if (hasInstitutionConstraint) matches.push(matchesInstitution);
+    if (hasRegionConstraint) matches.push(matchesRegion);
+    return matches.some(m => m);
+  } else {
+    // AND logic (default): ALL constraints must match
+    return matchesEducation && matchesInstitution && matchesRegion;
+  }
 }
 
 /**

@@ -4,12 +4,9 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Upload, Download, FileSpreadsheet, AlertCircle, CheckCircle2, X } from "lucide-react";
 import * as XLSX from "xlsx";
-import MainLayout from "@/components/layout/MainLayout";
+import { DashboardPage } from "@/components/pages";
 import Button from "@/components/shared/Button";
-import PageHeader from "@/components/shared/PageHeader";
-import DataTable, { ColumnConfig } from "@/components/shared/DataTable";
-import { Student } from "@/components/students/StudentCard";
-
+import ResponsiveListTable, { type ColumnConfig } from "@/components/shared/ResponsiveListTable";
 type ImportStep = "upload" | "mapping" | "preview" | "validation" | "progress" | "complete";
 
 interface ColumnMapping {
@@ -23,8 +20,11 @@ interface ValidationError {
   message: string;
 }
 
+/** One cell as XLSX hands it over. Empty cells come back undefined, so that is part of the type. */
+type ImportedCell = string | number | boolean | null | undefined;
+
 interface ImportedRow {
-  [key: string]: any;
+  [key: string]: ImportedCell | ValidationError[];
   _rowNumber: number;
   _errors: ValidationError[];
 }
@@ -78,7 +78,7 @@ export default function BulkImportPage() {
       const workbook = XLSX.read(data, { type: "binary" });
       const sheetName = workbook.SheetNames[0];
       const worksheet = workbook.Sheets[sheetName];
-      const json = XLSX.utils.sheet_to_json(worksheet, { header: 1 }) as any[][];
+      const json = XLSX.utils.sheet_to_json(worksheet, { header: 1 }) as ImportedCell[][];
 
       if (json.length > 0) {
         const headers = json[0] as string[];
@@ -101,7 +101,7 @@ export default function BulkImportPage() {
 
         // Parse data rows
         const dataRows = json.slice(1).map((row, index) => {
-          const rowData: any = { _rowNumber: index + 2, _errors: [] };
+          const rowData: ImportedRow = { _rowNumber: index + 2, _errors: [] };
           headers.forEach((header, colIndex) => {
             rowData[header] = row[colIndex];
           });
@@ -146,7 +146,7 @@ export default function BulkImportPage() {
 
     // Apply mappings to imported data
     const mappedData = importedData.map((row) => {
-      const mappedRow: any = { _rowNumber: row._rowNumber, _errors: [] };
+      const mappedRow: ImportedRow = { _rowNumber: row._rowNumber, _errors: [] };
       columnMappings.forEach((mapping) => {
         mappedRow[mapping.systemField] = row[mapping.excelColumn];
       });
@@ -160,12 +160,12 @@ export default function BulkImportPage() {
   const validateData = () => {
     const errors: ValidationError[] = [];
 
-    importedData.forEach((row, index) => {
+    importedData.forEach((row, _index) => {
       const rowErrors: ValidationError[] = [];
 
       // Validate required fields
       REQUIRED_FIELDS.forEach((field) => {
-        if (!row[field.field] || row[field.field].toString().trim() === "") {
+        if (!row[field.field] || String(row[field.field] ?? "").trim() === "") {
           rowErrors.push({
             row: row._rowNumber,
             field: field.field,
@@ -175,7 +175,7 @@ export default function BulkImportPage() {
       });
 
       // Validate email format
-      if (row.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(row.email)) {
+      if (row.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(row.email))) {
         rowErrors.push({
           row: row._rowNumber,
           field: "email",
@@ -184,7 +184,7 @@ export default function BulkImportPage() {
       }
 
       // Validate gender
-      if (row.gender && !["Male", "Female", "Other"].includes(row.gender)) {
+      if (row.gender && !["Male", "Female", "Other"].includes(String(row.gender))) {
         rowErrors.push({
           row: row._rowNumber,
           field: "gender",
@@ -193,7 +193,7 @@ export default function BulkImportPage() {
       }
 
       // Validate education level
-      if (row.educationLevel && !["Primary", "Secondary", "Tertiary"].includes(row.educationLevel)) {
+      if (row.educationLevel && !["Primary", "Secondary", "Tertiary"].includes(String(row.educationLevel))) {
         rowErrors.push({
           row: row._rowNumber,
           field: "educationLevel",
@@ -252,7 +252,7 @@ export default function BulkImportPage() {
     {
       key: "_rowNumber",
       label: "Row",
-      isSortable: false,
+      sortable: false,
       render: (row) => (
         <span className="text-xs text-neutral-500 dark:text-neutral-400">
           {row._rowNumber}
@@ -262,28 +262,28 @@ export default function BulkImportPage() {
     ...columnMappings.slice(0, 5).map((mapping) => ({
       key: mapping.systemField,
       label: REQUIRED_FIELDS.concat(OPTIONAL_FIELDS).find((f) => f.field === mapping.systemField)?.label || mapping.systemField,
-      isSortable: false,
+      sortable: false,
       render: (row: ImportedRow) => (
-        <span className={row._errors.some((e) => e.field === mapping.systemField) ? "text-red-600 dark:text-red-400" : ""}>
-          {row[mapping.systemField] || "-"}
+        <span className={row._errors.some((e) => e.field === mapping.systemField) ? "text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400" : ""}>
+          {String(row[mapping.systemField] ?? "") || "-"}
         </span>
       ),
     })),
     {
       key: "status",
       label: "Status",
-      isSortable: false,
+      sortable: false,
       render: (row) => (
         <div className="flex items-center gap-2">
           {row._errors.length === 0 ? (
             <>
-              <CheckCircle2 className="w-4 h-4 text-green-600 dark:text-green-400" />
-              <span className="text-xs text-green-600 dark:text-green-400">Valid</span>
+              <CheckCircle2 className="w-4 h-4 text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400" />
+              <span className="text-xs text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400">Valid</span>
             </>
           ) : (
             <>
-              <AlertCircle className="w-4 h-4 text-red-600 dark:text-red-400" />
-              <span className="text-xs text-red-600 dark:text-red-400">{row._errors.length} errors</span>
+              <AlertCircle className="w-4 h-4 text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400" />
+              <span className="text-xs text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400">{row._errors.length} errors</span>
             </>
           )}
         </div>
@@ -292,28 +292,27 @@ export default function BulkImportPage() {
   ];
 
   return (
-    <MainLayout>
-      <div className="p-6 space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <PageHeader
-          title="Bulk Import Students"
-          breadcrumbs={[
-            { label: "Dashboard", href: "/" },
-            { label: "Peoples", href: "#" },
-            { label: "Students", href: "/students" },
-            { label: "Bulk Import", isActive: true }
-          ]}
-        />
-        <Button
-          variant="outline"
-          onClick={downloadSampleTemplate}
-          className="flex items-center gap-2"
-        >
-          <Download className="w-4 h-4" />
-          Download Sample Template
-        </Button>
-      </div>
+    <DashboardPage
+      title="Bulk Import Students"
+      breadcrumbs={[
+        { label: "Dashboard", href: "/" },
+        { label: "Students", href: "/students" },
+        { label: "Bulk Import", isActive: true },
+      ]}
+      loadingText="Loading Bulk Import"
+      afterStats={
+        <div className="mt-6 p-6 space-y-6">
+          {/* Header Actions */}
+          <div className="flex items-center justify-end">
+            <Button
+              variant="outline"
+              onClick={downloadSampleTemplate}
+              className="flex items-center gap-2"
+            >
+              <Download className="w-4 h-4" />
+              Download Sample Template
+            </Button>
+          </div>
 
       {/* Progress Steps */}
       <div className="flex items-center justify-between bg-white dark:bg-neutral-800 rounded-lg p-6 shadow-sm">
@@ -519,7 +518,7 @@ export default function BulkImportPage() {
             </Button>
           </div>
 
-          <DataTable
+          <ResponsiveListTable variant="contained" showColumnHeaders={true}
             data={importedData.slice(0, 100)}
             columns={previewColumns}
             getRowKey={(row) => row._rowNumber.toString()}
@@ -542,7 +541,7 @@ export default function BulkImportPage() {
             <div className="bg-white dark:bg-neutral-800 rounded-lg p-6 shadow-sm">
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-lg bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
-                  <CheckCircle2 className="w-6 h-6 text-green-600 dark:text-green-400" />
+                  <CheckCircle2 className="w-6 h-6 text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400" />
                 </div>
                 <div>
                   <p className="text-sm text-neutral-600 dark:text-neutral-400">Valid Records</p>
@@ -555,8 +554,8 @@ export default function BulkImportPage() {
 
             <div className="bg-white dark:bg-neutral-800 rounded-lg p-6 shadow-sm">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-lg bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
-                  <AlertCircle className="w-6 h-6 text-red-600 dark:text-red-400" />
+                <div className="w-12 h-12 rounded-lg bg-red-100 dark:bg-red-900/30 midnight:bg-red-900/30 purple:bg-red-900/30 flex items-center justify-center">
+                  <AlertCircle className="w-6 h-6 text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400" />
                 </div>
                 <div>
                   <p className="text-sm text-neutral-600 dark:text-neutral-400">Invalid Records</p>
@@ -570,7 +569,7 @@ export default function BulkImportPage() {
             <div className="bg-white dark:bg-neutral-800 rounded-lg p-6 shadow-sm">
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-lg bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
-                  <AlertCircle className="w-6 h-6 text-amber-600 dark:text-amber-400" />
+                  <AlertCircle className="w-6 h-6 text-amber-600 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400" />
                 </div>
                 <div>
                   <p className="text-sm text-neutral-600 dark:text-neutral-400">Total Errors</p>
@@ -592,9 +591,9 @@ export default function BulkImportPage() {
                 {validationErrors.slice(0, 50).map((error, index) => (
                   <div
                     key={index}
-                    className="flex items-start gap-3 p-3 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800"
+                    className="flex items-start gap-3 p-3 bg-red-50 dark:bg-red-900/20 midnight:bg-red-900/20 purple:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800"
                   >
-                    <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400 mt-0.5 flex-shrink-0" />
+                    <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400 mt-0.5 flex-shrink-0" />
                     <div className="flex-1">
                       <p className="text-sm font-medium text-red-900 dark:text-red-100">
                         Row {error.row}: {error.field}
@@ -666,7 +665,7 @@ export default function BulkImportPage() {
                   {successCount}
                 </p>
               </div>
-              <div className="p-4 bg-red-50 dark:bg-red-900/20 rounded-lg">
+              <div className="p-4 bg-red-50 dark:bg-red-900/20 midnight:bg-red-900/20 purple:bg-red-900/20 rounded-lg">
                 <p className="text-sm text-red-700 dark:text-red-300">Failed</p>
                 <p className="text-2xl font-bold text-red-900 dark:text-red-100">
                   {errorCount}
@@ -681,7 +680,7 @@ export default function BulkImportPage() {
         <div className="bg-white dark:bg-neutral-800 rounded-lg p-12 shadow-sm">
           <div className="max-w-2xl mx-auto text-center space-y-6">
             <div className="w-16 h-16 mx-auto bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
-              <CheckCircle2 className="w-10 h-10 text-green-600 dark:text-green-400" />
+              <CheckCircle2 className="w-10 h-10 text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400" />
             </div>
             <div>
               <h2 className="text-2xl font-semibold text-neutral-900 dark:text-neutral-100 mb-2">
@@ -699,7 +698,7 @@ export default function BulkImportPage() {
                   {successCount}
                 </p>
               </div>
-              <div className="p-4 bg-red-50 dark:bg-red-900/20 rounded-lg">
+              <div className="p-4 bg-red-50 dark:bg-red-900/20 midnight:bg-red-900/20 purple:bg-red-900/20 rounded-lg">
                 <p className="text-sm text-red-700 dark:text-red-300">Failed</p>
                 <p className="text-3xl font-bold text-red-900 dark:text-red-100">
                   {errorCount}
@@ -731,7 +730,8 @@ export default function BulkImportPage() {
           </div>
         </div>
       )}
-      </div>
-    </MainLayout>
+        </div>
+      }
+    />
   );
 }

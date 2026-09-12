@@ -182,9 +182,7 @@ export default function ValidationErrorsModal({
           
           // Function to scroll with proper offset ensuring entire field is visible and stays in viewport
           const scrollToElement = () => {
-            const elementRect = errorElement!.getBoundingClientRect();
-            const elementHeight = elementRect.height;
-            
+            const elementRect = errorElement!.getBoundingClientRect();            
             // Get viewport dimensions
             const viewportHeight = scrollableParent 
               ? scrollableParent.clientHeight 
@@ -377,7 +375,7 @@ export default function ValidationErrorsModal({
        {/* Modal Content */}
               <div
          ref={modalRef}
-         className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-lg max-h-[calc(100vh-2rem)] sm:max-h-[calc(100vh-3rem)] mb-4 flex flex-col animate-in zoom-in-95 duration-200"
+         className="bg-surface rounded-2xl shadow-2xl w-full max-w-lg max-h-[calc(100vh-2rem)] sm:max-h-[calc(100vh-3rem)] mb-4 flex flex-col animate-in zoom-in-95 duration-200"
          onClick={(e) => e.stopPropagation()}
        >
         {/* Header */}
@@ -427,7 +425,7 @@ export default function ValidationErrorsModal({
                                  <div
                    key={fieldName}
                    onClick={() => handleScrollToField(fieldName)}
-                   className="flex items-start gap-2 p-2 bg-gray-50 dark:bg-gray-700/50 midnight:bg-gray-800/50 purple:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-600 midnight:border-cyan-500/20 purple:border-pink-500/20 hover:bg-gray-100 dark:hover:bg-gray-700 midnight:hover:bg-gray-800 purple:hover:bg-gray-800 transition-colors duration-200 cursor-pointer group"
+                   className="flex items-start gap-2 p-2 bg-gray-50 dark:bg-[#22262e]/50 midnight:bg-[#0f1330]/50 purple:bg-[#251340]/50 rounded-lg border border-gray-200 dark:border-gray-600 midnight:border-cyan-500/20 purple:border-pink-500/20 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors duration-200 cursor-pointer group"
                  >
                    <div className="flex-shrink-0 w-5 h-5 bg-yellow-500 dark:bg-yellow-600 midnight:bg-yellow-600 purple:bg-yellow-600 rounded-full flex items-center justify-center text-white text-xs font-semibold mt-0.5">
                      {index + 1}
@@ -437,11 +435,11 @@ export default function ValidationErrorsModal({
                        <p className="font-semibold text-xs text-gray-900 dark:text-white midnight:text-cyan-100 purple:text-pink-100">
                          {fieldLabel}
                        </p>
-                       <span className="text-[10px] font-medium text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 bg-blue-50 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 px-1.5 py-0.5 rounded">
+                       <span className="text-[0.625rem] font-medium text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 bg-blue-50 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 px-1.5 py-0.5 rounded">
                          {sectionName}
                        </span>
                      </div>
-                     <p className="text-[11px] text-gray-600 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70 leading-tight">
+                     <p className="text-[0.6875rem] text-gray-600 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70 leading-tight">
                        {errorMessage}
                      </p>
                    </div>
@@ -456,7 +454,7 @@ export default function ValidationErrorsModal({
                onClick={onClose}
                className="px-5 py-2 rounded-lg font-semibold text-xs text-white bg-blue-600 dark:bg-blue-500 midnight:bg-cyan-600 purple:bg-pink-600 hover:bg-blue-700 dark:hover:bg-blue-600 midnight:hover:bg-cyan-700 purple:hover:bg-pink-700 transition-all duration-200 active:scale-95 shadow-lg hover:shadow-xl cursor-pointer"
              >
-               I'll Complete These Fields
+               I&apos;ll Complete These Fields
              </button>
            </div>
         </div>

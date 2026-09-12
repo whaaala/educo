@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { X, Save, Calendar, Clock, Plus, Trash2, Settings as SettingsIcon } from "lucide-react";
-import type { TimetableConfig, CalendarType, WeekStructure, FreePeriod, DayScheduleOverride } from "@/lib/timetableConfig";
+import type { TimetableConfig, CalendarType, WeekStructure, FreePeriod } from "@/lib/timetableConfig";
 
 interface TimetableSettingsModalProps {
   isOpen: boolean;
@@ -86,32 +86,32 @@ export default function TimetableSettingsModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-      <div className="bg-white dark:bg-[#1a1d23] midnight:bg-[#0f1729] purple:bg-[#2a1a3e] rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+      <div className="bg-surface rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+        <div className="flex items-center justify-between p-6 border-b border-line">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 flex items-center justify-center">
               <SettingsIcon className="w-5 h-5 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+              <h2 className="text-xl font-bold text-ink">
                 Timetable Settings
               </h2>
               <p className="text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-300/70 purple:text-pink-300/70">
-                Configure your school's timetable calendar
+                Configure your school&apos;s timetable calendar
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors"
+            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors"
           >
             <X className="w-5 h-5 text-gray-500 dark:text-gray-400" />
           </button>
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-2 px-6 pt-4 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+        <div className="flex gap-2 px-6 pt-4 border-b border-line">
           {[
             { id: "general", label: "General", icon: Calendar },
             { id: "breaks", label: "Breaks", icon: Clock },
@@ -125,7 +125,7 @@ export default function TimetableSettingsModal({
                 className={`flex items-center gap-2 px-4 py-2 rounded-t-lg font-semibold text-sm transition-colors ${
                   activeTab === tab.id
                     ? "bg-blue-100 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400"
-                    : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"
+                    : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"
                 }`}
               >
                 <Icon className="w-4 h-4" />
@@ -199,7 +199,7 @@ export default function TimetableSettingsModal({
                     onChange={(e) =>
                       setConfig({ ...config, periodsPerDay: parseInt(e.target.value) })
                     }
-                    className="w-full px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
+                    className="w-full px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-[#1a1d24] text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
                   />
                 </div>
 
@@ -216,7 +216,7 @@ export default function TimetableSettingsModal({
                     onChange={(e) =>
                       setConfig({ ...config, periodDuration: parseInt(e.target.value) })
                     }
-                    className="w-full px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
+                    className="w-full px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-[#1a1d24] text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
                   />
                 </div>
               </div>
@@ -231,7 +231,7 @@ export default function TimetableSettingsModal({
                     type="time"
                     value={config.schoolStartTime}
                     onChange={(e) => setConfig({ ...config, schoolStartTime: e.target.value })}
-                    className="w-full px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
+                    className="w-full px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-[#1a1d24] text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
                   />
                 </div>
 
@@ -243,7 +243,7 @@ export default function TimetableSettingsModal({
                     type="time"
                     value={config.schoolEndTime}
                     onChange={(e) => setConfig({ ...config, schoolEndTime: e.target.value })}
-                    className="w-full px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
+                    className="w-full px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-[#1a1d24] text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
                   />
                 </div>
               </div>
@@ -253,14 +253,14 @@ export default function TimetableSettingsModal({
           {activeTab === "breaks" && (
             <div className="space-y-6">
               {/* Include Breaks Toggle */}
-              <div className="flex items-center justify-between p-4 rounded-xl bg-gray-50 dark:bg-gray-800/50 midnight:bg-cyan-900/10 purple:bg-pink-900/10">
+              <div className="flex items-center justify-between p-4 rounded-xl bg-gray-50 dark:bg-[#1a1d24]/50 midnight:bg-cyan-900/10 purple:bg-pink-900/10">
                 <span className="font-semibold text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300">
                   Include Break Times
                 </span>
                 <button
                   onClick={() => setConfig({ ...config, includeBreaks: !config.includeBreaks })}
                   className={`relative w-12 h-6 rounded-full transition-colors ${
-                    config.includeBreaks ? "bg-blue-500" : "bg-gray-300 dark:bg-gray-600"
+                    config.includeBreaks ? "bg-blue-500" : "bg-gray-300 dark:bg-[#2a2d35]"
                   }`}
                 >
                   <div
@@ -288,14 +288,14 @@ export default function TimetableSettingsModal({
                             breakSchedule: {
                               ...config.breakSchedule,
                               morningBreak: {
-                                ...config.breakSchedule?.morningBreak!,
+                                ...(config.breakSchedule?.morningBreak ?? { start: "", end: "" }),
                                 start: e.target.value,
                               },
                             },
                           })
                         }
                         placeholder="Start"
-                        className="px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
+                        className="px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-[#1a1d24] text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
                       />
                       <input
                         type="time"
@@ -306,14 +306,14 @@ export default function TimetableSettingsModal({
                             breakSchedule: {
                               ...config.breakSchedule,
                               morningBreak: {
-                                ...config.breakSchedule?.morningBreak!,
+                                ...(config.breakSchedule?.morningBreak ?? { start: "", end: "" }),
                                 end: e.target.value,
                               },
                             },
                           })
                         }
                         placeholder="End"
-                        className="px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
+                        className="px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-[#1a1d24] text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
                       />
                     </div>
                   </div>
@@ -333,14 +333,14 @@ export default function TimetableSettingsModal({
                             breakSchedule: {
                               ...config.breakSchedule,
                               lunch: {
-                                ...config.breakSchedule?.lunch!,
+                                ...(config.breakSchedule?.lunch ?? { start: "", end: "" }),
                                 start: e.target.value,
                               },
                             },
                           })
                         }
                         placeholder="Start"
-                        className="px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
+                        className="px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-[#1a1d24] text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
                       />
                       <input
                         type="time"
@@ -351,14 +351,14 @@ export default function TimetableSettingsModal({
                             breakSchedule: {
                               ...config.breakSchedule,
                               lunch: {
-                                ...config.breakSchedule?.lunch!,
+                                ...(config.breakSchedule?.lunch ?? { start: "", end: "" }),
                                 end: e.target.value,
                               },
                             },
                           })
                         }
                         placeholder="End"
-                        className="px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
+                        className="px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-[#1a1d24] text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
                       />
                     </div>
                   </div>
@@ -385,7 +385,7 @@ export default function TimetableSettingsModal({
                           })
                         }
                         placeholder="Start"
-                        className="px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
+                        className="px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-[#1a1d24] text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
                       />
                       <input
                         type="time"
@@ -403,7 +403,7 @@ export default function TimetableSettingsModal({
                           })
                         }
                         placeholder="End"
-                        className="px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
+                        className="px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-[#1a1d24] text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
                       />
                     </div>
                   </div>
@@ -415,14 +415,14 @@ export default function TimetableSettingsModal({
           {activeTab === "free-periods" && (
             <div className="space-y-6">
               {/* Include Free Periods Toggle */}
-              <div className="flex items-center justify-between p-4 rounded-xl bg-gray-50 dark:bg-gray-800/50 midnight:bg-cyan-900/10 purple:bg-pink-900/10">
+              <div className="flex items-center justify-between p-4 rounded-xl bg-gray-50 dark:bg-[#1a1d24]/50 midnight:bg-cyan-900/10 purple:bg-pink-900/10">
                 <span className="font-semibold text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300">
                   Include Free Periods
                 </span>
                 <button
                   onClick={() => setConfig({ ...config, includeFree: !config.includeFree })}
                   className={`relative w-12 h-6 rounded-full transition-colors ${
-                    config.includeFree ? "bg-blue-500" : "bg-gray-300 dark:bg-gray-600"
+                    config.includeFree ? "bg-blue-500" : "bg-gray-300 dark:bg-[#2a2d35]"
                   }`}
                 >
                   <div
@@ -473,7 +473,7 @@ export default function TimetableSettingsModal({
                             onChange={(e) =>
                               updateFreePeriod(index, "periodIndex", parseInt(e.target.value))
                             }
-                            className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                            className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-[#1a1d24] text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 outline-none"
                           />
                         </div>
 
@@ -485,7 +485,7 @@ export default function TimetableSettingsModal({
                             type="text"
                             value={fp.label}
                             onChange={(e) => updateFreePeriod(index, "label", e.target.value)}
-                            className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                            className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-[#1a1d24] text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 outline-none"
                           />
                         </div>
 
@@ -496,7 +496,7 @@ export default function TimetableSettingsModal({
                           <select
                             value={fp.type}
                             onChange={(e) => updateFreePeriod(index, "type", e.target.value)}
-                            className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                            className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-[#1a1d24] text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 outline-none"
                           >
                             <option value="free">Free</option>
                             <option value="study">Study Hall</option>
@@ -513,10 +513,10 @@ export default function TimetableSettingsModal({
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-end gap-3 p-6 border-t border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20">
+        <div className="flex items-center justify-end gap-3 p-6 border-t border-line">
           <button
             onClick={onClose}
-            className="px-6 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-semibold hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            className="px-6 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-semibold hover:bg-gray-100 dark:hover:bg-[#22262e] transition-colors"
           >
             Cancel
           </button>

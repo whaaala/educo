@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, memo } from "react";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import {
@@ -21,7 +21,6 @@ import {
   ClipboardList,
   Boxes,
   Briefcase,
-  Globe,
   ArrowRight,
   AlertTriangle,
   UserCheck,
@@ -29,13 +28,20 @@ import {
   Upload,
   Award,
   BarChart3,
+  CalendarClock,
+  Star,
+  MessageSquare,
+  Receipt,
+  Video,
+  LifeBuoy,
+  ExternalLink,
+  Presentation,
+  HardDrive,
+  Globe,
 } from "lucide-react";
 import TenantSwitcher from "@/components/admin/TenantSwitcher";
-
-// Custom Naira Icon Component
-const NairaIcon = ({ className }: { className?: string }) => (
-  <span className={className} style={{ fontSize: '1rem', fontWeight: 'bold' }}>₦</span>
-);
+import { useUser } from "@/contexts/UserContext";
+import CurrencyIcon from "@/components/shared/CurrencyIcon";
 import { cn } from "@/lib/utils";
 
 interface MenuItem {
@@ -61,7 +67,6 @@ const menuItems: MenuItem[] = [
       { id: "school-info", label: "School Information", icon: <Building2 className="w-4 h-4" />, href: "/school/info" },
       { id: "branches", label: "Branches", icon: <Network className="w-4 h-4" />, href: "/school/branches" },
       { id: "academic-years", label: "Academic Years", icon: <Calendar className="w-4 h-4" />, href: "/school/academic-years" },
-      { id: "classes", label: "Classes", icon: <Boxes className="w-4 h-4" />, href: "/school/classes" },
       { id: "sections", label: "Sections", icon: <ClipboardList className="w-4 h-4" />, href: "/school/sections" },
       { id: "departments", label: "Departments", icon: <Network className="w-4 h-4" />, href: "/school/departments" },
     ],
@@ -89,9 +94,32 @@ const menuItems: MenuItem[] = [
           { id: "bulk-import", label: "Bulk Import", icon: <Upload className="w-4 h-4" />, href: "/students/bulk-import" },
         ]
       },
-      { id: "parents", label: "Parents", icon: <Users className="w-4 h-4" />, href: "/parents" },
-      { id: "teachers", label: "Teachers", icon: <Users className="w-4 h-4" />, href: "/teachers" },
-      { id: "staff", label: "Staff", icon: <Users className="w-4 h-4" />, href: "/staff" },
+      {
+        id: "parents",
+        label: "Parents",
+        icon: <Users className="w-4 h-4" />,
+        children: [
+          { id: "parents-overview", label: "Overview", icon: <LayoutDashboard className="w-4 h-4" />, href: "/admin/parents/dashboard" },
+          { id: "all-parents", label: "All Parents", icon: <Users className="w-4 h-4" />, href: "/admin/parents?view=grid" },
+          { id: "parent-list", label: "Parent List", icon: <Users className="w-4 h-4" />, href: "/admin/parents?view=list" },
+          { id: "parent-fees", label: "Fee Records", icon: <CurrencyIcon className="w-4 h-4 text-inherit" />, href: "/admin/parents/fees" },
+          { id: "parent-messages", label: "Messages", icon: <MessageSquare className="w-4 h-4" />, href: "/admin/parents/messages" },
+          { id: "parent-chat", label: "Chat", icon: <MessageSquare className="w-4 h-4" />, href: "/admin/parents/chat" },
+          { id: "parent-events", label: "Events", icon: <Calendar className="w-4 h-4" />, href: "/admin/parents/events" },
+        ]
+      },
+      {
+        id: "personnel",
+        label: "Personnel",
+        icon: <Users className="w-4 h-4" />,
+        children: [
+          { id: "all-personnel", label: "All Personnel", icon: <Users className="w-4 h-4" />, href: "/staff?view=grid" },
+          { id: "personnel-list", label: "Personnel List", icon: <Users className="w-4 h-4" />, href: "/staff?view=list" },
+          { id: "leave-requests", label: "Leave Requests", icon: <CalendarClock className="w-4 h-4" />, href: "/staff/leave-requests" },
+          { id: "performance-reviews", label: "Performance Reviews", icon: <Star className="w-4 h-4" />, href: "/staff/performance-reviews" },
+          { id: "staff-discipline", label: "Discipline & Complaints", icon: <MessageSquare className="w-4 h-4" />, href: "/staff/discipline" },
+        ]
+      },
     ],
   },
   {
@@ -99,6 +127,15 @@ const menuItems: MenuItem[] = [
     label: "Academic",
     icon: <BookOpen className="w-5 h-5" />,
     children: [
+      {
+        id: "classes",
+        label: "Classes",
+        icon: <Boxes className="w-4 h-4" />,
+        children: [
+          { id: "all-classes", label: "All Classes", icon: <Boxes className="w-4 h-4" />, href: "/classes?view=grid" },
+          { id: "class-list", label: "Class List", icon: <Boxes className="w-4 h-4" />, href: "/classes?view=list" },
+        ]
+      },
       { id: "subjects", label: "Subjects", icon: <BookOpen className="w-4 h-4" />, href: "/subjects" },
       { id: "exams", label: "Exams", icon: <FileText className="w-4 h-4" />, href: "/exams" },
       { id: "syllabus", label: "Syllabus", icon: <FileText className="w-4 h-4" />, href: "/syllabus" },
@@ -110,10 +147,40 @@ const menuItems: MenuItem[] = [
     label: "Management",
     icon: <Briefcase className="w-5 h-5" />,
     children: [
-      { id: "fees", label: "Fees", icon: <NairaIcon className="w-4 h-4" />, href: "/fees" },
-      { id: "library", label: "Library", icon: <BookOpen className="w-4 h-4" />, href: "/library" },
+      {
+        id: "fees",
+        label: "Finance",
+        icon: <CurrencyIcon className="w-4 h-4 text-inherit" />,
+        children: [
+          { id: "fee-structure", label: "Fee Structure", icon: <FileText className="w-4 h-4" />, href: "/finance/fee-structure" },
+          { id: "installment-plans", label: "Installment Plans", icon: <Boxes className="w-4 h-4" />, href: "/finance/installments" },
+          { id: "receipts", label: "Receipts", icon: <Receipt className="w-4 h-4" />, href: "/finance/receipts" },
+        ]
+      },
+      {
+        id: "library",
+        label: "Library",
+        icon: <BookOpen className="w-4 h-4" />,
+        children: [
+          { id: "book-catalog", label: "Book Catalog", icon: <BookOpen className="w-4 h-4" />, href: "/library" },
+          { id: "borrowing", label: "Borrowing & Returns", icon: <ArrowRight className="w-4 h-4" />, href: "/library/borrowing" },
+          { id: "members", label: "Library Members", icon: <Users className="w-4 h-4" />, href: "/library/members" },
+          { id: "fines", label: "Fines & Payments", icon: <Receipt className="w-4 h-4" />, href: "/library/fines" },
+        ]
+      },
       { id: "dormitory", label: "Dormitory", icon: <Home className="w-4 h-4" />, href: "/dormitory" },
       { id: "transport", label: "Transport", icon: <Bus className="w-4 h-4" />, href: "/transport" },
+    ],
+  },
+  {
+    id: "workspace",
+    label: "Workspace",
+    icon: <FileText className="w-5 h-5" />,
+    children: [
+      { id: "drive", label: "My Drive", icon: <HardDrive className="w-4 h-4" />, href: "/drive" },
+      { id: "documents", label: "Documents", icon: <FileText className="w-4 h-4" />, href: "/documents" },
+      { id: "presentations", label: "Presentations", icon: <Presentation className="w-4 h-4" />, href: "/presentations" },
+      { id: "website-builder", label: "Website Builder", icon: <Globe className="w-4 h-4" />, href: "/website" },
     ],
   },
   {
@@ -128,33 +195,96 @@ const menuItems: MenuItem[] = [
     icon: <Settings className="w-5 h-5" />,
     children: [
       { id: "overview", label: "Settings Overview", icon: <Settings className="w-4 h-4" />, href: "/settings" },
-      { id: "regional", label: "Regional Settings", icon: <Globe className="w-4 h-4" />, href: "/settings" },
       { id: "general", label: "General Settings", icon: <Settings className="w-4 h-4" />, href: "/settings/general" },
+      { id: "communication", label: "Communication", icon: <Video className="w-4 h-4" />, href: "/admin/settings/communication" },
       { id: "schools", label: "Schools & Branches", icon: <Home className="w-4 h-4" />, href: "/settings/schools" },
-      { id: "tenants", label: "Tenant Management", icon: <Building2 className="w-4 h-4" />, href: "/admin/tenants" },
       { id: "users", label: "User Management", icon: <Users className="w-4 h-4" />, href: "/settings/users" },
+      { id: "admin-console", label: "Admin Console", icon: <ExternalLink className="w-4 h-4" />, href: "http://localhost:3001" },
     ],
   },
 ];
+
+// Parent-specific navigation (used when a Parent user is logged in)
+const parentMenuItems: MenuItem[] = [
+  {
+    id: "parent-dashboard",
+    label: "Dashboard",
+    icon: <LayoutDashboard className="w-5 h-5" />,
+    href: "/parents",
+  },
+  {
+    id: "parent-children",
+    label: "My Children",
+    icon: <GraduationCap className="w-5 h-5" />,
+    href: "/parents/children",
+  },
+  {
+    id: "parent-fees",
+    label: "Fees & Payments",
+    icon: <CurrencyIcon className="w-5 h-5 text-inherit" />,
+    href: "/parents/fees",
+  },
+  {
+    id: "parent-messages",
+    label: "Messages",
+    icon: <MessageSquare className="w-5 h-5" />,
+    href: "/parents/messages",
+  },
+  {
+    id: "parent-chat",
+    label: "Chat",
+    icon: <MessageSquare className="w-5 h-5" />,
+    href: "/parents/chat",
+  },
+  {
+    id: "parent-meetings",
+    label: "Video Calls & Meetings",
+    icon: <Video className="w-5 h-5" />,
+    href: "/parents/meetings",
+  },
+  {
+    id: "parent-homework",
+    label: "Homework",
+    icon: <BookOpen className="w-5 h-5" />,
+    href: "/parents/homework",
+  },
+  {
+    id: "parent-results",
+    label: "Results",
+    icon: <FileText className="w-5 h-5" />,
+    href: "/parents/results",
+  },
+  {
+    id: "parent-support",
+    label: "Support",
+    icon: <LifeBuoy className="w-5 h-5" />,
+    href: "/parents/support",
+  },
+];
+
+export { type MenuItem };
 
 interface SidebarProps {
   isCollapsed: boolean;
   setIsCollapsed: (value: boolean) => void;
   isMobileSidebarOpen: boolean;
   setIsMobileSidebarOpen: (value: boolean) => void;
+  customMenuItems?: MenuItem[];
+  showTenantSwitcher?: boolean;
 }
 
-export default function Sidebar({ isCollapsed, setIsCollapsed, isMobileSidebarOpen, setIsMobileSidebarOpen }: SidebarProps) {
+function Sidebar({ isCollapsed, setIsCollapsed, isMobileSidebarOpen, setIsMobileSidebarOpen, customMenuItems, showTenantSwitcher = true }: SidebarProps) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const { isParent } = useUser();
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
   const [isMobile, setIsMobile] = useState<boolean | null>(null); // null on server, boolean on client
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
   const [hoveredSubmenuItem, setHoveredSubmenuItem] = useState<string | null>(null);
-  const [hideTimeout, setHideTimeout] = useState<NodeJS.Timeout | null>(null);
-  const [submenuHideTimeout, setSubmenuHideTimeout] = useState<NodeJS.Timeout | null>(null);
+  const [hideTimeout, setHideTimeout] = useState<ReturnType<typeof setTimeout> | null>(null);
+  const [submenuHideTimeout, setSubmenuHideTimeout] = useState<ReturnType<typeof setTimeout> | null>(null);
   const [showLogoText, setShowLogoText] = useState(false);
-  const logoTextTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const logoTextTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Helper function to check if a link is active
   const isLinkActive = (href: string) => {
@@ -311,8 +441,8 @@ export default function Sidebar({ isCollapsed, setIsCollapsed, isMobileSidebarOp
                 "transition-all duration-200 ease-out",
                 "border",
                 hasActiveChild(item)
-                  ? "bg-blue-50/40 dark:bg-blue-900/10 midnight:bg-cyan-900/10 purple:bg-pink-900/10 text-blue-600 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300 border-blue-200/30 dark:border-blue-700/20 midnight:border-cyan-700/20 purple:border-pink-700/20"
-                  : "text-gray-600 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-100/50 dark:hover:bg-gray-800/50 midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 border-transparent",
+                  ? "bg-blue-50/40 dark:bg-blue-900/10 midnight:bg-cyan-900/10 purple:bg-pink-900/10 text-blue-600 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300 border-blue-200/30 dark:border-blue-700 midnight:border-cyan-500 purple:border-pink-500/20 midnight:border-cyan-700/20 purple:border-pink-700/20"
+                  : "text-gray-600 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-100/50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 border-transparent",
                 level > 0 && "pl-3"
               )}
             >
@@ -322,7 +452,7 @@ export default function Sidebar({ isCollapsed, setIsCollapsed, isMobileSidebarOp
                   "transition-all duration-200",
                   hasActiveChild(item)
                     ? "bg-blue-100/30 dark:bg-blue-800/20 midnight:bg-cyan-800/20 purple:bg-pink-800/20"
-                    : "bg-gray-100 dark:bg-gray-800/50 midnight:bg-cyan-500/10 purple:bg-pink-500/10"
+                    : "bg-gray-100 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-cyan-500/10 purple:bg-pink-500/10"
                 )}>
                   {item.icon}
                 </div>
@@ -353,14 +483,14 @@ export default function Sidebar({ isCollapsed, setIsCollapsed, isMobileSidebarOp
                 isExpanded && "rotate-180",
                 !(isMobile === true || (isMobile === false && !isCollapsed)) && "opacity-0"
               )}>
-                <ChevronDown className="w-4 h-4 text-gray-400 dark:text-gray-500" />
+                <ChevronDown className="w-4 h-4 text-gray-400 dark:text-gray-500 midnight:text-cyan-400 purple:text-pink-400" />
               </div>
             </button>
 
             {/* Popover menu for collapsed sidebar */}
             {isCollapsedDesktop && level === 0 && hoveredItem === item.id && (
               <div
-                className="absolute left-full top-0 w-56 bg-white dark:bg-[#1e2128] midnight:bg-[#0d1220] purple:bg-[#1f0d33] rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700/50 midnight:border-cyan-500/20 purple:border-pink-500/20 py-2 backdrop-blur-sm animate-in fade-in slide-in-from-left-2 duration-200"
+                className="absolute left-full top-0 w-56 bg-white dark:bg-[#1e2128] midnight:bg-[#0d1220] purple:bg-[#1f0d33] rounded-xl shadow-2xl border border-line py-2 backdrop-blur-sm animate-in fade-in slide-in-from-left-2 duration-200"
                 style={{
                   zIndex: 9999,
                   marginLeft: '8px',
@@ -368,7 +498,7 @@ export default function Sidebar({ isCollapsed, setIsCollapsed, isMobileSidebarOp
                 onMouseEnter={() => handleMouseEnterItem(item.id)}
                 onMouseLeave={() => handleMouseLeaveItem(item.id)}
               >
-                <div className="px-4 py-2.5 text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 border-b border-gray-100 dark:border-gray-800 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800/50 dark:to-gray-900/50">
+                <div className="px-4 py-2.5 text-sm font-bold text-ink border-b border-gray-100 dark:border-[#1a1d24] midnight:border-cyan-500/20 purple:border-pink-500/20 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800/50 dark:to-gray-900/50">
                   {item.label}
                 </div>
                 <div className="py-1">
@@ -388,15 +518,15 @@ export default function Sidebar({ isCollapsed, setIsCollapsed, isMobileSidebarOp
                           <div className={cn(
                             "flex items-center justify-between gap-3 px-4 py-2.5 text-sm transition-all duration-200 rounded-xl cursor-pointer",
                             childIsActive
-                              ? "bg-blue-50/40 dark:bg-blue-900/10 midnight:bg-cyan-900/10 purple:bg-pink-900/10 text-blue-600 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300 border border-blue-200/30 dark:border-blue-700/20 midnight:border-cyan-700/20 purple:border-pink-700/20"
-                              : "text-gray-700 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-100 dark:hover:bg-gray-700/50 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 hover:text-blue-600 dark:hover:text-blue-300 midnight:hover:text-cyan-300 purple:hover:text-pink-300"
+                              ? "bg-blue-50/40 dark:bg-blue-900/10 midnight:bg-cyan-900/10 purple:bg-pink-900/10 text-blue-600 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300 border border-blue-200/30 dark:border-blue-700 midnight:border-cyan-500 purple:border-pink-500/20 midnight:border-cyan-700/20 purple:border-pink-700/20"
+                              : "text-gray-700 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 hover:text-blue-600 dark:hover:text-blue-300 midnight:hover:text-cyan-300 purple:hover:text-pink-300"
                           )}>
                             <div className="flex items-center gap-3">
                               <div className={cn(
                                 "flex items-center justify-center w-7 h-7 rounded-lg transition-all duration-200",
                                 childIsActive
                                   ? "bg-blue-100/30 dark:bg-blue-800/20 midnight:bg-cyan-800/20 purple:bg-pink-800/20"
-                                  : "bg-gray-100 dark:bg-gray-700/50"
+                                  : "bg-surface-2/50"
                               )}>
                                 {child.icon}
                               </div>
@@ -408,7 +538,7 @@ export default function Sidebar({ isCollapsed, setIsCollapsed, isMobileSidebarOp
                           {/* Nested submenu popup */}
                           {hoveredSubmenuItem === child.id && (
                             <div
-                              className="absolute left-full top-0 w-52 bg-white dark:bg-[#1e2128] midnight:bg-[#0d1220] purple:bg-[#1f0d33] rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700/50 midnight:border-cyan-500/20 purple:border-pink-500/20 py-2 backdrop-blur-sm animate-in fade-in slide-in-from-left-2 duration-200"
+                              className="absolute left-full top-0 w-52 bg-white dark:bg-[#1e2128] midnight:bg-[#0d1220] purple:bg-[#1f0d33] rounded-xl shadow-2xl border border-line py-2 backdrop-blur-sm animate-in fade-in slide-in-from-left-2 duration-200"
                               style={{
                                 zIndex: 10000,
                                 marginLeft: '8px',
@@ -416,7 +546,7 @@ export default function Sidebar({ isCollapsed, setIsCollapsed, isMobileSidebarOp
                               onMouseEnter={() => handleMouseEnterSubmenuItem(child.id)}
                               onMouseLeave={() => handleMouseLeaveSubmenuItem(child.id)}
                             >
-                              <div className="px-4 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400 uppercase tracking-wide border-b border-gray-100 dark:border-gray-800 midnight:border-cyan-500/20 purple:border-pink-500/20">
+                              <div className="px-4 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400 uppercase tracking-wide border-b border-gray-100 dark:border-[#1a1d24] midnight:border-cyan-500/20 purple:border-pink-500/20">
                                 {child.label}
                               </div>
                               <div className="py-1">
@@ -429,15 +559,15 @@ export default function Sidebar({ isCollapsed, setIsCollapsed, isMobileSidebarOp
                                       className={cn(
                                         "flex items-center gap-3 px-4 py-2.5 text-sm transition-all duration-200 rounded-xl mx-2 cursor-pointer",
                                         isActive
-                                          ? "bg-blue-50/40 dark:bg-blue-900/10 midnight:bg-cyan-900/10 purple:bg-pink-900/10 text-blue-600 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300 border border-blue-200/30 dark:border-blue-700/20 midnight:border-cyan-700/20 purple:border-pink-700/20"
-                                          : "text-gray-700 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-100/80 dark:hover:bg-gray-700/50 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 hover:text-blue-600 dark:hover:text-blue-300 midnight:hover:text-cyan-300 purple:hover:text-pink-300"
+                                          ? "bg-blue-50/40 dark:bg-blue-900/10 midnight:bg-cyan-900/10 purple:bg-pink-900/10 text-blue-600 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300 border border-blue-200/30 dark:border-blue-700 midnight:border-cyan-500 purple:border-pink-500/20 midnight:border-cyan-700/20 purple:border-pink-700/20"
+                                          : "text-gray-700 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-100/80 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 hover:text-blue-600 dark:hover:text-blue-300 midnight:hover:text-cyan-300 purple:hover:text-pink-300"
                                       )}
                                     >
                                       <div className={cn(
                                         "flex items-center justify-center w-7 h-7 rounded-lg transition-all duration-200",
                                         isActive
                                           ? "bg-blue-100/30 dark:bg-blue-800/20 midnight:bg-cyan-800/20 purple:bg-pink-800/20"
-                                          : "bg-gray-100 dark:bg-gray-700/50"
+                                          : "bg-surface-2/50"
                                       )}>
                                         {grandchild.icon}
                                       </div>
@@ -458,7 +588,7 @@ export default function Sidebar({ isCollapsed, setIsCollapsed, isMobileSidebarOp
                         href={child.href || "#"}
                         className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100 hover:bg-blue-50 dark:hover:bg-blue-500/10 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 hover:text-blue-600 dark:hover:text-blue-300 midnight:hover:text-cyan-300 purple:hover:text-pink-300 transition-all duration-150 rounded-lg mx-2 cursor-pointer"
                       >
-                        <div className="flex items-center justify-center w-6 h-6 rounded-md bg-gray-100 dark:bg-gray-700/50">
+                        <div className="flex items-center justify-center w-6 h-6 rounded-md bg-surface-2/50">
                           {child.icon}
                         </div>
                         <span className="font-medium">{child.label}</span>
@@ -491,7 +621,7 @@ export default function Sidebar({ isCollapsed, setIsCollapsed, isMobileSidebarOp
               <div className="flex items-center gap-3 flex-1 min-w-0">
                 <div className={cn(
                   "flex items-center justify-center w-8 h-8 rounded-lg flex-shrink-0",
-                  "bg-gray-100 dark:bg-gray-800/50 midnight:bg-cyan-500/10 purple:bg-pink-500/10",
+                  "bg-gray-100 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-cyan-500/10 purple:bg-pink-500/10",
                   "group-hover:bg-blue-100 dark:group-hover:bg-blue-500/20",
                   "midnight:group-hover:bg-cyan-500/20 purple:group-hover:bg-pink-500/20",
                   "transition-colors duration-200"
@@ -526,7 +656,7 @@ export default function Sidebar({ isCollapsed, setIsCollapsed, isMobileSidebarOp
             {/* Tooltip for collapsed sidebar */}
             {isCollapsedDesktop && level === 0 && hoveredItem === item.id && (
               <div
-                className="absolute left-full top-0 px-3 py-2 bg-gray-900 dark:bg-gray-800 midnight:bg-cyan-600 purple:bg-pink-600 text-white text-sm font-medium rounded-lg whitespace-nowrap shadow-lg animate-in fade-in slide-in-from-left-1 duration-150"
+                className="absolute left-full top-0 px-3 py-2 bg-gray-900 dark:bg-[#1a1d24] midnight:bg-cyan-600 purple:bg-pink-600 text-white text-sm font-medium rounded-lg whitespace-nowrap shadow-lg animate-in fade-in slide-in-from-left-1 duration-150"
                 style={{
                   zIndex: 9999,
                   marginLeft: '12px',
@@ -571,8 +701,8 @@ export default function Sidebar({ isCollapsed, setIsCollapsed, isMobileSidebarOp
                     "flex items-center gap-3 px-3 py-2.5 pr-3 rounded-xl text-sm font-medium cursor-pointer",
                     "transition-all duration-200",
                     childIsActive
-                      ? "bg-blue-50/40 dark:bg-blue-900/10 midnight:bg-cyan-900/10 purple:bg-pink-900/10 text-blue-600 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300 border border-blue-200/30 dark:border-blue-700/20 midnight:border-cyan-700/20 purple:border-pink-700/20"
-                      : "text-gray-600 dark:text-gray-400 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100/50 dark:hover:bg-gray-800/50 midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 hover:text-blue-600 dark:hover:text-blue-300 midnight:hover:text-cyan-300 purple:hover:text-pink-300"
+                      ? "bg-blue-50/40 dark:bg-blue-900/10 midnight:bg-cyan-900/10 purple:bg-pink-900/10 text-blue-600 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300 border border-blue-200/30 dark:border-blue-700 midnight:border-cyan-500 purple:border-pink-500/20 midnight:border-cyan-700/20 purple:border-pink-700/20"
+                      : "text-gray-600 dark:text-gray-400 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100/50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 hover:text-blue-600 dark:hover:text-blue-300 midnight:hover:text-cyan-300 purple:hover:text-pink-300"
                   )}
                 >
                   <div className="flex items-center gap-3 flex-1 min-w-0">
@@ -580,7 +710,7 @@ export default function Sidebar({ isCollapsed, setIsCollapsed, isMobileSidebarOp
                       "flex items-center justify-center w-7 h-7 rounded-lg shrink-0 transition-all duration-200",
                       childIsActive
                         ? "bg-blue-100/30 dark:bg-blue-800/20 midnight:bg-cyan-800/20 purple:bg-pink-800/20"
-                        : "bg-gray-100 dark:bg-gray-800/50 midnight:bg-cyan-500/10 purple:bg-pink-500/10"
+                        : "bg-gray-100 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e]/50 midnight:bg-cyan-500/10 purple:bg-pink-500/10"
                     )}>
                       {child.icon}
                     </div>
@@ -617,7 +747,7 @@ export default function Sidebar({ isCollapsed, setIsCollapsed, isMobileSidebarOp
           "dark:from-[#1a1d23] dark:via-[#1e2128] dark:to-[#1a1d23]",
           "midnight:from-[#0f1729] midnight:via-[#0d1220] midnight:to-[#0f1729]",
           "purple:from-[#2a1a3e] purple:via-[#1f0d33] purple:to-[#2a1a3e]",
-          "border-r border-gray-200/80 dark:border-gray-800/50 midnight:border-cyan-500/20 purple:border-pink-500/20",
+          "border-r border-gray-200/80 dark:border-[#1a1d24] midnight:border-cyan-500/20 purple:border-pink-500/20",
           "shadow-xl shadow-gray-200/50 dark:shadow-black/20",
           "backdrop-blur-xl",
           "transition-all duration-500 ease-in-out z-40",
@@ -628,12 +758,16 @@ export default function Sidebar({ isCollapsed, setIsCollapsed, isMobileSidebarOp
           // Mobile visibility
           isMobileSidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         )}
-        style={isCollapsed && isMobile === false ? { overflow: 'visible' } : undefined}
+        style={{
+          ...(isCollapsed && isMobile === false ? { overflow: 'visible' } : {}),
+          // Set CSS variable for sidebar width so other components can use it
+          '--sidebar-width': isMobile ? '0px' : (isCollapsed ? '80px' : '288px'),
+        } as React.CSSProperties}
       >
         <div className="flex flex-col h-full" style={isCollapsed && isMobile === false ? { overflow: 'visible' } : undefined}>
           {/* Logo Section */}
           <div className={cn(
-            "flex items-center px-4 py-5 border-b border-gray-200/80 dark:border-gray-800/50 midnight:border-cyan-500/20 purple:border-pink-500/20",
+            "flex items-center px-4 py-5 border-b border-gray-200/80 dark:border-[#1a1d24] midnight:border-cyan-500/20 purple:border-pink-500/20",
             "bg-gradient-to-r from-blue-50/50 to-indigo-50/50 dark:from-blue-500/5 dark:to-indigo-500/5",
             "midnight:from-cyan-500/5 midnight:to-blue-500/5 purple:from-pink-500/5 purple:to-purple-500/5",
             "transition-all duration-500 ease-in-out",
@@ -699,22 +833,22 @@ export default function Sidebar({ isCollapsed, setIsCollapsed, isMobileSidebarOp
 
           {/* Navigation Menu */}
           <nav
-            className="flex-1 p-4"
+            className="flex-1 min-h-0 p-4"
             style={isCollapsed && isMobile === false ? { overflow: 'visible' } : { overflowY: 'auto', overflowX: 'hidden' }}
           >
             <div className="space-y-2">
-              {menuItems.map((item) => renderMenuItem(item))}
+              {(customMenuItems ?? (isParent ? parentMenuItems : menuItems)).map((item) => renderMenuItem(item))}
             </div>
           </nav>
 
           {/* Footer - Show based on mobile/collapsed state */}
           {(isMobile === true || (isMobile === false && !isCollapsed)) && (
-            <div className="p-4 border-t border-gray-200/80 dark:border-gray-800/50 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-gradient-to-r from-blue-50/30 to-indigo-50/30 dark:from-blue-500/5 dark:to-indigo-500/5 midnight:from-cyan-500/5 midnight:to-blue-500/5 purple:from-pink-500/5 purple:to-purple-500/5 space-y-3">
+            <div className="flex-shrink-0 p-4 border-t border-gray-200/80 dark:border-[#1a1d24] midnight:border-cyan-500/20 purple:border-pink-500/20 bg-gradient-to-r from-blue-50/30 to-indigo-50/30 dark:from-blue-500/5 dark:to-indigo-500/5 midnight:from-cyan-500/5 midnight:to-blue-500/5 purple:from-pink-500/5 purple:to-purple-500/5 space-y-3">
               {/* Tenant Switcher */}
-              <TenantSwitcher />
+              {showTenantSwitcher && !isParent && <TenantSwitcher />}
 
               {/* Help Section */}
-              <div className="px-4 py-3.5 bg-gradient-to-br from-blue-50 via-indigo-50 to-blue-100 dark:from-blue-500/10 dark:via-indigo-500/10 dark:to-blue-600/10 midnight:from-cyan-500/10 midnight:via-blue-500/10 midnight:to-cyan-600/10 purple:from-pink-500/10 purple:via-purple-500/10 purple:to-pink-600/10 rounded-xl border border-blue-200/50 dark:border-blue-500/20 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm hover:shadow-md transition-all duration-200">
+              <div className="px-4 py-3.5 bg-gradient-to-br from-blue-50 via-indigo-50 to-blue-100 dark:from-blue-500/10 dark:via-indigo-500/10 dark:to-blue-600/10 midnight:from-cyan-500/10 midnight:via-blue-500/10 midnight:to-cyan-600/10 purple:from-pink-500/10 purple:via-purple-500/10 purple:to-pink-600/10 rounded-xl border border-blue-200/50 dark:border-blue-500 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm hover:shadow-md transition-all duration-200">
                 <p className="text-sm font-bold text-blue-900 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300 flex items-center gap-2">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -730,3 +864,5 @@ export default function Sidebar({ isCollapsed, setIsCollapsed, isMobileSidebarOp
     </>
   );
 }
+
+export default memo(Sidebar);

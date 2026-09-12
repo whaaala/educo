@@ -1,4 +1,4 @@
-import { TransferRequest, TransferRecord, TransferHistory } from "@/types/transfer";
+import { TransferRequest, TransferHistory } from "@/types/transfer";
 
 /**
  * Mock Transfer Data

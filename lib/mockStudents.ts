@@ -1,6 +1,9 @@
 // Shared mock student data
 import { Student } from "@/components/students/StudentCard";
 
+// Export Student as StudentData for API routes
+export type StudentData = Student;
+
 // Timetable interfaces
 export interface TimetableEntry {
   day: string;
@@ -15,6 +18,25 @@ export interface Period {
   type?: "class" | "break";
 }
 
+/** A brother or sister on a student's record — the shape this file actually builds. */
+export interface StudentSibling {
+  name: string;
+  relationship: string;
+  age: number;
+  class: string;
+  section: string;
+  photo: string;
+  classNum: string;
+  school: string;
+}
+
+/** A file attached to a student's record. */
+export interface StudentDocument {
+  name: string;
+  type: string;
+  url: string;
+}
+
 // Extended student data interface matching the form structure
 export interface ExtendedStudentData {
   // Personal Information
@@ -25,6 +47,7 @@ export interface ExtendedStudentData {
   admissionDate?: string;
   rollNumber: string;
   status: "Active" | "Inactive";
+  classLevel?: string; // Current class level (e.g., "JSS 1", "SS 2", "100 Level")
 
   // NEW: Education Level & Institution Type (PRD Requirements)
   educationLevel?: "Primary" | "Secondary" | "Tertiary";
@@ -134,7 +157,7 @@ export interface ExtendedStudentData {
   guardianCountry?: string;
   
   // Siblings
-  siblings?: any[];
+  siblings?: StudentSibling[];
   isSiblingStudyingHere?: boolean;
   
   // Address
@@ -182,7 +205,7 @@ export interface ExtendedStudentData {
   transferCertificate?: File | null;
   immunizationCard?: File | null;
   studentIdProof?: File | null;
-  documents?: any[];
+  documents?: StudentDocument[];
   
      // Medical History
    medicalConditions?: string[];
@@ -244,7 +267,7 @@ function parseDate(dateStr: string): string {
       const year = parts[2];
       return `${year}-${month}-${day}`;
     }
-  } catch (e) {
+  } catch  {
     // Fallback to current date if parsing fails
   }
   return new Date().toISOString().split("T")[0];
@@ -483,7 +506,7 @@ function generateExtendedStudentData(student: Student, academicYear: string = "2
        }
        
        return siblings;
-     })() : ([] as any[]),
+     })() : ([] as StudentSibling[]),
      isSiblingStudyingHere: studentIndex % 2 === 0 && studentIndex % 3 === 0,
     
     // Address
@@ -535,7 +558,7 @@ function generateExtendedStudentData(student: Student, academicYear: string = "2
        { name: "Birth Certificate", type: "pdf", url: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf" },
        { name: "Medical Certificate", type: "pdf", url: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf" },
        { name: "Previous School Transcript", type: "pdf", url: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf" }
-     ] : ([] as any[]),
+     ] : ([] as StudentDocument[]),
      
           // Medical History (ensure all array fields are always arrays)
      medicalCondition: studentIndex % 10 === 0 ? "Asthma (mild)" : "Good",
@@ -678,7 +701,9 @@ function generateStudentAttendance(
     const month = months[currentDate.getMonth()];
     const year = currentDate.getFullYear();
 
-    const row: any = {
+    // Built key-by-key because the period columns are dynamic (`period1`…`periodN`), so the finished shape
+    // only becomes ClassAttendanceData once the loop below has filled them in.
+    const row: Record<string, string> = {
       date: `${day} ${month} ${year}`,
       day: dayName,
     };
@@ -698,7 +723,7 @@ function generateStudentAttendance(
       row[`period${p}`] = status;
     }
 
-    data.push(row as ClassAttendanceData);
+    data.push(row as unknown as ClassAttendanceData);
 
     // Move to next day
     currentDate.setDate(currentDate.getDate() + 1);
@@ -798,6 +823,7 @@ export const sampleStudents: Student[] = [
     status: "Active",
     avatar: "https://i.pravatar.cc/150?img=1",
     tenantId: "educo-default", // Educo v4.0 Multi-Tenant
+    branch: "Main Campus", // PRD: Multi-branch support
   },
   {
     id: "AD9892433",
@@ -809,6 +835,7 @@ export const sampleStudents: Student[] = [
     status: "Active",
     avatar: "https://i.pravatar.cc/150?img=2",
     tenantId: "educo-default",
+    branch: "North Campus",
   },
   {
     id: "AD9892432",
@@ -820,6 +847,7 @@ export const sampleStudents: Student[] = [
     status: "Active",
     avatar: "https://i.pravatar.cc/150?img=3",
     tenantId: "educo-default",
+    branch: "South Campus",
   },
   {
     id: "AD9892431",
@@ -832,6 +860,7 @@ export const sampleStudents: Student[] = [
     status: "Inactive",
     avatar: "https://i.pravatar.cc/150?img=4",
     tenantId: "greenfield-international",
+    branch: "East Campus",
   },
   {
     id: "AD9892430",
@@ -842,6 +871,7 @@ export const sampleStudents: Student[] = [
     joinedOn: "20 Jun 2015",
     status: "Active",
     avatar: "https://i.pravatar.cc/150?img=5",
+    branch: "West Campus",
   },
   {
     id: "AD9892429",
@@ -852,6 +882,7 @@ export const sampleStudents: Student[] = [
     joinedOn: "20 Jun 2015",
     status: "Active",
     avatar: "https://i.pravatar.cc/150?img=6",
+    branch: "Main Campus",
   },
   {
     id: "AD9892428",
@@ -862,6 +893,7 @@ export const sampleStudents: Student[] = [
     joinedOn: "18 Jan 2023",
     status: "Active",
     avatar: "https://i.pravatar.cc/150?img=7",
+    branch: "North Campus",
   },
   {
     id: "AD9892427",
@@ -872,6 +904,7 @@ export const sampleStudents: Student[] = [
     joinedOn: "26 May 2020",
     status: "Active",
     avatar: "https://i.pravatar.cc/150?img=8",
+    branch: "South Campus",
   },
   {
     id: "AD9892426",
@@ -882,6 +915,7 @@ export const sampleStudents: Student[] = [
     joinedOn: "15 Mar 2019",
     status: "Active",
     avatar: "https://i.pravatar.cc/150?img=9",
+    branch: "Main Campus",
   },
   {
     id: "AD9892425",
@@ -892,6 +926,7 @@ export const sampleStudents: Student[] = [
     joinedOn: "22 Jul 2018",
     status: "Active",
     avatar: "https://i.pravatar.cc/150?img=10",
+    branch: "East Campus",
   },
   {
     id: "AD9892424",
@@ -902,6 +937,7 @@ export const sampleStudents: Student[] = [
     joinedOn: "10 Sep 2019",
     status: "Active",
     avatar: "https://i.pravatar.cc/150?img=11",
+    branch: "West Campus",
   },
   {
     id: "AD9892423",
@@ -912,6 +948,7 @@ export const sampleStudents: Student[] = [
     joinedOn: "5 Nov 2020",
     status: "Active",
     avatar: "https://i.pravatar.cc/150?img=12",
+    branch: "North Campus",
   },
   {
     id: "AD9892422",
@@ -922,6 +959,7 @@ export const sampleStudents: Student[] = [
     joinedOn: "18 Feb 2018",
     status: "Active",
     avatar: "https://i.pravatar.cc/150?img=13",
+    branch: "Main Campus",
   },
   {
     id: "AD9892421",
@@ -932,6 +970,7 @@ export const sampleStudents: Student[] = [
     joinedOn: "30 Apr 2021",
     status: "Active",
     avatar: "https://i.pravatar.cc/150?img=14",
+    branch: "South Campus",
   },
   {
     id: "AD9892420",
@@ -942,6 +981,7 @@ export const sampleStudents: Student[] = [
     joinedOn: "12 Aug 2019",
     status: "Active",
     avatar: "https://i.pravatar.cc/150?img=15",
+    branch: "East Campus",
   },
   {
     id: "AD9892419",
@@ -952,6 +992,7 @@ export const sampleStudents: Student[] = [
     joinedOn: "25 Jan 2020",
     status: "Active",
     avatar: "https://i.pravatar.cc/150?img=16",
+    branch: "West Campus",
   },
   {
     id: "AD9892520",
@@ -962,6 +1003,7 @@ export const sampleStudents: Student[] = [
     joinedOn: "5 Sep 2024",
     status: "Active",
     avatar: "https://i.pravatar.cc/150?img=17",
+    branch: "Main Campus",
   },
   {
     id: "AD9892521",
@@ -972,6 +1014,7 @@ export const sampleStudents: Student[] = [
     joinedOn: "10 Sep 2024",
     status: "Active",
     avatar: "https://i.pravatar.cc/150?img=18",
+    branch: "North Campus",
   },
   {
     id: "AD9892522",
@@ -982,166 +1025,216 @@ export const sampleStudents: Student[] = [
     joinedOn: "15 Sep 2024",
     status: "Active",
     avatar: "https://i.pravatar.cc/150?img=19",
+    branch: "South Campus",
   },
   {
     id: "AD9892523",
     name: "Sophia Williams",
     rollNo: "36003",
-    class: "I, A",
+    class: "I, A", // Primary
     gender: "Female",
     joinedOn: "20 Sep 2024",
     status: "Active",
     avatar: "https://i.pravatar.cc/150?img=20",
+    branch: "East Campus",
   },
   {
     id: "AD9892524",
     name: "Noah Johnson",
     rollNo: "36004",
-    class: "JSS 1, B",
+    class: "JSS 1, B", // Secondary
     gender: "Male",
     joinedOn: "25 Sep 2024",
     status: "Active",
     avatar: "https://i.pravatar.cc/150?img=21",
+    branch: "West Campus",
   },
   {
     id: "AD9892525",
     name: "Ava Davis",
     rollNo: "36005",
-    class: "I, B",
+    class: "I, B", // Primary
     gender: "Female",
     joinedOn: "1 Oct 2024",
     status: "Active",
     avatar: "https://i.pravatar.cc/150?img=22",
+    branch: "Main Campus",
   },
   {
     id: "AD9892526",
     name: "Ethan Brown",
     rollNo: "36006",
-    class: "II, A",
+    class: "II, A", // Primary
     gender: "Male",
     joinedOn: "5 Oct 2024",
     status: "Active",
     avatar: "https://i.pravatar.cc/150?img=23",
+    branch: "North Campus",
   },
   {
     id: "AD9892527",
     name: "Isabella Garcia",
     rollNo: "36007",
-    class: "I, A",
+    class: "I, A", // Primary
     gender: "Female",
     joinedOn: "10 Oct 2024",
     status: "Active",
     avatar: "https://i.pravatar.cc/150?img=24",
+    branch: "South Campus",
   },
   {
     id: "AD9892528",
     name: "Mason Miller",
     rollNo: "36008",
-    class: "IV, B",
+    class: "IV, B", // Primary
     gender: "Male",
     joinedOn: "15 Oct 2024",
     status: "Active",
     avatar: "https://i.pravatar.cc/150?img=25",
+    branch: "East Campus",
   },
   {
     id: "AD9892529",
     name: "Mia Wilson",
     rollNo: "36009",
-    class: "I, B",
+    class: "I, B", // Primary
     gender: "Female",
     joinedOn: "20 Oct 2024",
     status: "Active",
     avatar: "https://i.pravatar.cc/150?img=26",
+    branch: "West Campus",
   },
   {
     id: "AD9892530",
     name: "Lucas Moore",
     rollNo: "36010",
-    class: "II, A",
+    class: "II, A", // Primary
     gender: "Male",
     joinedOn: "25 Oct 2024",
     status: "Active",
     avatar: "https://i.pravatar.cc/150?img=27",
+    branch: "Main Campus",
   },
   {
     id: "AD9892531",
     name: "Charlotte Taylor",
     rollNo: "36011",
-    class: "I, A",
+    class: "I, A", // Primary
     gender: "Female",
     joinedOn: "1 Nov 2024",
     status: "Active",
     avatar: "https://i.pravatar.cc/150?img=28",
+    branch: "North Campus",
   },
   {
     id: "AD9892532",
     name: "Benjamin Anderson",
     rollNo: "36012",
-    class: "JSS 1, B",
+    class: "JSS 1, B", // Secondary
     gender: "Male",
     joinedOn: "5 Nov 2024",
     status: "Active",
     avatar: "https://i.pravatar.cc/150?img=29",
+    branch: "South Campus",
   },
   {
     id: "AD9892533",
     name: "Amelia Jackson",
     rollNo: "36013",
-    class: "I, B",
+    class: "I, B", // Primary
     gender: "Female",
     joinedOn: "10 Nov 2024",
     status: "Active",
     avatar: "https://i.pravatar.cc/150?img=30",
+    branch: "East Campus",
   },
   {
     id: "AD9892534",
     name: "Elijah White",
     rollNo: "36014",
-    class: "II, A",
+    class: "II, A", // Primary
     gender: "Male",
     joinedOn: "15 Nov 2024",
     status: "Active",
     avatar: "https://i.pravatar.cc/150?img=31",
+    branch: "West Campus",
   },
   {
     id: "AD9892535",
     name: "Harper Harris",
     rollNo: "36015",
-    class: "I, A",
+    class: "I, A", // Primary
     gender: "Female",
     joinedOn: "20 Nov 2024",
     status: "Active",
     avatar: "https://i.pravatar.cc/150?img=32",
+    branch: "Main Campus",
   },
   {
     id: "AD9892600",
     name: "Alex Thompson",
     rollNo: "37001",
-    class: "I, A",
+    class: "100 Level, A", // Tertiary
     gender: "Male",
     joinedOn: "2 Nov 2025",
     status: "Active",
     avatar: "https://i.pravatar.cc/150?img=33",
+    branch: "Main Campus",
   },
   {
     id: "AD9892601",
     name: "Maya Rodriguez",
     rollNo: "37002",
-    class: "I, B",
+    class: "200 Level, B", // Tertiary
     gender: "Female",
     joinedOn: "2 Nov 2025",
     status: "Active",
     avatar: "https://i.pravatar.cc/150?img=34",
+    branch: "North Campus",
   },
   {
     id: "AD9892302",
     name: "Aaliyah Griffin",
     rollNo: "35020",
-    class: "JSS 1, A",
+    class: "JSS 1, A", // Secondary
     gender: "Female",
     joinedOn: "15 Jan 2024",
     status: "Active",
     avatar: "https://i.pravatar.cc/150?img=35",
+    branch: "South Campus",
+  },
+  {
+    id: "AD9892700",
+    name: "Daniel Okonkwo",
+    rollNo: "38001",
+    class: "300 Level, A", // Tertiary
+    gender: "Male",
+    joinedOn: "5 Sep 2024",
+    status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=36",
+    branch: "East Campus",
+  },
+  {
+    id: "AD9892701",
+    name: "Chioma Adeyemi",
+    rollNo: "38002",
+    class: "SSS 3, A", // Secondary (Senior)
+    gender: "Female",
+    joinedOn: "10 Sep 2024",
+    status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=37",
+    branch: "West Campus",
+  },
+  {
+    id: "AD9892702",
+    name: "Kwame Asante",
+    rollNo: "38003",
+    class: "400 Level, B", // Tertiary
+    gender: "Male",
+    joinedOn: "15 Sep 2024",
+    status: "Active",
+    avatar: "https://i.pravatar.cc/150?img=38",
+    branch: "Main Campus",
   },
 ];
 

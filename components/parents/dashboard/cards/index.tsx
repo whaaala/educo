@@ -1,0 +1,1067 @@
+import React from "react";
+import Image from "next/image";
+import Link from "next/link";
+import { formatCurrency } from "@/config/countries";
+import Button from "@/components/shared/Button";
+import {
+  AlertTriangle,
+  Award,
+  Bell,
+  BookOpen,
+  Calendar,
+  CalendarCheck,
+  CalendarDays,
+  CalendarPlus,
+  CheckCircle2,
+  ChevronRight,
+  Clock,
+  CreditCard,
+  Eye,
+  GraduationCap,
+  LifeBuoy,
+  Mail,
+  Minus,
+  Phone,
+  Send,
+  TrendingUp,
+  Users,
+  Video,
+  Zap,
+} from "lucide-react";
+import { DashboardDragHandle } from "@/components/parents/dashboard/parent-dashboard-masonry-dnd";
+import type {
+  Child,
+  ChildLeaveRequest,
+  ChildProgress,
+  ExamResultItem,
+  FeeReminderItem,
+  HomeworkItem,
+  NoticeItem,
+  ParentEvent,
+  ParentMessage,
+  ParentProfile,
+  PaymentHistoryItem,
+  UpcomingMeeting,
+  MeetingPlatform,
+} from "@/components/parents/dashboard/models";
+
+function formatShortDate(dateStr: string) {
+  return new Date(dateStr).toLocaleDateString("en-GB", { day: "2-digit", month: "short" });
+}
+
+function TrendIcon({ trend }: { trend: "up" | "down" | "stable" | string }) {
+  if (trend === "up") return <TrendingUp className="w-3 h-3 text-green-500" />;
+  if (trend === "down") return <TrendingUp className="w-3 h-3 text-red-500 rotate-180" />;
+  return <Minus className="w-3 h-3 text-gray-400" />;
+}
+
+export function ParentProfileCard({ parent }: { parent: ParentProfile }) {
+  return (
+    <div className="group relative bg-white/95 dark:bg-[#1a1d24]/95 midnight:bg-[#0a0e27]/95 purple:bg-[#1a0b2e]/95 backdrop-blur-sm rounded-2xl border border-gray-200/60 dark:border-gray-700/50 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.1)] dark:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.3)] hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.15)] dark:hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.4)] midnight:shadow-[0_4px_20px_-4px_rgba(6,182,212,0.1)] midnight:hover:shadow-[0_8px_30px_-4px_rgba(6,182,212,0.15)] purple:shadow-[0_4px_20px_-4px_rgba(236,72,153,0.1)] purple:hover:shadow-[0_8px_30px_-4px_rgba(236,72,153,0.15)] overflow-hidden transition-all duration-300 hover:-translate-y-0.5">
+      {/* Subtle top shine effect */}
+      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/50 dark:via-white/10 midnight:via-cyan-400/20 purple:via-pink-400/20 to-transparent" />
+      <div className="absolute top-2.5 right-2.5 z-10">
+        <DashboardDragHandle />
+      </div>
+      <div className="relative h-20 bg-gradient-to-br from-blue-500/10 via-indigo-500/10 to-purple-500/10 dark:from-blue-500/20 dark:via-indigo-500/15 dark:to-purple-500/20 midnight:from-cyan-500/20 midnight:via-blue-500/15 midnight:to-indigo-500/20 purple:from-pink-500/20 purple:via-purple-500/15 purple:to-indigo-500/20">
+        <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-30 dark:opacity-20" />
+        {/* Animated gradient overlay on hover */}
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-in-out" />
+      </div>
+      <div className="relative px-4 pb-4">
+        <div className="relative -mt-10 mb-3">
+          <div className="w-20 h-20 rounded-2xl overflow-hidden ring-4 ring-white dark:ring-gray-800 midnight:ring-gray-900 purple:ring-gray-900 shadow-xl group-hover:shadow-2xl transition-shadow duration-300">
+            <Image src={parent.profilePhoto} alt={parent.fullName} width={80} height={80} className="object-cover" unoptimized />
+          </div>
+          <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-gradient-to-br from-green-400 to-emerald-500 border-2 border-white dark:border-[#1a1d24] midnight:border-gray-900 purple:border-gray-900 flex items-center justify-center shadow-lg">
+            <CheckCircle2 className="w-3.5 h-3.5 text-white" />
+          </div>
+        </div>
+        <span className="inline-flex items-center text-[0.625rem] font-bold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 bg-blue-50 dark:bg-blue-900/40 midnight:bg-cyan-900/40 purple:bg-pink-900/40 px-2.5 py-1 rounded-lg shadow-sm">
+          {parent.id}
+        </span>
+        <h3 className="font-bold text-ink text-lg mt-2">{parent.fullName}</h3>
+        <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-gray-400 purple:text-gray-400 flex items-center gap-1.5 mt-1.5">
+          <Mail className="w-3.5 h-3.5" /> {parent.email}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+export function MyChildrenCard({
+  childList,
+  selectedChild,
+  onSelectChild,
+}: {
+  /** The parent's pupils. Named childList, not `children`: React reserves that name for JSX content. */
+  childList: Child[];
+  selectedChild: Child;
+  onSelectChild: (child: Child) => void;
+}) {
+  return (
+    <div className="group relative bg-white/95 dark:bg-[#1a1d24]/95 midnight:bg-[#0a0e27]/95 purple:bg-[#1a0b2e]/95 backdrop-blur-sm rounded-2xl border border-gray-200/60 dark:border-gray-700/50 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.1)] dark:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.3)] hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.15)] dark:hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.4)] midnight:shadow-[0_4px_20px_-4px_rgba(6,182,212,0.1)] midnight:hover:shadow-[0_8px_30px_-4px_rgba(6,182,212,0.15)] purple:shadow-[0_4px_20px_-4px_rgba(236,72,153,0.1)] purple:hover:shadow-[0_8px_30px_-4px_rgba(236,72,153,0.15)] overflow-hidden transition-all duration-300 hover:-translate-y-0.5 p-4">
+      {/* Subtle gradient overlay */}
+      <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/[0.02] via-transparent to-purple-500/[0.02] dark:from-indigo-500/[0.05] dark:to-purple-500/[0.05] midnight:from-cyan-500/[0.05] midnight:to-indigo-500/[0.05] purple:from-pink-500/[0.05] purple:to-purple-500/[0.05] pointer-events-none" />
+      {/* Top shine */}
+      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/50 dark:via-white/10 midnight:via-cyan-400/20 purple:via-pink-400/20 to-transparent" />
+      <div className="relative flex flex-wrap items-center justify-between gap-2 mb-4">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="p-2 rounded-xl bg-gradient-to-br from-indigo-100/80 to-white/80 dark:from-indigo-500/20 dark:to-gray-800/50 midnight:from-cyan-500/20 midnight:to-gray-800/50 purple:from-pink-500/20 purple:to-gray-800/50">
+            <Users className="w-4.5 h-4.5 text-indigo-500 dark:text-indigo-400 midnight:text-cyan-400 purple:text-pink-400" />
+          </div>
+          <span className="text-sm font-bold text-gray-800 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50 truncate">My Children</span>
+        </div>
+        <div className="flex items-center gap-2 shrink-0">
+          <span className="text-[0.625rem] font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 midnight:from-cyan-500 midnight:to-indigo-500 purple:from-pink-500 purple:to-purple-500 px-3 py-1.5 rounded-full shadow-md">
+            {childList.length}
+          </span>
+          <DashboardDragHandle />
+        </div>
+      </div>
+      <div className="space-y-2">
+        {childList.map((child) => {
+          const isSelected = selectedChild.id === child.id;
+          return (
+            <button
+              key={child.id}
+              onClick={() => onSelectChild(child)}
+              className={`w-full flex items-center gap-3 p-2.5 rounded-xl transition-all duration-200 group ${
+                isSelected
+                  ? "bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/30 dark:to-indigo-900/30 midnight:from-cyan-900/30 midnight:to-indigo-900/30 purple:from-pink-900/30 purple:to-purple-900/30 border border-blue-200 dark:border-blue-700/50 midnight:border-cyan-500/30 purple:border-pink-500/30 shadow-sm"
+                  : "bg-gray-50/80 dark:bg-[#22262e]/20 midnight:bg-[#0f1330]/30 purple:bg-[#251340]/30 border border-transparent hover:bg-gray-100 dark:hover:bg-[#22262e]/40 hover:border-gray-200 dark:hover:border-gray-600"
+              }`}
+              type="button"
+            >
+              <div
+                className={`relative w-10 h-10 rounded-xl overflow-hidden flex-shrink-0 transition-all duration-200 ${
+                  isSelected
+                    ? "ring-2 ring-blue-400 dark:ring-blue-500 midnight:ring-cyan-400 purple:ring-pink-400 ring-offset-2 ring-offset-white dark:ring-offset-gray-800"
+                    : "group-hover:scale-105"
+                }`}
+              >
+                <Image src={child.profilePhoto} alt={child.fullName} width={40} height={40} className="object-cover w-full h-full" unoptimized />
+              </div>
+              <div className="flex-1 text-left min-w-0">
+                <p
+                  className={`font-semibold text-sm truncate transition-colors ${
+                    isSelected
+                      ? "text-blue-700 dark:text-blue-300 midnight:text-cyan-300 purple:text-pink-300"
+                      : "text-gray-800 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400"
+                  }`}
+                >
+                  {child.fullName}
+                </p>
+                <p
+                  className={`text-[0.6875rem] mt-0.5 ${
+                    isSelected
+                      ? "text-blue-600/70 dark:text-blue-400/70 midnight:text-cyan-400/70 purple:text-pink-400/70"
+                      : "text-gray-500 dark:text-gray-400"
+                  }`}
+                >
+                  {child.classLevel} • Sec {child.section}
+                </p>
+              </div>
+              <div
+                className={`w-2.5 h-2.5 rounded-full transition-all duration-200 ${
+                  isSelected
+                    ? "bg-gradient-to-r from-blue-500 to-indigo-500 midnight:from-cyan-400 midnight:to-indigo-400 purple:from-pink-400 purple:to-purple-400 shadow-sm"
+                    : "bg-gray-300 dark:bg-[#2a2d35] opacity-0 group-hover:opacity-50"
+                }`}
+              />
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+export function QuickActionsCard() {
+  return (
+    <div className="group/card relative bg-white/95 dark:bg-[#1a1d24]/95 midnight:bg-[#0a0e27]/95 purple:bg-[#1a0b2e]/95 backdrop-blur-sm rounded-2xl border border-gray-200/60 dark:border-gray-700/50 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.1)] dark:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.3)] hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.15)] dark:hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.4)] midnight:shadow-[0_4px_20px_-4px_rgba(6,182,212,0.1)] midnight:hover:shadow-[0_8px_30px_-4px_rgba(6,182,212,0.15)] purple:shadow-[0_4px_20px_-4px_rgba(236,72,153,0.1)] purple:hover:shadow-[0_8px_30px_-4px_rgba(236,72,153,0.15)] overflow-hidden transition-all duration-300 hover:-translate-y-0.5 p-4">
+      {/* Top shine */}
+      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/50 dark:via-white/10 midnight:via-cyan-400/20 purple:via-pink-400/20 to-transparent" />
+      <div className="relative flex flex-wrap items-center justify-between gap-2 mb-3">
+        <div className="flex items-center gap-2.5">
+          <div className="p-2 rounded-xl bg-gradient-to-br from-gray-100 to-gray-50 dark:from-gray-700/50 dark:to-gray-700/30 midnight:from-gray-800/50 midnight:to-gray-800/30 purple:from-gray-800/50 purple:to-gray-800/30 shadow-sm">
+            <Zap className="w-4 h-4 text-gray-600 dark:text-gray-300 midnight:text-cyan-400 purple:text-pink-400" />
+          </div>
+          <h4 className="text-sm font-bold text-gray-800 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50">Quick Actions</h4>
+        </div>
+        <DashboardDragHandle />
+      </div>
+      <div className="relative grid grid-cols-2 gap-2.5">
+        <button
+          className="group flex items-center gap-2.5 p-3 rounded-xl bg-gradient-to-br from-blue-50 to-indigo-50/50 dark:from-blue-900/30 dark:to-indigo-900/20 midnight:from-cyan-900/30 midnight:to-blue-900/20 purple:from-pink-900/30 purple:to-purple-900/20 border border-blue-200/50 dark:border-blue-700/30 midnight:border-cyan-500/30 purple:border-pink-500/30 hover:border-blue-300 dark:hover:border-blue-600/50 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200"
+          type="button"
+        >
+          <div className="p-2 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-500 midnight:from-cyan-500 midnight:to-blue-500 purple:from-pink-500 purple:to-purple-500 shadow-md group-hover:shadow-lg group-hover:scale-110 transition-all duration-200">
+            <CalendarPlus className="w-4 h-4 text-white" />
+          </div>
+          <span className="text-xs font-semibold text-gray-700 dark:text-gray-200 midnight:text-gray-200 purple:text-gray-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 midnight:group-hover:text-cyan-400 purple:group-hover:text-pink-400 transition-colors">
+            Request Leave
+          </span>
+        </button>
+        <button
+          className="group flex items-center gap-2.5 p-3 rounded-xl bg-gradient-to-br from-purple-50 to-pink-50/50 dark:from-purple-900/30 dark:to-pink-900/20 midnight:from-indigo-900/30 midnight:to-purple-900/20 purple:from-purple-900/30 purple:to-pink-900/20 border border-purple-200/50 dark:border-purple-700/30 midnight:border-indigo-500/30 purple:border-purple-500/30 hover:border-purple-300 dark:hover:border-purple-600/50 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200"
+          type="button"
+        >
+          <div className="p-2 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 midnight:from-indigo-500 midnight:to-purple-500 purple:from-pink-500 purple:to-purple-500 shadow-md group-hover:shadow-lg group-hover:scale-110 transition-all duration-200">
+            <Send className="w-4 h-4 text-white" />
+          </div>
+          <span className="text-xs font-semibold text-gray-700 dark:text-gray-200 midnight:text-gray-200 purple:text-gray-200 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
+            Message Teacher
+          </span>
+        </button>
+        <Link
+          href="/parents/support"
+          className="group flex items-center gap-2.5 p-3 rounded-xl bg-gradient-to-br from-orange-50 to-amber-50/50 dark:from-orange-900/30 dark:to-amber-900/20 midnight:from-orange-900/30 midnight:to-amber-900/20 purple:from-orange-900/30 purple:to-amber-900/20 border border-orange-200/50 dark:border-orange-700/30 midnight:border-orange-500/30 purple:border-orange-500/30 hover:border-orange-300 dark:hover:border-orange-600/50 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 col-span-2"
+        >
+          <div className="p-2 rounded-lg bg-gradient-to-br from-orange-500 to-amber-500 shadow-md group-hover:shadow-lg group-hover:scale-110 transition-all duration-200">
+            <LifeBuoy className="w-4 h-4 text-white" />
+          </div>
+          <span className="text-xs font-semibold text-gray-700 dark:text-gray-200 midnight:text-gray-200 purple:text-gray-200 group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors">
+            Support Ticket
+          </span>
+        </Link>
+      </div>
+    </div>
+  );
+}
+
+export function PaymentHistoryCard({
+  payments,
+  countryCode,
+}: {
+  payments: PaymentHistoryItem[];
+  countryCode: string;
+}) {
+  return (
+    <div className="group/card relative bg-white/95 dark:bg-[#1a1d24]/95 midnight:bg-[#0a0e27]/95 purple:bg-[#1a0b2e]/95 backdrop-blur-sm rounded-2xl border border-gray-200/60 dark:border-gray-700/50 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.1)] dark:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.3)] hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.15)] dark:hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.4)] midnight:shadow-[0_4px_20px_-4px_rgba(6,182,212,0.1)] midnight:hover:shadow-[0_8px_30px_-4px_rgba(6,182,212,0.15)] purple:shadow-[0_4px_20px_-4px_rgba(236,72,153,0.1)] purple:hover:shadow-[0_8px_30px_-4px_rgba(236,72,153,0.15)] overflow-hidden transition-all duration-300 hover:-translate-y-0.5 p-3">
+      {/* Top shine */}
+      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/30 dark:via-white/5 to-transparent" />
+      <div className="relative flex flex-wrap items-center justify-between gap-2 mb-3">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <div className="p-2 rounded-xl bg-gradient-to-br from-emerald-100/80 to-white/80 dark:from-emerald-500/20 dark:to-gray-800/50 midnight:from-emerald-500/20 midnight:to-gray-800/50 purple:from-emerald-500/20 purple:to-gray-800/50">
+            <CreditCard className="w-4.5 h-4.5 text-emerald-500 dark:text-emerald-400 midnight:text-emerald-400 purple:text-emerald-400" />
+          </div>
+          <h4 className="text-sm font-bold text-gray-800 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50 truncate">Payment History</h4>
+        </div>
+        <div className="flex items-center gap-2 shrink-0">
+          <Link href="/parents/fees" className="text-[0.625rem] font-semibold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 hover:text-blue-700 dark:hover:text-blue-300 flex items-center gap-0.5 transition-colors">
+            View All <ChevronRight className="w-3 h-3" />
+          </Link>
+          <DashboardDragHandle />
+        </div>
+      </div>
+      <div className="relative space-y-2">
+        {payments.map((payment, index) => (
+          <div
+            key={payment.id}
+            className="group flex items-center justify-between p-2.5 rounded-xl bg-gradient-to-r from-gray-50/80 to-white dark:from-gray-700/30 dark:to-gray-700/10 midnight:from-gray-800/40 midnight:to-gray-800/20 purple:from-gray-800/40 purple:to-gray-800/20 border border-gray-100 dark:border-gray-700/30 midnight:border-gray-700/20 purple:border-gray-700/20 hover:border-green-200 dark:hover:border-green-500/40 hover:shadow-md hover:-translate-x-0.5 transition-all duration-200"
+          >
+            <div className="flex items-center gap-3">
+              <div className="relative">
+                <div className="p-2 rounded-xl bg-gradient-to-br from-green-100 to-emerald-100 dark:from-green-900/50 dark:to-emerald-900/50 midnight:from-green-900/50 midnight:to-emerald-900/50 purple:from-green-900/50 purple:to-emerald-900/50 shadow-sm group-hover:shadow-md group-hover:scale-105 transition-all duration-200">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400" />
+                </div>
+                {index === 0 && <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-gradient-to-r from-green-400 to-emerald-500 shadow-sm animate-pulse" />}
+              </div>
+              <div>
+                <p className="text-[0.6875rem] font-semibold text-gray-800 dark:text-white midnight:text-gray-100 purple:text-gray-100 group-hover:text-green-700 dark:group-hover:text-green-300 transition-colors">
+                  {payment.description}
+                </p>
+                <p className="text-[0.625rem] text-gray-500 dark:text-gray-400 midnight:text-gray-400 purple:text-gray-400 mt-0.5">{formatShortDate(payment.date)}</p>
+              </div>
+            </div>
+            <div className="text-right">
+              <span className="text-sm font-bold text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400">
+                {formatCurrency(payment.amount, countryCode)}
+              </span>
+              <p className="text-[0.5625rem] text-gray-400 dark:text-gray-500 mt-0.5">Completed</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export function ExamResultsCard({ results }: { results: ExamResultItem[] }) {
+  return (
+    <div className="group/card relative bg-white/95 dark:bg-[#1a1d24]/95 midnight:bg-[#0a0e27]/95 purple:bg-[#1a0b2e]/95 backdrop-blur-sm rounded-2xl border border-gray-200/60 dark:border-gray-700/50 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.1)] dark:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.3)] hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.15)] dark:hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.4)] midnight:shadow-[0_4px_20px_-4px_rgba(6,182,212,0.1)] midnight:hover:shadow-[0_8px_30px_-4px_rgba(6,182,212,0.15)] purple:shadow-[0_4px_20px_-4px_rgba(236,72,153,0.1)] purple:hover:shadow-[0_8px_30px_-4px_rgba(236,72,153,0.15)] overflow-hidden transition-all duration-300 hover:-translate-y-0.5 flex flex-col">
+      {/* Top shine */}
+      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/30 dark:via-white/5 to-transparent" />
+      <div className="relative px-4 py-3 flex flex-wrap items-center justify-between gap-2 border-b border-gray-100/50 dark:border-gray-700/30 midnight:border-gray-700/20 purple:border-gray-700/20">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="p-2 rounded-xl bg-gradient-to-br from-indigo-100/80 to-white/80 dark:from-indigo-500/20 dark:to-gray-800/50 midnight:from-cyan-500/20 midnight:to-gray-800/50 purple:from-pink-500/20 purple:to-gray-800/50">
+            <GraduationCap className="w-4.5 h-4.5 text-indigo-500 dark:text-indigo-400 midnight:text-cyan-400 purple:text-pink-400" />
+          </div>
+          <span className="text-sm font-bold text-gray-800 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50 truncate">Exam Results</span>
+        </div>
+        <div className="flex items-center gap-2 shrink-0">
+          <Link
+            href="/parents/results"
+            className="text-[0.625rem] font-semibold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 hover:text-blue-700 dark:hover:text-blue-300 flex items-center gap-0.5 transition-colors"
+          >
+            View All <ChevronRight className="w-3 h-3" />
+          </Link>
+          <DashboardDragHandle />
+        </div>
+      </div>
+      <div className="relative flex-1 px-3 py-2.5 flex flex-col justify-between gap-2">
+        {results.map((result) => (
+          <div
+            key={result.id}
+            className={`group p-2.5 rounded-xl border transition-all duration-200 hover:shadow-md ${
+              result.status === "pass"
+                ? "bg-gradient-to-r from-green-50/50 to-white dark:from-green-900/10 dark:to-gray-700/10 midnight:from-green-900/10 midnight:to-gray-800/20 purple:from-green-900/10 purple:to-gray-800/20 border-green-100 dark:border-green-700/20 midnight:border-green-700/15 purple:border-green-700/15 hover:border-green-300 dark:hover:border-green-500/40"
+                : "bg-gradient-to-r from-red-50/50 to-white dark:from-red-900/10 dark:to-gray-700/10 midnight:from-red-900/10 midnight:to-gray-800/20 purple:from-red-900/10 purple:to-gray-800/20 border-red-100 dark:border-red-700/20 midnight:border-red-700/15 purple:border-red-700/15 hover:border-red-300 dark:hover:border-red-500/40"
+            }`}
+          >
+            <div className="flex flex-col gap-2">
+              {/* Top row: Photo + Name + View Button */}
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2 min-w-0 flex-1">
+                  <div className="relative flex-shrink-0">
+                    <div className="w-8 h-8 rounded-lg overflow-hidden ring-2 ring-white dark:ring-gray-700 shadow-sm">
+                      <Image src={result.studentPhoto} alt={result.studentName} width={32} height={32} className="object-cover" unoptimized />
+                    </div>
+                    <div
+                      className={`absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full flex items-center justify-center ${
+                        result.status === "pass" ? "bg-green-500" : "bg-red-500"
+                      }`}
+                    >
+                      {result.status === "pass" ? <CheckCircle2 className="w-2 h-2 text-white" /> : <AlertTriangle className="w-2 h-2 text-white" />}
+                    </div>
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-semibold text-gray-800 dark:text-white midnight:text-gray-100 purple:text-gray-100 truncate">{result.studentName}</p>
+                    <p className="text-[0.6875rem] text-gray-500 dark:text-gray-400 midnight:text-gray-400 purple:text-gray-400 truncate">
+                      {result.class}-{result.section} • {result.examType}
+                    </p>
+                  </div>
+                </div>
+                <Link
+                  href={`/parents/children/${result.childId}/report-card?from=results`}
+                  className="flex-shrink-0 p-1.5 rounded-lg bg-indigo-50 dark:bg-indigo-900/30 midnight:bg-indigo-900/30 purple:bg-pink-900/30 text-indigo-600 dark:text-indigo-400 midnight:text-indigo-400 purple:text-pink-400 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-all duration-200 group-hover:scale-105"
+                >
+                  <Eye className="w-3.5 h-3.5" />
+                </Link>
+              </div>
+
+              {/* Bottom row: Progress bar + Percentage */}
+              <div className="flex items-center gap-2">
+                <div className="flex-1 h-1.5 bg-gray-200 dark:bg-[#22262e] midnight:bg-gray-700 purple:bg-gray-700 rounded-full overflow-hidden">
+                  <div
+                    className={`h-full rounded-full transition-all duration-500 ${
+                      result.percentage >= 70 ? "bg-gradient-to-r from-green-400 to-emerald-500" : "bg-gradient-to-r from-amber-400 to-orange-500"
+                    }`}
+                    style={{ width: `${result.percentage}%` }}
+                  />
+                </div>
+                <span
+                  className={`text-sm font-bold min-w-[36px] text-right ${result.percentage >= 70 ? "text-green-600 dark:text-green-400" : "text-amber-600 dark:text-amber-400"}`}
+                >
+                  {result.percentage}%
+                </span>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export function RecentGradesCard({
+  selectedChildId,
+  progress,
+}: {
+  selectedChildId: string;
+  progress: ChildProgress | undefined;
+}) {
+  return (
+    <div className="group/card relative bg-white/95 dark:bg-[#1a1d24]/95 midnight:bg-[#0a0e27]/95 purple:bg-[#1a0b2e]/95 backdrop-blur-sm rounded-2xl border border-gray-200/60 dark:border-gray-700/50 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.1)] dark:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.3)] hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.15)] dark:hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.4)] midnight:shadow-[0_4px_20px_-4px_rgba(6,182,212,0.1)] midnight:hover:shadow-[0_8px_30px_-4px_rgba(6,182,212,0.15)] purple:shadow-[0_4px_20px_-4px_rgba(236,72,153,0.1)] purple:hover:shadow-[0_8px_30px_-4px_rgba(236,72,153,0.15)] overflow-hidden transition-all duration-300 hover:-translate-y-0.5 flex flex-col">
+      {/* Top shine */}
+      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/30 dark:via-white/5 to-transparent" />
+      <div className="relative px-3 py-2.5 flex flex-wrap items-center justify-between gap-2 border-b border-gray-100/50 dark:border-gray-700/30 midnight:border-gray-700/20 purple:border-gray-700/20">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <div className="p-2 rounded-xl bg-gradient-to-br from-blue-100/80 to-white/80 dark:from-blue-500/20 dark:to-gray-800/50 midnight:from-cyan-500/20 midnight:to-gray-800/50 purple:from-pink-500/20 purple:to-gray-800/50">
+            <Award className="w-4.5 h-4.5 text-blue-500 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
+          </div>
+          <span className="text-sm font-bold text-gray-800 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50 truncate">Recent Grades</span>
+        </div>
+        <div className="flex items-center gap-2 shrink-0">
+          <Link
+            href={`/parents/children/${selectedChildId}`}
+            className="text-[0.625rem] font-semibold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 hover:text-blue-700 dark:hover:text-blue-300 flex items-center gap-0.5 transition-colors"
+          >
+            View All <ChevronRight className="w-3 h-3" />
+          </Link>
+          <DashboardDragHandle />
+        </div>
+      </div>
+      <div className="relative flex-1 px-3 py-2.5 flex flex-col justify-between gap-2">
+        {progress?.recentGrades.map((grade, idx) => (
+          <Link
+            key={idx}
+            href={`/parents/children/${selectedChildId}/report-card?subject=${encodeURIComponent(grade.subject)}`}
+            className="group relative flex items-center gap-3 p-2.5 rounded-xl bg-gradient-to-r from-gray-50/80 to-white dark:from-gray-700/30 dark:to-gray-700/10 midnight:from-gray-800/40 midnight:to-gray-800/20 purple:from-gray-800/40 purple:to-gray-800/20 border border-gray-100 dark:border-gray-600/20 midnight:border-gray-600/15 purple:border-gray-600/15 hover:border-blue-200 dark:hover:border-blue-500/30 hover:shadow-md hover:-translate-x-0.5 transition-all duration-200"
+          >
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-gray-800 dark:text-white midnight:text-gray-100 purple:text-gray-100 group-hover:text-blue-700 dark:group-hover:text-blue-300 midnight:group-hover:text-cyan-300 purple:group-hover:text-pink-300 transition-colors truncate">
+                {grade.subject}
+              </p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-gray-400 purple:text-gray-400 font-medium">{grade.score}%</p>
+            </div>
+            <div
+              className={`flex-shrink-0 p-1.5 rounded-lg transition-all duration-200 ${
+                grade.trend === "up"
+                  ? "bg-green-100 dark:bg-green-900/40 midnight:bg-green-900/40 purple:bg-green-900/40"
+                  : grade.trend === "down"
+                    ? "bg-red-100 dark:bg-red-900/40 midnight:bg-red-900/40 purple:bg-red-900/40"
+                    : "bg-gray-100 dark:bg-[#22262e]/50 midnight:bg-gray-700/50 purple:bg-gray-700/50"
+              }`}
+            >
+              <TrendIcon trend={grade.trend} />
+            </div>
+            <ChevronRight className="w-4 h-4 flex-shrink-0 text-gray-300 dark:text-gray-600 group-hover:text-blue-500 dark:group-hover:text-blue-400 group-hover:translate-x-0.5 transition-all duration-200" />
+          </Link>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export function EventsCard({ events, selectedChildId }: { events: ParentEvent[]; selectedChildId?: string }) {
+  // Filter events: show events for selected child OR general events (no childId)
+  const filteredEvents = selectedChildId
+    ? events.filter((event) => !event.childId || event.childId === selectedChildId)
+    : events;
+
+  return (
+    <div className="group/card relative bg-white/95 dark:bg-[#1a1d24]/95 midnight:bg-[#0a0e27]/95 purple:bg-[#1a0b2e]/95 backdrop-blur-sm rounded-2xl border border-gray-200/60 dark:border-gray-700/50 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.1)] dark:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.3)] hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.15)] dark:hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.4)] midnight:shadow-[0_4px_20px_-4px_rgba(6,182,212,0.1)] midnight:hover:shadow-[0_8px_30px_-4px_rgba(6,182,212,0.15)] purple:shadow-[0_4px_20px_-4px_rgba(236,72,153,0.1)] purple:hover:shadow-[0_8px_30px_-4px_rgba(236,72,153,0.15)] overflow-hidden transition-all duration-300 hover:-translate-y-0.5 flex flex-col">
+      {/* Top shine */}
+      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/30 dark:via-white/5 to-transparent" />
+
+      {/* Header */}
+      <div className="relative px-3 py-2.5 flex flex-wrap items-center justify-between gap-2 border-b border-gray-100/50 dark:border-gray-700/30 midnight:border-gray-700/20 purple:border-gray-700/20">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <div className="p-2 rounded-xl bg-gradient-to-br from-purple-100/80 to-white/80 dark:from-purple-500/20 dark:to-gray-800/50 midnight:from-indigo-500/20 midnight:to-gray-800/50 purple:from-pink-500/20 purple:to-gray-800/50">
+            <CalendarDays className="w-4.5 h-4.5 text-purple-500 dark:text-purple-400 midnight:text-indigo-400 purple:text-pink-400" />
+          </div>
+          <span className="text-sm font-bold text-gray-800 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50 truncate">Events</span>
+        </div>
+        <div className="flex items-center gap-2 shrink-0">
+          <Link
+            href={selectedChildId ? `/parents/events?child=${selectedChildId}` : "/parents/events"}
+            className="text-[0.625rem] font-semibold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 hover:text-blue-700 dark:hover:text-blue-300 flex items-center gap-0.5 transition-colors"
+          >
+            View All <ChevronRight className="w-3 h-3" />
+          </Link>
+          <DashboardDragHandle />
+        </div>
+      </div>
+
+      {/* Events 2x2 Grid */}
+      <div className="relative flex-1 px-3 py-3">
+        <div className="grid grid-cols-2 gap-2.5">
+          {filteredEvents.slice(0, 4).map((event) => (
+            <Link
+              key={event.id}
+              href={`/parents/events/${event.id}`}
+              className="group relative flex flex-col rounded-xl overflow-hidden border border-gray-100/80 dark:border-gray-600/30 midnight:border-gray-600/20 purple:border-gray-600/20 hover:border-purple-300 dark:hover:border-purple-500/40 shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5"
+            >
+              {/* Event Image with overlay */}
+              <div className="relative h-[100px] w-full">
+                <Image
+                  src={event.image}
+                  alt={event.title}
+                  fill
+                  className="object-cover group-hover:scale-110 transition-transform duration-500"
+                  unoptimized
+                />
+                {/* Gradient overlay for better text readability */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+
+                {/* Duration badge */}
+                <span className={`absolute top-2 left-2 px-2 py-0.5 rounded-md text-[0.5625rem] font-bold shadow-md backdrop-blur-sm ${
+                  event.duration === "Half Day"
+                    ? "bg-blue-500/90 text-white"
+                    : "bg-gradient-to-r from-purple-500 to-pink-500 text-white"
+                }`}>
+                  {event.duration}
+                </span>
+
+                {/* Event info overlay at bottom */}
+                <div className="absolute bottom-0 left-0 right-0 p-2.5">
+                  <p className="text-xs font-bold text-white truncate drop-shadow-md">
+                    {event.title}
+                  </p>
+                  <p className="text-[0.625rem] text-white/80 flex items-center gap-1 mt-0.5">
+                    <Calendar className="w-3 h-3" />
+                    {formatShortDate(event.date)}
+                  </p>
+                </div>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </div>
+
+      {/* Empty state */}
+      {filteredEvents.length === 0 && (
+        <div className="flex-1 flex flex-col items-center justify-center py-8 text-center">
+          <div className="p-3 rounded-full bg-gray-100 dark:bg-[#22262e]/50 mb-3">
+            <CalendarDays className="w-6 h-6 text-gray-400" />
+          </div>
+          <p className="text-sm font-medium text-gray-600 dark:text-gray-300">No upcoming events</p>
+          <p className="text-[0.6875rem] text-gray-500 dark:text-gray-400 mt-1">Check back later for school events</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export function ChildLeaveRequestsCard({ leaves }: { leaves: ChildLeaveRequest[] }) {
+  return (
+    <div className="group/card relative bg-white/95 dark:bg-[#1a1d24]/95 midnight:bg-[#0a0e27]/95 purple:bg-[#1a0b2e]/95 backdrop-blur-sm rounded-2xl border border-gray-200/60 dark:border-gray-700/50 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.1)] dark:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.3)] hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.15)] dark:hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.4)] midnight:shadow-[0_4px_20px_-4px_rgba(6,182,212,0.1)] midnight:hover:shadow-[0_8px_30px_-4px_rgba(6,182,212,0.15)] purple:shadow-[0_4px_20px_-4px_rgba(236,72,153,0.1)] purple:hover:shadow-[0_8px_30px_-4px_rgba(236,72,153,0.15)] overflow-hidden transition-all duration-300 hover:-translate-y-0.5 flex flex-col">
+      {/* Top shine */}
+      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/30 dark:via-white/5 to-transparent" />
+      <div className="relative px-3 py-2.5 flex items-center justify-between gap-2 border-b border-gray-100/50 dark:border-gray-700/30 midnight:border-gray-700/20 purple:border-gray-700/20">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <div className="p-2 rounded-xl bg-gradient-to-br from-cyan-100/80 to-white/80 dark:from-cyan-500/20 dark:to-gray-800/50 midnight:from-cyan-500/20 midnight:to-gray-800/50 purple:from-pink-500/20 purple:to-gray-800/50 shrink-0">
+            <CalendarCheck className="w-4.5 h-4.5 text-cyan-500 dark:text-cyan-400 midnight:text-cyan-400 purple:text-pink-400" />
+          </div>
+          <span className="text-sm font-bold text-gray-800 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50 truncate">Leave Requests</span>
+        </div>
+        <div className="flex items-center gap-1.5 shrink-0">
+          <Link
+            href="/parents/leaves"
+            className="text-[0.625rem] font-semibold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 hover:text-blue-700 dark:hover:text-blue-300 flex items-center gap-0.5 transition-colors whitespace-nowrap"
+          >
+            View All <ChevronRight className="w-3 h-3" />
+          </Link>
+          <DashboardDragHandle />
+        </div>
+      </div>
+      <div className="relative flex-1 px-3 py-2.5 flex flex-col justify-between gap-2">
+        {leaves.slice(0, 2).map((leave) => (
+          <Link
+            key={leave.id}
+            href={`/parents/leaves/${leave.id}`}
+            className={`group p-2.5 rounded-xl border transition-all duration-200 hover:shadow-md ${
+              leave.status === "approved"
+                ? "bg-gradient-to-r from-green-50/50 to-white dark:from-green-900/10 dark:to-gray-700/10 midnight:from-green-900/10 midnight:to-gray-800/20 purple:from-green-900/10 purple:to-gray-800/20 border-green-100 dark:border-green-700/20 midnight:border-green-700/15 purple:border-green-700/15 hover:border-green-300 dark:hover:border-green-500/40"
+                : leave.status === "pending"
+                  ? "bg-gradient-to-r from-amber-50/50 to-white dark:from-amber-900/10 dark:to-gray-700/10 midnight:from-amber-900/10 midnight:to-gray-800/20 purple:from-amber-900/10 purple:to-gray-800/20 border-amber-100 dark:border-amber-700/20 midnight:border-amber-700/15 purple:border-amber-700/15 hover:border-amber-300 dark:hover:border-amber-500/40"
+                  : "bg-gradient-to-r from-red-50/50 to-white dark:from-red-900/10 dark:to-gray-700/10 midnight:from-red-900/10 midnight:to-gray-800/20 purple:from-red-900/10 purple:to-gray-800/20 border-red-100 dark:border-red-700/20 midnight:border-red-700/15 purple:border-red-700/15 hover:border-red-300 dark:hover:border-red-500/40"
+            }`}
+          >
+            <div className="flex flex-col gap-2">
+              {/* Top row: Icon + Reason + Status Badge */}
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2 min-w-0 flex-1">
+                  <div
+                    className={`relative flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center ${
+                      leave.status === "approved"
+                        ? "bg-green-100 dark:bg-green-900/40"
+                        : leave.status === "pending"
+                          ? "bg-amber-100 dark:bg-amber-900/40"
+                          : "bg-red-100 dark:bg-red-900/40"
+                    }`}
+                  >
+                    {leave.status === "approved" && <CheckCircle2 className="w-4 h-4 text-green-600 dark:text-green-400" />}
+                    {leave.status === "pending" && <Clock className="w-4 h-4 text-amber-600 dark:text-amber-400" />}
+                    {leave.status === "declined" && <AlertTriangle className="w-4 h-4 text-red-600 dark:text-red-400" />}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-semibold text-gray-800 dark:text-white midnight:text-gray-100 purple:text-gray-100 truncate">{leave.reason}</p>
+                    <p className="text-[0.6875rem] text-gray-500 dark:text-gray-400 midnight:text-gray-400 purple:text-gray-400 truncate">
+                      {leave.childName}
+                    </p>
+                  </div>
+                </div>
+                <span
+                  className={`flex-shrink-0 px-2 py-1 rounded-lg text-[0.625rem] font-bold uppercase ${
+                    leave.status === "approved"
+                      ? "bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-400"
+                      : leave.status === "pending"
+                        ? "bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-400"
+                        : "bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-400"
+                  }`}
+                >
+                  {leave.status}
+                </span>
+              </div>
+
+              {/* Bottom row: Date range */}
+              <div className="flex items-center gap-2">
+                <div className="flex-1 flex items-center gap-1.5 text-[0.6875rem] text-gray-500 dark:text-gray-400">
+                  <Calendar className="w-3 h-3 flex-shrink-0" />
+                  <span className="truncate">{formatShortDate(leave.fromDate)} - {formatShortDate(leave.toDate)}</span>
+                </div>
+                <span
+                  className={`text-sm font-bold min-w-[45px] text-right ${
+                    leave.status === "approved"
+                      ? "text-green-600 dark:text-green-400"
+                      : leave.status === "pending"
+                        ? "text-amber-600 dark:text-amber-400"
+                        : "text-red-600 dark:text-red-400"
+                  }`}
+                >
+                  {leave.days}d
+                </span>
+              </div>
+            </div>
+          </Link>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export function HomeworkCard({ homework }: { homework: HomeworkItem[] }) {
+  return (
+    <div className="group/card relative bg-white/95 dark:bg-[#1a1d24]/95 midnight:bg-[#0a0e27]/95 purple:bg-[#1a0b2e]/95 backdrop-blur-sm rounded-2xl border border-gray-200/60 dark:border-gray-700/50 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.1)] dark:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.3)] hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.15)] dark:hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.4)] midnight:shadow-[0_4px_20px_-4px_rgba(6,182,212,0.1)] midnight:hover:shadow-[0_8px_30px_-4px_rgba(6,182,212,0.15)] purple:shadow-[0_4px_20px_-4px_rgba(236,72,153,0.1)] purple:hover:shadow-[0_8px_30px_-4px_rgba(236,72,153,0.15)] overflow-hidden transition-all duration-300 hover:-translate-y-0.5 flex flex-col">
+      {/* Top shine */}
+      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/30 dark:via-white/5 to-transparent" />
+      <div className="relative px-3 py-2.5 flex items-center justify-between border-b border-gray-100/50 dark:border-gray-700/30 midnight:border-gray-700/20 purple:border-gray-700/20">
+        <div className="flex items-center gap-2.5">
+          <div className="p-2 rounded-xl bg-gradient-to-br from-emerald-100/80 to-white/80 dark:from-emerald-500/20 dark:to-gray-800/50 midnight:from-emerald-500/20 midnight:to-gray-800/50 purple:from-pink-500/20 purple:to-gray-800/50">
+            <BookOpen className="w-4.5 h-4.5 text-emerald-500 dark:text-emerald-400 midnight:text-emerald-400 purple:text-pink-400" />
+          </div>
+          <span className="text-sm font-bold text-gray-800 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50">Homework</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <Link
+            href="/parents/homework"
+            className="text-[0.625rem] font-semibold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 hover:text-blue-700 dark:hover:text-blue-300 flex items-center gap-0.5 transition-colors"
+          >
+            View All <ChevronRight className="w-3 h-3" />
+          </Link>
+          <DashboardDragHandle />
+        </div>
+      </div>
+      <div className="relative flex-1 px-3 py-2.5 flex flex-col justify-between gap-2">
+        {homework.map((hw) => (
+          <Link
+            key={hw.id}
+            href={`/parents/homework/${hw.id}`}
+            className={`group relative p-2.5 rounded-xl border transition-all duration-200 hover:shadow-md hover:-translate-x-0.5 overflow-hidden ${
+              hw.color === "purple"
+                ? "bg-gradient-to-r from-purple-50/80 to-white dark:from-purple-900/20 dark:to-gray-700/10 midnight:from-purple-900/20 midnight:to-gray-800/20 purple:from-purple-900/20 purple:to-gray-800/20 border-purple-100 dark:border-purple-700/30 midnight:border-purple-700/20 purple:border-purple-700/20 hover:border-purple-300 dark:hover:border-purple-500/40"
+                : hw.color === "green"
+                  ? "bg-gradient-to-r from-green-50/80 to-white dark:from-green-900/20 dark:to-gray-700/10 midnight:from-green-900/20 midnight:to-gray-800/20 purple:from-green-900/20 purple:to-gray-800/20 border-green-100 dark:border-green-700/30 midnight:border-green-700/20 purple:border-green-700/20 hover:border-green-300 dark:hover:border-green-500/40"
+                  : "bg-gradient-to-r from-blue-50/80 to-white dark:from-blue-900/20 dark:to-gray-700/10 midnight:from-blue-900/20 midnight:to-gray-800/20 purple:from-blue-900/20 purple:to-gray-800/20 border-blue-100 dark:border-blue-700/30 midnight:border-blue-700/20 purple:border-blue-700/20 hover:border-blue-300 dark:hover:border-blue-500/40"
+            }`}
+          >
+            <div className="flex items-center justify-between gap-2 mb-2">
+              <div
+                className={`flex-shrink-0 px-2.5 py-1 rounded-lg text-[0.625rem] font-bold ${
+                  hw.color === "purple"
+                    ? "bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-300"
+                    : hw.color === "green"
+                      ? "bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-300"
+                      : "bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300"
+                }`}
+              >
+                {hw.subject}
+              </div>
+              <div className="flex-shrink-0 flex items-center gap-1 px-2 py-1 rounded-md bg-gray-100/80 dark:bg-[#22262e]/50 midnight:bg-gray-700/50 purple:bg-gray-700/50">
+                <Clock className="w-3 h-3 text-gray-500 dark:text-gray-400" />
+                <span className="text-[0.5625rem] font-semibold text-gray-600 dark:text-gray-300">{formatShortDate(hw.dueDate)}</span>
+              </div>
+            </div>
+            <div className="min-w-0 flex items-center justify-between gap-2">
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-semibold text-gray-800 dark:text-white midnight:text-gray-100 purple:text-gray-100 truncate group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">{hw.description}</p>
+                <p className="text-[0.625rem] text-gray-500 dark:text-gray-400 midnight:text-gray-400 purple:text-gray-400 mt-0.5 truncate">{hw.teacher}</p>
+              </div>
+              <ChevronRight className="w-4 h-4 flex-shrink-0 text-gray-300 dark:text-gray-600 group-hover:text-emerald-500 dark:group-hover:text-emerald-400 group-hover:translate-x-0.5 transition-all duration-200" />
+            </div>
+          </Link>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export function FeesReminderCard({
+  reminders,
+  countryCode,
+  onPayNow,
+}: {
+  reminders: FeeReminderItem[];
+  countryCode: string;
+  onPayNow?: (fee: FeeReminderItem) => void;
+}) {
+  return (
+    <div className="group/card relative bg-white/95 dark:bg-[#1a1d24]/95 midnight:bg-[#0a0e27]/95 purple:bg-[#1a0b2e]/95 backdrop-blur-sm rounded-2xl border border-gray-200/60 dark:border-gray-700/50 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.1)] dark:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.3)] hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.15)] dark:hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.4)] midnight:shadow-[0_4px_20px_-4px_rgba(6,182,212,0.1)] midnight:hover:shadow-[0_8px_30px_-4px_rgba(6,182,212,0.15)] purple:shadow-[0_4px_20px_-4px_rgba(236,72,153,0.1)] purple:hover:shadow-[0_8px_30px_-4px_rgba(236,72,153,0.15)] overflow-hidden transition-all duration-300 hover:-translate-y-0.5 flex flex-col">
+      {/* Top shine */}
+      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/30 dark:via-white/5 to-transparent" />
+      <div className="relative px-3 py-2.5 flex items-center justify-between border-b border-gray-100/50 dark:border-gray-700/30 midnight:border-gray-700/20 purple:border-gray-700/20">
+        <div className="flex items-center gap-2.5">
+          <div className="p-2 rounded-xl bg-gradient-to-br from-rose-100/80 to-white/80 dark:from-rose-500/20 dark:to-gray-800/50 midnight:from-rose-500/20 midnight:to-gray-800/50 purple:from-pink-500/20 purple:to-gray-800/50">
+            <CreditCard className="w-4.5 h-4.5 text-rose-500 dark:text-rose-400 midnight:text-rose-400 purple:text-pink-400" />
+          </div>
+          <span className="text-sm font-bold text-gray-800 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50">Fees Reminder</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <Link
+            href="/parents/fees"
+            className="text-[0.625rem] font-semibold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 hover:text-blue-700 dark:hover:text-blue-300 flex items-center gap-0.5 transition-colors"
+          >
+            View All <ChevronRight className="w-3 h-3" />
+          </Link>
+          <DashboardDragHandle />
+        </div>
+      </div>
+      <div className="relative flex-1 px-3 py-2.5 flex flex-col justify-between gap-2">
+        {reminders.map((fee) => (
+          <div
+            key={fee.id}
+            className={`group relative flex flex-col p-2.5 rounded-xl border transition-all duration-200 hover:shadow-md ${
+              fee.status === "overdue"
+                ? "bg-gradient-to-r from-red-50/80 to-white dark:from-red-900/20 dark:to-gray-700/10 midnight:from-red-900/20 midnight:to-gray-800/20 purple:from-red-900/20 purple:to-gray-800/20 border-red-200 dark:border-red-700/30 midnight:border-red-700/20 purple:border-red-700/20 hover:border-red-300 dark:hover:border-red-500/40"
+                : "bg-gradient-to-r from-amber-50/80 to-white dark:from-amber-900/20 dark:to-gray-700/10 midnight:from-amber-900/20 midnight:to-gray-800/20 purple:from-amber-900/20 purple:to-gray-800/20 border-amber-200 dark:border-amber-700/30 midnight:border-amber-700/20 purple:border-amber-700/20 hover:border-amber-300 dark:hover:border-amber-500/40"
+            }`}
+          >
+            <div className="flex items-start justify-between gap-2 mb-2">
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-bold text-gray-900 dark:text-white midnight:text-gray-100 purple:text-gray-100 truncate">{fee.feeType}</p>
+                <p className="text-[0.625rem] text-gray-500 dark:text-gray-400 midnight:text-gray-400 purple:text-gray-400 mt-0.5">{fee.childName}</p>
+              </div>
+              <span
+                className={`flex-shrink-0 inline-flex items-center gap-1 px-2 py-1 rounded-md text-[0.5625rem] font-bold uppercase tracking-wide ${
+                  fee.status === "overdue"
+                    ? "bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-400"
+                    : "bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-400"
+                }`}
+              >
+                {fee.status === "overdue" ? <AlertTriangle className="w-3 h-3" /> : <Clock className="w-3 h-3" />}
+                {fee.status === "overdue" ? "Overdue" : "Due"}
+              </span>
+            </div>
+            <div className="flex items-center justify-between gap-2 mt-auto">
+              <div>
+                <p className={`text-lg font-bold ${fee.status === "overdue" ? "text-red-700 dark:text-red-400" : "text-amber-700 dark:text-amber-400"}`}>
+                  {formatCurrency(fee.amount, countryCode)}
+                </p>
+                <p className="text-[0.5625rem] text-gray-500 dark:text-gray-400 midnight:text-gray-400 purple:text-gray-400 flex items-center gap-1">
+                  <CalendarDays className="w-2.5 h-2.5" /> Due: {formatShortDate(fee.dueDate)}
+                </p>
+              </div>
+              <Button
+                size="sm"
+                onClick={() => onPayNow?.(fee)}
+                className={`text-[0.625rem] px-3 py-1.5 font-bold shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 cursor-pointer ${
+                  fee.status === "overdue"
+                    ? "bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700"
+                    : "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700"
+                }`}
+              >
+                Pay Now
+              </Button>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export function MessagesCard({ messages }: { messages: ParentMessage[] }) {
+  const unreadCount = messages.filter((m) => m.unread).length;
+  return (
+    <div className="group/card relative bg-white/95 dark:bg-[#1a1d24]/95 midnight:bg-[#0a0e27]/95 purple:bg-[#1a0b2e]/95 backdrop-blur-sm rounded-2xl border border-gray-200/60 dark:border-gray-700/50 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.1)] dark:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.3)] hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.15)] dark:hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.4)] midnight:shadow-[0_4px_20px_-4px_rgba(6,182,212,0.1)] midnight:hover:shadow-[0_8px_30px_-4px_rgba(6,182,212,0.15)] purple:shadow-[0_4px_20px_-4px_rgba(236,72,153,0.1)] purple:hover:shadow-[0_8px_30px_-4px_rgba(236,72,153,0.15)] overflow-hidden transition-all duration-300 hover:-translate-y-0.5 flex flex-col">
+      {/* Top shine */}
+      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/30 dark:via-white/5 to-transparent" />
+      <div className="relative px-3 py-2.5 flex items-center justify-between border-b border-gray-100/50 dark:border-gray-700/30 midnight:border-gray-700/20 purple:border-gray-700/20">
+        <div className="flex items-center gap-2.5">
+          <div className="p-2 rounded-xl bg-gradient-to-br from-teal-100/80 to-white/80 dark:from-teal-500/20 dark:to-gray-800/50 midnight:from-teal-500/20 midnight:to-gray-800/50 purple:from-pink-500/20 purple:to-gray-800/50">
+            <Mail className="w-4.5 h-4.5 text-teal-500 dark:text-teal-400 midnight:text-teal-400 purple:text-pink-400" />
+          </div>
+          <span className="text-sm font-bold text-gray-800 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50">Messages</span>
+          {unreadCount > 0 && (
+            <span className="text-[0.5625rem] font-bold text-white bg-gradient-to-r from-red-500 to-rose-500 px-1.5 py-0.5 rounded-full shadow-md animate-pulse min-w-[18px] text-center">
+              {unreadCount}
+            </span>
+          )}
+        </div>
+        <div className="flex items-center gap-2">
+          <Link
+            href="/parents/messages"
+            className="text-[0.625rem] font-semibold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 hover:text-blue-700 dark:hover:text-blue-300 flex items-center gap-0.5 transition-colors"
+          >
+            View All <ChevronRight className="w-3 h-3" />
+          </Link>
+          <DashboardDragHandle />
+        </div>
+      </div>
+      <div className="relative flex-1 px-3 py-2.5 flex flex-col justify-between gap-2">
+        {messages.map((msg) => (
+          <Link
+            key={msg.id}
+            href={`/parents/messages?selected=${msg.id}`}
+            className={`group flex items-center gap-3 p-2.5 rounded-xl border transition-all duration-200 hover:shadow-md hover:-translate-x-0.5 ${
+              msg.unread
+                ? "bg-gradient-to-r from-teal-50/80 to-white dark:from-teal-900/20 dark:to-gray-700/10 midnight:from-teal-900/20 midnight:to-gray-800/20 purple:from-teal-900/20 purple:to-gray-800/20 border-teal-100 dark:border-teal-700/30 midnight:border-teal-700/20 purple:border-teal-700/20 hover:border-teal-300 dark:hover:border-teal-500/40"
+                : "bg-gradient-to-r from-gray-50/80 to-white dark:from-gray-700/20 dark:to-gray-700/10 midnight:from-gray-800/30 midnight:to-gray-800/20 purple:from-gray-800/30 purple:to-gray-800/20 border-gray-100 dark:border-gray-700/30 midnight:border-gray-700/20 purple:border-gray-700/20 hover:border-gray-200 dark:hover:border-gray-600/40"
+            }`}
+          >
+            <div className={`flex-shrink-0 w-2 h-2 rounded-full ${msg.unread ? "bg-gradient-to-r from-teal-500 to-emerald-500 shadow-sm" : "bg-transparent"}`} />
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-gray-800 dark:text-white midnight:text-gray-100 purple:text-gray-100 truncate group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors">
+                {msg.subject}
+              </p>
+              <p className="text-[0.625rem] text-gray-500 dark:text-gray-400 midnight:text-gray-400 purple:text-gray-400 mt-0.5 truncate">
+                {msg.from} • {msg.time}
+              </p>
+            </div>
+            <ChevronRight className="w-4 h-4 flex-shrink-0 text-gray-300 dark:text-gray-600 group-hover:text-teal-500 dark:group-hover:text-teal-400 group-hover:translate-x-0.5 transition-all duration-200" />
+          </Link>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export function NoticeBoardCard({ notices }: { notices: NoticeItem[] }) {
+  return (
+    <div className="group/card relative bg-white/95 dark:bg-[#1a1d24]/95 midnight:bg-[#0a0e27]/95 purple:bg-[#1a0b2e]/95 backdrop-blur-sm rounded-2xl border border-gray-200/60 dark:border-gray-700/50 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.1)] dark:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.3)] hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.15)] dark:hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.4)] midnight:shadow-[0_4px_20px_-4px_rgba(6,182,212,0.1)] midnight:hover:shadow-[0_8px_30px_-4px_rgba(6,182,212,0.15)] purple:shadow-[0_4px_20px_-4px_rgba(236,72,153,0.1)] purple:hover:shadow-[0_8px_30px_-4px_rgba(236,72,153,0.15)] overflow-hidden transition-all duration-300 hover:-translate-y-0.5">
+      {/* Top shine */}
+      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/30 dark:via-white/5 to-transparent" />
+      <div className="relative p-3 border-b border-gray-100/50 dark:border-gray-700/30 midnight:border-gray-700/20 purple:border-gray-700/20 flex items-center justify-between">
+        <div className="flex items-center gap-2.5">
+          <div className="p-2 rounded-xl bg-gradient-to-br from-amber-100/80 to-white/80 dark:from-amber-500/20 dark:to-gray-800/50 midnight:from-amber-500/20 midnight:to-gray-800/50 purple:from-amber-500/20 purple:to-gray-800/50">
+            <Bell className="w-4.5 h-4.5 text-amber-500 dark:text-amber-400 midnight:text-amber-400 purple:text-amber-400" />
+          </div>
+          <span className="text-sm font-bold text-gray-800 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50">Notice Board</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <Link href="/parents/notices" className="text-[0.625rem] font-semibold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 hover:text-blue-700 dark:hover:text-blue-300 flex items-center gap-0.5 transition-colors">
+            View All <ChevronRight className="w-3 h-3" />
+          </Link>
+          <DashboardDragHandle />
+        </div>
+      </div>
+      <div className="relative p-2">
+        {notices.slice(0, 3).map((notice, index) => (
+          <Link
+            key={notice.id}
+            href={`/parents/notices/${notice.id}`}
+            className={`block p-2.5 rounded-xl hover:bg-gradient-to-r hover:from-amber-50/50 hover:to-orange-50/50 dark:hover:from-amber-900/10 dark:hover:to-orange-900/10 midnight:hover:from-amber-900/10 midnight:hover:to-orange-900/10 purple:hover:from-amber-900/10 purple:hover:to-orange-900/10 transition-all duration-200 group ${index !== 2 ? "mb-1" : ""}`}
+          >
+            <div className="flex items-start gap-3">
+              {notice.isNew && <span className="w-2 h-2 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 mt-1.5 flex-shrink-0 shadow-sm animate-pulse" />}
+              <div className={`flex-1 min-w-0 ${!notice.isNew ? "pl-5" : ""}`}>
+                <p className="text-xs font-semibold text-gray-800 dark:text-white midnight:text-gray-100 purple:text-gray-100 line-clamp-1 group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">
+                  {notice.title}
+                </p>
+                <p className="text-[0.625rem] text-gray-500 dark:text-gray-400 midnight:text-gray-400 purple:text-gray-400 mt-0.5 flex items-center gap-1">
+                  <Calendar className="w-2.5 h-2.5" /> {formatShortDate(notice.date)}
+                </p>
+              </div>
+              <ChevronRight className="w-4 h-4 text-gray-300 dark:text-gray-600 group-hover:text-amber-500 dark:group-hover:text-amber-400 transition-colors flex-shrink-0" />
+            </div>
+          </Link>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export function QuickLinksCard({ selectedChildId }: { selectedChildId: string }) {
+  return (
+    <div className="group/card relative bg-white/95 dark:bg-[#1a1d24]/95 midnight:bg-[#0a0e27]/95 purple:bg-[#1a0b2e]/95 backdrop-blur-sm rounded-2xl border border-gray-200/60 dark:border-gray-700/50 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.1)] dark:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.3)] hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.15)] dark:hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.4)] midnight:shadow-[0_4px_20px_-4px_rgba(6,182,212,0.1)] midnight:hover:shadow-[0_8px_30px_-4px_rgba(6,182,212,0.15)] purple:shadow-[0_4px_20px_-4px_rgba(236,72,153,0.1)] purple:hover:shadow-[0_8px_30px_-4px_rgba(236,72,153,0.15)] overflow-hidden transition-all duration-300 hover:-translate-y-0.5 flex flex-col">
+      {/* Top shine */}
+      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/30 dark:via-white/5 to-transparent" />
+      <div className="relative px-3 py-2.5 flex items-center justify-between gap-2.5 border-b border-gray-100/50 dark:border-gray-700/30 midnight:border-gray-700/20 purple:border-gray-700/20">
+        <div className="flex items-center gap-2.5">
+          <div className="p-2 rounded-xl bg-gradient-to-br from-indigo-100/80 to-white/80 dark:from-indigo-500/20 dark:to-gray-800/50 midnight:from-cyan-500/20 midnight:to-gray-800/50 purple:from-pink-500/20 purple:to-gray-800/50">
+            <Zap className="w-4.5 h-4.5 text-indigo-500 dark:text-indigo-400 midnight:text-cyan-400 purple:text-pink-400" />
+          </div>
+          <h4 className="text-sm font-bold text-gray-800 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50">Quick Links</h4>
+        </div>
+        <DashboardDragHandle />
+      </div>
+      <div className="relative flex-1 px-3 py-2.5 flex flex-col justify-between gap-2">
+        <Link
+          href={`/parents/children/${selectedChildId}/report-card`}
+          className="flex items-center gap-3 p-2.5 rounded-xl bg-gradient-to-r from-blue-50/80 to-indigo-50/50 dark:from-blue-900/20 dark:to-indigo-900/10 midnight:from-blue-900/20 midnight:to-indigo-900/10 purple:from-blue-900/20 purple:to-indigo-900/10 border border-blue-100/50 dark:border-blue-800/30 midnight:border-blue-800/20 purple:border-blue-800/20 hover:border-blue-300 dark:hover:border-blue-700/50 hover:shadow-md hover:-translate-x-0.5 transition-all duration-200 group"
+        >
+          <div className="p-2 rounded-xl bg-white dark:bg-[#1a1d24]/80 midnight:bg-[#0f1330]/80 purple:bg-[#251340]/80 shadow-sm group-hover:shadow-md group-hover:scale-105 transition-all duration-200">
+            <Award className="w-4 h-4 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
+          </div>
+          <span className="text-xs font-semibold text-gray-700 dark:text-gray-200 midnight:text-gray-200 purple:text-gray-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+            View Report Card
+          </span>
+          <ChevronRight className="w-4 h-4 text-gray-400 ml-auto group-hover:text-blue-500 dark:group-hover:text-blue-400 group-hover:translate-x-0.5 transition-all duration-200" />
+        </Link>
+        <Link
+          href={`/parents/children/${selectedChildId}/attendance`}
+          className="flex items-center gap-3 p-2.5 rounded-xl bg-gradient-to-r from-purple-50/80 to-pink-50/50 dark:from-purple-900/20 dark:to-pink-900/10 midnight:from-purple-900/20 midnight:to-pink-900/10 purple:from-pink-900/20 purple:to-purple-900/10 border border-purple-100/50 dark:border-purple-800/30 midnight:border-purple-800/20 purple:border-pink-800/20 hover:border-purple-300 dark:hover:border-purple-700/50 hover:shadow-md hover:-translate-x-0.5 transition-all duration-200 group"
+        >
+          <div className="p-2 rounded-xl bg-white dark:bg-[#1a1d24]/80 midnight:bg-[#0f1330]/80 purple:bg-[#251340]/80 shadow-sm group-hover:shadow-md group-hover:scale-105 transition-all duration-200">
+            <CalendarCheck className="w-4 h-4 text-purple-600 dark:text-purple-400 midnight:text-indigo-400 purple:text-pink-400" />
+          </div>
+          <span className="text-xs font-semibold text-gray-700 dark:text-gray-200 midnight:text-gray-200 purple:text-gray-200 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
+            View Attendance
+          </span>
+          <ChevronRight className="w-4 h-4 text-gray-400 ml-auto group-hover:text-purple-500 dark:group-hover:text-purple-400 group-hover:translate-x-0.5 transition-all duration-200" />
+        </Link>
+        <Link
+          href="/parents/messages"
+          className="flex items-center gap-3 p-2.5 rounded-xl bg-gradient-to-r from-green-50/80 to-emerald-50/50 dark:from-green-900/20 dark:to-emerald-900/10 midnight:from-green-900/20 midnight:to-emerald-900/10 purple:from-green-900/20 purple:to-emerald-900/10 border border-green-100/50 dark:border-green-800/30 midnight:border-green-800/20 purple:border-green-800/20 hover:border-green-300 dark:hover:border-green-700/50 hover:shadow-md hover:-translate-x-0.5 transition-all duration-200 group"
+        >
+          <div className="p-2 rounded-xl bg-white dark:bg-[#1a1d24]/80 midnight:bg-[#0f1330]/80 purple:bg-[#251340]/80 shadow-sm group-hover:shadow-md group-hover:scale-105 transition-all duration-200">
+            <Send className="w-4 h-4 text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400" />
+          </div>
+          <span className="text-xs font-semibold text-gray-700 dark:text-gray-200 midnight:text-gray-200 purple:text-gray-200 group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors">
+            Messages
+          </span>
+          <ChevronRight className="w-4 h-4 text-gray-400 ml-auto group-hover:text-green-500 dark:group-hover:text-green-400 group-hover:translate-x-0.5 transition-all duration-200" />
+        </Link>
+      </div>
+    </div>
+  );
+}
+
+// Platform info helper for meetings
+function getMeetingPlatformInfo(platform: MeetingPlatform) {
+  switch (platform) {
+    case "zoom":
+      return {
+        name: "Zoom",
+        bgClass: "bg-blue-100 dark:bg-blue-900/40",
+        textClass: "text-blue-600 dark:text-blue-400",
+        icon: <Video className="w-3 h-3" />,
+      };
+    case "google-meet":
+      return {
+        name: "Meet",
+        bgClass: "bg-green-100 dark:bg-green-900/40",
+        textClass: "text-green-600 dark:text-green-400",
+        icon: <Video className="w-3 h-3" />,
+      };
+    case "whatsapp-video":
+      return {
+        name: "WhatsApp",
+        bgClass: "bg-emerald-100 dark:bg-emerald-900/40",
+        textClass: "text-emerald-600 dark:text-emerald-400",
+        icon: <Video className="w-3 h-3" />,
+      };
+    case "whatsapp-voice":
+      return {
+        name: "WhatsApp",
+        bgClass: "bg-emerald-100 dark:bg-emerald-900/40",
+        textClass: "text-emerald-600 dark:text-emerald-400",
+        icon: <Phone className="w-3 h-3" />,
+      };
+    case "educo-meet":
+      return {
+        name: "Educo",
+        bgClass: "bg-indigo-100 dark:bg-indigo-900/40",
+        textClass: "text-indigo-600 dark:text-indigo-400",
+        icon: <Video className="w-3 h-3" />,
+      };
+  }
+}
+
+function formatMeetingDate(dateStr: string) {
+  const date = new Date(dateStr);
+  const today = new Date();
+  const tomorrow = new Date(today);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+
+  if (date.toDateString() === today.toDateString()) {
+    return "Today";
+  } else if (date.toDateString() === tomorrow.toDateString()) {
+    return "Tomorrow";
+  }
+  return date.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" });
+}
+
+export function UpcomingMeetingsCard({ meetings }: { meetings: UpcomingMeeting[] }) {
+  const upcomingMeetings = meetings.filter((m) => m.status === "scheduled" || m.status === "in-progress");
+
+  return (
+    <div className="group/card relative bg-white/95 dark:bg-[#1a1d24]/95 midnight:bg-[#0a0e27]/95 purple:bg-[#1a0b2e]/95 backdrop-blur-sm rounded-2xl border border-gray-200/60 dark:border-gray-700/50 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.1)] dark:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.3)] hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.15)] dark:hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.4)] midnight:shadow-[0_4px_20px_-4px_rgba(6,182,212,0.1)] midnight:hover:shadow-[0_8px_30px_-4px_rgba(6,182,212,0.15)] purple:shadow-[0_4px_20px_-4px_rgba(236,72,153,0.1)] purple:hover:shadow-[0_8px_30px_-4px_rgba(236,72,153,0.15)] overflow-hidden transition-all duration-300 hover:-translate-y-0.5 flex flex-col">
+      {/* Top shine */}
+      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/30 dark:via-white/5 to-transparent" />
+      <div className="relative px-3 py-2.5 flex items-center justify-between gap-2 border-b border-gray-100/50 dark:border-gray-700/30 midnight:border-gray-700/20 purple:border-gray-700/20">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <div className="p-2 rounded-xl bg-gradient-to-br from-violet-100/80 to-white/80 dark:from-violet-500/20 dark:to-gray-800/50 midnight:from-violet-500/20 midnight:to-gray-800/50 purple:from-pink-500/20 purple:to-gray-800/50 shrink-0">
+            <Video className="w-4.5 h-4.5 text-violet-500 dark:text-violet-400 midnight:text-violet-400 purple:text-pink-400" />
+          </div>
+          <span className="text-sm font-bold text-gray-800 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50 truncate">Meetings</span>
+          {upcomingMeetings.length > 0 && (
+            <span className="text-[0.5625rem] font-bold text-white bg-violet-500 dark:bg-violet-600 midnight:bg-violet-600 purple:bg-pink-500 px-1.5 py-0.5 rounded-full min-w-[18px] text-center shrink-0">
+              {upcomingMeetings.length}
+            </span>
+          )}
+        </div>
+        <div className="flex items-center gap-1.5 shrink-0">
+          <Link
+            href="/parents/meetings"
+            className="text-[0.625rem] font-semibold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400 hover:text-blue-700 dark:hover:text-blue-300 flex items-center gap-0.5 transition-colors whitespace-nowrap"
+          >
+            View All <ChevronRight className="w-3 h-3" />
+          </Link>
+          <DashboardDragHandle />
+        </div>
+      </div>
+      <div className="relative flex-1 px-3 py-2.5 flex flex-col justify-between gap-2">
+        {upcomingMeetings.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-6 text-center">
+            <div className="p-3 rounded-full bg-gray-100 dark:bg-[#22262e]/50 mb-2">
+              <Video className="w-5 h-5 text-gray-400" />
+            </div>
+            <p className="text-xs text-gray-500 dark:text-gray-400">No upcoming meetings</p>
+          </div>
+        ) : (
+          upcomingMeetings.slice(0, 3).map((meeting) => {
+            const platformInfo = getMeetingPlatformInfo(meeting.platform);
+            return (
+              <Link
+                key={meeting.id}
+                href={`/parents/meetings/${meeting.id}`}
+                className="group flex items-center gap-3 p-2.5 rounded-xl bg-gradient-to-r from-gray-50/80 to-white dark:from-gray-700/30 dark:to-gray-700/10 midnight:from-gray-800/40 midnight:to-gray-800/20 purple:from-gray-800/40 purple:to-gray-800/20 border border-gray-100 dark:border-gray-600/20 midnight:border-gray-600/15 purple:border-gray-600/15 hover:border-violet-200 dark:hover:border-violet-500/30 hover:shadow-md hover:-translate-x-0.5 transition-all duration-200"
+              >
+                <div className="relative flex-shrink-0">
+                  <div className="w-10 h-10 rounded-xl overflow-hidden ring-2 ring-white dark:ring-gray-700 shadow-md">
+                    <Image src={meeting.hostPhoto} alt={meeting.hostName} width={40} height={40} className="object-cover" unoptimized />
+                  </div>
+                  <div className={`absolute -bottom-1 -right-1 p-1 rounded-md ${platformInfo.bgClass} ${platformInfo.textClass} shadow-sm`}>
+                    {platformInfo.icon}
+                  </div>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-gray-800 dark:text-white midnight:text-gray-100 purple:text-gray-100 truncate group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors">
+                    {meeting.title}
+                  </p>
+                  <p className="text-[0.625rem] text-gray-500 dark:text-gray-400 midnight:text-gray-400 purple:text-gray-400 mt-0.5 truncate">
+                    {meeting.hostName} • {meeting.hostRole}
+                  </p>
+                </div>
+                <div className="flex-shrink-0 text-right">
+                  <p className="text-[0.6875rem] font-bold text-gray-900 dark:text-white">{formatMeetingDate(meeting.scheduledDate)}</p>
+                  <p className="text-[0.625rem] text-gray-500 dark:text-gray-400 flex items-center justify-end gap-1">
+                    <Clock className="w-2.5 h-2.5" />
+                    {meeting.scheduledTime}
+                  </p>
+                </div>
+                <ChevronRight className="w-4 h-4 flex-shrink-0 text-gray-300 dark:text-gray-600 group-hover:text-violet-500 dark:group-hover:text-violet-400 group-hover:translate-x-0.5 transition-all duration-200" />
+              </Link>
+            );
+          })
+        )}
+      </div>
+    </div>
+  );
+}
+
+

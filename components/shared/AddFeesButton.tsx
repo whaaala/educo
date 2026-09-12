@@ -17,13 +17,13 @@ export default function AddFeesButton({
 }: AddFeesButtonProps) {
   // Size variants
   const sizeClasses = {
-    sm: "px-2 py-1 text-[10px] gap-1",
+    sm: "px-2 py-1 text-[0.625rem] gap-1",
     md: "px-3 py-1.5 text-xs gap-1.5",
     lg: "px-4 py-2 text-sm gap-2",
   };
 
   const iconSizes = {
-    sm: "text-[11px]",
+    sm: "text-[0.6875rem]",
     md: "text-xs",
     lg: "text-sm",
   };

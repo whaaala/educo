@@ -37,7 +37,7 @@ export default function StudentFeatureGuard({
   if (!isEnabled(feature)) {
     if (showMessage) {
       return (
-        <div className="p-4 bg-gray-50 dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/30 purple:border-pink-500/30">
+        <div className="p-4 bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0a0e27] purple:bg-[#1a0b2e] rounded-lg border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/30 purple:border-pink-500/30">
           <p className="text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400">
             This feature is not available for your institution type ({tenantContext.institutionType})
             and education level ({tenantContext.educationLevel}).

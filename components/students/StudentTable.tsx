@@ -3,8 +3,8 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Student } from "./StudentCard";
-import { MoreVertical, MessageCircle, Phone, Mail, Eye, Edit, Lock, TrendingUp, Trash2, Plus, ArrowRight } from "lucide-react";
-import DataTable, { ColumnConfig } from "@/components/shared/DataTable";
+import { MoreVertical, MessageCircle, Phone, Video, Mail, Eye, Edit, Lock, TrendingUp, Trash2, ArrowRight } from "lucide-react";
+import ResponsiveListTable, { type ColumnConfig } from "@/components/shared/ResponsiveListTable";
 import CollectFeesModal from "@/components/shared/CollectFeesModal";
 import DeleteConfirmationModal from "@/components/shared/DeleteConfirmationModal";
 import TransferRequestModal from "@/components/students/TransferRequestModal";
@@ -12,8 +12,9 @@ import Tooltip from "@/components/shared/Tooltip";
 import AddFeesButton from "@/components/shared/AddFeesButton";
 import NameLabel from "@/components/shared/NameLabel";
 import { useSidebar } from "@/contexts/SidebarContext";
-import { detectEducationLevelFromClass, getEducationLevelColor, getInstitutionTypeColor } from "@/utils/educationLevel";
+import { detectEducationLevelFromClass, getEducationLevelColor } from "@/utils/educationLevel";
 import { useFeatureFlags } from "@/hooks/useFeatureFlags";
+import { useCall } from "@/hooks/useCall";
 import { CreateTransferRequest } from "@/types/transfer";
 
 interface StudentTableProps {
@@ -31,6 +32,7 @@ export default function StudentTable({ students, isLoading = false, loadingMessa
   const router = useRouter();
   const { isCollapsed } = useSidebar();
   const { canTransferStudents, tenantContext } = useFeatureFlags();
+  const { startVideoCall, startVoiceCall } = useCall();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [internalSelectedIds, setInternalSelectedIds] = useState<Set<string>>(new Set());
@@ -175,16 +177,6 @@ export default function StudentTable({ students, isLoading = false, loadingMessa
     setIsDeleteModalOpen(false);
     setStudentToDelete(null);
   };
-
-  const handleDeleteAll = () => {
-    if (selectedIds.size > 0) {
-      console.log('Deleting students:', Array.from(selectedIds));
-      // Add your bulk delete logic here
-      // After deletion, clear the selected IDs
-      updateSelectedIds(new Set());
-    }
-  };
-
   // Close menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -386,7 +378,7 @@ export default function StudentTable({ students, isLoading = false, loadingMessa
       render: (student) => (
         <div className="flex items-center justify-start">
           <span
-            className={`inline-flex items-center justify-center px-2 md:px-3 xl:px-3.5 py-1 md:py-1.5 xl:py-2 rounded-full text-[10px] md:text-xs xl:text-sm font-semibold shadow-sm transition-all duration-300 whitespace-nowrap ${
+            className={`inline-flex items-center justify-center px-2 md:px-3 xl:px-3.5 py-1 md:py-1.5 xl:py-2 rounded-full text-[0.625rem] md:text-xs xl:text-sm font-semibold shadow-sm transition-all duration-300 whitespace-nowrap ${
               student.status === "Active"
                 ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 midnight:bg-green-500/20 midnight:text-green-300 purple:bg-green-500/20 purple:text-green-300"
                 : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 midnight:bg-red-500/20 midnight:text-red-300 purple:bg-red-500/20 purple:text-red-300"
@@ -435,13 +427,37 @@ export default function StudentTable({ students, isLoading = false, loadingMessa
               className="p-0.5 md:p-1 xl:p-1.5 rounded-md hover:bg-green-50 dark:hover:bg-green-500/20 midnight:hover:bg-cyan-500/20 purple:hover:bg-pink-500/20 transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer"
               onClick={(e) => {
                 e.stopPropagation();
-                console.log("Call", student.id);
+                startVoiceCall({
+                  id: student.id,
+                  name: student.name,
+                  avatar: student.avatar,
+                  role: "Student",
+                }, { callContext: `Voice call with ${student.name}` });
               }}
             >
               <Phone className="w-3.5 h-3.5 md:w-3 md:h-3 lg:w-3.5 lg:h-3.5 xl:w-4 xl:h-4 text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400 group-hover/call:text-green-600 dark:group-hover/call:text-green-400 transition-colors" />
             </button>
             <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 opacity-0 group-hover/call:opacity-100 transition-opacity duration-200 pointer-events-none z-[99999]">
-              <NameLabel name="Call" variant="compact" />
+              <NameLabel name="Voice Call" variant="compact" />
+            </div>
+          </div>
+          <div className="relative group/video flex-shrink-0">
+            <button
+              className="p-0.5 md:p-1 xl:p-1.5 rounded-md hover:bg-purple-50 dark:hover:bg-purple-500/20 midnight:hover:bg-cyan-500/20 purple:hover:bg-pink-500/20 transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer"
+              onClick={(e) => {
+                e.stopPropagation();
+                startVideoCall({
+                  id: student.id,
+                  name: student.name,
+                  avatar: student.avatar,
+                  role: "Student",
+                }, { callContext: `Video call with ${student.name}` });
+              }}
+            >
+              <Video className="w-3.5 h-3.5 md:w-3 md:h-3 lg:w-3.5 lg:h-3.5 xl:w-4 xl:h-4 text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400 group-hover/video:text-purple-600 dark:group-hover/video:text-purple-400 transition-colors" />
+            </button>
+            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 opacity-0 group-hover/video:opacity-100 transition-opacity duration-200 pointer-events-none z-[99999]">
+              <NameLabel name="Video Call" variant="compact" />
             </div>
           </div>
           <div className="relative group/email flex-shrink-0">
@@ -476,7 +492,7 @@ export default function StudentTable({ students, isLoading = false, loadingMessa
               ref={openMenuStudentId === student.id ? buttonRef : null}
               className={`p-0.5 md:p-1 xl:p-1.5 rounded-md transition-all duration-200 group hover:scale-105 active:scale-95 cursor-pointer ${
                 openMenuStudentId === student.id
-                  ? 'bg-gray-200 dark:bg-gray-600 midnight:bg-cyan-500/30 purple:bg-pink-500/30'
+                  ? 'bg-gray-200 dark:bg-[#2a2d35] midnight:bg-cyan-500/30 purple:bg-pink-500/30'
                   : 'hover:bg-gray-100 dark:hover:bg-gray-500/20 midnight:hover:bg-cyan-500/20 purple:hover:bg-pink-500/20'
               }`}
               title="More"
@@ -491,7 +507,7 @@ export default function StudentTable({ students, isLoading = false, loadingMessa
             {openMenuStudentId === student.id && (
               <div
                 ref={menuRef}
-                className={`absolute right-0 w-52 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-lg shadow-2xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 z-[999999] py-1 animate-in fade-in duration-200 ${
+                className={`absolute right-0 w-52 bg-surface rounded-lg shadow-2xl border border-line z-[999999] py-1 animate-in fade-in duration-200 ${
                   menuPosition === 'top'
                     ? 'bottom-full mb-1 slide-in-from-bottom-2'
                     : 'top-full mt-1 slide-in-from-top-2'
@@ -499,35 +515,35 @@ export default function StudentTable({ students, isLoading = false, loadingMessa
               >
                 <button
                   onClick={() => handleMenuItemClick('View Student', student)}
-                  className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-50 dark:hover:bg-gray-700 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer"
+                  className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer"
                 >
                   <Eye className="w-4 h-4" />
                   <span>View Student</span>
                 </button>
                 <button
                   onClick={() => handleMenuItemClick('Edit', student)}
-                  className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-50 dark:hover:bg-gray-700 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer"
+                  className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer"
                 >
                   <Edit className="w-4 h-4" />
                   <span>Edit</span>
                 </button>
                 <button
                   onClick={() => handleMenuItemClick('Login Details', student)}
-                  className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-50 dark:hover:bg-gray-700 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer"
+                  className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer"
                 >
                   <Lock className="w-4 h-4" />
                   <span>Login Details</span>
                 </button>
                 <button
                   onClick={() => handleMenuItemClick('Disable', student)}
-                  className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-50 dark:hover:bg-gray-700 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer"
+                  className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer"
                 >
                   <Lock className="w-4 h-4" />
                   <span>Disable</span>
                 </button>
                 <button
                   onClick={() => handleMenuItemClick('Promote Student', student)}
-                  className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-50 dark:hover:bg-gray-700 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer"
+                  className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer"
                 >
                   <TrendingUp className="w-4 h-4" />
                   <span>Promote Student</span>
@@ -535,7 +551,7 @@ export default function StudentTable({ students, isLoading = false, loadingMessa
                 {canTransferStudents && (
                   <button
                     onClick={() => handleMenuItemClick('Transfer Student', student)}
-                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-50 dark:hover:bg-gray-700 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer"
+                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 midnight:text-cyan-100 purple:text-pink-100 hover:bg-gray-50 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-colors cursor-pointer"
                   >
                     <ArrowRight className="w-4 h-4" />
                     <span>Transfer Student</span>
@@ -567,10 +583,9 @@ export default function StudentTable({ students, isLoading = false, loadingMessa
 
   return (
     <>
-      <DataTable
+      <ResponsiveListTable variant="contained" showColumnHeaders={true}
         data={students}
         columns={columns}
-        title="Student Records"
         searchPlaceholder="Search students..."
         getRowKey={(student) => student.id}
         emptyMessage="No students found"

@@ -210,7 +210,7 @@ export function GradingProvider({ children }: { children: ReactNode }) {
     classLevel: string,
     subject?: string
   ): GradeScheme[] => {
-    let schemes = gradeSchemes.filter((s) => {
+    const schemes = gradeSchemes.filter((s) => {
       if (s.educationLevel !== educationLevel) return false;
       if (s.class !== classLevel && s.class !== "All") return false;
       if (subject && s.subject !== subject && s.subject !== "All") return false;

@@ -4,7 +4,6 @@ import { useState } from "react";
 import {
   Activity,
   ChevronUp,
-  ChevronDown,
   Info,
   Heart,
   Pill,
@@ -18,18 +17,15 @@ import {
 import TagInput from "@/components/shared/TagInput";
 import FormInput from "@/components/shared/FormInput";
 import FormTextarea from "@/components/shared/FormTextarea";
-import { ValidationErrors } from "@/lib/validation";
+import type { FormSectionProps } from "@/components/shared/form-section-types";
+import type { StudentFormData } from "./types";
 
-interface MedicalHistorySectionProps {
-  formData: any;
-  onChange: (field: string, value: any) => void;
-  errors?: ValidationErrors;
-}
+type MedicalHistorySectionProps = FormSectionProps<StudentFormData>;
 
 export default function MedicalHistorySection({
   formData,
   onChange,
-  errors = {},
+  errors: _errors = {},
 }: MedicalHistorySectionProps) {
   const [isExpanded, setIsExpanded] = useState(true);
 
@@ -67,19 +63,19 @@ export default function MedicalHistorySection({
   ];
 
   return (
-    <section className="bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 shadow-sm hover:shadow-md transition-shadow duration-200">
+    <section className="bg-surface rounded-xl border border-line shadow-sm hover:shadow-md transition-shadow duration-200">
       {/* Collapsible Header */}
       <button
         type="button"
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full bg-pink-50/50 dark:bg-pink-900/10 midnight:bg-pink-900/10 purple:bg-pink-900/10 hover:bg-pink-50 dark:hover:bg-pink-900/20 midnight:hover:bg-pink-900/20 purple:hover:bg-pink-900/20 px-6 py-3 flex items-center justify-between transition-all duration-200 border-b border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20"
+        className="w-full bg-pink-50/50 dark:bg-pink-900/10 midnight:bg-pink-900/10 purple:bg-pink-900/10 hover:bg-pink-50 dark:hover:bg-pink-900/20 midnight:hover:bg-pink-900/20 purple:hover:bg-pink-900/20 px-6 py-3 flex items-center justify-between transition-all duration-200 border-b border-line"
       >
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-lg bg-pink-100 dark:bg-pink-900/30 midnight:bg-pink-900/30 purple:bg-pink-900/30 flex items-center justify-center">
             <Activity className="w-4 h-4 text-pink-600 dark:text-pink-400 midnight:text-pink-400 purple:text-pink-400" />
           </div>
           <div className="text-left">
-            <h2 className="text-base font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+            <h2 className="text-base font-semibold text-ink">
               Medical History & Health Information
             </h2>
             <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70">
@@ -102,7 +98,7 @@ export default function MedicalHistorySection({
           isExpanded ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
         }`}
       >
-        <div className="overflow-hidden">
+        <div className={isExpanded ? "overflow-visible" : "overflow-hidden"}>
           <div className="p-4 sm:p-6 space-y-6 sm:space-y-8 lg:space-y-10">
           {/* Medical Conditions & Allergies Section */}
           <div className="space-y-4">
@@ -110,7 +106,7 @@ export default function MedicalHistorySection({
               <div className="w-7 h-7 rounded-lg bg-pink-100 dark:bg-pink-900/20 midnight:bg-pink-900/20 purple:bg-pink-900/20 flex items-center justify-center flex-shrink-0">
                 <AlertCircle className="w-4 h-4 text-pink-600 dark:text-pink-400 midnight:text-pink-400 purple:text-pink-400" />
               </div>
-              <h3 className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+              <h3 className="text-sm font-semibold text-ink">
                 Medical Conditions & Allergies
               </h3>
             </div>
@@ -156,7 +152,7 @@ export default function MedicalHistorySection({
               <div className="w-7 h-7 rounded-lg bg-pink-100 dark:bg-pink-900/20 midnight:bg-pink-900/20 purple:bg-pink-900/20 flex items-center justify-center flex-shrink-0">
                 <Pill className="w-4 h-4 text-pink-600 dark:text-pink-400 midnight:text-pink-400 purple:text-pink-400" />
               </div>
-              <h3 className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+              <h3 className="text-sm font-semibold text-ink">
                 Medications & Medical History
               </h3>
             </div>
@@ -190,7 +186,7 @@ export default function MedicalHistorySection({
               <div className="w-7 h-7 rounded-lg bg-pink-100 dark:bg-pink-900/20 midnight:bg-pink-900/20 purple:bg-pink-900/20 flex items-center justify-center flex-shrink-0">
                 <Phone className="w-4 h-4 text-pink-600 dark:text-pink-400 midnight:text-pink-400 purple:text-pink-400" />
               </div>
-              <h3 className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+              <h3 className="text-sm font-semibold text-ink">
                 Emergency Contact (Medical)
               </h3>
             </div>
@@ -244,7 +240,7 @@ export default function MedicalHistorySection({
               <div className="w-7 h-7 rounded-lg bg-pink-100 dark:bg-pink-900/20 midnight:bg-pink-900/20 purple:bg-pink-900/20 flex items-center justify-center flex-shrink-0">
                 <UtensilsCrossed className="w-4 h-4 text-pink-600 dark:text-pink-400 midnight:text-pink-400 purple:text-pink-400" />
               </div>
-              <h3 className="text-sm font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+              <h3 className="text-sm font-semibold text-ink">
                 Dietary & Additional Information
               </h3>
             </div>

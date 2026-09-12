@@ -30,6 +30,7 @@ const SCHOOL_SCHEDULE_OPTIONS = [
 ];
 
 export default function SchoolProfileSettings() {
+  const [isMounted, setIsMounted] = useState(false);
   const [selectedLevels, setSelectedLevels] = useState<EducationLevelOption[]>(["Secondary"]);
   const [institutionType, setInstitutionType] = useState<InstitutionType>("private");
   const [tertiaryType, setTertiaryType] = useState<TertiaryType>("university");
@@ -37,6 +38,7 @@ export default function SchoolProfileSettings() {
 
   // Load settings from localStorage on component mount
   useEffect(() => {
+    setIsMounted(true);
     const savedLevels = localStorage.getItem("educationLevels");
     const savedInstitutionType = localStorage.getItem("institutionType") as InstitutionType;
     const savedTertiaryType = localStorage.getItem("tertiaryType") as TertiaryType;
@@ -46,7 +48,7 @@ export default function SchoolProfileSettings() {
       try {
         const levels = JSON.parse(savedLevels) as EducationLevelOption[];
         setSelectedLevels(levels);
-      } catch (e) {
+      } catch  {
         // Fallback for old single-value format
         const oldValue = localStorage.getItem("educationLevel");
         if (oldValue === "primary") setSelectedLevels(["Primary"]);
@@ -65,6 +67,17 @@ export default function SchoolProfileSettings() {
       setScheduleType(savedScheduleType);
     }
   }, []);
+
+  // Don't render until mounted to avoid hydration errors
+  if (!isMounted) {
+    return (
+      <div className="space-y-6 animate-pulse">
+        <div className="h-32 bg-gray-200 dark:bg-[#22262e] rounded-lg"></div>
+        <div className="h-24 bg-gray-200 dark:bg-[#22262e] rounded-lg"></div>
+        <div className="h-24 bg-gray-200 dark:bg-[#22262e] rounded-lg"></div>
+      </div>
+    );
+  }
 
   const toggleEducationLevel = (level: EducationLevelOption) => {
     const newLevels = selectedLevels.includes(level)
@@ -157,13 +170,13 @@ export default function SchoolProfileSettings() {
           </span>
         </div>
 
-        <div className="space-y-3 p-4 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-lg">
+        <div className="space-y-3 p-4 bg-surface border border-line rounded-lg">
           {(["Primary", "Secondary", "Tertiary"] as EducationLevelOption[]).map((level) => (
             <button
               key={level}
               type="button"
               onClick={() => toggleEducationLevel(level)}
-              className="w-full flex items-center gap-3 p-3 rounded-lg border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 hover:bg-gray-50 dark:hover:bg-gray-700/50 midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors cursor-pointer"
+              className="w-full flex items-center gap-3 p-3 rounded-lg border border-line hover:bg-gray-50 dark:hover:bg-[#22262e]/50 midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5 transition-colors cursor-pointer"
             >
               <div className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 ${
                 selectedLevels.includes(level)
@@ -175,7 +188,7 @@ export default function SchoolProfileSettings() {
                 )}
               </div>
               <div className="flex-1 text-left">
-                <p className="text-sm font-medium text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                <p className="text-sm font-medium text-ink">
                   {level} Education
                 </p>
                 <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70 mt-0.5">
@@ -245,7 +258,7 @@ export default function SchoolProfileSettings() {
           value={scheduleType}
           options={SCHOOL_SCHEDULE_OPTIONS}
           onChange={handleScheduleTypeChange}
-          variant="green"
+          variant="blue"
         />
         <p className="text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70 mt-2">
           {scheduleType === "full-time" && "Traditional full-time day school with regular daily schedule."}
@@ -285,17 +298,17 @@ export default function SchoolProfileSettings() {
                 Multi-Level Institution Configuration
               </p>
               <p className="text-xs text-green-800 dark:text-green-400 midnight:text-green-400 purple:text-green-400 mt-1">
-                Your institution has {selectedLevels.join(", ")} sections. The system will automatically determine each student's education level based on their class:
+                Your institution has {selectedLevels.join(", ")} sections. The system will automatically determine each student&apos;s education level based on their class:
               </p>
               <ul className="text-xs text-green-800 dark:text-green-400 midnight:text-green-400 purple:text-green-400 mt-2 space-y-1 list-disc list-inside ml-2">
                 {selectedLevels.includes("Primary") && (
-                  <li>Students in "Primary 1-6", "Grade 1-6", "Year 1-6", "Kindergarten" → <span className="font-semibold">Primary Level</span></li>
+                  <li>Students in &quot;Primary 1-6&quot;, &quot;Grade 1-6&quot;, &quot;Year 1-6&quot;, &quot;Kindergarten&quot; → <span className="font-semibold">Primary Level</span></li>
                 )}
                 {selectedLevels.includes("Secondary") && (
-                  <li>Students in "JSS/SSS 1-3", "Year 7-13", "Form 1-4", "Grade 7-12" → <span className="font-semibold">Secondary Level</span></li>
+                  <li>Students in &quot;JSS/SSS 1-3&quot;, &quot;Year 7-13&quot;, &quot;Form 1-4&quot;, &quot;Grade 7-12&quot; → <span className="font-semibold">Secondary Level</span></li>
                 )}
                 {selectedLevels.includes("Tertiary") && (
-                  <li>Students in "100-800 Level", "ND/HND", "Undergraduate/Postgraduate" → <span className="font-semibold">Tertiary Level</span></li>
+                  <li>Students in &quot;100-800 Level&quot;, &quot;ND/HND&quot;, &quot;Undergraduate/Postgraduate&quot; → <span className="font-semibold">Tertiary Level</span></li>
                 )}
               </ul>
             </div>
@@ -304,7 +317,7 @@ export default function SchoolProfileSettings() {
       )}
 
       {/* Current Configuration Summary */}
-      <div className="p-4 bg-gray-50 dark:bg-gray-800/50 midnight:bg-gray-800/50 purple:bg-gray-800/50 border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 rounded-lg">
+      <div className="p-4 bg-gray-50 dark:bg-[#1a1d24]/50 midnight:bg-[#0f1330]/50 purple:bg-[#251340]/50 border border-line rounded-lg">
         <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 midnight:text-cyan-100 purple:text-pink-100 mb-2">
           Current Configuration
         </h3>

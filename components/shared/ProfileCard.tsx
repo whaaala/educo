@@ -15,8 +15,9 @@ import { useState, useRef, useEffect } from "react";
 import CollectFeesModal from "./CollectFeesModal";
 import DeleteConfirmationModal from "./DeleteConfirmationModal";
 import AddFeesButton from "./AddFeesButton";
-import NameLabel from "./NameLabel";
+import Tooltip from "./Tooltip";
 import { getEducationLevelColor, getInstitutionTypeColor } from "@/utils/educationLevel";
+// NameLabel removed - using Tooltip component instead
 
 export interface ProfileDetail {
   label: string;
@@ -51,6 +52,21 @@ export interface ProfileCardProps {
   };
   customActions?: ProfileAction[];
   customDropdownItems?: DropdownMenuItem[];
+  showDetailsInDropdown?: boolean; // New prop to show detailed info in dropdown
+  /** Label for the "View" action in dropdown - defaults to "View Student" */
+  viewLabel?: string;
+  /** Whether to show the "Promote" option (only for students) */
+  showPromoteOption?: boolean;
+  /** Whether to show the default "Edit" option in dropdown - defaults to true */
+  showEditOption?: boolean;
+  /** Whether to show the default "Delete" option in dropdown - defaults to true */
+  showDeleteOption?: boolean;
+  /** Custom title for delete modal - defaults to "Delete Student" */
+  deleteModalTitle?: string;
+  /** Custom warning message for delete modal */
+  deleteModalWarning?: string;
+  /** Custom confirm button text for delete modal - defaults to "Delete Student" */
+  deleteModalConfirmText?: string;
   onMenuClick?: () => void;
   onEdit?: (id: string) => void;
   onView?: (id: string) => void;
@@ -70,6 +86,14 @@ export default function ProfileCard({
   primaryAction = { label: "Add Fees" },
   customActions,
   customDropdownItems,
+  showDetailsInDropdown = false,
+  viewLabel = "View Student",
+  showPromoteOption = true,
+  showEditOption = true,
+  showDeleteOption = true,
+  deleteModalTitle = "Delete Student",
+  deleteModalWarning = "This will permanently remove this student and all associated data. This action cannot be undone.",
+  deleteModalConfirmText = "Delete Student",
   onMenuClick,
   onEdit,
   onView,
@@ -151,7 +175,7 @@ export default function ProfileCard({
     <>
       <div className="relative group/card">
         <div
-          className="group relative bg-white dark:bg-gray-800/50 midnight:bg-gray-900/50 purple:bg-gray-900/50 hover:bg-gradient-to-br hover:from-blue-100 hover:via-purple-100 hover:to-pink-100 dark:hover:bg-gray-800/90 midnight:hover:bg-cyan-900/20 purple:hover:bg-pink-900/20 rounded-2xl border border-gray-200/50 dark:border-gray-700/50 midnight:border-cyan-500/20 purple:border-pink-500/20 transition-all duration-300 hover:shadow-2xl hover:shadow-purple-500/20 dark:hover:shadow-blue-400/30 midnight:hover:shadow-cyan-400/30 purple:hover:shadow-pink-400/30 hover:border-purple-300/60 dark:hover:border-blue-400/50 midnight:hover:border-cyan-400/50 purple:hover:border-pink-400/50 group-has-[:hover.group\\/avatar]:blur-[6px]"
+          className="group relative bg-white dark:bg-[#1a1d24]/50 midnight:bg-[#0a0e27]/50 purple:bg-[#1a0b2e]/50 hover:bg-gradient-to-br hover:from-blue-100 hover:via-purple-100 hover:to-pink-100 dark:hover:bg-[#22262e]/90 midnight:hover:bg-cyan-900/20 purple:hover:bg-pink-900/20 rounded-2xl border border-gray-200/50 dark:border-gray-700/50 midnight:border-cyan-500/20 purple:border-pink-500/20 transition-all duration-300 hover:shadow-2xl hover:shadow-purple-500/20 dark:hover:shadow-blue-400/30 midnight:hover:shadow-cyan-400/30 purple:hover:shadow-pink-400/30 hover:border-purple-300/60 dark:hover:border-blue-400/50 midnight:hover:border-cyan-400/50 purple:hover:border-pink-400/50 group-has-[:hover.group\\/avatar]:blur-[6px]"
         >
         {/* Gradient Overlay Effect */}
         <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-purple-500/3 to-pink-500/5 dark:from-blue-400/15 dark:via-purple-400/8 dark:to-pink-400/15 midnight:from-cyan-400/15 midnight:via-purple-400/8 midnight:to-cyan-400/15 purple:from-pink-400/15 purple:via-purple-400/8 purple:to-pink-400/15 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
@@ -201,7 +225,7 @@ export default function ProfileCard({
                 {status}
               </span>
             </div>
-            <div className="relative group/moremenu">
+            <Tooltip content="More Options" delay={200}>
               <button
                 ref={buttonRef}
                 onClick={(e) => {
@@ -213,7 +237,7 @@ export default function ProfileCard({
                 className={`p-1 rounded-md transition-all duration-200 group/menu ${
                   isMenuOpen
                     ? "bg-blue-50 border border-blue-200 dark:bg-blue-500/20 dark:border-blue-500 midnight:bg-cyan-500/20 midnight:border-cyan-500 purple:bg-pink-500/20 purple:border-pink-500"
-                    : "hover:bg-gray-100 dark:hover:bg-gray-700/50 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"
+                    : "hover:bg-gray-100 dark:hover:bg-[#22262e]/50 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"
                 }`}
               >
                 <MoreVertical
@@ -225,11 +249,7 @@ export default function ProfileCard({
                   }`}
                 />
               </button>
-              {/* Hover Label */}
-              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 opacity-0 group-hover/moremenu:opacity-100 transition-opacity duration-200 pointer-events-none z-[99999]">
-                <NameLabel name="More" variant="compact" />
-              </div>
-            </div>
+            </Tooltip>
           </div>
         </div>
 
@@ -271,7 +291,7 @@ export default function ProfileCard({
             </div>
           )}
           <div className="flex-1 min-w-0 space-y-1.5">
-            <h3 className="text-base font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 group-hover:text-black truncate">
+            <h3 className="text-base font-bold text-ink group-hover:text-black truncate">
               {name}
             </h3>
             <p className="text-xs font-semibold text-gray-600 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 truncate">
@@ -300,9 +320,9 @@ export default function ProfileCard({
             return (
               <div
                 key={index}
-                className="group/detail flex items-center justify-between py-1.5 px-3 rounded-lg bg-white/70 backdrop-blur-sm dark:bg-gray-700/40 midnight:bg-cyan-500/10 purple:bg-pink-500/10 group-hover:bg-white/95 dark:group-hover:bg-gray-700/60 midnight:group-hover:bg-cyan-500/25 purple:group-hover:bg-pink-500/25 transition-all duration-200 border border-white/40 group-hover:border-white/60"
+                className="group/detail flex items-center justify-between py-1.5 px-3 rounded-lg bg-white/70 backdrop-blur-sm dark:bg-[#22262e]/40 midnight:bg-cyan-500/10 purple:bg-pink-500/10 group-hover:bg-white/95 dark:group-hover:bg-gray-700/60 midnight:group-hover:bg-cyan-500/25 purple:group-hover:bg-pink-500/25 transition-all duration-200 border border-white/40 group-hover:border-white/60"
               >
-                <span className="text-[10px] font-bold text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 group-hover:text-gray-900 dark:group-hover:text-gray-100 transition-colors uppercase tracking-wider truncate">
+                <span className="text-[0.625rem] font-bold text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 group-hover:text-gray-900 dark:group-hover:text-gray-100 transition-colors uppercase tracking-wider truncate">
                   {detail.label}
                 </span>
                 {badgeColors ? (
@@ -310,7 +330,7 @@ export default function ProfileCard({
                     {detail.value}
                   </span>
                 ) : (
-                  <span className="text-sm font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 group-hover:text-black ml-3 flex-shrink-0">
+                  <span className="text-sm font-bold text-ink group-hover:text-black ml-3 flex-shrink-0">
                     {detail.value}
                   </span>
                 )}
@@ -320,47 +340,42 @@ export default function ProfileCard({
         </div>
 
         {/* Action Buttons */}
-        <div className="px-3 sm:px-4 pb-3 sm:pb-2.5 pt-0 flex items-center justify-between gap-2 sm:gap-3 border-t border-white/40 group-hover:border-white/60 dark:border-gray-700/50 midnight:border-cyan-500/10 purple:border-pink-500/10 mt-2 pt-2.5 sm:pt-2 relative z-10 transition-all duration-200">
-          <div className="flex items-center gap-1.5 sm:gap-2 flex-1 min-w-0">
+        <div className="px-2 sm:px-4 pb-3 sm:pb-2.5 pt-0 flex items-center justify-between gap-1.5 sm:gap-2 border-t border-white/40 group-hover:border-white/60 dark:border-gray-700/50 midnight:border-cyan-500/10 purple:border-pink-500/10 mt-2 pt-2.5 sm:pt-2 relative z-10 transition-all duration-200">
+          <div className="flex items-center gap-1 sm:gap-1.5 flex-shrink-0">
             {actions.map((action, index) => (
-              <div key={index} className="relative group/action">
+              <Tooltip key={index} content={action.label} delay={200}>
                 <button
                   onClick={action.onClick}
-                  style={{ cursor: "pointer", zIndex: 11111 }}
-                  className="flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 border-white/60 group-hover:border-white/80 dark:border-gray-600/50 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white/70 backdrop-blur-sm group-hover:bg-white/95 dark:bg-gray-800/30 midnight:bg-gray-900/30 purple:bg-gray-900/30 group-hover:shadow-md dark:hover:bg-gray-700/30 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-all duration-200 shadow-sm flex-shrink-0"
+                  style={{ cursor: "pointer" }}
+                  className="flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7 rounded-full border-2 border-white/60 hover:border-blue-400 dark:border-gray-600/50 midnight:border-cyan-500/30 purple:border-pink-500/30 bg-white/70 backdrop-blur-sm hover:bg-blue-50 dark:bg-[#1a1d24]/30 midnight:bg-[#0a0e27]/30 purple:bg-[#1a0b2e]/30 hover:shadow-md dark:hover:bg-[#22262e]/50 midnight:hover:bg-cyan-500/20 purple:hover:bg-pink-500/20 transition-all duration-200 shadow-sm"
                 >
                   <action.icon
                     style={{ cursor: "pointer" }}
-                    className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-gray-700 group-hover:text-gray-900 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400 transition-colors"
+                    className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-gray-600 hover:text-blue-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400 transition-colors"
                   />
                 </button>
-                {/* Hover Label */}
-                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 opacity-0 group-hover/action:opacity-100 transition-opacity duration-200 pointer-events-none z-[99999]">
-                  <NameLabel name={action.label} variant="compact" />
-                </div>
-              </div>
+              </Tooltip>
             ))}
           </div>
           {primaryAction && (
-            <div className="relative group/primaryaction flex-shrink-0">
-              <AddFeesButton
-                onClick={(e) => {
-                  e.stopPropagation();
-                  if (primaryAction.label === "Add Fees") {
-                    setIsFeesModalOpen(true);
-                  } else if (primaryAction.onClick) {
-                    primaryAction.onClick();
-                  }
-                }}
-                label={primaryAction.label}
-                size="md"
-                currency="₦"
-              />
-              {/* Hover Label */}
-              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 opacity-0 group-hover/primaryaction:opacity-100 transition-opacity duration-200 pointer-events-none z-[99999]">
-                <NameLabel name={primaryAction.label} variant="compact" />
+            <Tooltip content={primaryAction.label} delay={200}>
+              <div className="flex-shrink min-w-0">
+                <AddFeesButton
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (primaryAction.label === "Add Fees") {
+                      setIsFeesModalOpen(true);
+                    } else if (primaryAction.onClick) {
+                      primaryAction.onClick();
+                    }
+                  }}
+                  label={primaryAction.label}
+                  size="sm"
+                  currency={primaryAction.label === "Add Fees" ? "₦" : ""}
+                  className="!px-2 !py-1 !text-[0.625rem] sm:!px-2.5 sm:!py-1.5 sm:!text-xs whitespace-nowrap"
+                />
               </div>
-            </div>
+            </Tooltip>
           )}
         </div>
         </div>
@@ -369,51 +384,101 @@ export default function ProfileCard({
         {isMenuOpen && (
           <div
             ref={menuRef}
-            className="absolute w-52 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 rounded-lg shadow-2xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 py-1 animate-in fade-in slide-in-from-top-1 duration-200 z-[99999]"
+            className={`absolute ${showDetailsInDropdown ? 'w-52' : 'w-52'} bg-surface rounded-lg shadow-2xl border border-line ${showDetailsInDropdown ? 'p-0' : 'py-1'} animate-in fade-in slide-in-from-top-1 duration-200 z-[99999]`}
             style={{
               top: buttonRef.current ? `${buttonRef.current.getBoundingClientRect().bottom - (buttonRef.current.closest('.relative')?.getBoundingClientRect().top || 0) + 4}px` : '0px',
               right: '16px',
             }}
           >
-            {onView && (
+            {showDetailsInDropdown ? (
+              /* Simple Menu Items Only */
+              <>
+                {onView && (
+                  <button
+                    onClick={() => {
+                      setIsMenuOpen(false);
+                      onView(id);
+                    }}
+                    className="w-full px-4 py-2 text-left text-sm font-normal text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-50 dark:hover:bg-[#22262e]/50 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 flex items-center gap-3 transition-all duration-200"
+                    style={{ cursor: "pointer" }}
+                  >
+                    <Eye className="w-4 h-4 text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400" />
+                    <span>View Staff</span>
+                  </button>
+                )}
+
+                <button
+                  onClick={() => {
+                    setIsMenuOpen(false);
+                    if (onEdit) {
+                      onEdit(id);
+                    }
+                  }}
+                  className="w-full px-4 py-2 text-left text-sm font-normal text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-50 dark:hover:bg-[#22262e]/50 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 flex items-center gap-3 transition-all duration-200"
+                  style={{ cursor: "pointer" }}
+                >
+                  <Edit className="w-4 h-4 text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400" />
+                  <span>Edit</span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    setIsMenuOpen(false);
+                    setIsDeleteModalOpen(true);
+                  }}
+                  className="w-full px-4 py-2 text-left text-sm font-normal text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 midnight:hover:bg-red-900/20 purple:hover:bg-red-900/20 flex items-center gap-3 transition-all duration-200"
+                  style={{ cursor: "pointer" }}
+                >
+                  <Trash2 className="w-4 h-4" />
+                  <span>Delete</span>
+                </button>
+              </>
+            ) : (
+              /* Original Menu Items */
+              <>
+                {onView && (
+                  <button
+                    onClick={() => {
+                      setIsMenuOpen(false);
+                      onView(id);
+                    }}
+                    className="w-full px-4 py-2 text-left text-sm font-normal text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-50 dark:hover:bg-[#22262e]/50 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 flex items-center gap-3 transition-all duration-200"
+                    style={{ cursor: "pointer" }}
+                  >
+                    <Eye className="w-4 h-4 text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400" />
+                    <span>{viewLabel}</span>
+                  </button>
+                )}
+
+            {showEditOption && (
               <button
                 onClick={() => {
                   setIsMenuOpen(false);
-                  onView(id);
+                  if (onEdit) {
+                    onEdit(id);
+                  }
                 }}
-                className="w-full px-4 py-2 text-left text-sm font-normal text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-50 dark:hover:bg-gray-700/50 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 flex items-center gap-3 transition-all duration-200"
+                className="w-full px-4 py-2 text-left text-sm font-normal text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-50 dark:hover:bg-[#22262e]/50 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 flex items-center gap-3 transition-all duration-200"
                 style={{ cursor: "pointer" }}
               >
-                <Eye className="w-4 h-4 text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400" />
-                <span>View Student</span>
+                <Edit className="w-4 h-4 text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400" />
+                <span>Edit</span>
               </button>
             )}
 
-            <button
-              onClick={() => {
-                setIsMenuOpen(false);
-                if (onEdit) {
-                  onEdit(id);
-                }
-              }}
-              className="w-full px-4 py-2 text-left text-sm font-normal text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-50 dark:hover:bg-gray-700/50 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 flex items-center gap-3 transition-all duration-200"
-              style={{ cursor: "pointer" }}
-            >
-              <Edit className="w-4 h-4 text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400" />
-              <span>Edit</span>
-            </button>
-
-            <button
-              onClick={() => {
-                setIsMenuOpen(false);
-                // Handle promote action
-              }}
-              className="w-full px-4 py-2 text-left text-sm font-normal text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-50 dark:hover:bg-gray-700/50 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 flex items-center gap-3 transition-all duration-200"
-              style={{ cursor: "pointer" }}
-            >
-              <TrendingUp className="w-4 h-4 text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400" />
-              <span>Promote Student</span>
-            </button>
+            {showPromoteOption && (
+              <button
+                onClick={() => {
+                  setIsMenuOpen(false);
+                  // Handle promote action
+                }}
+                className="w-full px-4 py-2 text-left text-sm font-normal text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-50 dark:hover:bg-[#22262e]/50 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 flex items-center gap-3 transition-all duration-200"
+                style={{ cursor: "pointer" }}
+              >
+                <TrendingUp className="w-4 h-4 text-gray-600 dark:text-gray-400 midnight:text-cyan-400 purple:text-pink-400" />
+                <span>Promote Student</span>
+              </button>
+            )}
 
             {/* Custom Dropdown Items */}
             {customDropdownItems?.map((item, index) => (
@@ -426,7 +491,7 @@ export default function ProfileCard({
                 className={`w-full px-4 py-2 text-left text-sm font-normal flex items-center gap-3 transition-all duration-200 ${
                   item.variant === "danger"
                     ? "text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 midnight:hover:bg-red-900/20 purple:hover:bg-red-900/20"
-                    : "text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-50 dark:hover:bg-gray-700/50 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"
+                    : "text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 hover:bg-gray-50 dark:hover:bg-[#22262e]/50 midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10"
                 }`}
                 style={{ cursor: "pointer" }}
               >
@@ -439,17 +504,25 @@ export default function ProfileCard({
               </button>
             ))}
 
-            <button
-              onClick={() => {
-                setIsMenuOpen(false);
-                setIsDeleteModalOpen(true);
-              }}
-              className="w-full px-4 py-2 text-left text-sm font-normal text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 midnight:hover:bg-red-900/20 purple:hover:bg-red-900/20 flex items-center gap-3 transition-all duration-200"
-              style={{ cursor: "pointer" }}
-            >
-              <Trash2 className="w-4 h-4" />
-              <span>Delete</span>
-            </button>
+            {showDeleteOption && (
+              <button
+                onClick={() => {
+                  setIsMenuOpen(false);
+                  if (onDelete) {
+                    onDelete(id);
+                  } else {
+                    setIsDeleteModalOpen(true);
+                  }
+                }}
+                className="w-full px-4 py-2 text-left text-sm font-normal text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 midnight:hover:bg-red-900/20 purple:hover:bg-red-900/20 flex items-center gap-3 transition-all duration-200"
+                style={{ cursor: "pointer" }}
+              >
+                <Trash2 className="w-4 h-4" />
+                <span>Delete</span>
+              </button>
+            )}
+              </>
+            )}
           </div>
         )}
       </div>
@@ -474,11 +547,11 @@ export default function ProfileCard({
         isOpen={isDeleteModalOpen}
         onClose={handleCancelDelete}
         onConfirm={handleConfirmDelete}
-        title="Delete Student"
+        title={deleteModalTitle}
         itemName={name}
         itemId={id}
-        warningMessage="This will permanently remove this student and all associated data. This action cannot be undone."
-        confirmButtonText="Delete Student"
+        warningMessage={deleteModalWarning}
+        confirmButtonText={deleteModalConfirmText}
       />
     </>
   );

@@ -2,14 +2,10 @@
 
 import { useState, useMemo, useEffect } from "react";
 import {
-  DollarSign,
   TrendingUp,
   TrendingDown,
   AlertCircle,
-  Download,
-  Filter,
   Calendar,
-  CreditCard,
   Banknote,
   Wallet,
   Building2,
@@ -26,7 +22,7 @@ import {
   Award,
   UtensilsCrossed,
 } from "lucide-react";
-import DataTable, { Column } from "@/components/shared/DataTable";
+import ResponsiveListTable, { type ColumnConfig as Column } from "@/components/shared/ResponsiveListTable";
 import CustomDropdown from "@/components/shared/CustomDropdown";
 import Tooltip from "@/components/shared/Tooltip";
 import StatCard from "@/components/shared/StatCard";
@@ -37,15 +33,14 @@ import { getStudentById } from "@/lib/mockStudents";
 import {
   EducationLevel,
   SchoolType,
-  getFeesByEducationLevel,
-  getFeesBySchoolType,
   getFeeCategoriesForSchoolType,
   FEE_CATEGORIES
 } from "@/lib/feeConfigNew";
 import { useCountry } from "@/contexts/CountryContext";
+import type { LucideIcon } from "lucide-react";
 
 // Icon mapping
-const iconMap: Record<string, any> = {
+const iconMap: Record<string, LucideIcon> = {
   GraduationCap,
   FileCheck,
   Building2,
@@ -288,7 +283,7 @@ const MOCK_FEE_RECORDS: FeeRecord[] = [
 ];
 
 export default function FeesManagement({
-  educationLevel = "primary",
+  educationLevel: _educationLevel = "primary",
   schoolType: propSchoolType,
   studentId
 }: FeesManagementProps) {
@@ -320,8 +315,11 @@ export default function FeesManagement({
 
   // Listen for School Profile changes
   useEffect(() => {
-    const handleSchoolProfileChange = (event: CustomEvent<{ educationLevel: string; institutionType: string }>) => {
-      const { educationLevel: settingsEducationLevel, institutionType } = event.detail;
+    const handleSchoolProfileChange = (event: WindowEventMap["schoolProfileChanged"]) => {
+      // `educationLevels` is an ARRAY. This read a singular `educationLevel` that is never dispatched, so the
+      // tertiary branch below could never be reached.
+      const { educationLevels, institutionType } = event.detail;
+      const settingsEducationLevel = (educationLevels ?? []).length === 1 ? educationLevels[0] : "multi-level";
 
       // Map institutionType to schoolType
       if (institutionType === "public") {
@@ -333,8 +331,8 @@ export default function FeesManagement({
       }
     };
 
-    window.addEventListener("schoolProfileChanged" as any, handleSchoolProfileChange);
-    return () => window.removeEventListener("schoolProfileChanged" as any, handleSchoolProfileChange);
+    window.addEventListener("schoolProfileChanged", handleSchoolProfileChange);
+    return () => window.removeEventListener("schoolProfileChanged", handleSchoolProfileChange);
   }, []);
 
   // Get categories applicable to the school type
@@ -449,7 +447,7 @@ export default function FeesManagement({
 
       if (!tableContainer || !leftIndicator || !rightIndicator || !table) return;
 
-      let scrollTimeout: NodeJS.Timeout;
+      let scrollTimeout: ReturnType<typeof setTimeout>;
       let isScrolling = false;
 
       const handleScroll = () => {
@@ -574,42 +572,9 @@ export default function FeesManagement({
     const style = variants[status];
 
     return (
-      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[12px] font-semibold border ${style.bg} ${style.text} ${style.border}`}>
+      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[0.75rem] font-semibold border ${style.bg} ${style.text} ${style.border}`}>
         <span className={`w-1.5 h-1.5 rounded-full ${style.dot} animate-pulse`}></span>
         {status}
-      </span>
-    );
-  };
-
-  // Get category icon and color
-  const getCategoryBadge = (categoryId: string) => {
-    const category = FEE_CATEGORIES[categoryId];
-    if (!category) return null;
-
-    const Icon = iconMap[category.icon];
-    const colorClasses: Record<string, string> = {
-      blue: "bg-blue-50 dark:bg-blue-950/20 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-800/50",
-      green: "bg-green-50 dark:bg-green-950/20 text-green-700 dark:text-green-400 border-green-200 dark:border-green-800/50",
-      purple: "bg-purple-50 dark:bg-purple-950/20 text-purple-700 dark:text-purple-400 border-purple-200 dark:border-purple-800/50",
-      indigo: "bg-indigo-50 dark:bg-indigo-950/20 text-indigo-700 dark:text-indigo-400 border-indigo-200 dark:border-indigo-800/50",
-      amber: "bg-amber-50 dark:bg-amber-950/20 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-800/50",
-      rose: "bg-rose-50 dark:bg-rose-950/20 text-rose-700 dark:text-rose-400 border-rose-200 dark:border-rose-800/50",
-      cyan: "bg-cyan-50 dark:bg-cyan-950/20 text-cyan-700 dark:text-cyan-400 border-cyan-200 dark:border-cyan-800/50",
-      orange: "bg-orange-50 dark:bg-orange-950/20 text-orange-700 dark:text-orange-400 border-orange-200 dark:border-orange-800/50",
-      gray: "bg-gray-50 dark:bg-gray-800/20 text-gray-700 dark:text-gray-400 border-gray-200 dark:border-gray-700/50",
-      violet: "bg-violet-50 dark:bg-violet-950/20 text-violet-700 dark:text-violet-400 border-violet-200 dark:border-violet-800/50",
-      emerald: "bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800/50",
-      sky: "bg-sky-50 dark:bg-sky-950/20 text-sky-700 dark:text-sky-400 border-sky-200 dark:border-sky-800/50",
-      lime: "bg-lime-50 dark:bg-lime-950/20 text-lime-700 dark:text-lime-400 border-lime-200 dark:border-lime-800/50",
-      slate: "bg-slate-50 dark:bg-slate-950/20 text-slate-700 dark:text-slate-400 border-slate-200 dark:border-slate-800/50",
-      yellow: "bg-yellow-50 dark:bg-yellow-950/20 text-yellow-700 dark:text-yellow-400 border-yellow-200 dark:border-yellow-800/50",
-      pink: "bg-pink-50 dark:bg-pink-950/20 text-pink-700 dark:text-pink-400 border-pink-200 dark:border-pink-800/50",
-    };
-
-    return (
-      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[12px] font-medium border ${colorClasses[category.color]}`}>
-        {Icon && <Icon className="w-3.5 h-3.5" />}
-        {category.name}
       </span>
     );
   };
@@ -629,7 +594,7 @@ export default function FeesManagement({
       rose: "bg-rose-50 dark:bg-rose-950/20 text-rose-700 dark:text-rose-400 border-rose-200 dark:border-rose-800/50",
       cyan: "bg-cyan-50 dark:bg-cyan-950/20 text-cyan-700 dark:text-cyan-400 border-cyan-200 dark:border-cyan-800/50",
       orange: "bg-orange-50 dark:bg-orange-950/20 text-orange-700 dark:text-orange-400 border-orange-200 dark:border-orange-800/50",
-      gray: "bg-gray-50 dark:bg-gray-800/20 text-gray-700 dark:text-gray-400 border-gray-200 dark:border-gray-700/50",
+      gray: "bg-gray-50 dark:bg-[#1a1d24]/20 text-gray-700 dark:text-gray-400 border-gray-200 dark:border-gray-700/50",
       violet: "bg-violet-50 dark:bg-violet-950/20 text-violet-700 dark:text-violet-400 border-violet-200 dark:border-violet-800/50",
       emerald: "bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800/50",
       sky: "bg-sky-50 dark:bg-sky-950/20 text-sky-700 dark:text-sky-400 border-sky-200 dark:border-sky-800/50",
@@ -641,7 +606,7 @@ export default function FeesManagement({
 
     const badgeContent = (
       <span
-        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[12px] font-medium border ${colorClasses[category.color]} whitespace-nowrap max-w-[140px]`}
+        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[0.75rem] font-medium border ${colorClasses[category.color]} whitespace-nowrap max-w-[140px]`}
       >
         {Icon && <Icon className="w-3.5 h-3.5 flex-shrink-0" />}
         <span className="truncate">{category.name}</span>
@@ -666,14 +631,14 @@ export default function FeesManagement({
       key: "feeType",
       label: "Fee Details",
       sortable: true,
-      className: "text-left sticky left-0 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 z-10 after:absolute after:right-0 after:top-0 after:bottom-0 after:w-px after:bg-gradient-to-b after:from-transparent after:via-gray-200 after:to-transparent dark:after:via-gray-700",
+      className: "text-left sticky left-0 bg-surface z-10 after:absolute after:right-0 after:top-0 after:bottom-0 after:w-px after:bg-gradient-to-b after:from-transparent after:via-gray-200 after:to-transparent dark:after:via-gray-700",
       render: (row) => {
         const content = (
           <div className="flex flex-col gap-1 pr-4">
-            <span className="text-[12px] font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 whitespace-nowrap">
+            <span className="text-[0.75rem] font-semibold text-ink whitespace-nowrap">
               {row.feeType}
             </span>
-            <span className="text-[12px] text-gray-500 dark:text-gray-400 midnight:text-cyan-400/60 purple:text-pink-400/60 font-mono">
+            <span className="text-[0.75rem] text-gray-500 dark:text-gray-400 midnight:text-cyan-400/60 purple:text-pink-400/60 font-mono">
               {row.feeCode}
             </span>
           </div>
@@ -703,7 +668,7 @@ export default function FeesManagement({
       sortable: true,
       render: (row) => {
         const content = (
-          <span className="text-xs font-bold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 whitespace-nowrap">
+          <span className="text-xs font-bold text-ink whitespace-nowrap">
             {currencySymbol}{row.amount.toLocaleString()}
           </span>
         );
@@ -771,11 +736,11 @@ export default function FeesManagement({
       sortable: true,
       render: (row) => (
         row.paymentMode ? (
-          <span className="text-[12px] text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 whitespace-nowrap">
+          <span className="text-[0.75rem] text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 whitespace-nowrap">
             {row.paymentMode}
           </span>
         ) : (
-          <span className="text-[12px] text-gray-400 dark:text-gray-500">-</span>
+          <span className="text-[0.75rem] text-gray-400 dark:text-gray-500">-</span>
         )
       ),
     },
@@ -785,17 +750,17 @@ export default function FeesManagement({
       render: (row) => (
         <div className="flex items-center gap-1.5 justify-center">
           {row.discount > 0 && (
-            <span className="text-[12px] text-green-600 dark:text-green-400 font-medium whitespace-nowrap">
+            <span className="text-[0.75rem] text-green-600 dark:text-green-400 font-medium whitespace-nowrap">
               -{currencySymbol}{row.discount}
             </span>
           )}
           {row.fine > 0 && (
-            <span className="text-[12px] text-red-600 dark:text-red-400 font-medium whitespace-nowrap">
+            <span className="text-[0.75rem] text-red-600 dark:text-red-400 font-medium whitespace-nowrap">
               +{currencySymbol}{row.fine}
             </span>
           )}
           {row.discount === 0 && row.fine === 0 && (
-            <span className="text-[12px] text-gray-400">-</span>
+            <span className="text-[0.75rem] text-gray-400">-</span>
           )}
         </div>
       ),
@@ -1024,12 +989,11 @@ export default function FeesManagement({
         <div className="absolute left-0 top-0 bottom-0 w-4 bg-gradient-to-r from-gray-100/80 to-transparent dark:from-gray-800/80 pointer-events-none z-20 rounded-l-xl opacity-0 transition-opacity duration-300" id="scroll-left-indicator"></div>
         <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-gray-100/80 to-transparent dark:from-gray-800/80 pointer-events-none z-20 rounded-r-xl opacity-100 transition-opacity duration-300 lg:opacity-0" id="scroll-right-indicator"></div>
 
-        <DataTable
+        <ResponsiveListTable variant="contained" showColumnHeaders={true}
           columns={columns}
           data={filteredRecords}
           getRowKey={(item) => item.id}
           enablePagination={true}
-          enableSearch={true}
           enableItemsPerPage={true}
           emptyMessage="No fee records found"
         />

@@ -36,7 +36,7 @@ export default function TransferRequestForm({
   studentAdmissionNumber,
   currentClass,
   currentSection,
-  currentBranchId,
+  currentBranchId: _currentBranchId,
   currentBranchName,
   onSubmit,
   onCancel,
@@ -80,7 +80,8 @@ export default function TransferRequestForm({
     },
   ];
 
-  const priorities = [
+  // Tied to the request type, so an option value that is not a real priority stops compiling.
+  const priorities: { value: NonNullable<CreateTransferRequest["priority"]>; label: string }[] = [
     { value: "low", label: "Low" },
     { value: "normal", label: "Normal" },
     { value: "high", label: "High" },
@@ -117,7 +118,7 @@ export default function TransferRequestForm({
     { value: "D", label: "D" },
   ];
 
-  const handleChange = (field: keyof CreateTransferRequest, value: any) => {
+  const handleChange = <K extends keyof CreateTransferRequest>(field: K, value: CreateTransferRequest[K]) => {
     setFormData((prev) => ({
       ...prev,
       [field]: value,
@@ -157,7 +158,7 @@ export default function TransferRequestForm({
             type="button"
             onClick={onCancel}
             disabled={isSubmitting}
-            className="w-full sm:w-auto px-4 py-2 sm:py-2.5 rounded-lg font-medium text-xs sm:text-sm text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 bg-white dark:bg-gray-700 midnight:bg-gray-800 purple:bg-gray-800 border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 hover:bg-gray-50 dark:hover:bg-gray-600 midnight:hover:bg-gray-700 purple:hover:bg-gray-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+            className="w-full sm:w-auto px-4 py-2 sm:py-2.5 rounded-lg font-medium text-xs sm:text-sm text-gray-700 dark:text-gray-300 midnight:text-cyan-300 purple:text-pink-300 bg-white dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] border border-gray-300 dark:border-gray-600 midnight:border-cyan-500/30 purple:border-pink-500/30 hover:bg-gray-50 dark:hover:bg-[#2a2d35] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
           >
             Cancel
           </button>
@@ -238,7 +239,7 @@ export default function TransferRequestForm({
                     className="mt-0.5 sm:mt-1 mr-2 sm:mr-3 flex-shrink-0"
                   />
                   <div className="flex-1 min-w-0">
-                    <div className="text-sm sm:text-base font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50">
+                    <div className="text-sm sm:text-base font-semibold text-ink">
                       {type.label}
                     </div>
                     <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70 mt-0.5">
@@ -252,7 +253,7 @@ export default function TransferRequestForm({
 
           {/* Destination Details */}
           <div className="space-y-3 sm:space-y-4">
-            <h3 className="text-sm sm:text-base font-semibold text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 flex items-center gap-2">
+            <h3 className="text-sm sm:text-base font-semibold text-ink flex items-center gap-2">
               <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
               Destination Details
             </h3>
@@ -363,7 +364,7 @@ export default function TransferRequestForm({
           />
 
           {/* Notify Parent Checkbox */}
-          <label className="flex items-start sm:items-center gap-2 sm:gap-3 p-3 sm:p-4 rounded-lg bg-gray-50 dark:bg-gray-800 midnight:bg-gray-800 purple:bg-gray-800 cursor-pointer">
+          <label className="flex items-start sm:items-center gap-2 sm:gap-3 p-3 sm:p-4 rounded-lg bg-gray-50 dark:bg-[#1a1d24] midnight:bg-[#0f1330] purple:bg-[#251340] cursor-pointer">
             <input
               type="checkbox"
               checked={formData.notifyParent}

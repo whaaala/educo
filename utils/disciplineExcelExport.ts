@@ -93,7 +93,7 @@ export function exportDisciplineToExcel(incidents: DisciplineIncident[], filenam
       incident.witnesses ? incident.witnesses.join(", ") : "-",
       incident.reportedByName,
       incident.reportedByRole,
-      format(new Date(incident.reportedDate), "MMM dd, yyyy HH:mm"),
+      incident.reportedDate ? format(new Date(incident.reportedDate), "MMM dd, yyyy HH:mm") : "-",
       incident.parentNotified ? "Yes" : "No",
       incident.parentNotifiedDate ? format(new Date(incident.parentNotifiedDate), "MMM dd, yyyy") : "-",
       incident.followUpRequired ? "Yes" : "No",

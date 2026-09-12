@@ -1,8 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import DataTable, { Column } from "@/components/shared/DataTable";
-import RefreshButton from "@/components/shared/RefreshButton";
+import ResponsiveListTable, { type ColumnConfig } from "@/components/shared/ResponsiveListTable";
 import CustomDropdown from "@/components/shared/CustomDropdown";
 import WeekNavigator from "@/components/shared/WeekNavigator";
 import AttendanceStatusBadge from "@/components/shared/AttendanceStatusBadge";
@@ -35,7 +34,7 @@ const generateWeekOptions = (startYear: number = new Date().getFullYear()) => {
 
   // Start from the first Monday of the selected year
   // January 1st might not be a Monday, so we need to adjust
-  let weekStartDate = new Date(startYear, 0, 1); // Jan 1
+  const weekStartDate = new Date(startYear, 0, 1); // Jan 1
   const dayOfWeek = weekStartDate.getDay(); // 0 = Sunday, 1 = Monday, etc.
 
   // If Jan 1 is not Monday, move to the first Monday
@@ -75,14 +74,6 @@ const generateWeekOptions = (startYear: number = new Date().getFullYear()) => {
     const year = date.getFullYear();
     return `${day} ${month} ${year}`;
   };
-
-  // Format date helper - very compact format (DD Mon)
-  const formatCompactDate = (date: Date) => {
-    const day = String(date.getDate()).padStart(2, '0');
-    const month = months[date.getMonth()];
-    return `${day} ${month}`;
-  };
-
   for (let weekNum = 1; weekNum <= totalWeeks; weekNum++) {
     const weekStart = new Date(weekStartDate);
     const weekEnd = new Date(weekStartDate);
@@ -156,7 +147,7 @@ const getCurrentWeekNumber = (startYear: number): number => {
   }
 
   // Find the first Monday of the year (same logic as generateWeekOptions)
-  let firstMonday = new Date(startYear, 0, 1); // Jan 1
+  const firstMonday = new Date(startYear, 0, 1); // Jan 1
   const dayOfWeek = firstMonday.getDay(); // 0 = Sunday, 1 = Monday, etc.
 
   // Adjust to get the first Monday
@@ -182,7 +173,7 @@ export default function AttendanceByClass({ year = new Date().getFullYear(), onY
   const [selectedYear, setSelectedYear] = useState(year);
   const [config, setConfig] = useState<TimetableConfig>(getTimetableConfig());
   const [attendanceData, setAttendanceData] = useState<ClassAttendanceData[]>([]);
-  const [lastUpdated, setLastUpdated] = useState("25 May 2024");
+  const [_lastUpdated, _setLastUpdated] = useState("25 May 2024");
   const [enrolledSubjects, setEnrolledSubjects] = useState<string[]>([]);
   const [selectedWeek, setSelectedWeek] = useState(() => getCurrentWeekNumber(year));
 
@@ -253,27 +244,6 @@ export default function AttendanceByClass({ year = new Date().getFullYear(), onY
 
     onYearChange?.(newYear);
   };
-
-  const handleRefresh = async () => {
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    const now = new Date();
-    setLastUpdated(now.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }));
-
-    // Reload config in case it changed
-    const loadedConfig = getTimetableConfig();
-    setConfig(loadedConfig);
-
-    // Regenerate student-specific attendance data with selected year (full year)
-    const studentIdToUse = studentId || "default-student";
-    setAttendanceData(getStudentAttendanceData(studentIdToUse, loadedConfig.periodsPerDay, 365, selectedYear));
-
-    // Reload enrolled subjects if student is specified
-    if (studentId) {
-      const subjects = getStudentEnrolledSubjects(studentId);
-      setEnrolledSubjects(subjects);
-    }
-  };
-
   const getStatusIndicator = (status: AttendanceStatus) => {
     const colors = {
       present: "bg-green-500 dark:bg-green-600",
@@ -292,7 +262,7 @@ export default function AttendanceByClass({ year = new Date().getFullYear(), onY
     return (
       <div className="flex items-center justify-center">
         <div
-          className={`w-8 h-8 md:w-6 md:h-6 lg:w-7 lg:h-7 rounded-full ${colors[status]} flex items-center justify-center text-white font-bold text-xs md:text-[10px] lg:text-xs shadow-sm transition-transform hover:scale-125`}
+          className={`w-8 h-8 md:w-6 md:h-6 lg:w-7 lg:h-7 rounded-full ${colors[status]} flex items-center justify-center text-white font-bold text-xs md:text-[0.625rem] lg:text-xs shadow-sm transition-transform hover:scale-125`}
         >
           {labels[status]}
         </div>
@@ -337,7 +307,7 @@ export default function AttendanceByClass({ year = new Date().getFullYear(), onY
   };
 
   // Generate columns dynamically based on periodsPerDay and enrolled subjects
-  const columns: Column<ClassAttendanceData>[] = useMemo(() => {
+  const columns: ColumnConfig<ClassAttendanceData>[] = useMemo(() => {
     const periodsPerDay = config.periodsPerDay;
 
     // Use enrolled subjects if available, otherwise use default subjects
@@ -356,15 +326,15 @@ export default function AttendanceByClass({ year = new Date().getFullYear(), onY
         key: "date",
         label: "Date",
         sortable: true,
-        className: "text-left sticky left-0 bg-white dark:bg-gray-800 midnight:bg-gray-900 purple:bg-gray-900 z-10",
-        render: (row) => {
+        className: "text-left sticky left-0 bg-surface z-10",
+        render: (row: ClassAttendanceData) => {
           const isDayBlocked = isBlockedDay(row.day);
           return (
             <div className="flex flex-col items-start justify-center min-w-[80px] md:min-w-[70px] h-full">
-              <span className={`text-xs md:text-[10px] lg:text-xs font-bold leading-tight ${isDayBlocked ? 'text-gray-400 dark:text-gray-500 midnight:text-cyan-400/40 purple:text-pink-400/40' : 'text-gray-900 dark:text-gray-100 midnight:text-cyan-100 purple:text-pink-100'}`}>
+              <span className={`text-xs md:text-[0.625rem] lg:text-xs font-bold leading-tight ${isDayBlocked ? 'text-gray-400 dark:text-gray-500 midnight:text-cyan-400/40 purple:text-pink-400/40' : 'text-gray-900 dark:text-gray-100 midnight:text-cyan-100 purple:text-pink-100'}`}>
                 {row.date}
               </span>
-              <span className={`text-[10px] md:text-[9px] lg:text-[10px] leading-tight ${isDayBlocked ? 'text-gray-400 dark:text-gray-500 midnight:text-cyan-400/40 purple:text-pink-400/40' : 'text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70'}`}>
+              <span className={`text-[0.625rem] md:text-[0.5625rem] lg:text-[0.625rem] leading-tight ${isDayBlocked ? 'text-gray-400 dark:text-gray-500 midnight:text-cyan-400/40 purple:text-pink-400/40' : 'text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70'}`}>
                 {row.day}
               </span>
             </div>
@@ -384,11 +354,11 @@ export default function AttendanceByClass({ year = new Date().getFullYear(), onY
             // Show blocked indicator for days with no classes (regardless of date - past, present, or future)
             return (
               <div className="flex flex-col items-center justify-center gap-1.5 h-full min-h-[60px]">
-                <div className="w-8 h-8 md:w-6 md:h-6 lg:w-7 lg:h-7 rounded-full bg-gray-300 dark:bg-gray-600 midnight:bg-gray-700 purple:bg-gray-700 flex items-center justify-center shadow-sm opacity-50 flex-shrink-0">
-                  <span className="text-xs md:text-[10px] font-bold text-gray-600 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70">—</span>
+                <div className="w-8 h-8 md:w-6 md:h-6 lg:w-7 lg:h-7 rounded-full bg-gray-300 dark:bg-[#2a2d35] midnight:bg-gray-700 purple:bg-gray-700 flex items-center justify-center shadow-sm opacity-50 flex-shrink-0">
+                  <span className="text-xs md:text-[0.625rem] font-bold text-gray-600 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70">—</span>
                 </div>
                 <Tooltip content="No Class">
-                  <span className="text-[10px] md:text-[9px] lg:text-[10px] text-gray-400 dark:text-gray-500 midnight:text-cyan-400/40 purple:text-pink-400/40 leading-tight text-center max-w-[80px] truncate block">
+                  <span className="text-[0.625rem] md:text-[0.5625rem] lg:text-[0.625rem] text-gray-400 dark:text-gray-500 midnight:text-cyan-400/40 purple:text-pink-400/40 leading-tight text-center max-w-[80px] truncate block">
                     No Class
                   </span>
                 </Tooltip>
@@ -403,11 +373,11 @@ export default function AttendanceByClass({ year = new Date().getFullYear(), onY
             // Show clock icon for future dates (not yet attended)
             return (
               <div className="flex flex-col items-center justify-center gap-1.5 h-full min-h-[60px]">
-                <div className="w-8 h-8 md:w-6 md:h-6 lg:w-7 lg:h-7 rounded-full bg-gray-200 dark:bg-gray-700 midnight:bg-gray-800 purple:bg-gray-800 flex items-center justify-center shadow-sm flex-shrink-0">
+                <div className="w-8 h-8 md:w-6 md:h-6 lg:w-7 lg:h-7 rounded-full bg-gray-200 dark:bg-[#22262e] midnight:bg-[#0f1330] purple:bg-[#251340] flex items-center justify-center shadow-sm flex-shrink-0">
                   <Clock className="w-4 h-4 md:w-3 md:h-3 lg:w-3.5 lg:h-3.5 text-gray-500 dark:text-gray-400 midnight:text-cyan-400/70 purple:text-pink-400/70" />
                 </div>
                 <Tooltip content={subjects[index]}>
-                  <span className="text-[10px] md:text-[9px] lg:text-[10px] text-gray-500 dark:text-gray-400 midnight:text-cyan-400/60 purple:text-pink-400/60 leading-tight text-center max-w-[80px] truncate block">
+                  <span className="text-[0.625rem] md:text-[0.5625rem] lg:text-[0.625rem] text-gray-500 dark:text-gray-400 midnight:text-cyan-400/60 purple:text-pink-400/60 leading-tight text-center max-w-[80px] truncate block">
                     {subjects[index]}
                   </span>
                 </Tooltip>
@@ -422,7 +392,7 @@ export default function AttendanceByClass({ year = new Date().getFullYear(), onY
             <div className="flex flex-col items-center justify-center gap-1.5 h-full min-h-[60px]">
               {getStatusIndicator(status)}
               <Tooltip content={subjects[index]}>
-                <span className="text-[10px] md:text-[9px] lg:text-[10px] text-gray-500 dark:text-gray-400 midnight:text-cyan-400/60 purple:text-pink-400/60 leading-tight text-center max-w-[80px] truncate block">
+                <span className="text-[0.625rem] md:text-[0.5625rem] lg:text-[0.625rem] text-gray-500 dark:text-gray-400 midnight:text-cyan-400/60 purple:text-pink-400/60 leading-tight text-center max-w-[80px] truncate block">
                   {subjects[index]}
                 </span>
               </Tooltip>
@@ -447,10 +417,6 @@ export default function AttendanceByClass({ year = new Date().getFullYear(), onY
     const startDay = parseInt(startParts[0]);
     const startMonth = months.indexOf(startParts[1]);
     const startYear = parseInt(startParts[2]);
-
-    // Get configured school days (e.g., ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"])
-    const schoolDays = config.daysOfWeek || ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
-
     // Filter attendance data to only include dates within this week (include ALL days, even blocked ones)
     return attendanceData.filter(item => {
       const dateParts = item.date.split(' ');
@@ -466,11 +432,6 @@ export default function AttendanceByClass({ year = new Date().getFullYear(), onY
       return itemDate >= weekStart && itemDate <= weekEnd;
     }).slice(0, 7); // Ensure we only get 7 days max
   }, [attendanceData, selectedWeek, weekOptions]);
-
-  const handleWeekChange = (value: string | number) => {
-    setSelectedWeek(Number(value));
-  };
-
   const handlePreviousWeek = () => {
     if (selectedWeek > 1) {
       setSelectedWeek(selectedWeek - 1);
@@ -517,7 +478,7 @@ export default function AttendanceByClass({ year = new Date().getFullYear(), onY
       </div>
 
       {/* Legend */}
-      <div className="flex flex-wrap items-center gap-3 sm:gap-4 md:gap-3 lg:gap-5 xl:gap-6 2xl:gap-5 p-3 sm:p-4 md:p-3 lg:p-4 xl:p-5 2xl:p-4 bg-gray-50 dark:bg-gray-800/30 midnight:bg-gray-800/30 purple:bg-gray-800/30 rounded-lg sm:rounded-xl border border-gray-200 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 backdrop-blur-sm">
+      <div className="flex flex-wrap items-center gap-3 sm:gap-4 md:gap-3 lg:gap-5 xl:gap-6 2xl:gap-5 p-3 sm:p-4 md:p-3 lg:p-4 xl:p-5 2xl:p-4 bg-gray-50 dark:bg-[#1a1d24]/30 midnight:bg-[#0f1330]/30 purple:bg-[#251340]/30 rounded-lg sm:rounded-xl border border-line backdrop-blur-sm">
         <AttendanceStatusBadge type="present" label="Present" size="sm" />
         <AttendanceStatusBadge type="absent" label="Absent" size="sm" />
         <AttendanceStatusBadge type="late" label="Late" size="sm" />
@@ -527,12 +488,11 @@ export default function AttendanceByClass({ year = new Date().getFullYear(), onY
       </div>
 
       {/* Data Table */}
-      <DataTable<ClassAttendanceData>
+      <ResponsiveListTable<ClassAttendanceData> variant="contained" showColumnHeaders={true}
         data={currentWeekData}
         columns={columns}
         getRowKey={(item) => item.date}
         enablePagination={false}
-        enableSearch={false}
         enableItemsPerPage={false}
         emptyMessage="No attendance data available for this week"
       />

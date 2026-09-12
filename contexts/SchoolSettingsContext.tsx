@@ -104,23 +104,55 @@ export function SchoolSettingsProvider({ children }: { children: ReactNode }) {
   const [currentTenant, setCurrentTenant] = useState<Tenant | undefined>(undefined);
 
   // Load tenant data and sync with settings
+  // NOTE: localStorage values (user-configured) take priority over tenant defaults
   useEffect(() => {
     const tenantId = settings.tenantId || "educo-default";
     const tenant = getTenantById(tenantId);
     setCurrentTenant(tenant);
 
     // Sync tenant config to settings if tenant exists
+    // But check localStorage first for user-configured values
     if (tenant) {
+      const savedLevels = localStorage.getItem("educationLevels");
+      const savedInstitutionType = localStorage.getItem("institutionType");
+      const savedTertiaryType = localStorage.getItem("tertiaryType");
+      const savedScheduleType = localStorage.getItem("scheduleType");
+
+      // Parse localStorage values
+      let userSupportedLevels: EducationLevel[] | null = null;
+      if (savedLevels) {
+        try {
+          userSupportedLevels = JSON.parse(savedLevels) as EducationLevel[];
+        } catch  {
+          // Ignore parse errors
+        }
+      }
+
+      // Map tenant education levels to context education levels
+      const mapTenantLevels = (levels: string[]): EducationLevel[] => {
+        return levels.map(level => {
+          // Map "Junior Secondary" to "Secondary" for context compatibility
+          if (level === "Junior Secondary") return "Secondary";
+          return level as EducationLevel;
+        }).filter((level): level is EducationLevel =>
+          ["Primary", "Secondary", "Tertiary"].includes(level)
+        );
+      };
+
+      const tenantLevels = mapTenantLevels(tenant.config.supportedLevels as string[]);
+      const finalSupportedLevels = userSupportedLevels || tenantLevels;
+
       setSettings((prev) => ({
         ...prev,
         tenantId: tenant.id,
         schoolName: tenant.name,
-        supportedLevels: tenant.config.supportedLevels,
-        defaultEducationLevel: tenant.config.defaultEducationLevel,
-        institutionType: tenant.config.institutionType,
-        tertiaryType: tenant.config.tertiaryType,
-        scheduleType: tenant.config.scheduleType,
-        supportsMultipleLevels: tenant.config.supportsMultipleLevels,
+        // User-configured values take priority over tenant defaults
+        supportedLevels: finalSupportedLevels,
+        defaultEducationLevel: finalSupportedLevels[0] || "Secondary",
+        institutionType: (savedInstitutionType as InstitutionType) || tenant.config.institutionType as InstitutionType,
+        tertiaryType: savedTertiaryType || tenant.config.tertiaryType,
+        scheduleType: (savedScheduleType as SchoolScheduleType) || tenant.config.scheduleType as SchoolScheduleType,
+        supportsMultipleLevels: finalSupportedLevels.length > 1,
         region: tenant.config.region,
         subdomain: tenant.subdomain,
         currency: tenant.config.currency,
@@ -149,7 +181,7 @@ export function SchoolSettingsProvider({ children }: { children: ReactNode }) {
           const levels = JSON.parse(savedLevels) as EducationLevel[];
           supportedLevels = levels;
           supportsMultipleLevels = levels.length > 1;
-        } catch (e) {
+        } catch  {
           // Fallback to old single-value format
           const oldValue = localStorage.getItem("educationLevel");
           if (oldValue) {
@@ -185,7 +217,7 @@ export function SchoolSettingsProvider({ children }: { children: ReactNode }) {
       if (savedBankAccount) {
         try {
           bankAccount = JSON.parse(savedBankAccount);
-        } catch (e) {
+        } catch  {
           // Use default if parsing fails
         }
       }
@@ -280,4 +312,16 @@ export function useSchoolSettings() {
     throw new Error("useSchoolSettings must be used within a SchoolSettingsProvider");
   }
   return context;
+}
+
+/**
+ * The settings if a provider is above us, `undefined` if not — for components that can work either way.
+ *
+ * The throwing version above is right for a screen that genuinely requires the settings. But a shared dialog
+ * used both inside and outside the provider was calling it in a `try/catch` to get this behaviour, which is a
+ * conditional hook: React compares hook COUNT between renders, so a hook that may throw part-way shifts every
+ * hook after it. Asking the question without throwing is the fix — the caller then handles `undefined`.
+ */
+export function useOptionalSchoolSettings() {
+  return useContext(SchoolSettingsContext);
 }

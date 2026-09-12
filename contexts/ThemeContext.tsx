@@ -1,55 +1,77 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState, useCallback, ReactNode } from "react";
-
-type Theme = "light" | "dark" | "midnight" | "purple";
+import {
+  ThemeId,
+  ThemeDefinition,
+  THEMES,
+  THEME_ORDER,
+  ALL_THEME_CLASSES,
+} from "@/lib/theme-config";
 
 interface ThemeContextType {
-  theme: Theme;
-  setTheme: (theme: Theme) => void;
+  theme: ThemeId;
+  themeConfig: ThemeDefinition;
+  setTheme: (theme: ThemeId) => void;
   cycleTheme: () => void;
+  isDark: boolean;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
-const themes: Theme[] = ["light", "dark", "midnight", "purple"];
-
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>("light");
+  const [theme, setThemeState] = useState<ThemeId>("light");
 
-  const applyTheme = useCallback((newTheme: Theme) => {
+  const applyTheme = useCallback((newTheme: ThemeId) => {
+    const config = THEMES[newTheme];
+    if (!config) return;
+
     setThemeState(newTheme);
     localStorage.setItem("theme", newTheme);
 
     // Remove all theme classes
-    document.documentElement.classList.remove("dark", "midnight", "purple");
+    document.documentElement.classList.remove(...ALL_THEME_CLASSES);
 
-    // Add the new theme class (skip for light theme)
-    if (newTheme !== "light") {
-      document.documentElement.classList.add(newTheme);
+    // For dark-based themes, always add "dark" for Tailwind dark: variant support
+    if (config.isDark) {
+      document.documentElement.classList.add("dark");
+    }
+
+    // Add theme-specific class (if it differs from "dark")
+    if (config.cssClass && config.cssClass !== "dark") {
+      document.documentElement.classList.add(config.cssClass);
     }
   }, []);
 
   useEffect(() => {
-    // Check localStorage for saved theme preference on mount
-    const savedTheme = localStorage.getItem("theme") as Theme;
-    if (savedTheme && themes.includes(savedTheme)) {
+    const savedTheme = localStorage.getItem("theme") as ThemeId;
+    if (savedTheme && THEMES[savedTheme]) {
       applyTheme(savedTheme);
     }
   }, [applyTheme]);
 
-  const setTheme = (newTheme: Theme) => {
+  const setTheme = (newTheme: ThemeId) => {
     applyTheme(newTheme);
   };
 
   const cycleTheme = () => {
-    const currentIndex = themes.indexOf(theme);
-    const nextIndex = (currentIndex + 1) % themes.length;
-    applyTheme(themes[nextIndex]);
+    const currentIndex = THEME_ORDER.indexOf(theme);
+    const nextIndex = (currentIndex + 1) % THEME_ORDER.length;
+    applyTheme(THEME_ORDER[nextIndex]);
   };
 
+  const themeConfig = THEMES[theme];
+
   return (
-    <ThemeContext.Provider value={{ theme, setTheme, cycleTheme }}>
+    <ThemeContext.Provider
+      value={{
+        theme,
+        themeConfig,
+        setTheme,
+        cycleTheme,
+        isDark: themeConfig.isDark,
+      }}
+    >
       {children}
     </ThemeContext.Provider>
   );
@@ -57,12 +79,13 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
 export function useTheme() {
   const context = useContext(ThemeContext);
-  // Return default values if context is not available
   if (context === undefined) {
     return {
-      theme: "light" as Theme,
+      theme: "light" as ThemeId,
+      themeConfig: THEMES.light,
       setTheme: () => {},
-      cycleTheme: () => {}
+      cycleTheme: () => {},
+      isDark: false,
     };
   }
   return context;

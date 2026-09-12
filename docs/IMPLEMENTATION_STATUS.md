@@ -1,648 +1,449 @@
-# Educo v4.0 Implementation Status
+# Educo v7.0 Implementation Status
 
 ## Overview
 
-This document tracks the implementation progress of Educo v4.0 features aligned with the updated PRD (Product Requirements Document).
+This document tracks the implementation progress of Educo v7.0 features aligned with the PRD.
 
-**Last Updated:** January 2025
+**Last Updated:** 2026-07-15
 
----
-
-## ✅ Completed Features
-
-### Phase 1: Foundation & Quick Wins
-
-#### 1. Multi-Tenant Architecture Foundation
-
-**Status:** ✅ Implemented
-
-**Files:**
-- [lib/featureFlags.ts](../lib/featureFlags.ts) - Feature flag configuration
-- [contexts/SchoolSettingsContext.tsx](../contexts/SchoolSettingsContext.tsx) - Tenant context management
-- [hooks/useFeatureFlags.ts](../hooks/useFeatureFlags.ts) - Feature flag hooks
-
-**Features:**
-- Schema-per-tenant architecture foundation
-- Tenant context (tenantId, region, subdomain)
-- Feature flag system with 40+ flags
-- Education level & institution type awareness
-- Regional rollout support
-
-**Implementation Details:**
-```typescript
-interface SchoolSettings {
-  // Multi-tenant & feature flags
-  tenantId?: string;
-  region?: string;
-  subdomain?: string;
-  supportedLevels: EducationLevel[];
-  institutionType: InstitutionType;
-}
-```
+> **What changed since Feb 2026:** The presentation/LMS editing surface was deepened into a
+> reusable, well-tested system, and automated testing went from **0 → ~2,048 tests** — but ONLY
+> for the shared/editor/LMS/communication layer. The **ERP business-module pages** (student, staff,
+> teacher, finance, class, discipline, leave, payroll) still have **0 tests**, and **backend, auth,
+> database, payments, and CI/CD remain 0%**. Numbers below reflect a 2026-07-15 codebase scan.
 
 ---
 
-#### 2. Feature Flag System
+## Summary Dashboard
 
-**Status:** ✅ Implemented
+| Category | UI Complete | Backend Complete | Tests Complete |
+|----------|-------------|------------------|----------------|
+| Multi-Tenant Architecture | 80% | 0% | 0% |
+| Feature Flag System | 90% | 0% | 0% |
+| Student Management | 80% | 0% | 0% |
+| Staff & HR Management | 80% | 0% | 0% |
+| Teacher Management | 75% | 0% | 0% |
+| Class/Course Management | 70% | 0% | 0% |
+| Attendance Management | 60% | 0% | ~10% |
+| Academics & LMS (editors) | 70% | 0% | **Strong** |
+| Finance & Accounts | 30% | 0% | 0% |
+| Communication Suite | 15% | 0% | Partial |
+| Library/Hostel/Transport | 5% | 0% | 0% |
+| Reports & Analytics | 20% | 0% | 0% |
+| Transcripts & Certification | 70% | 0% | 0% |
+| Admissions | 0% | 0% | 0% |
+| Inventory Management | 0% | 0% | 0% |
+| Authentication & RBAC | 0% | 0% | 0% |
+| Device Support (Mobile App) | 40% | N/A | Partial |
+| Device Support (Tablet) | 0% | N/A | 0% |
+| CI/CD Pipeline | 0% | N/A | N/A |
+| Security Testing | 0% | N/A | 0% |
+| Cross-Tenant Isolation | 0% | 0% | 0% |
 
-**Modules:**
-- Student Management: `FF_Student_Profile`, `FF_Student_Transfer`, `FF_Student_Grading`
-- Finance: `FF_Finance_Private`, `FF_Finance_Public`, `FF_Finance_Tertiary`
-- Grading: `FF_Grading_Primary`, `FF_Grading_Secondary`, `FF_Grading_Tertiary`
-- Communication: `FF_Chat_WhatsApp`, `FF_Call_Zoom`, `FF_GoogleCalendar`
-- Reports: `FF_Transcript_Generation`, `FF_Reports_Export`
-- Facilities: `FF_Hostel_Management`, `FF_Transport_GPS`, `FF_Library_QR`
+**Overall Progress: ~40% (UI) | 0% (Backend) | Tests: strong on shared/editor/LMS layer, 0% on ERP business modules | 0% (CI/CD)**
 
-**Usage Example:**
-```typescript
-import { useFeatureFlags } from "@/hooks/useFeatureFlags";
-
-function StudentPage() {
-  const { canTransferStudents, canManageProfile } = useFeatureFlags();
-
-  return (
-    <>
-      {canManageProfile && <EditButton />}
-      {canTransferStudents && <TransferButton />}
-    </>
-  );
-}
-```
-
----
-
-#### 3. Student Management UI
-
-**Status:** ✅ Implemented
-
-**Components:**
-- [components/students/StudentCard.tsx](../components/students/StudentCard.tsx) - Card view with badges
-- [components/students/StudentTable.tsx](../components/students/StudentTable.tsx) - Table view with sorting
-- [components/students/StudentProfileCard.tsx](../components/students/StudentProfileCard.tsx) - Detail view
-- [components/shared/ProfileCard.tsx](../components/shared/ProfileCard.tsx) - Reusable profile component
-
-**Features:**
-- ✅ Education level badges (Primary, Secondary, Tertiary)
-- ✅ Institution type badges (Public, Private, International)
-- ✅ Auto-detection of education level from class names
-- ✅ Education level filter on student list
-- ✅ Clickable admission numbers
-- ✅ Delete confirmation modal
-- ✅ Feature flag integration
+> **Tests are NOT evenly distributed.** ~2,048 automated tests exist (web 1,955 across 121 files +
+> mobile 93 across 9 files), concentrated on: the shared editors (presentation/doc/whiteboard),
+> chart system, editor dialogs/menus/toolbars, communication call-ui/chat/messages, and pure logic
+> modules (chart, arrange, reorder, pptx-map, link-utils, smartchip, recorder, presenter timer,
+> storage). The business-module pages (student/staff/teacher/finance/class/discipline/leave/payroll)
+> have **0 test files** each.
 
 ---
 
-#### 4. Delete Workflow
+## Project Statistics
 
-**Status:** ✅ Implemented
-
-**Components:**
-- [components/shared/DeleteConfirmationModal.tsx](../components/shared/DeleteConfirmationModal.tsx)
-- Delete button in StudentCard dropdown
-- Delete button on student detail page
-- Bulk delete modal for multiple students
-
-**Features:**
-- Confirmation modal with comprehensive warning
-- Proper callback system with onDelete prop
-- Feature flag awareness
-- Ready for API integration
-
----
-
-#### 5. Education Level System
-
-**Status:** ✅ Implemented
-
-**Files:**
-- [utils/educationLevel.ts](../utils/educationLevel.ts) - Detection & color coding
-
-**Features:**
-- Auto-detection from class names (I-V for Primary, VI-XII for Secondary, etc.)
-- Support for comma-separated class formats ("III, A" → "III")
-- Color coding for each level:
-  - Primary: Blue/Indigo
-  - Secondary: Purple/Violet
-  - Tertiary: Amber/Orange
-- Institution type colors:
-  - Public: Green/Emerald
-  - Private: Blue/Sky
-  - International: Purple/Fuchsia
+| Metric | Count (2026-07-15) |
+|--------|-------|
+| Total Pages/Routes (Root App) | 102 |
+| Total Pages/Routes (Admin App) | 8 |
+| Shared Components (`components/shared/*.tsx`) | 154 |
+| Context Providers | 18 |
+| Type Definition Files | 13 |
+| Feature Flags | 40+ |
+| API Routes | 9 (placeholders) |
+| Communication Services | 4 (Agora, WebRTC, WhatsApp, Zoom) |
+| Export Utilities | 20+ (incl. real `.pptx` via `lib/export/pptx`) |
+| **Automated tests (web)** | **1,955 across 121 files** |
+| **Automated tests (mobile)** | **93 across 9 files** |
+| **Type errors (web/admin/mobile)** | **0** |
+| Mobile Screens | 12+ |
+| Mobile Modals | 11 |
+| Supported Countries | 50+ |
+| Shared reusable libs added (chart/editor-ops/export/presenter/recording/smartchip) | 12 files |
 
 ---
 
-#### 6. Feature Guard Components
+## Completed Features
 
-**Status:** ✅ Implemented
+### 1. Multi-Tenant Architecture Foundation
 
-**Files:**
-- [components/students/StudentFeatureGuard.tsx](../components/students/StudentFeatureGuard.tsx)
+**Status:** UI 80% | Backend 0%
 
-**Components:**
-- `StudentFeatureGuard` - Single feature check
-- `StudentFeatureGuardAny` - Multiple features (OR logic)
-- `StudentFeatureGuardAll` - Multiple features (AND logic)
+**Implemented:**
+- Schema-per-tenant architecture designed
+- Tenant context management (tenantId, region, subdomain)
+- Tenant switcher component in admin UI
+- Mock tenant data for testing
+- Admin tenant CRUD pages (`/admin/tenants`, `/admin/tenants/create`, `/admin/tenants/[id]`)
+- SchoolSettingsContext with tenant-aware configuration
+- Country configuration with 50+ countries
 
-**Usage:**
-```typescript
-<StudentFeatureGuard feature="FF_Student_Transfer">
-  <TransferButton />
-</StudentFeatureGuard>
-
-<StudentFeatureGuardAny features={["FF_Finance_Private", "FF_Finance_Public"]}>
-  <PaymentSection />
-</StudentFeatureGuardAny>
-```
-
----
-
-#### 7. Documentation
-
-**Status:** ✅ Implemented
-
-**Files:**
-- [docs/FEATURE_FLAGS.md](./FEATURE_FLAGS.md) - Comprehensive feature flag guide
-- [docs/PRD_v4.md](./PRD_v4.md) - Updated Product Requirements Document
-- [docs/IMPLEMENTATION_STATUS.md](./IMPLEMENTATION_STATUS.md) - This file
+**Pending:**
+- Supabase schema-per-tenant implementation
+- RLS policies
+- Tenant resolution middleware
+- Database-backed tenant configuration
+- Cross-tenant isolation enforcement
 
 ---
 
-## 🚧 In Progress
+### 2. Feature Flag System
 
-### School Settings Integration
+**Status:** 90% Complete (Code-based)
 
-**Status:** 🚧 In Progress
+**40+ flags implemented** across all module categories. See [FEATURE_FLAGS.md](./FEATURE_FLAGS.md) for full list.
 
-**Next Steps:**
-1. Update student forms to respect school settings constraints
-2. Add validation based on education level
-3. Implement level-specific features
+**Implemented:**
+- Feature flag definitions in `lib/featureFlags.ts`
+- `useFeatureFlags` hook for components
+- `StudentFeatureGuard` component (AND/OR logic)
+- `isFeatureEnabled` utility for server-side checks
+- Admin feature flag management UI (`/admin/feature-flags`)
 
----
-
-## 📋 Pending Features
-
-### Phase 2: Core Features
-
-#### A. Student Transfer Workflow
-
-**Status:** 📋 Pending
-
-**Requirements:**
-- Cross-branch transfer UI
-- Financial sync during transfer
-- Academic record migration
-- Parent notification
-- Transfer history tracking
-
-**Feature Flags:**
-- `FF_Student_Transfer` (Already defined)
+**Pending:**
+- Database-driven flags (currently code-based)
+- Per-tenant flag overrides
+- Flag analytics and audit logging
+- A/B testing percentage-based rollout
 
 ---
 
-#### B. Grading System Implementation
+### 3. Grading System Configuration
 
-**Status:** 📋 Pending
+**Status:** Configuration 100% | UI 60%
 
-**Requirements:**
+**Implemented:**
+- Complete grading rules in `lib/gradingConfig.ts`
+- Primary: Numeric + Remarks system
+- Secondary: WAEC-style A1-F9
+- Tertiary: GPA (A-F, 0-5.0)
+- Grading settings page (`/settings/grading`)
+- `GradingContext` provider
+- Grading adapter utilities
 
-**Primary School Grading:**
-- Classwork & Homework (20%)
-- Tests / Quizzes (20%)
-- Projects / Practicals (10%)
-- Behavior / Participation (10%)
-- Exam (40%)
-- Output: Numeric + Remarks
-
-**Secondary School Grading:**
-- Tests (15%)
-- Assignments (10%)
-- Mid-Term (15%)
-- Practicals (10%)
-- Exam (50%)
-- Output: WAEC-style (A1–F9)
-
-**Tertiary Grading:**
-- Continuous Assessment (30%)
-- Lab Work (10%)
-- Mid-Semester Exam (20%)
-- Final Exam (40%)
-- Output: GPA (A=5.0 → F=0)
-
-**Feature Flags:**
-- `FF_Grading_Primary`
-- `FF_Grading_Secondary`
-- `FF_Grading_Tertiary`
-- `FF_LMS_Grading`
+**Pending:**
+- Backend grading calculation APIs
+- Report card generation from live data
 
 ---
 
-#### C. Finance Module
+### 4. Student Management UI
 
-**Status:** 📋 Pending
+**Status:** 80% UI Complete
 
-**Requirements:**
+**Pages (13):**
+- `/students` — List with grid/list toggle
+- `/students/add` — Add new student
+- `/students/edit/[id]` — Edit student
+- `/students/[id]` — Detail page
+- `/students/attendance` — Attendance tracking
+- `/students/grading` — Grading interface
+- `/students/discipline` — Discipline records
+- `/students/transfers` — Transfer management
+- `/students/promotion` — Promotion workflow
+- `/students/bulk-import` — Bulk import
+- `/students/report-cards` — Report cards
+- `/students/transcripts` — Transcripts
+- `/students/cumulative-report` — Cumulative reports
 
-**Private Institution Finance:**
-- Paystack/Interswitch integration
-- Fee types: Tuition, PTA, meals, transport, weekend, hostel
-- Multi-term billing
-- Installment plans
-- Receipts & waivers
-
-**Public Institution Finance:**
-- Offline/bulk payments
-- CSV/Excel import
-- Government levies
-- Exam fees
-
-**Tertiary Finance:**
-- Hostel fees
-- Convocation fees
-- Transcript fees
-- Payment API integration
-
-**Feature Flags:**
-- `FF_Finance_Private`
-- `FF_Finance_Public`
-- `FF_Finance_Tertiary`
+**Components:** StudentCard, StudentTable, StudentProfileCard, StudentDisciplineManagement, StudentFeatureGuard, education level badges
 
 ---
 
-#### D. Transcript Management
+### 5. Staff & HR Management UI
 
-**Status:** 📋 Pending
+**Status:** 80% UI Complete
 
-**Requirements:**
-- Auto-generate transcripts (Primary → Tertiary)
-- Include attendance records
-- Include discipline records
-- Evening/weekend course tracking
-- Payment integration (Paystack/Interswitch)
-- Output formats: PDF, Excel
-- API-linked export for international admissions
+**Pages (10):**
+- `/staff` — Staff list
+- `/staff/add` — Add staff
+- `/staff/[id]` — Detail page
+- `/staff/edit/[id]` — Edit staff
+- `/staff/attendance` — Attendance tracking
+- `/staff/leave-requests` — Leave management
+- `/staff/payroll` — Payroll processing
+- `/staff/performance-reviews` — Reviews
+- `/staff/discipline` — Discipline
+- `/staff/transfers` — Transfers
 
-**Feature Flags:**
-- `FF_Transcript_Generation`
-- `FF_Transcript_Payment`
-
----
-
-#### E. Communication Suite
-
-**Status:** 📋 Pending
-
-**Requirements:**
-
-**WhatsApp Integration:**
-- WhatsApp Business API
-- Fee reminders
-- Attendance notifications
-- Parent communication
-
-**Zoom Integration:**
-- Live class scheduling
-- Recording management
-- Attendance tracking
-
-**Google Calendar:**
-- Event sync
-- Timetable integration
-
-**Email Integration:**
-- SendGrid setup
-- Report delivery
-- Notifications
-
-**Feature Flags:**
-- `FF_Chat_WhatsApp`
-- `FF_Call_Zoom`
-- `FF_GoogleCalendar`
-- `FF_Email_SendGrid`
+**Components:** StaffCard, StaffTable, StaffProfileCard, leave modals, performance review system, transfer workflow
 
 ---
 
-#### F. Attendance Management
+### 6. Teacher Management UI
 
-**Status:** 📋 Pending
+**Status:** 75% UI Complete
 
-**Requirements:**
-- Manual attendance marking
-- Lesson-level tracking
-- Sessional tracking
-- Evening/weekend support
-- Biometric integration (future)
-- GPS tracking (future)
-
-**Feature Flags:**
-- `FF_Attendance_Evening_Weekend`
-- `FF_Attendance_Biometric` (Future)
-- `FF_Attendance_GPS` (Future)
+**Pages (7):**
+- `/teachers` — Teacher list
+- `/teachers/add` — Add teacher
+- `/teachers/[id]` — Detail page
+- `/teachers/[id]/edit` — Edit teacher
+- `/teachers/portal/dashboard` — Teacher portal
+- `/teachers/portal/mark-attendance` — Mark attendance
+- `/teachers/portal/my-classes` — My classes
 
 ---
 
-#### G. Admissions & Examinations
+### 7. Class/Course Management UI
 
-**Status:** 📋 Pending
+**Status:** 70% UI Complete
 
-**Requirements:**
+**Pages (4):**
+- `/classes` — Classes list
+- `/classes/add` — Create class
+- `/classes/[id]` — Class detail
+- `/classes/[id]/subjects` — Subject assignment
 
-**National Examinations:**
-- Nigeria: WAEC, NECO, JAMB, BECE, NCEE
-- Ghana: WASSCE, BECE
-- Kenya: KCPE, KCSE
-- South Africa: NSC, CAPS
-- Uganda: UNEB
-
-**International Admissions:**
-- Transcript export
-- SAT/ACT integration
-- IELTS/TOEFL tracking
-- GRE/GMAT support
-
-**Feature Flags:**
-- `FF_Exams_National`
-- `FF_Admissions_International`
+**Components:** ClassCard, ClassTable, ClassDetailsModal, form sections for all education levels
 
 ---
 
-#### H. Hostel Management
+### 8. Discipline Management
 
-**Status:** 📋 Pending
+**Status:** 80% UI Complete
 
-**Requirements:**
-- Hostel allocation
-- Room assignment
-- Visitor logs
-- Fee management
-- Check-in/check-out tracking
+**Components:** DisciplineRecordsTable, ComplaintsTable, ComplaintStatisticsCards, IncidentReportForm, IncidentDetailModal, DisciplinaryActionsTable
 
-**Feature Flags:**
-- `FF_Hostel_Management`
-
-**Enabled For:** Secondary, Tertiary (Private & Public)
+**Types:** Incident types (misconduct, harassment, theft, fraud), severity levels (minor–critical), actions (warning–termination)
 
 ---
 
-#### I. Reports & Analytics
+### 9. Leave Management
 
-**Status:** 📋 Pending
+**Status:** 70% UI Complete
 
-**Requirements:**
-- Real-time dashboards per tenant
-- Performance insights per term/branch
-- Export: PDF/Excel
-- Google Data Studio integration (future)
-
-**Feature Flags:**
-- `FF_Reports_Export`
-- `FF_Reports_GoogleDataStudio` (Future)
+Leave types: Annual, Medical, Casual, Maternity, etc. Approval workflow. Balance tracking.
 
 ---
 
-## 🔮 Future Enhancements
+### 10. Performance Reviews
 
-### Phase 3: Advanced Features
+**Status:** 80% UI Complete
 
-#### 1. AI-Powered Analytics
-- Academic predictions
-- Performance insights
-- Intervention recommendations
-
-#### 2. Blockchain Transcripts
-- Immutable transcript records
-- Verification system
-- International recognition
-
-#### 3. Mobile App (React Native)
-- Student portal
-- Parent portal
-- Teacher portal
-- Admin portal
-
-#### 4. Advanced Integrations
-- WAEC/NECO/JAMB API integration
-- Integration monitoring dashboard
-- WhatsApp chatbot for parents
-
-#### 5. Transport Management
-- GPS tracking
-- OTP pickup system
-- Route optimization
-- Parent notifications
-
-**Feature Flag:** `FF_Transport_GPS`
-
-#### 6. Library Management
-- QR-based book issue/return
-- Catalog management
-- Digital library
-- Reading analytics
-
-**Feature Flag:** `FF_Library_QR`
-
-#### 7. Social Media Integration
-- Facebook/Instagram announcements
-- Social feed
-- Event promotion
-
-**Feature Flag:** `FF_FacebookIntegration`
+Criteria-based rating system. Review periods (quarterly, annual, probation). Rating scale: outstanding → unsatisfactory.
 
 ---
 
-## Feature Flag Rollout Plan
+### 11. Transfer Management
 
-### MVP (Current)
-✅ Enabled by default:
-- `FF_School_Management`
-- `FF_Student_Profile`
-- `FF_Student_Transfer`
-- `FF_Student_Grading`
-- `FF_LMS_Zoom`
-- `FF_LMS_GoogleDrive`
-- `FF_Chat_WhatsApp`
-- `FF_Call_Zoom`
-- `FF_GoogleCalendar`
-- `FF_Email_SendGrid`
-- `FF_Reports_Export`
-- `FF_Transcript_Generation`
-- `FF_Transcript_Payment`
-- `FF_Grading_Primary`
-- `FF_Grading_Secondary`
-- `FF_Grading_Tertiary`
-- `FF_Finance_Private`
-- `FF_Finance_Public`
-- `FF_Finance_Tertiary`
-- `FF_Hostel_Management`
-- `FF_Notifications_Push`
-- `FF_Notifications_SMS`
-- `FF_Notifications_Email`
-- `FF_Notifications_WhatsApp`
+**Status:** 80% UI Complete
 
-❌ Disabled (Future):
-- `FF_Attendance_Biometric`
-- `FF_Attendance_GPS`
-- `FF_Transport_GPS`
-- `FF_Library_QR`
-- `FF_Reports_GoogleDataStudio`
-- `FF_FacebookIntegration`
-- `FF_Notifications_Social`
-- `FF_Staff_Payroll`
+Cross-branch, class change, and external transfers. Financial clearance workflow. Transfer history & letter generation.
 
 ---
 
-## Technical Debt & Improvements
+### 12. Transcript Management
 
-### High Priority
-1. Move feature flags from code to database (per-tenant configuration)
-2. Implement actual API for student CRUD operations
-3. Add proper error handling and loading states
-4. Implement real authentication and authorization
+**Status:** 70% UI Complete
 
-### Medium Priority
-1. Add unit tests for feature flag system
-2. Implement tenant switching in development
-3. Add feature flag usage analytics
-4. Create admin UI for feature flag management
-
-### Low Priority
-1. Optimize bundle size
-2. Add feature flag documentation to Storybook
-3. Implement A/B testing framework
-4. Add feature flag audit logging
+Transcript generation UI, education level-specific templates, academic record display, payment workflow UI.
 
 ---
 
-## Testing Checklist
+### 13. Type System
 
-### Feature Flags
-- [ ] Test all 40+ feature flags
-- [ ] Verify education level constraints
-- [ ] Verify institution type constraints
-- [ ] Verify region constraints
-- [ ] Test feature guard components
+**Status:** 100% Complete (13 files)
 
-### Multi-Tenant
-- [ ] Test tenant context injection
-- [ ] Verify data isolation
-- [ ] Test tenant switching
-- [ ] Verify subdomain routing
-
-### Student Management
-- [x] Education level badges
-- [x] Institution type badges
-- [x] Auto-detection from class names
-- [x] Delete confirmation
-- [x] Clickable admission numbers
-- [ ] Transfer workflow
-- [ ] Grading system
+school.ts, tenant.ts, discipline.ts, transfer.ts, leave.ts, payroll.ts, performance.ts, transcript.ts, staffAttendance.ts, staffTransfer.ts, component.ts, library.ts, parent.ts
 
 ---
 
-## Performance Metrics
+### 14. Context Providers
 
-### Current Performance
-- Feature flag check: < 1ms
-- Context lookup: < 1ms
-- Badge rendering: < 5ms
-- Student list (100 records): < 500ms
+**Status:** 100% Complete (18 providers)
 
-### Target Performance
-- Feature flag check: < 0.5ms
-- Context lookup: < 0.5ms
-- Badge rendering: < 3ms
-- Student list (1000 records): < 1s
+ThemeContext, UserContext, AcademicYearContext, SidebarContext, CountryContext, SchoolSettingsContext, TransferContext, TranscriptContext, AttendanceContext, GradingContext, LeaveContext, PerformanceContext, DisciplineContext, CommunicationContext, ChildLeaveContext, DashboardContext, MeetingsContext, NotificationContext
 
 ---
 
-## Regional Rollout Status
+### 15. Communication Services
 
-### ✅ Nigeria (MVP)
-- Feature flags: Enabled
-- Payment gateways: Paystack, Interswitch
-- Exams: WAEC, NECO, JAMB, BECE, NCEE
-- Currency: NGN
+**Status:** 15% (Service abstractions only)
 
-### 📋 Ghana (Phase 2)
-- Feature flags: Configured
-- Payment gateways: Pending
-- Exams: WASSCE, BECE
-- Currency: GHS
+**Implemented:**
+- Agora RTC/RTM service abstraction (34KB)
+- WebRTC service abstraction (35KB)
+- WhatsApp service abstraction (19KB)
+- Zoom service abstraction (14KB)
+- Call UI components
+- CommunicationContext provider
 
-### 📋 Kenya (Phase 3)
-- Feature flags: Configured
-- Payment gateways: Pending (M-Pesa priority)
-- Exams: KCPE, KCSE
-- Currency: KES
-
-### 📋 South Africa (Phase 4)
-- Feature flags: Configured
-- Payment gateways: Pending
-- Exams: NSC, CAPS
-- Currency: ZAR
-
-### 📋 Uganda (Phase 4)
-- Feature flags: Configured
-- Payment gateways: Pending
-- Exams: UNEB
-- Currency: UGX
+**Pending:**
+- Backend API integration
+- Actual provider account setup
+- Message queue / delivery tracking
 
 ---
 
-## Next Steps
+### 16. Export & Reporting Utilities
 
-### Immediate (This Week)
-1. ✅ Implement feature flag system
-2. ✅ Update SchoolSettingsContext
-3. ✅ Create feature guard components
-4. ✅ Document feature flags
-5. 🚧 Update student forms with school settings constraints
-6. 🚧 Add education level-specific validation
+**Status:** 70% Complete
 
-### Short Term (This Month)
-1. Implement student transfer workflow
-2. Build grading system (Primary, Secondary, Tertiary)
-3. Create finance module UI
-4. Integrate Paystack for private institutions
-5. Build transcript generation system
-
-### Medium Term (Next 3 Months)
-1. Implement communication suite (WhatsApp, Zoom, Google)
-2. Build attendance management
-3. Create hostel management module
-4. Implement admissions workflow
-5. Build reports & analytics dashboard
-
-### Long Term (Next 6 Months)
-1. Launch React Native mobile app
-2. Implement AI-powered analytics
-3. Add blockchain transcript verification
-4. Build advanced integrations (WAEC, NECO, JAMB APIs)
-5. Expand to Ghana, Kenya, South Africa
+**Implemented:** 20+ export utilities covering PDF and Excel for students, staff, teachers, discipline, fees, installments, parents, transcripts, transfers, termination letters.
 
 ---
 
-## Contributors
+### 17. LMS Tools & Editors
 
-- Development Team
-- Product Team
-- QA Team
-- Documentation Team
+**Status:** Editors ~70% UI Complete · **well-tested & reusable** · rest of LMS 0%
+
+**Implemented (editors — deepened + tested 2026-07):**
+- **Presentation editor** (`SlideEditor`, 4,668 lines) — objects (text/shape/image/table/chart/
+  media/drawing), 9 menus with 177 wired actions, right-click, keyboard shortcuts, slideshow.
+- **Document editor** (`DocEditor`, 12,186 lines) — rich text, pages, tables, comments, @mentions.
+- **Interactive whiteboard** — templates, drawing tools, toolbar, properties panel.
+- **Shared reusable system** built this cycle (usable by web, mobile, docs, whiteboard, exports):
+  - **Chart core** `lib/chart/*` (pure types/geometry/palette + `chartToSvgString`) → one renderer
+    for web `<Chart>`, mobile `apps/mobile/components/Chart` (react-native-svg), and doc/export embeds.
+  - **Links** — `lib/link-utils` + shared `LinkDialog` (Insert → Link, Ctrl+K, link-to-slide).
+  - **Arrange/reorder ops** — `lib/editor-ops/{arrange,reorder}` (align/order/distribute/rotate/flip,
+    slide move/drag). Revived the previously-dead Arrange menu.
+  - **Real `.pptx` export** — `lib/export/{pptx,pptx-map}` (pptxgenjs) with native editable
+    shapes/tables/charts.
+  - **Presenter view** — `PresenterView` + `lib/presenter/timer` (current/next/notes/timer/clock).
+  - **Screen recording** — `useScreenRecorder` + `lib/recording/recorder` (getDisplayMedia/MediaRecorder).
+  - **Smart chips (Smart canvas)** — `lib/smartchip/chips` (date + interactive dropdown chips).
+  - **Immersive editor mode** — `MainLayout immersive` auto-collapses sidebar + hides top bar.
+- New dependency: `pptxgenjs@3.12.0`.
+
+**Pending:**
+- Zoom live class integration
+- Google Drive file sharing
+- Assignment management
+- Multimedia CMS
+- CBT Exam engine
+- Port the editors' features into the mobile app (only the chart renderer is ported so far)
 
 ---
 
-## Resources
+### 18. Mobile App (React Native / Expo)
 
-- [Educo v4.0 PRD](./PRD_v4.md)
-- [Feature Flags Guide](./FEATURE_FLAGS.md)
-- [API Documentation](./API.md) (Coming soon)
-- [Deployment Guide](./DEPLOYMENT.md) (Coming soon)
+**Status:** 40% UI Complete
+
+**Implemented:**
+- Tab navigation (Home, Children, Fees, Messages, More)
+- Payment history screen
+- Report details & list screens
+- Term progress tracking
+- 11 modal components (PayFees, ViewReceipt, LeaveRequest, MessageTeacher, ContactBursary, ActionModal, DetailView, DownloadStatement, FormModal, PaymentConfirmation, ViewResults)
+- UI component library (Avatar, BottomTabBar, ChildSwitcher, DatePicker, FormDropdown, FormInput, etc.)
+- Mobile ThemeContext
+
+**Pending:**
+- Teacher portal screens
+- Admin portal screens
+- Student portal screens (full)
+- Backend API connection
+- Push notifications
+- Offline support
 
 ---
 
-**Status Legend:**
-- ✅ Completed
-- 🚧 In Progress
-- 📋 Pending
-- 🔮 Future
+### 19. Admin Portal (apps/admin)
+
+**Status:** 60% UI Complete
+
+**Pages:**
+- Dashboard
+- Tenant management (list, create)
+- Feature flag management
+- Regional settings
+- School profile
+- Subscription management
+- Translation management
+
+---
+
+### 20. Theme System
+
+**Status:** 100% Complete
+
+4 themes: Light, Dark, Midnight, Purple. Tailwind CSS v4 CSS-first configuration with `@variant` definitions. ThemeContext adds appropriate CSS classes.
+
+---
+
+## Not Implemented
+
+### 1. Authentication & Authorization — 0%
+
+Required: Supabase Auth setup, login/signup pages, password reset, MFA, RBAC middleware, session management, JWT handling
+
+### 2. Database Integration — 0%
+
+Required: Supabase connection, schema-per-tenant setup, RLS policies, migrations, replace all mock data
+
+### 3. API Routes — ~1%
+
+4 placeholder routes exist (Agora token, student search, tenant translation, WhatsApp webhook). All core CRUD APIs needed.
+
+### 4. Payment Integration — 0%
+
+Environment vars defined for Paystack/Interswitch. No implementation.
+
+### 5. Admissions Module — 0%
+
+National and international admission workflows not started.
+
+### 6. Inventory Module — 0%
+
+New module — not started.
+
+### 7. Tablet-Optimized Layouts — 0%
+
+No tablet-specific layouts, collapsible sidebars, or orientation handling implemented.
+
+### 8. Testing — Partial (strong on editors/LMS, 0% on ERP modules)
+
+- **Done:** ~2,048 automated tests (web 1,955 / mobile 93). Unit + component coverage for the
+  shared editors (presentation/doc/whiteboard), the chart system, editor dialogs/menus/toolbars,
+  communication call-ui/chat/messages, and pure logic (chart, arrange, reorder, pptx-map,
+  link-utils, smartchip, recorder, presenter, storage). 0 type errors across web/admin/mobile.
+- **Not done:** business-module pages (student/staff/teacher/finance/class/discipline/leave/payroll)
+  have **0 tests**; no E2E/Playwright specs committed; no visual-regression baselines in CI; no
+  coverage gate. The PRD's "100% logic coverage / 95% overall / CI-enforced" bar is not yet met.
+
+### 9. CI/CD Pipeline — 0%
+
+No GitHub Actions workflows or deployment pipelines.
+
+### 10. Security Testing — 0%
+
+No XSS, CSRF, SQL injection, or tenant isolation testing.
+
+---
+
+## Integration Status
+
+| Integration | Env Config | Feature Flag | Implementation |
+|-------------|-----------|--------------|----------------|
+| Supabase | Ready | N/A | Not Started |
+| Paystack | Ready | `FF_Finance_Private` | Not Started |
+| Interswitch | Ready | `FF_Finance_Private` | Not Started |
+| SendGrid | Ready | `FF_Email_SendGrid` | Not Started |
+| SMS Gateway | Ready | `FF_Notifications_SMS` | Not Started |
+| WhatsApp API | Partial | `FF_Chat_WhatsApp` | Service abstraction only |
+| Zoom | Not Set | `FF_LMS_Zoom` | Service abstraction only |
+| Agora | Not Set | N/A | Service abstraction only |
+| Google Calendar | Not Set | `FF_GoogleCalendar` | Not Started |
+| Google Drive | Not Set | `FF_LMS_GoogleDrive` | Not Started |
+| Facebook | Not Set | `FF_FacebookIntegration` | Not Started |
+
+---
+
+## Status Legend
+
+- Complete = Feature fully implemented and functional
+- UI Complete = Frontend built with mock data, no backend
+- Not Started = No implementation exists

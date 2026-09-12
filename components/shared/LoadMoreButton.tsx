@@ -2,12 +2,15 @@
 
 import { Loader2, RefreshCw } from "lucide-react";
 
-interface LoadMoreButtonProps {
+export interface LoadMoreButtonProps {
   onClick: () => void;
   isLoading?: boolean;
   disabled?: boolean;
   text?: string;
   loadingText?: string;
+  totalItems?: number;
+  displayedItems?: number;
+  loadMoreCount?: number;
 }
 
 export default function LoadMoreButton({

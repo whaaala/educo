@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx jest:*)",
+      "Read(//tmp/**)",
+      "Bash(node -e \"require\\(''''./components/drive/DriveFileItem.tsx''''\\)\")",
+      "Read(//c/Users/eyite/educo/apps/mobile/**)"
+    ]
+  }
+}

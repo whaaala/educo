@@ -15,20 +15,17 @@ import {
   BarChart3,
   Users,
 } from "lucide-react";
-import MainLayout from "@/components/layout/MainLayout";
+import { DashboardPage } from "@/components/pages";
 import Button from "@/components/shared/Button";
-import PageHeader from "@/components/shared/PageHeader";
-import PageLoader from "@/components/shared/PageLoader";
 import FormDropdown from "@/components/shared/FormDropdown";
 import { Student } from "@/components/students/StudentCard";
 import StudentSelectionGrid from "@/components/students/StudentSelectionGrid";
 import { useStudentsByTenant } from "@/hooks/useStudentsByTenant";
 import { useSchoolSettings } from "@/contexts/SchoolSettingsContext";
 import { useGrading } from "@/contexts/GradingContext";
-import { usePageLoad } from "@/hooks/usePageLoad";
+import { useCurrentTenant } from "@/hooks/useTenant";
 import { useReactToPrint } from "react-to-print";
-import jsPDF from "jspdf";
-import html2canvas from "html2canvas";
+import ActionModal from "@/components/shared/ActionModal";
 
 type EducationLevel = "Primary" | "Secondary" | "Tertiary";
 type Term = "First Term" | "Second Term" | "Third Term" | "First Semester" | "Second Semester";
@@ -118,8 +115,6 @@ const getTermsByLevel = (level: EducationLevel): Term[] => {
 
 // Generate academic years (current year - 5 to current year + 1)
 const currentYear = new Date().getFullYear();
-const ACADEMIC_YEARS = Array.from({ length: 7 }, (_, i) => (currentYear - 5 + i).toString());
-
 // Generate mock subjects based on education level
 const generateMockSubjects = (educationLevel: EducationLevel, classLevel: string): SubjectGrade[] => {
   if (educationLevel === "Primary") {
@@ -181,12 +176,13 @@ const calculateGPA = (percentage: number): number => {
 export default function CumulativeReportPage() {
   const router = useRouter();
   const printRef = useRef<HTMLDivElement>(null);
-  const isPageLoading = usePageLoad(600);
   const [currentStep, setCurrentStep] = useState<"config" | "preview">("config");
+  const [isDownloadInfoOpen, setIsDownloadInfoOpen] = useState(false);
 
   const tenantStudents = useStudentsByTenant();
   const { settings } = useSchoolSettings();
   const { getGradeForScore } = useGrading();
+  const currentTenant = useCurrentTenant();
   const [students, setStudents] = useState<Student[]>([]);
 
   const [config, setConfig] = useState({
@@ -379,38 +375,20 @@ export default function CumulativeReportPage() {
   });
 
   const handleDownloadPDF = () => {
-    // Show instruction modal/alert
-    const confirmed = window.confirm(
-      'Click OK to open the print dialog.\n\n' +
-      'In the print dialog:\n' +
-      '1. Select "Save as PDF" or "Microsoft Print to PDF" as the destination\n' +
-      '2. Click Save/Print\n' +
-      '3. Choose where to save your PDF file\n\n' +
-      'Note: Browser print dialog handles all modern color formats correctly.'
-    );
-
-    if (confirmed) {
-      handlePrint();
-    }
+    setIsDownloadInfoOpen(true);
   };
 
   return (
-    <MainLayout>
-      {/* Loading Screen */}
-      <PageLoader isLoading={isPageLoading} loadingText="Loading Cumulative Reports" />
-
-      {/* Main Content - Fades in after loading */}
-      <div className={`transition-opacity duration-500 ${isPageLoading ? 'opacity-0' : 'opacity-100'}`}>
-      <div className="p-6 space-y-6">
-        <PageHeader
-          title="Cumulative Report Cards"
-          description="Generate comprehensive academic reports showing all completed terms/semesters"
-          icon={<BarChart3 className="w-6 h-6" />}
-          breadcrumbs={[
-            { label: "Students", href: "/students" },
-            { label: "Cumulative Reports", isActive: true },
-          ]}
-        />
+    <DashboardPage
+      title="Cumulative Report Cards"
+      description="Generate comprehensive academic reports showing all completed terms/semesters"
+      breadcrumbs={[
+        { label: "Students", href: "/students" },
+        { label: "Cumulative Reports", isActive: true },
+      ]}
+      loadingText="Loading Cumulative Reports"
+      afterStats={
+        <div className="mt-6 p-6 space-y-6">
 
         {/* Configuration Step */}
         {currentStep === "config" && (
@@ -446,15 +424,15 @@ export default function CumulativeReportPage() {
             {/* Instructions Card */}
             <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-4 sm:p-6">
               <div className="flex items-start gap-3 sm:gap-4">
-                <div className="p-2 sm:p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex-shrink-0">
-                  <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600 dark:text-blue-400" />
+                <div className="p-2 sm:p-3 bg-blue-100 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30 rounded-lg flex-shrink-0">
+                  <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <h3 className="text-base sm:text-lg font-semibold text-neutral-900 dark:text-neutral-100 mb-2">
-                    What's Included in This Report
+                    What&apos;s Included in This Report
                   </h3>
                   <p className="text-xs sm:text-sm text-neutral-600 dark:text-neutral-400 mb-3">
-                    This comprehensive report shows a student's complete academic journey including:
+                    This comprehensive report shows a student&apos;s complete academic journey including:
                   </p>
                   <ul className="text-xs sm:text-sm text-neutral-600 dark:text-neutral-400 space-y-1 ml-4">
                     <li>• All completed terms/semesters with detailed subject performance</li>
@@ -474,7 +452,7 @@ export default function CumulativeReportPage() {
               <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 px-4 sm:px-6 py-3 sm:py-4 border-b border-neutral-200 dark:border-neutral-700">
                 <div className="flex items-center gap-2 sm:gap-3">
                   <div className="p-1.5 sm:p-2 bg-green-100 dark:bg-green-900/30 rounded-lg flex-shrink-0">
-                    <Users className="w-4 h-4 sm:w-5 sm:h-5 text-green-600 dark:text-green-400" />
+                    <Users className="w-4 h-4 sm:w-5 sm:h-5 text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <h3 className="text-base sm:text-lg font-semibold text-neutral-900 dark:text-neutral-100">
@@ -495,8 +473,8 @@ export default function CumulativeReportPage() {
                     <FormDropdown
                       label="Education Level"
                       icon={<GraduationCap className="w-full h-full" />}
-                      iconBgColor="bg-blue-100 dark:bg-blue-900/30"
-                      iconColor="text-blue-600 dark:text-blue-400"
+                      iconBgColor="bg-blue-100 dark:bg-blue-900/30 midnight:bg-cyan-900/30 purple:bg-pink-900/30"
+                      iconColor="text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400"
                       value={config.educationLevel}
                       onChange={(value) =>
                         setConfig({
@@ -518,7 +496,7 @@ export default function CumulativeReportPage() {
                     label="Class"
                     icon={<BookOpen className="w-full h-full" />}
                     iconBgColor="bg-green-100 dark:bg-green-900/30"
-                    iconColor="text-green-600 dark:text-green-400"
+                    iconColor="text-green-600 dark:text-green-400 midnight:text-emerald-400 purple:text-emerald-400"
                     value={config.class}
                     onChange={(value) => setConfig({ ...config, class: value })}
                     options={[
@@ -552,9 +530,9 @@ export default function CumulativeReportPage() {
                 </div>
 
                 {/* Results Summary */}
-                <div className="mt-4 p-3 sm:p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                <div className="mt-4 p-3 sm:p-4 bg-blue-50 dark:bg-blue-900/20 midnight:bg-cyan-900/20 purple:bg-pink-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
                   <p className="text-xs sm:text-sm text-neutral-700 dark:text-neutral-300">
-                    <span className="font-semibold text-blue-600 dark:text-blue-400">
+                    <span className="font-semibold text-blue-600 dark:text-blue-400 midnight:text-cyan-400 purple:text-pink-400">
                       {filteredStudents.length}
                     </span>{" "}
                     student{filteredStudents.length !== 1 ? "s" : ""} found
@@ -627,7 +605,7 @@ export default function CumulativeReportPage() {
                   Print
                 </Button>
                 <Button
-                  onClick={handlePrint}
+                  onClick={handleDownloadPDF}
                   icon={<Download className="w-4 h-4" />}
                   title="Open print dialog to save as PDF"
                   className="w-full sm:w-auto"
@@ -639,15 +617,29 @@ export default function CumulativeReportPage() {
 
             {/* Report Preview */}
             <div ref={printRef} data-print-target className="bg-white p-4 sm:p-6 md:p-8 rounded-xl shadow-lg">
-              {/* Header */}
-              <div className="text-center mb-6 sm:mb-8 pb-4 sm:pb-6 border-b-2 border-neutral-200">
-                <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-neutral-900 mb-2">
-                  {settings.schoolName}
+              {/* Header - Uses tenant branding */}
+              <div
+                className="text-center mb-6 sm:mb-8 pb-4 sm:pb-6 border-b-2"
+                style={{ borderColor: currentTenant?.branding?.primaryColor || '#e5e7eb' }}
+              >
+                <h1
+                  className="text-xl sm:text-2xl md:text-3xl font-bold mb-2"
+                  style={{ color: currentTenant?.branding?.primaryColor || '#171717' }}
+                >
+                  {currentTenant?.name || settings.schoolName}
                 </h1>
+                {currentTenant?.branding?.motto && (
+                  <p className="text-xs sm:text-sm text-neutral-500 italic mb-2">
+                    &quot;{currentTenant.branding.motto}&quot;
+                  </p>
+                )}
                 <p className="text-xs sm:text-sm text-neutral-600 mb-3 sm:mb-4">
-                  {settings.institutionType} • {settings.region || "Nigeria"}
+                  {currentTenant?.config?.institutionType || settings.institutionType} • {currentTenant?.config?.region || settings.region || "Nigeria"}
                 </p>
-                <h2 className="text-lg sm:text-xl md:text-2xl font-semibold text-blue-600 mb-1">
+                <h2
+                  className="text-lg sm:text-xl md:text-2xl font-semibold mb-1"
+                  style={{ color: currentTenant?.branding?.primaryColor || '#2563eb' }}
+                >
                   Cumulative Academic Report
                 </h2>
                 <p className="text-xs sm:text-sm text-neutral-600">
@@ -882,11 +874,11 @@ export default function CumulativeReportPage() {
                       {/* Remarks */}
                       <div className="space-y-2">
                         <div className="p-3 bg-neutral-50 rounded">
-                          <p className="text-xs font-semibold text-neutral-700 mb-1">Teacher's Remarks</p>
+                          <p className="text-xs font-semibold text-neutral-700 mb-1">Teacher&apos;s Remarks</p>
                           <p className="text-sm text-neutral-900">{report.teacherRemarks}</p>
                         </div>
                         <div className="p-3 bg-neutral-50 rounded">
-                          <p className="text-xs font-semibold text-neutral-700 mb-1">Principal's Remarks</p>
+                          <p className="text-xs font-semibold text-neutral-700 mb-1">Principal&apos;s Remarks</p>
                           <p className="text-sm text-neutral-900">{report.principalRemarks}</p>
                         </div>
                       </div>
@@ -912,7 +904,38 @@ export default function CumulativeReportPage() {
           </div>
         )}
       </div>
-      </div>
-    </MainLayout>
+      }
+    >
+      <ActionModal
+        isOpen={isDownloadInfoOpen}
+        onClose={() => setIsDownloadInfoOpen(false)}
+        title="Download as PDF"
+        variant="info"
+        message={
+          <div className="space-y-3">
+            <p>
+              Click <strong>Open Print Dialog</strong> to download this report as a PDF.
+            </p>
+            <ol className="list-decimal pl-5 space-y-1">
+              <li>
+                In the print dialog, choose <strong>Save as PDF</strong> (or{" "}
+                <strong>Microsoft Print to PDF</strong>)
+              </li>
+              <li>Click Save / Print</li>
+              <li>Choose where to save your PDF</li>
+            </ol>
+            <p className="text-xs text-muted">
+              Note: the browser print dialog handles colors and layout best.
+            </p>
+          </div>
+        }
+        confirmLabel="Open Print Dialog"
+        cancelLabel="Cancel"
+        onConfirm={() => {
+          setIsDownloadInfoOpen(false);
+          handlePrint();
+        }}
+      />
+    </DashboardPage>
   );
 }
