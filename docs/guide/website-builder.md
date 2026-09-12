@@ -39,10 +39,12 @@ Build and maintain your school's public website by dragging blocks onto a page �
 | Block | Use it for |
 |-------|-----------|
 | **Section** | A full‑width band of the page (e.g. a tinted "Admissions" strip). Deliberately visible chrome you fill with other blocks. |
-| **Columns** | An equal‑column grid (2, 3, 4 columns) — great for feature cards or staff photos. |
+| **Columns** | A grid, picked the way you insert a table: sweep **how many across × how many down**. Uneven splits (sidebar, feature + two) sit underneath. Feature cards, staff photos, an article beside a sidebar. |
 | **Row** | Items sitting side‑by‑side that wrap on small screens. |
 | **Spacer** | Adjustable vertical breathing room. |
 | **Divider** | A dividing line (solid, dashed, dotted, thick). |
+| **Hero** | One photograph filling the screen, with your headline over it. |
+| **Rotating hero** | Several full‑screen photographs in turn, each with its own words. |
 
 ### Text
 | Block | Use it for |
@@ -53,7 +55,7 @@ Build and maintain your school's public website by dragging blocks onto a page �
 | **List** | Bulleted or numbered lists. |
 
 ### Media
-**Image**, **Photo gallery**, **Video** (YouTube/Vimeo/MP4), **Icon** (searchable symbol), **Embed** (paste an iframe/HTML).
+**Image**, **Photo gallery**, **Slider**, **Video** (YouTube/Vimeo/MP4), **Icon** (searchable symbol), **Embed** (paste an iframe/HTML).
 
 ### Photo gallery — many photographs at once
 
@@ -75,6 +77,41 @@ Then **Add gallery of 12** (or however many), and it lands.
 **Descriptions start from your file names.** A file called `sports day 1.jpg` arrives described as "sports day 1" — a starting point to improve in the Content tab, not a caption the builder invented. Blank descriptions are the commonest accessibility miss on a school site, so it's better to start with something true.
 
 > **Your photographs are resized as they come in.** A picture straight off a phone is around 1.2 MB, and a browser only keeps about 5 MB of your site — so a dozen of them at full size would not fit at all, and the page would quietly stop saving. Each one is stored with its longest edge at **1600 pixels**, which is larger than anywhere it's ever shown and far kinder to a parent loading the page on mobile data. If your browser's storage ever does fill up, the editor now tells you plainly instead of failing in silence — **export your site straight away** if you see that message.
+
+### Show one at a time — sliders, and the rest
+
+Any box can show its blocks **one at a time** instead of all at once. Select the box → **Design → Arrange** → tick **Show one at a time**.
+
+Each block inside becomes a **page** that fills the box. Visitors swipe between them on a phone or a trackpad, and — once they've tabbed to it — move one page per arrow key. **None of that puts any code on your site.**
+
+**Every page is an ordinary box**, and that's the whole point of doing it this way. One page can be a photograph, the next a headline over a photograph, the next a three-column layout with a button in it. Everything else in the Inspector still works inside a page, because a page *is* just a box.
+
+| Control | What it does |
+|---|---|
+| **Moving between them** | **Dots** (the default), **Arrows**, **Both**, or **None** — leave it on None and visitors swipe or use the keyboard. |
+| **Move on its own every** | Starts at **off**. Slide it right and it advances by itself. |
+
+Three things happen automatically and are worth knowing:
+
+- **The dots are real links.** Each page has its own address, so you can link straight to one from anywhere else on your site. If you give a page a **Bookmark** in the Content tab, that's the address used.
+- **It holds still while somebody's reading it.** If it moves on its own, hovering it or tabbing into it stops it until they leave. Something that keeps moving while you're trying to read it isn't just annoying — it's an accessibility failure.
+- **A visitor who's asked their device for less motion never sees it move**, and the sliding isn't animated for them either.
+
+> **Nothing is added to your site unless it's needed.** Set *Moving between them* to **None** with no auto-advance and the published page contains **no JavaScript at all** — it's pure CSS. Dots or auto-advance add one small script.
+
+### Slider, Hero and Rotating hero
+
+Three tiles that set all of the above up for you, so you don't have to know the mode exists.
+
+| Tile | Where | What you get |
+|---|---|---|
+| **Slider** | Media | Your photographs, one at a time, with dots. Choose them in one dialog, pick how visitors move between them, and whether it advances on its own. |
+| **Hero** | Layout | One photograph filling the screen with your headline over it. |
+| **Rotating hero** | Layout | Several of those in turn — each page its own full screen, its own photograph, its own words. |
+
+**Your words stay readable whatever photograph you choose.** A hero lays a dark wash over the picture before the headline goes on top. That isn't decoration: white text on a bright photograph is unreadable, and you pick the photograph, not us. The wash is strong enough that white text clears the WCAG AA contrast bar **even over a pure white photograph** — and it's an ordinary Background overlay, so you can change or remove it with the control that's already there.
+
+Everything the tiles make is ordinary blocks. Edit the second hero's headline by clicking it on the canvas; add a button to one slide and not the others; drag a slide's edge. There's nothing to convert and nothing special about them.
 
 **Photographs** — select an Image block and open the **Content** tab:
 

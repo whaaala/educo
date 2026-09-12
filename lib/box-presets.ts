@@ -5,7 +5,7 @@
  * Card container — without touching individual properties. Pure + theme-aware.
  */
 
-import { type BoxNode, type BoxType, createContainer, createGrid, createElement, cloneBox, GRID_MAX } from "@/lib/box-model";
+import { type BoxNode, type BoxType, type PagerNav, createContainer, createGrid, createElement, cloneBox, GRID_MAX } from "@/lib/box-model";
 import { buildCatalogueComponent, addChoices, applyPresetVariant } from "@/lib/component-catalogue";
 import type { SiteTheme } from "@/lib/site-storage";
 
@@ -205,6 +205,124 @@ export function photoGallery(photos: GalleryPhoto[], opts: { across: number; sta
   });
 }
 
+/**
+ * THE SCRIM OVER A HERO PHOTOGRAPH — a requirement, not a decoration.
+ *
+ * Putting white words straight onto a photograph only reads when the photograph happens to be dark, and a
+ * school chooses the photograph. So a hero ships with a dark gradient over the picture: strongest where the
+ * words sit, clearing towards the top so the photograph is still the thing you see. It is an ordinary
+ * `bgOverlay`, so the user can change or remove it with the control that is already there — this is the
+ * safe starting point, not a lock.
+ */
+export const HERO_SCRIM = "linear-gradient(180deg, rgba(0,0,0,0.50) 0%, rgba(0,0,0,0.58) 50%, rgba(0,0,0,0.66) 100%)";
+
+/**
+ * THE NUMBER IN THE SCRIM IS ARITHMETIC, NOT TASTE — and the first version of it failed.
+ *
+ * The headline is white and sits in the MIDDLE of the hero, so the only value that matters is the alpha at
+ * 50%. Work the worst case, a pure white photograph: a black overlay of alpha `a` composites to
+ * `255 × (1 − a)`, and white text needs that at 4.5:1 or better.
+ *
+ *     a = 0.35 → sRGB 166 → 2.43:1   FAIL   ← what this shipped as at first
+ *     a = 0.50 → sRGB 128 → 3.95:1   FAIL
+ *     a = 0.55 → sRGB 115 → 4.74:1   pass
+ *     a = 0.58 → sRGB 107 → 5.33:1   pass   ← chosen, with headroom
+ *
+ * A gradient still reads as a photograph rather than a dark panel, but it now starts at 0.50 instead of
+ * 0.15: the top of a hero is where a logo or a nav usually sits, and that needs to be legible too.
+ * `tests/e2e/pager-hero.spec.ts` samples the real composited pixel behind the headline over a WHITE
+ * photograph and asserts the ratio, so this cannot quietly drift back.
+ */
+export const HERO_SCRIM_MIN_CONTRAST = 4.5;
+
+/** One page of a slider: a box holding one photograph that fills it. */
+function photoSlide(p: GalleryPhoto): BoxNode {
+  const cell = createContainer("column", { width: "100%", padding: 0, gap: 0, align: "stretch", clip: true });
+  cell.children = [createElement("image", { src: p.src, imgW: p.imgW, imgH: p.imgH, alt: p.alt ?? "", width: "100%", height: "100%" })];
+  return cell;
+}
+
+/**
+ * A SLIDER — photographs, one at a time.
+ *
+ * The same `pager` mode the Arrange panel offers, arrived at by picking a tile instead of by knowing the
+ * mode exists. Nothing about the result is special: each page is a container holding an Image, so a user
+ * can put a caption on one, a button on another, or redesign any page entirely, without converting anything.
+ */
+export function photoSlider(photos: GalleryPhoto[], opts: { nav?: PagerNav; auto?: number; height?: number } = {}): BoxNode {
+  const strip = createContainer("column", {
+    width: "100%", padding: 0, gap: 0, align: "stretch",
+    pager: true,
+    ...(opts.nav && opts.nav !== "dots" ? { pagerNav: opts.nav } : {}),
+    ...(opts.auto ? { pagerAuto: opts.auto } : {}),
+    // A slider of photographs needs a height, or every page is as tall as its own picture and the strip
+    // jumps as it moves. It is an ordinary min-height the user can drag.
+    minHeight: opts.height ?? 420,
+  });
+  strip.children = photos.map(photoSlide);
+  return strip;
+}
+
+/**
+ * A HERO — one screen, one photograph, one sentence over it.
+ *
+ * Everything here is reachable today through existing controls (full screen height, a background image, a
+ * heading, the nine-point positioner). It is a tile because reachable and findable are different things:
+ * nothing in the palette said the word hero, so nobody built one.
+ */
+export function heroSection(photo: GalleryPhoto | null, headline: string, sub?: string): BoxNode {
+  const box = createContainer("column", {
+    width: "100%", padding: 48, gap: 12, align: "center", justify: "center",
+    screenHeight: "full",
+    contentX: "center", contentY: "center",
+    ...(photo ? { bgImage: photo.src, bgOverlay: HERO_SCRIM, bgSize: "cover", bgPosition: "center" } : { background: "#1f2937" }),
+  });
+  box.children = [
+    createElement("heading", { text: headline, width: "100%", textAlign: "center", color: "#ffffff", fontSize: 52, bold: true }),
+    ...(sub ? [createElement("text", { text: sub, width: "100%", textAlign: "center", color: "#f3f4f6", fontSize: 20 })] : []),
+  ];
+  return box;
+}
+
+/** A ROTATING HERO — a full-screen hero per photograph, shown one at a time. */
+export function rotatingHero(photos: GalleryPhoto[], headline: string, opts: { nav?: PagerNav; auto?: number } = {}): BoxNode {
+  const strip = createContainer("column", {
+    width: "100%", padding: 0, gap: 0, align: "stretch",
+    pager: true,
+    ...(opts.nav && opts.nav !== "dots" ? { pagerNav: opts.nav } : {}),
+    ...(opts.auto ? { pagerAuto: opts.auto } : {}),
+  });
+  // Each page is a whole hero — which is the point of the mode: a page is a box, so it can be anything a
+  // box can be, and the user edits the second one's words without the first one's knowing or caring.
+  strip.children = photos.map((p, i) => heroSection(p, i === 0 ? headline : `${headline} ${i + 1}`));
+  return strip;
+}
+
+/**
+ * WHICH TILES ASK FOR PHOTOGRAPHS, and which shape of the one setup screen each of them wants.
+ *
+ * Stated once, here, because three places need the same answer — whether the tile opens the setup, which
+ * copy it shows, and what it builds from the result. Three separate lists is exactly how "picker vs drag"
+ * drifted before.
+ */
+export const PHOTO_SETUP: Record<string, "gallery" | "slider" | "hero" | "still" | undefined> = {
+  gallery: "gallery", slider: "slider", rotatingHero: "hero", hero: "still",
+};
+
+/** What a photo tile builds once the setup is answered — the ONE place that maps a tile to a node. */
+export function nodeForPhotos(
+  kind: string,
+  photos: GalleryPhoto[],
+  o: { across: number; stagger: boolean; gap: number; nav: PagerNav; auto: number; headline: string },
+): BoxNode {
+  if (kind === "slider") return photoSlider(photos, { nav: o.nav, auto: o.auto });
+  if (kind === "rotatingHero") return rotatingHero(photos, o.headline, { nav: o.nav, auto: o.auto });
+  // A STILL hero is one photograph and one sentence — the setup takes several, so the first is the hero
+  // and the rest are simply not used. Taking the first is kinder than refusing the add.
+  if (kind === "hero") return heroSection(photos[0] ?? null, o.headline);
+  return photoGallery(photos, { across: o.across, stagger: o.stagger, gap: o.gap });
+}
+
 /** The layout combinations as add-time presets. Built fresh each call so two adds never share an id. */
 const gridLayoutChoices = (): Preset[] =>
   GRID_LAYOUTS.map((l) => ({ id: l.id, label: l.label, patch: { columns: GRID_MAX, children: l.spans.map(gridCell) } }));
@@ -231,6 +349,9 @@ export function blockForKind(kind: string, patch: Partial<BoxNode> = {}): BoxNod
     // A gallery with no photographs yet — the setup popup always replaces this wholesale. It exists so a
     // path that somehow adds one without asking still gets a real, empty grid rather than nothing.
     : kind === "gallery" ? photoGallery([], { across: 3 })
+    : kind === "slider" ? photoSlider([])
+    : kind === "hero" ? heroSection(null, "Welcome to our school")
+    : kind === "rotatingHero" ? rotatingHero([], "Welcome to our school")
     // A Section starts flush too — space is added on the side you want it, not removed from a default. The
     // Card and Outline STYLE presets still carry their own padding, because there it is part of the look
     // somebody chose rather than something they have to discover and undo.

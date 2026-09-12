@@ -218,6 +218,32 @@ export interface BoxNode {
    */
   rowFlow?: "even" | "masonry";
   /**
+   * SHOW ONE AT A TIME — a pager, as a MODE on any container rather than a Gallery component.
+   *
+   * With it on, the container's own children stop being a stack or a grid and become PAGES: one fills the
+   * box, the next sits beside it, and the visitor swipes, scrolls or arrows between them. Each page is
+   * therefore an ordinary box the user hand-designed, which is the entire reason this is a mode. A
+   * component's content is a flat `ComponentItem` (title, body, one media URL, no `BoxNode` anywhere), so
+   * a component could hold a list of captions and never a designed page — and inside one, the twelve
+   * columns, the spans, the offsets and every other control would stop applying.
+   *
+   * The mechanism is CSS scroll-snap and nothing else, so the baseline is genuinely zero JavaScript:
+   * every page is real DOM in reading order, touch swipe and trackpad work, and with the strip focusable
+   * the arrow keys page through it. Measured in a browser before this was built (see `pagerScript`) —
+   * that much needs no script at all.
+   */
+  pager?: boolean;
+  /** Which way of moving between pages is offered. Absent means dots. */
+  pagerNav?: PagerNav;
+  /**
+   * Seconds between automatic advances. Absent or 0 means it does not advance on its own, which is the
+   * default because movement nobody asked for is the thing this most easily gets wrong.
+   *
+   * Turning it on is what adds the auto-advance half of `pagerScript`, and that script pauses on hover and
+   * on keyboard focus — a carousel a reader cannot hold still to read is a WCAG 2.2.2 failure.
+   */
+  pagerAuto?: number;
+  /**
    * Masonry only, opt IN: measure the real rendered heights on the page and set the spans exactly.
    *
    * Off by default, because the default has to be zero JavaScript. With it off the spans are worked out from
@@ -2433,6 +2459,198 @@ export function gridRowTracks(node: BoxNode, bp: Breakpoint = "base"): string | 
  * In `rem` rather than px so a reader who has enlarged their browser font gets a grid that enlarges with them
  * — the same reason the rung ladder is in `em`.
  */
+// ── SHOW ONE AT A TIME ────────────────────────────────────────────────────────────────────────────────
+//
+// A pager built on CSS scroll-snap, with the navigation as REAL LINKS to REAL SECTIONS. What that buys,
+// measured in a browser before any of it was written:
+//   • swipe on touch, trackpad, and — once the strip is focusable — one page per arrow key, with the page
+//     itself never moving. All of that with NO JavaScript whatsoever.
+//   • every page in the document, in reading order, so a screen reader and a search engine get the words
+//     whether or not anything runs.
+//
+// And the one thing it does NOT buy, which is why `pagerScript` exists: a bare anchor link nudges the
+// whole page. Measured — 240px of vertical scroll even with the strip already entirely in view, 900px
+// with it below the fold, because a fragment navigation scrolls every scrollable ancestor and not just
+// the nearest one. `scroll-margin-block` does not suppress it (tried). Six lines of script do.
+
+/** How a visitor is offered a way between pages. */
+export type PagerNav = "dots" | "arrows" | "both" | "none";
+
+/** Is this container showing one child at a time? */
+export const isPager = (node: BoxNode): boolean => !!node.pager && isContainer(node);
+
+/**
+ * The id a page is reachable by — one function, so a dot's `href` and the page's `id` cannot drift.
+ *
+ * A bookmark the user set on the page WINS, because they chose it and may already have linked to it from
+ * somewhere else. Only a page without one gets the generated id, and generating it from the node id means
+ * it is stable across edits: renaming or restyling a page never breaks a link to it.
+ */
+export const pagerSlideId = (slide: BoxNode): string => slide.anchor || `slide-${slide.id}`;
+
+/**
+ * The container's own declarations when it is a pager.
+ *
+ * `grid-auto-columns: 100%` is what makes a page a PAGE — it fills the box regardless of what is in it, so
+ * a slide with one line of text and a slide with a photograph are the same width and snap the same way.
+ * `overflow-y: hidden` matters as much as the `x`: without it a tall page turns the strip into a
+ * two-directional scroller and the snap points fight the vertical scroll.
+ */
+export function pagerStripCss(): CSSProperties {
+  return {
+    display: "grid",
+    gridAutoFlow: "column",
+    gridAutoColumns: "100%",
+    gridTemplateColumns: "none", // a 12-column template underneath would fight the page columns
+    overflowX: "auto",
+    overflowY: "hidden",
+    scrollSnapType: "x mandatory",
+    // Smooth is set here and UNDONE for reduced motion in the shared sheet — CSS does not do that for us.
+    // Measured: under `prefers-reduced-motion: reduce` the computed value was still `smooth`.
+    scrollBehavior: "smooth",
+  };
+}
+
+/** What a PAGE gets, as a child of a pager. */
+export function pagerSlideCss(): CSSProperties {
+  // `min-width: 0` because a grid item's automatic minimum is its content, which would let a wide page
+  // push the strip wider than the box instead of scrolling inside it — the horizontal-scrollbar bug this
+  // project has guarded against in four other places.
+  return { scrollSnapAlign: "start", scrollSnapStop: "always", minWidth: 0 };
+}
+
+/**
+ * The navigation, as ONE emitter both renderers use — the same arrangement as `alertActionsHTML`.
+ *
+ * Every control is a real `<a href="#slide-…">` to a real section, so with no script it still works: the
+ * browser scrolls the strip to that page. The script upgrades it (see `pagerScript`); it is not required
+ * by it. Styled inline rather than through a class so the markup is self-contained and identical in the
+ * builder and the export with no stylesheet to keep in step.
+ */
+export function pagerNavHTML(node: BoxNode): string {
+  if (!isPager(node)) return "";
+  const nav = node.pagerNav ?? "dots";
+  if (nav === "none") return "";
+  const slides = node.children ?? [];
+  if (slides.length < 2) return ""; // one page is not a pager; offering controls would be a lie
+  const wants = (k: "dots" | "arrows") => nav === k || nav === "both";
+
+  // A DOT IS A REAL LINK TO A REAL PAGE, and it works with nothing running: the browser scrolls the strip
+  // to that section. The script only upgrades it (no page nudge, and it marks which one you are on).
+  //
+  // THEY ARE EMITTED EVEN WHEN ONLY ARROWS WERE ASKED FOR, and then hidden by the script. Arrows cannot
+  // work without it — "one back from where I am" needs to know where you are — so an arrows-only nav with
+  // no script rendered a bar containing two hidden arrows and nothing else: no way to move at all except
+  // by swiping, and nothing whatsoever for a keyboard. The dots are the floor everything else stands on;
+  // the moment the script runs it hides them and the user gets the arrows they chose.
+  const fallbackOnly = !wants("dots");
+  const dots = wants("dots") || wants("arrows")
+    ? `<div${fallbackOnly ? " data-eu-pager-dots-fallback" : ""} style="display:flex;gap:.5rem;align-items:center">`
+      + slides.map((s, i) =>
+        `<a href="#${pagerSlideId(s)}" data-eu-pager-dot="${i}" aria-label="Show ${i + 1} of ${slides.length}"`
+        + ` style="width:.7rem;height:.7rem;border-radius:999px;background:currentColor;opacity:.3"></a>`).join("")
+      + `</div>`
+    : "";
+
+  // AN ARROW MEANS "one back from wherever I am", and no static href can say that — there is no current
+  // page until something scrolls. So arrows ship HIDDEN and the script reveals them; with nothing running
+  // a reader gets the dots, which are honest, instead of two buttons that jump somewhere arbitrary.
+  //
+  // Deliberately NO `display` in the inline style: an inline `display` beats the `hidden` attribute's UA
+  // rule, so the thing would be hidden in name and visible on the page.
+  const arrow = (dir: "prev" | "next") =>
+    `<a href="#" hidden data-eu-pager-${dir} aria-label="${dir === "prev" ? "Show the previous one" : "Show the next one"}"`
+    + ` style="width:2.25rem;height:2.25rem;border-radius:999px;border:1px solid currentColor;opacity:.55;`
+    + `text-align:center;line-height:2.15rem;text-decoration:none;color:inherit">`
+    + `${dir === "prev" ? "&#8249;" : "&#8250;"}</a>`;
+  const body = wants("arrows") ? `${arrow("prev")}${dots}${arrow("next")}` : dots;
+
+  // `<nav>` rather than a bare div: it is a set of links between the parts of one thing, which is what the
+  // landmark is for, and it gives a screen-reader user a way to skip past it.
+  return `<nav data-eu-pager-nav aria-label="Choose which one to show"`
+    + ` style="display:flex;gap:.75rem;justify-content:center;align-items:center;padding:.75rem 0">${body}</nav>`;
+}
+
+/**
+ * One pager, wired up. Exported as a FUNCTION so the builder can run the very same code the page gets —
+ * `pagerScript` ships this function's own source, exactly as masonry does. One algorithm, not two.
+ *
+ * Everything here is an upgrade on something that already works without it:
+ *   • the dots are already links; this stops them NUDGING THE PAGE. Measured before it existed: clicking
+ *     one scrolled the document 240px even with the strip fully in view, because a fragment navigation
+ *     scrolls every scrollable ancestor. `scroll-margin-block` does not suppress that — this does.
+ *     `replaceState` keeps the page bookmarkable, which `preventDefault` alone throws away.
+ *   • the arrows ship hidden, because "one back from where I am" is not something a static href can say.
+ *   • the current dot gets `aria-current`, which nothing can express in CSS alone.
+ *   • auto-advance PAUSES on hover and on keyboard focus (WCAG 2.2.2 — a moving thing a reader cannot
+ *     hold still to read is a failure), and never runs at all for a reader who asked for less motion.
+ */
+export function pagerWire(strip: HTMLElement): void {
+  const d = document as Document;
+  const win = window as Window;
+  const slides = Array.prototype.filter.call(strip.children, (c: Element) => (c as HTMLElement).dataset.euSlide !== undefined) as HTMLElement[];
+  if (slides.length < 2) return;
+  const nav = strip.parentElement ? strip.parentElement.querySelector("[data-eu-pager-nav]") as HTMLElement | null : null;
+  const still = win.matchMedia && win.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const at = () => Math.round(strip.scrollLeft / Math.max(1, strip.clientWidth));
+  const go = (i: number) => {
+    const n = (i + slides.length) % slides.length;
+    strip.scrollTo({ left: slides[n].offsetLeft - strip.offsetLeft, behavior: still ? "auto" : "smooth" });
+  };
+  if (nav) {
+    nav.querySelectorAll("[data-eu-pager-dot]").forEach((a, i) => a.addEventListener("click", (e) => {
+      e.preventDefault();
+      go(i);
+      try { history.replaceState(null, "", (a as HTMLAnchorElement).getAttribute("href")); } catch { /* a file:// page cannot */ }
+    }));
+    const arrow = (sel: string, step: number) => {
+      const el = nav.querySelector(sel) as HTMLElement | null;
+      if (!el) return;
+      el.hidden = false; // it was hidden because without this script it could not mean anything
+      el.style.display = "block";
+      el.addEventListener("click", (e) => { e.preventDefault(); go(at() + step); });
+    };
+    arrow("[data-eu-pager-prev]", -1);
+    arrow("[data-eu-pager-next]", 1);
+    // The dots were only there in case this never ran (see `pagerNavHTML`). It has, so the user gets the
+    // arrows-only navigation they actually chose.
+    const spare = nav.querySelector("[data-eu-pager-dots-fallback]") as HTMLElement | null;
+    if (spare) spare.hidden = true;
+    const mark = () => {
+      const now = at();
+      nav.querySelectorAll("[data-eu-pager-dot]").forEach((a, i) => {
+        const on = i === now;
+        (a as HTMLElement).style.opacity = on ? "1" : "0.3";
+        if (on) a.setAttribute("aria-current", "true"); else a.removeAttribute("aria-current");
+      });
+    };
+    strip.addEventListener("scroll", () => { win.clearTimeout((strip as unknown as { _m?: number })._m); (strip as unknown as { _m?: number })._m = win.setTimeout(mark, 90); });
+    mark();
+  }
+  const every = Number(strip.dataset.euPagerAuto || 0);
+  if (!every || still) return;
+  let timer = 0;
+  const stop = () => { win.clearInterval(timer); timer = 0; };
+  const start = () => { if (!timer) timer = win.setInterval(() => { if (!d.hidden) go(at() + 1); }, every * 1000); };
+  // Pause while it is being read or operated, and pick up again when it is not. `focusin` covers the
+  // keyboard: tabbing INTO a slide has to stop it just as surely as hovering does.
+  strip.addEventListener("mouseenter", stop);
+  strip.addEventListener("mouseleave", start);
+  strip.addEventListener("focusin", stop);
+  strip.addEventListener("focusout", start);
+  if (nav) { nav.addEventListener("mouseenter", stop); nav.addEventListener("mouseleave", start); }
+  start();
+}
+
+/** The pager's script, shipped as this file's own function — so the page runs what the builder ran. */
+export function pagerScript(): string {
+  return `<script>(function(){if(window.__euPager)return;window.__euPager=1;
+var wire=${String(pagerWire)};
+function all(){document.querySelectorAll('[data-eu-pager]').forEach(function(s){try{wire(s);}catch(e){}});}
+if(document.readyState==='loading')addEventListener('DOMContentLoaded',all);else all();
+})();<\/script>`;
+}
+
 export const MASONRY_ROW_REM = 0.5;
 
 /**
@@ -3012,6 +3230,11 @@ export function containerStyle(node: BoxNode, bp: Breakpoint = "base"): CSSPrope
   // reach the page as a pixel value, or a reader who has raised their base font gets a box that ignores them.
   const minHpx = Math.max(node.minHeight ?? 0, floatingReserve(node, bp)) || undefined;
   const minH = combineMinHeight(minHpx == null ? undefined : remLen(minHpx), node.screenHeight);
+  // SHOW ONE AT A TIME. The node itself stays an ordinary BOX — its background, padding and height are
+  // the box's, exactly as on any other container — and the scrolling strip is an element INSIDE it
+  // (`pagerStripCss`). It has to be two elements: the navigation must sit outside the scroll container or
+  // it scrolls away with the pages, and a child of the strip cannot sit outside it.
+  if (isPager(node)) return { position: "relative", ...paddingCSS(node), minHeight: minH };
   if (node.layout === "grid") {
     // MASONRY changes exactly three of the declarations below and nothing else — the columns, the spans, the
     // offsets, the order and the reading order are all untouched, which is the whole reason it is a row option
@@ -3124,6 +3347,10 @@ function fillsGivenHeight(node: BoxNode): boolean {
 
 export function childStyle(child: BoxNode, parent: BoxNode, bp: Breakpoint = "base"): CSSProperties {
   const s: CSSProperties = {};
+  // A PAGE of a pager, and nothing else: no span, no offset, no order. Its width comes from the strip
+  // (`grid-auto-columns: 100%`), so any stored `colSpan` from before the mode was turned on is ignored
+  // rather than re-fitted — which is what stops a grid that becomes a pager keeping half its old shape.
+  if (isPager(parent)) return { ...pagerSlideCss(), ...placeCSS(child, parent) };
   if (parent.layout === "grid") {
     // Re-fitted to the track the row actually has AT THIS RUNG (see `gridPlacementAt`). A span of 8 left over
     // from a twelve-column desktop would otherwise generate implicit columns on a phone and blow the row's

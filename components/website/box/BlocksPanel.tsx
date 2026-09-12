@@ -13,7 +13,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
-  LayoutPanelTop, Columns3, Rows3, MoveVertical, Minus,
+  LayoutPanelTop, Columns3, Rows3, MoveVertical, Minus, GalleryHorizontal, GalleryThumbnails, Sunrise,
   Heading as HeadingIcon, Pilcrow, MousePointerClick, ListOrdered,
   Image as ImageIcon, Film, Shapes, CodeXml,
   PanelTopOpen, LayoutGrid, MessageSquareQuote, Hash, BadgeCheck, Star, BellRing,
@@ -21,7 +21,7 @@ import {
 } from "lucide-react";
 import type { BoxNode } from "@/lib/box-model";
 import type { SiteTheme } from "@/lib/site-storage";
-import { getAddChoices, photoGallery } from "@/lib/box-presets";
+import { getAddChoices, nodeForPhotos, PHOTO_SETUP } from "@/lib/box-presets";
 import { COMPONENT_CATALOGUE } from "@/lib/component-catalogue";
 import { PortalMenu, MenuItem, MenuHeader } from "./ui";
 import GridLayoutMenu from "./GridLayoutMenu";
@@ -40,7 +40,7 @@ type Block = { kind: string; label: string; Icon: LucideIcon; hint: string };
  * same one: Columns asks for a SHAPE and Photo gallery asks for PHOTOGRAPHS, and neither is a style. Leaving
  * it inferred is what let a dragged Columns block invent its own shape once already.
  */
-const OPENS_A_PICKER = new Set(["grid", "gallery"]);
+const OPENS_A_PICKER = new Set(["grid", "gallery", "slider", "hero", "rotatingHero"]);
 const GROUPS: { name: string; Icon: LucideIcon; blocks: Block[] }[] = [
   { name: "Layout", Icon: LayoutTemplate, blocks: [
     { kind: "container", label: "Section", Icon: LayoutPanelTop, hint: "A band you fill with anything" },
@@ -48,6 +48,8 @@ const GROUPS: { name: string; Icon: LucideIcon; blocks: Block[] }[] = [
     { kind: "row", label: "Row", Icon: Rows3, hint: "Items side by side" },
     { kind: "spacer", label: "Spacer", Icon: MoveVertical, hint: "Empty vertical space" },
     { kind: "divider", label: "Divider", Icon: Minus, hint: "A dividing line" },
+    { kind: "hero", label: "Hero", Icon: Sunrise, hint: "A full screen photo with a headline" },
+    { kind: "rotatingHero", label: "Rotating hero", Icon: GalleryThumbnails, hint: "Several full screen photos in turn" },
   ] },
   { name: "Text", Icon: Type, blocks: [
     { kind: "heading", label: "Heading", Icon: HeadingIcon, hint: "A big title" },
@@ -58,6 +60,7 @@ const GROUPS: { name: string; Icon: LucideIcon; blocks: Block[] }[] = [
   { name: "Media", Icon: Images, blocks: [
     { kind: "image", label: "Image", Icon: ImageIcon, hint: "A picture" },
     { kind: "gallery", label: "Photo gallery", Icon: Images, hint: "Many photos at once, in a grid" },
+    { kind: "slider", label: "Slider", Icon: GalleryHorizontal, hint: "Photos one at a time, swipe between" },
     { kind: "video", label: "Video", Icon: Film, hint: "YouTube, Vimeo or a file" },
     { kind: "icon", label: "Icon", Icon: Shapes, hint: "A small symbol" },
     { kind: "embed", label: "Embed", Icon: CodeXml, hint: "Paste code / an iframe" },
@@ -277,14 +280,15 @@ export default function BlocksPanel({ theme, onDragKind, onPick, defaultOpen = f
         <GridLayoutMenu anchor={menu.anchor} onClose={() => setMenu(null)} onPick={(patch) => onPick?.("grid", patch)} />
       )}
       {/* Everything else picks a LOOK from the list. Portaled so the panel's scroll area can never clip it. */}
-      {menu && menu.kind === "gallery" && (
+      {menu && PHOTO_SETUP[menu.kind] && (
         <GallerySetupMenu
           anchor={menu.anchor}
+          mode={PHOTO_SETUP[menu.kind]}
           onClose={() => setMenu(null)}
-          onPick={(photos, opts) => onPick?.("gallery", photoGallery(photos, opts))}
+          onPick={(photos, opts) => onPick?.(menu.kind, nodeForPhotos(menu.kind, photos, opts))}
         />
       )}
-      {menu && menu.kind !== "grid" && menu.kind !== "gallery" && variations.length > 0 && (
+      {menu && menu.kind !== "grid" && !PHOTO_SETUP[menu.kind] && variations.length > 0 && (
         <PortalMenu anchor={menu.anchor} onClose={() => setMenu(null)} width={184} ariaLabel={`Add ${menu.label}`}>
           <MenuHeader>Add {menu.label} as…</MenuHeader>
           <MenuItem onClick={() => { onPick?.(menu.kind); setMenu(null); }} Icon={Plus} label="Default" />

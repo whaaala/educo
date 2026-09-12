@@ -19,6 +19,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { ImagePlus, Loader2, X } from "lucide-react";
 import { importPhoto } from "@/lib/box-model";
 import { PICKER_COLUMNS, type GalleryPhoto } from "@/lib/box-presets";
+import type { PagerNav } from "@/lib/box-model";
 import { PortalMenu } from "./ui";
 import Slider from "@/components/shared/Slider";
 import type { MenuAnchor } from "./GridLayoutMenu";
@@ -32,16 +33,38 @@ const ACROSS = PICKER_COLUMNS.filter((c) => c >= 2 && c <= 6);
 const altFromName = (name: string) =>
   name.replace(/\.[a-z0-9]+$/i, "").replace(/[-_]+/g, " ").replace(/\s+/g, " ").trim();
 
-export default function GallerySetupMenu({ anchor, onClose, onPick }: {
+/**
+ * The three tiles this one screen serves. They ask for the SAME thing — photographs — and differ only in
+ * what is done with them, so they are one component with three shapes rather than three that drift.
+ *   • `gallery` — all of them at once, in a grid
+ *   • `slider`  — one at a time, swiped
+ *   • `hero`    — one at a time, full screen, with words over each
+ */
+export type GallerySetupMode = "gallery" | "slider" | "hero" | "still";
+
+const MODE_COPY: Record<GallerySetupMode, { title: string; add: (n: number) => string }> = {
+  gallery: { title: "Add a photo gallery", add: (n) => `Add gallery of ${n}` },
+  slider: { title: "Add a slider", add: (n) => `Add slider of ${n}` },
+  hero: { title: "Add a rotating hero", add: (n) => `Add hero of ${n}` },
+  still: { title: "Add a hero", add: () => "Add hero" },
+};
+
+export default function GallerySetupMenu({ anchor, onClose, onPick, mode = "gallery" }: {
   anchor: MenuAnchor;
   onClose: () => void;
-  onPick: (photos: GalleryPhoto[], opts: { across: number; stagger: boolean; gap: number }) => void;
+  onPick: (photos: GalleryPhoto[], opts: { across: number; stagger: boolean; gap: number; nav: PagerNav; auto: number; headline: string }) => void;
+  mode?: GallerySetupMode;
 }) {
   const [photos, setPhotos] = useState<GalleryPhoto[]>([]);
   const [busy, setBusy] = useState(0);
   const [across, setAcross] = useState(3);
   const [stagger, setStagger] = useState(false);
   const [gap, setGap] = useState(0); // spacing is a decision, never a default — it starts at nothing
+  const [nav, setNav] = useState<PagerNav>("dots");
+  const [auto, setAuto] = useState(0); // movement nobody asked for is what this most easily gets wrong
+  const [headline, setHeadline] = useState("Welcome to our school");
+  const paged = mode === "slider" || mode === "hero";   // has pages to move between
+  const still = mode === "still";                        // one photograph, one sentence, no pages
   const fileRef = useRef<HTMLInputElement>(null);
   // A slow import must not write into an unmounted popup (Escape while ten photographs are decoding).
   //
@@ -72,9 +95,9 @@ export default function GallerySetupMenu({ anchor, onClose, onPick }: {
   const rows = Math.max(1, Math.ceil(photos.length / across));
 
   return (
-    <PortalMenu anchor={anchor} onClose={onClose} width={GALLERY_MENU_WIDTH} ariaLabel="Add a photo gallery">
+    <PortalMenu anchor={anchor} onClose={onClose} width={GALLERY_MENU_WIDTH} ariaLabel={MODE_COPY[mode].title}>
       <div className="p-2">
-        <p className="px-0.5 pb-2 text-[0.8125rem] font-semibold text-ink">Add a photo gallery</p>
+        <p className="px-0.5 pb-2 text-[0.8125rem] font-semibold text-ink">{MODE_COPY[mode].title}</p>
 
         {/* ── 1 · the photographs, chosen in ONE go ─────────────────────────────────────────────────
             The single biggest thing this screen exists for. Adding twelve photographs by hand is twelve
@@ -96,7 +119,7 @@ export default function GallerySetupMenu({ anchor, onClose, onPick }: {
         {(photos.length > 0 || busy > 0) && (
           <div className="mt-2">
             <div className="flex items-center justify-between px-0.5 pb-1 text-[0.625rem] text-muted">
-              <span>{photos.length} photo{photos.length === 1 ? "" : "s"} · {across} across · {rows} row{rows === 1 ? "" : "s"}</span>
+              <span>{photos.length} photo{photos.length === 1 ? "" : "s"}{still ? "" : paged ? " · one at a time" : ` · ${across} across · ${rows} row${rows === 1 ? "" : "s"}`}</span>
               {busy > 0 && (
                 <span className="inline-flex items-center gap-1" role="status">
                   <Loader2 className="h-3 w-3 animate-spin" aria-hidden="true" />
@@ -120,6 +143,39 @@ export default function GallerySetupMenu({ anchor, onClose, onPick }: {
           </div>
         )}
 
+        {still ? null : paged ? (<>
+        {/* ── The pager's own two questions. A slider and a rotating hero differ from a gallery only in
+               what happens to the photographs, so everything above this line is shared. ── */}
+        <fieldset className="mt-3">
+          <legend className="px-0.5 pb-1 text-[0.625rem] font-medium uppercase tracking-wide text-muted">Moving between them</legend>
+          <div className="grid grid-cols-4 gap-1" role="group">
+            {(["dots", "arrows", "both", "none"] as const).map((k) => (
+              <button
+                key={k} type="button" onClick={() => setNav(k)} aria-pressed={nav === k}
+                aria-label={`Move between them with ${k}`}
+                className={`rounded-lg border px-1 py-1.5 text-[0.625rem] font-semibold capitalize ${nav === k ? "border-brand bg-brand/10 text-brand" : "border-line text-muted hover:border-brand/50"}`}
+              >{k}</button>
+            ))}
+          </div>
+        </fieldset>
+        <div className="mt-3">
+          <Slider label="Move on its own every" value={auto} min={0} max={15} onChange={setAuto} formatValue={(x) => (x ? `${x}s` : "off")} />
+          <p className="mt-0.5 text-[0.5625rem] leading-snug text-muted">
+            {auto ? "Pauses while somebody hovers or reads it with a keyboard, and never moves for a visitor who asked for less motion." : "Off — it only moves when a visitor moves it."}
+          </p>
+        </div>
+        {false && (
+          <label className="mt-3 block">
+            <span className="px-0.5 text-[0.625rem] font-medium uppercase tracking-wide text-muted">Headline</span>
+            <input
+              value={headline} onChange={(e) => setHeadline(e.target.value)}
+              aria-label="Headline over the first photo"
+              className="mt-1 w-full rounded-lg border border-line bg-surface px-2 py-1.5 text-xs text-ink"
+            />
+            <span className="mt-0.5 block text-[0.5625rem] leading-snug text-muted">Goes over the first photo. Every page is an ordinary box, so you edit the rest on the canvas.</span>
+          </label>
+        )}
+        </>) : (<>
         {/* ── 2 · how many across ────────────────────────────────────────────────────────────────── */}
         <fieldset className="mt-3">
           <legend className="px-0.5 pb-1 text-[0.625rem] font-medium uppercase tracking-wide text-muted">How many across</legend>
@@ -165,13 +221,32 @@ export default function GallerySetupMenu({ anchor, onClose, onPick }: {
         <div className="mt-3">
           <Slider label="Space between" value={gap} min={0} max={48} onChange={setGap} formatValue={(x) => (x ? `${(x / 10).toFixed(1)}rem` : "none")} />
         </div>
+        </>)}
 
+        {(mode === "hero" || still) && (
+          <label className="mt-3 block">
+            <span className="px-0.5 text-[0.625rem] font-medium uppercase tracking-wide text-muted">Headline</span>
+            <input
+              value={headline} onChange={(e) => setHeadline(e.target.value)}
+              aria-label="Headline over the photo"
+              className="mt-1 w-full rounded-lg border border-line bg-surface px-2 py-1.5 text-xs text-ink"
+            />
+            <span className="mt-0.5 block text-[0.5625rem] leading-snug text-muted">
+              {still
+                ? "Over the photograph. The words are an ordinary heading — restyle or move them like any other block."
+                : "Over the first photo. Every page is an ordinary box, so you edit the rest on the canvas."}
+            </span>
+          </label>
+        )}
+        {still && photos.length > 1 && (
+          <p className="mt-2 text-[0.5625rem] leading-snug text-muted">A hero shows one photograph — the first will be used.</p>
+        )}
         <button
           type="button"
           disabled={!photos.length}
-          onClick={() => { onPick(photos, { across, stagger, gap }); onClose(); }}
+          onClick={() => { onPick(photos, { across, stagger, gap, nav, auto, headline }); onClose(); }}
           className="mt-3 w-full rounded-lg bg-brand px-3 py-2 text-xs font-semibold text-white disabled:cursor-not-allowed disabled:opacity-40"
-        >{photos.length ? `Add gallery of ${photos.length}` : "Choose photos first"}</button>
+        >{photos.length ? MODE_COPY[mode].add(photos.length) : "Choose photos first"}</button>
       </div>
     </PortalMenu>
   );

@@ -120,6 +120,11 @@ ${LAYOUT_CSS}
 @media (prefers-reduced-motion: reduce) {
   .eu-root *, .eu-root *::before, .eu-root *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
 }
+/* scroll-behavior: smooth is NOT switched off by reduced motion on its own — measured: under
+   prefers-reduced-motion: reduce the computed value is still smooth. The rule above is what does it, for
+   the published page. The BUILDER's canvas carries .eu-tokens rather than .eu-root and gets the same rule
+   injected there (see BoxCanvas) — NOT added here, because this sheet ships to every published page and
+   .eu-tokens is an editor-only class that nothing on a published page can ever match. */
 `.trim();
 
 /** The complete Educo UI stylesheet for a theme: token variables + base rules + component styles. */

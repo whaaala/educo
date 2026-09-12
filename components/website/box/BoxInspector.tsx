@@ -10,7 +10,7 @@
 import { useState, useRef } from "react";
 import { Plus, X, Rows3, Columns3, Upload, AlignLeft, AlignCenter, AlignRight, Layers, Move, BringToFront, SendToBack, ChevronUp, ChevronDown, Italic, Underline, LayoutGrid, Maximize2, Sparkles, Paintbrush, Ruler, Type as TypeIcon, MonitorSmartphone, Bookmark, Lock, LockOpen } from "lucide-react";
 import type { SiteTheme } from "@/lib/site-storage";
-import type { BoxNode, FlexAlign, FlexJustify, AccPartStyle, Breakpoint } from "@/lib/box-model";
+import type { BoxNode, FlexAlign, FlexJustify, AccPartStyle, Breakpoint, PagerNav } from "@/lib/box-model";
 import { RUNG_LABEL } from "@/lib/educo-ui/layout";
 import { type ItemAction, TOAST_CORNERS, isContainer, isFloating, isCssBg, addItem, removeItem, moveItem, updateItem, addChildItem, updateChildItem, removeChildItem, moveChildItem , isMultiItemComponent, hasIntrinsicSize, sizeToCSS, GRID_MAX, COLUMN_FRACTIONS, columnFractionOf, canSetColumnFraction, gridColumns, bandEdgeCSS } from "@/lib/box-model";
 import { ACCORDION_DESIGNS, ACCORDION_DESIGN_COUNT, ACCORDION_AXES } from "@/lib/educo-ui/accordions";
@@ -598,6 +598,35 @@ export default function BoxInspector({ node, theme, onPatch, onAddChild, onFloat
                   <Range title="Edge depth" value={node.edgeDepth} min={0} max={30} fallback={6} onChange={(n) => onPatch({ edgeDepth: n })} unit="%" />
                 )}
               </div>
+              {/* SHOW ONE AT A TIME sits ABOVE "Arrange as", because it answers a different question: not
+                  how the blocks inside are arranged, but whether they are all on screen at once. With it
+                  on, each block in this box becomes a page a visitor swipes or arrows between — and each
+                  page stays an ordinary box, so everything else in this panel still applies inside it. */}
+              <label className="flex items-start gap-2 text-xs text-gray-600 dark:text-gray-300 midnight:text-slate-300 purple:text-purple-200">
+                <input type="checkbox" className="mt-0.5" checked={!!node.pager} aria-label="Show one at a time"
+                  onChange={(e) => onPatch({ pager: e.target.checked || undefined, pagerNav: undefined, pagerAuto: undefined })} />
+                <span><span className="font-medium text-ink">Show one at a time</span> — the blocks in this box become pages to swipe between.</span>
+              </label>
+              {node.pager ? (
+                <div className="space-y-2 rounded-lg border border-line p-2">
+                  <p className="text-[11px] leading-snug text-gray-500 dark:text-gray-400">
+                    Each block inside is one page. Design them exactly as you design anything else — a photo, a
+                    headline over it, a whole layout. Visitors swipe on a phone and use the arrow keys on a
+                    keyboard, with no extra code on your site.
+                  </p>
+                  <span className={label}>Moving between them</span>
+                  <Segmented full ariaLabel="Moving between them" value={node.pagerNav ?? "dots"}
+                    onChange={(v) => onPatch({ pagerNav: v === "dots" ? undefined : (v as PagerNav) })}
+                    options={[{ value: "dots", label: "Dots" }, { value: "arrows", label: "Arrows" }, { value: "both", label: "Both" }, { value: "none", label: "None" }]} />
+                  <Range title="Move on its own every" value={node.pagerAuto ?? 0} min={0} max={15} fallback={0}
+                    onChange={(n) => onPatch({ pagerAuto: n > 0 ? n : undefined })} unit="s" />
+                  <p className="text-[11px] leading-snug text-gray-500 dark:text-gray-400">
+                    {node.pagerAuto
+                      ? "It pauses while somebody is hovering or reading it with a keyboard, and never moves for a visitor who has asked their device for less motion."
+                      : "Off — it only moves when a visitor moves it. Slide it right to advance on its own."}
+                  </p>
+                </div>
+              ) : null}
               <Segmented full ariaLabel="Arrange as" value={isGrid ? "grid" : "flex"} onChange={(v) => onPatch({ layout: v as "flex" | "grid" })}
                 options={[{ value: "flex", label: "Free arrange" }, { value: "grid", label: "Grid" }]} />
               {isGrid ? (

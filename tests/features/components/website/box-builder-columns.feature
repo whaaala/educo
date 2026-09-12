@@ -470,3 +470,80 @@ Feature: The twelve-column grid in the Box Builder
 
   Scenario: An icon-only button says what it is
     Then every preview-size button has a name a screen reader can announce
+
+  # ── Show one at a time — a pager, as a MODE on any box ────────────────────
+  # Decided rather than built as a Gallery component: a component's content is a flat item (title, body,
+  # one media URL) with no box in it, so a page could never be something you design — and inside one the
+  # twelve columns, the spans, the offsets and every other control would stop applying.
+
+  Scenario: Any box can show one thing at a time
+    Given I have selected a box with several blocks in it
+    When I tick "Show one at a time"
+    Then each block inside becomes a page that fills the box
+    And a visitor swipes between them on a phone
+    And the arrow keys move one page at a time once the strip has focus
+    And none of that needs any code on my site
+
+  Scenario: A page is an ordinary box
+    Then I can give one page a photo, another a headline over a photo, another a whole layout
+    And every control in this panel still works inside a page
+
+  Scenario: Turning it on does not leave half the old shape behind
+    Given the box was a twelve-column grid
+    When I tick "Show one at a time"
+    Then the old column spans are ignored rather than re-fitted
+
+  Scenario: The dots are real links to real pages
+    Then every page has its own address
+    And a bookmark I set on a page is the address that is used
+    And clicking a dot moves the strip WITHOUT scrolling the rest of the page
+    # A bare anchor link does nudge it — measured at 240px even with the strip fully in view, because a
+    # fragment navigation scrolls every scrollable ancestor. scroll-margin-block does not suppress it.
+
+  Scenario: Arrows need the script, so they never appear pretending to work
+    Given I choose "Arrows"
+    Then a visitor whose browser runs no script still gets dots to use
+    And once the script runs, the arrows appear and the dots step aside
+
+  Scenario: Which page you are on is announced, not only coloured
+    Then the current dot is marked for a screen reader as well as shaded
+
+  Scenario: Nothing is added to my site unless it is needed
+    Given I choose "None" and leave it to the visitor to move
+    Then the published page contains no script at all
+
+  # ── Moving on its own ─────────────────────────────────────────────────────
+
+  Scenario: It does not move on its own unless I ask
+    Then "Move on its own every" starts at off
+
+  Scenario: It holds still while somebody is reading it
+    Given it moves on its own every few seconds
+    When a visitor hovers it, or tabs into it with a keyboard
+    Then it stops until they leave
+    # WCAG 2.2.2 — something moving that a reader cannot hold still to read is a failure.
+
+  Scenario: It never moves for a visitor who asked for less motion
+    Given a visitor whose device asks for reduced motion
+    Then it does not advance by itself
+    And the scrolling is not animated either
+    # CSS does not do that second one for us: smooth stays smooth under reduced motion unless a rule says
+    # otherwise.
+
+  # ── The tiles built on it ─────────────────────────────────────────────────
+
+  Scenario: A slider is photos one at a time
+    When I add a Slider and choose my photos
+    Then I get one page per photo, with dots to move between them
+
+  Scenario: A hero is one screen with a headline over a photo
+    When I add a Hero, choose a photo and type a headline
+    Then the section is exactly one screen tall
+    And the words are legible over the photo whatever photo I chose
+    # Asserted against a pure WHITE photograph, which is the worst case: the scrim is strong enough that
+    # white text still reaches 4.5:1. The first version shipped at 2.43:1.
+
+  Scenario: A rotating hero is several of those, in turn
+    When I add a Rotating hero and choose my photos
+    Then each page is its own full screen with its own words
+    And I edit the second one's words on the canvas like any other block

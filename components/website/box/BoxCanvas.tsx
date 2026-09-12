@@ -18,13 +18,13 @@ import {
   updateBox, removeBox, insertBox, moveBoxStep, duplicateBox, moveBox, cloneBox, findParent, isAncestor, isContainer, widthPct,
   isFloating, floatBox, unfloatBox, groupBoxes, ungroupBoxes, bringToFront, sendToBack, bringForward, sendBackward,
   fadedPaint, boxOpacity, backgroundCss, treePaintLayerCss, radiusCSS, isClipped, SHADOW_CSS, videoEmbedSrc, sanitizeCssDeclarations, expandScopedCss, ACCORDION_CSS_PARTS, itemOverrideCss, itemHasOverride, itemNumberVars, richBody, componentTextCss, componentBoxCss, bgShowThroughCss, resizeTopEdge, blockContainmentCss, alertToastCss, treeHasToast, accordionClasses, bandClasses, advancedCssStyle, alertActionsHTML, hugsContent, itemFloatContextCss, COMPONENT_ITEM_SEL, clampContentScale, MIN_CONTENT_SCALE, isMultiItemComponent, comfortableWidth, remLen, rootFontPx, isDefiniteLen, addItemAfter, duplicateItem, duplicateChildItem, removeItem, removeChildItem, moveItem, moveChildItem, updateItem, updateChildItem, ALERT_SEVERITY_ICON, alertPartInline, alertIconInline, collectAlertItemStyles,
-  type Breakpoint, resolveResponsive, updateBoxResponsive, imageSizing, importPhoto, treeItemEffectsCss, itemNeedsClass, floatZIndex, gridPlacementAt, gridColumnsAt, masonryMeasureAttr, masonryMeasurePass, selectionChain, typoRole, typoRootVars, typoCascadeCss, bandEdgeCSS,
+  type Breakpoint, resolveResponsive, updateBoxResponsive, imageSizing, importPhoto, treeItemEffectsCss, itemNeedsClass, floatZIndex, gridPlacementAt, gridColumnsAt, masonryMeasureAttr, masonryMeasurePass, isPager, pagerStripCss, pagerNavHTML, selectionChain, typoRole, typoRootVars, typoCascadeCss, bandEdgeCSS,
 } from "@/lib/box-model";
 import { ICON_SET } from "./icons";
 import { PortalMenu, MenuItem, MenuHeader, MenuSep } from "./ui";
 import GridLayoutMenu, { type MenuAnchor } from "./GridLayoutMenu";
 import GallerySetupMenu from "./GallerySetupMenu";
-import { blockForKind, photoGallery } from "@/lib/box-presets";
+import { blockForKind, nodeForPhotos, PHOTO_SETUP } from "@/lib/box-presets";
 import { treeHoverCss, treeRevealCss } from "@/lib/interactions";
 import { colorToCSS } from "@/components/shared/ColorPalettePicker";
 import { COMPONENT_CSS } from "@/lib/educo-ui/components";
@@ -656,7 +656,7 @@ export default function BoxCanvas({
   };
   /** Where a dropped Columns block will go, held while the user picks its shape. */
   const [pendingGrid, setPendingGrid] = useState<{ anchor: MenuAnchor; parentId: string; index: number; moveWidth: string | null } | null>(null);
-  const [pendingGallery, setPendingGallery] = useState<{ anchor: MenuAnchor; parentId: string; index: number; moveWidth: string | null } | null>(null);
+  const [pendingGallery, setPendingGallery] = useState<{ anchor: MenuAnchor; kind: string; parentId: string; index: number; moveWidth: string | null } | null>(null);
 
   /** Put a freshly built block at a recorded slot — the tail of every palette insertion. */
   const insertAt = (node: BoxNode, parentId: string, index: number, moveWidth: string | null) => {
@@ -1426,7 +1426,50 @@ export default function BoxCanvas({
           // SECTION: normalizeRowBands also makes bands inside every component, and they are not sections.
           className={`${bandClasses(node, parent === root)} ${editable ? "transition-shadow" : ""} ${isSel ? "outline outline-2 outline-indigo-500 outline-offset-[-2px]" : (editable && !node.rowBand && !isRoot) ? "hover:outline hover:outline-1 hover:outline-indigo-300/70 hover:outline-offset-[-1px]" : ""}`}
         >
-          {kids.map((c) => (
+          {/* SHOW ONE AT A TIME — the same two elements the export writes, for the same reason: the
+              navigation has to sit OUTSIDE the scroll container or it scrolls away with the pages. The
+              strip's declarations come from `pagerStripCss`, which the export calls too, and the nav
+              markup from `pagerNavHTML` — one emitter each, so the builder cannot drift from the page.
+              The strip really scrolls here, so the pages are edited exactly where a visitor meets them. */}
+          {isPager(node) ? (
+            <>
+              <div
+                data-eu-pager
+                data-pager-strip={node.id}
+                tabIndex={0}
+                role="group"
+                aria-roledescription="carousel"
+                aria-label="One at a time"
+                style={pagerStripCss()}
+              >
+                {kids.map((c) => (
+                  <Fragment key={c.id}>{renderNode(c, node, sizedAbove || node.minHeight != null || node.height != null)}</Fragment>
+                ))}
+              </div>
+              {/* The nav is the published markup, shown as published — but a dot is an `<a href="#…">`, and
+                  following one in the EDITOR would scroll the whole builder. So the click is caught here
+                  and turned into the same strip scroll the page's own script performs. */}
+              {(() => {
+                const html = pagerNavHTML(node);
+                if (!html) return null;
+                return (
+                  <div
+                    onMouseDown={(e) => e.stopPropagation()}
+                    onClick={(e) => {
+                      const a = (e.target as HTMLElement).closest("a[data-eu-pager-dot]");
+                      e.preventDefault();
+                      if (!a) return;
+                      const i = Number(a.getAttribute("data-eu-pager-dot"));
+                      const strip = e.currentTarget.parentElement?.querySelector<HTMLElement>(`[data-pager-strip="${CSS.escape(node.id)}"]`);
+                      const slide = strip?.children[i] as HTMLElement | undefined;
+                      if (strip && slide) strip.scrollTo({ left: slide.offsetLeft - strip.offsetLeft, behavior: "smooth" });
+                    }}
+                    dangerouslySetInnerHTML={{ __html: html }}
+                  />
+                );
+              })()}
+            </>
+          ) : kids.map((c) => (
             <Fragment key={c.id}>{renderNode(c, node, sizedAbove || node.minHeight != null || node.height != null)}</Fragment>
           ))}
           {editable && kids.length === 0 && (
@@ -1747,6 +1790,14 @@ export default function BoxCanvas({
           a structural container, so a page made only of plain sections still needs it. Scoped to both roots for
           the same reason the tokens are — the canvas root carries `.eu-tokens`, never `.eu-root`. */}
       <style dangerouslySetInnerHTML={{ __html: layoutCss(".eu-root, .eu-tokens") }} />
+      {/* REDUCED MOTION, FOR THE CANVAS. The published page gets this from `BASE_CSS` via `.eu-root`; the
+          builder's canvas carries `.eu-tokens` instead, so the rule is repeated here rather than added to
+          that sheet — it ships to every published page, where `.eu-tokens` can never match, and a guard
+          (`educo-base.test.ts`) fails on any class in it that no renderer emits.
+          It matters for the pager: `scroll-behavior: smooth` is NOT switched off by reduced motion on its
+          own — measured, the computed value stays `smooth` — so without this a reader who asked for less
+          motion would get gliding pages in the editor and instant ones on their site. */}
+      <style dangerouslySetInnerHTML={{ __html: "@media (prefers-reduced-motion: reduce){.eu-tokens *,.eu-tokens *::before,.eu-tokens *::after{animation-duration:.01ms !important;transition-duration:.01ms !important;scroll-behavior:auto !important}}" }} />
       {/* The empty-columns "Add a block here" target, hidden until asked for.
           Written as a real rule rather than a Tailwind named-group variant: `group-hover/name:` did not make it
           into the compiled sheet, so the class was on the element and did nothing — the ghost simply sat there
@@ -1800,12 +1851,15 @@ export default function BoxCanvas({
         />,
         document.body,
       )}
-      {/* "Choose a layout", opened where a Columns block was DROPPED. Same component the palette tile opens. */}
+      {/* The photo setup, opened where a Photo gallery / Slider / Hero tile was DROPPED — the same
+          component the palette tile opens, in the same shape, because a drop and a click are the same
+          instruction. `PHOTO_SETUP` is the one list that says which tiles ask this question. */}
       {pendingGallery && (
         <GallerySetupMenu
           anchor={pendingGallery.anchor}
+          mode={PHOTO_SETUP[pendingGallery.kind]}
           onClose={() => setPendingGallery(null)}
-          onPick={(photos, opts) => insertAt(photoGallery(photos, opts), pendingGallery.parentId, pendingGallery.index, pendingGallery.moveWidth)}
+          onPick={(photos, opts) => insertAt(nodeForPhotos(pendingGallery.kind, photos, opts), pendingGallery.parentId, pendingGallery.index, pendingGallery.moveWidth)}
         />
       )}
       {pendingGrid && (

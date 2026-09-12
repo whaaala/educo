@@ -326,6 +326,11 @@ test.describe("a drag is one gesture", () => {
   test("the page is written to storage ONCE for a whole drag", async ({ page }) => {
     await seedGrid(page, 2, 2);
     await selectCell(page, "c0");
+    // LET THE PAGE SETTLE BEFORE COUNTING. The load itself saves once, and under four parallel workers
+    // that write can still be in flight when the counter is installed — which counts somebody else's
+    // write against this drag and fails a guard that is perfectly correct. Waiting for a quiet moment
+    // measures the drag rather than the machine.
+    await page.waitForTimeout(600);
     await page.evaluate(() => {
       (window as unknown as { __w: number }).__w = 0;
       const orig = Storage.prototype.setItem;

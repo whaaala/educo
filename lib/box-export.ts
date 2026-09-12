@@ -10,7 +10,7 @@
 import type { CSSProperties } from "react";
 import {
   type BoxNode, type Breakpoint, BP_ORDER, containerStyle, childStyle, marginCSS, sizeToCSS, radiusCSS, SHADOW_CSS, u, baseUnit, fadedPaint, boxOpacity, backgroundCss, paintLayerCss,
-  resolveResponsive, floatStacksOnMobile, alertToastCss, accordionClasses, bandClasses, videoEmbedSrc, isContainer, sanitizeCssDeclarations, expandScopedCss, COMPONENT_PARTS, itemFloatContextCss, itemOverrideCss, itemNumberVars, richBody, plainBody, componentTextCss, componentBoxCss, renderAlertHTML, alertDismissScript, masonryMeasureAttr, masonryMeasureScript, bgShowThroughCss, blockContainmentCss, COMPONENT_ITEM_SEL, remLen, imageSizing, hasIntrinsicSize, itemNeedsClass, itemScope, floatZIndex, typoRole, typoRootVars, typoCascadeCss, bandEdgeCSS,
+  resolveResponsive, floatStacksOnMobile, alertToastCss, accordionClasses, bandClasses, videoEmbedSrc, isContainer, sanitizeCssDeclarations, expandScopedCss, COMPONENT_PARTS, itemFloatContextCss, itemOverrideCss, itemNumberVars, richBody, plainBody, componentTextCss, componentBoxCss, renderAlertHTML, alertDismissScript, masonryMeasureAttr, masonryMeasureScript, isPager, pagerNavHTML, pagerScript, pagerStripCss, pagerSlideId, bgShowThroughCss, blockContainmentCss, COMPONENT_ITEM_SEL, remLen, imageSizing, hasIntrinsicSize, itemNeedsClass, itemScope, floatZIndex, typoRole, typoRootVars, typoCascadeCss, bandEdgeCSS,
 } from "@/lib/box-model";
 import { isRegistryComponent, renderComponent, componentScripts } from "@/lib/educo-ui/registry";
 import { iconSvg } from "@/lib/educo-ui/icon-svg";
@@ -409,7 +409,12 @@ function renderNode(node: BoxNode, rawParent: BoxNode | null, theme: SiteTheme, 
     const diff = diffStyle(byRung[i - 1], byRung[i]);
     if (diff) sheet.rungs[BP_ORDER[i]].push(`.${cls}{${diff}}`);
   }
-  const idAttr = r.anchor ? ` id="${esc(r.anchor)}"` : "";
+  // A PAGE of a pager always carries an id, because the dots link to it — `pagerSlideId` is the one
+  // function that decides what it is, so the link and the target cannot disagree. It also carries the
+  // marker the script counts pages by; without it a nav or a toolbar inside the strip would be counted
+  // as a page.
+  const inPager = !!rawParent && isPager(resolveResponsive(rawParent, "base"));
+  const idAttr = inPager ? ` id="${esc(pagerSlideId(r))}" data-eu-slide` : r.anchor ? ` id="${esc(r.anchor)}"` : "";
   // A structural band also carries its layout classes — computed by box-model, so the canvas gets the same ones.
   const allCls = [cls, bandClasses(r, isPageSection)].filter(Boolean).join(" ");
   if (isContainer(r)) {
@@ -422,6 +427,23 @@ function renderNode(node: BoxNode, rawParent: BoxNode | null, theme: SiteTheme, 
     // script cannot read back, because masonry spends that gap as empty units rather than as `row-gap`.
     const mGap = masonryMeasureAttr(r);
     if (mGap != null) return `<div${idAttr} class="${allCls}" data-eu-masonry="${mGap}">${kids}${masonryMeasureScript()}</div>`;
+    // SHOW ONE AT A TIME. The strip carries the marker the script looks for; the nav is a sibling of the
+    // strip rather than a child of it, or it would become a page of its own and scroll away with them.
+    //
+    // The script rides along ONLY when it can do something: dots to un-nudge, arrows to reveal, or an
+    // auto-advance to run. A pager set to no navigation and no auto-advance is pure CSS and ships nothing.
+    if (isPager(r)) {
+      const auto = r.pagerAuto && r.pagerAuto > 0 ? ` data-eu-pager-auto="${Math.round(r.pagerAuto)}"` : "";
+      const nav = pagerNavHTML(r);
+      const script = nav || auto ? pagerScript() : "";
+      // `tabindex="0"` + a label is the whole keyboard story, and it needs no script at all: an overflow
+      // container is not focusable by default, and once it is, one arrow key moves exactly one page —
+      // measured, with the page itself never moving.
+      return `<div${idAttr} class="${allCls}">`
+        + `<div data-eu-pager${auto} tabindex="0" role="group" aria-roledescription="carousel"`
+        + ` aria-label="One at a time" style="${styleString(pagerStripCss())}">${kids}</div>`
+        + `${nav}${script}</div>`;
+    }
     return `<div${idAttr} class="${allCls}">${kids}</div>`;
   }
   return `<div${idAttr} class="${allCls}">${elementHTML(r, theme, pageMap)}</div>`;
