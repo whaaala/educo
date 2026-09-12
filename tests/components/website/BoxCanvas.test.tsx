@@ -6,10 +6,10 @@ import BoxCanvas from "@/components/website/box/BoxCanvas";
 import { DEFAULT_THEME } from "@/lib/site-storage";
 import { createContainer, createGrid, createElement, findBox, makeRowBand, normalizeRowBands, type BoxNode } from "@/lib/box-model";
 
-function Harness({ initial, initialSel = null as string | null }: { initial: BoxNode; initialSel?: string | null }) {
+function Harness({ initial, initialSel = null as string | null, minHeight }: { initial: BoxNode; initialSel?: string | null; minHeight?: number }) {
   const [root, setRoot] = useState(initial);
   const [sel, setSel] = useState<string | null>(initialSel);
-  return <BoxCanvas root={root} theme={DEFAULT_THEME} selectedId={sel} onSelectId={setSel} onChange={setRoot} />;
+  return <BoxCanvas root={root} theme={DEFAULT_THEME} selectedId={sel} onSelectId={setSel} onChange={setRoot} minHeight={minHeight} />;
 }
 
 // Multi-select harness: exposes the selected ids for marquee tests.
@@ -104,13 +104,30 @@ describe("BoxCanvas (box-model editor)", () => {
   it("the ROOT grows (min-height = floatingReserve) so a floated child is contained, not spilling below", () => {
     // A floated card sitting at top:40% with a 300px definite height needs the parent to be
     // at least 300 / (1 − 0.40) = 500px tall so its bottom stays inside. The root's own floor
-    // (PAGE_MIN_H) must NOT override that reserve.
+    // must NOT override that reserve.
+    //
+    // THIS TEST COULD NOT FAIL, twice over, and both faults hid each other. `top` was written as the STRING
+    // "40%", but the model stores `top` as a NUMBER of percent — so `Math.max("40%", 0)` is NaN,
+    // `floatingReserve` returned 0, and no reserve was ever computed. The assertion still passed, because
+    // `minHeight` defaults to 600 on BoxCanvas: it was measuring the page floor it claims the reserve beats.
+    //
+    // Fixed by giving the fixture the shape the product actually stores, and by passing a SMALL page floor
+    // so only the reserve can satisfy the assertion.
     const floated = createContainer("column", {
-      id: "f", position: "absolute", left: "10%", top: "40%", width: "50%", height: "300px",
-    } as unknown as Partial<BoxNode>);
-    render(<Harness initial={createContainer("column", { id: "root", children: [floated] } as Partial<BoxNode>)} />);
+      // No `as unknown as` cast here, deliberately: that cast is what let `top: "40%"` through in the first
+      // place. Typed properly, the compiler rejects the shape that made this test vacuous.
+      id: "f", position: "absolute", left: 10, top: 40, width: "50%", height: "300px",
+    });
+    render(
+      <Harness
+        initial={createContainer("column", { id: "root", children: [floated] } as Partial<BoxNode>)}
+        minHeight={120}
+      />,
+    );
     const rootEl = document.querySelector<HTMLElement>('[data-box-id="root"]')!;
-    expect(parseFloat(rootEl.style.minHeight)).toBeGreaterThanOrEqual(500); // reserve wins over the small page floor
+    const min = parseFloat(rootEl.style.minHeight);
+    expect(min, "300px at top:40% needs 500px of parent for its bottom to stay inside").toBeGreaterThanOrEqual(500);
+    expect(min, "…and that must come from the reserve, not from the page floor").toBeGreaterThan(120);
   });
 
   it("a SELECTED box shows overflow:visible so its (outside) toolbar + resize handles are never clipped", () => {

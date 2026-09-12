@@ -94,6 +94,28 @@ Feature: A floating Blocks panel — modern, spacious, out of the way
       | row           | Side by side |
       | grid          | Grid         |
 
+  # ── The page is exactly as tall as what is on it ──
+  # Reported from the canvas: adding a Stack left a strip of dead space underneath it. The page root carried
+  # a 160px minimum unconditionally while an empty Stack is 128px, so 32px sat below the block — on the root,
+  # where there is no control to remove it. It was also a canvas ≠ export break: the exporter writes no page
+  # minimum, so the editor drew a taller page than the published one for anything shorter than 160px.
+  Scenario: Adding a block leaves no space below it
+    Given the Box Builder is open on an empty page
+    When I add a "Stack"
+    Then the page ends where its content ends
+    And no strip of empty space appears beneath the block
+
+  Scenario: An empty page still has a floor to drop into
+    Given the Box Builder is open on an empty page
+    Then the page is still a visible box I can aim a block at
+    # The floor is an OFFER for an empty page, exactly like the empty box's own courtesy height —
+    # never a size imposed on a page that has content.
+
+  Scenario: The page grows past that floor with real content
+    Given the Box Builder is open on an empty page
+    When I add three bands from the top bar
+    Then the page is taller than the empty-page floor
+
   # ── Design ──
   Scenario: The panel has a modern, spacious look
     Given the Blocks panel is open

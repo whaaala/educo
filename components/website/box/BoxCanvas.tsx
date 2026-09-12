@@ -1365,7 +1365,22 @@ export default function BoxCanvas({
         : stacked
         ? { width: "100%" } // content-height (no fixed height/minHeight) so nothing is clipped
         : parent ? childStyle(node, parent, breakpoint) : {
-            width: "100%", minHeight: Math.max(minHeight, floatingReserve(node, breakpoint)),
+            /**
+             * THE PAGE FLOOR IS AN OFFER FOR AN EMPTY PAGE, and steps aside the moment there is content.
+             *
+             * It was applied unconditionally, and that produced a strip of dead space under the first block
+             * a user added: the page insisted on 160px while an empty Stack is 128px (the 8rem courtesy
+             * height), so 32px sat below it — on the page ROOT, where there is no control to remove it.
+             *
+             * Worse, the floor is the CANVAS's alone: the export writes no page minimum, so the editor was
+             * drawing a page taller than the published one for any page shorter than 160px. Standing rule is
+             * canvas = export, and a floor that only one of them applies breaks it.
+             *
+             * Same shape as the empty-box courtesy height below: something to see and drop into when there
+             * is nothing, never a size imposed on a page that has content.
+             */
+            width: "100%",
+            minHeight: Math.max((node.children?.length ?? 0) ? 0 : minHeight, floatingReserve(node, breakpoint)),
             ["--box-u" as string]: baseUnit(node.baseFont ?? 10),
             // The role defaults everything below inherits — the SAME set the export writes on the page root,
             // or a font set on a section would cascade while you edit and not on the published site.

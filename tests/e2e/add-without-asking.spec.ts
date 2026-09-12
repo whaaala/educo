@@ -129,3 +129,58 @@ test.describe("a height you set beats the courtesy height", () => {
     expect(h, "but not a screenful nobody asked for").toBeLessThan(300);
   });
 });
+
+/**
+ * THE PAGE'S OWN FLOOR is the same kind of offer, one level up — and it was not stepping aside.
+ *
+ * Reported from the canvas: adding a Stack left a strip of dead space underneath it. The page root carried
+ * `PAGE_MIN_H` (160px) unconditionally while an empty Stack is 128px, so 32px sat below the block — on the
+ * ROOT, where there is no control to remove it.
+ *
+ * It was also a canvas ≠ export break, which is the more serious half: the exporter writes no page minimum
+ * at all, so the editor had been drawing a page taller than the published one for any page shorter than
+ * 160px. Measured on the PAGE ROOT rather than on a wrapper, because the floor lives on the root.
+ */
+test.describe("the page is exactly as tall as what is on it", () => {
+  const pageRootBox = (page: Page) =>
+    page.locator("[data-box-id]").first().evaluate((el) => {
+      const r = el.getBoundingClientRect();
+      return { top: Math.round(r.top), bottom: Math.round(r.bottom), height: Math.round(r.height) };
+    });
+
+  test("adding a block leaves NO space below it", async ({ page }) => {
+    await freshBuilder(page);
+    await tile(page, "Stack").click();
+    await page.waitForTimeout(900);
+
+    const root = await pageRootBox(page);
+    // The deepest block on the page — the Stack itself, not the band around it.
+    const last = await page.locator("[data-box-id]").last().evaluate((el) => Math.round(el.getBoundingClientRect().bottom));
+    expect(root.bottom - last, "the page must end where its content ends, not 32px later").toBeLessThanOrEqual(2);
+  });
+
+  test("an EMPTY page still has a floor, so there is somewhere to drop the first block", async ({ page }) => {
+    // The offer this fix must not remove: with nothing on it, the page is still a visible drop target.
+    await freshBuilder(page);
+    const root = await pageRootBox(page);
+    expect(root.height, "an empty page is still a box you can aim at").toBeGreaterThan(100);
+  });
+
+  test("and it still grows past the floor with real content", async ({ page }) => {
+    // The other direction: removing the floor must not CAP the page.
+    //
+    // Added through the top bar, not the palette. A palette tile lands inside whatever is selected — and the
+    // block just added IS selected — so clicking Stack three times nests three boxes and leaves the page
+    // 128px tall, which measures the nesting rule rather than this one. "Add a band" always adds at page
+    // level, which is what makes this a test of the page's height.
+    await freshBuilder(page);
+    await page.keyboard.press("b"); // close the palette so it cannot cover the top bar
+    await page.waitForTimeout(400);
+    for (let i = 0; i < 3; i++) {
+      await page.locator("button", { hasText: "Add a band" }).first().click();
+      await page.waitForTimeout(800);
+    }
+    const root = await pageRootBox(page);
+    expect(root.height, "three bands make a page taller than the empty-page floor").toBeGreaterThan(300);
+  });
+});
