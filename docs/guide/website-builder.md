@@ -53,7 +53,28 @@ Build and maintain your school's public website by dragging blocks onto a page �
 | **List** | Bulleted or numbered lists. |
 
 ### Media
-**Image**, **Video** (YouTube/Vimeo/MP4), **Icon** (searchable symbol), **Embed** (paste an iframe/HTML).
+**Image**, **Photo gallery**, **Video** (YouTube/Vimeo/MP4), **Icon** (searchable symbol), **Embed** (paste an iframe/HTML).
+
+### Photo gallery — many photographs at once
+
+The Image block adds **one** picture. **Photo gallery** adds a whole set in a single step, and it's the block to reach for when you're putting up sports day, the fete or an open day.
+
+Blocks → **Photo gallery**. A short setup opens and asks four things:
+
+| | |
+|---|---|
+| **Choose photos** | One file dialog, **as many photographs as you like** — pick the whole folder. Each appears as a thumbnail as it's added, and you can drop any of them before committing. |
+| **How many across** | 2, 3, 4 or 6. These are the counts that divide the twelve exactly, so the row is always even. |
+| **Row heights** | **Even** for tidy rows of equal height, or **Follow the picture** so photographs of different shapes stagger instead of being cropped. Both are shown as little pictures rather than named. |
+| **Space between** | Starts at none. Sweep it and watch the preview — whatever you choose is what arrives. |
+
+Then **Add gallery of 12** (or however many), and it lands.
+
+**What lands is an ordinary grid.** That's deliberate and it's the whole point: each photograph sits in a real cell, so you can put a caption under one, give another a background, drag a cell's edge to make one picture wider than the rest, nest a whole layout inside one, or change the columns afterwards. Every control in §10c works on it, because it *is* one of those. A gallery isn't a special sealed block you can only fill with pictures.
+
+**Descriptions start from your file names.** A file called `sports day 1.jpg` arrives described as "sports day 1" — a starting point to improve in the Content tab, not a caption the builder invented. Blank descriptions are the commonest accessibility miss on a school site, so it's better to start with something true.
+
+> **Your photographs are resized as they come in.** A picture straight off a phone is around 1.2 MB, and a browser only keeps about 5 MB of your site — so a dozen of them at full size would not fit at all, and the page would quietly stop saving. Each one is stored with its longest edge at **1600 pixels**, which is larger than anywhere it's ever shown and far kinder to a parent loading the page on mobile data. If your browser's storage ever does fill up, the editor now tells you plainly instead of failing in silence — **export your site straight away** if you see that message.
 
 **Photographs** — select an Image block and open the **Content** tab:
 

@@ -161,6 +161,50 @@ export function tableGrid(cols: number, rows: number): BoxNode {
   return createGrid(GRID_MAX, { children: Array.from({ length: c * r }, () => gridCell(span)) });
 }
 
+/** One photograph, as chosen and already downscaled by `importPhoto`. */
+export type GalleryPhoto = { src: string; imgW?: number; imgH?: number; alt?: string };
+
+/**
+ * A finished photo gallery — an ORDINARY GRID of ordinary cells, each holding an ordinary Image block.
+ *
+ * Deliberately not a component. A component's content is a flat `ComponentItem` (title, body, one `media`
+ * URL) with no `BoxNode` in it, so a cell could never be a box you design — no background, no caption you
+ * style, no nested layout, no per-cell anything — and the twelve-column grid would stop applying inside
+ * it, switching off spans, offsets, order, per-cell resize and Row heights. What a component would have
+ * bought is discoverability and a guided setup, and the palette tile buys both without the cost.
+ *
+ * So this function's whole job is to remove the TYPING, not the freedom: twelve photographs become twelve
+ * real cells in one step instead of twelve drags and twelve file dialogs, and every control that works on
+ * a grid still works on the result.
+ */
+export function photoGallery(photos: GalleryPhoto[], opts: { across: number; stagger?: boolean; gap?: number } = { across: 3 }): BoxNode {
+  const across = fitColumns(Math.max(1, Math.round(opts.across)));
+  const span = GRID_MAX / across;
+  const cells = photos.map((p) => {
+    const cell = gridCell(span);
+    cell.children = [createElement("image", {
+      src: p.src, imgW: p.imgW, imgH: p.imgH,
+      // Alt text is the visitor-facing half of a gallery and the one people forget. Carried through when
+      // the importer could derive it (the file name), empty when it could not — never a fabricated caption.
+      alt: p.alt ?? "",
+      width: "100%",
+      // "Show the whole picture" — a gallery's photographs keep their own proportions rather than being
+      // cropped to a common height. With Row heights on Even they still line up; with Follow the picture
+      // they stagger. Either way nothing is cut off without the user choosing it.
+      height: "auto",
+    })];
+    return cell;
+  });
+  return createGrid(GRID_MAX, {
+    children: cells,
+    // Spacing is a decision, never a default (the standing rule) — so this is whatever the setup showed
+    // the user, and the setup starts at zero. It is passed through rather than invented here.
+    gap: Math.max(0, Math.round(opts.gap ?? 0)),
+    padding: 0,
+    ...(opts.stagger ? { rowFlow: "masonry" as const } : {}),
+  });
+}
+
 /** The layout combinations as add-time presets. Built fresh each call so two adds never share an id. */
 const gridLayoutChoices = (): Preset[] =>
   GRID_LAYOUTS.map((l) => ({ id: l.id, label: l.label, patch: { columns: GRID_MAX, children: l.spans.map(gridCell) } }));
@@ -184,6 +228,9 @@ export function blockForKind(kind: string, patch: Partial<BoxNode> = {}): BoxNod
     // Both palette routes now ask instead of assuming (see GridLayoutMenu), so this is the answer only for a
     // path that adds a grid without a shape — and the honest answer there is "undivided".
     : kind === "grid" ? tableGrid(1, 1)
+    // A gallery with no photographs yet — the setup popup always replaces this wholesale. It exists so a
+    // path that somehow adds one without asking still gets a real, empty grid rather than nothing.
+    : kind === "gallery" ? photoGallery([], { across: 3 })
     // A Section starts flush too — space is added on the side you want it, not removed from a default. The
     // Card and Outline STYLE presets still carry their own padding, because there it is part of the look
     // somebody chose rather than something they have to discover and undo.

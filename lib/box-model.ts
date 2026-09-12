@@ -2807,6 +2807,75 @@ export function measureImage(src: string): Promise<{ imgW?: number; imgH?: numbe
   });
 }
 
+/**
+ * The longest edge a photograph is stored at, and the quality it is encoded with.
+ *
+ * NOT a preference — the difference between a gallery that works and one that destroys the page.
+ * An upload is kept as a `data:` URL inside the saved site, and a browser gives that store about 5MB.
+ * Measured: one 3000×2000 photograph straight off a phone is **1,260 KB** as a data URL, so **four** of
+ * them fill the entire store and the fifth throws. A twelve-photograph gallery could not exist.
+ *
+ * 1600px is chosen against the page, not the camera: the widest a picture is ever drawn here is one
+ * column of the largest container (76rem ≈ 1216px), and 1600 leaves headroom for a dense screen without
+ * storing pixels nothing can show. It is also simply the right thing to publish — a school site that
+ * ships 3000px photographs to a phone is the single heaviest mistake this builder could make.
+ */
+export const PHOTO_MAX_EDGE = 1600;
+export const PHOTO_QUALITY = 0.82;
+
+/**
+ * Read a chosen file and return it as a data URL that is safe to store — downscaled and re-encoded.
+ *
+ * Total by design, like `measureImage`: anything that cannot be decoded or drawn comes back as the
+ * ORIGINAL bytes rather than as an error, because losing a picture the user chose is worse than storing
+ * a large one. The caller still learns the size it ended up, so it can say so.
+ *
+ * A picture already within the cap is still re-encoded when that makes it smaller, and kept as-is when
+ * it does not — so a small PNG logo with sharp edges is never silently turned into a blurry JPEG.
+ */
+export async function importPhoto(file: File): Promise<{ src: string; imgW?: number; imgH?: number; bytes: number; originalBytes: number }> {
+  const original = await new Promise<string>((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = () => resolve(String(r.result));
+    r.onerror = () => reject(new Error("unreadable"));
+    r.readAsDataURL(file);
+  }).catch(() => "");
+  if (!original) return { src: "", bytes: 0, originalBytes: file.size };
+
+  const dims = await measureImage(original);
+  const fallback = { src: original, ...dims, bytes: original.length, originalBytes: original.length };
+  if (typeof document === "undefined" || !dims.imgW || !dims.imgH) return fallback;
+
+  const scale = Math.min(1, PHOTO_MAX_EDGE / Math.max(dims.imgW, dims.imgH));
+  const w = Math.max(1, Math.round(dims.imgW * scale));
+  const h = Math.max(1, Math.round(dims.imgH * scale));
+  try {
+    const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+      const i = new Image();
+      i.onload = () => resolve(i);
+      i.onerror = () => reject(new Error("decode"));
+      i.src = original;
+    });
+    const canvas = document.createElement("canvas");
+    canvas.width = w; canvas.height = h;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return fallback;
+    // A photograph scaled in one step aliases badly; the browser's own smoothing is what avoids that.
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = "high";
+    ctx.drawImage(img, 0, 0, w, h);
+    // Transparency must survive, so anything with an alpha channel stays PNG-like (WebP keeps alpha too).
+    const type = /^data:image\/(png|gif|svg)/i.test(original) ? "image/webp" : "image/jpeg";
+    const out = canvas.toDataURL(type, PHOTO_QUALITY);
+    // `toDataURL` silently falls back to PNG when a type is unsupported, which can be BIGGER than the
+    // original — so the re-encode is only kept when it actually won.
+    if (!out.startsWith("data:image/") || out.length >= original.length) return fallback;
+    return { src: out, imgW: w, imgH: h, bytes: out.length, originalBytes: original.length };
+  } catch {
+    return fallback;
+  }
+}
+
 /** flex behaviour for a child inside a flex parent, derived from its main-size token.
  *  An explicit size is a FIXED share (no grow/shrink) so a section keeps exactly the width you give it —
  *  you can resize it narrower to open space, and drop another section into that space. `fill` grows to

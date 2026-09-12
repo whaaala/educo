@@ -18,12 +18,13 @@ import {
   updateBox, removeBox, insertBox, moveBoxStep, duplicateBox, moveBox, cloneBox, findParent, isAncestor, isContainer, widthPct,
   isFloating, floatBox, unfloatBox, groupBoxes, ungroupBoxes, bringToFront, sendToBack, bringForward, sendBackward,
   fadedPaint, boxOpacity, backgroundCss, treePaintLayerCss, radiusCSS, isClipped, SHADOW_CSS, videoEmbedSrc, sanitizeCssDeclarations, expandScopedCss, ACCORDION_CSS_PARTS, itemOverrideCss, itemHasOverride, itemNumberVars, richBody, componentTextCss, componentBoxCss, bgShowThroughCss, resizeTopEdge, blockContainmentCss, alertToastCss, treeHasToast, accordionClasses, bandClasses, advancedCssStyle, alertActionsHTML, hugsContent, itemFloatContextCss, COMPONENT_ITEM_SEL, clampContentScale, MIN_CONTENT_SCALE, isMultiItemComponent, comfortableWidth, remLen, rootFontPx, isDefiniteLen, addItemAfter, duplicateItem, duplicateChildItem, removeItem, removeChildItem, moveItem, moveChildItem, updateItem, updateChildItem, ALERT_SEVERITY_ICON, alertPartInline, alertIconInline, collectAlertItemStyles,
-  type Breakpoint, resolveResponsive, updateBoxResponsive, imageSizing, measureImage, treeItemEffectsCss, itemNeedsClass, floatZIndex, gridPlacementAt, gridColumnsAt, masonryMeasureAttr, masonryMeasurePass, selectionChain, typoRole, typoRootVars, typoCascadeCss, bandEdgeCSS,
+  type Breakpoint, resolveResponsive, updateBoxResponsive, imageSizing, importPhoto, treeItemEffectsCss, itemNeedsClass, floatZIndex, gridPlacementAt, gridColumnsAt, masonryMeasureAttr, masonryMeasurePass, selectionChain, typoRole, typoRootVars, typoCascadeCss, bandEdgeCSS,
 } from "@/lib/box-model";
 import { ICON_SET } from "./icons";
 import { PortalMenu, MenuItem, MenuHeader, MenuSep } from "./ui";
 import GridLayoutMenu, { type MenuAnchor } from "./GridLayoutMenu";
-import { blockForKind } from "@/lib/box-presets";
+import GallerySetupMenu from "./GallerySetupMenu";
+import { blockForKind, photoGallery } from "@/lib/box-presets";
 import { treeHoverCss, treeRevealCss } from "@/lib/interactions";
 import { colorToCSS } from "@/components/shared/ColorPalettePicker";
 import { COMPONENT_CSS } from "@/lib/educo-ui/components";
@@ -655,6 +656,7 @@ export default function BoxCanvas({
   };
   /** Where a dropped Columns block will go, held while the user picks its shape. */
   const [pendingGrid, setPendingGrid] = useState<{ anchor: MenuAnchor; parentId: string; index: number; moveWidth: string | null } | null>(null);
+  const [pendingGallery, setPendingGallery] = useState<{ anchor: MenuAnchor; parentId: string; index: number; moveWidth: string | null } | null>(null);
 
   /** Put a freshly built block at a recorded slot — the tail of every palette insertion. */
   const insertAt = (node: BoxNode, parentId: string, index: number, moveWidth: string | null) => {
@@ -1799,6 +1801,13 @@ export default function BoxCanvas({
         document.body,
       )}
       {/* "Choose a layout", opened where a Columns block was DROPPED. Same component the palette tile opens. */}
+      {pendingGallery && (
+        <GallerySetupMenu
+          anchor={pendingGallery.anchor}
+          onClose={() => setPendingGallery(null)}
+          onPick={(photos, opts) => insertAt(photoGallery(photos, opts), pendingGallery.parentId, pendingGallery.index, pendingGallery.moveWidth)}
+        />
+      )}
       {pendingGrid && (
         <GridLayoutMenu
           anchor={pendingGrid.anchor}
@@ -2371,12 +2380,32 @@ function ElementView({ node, theme, editable, onText, onSrc, onPatchNode, breakp
         <div className="relative w-full" style={{ height: sizing.height, aspectRatio: sizing.aspectRatio }}>
           {/* alt is passed here too, so what a screen reader gets while editing matches the published page.
               So are the intrinsic dimensions, which is what holds the box open before the photo arrives. */}
-          <ImageBox theme={theme} src={node.src} alt={node.alt ?? ""} width={node.imgW} height={node.imgH} />
+          {/* `rounded={false}`, and it is not a style choice — it is the corner-radius rule.
+              `ImageBox` defaults to rounding by `theme.radius * 1.25`, which wrote **20px inline onto
+              every photograph in the builder** while the node carried no radius at all and no control
+              could explain or remove it. Worse, the EXPORT emits the node's radius through `radiusCSS`
+              like everything else, so it published square corners: measured at canvas 20px vs export 0px
+              — canvas ≠ export, in the direction where the editor lies to you. A picture's corners are
+              the block's corners, set in Outline & effects and emitted by the one resolver both
+              renderers call. */}
+          <ImageBox theme={theme} rounded={false} src={node.src} alt={node.alt ?? ""} width={node.imgW} height={node.imgH} />
           {editable && (<>
             <button onClick={() => fileRef.current?.click()} className="absolute bottom-2 right-2 inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium bg-gray-900/80 text-white shadow-lg hover:bg-gray-900"><Upload className="w-3.5 h-3.5" /> {node.src ? "Replace" : "Upload"}</button>
             {/* The natural size is measured BEFORE the patch, so the picture and its shape land in one undo
                 step — and so replacing a photo can never leave the previous one's dimensions behind. */}
-            <input ref={fileRef} type="file" accept="image/*" className="hidden" aria-label="Upload image" onChange={(e) => { const f = e.target.files?.[0]; if (!f) return; const r = new FileReader(); r.onload = async () => { const src = String(r.result); const dims = await measureImage(src); if (onPatchNode) onPatchNode({ src, imgW: dims.imgW, imgH: dims.imgH }); else onSrc(src); }; r.readAsDataURL(f); e.target.value = ""; }} />
+            {/* DOWNSCALED ON THE WAY IN (`importPhoto`), not stored as the camera produced it. A saved site
+                lives in about 5MB of browser storage and one 3000×2000 photograph is 1,260 KB as a data
+                URL — measured — so the fifth upload used to throw and the save silently stopped working.
+                The picture and its measured shape still land in ONE undo step. */}
+            <input ref={fileRef} type="file" accept="image/*" className="hidden" aria-label="Upload image"
+              onChange={async (e) => {
+                const f = e.target.files?.[0];
+                e.target.value = "";
+                if (!f) return;
+                const { src, imgW, imgH } = await importPhoto(f);
+                if (!src) return;
+                if (onPatchNode) onPatchNode({ src, imgW, imgH }); else onSrc(src);
+              }} />
           </>)}
         </div>
       );

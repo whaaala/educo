@@ -9,7 +9,7 @@
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Plus, Smartphone, Tablet, Laptop, Monitor, Tv, Maximize2, Undo2, Redo2, Eye, X, Home, Trash2, Files, Download, Settings2, Palette, SlidersHorizontal, PanelRightClose, PanelRightOpen } from "lucide-react";
+import { Plus, Smartphone, Tablet, Laptop, Monitor, Tv, Maximize2, Undo2, Redo2, Eye, X, Home, Trash2, Files, Download, Settings2, Palette, SlidersHorizontal, PanelRightClose, PanelRightOpen, AlertTriangle } from "lucide-react";
 import { DEFAULT_THEME, resolveSiteTheme } from "@/lib/site-storage";
 import { THEMES, type ThemeId } from "@/lib/theme-config";
 import {
@@ -130,7 +130,32 @@ export default function BoxDemoPage() {
     setHist({ present: s, past: [], future: [] });
     setActivePageId(s.homeId);
   }, []);
-  useEffect(() => { if (site) { try { localStorage.setItem(KEY, JSON.stringify(site)); } catch { /* ignore */ } } }, [site]);
+  /**
+   * A SAVE THAT FAILS MUST SAY SO.
+   *
+   * This was `catch { /* ignore *\/ }`, and the thing it was ignoring is the browser's storage filling up.
+   * An uploaded picture is kept as a `data:` URL inside the saved site and the store holds about 5MB —
+   * measured, one 3000×2000 photograph off a phone is 1,260 KB, so the FIFTH one throws. Swallowed, the
+   * page went on looking perfectly fine and every edit since the last good save was gone at the next
+   * reload. Silent data loss is the worst failure this editor can have, and it was one line.
+   *
+   * `importPhoto` now downscales on the way in, which is what stops this happening at all. This is the
+   * backstop for when it happens anyway — a page of very many pictures, or a browser with a smaller store.
+   */
+  const [saveError, setSaveError] = useState<string | null>(null);
+  useEffect(() => {
+    if (!site) return;
+    try {
+      localStorage.setItem(KEY, JSON.stringify(site));
+      setSaveError((prev) => (prev === null ? prev : null)); // recovered — say so by going quiet
+    } catch (err) {
+      const full = err instanceof DOMException
+        && (err.name === "QuotaExceededError" || err.name === "NS_ERROR_DOM_QUOTA_REACHED");
+      setSaveError(full
+        ? "Your browser's storage is full, so this page is no longer being saved. Remove some pictures, or export the site now to keep your work."
+        : "This page could not be saved. Export the site now to keep your work.");
+    }
+  }, [site]);
   // After the tree changes, scroll a freshly-added block into view (set via revealBox) so it's never lost.
   useEffect(() => {
     const id = pendingReveal.current;
@@ -408,6 +433,16 @@ export default function BoxDemoPage() {
 
   return (
     <div className="h-screen flex flex-col bg-canvas">
+      {/* THE SAVE HAS STOPPED WORKING — said plainly, and never dismissible.
+          This is not a notification, it is the state of the document: everything from here on is being
+          lost. `role="alert"` so a screen reader is told the moment it appears, and it names the one
+          action that recovers the work (Export) rather than only stating the problem. */}
+      {saveError && (
+        <div role="alert" className="shrink-0 flex items-center gap-2 px-4 py-2 text-xs font-medium bg-red-50 text-red-800 border-b border-red-200 dark:bg-red-950/50 dark:text-red-200 dark:border-red-900 midnight:bg-red-950/50 midnight:text-red-200 midnight:border-red-900 purple:bg-red-950/50 purple:text-red-200 purple:border-red-900">
+          <AlertTriangle className="w-4 h-4 shrink-0" aria-hidden="true" />
+          <span>{saveError}</span>
+        </div>
+      )}
       {/* ── Top app bar ── */}
       <header className="h-14 shrink-0 flex items-center gap-2 px-4 border-b border-line bg-surface z-30">
         <span className="text-sm font-bold text-gray-800 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50 mr-1 shrink-0">Box Builder</span>
