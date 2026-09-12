@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * "Choose a layout" — the ONE popup that decides a Columns block's shape.
+ * "Choose a layout" — the ONE popup that decides a Grid block's shape.
  *
  * It lives here, on its own, because both routes to adding a grid have to show it. Clicking the palette tile
  * opens it; dropping the tile onto the page opens it too. When the picker belonged to the palette, the drag

@@ -16,7 +16,7 @@ Feature: The twelve-column grid in the Box Builder
   # ── Picking a layout ───────────────────────────────────────────────────────
 
   Scenario: Picking a shape the way you insert a table
-    When I click Columns in the blocks panel
+    When I click Grid in the blocks panel
     Then I can sweep a small grid to choose how many across and how many down
     And choosing 4 across by 3 down gives me twelve empty cells
     And each cell spans three of the twelve columns underneath
@@ -27,26 +27,26 @@ Feature: The twelve-column grid in the Box Builder
     Because five cannot be twelfths, and a row where two cells are quietly wider is worse
 
   Scenario: The uneven shapes a sweep cannot express
-    When I open the Columns picker
+    When I open the Grid picker
     Then Sidebar left, Sidebar right, Feature + two and Wide + narrow are offered underneath
     And every one of them fills the twelve exactly
 
-  Scenario: Dragging a Columns block asks for its shape too
+  Scenario: Dragging a Grid block asks for its shape too
     # Dragging says WHERE a layout goes. It does not say what the layout IS, and the builder must not
     # answer that on my behalf — a dropped block used to divide the section into two cells nobody chose.
-    When I drag Columns onto a section
+    When I drag Grid onto a section
     Then the same "Choose a layout" picker opens where I dropped it
     And nothing is added to the page until I choose a shape
     And choosing 3 across by 2 down gives me six cells, each a third of the twelve
 
-  Scenario: Cancelling a dropped Columns block
-    When I drag Columns onto a section
+  Scenario: Cancelling a dropped Grid block
+    When I drag Grid onto a section
     And I press Escape
     Then the picker closes on the FIRST press
     And the page is exactly as it was before I dragged
 
   Scenario: One column across is one undivided cell
-    When I drag Columns onto a section
+    When I drag Grid onto a section
     And I choose 1 across by 1 down
     Then I get a single cell spanning all twelve columns
     And nothing has been split
@@ -59,7 +59,7 @@ Feature: The twelve-column grid in the Box Builder
     And a slider underneath offers any count from 1 to 12
 
   Scenario: A row is full width with no padding, at every depth
-    When I add a Columns block
+    When I add a Grid block
     Then it runs the full width of the space it was given
     And it has no inner spacing until I ask for some
     And the same is true of a grid I add inside one of its cells
@@ -334,7 +334,7 @@ Feature: The twelve-column grid in the Box Builder
   # ── Nesting ────────────────────────────────────────────────────────────────
 
   Scenario: A cell holds whatever a page holds
-    When I select a cell and add a Columns block inside it
+    When I select a cell and add a Grid block inside it
     Then I pick its columns and rows the same way
     And I can do the same again inside one of ITS cells
 

@@ -43,9 +43,19 @@ type Block = { kind: string; label: string; Icon: LucideIcon; hint: string };
 const OPENS_A_PICKER = new Set(["grid", "gallery", "slider", "hero", "rotatingHero"]);
 const GROUPS: { name: string; Icon: LucideIcon; blocks: Block[] }[] = [
   { name: "Layout", Icon: LayoutTemplate, blocks: [
-    { kind: "container", label: "Section", Icon: LayoutPanelTop, hint: "A band you fill with anything" },
-    { kind: "grid", label: "Columns", Icon: Columns3, hint: "Pick a split — equal, sidebar, feature" },
-    { kind: "row", label: "Row", Icon: Rows3, hint: "Items side by side" },
+    // NAMED FOR WHAT THEY DO, and ordered by it: down the page, across the page, both at once.
+    //
+    // These three were Section / Columns / Row, and UAT found four separate problems with that. "Section"
+    // meant one thing here (a plain transparent box) and something else on the top bar (a tinted, padded
+    // band) — and this tile's own hint, "A band you fill with anything", described the TOP BAR rather than
+    // the tile. "Columns" named a picker that sweeps across AND down, so it is a grid, not columns. And the
+    // three names gave a reader no way to tell them apart, which matters more than usual here because they
+    // are ONE object wearing three hats: the same node goes flex-column → flex-row → grid with a single
+    // click in **Arrange as**. Naming them after the arrangement makes that switch legible instead of
+    // surprising.
+    { kind: "container", label: "Stack", Icon: LayoutPanelTop, hint: "Blocks one under the other" },
+    { kind: "row", label: "Side by side", Icon: Rows3, hint: "Blocks in a row, across the page" },
+    { kind: "grid", label: "Grid", Icon: Columns3, hint: "Sweep across and down. Widths line up across the whole page." },
     { kind: "spacer", label: "Spacer", Icon: MoveVertical, hint: "Empty vertical space" },
     { kind: "divider", label: "Divider", Icon: Minus, hint: "A dividing line" },
     { kind: "hero", label: "Hero", Icon: Sunrise, hint: "A full screen photo with a headline" },

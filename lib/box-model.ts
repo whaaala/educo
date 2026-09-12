@@ -464,6 +464,25 @@ export function isContainer(node: BoxNode): boolean {
   return node.type === "container";
 }
 
+/**
+ * What to CALL a container, in the one place that decides it.
+ *
+ * A container is a single object that wears three arrangements — down the page, across it, or both at once —
+ * and switching between them is one click in "Arrange as". So the name has to follow the arrangement, or the
+ * block is called one thing in the palette, another in the inspector, and a third on the drag preview.
+ *
+ * It was exactly that: the inspector and the canvas each computed "Grid" / "Row" / "Section" from their own
+ * copy of this expression, and the palette called the same blocks Section / Columns / Row. UAT found four
+ * separate complaints in that one gap. One resolver, so they cannot drift again — and so a rename lands
+ * everywhere at once.
+ *
+ * These are the names a USER sees. The stored `layout` and `direction` are untouched.
+ */
+export function containerLabel(node: BoxNode): string {
+  if (node.layout === "grid") return "Grid";
+  return (node.direction ?? "column") === "row" ? "Side by side" : "Stack";
+}
+
 /** Lifted out of the flow onto its own free-floating layer (can overlap siblings)? */
 export function isFloating(node: BoxNode): boolean {
   return node.position === "absolute";

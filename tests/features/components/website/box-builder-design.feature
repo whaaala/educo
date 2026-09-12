@@ -7,7 +7,7 @@ Feature: Box Builder — modern look & feel, blocks palette, plain language
   Scenario: A modern app-bar and three-panel layout
     Then the top app-bar groups its controls (page tabs · add/undo/redo · preview/export/reset · device size)
     And the layout is Blocks palette (left) · Canvas (centre) · Inspector (right)
-    And buttons are quiet "ghost" buttons with one primary "Add section" call-to-action
+    And buttons are quiet "ghost" buttons with one primary "Add a band" call-to-action
     And it looks correct in light, dark, midnight and purple themes
 
   Scenario: Sections read as seamless building blocks

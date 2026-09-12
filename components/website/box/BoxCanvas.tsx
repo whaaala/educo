@@ -15,7 +15,7 @@ import type { SiteTheme } from "@/lib/site-storage";
 import {
   type BoxNode, type BoxType,
   containerStyle, childStyle, marginCSS, sizeToCSS, u, baseUnit, floatingReserve, floatStacksOnMobile, createContainer, createGrid, createElement, createComponent,
-  updateBox, removeBox, insertBox, moveBoxStep, duplicateBox, moveBox, cloneBox, findParent, isAncestor, isContainer, widthPct,
+  updateBox, removeBox, insertBox, moveBoxStep, duplicateBox, moveBox, cloneBox, findParent, isAncestor, isContainer, containerLabel, widthPct,
   isFloating, floatBox, unfloatBox, groupBoxes, ungroupBoxes, bringToFront, sendToBack, bringForward, sendBackward,
   fadedPaint, boxOpacity, backgroundCss, treePaintLayerCss, radiusCSS, isClipped, SHADOW_CSS, videoEmbedSrc, sanitizeCssDeclarations, expandScopedCss, ACCORDION_CSS_PARTS, itemOverrideCss, itemHasOverride, itemNumberVars, richBody, componentTextCss, componentBoxCss, bgShowThroughCss, resizeTopEdge, blockContainmentCss, alertToastCss, treeHasToast, accordionClasses, bandClasses, advancedCssStyle, alertActionsHTML, hugsContent, itemFloatContextCss, COMPONENT_ITEM_SEL, clampContentScale, MIN_CONTENT_SCALE, isMultiItemComponent, comfortableWidth, remLen, rootFontPx, isDefiniteLen, addItemAfter, duplicateItem, duplicateChildItem, removeItem, removeChildItem, moveItem, moveChildItem, updateItem, updateChildItem, ALERT_SEVERITY_ICON, alertPartInline, alertIconInline, collectAlertItemStyles,
   type Breakpoint, resolveResponsive, updateBoxResponsive, imageSizing, importPhoto, treeItemEffectsCss, itemNeedsClass, floatZIndex, gridPlacementAt, gridColumnsAt, masonryMeasureAttr, masonryMeasurePass, isPager, pagerStripCss, pagerNavHTML, selectionChain, typoRole, typoRootVars, typoCascadeCss, bandEdgeCSS,
@@ -432,7 +432,7 @@ export default function BoxCanvas({
   // cursor while a bright INSERTION LINE (or drop-inside highlight) shows exactly where it will land.
   // Any block can move to any slot in any container — reorder among siblings AND reparent (nested).
   const dragLabel = (n: BoxNode): string => {
-    if (isContainer(n)) return n.layout === "grid" ? "Grid" : (n.direction ?? "column") === "row" ? "Row" : "Section";
+    if (isContainer(n)) return containerLabel(n);
     const t = n.text?.trim();
     if (n.type === "heading") return t ? `Heading: ${t.slice(0, 18)}` : "Heading";
     if (n.type === "button") return t ? `Button: ${t.slice(0, 14)}` : "Button";

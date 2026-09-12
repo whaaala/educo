@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen, fireEvent, within } from "@testing-library/react";
 import BlocksPanel from "@/components/website/box/BlocksPanel";
 import { DEFAULT_THEME } from "@/lib/site-storage";
 import { CHROME_Z, CHROME_Z_FLOOR } from "@/lib/educo-ui/stacking";
@@ -8,7 +8,7 @@ describe("BlocksPanel (floating insert palette)", () => {
   it("is CLOSED by default — only a launcher shows, no tiles", () => {
     render(<BlocksPanel theme={DEFAULT_THEME} />);
     expect(screen.getByLabelText("Open blocks panel")).toBeInTheDocument();
-    expect(screen.queryByLabelText(/Add Section/)).not.toBeInTheDocument(); // tiles hidden until opened
+    expect(screen.queryByLabelText(/Add Stack/)).not.toBeInTheDocument(); // tiles hidden until opened
   });
 
   it("clicking the launcher opens the floating panel with search, tabs and tiles", () => {
@@ -17,12 +17,12 @@ describe("BlocksPanel (floating insert palette)", () => {
     expect(screen.getByRole("dialog", { name: "Blocks" })).toBeInTheDocument();
     expect(screen.getByLabelText("Search blocks")).toBeInTheDocument();
     expect(screen.getByRole("tab", { name: "All" })).toBeInTheDocument();
-    expect(screen.getByLabelText(/Add Section/)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Add Stack/)).toBeInTheDocument();
   });
 
   it("lists blocks (grouped) with plain names, incl. Spacer + composite components", () => {
     render(<BlocksPanel theme={DEFAULT_THEME} defaultOpen />);
-    for (const name of ["Section", "Columns", "Spacer", "Text", "Image", "Video", "Icon", "Divider", "Card", "Quote", "Stat", "Badge", "Rating"]) {
+    for (const name of ["Stack", "Grid", "Spacer", "Text", "Image", "Video", "Icon", "Divider", "Card", "Quote", "Stat", "Badge", "Rating"]) {
       expect(screen.getByLabelText(new RegExp(`Add ${name}`))).toBeInTheDocument();
     }
   });
@@ -34,8 +34,12 @@ describe("BlocksPanel (floating insert palette)", () => {
     render(<BlocksPanel theme={DEFAULT_THEME} onPick={onPick} defaultOpen />);
     fireEvent.click(screen.getByLabelText(/Add Card/));
     expect(onPick).not.toHaveBeenCalled();                       // it asks first
-    expect(screen.getByLabelText("Add Card")).toBeInTheDocument(); // the chooser, by its own label
-    fireEvent.click(screen.getByText("Side by side"));
+    const chooser = screen.getByLabelText("Add Card"); // the chooser, by its own label
+    expect(chooser).toBeInTheDocument();
+    // Scoped to the chooser deliberately: "Side by side" is also the Layout tile that arranges blocks in a
+    // row, so a page-wide query for that text now matches two different things. The shared wording is right —
+    // both mean "beside each other" — but a test must say WHICH one it is clicking.
+    fireEvent.click(within(chooser).getByText("Side by side"));
     expect(onPick).toHaveBeenCalledWith("card", { variant: "horizontal" });
   });
 
@@ -107,7 +111,7 @@ describe("BlocksPanel (floating insert palette)", () => {
     render(<BlocksPanel theme={DEFAULT_THEME} defaultOpen />);
     fireEvent.change(screen.getByLabelText("Search blocks"), { target: { value: "card" } });
     expect(screen.getByLabelText(/Add Card/)).toBeInTheDocument();
-    expect(screen.queryByLabelText(/Add Section/)).not.toBeInTheDocument(); // filtered out
+    expect(screen.queryByLabelText(/Add Stack/)).not.toBeInTheDocument(); // filtered out
     fireEvent.change(screen.getByLabelText("Search blocks"), { target: { value: "zzzzz" } });
     expect(screen.getByText(/No blocks match/)).toBeInTheDocument();
   });
@@ -118,7 +122,7 @@ describe("BlocksPanel (floating insert palette)", () => {
     for (const name of ["Image", "Video", "Icon", "Embed"]) {
       expect(screen.getByLabelText(new RegExp(`Add ${name}`))).toBeInTheDocument();
     }
-    expect(screen.queryByLabelText(/Add Section/)).not.toBeInTheDocument(); // Layout hidden
+    expect(screen.queryByLabelText(/Add Stack/)).not.toBeInTheDocument(); // Layout hidden
     expect(screen.queryByLabelText(/Add Card/)).not.toBeInTheDocument();    // Components hidden
   });
 });

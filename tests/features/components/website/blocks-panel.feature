@@ -62,6 +62,38 @@ Feature: A floating Blocks panel — modern, spacious, out of the way
     Given the Blocks panel is open
     Then each tile is draggable and sets the palette block type on drag start
 
+  # ── Naming: the three layout blocks are ONE object in three arrangements ──
+  # They were Section / Columns / Row, and UAT found four problems with that in one sitting:
+  # "Section" also named the top bar's tinted band (a different thing); this tile's hint described that
+  # band rather than the tile; "Columns" named a picker that sweeps across AND down; and the three names
+  # gave a reader no way to tell them apart. They are the same node — Arrange as switches between them in
+  # one click — so each is named for the arrangement it produces.
+  Scenario: The layout blocks are named for what they do, and ordered the same way
+    Given the Blocks panel is open
+    Then the Layout group offers "Stack", then "Side by side", then "Grid"
+    And "Stack" is described as "Blocks one under the other"
+    And "Side by side" is described as "Blocks in a row, across the page"
+    And "Grid" is described as "Sweep across and down. Widths line up across the whole page."
+    And no tile is called "Section", because the top bar already uses that idea for something else
+
+  Scenario: The top bar adds a BAND, and says so
+    Then the top bar's primary button reads "Add a band"
+    And it creates a tinted, full-width, padded strip
+    And that is a different result from the "Stack" tile, which adds a plain transparent box
+
+  Scenario Outline: A container is called the same thing everywhere it is named
+    # The inspector, the drag preview and the palette each used to compute this themselves, which is how
+    # they drifted. One resolver now answers for all three.
+    Given a container arranged "<arrangement>"
+    Then the inspector titles it "<name>"
+    And dragging it shows "<name>" on the preview
+
+    Examples:
+      | arrangement   | name         |
+      | column        | Stack        |
+      | row           | Side by side |
+      | grid          | Grid         |
+
   # ── Design ──
   Scenario: The panel has a modern, spacious look
     Given the Blocks panel is open

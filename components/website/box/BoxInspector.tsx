@@ -12,7 +12,7 @@ import { Plus, X, Rows3, Columns3, Upload, AlignLeft, AlignCenter, AlignRight, L
 import type { SiteTheme } from "@/lib/site-storage";
 import type { BoxNode, FlexAlign, FlexJustify, AccPartStyle, Breakpoint, PagerNav } from "@/lib/box-model";
 import { RUNG_LABEL } from "@/lib/educo-ui/layout";
-import { type ItemAction, TOAST_CORNERS, isContainer, isFloating, isCssBg, addItem, removeItem, moveItem, updateItem, addChildItem, updateChildItem, removeChildItem, moveChildItem , isMultiItemComponent, hasIntrinsicSize, sizeToCSS, GRID_MAX, COLUMN_FRACTIONS, columnFractionOf, canSetColumnFraction, gridColumns, bandEdgeCSS } from "@/lib/box-model";
+import { type ItemAction, TOAST_CORNERS, isContainer, containerLabel, isFloating, isCssBg, addItem, removeItem, moveItem, updateItem, addChildItem, updateChildItem, removeChildItem, moveChildItem , isMultiItemComponent, hasIntrinsicSize, sizeToCSS, GRID_MAX, COLUMN_FRACTIONS, columnFractionOf, canSetColumnFraction, gridColumns, bandEdgeCSS } from "@/lib/box-model";
 import { ACCORDION_DESIGNS, ACCORDION_DESIGN_COUNT, ACCORDION_AXES } from "@/lib/educo-ui/accordions";
 import { ALERT_DESIGNS, ALERT_DESIGN_COUNT, ALERT_AXES } from "@/lib/educo-ui/alerts";
 import { COMPONENT_REGISTRY, isRegistryComponent, defaultComponentFields, renderComponent } from "@/lib/educo-ui/registry";
@@ -400,7 +400,7 @@ export default function BoxInspector({ node, theme, onPatch, onAddChild, onFloat
   const componentEntry = catalogueEntry(node.component);
   const typeLabel = presetEntry?.label
     ?? componentEntry?.label
-    ?? (container ? (isGrid ? "Grid" : node.direction === "row" ? "Row" : "Section") : node.type);
+    ?? (container ? containerLabel(node) : node.type);
 
   // The ladder names the rungs; repeating them here is how the chips and the model drifted apart before.
   // The `?? ""` is not decoration: an unrecognised rung used to reach `.toLowerCase()` on undefined and take

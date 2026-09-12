@@ -77,8 +77,8 @@ function pageRoot(rows: BoxNode[] = []): BoxNode {
 const makeRow = (sections: BoxNode[] = []): BoxNode => makeRowBand(sections, ROW_GAP);
 const makeSection = (bg: string): BoxNode => createContainer("column", { direction: "column", wrap: false, width: "100%", padding: 48, gap: 0, align: "stretch", justify: "start", background: bg });
 const makeBlock = (bg: string, width: string): BoxNode => createContainer("column", { direction: "column", wrap: false, width, padding: 24, gap: 0, align: "stretch", justify: "start", background: bg });
-// A fresh page starts BLANK — an empty, transparent canvas. Blocks you drop land standalone (no tinted Section
-// chrome around them); "Add section" is how you deliberately create a tinted, padded layout container.
+// A fresh page starts BLANK — an empty, transparent canvas. Blocks you drop land standalone (no tinted band
+// chrome around them); "Add a band" is how you deliberately create a tinted, padded layout container.
 const starter = (): BoxNode => pageRoot([]);
 const countSections = (root: BoxNode): number => (root.children ?? []).reduce((n, row) => n + (row.children?.length ?? 0), 0);
 
@@ -383,7 +383,7 @@ export default function BoxDemoPage() {
     const node = blockForKind(kind, patch);
     // Drop where YOU target: into the selected container if one is selected, else onto the page. Every block
     // (element OR component) sits in its own TRANSPARENT, hug-to-content wrapper — the only visible box is the
-    // one the block itself paints. The tinted "Section" chrome only appears when you deliberately Add a section.
+    // one the block itself paints. The tinted band chrome only appears when you deliberately Add a band.
     commitWith((cur) => {
       const parentId = selected && isContainer(selected) ? selected.id : cur.id;
       const target = findBox(cur, parentId) ?? cur;
@@ -471,7 +471,10 @@ export default function BoxDemoPage() {
         </div>
         <ToolDivider />
 
-        <ToolBtn onClick={addSection} primary title="Add a full-width section"><Plus className="w-3.5 h-3.5" /> Add section</ToolBtn>
+        {/* "Add a band", not "Add section": this makes a TINTED, 48px-padded, full-width strip, which is a
+            different thing from the palette's Stack tile (a plain transparent box). Both were called
+            "Section", and a user had no way to know which one they were getting. */}
+        <ToolBtn onClick={addSection} primary title="Add a full-width, tinted band across the page"><Plus className="w-3.5 h-3.5" /> Add a band</ToolBtn>
         <div className="flex items-center gap-0.5">
           <ToolBtn onClick={undo} disabled={!canUndo} ariaLabel="Undo" title="Undo (Ctrl+Z)"><Undo2 className="w-4 h-4" /></ToolBtn>
           <ToolBtn onClick={redo} disabled={!canRedo} ariaLabel="Redo" title="Redo (Ctrl+Y)"><Redo2 className="w-4 h-4" /></ToolBtn>

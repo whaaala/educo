@@ -27,7 +27,7 @@ Build and maintain your school's public website by dragging blocks onto a page �
 | **Blocks panel** (floating) | Everything you can add: Layout, Text, Media, and Components. Open it from the **Blocks** launcher at the canvas's top-left (or press **B**); it floats over the canvas so your page keeps its full width. **Search** to filter, use the **category tabs** to jump, then click a block to add it (or drag it onto the page). Close it with the ✕, Esc, or by clicking the launcher again. |
 | **Canvas** (middle) | Your page. Click a block to select it; its controls appear on the right. |
 | **Inspector** (right) | Every setting for the selected block, in three tabs: **Design**, **Content**, **Per‑device**. Collapse it (the ⟩ button in its header) to give the canvas more room, and reopen it from the slim rail on the right. |
-| **Top bar** | Pages, **Add section**, Undo/Redo, **Preview**, **Export**, **Reset**, the device switcher, and **Base size**. |
+| **Top bar** | Pages, **Add a band**, Undo/Redo, **Preview**, **Export**, **Reset**, the device switcher, and **Base size**. |
 
 **Flow by default, float for free.** New blocks join the normal page flow (they stack and reflow responsively). When you want to place something freely on top, you switch a block to **Floating** — see §7.
 
@@ -36,11 +36,22 @@ Build and maintain your school's public website by dragging blocks onto a page �
 ## 3. The building blocks
 
 ### Layout
+
+**Stack, Side by side and Grid are the same block in three arrangements.** You don't have to choose
+correctly up front: select any of them, open **Arrange as**, and switch. A stack becomes a row becomes a
+grid with one click, and whatever is inside comes with it. They're named for what they do to the blocks you
+put in them — down the page, across the page, or both at once.
+
+Separately, the **+ Add a band** button at the top of the screen adds a *tinted, full-width, padded strip*
+across the page — the visible "Admissions" bar sort of thing. That's a different result from the **Stack**
+tile, which gives you a plain transparent box. (Both used to be called "Section", which is why this note
+exists.)
+
 | Block | Use it for |
 |-------|-----------|
-| **Section** | A full‑width band of the page (e.g. a tinted "Admissions" strip). Deliberately visible chrome you fill with other blocks. |
-| **Columns** | A grid, picked the way you insert a table: sweep **how many across × how many down**. Uneven splits (sidebar, feature + two) sit underneath. Feature cards, staff photos, an article beside a sidebar. |
-| **Row** | Items sitting side‑by‑side that wrap on small screens. |
+| **Stack** | Blocks one under the other, down the page. A plain box you fill with anything. |
+| **Side by side** | Blocks in a row, across the page — they wrap onto the next line on small screens. |
+| **Grid** | Across *and* down, picked the way you insert a table: sweep **how many across × how many down**. Uneven splits (sidebar, feature + two) sit underneath. Feature cards, staff photos, an article beside a sidebar. |
 | **Spacer** | Adjustable vertical breathing room. |
 | **Divider** | A dividing line (solid, dashed, dotted, thick). |
 | **Hero** | One photograph filling the screen, with your headline over it. |
@@ -150,14 +161,14 @@ These are ready‑made, themed pieces. **Each one is a fully editable tree** —
 
 ### Scenario B — A "Why choose us" strip of three cards
 **Goal:** three selling points with icons and a link each.
-1. Blocks → **Columns** → **3 columns**.
+1. Blocks → **Grid** → **3 across**.
 2. Into each column, add a **Card**.
 3. Click each card's **heading** and type the point ("Small classes"); click the **body** and describe it; click the **button** and set its **Link** to the relevant page.
 4. Want the heading centred? Select just that heading → **Content position** or **Text align** → centre. Only that heading changes.
 
 ### Scenario C — An eye‑catching admissions banner
 **Goal:** a coloured band with a headline and an "Apply now" button.
-1. Blocks → **Section**. In the inspector give it a **Background** colour (or image) and some **Inner spacing**.
+1. Blocks → **Stack**. In the inspector give it a **Background** colour (or image) and some **Inner spacing**.
 2. Into the section add a **Heading** ("Admissions open for September") and a **Button** ("Apply now").
 3. Select the button → set its **Link** to your application page, tick **Open in a new tab** if it's external.
 
@@ -273,11 +284,11 @@ The builder is responsive by design, and you can fine‑tune per size.
 
 ---
 
-## 10b. Sections: edge to edge, or a centred column
+## 10b. Bands: edge to edge, or a centred column
 
-Every section sits in a full‑width band across the page. Select the section → **Design** tab → **Arrange** → **Content width**:
+Every top-level block sits in a full‑width band across the page. Select it → **Design** tab → **Arrange** → **Content width**:
 
-- **Edge to edge** — the section and its content run the full width of the page. Right for a photo strip or a colour banner.
+- **Edge to edge** — the band and its content run the full width of the page. Right for a photo strip or a colour banner.
 - **Centred column** — the **background still spans the whole page**, but the words sit in a centred column. Right for almost everything else.
 
 That second one is the setting that makes a page look professionally made. A heading stretched across a 27‑inch monitor is genuinely hard to read — the eye loses its place coming back to the start of the next line — so the text is capped at a comfortable measure that **widens by one step** as the screen grows: a phone gets the full width less a margin, a tablet ~34rem, a large tablet ~52rem, a desktop ~68rem, a very large screen ~76rem.
@@ -286,15 +297,15 @@ On a phone the column always keeps a margin, so text never touches the edge of t
 
 ---
 
-## 10c. Columns — laying a page out like a table
+## 10c. Grid — laying a page out like a table
 
-Most page layouts are a row split into parts: a wide article beside a narrow sidebar, three cards across, a photo next to some words. In the Blocks panel that's **Columns**.
+Most page layouts are a row split into parts: a wide article beside a narrow sidebar, three cards across, a photo next to some words. In the Blocks panel that's **Grid**.
 
 ### Pick the shape, don't do the sums
 
-Click **Columns** and you get a little grid. Sweep across it — *4 across, 3 down* — and click. You get twelve empty cells arranged exactly like that, the same way you'd insert a table in a word processor. Underneath the picker are the uneven shapes a sweep can't express: **Sidebar left · 4 · 8**, **Sidebar right · 8 · 4**, **Feature + two · 6 · 3 · 3**, **Wide + narrow · 7 · 5**.
+Click **Grid** and you get a little grid. Sweep across it — *4 across, 3 down* — and click. You get twelve empty cells arranged exactly like that, the same way you'd insert a table in a word processor. Underneath the picker are the uneven shapes a sweep can't express: **Sidebar left · 4 · 8**, **Sidebar right · 8 · 4**, **Feature + two · 6 · 3 · 3**, **Wide + narrow · 7 · 5**.
 
-**Dragging Columns asks the same question.** Drop the tile where you want the layout and the picker opens right there. Dragging says *where* the layout goes; it doesn't say what the layout *is*, so nothing is added to the page until you've chosen a shape — and pressing Escape (or clicking away) leaves the page exactly as it was.
+**Dragging Grid asks the same question.** Drop the tile where you want the layout and the picker opens right there. Dragging says *where* the layout goes; it doesn't say what the layout *is*, so nothing is added to the page until you've chosen a shape — and pressing Escape (or clicking away) leaves the page exactly as it was.
 
 ### Twelve columns underneath
 
@@ -335,7 +346,7 @@ If a row has columns left over, hover it (or select something in it) and an **Ad
 
 ### Grids inside grids
 
-A cell is just a container, so **anything you can do to the page you can do inside a cell** — including adding another Columns block with its own columns and rows, as deep as you like. Each one carries its own spacing: **Space between blocks**, plus **Space across** and **Space down** separately when a row wants more air between its columns than between its rows, and Inner/Outer spacing per side.
+A cell is just a container, so **anything you can do to the page you can do inside a cell** — including adding another Grid block with its own columns and rows, as deep as you like. Each one carries its own spacing: **Space between blocks**, plus **Space across** and **Space down** separately when a row wants more air between its columns than between its rows, and Inner/Outer spacing per side.
 
 **All three are sliders.** Spacing is something you judge by eye, so you sweep it and watch the canvas rather than typing a number and looking. Space across and Space down start out *matching* Space between blocks — sweep one and it takes on a value of its own, and the line underneath offers it straight back to matching whenever you want it. A whole sweep is **one Ctrl+Z**, however many times the slider ticked on the way.
 
@@ -390,7 +401,7 @@ Backgrounds, borders, corners and padding stay with the box itself — they're t
 
 ## 10g. Sloped and curved section edges
 
-Sections don't have to meet in a straight line. Select one → **Design → Arrange → Edge shape**, and pick a shape for its **top** and its **bottom** independently:
+Bands don't have to meet in a straight line. Select one → **Design → Arrange → Edge shape**, and pick a shape for its **top** and its **bottom** independently:
 
 - **Straight** — the default
 - **Slope right** / **Slope left** — a diagonal cut

@@ -29,7 +29,7 @@ const nodeCount = (page: Page) => page.evaluate(() => {
 const tile = (page: Page, name: string) => page.locator('[role="button"]', { hasText: new RegExp(`^${name}`) }).first();
 
 test.describe("a look on an empty box is not worth a question", () => {
-  for (const name of ["Section", "Row", "Image", "Icon"]) {
+  for (const name of ["Stack", "Side by side", "Image", "Icon"]) {
     test(`${name} lands on one click, with nothing in the way`, async ({ page }) => {
       await freshBuilder(page);
       const before = await nodeCount(page);
@@ -46,7 +46,7 @@ test.describe("a look on an empty box is not worth a question", () => {
 
 test.describe("a structural choice, or the block's role, still asks", () => {
   for (const [name, why] of [["Heading", "Display or Eyebrow is its place in the document"],
-                             ["Columns", "the shape is structural — changing it later means redoing the content"],
+                             ["Grid", "the shape is structural — changing it later means redoing the content"],
                              ["Photo gallery", "the photographs ARE the content"]] as const) {
     test(`${name} asks first — ${why}`, async ({ page }) => {
       await freshBuilder(page);
@@ -64,9 +64,9 @@ test.describe("a structural choice, or the block's role, still asks", () => {
 });
 
 test.describe("the looks did not disappear — they moved to where they can be judged", () => {
-  test("a Section still offers all four styles, as previews of the real block", async ({ page }) => {
+  test("a Stack still offers all four styles, as previews of the real block", async ({ page }) => {
     await freshBuilder(page);
-    await tile(page, "Section").click();
+    await tile(page, "Stack").click();
     await page.waitForTimeout(1000);
     await page.keyboard.press("b");           // close the palette so it cannot cover the canvas
     await page.waitForTimeout(400);
@@ -95,7 +95,7 @@ test.describe("a height you set beats the courtesy height", () => {
   // sets it — you lay the band out, then fill it — so the control did nothing at the only moment it was used.
   test("Full screen works on an EMPTY section, which is when it is set", async ({ page }) => {
     await freshBuilder(page);
-    await tile(page, "Section").click();
+    await tile(page, "Stack").click();
     await page.waitForTimeout(900);
     await page.keyboard.press("b");
     await page.waitForTimeout(400);
@@ -122,7 +122,7 @@ test.describe("a height you set beats the courtesy height", () => {
   test("…and an empty section nobody sized still gets its courtesy height", async ({ page }) => {
     // The offer must survive the fix: an unsized empty box is still visible and droppable rather than 0px.
     await freshBuilder(page);
-    await tile(page, "Section").click();
+    await tile(page, "Stack").click();
     await page.waitForTimeout(900);
     const h = await page.locator("[data-box-id]").last().evaluate((el) => Math.round(el.getBoundingClientRect().height));
     expect(h, "still a box you can see and drop into").toBeGreaterThan(100);

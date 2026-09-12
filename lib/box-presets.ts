@@ -100,7 +100,7 @@ export function getPresets(kind: string, theme: SiteTheme): Preset[] {
  *
  * Every one is stated in twelfths and every one adds to twelve, so the row is a real twelve-column grid from
  * the moment it lands and the per-block controls all read the same units. The cells are empty containers —
- * the same block the "Section" tile adds — so a user fills them exactly as they fill anything else.
+ * the same block the "Stack" tile adds — so a user fills them exactly as they fill anything else.
  *
  * These are ADD-TIME only. Applying one to a row that already has content would replace that content, so they
  * are deliberately not in `getPresets`, which feeds the inspector's restyle gallery.
@@ -352,7 +352,7 @@ export function blockForKind(kind: string, patch: Partial<BoxNode> = {}): BoxNod
     : kind === "slider" ? photoSlider([])
     : kind === "hero" ? heroSection(null, "Welcome to our school")
     : kind === "rotatingHero" ? rotatingHero([], "Welcome to our school")
-    // A Section starts flush too — space is added on the side you want it, not removed from a default. The
+    // A Stack starts flush too — space is added on the side you want it, not removed from a default. The
     // Card and Outline STYLE presets still carry their own padding, because there it is part of the look
     // somebody chose rather than something they have to discover and undo.
     : kind === "container" ? createContainer("column", { width: "100%", padding: 0, gap: 0, align: "stretch" })
@@ -379,7 +379,7 @@ export function blockForKind(kind: string, patch: Partial<BoxNode> = {}): BoxNod
  * BLOCKS THAT ARE ADDED, NOT ASKED ABOUT.
  *
  * Asking at add-time earns its place when the answer is STRUCTURAL, SUPPLIES THE CONTENT, or names the
- * block's ROLE — Columns' shape (changing three cells to four later means redoing the content), a
+ * block's ROLE — Grid's shape (changing three cells to four later means redoing the content), a
  * gallery's photographs (without them it is an empty shell), an Alert's job (it sets the icon, the colour
  * AND the screen-reader role), a heading's Display-vs-Eyebrow (its place in the document).
  *

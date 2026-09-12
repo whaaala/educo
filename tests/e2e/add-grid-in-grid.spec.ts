@@ -57,7 +57,7 @@ async function addColumnsBlock(page: Page) {
   const opener = page.locator('[aria-label="Open blocks panel"]');
   if (await opener.count()) await opener.click();
   await page.waitForTimeout(400); // the panel slides in — clicking mid-animation lands on a moving target
-  await page.locator('[aria-label^="Add Columns"]').first().click();
+  await page.locator('[aria-label^="Add Grid"]').first().click();
   await page.waitForSelector('[role="menu"]', { timeout: 5000 });
   await page.locator('[role="gridcell"][aria-label="2 across, 1 down"]').click();
   await page.waitForTimeout(300);

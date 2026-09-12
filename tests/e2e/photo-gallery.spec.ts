@@ -146,7 +146,7 @@ test.describe("adding a photo gallery", () => {
     });
     // A top-bar action, deliberately: a palette tile with looks to choose opens a menu instead of adding,
     // so the tree would never change and the save would never be attempted.
-    await page.click('button:has-text("Add section")');
+    await page.click('button:has-text("Add a band")');
     await page.waitForTimeout(1200);
 
     // Next.js keeps an always-present empty `[role="alert"]` route announcer in the document, so the
