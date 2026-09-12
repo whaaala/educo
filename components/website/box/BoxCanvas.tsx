@@ -1018,7 +1018,14 @@ export default function BoxCanvas({
         // which, in a grid nobody has given a height to, is every row — simply ignored the smaller number it
         // was handed. This row grew anyway, downward, and the top edge the user was holding did not move at
         // all: measured at 0px moved on the grabbed edge and 120px on the opposite one, on all four of the
-        // grids tried. That is the edge-anchoring rule this project has now broken three times.
+        // grids tried.
+        //
+        // NOT A REGRESSION — this path never held the rule. The flow resize (`startResize`) has anchored all
+        // four edges for a long time; a grid cell goes through here instead, and this edge has been wrong
+        // since the day it shipped. It was wrong in two different ways: first it resized the row ABOVE, so
+        // the held edge moved and a different box changed size; then it grew THIS row downward, so the held
+        // edge did not move at all. Both were called fixed. What let that stand is in the spec's own note —
+        // the guard only ever exercised two cells across.
         //
         // Clamping to the real slack is the honest version: where there is room above (a grid given a height,
         // whose rows share it — which is the only case where a top-edge drag has anything to mean) the row

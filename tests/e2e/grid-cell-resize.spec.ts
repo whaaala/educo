@@ -200,7 +200,7 @@ test.describe("resizing a grid cell's height", () => {
 });
 
 /**
- * THE GRABBED EDGE IS THE ONLY ONE THAT MOVES — the rule this project has now broken three times.
+ * THE GRABBED EDGE IS THE ONLY ONE THAT MOVES.
  *
  * The two tests above cover the edges that were already right. These cover the two that were not, each in
  * the exact shape that failed, because both failed for ONE reason: the drag wrote a SIZE (a span, a
@@ -208,6 +208,16 @@ test.describe("resizing a grid cell's height", () => {
  * already at the floor, a row above already at its content height — the size grew anyway and it grew out of
  * the FAR edge. Measured before the fix: the left edge moved the right edge 171px, and the top edge moved
  * the bottom edge by the whole drag on every grid tried.
+ *
+ * THE PART THAT MATTERS MORE THAN THE BUG: this was never a regression. A grid cell has its own resize
+ * path, and these two edges were wrong from the day it shipped — while `box-builder-columns.feature`
+ * carried the scenario "The grabbed edge is the only one that moves" and a test above it passed. Both
+ * only ever built a TWO-cell row. At two across the previous cell has room to give and the row above has
+ * slack, so the partner always absorbed the difference and the defect had nowhere to show. The rule was
+ * asserted, the assertion passed, and the rule was not held.
+ *
+ * So each edge below is tested TWICE: once ordinarily, and once dragged FAR past what the row can give.
+ * The second is the one that would have caught this, because the clamp is the half that goes missing.
  */
 test.describe("the grabbed edge is the only one that moves", () => {
   /** A full rect — `rectOf` above answers about the down axis only. */
