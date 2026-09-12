@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { seedSite } from "./helpers/seed-site";
 
 /**
  * PREVIEW, after the multi-page rewrite.
@@ -12,26 +13,20 @@ import { test, expect } from "@playwright/test";
  */
 test.describe("Multi-page preview", () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto("/website/box-demo");
-    await page.evaluate(() => {
-      const rid = () => "b" + Math.random().toString(36).slice(2, 9);
-      const mk = (id: string, name: string, path: string, text: string) => ({
-        id, name, path,
-        root: { id: `root-${id}`, type: "container", direction: "column", children: [
-          { id: rid(), type: "container", direction: "row", rowBand: true, width: "fill", children: [
-            { id: rid(), type: "heading", text, fontSize: 28, bold: true },
-          ] },
+    const rid = () => "b" + Math.random().toString(36).slice(2, 9);
+    const mk = (id: string, name: string, path: string, text: string) => ({
+      id, name, path,
+      root: { id: `root-${id}`, type: "container", direction: "column", children: [
+        { id: rid(), type: "container", direction: "row", rowBand: true, width: "fill", children: [
+          { id: rid(), type: "heading", text, fontSize: 28, bold: true },
         ] },
-      });
-      const site = { homeId: "p1", pages: [
-        mk("p1", "Home", "home", "Welcome to our school"),
-        mk("p2", "Admissions", "admissions", "How to apply"),
-        mk("p3", "Term Dates", "term-dates", "When we are open"),
-      ] };
-      localStorage.setItem("educo_box_site_v1", JSON.stringify(site));
-      localStorage.setItem("educo_box_site_cleaned_v1", "1");
+      ] },
     });
-    await page.reload();
+    await seedSite(page, { homeId: "p1", pages: [
+      mk("p1", "Home", "home", "Welcome to our school"),
+      mk("p2", "Admissions", "admissions", "How to apply"),
+      mk("p3", "Term Dates", "term-dates", "When we are open"),
+    ] });
     await page.waitForSelector('[data-box-id]', { timeout: 20000 });
     await page.getByRole("button", { name: /preview/i }).first().click();
     await page.waitForTimeout(1500);

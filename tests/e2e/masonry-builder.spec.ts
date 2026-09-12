@@ -1,4 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
+import { seedSite } from "./helpers/seed-site";
 
 /**
  * MASONRY through the REAL builder — the control, and canvas = export.
@@ -35,27 +36,21 @@ const svg = (w: number, h: number) =>
   ).toString("base64");
 
 async function seedGallery(page: Page) {
-  await page.goto("/website/box-demo");
-  await page.evaluate(({ photos, srcs }) => {
-    const cells = photos.map(([w, h], i) => ({
-      id: `cell${i}`, type: "container", layout: "flex", direction: "column",
-      padding: 0, gap: 0, width: "100%", colSpan: 4, height: "auto",
-      children: [{ id: `img${i}`, type: "image", src: srcs[i], alt: `photo ${i + 1}`, width: "100%", height: "auto", imgW: w, imgH: h }],
-    }));
-    const site = {
-      pages: [{ id: "p1", name: "Home", path: "/", root: {
-        id: "root", type: "container", direction: "column", padding: 0, gap: 0, children: [
-          { id: "band", type: "container", direction: "row", rowBand: true, width: "fill", gap: 0, padding: 0, sectionWidth: "contained", children: [
-            { id: "gallery", type: "container", layout: "grid", columns: 12, gap: 16, padding: 0, width: "100%", children: cells },
-          ] },
-        ],
-      } }],
-      homeId: "p1",
-    };
-    localStorage.setItem("educo_box_site_v1", JSON.stringify(site));
-    localStorage.setItem("educo_box_site_cleaned_v1", "1");
-  }, { photos: PHOTOS, srcs: PHOTOS.map(([w, h]) => svg(w, h)) });
-  await page.reload();
+  const cells = PHOTOS.map(([w, h], i) => ({
+    id: `cell${i}`, type: "container", layout: "flex", direction: "column",
+    padding: 0, gap: 0, width: "100%", colSpan: 4, height: "auto",
+    children: [{ id: `img${i}`, type: "image", src: svg(w, h), alt: `photo ${i + 1}`, width: "100%", height: "auto", imgW: w, imgH: h }],
+  }));
+  await seedSite(page, {
+    pages: [{ id: "p1", name: "Home", path: "/", root: {
+      id: "root", type: "container", direction: "column", padding: 0, gap: 0, children: [
+        { id: "band", type: "container", direction: "row", rowBand: true, width: "fill", gap: 0, padding: 0, sectionWidth: "contained", children: [
+          { id: "gallery", type: "container", layout: "grid", columns: 12, gap: 16, padding: 0, width: "100%", children: cells },
+        ] },
+      ],
+    } }],
+    homeId: "p1",
+  });
   await page.waitForSelector('[data-box-id="gallery"]', { timeout: 15_000 });
   // A real screen width, so what the editor draws is what a visitor at that width gets.
   await page.setViewportSize({ width: 1800, height: 1000 });

@@ -1,4 +1,5 @@
 import { test, expect, type Page, type Frame } from "@playwright/test";
+import { seedSite, sitePage } from "./helpers/seed-site";
 // THE REAL SCRIM, imported rather than retyped. Written out as a literal here, this test asserted a
 // string it had chosen itself: weakening the product's scrim back to the failing 0.35 left it passing.
 // A guard that cannot fail reports safety that does not exist.
@@ -24,26 +25,20 @@ import { HERO_SCRIM } from "@/lib/box-presets";
 
 /** Seed a page with a pager, plus a tall block above it so "below the fold" is real. */
 async function seedPager(page: Page, opts: { nav?: string; auto?: number; below?: boolean } = {}) {
-  await page.goto("/website/box-demo");
-  await page.evaluate((o) => {
-    const slide = (i: number, c: string) => ({
-      id: `s${i}`, type: "container", layout: "flex", direction: "column", padding: 0, gap: 0,
-      width: "100%", background: c, minHeight: 300,
-      children: [{ id: `h${i}`, type: "heading", text: `Page ${i}`, width: "100%" }],
-    });
-    const band = (id: string, kids: unknown[]) => ({ id, type: "container", direction: "row", rowBand: true, width: "fill", gap: 0, padding: 0, children: kids });
-    const rows: unknown[] = [];
-    if (o.below) rows.push(band("top", [{ id: "filler", type: "container", layout: "flex", direction: "column", padding: 0, gap: 0, width: "100%", minHeight: 900, background: "#eef", children: [] }]));
-    rows.push(band("band", [{
-      id: "pg", type: "container", layout: "flex", direction: "column", padding: 0, gap: 0, width: "100%",
-      pager: true, ...(o.nav ? { pagerNav: o.nav } : {}), ...(o.auto ? { pagerAuto: o.auto } : {}),
-      children: [slide(1, "#c7d2fe"), slide(2, "#bbf7d0"), slide(3, "#fde68a"), slide(4, "#fca5a5")],
-    }]));
-    const site = { pages: [{ id: "p1", name: "Home", path: "/", root: { id: "root", type: "container", direction: "column", padding: 0, gap: 0, children: rows } }], homeId: "p1" };
-    localStorage.setItem("educo_box_site_v1", JSON.stringify(site));
-    localStorage.setItem("educo_box_site_cleaned_v1", "1");
-  }, opts);
-  await page.reload();
+  const slide = (i: number, c: string) => ({
+    id: `s${i}`, type: "container", layout: "flex", direction: "column", padding: 0, gap: 0,
+    width: "100%", background: c, minHeight: 300,
+    children: [{ id: `h${i}`, type: "heading", text: `Page ${i}`, width: "100%" }],
+  });
+  const band = (id: string, kids: unknown[]) => ({ id, type: "container", direction: "row", rowBand: true, width: "fill", gap: 0, padding: 0, children: kids });
+  const rows: unknown[] = [];
+  if (opts.below) rows.push(band("top", [{ id: "filler", type: "container", layout: "flex", direction: "column", padding: 0, gap: 0, width: "100%", minHeight: 900, background: "#eef", children: [] }]));
+  rows.push(band("band", [{
+    id: "pg", type: "container", layout: "flex", direction: "column", padding: 0, gap: 0, width: "100%",
+    pager: true, ...(opts.nav ? { pagerNav: opts.nav } : {}), ...(opts.auto ? { pagerAuto: opts.auto } : {}),
+    children: [slide(1, "#c7d2fe"), slide(2, "#bbf7d0"), slide(3, "#fde68a"), slide(4, "#fca5a5")],
+  }]));
+  await seedSite(page, { pages: [{ id: "p1", name: "Home", path: "/", root: { id: "root", type: "container", direction: "column", padding: 0, gap: 0, children: rows } }], homeId: "p1" });
   await page.waitForSelector('[data-eu-pager]', { timeout: 45000 });
   await page.waitForTimeout(600);
 }
@@ -212,25 +207,20 @@ test.describe("auto-advance", () => {
 test.describe("the hero", () => {
   /** Seed a hero over a PURE WHITE photograph — the worst case the scrim has to survive. */
   async function seedHero(page: Page) {
-    await page.goto("/website/box-demo");
-    await page.evaluate((scrim) => {
-      const c = document.createElement("canvas"); c.width = 1200; c.height = 800;
-      const x = c.getContext("2d")!; x.fillStyle = "#ffffff"; x.fillRect(0, 0, 1200, 800);
-      const white = c.toDataURL("image/png");
-      const hero = {
-        id: "hero", type: "container", layout: "flex", direction: "column", width: "100%",
-        padding: 48, gap: 12, align: "center", justify: "center", screenHeight: "full",
-        contentX: "center", contentY: "center",
-        bgImage: white, bgSize: "cover", bgPosition: "center",
-        bgOverlay: scrim,
-        children: [{ id: "hh", type: "heading", text: "Open Day", width: "100%", textAlign: "center", color: "#ffffff", fontSize: 52, bold: true }],
-      };
-      const site = { pages: [{ id: "p1", name: "Home", path: "/", root: { id: "root", type: "container", direction: "column", padding: 0, gap: 0, children: [
-        { id: "band", type: "container", direction: "row", rowBand: true, width: "fill", gap: 0, padding: 0, children: [hero] }] } }], homeId: "p1" };
-      localStorage.setItem("educo_box_site_v1", JSON.stringify(site));
-      localStorage.setItem("educo_box_site_cleaned_v1", "1");
-    }, HERO_SCRIM);
-    await page.reload();
+    // A plain WHITE 1200×800 picture — the worst case for a scrim, and the point of the test. An SVG data
+    // URL says that in Node, so the whole site can be installed before the page opens.
+    const white = "data:image/svg+xml;base64," + Buffer.from(
+      '<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800"><rect width="100%" height="100%" fill="#ffffff"/></svg>',
+      "utf8",
+    ).toString("base64");
+    await seedSite(page, sitePage([{
+      id: "hero", type: "container", layout: "flex", direction: "column", width: "100%",
+      padding: 48, gap: 12, align: "center", justify: "center", screenHeight: "full",
+      contentX: "center", contentY: "center",
+      bgImage: white, bgSize: "cover", bgPosition: "center",
+      bgOverlay: HERO_SCRIM,
+      children: [{ id: "hh", type: "heading", text: "Open Day", width: "100%", textAlign: "center", color: "#ffffff", fontSize: 52, bold: true }],
+    }]));
     await page.waitForSelector('[data-box-id="hero"]', { timeout: 20000 });
     await page.waitForTimeout(900);
   }
@@ -277,20 +267,14 @@ test.describe("the hero", () => {
   });
 
   test("a rotating hero is full-screen on every page, and pages like any other pager", async ({ page }) => {
-    await page.goto("/website/box-demo");
-    await page.evaluate(() => {
-      const mk = (i: number) => ({
-        id: `h${i}`, type: "container", layout: "flex", direction: "column", width: "100%", padding: 48, gap: 12,
-        align: "center", justify: "center", screenHeight: "full", background: ["#234", "#432", "#343"][i],
-        children: [{ id: `t${i}`, type: "heading", text: `Hero ${i + 1}`, width: "100%", color: "#fff" }],
-      });
-      const site = { pages: [{ id: "p1", name: "Home", path: "/", root: { id: "root", type: "container", direction: "column", padding: 0, gap: 0, children: [
-        { id: "band", type: "container", direction: "row", rowBand: true, width: "fill", gap: 0, padding: 0, children: [
-          { id: "rh", type: "container", layout: "flex", direction: "column", width: "100%", padding: 0, gap: 0, pager: true, children: [mk(0), mk(1), mk(2)] }] }] } }], homeId: "p1" };
-      localStorage.setItem("educo_box_site_v1", JSON.stringify(site));
-      localStorage.setItem("educo_box_site_cleaned_v1", "1");
+    const mk = (i: number) => ({
+      id: `h${i}`, type: "container", layout: "flex", direction: "column", width: "100%", padding: 48, gap: 12,
+      align: "center", justify: "center", screenHeight: "full", background: ["#234", "#432", "#343"][i],
+      children: [{ id: `t${i}`, type: "heading", text: `Hero ${i + 1}`, width: "100%", color: "#fff" }],
     });
-    await page.reload();
+    await seedSite(page, sitePage([
+      { id: "rh", type: "container", layout: "flex", direction: "column", width: "100%", padding: 0, gap: 0, pager: true, children: [mk(0), mk(1), mk(2)] },
+    ]));
     await page.waitForSelector("[data-eu-pager]", { timeout: 20000 });
     await page.waitForTimeout(800);
     const r = await page.locator("[data-eu-pager]").evaluate((el) => {
@@ -306,20 +290,14 @@ test.describe("the navigation is reachable", () => {
   test("the dots are ON the box, so a full-screen hero does not put them below the fold", async ({ page }) => {
     // The defect this guards, seen in a screenshot: the nav sat AFTER the strip in normal flow, so on a
     // hero one whole screen tall the only visible control was off the bottom of the screen.
-    await page.goto("/website/box-demo");
-    await page.evaluate(() => {
-      const hero = (i: number) => ({
-        id: `h${i}`, type: "container", layout: "flex", direction: "column", width: "100%", padding: 48, gap: 12,
-        align: "center", justify: "center", screenHeight: "full", background: ["#234", "#432", "#343"][i],
-        children: [{ id: `t${i}`, type: "heading", text: `Hero ${i + 1}`, width: "100%", color: "#fff" }],
-      });
-      const site = { pages: [{ id: "p1", name: "Home", path: "/", root: { id: "root", type: "container", direction: "column", padding: 0, gap: 0, children: [
-        { id: "band", type: "container", direction: "row", rowBand: true, width: "fill", gap: 0, padding: 0, children: [
-          { id: "rh", type: "container", layout: "flex", direction: "column", width: "100%", padding: 0, gap: 0, pager: true, children: [hero(0), hero(1), hero(2)] }] }] } }], homeId: "p1" };
-      localStorage.setItem("educo_box_site_v1", JSON.stringify(site));
-      localStorage.setItem("educo_box_site_cleaned_v1", "1");
+    const hero = (i: number) => ({
+      id: `h${i}`, type: "container", layout: "flex", direction: "column", width: "100%", padding: 48, gap: 12,
+      align: "center", justify: "center", screenHeight: "full", background: ["#234", "#432", "#343"][i],
+      children: [{ id: `t${i}`, type: "heading", text: `Hero ${i + 1}`, width: "100%", color: "#fff" }],
     });
-    await page.reload();
+    await seedSite(page, sitePage([
+      { id: "rh", type: "container", layout: "flex", direction: "column", width: "100%", padding: 0, gap: 0, pager: true, children: [hero(0), hero(1), hero(2)] },
+    ]));
     await page.waitForSelector("[data-eu-pager-nav]", { timeout: 20000 });
     // MEASURED ON THE PUBLISHED PAGE, not on the canvas. In the builder the page starts below the
     // toolbar, so a 100svh hero legitimately ends a toolbar's height past the bottom of the visible

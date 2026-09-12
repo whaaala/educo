@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, memo } from "react";
+import { useState, useEffect, useRef, useCallback, memo, Suspense } from "react";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import {
@@ -264,6 +264,29 @@ const parentMenuItems: MenuItem[] = [
 
 export { type MenuItem };
 
+/**
+ * Reports the current query string upward, and does nothing else.
+ *
+ * `useSearchParams()` opts whatever component calls it out of static prerendering, and Sidebar sits in
+ * every layout — so calling it up in Sidebar itself made `next build` fail on every route that still
+ * prerenders ("useSearchParams() should be wrapped in a suspense boundary"). Marking each page
+ * `force-dynamic` only hid it: those routes stopped prerendering, so the ones that remained were the only
+ * ones left to report the fault.
+ *
+ * The query string is read for exactly one thing — highlighting a nav link whose `href` carries one —
+ * which is a client-only fact the server could not resolve anyway. So the bailout is confined to this
+ * leaf: Suspense bounds it to a component that renders `null`, the sidebar around it prerenders as it
+ * always did, and the real value arrives on hydration.
+ */
+function SearchParamsReporter({ onChange }: { onChange: (search: string) => void }) {
+  const searchParams = useSearchParams();
+  const search = searchParams.toString();
+  useEffect(() => {
+    onChange(search);
+  }, [onChange, search]);
+  return null;
+}
+
 interface SidebarProps {
   isCollapsed: boolean;
   setIsCollapsed: (value: boolean) => void;
@@ -275,7 +298,9 @@ interface SidebarProps {
 
 function Sidebar({ isCollapsed, setIsCollapsed, isMobileSidebarOpen, setIsMobileSidebarOpen, customMenuItems, showTenantSwitcher = true }: SidebarProps) {
   const pathname = usePathname();
-  const searchParams = useSearchParams();
+  // Empty until hydration — see SearchParamsReporter above for why it is not read directly here.
+  const [search, setSearch] = useState("");
+  const onSearchChange = useCallback((next: string) => setSearch(next), []);
   const { isParent } = useUser();
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
   const [isMobile, setIsMobile] = useState<boolean | null>(null); // null on server, boolean on client
@@ -302,8 +327,7 @@ function Sidebar({ isCollapsed, setIsCollapsed, isMobileSidebarOpen, setIsMobile
 
     // If there are search params in the link, check them too
     if (linkSearch) {
-      const currentSearch = searchParams.toString();
-      return linkSearch === `?${currentSearch}`;
+      return linkSearch === `?${search}`;
     }
 
     // If no search params in link, it's active if pathname matches
@@ -730,6 +754,10 @@ function Sidebar({ isCollapsed, setIsCollapsed, isMobileSidebarOpen, setIsMobile
 
   return (
     <>
+      <Suspense fallback={null}>
+        <SearchParamsReporter onChange={onSearchChange} />
+      </Suspense>
+
       {/* Mobile Overlay - Only shows on mobile when menu is open */}
       {isMobile && isMobileSidebarOpen && (
         <div

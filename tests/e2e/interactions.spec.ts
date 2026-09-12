@@ -1,4 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
+import { seedSite } from "./helpers/seed-site";
 import type { BoxNode } from "@/lib/box-model";
 import { siteFromRoot } from "@/lib/box-site";
 import { renderSitePage } from "@/lib/box-export";
@@ -53,7 +54,9 @@ async function loadExportAtOrigin(page: Page, node: BoxNode) {
   ] } as unknown as BoxNode;
   const html = exportDoc(root);
   await page.route("**/__export_fixture", (route) => route.fulfill({ contentType: "text/html", body: html }));
-  await page.goto("http://localhost:3000/__export_fixture");
+  // Relative, so this follows `baseURL` — hardcoding port 3000 sent it to the dev server (or nothing at all)
+  // whenever the suite was pointed at a production build on another port.
+  await page.goto("/__export_fixture");
   await page.waitForSelector("#tgt", { state: "attached", timeout: 10_000 });
 }
 
@@ -77,9 +80,9 @@ const look = (sel: string, withOutline: boolean) =>
 const lookOf = (page: Page, sel: string, withOutline = true) =>
   page.evaluate(look(sel, withOutline)) as Promise<string>;
 
-// The canvas cases reload the dev page once per effect, which the default 30s cannot cover — the same reason
-// the layout harness raises its own limit. Serial, because parallel reloads of the dev server just time out.
-test.describe.configure({ mode: "serial" });
+// The canvas cases open the builder once per effect, which the default 30s cannot cover — the same reason the
+// layout harness raises its own limit. No longer serial: "parallel reloads just time out" was a misreading of
+// the seeding race that `helpers/seed-site` now closes.
 test.setTimeout(150_000);
 
 test.describe("Interactions — hover, focus and entrance (Rounds 1a + 1b)", () => {
@@ -91,23 +94,17 @@ test.describe("Interactions — hover, focus and entrance (Rounds 1a + 1b)", () 
     // times made this the slowest test in the suite and a flaky one — it timed out when run straight after the
     // layout harness had been hammering the same dev server for ten minutes. Nothing is lost: hovering one card
     // cannot affect its siblings.
-    await page.goto(CANVAS);
     const idFor = (fxId: string) => `tgt-${fxId || "none"}`;
-    await page.evaluate((effects) => {
-      const rid = () => "b" + Math.random().toString(36).slice(2, 9);
-      const cards = effects.map((fx) => ({
-        id: `tgt-${fx || "none"}`, type: "container", preset: "card", direction: "column",
-        width: "30%", padding: 16, gap: 8, radius: 16, shadow: "md", borderWidth: 1,
-        background: "var(--eu-color-surface)", hoverEffect: fx,
-        children: [{ id: rid(), type: "heading", text: "Hover me", fontSize: 18, bold: true }],
-      }));
-      const site = { pages: [{ id: "p1", name: "Home", path: "/", root: { id: "root", type: "container", direction: "column", children: [
-        { id: rid(), type: "container", direction: "row", rowBand: true, width: "fill", wrap: true, children: cards },
-      ] } }], homeId: "p1" };
-      localStorage.setItem("educo_box_site_v1", JSON.stringify(site));
-      localStorage.setItem("educo_box_site_cleaned_v1", "1");
-    }, HOVER_EFFECTS.map((f) => f.id));
-    await page.reload();
+    const rid = () => "b" + Math.random().toString(36).slice(2, 9);
+    const cards = HOVER_EFFECTS.map((f) => f.id).map((fx) => ({
+      id: idFor(fx), type: "container", preset: "card", direction: "column",
+      width: "30%", padding: 16, gap: 8, radius: 16, shadow: "md", borderWidth: 1,
+      background: "var(--eu-color-surface)", hoverEffect: fx,
+      children: [{ id: rid(), type: "heading", text: "Hover me", fontSize: 18, bold: true }],
+    }));
+    await seedSite(page, { pages: [{ id: "p1", name: "Home", path: "/", root: { id: "root", type: "container", direction: "column", children: [
+      { id: rid(), type: "container", direction: "row", rowBand: true, width: "fill", wrap: true, children: cards },
+    ] } }], homeId: "p1" }, CANVAS);
     await page.waitForSelector(`[data-box-id="${idFor("")}"]`, { timeout: 20000 });
     await page.waitForTimeout(300);
 
@@ -237,16 +234,10 @@ test.describe("Interactions — hover, focus and entrance (Rounds 1a + 1b)", () 
 
     // On the CANVAS the identical rule must pin to the PAGE frame, never over the editor chrome. The page root
     // carries a transform, which makes it the containing block for a fixed descendant.
-    await page.goto(CANVAS);
-    await page.evaluate((n) => {
-      const rid = () => "b" + Math.random().toString(36).slice(2, 9);
-      const site = { pages: [{ id: "p1", name: "Home", path: "/", root: { id: "root", type: "container", direction: "column", children: [
-        { id: rid(), type: "container", direction: "row", rowBand: true, width: "fill", children: [n] },
-      ] } }], homeId: "p1" };
-      localStorage.setItem("educo_box_site_v1", JSON.stringify(site));
-      localStorage.setItem("educo_box_site_cleaned_v1", "1");
-    }, toast("bottom-right"));
-    await page.reload();
+    await seedSite(page, { pages: [{ id: "p1", name: "Home", path: "/", root: { id: "root", type: "container", direction: "column", children: [
+      { id: "b" + Math.random().toString(36).slice(2, 9), type: "container", direction: "row", rowBand: true, width: "fill",
+        children: [toast("bottom-right")] },
+    ] } }], homeId: "p1" }, CANVAS);
     // Same reason as the export: a fixed toast collapses its wrapper, so wait for it to exist.
     await page.waitForSelector('[data-box-id="tgt"]', { state: "attached", timeout: 20000 });
     await page.waitForTimeout(400);

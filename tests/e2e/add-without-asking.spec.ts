@@ -1,4 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
+import { clearSite } from "./helpers/seed-site";
 
 /**
  * ADDING A BLOCK — what interrupts you, and what does not.
@@ -10,9 +11,7 @@ import { test, expect, type Page } from "@playwright/test";
  */
 
 async function freshBuilder(page: Page) {
-  await page.goto("/website/box-demo");
-  await page.evaluate(() => { localStorage.clear(); localStorage.setItem("educo_box_site_cleaned_v1", "1"); });
-  await page.reload();
+  await clearSite(page);
   await page.waitForSelector("text=Box Builder", { timeout: 20000 });
   await page.waitForTimeout(600);
   await page.keyboard.press("b");

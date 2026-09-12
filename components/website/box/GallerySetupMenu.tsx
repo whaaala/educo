@@ -130,7 +130,7 @@ export default function GallerySetupMenu({ anchor, onClose, onPick, mode = "gall
             <ul className="flex max-h-24 flex-wrap gap-1 overflow-y-auto">
               {photos.map((p, i) => (
                 <li key={`${i}-${p.src.slice(-16)}`} className="relative">
-                  {/* eslint-disable-next-line @next/next/no-img-element -- a data: URL the user just chose; the Image optimiser cannot fetch it */}
+                  
                   <img src={p.src} alt="" className="h-10 w-10 rounded object-cover" />
                   <button
                     type="button" onClick={() => remove(i)}

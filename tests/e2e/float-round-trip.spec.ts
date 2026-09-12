@@ -1,4 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
+import { seedSite, sitePage } from "./helpers/seed-site";
 
 /**
  * FLOATING A PARENT — the children come with it, and un-floating puts everything back.
@@ -15,27 +16,18 @@ import { test, expect, type Page } from "@playwright/test";
  */
 
 async function seed(page: Page) {
-  await page.goto("/website/box-demo");
-  await page.evaluate(() => {
-    const cell = (id: string, bg: string, text: string) => ({
-      id, type: "container", layout: "flex", direction: "column", padding: 0, gap: 0, width: "100%",
-      colSpan: 6, background: bg, minHeight: 60, children: [{ id: `t${id}`, type: "text", text, width: "auto" }],
-    });
-    const site = { pages: [{ id: "p1", name: "Home", path: "/", root: {
-      id: "root", type: "container", direction: "column", padding: 0, gap: 0, children: [
-        { id: "band", type: "container", direction: "row", rowBand: true, width: "fill", gap: 0, padding: 0, children: [
-          // The section has a height the USER set. Nothing about floating may ever take it away.
-          { id: "sec", type: "container", direction: "column", padding: 0, gap: 0, width: "100%", minHeight: 400,
-            background: "#eef2ff", children: [
-              { id: "grid", type: "container", layout: "grid", columns: 12, gap: 0, padding: 0, width: "100%",
-                background: "#c7d2fe", children: [cell("c0", "#bbf7d0", "left"), cell("c1", "#fde68a", "right")] },
-            ] },
-        ] },
-      ] } }], homeId: "p1" };
-    localStorage.setItem("educo_box_site_v1", JSON.stringify(site));
-    localStorage.setItem("educo_box_site_cleaned_v1", "1");
+  const cell = (id: string, bg: string, text: string) => ({
+    id, type: "container", layout: "flex", direction: "column", padding: 0, gap: 0, width: "100%",
+    colSpan: 6, background: bg, minHeight: 60, children: [{ id: `t${id}`, type: "text", text, width: "auto" }],
   });
-  await page.reload();
+  await seedSite(page, sitePage([
+    // The section has a height the USER set. Nothing about floating may ever take it away.
+    { id: "sec", type: "container", direction: "column", padding: 0, gap: 0, width: "100%", minHeight: 400,
+      background: "#eef2ff", children: [
+        { id: "grid", type: "container", layout: "grid", columns: 12, gap: 0, padding: 0, width: "100%",
+          background: "#c7d2fe", children: [cell("c0", "#bbf7d0", "left"), cell("c1", "#fde68a", "right")] },
+      ] },
+  ]));
   await page.waitForSelector('[data-box-id="grid"]', { timeout: 15000 });
   await page.waitForTimeout(300);
 }

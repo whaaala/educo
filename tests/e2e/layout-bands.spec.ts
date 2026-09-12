@@ -1,4 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
+import { seedSite } from "./helpers/seed-site";
 import { normalizeRowBands, type BoxNode } from "@/lib/box-model";
 import { siteFromRoot } from "@/lib/box-site";
 import { renderSitePage } from "@/lib/box-export";
@@ -100,20 +101,14 @@ test.describe("bands", () => {
     // while you were editing it, and every class name would still have looked correct.
     await page.setViewportSize({ width: 1440, height: 900 });
 
-    await page.goto("/website/box-demo");
-    await page.evaluate(() => {
-      const site = { homeId: "p1", pages: [{ id: "p1", name: "Home", path: "/", root: {
-        id: "root", type: "container", direction: "column", children: [{
-          id: "band", type: "container", direction: "row", rowBand: true, width: "fill",
-          background: "#3355ff", sectionWidth: "contained",
-          children: [{ id: "inner", type: "container", direction: "column", width: "fill",
-            children: [{ id: "t", type: "text", text: "Welcome to Oakfield Primary" }] }],
-        }],
-      } }] };
-      localStorage.setItem("educo_box_site_v1", JSON.stringify(site));
-      localStorage.setItem("educo_box_site_cleaned_v1", "1");
-    });
-    await page.reload();
+    await seedSite(page, { homeId: "p1", pages: [{ id: "p1", name: "Home", path: "/", root: {
+      id: "root", type: "container", direction: "column", children: [{
+        id: "band", type: "container", direction: "row", rowBand: true, width: "fill",
+        background: "#3355ff", sectionWidth: "contained",
+        children: [{ id: "inner", type: "container", direction: "column", width: "fill",
+          children: [{ id: "t", type: "text", text: "Welcome to Oakfield Primary" }] }],
+      }],
+    } }] });
     await page.waitForSelector('[data-box-id="band"]', { timeout: 20000 });
 
     const cls = (await page.locator('[data-box-id="band"]').getAttribute("class")) ?? "";

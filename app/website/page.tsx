@@ -19,16 +19,14 @@ import StudioHeader from "@/components/website/StudioHeader";
 import StudioEmptyState from "@/components/website/StudioEmptyState";
 import DeleteConfirmationModal from "@/components/shared/DeleteConfirmationModal";
 
-/** The app theme's base background — used so the hero fades into (and respects) the current theme. */
-const THEME_BASE: Record<string, string | null> = { light: null, dark: "#0f1115", midnight: "#0a0e27", purple: "#1a0b2e" };
-
-/** Hero background: vivid brand gradient in light mode; brand glow fading into the theme's dark base otherwise. */
-export function heroBackground(themeId: string, primary: string, accent: string): string {
-  const base = THEME_BASE[themeId];
-  return base
-    ? `radial-gradient(130% 130% at 0% 0%, ${primary} 0%, ${base} 68%)`
-    : `radial-gradient(130% 130% at 0% 0%, ${accent} 0%, ${primary} 55%)`;
-}
+// `heroBackground` and its `THEME_BASE` table lived here and were DEAD — called from nowhere, not even
+// from this file. They were also `export`ed, and that is what made the production build impossible: an App
+// Router page may only export from a fixed list (`default`, `metadata`, `generateStaticParams` and a few
+// route options), and any other export fails `next build` with a type error about an index signature,
+// reported nowhere near the line responsible.
+//
+// Nothing caught it because nothing ran the build: `npm run check` is typecheck + lint + tests, and none of
+// those is `next build`. It is now `npm run build:check`, run before a commit — see CLAUDE.md rule 15.
 
 function timeAgo(iso: string): string {
   const diff = Date.now() - new Date(iso).getTime();

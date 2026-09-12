@@ -1,4 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
+import { seedSite, sitePage } from "./helpers/seed-site";
 
 /**
  * ADDING A GRID INSIDE A GRID, through the palette, in the real builder.
@@ -11,26 +12,13 @@ import { test, expect, type Page } from "@playwright/test";
  */
 
 async function seedGrid(page: Page) {
-  await page.goto("/website/box-demo");
-  await page.evaluate(() => {
-    const cell = (id: string) => ({
-      id, type: "container", layout: "flex", direction: "column", padding: 0, gap: 0,
-      width: "100%", colSpan: 6, background: "#e0e7ff", children: [],
-    });
-    const site = {
-      pages: [{ id: "p1", name: "Home", path: "/", root: {
-        id: "root", type: "container", direction: "column", padding: 0, gap: 0, children: [
-          { id: "band", type: "container", direction: "row", rowBand: true, width: "fill", gap: 0, padding: 0, children: [
-            { id: "tgt", type: "container", layout: "grid", columns: 12, gap: 0, padding: 0, width: "100%", minHeight: 300, children: [cell("a"), cell("b")] },
-          ] },
-        ],
-      } }],
-      homeId: "p1",
-    };
-    localStorage.setItem("educo_box_site_v1", JSON.stringify(site));
-    localStorage.setItem("educo_box_site_cleaned_v1", "1");
+  const cell = (id: string) => ({
+    id, type: "container", layout: "flex", direction: "column", padding: 0, gap: 0,
+    width: "100%", colSpan: 6, background: "#e0e7ff", children: [],
   });
-  await page.reload();
+  await seedSite(page, sitePage([
+    { id: "tgt", type: "container", layout: "grid", columns: 12, gap: 0, padding: 0, width: "100%", minHeight: 300, children: [cell("a"), cell("b")] },
+  ]));
   await page.waitForSelector('[data-box-id="tgt"]', { timeout: 15000 });
   await page.waitForTimeout(250);
 }

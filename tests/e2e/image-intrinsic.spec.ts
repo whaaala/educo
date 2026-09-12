@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { seedSite, sitePage } from "./helpers/seed-site";
 import type { BoxNode } from "@/lib/box-model";
 import { siteFromRoot } from "@/lib/box-site";
 import { renderSitePage } from "@/lib/box-export";
@@ -49,14 +50,7 @@ const inspect = (sel: string) => (page: import("@playwright/test").Page) =>
 /** Load a tree into the builder's storage and open the canvas on it. */
 async function openCanvas(page: import("@playwright/test").Page, root: BoxNode) {
   await page.setViewportSize({ width: 1280, height: 900 });
-  await page.goto("/website/box-demo");
-  await page.evaluate((tree) => {
-    localStorage.setItem("educo_box_site_v1", JSON.stringify({
-      homeId: "p1", pages: [{ id: "p1", name: "Home", path: "/", root: tree }],
-    }));
-    localStorage.setItem("educo_box_site_cleaned_v1", "1");
-  }, root as unknown as Record<string, unknown>);
-  await page.reload();
+  await seedSite(page, { homeId: "p1", pages: [{ id: "p1", name: "Home", path: "/", root }] });
   await page.waitForSelector('[data-box-id="pic"] img', { timeout: 20000 });
 }
 
@@ -139,21 +133,11 @@ test.describe("an image that knows its own shape", () => {
 
   test("uploading a photograph measures it, for real, through the real control", async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 900 });
-    await page.goto("/website/box-demo");
-    await page.evaluate(() => {
-      localStorage.setItem("educo_box_site_v1", JSON.stringify({
-        homeId: "p1", pages: [{ id: "p1", name: "Home", path: "/", root: {
-          id: "root", type: "container", direction: "column", children: [
-            { id: "band", type: "container", direction: "row", rowBand: true, width: "fill", children: [
-              { id: "sec", type: "container", direction: "column", width: "fill", padding: 0, children: [
-                { id: "pic", type: "image", src: "", width: "100%", height: "auto" },
-              ] },
-            ] },
-          ] } }],
-      }));
-      localStorage.setItem("educo_box_site_cleaned_v1", "1");
-    });
-    await page.reload();
+    await seedSite(page, sitePage([
+      { id: "sec", type: "container", direction: "column", width: "fill", padding: 0, children: [
+        { id: "pic", type: "image", src: "", width: "100%", height: "auto" },
+      ] },
+    ]));
     await page.waitForSelector('[data-box-id="pic"]', { timeout: 20000 });
 
     // A real 8×2 PNG through the real file input — this is the path a school actually uses.

@@ -182,9 +182,14 @@ Run through this checklist BEFORE telling the user it's done:
 - Current register: Builder Hub · Website Builder Guide · Layout System · Builder Parity Audit · Interactions & Effects · the per-component plans and audits.
 
 ### 15. When to run tests (MANDATORY — operational)
+- Full detail, the measurements and the traps: [docs/TESTING.md](docs/TESTING.md)
 - **Full suite before a COMMIT, not after every fix.** During a change run only `npm run typecheck` plus the specs related to the files you touched.
 - **NEVER run vitest and Playwright at the same time.** A 30s timeout under that load is contention, not a failure.
-- Gate before any commit: `npm run typecheck` · `npx eslint .` · `npx vitest run` · `npm run test:layout` · `npm run test:invariants:rest` — all green, zero errors.
+- Gate before any commit: `npm run typecheck` · `npx eslint .` · `npx vitest run` · **`npm run test:fast`** — all green, zero errors.
+- **`npm run test:fast` builds, serves and runs every browser suite** (`scripts/test-fast.js`). It replaces running `test:layout` + `test:invariants:rest` against the dev server: **344 tests in ~1.4 min instead of ~12.8 min**, because `next start` serves routes that are already built while `next dev` compiles each one on first request. Add `-- --no-build` to reuse the existing `.next`.
+- **The production build is part of the gate**, not an afterthought — `test:fast` builds first, and `npm run build:check` runs it alone. A build break is invisible to `next dev`: it shipped broken for an unknown stretch because nothing ever ran `next build`.
+- **Stop the dev server before building** — `next dev` holds `.next/trace`, and the lock reads as a build failure.
+- **If a browser suite only fails under load, suspect a RACE, not the server.** These suites were forced serial for months on the belief that the dev server could not serve parallel reloads. It could; the seeding helper was racing the app's first save. Forcing serial hid it — see `tests/e2e/helpers/seed-site.ts`.
 
 ### 16. Responsive Field Guide — the four ingredients (MANDATORY, everywhere)
 Every content item and component, existing and future, across the whole app:

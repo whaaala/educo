@@ -1,4 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
+import { seedSite, sitePage, clearSite } from "./helpers/seed-site";
 
 /**
  * ADDING A PHOTO GALLERY, driven through the REAL builder.
@@ -34,9 +35,7 @@ const asFiles = (urls: string[]) => urls.map((u, i) => ({
 }));
 
 async function freshBuilder(page: Page) {
-  await page.goto("/website/box-demo");
-  await page.evaluate(() => { localStorage.clear(); localStorage.setItem("educo_box_site_cleaned_v1", "1"); });
-  await page.reload();
+  await clearSite(page);
   await page.waitForSelector("text=Box Builder", { timeout: 20000 });
   await page.waitForTimeout(800);
 }
@@ -166,17 +165,21 @@ test.describe("a photograph is not rounded unless someone asked", () => {
   // node carried no radius and no control could explain it. The export emitted the node's radius as usual,
   // so it published square corners: canvas 20px, export 0px — canvas ≠ export, the direction where the
   // editor lies to you.
-  const seedImage = (page: Page, radius?: number) => page.evaluate((r) => {
-    const c = document.createElement("canvas"); c.width = 600; c.height = 400;
-    const x = c.getContext("2d")!; x.fillStyle = "#4488cc"; x.fillRect(0, 0, 600, 400);
-    const img = { id: "im1", type: "image", src: c.toDataURL("image/jpeg", 0.9), imgW: 600, imgH: 400, width: "100%", height: "auto", alt: "a photo", ...(r != null ? { radius: r, clip: true } : {}) };
-    const site = { pages: [{ id: "p1", name: "Home", path: "/", root: { id: "root", type: "container", direction: "column", padding: 0, gap: 0, children: [
-      { id: "band", type: "container", direction: "row", rowBand: true, width: "fill", gap: 0, padding: 0, children: [
-        { id: "g", type: "container", layout: "grid", columns: 12, gap: 0, padding: 0, width: "100%", children: [
-          { id: "c1", type: "container", layout: "flex", direction: "column", padding: 0, gap: 0, width: "100%", colSpan: 6, children: [img] }] }] }] } }], homeId: "p1" };
-    localStorage.setItem("educo_box_site_v1", JSON.stringify(site));
-    localStorage.setItem("educo_box_site_cleaned_v1", "1");
-  }, radius);
+  // A 600×400 picture with no bytes to fetch. It used to be painted on a `<canvas>` inside the page, which
+  // meant the seed had to run after the app had loaded; the shape and the colour are all this test needs, so
+  // an SVG built here does the same job and lets the whole site be installed before the page ever opens.
+  const PHOTO = "data:image/svg+xml;base64," + Buffer.from(
+    '<svg xmlns="http://www.w3.org/2000/svg" width="600" height="400"><rect width="100%" height="100%" fill="#4488cc"/></svg>',
+    "utf8",
+  ).toString("base64");
+
+  const seedImage = (page: Page, radius?: number) => {
+    const img = { id: "im1", type: "image", src: PHOTO, imgW: 600, imgH: 400, width: "100%", height: "auto", alt: "a photo", ...(radius != null ? { radius, clip: true } : {}) };
+    return seedSite(page, sitePage([
+      { id: "g", type: "container", layout: "grid", columns: 12, gap: 0, padding: 0, width: "100%", children: [
+        { id: "c1", type: "container", layout: "flex", direction: "column", padding: 0, gap: 0, width: "100%", colSpan: 6, children: [img] }] },
+    ]));
+  };
 
   /** The radius the canvas draws, and the radius the published page draws, for the same picture. */
   async function bothSides(page: Page) {
@@ -194,9 +197,7 @@ test.describe("a photograph is not rounded unless someone asked", () => {
   }
 
   test("with no radius set, the picture is square — on the canvas AND published", async ({ page }) => {
-    await page.goto("/website/box-demo");
     await seedImage(page);
-    await page.reload();
     await page.waitForTimeout(1800);
     const { canvas, exported } = await bothSides(page);
     expect(canvas.img, "nothing rounded it, so nothing is round").toBe("0px");
@@ -204,9 +205,7 @@ test.describe("a photograph is not rounded unless someone asked", () => {
   });
 
   test("with a radius set, the canvas shows exactly what gets published", async ({ page }) => {
-    await page.goto("/website/box-demo");
     await seedImage(page, 24);
-    await page.reload();
     await page.waitForTimeout(1800);
     const { canvas, exported } = await bothSides(page);
     expect(canvas.wrapper, "the radius the user set, on the block whose control they used").toBe("24px");

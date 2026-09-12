@@ -1,4 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
+import { seedSite, sitePage } from "./helpers/seed-site";
 import { ALL_COMPONENTS } from "@/lib/component-catalogue";
 import { blockForKind } from "@/lib/box-presets";
 
@@ -47,19 +48,9 @@ async function waitForRendered(page: Page) {
   }, undefined, { timeout: 15000 });
 }
 
+/** One band holding the node under test — see `helpers/seed-site` for why it is installed, not written. */
 async function seed(page: Page, node: Record<string, unknown>) {
-  await page.evaluate((n) => {
-    const rid = () => "b" + Math.random().toString(36).slice(2, 9);
-    const site = {
-      pages: [{ id: "p1", name: "Home", path: "/", root: { id: "root", type: "container", direction: "column", children: [
-        { id: rid(), type: "container", direction: "row", rowBand: true, width: "fill", children: [n] },
-      ] } }],
-      homeId: "p1",
-    };
-    localStorage.setItem("educo_box_site_v1", JSON.stringify(site));
-    localStorage.setItem("educo_box_site_cleaned_v1", "1");
-  }, node);
-  await page.reload();
+  await seedSite(page, sitePage([node]));
   await waitForRendered(page);
   await page.waitForTimeout(250); // let fonts/icons settle so measurements are stable
 }
@@ -112,18 +103,17 @@ function assertInvariants(g: Geometry, where: string) {
   expect(g.boxH, `${where}: box must have a real height`).toBeGreaterThan(8);
 }
 
-// Each case reloads a heavy dev page, so run them one at a time: in parallel the dev server simply cannot
-// serve 60+ reloads at once and every case times out, which looks like a failure but tells you nothing.
-test.describe.configure({ mode: "serial" });
+// These ran SERIAL for a long time, on the belief that the dev server could not serve 60+ reloads at once.
+// That was the wrong diagnosis: the seeding race below (see `helpers/seed-site`) simply loses more often the
+// busier the machine is, so adding workers added failures and taking them away hid the bug. With the race
+// gone the whole file runs in parallel — 65 cases in 40s against a production build, against 5.4 minutes
+// serial. Left parallel deliberately: if these ever start failing under load again, the cause is a race and
+// not the server, and forcing them serial would only hide it a second time.
 test.setTimeout(60_000);
 
 test.describe("Component layout invariants", () => {
-  test.beforeEach(async ({ page }) => {
-    await page.goto("/website/box-demo");
-    await page.evaluate(() => {
-      ["educo_box_site_v1", "educo_box_demo_v9", "educo_box_site_cleaned_v1"].forEach((k) => localStorage.removeItem(k));
-    });
-  });
+  // No `beforeEach` navigation: `seed` installs storage and navigates itself, so an extra page load here
+  // would only cost a second and re-open the race the helper exists to close.
 
   for (const component of COMPONENTS) {
     // THE REAL INSERTION PATH. This used to hand-write `{type:"component", component}`, which the palette
@@ -217,7 +207,6 @@ test.describe("Component layout invariants", () => {
    * and looks perfectly correct.
    */
   test("a ramp token painted on a design-system tree actually resolves on the canvas", async ({ page }) => {
-    await page.goto("/website/box-demo");
     await seed(page, {
       id: "tgt", type: "container", preset: "card", direction: "column", width: "100%",
       padding: 24, gap: 12, radius: 16, borderWidth: 0,
@@ -242,7 +231,6 @@ test.describe("Component layout invariants", () => {
    * only proof is asking the browser what a narrow component actually computed.
    */
   test("a narrow component responds to ITS OWN width, not the page's", async ({ page }) => {
-    await page.goto("/website/box-demo");
     // Same page, same viewport — only the component is narrow. If the query measured the page (which is wide),
     // both of these would come back `nowrap` and the responsive rule would be dead.
     await seed(page, { id: "tgt", type: "component", component: "alert", width: "18rem",
@@ -272,7 +260,6 @@ test.describe("Component layout invariants", () => {
   test("a hug-to-content component still sizes to its text (containment must stay off there)", async ({ page }) => {
     // The trade-off recorded in blockContainmentCss: intrinsic width and inline-size containment cannot coexist.
     // If containment ever leaks onto a hug block, this collapses to roughly its padding.
-    await page.goto("/website/box-demo");
     await seed(page, { id: "tgt", type: "component", component: "alert", width: "auto",
       alertSeverity: "info", alertForm: "inline", items: [{ id: "i1", title: "Heads up", body: "This is an alert message" }] });
     const w = await page.evaluate(() => (document.querySelector(".eu-alert") as HTMLElement).getBoundingClientRect().width);

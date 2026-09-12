@@ -1,4 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
+import { seedSite, sitePage } from "./helpers/seed-site";
 
 /**
  * RESIZING A GRID CELL, driven through the REAL builder.
@@ -16,29 +17,16 @@ import { test, expect, type Page } from "@playwright/test";
 
 /** A grid of `cells` painted cells, seeded straight into the builder's storage. */
 async function seedGrid(page: Page, cells: number, rows: number, minHeight?: number) {
-  await page.goto("/website/box-demo");
-  await page.evaluate(({ cells, rows, minHeight }) => {
-    const span = 12 / cells;
-    const kids = Array.from({ length: cells * rows }, (_, i) => ({
-      id: `c${i}`, type: "container", layout: "flex", direction: "column",
-      padding: 0, gap: 0, width: "100%", colSpan: span,
-      background: ["#c7d2fe", "#bbf7d0", "#fde68a", "#fca5a5"][i % 4],
-      children: [{ id: `t${i}`, type: "text", text: `Cell ${i}`, width: "auto" }],
-    }));
-    const site = {
-      pages: [{ id: "p1", name: "Home", path: "/", root: {
-        id: "root", type: "container", direction: "column", padding: 0, gap: 0, children: [
-          { id: "band", type: "container", direction: "row", rowBand: true, width: "fill", gap: 0, padding: 0, children: [
-            { id: "tgt", type: "container", layout: "grid", columns: 12, gap: 0, padding: 0, width: "100%", minHeight, children: kids },
-          ] },
-        ],
-      } }],
-      homeId: "p1",
-    };
-    localStorage.setItem("educo_box_site_v1", JSON.stringify(site));
-    localStorage.setItem("educo_box_site_cleaned_v1", "1");
-  }, { cells, rows, minHeight });
-  await page.reload();
+  const span = 12 / cells;
+  const kids = Array.from({ length: cells * rows }, (_, i) => ({
+    id: `c${i}`, type: "container", layout: "flex", direction: "column",
+    padding: 0, gap: 0, width: "100%", colSpan: span,
+    background: ["#c7d2fe", "#bbf7d0", "#fde68a", "#fca5a5"][i % 4],
+    children: [{ id: `t${i}`, type: "text", text: `Cell ${i}`, width: "auto" }],
+  }));
+  await seedSite(page, sitePage([
+    { id: "tgt", type: "container", layout: "grid", columns: 12, gap: 0, padding: 0, width: "100%", minHeight, children: kids },
+  ]));
   await page.waitForSelector('[data-box-id="tgt"]', { timeout: 15000 });
   await page.waitForTimeout(250);
 }

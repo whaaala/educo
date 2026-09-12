@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { seedSite, sitePage } from "./helpers/seed-site";
 import type { BoxNode } from "@/lib/box-model";
 import { siteFromRoot } from "@/lib/box-site";
 import { renderSitePage } from "@/lib/box-export";
@@ -39,19 +40,10 @@ test.describe("Advanced CSS on a plain block", () => {
 
   test("the CANVAS applies it too, and to the same value", async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 900 });
-    await page.goto("/website/box-demo");
-    await page.evaluate((css) => {
-      const site = { homeId: "p1", pages: [{ id: "p1", name: "Home", path: "/", root: {
-        id: "root", type: "container", direction: "column", children: [
-          { id: "band", type: "container", direction: "row", rowBand: true, width: "fill", children: [
-            { id: "sec", type: "container", direction: "column", width: "fill", advancedCss: css,
-              children: [{ id: "t", type: "text", text: "Term dates" }] },
-          ] },
-        ] } }] };
-      localStorage.setItem("educo_box_site_v1", JSON.stringify(site));
-      localStorage.setItem("educo_box_site_cleaned_v1", "1");
-    }, CSS);
-    await page.reload();
+    await seedSite(page, sitePage([
+      { id: "sec", type: "container", direction: "column", width: "fill", advancedCss: CSS,
+        children: [{ id: "t", type: "text", text: "Term dates" }] },
+    ]));
     await page.waitForSelector('[data-box-id="sec"]', { timeout: 20000 });
 
     const m = await measure('[data-box-id="sec"]')(page);
