@@ -274,12 +274,21 @@ test.describe("Alert actions", () => {
     const canvasClasses = (await page.locator('[data-box-id="tgt"] .eu-alert').getAttribute("class")) ?? "";
     for (const c of expected) expect(canvasClasses, `the CANVAS is missing ${c}`).toContain(c);
 
-    const canvasLook = await page.locator('[data-box-id="tgt"] .eu-alert').evaluate((n) => {
-      const c = getComputedStyle(n);
-      return [c.borderTopStyle, c.borderTopLeftRadius, c.padding, c.textAlign, c.alignItems].join("|");
-    });
     // Classes matching is not enough — what matters is that they RESOLVE to the same rendering.
-    expect(canvasLook, "the builder must render what the site will").toBe(exportLook);
+    //
+    // POLLED, and that is the last of this test's flakiness. The wait above proves the alert is in the
+    // DOM; it cannot prove the stylesheet that gives it its padding and radius has been applied, and the
+    // builder injects several style blocks of its own. Reading the computed style at one guessed moment
+    // meant that eight minutes into a loaded invariants run it could sample a half-styled box. Polling
+    // asserts the SETTLED rendering, which is what the rule is actually about — a genuine mismatch still
+    // fails, it just takes the timeout to do it.
+    await expect.poll(
+      async () => page.locator('[data-box-id="tgt"] .eu-alert').evaluate((n) => {
+        const c = getComputedStyle(n);
+        return [c.borderTopStyle, c.borderTopLeftRadius, c.padding, c.textAlign, c.alignItems].join("|");
+      }),
+      { timeout: 15000, message: "the builder must render what the site will" },
+    ).toBe(exportLook);
   });
 
   test("the CANVAS shows the same actions as the export — canvas = export", async ({ page }) => {

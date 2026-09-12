@@ -24,7 +24,7 @@ import { ICON_SET } from "./icons";
 import { PortalMenu, MenuItem, MenuHeader, MenuSep } from "./ui";
 import GridLayoutMenu, { type MenuAnchor } from "./GridLayoutMenu";
 import GallerySetupMenu from "./GallerySetupMenu";
-import { blockForKind, nodeForPhotos, PHOTO_SETUP } from "@/lib/box-presets";
+import { blockForKind, nodeForPhotos, photoGallery, PHOTO_SETUP, type GalleryPhoto } from "@/lib/box-presets";
 import { treeHoverCss, treeRevealCss } from "@/lib/interactions";
 import { colorToCSS } from "@/components/shared/ColorPalettePicker";
 import { COMPONENT_CSS } from "@/lib/educo-ui/components";
@@ -649,7 +649,13 @@ export default function BoxCanvas({
   const PALETTE_TYPE = "application/x-box-block";
   const nodeForKind = (kind: string): BoxNode => blockForKind(kind);
   const onCanvasDragOver = (e: React.DragEvent) => {
-    if (!editable || !e.dataTransfer.types.includes(PALETTE_TYPE)) return;
+    // FILES COUNT AS SOMETHING DROPPABLE, and this is the half that makes the drop happen at all: a
+    // browser only fires `drop` when `dragover` called `preventDefault()`. Left checking for a palette
+    // tile alone, the drop handler below could never run for a photograph dragged off the desktop — the
+    // page would simply open the picture as a document instead.
+    if (!editable) return;
+    const wanted = e.dataTransfer.types.includes(PALETTE_TYPE) || e.dataTransfer.types.includes("Files");
+    if (!wanted) return;
     e.preventDefault(); e.dataTransfer.dropEffect = "copy";
     const hit = computeDrop(e.clientX, e.clientY, null);
     setDropRect(hit?.rect ?? null);
@@ -666,9 +672,44 @@ export default function BoxCanvas({
     onChange(insertBox(rootRef.current, parentId, index, node));
   };
 
+  /**
+   * PHOTOGRAPHS DRAGGED IN FROM THE DESKTOP.
+   *
+   * This handler used to return the moment the drag carried no palette tile, so dropping a folder of
+   * pictures onto the page did nothing whatsoever — no block, no message, no clue that it was even a
+   * thing the builder had an opinion about. Dragging files onto a page is how everyone expects to add a
+   * picture, and it was the single most obvious route to a gallery.
+   *
+   * ONE picture becomes an Image block; SEVERAL become a gallery, because that is plainly what was meant.
+   * They go through `importPhoto` like every other upload, so they are downscaled on the way in and a
+   * dropped folder cannot fill the browser's storage the way a full-size one would.
+   */
+  const onDropFiles = async (files: File[], parentId: string, index: number, moveWidth: string | null) => {
+    const photos: GalleryPhoto[] = [];
+    for (const file of files) {
+      const { src, imgW, imgH } = await importPhoto(file);
+      if (src) photos.push({ src, imgW, imgH, alt: file.name.replace(/\.[a-z0-9]+$/i, "").replace(/[-_]+/g, " ").trim() });
+    }
+    if (!photos.length) return;
+    const node = photos.length === 1
+      ? createElement("image", { src: photos[0].src, imgW: photos[0].imgW, imgH: photos[0].imgH, alt: photos[0].alt, width: "100%", height: "auto" })
+      : photoGallery(photos, { across: photos.length >= 6 ? 4 : 3 });
+    insertAt(node, parentId, index, moveWidth);
+  };
+
   const onCanvasDrop = (e: React.DragEvent) => {
     if (!editable) return;
     const kind = e.dataTransfer.getData(PALETTE_TYPE);
+    // A DROP OF FILES, before the palette check — that check was the early return that made this silent.
+    const dropped = Array.from(e.dataTransfer.files ?? []).filter((f) => f.type.startsWith("image/"));
+    if (!kind && dropped.length) {
+      e.preventDefault();
+      const at = computeDrop(e.clientX, e.clientY, null);
+      setDropRect(null);
+      void onDropFiles(dropped, at ? at.target.parentId : rootRef.current.id,
+        at ? at.target.index : rootRef.current.children?.length ?? 0, at?.moveWidth ?? null);
+      return;
+    }
     if (!kind) return;
     e.preventDefault();
     const hit = computeDrop(e.clientX, e.clientY, null);
@@ -1560,7 +1601,7 @@ export default function BoxCanvas({
           ...(isDragging ? { opacity: 0.4 } : {}) }}
         className={`${isSel ? "outline outline-2 outline-indigo-500 outline-offset-[-2px]" : editable ? "hover:outline hover:outline-1 hover:outline-indigo-300/70 hover:outline-offset-[-1px]" : ""}`}
       >
-        <ElementView node={node} theme={theme} editable={editable} breakpoint={breakpoint} onText={(v) => onChange(updateBox(root, node.id, { text: v }))} onSrc={(v) => onChange(updateBox(root, node.id, { src: v }))} onPatchNode={(patch) => onChange(updateBox(root, node.id, patch))} itemSel={itemSel} setItemSel={setItemSel} />
+        <ElementView node={node} theme={theme} editable={editable} selected={isSel} breakpoint={breakpoint} onText={(v) => onChange(updateBox(root, node.id, { text: v }))} onSrc={(v) => onChange(updateBox(root, node.id, { src: v }))} onPatchNode={(patch) => onChange(updateBox(root, node.id, patch))} itemSel={itemSel} setItemSel={setItemSel} />
         {isSolo && <ChromeMirror blockId={node.id}><NodeToolbar node={node} isRoot={isRoot} />{resizeHandles}</ChromeMirror>}
       </div>
     );
@@ -2400,8 +2441,8 @@ function ComponentView({ node, editable, onPatchNode, breakpoint = "base", itemS
   return <div className="eu-root" style={styleVars} />;
 }
 
-function ElementView({ node, theme, editable, onText, onSrc, onPatchNode, breakpoint = "base", itemSel, setItemSel }: {
-  node: BoxNode; theme: SiteTheme; editable?: boolean; onText: (v: string) => void; onSrc: (v: string) => void; onPatchNode?: (patch: Partial<BoxNode>) => void; breakpoint?: Breakpoint;
+function ElementView({ node, theme, editable, selected, onText, onSrc, onPatchNode, breakpoint = "base", itemSel, setItemSel }: {
+  node: BoxNode; theme: SiteTheme; editable?: boolean; selected?: boolean; onText: (v: string) => void; onSrc: (v: string) => void; onPatchNode?: (patch: Partial<BoxNode>) => void; breakpoint?: Breakpoint;
   itemSel?: { boxId: string; id: string; parentId?: string } | null;
   setItemSel?: (v: { boxId: string; id: string; parentId?: string } | null) => void;
 }) {
@@ -2444,7 +2485,15 @@ function ElementView({ node, theme, editable, onText, onSrc, onPatchNode, breakp
               renderers call. */}
           <ImageBox theme={theme} rounded={false} src={node.src} alt={node.alt ?? ""} width={node.imgW} height={node.imgH} />
           {editable && (<>
+            {/* THE BUTTON BELONGS TO THE PICTURE YOU ARE WORKING ON — or to one with nothing in it yet,
+                where it is the only way in. It used to render on EVERY image at once, so a gallery of
+                twelve photographs came with twelve dark pills sitting permanently on top of them: the
+                thing being designed covered by the tool for changing it. The toolbar and the resize
+                handles already behave this way; this did not.
+                The input itself stays mounted either way — it is what "Replace" opens. */}
+            {(selected || !node.src) && (
             <button onClick={() => fileRef.current?.click()} className="absolute bottom-2 right-2 inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium bg-gray-900/80 text-white shadow-lg hover:bg-gray-900"><Upload className="w-3.5 h-3.5" /> {node.src ? "Replace" : "Upload"}</button>
+            )}
             {/* The natural size is measured BEFORE the patch, so the picture and its shape land in one undo
                 step — and so replacing a photo can never leave the previous one's dimensions behind. */}
             {/* DOWNSCALED ON THE WAY IN (`importPhoto`), not stored as the camera produced it. A saved site

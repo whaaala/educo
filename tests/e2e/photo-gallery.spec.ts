@@ -213,3 +213,127 @@ test.describe("a photograph is not rounded unless someone asked", () => {
     expect(exported, "canvas = export").toEqual(canvas);
   });
 });
+
+test.describe("photographs dragged in from the desktop", () => {
+  // This did NOTHING, silently: the drop handler returned the moment the drag carried no palette tile,
+  // and `dragover` never called `preventDefault()` so the browser did not fire `drop` at all. Dragging
+  // files onto a page is how everyone expects to add a picture, and it was the most obvious route to a
+  // gallery — named to the user as a defect, and then not fixed in the change that fixed the other one.
+
+  /** Drop real image files onto the canvas the way a desktop drag does. */
+  const dropPhotos = (page: Page, count: number) => page.evaluate(async (n) => {
+    const make = (w: number, h: number, i: number) => {
+      const c = document.createElement("canvas"); c.width = w; c.height = h;
+      const x = c.getContext("2d")!; x.fillStyle = `hsl(${(i * 70) % 360},60%,50%)`; x.fillRect(0, 0, w, h);
+      return new Promise<Blob>((r) => c.toBlob((b) => r(b!), "image/jpeg", 0.9));
+    };
+    const dt = new DataTransfer();
+    for (let i = 0; i < n; i++) dt.items.add(new File([await make(2400, 1600, i)], `sports day ${i + 1}.jpg`, { type: "image/jpeg" }));
+    const canvas = document.querySelector(".eu-tokens") as HTMLElement;
+    const r = canvas.getBoundingClientRect();
+    const opts = { bubbles: true, cancelable: true, clientX: r.left + r.width / 2, clientY: r.top + 80, dataTransfer: dt };
+    canvas.dispatchEvent(new DragEvent("dragover", opts));
+    canvas.dispatchEvent(new DragEvent("drop", opts));
+  }, count);
+
+  const saved = (page: Page) => page.evaluate(() => {
+    const site = JSON.parse(localStorage.getItem("educo_box_site_v1") || "{}");
+    const images: (string | undefined)[] = []; const grids: number[] = [];
+    const walk = (n: Record<string, unknown>) => {
+      if (n.type === "image") images.push(n.imgW as unknown as string);
+      if (n.layout === "grid") grids.push(((n.children as unknown[]) ?? []).length);
+      ((n.children as Record<string, unknown>[]) ?? []).forEach(walk);
+    };
+    if (site.pages) walk(site.pages[0].root);
+    return { images: images.length, widest: Math.max(0, ...images.map(Number)), grids, bytes: (localStorage.getItem("educo_box_site_v1") || "").length };
+  });
+
+  test("one photograph becomes an Image block, downscaled like any other upload", async ({ page }) => {
+    await freshBuilder(page);
+    await dropPhotos(page, 1);
+    await expect.poll(async () => (await saved(page)).images, { timeout: 20000 }).toBe(1);
+    const s = await saved(page);
+    expect(s.grids, "one picture is a picture, not a gallery of one").toEqual([]);
+    expect(s.widest, "and it goes through the same importer, so it cannot fill the store").toBeLessThanOrEqual(1600);
+  });
+
+  test("several become a gallery, because that is plainly what was meant", async ({ page }) => {
+    await freshBuilder(page);
+    await dropPhotos(page, 5);
+    await expect.poll(async () => (await saved(page)).images, { timeout: 30000 }).toBe(5);
+    const s = await saved(page);
+    expect(s.grids, "one grid holding all five").toEqual([5]);
+    expect(s.bytes, "five full-size photographs would not have fitted in the browser at all").toBeLessThan(2_000_000);
+  });
+
+  test("the canvas ACCEPTS the drag, which is what makes a real drop happen at all", async ({ page }) => {
+    // The half a synthesised drop cannot test by itself. A browser only fires `drop` when `dragover`
+    // called `preventDefault()` — so with the canvas refusing the drag, a real user's photograph would
+    // be opened as a document by the browser and the page would never see it. Dispatching the events by
+    // hand bypasses that rule, which is exactly why it has to be asserted directly.
+    await freshBuilder(page);
+    const accepted = await page.evaluate(() => {
+      const dt = new DataTransfer();
+      dt.items.add(new File([new Uint8Array([1, 2, 3])], "photo.jpg", { type: "image/jpeg" }));
+      const canvas = document.querySelector(".eu-tokens") as HTMLElement;
+      const r = canvas.getBoundingClientRect();
+      const ev = new DragEvent("dragover", { bubbles: true, cancelable: true, clientX: r.left + 20, clientY: r.top + 20, dataTransfer: dt });
+      canvas.dispatchEvent(ev);
+      return ev.defaultPrevented;
+    });
+    expect(accepted, "a drag carrying files must be accepted, or no drop event is ever delivered").toBe(true);
+  });
+
+  test("a drag of something that is not a picture is left alone", async ({ page }) => {
+    await freshBuilder(page);
+    await page.evaluate(() => {
+      const dt = new DataTransfer();
+      dt.items.add(new File(["hello"], "notes.txt", { type: "text/plain" }));
+      const canvas = document.querySelector(".eu-tokens") as HTMLElement;
+      const r = canvas.getBoundingClientRect();
+      const opts = { bubbles: true, cancelable: true, clientX: r.left + 10, clientY: r.top + 10, dataTransfer: dt };
+      canvas.dispatchEvent(new DragEvent("dragover", opts));
+      canvas.dispatchEvent(new DragEvent("drop", opts));
+    });
+    await page.waitForTimeout(1200);
+    expect((await saved(page)).images, "nothing is invented from a file we cannot show").toBe(0);
+  });
+});
+
+test.describe("the editor's chrome belongs to the block you are working on", () => {
+  test("the Replace button is on the SELECTED picture only, not on all of them", async ({ page }) => {
+    // A gallery of twelve photographs used to arrive with twelve dark pills sitting permanently on top of
+    // them — the thing being designed covered by the tool for changing it.
+    await freshBuilder(page);
+    await openGallerySetup(page);
+    const urls = await makePhotos(page, [[1200, 800], [1200, 800], [1200, 800], [1200, 800]]);
+    await page.setInputFiles('input[aria-label="Choose photos for the gallery"]', asFiles(urls));
+    await expect(page.locator('[aria-label="Add a photo gallery"] li img')).toHaveCount(4, { timeout: 30000 });
+    await page.locator('[aria-label="Add a photo gallery"] button', { hasText: /^Add gallery of 4$/ }).click();
+    await page.waitForTimeout(1500);
+
+    // Close the Blocks panel first — it floats OVER the left of the canvas, so clicks aimed at the first
+    // photograph land on the panel instead. (That cost a debugging round: the chain was working the whole
+    // time and the clicks were never reaching it.)
+    await page.keyboard.press("b");
+    await page.waitForTimeout(400);
+
+    const pills = () => page.locator('[data-box-id] button', { hasText: /Replace/ });
+    await expect(pills(), "nothing selected — no pills over the photographs").toHaveCount(0);
+
+    // CLICK UNTIL IT IS SELECTED, rather than a fixed number of times. "Click selects the box, click
+    // again goes inside" walks a chain whose DEPTH depends on the tree — two steps to reach this picture,
+    // three in a grid nested one level deeper — so a hardcoded count tests the tree, not the rule.
+    const first = page.locator('[data-box-id] img').first();
+    const wrapId = await first.evaluate((i) => i.closest("[data-box-id]")!.getAttribute("data-box-id")!);
+    const b = (await first.boundingBox())!;
+    for (let i = 0; i < 5; i++) {
+      const selected = await page.locator(`[data-box-id="${wrapId}"]`).evaluate((e) => e.className.includes("outline-indigo-500"));
+      if (selected) break;
+      await page.mouse.click(b.x + b.width * 0.5, b.y + b.height * 0.5);
+      await page.waitForTimeout(250);
+    }
+    await expect(page.locator(`[data-box-id="${wrapId}"]`), "the picture is the thing being worked on").toHaveClass(/outline-indigo-500/);
+    await expect(pills(), "exactly one pill — on that picture, not on the other three").toHaveCount(1);
+  });
+});
