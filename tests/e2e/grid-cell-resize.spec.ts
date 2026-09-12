@@ -198,3 +198,134 @@ test.describe("resizing a grid cell's height", () => {
     expect(Math.abs(r2 - r3), "the rows that were NOT dragged share the rest evenly").toBeLessThan(4);
   });
 });
+
+/**
+ * THE GRABBED EDGE IS THE ONLY ONE THAT MOVES — the rule this project has now broken three times.
+ *
+ * The two tests above cover the edges that were already right. These cover the two that were not, each in
+ * the exact shape that failed, because both failed for ONE reason: the drag wrote a SIZE (a span, a
+ * min-height) and left a partner to absorb the difference. Where the partner could not — a previous cell
+ * already at the floor, a row above already at its content height — the size grew anyway and it grew out of
+ * the FAR edge. Measured before the fix: the left edge moved the right edge 171px, and the top edge moved
+ * the bottom edge by the whole drag on every grid tried.
+ */
+test.describe("the grabbed edge is the only one that moves", () => {
+  /** A full rect — `rectOf` above answers about the down axis only. */
+  const boxOf = (page: Page, id: string) =>
+    page.locator(`[data-box-id="${id}"]`).evaluate((el) => {
+      const r = el.getBoundingClientRect();
+      return { left: r.left, right: r.right, top: r.top, bottom: r.bottom, width: r.width, height: r.height };
+    });
+
+  test("the LEFT edge grows the cell leftward — the right edge never moves", async ({ page }) => {
+    // FOUR across, which is the shape that failed. With two, the previous cell had room to give and the bug
+    // was invisible; with four it is already at the wrap threshold, so the span went on growing to the right.
+    await seedGrid(page, 4, 2);
+    await selectCell(page, "c1"); // a cell WITH a previous sibling, so there is a boundary to move
+    const before = await boxOf(page, "c1");
+    const grid = (await page.locator('[data-box-id="tgt"]').boundingBox())!;
+    await dragHandle(page, "Resize left edge", -grid.width / 6, 0); // two of twelve columns, leftward
+
+    const after = await boxOf(page, "c1");
+    expect(Math.abs(after.right - before.right), "the RIGHT edge — the one not being held — does not move").toBeLessThan(3);
+    expect(after.left, "…because the LEFT edge, the one under the pointer, is what moved").toBeLessThan(before.left - 60);
+  });
+
+  test("dragging the LEFT edge past what the row can give still never moves the right edge", async ({ page }) => {
+    // The clamp itself. Pushed beyond the point where the previous cell can give ground, the span used to
+    // carry on growing — and a grid item grows to the RIGHT, so the far edge ran away across the page.
+    await seedGrid(page, 4, 2);
+    await selectCell(page, "c1");
+    const before = await boxOf(page, "c1");
+    const grid = (await page.locator('[data-box-id="tgt"]').boundingBox())!;
+    await dragHandle(page, "Resize left edge", -grid.width * 1.5, 0); // far further than there is room for
+
+    const after = await boxOf(page, "c1");
+    expect(Math.abs(after.right - before.right), "the far edge is still exactly where it was").toBeLessThan(3);
+  });
+
+  test("the TOP edge moves the BOUNDARY — the row above gives back exactly what this row takes", async ({ page }) => {
+    // The bug: a min-height is a FLOOR, so handing the row above a smaller one changed nothing at all, and
+    // this row grew DOWNWARD instead — the one edge a top-edge drag is required to leave alone.
+    await seedGrid(page, 2, 2);
+    await selectCell(page, "c2"); // second row, so there IS a boundary above it
+    const before = await boxOf(page, "c2");
+    const aboveBefore = await heightOf(page, "c0");
+    await dragHandle(page, "Resize top edge", 0, -60);
+
+    const after = await boxOf(page, "c2");
+    const aboveAfter = await heightOf(page, "c0");
+    expect(Math.abs(after.bottom - before.bottom), "the BOTTOM edge is not the one being held, so it stays").toBeLessThan(3);
+    expect(Math.abs((after.height - before.height) - (aboveBefore - aboveAfter)),
+      "the boundary moved and nothing else did: what one row gained, the other gave").toBeLessThan(3);
+  });
+
+  test("the TOP edge dragged past the room above still never pushes the bottom down", async ({ page }) => {
+    // The clamp. There is only ever as much room above as that row can spare; asked for more, the old code
+    // wrote the whole request into this row and let it grow out of its far edge instead.
+    await seedGrid(page, 2, 2);
+    await selectCell(page, "c2");
+    const before = await boxOf(page, "c2");
+    await dragHandle(page, "Resize top edge", 0, -600); // far more than any row above could ever give
+
+    const after = await boxOf(page, "c2");
+    expect(Math.abs(after.bottom - before.bottom), "the bottom edge is still exactly where it was").toBeLessThan(3);
+  });
+});
+
+/**
+ * A DRAG IS ONE GESTURE — one picture while it happens, one entry when it ends.
+ *
+ * It used to commit the whole page into React state on every pointer move: on a 500-block page at a real
+ * mouse's 120 events/sec that ran frames to 27ms (below 60fps — the lag and the stepping the user reported),
+ * and it left ~200 undo entries, so one Ctrl+Z undid a single frame of the drag.
+ */
+test.describe("a drag is one gesture", () => {
+  test("what the drag SHOWS is what the release COMMITS", async ({ page }) => {
+    // The preview paints the DOM directly, so this is the guard that it cannot drift from the tree: the two
+    // are read either side of the mouse-up and must be the same number.
+    await seedGrid(page, 2, 2);
+    await selectCell(page, "c0");
+    const h = (await page.locator('[aria-label="Resize bottom edge"]').boundingBox())!;
+    const x = h.x + h.width / 2, y = h.y + h.height / 2;
+    await page.mouse.move(x, y);
+    await page.mouse.down();
+    for (let i = 1; i <= 8; i++) await page.mouse.move(x, y + (180 * i) / 8);
+    await page.waitForTimeout(120);
+    const shown = await heightOf(page, "c0"); // still mid-drag: nothing has been committed yet
+    await page.mouse.up();
+    await page.waitForTimeout(300);
+    const committed = await heightOf(page, "c0");
+
+    expect(shown, "the drag actually moved something").toBeGreaterThan(100);
+    expect(committed, "and the committed tree renders the picture the drag was showing").toBeCloseTo(shown, -0.5);
+  });
+
+  test("ONE undo puts back the whole drag", async ({ page }) => {
+    await seedGrid(page, 2, 2);
+    await selectCell(page, "c0");
+    const before = await heightOf(page, "c0");
+    await dragHandle(page, "Resize bottom edge", 0, 180);
+    expect(await heightOf(page, "c0"), "the drag landed").toBeGreaterThan(before + 100);
+
+    await page.keyboard.press("Control+z");
+    await page.waitForTimeout(350);
+    expect(await heightOf(page, "c0"), "one undo, not one per frame of the gesture").toBeCloseTo(before, -0.5);
+  });
+
+  test("the page is written to storage ONCE for a whole drag", async ({ page }) => {
+    await seedGrid(page, 2, 2);
+    await selectCell(page, "c0");
+    await page.evaluate(() => {
+      (window as unknown as { __w: number }).__w = 0;
+      const orig = Storage.prototype.setItem;
+      Storage.prototype.setItem = function (k: string, v: string) {
+        if (k === "educo_box_site_v1") (window as unknown as { __w: number }).__w++;
+        return orig.call(this, k, v);
+      };
+    });
+    await dragHandle(page, "Resize bottom edge", 0, 180);
+    const writes = await page.evaluate(() => (window as unknown as { __w: number }).__w);
+    expect(writes, "a drag re-serialised the whole site on every pointer move").toBeLessThanOrEqual(2);
+  });
+});

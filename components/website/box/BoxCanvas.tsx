@@ -760,6 +760,34 @@ export default function BoxCanvas({
   const MIN_ROW_PX = 24;
 
   /**
+   * What a box would be tall if it had no `min-height` of its own — the height its CONTENT needs.
+   *
+   * A row cannot be squeezed below this, and knowing by how much it CAN be squeezed is what lets a top-edge
+   * drag keep the bottom edge still (see `startResizeGridCell`). Measured from the children rather than read
+   * from `scrollHeight`, which reports the box's own height once a `min-height` is holding it open and so
+   * always says the slack is zero.
+   *
+   * Out-of-flow children are skipped: the editor's "Empty — drag a block in" hint and the leftover-columns
+   * ghost are `position: absolute` precisely so they contribute no height, and counting them here would put
+   * that height back.
+   */
+  const naturalHeightOf = (el: HTMLElement): number => {
+    const cs = getComputedStyle(el);
+    const padT = parseFloat(cs.paddingTop) || 0, padB = parseFloat(cs.paddingBottom) || 0;
+    const brT = parseFloat(cs.borderTopWidth) || 0, brB = parseFloat(cs.borderBottomWidth) || 0;
+    const top = el.getBoundingClientRect().top;
+    let content = top + brT + padT; // an empty box is its own padding and nothing else
+    for (const child of Array.from(el.children)) {
+      const ce = child as HTMLElement;
+      if (getComputedStyle(ce).position === "absolute") continue;
+      const cr = ce.getBoundingClientRect();
+      if (!cr.height && !cr.width) continue;
+      content = Math.max(content, cr.bottom);
+    }
+    return Math.max(0, content - top + padB + brB);
+  };
+
+  /**
    * Resize a GRID CELL by dragging its edges — in TRACKS, not pixels.
    *
    * A grid item's `width: 60%` is sixty percent of the cell it already sits in, so the generic flow resize
@@ -831,11 +859,98 @@ export default function BoxCanvas({
     // height has to be written to every cell in the row — setting one alone does nothing at all.
     const rowH0 = Math.max(...row.map((s) => s.rect.height), 1);
     const aboveH0 = above.length ? Math.max(...above.map((s) => s.rect.height), 1) : 0;
+    /**
+     * How much the row ABOVE can actually give back — its height today, less the height its content needs.
+     *
+     * This is what anchors the TOP edge. A `min-height` is a floor, not a cap, so writing a smaller one into
+     * a row that is already at its content height changes nothing at all; the row below then grew by going
+     * DOWNWARD and the edge under the pointer never moved — the opposite edge did. Knowing the slack means
+     * the drag can be clamped to what is really available, so the bottom edge never budges.
+     */
+    const slackOf = (cells: { id: string }[], h0: number) =>
+      cells.length
+        ? Math.max(0, h0 - Math.max(...cells.map((s) => {
+            const el2 = document.querySelector<HTMLElement>(`[data-box-id="${CSS.escape(s.id)}"]`);
+            return el2 ? naturalHeightOf(el2) : h0;
+          }), MIN_ROW_PX))
+        : 0;
+    const aboveSlack = slackOf(above, aboveH0);
+    /** And how much THIS row can give back, which is what bounds a top edge dragged downward. */
+    const rowSlack = slackOf(row, rowH0);
+
+    // ── THE DRAG PAINTS ITSELF, AND COMMITS ONCE ──────────────────────────────────────────────────────
+    //
+    // It used to commit the whole page into React state on every pointer move. Every move therefore
+    // re-rendered the canvas, pushed an undo entry and re-serialised the site to localStorage: measured on a
+    // 500-block page at a real mouse's 120 events/sec, frames ran to 27ms at the 90th percentile — below
+    // 60fps, which is the lag and the stepping — and one drag left ~200 entries in the undo history, so a
+    // single Ctrl+Z undid one frame of it.
+    //
+    // So the drag now writes its result STRAIGHT ONTO THE DOM and commits one tree on release. It is the
+    // same picture because it is the same code: the preview asks `childStyle` and `containerStyle` — the two
+    // functions the renderer itself calls — what this tree looks like, rather than hand-writing a second
+    // opinion that could drift from the first.
+    //
+    // Every property it touches is remembered and PUT BACK before the commit, so React is never left holding
+    // an inline value it did not write. Without that, a property the final tree does not emit (a span of 1
+    // emits no `grid-column` at all) would be left painted on the element for ever, because React compares
+    // its own previous output and would see nothing to remove.
+    const touched = new Map<HTMLElement, Map<string, string>>();
+    const put = (el: HTMLElement, prop: string, value: string) => {
+      let seen = touched.get(el);
+      if (!seen) { seen = new Map(); touched.set(el, seen); }
+      if (!seen.has(prop)) seen.set(prop, el.style.getPropertyValue(prop));
+      el.style.setProperty(prop, value);
+    };
+    const restore = () => {
+      for (const [el, seen] of touched) for (const [prop, was] of seen) {
+        if (was) el.style.setProperty(prop, was); else el.style.removeProperty(prop);
+      }
+      touched.clear();
+    };
+    const paintPreview = (tree: BoxNode) => {
+      const parentNow = findByIdLocal(tree, info.parent.id);
+      if (!parentNow) return;
+      const rp = resolveResponsive(parentNow, breakpoint);
+      const gNow = document.querySelector<HTMLElement>(`[data-box-id="${CSS.escape(rp.id)}"]`);
+      // The grid's own row track list is a FUNCTION of the cells: which row a cell lands on depends on the
+      // spans before it, and a row that has been given a height becomes `auto` while the rest stay `1fr`
+      // (see `gridRowTracks`). So widening a cell can change the container too, and the preview has to ask.
+      if (gNow) put(gNow, "grid-template-rows", String(containerStyle(rp, breakpoint).gridTemplateRows ?? ""));
+      for (const child of rp.children ?? []) {
+        const cEl = document.querySelector<HTMLElement>(`[data-box-id="${CSS.escape(child.id)}"]`);
+        if (!cEl) continue;
+        const cs2 = childStyle(child, rp, breakpoint);
+        put(cEl, "grid-column", String(cs2.gridColumn ?? ""));
+        if (hasS || hasN) {
+          const mh = isContainer(child)
+            ? containerStyle(child, breakpoint).minHeight
+            : child.minHeight != null ? remLen(child.minHeight) : undefined;
+          put(cEl, "min-height", String(mh ?? ""));
+        }
+      }
+      // The selection chrome only re-measures on a render, and there are none until release — so the
+      // handles would come away from the box the instant it started to move. They follow it here instead,
+      // inside the same frame, which is also why the drag no longer feels a step behind the pointer.
+      for (const mirror of Array.from(document.querySelectorAll<HTMLElement>("[data-chrome-mirror]"))) {
+        const target = document.querySelector<HTMLElement>(`[data-box-id="${CSS.escape(mirror.dataset.chromeMirror ?? "")}"]`);
+        if (!target) continue;
+        const q = target.getBoundingClientRect();
+        mirror.style.left = `${q.left}px`; mirror.style.top = `${q.top}px`;
+        mirror.style.width = `${q.width}px`; mirror.style.height = `${q.height}px`;
+      }
+    };
+
+    // EVERY FRAME IS COMPUTED FROM THE TREE AS IT WAS WHEN THE DRAG BEGAN, never from the last frame's
+    // answer. One pointer position gives one result, so the drag is reversible by construction and cannot
+    // accumulate — and because nothing is committed until release, what is committed IS the last position
+    // the pointer was in, which is what "it lands where I let go" means.
+    const base = rootRef.current;
     setResizeCursor(cursorFor(edge)); setResizing(true);
     let raf = 0, pending: BoxNode | null = null;
-    const flush = () => { raf = 0; if (pending) { onChange(pending); pending = null; } };
+    const flush = () => { raf = 0; if (pending) paintPreview(pending); };
     const onMove = (ev: MouseEvent) => {
-      let tree = rootRef.current;
+      let tree = base;
       // ── ACROSS: the boundary between two cells is SHARED, so it takes from the neighbour ──
       // This is the whole difference from the first attempt, which pinned the dragged cell to an absolute
       // column: that turned its auto-placed siblings into items that had to flow AROUND it, and they scattered
@@ -861,12 +976,24 @@ export default function BoxCanvas({
         // back in brings a wrapped neighbour up beside it at the width just freed. The version this replaces
         // accumulated a delta and clamped the neighbour at the floor, so out-and-back left the row four
         // columns short — and once the neighbour had wrapped nothing was written to it at all.
-        const span = Math.max(1, Math.min(track, want));
+        //
+        // THE TWO EDGES HAVE DIFFERENT CEILINGS, and that is the fix for a west drag moving the wrong edge.
+        // `NEIGHBOUR_MIN` is a WRAP threshold, not a width floor: past it the neighbour stops sharing and
+        // drops to the next row, which is what lets an EAST drag carry the cell out to the full width.
+        //
+        // A cell BEFORE this one has nowhere to wrap to — a grid places items in source order, so the only
+        // thing that can move this cell's left edge is the previous cell giving ground. Past the point where
+        // it can, the span went on growing anyway and the cell grew out of its RIGHT edge instead: measured
+        // on a four-across grid, dragging the left edge moved the right edge 171px. So a west drag is capped
+        // at what the pair actually owns, and because that neighbour cannot wrap, its floor is one column —
+        // the wrap threshold would be a wall it has no way past.
+        const ceiling = hasE ? track : Math.max(1, pairBudget - 1);
+        const span = Math.max(1, Math.min(ceiling, want));
         tree = writeBox(tree, id, { colSpan: span });
         if (neighbour) {
           const beside = pairBudget - span;                    // what the neighbour needs to fit alongside
           const nSpan = spanOf(neighbour.node);
-          tree = writeBox(tree, neighbour.id, { colSpan: beside >= NEIGHBOUR_MIN ? beside : nSpan });
+          tree = writeBox(tree, neighbour.id, { colSpan: beside >= (hasE ? NEIGHBOUR_MIN : 1) ? beside : nSpan });
         }
       }
       // ── DOWN: the grabbed edge moves, and THIS row is the one that changes size ──
@@ -884,21 +1011,40 @@ export default function BoxCanvas({
         const h = Math.max(MIN_ROW_PX, Math.round(rowH0 + dy));
         for (const s of row) tree = writeBox(tree, s.id, { minHeight: h });
       } else if (hasN) {
-        const wanted = Math.max(MIN_ROW_PX, Math.round(rowH0 - dy));
-        // THIS row always becomes the size that was asked for — the edge under the pointer must follow it.
-        for (const s of row) tree = writeBox(tree, s.id, { minHeight: wanted });
-        // The row above then gives back as much of that as it can spare, which is what keeps this row's
-        // BOTTOM edge still. When it has nothing to spare (a row already at its content height) it keeps what
-        // it has and the page grows instead — growing the box being held matters more than pinning its far
-        // edge, and refusing to grow at all was the bug: the handle moved and nothing happened.
-        const take = Math.min(Math.max(0, wanted - rowH0), Math.max(0, aboveH0 - MIN_ROW_PX));
-        if (take > 0) for (const s of above) tree = writeBox(tree, s.id, { minHeight: Math.round(aboveH0 - take) });
+        // THE ROW GROWS UPWARD BY EXACTLY WHAT THE ROW ABOVE CAN GIVE, AND NOT A PIXEL MORE.
+        //
+        // The previous version wrote the full requested height into this row and then asked the row above to
+        // absorb it. A `min-height` is a FLOOR, though, so a row already sitting at its content height —
+        // which, in a grid nobody has given a height to, is every row — simply ignored the smaller number it
+        // was handed. This row grew anyway, downward, and the top edge the user was holding did not move at
+        // all: measured at 0px moved on the grabbed edge and 120px on the opposite one, on all four of the
+        // grids tried. That is the edge-anchoring rule this project has now broken three times.
+        //
+        // Clamping to the real slack is the honest version: where there is room above (a grid given a height,
+        // whose rows share it — which is the only case where a top-edge drag has anything to mean) the row
+        // grows and its bottom edge stays exactly still; where there is none, the edge does not move, because
+        // there is nowhere for it to go.
+        // Both directions are bounded by the same idea — the boundary moves as far as the row on the far side
+        // of it can give. Up, that is the row above's slack; down, it is this row's own. With NO row above,
+        // the boundary is the grid's own top edge and cannot move at all: shrinking this row there would pull
+        // its BOTTOM up while the edge under the pointer stayed put, which is the same defect mirrored.
+        const rise = Math.max(above.length ? -rowSlack : 0, Math.min(-dy, aboveSlack));
+        if (Math.round(rise) !== 0) {
+          const wanted = Math.max(MIN_ROW_PX, Math.round(rowH0 + rise));
+          for (const s of row) tree = writeBox(tree, s.id, { minHeight: wanted });
+          for (const s of above) tree = writeBox(tree, s.id, { minHeight: Math.max(MIN_ROW_PX, Math.round(aboveH0 - rise)) });
+        }
       }
       pending = tree;
       if (!raf) raf = requestAnimationFrame(flush);
     };
     const onUp = () => {
-      if (raf) { cancelAnimationFrame(raf); flush(); }
+      if (raf) { cancelAnimationFrame(raf); raf = 0; }
+      // PUT THE PREVIEW BACK, THEN COMMIT ONCE. In that order: the commit is the only thing that may leave a
+      // mark, so React re-renders from a DOM it alone has written to. One tree, one undo entry, one write to
+      // storage — and it is the LAST pointer position, so the drag ends where the pointer did.
+      restore();
+      if (pending) { onChange(pending); pending = null; }
       setResizing(false); setResizeCursor(null);
       document.removeEventListener("mousemove", onMove); document.removeEventListener("mouseup", onUp);
     };
@@ -1431,6 +1577,11 @@ export default function BoxCanvas({
     if (!box) return null;
     return createPortal(
       <div
+        // NAMED so a drag can move it WITHIN THE FRAME, without a render. A drag paints itself straight onto
+        // the DOM (see `paintPreview`), so nothing re-renders while the pointer is down and this mirror —
+        // which only re-measures on a render — would otherwise sit frozen at the size the box had when the
+        // drag began: the handles would come away from the box the moment it started to change.
+        data-chrome-mirror={blockId}
         style={{ position: "fixed", ...box, pointerEvents: "none", zIndex: CHROME_Z.handle }}
       >{children}</div>,
       document.body,

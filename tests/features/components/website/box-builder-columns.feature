@@ -278,6 +278,50 @@ Feature: The twelve-column grid in the Box Builder
     When I drag a cell's left edge
     Then its right edge stays exactly where it was
 
+  # ── The grabbed edge, on all four sides ───────────────────────────────────
+  # Reported as three faults at once — stepped, laggy, and landing somewhere other than where the pointer was
+  # let go. They were one fault: the drag wrote a SIZE and left a partner to absorb the difference, and where
+  # the partner could not, the size grew out of the FAR edge instead.
+
+  Scenario: Dragging the left edge takes room from the cell before it
+    Given a row of four cells
+    When I drag the second cell's left edge leftwards
+    Then the cell before it gives up exactly that much room
+    And my cell's right edge has not moved at all
+
+  Scenario: The left edge stops when there is no more room to take
+    Given the cell before mine is already as narrow as it can be
+    When I keep dragging leftwards
+    Then my cell simply stops growing
+    And its right edge is still exactly where it was
+
+  Scenario: Dragging the top edge moves the boundary between two rows
+    When I drag a cell's top edge upwards
+    Then the row above gives back exactly what this row takes
+    And this row's bottom edge does not move
+
+  Scenario: The top edge stops when the row above has nothing to give
+    Given the row above is already only as tall as the things in it
+    When I drag my cell's top edge upwards
+    Then nothing is pushed downwards to make room
+    And my cell's bottom edge is still exactly where it was
+
+  # ── A drag is one gesture ─────────────────────────────────────────────────
+
+  Scenario: What the drag shows is what letting go commits
+    When I drag a cell's edge and hold the pointer still
+    Then the canvas is already showing the result
+    And letting go leaves the page exactly as it was being shown
+
+  Scenario: One drag, one undo
+    When I drag a cell's edge right across the page and let go
+    And I press Ctrl+Z once
+    Then the whole drag is undone, not one frame of it
+
+  Scenario: A drag does not re-save the site on every pointer move
+    When I drag a cell's edge
+    Then the page is written to storage once, when I let go
+
   # ── Empty space ────────────────────────────────────────────────────────────
 
   Scenario: Leftover columns can be filled, but only when asked
@@ -302,6 +346,29 @@ Feature: The twelve-column grid in the Box Builder
   Scenario: Space across and space down are separate
     When I set Space across wider than Space down
     Then the columns have more air between them than the rows
+
+  Scenario: Spacing is swept, not typed
+    Given I have selected a grid
+    Then Space across and Space down are sliders, like the spacing control above them
+    And sweeping one changes the canvas as I sweep
+
+  Scenario: An axis follows the shared spacing until it is given one of its own
+    Then each axis says it is matching "Space between blocks"
+    When I sweep one of them
+    Then that axis has a value of its own
+    And it offers to go back to matching the shared spacing
+    When I take that offer
+    Then it follows the shared spacing again
+
+  Scenario: One sweep, one undo
+    When I sweep a spacing slider from nothing to wide open
+    And I press Ctrl+Z once — with the slider still focused
+    Then the whole sweep is undone
+
+  Scenario: Two different controls are two separate acts
+    When I sweep Space across and then immediately sweep Space down
+    And I press Ctrl+Z once
+    Then only the second sweep is undone
 
   # ── Selecting ──────────────────────────────────────────────────────────────
 

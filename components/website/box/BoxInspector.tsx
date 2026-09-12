@@ -94,6 +94,31 @@ function Range({ title, value, min, max, fallback, onChange, unit = "px" }: { ti
   return <Slider label={title} value={v} min={min} max={max} onChange={onChange} formatValue={unit === "rem" ? (x) => `${toRem(x)}rem` : (x) => `${x}${unit}`} />;
 }
 
+/**
+ * One AXIS of spacing — a slider that can also be handed back to "same as the spacing above".
+ *
+ * The unset state is the whole reason this is not just a `Range`. A slider has no way to say "nothing set
+ * here": every position is a number. So the slider shows what the axis is CURRENTLY worth (its own value, or
+ * the shared one it is following) and a line underneath says which of those two it is — and, once the axis
+ * has a value of its own, offers it back. Without that, opening this panel and nudging the slider would
+ * silently pin an axis that was meant to keep following, and there would be no way to un-pin it.
+ */
+function GapRange({ label, value, fallback, onChange, onMatch }: {
+  label: string; value?: number; fallback: number; onChange: (n: number) => void; onMatch: () => void;
+}) {
+  const own = value != null;
+  return (
+    <div className="flex flex-col gap-0.5">
+      <Slider label={label} value={value ?? fallback} min={0} max={128} onChange={onChange} formatValue={(x) => `${toRem(x)}rem`} />
+      <button
+        type="button" onClick={onMatch} disabled={!own}
+        aria-label={`${label} — use the same spacing as "Space between blocks"`}
+        className="self-start text-[0.625rem] text-gray-500 hover:text-brand disabled:hover:text-gray-500 disabled:cursor-default dark:text-gray-400 midnight:text-slate-400 purple:text-purple-300"
+      >{own ? "Match “Space between blocks”" : "Matching “Space between blocks”"}</button>
+    </div>
+  );
+}
+
 // A labelled colour control that reuses the design-system OKLCH palette picker (spectrum + palettes + hex).
 // When `onClear` is given, the picker offers a "None (transparent)" choice and shows a checkerboard when unset.
 function ColorRow({ title, value, fallback, onSelect, onClear }: { title: string; value?: string; fallback: string; onSelect: (c: string) => void; onClear?: () => void; mode?: "matrix" | "both" }) {
@@ -640,13 +665,13 @@ export default function BoxInspector({ node, theme, onPatch, onAddChild, onFloat
               <CompactSelect label="Line up (across)" ariaLabel="Line up" value={node.align ?? "stretch"} onChange={(v) => onPatch({ align: v as FlexAlign })} options={ALIGN_OPTS.map(([v, l]) => ({ value: v, label: l }))} />
               <Range title="Space between blocks" value={node.gap} min={0} max={64} fallback={16} onChange={(n) => onPatch({ gap: n, gapX: undefined, gapY: undefined })} unit="rem" />
               {/* Across and down separately — the commonest grid there is wants air between its columns and
-                  less between its rows, and one number cannot say that. Blank means "same as above". */}
-              <div className="grid grid-cols-2 gap-2">
-                <CompactField label="Space across" ariaLabel="Space across" type="number" min={0} max={128} placeholder="same"
-                  value={node.gapX ?? ""} onChange={(v) => onPatch({ gapX: v === "" ? undefined : Math.max(0, Number(v) || 0) })} />
-                <CompactField label="Space down" ariaLabel="Space down" type="number" min={0} max={128} placeholder="same"
-                  value={node.gapY ?? ""} onChange={(v) => onPatch({ gapY: v === "" ? undefined : Math.max(0, Number(v) || 0) })} />
-              </div>
+                  less between its rows, and one number cannot say that. Unset means "same as above".
+                  SLIDERS, like the control above them. They were number boxes, so the only way to find the
+                  spacing you wanted was to type a guess, look, and type another — and spacing is judged by
+                  eye, never by arithmetic. A slider is the control for a value you sweep until it looks
+                  right, and it is the same gesture as every other spacing control in this panel. */}
+              <GapRange label="Space across" value={node.gapX} fallback={node.gap ?? 16} onChange={(n) => onPatch({ gapX: n })} onMatch={() => onPatch({ gapX: undefined })} />
+              <GapRange label="Space down" value={node.gapY} fallback={node.gap ?? 16} onChange={(n) => onPatch({ gapY: n })} onMatch={() => onPatch({ gapY: undefined })} />
             </Accordion>
           )}
 

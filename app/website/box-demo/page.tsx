@@ -95,6 +95,9 @@ function pruneEmptyChrome(root: BoxNode): BoxNode {
 type Hist = { present: BoxSite; past: BoxSite[]; future: BoxSite[] };
 const HIST_CAP = 100;
 
+/** Input types with no text in them, so the page's own undo keeps Ctrl+Z instead of the browser's. */
+const NON_TEXT_INPUTS = new Set(["range", "checkbox", "radio", "color", "button", "submit", "file"]);
+
 export default function BoxDemoPage() {
   const [hist, setHist] = useState<Hist | null>(null);
   const [activePageId, setActivePageId] = useState<string | null>(null);
@@ -136,10 +139,39 @@ export default function BoxDemoPage() {
     requestAnimationFrame(() => document.querySelector<HTMLElement>(`[data-box-id="${id}"]`)?.scrollIntoView({ behavior: "smooth", block: "nearest" }));
   }, [site]);
 
+  /**
+   * ONE GESTURE IS ONE UNDO.
+   *
+   * Every edit used to push its own history entry, which is right for "delete this block" and quite wrong
+   * for a control you *adjust*: dragging the spacing slider from nothing to 3rem left THIRTY entries, so
+   * Ctrl+Z walked back one pixel of spacing at a time and the thing the user actually did was unreachable.
+   *
+   * Two edits merge when they are the SAME control on the SAME block, close together in time — the rule a
+   * text editor uses for typing, and for the same reason: a continuous adjustment is one act. The key is
+   * derived from the patch's own field names, so every control in the inspector gets this without being
+   * changed, and any control that writes a DIFFERENT field (or lands on a different block) starts a new
+   * entry immediately, however fast it follows.
+   */
+  const MERGE_MS = 700;
+  const mergeAt = useRef<{ key: string; at: number } | null>(null);
+
   const pushSite = (next: BoxSite) => setHist((h) => (h ? { present: next, past: [...h.past, h.present].slice(-HIST_CAP), future: [] } : h));
   const resetSite = (next: BoxSite) => { const s = normalizeSite(next, ROW_GAP); setHist({ present: s, past: [], future: [] }); setActivePageId(s.homeId); setSelectedIds([]); };
   // An edit to the ACTIVE page's tree.
-  const commit = (nextRoot: BoxNode) => setHist((h) => (h && activePage ? { present: setPageRoot(h.present, activePage.id, normalizeRowBands(nextRoot, ROW_GAP)), past: [...h.past, h.present].slice(-HIST_CAP), future: [] } : h));
+  const commit = (nextRoot: BoxNode, mergeKey?: string) => {
+    // Worked out BEFORE the updater, never inside it: a state updater may be called more than once for one
+    // update, and a ref written in there would see the second call as a repeat of the first.
+    const now = Date.now();
+    const merge = !!mergeKey && mergeAt.current?.key === mergeKey && now - mergeAt.current.at < MERGE_MS;
+    mergeAt.current = mergeKey ? { key: mergeKey, at: now } : null;
+    setHist((h) => {
+      if (!h || !activePage) return h;
+      const present = setPageRoot(h.present, activePage.id, normalizeRowBands(nextRoot, ROW_GAP));
+      // Merging REPLACES what the gesture has produced so far and leaves `past` alone, so the entry already
+      // sitting there is still the state from before the gesture began — which is what one Ctrl+Z returns to.
+      return merge ? { ...h, present } : { present, past: [...h.past, h.present].slice(-HIST_CAP), future: [] };
+    });
+  };
   // Race-safe edit: `fn` receives the LATEST committed root (not a possibly-stale render closure), so rapid
   // successive actions (e.g. adding several blocks fast) each build on the previous result — every new block
   // lands in its OWN full-width row instead of being grouped into a shared row band with clamped widths.
@@ -157,8 +189,16 @@ export default function BoxDemoPage() {
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
+      // UNDO STEPS ASIDE FOR A TEXT FIELD, AND ONLY FOR A TEXT FIELD.
+      //
+      // This used to hand every Ctrl+Z to any focused `<input>`, which is right for one you TYPE in — the
+      // browser's own text undo is what you want there — and wrong for one you DRAG. A range slider holds no
+      // text to undo, so after adjusting the spacing the focus was still on the slider and Ctrl+Z did
+      // absolutely nothing: measured at sixty presses without a single change reversed.
       const ae = document.activeElement as HTMLElement | null;
-      if (ae && (ae.tagName === "INPUT" || ae.tagName === "TEXTAREA" || ae.isContentEditable)) return;
+      const typedInto = ae?.tagName === "TEXTAREA" || !!ae?.isContentEditable
+        || (ae?.tagName === "INPUT" && !NON_TEXT_INPUTS.has((ae as HTMLInputElement).type));
+      if (typedInto) return;
       const mod = e.ctrlKey || e.metaKey; const k = e.key.toLowerCase();
       if (mod && k === "z" && !e.shiftKey) { e.preventDefault(); undo(); }
       else if (mod && (k === "y" || (k === "z" && e.shiftKey))) { e.preventDefault(); redo(); }
@@ -245,7 +285,12 @@ export default function BoxDemoPage() {
   const onSetHome = () => { pushSite(setHomePage(site, activePage.id)); setPageMenu(false); };
 
   const addSection = () => { const sec = makeSection(SECTION_TINTS[countSections(root) % SECTION_TINTS.length]); sec.width = "100%"; commit(insertBox(root, root.id, root.children?.length ?? 0, makeRow([sec]))); };
-  const onPatch = (patch: Partial<BoxNode>) => { if (selected) commit(patchAt(root, selected.id, patch)); };
+  // The merge key is the block plus the FIELDS being written, so "drag the spacing slider" coalesces while
+  // "set the spacing, then the colour" does not — no control had to be told about any of this.
+  const onPatch = (patch: Partial<BoxNode>) => {
+    if (!selected) return;
+    commit(patchAt(root, selected.id, patch), `${selected.id}:${Object.keys(patch).sort().join(",")}`);
+  };
   const resetOverride = () => { if (selected && bp !== "base") commit(clearOverride(root, selected.id, bp)); };
 
   // ── The twelve-column grid: the three things a block cannot patch on its OWN node ──

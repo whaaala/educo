@@ -257,7 +257,11 @@ Select a cell and drag its edge. It behaves like a table: **the boundary between
 
 **And it comes back.** A wrapped neighbour keeps the width it had — wrapping moves it, it doesn't resize it — so when you drag the cell back in, the neighbour returns to the row and widens by exactly what you gave up. Drag out and back and you land precisely where you started. The row always adds up to the full twelve.
 
-Dragging the top or bottom edge sets that **whole row's height**, so the row grows as one and the page grows with it.
+**The edge you grab is the only one that moves** — on all four sides. Drag the **left** edge and the cell before yours gives up exactly that much room while your right edge stays put; drag the **right** edge and your left edge stays put. When the cell next to you has no more room to give, yours simply stops growing rather than sliding out of its far side.
+
+Dragging the **bottom** edge sets that **whole row's height**, so the row grows as one and the page grows with it. Dragging the **top** edge moves the boundary between your row and the one above: that row gives back exactly what yours takes, so your bottom edge doesn't budge. If the row above is already only as tall as the things inside it, there's nothing to give and the edge stays where it is — nothing is pushed down the page to make room.
+
+**A drag is one gesture.** The canvas shows the result as you drag, letting go commits exactly what you were being shown, and one **Ctrl+Z** puts the whole drag back — not one frame of it.
 
 ### How small a box can go
 
@@ -274,6 +278,8 @@ If a row has columns left over, hover it (or select something in it) and an **Ad
 ### Grids inside grids
 
 A cell is just a container, so **anything you can do to the page you can do inside a cell** — including adding another Columns block with its own columns and rows, as deep as you like. Each one carries its own spacing: **Space between blocks**, plus **Space across** and **Space down** separately when a row wants more air between its columns than between its rows, and Inner/Outer spacing per side.
+
+**All three are sliders.** Spacing is something you judge by eye, so you sweep it and watch the canvas rather than typing a number and looking. Space across and Space down start out *matching* Space between blocks — sweep one and it takes on a value of its own, and the line underneath offers it straight back to matching whenever you want it. A whole sweep is **one Ctrl+Z**, however many times the slider ticked on the way.
 
 Grids start **full width with no padding**, at every level. Spacing is something you add, not something you have to find and remove.
 
