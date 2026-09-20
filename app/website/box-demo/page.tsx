@@ -15,7 +15,7 @@ import { THEMES, type ThemeId } from "@/lib/theme-config";
 import {
   type BoxNode, type Breakpoint, createContainer, findBox, findParent, updateBox, insertBox, removeBox, duplicateBox, widthPct, makeRowBand, normalizeRowBands, groupBoxes, alignInRow, alignInRowOf, setSectionWidth, sectionWidthOf, pageBandOf,
   floatBox, unfloatBox, bringToFront, bringForward, sendBackward, sendToBack,
-  resolveResponsive, updateBoxResponsive, clearOverride, hasOverride, isContainer,
+  resolveResponsive, updateBoxResponsive, clearOverride, hasOverride,
   gridColumns, retrackGrid, setColumnFraction,
 } from "@/lib/box-model";
 import { blockForKind } from "@/lib/box-presets";
@@ -416,14 +416,52 @@ export default function BoxDemoPage() {
     // "one level up from the selection": the first block lands on the page root and is wrapped in its own
     // row band, so stepping up from it reaches that band and the next block would land BESIDE it instead of
     // beneath. Repeating the previous target keeps repeated clicks doing the same thing each time.
-    const autoSelected = !!selected && autoSelectedId.current === selected.id;
-    const preferred = autoSelected ? lastInsertParent.current : (selected && isContainer(selected) ? selected.id : null);
-    // A remembered parent can have been deleted since; fall back to the page rather than throw.
-    const parentId = preferred && findBox(root, preferred) ? preferred : root.id;
+    /**
+     * A PALETTE CLICK ADDS AFTER WHAT YOU HAVE SELECTED — never inside it.
+     *
+     * It used to insert INTO the selected container, so that "select a grid cell, add a Grid inside it"
+     * worked. The rule was real, and it had a blind spot it was never designed against: an empty container
+     * is the commonest thing to have selected, and a new block inside an EMPTY one is pixel-identical to
+     * it — same width, same height, same position, stacked exactly on top.
+     *
+     * Measured: with a stack selected, the added block rendered 432×150 at y=88, which is precisely the
+     * stack's own box. Nothing on screen changed, so the click read as having failed — and clicking again
+     * put a SECOND block inside, at which point the parent finally grew and it looked like the second click
+     * was the one that worked. Two nested blocks where the user wanted one, and no way to tell.
+     *
+     * So the palette places a SIBLING, which is always somewhere new and visible, and nesting keeps the
+     * explicit route it already had: the inspector's "+ Add a block inside".
+     *
+     * Going up past a BAND is what makes "after" mean what it looks like. A band lays its children out side
+     * by side, so inserting after a block inside one puts the newcomer BESIDE it; stepping up to the band's
+     * own parent gives it a line of its own, underneath — which is where a person looks for it.
+     */
+    /**
+     * THE ONE EXCEPTION: A GRID, AND A GRID CELL, STILL RECEIVE THE BLOCK INSIDE.
+     *
+     * This is not a special case for its own sake — it is the same test applied honestly. "Inside" is
+     * confusing exactly when the container has no shape of its own, and an empty Stack has none: its child
+     * lands on the identical pixels. A grid CELL is the opposite. It is a bounded slot that exists in order
+     * to hold something, drawn at a fixed place in the grid, so a block arriving in it is visible at once.
+     *
+     * It also keeps an earlier report fixed rather than trading one for another: "I can no longer add
+     * grid/grids within an already added grid" is the reason the insert-into-selection rule exists at all.
+     */
+    const here = selected ? findParent(root, selected.id) : null;
+    const intoSelection = !!selected && (selected.layout === "grid" || here?.parent.layout === "grid");
+    const band = !intoSelection && here?.parent.rowBand ? findParent(root, here.parent.id) : null;
+    const at = intoSelection ? null : (band ?? here);
+    const parentId = intoSelection
+      ? selected!.id
+      : at && findBox(root, at.parent.id) ? at.parent.id : root.id;
+    const index = intoSelection
+      ? (findBox(root, selected!.id)?.children?.length ?? 0)
+      : at ? at.index + 1 : (findBox(root, root.id)?.children?.length ?? 0);
     lastInsertParent.current = parentId;
     commitWith((cur) => {
       const target = findBox(cur, parentId) ?? cur;
-      return insertBox(cur, findBox(cur, parentId) ? parentId : cur.id, target.children?.length ?? 0, node);
+      const max = target.children?.length ?? 0;
+      return insertBox(cur, findBox(cur, parentId) ? parentId : cur.id, Math.min(index, max), node);
     });
     // "Flow + auto-reveal": a new block joins the normal flow (a floating sibling overlays it), so SELECT it and
     // scroll it into view — you always see exactly what landed and where, never lost behind a floating card.

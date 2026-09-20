@@ -79,6 +79,7 @@ const INVARIANT_SPECS = [
   "tests/e2e/stack-under-column.spec.ts",
   "tests/e2e/build-from-blank.spec.ts",
   "tests/e2e/drop-placement.spec.ts",
+  "tests/e2e/palette-adds-after.spec.ts",
 ];
 
 const argv = process.argv.slice(2);

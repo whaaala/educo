@@ -171,9 +171,23 @@ test.describe("adding a block never moves your insertion point", () => {
     expect(deepest, "clicking the same tile must never bury the next block inside the last one").toBeLessThanOrEqual(2);
   });
 
-  test("but a container YOU selected still receives the block inside it", async ({ page }) => {
-    // The behaviour this must not break — it was itself a reported bug ("I can no longer add grid/grids
-    // within an already added grid"). A selection the user made IS an insertion target.
+  test("a container YOU selected gets the block AFTER it — and 'Add a block inside' still nests", async ({ page }) => {
+    /**
+     * THIS ASSERTED THE OPPOSITE, and both versions are answers to a real report.
+     *
+     * The old rule — a selection the user made IS an insertion target — came from "I can no longer add
+     * grid/grids within an already added grid". It worked, and it had a blind spot: an EMPTY container is
+     * the commonest thing to have selected, and a block inside an empty one is pixel-identical to it. Same
+     * width, same height, same position. Measured: 432×150 at y=88, exactly the selected stack's own box.
+     *
+     * So the click looked like it had failed, and clicking again put a SECOND block inside — at which point
+     * the parent finally grew and the second click looked like the one that worked. Two nested blocks where
+     * one was wanted, reported as "I always have to click this twice".
+     *
+     * The palette now places a SIBLING, which is always somewhere new. Nesting keeps the route it already
+     * had, and the second half of this test is what stops that being a promise: "+ Add a block inside" must
+     * still put a block INSIDE, or the first report is simply back.
+     */
     await freshBuilder(page);
     await tile(page, "Stack").click();
     await page.waitForTimeout(900);
@@ -192,9 +206,18 @@ test.describe("adding a block never moves your insertion point", () => {
     await page.waitForTimeout(900);
 
     const lines = await shape(page);
-    expect(lines.filter((l) => l.startsWith("1:")).length, "still ONE block at page level").toBe(1);
-    expect(Math.max(...lines.map((l) => Number(l.split(":")[0]))), "the second landed inside the first")
-      .toBeGreaterThanOrEqual(3);
+    expect(lines.filter((l) => l.startsWith("1:")).length, "TWO blocks at page level — a sibling, not a child")
+      .toBe(2);
+
+    // …and the explicit route still nests, which is the half that keeps the earlier report fixed.
+    const inside = page.getByRole("button", { name: /Add a block inside/i });
+    expect(await inside.count(), "the explicit nesting control is there").toBeGreaterThan(0);
+    const depthBefore = Math.max(...lines.map((l) => Number(l.split(":")[0])));
+    await inside.first().click();
+    await page.waitForTimeout(900);
+    const after = await shape(page);
+    expect(Math.max(...after.map((l) => Number(l.split(":")[0]))), "it put a block one level deeper")
+      .toBeGreaterThan(depthBefore);
   });
 });
 
