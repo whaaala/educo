@@ -14,10 +14,10 @@ import { Plus, ChevronUp, ChevronDown, Copy, Scissors, ClipboardPaste, Trash2, U
 import type { SiteTheme } from "@/lib/site-storage";
 import {
   type BoxNode, type BoxType,
-  containerStyle, childStyle, marginCSS, sizeToCSS, u, baseUnit, floatingReserve, floatStacksOnMobile, createContainer, createGrid, createElement, createComponent,
+  containerStyle, childStyle, marginCSS, sizeToCSS, u, baseUnit, floatingReserve, floatStacksOnMobile, createContainer, createElement, createComponent,
   updateBox, removeBox, insertBox, moveBoxStep, duplicateBox, moveBox, cloneBox, findParent, isAncestor, isContainer, containerLabel, widthPct, stackWithBlock, fitBand,
   isFloating, floatBox, unfloatBox, groupBoxes, ungroupBoxes, bringToFront, sendToBack, bringForward, sendBackward,
-  fadedPaint, boxOpacity, backgroundCss, treePaintLayerCss, radiusCSS, isClipped, SHADOW_CSS, videoEmbedSrc, sanitizeCssDeclarations, expandScopedCss, ACCORDION_CSS_PARTS, itemOverrideCss, itemHasOverride, itemNumberVars, richBody, componentTextCss, componentBoxCss, bgShowThroughCss, resizeTopEdge, blockContainmentCss, alertToastCss, treeHasToast, accordionClasses, bandClasses, advancedCssStyle, alertActionsHTML, hugsContent, itemFloatContextCss, COMPONENT_ITEM_SEL, clampContentScale, MIN_CONTENT_SCALE, isMultiItemComponent, comfortableWidth, remLen, rootFontPx, isDefiniteLen, addItemAfter, duplicateItem, duplicateChildItem, removeItem, removeChildItem, moveItem, moveChildItem, updateItem, updateChildItem, ALERT_SEVERITY_ICON, alertPartInline, alertIconInline, collectAlertItemStyles,
+  shouldTakeMirrorBox, hostSizedFor, type MirrorBox, type MirrorChase, fadedPaint, boxOpacity, backgroundCss, treePaintLayerCss, radiusCSS, isClipped, SHADOW_CSS, videoEmbedSrc, sanitizeCssDeclarations, expandScopedCss, ACCORDION_CSS_PARTS, itemOverrideCss, itemHasOverride, itemNumberVars, richBody, componentTextCss, componentBoxCss, bgShowThroughCss, resizeTopEdge, blockContainmentCss, alertToastCss, treeHasToast, accordionClasses, bandClasses, advancedCssStyle, alertActionsHTML, hugsContent, itemFloatContextCss, COMPONENT_ITEM_SEL, clampContentScale, MIN_CONTENT_SCALE, isMultiItemComponent, comfortableWidth, remLen, rootFontPx, isDefiniteLen, addItemAfter, duplicateItem, duplicateChildItem, removeItem, removeChildItem, moveItem, moveChildItem, updateItem, updateChildItem, ALERT_SEVERITY_ICON, alertPartInline, alertIconInline, collectAlertItemStyles,
   type Breakpoint, resolveResponsive, updateBoxResponsive, imageSizing, importPhoto, treeItemEffectsCss, itemNeedsClass, floatZIndex, gridPlacementAt, gridColumnsAt, masonryMeasureAttr, masonryMeasurePass, isPager, pagerStripCss, pagerNavHTML, selectionChain, typoRole, typoRootVars, typoCascadeCss, bandEdgeCSS,
 } from "@/lib/box-model";
 import { ICON_SET } from "./icons";
@@ -221,10 +221,39 @@ function ChromeMirror({ blockId, children }: { blockId: string; children: ReactN
 
   // Scrolling and window resizing move the block without re-rendering anything here, so they have to ask.
   useEffect(() => {
-    const onMove = () => remeasure();
+    // A REAL signal restores the churn budget: scrolling and resizing are the user moving the block, so the
+    // mirror must follow however many frames that takes. Only a layout arguing with itself is given up on.
+    const onMove = () => { churn.current = { churn: 0, seen: churn.current.seen }; remeasure(); };
+    /**
+     * A DRAG IS A REAL SIGNAL TOO — and leaving it off this list is what marooned the handles.
+     *
+     * The budget exists to abandon a layout that argues with ITSELF. A pointer held down is the user
+     * arguing with it, and that must be followed for as many frames as the gesture lasts. Re-arming here
+     * costs one object write per move and no render: the drag is already committing a tree per frame, so
+     * the measurement it needs is coming anyway.
+     *
+     * Gated on the button being DOWN, so hovering the page does not quietly switch the bound off — capture
+     * phase, because the handle's own mousedown stops propagation before any bubble listener would see it.
+     */
+    let gesturing = false;
+    const rearm = () => { churn.current = { churn: 0, seen: churn.current.seen }; };
+    const onDown = () => { gesturing = true; rearm(); };
+    const onDrag = () => { if (gesturing) rearm(); };
+    const onUp = () => { gesturing = false; };
     window.addEventListener("scroll", onMove, true);
     window.addEventListener("resize", onMove);
-    return () => { window.removeEventListener("scroll", onMove, true); window.removeEventListener("resize", onMove); };
+    window.addEventListener("pointerdown", onDown, true);
+    window.addEventListener("pointermove", onDrag, true);
+    window.addEventListener("pointerup", onUp, true);
+    window.addEventListener("pointercancel", onUp, true);
+    return () => {
+      window.removeEventListener("scroll", onMove, true);
+      window.removeEventListener("resize", onMove);
+      window.removeEventListener("pointerdown", onDown, true);
+      window.removeEventListener("pointermove", onDrag, true);
+      window.removeEventListener("pointerup", onUp, true);
+      window.removeEventListener("pointercancel", onUp, true);
+    };
   }, []);
 
   // Deliberately NO dependency array: a block's geometry changes without any prop of this component changing
@@ -238,17 +267,43 @@ function ChromeMirror({ blockId, children }: { blockId: string; children: ReactN
   // chain: the update lands in a new frame, React's nested-update counter starts over, and the very worst an
   // unsettled layout can now do is shimmer. A crash becomes a cosmetic bug, which is the right trade.
   const measured = useRef(false);
+  /**
+   * THE LOOP IS BOUNDED, not merely deferred — and it took a second report to learn the difference.
+   *
+   * measure → setState → render → measure is a cycle with no natural end. Deferring the re-measure to a
+   * frame was supposed to break it, on the reasoning that React's nested-update counter starts over in a
+   * new task. It does; what it does not do is STOP the cycle. A layout that will not settle — and a grid
+   * whose rows are partly `auto` and partly `1fr` can oscillate by a fraction of a pixel forever — keeps
+   * producing a different measurement every frame, so the chain runs on and "Maximum update depth
+   * exceeded" comes back.
+   *
+   * Counting the consecutive changes is what ends it. After `MAX_CHURN` frames of chasing a value that
+   * never settles, the mirror keeps the last one it had and stops asking. The chrome may sit a fraction of
+   * a pixel out on a layout that was never going to settle; it cannot take the page down.
+   *
+   * The count resets on a real signal — a scroll, a window resize, a new block — so an honest movement is
+   * always followed, and only a layout arguing with itself is abandoned.
+   *
+   * `boxRef` mirrors the state so the comparison happens OUTSIDE the updater: a state updater must be pure,
+   * and React may call it twice, which would double-count the churn and halve the budget.
+   */
+  const MAX_CHURN = 8;
+  const churn = useRef<MirrorChase>({ churn: 0, seen: null });
+  const boxRef = useRef<MirrorBox | null>(null);
+  useEffect(() => { churn.current = { churn: 0, seen: null }; }, [blockId]);
   useEffect(() => {
     const measure = () => {
       const el = document.querySelector<HTMLElement>(`[data-box-id="${CSS.escape(blockId)}"]`);
       const r = el?.getBoundingClientRect();
       const next = r ? { left: r.left, top: r.top, width: r.width, height: r.height } : null;
-      setBox((prev) => {
-        if (!prev || !next) return prev === next ? prev : next;
-        const near = (a: number, b: number) => Math.abs(a - b) < 0.5;
-        return near(prev.left, next.left) && near(prev.top, next.top)
-          && near(prev.width, next.width) && near(prev.height, next.height) ? prev : next;
-      });
+      // The decision itself lives in `shouldTakeMirrorBox` (box-model), pure and unit-tested — the browser
+      // condition that triggers the runaway has resisted every attempt to reproduce, so testing the rule is
+      // the only honest guard for it.
+      const verdict = shouldTakeMirrorBox(boxRef.current, next, churn.current, MAX_CHURN);
+      churn.current = verdict.state;
+      if (!verdict.take) return;
+      boxRef.current = next;
+      setBox(next);
     };
     // The FIRST measurement is synchronous, so selecting a block shows its toolbar and handles immediately —
     // deferring that one put the chrome a frame behind the click, which is exactly the kind of lag that
@@ -289,6 +344,9 @@ export default function BoxCanvas({
   breakpoint?: Breakpoint; // active responsive breakpoint — edits at tablet/mobile write per-breakpoint overrides
 }) {
   const [menuFor, setMenuFor] = useState<string | null>(null); // which box's actions dropdown is open
+  // The "add a block inside" menu an EMPTY box's own + opens. Separate from `menuFor`, which is the whole
+  // actions dropdown: this one offers only the thing the empty box is asking for.
+  const [addInside, setAddInside] = useState<{ id: string; anchor: MenuAnchor } | null>(null);
   const [menuAnchor, setMenuAnchor] = useState<{ top: number; left: number; bottom: number; right: number } | null>(null); // the ⋯ button's rect (PortalMenu positions off this)
   const closeMenu = () => { setMenuFor(null); setMenuAnchor(null); };
   const [resizing, setResizing] = useState(false);
@@ -894,7 +952,7 @@ export default function BoxCanvas({
     setDropRect(hit?.rect ?? null);
   };
   /** Where a dropped Columns block will go, held while the user picks its shape. */
-  const [pendingGrid, setPendingGrid] = useState<{ anchor: MenuAnchor; parentId: string; index: number; moveWidth: string | null } | null>(null);
+  const [pendingGrid, setPendingGrid] = useState<{ anchor: MenuAnchor; parentId: string; index: number; moveWidth: string | null; selectAfter?: boolean } | null>(null);
   const [pendingGallery, setPendingGallery] = useState<{ anchor: MenuAnchor; kind: string; parentId: string; index: number; moveWidth: string | null } | null>(null);
 
   /** Put a freshly built block at a recorded slot — the tail of every palette insertion. */
@@ -1639,9 +1697,24 @@ export default function BoxCanvas({
   const addChild = (parentId: string, kind: BoxType | "row" | "grid" | "accordion", patch: Partial<BoxNode> = {}) => {
     const parent = findByIdLocal(root, parentId);
     const node = Object.assign(
+      /**
+       * A STACK FROM THIS MENU IS THE SAME STACK THE PALETTE MAKES — `blockForKind`, one definition.
+       *
+       * It built its own, and built it wrong twice over. `createContainer("row", { direction: "row" … })`
+       * is a SIDE-BY-SIDE row, under a menu item labelled "Stack" — the label and the code disagreed. And
+       * it set `clip: true`, which is the explicit "this may shrink past its content" opt-in, so an empty
+       * one rendered ZERO PIXELS: the block was added, correctly, and could not be seen.
+       *
+       * Two routes to "add a Stack" that produce different blocks is the drift a single resolver exists to
+       * prevent — the same rule `radiusCSS` and `containerLabel` are held to.
+       */
       kind === "row" ? createContainer("row")
-      : kind === "grid" ? createGrid(3)
-      : kind === "container" ? createContainer("row", { direction: "row", wrap: true, align: "stretch", clip: true })
+      // …and a GRID likewise. `createGrid(3)` is three columns with NOTHING IN THEM — the empty shell
+      // `blockForKind` exists to avoid, and its comment says why: "no cell to click, nothing to resize and
+      // nowhere to put anything". Adding a Grid from this menu produced exactly that, while the palette's
+      // Grid produced a real one. Same block, two routes, one of them unusable.
+      : kind === "grid" ? blockForKind("grid")
+      : kind === "container" ? blockForKind("container")
       : kind === "accordion" ? createComponent("accordion")
       : createElement(kind as Exclude<BoxType, "container">),
       patch,
@@ -1657,11 +1730,49 @@ export default function BoxCanvas({
       const used = (parent.children ?? []).reduce((s, c) => s + widthPct(c.width), 0);
       node.width = used <= 88 ? `${Math.max(15, Math.round(100 - used))}%` : "100%";
     }
-    // Append at end. We intentionally do NOT select the new box — the current selection (the parent you're
-    // adding into) stays put, so you can keep adding.
+    /**
+     * THE NEW BLOCK IS SELECTED. ALWAYS — and it took two reports to get here.
+     *
+     * The original rule was to leave the selection alone "so you can keep adding". It meant that adding
+     * into a box produced NO VISIBLE CHANGE in the two commonest cases, and both were reported as the
+     * feature being broken:
+     *
+     *   • into an EMPTY box: the new block is transparent, has no content and exactly fills its parent, so
+     *     nothing on screen moves at all;
+     *   • into a GRID: two transparent 50px cells look exactly like one transparent 100px cell — the grid
+     *     shares its height out and does not grow.
+     *
+     * The second is why this is not conditional on the parent being empty, which was the first attempt:
+     * "can you see it?" is not a question about whether the parent had children. Every item in the menu
+     * worked both times; every item looked broken.
+     *
+     * Selecting what just landed is the one signal that works in every case — an outline round it, and the
+     * inspector on it, ready to style the thing you just made. Adding several in a row costs one click on
+     * the parent's + again, which is a fair price for never wondering whether the last one happened.
+     */
     const index = parent?.children?.length ?? 0;
     onChange(insertBox(root, parentId, index, node));
+    select(node.id);
     closeMenu();
+  };
+
+  /**
+   * ADD `type` INSIDE `parentId` — and a GRID asks for its shape first, exactly as the palette does.
+   *
+   * Both "Add inside" menus used to insert a grid outright, so a grid added inside a box arrived as a fixed
+   * one-cell 1×1 while the same Grid from the palette asked how many across and how many down. There is a
+   * whole spec on the palette's two routes both opening that picker — "dragging a tile says WHERE a layout
+   * goes; it does not say what the layout IS, and the builder must not answer that for you" — and this
+   * third route quietly answered it. "I should be able to add a grid inside a stack with as many rows and
+   * columns as I want" is that gap, reported.
+   */
+  const addInsideOf = (parentId: string, type: BoxType | "row" | "grid" | "accordion", anchor: MenuAnchor) => {
+    if (type === "grid") {
+      const parent = findByIdLocal(rootRef.current, parentId);
+      setPendingGrid({ anchor, parentId, index: parent?.children?.length ?? 0, moveWidth: null, selectAfter: true });
+      return;
+    }
+    addChild(parentId, type);
   };
 
   /**
@@ -1669,7 +1780,7 @@ export default function BoxCanvas({
    * unsized empty box normally gets must step aside. Otherwise a box you have just dragged small is held
    * open from the inside by empty children nobody sized, and the size you set is not the size you get.
    */
-  const renderNode = (rawNode: BoxNode, parent: BoxNode | null, sizedAbove = false): React.ReactNode => {
+  const renderNode = (rawNode: BoxNode, parent: BoxNode | null, sizedAbove = false, hostSized = false): React.ReactNode => {
     // Resolve the box for the active breakpoint (base merged with tablet/mobile overrides). Same id/type/
     // children as the base, so selection + structure are unaffected — only style/geometry differ.
     const node = resolveResponsive(rawNode, breakpoint);
@@ -1706,7 +1817,7 @@ export default function BoxCanvas({
         ? { left: `${node.left ?? 0}%`, top: `${node.top ?? 0}%`, width: sizeToCSS(node.width), height: node.height ? sizeToCSS(node.height) : undefined, minHeight: node.minHeight, zIndex: floatZIndex(node) } // no width ⇒ auto ⇒ hug content (never a wide default box)
         : stacked
         ? { width: "100%" } // content-height (no fixed height/minHeight) so nothing is clipped
-        : parent ? childStyle(node, parent, breakpoint) : {
+        : parent ? childStyle(node, parent, breakpoint, hostSized) : {
             /**
              * THE PAGE FLOOR IS AN OFFER FOR AN EMPTY PAGE, and steps aside the moment there is content.
              *
@@ -1770,9 +1881,22 @@ export default function BoxCanvas({
       const kids = node.children ?? [];
       const deepest = node.rowBand ? (kids.length === 1 ? kids[0].id : undefined) : node.id;
       if (!deepest) { select(null); closeMenu(); startMarqueeArm(e); return; }
+      /**
+       * IT DESCENDS, AND THEN IT STOPS. It used to wrap around to the outermost again.
+       *
+       * Reported as the selection being unpredictable, and it is: on a parent holding one child, clicking
+       * repeatedly gave P → C → P → C forever, so a click was as likely to take you further out as further
+       * in and there was no way to tell which without looking. Drilling is only useful if it is
+       * one-directional — each click goes one level deeper and the innermost is where it rests.
+       *
+       * Starting over is what clicking empty canvas is for, and that already clears the selection.
+       */
       const chain = selectionChain(rootRef.current, deepest);
       const at = selSet.size === 1 ? chain.indexOf([...selSet][0]) : -1;
-      select(at >= 0 && at < chain.length - 1 ? chain[at + 1] : (chain[0] ?? deepest));
+      const next = at < 0
+        ? (chain[0] ?? deepest)                          // nothing of this chain selected → the outermost
+        : chain[Math.min(at + 1, chain.length - 1)];     // one deeper, and no further than the innermost
+      select(next);
       closeMenu(); startMarqueeArm(e);
     };
 
@@ -1847,7 +1971,7 @@ export default function BoxCanvas({
                 style={pagerStripCss()}
               >
                 {kids.map((c) => (
-                  <Fragment key={c.id}>{renderNode(c, node, sizedAbove || node.minHeight != null || node.height != null)}</Fragment>
+                  <Fragment key={c.id}>{renderNode(c, node, sizedAbove || node.minHeight != null || node.height != null, hostSizedFor(node, hostSized))}</Fragment>
                 ))}
               </div>
               {/* The nav is the published markup, shown as published — but a dot is an `<a href="#…">`, and
@@ -1874,7 +1998,7 @@ export default function BoxCanvas({
               })()}
             </>
           ) : kids.map((c) => (
-            <Fragment key={c.id}>{renderNode(c, node, sizedAbove || node.minHeight != null || node.height != null)}</Fragment>
+            <Fragment key={c.id}>{renderNode(c, node, sizedAbove || node.minHeight != null || node.height != null, hostSizedFor(node, hostSized))}</Fragment>
           ))}
           {editable && kids.length === 0 && (
             // An empty block shows a non-interactive hint — drag a block from the palette (or use the ⋯ menu)
@@ -1897,7 +2021,31 @@ export default function BoxCanvas({
             // its parent's height, so an empty box is exactly the height it was given, and `overflow-hidden`
             // lets the hint clip away quietly when that height is smaller than the words.
             <div data-ph className="absolute inset-0 flex flex-col items-center justify-center gap-1.5 overflow-hidden text-gray-400 dark:text-gray-500 border border-dashed border-gray-300/80 dark:border-white/15 pointer-events-none" style={{ fontSize: u(11), borderRadius: "inherit" }}>
-              <span className="flex items-center justify-center rounded-full bg-gray-100 dark:bg-white/5" style={{ width: u(22), height: u(22) }}><Plus className="w-3.5 h-3.5" /></span>
+              {/* A REAL BUTTON, because the line under it says "click to add" and nothing did.
+                  The pill was a `<span>` inside a `pointer-events-none` hint, so an empty box contained
+                  exactly zero buttons: measured three clicks on one, no menu, no child, nothing but the box
+                  selecting itself. A control that says what it does and does not do it is the defect this
+                  project keeps meeting — and putting a block INSIDE another is now a deliberate act rather
+                  than a side effect of the palette, so the empty box is exactly where someone looks for it.
+                  `pointer-events-auto` because the hint around it deliberately has none: clicking the BOX
+                  still just selects it, and only the pill adds. */}
+              <button
+                type="button"
+                // A DISTINCT NAME from the inspector's "Add a block inside" button. They do different things —
+                // this one opens a menu to choose from, that one adds straight away — and giving two
+                // controls the same accessible name leaves a screen-reader user with one name for two
+                // behaviours. It also made a test click the wrong one, which is how it was noticed.
+                aria-label="Choose a block to add inside"
+                title="Add a block inside"
+                onMouseDown={(e) => e.stopPropagation()}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  const r = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                  setAddInside({ id: node.id, anchor: { top: r.top, bottom: r.bottom, left: r.left, right: r.right } });
+                }}
+                className="pointer-events-auto flex items-center justify-center rounded-full bg-gray-100 dark:bg-white/5 hover:bg-brand/15 hover:text-brand transition-colors"
+                style={{ width: u(22), height: u(22) }}
+              ><Plus className="w-3.5 h-3.5" /></button>
               Empty — drag a block in, or click to add
             </div>
           )}
@@ -2006,6 +2154,23 @@ export default function BoxCanvas({
             <Lock className="w-3 h-3" aria-hidden="true" /> Locked
           </span>
         )}
+        {/* ADD INSIDE, ON EVERY CONTAINER — not only an empty one.
+            The + in the middle of an empty box only exists while the box IS empty: the moment anything goes
+            in, the hint and its button are gone and putting a second thing inside has no on-canvas route at
+            all. You had to know the inspector. Since a palette click now adds a SIBLING, nesting is a
+            deliberate act and it needs a control that does not disappear the first time you use it.
+            Same menu as the empty box's +, so there is one answer to "what can go in here". */}
+        {!isRoot && isContainer(node) && !node.locked && (
+          <button
+            onClick={(e) => {
+              const r = (e.currentTarget as HTMLElement).getBoundingClientRect();
+              setAddInside({ id: node.id, anchor: { top: r.top, bottom: r.bottom, left: r.left, right: r.right } });
+            }}
+            aria-label="Add a block inside this one"
+            title="Add a block inside"
+            className="p-1 rounded text-white/90 hover:bg-white/15"
+          ><Plus className="w-3.5 h-3.5" /></button>
+        )}
         {!isRoot && (
           <button
             onClick={() => onChange(updateBox(rootRef.current, node.id, { locked: !node.locked }))}
@@ -2040,7 +2205,7 @@ export default function BoxCanvas({
             </>)}
             {isContainer(node) && (<>
               <MenuHeader>Add inside</MenuHeader>
-              {ADD_ITEMS.map(({ type, label, Icon }) => <Item key={type} onClick={() => addChild(node.id, type)} Icon={Icon} label={label} />)}
+              {ADD_ITEMS.map(({ type, label, Icon }) => <Item key={type} onClick={() => menuAnchor && addInsideOf(node.id, type, menuAnchor)} Icon={Icon} label={label} />)}
               {!isRoot && <MenuSep />}
             </>)}
             {!isRoot && (isFloating(node) ? (<>
@@ -2185,6 +2350,21 @@ export default function BoxCanvas({
           style={{ position: "absolute", top: "100%", left: 0, right: 0, height: "6rem" }}
         />
       )}
+      {/* What the empty box's own + opens: the same list the actions menu offers under "Add inside", so
+          there is one answer to "what can go in here" rather than two that can drift apart. */}
+      {addInside && (
+        <PortalMenu anchor={addInside.anchor} onClose={() => setAddInside(null)} ariaLabel="Add a block inside" width={200}>
+          <MenuHeader>Add inside</MenuHeader>
+          {ADD_ITEMS.map(({ type, label, Icon }) => (
+            <MenuItem
+              key={type}
+              onClick={() => { addInsideOf(addInside.id, type, addInside.anchor); setAddInside(null); }}
+              Icon={Icon}
+              label={label}
+            />
+          ))}
+        </PortalMenu>
+      )}
       {dropRect && createPortal(
         <div
           aria-hidden="true"
@@ -2208,7 +2388,13 @@ export default function BoxCanvas({
         <GridLayoutMenu
           anchor={pendingGrid.anchor}
           onClose={() => setPendingGrid(null)}
-          onPick={(patch) => insertAt(blockForKind("grid", patch), pendingGrid.parentId, pendingGrid.index, pendingGrid.moveWidth)}
+          onPick={(patch) => {
+            const grid = blockForKind("grid", patch);
+            insertAt(grid, pendingGrid.parentId, pendingGrid.index, pendingGrid.moveWidth);
+            // Added from an "Add inside" menu: hand it the selection, for the same reason every other add
+            // does — a fresh grid of empty cells is transparent, and nothing else would say it had landed.
+            if (pendingGrid.selectAfter) select(grid.id);
+          }}
         />
       )}
       {/* Alignment guides while free-dragging a floating box (snap to sibling / parent edges + centres). */}

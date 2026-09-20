@@ -524,6 +524,126 @@ export function isEmptyBox(node: BoxNode): boolean {
   return (node.children?.length ?? 0) === 0 && !node.text && !node.src && node.type !== "component";
 }
 
+/** Block types that draw a line rather than occupy a band — they have no height worth the name. */
+const NO_HEIGHT_OF_ITS_OWN = new Set<BoxType>(["divider"]);
+
+/** A measured rectangle, as the editor's selection chrome mirrors it. */
+export type MirrorBox = { left: number; top: number; width: number; height: number };
+
+/**
+ * SHOULD THE SELECTION CHROME TAKE THIS NEW MEASUREMENT, or has the layout stopped settling?
+ *
+ * The editor mirrors a selected block's rectangle so its toolbar and handles sit on it. Measuring happens
+ * after every render, because a block's geometry changes without any prop changing — a longer heading, a
+ * reflow, a drag in progress. That makes a cycle: measure → setState → render → measure.
+ *
+ * Deferring the re-measure to the next frame stops React counting the updates as nested, and was believed
+ * to be the whole fix. It is not: it breaks the COUNTING, not the CYCLE. A layout that never settles — a
+ * grid whose rows are partly `auto` and partly `1fr` can disagree with itself by a fraction of a pixel
+ * indefinitely — produces a different answer every frame and the chain runs on until React gives up with
+ * "Maximum update depth exceeded". That crash was reported twice.
+ *
+ * So the chase is given a budget: chasing a value that keeps changing spends it, and the layout holding
+ * still gives it back. When it runs out the mirror keeps the last rectangle it had.
+ *
+ * ── WHICH RECTANGLE "HOLDING STILL" IS MEASURED AGAINST, AND WHY IT IS NOT THE OBVIOUS ONE ──────────
+ *
+ * The first version asked "does this measurement match the one the chrome is DISPLAYING?" — and that
+ * wrecked every resize, which is the one gesture the mirror exists to follow. Two faults, one root:
+ *
+ *   · A drag commits a tree PER FRAME, so its loop runs take → quiet → take → quiet. Exactly ONE quiet
+ *     frame per move. Requiring two (added to close an alternating-oscillation loophole) meant the budget
+ *     was never restored during a drag at all: eight mousemoves, about 130ms, and the handles stopped.
+ *   · Worse, the freeze was PERMANENT. Once it stops taking, the displayed rectangle is stale by
+ *     definition, so it can never again match a block that is still moving — the way back was sealed by
+ *     the same comparison that closed the road. Reported with the handles marooned some 550px from the
+ *     block they belonged to, and only re-selecting the block cleared it.
+ *
+ * Both dissolve once the two questions are asked separately, because they were never the same question:
+ *
+ *   · `settled` — has the LAYOUT stopped changing? This measurement against the LAST MEASUREMENT, taken
+ *     or not. It keeps advancing while the chase is abandoned, so a layout that finally holds still is
+ *     always noticed, and one that alternates forever never reads as settled.
+ *   · `showing` — is the CHROME already drawn there? That decides whether an update is needed at all.
+ *
+ * A settle then both restores the budget AND takes the measurement, which is the way back: however badly
+ * a chase was abandoned, the chrome lands on the block the moment the block stops moving.
+ *
+ * Pure and exported so the rule can be tested. The browser condition that triggers the runaway has
+ * resisted every attempt to reproduce — including a drag driven at 120 events/sec with sub-pixel jitter —
+ * so testing the DECISION is the only honest guard available for that half of it. The half the user hit
+ * is driven in a real browser by `tests/e2e/chrome-follows-resize.spec.ts`.
+ */
+export type MirrorChase = { churn: number; seen: MirrorBox | null };
+
+export function shouldTakeMirrorBox(
+  prev: MirrorBox | null,
+  next: MirrorBox | null,
+  state: MirrorChase,
+  maxChurn: number,
+): { take: boolean; state: MirrorChase } {
+  const near = (a: number, b: number) => Math.abs(a - b) < 0.5;
+  const same = (a: MirrorBox | null, b: MirrorBox | null) =>
+    a && b
+      ? near(a.left, b.left) && near(a.top, b.top) && near(a.width, b.width) && near(a.height, b.height)
+      : a === b;
+
+  const settled = same(state.seen, next);   // the layout gave the same answer twice running
+  const showing = same(prev, next);         // the chrome is already drawn on it
+
+  // Nothing to update. A repeat measurement still counts as the layout holding still.
+  if (showing) return { take: false, state: { churn: settled ? 0 : state.churn, seen: next } };
+  // It held still, and the chrome is somewhere else: catch up, and start the budget fresh.
+  if (settled) return { take: true, state: { churn: 0, seen: next } };
+  // Still moving with the budget gone — keep the last rectangle rather than chase a layout arguing with
+  // itself. `seen` keeps advancing, so the branch above brings the chrome back the moment it does settle.
+  if (state.churn >= maxChurn) return { take: false, state: { churn: state.churn, seen: next } };
+  return { take: true, state: { churn: state.churn + 1, seen: next } };
+}
+
+/**
+ * A GRID with nothing in it to give it height — every cell empty and unsized.
+ *
+ * A grid's rows are `minmax(min-content, 1fr)`: they SHARE whatever height the grid has. Given one (a grid
+ * with its own `min-height`, or one stretched by its parent) that works out. Given none — a grid sitting in
+ * a stack that hugs its content — there is nothing to share: the cells are 0, so the grid is 0, so the stack
+ * holding it collapses with it. Measured: a Grid added inside a child stack left the stack under 8px.
+ */
+export function gridHasNothingToShare(node: BoxNode): boolean {
+  if (node.layout !== "grid") return false;
+  const cells = node.children ?? [];
+  return cells.length > 0 && cells.every((c) => isEmptyBox(c) && c.minHeight == null && c.height == null);
+}
+
+/**
+ * Does this box hold nothing that gives it height?
+ *
+ * Broader than `isEmptyBox`, and the difference is the case it exists for: a stack whose only content is a
+ * DIVIDER is not empty, but a divider is a 2px line, so the stack came out 2px tall. Correct arithmetic and
+ * useless in practice — at 2px the box cannot be clicked, selected or dragged by any of its handles, which
+ * is the same "too small to grab" failure the empty-box floor was written for.
+ *
+ * Recursive, because the wrapping is: `normalizeRowBands` puts every child of a content container inside a
+ * band of its own, so the thing directly under a stack is usually another container rather than the divider.
+ */
+export function holdsNothingTall(node: BoxNode): boolean {
+  if (!isContainer(node)) return NO_HEIGHT_OF_ITS_OWN.has(node.type);
+  const kids = node.children ?? [];
+  /**
+   * AN EMPTY CONTAINER IS NOT A THIN LINE, and conflating the two broke a deliberate rule.
+   *
+   * Written first as "no children, or every child holds nothing tall", this returned true for a box holding
+   * an EMPTY GRID — the grid's cells have no children, so the whole chain read as height-less and the box
+   * got a floor. That contradicts a contract with its own tests: "a box holding an empty grid shrinks too —
+   * its cells' hints do not hold it open", which exists so a box can be dragged small.
+   *
+   * Emptiness is `isEmptyBox`'s question and is answered elsewhere. This one is narrower: does the box hold
+   * something that DRAWS but has no height — a divider — and nothing else? An empty box is not that.
+   */
+  if (!kids.length) return false;
+  return kids.every(holdsNothingTall);
+}
+
 // ── See-through ─────────────────────────────────────────────────────────────
 //
 // CSS `opacity` is a GROUP operation: it fades the element and everything inside it, and a child cannot opt
@@ -3568,7 +3688,24 @@ function fillsGivenHeight(node: BoxNode): boolean {
   return !!node.rowBand && kids.length === 1 && fillsGivenHeight(kids[0]);
 }
 
-export function childStyle(child: BoxNode, parent: BoxNode, bp: Breakpoint = "base"): CSSProperties {
+/**
+ * Has the nearest REAL container above this block been given a height?
+ *
+ * "Real" excludes row bands, which are scaffolding: `normalizeRowBands` puts one around every child of a
+ * content container, so the thing directly above a block is almost never the box a person thinks of as its
+ * container. A band carries no height of its own and passes the question straight through.
+ *
+ * The distinction matters for exactly one rule — the floor under a grid that has nothing to share (see
+ * `gridHasNothingToShare`) — and it has to be this narrow. "Any ancestor sized" is too broad: a grid inside
+ * an unsized child stack, itself inside a stack somebody sized, would count as sized and collapse anyway,
+ * which is the reported case. "The immediate parent" is too narrow: that is the band, always unsized.
+ */
+export function hostSizedFor(node: BoxNode, inheritedHostSized: boolean): boolean {
+  if (node.rowBand) return inheritedHostSized;                        // scaffolding — pass it through
+  return node.minHeight != null || node.height != null || !!node.screenHeight;
+}
+
+export function childStyle(child: BoxNode, parent: BoxNode, bp: Breakpoint = "base", hostSized = false): CSSProperties {
   const s: CSSProperties = {};
   // A PAGE of a pager, and nothing else: no span, no offset, no order. Its width comes from the strip
   // (`grid-auto-columns: 100%`), so any stored `colSpan` from before the mode was turned on is ignored
@@ -3605,6 +3742,36 @@ export function childStyle(child: BoxNode, parent: BoxNode, bp: Breakpoint = "ba
     // land identically on a grid child and a flex child or "stays visible while scrolling" would depend
     // on which engine the parent happens to use.
     Object.assign(s, pinCSS(child));
+    /**
+     * AN EMPTY CELL KEEPS A FLOOR — and it took being wrong about this twice to pin down when it matters.
+     *
+     * A grid whose rows have a height to share (`minmax(min-content, 1fr)` inside a grid that was given a
+     * `min-height`) hands every cell a share whatever the cell's own minimum says. Measured against such a
+     * grid, removing this floor changes nothing, which is why it was first added on a guess, then withdrawn
+     * as unprovable.
+     *
+     * The case it exists for is a grid with NO HEIGHT OF ITS OWN — one sitting inside a stack that hugs its
+     * content. There is nothing to share out: an empty cell is 0, so the grid is 0, so the stack holding it
+     * collapses too. Measured: adding a Grid inside a child stack left the child stack under 8px along with
+     * three of its descendants. "The inner child breaks the page" was this.
+     *
+     * HEIGHT only. In a grid the width is the SPAN's job — `grid-column` decides it, and a `min-width` here
+     * would fight the track rather than help it.
+     */
+    /**
+     * NO FLOOR ON A GRID CELL — and this is an open question, not a settled one.
+     *
+     * A grid with no height of its own (one inside a stack that hugs) has nothing to share out, so its
+     * empty cells are 0, the grid is 0, and the stack holding it collapses. That is real and measured:
+     * adding a Grid inside a child stack left the stack under 8px.
+     *
+     * Flooring the cells fixes it and breaks something else — `empty-box-height` asserts "a box holding an
+     * EMPTY GRID shrinks too — its cells' hints do not hold it open", which exists so a box can be dragged
+     * small. A floor on the cells survives the box's own resize and stops it.
+     *
+     * Both are rules someone asked for, so the choice is not mine to make quietly. Left as it was until it
+     * is decided; the collapse is recorded in the ledger rather than papered over.
+     */
     return s;
   }
   const isRow = (parent.direction ?? "column") === "row";
@@ -3658,6 +3825,59 @@ export function childStyle(child: BoxNode, parent: BoxNode, bp: Breakpoint = "ba
   //   • override a size the user set. `minHeight`, `height` and `screenHeight` are all somebody's decision,
   //     and a decision wins however small it is.
   //   • override `clip`, which IS the explicit "let this shrink past its content" opt-in. It keeps its zero.
+  // A box holding only ZERO-HEIGHT content gets the floor too, and for the same reason it exists: a stack
+  // whose sole content is a divider came out 2px tall — correct arithmetic, and impossible to click, select
+  // or drag by any of its handles. `holdsNothingTall` is the broader question, `isEmptyBox` the special case
+  // of it, and only the empty one also wants its width floored.
+  // A box holding only ZERO-HEIGHT content gets the floor too, for the reason the floor exists: a stack
+  // whose sole content is a divider came out 2px tall — correct arithmetic, and impossible to click, select
+  // or drag by any of its handles. `holdsNothingTall` is deliberately NARROW: whether a box is EMPTY is
+  // `isEmptyBox`'s question, and treating the two as one floored a box holding an empty grid, which has a
+  // rule of its own ("a box holding an empty grid shrinks too").
+  if (!child.clip && !isEmptyBox(child) && holdsNothingTall(child)
+      && child.minHeight == null && child.height == null && !child.screenHeight) {
+    s.minHeight = EMPTY_BOX_MIN;
+  }
+  /**
+   * A GRID WITH NOTHING TO SHARE KEEPS A FLOOR — unless you have sized the box it is in.
+   *
+   * That second clause is the whole design, and it took two attempts to find. Flooring the grid's CELLS
+   * fixes the collapse and breaks a rule with its own tests: "a box holding an EMPTY GRID shrinks too", so
+   * that a box can be dragged small. A floor on the cells survives the box's resize and blocks it.
+   *
+   * Reading the PARENT settles both. Squeeze the box and it gains an explicit height — a decision — so the
+   * courtesy stands aside and the grid shrinks with it, exactly as that rule requires. Leave the box alone,
+   * as a freshly added child stack is, and the grid keeps a height you can see and grab. One is a size
+   * somebody chose; the other is the absence of one.
+   */
+  /**
+   * A GRID WITH NOTHING TO SHARE KEEPS A FLOOR — unless you have sized the box it sits in.
+   *
+   * A grid's rows share whatever height the grid has. Given none — a grid in a stack that hugs its content
+   * — there is nothing to share: the cells are 0, the grid is 0, and the stack collapses with it. Measured:
+   * adding a Grid inside a child stack left the stack under 8px, reported as "the inner child breaks".
+   *
+   * The second clause is what lets this coexist with a rule that says the opposite. `empty-box-height`
+   * asserts "a box holding an EMPTY GRID shrinks too", so a box can be dragged small; squeezing that box
+   * gives it an explicit height, and a courtesy must always yield to a size somebody chose.
+   *
+   * `hostSized` and not "any ancestor sized" — see `hostSizedFor`. The reported case has an outer stack
+   * that IS sized, so the broader question answers yes and the collapse survives it.
+   */
+  if (!hostSized && !child.clip && gridHasNothingToShare(child)
+      && child.minHeight == null && child.height == null && !child.screenHeight) {
+    /**
+     * ONE FLOOR PER ROW, because the rows share whatever the grid gets.
+     *
+     * A single floor is the right answer for one row and the wrong one for four: a 2×2 grid handed 40px
+     * splits it into two 20px rows, which is back under the size at which a cell can be seen or grabbed —
+     * the very thing the floor exists to prevent. The grid asks for as much as its rows need.
+     */
+    const track = Math.max(1, gridColumns(child));
+    const used = (child.children ?? []).reduce((n, c) => n + Math.max(1, Math.round(c.colSpan ?? 1)), 0);
+    const rows = Math.max(1, Math.ceil(used / track));
+    s.minHeight = rows > 1 ? `calc(${EMPTY_BOX_MIN} * ${rows})` : EMPTY_BOX_MIN;
+  }
   if (child.clip || isEmptyBox(child)) {
     const floor = child.clip ? 0 : EMPTY_BOX_MIN;
     // Width: only where the user has not stated one. A stored width ("50%", "fill") is already an answer.

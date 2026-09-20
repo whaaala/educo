@@ -210,6 +210,11 @@ test.describe("adding a block never moves your insertion point", () => {
       .toBe(2);
 
     // …and the explicit route still nests, which is the half that keeps the earlier report fixed.
+    // The palette is closed first: it is still open from the click above, and a click on the inspector
+    // while it is can land without the effect the test is looking for — it passed against the dev server
+    // and failed against the production build, which is timing, not behaviour.
+    await page.keyboard.press("b");
+    await page.waitForTimeout(400);
     const inside = page.getByRole("button", { name: /Add a block inside/i });
     expect(await inside.count(), "the explicit nesting control is there").toBeGreaterThan(0);
     const depthBefore = Math.max(...lines.map((l) => Number(l.split(":")[0])));

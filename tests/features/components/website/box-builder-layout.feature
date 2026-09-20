@@ -106,3 +106,32 @@ Feature: Placing blocks beside one another in the Box Builder
     And only the WIDTHS tell the two apart — 50 and 50 when the empty space is used,
       33 and 67 when the row renormalises instead
     Because a guard that passes with the behaviour broken is not a guard
+
+
+  # ── The selection chrome follows the block ────────────────────────────────
+  # tests/e2e/chrome-follows-resize.spec.ts · tests/unit/mirror-box-churn.test.ts
+
+  Scenario: Dragging an edge, however far
+    Given a block I have selected
+    When I drag its right edge five hundred pixels across
+    Then the handle stays on the edge the whole way, not just at the end
+    And the toolbar stays on the block rather than hanging over empty canvas
+
+  Scenario: The chrome comes back if it ever falls behind
+    Given a drag driven faster than the browser can draw frames
+    Then the chrome may sit one frame behind, because a frame that has not happened cannot be drawn
+    But the gap stays the size of one movement however long the drag runs
+    And the moment I stop, the chrome is on the block again
+
+  Scenario: A layout that argues with itself is still given up on
+    Given a layout whose measurement never settles
+    Then the chrome stops chasing it after a bounded number of frames
+    And it keeps the last rectangle it had rather than taking the page down
+    Because "Maximum update depth exceeded" came out of that chase, twice
+
+  # ── Why this is asserted the way it is ─────────────────────────────────────
+
+  Scenario: A drag is not tested by its result alone
+    Given the resize tests drag this very handle twelve steps and check the stored width
+    Then they passed while the handles froze after eight, stranded 415px from the block
+    Because the resize was never wrong — what the user was LOOKING AT was

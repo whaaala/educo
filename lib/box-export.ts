@@ -9,7 +9,7 @@
 
 import type { CSSProperties } from "react";
 import {
-  type BoxNode, type Breakpoint, BP_ORDER, containerStyle, childStyle, marginCSS, sizeToCSS, radiusCSS, SHADOW_CSS, u, baseUnit, fadedPaint, boxOpacity, backgroundCss, paintLayerCss,
+  type BoxNode, type Breakpoint, BP_ORDER, containerStyle, childStyle, hostSizedFor, marginCSS, sizeToCSS, radiusCSS, SHADOW_CSS, u, baseUnit, fadedPaint, boxOpacity, backgroundCss, paintLayerCss,
   resolveResponsive, floatStacksOnMobile, alertToastCss, accordionClasses, bandClasses, videoEmbedSrc, isContainer, sanitizeCssDeclarations, expandScopedCss, COMPONENT_PARTS, itemFloatContextCss, itemOverrideCss, itemNumberVars, richBody, plainBody, componentTextCss, componentBoxCss, renderAlertHTML, alertDismissScript, masonryMeasureAttr, masonryMeasureScript, isPager, pagerNavHTML, pagerScript, pagerStripCss, pagerSlideId, bgShowThroughCss, blockContainmentCss, COMPONENT_ITEM_SEL, remLen, imageSizing, hasIntrinsicSize, itemNeedsClass, itemScope, floatZIndex, typoRole, typoRootVars, typoCascadeCss, bandEdgeCSS,
 } from "@/lib/box-model";
 import { isRegistryComponent, renderComponent, componentScripts } from "@/lib/educo-ui/registry";
@@ -296,7 +296,7 @@ const RESET: Record<string, string> = {
 };
 
 /** The full style object for a node at a breakpoint — mirrors BoxCanvas's wrapStyle so editor == export. */
-function styleAt(node: BoxNode, rawParent: BoxNode | null, bp: Breakpoint, theme: SiteTheme): CSSProperties {
+function styleAt(node: BoxNode, rawParent: BoxNode | null, bp: Breakpoint, theme: SiteTheme, hostSized = false): CSSProperties {
   const r = resolveResponsive(node, bp);
   const parent = rawParent ? resolveResponsive(rawParent, bp) : null;
   const isRoot = rawParent === null;
@@ -321,7 +321,7 @@ function styleAt(node: BoxNode, rawParent: BoxNode | null, bp: Breakpoint, theme
       ? { position: "relative", width: "100%", height: "auto", minHeight: "auto", zIndex: "auto" } // full-width flow, grows with content
       // The PAGE ROOT publishes the theme's typography as the role defaults everything below inherits — which
       // is what lets a block stop hard-coding them and a section start overriding them.
-      : parent ? childStyle(r, parent, bp) : { width: "100%", ["--box-u" as string]: baseUnit(r.baseFont ?? 10), ...typoRootVars(theme) }),
+      : parent ? childStyle(r, parent, bp, hostSized) : { width: "100%", ["--box-u" as string]: baseUnit(r.baseFont ?? 10), ...typoRootVars(theme) }),
     // A CONTAINER hands its typography down to everything inside it (see typoCascadeCss).
     ...(isContainer(r) ? typoCascadeCss(r) : {}),
     ...(selfPaint ? {} : bgCss(r)), // background styles the block element (component/button), not this wrapper
@@ -378,14 +378,14 @@ function diffStyle(base: CSSProperties, bp: CSSProperties): string {
 }
 
 /** Render a node (and subtree) to HTML, pushing its base + per-breakpoint rules into `sheet`. */
-function renderNode(node: BoxNode, rawParent: BoxNode | null, theme: SiteTheme, pageMap: Map<string, string>, sheet: Sheet, isPageSection = false): string {
+function renderNode(node: BoxNode, rawParent: BoxNode | null, theme: SiteTheme, pageMap: Map<string, string>, sheet: Sheet, isPageSection = false, hostSized = false): string {
   const r = resolveResponsive(node, "base");
   if (r.hidden && !node.responsive) return ""; // hidden at base with no per-device un-hide → skip entirely
   const cls = classFor(node.id);
   // Build UP: the phone layout is the unqualified rule and every wider rung adds only what CHANGES from the
   // rung below it. Diffing against the neighbour rather than the base is what keeps the sheet small — a rung
   // that changes nothing emits nothing at all.
-  const byRung = BP_ORDER.map((bp) => styleAt(node, rawParent, bp, theme));
+  const byRung = BP_ORDER.map((bp) => styleAt(node, rawParent, bp, theme, hostSized));
   const ov = overridesCss(r);
   sheet.rungs.phone.push(`.${cls}{${[styleString(byRung[0]), ov].filter(Boolean).join(";")}}`);
   // Hover & focus (Interactions 1a) — the SAME emitter the canvas uses, so the builder shows exactly what a
@@ -420,7 +420,7 @@ function renderNode(node: BoxNode, rawParent: BoxNode | null, theme: SiteTheme, 
   if (isContainer(r)) {
     // Children of the PAGE ROOT (the only call with no parent) are the page's sections; nothing deeper is.
     const kidsAreSections = rawParent === null;
-    const kids = (r.children ?? []).map((c) => renderNode(c, node, theme, pageMap, sheet, kidsAreSections)).join("");
+    const kids = (r.children ?? []).map((c) => renderNode(c, node, theme, pageMap, sheet, kidsAreSections, hostSizedFor(node, hostSized))).join("");
     // MASONRY, measured (C). The marker and the script ride WITH the gallery, in the same shape the Alert's
     // dismiss script uses: one guarded global, so ten measured galleries still run one copy, and a page with
     // none ships no script at all. The attribute's value is the down-gap in row units — the one number the

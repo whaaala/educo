@@ -40,12 +40,21 @@ const treeIds = (page: Page) =>
 async function openPaletteAndAddStack(page: Page) {
   const before = await treeIds(page);
   const tile = page.getByRole("button", { name: /^Add Stack$/ });
-  // Only open it if it is not already open — the opener TOGGLES, so clicking it again on a second add
-  // closes the panel and the tile is never found. Checking first keeps the helper usable twice in a row,
-  // which is exactly the sequence the last test needs.
+  /**
+   * Opened with the KEYBOARD, the way `add-without-asking.spec.ts` does it.
+   *
+   * It used to click `button[aria-label*="block" i]`, and that selector is ambiguous: the inspector's own
+   * "+ Add a block inside" matches it too. Which one `.first()` found depended on DOM order, so with a
+   * block selected the helper could click the inspector instead, the palette never opened, and all six
+   * tests sat on a click that could not resolve until the 120s timeout. They passed against the dev server
+   * and failed against the production build — the timing differed, the ambiguity did not.
+   *
+   * Only opened when it is not already open: the shortcut TOGGLES, so firing it again on a second add
+   * would close the panel. That is the sequence the two-clicks test needs.
+   */
   if (await tile.count() === 0) {
-    await page.locator('button[aria-label*="block" i], button[title*="block" i]').first().click();
-    await page.waitForTimeout(350);
+    await page.keyboard.press("b");
+    await page.waitForTimeout(400);
   }
   await tile.first().click();
   await page.waitForTimeout(600);

@@ -80,6 +80,9 @@ const INVARIANT_SPECS = [
   "tests/e2e/build-from-blank.spec.ts",
   "tests/e2e/drop-placement.spec.ts",
   "tests/e2e/palette-adds-after.spec.ts",
+  "tests/e2e/add-inside-empty-box.spec.ts",
+  "tests/e2e/selection-drills-inward.spec.ts",
+  "tests/e2e/chrome-follows-resize.spec.ts",
 ];
 
 const argv = process.argv.slice(2);

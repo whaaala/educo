@@ -75,7 +75,24 @@ describe("BoxCanvas (box-model editor)", () => {
     expect(added.width).toBe("40%"); // fills the row's leftover (100 − 60) → sits beside c1
   });
 
-  it("adding a section does NOT steal the selection (the parent stays selected)", async () => {
+  it("adding a block HANDS IT THE SELECTION, so you can see that it landed", async () => {
+    /**
+     * THIS ASSERTED THE OPPOSITE — "the selection never jumped to it" — and that rule produced two separate
+     * reports of the feature being broken when it was working perfectly.
+     *
+     * The intent was reasonable: leave the selection alone so you can add several things in a row. What it
+     * missed is that a newly added block is frequently INVISIBLE:
+     *
+     *   • into an EMPTY box it is transparent, has no content, and exactly fills its parent — nothing on
+     *     screen moves at all ("I always have to click this twice");
+     *   • into a GRID the grid does not grow, it shares its height out, so two transparent 50px cells look
+     *     exactly like one transparent 100px cell ("the highlighted ones are not working").
+     *
+     * In both, every menu item worked and every menu item looked broken. Selecting what just landed is the
+     * one signal that holds in every case — an outline round it, the inspector on it. Adding several in a
+     * row now costs one click back on the parent, which is a fair price for never wondering whether the
+     * last one happened.
+     */
     const user = userEvent.setup();
     const onSelectId = vi.fn();
     function AddHarness() {
@@ -86,8 +103,11 @@ describe("BoxCanvas (box-model editor)", () => {
     const before = container.querySelectorAll("[data-box-id]").length;
     await user.click(screen.getByLabelText("Block actions"));
     await user.click(screen.getByRole("menuitem", { name: "Stack" }));
-    expect(container.querySelectorAll("[data-box-id]").length).toBeGreaterThan(before); // the new section was added…
-    expect(onSelectId).not.toHaveBeenCalled(); // …but the selection never jumped to it
+    expect(container.querySelectorAll("[data-box-id]").length).toBeGreaterThan(before); // the block was added…
+    expect(onSelectId).toHaveBeenCalled();                                              // …and it is what is now selected
+    const picked = onSelectId.mock.calls.at(-1)![0];
+    expect(picked, "and it is not the parent that was selected before").not.toBe("root");
+    expect(picked, "…it is a real block").toBeTruthy();
   });
 
   it("adds a Grid container and renders it as CSS grid", async () => {
@@ -95,10 +115,33 @@ describe("BoxCanvas (box-model editor)", () => {
     const { container } = render(<Harness initial={tree()} initialSel="root" />);
     await user.click(screen.getByLabelText("Block actions"));
     await user.click(screen.getByRole("menuitem", { name: "Grid" }));
+    /**
+     * A GRID ASKS FOR ITS SHAPE FIRST, from this menu as from the palette.
+     *
+     * It used to be inserted outright as a fixed 1×1 here, while the palette opened a picker — so the same
+     * Grid arrived differently depending on which control you reached for, and "add a grid inside a stack
+     * with as many rows and columns as I want" was unreachable from the menu. The palette's own rule is
+     * that dragging a tile says WHERE a layout goes and not what it IS; the menu now says the same.
+     */
+    await user.click(screen.getByLabelText("2 across, 1 down"));
     // the new grid child is a container whose inline style uses display:grid
     const grids = Array.from(container.querySelectorAll<HTMLElement>("[data-box-id]")).filter((el) => el.style.display === "grid");
     expect(grids.length).toBe(1);
-    expect(grids[0].style.gridTemplateColumns).toContain("repeat(3");
+    /**
+     * TWELVE columns, not three — and it is the same grid the palette makes.
+     *
+     * This menu built its own with `createGrid(3)`: three columns and NOTHING IN THEM. `blockForKind`'s
+     * comment names why that is wrong — "an empty shell with no cell to click, nothing to resize and
+     * nowhere to put anything" — so the palette has never produced one, and a Grid added from the menu was
+     * unusable while a Grid added from the palette worked. Two routes to one block, one of them broken.
+     *
+     * Both now go through `blockForKind`, which is the project's twelve-column grid carrying exactly ONE
+     * cell: twelve because that is the track everything else is measured in, one cell because arriving
+     * already divided is a shape nobody chose.
+     */
+    expect(grids[0].style.gridTemplateColumns).toContain("repeat(12");
+    const cells = Array.from(grids[0].querySelectorAll<HTMLElement>(":scope > [data-box-id]"));
+    expect(cells.length, "and it has a cell to click, rather than being an empty shell").toBeGreaterThan(0);
   });
 
   it("the ROOT grows (min-height = floatingReserve) so a floated child is contained, not spilling below", () => {
