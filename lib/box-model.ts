@@ -333,6 +333,20 @@ export interface BoxNode {
   /** How deep the shape cuts, as a percentage of the band's height. Default 6. */
   edgeDepth?: number;
 
+  /**
+   * PINNING — the block stays visible while the page scrolls past it. Phase 3 of the Layout System.
+   *
+   * `position: sticky`, said once: which edge of the screen it holds itself against. Undefined is the
+   * default and means what it has always meant — the block scrolls away with everything else.
+   *
+   * It is a per-rung control like every other layout decision, which is the point: a sidebar that follows
+   * you down a desktop is useful, and the same sidebar pinned on a phone eats a screen that has none to
+   * spare. Set it at the base and turn it off at `phone`.
+   */
+  pin?: "top" | "bottom";
+  /** How far from that edge it comes to rest, in px (emitted as rem). Default 0 — flush against the edge. */
+  pinOffset?: number;
+
   // ── free / floating position (escape the flow: lift a section onto its OWN layer to OVERLAP others) ──
   position?: "flow" | "absolute"; // default "flow" (in the row-band stack); "absolute" = free-floating layer
   left?: number;            // absolute only: X offset as % of the positioning parent's content box (responsive)
@@ -1850,6 +1864,32 @@ export function moveBoxStep(root: BoxNode, id: string, dir: -1 | 1): BoxNode {
  * Move `id` to be a child of `newParentId` at `index`. Guards against dropping a node into itself
  * or a descendant (which would detach the subtree). Returns the original tree if the move is invalid.
  */
+/**
+ * Put `node` UNDER (or over) the block `id`, by turning that block's SLOT into a vertical Stack.
+ *
+ * "One tall block on the left, two stacked beside it on the right" is an ordinary page and the model has
+ * always been able to hold it — a row band whose second child is a column of two. What there was no way to
+ * DO was reach it: a band is a row, a row only knows side-by-side, so a block dropped under one of its
+ * columns was read as "another column" and wedged in beside. The model reached further than the controls,
+ * and the lever for that is always more controls, never more model.
+ *
+ * So the column is created on demand: the block you aimed under is lifted into a new Stack together with the
+ * newcomer, and the Stack takes its place — same slot, same width, so nothing else on the line moves. Its
+ * NEIGHBOUR is not touched at all, which is the property that makes this safe to do automatically.
+ *
+ * The inner block goes to `width: 100%` because it now measures against the Stack rather than the band; the
+ * Stack carries the width it used to have, so the line is unchanged.
+ */
+export function stackWithBlock(root: BoxNode, id: string, node: BoxNode, before = false): BoxNode {
+  const target = findBox(root, id);
+  const info = findParent(root, id);
+  if (!target || !info) return root;
+  const column = createContainer("column", { width: target.width ?? "100%", padding: 0, gap: 0, align: "stretch", justify: "start" });
+  const inner: BoxNode = { ...target, width: "100%" };
+  column.children = before ? [node, inner] : [inner, node];
+  return insertBox(removeBox(root, id), info.parent.id, info.index, column);
+}
+
 export function moveBox(root: BoxNode, id: string, newParentId: string, index: number): BoxNode {
   if (id === newParentId || isAncestor(root, id, newParentId)) return root;
   const node = findBox(root, id);
@@ -1894,10 +1934,51 @@ export function widthPct(token?: string): number {
 export function clampRowWidths(row: BoxNode): BoxNode {
   const kids = row.children ?? [];
   if (!kids.length) return row;
+  /**
+   * A ROW THAT WRAPS IS ALLOWED TO ADD UP TO MORE THAN 100%. That is what wrapping IS.
+   *
+   * This rescaled every row whose widths exceeded the line, to stop a row running off the page. For a row
+   * that cannot wrap that is right. For a row band it is exactly wrong, because a band wraps
+   * (`flexWrap: node.wrap || node.rowBand ? "wrap"`), so the overflow was never going to leave the page —
+   * it was going to become a second line.
+   *
+   * The cost was that a block could not be widened past its neighbours at all: push the boundary and the
+   * sum went over 100, this rescaled everything back down, and the drag was undone on commit. "Make this
+   * one full width and let the other drop below" — the ordinary way a person rearranges two columns — was
+   * unreachable, and so was its reverse, because nothing had moved to reverse.
+   *
+   * Leaving a wrapping row alone makes both directions fall out of the layout itself: widen and the
+   * neighbour goes to the next line; narrow and it comes back, with nothing remembered and nothing moved.
+   */
+  if (row.rowBand || row.wrap) return row;
+  return fitRowWidths(row);
+}
+
+/**
+ * Scale a row's widths down so they fit on ONE line — the old `clampRowWidths`, now called deliberately
+ * instead of on every commit.
+ *
+ * The difference is everything. As an invariant it made the wrap impossible: widen a block past its
+ * neighbours and the sum went over 100, this pulled it straight back, and the drag was undone on commit.
+ * As a step taken at INSERT time it does the job it was always for — a block dropped beside one that
+ * already fills the line has to come from somewhere, so the line is shared out — while a width the user
+ * dragged is left exactly as they set it, free to push a neighbour onto the next line.
+ */
+export function fitRowWidths(row: BoxNode): BoxNode {
+  const kids = row.children ?? [];
+  if (!kids.length) return row;
   const sum = kids.reduce((s, k) => s + widthPct(k.width), 0);
   if (sum <= 100) return row;
   const f = 100 / sum;
   return { ...row, children: kids.map((k) => ({ ...k, width: `${Math.max(3, Math.round(widthPct(k.width) * f))}%` })) };
+}
+
+/** Share out the widths of the band `bandId` so its children fit on one line. Used when a block is added. */
+export function fitBand(root: BoxNode, bandId: string): BoxNode {
+  const band = findBox(root, bandId);
+  if (!band?.rowBand) return root;
+  const fitted = fitRowWidths(band);
+  return fitted === band ? root : updateBox(root, bandId, { children: fitted.children });
 }
 
 /** Canonicalize a container tree RECURSIVELY: every CONTENT container (the page root, a section, a block)
@@ -2698,6 +2779,20 @@ if(document.readyState==='loading')addEventListener('DOMContentLoaded',all);else
 export const MASONRY_ROW_REM = 0.5;
 
 /**
+ * The smallest an EMPTY, UNSIZED box may render — the floor that stops a block you just added from being
+ * too small to see or to grab. See the long note in `childStyle` for what it is defending against.
+ *
+ * 2.5rem (40px at the default root) is chosen against the thing that has to work: a block carries four edge
+ * handles and four corner handles, each about 8px. Below roughly 32px they overlap and there is no part of
+ * the block left to click that is not a handle, so it cannot be selected OR resized. 40px leaves a usable
+ * band in the middle, and is still small enough that six of them barely move a parent somebody sized.
+ *
+ * In `rem`, never px, per the Responsive Field Guide — a reader who has raised their browser font gets a
+ * bigger floor too, which is exactly right, because their handles are bigger as well.
+ */
+export const EMPTY_BOX_MIN = "2.5rem";
+
+/**
  * The shape assumed for a cell whose height CANNOT be known statically — a card, a caption, any text.
  *
  * Something has to be assumed or such a cell claims one unit and renders 8px tall, which is not "approximate",
@@ -3142,10 +3237,51 @@ export async function importPhoto(file: File): Promise<{ src: string; imgW?: num
  *  An explicit size is a FIXED share (no grow/shrink) so a section keeps exactly the width you give it —
  *  you can resize it narrower to open space, and drop another section into that space. `fill` grows to
  *  take whatever is left. Dropping a section beside another sets its width to the leftover so it fits. */
-export function flexForWidth(token?: string): string | undefined {
+/**
+ * Is this child ALONE on its line, once a wrapping row has packed its children?
+ *
+ * The reason this is computed rather than left to `flex-grow: 1` is a regression it caused within minutes:
+ * grow spends whatever is LEFT OVER on a line, and narrowing a block is exactly how a line comes to have
+ * space left over. So a block dragged narrower had the space handed straight back to it and would not
+ * shrink at all — "I can no longer decrease the width of a stack from the right".
+ *
+ * Flexbox packs greedily, so the same walk here tells us what it will do: fill a line until the next child
+ * would take it past 100%, then start another. A child that ends up on a line by itself is the only case
+ * that should grow — it has room beside it that nothing else is asking for.
+ */
+export function aloneOnItsLine(parent: BoxNode, child: BoxNode): boolean {
+  const kids = (parent.children ?? []).filter((k) => !isFloating(k) && !k.hidden);
+  if (kids.length < 2) return false;                    // the only child already fills the row by other means
+  let line: BoxNode[] = [];
+  let used = 0;
+  for (const k of kids) {
+    const w = widthPct(k.width) || 100;
+    // A hair over 100 is still one line — percentages that round to 100.4 are meant to be a full line.
+    if (line.length && used + w > 100.5) {
+      if (line.some((n) => n.id === child.id)) return line.length === 1;
+      line = []; used = 0;
+    }
+    line.push(k); used += w;
+  }
+  return line.some((n) => n.id === child.id) && line.length === 1;
+}
+
+export function flexForWidth(token?: string, fillsItsLine = false): string | undefined {
   if (token === "fill") return "1 1 0%";
   if (!token || token === "auto") return "0 0 auto";
-  return `0 1 ${token}`; // fixed share, but MAY SHRINK to fit — so a row's sections can never overflow / run off the page
+  /**
+   * `fillsItsLine` — A BLOCK ALONE ON A LINE GROWS TO FILL IT; one that shares a line keeps its share.
+   *
+   * Both halves come from the single `1` in the grow position, and that is the whole trick: `flex-grow`
+   * only ever spends space that is LEFT OVER on a line. Two blocks at 50% leave none, so they stay at 50%
+   * and "a resized block is exactly the size you set" still holds. A block wrapped onto a line by itself
+   * leaves 50% over, so it takes it.
+   *
+   * That is what makes widening a block and narrowing it again symmetrical: the neighbour drops to the next
+   * line and spreads to fill it, then comes back up to its own share, and nothing was moved or remembered
+   * to achieve either. Only row bands ask for this — a row that cannot wrap has no "alone on its line".
+   */
+  return `${fillsItsLine ? 1 : 0} 1 ${token}`; // fixed share, but MAY SHRINK to fit — so a row's sections can never run off the page
 }
 
 /**
@@ -3422,6 +3558,10 @@ export function childStyle(child: BoxNode, parent: BoxNode, bp: Breakpoint = "ba
     placeInSequence(s, child);
     // LAST, so the nine-point position wins over the older per-axis controls it replaces.
     Object.assign(s, placeCSS(child, parent));
+    // …and pinning after even that: it writes `position`, which none of the above touches, and it must
+    // land identically on a grid child and a flex child or "stays visible while scrolling" would depend
+    // on which engine the parent happens to use.
+    Object.assign(s, pinCSS(child));
     return s;
   }
   const isRow = (parent.direction ?? "column") === "row";
@@ -3439,7 +3579,12 @@ export function childStyle(child: BoxNode, parent: BoxNode, bp: Breakpoint = "ba
   // `!isRow` — because in a row the main axis is width, and a grid should take its share of the width like
   // anything else, not all of it.
   const fillsMain = !isRow && fillsGivenHeight(child) && (!mainToken || mainToken === "auto");
-  s.flex = fillsMain || ((!mainToken || mainToken === "auto") && parentDefinite) ? "1 1 auto" : flexForWidth(mainToken);
+  // A section of a ROW BAND fills its line ONLY when it is alone on it (`aloneOnItsLine`). Granting the grow
+  // unconditionally looks equivalent and is not: grow spends leftover space, and narrowing a block is how a
+  // line gets leftover space — so every block became un-shrinkable the moment it stopped sharing a full line.
+  s.flex = fillsMain || ((!mainToken || mainToken === "auto") && parentDefinite)
+    ? "1 1 auto"
+    : flexForWidth(mainToken, !!parent.rowBand && isRow && aloneOnItsLine(parent, child));
   // A box can pin its OWN cross-axis alignment (used by edge-anchored resize to keep the far edge fixed
   // even when the parent centres/stretches its children).
   if (child.alignSelf) s.alignSelf = child.alignSelf;
@@ -3449,7 +3594,35 @@ export function childStyle(child: BoxNode, parent: BoxNode, bp: Breakpoint = "ba
   // A SCREEN HEIGHT counts as an explicit floor too. Without that clause an empty box lost it — and a hero is
   // empty right up until you put something in it, so "make this section full screen" appeared to do nothing
   // at the exact moment a person would try it.
-  if (child.clip || isEmptyBox(child)) { s.minWidth = 0; if (child.minHeight == null && !child.screenHeight) s.minHeight = 0; } // keep an EXPLICIT resize floor; only drop the content-min when there's none
+  //
+  // …BUT NOT ALL THE WAY TO NOTHING, unless the user asked for that.
+  //
+  // An empty box has nothing inside to hold it open, so with a zero minimum it collapses to whatever its
+  // parent has spare — and in a parent that has been GIVEN a height, what it has spare is that height split
+  // between however many children there are. Measured: six blocks added one at a time into a 200px stack
+  // came out 159 · 79 · 53 · 40 · 32 · **26px**. At 26px you cannot tell what a block is, and its four
+  // resize handles sit on top of one another, so the block you just added is neither visible nor grabbable.
+  //
+  // The same six added to an UNSIZED parent are 128px each and the parent grows to hold them — correct, and
+  // the reason this hid for so long: every test for it, and the editor's own courtesy height, used a parent
+  // nobody had resized. The bug lives entirely in the state a user reaches by resizing something, which is
+  // to say the normal one.
+  //
+  // So the floor is small rather than generous — enough to see and to grab, not enough to fight a parent
+  // somebody sized. A 200px stack with six blocks in it becomes 240px rather than 768px.
+  //
+  // TWO THINGS THE FLOOR MUST NEVER DO, and they are the reason for the conditions rather than a flat value:
+  //   • override a size the user set. `minHeight`, `height` and `screenHeight` are all somebody's decision,
+  //     and a decision wins however small it is.
+  //   • override `clip`, which IS the explicit "let this shrink past its content" opt-in. It keeps its zero.
+  if (child.clip || isEmptyBox(child)) {
+    const floor = child.clip ? 0 : EMPTY_BOX_MIN;
+    // Width: only where the user has not stated one. A stored width ("50%", "fill") is already an answer.
+    s.minWidth = child.width == null || child.width === "auto" ? floor : 0;
+    // Height: keep an EXPLICIT resize floor; only replace the content-min when there is none.
+    if (child.minHeight == null && child.height == null && !child.screenHeight) s.minHeight = floor;
+    else if (child.minHeight == null && !child.screenHeight) s.minHeight = 0;
+  }
   // ── Responsive Field Guide reflow ──
   // A section inside a ROW BAND keeps a usable minimum width (`min(100%, 14rem)`): its siblings stay side-by-side
   // while they fit, but once the row is too narrow for everyone at that minimum, it WRAPS — so on a phone the
@@ -3477,6 +3650,8 @@ export function childStyle(child: BoxNode, parent: BoxNode, bp: Breakpoint = "ba
   // LAST, so the nine-point position wins over the older per-axis controls it replaces (`push`, and the
   // hug-to-content `alignSelf` just above): a block told where to sit goes there.
   Object.assign(s, placeCSS(child, parent));
+  // …and pinning after even that — see the matching line in the grid branch above.
+  Object.assign(s, pinCSS(child));
   return s;
 }
 
@@ -3514,6 +3689,79 @@ export function combineMinHeight(own: string | undefined, screen: BoxNode["scree
   const wanted = screen === "full" ? "100svh" : screen === "half" ? "50svh" : undefined;
   if (!wanted) return own;
   return own ? `max(${own}, ${wanted})` : wanted;
+}
+
+// ── Pinning: a block that stays put while the page scrolls ───────────────────
+
+/**
+ * THE ONE RESOLVER for pinning — `radiusCSS`'s rule, for the same reason.
+ *
+ * The canvas and the export must agree about a pinned block or the builder is lying about the published
+ * page, and they agree here by both calling `childStyle`, which calls this. Nothing else may write
+ * `position: sticky`.
+ *
+ * `sticky` and not `fixed`, deliberately. A fixed block leaves the document entirely — it is measured
+ * against the viewport, so it escapes its column, ignores the page's gutters and sits on top of whatever
+ * scrolls beneath it. Sticky stays a member of its parent: it occupies its space in the flow, holds itself
+ * against the named edge while its PARENT is on screen, and leaves with the parent. That is what "a sidebar
+ * that follows you down the page" actually means, and it is also what makes it safe — a sticky block cannot
+ * cover the footer, because it stops when its parent does.
+ *
+ * TWO THINGS ARE NOT NEGOTIABLE, and both are one-line clauses here:
+ *
+ *  1. **A floating block is never pinned.** `position: absolute` and `position: sticky` are the same
+ *     property, so a block carrying both would have whichever the object spread wrote last — which is to
+ *     say, whichever the reader of that code happened to order first. Free positioning wins, because the
+ *     user placed that block by hand and sticky would silently move it.
+ *
+ *  2. **The edge is an offset, not a side.** `top` for a block pinned to the top, `bottom` for the bottom.
+ *     Writing both (or neither) is how a sticky block ends up inert — present in the CSS, doing nothing —
+ *     which is the defect class this project keeps meeting.
+ *
+ * `PAGE_Z.sticky` comes from the stacking ladder rather than a literal, so a pinned block sits above
+ * ordinary flow content and still cannot reach the editor's chrome.
+ */
+export function pinCSS(node: BoxNode): CSSProperties {
+  if (!node.pin) return {};
+  if (node.position === "absolute") return {}; // clause 1 — free positioning wins
+  return { position: "sticky", [node.pin]: u(node.pinOffset ?? 0), zIndex: PAGE_Z.sticky };
+}
+
+/**
+ * Does an ancestor of this block stop it from ever sticking?
+ *
+ * `position: sticky` is measured against the nearest **scroll container**, and `overflow: hidden` makes one.
+ * So a pinned block inside a clipped ancestor is pinned to a box that never scrolls: the CSS is present,
+ * correct and completely inert. Nothing errors, nothing warns, and the block simply scrolls away.
+ *
+ * This is not a rare corner. The wrapper clips whenever `clip` is set **or the block has a corner radius**
+ * (canvas and export both), so rounding a section — an ordinary thing to do — would quietly switch off a
+ * sticky sidebar inside it. A teacher would have no way to connect the two.
+ *
+ * Returns the nearest offending ancestor, so the inspector can name it rather than say "something above".
+ */
+export function pinBlockedBy(root: BoxNode, id: string): BoxNode | null {
+  // The chain from the root down to the block, or null when it is not in this tree.
+  const walk = (node: BoxNode, trail: BoxNode[]): BoxNode[] | null => {
+    const path = [...trail, node];
+    if (node.id === id) return path;
+    for (const kid of node.children ?? []) {
+      const hit = walk(kid, path);
+      if (hit) return hit;
+    }
+    return null;
+  };
+  const path = walk(root, []);
+  if (!path) return null;
+  const self = path[path.length - 1];
+  if (!self.pin) return null;
+  // Nearest first, and the block's OWN clipping is irrelevant — it is an ANCESTOR's scroll container that
+  // captures it. The root is excluded: the page itself is the thing being scrolled.
+  for (let i = path.length - 2; i >= 1; i--) {
+    const a = path[i];
+    if (a.clip || radiusCSS(a)) return a;
+  }
+  return null;
 }
 
 // ── Band edges: sloped and curved section boundaries ─────────────────────────

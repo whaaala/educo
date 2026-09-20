@@ -354,7 +354,7 @@ function AccPreview({ id, size, axes = [] }: { id: string; size: ThumbSize; axes
   );
 }
 
-export default function BoxInspector({ node, theme, onPatch, onAddChild, onFloat, onUnfloat, onLayer, onAlignInRow, rowJustify, onSectionWidth, sectionWidth, canFloat = true, inGrid = false, inMasonry = false, gridTrack, onSetFraction, onRetrack, breakpoint = "base", overridden = false, onResetOverride, pages, currentPageId }: {
+export default function BoxInspector({ node, theme, onPatch, onAddChild, onFloat, onUnfloat, onLayer, onAlignInRow, rowJustify, onSectionWidth, sectionWidth, canFloat = true, inGrid = false, inMasonry = false, gridTrack, onSetFraction, onRetrack, breakpoint = "base", overridden = false, onResetOverride, pages, currentPageId, pinBlockedBy = null }: {
   node: BoxNode;
   theme: SiteTheme;
   onPatch: (patch: Partial<BoxNode>) => void;
@@ -384,6 +384,17 @@ export default function BoxInspector({ node, theme, onPatch, onAddChild, onFloat
   onResetOverride?: () => void;
   pages?: { id: string; name: string }[];
   currentPageId?: string;
+  /**
+   * The name of an ancestor that would stop this block ever sticking, or null when nothing does.
+   *
+   * `position: sticky` is measured against the nearest SCROLL CONTAINER, and `overflow: hidden` makes one —
+   * which the wrapper sets whenever a block is clipped or merely has a corner radius. A pinned block inside
+   * one is pinned to a box that never scrolls: correct CSS, completely inert, no error anywhere. The
+   * inspector has to say so, because nothing else in the product can.
+   *
+   * Computed by the caller, which is what holds the tree (`pinBlockedBy` in box-model).
+   */
+  pinBlockedBy?: string | null;
 }) {
   const [tab, setTab] = useState<"design" | "content" | "device">("design");
   const [accSel, setAccSel] = useState<string[]>([]); // accordion items ticked for grouping
@@ -569,6 +580,34 @@ export default function BoxInspector({ node, theme, onPatch, onAddChild, onFloat
                     ? "At least this tall on every device — it grows further if the content needs it."
                     : "As tall as whatever is inside it."}
                 </p>
+              </div>
+              {/* PINNING — Phase 3 of the Layout System. `position: sticky` as an OPTION on any block.
+                  Worded as what it does rather than what it is: "stays put while you scroll" is the
+                  behaviour, "sticky" is the CSS keyword, and only one of those is a thing a teacher
+                  already knows. Per-rung like every other layout control, which is the point — a sidebar
+                  that follows you down a desktop eats a phone screen that has none to spare. */}
+              <div className="space-y-1">
+                <span className={label}>Stays put while scrolling</span>
+                <Segmented full ariaLabel="Stays put while scrolling" value={node.pin ?? "off"}
+                  onChange={(v) => onPatch({ pin: v === "off" ? undefined : (v as NonNullable<BoxNode["pin"]>) })}
+                  options={[{ value: "off", label: "Scrolls away" }, { value: "top", label: "Hold to top" }, { value: "bottom", label: "Hold to bottom" }]} />
+                <p className="text-[11px] leading-snug text-gray-500 dark:text-gray-400">
+                  {node.pin
+                    ? `It holds against the ${node.pin} of the screen while the rest of its section scrolls past, then leaves with the section.`
+                    : "It scrolls with the rest of the page."}
+                </p>
+                {node.pin && (
+                  <Range title="Distance from the edge" value={node.pinOffset} min={0} max={120} fallback={0} onChange={(n) => onPatch({ pinOffset: n || undefined })} unit="rem" />
+                )}
+                {/* THE SILENT FAILURE, SAID OUT LOUD. A clipping ancestor makes a scroll container, and a
+                    block pinned inside one simply never sticks — no error, no warning, nothing to connect
+                    the cause to the effect. This is the only place that can tell them. */}
+                {node.pin && pinBlockedBy && (
+                  <p role="status" className="text-[11px] leading-snug rounded-md px-2 py-1.5 bg-amber-50 text-amber-900 ring-1 ring-amber-200 dark:bg-amber-950/40 dark:text-amber-200 dark:ring-amber-900 midnight:bg-amber-950/40 midnight:text-amber-200 midnight:ring-amber-900 purple:bg-amber-950/40 purple:text-amber-200 purple:ring-amber-900">
+                    This will not hold: the <b>{pinBlockedBy}</b> around it clips its contents, which stops
+                    anything inside from pinning. Turn off that block&apos;s rounding or clipping to let this work.
+                  </p>
+                )}
               </div>
               {/* BAND EDGES. Shown as the shapes they are (RULE S) — a slope and a curve are pictures, and
                   naming them "slope-right" in a dropdown would be asking a teacher to imagine the result. */}

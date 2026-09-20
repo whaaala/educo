@@ -65,6 +65,16 @@ const INVARIANT_SPECS = [
   "tests/e2e/photo-gallery.spec.ts",
   "tests/e2e/pager-hero.spec.ts",
   "tests/e2e/add-without-asking.spec.ts",
+  "tests/e2e/side-by-side-drop.spec.ts",
+  "tests/e2e/empty-block-floor.spec.ts",
+  // These three are builder invariants that were on disk but in NEITHER list, so `test:fast` never ran them
+  // and neither did `test:invariants:rest`. That is the exact silent stop this file's guard exists to catch,
+  // one level up: the guard checks the two lists agree with EACH OTHER, which a spec missing from both
+  // satisfies perfectly. `tests/unit/test-scripts.test.ts` now also checks the builder specs on disk are
+  // listed, so the next one cannot go missing the same way.
+  "tests/e2e/empty-box-height.spec.ts",
+  "tests/e2e/float-round-trip.spec.ts",
+  "tests/e2e/see-through.spec.ts",
 ];
 
 const argv = process.argv.slice(2);

@@ -15,7 +15,7 @@ import type { SiteTheme } from "@/lib/site-storage";
 import {
   type BoxNode, type BoxType,
   containerStyle, childStyle, marginCSS, sizeToCSS, u, baseUnit, floatingReserve, floatStacksOnMobile, createContainer, createGrid, createElement, createComponent,
-  updateBox, removeBox, insertBox, moveBoxStep, duplicateBox, moveBox, cloneBox, findParent, isAncestor, isContainer, containerLabel, widthPct,
+  updateBox, removeBox, insertBox, moveBoxStep, duplicateBox, moveBox, cloneBox, findParent, isAncestor, isContainer, containerLabel, widthPct, stackWithBlock, fitBand,
   isFloating, floatBox, unfloatBox, groupBoxes, ungroupBoxes, bringToFront, sendToBack, bringForward, sendBackward,
   fadedPaint, boxOpacity, backgroundCss, treePaintLayerCss, radiusCSS, isClipped, SHADOW_CSS, videoEmbedSrc, sanitizeCssDeclarations, expandScopedCss, ACCORDION_CSS_PARTS, itemOverrideCss, itemHasOverride, itemNumberVars, richBody, componentTextCss, componentBoxCss, bgShowThroughCss, resizeTopEdge, blockContainmentCss, alertToastCss, treeHasToast, accordionClasses, bandClasses, advancedCssStyle, alertActionsHTML, hugsContent, itemFloatContextCss, COMPONENT_ITEM_SEL, clampContentScale, MIN_CONTENT_SCALE, isMultiItemComponent, comfortableWidth, remLen, rootFontPx, isDefiniteLen, addItemAfter, duplicateItem, duplicateChildItem, removeItem, removeChildItem, moveItem, moveChildItem, updateItem, updateChildItem, ALERT_SEVERITY_ICON, alertPartInline, alertIconInline, collectAlertItemStyles,
   type Breakpoint, resolveResponsive, updateBoxResponsive, imageSizing, importPhoto, treeItemEffectsCss, itemNeedsClass, floatZIndex, gridPlacementAt, gridColumnsAt, masonryMeasureAttr, masonryMeasurePass, isPager, pagerStripCss, pagerNavHTML, selectionChain, typoRole, typoRootVars, typoCascadeCss, bandEdgeCSS,
@@ -184,6 +184,95 @@ const ADD_ITEMS: { type: BoxType | "row" | "grid" | "accordion"; label: string; 
   { type: "embed", label: "Embed / HTML", Icon: Code2 },
 ];
 
+/**
+ * A fixed MIRROR of a block's box, portaled above the page, holding that block's own chrome.
+ *
+ * The toolbar and the resize handles used to render INSIDE the block's wrapper, which put them down in the
+ * page's stacking world — and there the chrome ladder has no say at all, because a wrapper with a z-index
+ * creates a stacking context and everything inside it is trapped underneath. So a second floating block
+ * raised above the first covered the FIRST one's controls: you could see the block you had selected and
+ * could not reach the toolbar that deletes it or the handles that resize it. The z-index on the handles was
+ * present, correct, and completely inert — the failure this project keeps meeting.
+ *
+ * The mirror is a `position: fixed` box at the block's exact rect, so every child keeps the offsets it
+ * already had (`-top-1`, `top-full`, `left-1/2`) and the markup did not have to change. It carries no
+ * pointer events itself, so the page underneath stays clickable; each child takes them back.
+ *
+ * It exists only for the SELECTED block, so a page of two hundred blocks pays for one.
+ *
+ * ── WHY THIS SITS AT MODULE SCOPE, AND MUST STAY HERE ───────────────────────────────────────────────
+ *
+ * It used to be declared INSIDE `BoxCanvas`, and that is what produced "Maximum update depth exceeded"
+ * whenever a block was resized. A component declared inside another is a NEW FUNCTION IDENTITY on every
+ * render, so React cannot match it to the previous tree: it unmounts the old one and mounts a fresh one,
+ * every single render. Every ref resets with it — including `measured` below, whose entire job is to make
+ * the first measurement synchronous and every one after it wait for a frame.
+ *
+ * So the deferral that exists precisely to break the measure → setState → measure chain was NEVER REACHED.
+ * Each render arrived as a first mount, took the synchronous path, set state, and rendered again. While the
+ * geometry is still the loop is harmless (`setBox` returns `prev` and nothing re-renders) — which is why it
+ * only ever crashed during a resize, the one time the geometry changes on every frame.
+ *
+ * The guard was written, correct, and unreachable. Keeping this at module scope is what makes it run.
+ */
+function ChromeMirror({ blockId, children }: { blockId: string; children: ReactNode }) {
+  const [box, setBox] = useState<{ left: number; top: number; width: number; height: number } | null>(null);
+  const [, remeasure] = useReducer((n: number) => n + 1, 0);
+
+  // Scrolling and window resizing move the block without re-rendering anything here, so they have to ask.
+  useEffect(() => {
+    const onMove = () => remeasure();
+    window.addEventListener("scroll", onMove, true);
+    window.addEventListener("resize", onMove);
+    return () => { window.removeEventListener("scroll", onMove, true); window.removeEventListener("resize", onMove); };
+  }, []);
+
+  // Deliberately NO dependency array: a block's geometry changes without any prop of this component changing
+  // (typing a longer heading, a reflow, a resize gesture in progress). It therefore MUST only call setBox
+  // when something actually moved — a fresh object every pass would re-render, re-run this, and loop.
+  //
+  // AND IT MEASURES INSIDE A FRAME, which is what makes that safe rather than merely careful. The tolerance
+  // below assumes the layout settles; when it does not — and a grid whose rows are partly `auto` and partly
+  // `1fr` can genuinely oscillate by a fraction of a pixel — a synchronous measure-and-set chain runs until
+  // React gives up with "Maximum update depth exceeded". Deferring to `requestAnimationFrame` breaks the
+  // chain: the update lands in a new frame, React's nested-update counter starts over, and the very worst an
+  // unsettled layout can now do is shimmer. A crash becomes a cosmetic bug, which is the right trade.
+  const measured = useRef(false);
+  useEffect(() => {
+    const measure = () => {
+      const el = document.querySelector<HTMLElement>(`[data-box-id="${CSS.escape(blockId)}"]`);
+      const r = el?.getBoundingClientRect();
+      const next = r ? { left: r.left, top: r.top, width: r.width, height: r.height } : null;
+      setBox((prev) => {
+        if (!prev || !next) return prev === next ? prev : next;
+        const near = (a: number, b: number) => Math.abs(a - b) < 0.5;
+        return near(prev.left, next.left) && near(prev.top, next.top)
+          && near(prev.width, next.width) && near(prev.height, next.height) ? prev : next;
+      });
+    };
+    // The FIRST measurement is synchronous, so selecting a block shows its toolbar and handles immediately —
+    // deferring that one put the chrome a frame behind the click, which is exactly the kind of lag that
+    // makes an editor feel loose. Every measurement AFTER it waits for a frame, and that is the one that
+    // matters: a re-measure is the only one that can chain, and a frame boundary is what stops it.
+    if (!measured.current) { measured.current = true; measure(); return; }
+    const raf = requestAnimationFrame(measure);
+    return () => cancelAnimationFrame(raf);
+  });
+
+  if (!box) return null;
+  return createPortal(
+    <div
+      // NAMED so a drag can move it WITHIN THE FRAME, without a render. A drag paints itself straight onto
+      // the DOM (see `paintPreview`), so nothing re-renders while the pointer is down and this mirror —
+      // which only re-measures on a render — would otherwise sit frozen at the size the box had when the
+      // drag began: the handles would come away from the box the moment it started to change.
+      data-chrome-mirror={blockId}
+      style={{ position: "fixed", ...box, pointerEvents: "none", zIndex: CHROME_Z.handle }}
+    >{children}</div>,
+    document.body,
+  );
+}
+
 export default function BoxCanvas({
   root, theme, editable = true, selectedId, onSelectId, selectedIds, onSelectIds, onChange, onResized, minHeight = 600, breakpoint = "base",
 }: {
@@ -242,6 +331,42 @@ export default function BoxCanvas({
   const selSet = new Set(selectedIds ?? (selectedId != null ? [selectedId] : []));
   const emitSelection = (ids: string[]) => { onSelectIds?.(ids); onSelectId?.(ids[0] ?? null); };
   const select = (id: string | null) => emitSelection(id ? [id] : []);
+
+  /**
+   * Does the selected block's toolbar sit ABOVE its box, or flip BELOW it?
+   *
+   * THIS STATE LIVES HERE, AND THAT IS THE POINT. It belonged to `NodeToolbar`, which is declared inside
+   * this component — so React gave it a new function identity on every render, unmounted it and mounted a
+   * fresh one each time. An effect re-runs on mount whatever its dependency array says, so the `[node.id]`
+   * guard that was added to stop this exact crash ("Maximum update depth exceeded") could never hold: every
+   * render measured, set state, and rendered again.
+   *
+   * That is the same structural fault that defeated `ChromeMirror`'s `measured` ref — two correct fixes for
+   * one crash, both nullified by where their components were declared. Hoisting the STATE is the smaller of
+   * the two remedies: `NodeToolbar` keeps its place and simply stops carrying hooks, so remounting it is
+   * merely wasteful rather than dangerous.
+   *
+   * Measured against the BLOCK rather than the toolbar's own parent: the chrome mirror is an exact copy of
+   * the block's rect, so the block gives the same answer and is always in the DOM — the mirror is not, on
+   * the first render after a selection.
+   */
+  const soloId = selSet.size === 1 ? [...selSet][0] : null;
+  const [toolbarBelow, setToolbarBelow] = useState(false);
+  useEffect(() => {
+    if (!soloId) return;
+    const measure = () => {
+      const box = document.querySelector<HTMLElement>(`[data-box-id="${CSS.escape(soloId)}"]`);
+      if (!box) return;
+      const canvasTop = document.querySelector(`[data-box-id="${CSS.escape(rootRef.current.id)}"]`)?.getBoundingClientRect().top ?? 0;
+      // Within 36px of the canvas top there is no room above, so the bar drops BELOW the box rather than
+      // sitting over the app header. Only written when it actually changes, so a stable page settles.
+      setToolbarBelow((prev) => { const next = box.getBoundingClientRect().top < canvasTop + 36; return next === prev ? prev : next; });
+    };
+    measure();
+    window.addEventListener("scroll", measure, true);
+    window.addEventListener("resize", measure);
+    return () => { window.removeEventListener("scroll", measure, true); window.removeEventListener("resize", measure); };
+  }, [soloId]);
 
   // Style/geometry writes (resize, drag, nudge) go to the active breakpoint's override when not on base,
   // so tuning mobile/tablet never disturbs the desktop base. Structural ops (add/move/float/z) stay base.
@@ -448,14 +573,14 @@ export default function BoxCanvas({
     return t ? `Text: ${t.slice(0, 18)}` : "Text";
   };
   const directKids = (el: HTMLElement) => Array.from(el.querySelectorAll<HTMLElement>(":scope > [data-box-id]"));
-  type Drop = { target: { parentId: string; index: number }; rect: { left: number; top: number; width: number; height: number; inside: boolean }; moveWidth?: string };
+  type Drop = { target: { parentId: string; index: number }; rect: { left: number; top: number; width: number; height: number; inside: boolean }; moveWidth?: string; wrapUnder?: { id: string; before: boolean } };
 
   // Pick the drop SLOT among a container's children from the ACTUAL laid-out geometry — not the nominal
   // flex-direction. This is what makes drops land where the line shows even when a "row" wraps: full-width
   // sections stack (we compare vertically, draw a horizontal line); side-by-side blocks share a row (we
   // compare horizontally, draw a vertical line). We find the child nearest the cursor, detect whether it
   // sits BESIDE a sibling (same row) or is stacked, then decide before/after on that local axis.
-  const slotFromKids = (parentEl: HTMLElement, kidEls: HTMLElement[], x: number, y: number): { index: number; rect: Drop["rect"]; moveWidth?: string } => {
+  const slotFromKids = (parentEl: HTMLElement, kidEls: HTMLElement[], x: number, y: number): { index: number; rect: Drop["rect"]; moveWidth?: string; rowFlow?: boolean; wrapUnder?: Drop["wrapUnder"] } => {
     const pr = parentEl.getBoundingClientRect();
     const T = 3;
     if (!kidEls.length) return { index: 0, rect: { left: pr.left, top: pr.top, width: pr.width, height: pr.height, inside: true } };
@@ -468,8 +593,49 @@ export default function BoxCanvas({
     // "Side-by-side" drop when either: the nearest block already sits beside a sibling, OR the pointer is
     // on that block's LINE but in the empty gap to its side (so you can drop into the space you opened up
     // by narrowing a section). Otherwise it's a stacked drop onto its own new line.
+    /**
+     * UNDER THIS COLUMN, rather than beside it.
+     *
+     * A band is a row, so the test below reads "the nearest block shares its line with someone, therefore
+     * this is a side-by-side drop" — whatever the pointer's height. Aim at the empty space beneath the
+     * SHORTER of two columns and the block was wedged in as a third column, which is not remotely what the
+     * gesture meant.
+     *
+     * The three conditions together are what make the intent unambiguous, and none of them can be dropped:
+     * the pointer is horizontally INSIDE that block's column (so it is about that column, not the band),
+     * it is vertically OUTSIDE the block (so it is not simply on it), and a neighbour on the line is TALLER
+     * (so there is real empty space under it to aim at — without this, "below" means below the whole band).
+     */
+    const kidId = kidEls[k].getAttribute("data-box-id");
+    const tallerNeighbour = rects.some((r, i) => i !== k && sameRow(r, kr) && (r.bottom > kr.bottom + 4 || r.top < kr.top - 4));
+    if (kidId && tallerNeighbour && x >= kr.left && x <= kr.right && (y > kr.bottom || y < kr.top)) {
+      const above = y < kr.top;
+      return {
+        index: k,
+        // A line the width of THAT COLUMN — narrower than the band-wide line that means "a new band below".
+        // The difference in width is the whole explanation of which one you are about to get.
+        rect: { left: kr.left, top: (above ? kr.top : kr.bottom) - T / 2, width: kr.width, height: T, inside: false },
+        moveWidth: "100%",
+        wrapUnder: { id: kidId, before: above },
+      };
+    }
     const onKrLine = y >= kr.top && y <= kr.bottom;
-    const rowFlow = rects.some((r, i) => i !== k && sameRow(r, kr)) || (onKrLine && (x < kr.left || x > kr.right));
+    /**
+     * AIMING AT A BLOCK'S LEFT OR RIGHT EDGE MEANS "BESIDE IT", even when the block fills the line.
+     *
+     * The gap test below — is the pointer horizontally OUTSIDE this block — only answers the question when
+     * there is a gap to be outside of. A block at full width has none, so a drop anywhere on it read as
+     * "stacked", and once a stacked reading inside a band became "a new band below" (the fix for the
+     * indicator that promised one placement and delivered another), adding a SECOND COLUMN to a full-width
+     * band stopped being possible at all. That is the oldest gesture in the builder, and its own comment has
+     * always described it: "hover the LEFT/RIGHT of a SECTION to place another section alongside it".
+     *
+     * So the edge is a target in its own right. The middle of the block still means below, which is what
+     * keeps the two readings distinct.
+     */
+    const edgeZone = Math.min(kr.width * 0.25, 48);
+    const nearSide = onKrLine && (x < kr.left + edgeZone || x > kr.right - edgeZone);
+    const rowFlow = rects.some((r, i) => i !== k && sameRow(r, kr)) || nearSide || (onKrLine && (x < kr.left || x > kr.right));
     const before = rowFlow ? x < cx(kr) : y < cy(kr);
     const index = k + (before ? 0 : 1);
     const rect: Drop["rect"] = rowFlow
@@ -483,7 +649,33 @@ export default function BoxCanvas({
       const remaining = Math.round((100 - lineSumPct) * 10) / 10;
       moveWidth = remaining >= 8 ? `${remaining}%` : "100%"; // no real room left → give it its own line instead of overflowing
     }
-    return { index, rect, moveWidth };
+    return { index, rect, moveWidth, rowFlow };
+  };
+
+  /**
+   * A STACKED drop inside a ROW BAND belongs in a NEW BAND, not in that band.
+   *
+   * A row band lays its children out side by side — that is what it is for — so inserting into one always
+   * produces a block BESIDE the others, whatever the pointer meant. But the canvas draws a horizontal "new
+   * line below" indicator for a stacked reading, so it was promising a placement it then did not deliver.
+   *
+   * It went unseen for a long time because the mis-placed block was INVISIBLE: an empty box had no minimum,
+   * so it rendered zero-height and nobody could see it sitting in the wrong place. Giving empty boxes a floor
+   * (`EMPTY_BOX_MIN`) is what made it show up — one bug hiding inside another.
+   *
+   * The redirect is to the band's own parent, which is a content container: `normalizeRowBands` wraps a bare
+   * child of one in a band of its own, so the block arrives full width on its own line — which is exactly
+   * what the indicator drew, and exactly what "add it underneath" has to mean.
+   */
+  const bandRedirect = (parentId: string, slot: { index: number; rect: Drop["rect"]; moveWidth?: string; rowFlow?: boolean; wrapUnder?: Drop["wrapUnder"] }): Drop | null => {
+    const band = findByIdLocal(rootRef.current, parentId);
+    if (slot.wrapUnder) return null;                       // "under THIS column" is a different answer entirely
+    if (!band?.rowBand || slot.rowFlow) return null;       // not a band, or the pointer meant "beside" after all
+    const up = findParent(rootRef.current, parentId);
+    if (!up) return null;                                   // the page root has no parent to put a band in
+    // Above the band's first child means above the band; anywhere else means below it.
+    const at = up.index + (slot.index === 0 ? 0 : 1);
+    return { target: { parentId: up.parent.id, index: at }, rect: slot.rect, moveWidth: "100%" };
   };
   // Hit-test the deepest box under the cursor that ISN'T the dragged block (or inside it). If it's a
   // container, drop INSIDE it (among its children); if it's a leaf, drop BESIDE it (among its parent's).
@@ -530,10 +722,13 @@ export default function BoxCanvas({
     const dropBeside = !isContainer(node) || (nearEdge && !!info);
     if (dropBeside && info) {
       const pEl = document.querySelector<HTMLElement>(`[data-box-id="${info.parent.id}"]`);
-      if (pEl) { const s = slotFromKids(pEl, directKids(pEl), x, y); return { target: { parentId: info.parent.id, index: s.index }, rect: s.rect, moveWidth: s.moveWidth }; }
+      if (pEl) {
+        const s = slotFromKids(pEl, directKids(pEl), x, y);
+        return bandRedirect(info.parent.id, s) ?? { target: { parentId: info.parent.id, index: s.index }, rect: s.rect, moveWidth: s.moveWidth, wrapUnder: s.wrapUnder };
+      }
     }
     const s = slotFromKids(hitEl, directKids(hitEl), x, y); // drop INSIDE this container
-    return { target: { parentId: node.id, index: s.index }, rect: s.rect, moveWidth: s.moveWidth };
+    return bandRedirect(node.id, s) ?? { target: { parentId: node.id, index: s.index }, rect: s.rect, moveWidth: s.moveWidth, wrapUnder: s.wrapUnder };
   };
 
   const onDragMove = (ev: MouseEvent) => {
@@ -667,11 +862,17 @@ export default function BoxCanvas({
   const [pendingGallery, setPendingGallery] = useState<{ anchor: MenuAnchor; kind: string; parentId: string; index: number; moveWidth: string | null } | null>(null);
 
   /** Put a freshly built block at a recorded slot — the tail of every palette insertion. */
-  const insertAt = (node: BoxNode, parentId: string, index: number, moveWidth: string | null) => {
+  const insertAt = (node: BoxNode, parentId: string, index: number, moveWidth: string | null, wrapUnder?: { id: string; before: boolean }) => {
     // A new hugging block (Fit / width auto) stays hugging where it lands; only definite-width blocks fill the line.
     const hugs = !node.width || node.width === "auto";
     if (moveWidth && !hugs) node.width = moveWidth;
-    onChange(insertBox(rootRef.current, parentId, index, node));
+    // UNDER ONE COLUMN of a side-by-side band: that column becomes a Stack holding both, and the block beside
+    // it is untouched. See `stackWithBlock`, which owns the tree surgery so the rule is unit-testable.
+    if (wrapUnder) { onChange(stackWithBlock(rootRef.current, wrapUnder.id, node, wrapUnder.before)); return; }
+    // A block landing on a line that is already full has to come from somewhere, so the line is shared out
+    // (`fitBand`). This runs on the ADD and nowhere else: a width the user dragged is theirs, and is left
+    // free to push a neighbour onto the next line. Doing it on every commit is what made wrapping impossible.
+    onChange(fitBand(insertBox(rootRef.current, parentId, index, node), parentId));
   };
 
   /**
@@ -727,7 +928,7 @@ export default function BoxCanvas({
       setPendingGrid({ anchor: { top: e.clientY, bottom: e.clientY, left: e.clientX, right: e.clientX }, parentId, index, moveWidth });
       return;
     }
-    insertAt(nodeForKind(kind), parentId, index, moveWidth);
+    insertAt(nodeForKind(kind), parentId, index, moveWidth, hit?.wrapUnder);
   };
 
   // ── Drag-to-resize ───────────────────────────────────────────────────────────────────────────
@@ -1219,20 +1420,50 @@ export default function BoxCanvas({
     const minHpx = selfSizing ? Math.max(8, naturalH * MIN_CONTENT_SCALE) : 8;
     /** The text scale a box of `px` needs so `natural` px of content still fits (1 until it must shrink). */
     const fitScale = (px: number, natural: number) => (natural > 0 ? clampContentScale(px / natural) : 1);
-    // The IMMEDIATE next section on this line (the closest sibling to the right) and its FIXED absolute
-    // left. Resizing this section's right edge holds that neighbour EXACTLY in place — its margin-left
-    // absorbs the change — so this section fills / opens the gap and the neighbour never moves.
-    let nextSibId: string | null = null, nextLeftPx = maxW;
+    /**
+     * THE NEIGHBOURS THIS BLOCK SHARES A BOUNDARY WITH, and the widths they had when the drag began.
+     *
+     * The boundary between two blocks on a line belongs to BOTH of them, so dragging it spends the
+     * neighbour's space: you take width, it gives width, and the pair keeps the line exactly full. That is
+     * how a table column behaves and it is what "seamless" means here.
+     *
+     * It did not work that way, and the failure was total rather than partial. The right edge was clamped to
+     * `nextLeftPx` — the neighbour's left edge — on the reasoning that a drag FILLS A GAP and the neighbour
+     * never moves. When the two blocks are touching there IS no gap: `nextLeftPx === startRightPx`, the
+     * clamp pinned the edge exactly where it already was, and a 200px drag produced a stored width of
+     * "50.00%" where "50%" had been. The control was not stiff or laggy; it was inert, and a full row is the
+     * ordinary case rather than a corner.
+     *
+     * Both sides are needed because either edge can be the one you grab: the right edge spends the block
+     * after this one, the left edge spends the block before it.
+     */
+    let nextSibId: string | null = null, nextLeftPx = maxW, nextWidth0 = 0;
+    let prevSibId: string | null = null, prevRightPx = 0, prevWidth0 = 0;
     if (parentRow && info) {
       for (const c of info.parent.children!) {
         if (c.id === id) continue;
         const e2 = document.querySelector<HTMLElement>(`[data-box-id="${c.id}"]`);
         if (!e2) continue;
         const r2 = e2.getBoundingClientRect();
-        const cl = r2.left - contentLeftPx;
-        if (r2.top < rect.bottom && rect.top < r2.bottom && cl >= startRightPx - 1 && cl < nextLeftPx) { nextLeftPx = cl; nextSibId = c.id; }
+        if (!(r2.top < rect.bottom && rect.top < r2.bottom)) continue; // not on this visual line
+        const cl = r2.left - contentLeftPx, cr = r2.right - contentLeftPx;
+        if (cl >= startRightPx - 1 && cl < nextLeftPx) { nextLeftPx = cl; nextSibId = c.id; nextWidth0 = r2.width; }
+        if (cr <= startLeftPx + 1 && cr > prevRightPx) { prevRightPx = cr; prevSibId = c.id; prevWidth0 = r2.width; }
       }
     }
+
+    /**
+     * The least a NEIGHBOUR may be squeezed to by a drag.
+     *
+     * A section in a row band carries a `min(100%, 14rem)` reflow floor — the width at which the browser
+     * stops shrinking it and wraps it to the next line instead. Squeezing past that would be fighting the
+     * layout rather than driving it, so the shared boundary stops there.
+     *
+     * And it STOPS rather than writing a size and hoping: Rule 19's second clause, the one the grid cell
+     * learned the hard way. Where the partner cannot give, the edge does not move — it never grows out of
+     * the far side instead.
+     */
+    const neighbourMinPx = Math.min(maxW, 14 * rootPx);
 
     setResizeCursor(cursorFor(edge));
     setResizing(true);
@@ -1246,15 +1477,71 @@ export default function BoxCanvas({
       // (its margin-left absorbs the gap) — so you fill the gap and the neighbour never moves. LEFT edge:
       // shifts right with margin-left, keeping this section's right edge fixed (a gap opens on the left).
       if (hasE) {
-        const right = Math.min(nextLeftPx, Math.max(startLeftPx + minWpx, startRightPx + dx));
+        // SHARED BOUNDARY. The edge you grab moves and the block after it gives up exactly what you take —
+        // so the line stays full and the pair's widths always sum to what they summed to before. Keeping
+        // that sum constant also matters downstream: `clampRowWidths` rescales a row whose widths exceed
+        // 100%, which would silently undo the drag the moment it overshot.
+        const wanted = Math.max(startLeftPx + minWpx, startRightPx + dx);
+        // How far the boundary may travel: what the neighbour can give before it hits its floor, or — with
+        // no neighbour on this line — the rest of the row.
+        const give = nextSibId ? Math.max(0, nextWidth0 - neighbourMinPx) : Math.max(0, maxW - startRightPx);
+        /**
+         * KEEP PULLING AND THE NEIGHBOUR MOVES TO THE NEXT LINE, keeping the width it had.
+         *
+         * Stopping dead at the neighbour's floor is defensible, but it makes "let this block have the whole
+         * row" unreachable by the gesture a person actually uses. Past the floor the neighbour therefore
+         * leaves the line rather than being crushed on it — and it takes its ORIGINAL width with it, because
+         * that width is a decision the user made and wrapping is not a reason to discard it.
+         *
+         * `WRAP_PULL` is the deliberate-intent margin. Without it the neighbour would jump lines at the exact
+         * pixel the floor is reached, which turns a small wobble at the end of a drag into a structural edit.
+         *
+         * It happens DURING the drag, not on release, so what you are shown is what you get — the rule the
+         * grid cell's "what the drag SHOWS is what the release COMMITS" test exists to hold. And because each
+         * move rebuilds from `base`, dragging back undoes it: the neighbour returns to the line by itself.
+         */
+        const WRAP_PULL = 24;
+        const band = parentRow && info ? info.parent : null;
+        const bandUp = band ? findParent(rootRef.current, band.id) : null;
+        const wraps = !!nextSibId && !!band && !!bandUp && wanted > startRightPx + give + WRAP_PULL;
+        const right = wraps ? maxW : Math.min(startRightPx + give, wanted);
         const scE = selfSizing ? fitScale(right - startLeftPx, naturalW) : 1;
         tree = writeBox(tree, id, { width: pct(right - startLeftPx), ...(selfSizing ? { contentScale: scE < 1 ? scE : undefined } : {}) });
-        if (nextSibId) tree = writeBox(tree, nextSibId, { marginLeft: Math.max(0, pxU(nextLeftPx - right)) }); // pin the neighbour in place
+        if (wraps) {
+          /**
+           * IT WRAPS BY ITSELF — nothing is moved.
+           *
+           * This used to lift the neighbour out of the band and into a new band below. That worked, and it
+           * was the wrong mechanism: a structural move is one-way. Reverse the drag afterwards and there is
+           * nothing to reverse, because the tree no longer records that those blocks ever shared a line, so
+           * narrowing this block again left them stranded underneath.
+           *
+           * Now the widths simply stop adding up to a single line and the band's own wrapping does the rest
+           * (`clampRowWidths` no longer rescales a row that can wrap). Widen and the neighbour drops below;
+           * narrow and it comes back up beside you. Nothing is remembered because nothing changed.
+           *
+           * The neighbour is RESTORED to the width it had when the drag began rather than left at the floor
+           * it was squeezed to on the way — so what comes back is the block the user had, not a sliver.
+           */
+          tree = writeBox(tree, nextSibId!, { width: pct(nextWidth0) });
+        } else if (nextSibId) {
+          // Narrowing hands the space back, which is the same arithmetic with the sign reversed.
+          tree = writeBox(tree, nextSibId, { width: pct(nextWidth0 - (right - startRightPx)) });
+        }
       }
       if (hasW) {
-        const left = Math.min(startRightPx - minWpx, Math.max(flowX, startLeftPx + dx));
+        // The mirror image: this block's left edge spends the block BEFORE it. With nothing before it on the
+        // line there is no boundary to share, so it keeps the old behaviour and opens a gap with margin-left.
+        const wanted = Math.min(startRightPx - minWpx, startLeftPx + dx);
+        const give = prevSibId ? Math.max(0, prevWidth0 - neighbourMinPx) : Math.max(0, startLeftPx - flowX);
+        const left = Math.max(startLeftPx - give, wanted);
         const scW = selfSizing ? fitScale(startRightPx - left, naturalW) : 1;
-        tree = writeBox(tree, id, { width: pct(startRightPx - left), marginLeft: Math.max(0, pxU(left - flowX)), ...(selfSizing ? { contentScale: scW < 1 ? scW : undefined } : {}) });
+        tree = writeBox(tree, id, {
+          width: pct(startRightPx - left),
+          ...(prevSibId ? {} : { marginLeft: Math.max(0, pxU(left - flowX)) }),
+          ...(selfSizing ? { contentScale: scW < 1 ? scW : undefined } : {}),
+        });
+        if (prevSibId) tree = writeBox(tree, prevSibId, { width: pct(prevWidth0 - (startLeftPx - left)) });
       }
       // ── HEIGHT ── the height you drag sets a MIN-HEIGHT (a floor), not a fixed height. The section HUGS
       // its content, so growing a child grows the section; shrinking below the content does nothing (the
@@ -1630,80 +1917,6 @@ export default function BoxCanvas({
     );
   };
 
-  /**
-   * A fixed MIRROR of a block's box, portaled above the page, holding that block's own chrome.
-   *
-   * The toolbar and the resize handles used to render INSIDE the block's wrapper, which put them down in the
-   * page's stacking world — and there the chrome ladder has no say at all, because a wrapper with a z-index
-   * creates a stacking context and everything inside it is trapped underneath. So a second floating block
-   * raised above the first covered the FIRST one's controls: you could see the block you had selected and
-   * could not reach the toolbar that deletes it or the handles that resize it. The z-index on the handles was
-   * present, correct, and completely inert — the failure this project keeps meeting.
-   *
-   * The mirror is a `position: fixed` box at the block's exact rect, so every child keeps the offsets it
-   * already had (`-top-1`, `top-full`, `left-1/2`) and the markup did not have to change. It carries no
-   * pointer events itself, so the page underneath stays clickable; each child takes them back.
-   *
-   * It exists only for the SELECTED block, so a page of two hundred blocks pays for one.
-   */
-  function ChromeMirror({ blockId, children }: { blockId: string; children: ReactNode }) {
-    const [box, setBox] = useState<{ left: number; top: number; width: number; height: number } | null>(null);
-    const [, remeasure] = useReducer((n: number) => n + 1, 0);
-
-    // Scrolling and window resizing move the block without re-rendering anything here, so they have to ask.
-    useEffect(() => {
-      const onMove = () => remeasure();
-      window.addEventListener("scroll", onMove, true);
-      window.addEventListener("resize", onMove);
-      return () => { window.removeEventListener("scroll", onMove, true); window.removeEventListener("resize", onMove); };
-    }, []);
-
-    // Deliberately NO dependency array: a block's geometry changes without any prop of this component changing
-    // (typing a longer heading, a reflow, a resize gesture in progress). It therefore MUST only call setBox
-    // when something actually moved — a fresh object every pass would re-render, re-run this, and loop.
-    //
-    // AND IT MEASURES INSIDE A FRAME, which is what makes that safe rather than merely careful. The tolerance
-    // below assumes the layout settles; when it does not — and a grid whose rows are partly `auto` and partly
-    // `1fr` can genuinely oscillate by a fraction of a pixel — a synchronous measure-and-set chain runs until
-    // React gives up with "Maximum update depth exceeded". Deferring to `requestAnimationFrame` breaks the
-    // chain: the update lands in a new frame, React's nested-update counter starts over, and the very worst an
-    // unsettled layout can now do is shimmer. A crash becomes a cosmetic bug, which is the right trade.
-    const measured = useRef(false);
-    useEffect(() => {
-      const measure = () => {
-        const el = document.querySelector<HTMLElement>(`[data-box-id="${CSS.escape(blockId)}"]`);
-        const r = el?.getBoundingClientRect();
-        const next = r ? { left: r.left, top: r.top, width: r.width, height: r.height } : null;
-        setBox((prev) => {
-          if (!prev || !next) return prev === next ? prev : next;
-          const near = (a: number, b: number) => Math.abs(a - b) < 0.5;
-          return near(prev.left, next.left) && near(prev.top, next.top)
-            && near(prev.width, next.width) && near(prev.height, next.height) ? prev : next;
-        });
-      };
-      // The FIRST measurement is synchronous, so selecting a block shows its toolbar and handles immediately —
-      // deferring that one put the chrome a frame behind the click, which is exactly the kind of lag that
-      // makes an editor feel loose. Every measurement AFTER it waits for a frame, and that is the one that
-      // matters: a re-measure is the only one that can chain, and a frame boundary is what stops it.
-      if (!measured.current) { measured.current = true; measure(); return; }
-      const raf = requestAnimationFrame(measure);
-      return () => cancelAnimationFrame(raf);
-    });
-
-    if (!box) return null;
-    return createPortal(
-      <div
-        // NAMED so a drag can move it WITHIN THE FRAME, without a render. A drag paints itself straight onto
-        // the DOM (see `paintPreview`), so nothing re-renders while the pointer is down and this mirror —
-        // which only re-measures on a render — would otherwise sit frozen at the size the box had when the
-        // drag began: the handles would come away from the box the moment it started to change.
-        data-chrome-mirror={blockId}
-        style={{ position: "fixed", ...box, pointerEvents: "none", zIndex: CHROME_Z.handle }}
-      >{children}</div>,
-      document.body,
-    );
-  }
-
   // Small floating structure toolbar for the selected node.
   function NodeToolbar({ node, isRoot }: { node: BoxNode; isRoot: boolean }) {
     // COLLAPSED bar: just a drag grip + a ⋯ button (tiny, never covers the box). All actions live in
@@ -1715,37 +1928,18 @@ export default function BoxCanvas({
     );
     // The toolbar sits ABOVE the box (outside it) so it NEVER covers the content — important now that blocks hug
     // their content and can be small. When the box is near the canvas top (no room above), it flips to BELOW.
-    const barRef = useRef<HTMLDivElement>(null);
-    const [below, setBelow] = useState(false);
-    // MEASURED ON A SIGNAL, NEVER ON EVERY RENDER.
     //
-    // This ran with no dependency array, so every render measured the box and called `setBelow` — safe only
-    // for as long as the measurement is perfectly stable. It stopped being: React re-rendered, the effect
-    // measured a value half a pixel different, set state, and the whole thing went round again until the
-    // browser gave up with "Maximum update depth exceeded". A layout that settles on the second pass is
-    // normal; an effect that re-runs on every render turns that into an infinite loop.
-    //
-    // The flip only ever needs recomputing when the block is selected, when the page scrolls, or when the
-    // window resizes — so it listens for exactly those and depends on the block, rather than on nothing.
-    useEffect(() => {
-      const measure = () => {
-        const box = barRef.current?.parentElement;
-        if (!box) return;
-        const canvasTop = document.querySelector(`[data-box-id="${rootRef.current.id}"]`)?.getBoundingClientRect().top ?? 0;
-        // Within 36px of the canvas top there is no room above, so the bar drops BELOW the box rather than
-        // sitting over the app header. Only written when it actually changes, so a stable page settles.
-        setBelow((prev) => { const next = box.getBoundingClientRect().top < canvasTop + 36; return next === prev ? prev : next; });
-      };
-      measure();
-      window.addEventListener("scroll", measure, true);
-      window.addEventListener("resize", measure);
-      return () => { window.removeEventListener("scroll", measure, true); window.removeEventListener("resize", measure); };
-    }, [node.id]);
+    // THIS COMPONENT HOLDS NO HOOKS, deliberately. It is declared inside `BoxCanvas`, so React remounts it on
+    // every render — and an effect re-runs on mount whatever its dependency array says, which is how the
+    // `[node.id]` guard that once "fixed" the Maximum-update-depth crash here came to be unreachable. The
+    // measurement now lives in `BoxCanvas` itself (`toolbarBelow`), where it runs once per selection, and
+    // this component is left as a pure render: remounting it is wasteful, and nothing worse.
+    const below = toolbarBelow;
     // A group of controls needs to say so: without a role and a name a screen-reader user meets a run of
     // loose buttons with no indication they belong to the block that was just selected. The item CRUD bar
     // next door already got this right — this one had nothing.
     return (
-      <div ref={barRef} role="toolbar" aria-label="Block toolbar" style={{ zIndex: CHROME_Z.toolbar, pointerEvents: "auto" }} className={`absolute left-0 w-max max-w-none ${below ? "top-full mt-1" : "bottom-full mb-1"} flex items-center gap-0.5 rounded-xl bg-gray-900/95 dark:bg-gray-800/95 backdrop-blur-sm px-1 py-1 shadow-lg ring-1 ring-white/10`} onClick={(e) => e.stopPropagation()} onMouseDown={(e) => e.stopPropagation()}>
+      <div role="toolbar" aria-label="Block toolbar" style={{ zIndex: CHROME_Z.toolbar, pointerEvents: "auto" }} className={`absolute left-0 w-max max-w-none ${below ? "top-full mt-1" : "bottom-full mb-1"} flex items-center gap-0.5 rounded-xl bg-gray-900/95 dark:bg-gray-800/95 backdrop-blur-sm px-1 py-1 shadow-lg ring-1 ring-white/10`} onClick={(e) => e.stopPropagation()} onMouseDown={(e) => e.stopPropagation()}>
         {!isRoot && !node.locked && (
           <span
             onMouseDown={(e) => startDrag(e, node)}

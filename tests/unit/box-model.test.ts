@@ -5,7 +5,7 @@ import {
   createContainer, createGrid, createElement, createComponent,
   addItem, removeItem, moveItem, updateItem, addChildItem, updateChildItem, removeChildItem, moveChildItem, sanitizeCssDeclarations, expandScopedCss, ACCORDION_CSS_PARTS, itemOverrideCss, itemHasOverride, itemFloatReserveRem, richBody, plainBody, isEmptyBox,
   findBox, findParent, isAncestor, updateBox, insertBox, removeBox, moveBoxStep, moveBox,
-  containerStyle, childStyle, paddingCSS, marginCSS, sizeToCSS, flexForWidth, fillMainAxis, u, newBoxId, dropIndexAmong,
+  containerStyle, childStyle, paddingCSS, marginCSS, sizeToCSS, flexForWidth, fillMainAxis, u, newBoxId, dropIndexAmong, EMPTY_BOX_MIN,
   makeRowBand, normalizeRowBands, clampRowWidths, widthPct,
   isFloating, floatBox, unfloatBox, groupBoxes, ungroupBoxes, alignInRow, alignInRowOf, bringToFront, sendToBack, bringForward, sendBackward, floatingZRange, cloneBox,
   isCssBg, bgImageLayer, renderAlertHTML, bgShowThroughCss,
@@ -576,9 +576,18 @@ describe("box-model — layout CSS mapping", () => {
     // the explicit floor must survive so the height edit is actually visible (the bug: it got zeroed).
     const resized = childStyle(createContainer("column", { minHeight: 180 } as Partial<BoxNode>), parent);
     expect(resized.minHeight).not.toBe(0);   // the floor is preserved (comes from containerStyle, not zeroed here)
-    // An empty section with NO explicit floor still drops its content-min so it can shrink with the parent.
+    // An empty section with NO explicit floor gets the VISIBLE floor rather than zero.
+    //
+    // This half used to assert 0, and that zero was the bug: in a parent that has been given a height, the
+    // children divide it, so six empty blocks added one at a time measured 159 · 79 · 53 · 40 · 32 · 26px —
+    // and at 26px a block is entirely covered by its own eight resize handles. A box nobody has sized must
+    // stay big enough to see and to grab; a box somebody HAS sized keeps their number, which is the
+    // assertion above. See `EMPTY_BOX_MIN` and the note in `childStyle`.
     const bare = childStyle(createContainer("column", {} as Partial<BoxNode>), parent);
-    expect(bare.minHeight).toBe(0);
+    expect(bare.minHeight).toBe(EMPTY_BOX_MIN);
+    // `clip` is the explicit "let this shrink past its content" opt-in, and it still reaches zero.
+    const clippedBare = childStyle(createContainer("column", { clip: true } as Partial<BoxNode>), parent);
+    expect(clippedBare.minHeight).toBe(0);
   });
 
   it("childStyle uses grid-column span for a grid parent", () => {

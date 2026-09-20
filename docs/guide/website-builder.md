@@ -221,6 +221,7 @@ Overrides that apply only on the current device size (see §8).
 - **A resized block is one shape.** When you make a button, card, badge or any block bigger, the block *itself* grows to fill the new size — there's never a second empty shape left behind at the old size. Its content re‑positions inside it automatically (a resized button centres its label).
 - **Content position.** When a block is bigger than its content (e.g. you made a badge tall), use the **3×3 Content position** grid to place the content — top‑left, centre, bottom‑right, etc. Works for every block, elements and components alike.
 - **Position in row.** To left/centre/right‑align a hugging block within its row, use **Position in row**.
+- **A block you add is always big enough to see.** An empty block has nothing inside to hold it open, so it takes a small minimum size until you put something in it or size it yourself. This matters most when you add several blocks into a stack you have already given a height to: they no longer share that height until each one is a sliver — the stack grows a little instead, and every block stays large enough to click and to drag by its handles. A size **you** set is always honoured, however small; the minimum only applies where you have not said.
 
 ---
 
@@ -294,6 +295,15 @@ Every top-level block sits in a full‑width band across the page. Select it →
 That second one is the setting that makes a page look professionally made. A heading stretched across a 27‑inch monitor is genuinely hard to read — the eye loses its place coming back to the start of the next line — so the text is capped at a comfortable measure that **widens by one step** as the screen grows: a phone gets the full width less a margin, a tablet ~34rem, a large tablet ~52rem, a desktop ~68rem, a very large screen ~76rem.
 
 On a phone the column always keeps a margin, so text never touches the edge of the screen.
+
+### Putting a block beside one, or underneath it
+
+When a block does not fill the width of its band, there is empty space beside it — and you can drop something into it. As you drag, the insertion line tells you which you are about to get, and it is worth learning the two shapes:
+
+- **A vertical line** means **side by side**. The new block takes the space that was free; the block already there **keeps the width you gave it**. Nothing is resized to make room.
+- **A horizontal line** means **its own line**. Dropping below a side‑by‑side band creates a **new full‑width band underneath it**, leaving the band above untouched.
+
+The whole empty area is a target, not just the edge — aim anywhere in the gap. And if you change your mind, **Ctrl+Z** puts it back.
 
 ---
 

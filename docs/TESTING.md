@@ -84,6 +84,24 @@ acts only when its generation is higher than the last applied.
   gestures with `dispatchEvent`.
 - **Git checks this repo out with CRLF**, so any test reading source must `.replace(/\r\n/g, "\n")` at the
   point of reading. Guarded by `tests/unit/source-reading-tests.test.ts`.
+- **An MCP server cannot be launched through `npx` on Windows** — and the way it fails is the trap. `.mcp.json`
+  named `"command": "npx"`, and the Playwright MCP server failed to connect in *every* session, reported as
+  `CONNECT_TIMEOUT` after 30s. That reads like a slow server and is nothing of the kind: `npx` is `npx.cmd`, a
+  batch file, an MCP client spawns its servers **without a shell**, and `CreateProcess` will not launch a
+  `.cmd` without one. The spawn fails with **ENOENT in ~13ms**, nothing ever speaks the protocol, and the
+  client waits out its whole deadline before calling it a timeout. **A process that never started looks
+  exactly like a server that is slow.**
+  Neither thing that *looks* like the cause is one, both measured: under 16-core CPU saturation the handshake
+  still completed in **3.4s**, and with the npm registry pointed at an unreachable host it completed in
+  **2.0s** (`npx` resolves the installed copy without the network). The only variable that changes the
+  outcome is whether a shell is involved — `shell:true` handshakes in 2.4s, `shell:false` does not start.
+  The command must therefore name a real executable on PATH (`node`) plus the package's own entry script:
+  `node ./node_modules/@playwright/mcp/cli.js`, which handshakes in **~0.8s** with or without a shell, under
+  load, and offline. That is also *more* portable than `npx`, not less — the entry point is a declared
+  devDependency, so `npm install` provides it and nothing is fetched at launch.
+  Guarded by `tests/unit/mcp-config.test.ts`, which rejects any shell-only shim (`npx`/`npm`/`yarn`/`pnpm`/
+  `bunx`) and checks the script exists and its package is declared. **Changing `.mcp.json` only takes effect
+  when Claude Code restarts** — it reads the file once, at session start.
 
 ## Where the lists live
 
