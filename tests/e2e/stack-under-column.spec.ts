@@ -132,6 +132,36 @@ test.describe("a block dropped under one column", () => {
       "and nothing spills sideways").toBe(true);
   });
 
+  test("the newcomer FILLS the empty space it was dropped into", async ({ page }) => {
+    /**
+     * You aim at a gap because you can see it. Arriving at the courtesy 8rem and leaving the rest of the
+     * gap empty is the builder ignoring the thing you pointed at — and it is what happened: the block landed
+     * 128px tall under a column with 260px of room, with the remainder still blank underneath it.
+     *
+     * Filling is the DEFAULT, not a permanent rule: dragging its height writes a real height and takes the
+     * fill off, which is the whole of the user's statement — it should fill "unless I resize the height".
+     */
+    await seedUneven(page);
+    const r0 = (await page.locator('[data-box-id="R"]').boundingBox())!;
+    const l = (await page.locator('[data-box-id="L"]').boundingBox())!;
+    const gap = (l.y + l.height) - (r0.y + r0.height);
+    expect(gap, "the seed really does leave a gap worth filling").toBeGreaterThan(150);
+
+    await dragOver(page, r0.x + r0.width / 2, r0.y + r0.height + 60);
+    await drop(page, r0.x + r0.width / 2, r0.y + r0.height + 60);
+
+    const shape = await bandShape(page);
+    const right = shape[1] as { kids: unknown[] };
+    const secondKid = right.kids[1] as { kids: unknown[] } | string;
+    const newId = typeof secondKid === "string" ? secondKid : (secondKid.kids[0] as string);
+    const nb = (await page.locator(`[data-box-id="${newId}"]`).boundingBox())!;
+    const l2 = (await page.locator('[data-box-id="L"]').boundingBox())!;
+
+    expect(nb.height, "it took the room that was there, not a default 128px").toBeGreaterThan(gap * 0.7);
+    expect(nb.y + nb.height, "…reaching the bottom of the taller column beside it")
+      .toBeGreaterThanOrEqual(l2.y + l2.height - 6);
+  });
+
   test("dropping BESIDE a column still adds a column — the readings stay distinct", async ({ page }) => {
     // The direction that keeps the test above honest: if everything near a column became a stack-under,
     // side-by-side would be unreachable. Aimed level with both blocks, past the right-hand edge.

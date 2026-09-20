@@ -75,6 +75,10 @@ const INVARIANT_SPECS = [
   "tests/e2e/empty-box-height.spec.ts",
   "tests/e2e/float-round-trip.spec.ts",
   "tests/e2e/see-through.spec.ts",
+  "tests/e2e/side-by-side-resize.spec.ts",
+  "tests/e2e/stack-under-column.spec.ts",
+  "tests/e2e/build-from-blank.spec.ts",
+  "tests/e2e/drop-placement.spec.ts",
 ];
 
 const argv = process.argv.slice(2);

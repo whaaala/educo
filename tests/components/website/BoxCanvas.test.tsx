@@ -521,7 +521,21 @@ describe("BoxCanvas (box-model editor)", () => {
     expect(n?.marginLeft).toBeGreaterThan(0);  // box shifts right so the RIGHT edge stays fixed
   });
 
-  it("resizing a ROW section is EDGE-ANCHORED — the grabbed edge moves, the opposite stays; the neighbour is a WALL (never moves)", () => {
+  it("resizing a ROW section is EDGE-ANCHORED, and the neighbour GIVES UP exactly what you take", () => {
+    /**
+     * THE NEIGHBOUR IS NO LONGER A WALL, and that was the point of changing it.
+     *
+     * This asserted `b` came out untouched at "50%" — the old rule, where a drag could only ever fill a GAP
+     * and the neighbour never moved. Two blocks sharing a full row are touching, so there is no gap: the
+     * right edge was clamped to exactly where it already was and a 200px drag stored "50.00%" where "50%"
+     * had been. Not stiff, not laggy — inert, in the ordinary case rather than a corner.
+     *
+     * The boundary between two blocks belongs to both of them, so dragging it spends the neighbour's space:
+     * you take width, it gives width, and the line stays exactly full. What is still true — and is the half
+     * this test has always been named for — is that the edge you GRAB is the only one that moves.
+     *
+     * Driven in a browser by `tests/e2e/side-by-side-resize.spec.ts`; this one holds the arithmetic.
+     */
     const initial = createContainer("row", {
       id: "root", direction: "row",
       children: [createContainer("column", { id: "a", width: "50%" } as Partial<BoxNode>), createContainer("column", { id: "b", width: "50%" } as Partial<BoxNode>)],
@@ -536,9 +550,13 @@ describe("BoxCanvas (box-model editor)", () => {
     fireEvent.mouseMove(document, { clientX: -60, clientY: 0 }); // shrink a from its RIGHT edge (right moves in)
     fireEvent.mouseUp(document);
     const last = onChange.mock.calls.at(-1)![0];
-    expect(parseFloat(findBox(last, "a")!.width!)).toBeLessThan(50);  // a shrank from the right (left edge stayed)
-    expect(findBox(last, "b")?.width).toBe("50%");                    // the neighbour did NOT move (wall)
-    expect(findBox(last, "a")?.marginLeft ?? 0).toBe(0);             // right edge → no margin touched
+    const aw = parseFloat(findBox(last, "a")!.width!);
+    const bw = parseFloat(findBox(last, "b")!.width!);
+    expect(aw, "a shrank from the right — its left edge stayed put").toBeLessThan(50);
+    expect(bw, "and the neighbour took back exactly what a gave up").toBeGreaterThan(50);
+    expect(aw + bw, "so the line is still exactly full").toBeGreaterThan(99);
+    expect(aw + bw).toBeLessThan(101);
+    expect(findBox(last, "a")?.marginLeft ?? 0, "a right-edge drag never touches the margin").toBe(0);
   });
 
   it("dragging the TOP edge sets a MIN-HEIGHT (floor), keeping the box a hug-content box (no fixed height)", () => {

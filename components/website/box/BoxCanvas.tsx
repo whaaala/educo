@@ -633,9 +633,42 @@ export default function BoxCanvas({
      * So the edge is a target in its own right. The middle of the block still means below, which is what
      * keeps the two readings distinct.
      */
-    const edgeZone = Math.min(kr.width * 0.25, 48);
-    const nearSide = onKrLine && (x < kr.left + edgeZone || x > kr.right - edgeZone);
-    const rowFlow = rects.some((r, i) => i !== k && sameRow(r, kr)) || nearSide || (onKrLine && (x < kr.left || x > kr.right));
+    /**
+     * THE EDGES PLACE THINGS AROUND A BLOCK; THE MIDDLE PLACES THEM INSIDE IT.
+     *
+     * One rule on both axes, which is what makes it learnable: the LEFT and RIGHT strips mean beside, the
+     * TOP and BOTTOM strips mean above and below, and everything in between means inside.
+     *
+     * Before this there was no way at all to put a block BELOW one whose width had been reduced. The gap
+     * beside it meant "beside"; the block itself meant "inside"; and the canvas is exactly as tall as its
+     * content, so there was nothing underneath to aim at either. Measured: of four sensible aims, one landed
+     * beside, two landed nested inside, and the fourth did nothing whatsoever.
+     *
+     * The vertical strips are checked BEFORE the "shares a line with someone" test, because that test is
+     * what used to make every drop near a column a side-by-side one regardless of height.
+     */
+    const edgeX = Math.min(kr.width * 0.25, 48);
+    const edgeY = Math.min(kr.height * 0.25, 48);
+    const withinX = x >= kr.left && x <= kr.right;
+    /**
+     * The side strips only mean "beside" where the parent CAN put things side by side.
+     *
+     * In a column, beside is not a placement the parent offers, so reading its left and right strips that
+     * way turns an ordinary reorder into a no-op: dragging a block over the one below it, with the cursor
+     * near the left edge, was read as "put it next to that" and the block never moved.
+     *
+     * Row-ness is read from the laid-out result rather than the stored direction — two children sharing a
+     * line prove it whatever the tree says — and from the computed direction for the case that has only one
+     * child, where there is no pair to prove it with.
+     */
+    const parentDir = typeof getComputedStyle === "function" ? getComputedStyle(parentEl).flexDirection : "";
+    const parentPlacesSideBySide = parentDir.startsWith("row")
+      || rects.some((r, i) => rects.some((r2, j) => j > i && sameRow(r, r2)));
+    const nearSide = parentPlacesSideBySide && onKrLine && (x < kr.left + edgeX || x > kr.right - edgeX);
+    const nearTopBottom = withinX && !nearSide && (y < kr.top + edgeY || y > kr.bottom - edgeY);
+    const rowFlow = nearSide
+      || (onKrLine && (x < kr.left || x > kr.right))          // in a gap on this line → beside
+      || (!nearTopBottom && rects.some((r, i) => i !== k && sameRow(r, kr)));
     const before = rowFlow ? x < cx(kr) : y < cy(kr);
     const index = k + (before ? 0 : 1);
     const rect: Drop["rect"] = rowFlow
@@ -716,9 +749,12 @@ export default function BoxCanvas({
     // main axis means: hover the TOP/BOTTOM of a ROW to make a NEW row above/below; hover the LEFT/RIGHT
     // of a SECTION to place another section alongside it — and the row's own empty space drops inside.
     const r = hitEl.getBoundingClientRect();
-    const parentIsRow = !!info && (info.parent.direction ?? "column") === "row";
+    // BOTH axes, not just the parent's main one. Checking only the main axis meant that inside a row band —
+    // where the main axis is horizontal — the top and bottom strips of a block were not edges at all, so a
+    // drop there fell through to "inside this container" and the block ended up nested. The strips are the
+    // same on both axes because the rule is the same on both: edges place around, the middle places inside.
     const bx = Math.min(r.width * 0.22, 22), by = Math.min(r.height * 0.22, 22);
-    const nearEdge = parentIsRow ? (x < r.left + bx || x > r.right - bx) : (y < r.top + by || y > r.bottom - by);
+    const nearEdge = (x < r.left + bx || x > r.right - bx) || (y < r.top + by || y > r.bottom - by);
     const dropBeside = !isContainer(node) || (nearEdge && !!info);
     if (dropBeside && info) {
       const pEl = document.querySelector<HTMLElement>(`[data-box-id="${info.parent.id}"]`);
@@ -1484,7 +1520,18 @@ export default function BoxCanvas({
         const wanted = Math.max(startLeftPx + minWpx, startRightPx + dx);
         // How far the boundary may travel: what the neighbour can give before it hits its floor, or — with
         // no neighbour on this line — the rest of the row.
-        const give = nextSibId ? Math.max(0, nextWidth0 - neighbourMinPx) : Math.max(0, maxW - startRightPx);
+        /**
+         * THE EMPTY SPACE IS SPENT FIRST, and only then the neighbour's width.
+         *
+         * Two blocks that TOUCH share a boundary, so dragging it has to spend the neighbour — that is the
+         * whole of the shared-boundary rule. But where a GAP sits between them, growing into the gap costs
+         * the neighbour nothing and must not move it: the space is already free. Spending its width anyway
+         * would shrink a block the user sized in order to fill space that belonged to nobody.
+         */
+        const gapPx = Math.max(0, nextLeftPx - startRightPx);
+        const give = nextSibId
+          ? gapPx + Math.max(0, nextWidth0 - neighbourMinPx)
+          : Math.max(0, maxW - startRightPx);
         /**
          * KEEP PULLING AND THE NEIGHBOUR MOVES TO THE NEXT LINE, keeping the width it had.
          *
@@ -1524,8 +1571,14 @@ export default function BoxCanvas({
            * it was squeezed to on the way — so what comes back is the block the user had, not a sliver.
            */
           tree = writeBox(tree, nextSibId!, { width: pct(nextWidth0) });
+        } else if (nextSibId && gapPx > 0) {
+          // A GAP between us: the neighbour's margin absorbs the change so it stays EXACTLY where it is,
+          // and only what is taken PAST its left edge comes out of its width. Narrowing re-opens the gap
+          // rather than handing width back — the space was nobody's to begin with.
+          if (right <= nextLeftPx) tree = writeBox(tree, nextSibId, { marginLeft: Math.max(0, pxU(nextLeftPx - right)) });
+          else tree = writeBox(tree, nextSibId, { marginLeft: 0, width: pct(nextWidth0 - (right - nextLeftPx)) });
         } else if (nextSibId) {
-          // Narrowing hands the space back, which is the same arithmetic with the sign reversed.
+          // TOUCHING: a shared boundary. Narrowing hands the space back, the same arithmetic sign-reversed.
           tree = writeBox(tree, nextSibId, { width: pct(nextWidth0 - (right - startRightPx)) });
         }
       }
@@ -2029,9 +2082,16 @@ export default function BoxCanvas({
       // Setting it here fixes it for the frame in one place: an inline style beats the stylesheet at any
       // width, and it is the rung the user actually chose. The phone rung has no cap, so it is left unset and
       // the `var(--eu-measure, 100%)` fallback keeps the page gutter, exactly as the media queries do.
-      style={RUNG_MEASURE[breakpoint === "base" ? "desktop" : breakpoint]
-        ? ({ ["--eu-measure" as string]: RUNG_MEASURE[breakpoint === "base" ? "desktop" : breakpoint] } as CSSProperties)
-        : undefined}
+      /**
+       * `relative` so the editor's drop room below the page can be positioned against this box without
+       * adding to its height — see the strip at the end of this element.
+       */
+      style={{
+        ...(editable ? { position: "relative" as const } : {}),
+        ...(RUNG_MEASURE[breakpoint === "base" ? "desktop" : breakpoint]
+          ? ({ ["--eu-measure" as string]: RUNG_MEASURE[breakpoint === "base" ? "desktop" : breakpoint] } as CSSProperties)
+          : {}),
+      }}
     >
       {/* Educo UI component styles + this site's tokens, injected once so any placed block renders exactly as it
           will in the exported site.
@@ -2101,6 +2161,30 @@ export default function BoxCanvas({
       )}
       {/* Drop indicator: a bright insertion line between siblings, or a dashed highlight over an empty
           container you're dropping into. Portaled to <body> so it's never clipped. */}
+      {/**
+        * ROOM BENEATH THE PAGE, FOR THE EDITOR ONLY — and OUT OF FLOW, which is the whole point.
+        *
+        * The page is exactly as tall as what is on it, deliberately, and that is right for the published
+        * page. In the editor it left nowhere to aim: below the last band there was no canvas at all, so a
+        * drop there never reached a handler. Nothing happened — which reads as the builder being broken
+        * rather than as a missing target.
+        *
+        * This was first tried as `padding-bottom` on the canvas, and that was worse than the problem. The
+        * white sheet a user reads as "the page" is the canvas's PARENT, so padding on the canvas stretched
+        * the sheet: the page root measured 160px while the sheet drew 256px. The builder was showing a page
+        * 96px taller than the page, which is canvas ≠ export in the direction where the editor flatters.
+        *
+        * Absolutely positioned against the canvas, it adds nothing to any height — the sheet ends where the
+        * page ends — while still being a real element under the pointer whose events bubble to the canvas's
+        * own drop handler. A drop there finds no block, which is exactly the fallback that appends a band.
+        */}
+      {editable && (
+        <div
+          data-drop-below-page
+          aria-hidden="true"
+          style={{ position: "absolute", top: "100%", left: 0, right: 0, height: "6rem" }}
+        />
+      )}
       {dropRect && createPortal(
         <div
           aria-hidden="true"

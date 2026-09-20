@@ -20,17 +20,27 @@ import { seedSite, sitePage } from "./helpers/seed-site";
  * rather than the stored one: the stored tree was never wrong.
  */
 
-async function addInside(page: Page, parentId: string) {
-  await page.evaluate((parentId) => {
-    const el = document.querySelector(`[data-box-id="${parentId}"]`)!;
-    const r = el.getBoundingClientRect();
-    const dt = new DataTransfer();
-    dt.setData("application/x-box-block", "container");
-    const at = { clientX: r.left + r.width / 2, clientY: r.bottom - 4, bubbles: true, cancelable: true, dataTransfer: dt };
-    el.dispatchEvent(new DragEvent("dragover", at));
-    el.dispatchEvent(new DragEvent("drop", at));
-  }, parentId);
-  await page.waitForTimeout(320);
+/**
+ * `n` empty blocks inside a stack, SEEDED rather than dropped.
+ *
+ * They used to be dropped one at a time, aimed at the parent's bottom edge. That stopped meaning "inside"
+ * the day the drop rules gained their symmetry — the bottom strip of a block now means BELOW it, which is
+ * the whole point of that change. The floor these tests are about is a rendering property of an empty box,
+ * not a property of how it got there, so seeding measures exactly the same thing and stops this suite
+ * breaking every time a drop rule is tuned. Where the drop rules themselves are under test, that is
+ * `drop-placement.spec.ts`.
+ */
+async function seedWithChildren(page: Page, n: number, parentExtras: Record<string, unknown>) {
+  await seedSite(page, sitePage([
+    {
+      id: "a", type: "container", direction: "column", padding: 24, gap: 0, width: "60%", background: "#c7d2fe", ...parentExtras,
+      children: Array.from({ length: n }, (_, i) => ({
+        id: `k${i}`, type: "container", direction: "column", padding: 0, gap: 0, width: "100%", background: "#a5b4fc", children: [],
+      })),
+    },
+  ]));
+  await page.waitForSelector(`[data-box-id="k${n - 1}"]`, { timeout: 15000 });
+  await page.waitForTimeout(350);
 }
 
 /** Every direct child of `parentId`, as rendered. */
@@ -52,32 +62,22 @@ async function childBoxes(page: Page, parentId: string) {
 /** The floor, in px at the test's root font size. Below this a block is all handle and no block. */
 const FLOOR = 40;
 
-async function seedStack(page: Page, extras: Record<string, unknown>) {
-  await seedSite(page, sitePage([
-    { id: "a", type: "container", direction: "column", padding: 24, gap: 0, width: "60%", background: "#c7d2fe", ...extras, children: [] },
-  ]));
-  await page.waitForSelector('[data-box-id="a"]', { timeout: 15000 });
-  await page.waitForTimeout(350);
-}
-
 test.describe("a block added into a stack stays visible", () => {
   test("six blocks into a SIZED stack — none collapses below the floor", async ({ page }) => {
     // The reported case, at the depth where it used to reach 26px.
-    await seedStack(page, { minHeight: 200 });
-    for (let n = 1; n <= 6; n++) {
-      await addInside(page, "a");
+    for (const n of [1, 2, 3, 4, 5, 6]) {
+      await seedWithChildren(page, n, { minHeight: 200 });
       const kids = await childBoxes(page, "a");
-      expect(kids.length, `add #${n} actually added a block`).toBe(n);
+      expect(kids.length, `${n} blocks are there`).toBe(n);
       const smallest = Math.min(...kids.map((k) => k.h));
-      expect(smallest, `after ${n} blocks the smallest is ${Math.round(smallest)}px — must stay grabbable`)
+      expect(smallest, `with ${n} blocks the smallest is ${Math.round(smallest)}px — must stay grabbable`)
         .toBeGreaterThanOrEqual(FLOOR - 1);
     }
   });
 
   test("…and the parent grows to hold them rather than squeezing them", async ({ page }) => {
     // The other half. A floor that the parent ignores would just make the children overflow it.
-    await seedStack(page, { minHeight: 200 });
-    for (let n = 1; n <= 6; n++) await addInside(page, "a");
+    await seedWithChildren(page, 6, { minHeight: 200 });
     const parent = (await page.locator('[data-box-id="a"]').boundingBox())!;
     const kids = await childBoxes(page, "a");
     const stacked = kids.reduce((s, k) => s + k.h, 0);
@@ -113,8 +113,7 @@ test.describe("a block added into a stack stays visible", () => {
 
   test("an UNSIZED parent still grows, exactly as before", async ({ page }) => {
     // The behaviour that was always correct, held in place so the fix cannot regress it.
-    await seedStack(page, {});
-    for (let n = 1; n <= 3; n++) await addInside(page, "a");
+    await seedWithChildren(page, 3, {});
     const kids = await childBoxes(page, "a");
     expect(kids.length).toBe(3);
     for (const k of kids) expect(k.h, "the 8rem courtesy height is untouched").toBeGreaterThan(100);

@@ -143,6 +143,41 @@ test.describe("two blocks sharing a line", () => {
     expect(bands, "and it never became a second band — nothing was moved").toBe(1);
   });
 
+  test("after the neighbour wraps, the block can still be narrowed — step by step", async ({ page }) => {
+    /**
+     * WIDENING MUST NOT BE A ONE-WAY DOOR, and it was.
+     *
+     * Once the neighbour wrapped away, the block was alone on the FIRST line — so "a block alone on its
+     * line fills that line" applied to it and it grew to the full row whatever its stored width said.
+     * Narrowing then changed the number and nothing on screen: 100% → 88.43% while it still rendered 864px.
+     * The next drag measured that same inflated edge, produced the same answer, and it could never be
+     * narrowed again. Measured: five successive drags, all five stuck at 88.43%.
+     *
+     * The fill belongs only to a line something was PUSHED onto. The first line is where the user is
+     * working and has to show the width they set.
+     */
+    await seedPair(page);
+    expect(await select(page, "L")).toBe(true);
+    await dragHandle(page, "Resize right edge", 420);
+    expect((await widthOf(page, "R")).box.y, "R wrapped below").toBeGreaterThan(200);
+
+    const seen: number[] = [];
+    for (let i = 0; i < 5; i++) {
+      expect(await select(page, "L")).toBe(true);
+      await dragHandle(page, "Resize right edge", -100);
+      seen.push((await widthOf(page, "L")).box.width);
+    }
+    // Every step moved, and always in the same direction. A single stuck value repeated is the defect.
+    for (let i = 1; i < seen.length; i++) {
+      expect(seen[i], `step ${i + 1} narrowed further (${seen.map((n) => Math.round(n)).join(" → ")})`)
+        .toBeLessThan(seen[i - 1] - 40);
+    }
+    // …and by the end the neighbour has come home, at the width it always had.
+    const l = await widthOf(page, "L"), r = await widthOf(page, "R");
+    expect(Math.abs(r.box.y - l.box.y), "R is back on the first row").toBeLessThan(4);
+    expect(r.pct, "at its original width").toBe(50);
+  });
+
   test("a block alone on its line fills that line", async ({ page }) => {
     // The other half of what wrapping has to do: dropped onto a line of its own, the neighbour spreads to
     // fill it rather than sitting at half width with empty space beside it.

@@ -5,7 +5,7 @@ import {
   createContainer, createGrid, createElement, createComponent,
   addItem, removeItem, moveItem, updateItem, addChildItem, updateChildItem, removeChildItem, moveChildItem, sanitizeCssDeclarations, expandScopedCss, ACCORDION_CSS_PARTS, itemOverrideCss, itemHasOverride, itemFloatReserveRem, richBody, plainBody, isEmptyBox,
   findBox, findParent, isAncestor, updateBox, insertBox, removeBox, moveBoxStep, moveBox,
-  containerStyle, childStyle, paddingCSS, marginCSS, sizeToCSS, flexForWidth, fillMainAxis, u, newBoxId, dropIndexAmong, EMPTY_BOX_MIN,
+  containerStyle, childStyle, paddingCSS, marginCSS, sizeToCSS, flexForWidth, fillMainAxis, u, newBoxId, dropIndexAmong, EMPTY_BOX_MIN, fitRowWidths,
   makeRowBand, normalizeRowBands, clampRowWidths, widthPct,
   isFloating, floatBox, unfloatBox, groupBoxes, ungroupBoxes, alignInRow, alignInRowOf, bringToFront, sendToBack, bringForward, sendBackward, floatingZRange, cloneBox,
   isCssBg, bgImageLayer, renderAlertHTML, bgShowThroughCss,
@@ -434,20 +434,53 @@ describe("box-model — mutations are immutable and correct", () => {
     expect(groupBoxes(root, ["a"], { left: 0, top: 0, width: "50%", height: 100 })).toBe(root);
   });
 
-  it("clampRowWidths scales an over-full row's sections down so they never exceed 100% (no off-page overflow)", () => {
-    const row = makeRowBand([
+  it("a row that WRAPS is left over-full on purpose; one that cannot wrap is still scaled to fit", () => {
+    /**
+     * THIS ASSERTED THE OPPOSITE, and the opposite made wrapping impossible.
+     *
+     * `clampRowWidths` used to scale EVERY over-full row back to 100%, on every commit. For a row that
+     * cannot wrap that is right — it is what stops content running off the page. For a ROW BAND it was
+     * exactly wrong, because a band wraps: the overflow was never going to leave the page, it was going to
+     * become a second line.
+     *
+     * The cost was that a block could not be widened past its neighbours at all. Push the boundary, the sum
+     * went over 100, this pulled it straight back, and the drag was undone the moment it was committed.
+     * "Make this one full width and let the other drop below" was unreachable — and so was its reverse,
+     * because nothing had moved to reverse.
+     *
+     * Sharing a full line out is still needed when a block is ADDED to one; that is now `fitRowWidths`,
+     * called at insert time (`fitBand`) rather than held as an invariant over every commit.
+     */
+    const band = makeRowBand([
       createContainer("column", { id: "a", width: "100%" } as Partial<BoxNode>),
       createContainer("column", { id: "b", width: "100%" } as Partial<BoxNode>),
     ], 0);
-    const clamped = clampRowWidths(row);
-    expect(clamped.children!.map((c) => c.width)).toEqual(["50%", "50%"]); // 200% → scaled to 50/50
-    // a valid row (≤100%) is returned untouched
-    const ok = makeRowBand([createContainer("column", { id: "c", width: "40%" } as Partial<BoxNode>)], 0);
+    // A BAND wraps, so it keeps what it was given — the second block goes to the next line.
+    expect(clampRowWidths(band)).toBe(band);
+
+    // A row that CANNOT wrap is still scaled to fit, which is what the clamp is for. `wrap: false` has to be
+    // stated: `createContainer("row")` turns wrapping ON by default, so a plain row is a wrapping one.
+    const nowrap = createContainer("row", {
+      id: "nowrap",
+      wrap: false,
+      children: [
+        createContainer("column", { id: "c", width: "100%" } as Partial<BoxNode>),
+        createContainer("column", { id: "d", width: "100%" } as Partial<BoxNode>),
+      ],
+    } as Partial<BoxNode>);
+    expect(clampRowWidths(nowrap).children!.map((c) => c.width)).toEqual(["50%", "50%"]);
+
+    // And the sharing-out itself still exists, for the moment a block is added to a full line.
+    expect(fitRowWidths(band).children!.map((c) => c.width)).toEqual(["50%", "50%"]);
+
+    // A row already within one line is returned untouched, wrapping or not.
+    const ok = makeRowBand([createContainer("column", { id: "e", width: "40%" } as Partial<BoxNode>)], 0);
     expect(clampRowWidths(ok)).toBe(ok);
-    // normalizeRowBands applies the clamp across all rows
-    const root = createContainer("column", { id: "root", children: [row] } as Partial<BoxNode>);
-    const norm = normalizeRowBands(root, 0);
-    expect(norm.children![0].children!.map((c) => c.width)).toEqual(["50%", "50%"]);
+    expect(fitRowWidths(ok)).toBe(ok);
+
+    // normalizeRowBands leaves a band's deliberate overflow alone.
+    const root = createContainer("column", { id: "root", children: [band] } as Partial<BoxNode>);
+    expect(normalizeRowBands(root, 0).children![0].children!.map((c) => c.width)).toEqual(["100%", "100%"]);
   });
 
   it("normalizeRowBands RESPECTS the user's margins on every section (never strips them)", () => {

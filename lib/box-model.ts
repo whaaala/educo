@@ -1886,7 +1886,38 @@ export function stackWithBlock(root: BoxNode, id: string, node: BoxNode, before 
   if (!target || !info) return root;
   const column = createContainer("column", { width: target.width ?? "100%", padding: 0, gap: 0, align: "stretch", justify: "start" });
   const inner: BoxNode = { ...target, width: "100%" };
-  column.children = before ? [node, inner] : [inner, node];
+  /**
+   * THE NEWCOMER TAKES THE SPACE THAT IS ACTUALLY THERE.
+   *
+   * You aim at a gap under a short column because you can SEE the gap — so arriving at a courtesy 8rem and
+   * leaving the rest of it empty is the builder ignoring the thing you pointed at. `height: "fill"` is the
+   * model's existing way of saying "take what is left on this axis" (`flexForWidth` turns it into
+   * `1 1 0%`), so the block fills the column down to the height its taller neighbour sets.
+   *
+   * Only when the block has no height of its own: a size somebody set is a decision, and this must not
+   * overrule one. Dragging its height afterwards writes a real height and takes the fill off — which is the
+   * user's own statement of the rule: it should fill "unless I resize the height of it".
+   */
+  /**
+   * THE BANDS ARE BUILT HERE, and that is what makes the fill land on the right axis.
+   *
+   * `normalizeRowBands` wraps every child of a content container in a row band of its own. Inside a row,
+   * height is the CROSS axis — so `height: "fill"` written on the BLOCK is not a main-axis instruction at
+   * all, and the band around it stayed `flex: 0 0 auto` and zero pixels tall. The block was there, correct,
+   * and invisible.
+   *
+   * Making the bands here puts the fill on the band, where height IS the main axis of the column holding
+   * it, and leaves the block to stretch inside its band as any block does.
+   */
+  // BOTH halves, because the two axes are different questions. The BAND takes the leftover height of the
+  // column (`height: "fill"` is main-axis there), and the block takes the height of its band (`100%` is
+  // cross-axis there). With only the first the band filled and the block sat 40px tall inside it, which
+  // looks exactly like the bug it was meant to fix.
+  const fills = !(node.height || node.minHeight);
+  const newBand = makeRowBand([fills ? { ...node, height: "100%" } : node], 0);
+  if (fills) newBand.height = "fill";
+  const keepBand = makeRowBand([inner], 0);
+  column.children = before ? [newBand, keepBand] : [keepBand, newBand];
   return insertBox(removeBox(root, id), info.parent.id, info.index, column);
 }
 
@@ -3248,22 +3279,34 @@ export async function importPhoto(file: File): Promise<{ src: string; imgW?: num
  * Flexbox packs greedily, so the same walk here tells us what it will do: fill a line until the next child
  * would take it past 100%, then start another. A child that ends up on a line by itself is the only case
  * that should grow — it has room beside it that nothing else is asking for.
+ *
+ * AND ONLY ON A LINE IT WAS PUSHED ONTO (`lineIndex > 0`). This is the second correction, and the symptom
+ * was a dead end rather than a cosmetic one. Widen a block until its neighbour wraps away and that block is
+ * then alone on the FIRST line — so it grew to fill the row whatever its stored width said. Narrowing it
+ * changed the stored number and nothing on screen: 100% → 88.43% while it still rendered 864px. The next
+ * drag measured that same inflated edge, computed the same answer, and the block could never be narrowed
+ * again. Widening was a one-way door, and the neighbour could never be brought back up.
+ *
+ * The first line is where the user is working and must show the width they set. A LATER line exists only
+ * because something was pushed onto it, and there the fill is what they asked for — "when they move to the
+ * bottom, they should occupy the width of that row".
  */
 export function aloneOnItsLine(parent: BoxNode, child: BoxNode): boolean {
   const kids = (parent.children ?? []).filter((k) => !isFloating(k) && !k.hidden);
   if (kids.length < 2) return false;                    // the only child already fills the row by other means
   let line: BoxNode[] = [];
   let used = 0;
+  let lineIndex = 0;
   for (const k of kids) {
     const w = widthPct(k.width) || 100;
     // A hair over 100 is still one line — percentages that round to 100.4 are meant to be a full line.
     if (line.length && used + w > 100.5) {
-      if (line.some((n) => n.id === child.id)) return line.length === 1;
-      line = []; used = 0;
+      if (line.some((n) => n.id === child.id)) return lineIndex > 0 && line.length === 1;
+      line = []; used = 0; lineIndex++;
     }
     line.push(k); used += w;
   }
-  return line.some((n) => n.id === child.id) && line.length === 1;
+  return lineIndex > 0 && line.length === 1 && line.some((n) => n.id === child.id);
 }
 
 export function flexForWidth(token?: string, fillsItsLine = false): string | undefined {
