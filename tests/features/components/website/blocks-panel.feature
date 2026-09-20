@@ -94,6 +94,27 @@ Feature: A floating Blocks panel — modern, spacious, out of the way
       | row           | Side by side |
       | grid          | Grid         |
 
+  # ── Adding a block never moves your insertion point ──
+  # Reported: "i can no longer add stack one after the other." Two deliberate behaviours were colliding. A
+  # block is inserted into the SELECTED container — which is what makes "select a cell, add a Grid inside
+  # it" work, and was itself the fix for an earlier report. And a freshly added block is SELECTED, so you
+  # can see and style what landed. Together, every click went one level deeper: three Stack clicks gave
+  # three boxes nested inside one another, with no way to stop it short of clicking elsewhere between adds.
+  Scenario: Clicking the same tile repeatedly adds blocks side by side down the page
+    Given the Box Builder is open on an empty page
+    When I click "Stack" three times
+    Then there are three blocks at page level
+    And none of them is inside another
+
+  Scenario: A container I selected myself still receives the block inside it
+    Given the Box Builder is open on an empty page
+    And I have added a "Stack"
+    When I click that Stack on the canvas to select it
+    And I click "Stack" in the panel
+    Then the new block lands INSIDE the one I selected
+    # The distinction that makes both true: a selection the BUILDER made for you on add is not a place to
+    # insert into — only one YOU made is. Repeating a click repeats the result.
+
   # ── The page is exactly as tall as what is on it ──
   # Reported from the canvas: adding a Stack left a strip of dead space underneath it. The page root carried
   # a 160px minimum unconditionally while an empty Stack is 128px, so 32px sat below the block — on the root,

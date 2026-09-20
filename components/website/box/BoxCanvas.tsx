@@ -167,8 +167,10 @@ const HANDLES: { edge: Edge; pos: string; cursor: string; label: string; title: 
 ];
 
 const ADD_ITEMS: { type: BoxType | "row" | "grid" | "accordion"; label: string; Icon: typeof Type }[] = [
-  { type: "container", label: "Section (stack)", Icon: Rows3 },
-  { type: "row", label: "Row", Icon: Columns3 },
+  // The same names as the palette — see `containerLabel` in lib/box-model.ts for why they are named for the
+  // arrangement they produce. This menu was missed by that rename and still said "Section (stack)"/"Row".
+  { type: "container", label: "Stack", Icon: Rows3 },
+  { type: "row", label: "Side by side", Icon: Columns3 },
   { type: "grid", label: "Grid", Icon: Grid3x3 },
   { type: "heading", label: "Heading", Icon: HeadingIcon },
   { type: "text", label: "Text", Icon: Type },

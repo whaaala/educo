@@ -85,7 +85,7 @@ describe("BoxCanvas (box-model editor)", () => {
     const { container } = render(<AddHarness />);
     const before = container.querySelectorAll("[data-box-id]").length;
     await user.click(screen.getByLabelText("Block actions"));
-    await user.click(screen.getByRole("menuitem", { name: "Section (stack)" }));
+    await user.click(screen.getByRole("menuitem", { name: "Stack" }));
     expect(container.querySelectorAll("[data-box-id]").length).toBeGreaterThan(before); // the new section was added…
     expect(onSelectId).not.toHaveBeenCalled(); // …but the selection never jumped to it
   });

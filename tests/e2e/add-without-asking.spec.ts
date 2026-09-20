@@ -131,6 +131,74 @@ test.describe("a height you set beats the courtesy height", () => {
 });
 
 /**
+ * ADDING A BLOCK NEVER MOVES YOUR INSERTION POINT.
+ *
+ * Reported: "I can no longer add stack one after the other." Two deliberate behaviours were colliding. A
+ * block is inserted into the SELECTED container — which is what makes "select a cell, add a Columns block
+ * inside it" work, and was itself a fix for an earlier report. And a freshly added block is SELECTED, so you
+ * can see and style what landed. Together, every click went one level deeper: clicking Stack three times
+ * gave three boxes nested inside one another instead of three down the page, with no way to stop it short of
+ * clicking elsewhere between every add.
+ *
+ * The rule now: a selection the BUILDER made for you is not a place to insert into — only one YOU made is.
+ * Repeating a click repeats the result.
+ */
+test.describe("adding a block never moves your insertion point", () => {
+  /** The page tree, as depth-tagged lines — shape is what matters here, not ids. */
+  const shape = (page: Page) => page.evaluate(() => {
+    const site = JSON.parse(localStorage.getItem("educo_box_site_v1") || "{}");
+    if (!site.pages) return [] as string[];
+    const out: string[] = [];
+    const walk = (n: Record<string, unknown>, d: number) => {
+      out.push(`${d}:${n.type}${n.rowBand ? "[band]" : ""}`);
+      ((n.children as Record<string, unknown>[]) ?? []).forEach((c) => walk(c, d + 1));
+    };
+    walk(site.pages[0].root as Record<string, unknown>, 0);
+    return out;
+  });
+
+  test("three Stacks in a row become three blocks DOWN THE PAGE, not three nested", async ({ page }) => {
+    await freshBuilder(page);
+    for (let i = 0; i < 3; i++) {
+      await tile(page, "Stack").click();
+      await page.waitForTimeout(900);
+    }
+    const lines = await shape(page);
+    // Three bands directly under the page root — siblings, each holding one Stack.
+    expect(lines.filter((l) => l.startsWith("1:")).length, "three blocks at page level").toBe(3);
+    // Nothing deeper than page → band → stack. A nest would push the tree to depth 4+.
+    const deepest = Math.max(...lines.map((l) => Number(l.split(":")[0])));
+    expect(deepest, "clicking the same tile must never bury the next block inside the last one").toBeLessThanOrEqual(2);
+  });
+
+  test("but a container YOU selected still receives the block inside it", async ({ page }) => {
+    // The behaviour this must not break — it was itself a reported bug ("I can no longer add grid/grids
+    // within an already added grid"). A selection the user made IS an insertion target.
+    await freshBuilder(page);
+    await tile(page, "Stack").click();
+    await page.waitForTimeout(900);
+    await page.keyboard.press("b"); // close the palette so it cannot cover the canvas
+    await page.waitForTimeout(400);
+
+    // Click the Stack myself, so the selection is mine rather than the builder's.
+    const box = page.locator("[data-box-id]").last();
+    const b = (await box.boundingBox())!;
+    await page.mouse.click(b.x + b.width / 2, b.y + b.height / 2);
+    await page.waitForTimeout(700);
+
+    await page.keyboard.press("b");
+    await page.waitForTimeout(500);
+    await tile(page, "Stack").click();
+    await page.waitForTimeout(900);
+
+    const lines = await shape(page);
+    expect(lines.filter((l) => l.startsWith("1:")).length, "still ONE block at page level").toBe(1);
+    expect(Math.max(...lines.map((l) => Number(l.split(":")[0]))), "the second landed inside the first")
+      .toBeGreaterThanOrEqual(3);
+  });
+});
+
+/**
  * THE PAGE'S OWN FLOOR is the same kind of offer, one level up — and it was not stepping aside.
  *
  * Reported from the canvas: adding a Stack left a strip of dead space underneath it. The page root carried

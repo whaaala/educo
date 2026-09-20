@@ -103,6 +103,20 @@ export default function BoxDemoPage() {
   const [activePageId, setActivePageId] = useState<string | null>(null);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const pendingReveal = useRef<string | null>(null); // id of a just-added block to select + scroll into view
+  // The block the BUILDER selected for you on add. Cleared the moment you select anything yourself — see
+  // insertBlock for why a selection you did not make is not a place to insert into.
+  const autoSelectedId = useRef<string | null>(null);
+  // The container the last palette insert went into, so repeating the click repeats the result.
+  const lastInsertParent = useRef<string | null>(null);
+  /**
+   * Selection the USER made — which, unlike one the builder made, IS a place to insert into.
+   *
+   * Declared up here with the other hooks, and not beside `revealBox` where it reads more naturally: this
+   * component returns early while the site is loading (`PageLoader` below), so a `useCallback` placed after
+   * that point is a CONDITIONAL hook. React then sees a different hook order once the site arrives and
+   * throws "change in the order of Hooks". Every hook in this component has to sit above that return.
+   */
+  const selectByUser = useCallback((ids: string[]) => { autoSelectedId.current = null; lastInsertParent.current = null; setSelectedIds(ids); }, []);
   const [device, setDevice] = useState<Device>("full");
   const [preview, setPreview] = useState(false);
   const [pageMenu, setPageMenu] = useState(false); // page-settings popover open
@@ -381,13 +395,35 @@ export default function BoxDemoPage() {
   // Click-to-add from the palette: insert into the selected container (or the page) with an optional style.
   const insertBlock = (kind: string, patch: Partial<BoxNode> = {}) => {
     const node = blockForKind(kind, patch);
-    // Drop where YOU target: into the selected container if one is selected, else onto the page. Every block
-    // (element OR component) sits in its own TRANSPARENT, hug-to-content wrapper — the only visible box is the
-    // one the block itself paints. The tinted band chrome only appears when you deliberately Add a band.
+    /**
+     * Drop where YOU target: into the selected container if one is selected, else onto the page. Every block
+     * (element OR component) sits in its own TRANSPARENT, hug-to-content wrapper — the only visible box is
+     * the one the block itself paints. The tinted band chrome only appears when you deliberately Add a band.
+     *
+     * ADDING A BLOCK NEVER MOVES YOUR INSERTION POINT.
+     *
+     * Two deliberate behaviours used to collide here. A block is inserted into the selected container, which
+     * is what makes "select a cell, add a Columns block inside it" work. And a freshly added block is
+     * SELECTED, so you can see and style what just landed. Together they meant every click went one level
+     * deeper: clicking Stack three times gave three boxes nested inside one another rather than three down
+     * the page, and there was no way to stop it short of clicking somewhere else between every add.
+     *
+     * So a selection the builder made for you is not treated as a place to insert into — only one YOU made
+     * is. The new block is still selected and still scrolled into view; the next block simply lands beside
+     * it. To put something inside instead, click the box first (or use "+ Add a block inside").
+     */
+    // Where the LAST block went, if the only thing selected is the block that add itself selected. Not
+    // "one level up from the selection": the first block lands on the page root and is wrapped in its own
+    // row band, so stepping up from it reaches that band and the next block would land BESIDE it instead of
+    // beneath. Repeating the previous target keeps repeated clicks doing the same thing each time.
+    const autoSelected = !!selected && autoSelectedId.current === selected.id;
+    const preferred = autoSelected ? lastInsertParent.current : (selected && isContainer(selected) ? selected.id : null);
+    // A remembered parent can have been deleted since; fall back to the page rather than throw.
+    const parentId = preferred && findBox(root, preferred) ? preferred : root.id;
+    lastInsertParent.current = parentId;
     commitWith((cur) => {
-      const parentId = selected && isContainer(selected) ? selected.id : cur.id;
       const target = findBox(cur, parentId) ?? cur;
-      return insertBox(cur, parentId, target.children?.length ?? 0, node);
+      return insertBox(cur, findBox(cur, parentId) ? parentId : cur.id, target.children?.length ?? 0, node);
     });
     // "Flow + auto-reveal": a new block joins the normal flow (a floating sibling overlays it), so SELECT it and
     // scroll it into view — you always see exactly what landed and where, never lost behind a floating card.
@@ -396,7 +432,7 @@ export default function BoxDemoPage() {
 
   // Select a box and scroll it into view AFTER the tree re-renders (so a just-added block is never hidden —
   // e.g. behind a floating sibling on the overlay layer). The reveal id is consumed by the effect below.
-  const revealBox = (id: string) => { pendingReveal.current = id; setSelectedIds([id]); };
+  const revealBox = (id: string) => { pendingReveal.current = id; autoSelectedId.current = id; setSelectedIds([id]); };
 
   const frameW = DEVICES.find((d) => d.id === device)!.w;
   const pageList = site.pages.map((p) => ({ id: p.id, name: p.name }));
@@ -504,7 +540,7 @@ export default function BoxDemoPage() {
           <div className="flex-1 min-w-0 overflow-auto">
             <div className="p-8 flex justify-center min-h-full">
               <div className={`shadow-sm rounded-xl ring-1 ring-black/10 dark:ring-white/10 shrink-0 h-fit transition-[width] duration-300 ${device === "full" ? "w-full max-w-5xl" : ""}`} style={{ width: frameW ?? undefined, background: renderTheme.background, color: renderTheme.text, fontFamily: renderTheme.bodyFont, containerType: "inline-size" }}>
-                <BoxCanvas root={root} theme={renderTheme} minHeight={PAGE_MIN_H} selectedIds={selectedIds} onSelectIds={setSelectedIds} onChange={commit} breakpoint={bp} />
+                <BoxCanvas root={root} theme={renderTheme} minHeight={PAGE_MIN_H} selectedIds={selectedIds} onSelectIds={selectByUser} onChange={commit} breakpoint={bp} />
               </div>
             </div>
           </div>
