@@ -2,8 +2,9 @@
  * Static HTML export for the box builder — the publish GROUNDWORK.
  *
  * A BoxSite becomes a FOLDER of files, delivered as a ZIP: one `.html` per page plus a shared `styles.css`
- * the browser caches once. A sticky nav appears on every page and `page:<id>` links resolve to the other
- * page's relative filename, so the site works opened from a folder or a USB stick as well as from a host.
+ * the browser caches once. Each page is exactly what the user designed — nothing is injected above it — and
+ * `page:<id>` links in the blocks THEY built resolve to the other page's relative filename, so the site works
+ * opened from a folder or a USB stick as well as from a host.
  * Styles come from the same pure box-model helpers the editor uses, so the canvas and the export agree.
  */
 
@@ -20,7 +21,6 @@ import { colorToCSS } from "@/components/shared/ColorPalettePicker";
 import { BREAKPOINTS_EM, BASE_CSS } from "@/lib/educo-ui/base";
 import { COMPONENT_CSS } from "@/lib/educo-ui/components";
 import { tokensFromTheme, tokensToCss } from "@/lib/educo-ui/tokens";
-import { PAGE_Z } from "@/lib/educo-ui/stacking";
 import { subsetCss, usedEuClasses, stripComments } from "@/lib/educo-ui/subset";
 import { familiesInUse } from "@/lib/educo-ui/font-embed";
 import { zipSync, strToU8 } from "fflate";
@@ -420,7 +420,7 @@ function renderNode(node: BoxNode, rawParent: BoxNode | null, theme: SiteTheme, 
   if (isContainer(r)) {
     // Children of the PAGE ROOT (the only call with no parent) are the page's sections; nothing deeper is.
     const kidsAreSections = rawParent === null;
-    const kids = (r.children ?? []).map((c) => renderNode(c, node, theme, pageMap, sheet, kidsAreSections, hostSizedFor(node, hostSized))).join("");
+    const kids = (r.children ?? []).map((c) => renderNode(c, node, theme, pageMap, sheet, kidsAreSections, hostSizedFor(node, hostSized, rawParent))).join("");
     // MASONRY, measured (C). The marker and the script ride WITH the gallery, in the same shape the Alert's
     // dismiss script uses: one guarded global, so ten measured galleries still run one copy, and a page with
     // none ships no script at all. The attribute's value is the down-gap in row units — the one number the
@@ -504,21 +504,20 @@ export function siteFileMap(site: BoxSite): Map<string, string> {
 }
 
 /**
- * The nav, rendered into EVERY page.
+ * THE PAGE IS WHAT THE USER DESIGNED — nothing is injected above it.
  *
- * `aria-current="page"` marks where the visitor is — without it a screen-reader user has no way to tell which
- * of five links is the page they are on. Links are RELATIVE (`about.html`, never `/about`) so the export still
- * works opened from a folder, a USB stick, or a subdirectory on a host.
+ * A `<nav class="eu-site-nav">` listing every page used to be prepended to every rendered page. It was
+ * well-meant, and it was the BUILDER's furniture rather than the user's design: it arrived unasked, it could
+ * not be styled, moved or removed, and on a ONE-PAGE site it rendered as a lone bold "Home" at the top of the
+ * canvas that read as a stray heading nobody had typed.
+ *
+ * Page-to-page navigation is still fully supported — it is BUILT now rather than injected. A Button or Link
+ * block whose destination is `page:<id>` resolves through `siteFileMap` to the right file (see `href` above),
+ * so a header you design yourself navigates exactly as the old bar did and looks the way you meant it to.
+ *
+ * Inside the editor's Preview, moving between pages is the job of the preview's own toolbar, which carries a
+ * tab per page: chrome belongs AROUND the page, never inside it.
  */
-function siteNav(site: BoxSite, files: Map<string, string>, currentId: string): string {
-  const ordered = orderedPages(site);
-  const links = ordered.map((p) => {
-    const href = files.get(p.id) ?? "index.html";
-    const current = p.id === currentId ? ` aria-current="page"` : "";
-    return `<a href="${esc(href)}"${current}>${esc(p.name)}</a>`;
-  }).join("");
-  return `<nav class="eu-site-nav">${links}</nav>`;
-}
 
 /** Home first, then the rest in their existing order — the nav reads the way a visitor expects. */
 function orderedPages(site: BoxSite) {
@@ -547,9 +546,7 @@ export function renderSitePage(site: BoxSite, theme: SiteTheme, pageId: string, 
   const page = site.pages.find((p) => p.id === pageId) ?? orderedPages(site)[0];
   if (!page) return "";
   const sheet: Sheet = emptySheet();
-  const body = renderPageHTML(page.root, theme, files, sheet);
-  const nav = siteNav(site, files, page.id);
-  const markup = `${nav}\n${body}`;
+  const markup = renderPageHTML(page.root, theme, files, sheet);
   const components = subsetCss(COMPONENT_CSS, usedEuClasses(markup));
   const shared = opts.inlineShared ? `${sharedCss(theme)}\n${SITE_CHROME_CSS}` : undefined;
   return pageDocument(theme, page.name, markup, [components, sheetCss(sheet)].filter(Boolean).join("\n"), shared);
@@ -589,9 +586,7 @@ export function renderSiteFiles(site: BoxSite, theme: SiteTheme, fontCss = ""): 
   for (const page of orderedPages(site)) {
     // Each page gets its own sheet, so a page carries only the rules for the blocks actually on it.
     const sheet: Sheet = emptySheet();
-    const body = renderPageHTML(page.root, theme, files, sheet);
-    const nav = siteNav(site, files, page.id);
-    const markup = `${nav}\n${body}`;
+    const markup = renderPageHTML(page.root, theme, files, sheet);
     // Only the component rules this page's markup actually uses — read from the RENDERED HTML, so it
     // cannot disagree with what the page contains.
     const components = subsetCss(COMPONENT_CSS, usedEuClasses(markup));
@@ -619,13 +614,15 @@ function sharedCss(theme: SiteTheme): string {
   return stripComments(`${tokensToCss(tokensFromTheme(theme))}\n${BASE_CSS}`);
 }
 
-/** The nav's own styling — part of the shared sheet because it appears on every page. */
-const SITE_CHROME_CSS = `html,body{max-width:100%;overflow-x:hidden}
-.eu-site-nav{position:sticky;top:0;z-index:${PAGE_Z.sticky};display:flex;gap:4px;padding:8px 16px;background:var(--eu-color-surface);border-bottom:1px solid var(--eu-color-border)}
-.eu-site-nav a{color:var(--eu-color-text);text-decoration:none;padding:8px 12px;border-radius:var(--eu-radius-md)}
-.eu-site-nav a:hover{background:var(--eu-color-surface-2)}
-.eu-site-nav a[aria-current="page"]{background:var(--eu-color-surface-2);font-weight:600}
-.eu-site-nav a:focus-visible{outline:2px solid var(--eu-color-brand);outline-offset:2px}`;
+/**
+ * The page-level guard that belongs on every exported page.
+ *
+ * This was the injected nav's stylesheet. The nav is gone (see above), so what survives is the one rule that
+ * is about the PAGE rather than about the bar that used to sit on top of it: nothing may scroll the document
+ * sideways. Kept deliberately — dropping it with the rest would let any over-wide block reintroduce a
+ * horizontal scrollbar on every exported site.
+ */
+const SITE_CHROME_CSS = `html,body{max-width:100%;overflow-x:hidden}`;
 
 /**
  * Fetch the site's OTHER pages while the browser is idle, so following a nav link opens instantly.

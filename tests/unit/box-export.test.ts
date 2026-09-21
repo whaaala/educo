@@ -440,12 +440,20 @@ describe("box-export — static HTML", () => {
 
   it("PREVIEW shows the real page — same links as the export, with the shared sheet inlined", () => {
     // The old preview put every page in one document and pinned <base> so `#home` stayed an in-page scroll.
-    // There are no hash links between pages any more: preview renders the REAL file, and the builder
-    // intercepts clicks on its nav. The one difference is that a srcdoc document has no styles.css to fetch,
-    // so the shared sheet is inlined instead of linked.
+    // There are no hash links between pages any more: preview renders the REAL file. The one difference is
+    // that a srcdoc document has no styles.css to fetch, so the shared sheet is inlined instead of linked.
+    //
+    // This used to assert `href="index.html"` in BOTH, which worked only because a nav was injected into
+    // every page. Nothing is injected any more, so an empty page has no links at all — and asserting on a
+    // link the builder puts there tests the builder, not the promise. The promise is that PREVIEW AND
+    // EXPORT AGREE, so it is now asserted on a link the USER built, which is the only kind there is.
     const site = siteFromRoot(emptyPageRoot(), "Home");
+    const homeId = site.homeId;
+    site.pages[0].root.children = [
+      { id: "cta", type: "button", text: "Home", href: `page:${homeId}` } as unknown as BoxNode,
+    ];
     const shipped = renderSiteFiles(site, DEFAULT_THEME)["index.html"];
-    const previewed = renderSitePage(site, DEFAULT_THEME, site.homeId, { inlineShared: true });
+    const previewed = renderSitePage(site, DEFAULT_THEME, homeId, { inlineShared: true });
 
     expect(previewed).toContain("--eu-color-primary-500:#");        // inlined, because nothing can be fetched
     expect(previewed).not.toContain('<link rel="stylesheet"');
@@ -453,6 +461,15 @@ describe("box-export — static HTML", () => {
     // the LINKS are identical — that is what makes the preview trustworthy
     expect(previewed).toContain('href="index.html"');
     expect(shipped).toContain('href="index.html"');
+  });
+
+  it("an empty page is EMPTY — the preview adds no navigation of its own", () => {
+    // The counterpart to the assertion above: what makes preview==export meaningful is that neither side
+    // invents markup. A lone bold "Home" above the canvas of a one-page site was exactly that invention.
+    const site = siteFromRoot(emptyPageRoot(), "Home");
+    const previewed = renderSitePage(site, DEFAULT_THEME, site.homeId, { inlineShared: true });
+    expect(previewed).not.toContain("eu-site-nav");
+    expect(previewed).not.toContain('href="index.html"');
   });
 
   it("downloadSite is a safe no-op when the DOM/URL APIs are unavailable", () => {

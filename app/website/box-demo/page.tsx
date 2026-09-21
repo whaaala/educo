@@ -9,7 +9,7 @@
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Plus, Smartphone, Tablet, Laptop, Monitor, Tv, Maximize2, Undo2, Redo2, Eye, X, Home, Trash2, Files, Download, Settings2, Palette, SlidersHorizontal, PanelRightClose, PanelRightOpen, AlertTriangle } from "lucide-react";
+import { Plus, Smartphone, Tablet, Laptop, Monitor, Tv, Maximize2, RotateCw, Undo2, Redo2, Eye, X, Home, Trash2, Files, Download, Settings2, Palette, SlidersHorizontal, PanelRightClose, PanelRightOpen, AlertTriangle } from "lucide-react";
 import { DEFAULT_THEME, resolveSiteTheme } from "@/lib/site-storage";
 import { THEMES, type ThemeId } from "@/lib/theme-config";
 import {
@@ -32,6 +32,7 @@ import BlocksPanel from "@/components/website/box/BlocksPanel";
 import ThemeSwitcher from "@/components/shared/ThemeSwitcher";
 import { ToolBtn, ToolDivider, Segmented } from "@/components/website/box/ui";
 import PageLoader from "@/components/shared/PageLoader";
+import CompactSelect from "@/components/shared/CompactSelect";
 import DeleteConfirmationModal from "@/components/shared/DeleteConfirmationModal";
 
 const KEY = "educo_box_site_v1"; // multi-page site
@@ -67,6 +68,67 @@ const DEVICES: { id: Device; label: string; w: number | null; Icon: typeof Smart
   { id: "desktop", label: "Desktop", w: 1280, Icon: Monitor }, // desktop (1200+)
   { id: "wide", label: "Wide", w: 1920, Icon: Tv }, // big desktop (1800+)
   { id: "full", label: "Full width", w: null, Icon: Maximize2 },
+];
+
+/**
+ * THE PREVIEW'S OWN SIZE LIST — named screens, the way a browser's device mode offers them.
+ *
+ * The icon row this replaces could only ever say "Tablet". A person checking their school's site wants to
+ * know it works on the phone in their pocket, and "768px" is not an answer to that question — "iPad Mini" is.
+ *
+ * Both kinds are here, in that order, because they answer different questions. The FIRST group is this
+ * project's own responsive ladder (see `DEVICE_RUNG`): one width sitting safely inside each rung, so stepping
+ * down the group walks you through every layout the site can produce. The rest are real devices at their real
+ * CSS-pixel sizes, for checking the one screen you actually care about.
+ *
+ * Heights are given too, and they matter: a hero built to be "one screen tall" is a different thing on a
+ * 667px-tall iPhone SE than on a 1080px desktop, and a width-only preview could never show you that.
+ */
+type Preset = { id: string; label: string; w: number; h: number };
+const PREVIEW_PRESETS: { group: string; items: Preset[] }[] = [
+  {
+    group: "This site's screen sizes",
+    items: [
+      { id: "rung-mobile", label: "Mobile — 375 × 812", w: 375, h: 812 },
+      { id: "rung-tablet", label: "Tablet — 768 × 1024", w: 768, h: 1024 },
+      { id: "rung-laptop", label: "Laptop — 1024 × 768", w: 1024, h: 768 },
+      { id: "rung-desktop", label: "Desktop — 1280 × 800", w: 1280, h: 800 },
+      { id: "rung-wide", label: "Wide — 1920 × 1080", w: 1920, h: 1080 },
+    ],
+  },
+  {
+    group: "Phones",
+    items: [
+      { id: "iphone-se", label: "iPhone SE", w: 375, h: 667 },
+      { id: "iphone-16", label: "iPhone 16", w: 393, h: 852 },
+      { id: "iphone-16-pro-max", label: "iPhone 16 Pro Max", w: 440, h: 956 },
+      { id: "pixel-9", label: "Pixel 9", w: 412, h: 915 },
+      { id: "galaxy-a55", label: "Samsung Galaxy A55", w: 360, h: 800 },
+    ],
+  },
+  {
+    group: "Foldables",
+    items: [
+      { id: "fold-6-closed", label: "Galaxy Z Fold 6 — folded", w: 344, h: 882 },
+      { id: "fold-6-open", label: "Galaxy Z Fold 6 — open", w: 768, h: 1104 },
+    ],
+  },
+  {
+    group: "Tablets & laptops",
+    items: [
+      { id: "ipad-mini", label: "iPad Mini", w: 768, h: 1024 },
+      { id: "ipad-pro-13", label: "iPad Pro 13", w: 1032, h: 1376 },
+      { id: "surface-pro-10", label: "Surface Pro 10", w: 912, h: 1368 },
+      { id: "macbook-air", label: 'MacBook Air 13"', w: 1280, h: 800 },
+    ],
+  },
+];
+const PRESETS_FLAT: Preset[] = PREVIEW_PRESETS.flatMap((g) => g.items);
+
+/** Zoom steps, matching what a browser's device mode offers. `fit` shrinks to whatever room there is. */
+const ZOOMS = [
+  { value: "fit", label: "Fit to window" },
+  ...[0.5, 0.75, 1, 1.25, 1.5, 2].map((z) => ({ value: String(z), label: `${z * 100}%` })),
 ];
 
 function pageRoot(rows: BoxNode[] = []): BoxNode {
@@ -290,6 +352,101 @@ export default function BoxDemoPage() {
     });
   }, [fileToPage, switchPage]);
 
+  /**
+   * THE PREVIEW HAS TO GIVE THE PAGE THE WIDTH IT PROMISES — measured, and it did not.
+   *
+   * `globals.css` carries an UNLAYERED `img, picture, video, svg, iframe, embed, object { max-width: 100% }`,
+   * which beats every Tailwind utility on the element (the cascade trap this project has hit before, when
+   * `h-full` never applied to an `<img>`). So the preview frame was silently clamped to the space available.
+   *
+   * Measured on a 1440px screen: choosing **Wide** asked for 1920px and rendered 1392px — and the frame's own
+   * `innerWidth` was 1392 too, so the page inside laid itself out at the DESKTOP rung (1200+) instead of the
+   * big-desktop rung (1800+). The preview was not merely small; it was showing a different layout from the one
+   * the label named, with nothing to say so. Every narrower device was honest, which is what kept it hidden.
+   *
+   * So the frame is given its true width (`max-width: none`) and SCALED DOWN to fit, the way a browser's own
+   * device mode does: the page inside still sees 1920 CSS pixels and picks the right rung, and what you look
+   * at is that layout, shrunk. The zoom is stated in the bar rather than left to be guessed at.
+   *
+   * Declared HERE, above the loading guard, for the reason the note below spells out — written first next to
+   * the preview markup it serves, which put a `useRef` after the guard and crashed the builder on the hook
+   * order. The note existed; it still caught me. It is repeated in the comment on `fitScale` at its use site.
+   */
+  const stageRef = useRef<HTMLDivElement>(null);
+  const [stage, setStage] = useState({ w: 0, h: 0 });
+  useEffect(() => {
+    const el = stageRef.current;
+    if (!el) return;
+    /**
+     * THE CONTENT BOX, not the padded one — `clientWidth` INCLUDES padding.
+     *
+     * Fitting to `clientWidth` fits the frame to the stage's border box, so a scaled screen came out exactly
+     * as wide as the stage and ate the 24px gutter whole: at Wide on a 1440px window the frame was drawn
+     * 1440px across, flush to both edges, and the card's rounded corners, ring and shadow were all outside
+     * the window. It looked like the padding had been forgotten rather than like a preview of a screen.
+     */
+    const read = () => {
+      const cs = getComputedStyle(el);
+      const padX = (parseFloat(cs.paddingLeft) || 0) + (parseFloat(cs.paddingRight) || 0);
+      const padY = (parseFloat(cs.paddingTop) || 0) + (parseFloat(cs.paddingBottom) || 0);
+      setStage({ w: Math.max(0, el.clientWidth - padX), h: Math.max(0, el.clientHeight - padY) });
+    };
+    read();
+    const ro = new ResizeObserver(read);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [preview]); // the stage only exists while previewing, so it is re-observed each time preview opens
+
+  /**
+   * THE PREVIEW'S SCREEN, as a browser's device mode models it: a size, a zoom and an orientation.
+   *
+   * ONE source of truth — the size in portrait. The preset dropdown does not hold the selection; it is
+   * DERIVED by matching this size against the list, so typing a width by hand moves the dropdown to "Custom"
+   * by itself and picking a preset back again needs nothing extra. Two pieces of state that each believed
+   * they owned the selection is how a control like this normally goes wrong.
+   */
+  const [screen, setScreen] = useState<{ w: number; h: number } | null>(null); // null = Responsive: fill the stage
+  const [zoom, setZoom] = useState("fit");
+  const [rotated, setRotated] = useState(false);
+  // Rotation is a VIEW of the size, never a write to it — so turning the phone twice lands on exactly the
+  // numbers you started with, and a preset stays recognisable while it is on its side.
+  const screenW = screen ? (rotated ? screen.h : screen.w) : null;
+  const screenH = screen ? (rotated ? screen.w : screen.h) : null;
+  /**
+   * WHAT IS IN THE BOX WHILE YOU ARE STILL TYPING IT.
+   *
+   * The two number fields were bound straight to the size and refused anything outside 120–4000. That reads
+   * as a sensible clamp and makes the control unusable: to type "500" you must first type "5", which is
+   * below the floor, so the commit was skipped, the controlled input re-rendered from the unchanged size and
+   * the keystroke vanished. Every digit after it met the same fate. Only a paste — or a test calling
+   * `fill()`, which is exactly what mine did — could ever set a number, so the guard sailed over it.
+   *
+   * A draft holds the half-typed value; the size is committed only once the number is a real one. Typing
+   * therefore works digit by digit, and the frame still never gets a nonsense width.
+   */
+  const [wDraft, setWDraft] = useState("");
+  const [hDraft, setHDraft] = useState("");
+  useEffect(() => { setWDraft(screenW ? String(screenW) : ""); }, [screenW]);
+  useEffect(() => { setHDraft(screenH ? String(screenH) : ""); }, [screenH]);
+  const SIZE_MIN = 120, SIZE_MAX = 4000;
+  /** Commit a typed side, in the orientation the person is looking at. */
+  const typeSide = (side: "w" | "h", text: string) => {
+    (side === "w" ? setWDraft : setHDraft)(text);
+    const n = Math.round(Number(text));
+    if (!screen || !Number.isFinite(n) || n < SIZE_MIN || n > SIZE_MAX) return;
+    const wantsW = side === "w" ? !rotated : rotated; // rotated, the box labelled "width" drives the height
+    setScreen(wantsW ? { w: n, h: screen.h } : { w: screen.w, h: n });
+  };
+  /**
+   * THE PREVIEW CHANGES NOTHING OUTSIDE ITSELF.
+   *
+   * This used to push the previewed width back into `device`, so choosing "iPhone SE" to LOOK at something
+   * silently re-pointed the editor's canvas and its per-device editing layer. Looking is not editing: the
+   * editor has its own size control and that is the only thing that should move it. Removed at the user's
+   * explicit instruction not to touch the non-preview page — and it was the right call anyway, since a
+   * free-typed preview width would have been quietly rewriting which breakpoint their next edit landed on.
+   */
+
   // NOTE: every hook above runs on EVERY render. React counts hooks by call order, so a `useMemo` or
   // `useCallback` placed AFTER this guard is called only sometimes — which crashes the whole builder with
   // "Rendered more hooks than during the previous render". That is precisely what happened when the preview
@@ -475,6 +632,23 @@ export default function BoxDemoPage() {
   const frameW = DEVICES.find((d) => d.id === device)!.w;
   const pageList = site.pages.map((p) => ({ id: p.id, name: p.name }));
 
+  /**
+   * How big the frame is DRAWN, as distinct from how big the page thinks it is.
+   *
+   * `Fit to window` shrinks on BOTH axes — a tall phone on a short stage is as much of a problem as a wide
+   * desktop on a narrow one, and fitting only the width would push the bottom of the screen out of sight.
+   * It never grows past 1: a 375px phone is drawn at 375px on a big monitor, not blown up to fill it.
+   *
+   * An explicit percentage is obeyed exactly, including when it overflows — that is what asking for 200% on
+   * a small screen means, and the stage scrolls rather than silently ignoring you.
+   */
+  const fitScale = screenW
+    ? Math.min(1, stage.w ? stage.w / screenW : 1, screenH && stage.h ? stage.h / screenH : 1)
+    : 1;
+  const scale = screenW ? (zoom === "fit" ? fitScale : Number(zoom)) : 1;
+  /** The preset this size IS, or null when the numbers have been typed by hand. */
+  const activePreset = screen ? PRESETS_FLAT.find((p) => p.w === screen.w && p.h === screen.h) ?? null : null;
+
   // ── Visitor preview ──
   if (preview) {
     return (
@@ -486,20 +660,132 @@ export default function BoxDemoPage() {
               <button key={p.id} onClick={() => switchPage(p.id)} aria-current={p.id === activePage.id} className={`text-xs px-2.5 py-1 rounded-md whitespace-nowrap ${p.id === activePage.id ? "bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 font-semibold" : "text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100 dark:hover:bg-gray-800 midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5"}`}>{p.name}{p.id === site.homeId ? " ·" : ""}</button>
             ))}
           </nav>
-          <div className="ml-auto flex items-center rounded-lg border border-gray-300 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 p-0.5" role="group" aria-label="Preview screen size">
-            {DEVICES.map((d) => <button key={d.id} onClick={() => setDevice(d.id)} aria-label={`${d.label} preview`} aria-pressed={device === d.id} className={`p-1.5 rounded-md ${device === d.id ? "bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300" : "text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5"}`}><d.Icon className="w-4 h-4" /></button>)}
+          {/* ── The screen: a size, its exact numbers, a zoom and an orientation ── */}
+          <div className="ml-auto flex items-center gap-2 shrink-0">
+            <div className="w-52">
+              <CompactSelect
+                ariaLabel="Preview screen size"
+                value={activePreset?.id ?? (screen ? "custom" : "responsive")}
+                onChange={(v) => {
+                  // Responsive is 1:1 on the real stage, so any zoom is dropped with it — a disabled box
+                  // still SHOWING "50%" while nothing is scaled is a control lying about what it is doing.
+                  if (v === "responsive") { setScreen(null); setRotated(false); setZoom("fit"); return; }
+                  if (v === "custom") return; // "Custom" only ever REPORTS typed numbers; it is not a destination
+                  const p = PRESETS_FLAT.find((x) => x.id === v);
+                  if (p) setScreen({ w: p.w, h: p.h });
+                }}
+                optionGroups={[
+                  { group: "Fit the window", items: [{ value: "responsive", label: "Responsive" }] },
+                  ...PREVIEW_PRESETS.map((g) => ({ group: g.group, items: g.items.map((p) => ({ value: p.id, label: p.label })) })),
+                  // Listed only while it applies, so the menu never offers a choice that does nothing.
+                  ...(screen && !activePreset ? [{ group: "Typed by hand", items: [{ value: "custom", label: `Custom — ${screen.w} × ${screen.h}` }] }] : []),
+                ]}
+              />
+            </div>
+
+            {/* The exact numbers, editable — the size is a decision, not only a menu pick. */}
+            <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300">
+              <input
+                type="number" min={SIZE_MIN} max={SIZE_MAX} aria-label="Preview width in pixels"
+                value={wDraft} placeholder="auto" disabled={!screen}
+                onChange={(e) => typeSide("w", e.target.value)}
+                className="w-16 px-1.5 py-1 rounded-md border border-gray-300 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-transparent tabular-nums outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-40"
+              />
+              <span aria-hidden="true">×</span>
+              <input
+                type="number" min={SIZE_MIN} max={SIZE_MAX} aria-label="Preview height in pixels"
+                value={hDraft} placeholder="auto" disabled={!screen}
+                onChange={(e) => typeSide("h", e.target.value)}
+                className="w-16 px-1.5 py-1 rounded-md border border-gray-300 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 bg-transparent tabular-nums outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-40"
+              />
+            </div>
+
+            <div className="w-36">
+              <CompactSelect ariaLabel="Preview zoom" value={zoom} onChange={setZoom} options={ZOOMS} disabled={!screen} />
+            </div>
+
+            <button
+              onClick={() => setRotated((v) => !v)} disabled={!screen}
+              aria-label="Rotate the preview" aria-pressed={rotated}
+              title={rotated ? "Back to portrait" : "Turn it on its side"}
+              className={`p-1.5 rounded-md border border-gray-300 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 disabled:opacity-40 ${rotated ? "bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300" : "text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5"}`}
+            ><RotateCw className="w-4 h-4" /></button>
+
+            {/* What the page inside is ACTUALLY being given, and the zoom it is drawn at — never left to guess. */}
+            <output aria-live="polite" className="text-[0.6875rem] tabular-nums text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 whitespace-nowrap w-28 text-right">
+              {screenW ? `${screenW} px` : "Responsive"}{scale !== 1 ? ` · ${Math.round(scale * 100)}%` : ""}
+            </output>
           </div>
         </div>
-        <div className="flex-1 overflow-hidden p-6 flex justify-center">
-          <iframe
-            ref={previewFrameRef}
-            title="Site preview"
-            srcDoc={previewHTML}
-            onLoad={wirePreviewNav}
-            sandbox="allow-same-origin allow-scripts allow-popups"
-            className="bg-white shadow-2xl rounded-xl ring-1 ring-black/10 shrink-0 border-0"
-            style={{ width: frameW ?? "100%", maxWidth: frameW ? undefined : "64rem", height: "100%" }}
-          />
+        {/* `overflow-auto`, not hidden: at an explicit zoom the frame may be larger than the stage, and a
+            preview you cannot scroll to the rest of is the defect this whole area exists to avoid. */}
+        {/**
+          * A BLOCK stage with an `auto`-margined sizer, NOT a centring flex row with a rigid item.
+          *
+          * `justify-content: center` on an item WIDER than its container overflows it equally on BOTH
+          * sides, and the start-side overflow of a scroll container can never be scrolled to — measured at
+          * 200% on a 1440px window, 560px of the page sat off the left with no way to reach it.
+          *
+          * Auto margins do not have that fault: they absorb free space when there is some and resolve to
+          * ZERO the moment there is none, so an oversized frame starts flush at the left, its overflow goes
+          * entirely to the end edge where scrolling can reach it, and a smaller one is still centred.
+          *
+          * Both halves matter, which mutating them proved one at a time: with the stage left as flex,
+          * `mx-auto` alone still holds the rule (auto margins win over `justify-content`), and dropping
+          * `shrink-0` hid it a third way by simply squashing the sizer. It takes a rigid item in a centring
+          * flex row to lose the left-hand side — which is exactly the arrangement this replaced.
+          */}
+        <div ref={stageRef} data-preview-stage className="flex-1 overflow-auto p-6">
+          {/**
+            * A SIZER THAT RESERVES THE SCALED BOX, with the frame scaled from its TOP-LEFT inside it.
+            *
+            * The frame used to be scaled in place, from `top center`. A CSS transform does not change the
+            * box layout reserves, and it only ever creates SCROLLABLE overflow towards the end edge — so
+            * above 100% the frame grew out of both sides of the stage and the left-hand part became
+            * permanently unreachable: measured at 200% on a 1900px window, the frame's left edge sat at
+            * -78px while `scrollLeft` could only travel 0…78. Scrolling right went further right; nothing
+            * could ever bring the lost strip back. On a narrower window it was hundreds of pixels, and it
+            * is exactly what "none of the zoom options is being followed" looks like from the outside.
+            *
+            * With a wrapper of the SCALED size, ordinary layout does all of it: centring stays centring,
+            * the stage's own `overflow-auto` produces real scrollbars, and scaling from `top left` keeps
+            * every pixel inside the box that was reserved for it. The `margin-bottom` hack that used to
+            * claw back the unscaled height goes too — the wrapper is simply the right size.
+            */}
+          <div
+            className="mx-auto"
+            style={screenW && screenH
+              ? { width: Math.round(screenW * scale), height: Math.round(screenH * scale) }
+              : { width: "100%", height: "100%" }}
+          >
+            <iframe
+              ref={previewFrameRef}
+              title="Site preview"
+              srcDoc={previewHTML}
+              onLoad={wirePreviewNav}
+              sandbox="allow-same-origin allow-scripts allow-popups"
+              className="bg-white shadow-2xl rounded-xl ring-1 ring-black/10 border-0 block"
+              style={{
+                width: screenW ?? "100%",
+                /**
+                 * `none` in BOTH cases, and for two different reasons.
+                 *
+                 * With a chosen screen: the global `iframe{max-width:100%}` is unlayered and would clamp it.
+                 *
+                 * On Responsive: it used to be capped at `64rem`. That is a sensible reading width for an
+                 * article and the wrong thing entirely for a preview — on a wide monitor the page was drawn
+                 * 1024px across with empty gutters either side, which is neither what the person's screen
+                 * shows nor what a visitor would see. Responsive means "the screen I am actually on".
+                 */
+                maxWidth: "none",
+                // Laid out at the page's OWN size and scaled visually, so the page keeps the viewport it was
+                // promised. Height follows the chosen screen; Responsive just fills the stage.
+                height: screenH ?? "100%",
+                transform: scale !== 1 ? `scale(${scale})` : undefined,
+                transformOrigin: "top left",
+              }}
+            />
+          </div>
         </div>
       </div>
     );

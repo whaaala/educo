@@ -4,7 +4,7 @@
  * A page and the editor that draws it are two different worlds sharing one screen, and until this module they
  * shared one range of z-index numbers as well. The audit that opened Phase 2 found the editor's own furniture
  * at `z-20` … `z-50` — resize handles at 30, the block toolbar at 40, the blocks panel at 50 — sitting in
- * exactly the range a page uses: the site nav at 30, a toast at 60, and a floating section at whatever number
+ * exactly the range a page uses: a sticky header at 30, a toast at 60, and a floating section at whatever number
  * the user's last "Bring to front" produced, which was unbounded.
  *
  * So this was not a tidiness problem. **A float brought to front enough times rendered ON TOP of the handles
@@ -53,7 +53,7 @@ export const PAGE_Z = {
    * be a second ladder wearing this one's clothes.
    */
   raised: 1,
-  /** Anything pinned while the page scrolls: the site nav, a sticky sidebar. */
+  /** Anything pinned while the page scrolls: a sticky header or sidebar the user has built. */
   sticky: 30,
   /** A menu or panel the page itself opens, which must clear pinned furniture. */
   overlay: 100,

@@ -169,7 +169,7 @@ test.describe("Interactions — hover, focus and entrance (Rounds 1a + 1b)", () 
     ] };
     await loadExport(page, node as unknown as BoxNode);
     const resting = await lookOf(page, "#tgt");
-    // The exported page has a sticky nav, so the first Tab lands there — walk until focus is inside the block.
+    // Tab order starts at the top of the document, which may be above this block — walk until focus is inside it.
     for (let i = 0; i < 12; i++) {
       await page.keyboard.press("Tab");
       if (await page.evaluate(() => !!document.activeElement?.closest("#tgt"))) break;

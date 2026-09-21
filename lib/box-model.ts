@@ -1703,8 +1703,21 @@ export function resizeTopEdge(
 ): { top: number; height: number } {
   const wantedTop = Math.min(startBotPx - minHpx, startTopPx + dy); // where the pointer asks the top to be
   const top = Math.max(topFloorPx, wantedTop);                      // …clamped to the page
-  const overshoot = Math.max(0, topFloorPx - wantedTop);            // how far past the page top it asked for
-  return { top, height: Math.round(startBotPx + overshoot - top) };
+  /**
+   * AT THE WALL THE EDGE STOPS. It does not grow out of the far side.
+   *
+   * This used to add whatever was dragged past the page top onto the HEIGHT, so the block kept growing —
+   * downward. The reasoning was that a handle which does nothing feels broken, and a block flush against
+   * the page top is the common case for a first block. Measured on exactly that block: dragging the top
+   * edge UP by 80px moved the top edge 0px and the BOTTOM edge 80px DOWN. The user is holding one edge and
+   * watching the opposite one move away from them, in the opposite direction to the drag.
+   *
+   * RULE 19 settles it, and settles it against the old reading: "the edge you grab is the ONLY one that
+   * moves; the opposite edge stays fixed… where the partner cannot give, the edge stops; it does not grow
+   * out of the far side." A dead handle at the wall is the honest answer — there is nowhere above the page
+   * for the edge to go, and growing the other end is not the same gesture.
+   */
+  return { top, height: Math.round(startBotPx - top) };
 }
 
 /**
@@ -3648,14 +3661,28 @@ export function containerStyle(node: BoxNode, bp: Breakpoint = "base"): CSSPrope
     // Responsive Field Guide: a ROW BAND always allows wrapping so its sections REFLOW (stack) on narrow
     // screens instead of shrinking to unreadable slivers. On desktop they still sit side-by-side (they fit).
     flexWrap: node.wrap || node.rowBand ? "wrap" : "nowrap",
-    // Pack wrapped lines to the top so they never stretch apart and leave gaps between sections — EXCEPT when
-    // this box exists to hold something that wants the height it is given (a grid, or a band holding one).
-    //
-    // A row band always wraps, and on a wrapping flex container `align-content: flex-start` makes each LINE
-    // hug its content. `align-items: stretch` then stretches the child inside that line — which is already
-    // zero tall — so a nested grid measured 0px inside a band that was itself correctly 500px. Two rules that
-    // are each right on their own, cancelling each other out, and nothing in the class names said so.
-    alignContent: fillsGivenHeight(node) ? "stretch" : "flex-start",
+    /**
+     * WRAPPED LINES FILL THE BOX — and getting this wrong collapses everything dropped into a sized box.
+     *
+     * A row band always wraps, and on a wrapping flex container it is `align-content` that hands out the
+     * cross-axis space, NOT `align-items`. With `flex-start` the single line hugs its content and every
+     * spare pixel is left at the bottom; `align-items: stretch` then dutifully stretches the child to fill
+     * a line that is already as short as the child. Two rules each right on their own, cancelling out.
+     *
+     * Measured: a Stack dropped into a 400px section landed 40px tall inside a band that was correctly
+     * 400px — 360px of the box left empty, with nothing in the styles to say why. Reported as "it collapses
+     * to the minimum height instead of taking the rest of the space".
+     *
+     * This was patched once for the case that was reported then — a nested GRID — by asking
+     * `fillsGivenHeight`. That was too narrow by exactly one step: a grid is not the only thing that wants
+     * the height it is given, every CONTAINER does. An element still hugs, because `childStyle` pins it to
+     * the start of its line, so a heading sits in the same place either way.
+     *
+     * `stretch` is also the CSS default, so this is the browser's own answer rather than a second opinion:
+     * where a line has no spare room the two are identical, and the only case they differ is the one the
+     * user is complaining about.
+     */
+    alignContent: "stretch",
     ...paddingCSS(node),
     minHeight: minH,
   };
@@ -3700,9 +3727,24 @@ function fillsGivenHeight(node: BoxNode): boolean {
  * an unsized child stack, itself inside a stack somebody sized, would count as sized and collapse anyway,
  * which is the reported case. "The immediate parent" is too narrow: that is the band, always unsized.
  */
-export function hostSizedFor(node: BoxNode, inheritedHostSized: boolean): boolean {
+export function hostSizedFor(node: BoxNode, inheritedHostSized: boolean, parent?: BoxNode | null): boolean {
   if (node.rowBand) return inheritedHostSized;                        // scaffolding — pass it through
-  return node.minHeight != null || node.height != null || !!node.screenHeight;
+  const ownSize = node.minHeight != null || node.height != null || !!node.screenHeight;
+  /**
+   * A GRID CELL IS GIVEN ITS HEIGHT BY THE ROW, and stores nothing to say so.
+   *
+   * Every other box answers this question out of its own tokens, and a cell cannot: the rows are
+   * `minmax(min-content, 1fr)`, so a cell in a grid that HAS a height is handed a share of it while its
+   * own `height` and `minHeight` stay empty. Reading only the tokens therefore called every cell unsized,
+   * and everything dropped into one hugged its content in a box with room to spare — measured: a Stack
+   * dropped into a 200px cell sat at 40px with 160px left under it.
+   *
+   * It inherits rather than assuming: a grid with no height of its own has nothing to share out (see
+   * `gridHasNothingToShare`), so its cells really are unsized and the floor that keeps them grabbable
+   * still applies. Sized grid, sized cells; unsized grid, unsized cells.
+   */
+  if (parent?.layout === "grid") return inheritedHostSized || ownSize;
+  return ownSize;
 }
 
 export function childStyle(child: BoxNode, parent: BoxNode, bp: Breakpoint = "base", hostSized = false): CSSProperties {
@@ -3780,7 +3822,9 @@ export function childStyle(child: BoxNode, parent: BoxNode, bp: Breakpoint = "ba
   const parentMain = isRow ? parent.width : parent.height;
   // "Definite" main size means the child should fill+follow it. For a column, an explicit height OR a
   // min-height (set by resizing the section's height) both count — so children fill/shrink with the floor.
-  const parentDefinite = (!!parentMain && parentMain !== "auto" && parentMain !== "fill") || (!isRow && !!parent.minHeight);
+  // …and a GRID CELL is definite too, though it stores nothing: the row hands it a height (`hostSizedFor`).
+  // Without this clause a block dropped into a cell hugged its content and left the rest of the cell empty.
+  const parentDefinite = (!!parentMain && parentMain !== "auto" && parentMain !== "fill") || (!isRow && !!parent.minHeight) || (!isRow && hostSized);
   // When the child has no explicit MAIN size and the parent's main axis is DEFINITE (e.g. a section with a
   // set height), the child FILLS + follows the parent (`1 1 auto`: grow to fill, shrink to fit, content
   // basis) — so shrinking the parent's height shrinks its children. Otherwise it hugs / uses its token

@@ -111,18 +111,33 @@ describe("Top-edge resize is edge-anchored and never leaves the page (RULE H)", 
     }
   });
 
-  it("keeps growing at the page top instead of going dead — the overshoot extends the BOTTOM", () => {
-    // Dragging 120 up from y=100 asks for a top of -20, which is 40 past the page top (y=20).
+  it("AT THE PAGE TOP THE EDGE STOPS — the bottom does not move to make up for it", () => {
+    /**
+     * Dragging 120 up from y=100 asks for a top of -20, which is 40 past the page top (y=20). The top goes
+     * as far as it can and stops there; the bottom stays exactly where it was.
+     *
+     * THIS REVERSES A DELIBERATE DECISION, so the reason is worth keeping. The overshoot used to be added
+     * to the HEIGHT, on the reading that a handle doing nothing feels broken and a block flush against the
+     * page top is the common case for a first block. Driven in a browser on exactly that block, it looked
+     * like this: dragging the top edge UP 80px moved the top edge 0px and the BOTTOM edge 80px DOWN — the
+     * user holding one edge, watching the opposite one run away in the opposite direction. Reported.
+     *
+     * Rule 19 is unambiguous and decides it: "the edge you grab is the ONLY one that moves… where the
+     * partner cannot give, the edge stops; it does not grow out of the far side."
+     */
     const { top, height } = resizeTopEdge(START_TOP, START_BOT, -120, MIN_H, PAGE_TOP);
-    expect(top).toBe(PAGE_TOP);              // pinned at the page top
-    expect(height).toBe(200);                // still grew by the full 120 dragged
-    expect(top + height).toBe(START_BOT + 40); // the overshoot went to the bottom
+    expect(top).toBe(PAGE_TOP);                       // pinned at the page top
+    expect(height).toBe(START_BOT - PAGE_TOP);        // exactly as tall as the room it had
+    expect(top + height).toBe(START_BOT);             // …and the bottom NEVER moved
   });
 
-  it("a block already flush against the page top still grows (the reported dead-handle case)", () => {
+  it("a block already flush against the page top does not move at all", () => {
+    // The dead handle, and it is the honest answer: there is nowhere above the page for the edge to go,
+    // and growing the other end is a different gesture from the one being made.
     const { top, height } = resizeTopEdge(PAGE_TOP, PAGE_TOP + 80, -100, MIN_H, PAGE_TOP);
     expect(top).toBe(PAGE_TOP);
-    expect(height).toBe(180); // 80 + the 100 dragged
+    expect(height).toBe(80);                          // unchanged — not 180
+    expect(top + height).toBe(PAGE_TOP + 80);         // the bottom stayed put
   });
 });
 

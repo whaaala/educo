@@ -48,6 +48,7 @@ const INVARIANT_SPECS = [
   "tests/e2e/design-distinctness.spec.ts",
   "tests/e2e/alert-actions.spec.ts",
   "tests/e2e/multipage-preview.spec.ts",
+  "tests/e2e/preview-viewport.spec.ts",
   "tests/e2e/exported-site.spec.ts",
   "tests/e2e/layout-bands.spec.ts",
   "tests/e2e/advanced-css.spec.ts",
@@ -83,6 +84,8 @@ const INVARIANT_SPECS = [
   "tests/e2e/add-inside-empty-box.spec.ts",
   "tests/e2e/selection-drills-inward.spec.ts",
   "tests/e2e/chrome-follows-resize.spec.ts",
+  "tests/e2e/dropped-block-fills-space.spec.ts",
+  "tests/e2e/vertical-edges-anchored.spec.ts",
 ];
 
 const argv = process.argv.slice(2);

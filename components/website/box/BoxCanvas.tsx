@@ -1115,6 +1115,27 @@ export default function BoxCanvas({
     const cs = getComputedStyle(el);
     const padT = parseFloat(cs.paddingTop) || 0, padB = parseFloat(cs.paddingBottom) || 0;
     const brT = parseFloat(cs.borderTopWidth) || 0, brB = parseFloat(cs.borderBottomWidth) || 0;
+    /**
+     * A CHILD THAT FILLS ITS PARENT CANNOT BE ASKED HOW TALL ITS CONTENT IS — it will answer with the
+     * parent's height, which makes the slack zero and the top edge DEAD.
+     *
+     * Measuring the children instead of `scrollHeight` was the right move (a `min-height` holding the box
+     * open makes `scrollHeight` report the box itself), but it has the identical fault one level down: a
+     * band with `flex-grow: 1` is exactly as tall as whatever it is given. Measured on a cell dragged to
+     * 300px holding a 40px stack: the natural height came back as 300, so `aboveSlack` was 0 and dragging
+     * the row below by its top edge did nothing whatsoever — reported as "the top adjustment does nothing".
+     *
+     * So the grow is turned OFF for the measurement and put straight back. Synchronous, inside one frame
+     * and once per drag rather than per move, so nothing is ever painted in this state.
+     */
+    const undo: (() => void)[] = [];
+    for (const child of Array.from(el.children)) {
+      const ce = child as HTMLElement;
+      if (getComputedStyle(ce).position === "absolute") continue;
+      const was = ce.style.getPropertyValue("flex-grow"), pri = ce.style.getPropertyPriority("flex-grow");
+      undo.push(() => { if (was) ce.style.setProperty("flex-grow", was, pri); else ce.style.removeProperty("flex-grow"); });
+      ce.style.setProperty("flex-grow", "0", "important");
+    }
     const top = el.getBoundingClientRect().top;
     let content = top + brT + padT; // an empty box is its own padding and nothing else
     for (const child of Array.from(el.children)) {
@@ -1124,6 +1145,7 @@ export default function BoxCanvas({
       if (!cr.height && !cr.width) continue;
       content = Math.max(content, cr.bottom);
     }
+    for (const put of undo) put();
     return Math.max(0, content - top + padB + brB);
   };
 
@@ -1447,12 +1469,40 @@ export default function BoxCanvas({
       pageTopPx = pgRect.top + (parseFloat(pgCs.paddingTop) || 0) - contentTopPx;
     }
 
+    /**
+     * WHERE FLOW WOULD PUT THIS BLOCK'S TOP — measured, never assumed.
+     *
+     * The cross-axis anchor below pins `margin-top` so an un-stretched box does not jump when the stretch is
+     * taken off it. It measured that margin from the PARENT'S CONTENT TOP, which is the right reference for
+     * exactly one block: the first. Every block after it has ALREADY been carried down there by the blocks
+     * before it, so the anchor added a distance flow had already travelled and the block teleported down by
+     * the whole height above it — before the pointer had moved at all.
+     *
+     * Measured on the reported page (a band holding a grid, then two stacks): grabbing the last stack's top
+     * edge and dragging 80px moved its top 380px and its supposedly ANCHORED bottom 300px, leaving 380px of
+     * white space above it. Dragging the BOTTOM edge did the same thing, because this anchor fires for both.
+     * That white space is the bug as the user meets it; the gap they then could not close is the next one.
+     *
+     * The honest reference is where the block sits with the anchor's own styles on it and no margin at all.
+     * Applied and taken straight back, synchronously within one frame, so nothing is ever painted in this
+     * state — the same measurement trick `naturalHeightOf` uses one level up, and for the same reason: the
+     * only thing that knows where flow puts a box is the browser.
+     */
+    const flowTopPx = (() => {
+      const prevAlign = el.style.alignSelf, prevMT = el.style.marginTop;
+      el.style.alignSelf = "flex-start";
+      el.style.marginTop = "0px";
+      const t = el.getBoundingClientRect().top;
+      el.style.alignSelf = prevAlign; el.style.marginTop = prevMT;
+      return t;
+    })();
+
     // Cross-axis anchor: pin alignment + current position/size so a centred/stretched box doesn't jump.
     let base = root, changed = false;
     const anchor: Partial<BoxNode> = {};
     if (prRect) {
       if ((hasE || hasW) && !parentRow) { anchor.alignSelf = "flex-start"; anchor.width = pct(W0); anchor.marginLeft = pxU(rect.left - contentLeftPx); } // width is CROSS (column) → pin horizontal
-      if ((hasN || hasS) && parentRow) { anchor.alignSelf = "flex-start"; anchor.minHeight = Math.round(H0); anchor.marginTop = pxU(rect.top - contentTopPx); } // height is CROSS (row) → un-stretch so the floor governs + pin vertical
+      if ((hasN || hasS) && parentRow) { anchor.alignSelf = "flex-start"; anchor.minHeight = Math.round(H0); anchor.marginTop = pxU(rect.top - flowTopPx); } // height is CROSS (row) → un-stretch so the floor governs + pin vertical
     }
     if (Object.keys(anchor).length) { base = writeBox(base, id, anchor); changed = true; }
     if (changed) onChange(base);
@@ -1545,6 +1595,107 @@ export default function BoxCanvas({
         if (cr <= startLeftPx + 1 && cr > prevRightPx) { prevRightPx = cr; prevSibId = c.id; prevWidth0 = r2.width; }
       }
     }
+
+    /**
+     * THE BLOCK DIRECTLY ABOVE — whom the TOP edge's boundary belongs to, on the VERTICAL axis.
+     *
+     * The horizontal edges have spent their neighbour for a long time: take width, the block beside you
+     * gives width, the line stays full. The vertical edges never did. Dragging a stack's top edge only ever
+     * opened a `margin-top`, so shrinking a block left a hole above it that belonged to nobody, and the
+     * block above went on being exactly as tall as it was. Reported as "when I reduce the height of the
+     * last stack, the one above it does not adjust automatically" — and then, worse, the hole could not be
+     * closed by hand: growing the block above moves the flow origin of the one below it, so the margin
+     * carries the hole along in front of it. Measured at 380px of white space before and 380px after
+     * growing the block above by 200px. "The white space always remains" is literally what the maths did.
+     *
+     * The partner is the PREVIOUS SIBLING IN DOCUMENT ORDER, the lesson the grid cell learned the hard way
+     * — not "whatever is measured above", which stops being findable the moment a block wraps. A floating
+     * block is skipped: it is out of flow and owns no boundary. And a previous sibling that SHARES this
+     * block's line sits BESIDE it, not above, so the top edge is not its boundary at all: there the drag
+     * keeps the old margin behaviour, because no single block owns that edge.
+     */
+    let aboveSibId: string | null = null, aboveH0 = 0, aboveSlack = 0, aboveIsComp = false, aboveGap0 = 0;
+    {
+      /**
+       * IT WALKS UP THROUGH WRAPPERS, because the block above is usually not a sibling at all.
+       *
+       * The builder gives every top-level block its own BAND, so two stacks that touch on the page are two
+       * only children in two different parents — measured: `root › band-1 › green` and `root › band-2 ›
+       * magenta`. A sibling-only lookup therefore found nothing in the layout a real user actually builds,
+       * and the fix worked solely in the seeded one-band page the first test used. That is the same trap
+       * this file records twice already: a guard built on a shape simpler than the product.
+       *
+       * So where a block is the FIRST thing in its parent, its top edge IS the parent's top edge, and the
+       * boundary belongs to whatever sits above the parent — one level up, repeatedly. A band given a height
+       * stretches its child, so writing the height there grows the stack inside it (measured: band 380 →
+       * green 380, over green's own stored 300).
+       *
+       * It stops climbing at a parent with padding above the block: there the top edge sits INSIDE the
+       * parent rather than on its boundary, so nothing above owns it and the old margin behaviour is right.
+       */
+      let cursor: string = id;
+      for (let hop = 0; hop < 8; hop++) {
+        const up = findParent(rootRef.current, cursor);
+        if (!up) break;
+        const kids = up.parent.children ?? [];
+        const at = kids.findIndex((c) => c.id === cursor);
+        let beside = false, found: { c: BoxNode; r: DOMRect } | null = null;
+        for (let i = at - 1; i >= 0; i--) {
+          const c = kids[i];
+          if (isFloating(c)) continue;
+          const e2 = document.querySelector<HTMLElement>(`[data-box-id="${CSS.escape(c.id)}"]`);
+          if (!e2) continue;
+          const r2 = e2.getBoundingClientRect();
+          if (r2.bottom > rect.top + 2) { beside = true; break; } // shares this block's line: beside, not above
+          found = { c, r: r2 };
+          break;
+        }
+        if (beside) break;
+        if (found) {
+          /**
+           * …AND THEN DESCEND TO THE BLOCK THAT ACTUALLY OWNS THAT HEIGHT.
+           *
+           * Having climbed to the band above, the band is the wrong thing to write to. A band HUGS its
+           * child, so its height is really the child's stored `min-height` — which makes two things go
+           * wrong at once: asked how tall its content is, the band answers with that floor, so its slack
+           * came out 0 and dragging the top edge UP was completely DEAD (measured: 0px moved); and writing
+           * a smaller height to the band would change nothing anyway, because the child holds it open.
+           *
+           * Growing worked and shrinking did not, which is exactly the asymmetry that makes this kind of
+           * fault read as "sometimes it works". It is the same trap this file records twice already — a box
+           * asked about its content answering with its own size — arriving one level further out.
+           *
+           * So where a wrapper has a single in-flow child exactly as tall as itself, that child is the real
+           * partner: shrink it and the wrapper follows it down; grow it and the wrapper follows it up.
+           */
+          let owner = found.c;
+          let ownerEl = document.querySelector<HTMLElement>(`[data-box-id="${CSS.escape(found.c.id)}"]`)!;
+          for (let dive = 0; dive < 8; dive++) {
+            const inFlow = (owner.children ?? []).filter((c) => !isFloating(c));
+            if (inFlow.length !== 1) break;
+            const kEl = document.querySelector<HTMLElement>(`[data-box-id="${CSS.escape(inFlow[0].id)}"]`);
+            if (!kEl) break;
+            if (Math.abs(kEl.getBoundingClientRect().height - ownerEl.getBoundingClientRect().height) > 2) break;
+            owner = inFlow[0]; ownerEl = kEl;
+          }
+          aboveSibId = owner.id;
+          const ownerRect = ownerEl.getBoundingClientRect();
+          aboveH0 = ownerRect.height;
+          aboveSlack = Math.max(0, aboveH0 - Math.max(naturalHeightOf(ownerEl), MIN_ROW_PX));
+          aboveIsComp = owner.type === "component" || owner.type === "button";
+          // The space ALREADY between them — outer spacing the user asked for, and the parent's own gap.
+          aboveGap0 = Math.max(0, rect.top - ownerRect.bottom);
+          break;
+        }
+        // Nothing before it here — climb, but only while this block's top edge really is the parent's.
+        const upEl = document.querySelector<HTMLElement>(`[data-box-id="${CSS.escape(up.parent.id)}"]`);
+        if (!upEl || isFloating(up.parent)) break;
+        if (Math.abs(upEl.getBoundingClientRect().top - rect.top) > 2) break; // padding/border between them
+        cursor = up.parent.id;
+      }
+    }
+    /** And what THIS block can give back — what bounds the same boundary dragged DOWNWARD. */
+    const selfSlack = Math.max(0, H0 - Math.max(naturalHeightOf(el), MIN_ROW_PX));
 
     /**
      * The least a NEIGHBOUR may be squeezed to by a drag.
@@ -1666,7 +1817,46 @@ export default function BoxCanvas({
         const sc = fitScale(h, naturalH);
         tree = writeBox(tree, id, isComp ? { height: remLen(h, rootPx), minHeight: undefined, clip: undefined, contentScale: sc < 1 ? sc : undefined } : { minHeight: h, height: undefined });
       } // top fixed, bottom moves
-      if (hasN) {
+      if (hasN && aboveSibId) {
+        /**
+         * A SHARED BOUNDARY, on the vertical axis — the same bargain the east and west edges have always
+         * struck, and the arithmetic the grid cell already proved: the boundary moves as far as the block
+         * on the FAR SIDE of it can give, and that block absorbs exactly what this one releases.
+         *
+         * Drag the top DOWN and this block shrinks while the one above grows into the space, so no hole
+         * ever opens. Drag it UP and this block grows while the one above gives the height back, clamped to
+         * the height its own content needs — where it cannot give, the edge STOPS rather than growing out
+         * of the far side (rule 19's second clause). `margin-top` goes to zero and STAYS there: the pair is
+         * held together by flow, so nothing can carry a gap along in front of it.
+         */
+        /**
+         * THE SPACE BETWEEN THEM IS SPENT FIRST, and only then the block above — the rule the EAST edge
+         * already follows ("growing into the gap costs the neighbour nothing and must not move it").
+         *
+         * This branch used to write `margin-top: 0` flat. With no spacing above, that is the same thing and
+         * every guard passed. Give the block outer spacing, though, and it INVERTED the gesture: zeroing a
+         * 40px margin lifted the block 40px while the pointer was dragging it down, so a 20px drag DOWN
+         * moved the top 20px UP — and the spacing the user had asked for was gone for good.
+         *
+         * So the gap is a quantity the drag spends, not a value the drag clears. Growing upward closes it
+         * first and takes from the block above only once it is used up; shrinking hands the space to the
+         * block above and leaves the gap exactly as it was. Where there is no gap, the arithmetic reduces
+         * to what it was before, which is why the original guards still hold.
+         */
+        const rise = Math.max(-selfSlack, Math.min(-dy, aboveGap0 + aboveSlack));
+        const fromGap = Math.min(Math.max(rise, 0), aboveGap0); // only GROWING eats the gap
+        const fromPartner = rise - fromGap;                     // negative → the block above grows instead
+        const h = Math.max(MIN_ROW_PX, Math.round(H0 + rise));
+        const ah = Math.max(MIN_ROW_PX, Math.round(aboveH0 - fromPartner));
+        const mt = pxU(Math.max(0, Math.round(aboveGap0 - fromGap)));
+        const scN = fitScale(h, naturalH);
+        tree = writeBox(tree, id, isComp
+          ? { height: remLen(h, rootPx), minHeight: undefined, clip: undefined, marginTop: mt, contentScale: scN < 1 ? scN : undefined }
+          : { minHeight: h, height: undefined, marginTop: mt });
+        tree = writeBox(tree, aboveSibId, aboveIsComp
+          ? { height: remLen(ah, rootPx), minHeight: undefined }
+          : { minHeight: ah, height: undefined });
+      } else if (hasN) {
         // Edge-anchored: the BOTTOM stays put, the TOP moves. Dragging the top UP grows the block — even at the
         // canvas top — by letting margin-top go negative so the block extends upward (was clamped to the flow
         // origin, which pinned the first block and made top-resize do nothing).
@@ -1971,7 +2161,7 @@ export default function BoxCanvas({
                 style={pagerStripCss()}
               >
                 {kids.map((c) => (
-                  <Fragment key={c.id}>{renderNode(c, node, sizedAbove || node.minHeight != null || node.height != null, hostSizedFor(node, hostSized))}</Fragment>
+                  <Fragment key={c.id}>{renderNode(c, node, sizedAbove || node.minHeight != null || node.height != null, hostSizedFor(node, hostSized, parent))}</Fragment>
                 ))}
               </div>
               {/* The nav is the published markup, shown as published — but a dot is an `<a href="#…">`, and
@@ -1998,7 +2188,7 @@ export default function BoxCanvas({
               })()}
             </>
           ) : kids.map((c) => (
-            <Fragment key={c.id}>{renderNode(c, node, sizedAbove || node.minHeight != null || node.height != null, hostSizedFor(node, hostSized))}</Fragment>
+            <Fragment key={c.id}>{renderNode(c, node, sizedAbove || node.minHeight != null || node.height != null, hostSizedFor(node, hostSized, parent))}</Fragment>
           ))}
           {editable && kids.length === 0 && (
             // An empty block shows a non-interactive hint — drag a block from the palette (or use the ⋯ menu)

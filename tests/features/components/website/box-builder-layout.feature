@@ -135,3 +135,128 @@ Feature: Placing blocks beside one another in the Box Builder
     Given the resize tests drag this very handle twelve steps and check the stored width
     Then they passed while the handles froze after eight, stranded 415px from the block
     Because the resize was never wrong — what the user was LOOKING AT was
+
+
+  # ── A dropped block takes the room it lands in ────────────────────────────
+  # tests/e2e/dropped-block-fills-space.spec.ts
+
+  Scenario: Dropping a block into a box with room in it
+    Given a section I have given a height of 400 pixels
+    When I drag a Stack into it
+    Then the Stack is 400 pixels tall, not 40
+    Because I pointed at the space, and the space is what I meant
+
+  Scenario: Dropping a block into a grid cell
+    Given a grid with a height, whose rows hand each cell a share of it
+    When I drop a block into one of those cells
+    Then it fills the cell, though the cell stores no height of its own
+    And neither the cell nor its neighbour changes size to accommodate it
+
+  Scenario: A grid nobody has given a height to
+    Given a grid with no height of its own, so its rows have nothing to share
+    When I drop a block into a cell
+    Then it takes the 8rem courtesy height, not a share of a height nobody gave
+    And never more than the cell holding it
+
+  Scenario: A size I set is never overruled by the fill
+    Given a block I have given a height of 90 pixels
+    When it sits in a section 400 pixels tall
+    Then it is 90 pixels tall
+    Because a decision always beats a courtesy
+
+  # ── The top and bottom edges do not move each other ───────────────────────
+  # tests/e2e/vertical-edges-anchored.spec.ts
+
+  Scenario: Dragging the top edge of a block at the very top of the page
+    When I drag its top edge upward
+    Then the top edge stops, because there is nowhere above the page for it to go
+    And the bottom edge does not move at all
+    Because growing the other end is a different gesture from the one I am making
+
+  Scenario: Dragging the top edge of a cell in the second row
+    When I drag its top edge up
+    Then the top edge follows me and the bottom edge stays exactly where it was
+    And the row above gives back precisely what this row takes
+
+  Scenario: Dragging the top edge after something has been dropped in the row above
+    Given the row above holds a block that fills it
+    When I drag this row's top edge up
+    Then it still moves
+    Because a block that fills its box answers with the BOX's height when asked
+      how tall its content is, which made the slack nought and the edge dead
+
+  # ── Two stacks that touch share the boundary between them ──────────────────
+  # tests/e2e/vertical-edges-anchored.spec.ts
+
+  Scenario: Reducing the last stack on the page
+    Given two stacks that touch, one above the other
+    When I drag the lower one's top edge down to make it shorter
+    Then the stack above grows by exactly what this one gave up
+    And no white space is left between them
+    And the bottom edge does not move
+    Because the boundary between two blocks belongs to both of them,
+      the same bargain the left and right edges have always struck
+
+  Scenario: Reducing the last stack from its bottom edge
+    Given two stacks that touch, one above the other
+    When I drag the lower one's bottom edge up
+    Then only the bottom moves, and the stack above stays exactly where it is
+    And no hole opens above it
+    Because the anchor used to measure this block's margin from the PAGE's top
+      rather than from where flow had already put it, so the block teleported
+      down by the whole height above it before the pointer had moved at all
+
+  Scenario: Growing the lower stack into the one above
+    Given two stacks that touch, one above the other
+    When I drag the lower one's top edge up
+    Then the stack above gives back exactly what this one takes
+    And the bottom edge never moves
+
+  Scenario: Dragging further than the stack above can give
+    When I drag the top edge far past what the stack above owns
+    Then the edge stops at the boundary
+    And the stack above keeps a usable minimum rather than vanishing
+    Because where the partner cannot give, the edge stops — it never grows
+      out of the far side instead
+
+  Scenario: The block above is in its own band
+    Given the builder gives every top-level block its own band
+    And the stack above is therefore an only child in the band before this one
+    When I drag the lower stack's top edge
+    Then the stack above still gives back what this one takes
+    Because a sibling-only lookup finds nothing in the shape a real page has,
+      so the boundary is followed up through the wrapper and back down to the
+      block that actually owns the height — a band hugs its child, so writing
+      the height to the band alone could grow it but never shrink it
+
+  Scenario: A stack with space deliberately left above it
+    Given I have given the lower stack outer spacing on its top
+    When I drag its top edge down
+    Then the edge goes down, the way I dragged it
+    And the space I asked for is still exactly what it was
+    Because the space is a quantity the drag SPENDS, never a value the drag clears —
+      zeroing a 40px margin lifted the block 40px while the pointer was dragging it
+      down, so the gesture came out inverted and the spacing was gone for good
+
+  Scenario: Growing upward into space that is already free
+    Given there is space between the two stacks
+    When I drag the lower one's top edge up by less than that space
+    Then the gap gives the room up
+    And the stack above is not touched at all, because the space was already free
+    Because this is the east edge's own rule, which the vertical axis never had
+
+  Scenario: A block that sits beside another, not above it
+    Given two stacks side by side on one line
+    When I drag the right-hand one's top edge
+    Then the block beside it is not resized
+    Because the block before it on a line is a neighbour, not a partner,
+      and that boundary belongs to the left and right edges
+
+  # ── Why this is asserted the way it is ─────────────────────────────────────
+
+  Scenario: Two rules each right on their own, cancelling out
+    Given a row band wraps, so its cross-axis space is handed out by align-content
+    And align-items then stretches the child to fill its line
+    Then a line packed to the start is already as short as the child,
+      so the stretch achieves nothing and 360 pixels of the box stay empty
+    Because nothing in either rule mentions the other
