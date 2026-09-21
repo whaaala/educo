@@ -615,14 +615,32 @@ function sharedCss(theme: SiteTheme): string {
 }
 
 /**
- * The page-level guard that belongs on every exported page.
+ * The page-level guard that belongs on every exported page — and the line that silently broke pinning.
  *
  * This was the injected nav's stylesheet. The nav is gone (see above), so what survives is the one rule that
  * is about the PAGE rather than about the bar that used to sit on top of it: nothing may scroll the document
- * sideways. Kept deliberately — dropping it with the rest would let any over-wide block reintroduce a
- * horizontal scrollbar on every exported site.
+ * sideways. Kept deliberately — dropping it would let any over-wide block reintroduce a horizontal scrollbar
+ * on every exported site.
+ *
+ * WHY `clip`, AND WHY `hidden` IS STILL HERE UNDERNEATH IT.
+ *
+ * `overflow-x: hidden` forces the computed `overflow-y` to `auto`, which makes `<body>` a SCROLL CONTAINER.
+ * The page itself scrolls on the viewport, so every `position: sticky` block on every exported page was
+ * being measured against a box that never moves: correct CSS, completely inert, no error anywhere.
+ *
+ * Measured on a pinned nav with the page scrolled 600px: it moved the full 600px and left the screen. With
+ * this one clause changed, it moved 8px and held. Nothing else differed between the two runs — and the
+ * builder's own canvas held it correctly the whole time, so the editor was showing a behaviour it had never
+ * once published.
+ *
+ * `clip` prevents sideways scrolling exactly as `hidden` does but creates NO scroll container, so sticky
+ * survives. It is layered as progressive enhancement rather than swapped: a browser too old for `clip`
+ * (below Safari 16) drops the `@supports` block and keeps `hidden` — no sideways scroll, no working sticky,
+ * which is precisely where it was before. Removing `hidden` outright would have traded a dead feature for a
+ * horizontally scrolling page on those browsers.
  */
-const SITE_CHROME_CSS = `html,body{max-width:100%;overflow-x:hidden}`;
+const SITE_CHROME_CSS = `html,body{max-width:100%;overflow-x:hidden}
+@supports (overflow-x:clip){html,body{overflow-x:clip}}`;
 
 /**
  * Fetch the site's OTHER pages while the browser is idle, so following a nav link opens instantly.

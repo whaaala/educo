@@ -3783,7 +3783,7 @@ export function childStyle(child: BoxNode, parent: BoxNode, bp: Breakpoint = "ba
     // …and pinning after even that: it writes `position`, which none of the above touches, and it must
     // land identically on a grid child and a flex child or "stays visible while scrolling" would depend
     // on which engine the parent happens to use.
-    Object.assign(s, pinCSS(child));
+    Object.assign(s, pinCSS(child, parent));
     /**
      * AN EMPTY CELL KEEPS A FLOOR — and it took being wrong about this twice to pin down when it matters.
      *
@@ -3958,7 +3958,7 @@ export function childStyle(child: BoxNode, parent: BoxNode, bp: Breakpoint = "ba
   // hug-to-content `alignSelf` just above): a block told where to sit goes there.
   Object.assign(s, placeCSS(child, parent));
   // …and pinning after even that — see the matching line in the grid branch above.
-  Object.assign(s, pinCSS(child));
+  Object.assign(s, pinCSS(child, parent));
   return s;
 }
 
@@ -4028,10 +4028,60 @@ export function combineMinHeight(own: string | undefined, screen: BoxNode["scree
  * `PAGE_Z.sticky` comes from the stacking ladder rather than a literal, so a pinned block sits above
  * ordinary flow content and still cannot reach the editor's chrome.
  */
-export function pinCSS(node: BoxNode): CSSProperties {
-  if (!node.pin) return {};
-  if (node.position === "absolute") return {}; // clause 1 — free positioning wins
-  return { position: "sticky", [node.pin]: u(node.pinOffset ?? 0), zIndex: PAGE_Z.sticky };
+/**
+ * A WRAPPER BAND TAKES ON ITS ONLY CHILD'S PIN — because otherwise the child has nowhere to travel.
+ *
+ * The builder gives every top-level block its own band, so a user who pins a header produces
+ * `root › band › header` where the band HUGS the header: parent 64px, child 64px, travel 0px. The header
+ * is correctly `position: sticky` and scrolls away with the page, for the same reason a stretched rail does.
+ *
+ * Measured: alone in its band a pinned nav lost the whole 700px it was scrolled; with the pin moved up to
+ * the band it moved 8px and held. The band's own parent is the page, which is as tall as the site.
+ *
+ * This is the shape of bug this project keeps meeting from ONE cause — a test that builds its tree by hand.
+ * The guard for pinning put the header and the body in a single band, which is a page no user can make, and
+ * every assertion in it passed while the real thing did nothing.
+ *
+ * Only a band that HUGS. A band carrying its own height gives its child real travel, and hoisting there
+ * would change a working case into a different one — the whole band would stick instead of the block.
+ * Returns the child whose pin is being carried, so both sides of the decision read from one function.
+ */
+export function bandCarriesPin(band: BoxNode): BoxNode | null {
+  if (!band.rowBand || band.pin || band.minHeight != null || band.height != null) return null;
+  const inFlow = (band.children ?? []).filter((k) => !isFloating(k));
+  return inFlow.length === 1 && inFlow[0].pin ? inFlow[0] : null;
+}
+
+export function pinCSS(node: BoxNode, parent?: BoxNode): CSSProperties {
+  // The child half of the hoist above: it stands down so the band alone writes `position`.
+  if (parent && bandCarriesPin(parent)?.id === node.id) return {};
+  // The band half: it pins on behalf of the child it wraps, at that child's edge and offset.
+  const src = bandCarriesPin(node) ?? node;
+  if (!src.pin) return {};
+  if (src.position === "absolute" || node.position === "absolute") return {}; // clause 1 — free positioning wins
+  const css: CSSProperties = { position: "sticky", [src.pin]: u(src.pinOffset ?? 0), zIndex: PAGE_Z.sticky };
+  /**
+   * CLAUSE 3 — A BLOCK STRETCHED TO ITS PARENT'S HEIGHT HAS NOWHERE TO TRAVEL.
+   *
+   * Sticky moves a box WITHIN its parent. A row and a grid both hand their children the full height of the
+   * line or the row (`align-items: stretch`, which is the initial value for both), so a pinned child is made
+   * exactly as tall as the thing beside it and has zero room to move. The CSS is present and correct and the
+   * block simply scrolls away — the same shape of silent failure as clause 2 above.
+   *
+   * Measured before this line existed: a 200px rail beside 2400px of content was itself 2400px tall, giving
+   * it 0px of travel. It could not have held even with a working scroll container.
+   *
+   * Only where the parent WOULD stretch it. In a column the cross axis is horizontal, so `align-self` there
+   * governs WIDTH — writing it would shrink a full-width pinned header to the width of its text, which is a
+   * different bug in exchange for this one.
+   *
+   * It overrides a stretch the user may have set, and that is deliberate: stretching and pinning are not
+   * both satisfiable, and pinning is the thing they asked for. `flex-start` rather than `start` to match
+   * every other alignment this file writes; it is valid in grid too.
+   */
+  const stretchesChildren = !!parent && (parent.layout === "grid" || (parent.direction ?? "column") === "row");
+  if (stretchesChildren) css.alignSelf = "flex-start";
+  return css;
 }
 
 /**

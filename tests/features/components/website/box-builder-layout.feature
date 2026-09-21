@@ -252,6 +252,63 @@ Feature: Placing blocks beside one another in the Box Builder
     Because the block before it on a line is a neighbour, not a partner,
       and that boundary belongs to the left and right edges
 
+  # ── Pinning: a block that stays put while the page scrolls ────────────────
+  # tests/unit/pinning.test.ts  ·  tests/e2e/pinning-holds.spec.ts
+
+  Scenario: A pinned header holds while the page scrolls
+    Given a block I have set to stay put at the top
+    When I scroll the page down
+    Then it stays on the screen instead of travelling away with the page
+    And it holds on the CANVAS and on the EXPORTED page alike
+
+  Scenario: A pinned side rail keeps its own height
+    Given a short block pinned beside much taller content
+    When the row stretches its children to a common height
+    Then the pinned block is taken out of that stretch
+    Because sticky moves a box WITHIN its parent, and a block as tall as its
+      parent has nowhere to travel — measured at 2400 pixels tall beside 2400
+      pixels of content, which is zero room to move
+
+  Scenario: A pinned block in a stack is not un-stretched
+    Given a pinned block whose parent lays its children out in a column
+    Then nothing is written to its cross-axis alignment
+    Because in a column the cross axis is WIDTH, so the same line that rescues
+      a side rail would shrink a full-width header to the width of its text
+
+  Scenario: The exported page must not make its own scroll container
+    Given every exported page stops sideways scrolling
+    Then it does so with `overflow-x: clip`, never `hidden`
+    Because `hidden` forces the computed `overflow-y` to `auto`, which makes
+      the body a scroll container while the page scrolls on the viewport — so
+      every pinned block was measured against a box that never moves, and a
+      pinned nav lost the whole 600 pixels it was scrolled
+
+  Scenario: A pinned header alone in its own band
+    Given the builder gives every top-level block its own band
+    And that band hugs the block, so the two are exactly the same height
+    When I pin the block
+    Then the BAND carries the pin, and the block stands down
+    Because a child as tall as its parent has nowhere to travel — measured at
+      64 pixels inside a 64-pixel band, losing the whole 700 pixels it was
+      scrolled, while a hand-built page with two blocks in one band held fine
+
+  Scenario: A band that has a height of its own does not carry the pin
+    Given a band the user has given a height
+    Then it gives its child real room, so the child keeps its own pin
+    Because hoisting there would stick the whole band instead of the block
+
+  Scenario: What the canvas shows is what the page publishes
+    Then a pinned block behaves identically in the editor and in the export
+    Because the canvas held it correctly for the whole life of the feature
+      while the published page never did — the editor was showing a behaviour
+      it had never once shipped
+
+  Scenario: Asserting the CSS is not asserting the behaviour
+    Given a test that checks `position: sticky` is present
+    Then it passes whether or not anything actually sticks
+    Because that is how this shipped built, reachable and inert — the guard
+      that matters scrolls a real page and measures what moved
+
   # ── Why this is asserted the way it is ─────────────────────────────────────
 
   Scenario: Two rules each right on their own, cancelling out

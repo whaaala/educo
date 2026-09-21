@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import {
-  pinCSS, pinBlockedBy, childStyle, createContainer, createGrid, type BoxNode,
+  pinCSS, pinBlockedBy, bandCarriesPin, childStyle, createContainer, createGrid, type BoxNode,
 } from "@/lib/box-model";
 import { PAGE_Z } from "@/lib/educo-ui/stacking";
 
@@ -52,6 +52,85 @@ describe("pinCSS — the one resolver", () => {
     // placed that block by hand and sticky would silently move it. Without this clause the winner would be
     // whichever the object spread happened to write last.
     expect(pinCSS(box({ pin: "top", position: "absolute", left: 10, top: 10 }))).toEqual({});
+  });
+
+  /**
+   * CLAUSE 3 — the contract for “it has somewhere to travel”.
+   *
+   * These assert the CSS text, which is all a unit test can do, and that is exactly why they are not enough
+   * on their own: `tests/e2e/pinning-holds.spec.ts` scrolls a real page and measures whether the block
+   * actually held. Both exist deliberately — this guards the resolver's contract, that one guards the
+   * behaviour. The feature shipped for its whole life with only the first kind, and did nothing.
+   */
+  describe("clause 3 — a stretched block has nowhere to go", () => {
+    it("a pinned child of a ROW is taken out of the stretch", () => {
+      const row = createContainer("row", { direction: "row" } as Partial<BoxNode>);
+      expect(pinCSS(box({ pin: "top" }), row).alignSelf).toBe("flex-start");
+    });
+
+    it("a pinned child of a GRID is too", () => {
+      expect(pinCSS(box({ pin: "top" }), createGrid(3)).alignSelf).toBe("flex-start");
+    });
+
+    it("a pinned child of a COLUMN is NOT — there the cross axis is width", () => {
+      // Writing `align-self` in a column shrinks a full-width pinned header to the width of its text.
+      // That would be a different bug traded for this one.
+      const col = createContainer("column", { direction: "column" } as Partial<BoxNode>);
+      expect(pinCSS(box({ pin: "top" }), col).alignSelf).toBeUndefined();
+    });
+
+    it("nothing is written for a block nobody pinned, whatever the parent", () => {
+      const row = createContainer("row", { direction: "row" } as Partial<BoxNode>);
+      expect(pinCSS(box({}), row)).toEqual({});
+    });
+  });
+
+  /**
+   * CLAUSE 4 — the band hoist. A wrapper that hugs its only child gives that child no travel, so the BAND
+   * is what has to move. The builder puts every top-level block in its own band, which makes this the
+   * ordinary case rather than a corner: a pinned header alone in its band lost the whole 700px it was
+   * scrolled until this existed.
+   */
+  describe("clause 4 — a hugging band carries its only child's pin", () => {
+    const wrapper = (kids: BoxNode[], extras: Partial<BoxNode> = {}) =>
+      createContainer("row", { rowBand: true, children: kids, ...extras } as Partial<BoxNode>);
+
+    it("the band writes the pin, at the CHILD's edge and offset", () => {
+      const kid = box({ id: "kid", pin: "bottom", pinOffset: 12 });
+      const band = wrapper([kid]);
+      expect(bandCarriesPin(band)?.id).toBe("kid");
+      const css = pinCSS(band, createContainer("column"));
+      expect(css.position).toBe("sticky");
+      expect(css.bottom).toBeTruthy();
+      expect(css.top).toBeUndefined();
+    });
+
+    it("…and the child stands down, so only one element writes `position`", () => {
+      const kid = box({ id: "kid", pin: "top" });
+      expect(pinCSS(kid, wrapper([kid]))).toEqual({});
+    });
+
+    it("a band with TWO children does not hoist — the child has real travel there", () => {
+      const kid = box({ id: "kid", pin: "top" });
+      const band = wrapper([kid, box({ id: "other" })]);
+      expect(bandCarriesPin(band)).toBeNull();
+      expect(pinCSS(kid, band).position).toBe("sticky"); // the child keeps it
+    });
+
+    it("a band with a height of its own does not hoist", () => {
+      // It gives its child room, and hoisting would stick the whole band instead of the block.
+      const kid = box({ id: "kid", pin: "top" });
+      expect(bandCarriesPin(wrapper([kid], { minHeight: 600 }))).toBeNull();
+    });
+
+    it("an ordinary container that is not a band never hoists", () => {
+      const kid = box({ id: "kid", pin: "top" });
+      expect(bandCarriesPin(createContainer("column", { children: [kid] } as Partial<BoxNode>))).toBeNull();
+    });
+
+    it("a band whose only child is NOT pinned carries nothing", () => {
+      expect(bandCarriesPin(wrapper([box({ id: "kid" })]))).toBeNull();
+    });
   });
 });
 

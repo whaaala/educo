@@ -49,6 +49,7 @@ const INVARIANT_SPECS = [
   "tests/e2e/alert-actions.spec.ts",
   "tests/e2e/multipage-preview.spec.ts",
   "tests/e2e/preview-viewport.spec.ts",
+  "tests/e2e/pinning-holds.spec.ts",
   "tests/e2e/exported-site.spec.ts",
   "tests/e2e/layout-bands.spec.ts",
   "tests/e2e/advanced-css.spec.ts",
