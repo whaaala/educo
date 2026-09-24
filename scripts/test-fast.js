@@ -56,6 +56,7 @@ const INVARIANT_SPECS = [
   "tests/e2e/float-pin.spec.ts",
   "tests/e2e/preview-fills-the-screen.spec.ts",
   "tests/e2e/every-screen-size.spec.ts",
+  "tests/e2e/builder-chrome-fits.spec.ts",
   "tests/e2e/grid-cells-never-overlap.spec.ts",
   "tests/e2e/keyboard-survives-selection.spec.ts",
   "tests/e2e/empty-band-shows.spec.ts",

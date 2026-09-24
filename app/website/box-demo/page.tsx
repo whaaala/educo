@@ -943,7 +943,24 @@ export default function BoxDemoPage() {
         </div>
       )}
       {/* ── Top app bar ── */}
-      <header className="h-14 shrink-0 flex items-center gap-2 px-4 border-b border-line bg-surface z-30">
+      {/**
+        * IT WRAPS RATHER THAN SCROLLS, AND THAT IS THE WHOLE REASON IT WORKS.
+        *
+        * Measured at 768px: the device chips, the base size and both theme switchers sat off the right-hand
+        * edge, reachable only by scrolling the whole PAGE sideways; at 375px the toolbar had lost Preview,
+        * Export and Reset entirely. Controls that exist and cannot be reached are controls that are not there.
+        *
+        * The obvious remedy — `overflow-x-auto` on this bar — is the wrong one here, and trying it is how
+        * that was learned: a scroll container clips its absolutely positioned descendants, and THREE menus
+        * hang off this header (page settings, the website theme, the editor theme). Two of them belong to
+        * `ThemeSwitcher`, a SHARED component that other pages use, so making them fit would mean portalling
+        * a component this page does not own.
+        *
+        * Wrapping needs none of that. Every control stays on screen, nothing is clipped because nothing
+        * overflows, and at desktop widths there is room for one row so the bar looks exactly as it did.
+        * `min-h-14` keeps that single row the same height it always was.
+        */}
+      <header className="min-h-14 shrink-0 flex flex-wrap items-center gap-2 gap-y-1.5 py-1.5 px-4 border-b border-line bg-surface z-30">
         <span className="text-sm font-bold text-gray-800 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50 mr-1 shrink-0">Box Builder</span>
         <ToolDivider />
 
@@ -986,7 +1003,10 @@ export default function BoxDemoPage() {
         <ToolBtn onClick={onExport} title="Download the whole site as HTML"><Download className="w-3.5 h-3.5" /> Export</ToolBtn>
         <ToolBtn onClick={() => resetSite(siteFromRoot(starter()))} title="Start over">Reset</ToolBtn>
 
-        <div className="ml-auto flex items-center gap-2 shrink-0">
+        {/* This group wraps too. Left as one unbreakable row it was still 417px wide on a 375px screen, so
+            the editor's own theme switcher — the last control in it — hung off the edge while everything
+            else had been rescued. `ml-auto` still pushes it right whenever there IS room. */}
+        <div className="ml-auto flex flex-wrap items-center justify-end gap-2 gap-y-1.5">
           <Segmented ariaLabel="Preview screen size" value={device} onChange={setDevice} options={DEVICES.map((d) => ({ value: d.id, Icon: d.Icon, title: `${d.label}${d.w ? ` (${d.w}px)` : ""}` }))} />
           <label className="flex items-center gap-1 text-[0.6875rem] text-gray-400" title="Base size in px — everything scales off this so text stays readable when zoomed (WCAG)">
             <span className="hidden lg:inline">Base size</span>
