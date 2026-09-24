@@ -131,6 +131,42 @@ test.describe("an image that knows its own shape", () => {
     expect(heading!.y, "the heading already sits below the reserved box").toBeGreaterThan(img!.y + img!.height - 2);
   });
 
+  test("a picture added the way a person adds one — from the menu, then uploaded — keeps its own shape", async ({ page }) => {
+    /**
+     * THE WHOLE ROUTE, WITH NOTHING SEEDED. Every other test here hands the image block a `height: "auto"`
+     * it would not have had, which is exactly why they all passed while this route was broken.
+     *
+     * Measured before the fix: choose Image from the "add a block inside" menu, upload a 4:3 photograph, and
+     * the block rendered 1024×260 — a 3.94:1 letterbox — because it was created carrying `height: "260px"`
+     * and a stated height beats a measured shape. The same photograph dropped onto the canvas was fine. The
+     * common route was the broken one, and no test walked it.
+     */
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await seedSite(page, sitePage([
+      { id: "band", type: "container", direction: "column", width: "fill", padding: 0, gap: 0, children: [] },
+    ]));
+    await page.waitForSelector('[data-box-id="band"]', { timeout: 20000 });
+
+    // The empty box's own affordance, then the block type — no fixture writes the height here.
+    await page.locator('button[aria-label="Choose a block to add inside"]').first().click();
+    await page.locator("button").filter({ hasText: /^Image$/ }).first().click();
+    // `attached`, not visible: the real control is a hidden file input that a styled button clicks for it.
+    await page.waitForSelector('input[aria-label="Upload image"]', { state: "attached", timeout: 20000 });
+
+    // A real 4×3 PNG through the real control.
+    await page.locator('input[aria-label="Upload image"]').first().setInputFiles({
+      name: "hall.png", mimeType: "image/png", buffer: Buffer.from(PNG_4x3.split(",")[1], "base64"),
+    });
+    await expect.poll(async () => page.locator("img").first().getAttribute("width"), { timeout: 15000 }).toBe("4");
+
+    const r = await page.locator("img").first().evaluate((el) => {
+      const b = el.getBoundingClientRect();
+      return { w: Math.round(b.width), h: Math.round(b.height) };
+    });
+    expect(Math.abs(r.h - (r.w * 3) / 4), `a 4:3 photograph came out ${r.w}×${r.h}`).toBeLessThanOrEqual(2);
+    expect(r.h, "and NOT the letterbox it was born with").not.toBe(260);
+  });
+
   test("uploading a photograph measures it, for real, through the real control", async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 900 });
     await seedSite(page, sitePage([

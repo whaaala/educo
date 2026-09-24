@@ -168,6 +168,149 @@ test.describe("a pinned block holds while the page scrolls", () => {
     expect(r.movedWithPage, "held on the canvas too").toBeLessThan(40);
   });
 
+  /**
+   * FIXED — the second mechanism. It differs from sticky in exactly the ways that matter to a user: it
+   * holds however far you scroll rather than leaving with its section, it reserves no space, and it can
+   * take a corner. Each of those is asserted rather than assumed.
+   */
+  test("EXPORT · a FIXED bar holds however far you scroll", async ({ page }) => {
+    const root = {
+      id: "root", type: "container", direction: "column", padding: 0, gap: 0, children: [
+        { id: "b1", type: "container", direction: "row", rowBand: true, width: "fill", padding: 0, gap: 0,
+          children: [tall("bar", 56, "#0d3b1e", { pin: "top", hold: "fixed" })] },
+        { id: "b2", type: "container", direction: "row", rowBand: true, width: "fill", padding: 0, gap: 0,
+          children: [tall("body1", 4000, "#4d8c0f")] },
+      ],
+    } as unknown as BoxNode;
+    const r = await heldInExport(page, root, "bar");
+    expect(r.position, "fixed, not sticky").toBe("fixed");
+    expect(r.scrolledBy).toBeGreaterThan(400);
+    expect(r.movedWithPage, "it did not move at all").toBeLessThan(6);
+  });
+
+  test("EXPORT · a FIXED block can take a corner, which sticky cannot", async ({ page }) => {
+    const root = {
+      id: "root", type: "container", direction: "column", padding: 0, gap: 0, children: [
+        { id: "b1", type: "container", direction: "row", rowBand: true, width: "fill", padding: 0, gap: 0,
+          children: [{ ...tall("fab", 56, "#8c0f52", { pin: "bottom-right", hold: "fixed", pinOffset: 16 }), width: "56px" }] },
+        { id: "b2", type: "container", direction: "row", rowBand: true, width: "fill", padding: 0, gap: 0,
+          children: [tall("body1", 4000, "#4d8c0f")] },
+      ],
+    } as unknown as BoxNode;
+    const html = exportDoc(root);
+    await page.route("**/__corner", (rt) => rt.fulfill({ contentType: "text/html", body: html }));
+    await page.goto("/__corner");
+    await page.waitForTimeout(400);
+    const r = await page.evaluate(async () => {
+      const el = document.querySelector<HTMLElement>(".bx-fab")!;
+      window.scrollTo(0, 900);
+      await new Promise((res) => setTimeout(res, 350));
+      const b = el.getBoundingClientRect();
+      return {
+        position: getComputedStyle(el).position,
+        fromBottom: Math.round(window.innerHeight - b.bottom), fromRight: Math.round(window.innerWidth - b.right),
+        fromTop: Math.round(b.top), fromLeft: Math.round(b.left),
+      };
+    });
+    /**
+     * Asserted on WHERE IT IS, not on which insets were written. `getComputedStyle` returns the USED value
+     * for a positioned element, so an inset nobody set comes back as a pixel number rather than `auto` — a
+     * check on that passes or fails for reasons unrelated to the corner. It is also the F3 mistake in
+     * miniature: the CSS text is not the behaviour.
+     */
+    expect(r.position).toBe("fixed");
+    expect(r.fromBottom, "it sits against the bottom it was told to").toBeLessThan(40);
+    expect(r.fromRight, "and against the right").toBeLessThan(40);
+    expect(r.fromTop, "…which means NOT against the top").toBeGreaterThan(200);
+    expect(r.fromLeft, "…nor the left").toBeGreaterThan(200);
+  });
+
+  test("CANVAS · a FIXED bar HOLDS ON SCREEN while the canvas scrolls, and stays inside the page", async ({ page }) => {
+    /**
+     * THE GUARD THAT LET A USER FIND THE BUG. It used to assert `position: fixed` and containment, and
+     * nothing about whether the bar actually held — so it passed while a block set to float on screen
+     * scrolled away in the editor, travelling the full 600px of a canvas scroll. Reported from a screenshot:
+     * "it didn't stay on the screen".
+     *
+     * Inside the editor a fixed box CANNOT be measured against the window: the page frame declares
+     * `container-type: inline-size` for container queries, and that captures every fixed descendant. So the
+     * canvas simulates it — the block keeps its place in the page and is offset by the canvas's own scroll
+     * — and what is asserted here is the BEHAVIOUR both routes have to produce, never the property one of
+     * them happens to use. Containment is still asserted: over the toolbar it could not be selected at all.
+     */
+    const root = {
+      id: "root", type: "container", direction: "column", padding: 0, gap: 0, children: [
+        { id: "b1", type: "container", direction: "row", rowBand: true, width: "fill", padding: 0, gap: 0,
+          children: [tall("bar", 56, "#0d3b1e", { pin: "top", hold: "fixed" })] },
+        { id: "b2", type: "container", direction: "row", rowBand: true, width: "fill", padding: 0, gap: 0,
+          children: [tall("body1", 4000, "#4d8c0f")] },
+      ],
+    } as unknown as BoxNode;
+    await seedSite(page, { homeId: "p1", pages: [{ id: "p1", name: "Home", path: "/", root }] });
+    // `attached`, not `visible`: a fixed block leaves the flow, so its wrapper correctly collapses to zero
+    // size — the same reason the interactions spec waits this way for a toast.
+    await page.waitForSelector("[data-box-id=\"bar\"]", { state: "attached", timeout: 30000 });
+    await page.waitForTimeout(700);
+    const r = await page.evaluate(async () => {
+      const el = document.querySelector<HTMLElement>('[data-box-id="bar"]')!;
+      const pageRoot = document.querySelector<HTMLElement>('[data-box-id="root"]')!;
+      let scroller: HTMLElement | null = el.parentElement;
+      while (scroller && !/auto|scroll/.test(getComputedStyle(scroller).overflowY)) scroller = scroller.parentElement;
+      const top = () => Math.round(el.getBoundingClientRect().top);
+      // Both readings while scrolled: the canvas insets the page, so a held block catches the top of the
+      // view once the page's own top edge has gone — a one-off move of that padding, not a failure to hold.
+      if (scroller) scroller.scrollTop = 200;
+      await new Promise((res) => setTimeout(res, 300));
+      const before = top();
+      if (scroller) scroller.scrollTop = 700;
+      await new Promise((res) => setTimeout(res, 350));
+      const b = el.getBoundingClientRect(), p = pageRoot.getBoundingClientRect();
+      return {
+        travelled: before - top(),
+        scrolled: Math.round(scroller?.scrollTop ?? 0),
+        withinPage: b.left >= p.left - 2 && b.right <= p.right + 2,
+        left: Math.round(b.left), pageLeft: Math.round(p.left),
+      };
+    });
+    expect(r.scrolled, "the canvas really scrolled — otherwise this proves nothing").toBeGreaterThan(400);
+    expect(r.travelled, `the bar travelled ${r.travelled}px with the canvas; it is meant to hold`).toBeLessThan(6);
+    expect(r.withinPage, `the bar sits at ${r.left} and the page starts at ${r.pageLeft} — it escaped the canvas`).toBe(true);
+  });
+
+  test("CANVAS · a bar a TILT captures does not hold — the editor shows what the page will do", async ({ page }) => {
+    /**
+     * The other half of the canvas simulation, and the half that was wrong first. A fixed block inside a
+     * tilted block, a component or the glass Alert is captured by that box on the published page — it holds
+     * against THAT, not the window, which is exactly what the Inspector's warning says. Simulating the hold
+     * in the editor had the builder drawing the behaviour it was simultaneously telling you would not happen.
+     */
+    const root = {
+      id: "root", type: "container", direction: "column", padding: 0, gap: 0, children: [
+        { id: "b1", type: "container", direction: "row", rowBand: true, width: "fill", padding: 0, gap: 0,
+          children: [tall("tilted", 900, "#1b3a57", { rotate: 3, children: [tall("bar", 56, "#0d3b1e", { pin: "top", hold: "fixed" })] })] },
+        { id: "b2", type: "container", direction: "row", rowBand: true, width: "fill", padding: 0, gap: 0,
+          children: [tall("body1", 3000, "#4d8c0f")] },
+      ],
+    } as unknown as BoxNode;
+    await seedSite(page, { homeId: "p1", pages: [{ id: "p1", name: "Home", path: "/", root }] });
+    await page.waitForSelector('[data-box-id="bar"]', { state: "attached", timeout: 30000 });
+    await page.waitForTimeout(700);
+    const r = await page.evaluate(async () => {
+      const el = document.querySelector<HTMLElement>('[data-box-id="bar"]')!;
+      let sc: HTMLElement | null = el.parentElement;
+      while (sc && !/auto|scroll/.test(getComputedStyle(sc).overflowY)) sc = sc.parentElement;
+      const top = () => Math.round(el.getBoundingClientRect().top);
+      if (sc) sc.scrollTop = 200;
+      await new Promise((res) => setTimeout(res, 300));
+      const before = top();
+      if (sc) sc.scrollTop = 700;
+      await new Promise((res) => setTimeout(res, 350));
+      return { travelled: before - top(), scrolled: Math.round(sc?.scrollTop ?? 0) };
+    });
+    expect(r.scrolled).toBeGreaterThan(400);
+    expect(r.travelled, "captured by the tilt, so it travels with the page — as the published page will").toBeGreaterThan(400);
+  });
+
   test("a block NOBODY pinned still scrolls away", async ({ page }) => {
     // The guard that stops the others passing for the wrong reason: if everything held, these assertions
     // would be measuring a page that cannot scroll rather than a block that sticks.

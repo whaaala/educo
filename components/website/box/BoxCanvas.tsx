@@ -17,8 +17,8 @@ import {
   containerStyle, childStyle, marginCSS, sizeToCSS, u, baseUnit, floatingReserve, floatStacksOnMobile, createContainer, createElement, createComponent,
   updateBox, removeBox, insertBox, moveBoxStep, duplicateBox, moveBox, cloneBox, findParent, isAncestor, isContainer, containerLabel, widthPct, stackWithBlock, fitBand,
   isFloating, floatBox, unfloatBox, groupBoxes, ungroupBoxes, bringToFront, sendToBack, bringForward, sendBackward,
-  shouldTakeMirrorBox, hostSizedFor, type MirrorBox, type MirrorChase, fadedPaint, boxOpacity, backgroundCss, treePaintLayerCss, radiusCSS, isClipped, SHADOW_CSS, videoEmbedSrc, sanitizeCssDeclarations, expandScopedCss, ACCORDION_CSS_PARTS, itemOverrideCss, itemHasOverride, itemNumberVars, richBody, componentTextCss, componentBoxCss, bgShowThroughCss, resizeTopEdge, blockContainmentCss, alertToastCss, treeHasToast, accordionClasses, bandClasses, advancedCssStyle, alertActionsHTML, hugsContent, itemFloatContextCss, COMPONENT_ITEM_SEL, clampContentScale, MIN_CONTENT_SCALE, isMultiItemComponent, comfortableWidth, remLen, rootFontPx, isDefiniteLen, addItemAfter, duplicateItem, duplicateChildItem, removeItem, removeChildItem, moveItem, moveChildItem, updateItem, updateChildItem, ALERT_SEVERITY_ICON, alertPartInline, alertIconInline, collectAlertItemStyles,
-  type Breakpoint, resolveResponsive, updateBoxResponsive, imageSizing, importPhoto, treeItemEffectsCss, itemNeedsClass, floatZIndex, gridPlacementAt, gridColumnsAt, masonryMeasureAttr, masonryMeasurePass, isPager, pagerStripCss, pagerNavHTML, selectionChain, typoRole, typoRootVars, typoCascadeCss, bandEdgeCSS,
+  shouldTakeMirrorBox, hostSizedFor, type MirrorBox, type MirrorChase, fadedPaint, boxOpacity, backgroundCss, treePaintLayerCss, radiusCSS, isClipped, SHADOW_CSS, videoEmbedSrc, sanitizeCssDeclarations, expandScopedCss, ACCORDION_CSS_PARTS, itemOverrideCss, itemHasOverride, itemNumberVars, richBody, componentTextCss, componentBoxCss, bgShowThroughCss, resizeTopEdge, blockContainmentCss, alertToastCss, treeHasToast, treeHasFixedHold, accordionClasses, bandClasses, advancedCssStyle, alertActionsHTML, hugsContent, itemFloatContextCss, COMPONENT_ITEM_SEL, clampContentScale, MIN_CONTENT_SCALE, isMultiItemComponent, comfortableWidth, remLen, rootFontPx, isDefiniteLen, addItemAfter, duplicateItem, duplicateChildItem, removeItem, removeChildItem, moveItem, moveChildItem, updateItem, updateChildItem, ALERT_SEVERITY_ICON, alertPartInline, alertIconInline, collectAlertItemStyles,
+  type Breakpoint, resolveResponsive, updateBoxResponsive, treePinArrivalCss, floatHoldCSS, canvasFixedStyle, capturesFixed, imageSizing, importPhoto, treeItemEffectsCss, itemNeedsClass, floatZIndex, gridPlacementAt, gridColumnsAt, masonryMeasureAttr, masonryMeasurePass, isPager, pagerStripCss, pagerNavHTML, selectionChain, typoRole, typoRootVars, typoCascadeCss, bandEdgeCSS,
 } from "@/lib/box-model";
 import { ICON_SET } from "./icons";
 import { PortalMenu, MenuItem, MenuHeader, MenuSep } from "./ui";
@@ -101,6 +101,39 @@ const flexPos = (v?: string): string => (v === "center" ? "center" : v === "end"
  *  that parent's content box), width (% of it) and height (px). Reads live DOM rects, so it captures the
  *  box exactly where it sits → floating it causes NO jump. Exported so both the canvas (⋯ menu / Alt-drag)
  *  and the page (inspector toggle) lift from the same measurement. Returns null if the DOM isn't ready. */
+/**
+ * WHERE A FLOATED BLOCK IS SITTING RIGHT NOW — px from the top-left of the box a FIXED block is measured
+ * against: the page root here, the window on the published page.
+ *
+ * Read the moment a floated block is set to float on screen. Its stored `left`/`top` are percentages of the
+ * section it was placed in, and those mean a different place once the box being measured against is the
+ * window — measured, a block resting 720px down a tall section landed at 240px. Taking the measurement now
+ * is what makes "keep it where I dragged it" true rather than approximately true.
+ */
+export function measureFixedGeom(rootId: string, id: string): { x: number; y: number } | null {
+  if (typeof document === "undefined") return null;
+  const el = document.querySelector<HTMLElement>(`[data-box-id="${id}"]`);
+  const page = document.querySelector<HTMLElement>(`[data-box-id="${rootId}"]`);
+  if (!el || !page) return null;
+  const r = el.getBoundingClientRect(), pr = page.getBoundingClientRect();
+  /**
+   * LESS THE SCROLL, and that is not a detail — it is the difference between two origins.
+   *
+   * A held block is drawn at `scroll + y` (canvas) and at `y` from the top of the window (export), so `y`
+   * has to be measured from the top of what is ON SCREEN, not from the top of the page. Measured with the
+   * page origin instead, switching a block moved it down by exactly the distance the canvas was scrolled —
+   * 425px in the guard that caught it. Horizontal needs no such correction: the canvas draws `x` from the
+   * page's left edge, and on the published page the page starts at the window's left edge.
+   */
+  let scroller: HTMLElement | null = el.parentElement;
+  while (scroller && !/auto|scroll/.test(getComputedStyle(scroller).overflowY)) scroller = scroller.parentElement;
+  // From the top of what is ON SCREEN — the visible top of the page, which is the page's own top edge until
+  // that edge scrolls away and the canvas's top edge after it. That is the origin the published page uses
+  // (the window), and the origin `canvasFixedStyle` draws against, so all three agree.
+  const viewTop = Math.max(scroller ? scroller.getBoundingClientRect().top : 0, pr.top);
+  return { x: Math.round(r.left - pr.left), y: Math.round(r.top - viewTop) };
+}
+
 export function measureFloatGeom(root: BoxNode, id: string): { parentId: string; left: number; top: number; width: string; height: number } | null {
   if (typeof document === "undefined") return null;
   const el = document.querySelector<HTMLElement>(`[data-box-id="${id}"]`);
@@ -387,7 +420,45 @@ export default function BoxCanvas({
   // Selection is a SET (marquee can pick many). selectedIds wins when provided; otherwise fall back to the
   // single selectedId. emitSelection keeps BOTH callbacks in sync so simple + multi callers both work.
   const selSet = new Set(selectedIds ?? (selectedId != null ? [selectedId] : []));
-  const emitSelection = (ids: string[]) => { onSelectIds?.(ids); onSelectId?.(ids[0] ?? null); };
+  /**
+   * THE CARET GOES WITH THE SELECTION — done HERE, at the moment the selection changes, and never in an
+   * effect that watches it.
+   *
+   * Clicking a container selects it, but the click also lands on whatever is inside, and a text block's
+   * `contentEditable` span takes focus. The two then disagree: the selection is the SECTION while
+   * `document.activeElement` is a span belonging to a text block three levels down. Measured exactly that —
+   * `{selection: "sec", activeElement: SPAN, its block: "tc1"}`. The key handler refuses to act while focus
+   * is in editable text, which is right, so with the caret stranded in a block nobody chose, **every**
+   * shortcut silently did nothing: Alt+F, Delete, Ctrl+D, Ctrl+C, every arrow key.
+   *
+   * THE FIRST FIX FOR IT WAS AN EFFECT ON THE SELECTION, AND IT TOOK THE EDITOR DOWN. Blurring changes
+   * focus, which can change the selection, which re-ran the effect, which blurred again: "Maximum update
+   * depth exceeded", reported from a real page with a screenshot. A selection change is an EVENT, not a
+   * state to reconcile — so it is handled where the event happens, once, with no render in the loop.
+   */
+  const emitSelection = (ids: string[]) => {
+    /**
+     * ONCE, AND SYNCHRONOUSLY — the second shot on the next frame ATE THE USER'S TYPING and had to go.
+     *
+     * Measured, from a fresh load: one click on a text block, a 700ms human pause, then type — and the text
+     * went nowhere in 2 of 3 trials. The reason is the drill-down rule: the first click on a text block
+     * selects the outermost BAND, not the text, so one frame later `owner !== wanted` was true of the very
+     * span the user had just clicked into, and the deferred pass blurred it. The synchronous pass cannot
+     * make that mistake: it runs inside the pointer handler, BEFORE the browser moves focus, so all it can
+     * ever see is a caret left over from an earlier edit.
+     *
+     * What the deferred pass was there for — focus that arrives after the selection does — is handled by the
+     * pointer rule below, which asks the only question that distinguishes the two cases: did the click land
+     * inside the text being edited?
+     */
+    const wanted = ids[0] ?? null;
+    const ae = document.activeElement as HTMLElement | null;
+    if (ae?.isContentEditable) {
+      const owner = ae.closest("[data-box-id]")?.getAttribute("data-box-id") ?? null;
+      if (owner && owner !== wanted) ae.blur(); // typing in the block you are selecting is left alone
+    }
+    onSelectIds?.(ids); onSelectId?.(ids[0] ?? null);
+  };
   const select = (id: string | null) => emitSelection(id ? [id] : []);
 
   /**
@@ -539,6 +610,79 @@ export default function BoxCanvas({
     select(node.id);
   };
 
+  /**
+   * THE CANVAS PUBLISHES ITS OWN SCROLL, so a block that holds on screen can be SEEN holding.
+   *
+   * A user floated a stack, set it to float on screen, scrolled, and watched it leave — while the published
+   * page held it perfectly. Inside the editor a fixed box is captured by the page frame's `container-type`
+   * (the thing that makes container queries work), so it can only ever be measured against the page, which
+   * scrolls. `canvasFixedStyle` therefore keeps such a block in the page and adds this offset to it, which
+   * is the same picture from the other direction.
+   *
+   * The nearest scrolling ancestor is FOUND rather than assumed, and it is looked up by its overflow alone —
+   * not by whether it happens to be scrollable at that instant, because a short page becomes a long one the
+   * moment a block is added.
+   */
+  useEffect(() => {
+    const host = canvasRef.current;
+    if (!host) return;
+    let scroller: HTMLElement | null = host.parentElement;
+    while (scroller && !/auto|scroll/.test(getComputedStyle(scroller).overflowY)) scroller = scroller.parentElement;
+    let raf = 0;
+    const write = () => {
+      raf = 0;
+      const scrolled = scroller ? scroller.scrollTop : window.scrollY;
+      host.style.setProperty("--canvas-scroll", `${Math.round(scrolled)}px`);
+      host.style.setProperty("--canvas-h", `${Math.round(scroller ? scroller.clientHeight : window.innerHeight)}px`);
+      // How far the PAGE sits below the top of the scrolling area — the canvas's own padding, which the page
+      // being edited does not have. Without it a block held at the page's top edge keeps that padding as a
+      // gap above it for the whole scroll, which is exactly what a user reported seeing.
+      const inset = scroller
+        ? host.getBoundingClientRect().top - scroller.getBoundingClientRect().top + scrolled
+        : host.getBoundingClientRect().top + scrolled;
+      host.style.setProperty("--canvas-top", `${Math.round(inset)}px`);
+    };
+    // One write per frame at most: a scroll fires far faster than the screen refreshes, and this only moves
+    // an inline variable — there is nothing to be gained by doing it twice between paints.
+    const onScroll = () => { if (!raf) raf = requestAnimationFrame(write); };
+    write();
+    const src: HTMLElement | Window = scroller ?? window;
+    src.addEventListener("scroll", onScroll, { passive: true });
+    const ro = typeof ResizeObserver === "undefined" ? null : new ResizeObserver(write);
+    if (ro && scroller) ro.observe(scroller);
+    return () => {
+      src.removeEventListener("scroll", onScroll);
+      ro?.disconnect();
+      if (raf) cancelAnimationFrame(raf);
+    };
+  }, []);
+
+  /**
+   * WHERE EACH HELD BLOCK'S HOLDER SITS — the other half of drawing `position: fixed` without it.
+   *
+   * The simulated block is `absolute`, so it is measured from its nearest POSITIONED ancestor: the band it
+   * lives in, not the page. A bar in the first band sits a few pixels below the page's top, which is why it
+   * looked correct and its guard passed; a block further down the page landed at its own band instead —
+   * measured 1,488px down. This writes that distance onto the block so every held block is measured from
+   * the same origin the window gives it on the published page.
+   *
+   * No dependency array, like the masonry pass above and for the same reason: it has to be re-taken after
+   * any render that could have moved anything. It writes an inline variable and never calls setState, so it
+   * cannot loop.
+   */
+  useEffect(() => {
+    const host = canvasRef.current;
+    if (!host) return;
+    const page = host.querySelector<HTMLElement>("[data-box-id]");
+    if (!page) return;
+    const pageTop = page.getBoundingClientRect().top;
+    host.querySelectorAll<HTMLElement>("[data-held]").forEach((el) => {
+      const holder = el.offsetParent as HTMLElement | null;
+      const top = holder ? holder.getBoundingClientRect().top - pageTop : 0;
+      el.style.setProperty("--holder-top", `${Math.round(top)}px`);
+    });
+  });
+
   // MASONRY, measured (C). The canvas calls the very function whose SOURCE the exported page ships
   // (`masonryMeasurePass` / `masonryMeasureScript`), so the editor cannot drift from the published site — the
   // trap this project has paid for four times. Only galleries that opted in carry the marker, so a canvas with
@@ -561,6 +705,83 @@ export default function BoxCanvas({
     ro.observe(host);
     return () => ro.disconnect();
   });
+
+  /**
+   * THE CARET LEAVES WHEN THE POINTER LANDS OUTSIDE IT. The question is WHERE THE CLICK WENT — never what is
+   * selected, and never what the selection is about to become.
+   *
+   * Two bugs, one on each side of that distinction, and asking about the selection cannot answer both:
+   *
+   *   • Click the empty part of a container while a text block inside it holds the caret. The selection is
+   *     the container; `document.activeElement` is a span three levels down that nobody chose. The key
+   *     handler above refuses to act while focus is in editable text, so EVERY shortcut silently does
+   *     nothing — Alt+F, Delete, Ctrl+D, the arrows.
+   *   • Click a text block to edit it. The drill-down rule selects the outermost BAND on that first click,
+   *     so "is the caret's block the selected one?" is FALSE of the span the user just clicked into — and
+   *     the answer "blur it" throws their typing away. Measured: 2 of 3 trials lost the text.
+   *
+   * Where the pointer landed separates them exactly. Inside the focused editable → the user is aiming at
+   * that text, so it keeps the caret however the selection resolves. Anywhere else on the canvas → the caret
+   * has been left behind, and it goes.
+   *
+   * AND THE RANGE GOES WITH IT, which is the part a blur alone gets wrong. Chrome restores focus to whatever
+   * holds the document's Selection: blurring `t1` put the caret straight into `t0` one frame later — focusin
+   * logged with no `.focus()` call anywhere in the trace — and it sat there for up to a second, shortcuts
+   * dead, until an unrelated re-render happened to clear it. Dropping the range removes the thing Chrome
+   * restores to, so the blur sticks.
+   *
+   * ── IT IS THE BROWSER THAT PUTS THE CARET THERE, SO THE DEFAULT IS WHAT HAS TO BE REFUSED ──
+   *
+   * Clearing up after the click does not work, and three measurements said so before this line was written.
+   * Blurring on `pointerdown` and dropping the range left the caret back in `t0` seventeen milliseconds
+   * later — a fresh `focusin` on the ORIGINAL span (tagged and checked: React had not re-created it), with
+   * no `.focus()` call and no Selection call anywhere in the trace. Seventeen milliseconds after mousedown
+   * is mouseup, and that is Chrome finishing the click: it looks for the nearest caret position to the
+   * point, finds one inside the only editable in that column, and focuses it. Clicking the empty part of a
+   * box has always meant "put the caret in the text near here" to the browser.
+   *
+   * So the default action is refused instead, with `preventDefault()` on `mousedown` — the one event whose
+   * default that is. Nothing to chase a frame later, because the caret never moves in the first place.
+   *
+   * REFUSING IT MEANS OWNING WHAT IT USED TO DO. That same default is what blurred the old field when you
+   * clicked away, so this has to do it by hand — and for text inputs too, not only editables: the key
+   * handler above declines just as firmly for an INPUT, so an Inspector field left focused would disable
+   * every shortcut in exactly the same way.
+   *
+   * IT READS NO STATE AND SETS NONE, so — unlike the effect that first fixed the stranded caret and took the
+   * editor down with "Maximum update depth exceeded" — there is nothing here to re-enter. The empty
+   * dependency list is part of that, not an oversight.
+   *
+   * WHAT IT DELIBERATELY DOES NOT TOUCH:
+   *   • anything outside the canvas — the Inspector, the toolbars and the top bar act ON the text being
+   *     edited, so a formatting control must never throw the caret away before its own click is handled;
+   *   • a click aimed INTO the focused text, which is the user moving their own caret;
+   *   • a button, link, field or anything else focusable on the canvas, which needs the default it is asking
+   *     for. `[contenteditable]` is in that list so clicking straight from one text block into another still
+   *     lands the caret where it was aimed.
+   */
+  useEffect(() => {
+    const KEEPS_DEFAULT = 'button, a, input, textarea, select, label, [role="button"], [contenteditable], [tabindex]';
+    const onDown = (e: MouseEvent) => {
+      if (e.button !== 0) return; // a right-click opens a menu; it is not a click away from the text
+      const target = e.target as HTMLElement | null;
+      const canvas = canvasRef.current;
+      if (!target || !canvas || !canvas.contains(target)) return;
+      const ae = document.activeElement as HTMLElement | null;
+      const holdsText = !!ae && (ae.isContentEditable || ["INPUT", "TEXTAREA", "SELECT"].includes(ae.tagName));
+      if (holdsText && ae && (ae === target || ae.contains(target))) return; // aimed at the text being edited
+      if (target.closest(KEEPS_DEFAULT)) return; // it needs the focus the default would give it
+      if (holdsText && ae) {
+        ae.blur(); // blur FIRST: the block commits its text on blur, and that must read the real DOM
+        // The range is dropped too, because Chrome restores focus to whatever the document's selection points
+        // at. We are only here because the pointer went down outside every editable, so it is a leftover.
+        window.getSelection()?.removeAllRanges();
+      }
+      e.preventDefault(); // …and no new caret, which is the whole point
+    };
+    document.addEventListener("mousedown", onDown, true);
+    return () => document.removeEventListener("mousedown", onDown, true);
+  }, []);
 
   // Keyboard operations on the selected box (WCAG): copy/cut/paste, duplicate, delete, reorder, deselect.
   useEffect(() => {
@@ -1970,7 +2191,7 @@ export default function BoxCanvas({
    * unsized empty box normally gets must step aside. Otherwise a box you have just dragged small is held
    * open from the inside by empty children nobody sized, and the size you set is not the size you get.
    */
-  const renderNode = (rawNode: BoxNode, parent: BoxNode | null, sizedAbove = false, hostSized = false): React.ReactNode => {
+  const renderNode = (rawNode: BoxNode, parent: BoxNode | null, sizedAbove = false, hostSized = false, capturedAbove = false): React.ReactNode => {
     // Resolve the box for the active breakpoint (base merged with tablet/mobile overrides). Same id/type/
     // children as the base, so selection + structure are unaffected — only style/geometry differ.
     const node = resolveResponsive(rawNode, breakpoint);
@@ -2004,7 +2225,7 @@ export default function BoxCanvas({
       // Floating: free-position on its own layer. Stacked (mobile): plain full-width flow block. Flow: fill+divide
       // per childStyle. Root: fill the canvas + define the global base unit (--box-u, rem-based).
       ...(floating
-        ? { left: `${node.left ?? 0}%`, top: `${node.top ?? 0}%`, width: sizeToCSS(node.width), height: node.height ? sizeToCSS(node.height) : undefined, minHeight: node.minHeight, zIndex: floatZIndex(node) } // no width ⇒ auto ⇒ hug content (never a wide default box)
+        ? { left: `${node.left ?? 0}%`, top: `${node.top ?? 0}%`, width: sizeToCSS(node.width), height: node.height ? sizeToCSS(node.height) : undefined, minHeight: node.minHeight, zIndex: floatZIndex(node), ...floatHoldCSS(node) } // no width ⇒ auto ⇒ hug content; a floated block may still hold on screen
         : stacked
         ? { width: "100%" } // content-height (no fixed height/minHeight) so nothing is clipped
         : parent ? childStyle(node, parent, breakpoint, hostSized) : {
@@ -2032,7 +2253,7 @@ export default function BoxCanvas({
             // it the containing block for fixed descendants, so the toast pins to the PAGE frame here and to the
             // viewport on the published site — identical CSS, and it can never float over the editor chrome.
             // Applied only when the page actually has a toast, so nothing else changes rendering.
-            ...(treeHasToast(node) ? { transform: "translate(0)" } : {}),
+            ...(treeHasToast(node) || treeHasFixedHold(node) ? { transform: "translate(0)" } : {}),
           }),
       ...(selfPaint ? {} : backgroundStyle(node)), // a component/button's background styles the block element, not this wrapper
       // Advanced CSS goes LAST, so it beats the generated styles above — which is exactly what the export does
@@ -2044,6 +2265,23 @@ export default function BoxCanvas({
       ...(isContainer(node) ? typoCascadeCss(node) : {}),
       ...advancedCssStyle(node),
     };
+
+    /**
+     * LAST OF ALL, THE ONE THING THE CANVAS CANNOT RENDER LITERALLY. A block that floats on screen is
+     * `position: fixed` on the published page; here it would be captured by the page frame's
+     * `container-type` and scroll away — which is exactly what a user reported seeing. `canvasFixedStyle`
+     * keeps it in the page and offsets it by the canvas's own scroll, so the editor shows it holding.
+     */
+    /**
+     * …UNLESS AN ANCESTOR CAPTURES IT, in which case the published page will not hold it either and the
+     * editor must not pretend otherwise. A tilt, a component or the glass Alert makes its own frame, and
+     * a fixed block inside one holds against THAT — which is precisely what the Inspector warns about.
+     * Simulating the hold here would have the builder drawing the very behaviour it is telling you will
+     * not happen.
+     */
+    const canvasStyle = capturedAbove ? wrapStyle : canvasFixedStyle(wrapStyle);
+    // Marked so the measuring pass below can find every held block and tell it where its holder sits.
+    const heldAttr = canvasStyle !== wrapStyle ? { "data-held": "1" } : {};
 
     // Visible drag-to-resize handles on every edge + corner, so you can resize from any side.
     const resizeHandles = isSolo && editable && !isRoot && !node.locked ? (
@@ -2099,6 +2337,7 @@ export default function BoxCanvas({
         <div
           key={node.id}
           data-box-id={node.id}
+          {...heldAttr}
           // The SAME marker the exported page carries, carrying the same number — see `masonryMeasureAttr`.
           data-eu-masonry={masonryMeasureAttr(node) ?? undefined}
           id={node.anchor || undefined}
@@ -2120,7 +2359,7 @@ export default function BoxCanvas({
             // `relative` so the out-of-flow hint is measured against THIS box and not some ancestor. Only
             // when the box is empty, so it can never become a containing block for a child that floats.
             ...(editable && kids.length === 0 ? { position: "relative" as const } : {}),
-            ...wrapStyle,
+            ...canvasStyle,
             // NOT the page root and NOT a row band. Both are invisible scaffolding rather than boxes anyone
             // added: the root carries the PAGE's own minimum height (roughly a viewport) and an 8rem courtesy
             // band would overrule it, collapsing an empty page to a strip.
@@ -2161,7 +2400,7 @@ export default function BoxCanvas({
                 style={pagerStripCss()}
               >
                 {kids.map((c) => (
-                  <Fragment key={c.id}>{renderNode(c, node, sizedAbove || node.minHeight != null || node.height != null, hostSizedFor(node, hostSized, parent))}</Fragment>
+                  <Fragment key={c.id}>{renderNode(c, node, sizedAbove || node.minHeight != null || node.height != null, hostSizedFor(node, hostSized, parent), capturedAbove || capturesFixed(node))}</Fragment>
                 ))}
               </div>
               {/* The nav is the published markup, shown as published — but a dot is an `<a href="#…">`, and
@@ -2188,7 +2427,7 @@ export default function BoxCanvas({
               })()}
             </>
           ) : kids.map((c) => (
-            <Fragment key={c.id}>{renderNode(c, node, sizedAbove || node.minHeight != null || node.height != null, hostSizedFor(node, hostSized, parent))}</Fragment>
+            <Fragment key={c.id}>{renderNode(c, node, sizedAbove || node.minHeight != null || node.height != null, hostSizedFor(node, hostSized, parent), capturedAbove || capturesFixed(node))}</Fragment>
           ))}
           {editable && kids.length === 0 && (
             // An empty block shows a non-interactive hint — drag a block from the palette (or use the ⋯ menu)
@@ -2283,6 +2522,7 @@ export default function BoxCanvas({
       <div
         key={node.id}
         data-box-id={node.id}
+        {...heldAttr}
         id={node.anchor || undefined}
         onMouseDown={onSelectDown}
         // Elements (non-containers) apply their own minHeight/height here (containers get it from containerStyle),
@@ -2290,7 +2530,7 @@ export default function BoxCanvas({
         // position is set, the wrapper becomes a flex box so the content re-positions as the block grows.
         // RULE O: for a COMPONENT/BUTTON the stored height is a floor (see componentBoxCss) — the box grows if
         // its content later needs more room, instead of the content spilling out below it.
-        style={{ ...wrapStyle,
+        style={{ ...canvasStyle,
           // A self-painting block is a COLUMN FLEX whose stored height is a FLOOR: the box grows if its content
           // needs more room (never a spill), while its `.eu-root` stretches to fill it (never an empty gap).
           ...(selfPaint ? { display: "flex", flexDirection: "column" } : {}),
@@ -2499,6 +2739,8 @@ export default function BoxCanvas({
         const css = treeHoverCss(root, scopeFor)
           + treeRevealCss(root, scopeFor, staggerFor)
           + treeItemEffectsCss(root)
+          // The pinned block’s ARRIVAL, from the same resolver the export uses.
+          + treePinArrivalCss(root, scopeFor)
           + treePaintLayerCss(root, scopeFor);
         return css ? <style dangerouslySetInnerHTML={{ __html: css }} /> : null;
       })()}

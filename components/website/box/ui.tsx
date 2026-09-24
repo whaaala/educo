@@ -15,7 +15,15 @@ import { CHROME_Z } from "@/lib/educo-ui/stacking";
 export function ToolBtn({ onClick, title, ariaLabel, active, disabled, primary, children }: {
   onClick?: () => void; title?: string; ariaLabel?: string; active?: boolean; disabled?: boolean; primary?: boolean; children: ReactNode;
 }) {
-  const base = "inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed";
+  /**
+   * `whitespace-nowrap shrink-0` — a toolbar button never breaks its own label.
+   *
+   * Seen at 768px and 375px in the builder: "Add a band" wrapped onto THREE lines inside a 56px-tall bar,
+   * turning a button into a tall blue block, and the page tab was clipped to "Hom". A flex row hands out the
+   * shortage by shrinking its children, and text is what gives first — so the label becomes unreadable long
+   * before anything runs out of room. A control that cannot be read cannot be used.
+   */
+  const base = "inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium whitespace-nowrap shrink-0 transition-colors disabled:opacity-40 disabled:cursor-not-allowed";
   const look = primary
     ? "bg-brand text-brand-fg shadow-sm hover:brightness-105"
     : active

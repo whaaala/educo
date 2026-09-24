@@ -104,3 +104,25 @@ Feature: Box Builder — floating layers (free overlap)
 
   Scenario: Every floating action is reachable without a mouse
     Then float/return, nudge, resize and layering are all available via keyboard shortcuts and inspector controls with aria labels
+
+  # ── The keyboard survives a click ──────────────────────────────────────────
+  # tests/e2e/keyboard-survives-selection.spec.ts
+
+  Scenario: Selecting a container with a click leaves every shortcut working
+    Given a section with a text block inside it
+    When I click the section to select it
+    Then the caret is not left behind inside the text block
+    And Alt+F floats the section, and floats it back
+    And Ctrl+D duplicates it, and Delete removes it
+    Because the click that selects the section also lands on the text inside it,
+      and that text's editable span takes focus. The key handler refuses to act
+      while focus is in editable text — rightly, nobody wants Delete removing a
+      section mid-word — so with the caret stranded in a block I never chose,
+      EVERY shortcut silently did nothing. Measured: selection "sec", focus a
+      contentEditable span in block "tc1". It was reported as a section that
+      would not float.
+
+  Scenario: …and typing is still typing
+    When I click into a text block until it is the selection
+    Then the caret is in that block and what I type appears in it
+    Because the fix above must not be paid for with the thing it protects

@@ -668,3 +668,186 @@ describe("Accordion — full three-tab audit (Design · Content · Per-device)",
     }
   });
 });
+
+// ══ PINNING — reachable on every block, shown as pictures, and described truthfully ══
+describe("BoxInspector — Stays put while scrolling", () => {
+  const heading = (extra: Partial<BoxNode> = {}) => createElement("heading", { id: "h", text: "Hi", ...extra } as Partial<BoxNode>);
+  const gallery = () => screen.queryByRole("group", { name: "Stays put while scrolling" });
+
+  it("is offered on an ELEMENT, not only a container — a heading or a button can be pinned", () => {
+    // It lived under Arrange, which only containers have, so "Floats on screen" could never reach the very
+    // button it exists for.
+    renderFor(heading(), { canFloat: true });
+    expect(gallery()).toBeInTheDocument();
+  });
+
+  it("is offered on a COMPONENT too", () => {
+    renderFor(createComponent("card", { id: "c" } as Partial<BoxNode>), { canFloat: true });
+    expect(gallery()).toBeInTheDocument();
+  });
+
+  it("shows each behaviour as a PICTURE, never a bare label (RULE S)", () => {
+    renderFor(heading(), { canFloat: true });
+    for (const name of ["Scrolls away", "Sticks when reached", "Floats on screen"]) {
+      const tile = screen.getByRole("button", { name: `${name} option` });
+      expect(tile.querySelector("[data-pin-preview]"), `${name} draws its before-and-after`).not.toBeNull();
+    }
+  });
+
+  it("each picture is a DIFFERENT drawing (RULE T) — the moving bar sits somewhere else in every one", () => {
+    const { container } = render(<BoxInspector node={heading()} theme={DEFAULT_THEME} onPatch={vi.fn()} canFloat />);
+    const shapeOf = (mode: string) => [...container.querySelectorAll(`button [data-pin-preview="${mode}"] [data-pin-bar]`)]
+      .map((el) => el.className).join("|");
+    const shapes = ["off", "sticky", "fixed"].map(shapeOf);
+    expect(new Set(shapes).size, shapes.join("  vs  ")).toBe(3);
+  });
+
+  it("picking a behaviour writes it, and Scrolls away clears both fields", () => {
+    const onPatch = renderFor(heading(), { canFloat: true });
+    fireEvent.click(screen.getByRole("button", { name: "Floats on screen option" }));
+    expect(onPatch).toHaveBeenCalledWith({ pin: "top", hold: "fixed" });
+    fireEvent.click(screen.getByRole("button", { name: "Sticks when reached option" }));
+    expect(onPatch).toHaveBeenCalledWith({ pin: "top", hold: undefined });
+    fireEvent.click(screen.getByRole("button", { name: "Scrolls away option" }));
+    expect(onPatch).toHaveBeenCalledWith({ pin: undefined, hold: undefined });
+  });
+
+  describe("the line underneath says what THIS block will do", () => {
+    const summary = () => document.querySelector("[data-pin-summary]")?.textContent ?? "";
+
+    it("placed straight on the page, it holds for the rest of the page — not 'leaves with its section'", () => {
+      renderFor(heading({ pin: "top" }), { canFloat: true, pinScope: "page" });
+      expect(summary()).toMatch(/for the rest of the page/);
+      expect(summary()).not.toMatch(/section/);
+    });
+
+    it("inside a block, it NAMES the block it lets go with", () => {
+      renderFor(heading({ pin: "top" }), { canFloat: true, pinScope: { around: "Stack" } });
+      expect(summary()).toMatch(/until the Stack around it scrolls away/);
+    });
+
+    it("beside a neighbour, it lets go with that row of blocks", () => {
+      renderFor(heading({ pin: "top" }), { canFloat: true, pinScope: "row" });
+      expect(summary()).toMatch(/until the row of blocks it sits in scrolls away/);
+    });
+
+    it("held to the BOTTOM it waits at the bottom until you reach it — a different behaviour, a different sentence", () => {
+      renderFor(heading({ pin: "bottom" }), { canFloat: true, pinScope: "page" });
+      expect(summary()).toMatch(/Waits at the bottom of the window until you scroll down to where it sits/);
+    });
+
+    it("floating on screen, it names the edge or corner and says the page runs underneath", () => {
+      renderFor(heading({ pin: "bottom-right", hold: "fixed" }), { canFloat: true });
+      expect(summary()).toMatch(/in the bottom-right corner of the window/);
+      expect(summary()).toMatch(/page scrolls underneath it/);
+    });
+
+    it("not pinned, it scrolls with the page", () => {
+      renderFor(heading(), { canFloat: true });
+      expect(summary()).toBe("It scrolls with the rest of the page.");
+    });
+  });
+
+  it("a FLOATING block IS offered the one that can work — floating on screen — and not the one that cannot", () => {
+    // Measured: emitted as fixed, a floated block travelled 0px over a 900px scroll. Sticky is the one that
+    // cannot hold a freely placed block, because it holds against a place in the flow that the block gave up.
+    renderFor(heading({ position: "absolute", left: 5, top: 5 }), { canFloat: true });
+    expect(screen.getByRole("button", { name: "Floats on screen option" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Sticks when reached option" })).toBeNull();
+    expect(document.querySelector("[data-float-pin-note]")?.textContent).toMatch(/needs it back in the layout/);
+  });
+
+  it("picking it writes the fixed hold, and the note then says it holds where it was placed", () => {
+    const onPatch = renderFor(heading({ position: "absolute", left: 5, top: 5 }), { canFloat: true });
+    fireEvent.click(screen.getByRole("button", { name: "Floats on screen option" }));
+    expect(onPatch).toHaveBeenCalledWith({ pin: "top", hold: "fixed" });
+    cleanup();
+    renderFor(heading({ position: "absolute", left: 5, top: 5, pin: "top", hold: "fixed" }), { canFloat: true });
+    expect(document.querySelector("[data-float-pin-note]")?.textContent).toMatch(/holds exactly where you placed it/);
+  });
+});
+
+// ══ A block that floats on screen covers what is under it — said out loud, with the alternative ══
+describe("BoxInspector — “Floats on screen” warns about what it covers", () => {
+  const bar = (extra: Partial<BoxNode>) => createContainer("column", { id: "bar", ...extra } as Partial<BoxNode>);
+  const covers = () => screen.queryByText(/covers the top of your page|sits over the bottom of every screen/);
+
+  it("held to the TOP, it says it covers the top of the page", () => {
+    renderFor(bar({ pin: "top", hold: "fixed" }), { canFloat: true });
+    expect(screen.getByText(/covers the top of your page when it opens/)).toBeInTheDocument();
+  });
+
+  it("held to the BOTTOM, it says it sits over the footer", () => {
+    renderFor(bar({ pin: "bottom", hold: "fixed" }), { canFloat: true });
+    expect(screen.getByText(/your footer included/)).toBeInTheDocument();
+  });
+
+  it("“Keep its space instead” switches it to the mechanism that does", () => {
+    const onPatch = renderFor(bar({ pin: "top", hold: "fixed" }), { canFloat: true });
+    fireEvent.click(screen.getByRole("button", { name: "Keep its space instead" }));
+    expect(onPatch).toHaveBeenCalledWith({ hold: undefined });
+  });
+
+  it("says nothing for a block that KEEPS its space, or one in a corner where it covers little", () => {
+    renderFor(bar({ pin: "top" }), { canFloat: true });
+    expect(covers(), "sticky keeps its place in the layout").toBeNull();
+    cleanup();
+    renderFor(bar({ pin: "bottom-right", hold: "fixed" }), { canFloat: true });
+    expect(covers(), "a corner button is not a bar across the page").toBeNull();
+  });
+});
+
+// ══ THE ARRIVAL (Step 2b) — offered only to a pinned block, shown as pictures, honest about condense ══
+describe("BoxInspector — When it takes hold", () => {
+  const navBar = (extra: Partial<BoxNode> = {}) =>
+    createContainer("column", { id: "nav", minHeight: 64, padding: 16, ...extra } as Partial<BoxNode>);
+  const gallery = () => screen.queryByRole("group", { name: "When it takes hold" });
+
+  it("is offered once a block is pinned, and not before — there is nothing to arrive at", () => {
+    renderFor(navBar(), { canFloat: true });
+    expect(gallery()).toBeNull();
+    cleanup();
+    renderFor(navBar({ pin: "top" }), { canFloat: true });
+    expect(gallery()).toBeInTheDocument();
+  });
+
+  it("shows all six as PICTURES, Nothing included (RULE S)", () => {
+    renderFor(navBar({ pin: "top" }), { canFloat: true });
+    for (const name of ["Nothing", "Shadow", "Solid", "Glass", "Rule", "Condense"]) {
+      const tile = screen.getByRole("button", { name: `${name} arrival` });
+      expect(tile.querySelector("[data-arrival-preview]"), `${name} draws what it does`).not.toBeNull();
+    }
+  });
+
+  it("every picture is a different drawing (RULE T)", () => {
+    const { container } = render(<BoxInspector node={navBar({ pin: "top" })} theme={DEFAULT_THEME} onPatch={vi.fn()} canFloat />);
+    const shapes = ["none", "shadow", "solid", "glass", "rule", "condense"].map((fx) =>
+      [...container.querySelectorAll(`[data-arrival-preview="${fx}"] [data-arrival-bar]`)].map((el) => el.className).join("|"));
+    expect(new Set(shapes).size, shapes.join("\n")).toBe(6);
+  });
+
+  it("picking one writes it; Nothing clears it", () => {
+    const onPatch = renderFor(navBar({ pin: "top" }), { canFloat: true });
+    fireEvent.click(screen.getByRole("button", { name: "Glass arrival" }));
+    expect(onPatch).toHaveBeenCalledWith({ pinArrival: "glass" });
+    fireEvent.click(screen.getByRole("button", { name: "Nothing arrival" }));
+    expect(onPatch).toHaveBeenCalledWith({ pinArrival: undefined });
+  });
+
+  it("the distance it takes is offered only once an arrival is chosen", () => {
+    renderFor(navBar({ pin: "top" }), { canFloat: true });
+    expect(screen.queryByText(/Takes hold over/)).toBeNull();
+    cleanup();
+    renderFor(navBar({ pin: "top", pinArrival: "shadow" }), { canFloat: true });
+    expect(screen.getByText(/Takes hold over/)).toBeInTheDocument();
+  });
+
+  it("CONDENSE says so when the block has nothing to condense, and stops saying it once it has", () => {
+    // A control that appears to work and does nothing is the defect this project meets most often.
+    renderFor(createContainer("column", { id: "bar", pin: "top", pinArrival: "condense" } as Partial<BoxNode>), { canFloat: true });
+    expect(screen.getByText(/nothing to condense yet/)).toBeInTheDocument();
+    cleanup();
+    renderFor(navBar({ pin: "top", pinArrival: "condense" }), { canFloat: true });
+    expect(screen.queryByText(/nothing to condense yet/)).toBeNull();
+  });
+});

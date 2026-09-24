@@ -8,11 +8,11 @@
  */
 
 import { useState, useRef } from "react";
-import { Plus, X, Rows3, Columns3, Upload, AlignLeft, AlignCenter, AlignRight, Layers, Move, BringToFront, SendToBack, ChevronUp, ChevronDown, Italic, Underline, LayoutGrid, Maximize2, Sparkles, Paintbrush, Ruler, Type as TypeIcon, MonitorSmartphone, Bookmark, Lock, LockOpen } from "lucide-react";
+import { Plus, X, Rows3, Columns3, Upload, ArrowRight, AlignLeft, AlignCenter, AlignRight, Layers, Move, BringToFront, SendToBack, ChevronUp, ChevronDown, Italic, Underline, LayoutGrid, Maximize2, Sparkles, Paintbrush, Ruler, Type as TypeIcon, MonitorSmartphone, Bookmark, Lock, LockOpen } from "lucide-react";
 import type { SiteTheme } from "@/lib/site-storage";
-import type { BoxNode, FlexAlign, FlexJustify, AccPartStyle, Breakpoint, PagerNav } from "@/lib/box-model";
+import type { BoxNode, FlexAlign, FlexJustify, AccPartStyle, Breakpoint, PagerNav, PinScopeWords } from "@/lib/box-model";
 import { RUNG_LABEL } from "@/lib/educo-ui/layout";
-import { type ItemAction, TOAST_CORNERS, isContainer, containerLabel, isFloating, isCssBg, addItem, removeItem, moveItem, updateItem, addChildItem, updateChildItem, removeChildItem, moveChildItem , isMultiItemComponent, hasIntrinsicSize, sizeToCSS, GRID_MAX, COLUMN_FRACTIONS, columnFractionOf, canSetColumnFraction, gridColumns, bandEdgeCSS } from "@/lib/box-model";
+import { type ItemAction, TOAST_CORNERS, isContainer, containerLabel, isFloating, isCssBg, addItem, removeItem, moveItem, updateItem, addChildItem, updateChildItem, removeChildItem, moveChildItem , isMultiItemComponent, hasIntrinsicSize, sizeToCSS, GRID_MAX, COLUMN_FRACTIONS, columnFractionOf, canSetColumnFraction, gridColumns, bandEdgeCSS, PIN_ARRIVALS, PIN_ARRIVAL_AFTER, pinArrivalHasEffect } from "@/lib/box-model";
 import { ACCORDION_DESIGNS, ACCORDION_DESIGN_COUNT, ACCORDION_AXES } from "@/lib/educo-ui/accordions";
 import { ALERT_DESIGNS, ALERT_DESIGN_COUNT, ALERT_AXES } from "@/lib/educo-ui/alerts";
 import { COMPONENT_REGISTRY, isRegistryComponent, defaultComponentFields, renderComponent } from "@/lib/educo-ui/registry";
@@ -313,6 +313,120 @@ function HoverPreview({ effect }: { effect: HoverEffect }) {
   );
 }
 
+/**
+ * THE THREE SCROLL BEHAVIOURS, SHOWN (RULE S) — a page at the top, then the same page scrolled.
+ *
+ * A behaviour cannot be scaled down from real markup the way a design can: what differs is what happens
+ * OVER TIME, so each tile is a before-and-after pair. The words alone did not work — "While its section
+ * shows" and "Always on screen" were the two a user could not tell apart — and the difference is one a
+ * picture makes at a glance: the bar that leaves, the bar that catches at the top, the button that never
+ * moved while the page slid under it. Theme tokens throughout, so every theme draws it in its own colours.
+ */
+type PinMode = "off" | "sticky" | "fixed";
+function PinFrame({ mode, scrolled }: { mode: PinMode; scrolled: boolean }) {
+  // Content lines, down the frame. Scrolled, they have all moved up. Whole class names, so Tailwind sees them.
+  const lines = scrolled
+    ? ["top-[16%]", "top-[28%]", "top-[40%]", "top-[52%]", "top-[64%]", "top-[76%]", "top-[88%]"]
+    : ["top-[60%]", "top-[72%]", "top-[84%]"];
+  return (
+    <span className="relative block h-full aspect-[3/4] overflow-hidden rounded-[3px] border border-line bg-surface">
+      {!scrolled && <span className="absolute inset-x-[10%] top-[6%] h-[26%] rounded-[2px] bg-muted/25" />}
+      {lines.map((t) => (
+        <span key={t} className={`absolute left-[10%] w-[70%] h-[5%] rounded-full bg-muted/40 ${t}`} />
+      ))}
+      {/* THE BAR — in the page at the top; after the scroll it has left (off) or caught the edge (sticky). */}
+      {mode !== "fixed" && !(mode === "off" && scrolled) && (
+        <span data-pin-bar className={`absolute inset-x-0 h-[15%] bg-brand ${scrolled ? "top-0 shadow-sm" : "top-[38%]"}`} />
+      )}
+      {/* THE FLOATING BUTTON — the same corner in both frames: that it never moved IS the point. */}
+      {mode === "fixed" && (
+        <span data-pin-bar className="absolute right-[8%] bottom-[7%] h-[14%] w-[40%] rounded-full bg-brand shadow-sm" />
+      )}
+    </span>
+  );
+}
+function PinPreview({ mode }: { mode: PinMode }) {
+  return (
+    <span aria-hidden="true" data-pin-preview={mode} className="flex h-full w-full items-center justify-center gap-1.5 bg-surface-2 p-1">
+      <PinFrame mode={mode} scrolled={false} />
+      <ArrowRight className="h-3 w-3 shrink-0 text-muted" />
+      <PinFrame mode={mode} scrolled />
+    </span>
+  );
+}
+
+/**
+ * THE ARRIVALS, SHOWN (RULE S) — the bar in the page, then the bar once the page has moved under it.
+ *
+ * Same before-and-after as the mechanism tiles, because an arrival is also a change over time. Each tile
+ * draws the real difference: the shadow that appears, the colour that fills in, the frost, the hairline, the
+ * bar that gets shorter. `Nothing` draws the bar unchanged, which is exactly what it does.
+ */
+const ARRIVAL_BAR: Record<string, { before: string; after: string; afterH?: string; rule?: boolean }> = {
+  "": { before: "bg-brand", after: "bg-brand" },
+  shadow: { before: "bg-brand", after: "bg-brand shadow-[0_3px_5px_rgba(2,6,23,.5)]" },
+  solid: { before: "bg-brand/20", after: "bg-brand" },
+  glass: { before: "bg-brand/10", after: "bg-brand/50 backdrop-blur-[1px]" },
+  rule: { before: "bg-brand", after: "bg-brand", rule: true },
+  condense: { before: "bg-brand", after: "bg-brand", afterH: "h-[9%]" },
+};
+function ArrivalFrame({ fx, after }: { fx: string; after: boolean }) {
+  const look = ARRIVAL_BAR[fx] ?? ARRIVAL_BAR[""];
+  return (
+    <span className="relative block h-full aspect-[3/4] overflow-hidden rounded-[3px] border border-line bg-surface">
+      {["top-[30%]", "top-[44%]", "top-[58%]", "top-[72%]", "top-[86%]"].map((t) => (
+        <span key={t} className={`absolute left-[10%] w-[70%] h-[5%] rounded-full bg-muted/40 ${t}`} />
+      ))}
+      {/* Content sits UNDER the bar once the page has moved — which is what makes solid and glass visible. */}
+      <span className={`absolute left-[10%] w-[70%] h-[5%] rounded-full bg-muted/40 ${after ? "top-[10%]" : "top-[16%]"}`} />
+      <span data-arrival-bar className={`absolute inset-x-0 top-0 ${after && look.afterH ? look.afterH : "h-[15%]"} ${after ? look.after : look.before}`} />
+      {after && look.rule && <span className="absolute inset-x-0 top-[15%] h-px bg-ink/50" />}
+    </span>
+  );
+}
+function ArrivalPreview({ fx }: { fx: string }) {
+  return (
+    <span aria-hidden="true" data-arrival-preview={fx || "none"} className="flex h-full w-full items-center justify-center gap-1.5 bg-surface-2 p-1">
+      <ArrivalFrame fx={fx} after={false} />
+      <ArrowRight className="h-3 w-3 shrink-0 text-muted" />
+      <ArrivalFrame fx={fx} after />
+    </span>
+  );
+}
+
+/**
+ * THE LINE UNDER THE PIN CONTROL — what the block will actually do, in the words a teacher would use.
+ *
+ * It used to say "then leaves with the section" for every sticky block, which was false for the block a user
+ * pins first: placed straight on the page, its band hugs it, the pin moves up to the band, and the band's
+ * parent is the page — so it holds to the very end. `scope` comes from `pinScopeWords` and is the one true
+ * answer to "until when?".
+ *
+ * Top and bottom are different sentences because they are different behaviours: a block held to the top
+ * catches as you reach it, while one held to the bottom waits at the bottom of the window until you reach
+ * the place it sits.
+ */
+export function pinSummary(node: BoxNode, scope: PinScopeWords | null): string {
+  if (!node.pin) return "It scrolls with the rest of the page.";
+  if ((node.hold ?? "sticky") === "fixed") {
+    const where: Record<NonNullable<BoxNode["pin"]>, string> = {
+      top: "along the top of the window", bottom: "along the bottom of the window",
+      left: "down the left side of the window", right: "down the right side of the window",
+      "top-left": "in the top-left corner of the window", "top-right": "in the top-right corner of the window",
+      "bottom-left": "in the bottom-left corner of the window", "bottom-right": "in the bottom-right corner of the window",
+    };
+    return `Always visible ${where[node.pin]}, from the moment the page opens. It is lifted off the page and keeps no space, so the page scrolls underneath it.`;
+  }
+  const around = scope && typeof scope === "object" ? `the ${scope.around} around it` : scope === "row" ? "the row of blocks it sits in" : null;
+  if (node.pin.includes("bottom")) {
+    return around
+      ? `Waits at the bottom of the window while ${around} is on screen, until you scroll down to where it sits. It keeps its own place in the layout.`
+      : "Waits at the bottom of the window until you scroll down to where it sits, then carries on with the page. It keeps its own place in the layout.";
+  }
+  const until = around ? `until ${around} scrolls away` : "for the rest of the page";
+  return `Scrolls with the page until it reaches the top of the window, then holds there ${until}. It keeps its own place in the layout, so it hides nothing until you scroll.`;
+}
+
 /** Turn an effect's CSS declaration string into React inline style — the same declarations the page will use. */
 function declsToStyle(decls: string): Record<string, string> {
   const out: Record<string, string> = {};
@@ -354,7 +468,7 @@ function AccPreview({ id, size, axes = [] }: { id: string; size: ThumbSize; axes
   );
 }
 
-export default function BoxInspector({ node, theme, onPatch, onAddChild, onFloat, onUnfloat, onLayer, onAlignInRow, rowJustify, onSectionWidth, sectionWidth, canFloat = true, inGrid = false, inMasonry = false, gridTrack, onSetFraction, onRetrack, breakpoint = "base", overridden = false, onResetOverride, pages, currentPageId, pinBlockedBy = null }: {
+export default function BoxInspector({ node, theme, onPatch, onAddChild, onFloat, onUnfloat, onLayer, onAlignInRow, rowJustify, onSectionWidth, sectionWidth, canFloat = true, inGrid = false, inMasonry = false, gridTrack, onSetFraction, onRetrack, breakpoint = "base", overridden = false, onResetOverride, pages, currentPageId, pinBlockedBy = null, fixedBlockedBy = null, pinScope = null }: {
   node: BoxNode;
   theme: SiteTheme;
   onPatch: (patch: Partial<BoxNode>) => void;
@@ -395,6 +509,10 @@ export default function BoxInspector({ node, theme, onPatch, onAddChild, onFloat
    * Computed by the caller, which is what holds the tree (`pinBlockedBy` in box-model).
    */
   pinBlockedBy?: string | null;
+  /** The block whose frame captures a FIXED descendant — a tilt, a component, or the glass Alert. */
+  fixedBlockedBy?: string | null;
+  /** Where a STICKY block lets go — `pinScopeWords` in box-model, computed by the caller that holds the tree. */
+  pinScope?: PinScopeWords | null;
 }) {
   const [tab, setTab] = useState<"design" | "content" | "device">("design");
   const [accSel, setAccSel] = useState<string[]>([]); // accordion items ticked for grouping
@@ -543,7 +661,148 @@ export default function BoxInspector({ node, theme, onPatch, onAddChild, onFloat
                       <button onClick={() => onLayer?.("front")} aria-label="Bring to front" title="Bring to front" className={iconBtn(false)}><BringToFront className="w-4 h-4" /></button>
                     </div>
                   </div>
+                  {/* A FLOATED BLOCK CAN FLOAT ON SCREEN — and cannot stick.
+                      Measured: emitted as `fixed` it travelled 0px over a 900px scroll, so free placement and
+                      holding on screen are not in conflict at all; the place it was dragged to becomes the
+                      place it holds. Sticky is the one that cannot, because it holds a box relative to where
+                      it sits in the FLOW and a floated block does not sit there — forced, it jumps back into
+                      the layout and starts taking space. Said plainly, rather than offered and ignored. */}
+                  <div className="space-y-1.5">
+                    <DesignGallery
+                      label="Stays put while scrolling" hint="a floated block can hold on screen" ariaLabel="Stays put while scrolling" itemNoun="option"
+                      value={node.pin && (node.hold ?? "sticky") === "fixed" ? "fixed" : "off"}
+                      onPick={(v) => onPatch(v === "off" ? { pin: undefined, hold: undefined } : { pin: node.pin ?? "top", hold: "fixed" })}
+                      groups={[{ items: ([["off", "Scrolls away"], ["fixed", "Floats on screen"]] as const).map(([id, name]) => ({
+                        id, label: name, preview: () => <PinPreview mode={id} />,
+                      })) }]}
+                    />
+                    <p data-float-pin-note className="text-[11px] leading-snug text-gray-500 dark:text-gray-400 midnight:text-cyan-200/80 purple:text-pink-200/80">
+                      {node.pin && (node.hold ?? "sticky") === "fixed"
+                        ? "It holds exactly where you placed it, on every screen and however far the page scrolls."
+                        : "It scrolls with the page. “Sticks when reached” needs it back in the layout — that one holds a block against where it sits in the page, and a freely placed block has no place there."}
+                    </p>
+                    {node.pin && (node.hold ?? "sticky") === "fixed" && fixedBlockedBy && (
+                      <p role="status" className="text-[11px] leading-snug rounded-md px-2 py-1.5 bg-amber-50 text-amber-900 ring-1 ring-amber-200 dark:bg-amber-950/40 dark:text-amber-200 dark:ring-amber-900 midnight:bg-amber-950/40 midnight:text-amber-200 midnight:ring-amber-900 purple:bg-amber-950/40 purple:text-amber-200 purple:ring-amber-900">
+                        This will not stay on screen: the <b>{fixedBlockedBy}</b> around it makes its own frame,
+                        so anything fixed inside holds against that instead of the window.
+                      </p>
+                    )}
+                  </div>
                 </>
+              )}
+              {/* PINNING — Phase 3 of the Layout System, on ANY block that sits in the layout.
+                  It lived under Arrange, which only a container has, so a heading, a button, an image or a
+                  component could never be pinned — and the "Apply now" button is the very thing "Floats on
+                  screen" is for. Placement is where the guide always said it was. Worded as what it does, and
+                  per-rung like every other layout control: a rail that follows you down a desktop eats a phone
+                  screen that has none to spare. */}
+              {!floating && (
+                <div className="space-y-1.5">
+                  {/* AXIS 1 — THE MECHANISM, SHOWN (RULE S). Words alone failed UAT: "While its section shows"
+                      and "Always on screen" could not be told apart. Each tile is the page before and after
+                      a scroll, and the line underneath says precisely what THIS block will do. */}
+                  <DesignGallery
+                    label="Stays put while scrolling" hint="what it does as the page moves" ariaLabel="Stays put while scrolling" itemNoun="option"
+                    value={!node.pin ? "off" : (node.hold ?? "sticky")}
+                    onPick={(v) => onPatch(
+                      v === "off" ? { pin: undefined, hold: undefined }
+                      // Leaving fixed for sticky can strand a corner or a side, which sticky cannot express —
+                      // `stickyEdge` brings the anchor back to the nearest edge sticky actually has.
+                      : v === "sticky" ? { pin: node.pin ?? "top", hold: undefined }
+                      : { pin: node.pin ?? "top", hold: "fixed" })}
+                    groups={[{ items: ([["off", "Scrolls away"], ["sticky", "Sticks when reached"], ["fixed", "Floats on screen"]] as const).map(([id, name]) => ({
+                      id, label: name, preview: () => <PinPreview mode={id} />,
+                    })) }]}
+                  />
+                  <p data-pin-summary className="text-[11px] leading-snug text-gray-500 dark:text-gray-400 midnight:text-cyan-200/80 purple:text-pink-200/80">
+                    {pinSummary(node, pinScope)}
+                  </p>
+                  {/* AXIS 2 — THE ANCHOR. Sticky gets the two edges a vertical scroll can mean; fixed gets all
+                      eight, because every one of them is meaningful against the viewport. */}
+                  {node.pin && (
+                    <Segmented full ariaLabel="Held against"
+                      value={node.pin}
+                      onChange={(v) => onPatch({ pin: v as NonNullable<BoxNode["pin"]> })}
+                      options={(node.hold ?? "sticky") === "fixed"
+                        ? [
+                            { value: "top", label: "Top" }, { value: "bottom", label: "Bottom" },
+                            { value: "left", label: "Left" }, { value: "right", label: "Right" },
+                            { value: "top-left", label: "↖", title: "Top-left corner" }, { value: "top-right", label: "↗", title: "Top-right corner" },
+                            { value: "bottom-left", label: "↙", title: "Bottom-left corner" }, { value: "bottom-right", label: "↘", title: "Bottom-right corner" },
+                          ]
+                        : [{ value: "top", label: "Top" }, { value: "bottom", label: "Bottom" }]} />
+                  )}
+                  {node.pin && (
+                    <Range title="Distance from the edge" value={node.pinOffset} min={0} max={120} fallback={0} onChange={(n) => onPatch({ pinOffset: n || undefined })} unit="rem" />
+                  )}
+                  {/* AXIS 3 — THE ARRIVAL. A bar that looks the same held as it did in the page tells the
+                      reader nothing about what just happened. Nothing is the default: rule 11, nothing
+                      arrives that nobody asked for. */}
+                  {node.pin && (
+                    <>
+                      <DesignGallery
+                        label="When it takes hold" hint="what changes as the page moves" ariaLabel="When it takes hold" itemNoun="arrival"
+                        value={node.pinArrival ?? ""}
+                        onPick={(id) => onPatch({ pinArrival: (id || undefined) as BoxNode["pinArrival"] })}
+                        groups={[{ items: [{ id: "", label: "Nothing" }, ...PIN_ARRIVALS.map((a) => ({ id: a.id, label: a.label }))].map((a) => ({
+                          id: a.id, label: a.label, preview: () => <ArrivalPreview fx={a.id} />,
+                        })) }]}
+                      />
+                      {node.pinArrival && (
+                        <Range title="Takes hold over" value={node.pinArrivalAfter} min={40} max={600} fallback={PIN_ARRIVAL_AFTER}
+                          onChange={(n) => onPatch({ pinArrivalAfter: n === PIN_ARRIVAL_AFTER ? undefined : n })} unit="px of scrolling" />
+                      )}
+                      {/* A CONTROL THAT APPEARS TO WORK AND DOES NOTHING IS THE DEFECT THIS PROJECT MEETS
+                          MOST. A bar whose height is simply its text has neither inner spacing nor a height,
+                          so there is nothing for "Condense" to take away — said here rather than left to be
+                          discovered by scrolling a published page. */}
+                      {node.pinArrival === "condense" && !pinArrivalHasEffect(node) && (
+                        <p role="status" className="text-[11px] leading-snug rounded-md px-2 py-1.5 bg-amber-50 text-amber-900 ring-1 ring-amber-200 dark:bg-amber-950/40 dark:text-amber-200 dark:ring-amber-900 midnight:bg-amber-950/40 midnight:text-amber-200 midnight:ring-amber-900 purple:bg-amber-950/40 purple:text-amber-200 purple:ring-amber-900">
+                          There is nothing to condense yet: this block has no height and no inner spacing of
+                          its own. Give it one under <b>Size</b> or <b>Spacing</b>, or pick another arrival.
+                        </p>
+                      )}
+                    </>
+                  )}
+                  {/* THE OTHER SILENT FAILURE, and it is the one nobody could ever diagnose. A fixed block is
+                      captured by any ancestor carrying a transform, a container-type or a backdrop-filter —
+                      which here means a TILTED block, any COMPONENT, or the glass Alert. "My fixed bar stopped
+                      working when I tilted the section" is otherwise an unexplainable sentence. */}
+                  {node.pin && (node.hold ?? "sticky") === "fixed" && fixedBlockedBy && (
+                    <p role="status" className="text-[11px] leading-snug rounded-md px-2 py-1.5 bg-amber-50 text-amber-900 ring-1 ring-amber-200 dark:bg-amber-950/40 dark:text-amber-200 dark:ring-amber-900 midnight:bg-amber-950/40 midnight:text-amber-200 midnight:ring-amber-900 purple:bg-amber-950/40 purple:text-amber-200 purple:ring-amber-900">
+                      This will not stay on screen: the <b>{fixedBlockedBy}</b> around it makes its own frame,
+                      so anything fixed inside holds against that instead of the window.
+                    </p>
+                  )}
+                  {/* IT COVERS SOMETHING, AND ONLY THE BUILDER KNOWS IT WILL. A block that floats on screen
+                      keeps no space, so the page starts underneath it: measured, a 64px bar hid 56px of the
+                      block below it the moment the page opened, and a bar held to the bottom sits over the
+                      footer for good. The space is NOT added automatically — spacing is a decision here, never
+                      a default — so this says what will happen and offers the one-click alternative instead.
+                      Sticky at the top of a page looks identical and keeps its place in the layout. */}
+                  {node.pin && (node.hold ?? "sticky") === "fixed" && (node.pin === "top" || node.pin === "bottom") && (
+                    <div className="text-[11px] leading-snug rounded-md px-2 py-1.5 space-y-1 bg-amber-50 text-amber-900 ring-1 ring-amber-200 dark:bg-amber-950/40 dark:text-amber-200 dark:ring-amber-900 midnight:bg-amber-950/40 midnight:text-amber-200 midnight:ring-amber-900 purple:bg-amber-950/40 purple:text-amber-200 purple:ring-amber-900">
+                      <p role="status">
+                        {node.pin === "top"
+                          ? "This covers the top of your page when it opens, because it keeps no space."
+                          : "This sits over the bottom of every screen — your footer included — because it keeps no space."}
+                      </p>
+                      <button type="button" onClick={() => onPatch({ hold: undefined })}
+                        className="font-semibold underline underline-offset-2 hover:no-underline">
+                        Keep its space instead
+                      </button>
+                    </div>
+                  )}
+                  {/* THE SILENT FAILURE, SAID OUT LOUD. A clipping ancestor makes a scroll container, and a
+                      block pinned inside one simply never sticks — no error, no warning, nothing to connect
+                      the cause to the effect. This is the only place that can tell them. */}
+                  {node.pin && (node.hold ?? "sticky") === "sticky" && pinBlockedBy && (
+                    <p role="status" className="text-[11px] leading-snug rounded-md px-2 py-1.5 bg-amber-50 text-amber-900 ring-1 ring-amber-200 dark:bg-amber-950/40 dark:text-amber-200 dark:ring-amber-900 midnight:bg-amber-950/40 midnight:text-amber-200 midnight:ring-amber-900 purple:bg-amber-950/40 purple:text-amber-200 purple:ring-amber-900">
+                      This will not hold: the <b>{pinBlockedBy}</b> around it clips its contents, which stops
+                      anything inside from pinning. Turn off that block&apos;s rounding or clipping to let this work.
+                    </p>
+                  )}
+                </div>
               )}
             </Accordion>
           )}
@@ -580,34 +839,6 @@ export default function BoxInspector({ node, theme, onPatch, onAddChild, onFloat
                     ? "At least this tall on every device — it grows further if the content needs it."
                     : "As tall as whatever is inside it."}
                 </p>
-              </div>
-              {/* PINNING — Phase 3 of the Layout System. `position: sticky` as an OPTION on any block.
-                  Worded as what it does rather than what it is: "stays put while you scroll" is the
-                  behaviour, "sticky" is the CSS keyword, and only one of those is a thing a teacher
-                  already knows. Per-rung like every other layout control, which is the point — a sidebar
-                  that follows you down a desktop eats a phone screen that has none to spare. */}
-              <div className="space-y-1">
-                <span className={label}>Stays put while scrolling</span>
-                <Segmented full ariaLabel="Stays put while scrolling" value={node.pin ?? "off"}
-                  onChange={(v) => onPatch({ pin: v === "off" ? undefined : (v as NonNullable<BoxNode["pin"]>) })}
-                  options={[{ value: "off", label: "Scrolls away" }, { value: "top", label: "Hold to top" }, { value: "bottom", label: "Hold to bottom" }]} />
-                <p className="text-[11px] leading-snug text-gray-500 dark:text-gray-400">
-                  {node.pin
-                    ? `It holds against the ${node.pin} of the screen while the rest of its section scrolls past, then leaves with the section.`
-                    : "It scrolls with the rest of the page."}
-                </p>
-                {node.pin && (
-                  <Range title="Distance from the edge" value={node.pinOffset} min={0} max={120} fallback={0} onChange={(n) => onPatch({ pinOffset: n || undefined })} unit="rem" />
-                )}
-                {/* THE SILENT FAILURE, SAID OUT LOUD. A clipping ancestor makes a scroll container, and a
-                    block pinned inside one simply never sticks — no error, no warning, nothing to connect
-                    the cause to the effect. This is the only place that can tell them. */}
-                {node.pin && pinBlockedBy && (
-                  <p role="status" className="text-[11px] leading-snug rounded-md px-2 py-1.5 bg-amber-50 text-amber-900 ring-1 ring-amber-200 dark:bg-amber-950/40 dark:text-amber-200 dark:ring-amber-900 midnight:bg-amber-950/40 midnight:text-amber-200 midnight:ring-amber-900 purple:bg-amber-950/40 purple:text-amber-200 purple:ring-amber-900">
-                    This will not hold: the <b>{pinBlockedBy}</b> around it clips its contents, which stops
-                    anything inside from pinning. Turn off that block&apos;s rounding or clipping to let this work.
-                  </p>
-                )}
               </div>
               {/* BAND EDGES. Shown as the shapes they are (RULE S) — a slope and a curve are pictures, and
                   naming them "slope-right" in a dropdown would be asking a teacher to imagine the result. */}

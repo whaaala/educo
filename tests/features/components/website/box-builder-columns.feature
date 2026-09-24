@@ -233,6 +233,27 @@ Feature: The twelve-column grid in the Box Builder
     Then the phone shows a two-up layout
     And the wider devices are unaffected
 
+  Scenario: Cells I placed by hand flow instead of piling up when the row narrows
+    Given a row of twelve columns with three cells I started at columns 1, 5 and 9
+    And I also said which row each of them sits in
+    When I drag the preview narrower
+    Then every one of the three is still on the page at every width
+    And no cell is ever painted on top of another
+    And on a tablet held upright two sit side by side and the third wraps underneath
+    And on a phone all three are stacked
+    # The bug this replaced: the starts were rescaled into the narrower track and then CLAMPED, so two cells
+    # were given the same column and one was drawn underneath the other. Measured at 820px the second cell was
+    # hidden by the third; at 580px only the last of the three could be seen. Nothing errored and nothing
+    # overflowed — the blocks simply looked deleted, which is how it was reported.
+
+  Scenario: My own placement is kept at a rung where I set the column count myself
+    Given the Phone device is selected
+    And I set the row to two columns
+    When I start a cell at column 2
+    Then it stays at column 2 on a phone
+    # There I am already speaking in that rung's units, so re-flowing my placement would be the builder
+    # arguing with me.
+
   # ── Dragging a cell's edge ─────────────────────────────────────────────────
 
   Scenario: The boundary between two cells is shared
@@ -547,3 +568,14 @@ Feature: The twelve-column grid in the Box Builder
     When I add a Rotating hero and choose my photos
     Then each page is its own full screen with its own words
     And I edit the second one's words on the canvas like any other block
+
+  Scenario: Setting the column count for a device does not pile the cells up
+    Given a twelve-column row with cells I started at columns 1, 5 and 9
+    When I pick a device and set Columns to 3 there
+    Then the cells flow one after another at that size
+    And no cell is placed on top of another
+    Because *Start at column* is written in the twelve-column row's units and I did
+      not restate it when I changed the count — so taking it at face value in a
+      three-track row put every cell in column 1, drawn one on top of another, from
+      820px down. Restating a cell's own start at that device is still honoured
+      exactly: there I really am speaking in that row's units.

@@ -9,14 +9,15 @@
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Plus, Smartphone, Tablet, Laptop, Monitor, Tv, Maximize2, RotateCw, Undo2, Redo2, Eye, X, Home, Trash2, Files, Download, Settings2, Palette, SlidersHorizontal, PanelRightClose, PanelRightOpen, AlertTriangle } from "lucide-react";
+import { Plus, Smartphone, Tablet, Laptop, Monitor, Tv, Maximize2, RotateCw, Undo2, Redo2, Eye, X, Home, Trash2, Files, Download, Settings2, Palette, SlidersHorizontal, PanelRightClose, PanelRightOpen, AlertTriangle, ChevronUp, ChevronDown } from "lucide-react";
 import { DEFAULT_THEME, resolveSiteTheme } from "@/lib/site-storage";
 import { THEMES, type ThemeId } from "@/lib/theme-config";
+import { RUNG_LABEL, RUNG_ORDER, RUNG_PX } from "@/lib/educo-ui/layout";
 import {
   type BoxNode, type Breakpoint, createContainer, findBox, findParent, updateBox, insertBox, removeBox, duplicateBox, widthPct, makeRowBand, normalizeRowBands, groupBoxes, alignInRow, alignInRowOf, setSectionWidth, sectionWidthOf, pageBandOf,
   floatBox, unfloatBox, bringToFront, bringForward, sendBackward, sendToBack,
   resolveResponsive, updateBoxResponsive, clearOverride, hasOverride,
-  gridColumns, retrackGrid, setColumnFraction,
+  gridColumns, retrackGrid, setColumnFraction, pinBlockedBy, fixedBlockedBy, blockedByLabel, pinScopeWords, isFloating,
 } from "@/lib/box-model";
 import { blockForKind } from "@/lib/box-presets";
 import {
@@ -25,7 +26,7 @@ import {
 import { renderSitePage, renderSiteFiles, siteFileMap, downloadSite, fontFamiliesInSite } from "@/lib/box-export";
 import { embedFontCss } from "@/lib/educo-ui/font-embed";
 import { warmIcons, hasIcon } from "@/lib/educo-ui/icon-svg";
-import BoxCanvas, { measureFloatGeom, measureGroupGeom } from "@/components/website/box/BoxCanvas";
+import BoxCanvas, { measureFloatGeom, measureFixedGeom, measureGroupGeom } from "@/components/website/box/BoxCanvas";
 import BoxInspector from "@/components/website/box/BoxInspector";
 import BulkInspector from "@/components/website/box/BulkInspector";
 import BlocksPanel from "@/components/website/box/BlocksPanel";
@@ -70,60 +71,7 @@ const DEVICES: { id: Device; label: string; w: number | null; Icon: typeof Smart
   { id: "full", label: "Full width", w: null, Icon: Maximize2 },
 ];
 
-/**
- * THE PREVIEW'S OWN SIZE LIST — named screens, the way a browser's device mode offers them.
- *
- * The icon row this replaces could only ever say "Tablet". A person checking their school's site wants to
- * know it works on the phone in their pocket, and "768px" is not an answer to that question — "iPad Mini" is.
- *
- * Both kinds are here, in that order, because they answer different questions. The FIRST group is this
- * project's own responsive ladder (see `DEVICE_RUNG`): one width sitting safely inside each rung, so stepping
- * down the group walks you through every layout the site can produce. The rest are real devices at their real
- * CSS-pixel sizes, for checking the one screen you actually care about.
- *
- * Heights are given too, and they matter: a hero built to be "one screen tall" is a different thing on a
- * 667px-tall iPhone SE than on a 1080px desktop, and a width-only preview could never show you that.
- */
-type Preset = { id: string; label: string; w: number; h: number };
-const PREVIEW_PRESETS: { group: string; items: Preset[] }[] = [
-  {
-    group: "This site's screen sizes",
-    items: [
-      { id: "rung-mobile", label: "Mobile — 375 × 812", w: 375, h: 812 },
-      { id: "rung-tablet", label: "Tablet — 768 × 1024", w: 768, h: 1024 },
-      { id: "rung-laptop", label: "Laptop — 1024 × 768", w: 1024, h: 768 },
-      { id: "rung-desktop", label: "Desktop — 1280 × 800", w: 1280, h: 800 },
-      { id: "rung-wide", label: "Wide — 1920 × 1080", w: 1920, h: 1080 },
-    ],
-  },
-  {
-    group: "Phones",
-    items: [
-      { id: "iphone-se", label: "iPhone SE", w: 375, h: 667 },
-      { id: "iphone-16", label: "iPhone 16", w: 393, h: 852 },
-      { id: "iphone-16-pro-max", label: "iPhone 16 Pro Max", w: 440, h: 956 },
-      { id: "pixel-9", label: "Pixel 9", w: 412, h: 915 },
-      { id: "galaxy-a55", label: "Samsung Galaxy A55", w: 360, h: 800 },
-    ],
-  },
-  {
-    group: "Foldables",
-    items: [
-      { id: "fold-6-closed", label: "Galaxy Z Fold 6 — folded", w: 344, h: 882 },
-      { id: "fold-6-open", label: "Galaxy Z Fold 6 — open", w: 768, h: 1104 },
-    ],
-  },
-  {
-    group: "Tablets & laptops",
-    items: [
-      { id: "ipad-mini", label: "iPad Mini", w: 768, h: 1024 },
-      { id: "ipad-pro-13", label: "iPad Pro 13", w: 1032, h: 1376 },
-      { id: "surface-pro-10", label: "Surface Pro 10", w: 912, h: 1368 },
-      { id: "macbook-air", label: 'MacBook Air 13"', w: 1280, h: 800 },
-    ],
-  },
-];
-const PRESETS_FLAT: Preset[] = PREVIEW_PRESETS.flatMap((g) => g.items);
+import { PREVIEW_PRESETS, PRESETS_FLAT } from "@/lib/preview-devices";
 
 /** Zoom steps, matching what a browser's device mode offers. `fit` shrinks to whatever room there is. */
 const ZOOMS = [
@@ -338,6 +286,26 @@ export default function BoxDemoPage() {
     return m;
   }, [site]);
 
+  /**
+   * THE BAR'S SHORTCUT, AND WHY IT IS DECLARED UP HERE.
+   *
+   * The preview is an IFRAME, and the first thing anyone does is click or scroll the page inside it. From
+   * that moment a key press is delivered to the frame's own document and never reaches this one: measured,
+   * the bar toggled while focus sat on `body` and did nothing at all once `activeElement` was the `IFRAME`.
+   * A shortcut that stops working the instant you touch the thing it acts on is worse than none, because
+   * you learn it and then it lies to you.
+   *
+   * So it is attached to BOTH documents, and it sits above `wirePreviewNav` because that is where the
+   * frame's copy is bound — on every load, for the same reason the link handler is.
+   */
+  const onPreviewKey = useCallback((e: KeyboardEvent) => {
+    // Not while a number is being typed into the width/height boxes, and never on top of a browser shortcut.
+    const el = e.target as HTMLElement | null;
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    if (el && (el.tagName === "INPUT" || el.tagName === "TEXTAREA" || el.isContentEditable)) return;
+    if (e.key === "h" || e.key === "H") { e.preventDefault(); setBarShown((s) => !s); }
+  }, []);
+
   const wirePreviewNav = useCallback(() => {
     const doc = previewFrameRef.current?.contentDocument;
     if (!doc) return;
@@ -350,7 +318,9 @@ export default function BoxDemoPage() {
       e.preventDefault();
       switchPage(pageId);
     });
-  }, [fileToPage, switchPage]);
+    // The bar's shortcut, inside the frame — so it keeps working after the first click on the page itself.
+    doc.addEventListener("keydown", onPreviewKey);
+  }, [fileToPage, switchPage, onPreviewKey]);
 
   /**
    * THE PREVIEW HAS TO GIVE THE PAGE THE WIDTH IT PROMISES — measured, and it did not.
@@ -408,6 +378,33 @@ export default function BoxDemoPage() {
   const [screen, setScreen] = useState<{ w: number; h: number } | null>(null); // null = Responsive: fill the stage
   const [zoom, setZoom] = useState("fit");
   const [rotated, setRotated] = useState(false);
+  /**
+   * A WIDTH SWEPT BY DRAGGING AN EDGE, in Responsive — null is the whole window. It narrows from both sides
+   * at once so the page stays centred while the breakpoints change under it, which is the point of sweeping.
+   */
+  const [previewFluidW, setPreviewFluidW] = useState<number | null>(null);
+  /**
+   * THE PREVIEW BAR IS HIDDEN BECAUSE YOU ASKED, NEVER BECAUSE TIME PASSED.
+   *
+   * It floats over the page rather than sitting in the flow, so it costs the preview no height either way —
+   * the only thing hiding buys is an unobstructed top edge, and that is a choice, not a default.
+   *
+   * It used to hide itself: a timer, plus `onPointerLeave` on the bar. Both were wrong in the same way, and
+   * the second was the worse of the two. A menu is portalled OUT of the bar, so choosing a device moved the
+   * pointer "off" the bar and the whole strip left the screen the instant the choice was made — pick iPhone
+   * SE, then want to rotate it, and the controls are gone. Measured as six guards timing out on a control
+   * that was visible, enabled, and translated off the top of the window: `-translate-y-full` keeps an
+   * element clickable in the DOM's opinion and entirely unreachable in a person's.
+   *
+   * So: a button says Hide, `H` toggles it, and a labelled handle at the top brings it back. Nothing
+   * disappears on its own, and there is always something on screen to press.
+   */
+  const [barShown, setBarShown] = useState(true);
+  useEffect(() => {
+    if (!preview) return;
+    window.addEventListener("keydown", onPreviewKey);
+    return () => window.removeEventListener("keydown", onPreviewKey);
+  }, [preview, onPreviewKey]);
   // Rotation is a VIEW of the size, never a write to it — so turning the phone twice lands on exactly the
   // numbers you started with, and a preset stays recognisable while it is on its side.
   const screenW = screen ? (rotated ? screen.h : screen.w) : null;
@@ -428,7 +425,9 @@ export default function BoxDemoPage() {
   const [hDraft, setHDraft] = useState("");
   useEffect(() => { setWDraft(screenW ? String(screenW) : ""); }, [screenW]);
   useEffect(() => { setHDraft(screenH ? String(screenH) : ""); }, [screenH]);
-  const SIZE_MIN = 120, SIZE_MAX = 4000;
+  // 5120 because a 32:9 super-ultrawide is a real thing people browse on, and a cap below the catalogue
+  // would offer a screen the controls then refused to accept.
+  const SIZE_MIN = 120, SIZE_MAX = 6000;
   /** Commit a typed side, in the orientation the person is looking at. */
   const typeSide = (side: "w" | "h", text: string) => {
     (side === "w" ? setWDraft : setHDraft)(text);
@@ -485,7 +484,24 @@ export default function BoxDemoPage() {
   // "set the spacing, then the colour" does not — no control had to be told about any of this.
   const onPatch = (patch: Partial<BoxNode>) => {
     if (!selected) return;
-    commit(patchAt(root, selected.id, patch), `${selected.id}:${Object.keys(patch).sort().join(",")}`);
+    /**
+     * A FLOATED BLOCK LIFTED TO THE WINDOW KEEPS THE PLACE IT IS SITTING IN.
+     *
+     * Its `left`/`top` are percentages of the section it was placed in, and a percentage of a tall section
+     * is not the same place as a percentage of the window — measured, 720px down became 240px. So the spot
+     * is measured at the moment of the switch and stored in a unit that means the same in both boxes. The
+     * percentages are left alone, so putting it back in the layout returns it exactly where it was.
+     */
+    let p = patch;
+    if (isFloating(selected)) {
+      if (patch.hold === "fixed") {
+        const g = measureFixedGeom(root.id, selected.id);
+        if (g) p = { ...patch, pinX: g.x, pinY: g.y };
+      } else if ("hold" in patch || "pin" in patch) {
+        p = { ...patch, pinX: undefined, pinY: undefined };
+      }
+    }
+    commit(patchAt(root, selected.id, p), `${selected.id}:${Object.keys(p).sort().join(",")}`);
   };
   const resetOverride = () => { if (selected && bp !== "base") commit(clearOverride(root, selected.id, bp)); };
 
@@ -649,11 +665,55 @@ export default function BoxDemoPage() {
   /** The preset this size IS, or null when the numbers have been typed by hand. */
   const activePreset = screen ? PRESETS_FLAT.find((p) => p.w === screen.w && p.h === screen.h) ?? null : null;
 
+  /**
+   * RESPONSIVE MEANS THE SCREEN THEY ARE ACTUALLY LOOKING AT — asked for directly: "preview should take the
+   * monitor screen that I'm using by default; the viewport width and height should always be taken".
+   *
+   * It did not. The stage carried 24px of padding and the frame carried rounded corners, a ring and a
+   * shadow, so even Responsive letterboxed the page inside a card and handed it a width the visitor's
+   * browser would never give it. Framing is right for a DEVICE — an iPhone should look like an iPhone on a
+   * surface — and wrong for "show me my site". So the chrome now belongs to the presets alone.
+   */
+  const framed = !!screen;
+  /**
+   * …AND THE WIDTH CAN BE SWEPT. `fluidW` is a width chosen by dragging either edge, which narrows the page
+   * SYMMETRICALLY so it stays centred while the rungs change under it. Null is the whole window.
+   */
+  /**
+   * RESPONSIVE IS NOT A MEASUREMENT — it is `100%` of the window, so moving this browser to another monitor
+   * or dragging it wider re-lays the page out at the new size with nothing stored. A number only ever
+   * appears when the PERSON picks one: a device, typed digits, or a width they swept.
+   *
+   * And a swept width is clamped to the window it is being shown in, so shrinking the browser afterwards
+   * cannot leave the preview wider than the space it has.
+   */
+  const fluidW = previewFluidW == null ? null : Math.min(previewFluidW, stage.w || previewFluidW);
+  const liveW = framed ? (screenW ?? 0) : (fluidW ?? stage.w);
+  /** Which rung a width lands on — the thing being explored, named rather than left to be inferred. */
+  const rungOf = (w: number): string => {
+    const hit = [...RUNG_ORDER].reverse().find((r) => w >= RUNG_PX[r]) ?? "phone";
+    return RUNG_LABEL[hit];
+  };
+
   // ── Visitor preview ──
   if (preview) {
     return (
-      <div className="h-screen flex flex-col bg-gray-100 dark:bg-gray-950 midnight:bg-[#060a1e] purple:bg-[#120722]">
-        <div className="h-12 shrink-0 flex items-center gap-3 px-4 border-b border-gray-200 dark:border-gray-800 midnight:border-cyan-500/10 purple:border-pink-500/10 bg-white dark:bg-[#161922]">
+      <div
+        className="h-screen relative overflow-hidden bg-gray-100 dark:bg-gray-950 midnight:bg-[#060a1e] purple:bg-[#120722]"
+        onPointerMove={(e) => { if (e.clientY < 64) setBarShown(true); }}
+      >
+        {/**
+          * THE BAR STEPS OUT OF THE WAY. It used to sit in the flow and take 48px off the top, so the page
+          * was handed a shorter viewport than the visitor's — and "one screen tall" is a real design
+          * decision that then rendered differently here than on the published site. It now floats over the
+          * preview and hides itself, leaving the page the WHOLE window; moving the pointer near the top
+          * brings it back, and the Exit pill never leaves.
+          */}
+        <div
+          data-preview-bar
+          className={`absolute inset-x-0 top-0 z-20 h-12 flex items-center gap-3 px-4 border-b border-gray-200 dark:border-gray-800 midnight:border-cyan-500/10 purple:border-pink-500/10 bg-white/95 dark:bg-[#161922]/95 backdrop-blur transition-transform duration-200 ${barShown ? "translate-y-0" : "-translate-y-full"}`}
+          aria-hidden={!barShown}
+        >
           <button onClick={() => setPreview(false)} className="inline-flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700"><X className="w-3.5 h-3.5" /> Exit preview</button>
           <nav className="flex items-center gap-1 overflow-x-auto" aria-label="Pages">
             {site.pages.map((p) => (
@@ -712,11 +772,32 @@ export default function BoxDemoPage() {
             ><RotateCw className="w-4 h-4" /></button>
 
             {/* What the page inside is ACTUALLY being given, and the zoom it is drawn at — never left to guess. */}
-            <output aria-live="polite" className="text-[0.6875rem] tabular-nums text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 whitespace-nowrap w-28 text-right">
-              {screenW ? `${screenW} px` : "Responsive"}{scale !== 1 ? ` · ${Math.round(scale * 100)}%` : ""}
+            {/* The width it is really being given, and the RUNG that width lands on — the thing a sweep is
+                for. "1024 px · Tablet landscape" says what a visitor on that screen gets. */}
+            <output aria-live="polite" data-preview-readout className="text-[0.6875rem] tabular-nums text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 whitespace-nowrap w-44 text-right">
+              {liveW ? `${Math.round(liveW)} px · ${rungOf(liveW)}` : "Responsive"}{scale !== 1 ? ` · ${Math.round(scale * 100)}%` : ""}
             </output>
+
+            {/* Hiding is a DECISION, and it is stated where the decision is made — not a timer, and not a
+                pointer that happened to move. The same key toggles it back. */}
+            <button
+              onClick={() => setBarShown(false)} data-preview-bar-hide
+              aria-label="Hide the preview controls" aria-expanded title="Hide the controls (H)"
+              className="p-1.5 rounded-md border border-gray-300 dark:border-gray-700 midnight:border-cyan-500/20 purple:border-pink-500/20 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 midnight:hover:bg-cyan-500/5 purple:hover:bg-pink-500/5"
+            ><ChevronUp className="w-4 h-4" /></button>
           </div>
         </div>
+
+        {/* THE WAY BACK IS ALWAYS ON SCREEN. A hidden bar is translated off the top of the window, where
+            nothing can reach it — so the handle that brings it back is a real, focusable button sitting in
+            the viewport, not a region of the page you have to know to wave the pointer at. */}
+        {!barShown && (
+          <button
+            onClick={() => setBarShown(true)} data-preview-bar-show
+            aria-label="Show the preview controls" aria-expanded={false} title="Show the controls (H)"
+            className="absolute top-0 left-1/2 -translate-x-1/2 z-20 inline-flex items-center gap-1 px-3 py-1 rounded-b-lg bg-white/95 dark:bg-[#161922]/95 midnight:bg-[#0b1220]/95 purple:bg-[#1a1020]/95 backdrop-blur shadow-md text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:text-gray-900 dark:hover:text-white"
+          ><ChevronDown className="w-4 h-4" /><span className="text-[0.6875rem]">Controls</span></button>
+        )}
         {/* `overflow-auto`, not hidden: at an explicit zoom the frame may be larger than the stage, and a
             preview you cannot scroll to the rest of is the defect this whole area exists to avoid. */}
         {/**
@@ -735,7 +816,7 @@ export default function BoxDemoPage() {
           * `shrink-0` hid it a third way by simply squashing the sizer. It takes a rigid item in a centring
           * flex row to lose the left-hand side — which is exactly the arrangement this replaced.
           */}
-        <div ref={stageRef} data-preview-stage className="flex-1 overflow-auto p-6">
+        <div ref={stageRef} data-preview-stage className={`absolute inset-0 overflow-auto ${framed ? "p-6 pt-14" : "p-0"}`}>
           {/**
             * A SIZER THAT RESERVES THE SCALED BOX, with the frame scaled from its TOP-LEFT inside it.
             *
@@ -753,18 +834,67 @@ export default function BoxDemoPage() {
             * claw back the unscaled height goes too — the wrapper is simply the right size.
             */}
           <div
-            className="mx-auto"
+            className="mx-auto relative"
             style={screenW && screenH
               ? { width: Math.round(screenW * scale), height: Math.round(screenH * scale) }
-              : { width: "100%", height: "100%" }}
+              : { width: fluidW ?? "100%", height: "100%" }}
           >
+            {/**
+              * THE TWO EDGES YOU CAN SWEEP. Only in Responsive — a device preset IS its size, and a handle
+              * that contradicts the name of the device would be a control lying about what it does.
+              * Dragging either edge narrows the page from BOTH sides so it stays centred while the rungs
+              * change under it; a double-click gives the whole window back.
+              */}
+            {!framed && (["left", "right"] as const).map((side) => (
+              <div
+                key={side}
+                role="separator"
+                aria-orientation="vertical"
+                aria-label={`Drag the ${side} edge to narrow the preview`}
+                title="Drag to sweep the width · double-click for the full window"
+                data-preview-grip={side}
+                onDoubleClick={() => setPreviewFluidW(null)}
+                onPointerDown={(e) => {
+                  e.preventDefault();
+                  (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+                  const stageW = stageRef.current?.clientWidth ?? window.innerWidth;
+                  const startW = fluidW ?? stageW;
+                  const startX = e.clientX;
+                  const onMove = (ev: PointerEvent) => {
+                    // Both sides give, so the page stays centred: one edge moving in by `d` takes 2d off.
+                    const d = (side === "left" ? ev.clientX - startX : startX - ev.clientX) * 2;
+                    setPreviewFluidW(Math.max(SIZE_MIN, Math.min(stageW, Math.round(startW - d))));
+                  };
+                  const onUp = () => { window.removeEventListener("pointermove", onMove); window.removeEventListener("pointerup", onUp); };
+                  window.addEventListener("pointermove", onMove);
+                  window.addEventListener("pointerup", onUp);
+                }}
+                /**
+                 * INSIDE the edge, not straddling it. Half-outside put the right-hand grip at 1436…1444 in a
+                 * 1440px window, so the half a person can actually reach was 4px — and a press aimed at its
+                 * middle landed off the screen entirely, which is how it was found: the left one worked and
+                 * the right one did nothing at all.
+                 */
+                className={`group absolute inset-y-0 ${side === "left" ? "left-0" : "right-0"} z-10 flex w-4 cursor-ew-resize items-center justify-center bg-transparent hover:bg-indigo-500/15 active:bg-indigo-500/25 transition-colors`}
+              >
+                {/* VISIBLE, or it does not exist. The first version was a transparent strip that only showed
+                    itself on hover, and the person it was built for could not find it at all: "there's no way
+                    I can do that, it doesn't show me". A handle you have to discover by accident is not a
+                    handle. */}
+                <span aria-hidden="true" className="pointer-events-none h-10 w-1.5 rounded-full bg-indigo-500/70 shadow ring-1 ring-white/70 group-hover:h-16 group-hover:bg-indigo-600 transition-all" />
+              </div>
+            ))}
             <iframe
               ref={previewFrameRef}
               title="Site preview"
               srcDoc={previewHTML}
               onLoad={wirePreviewNav}
               sandbox="allow-same-origin allow-scripts allow-popups"
-              className="bg-white shadow-2xl rounded-xl ring-1 ring-black/10 border-0 block"
+              /**
+               * The card look belongs to a DEVICE. Responsive is the visitor's own screen, and a rounded,
+               * ringed, shadowed card with padding around it is not what their browser shows them.
+               */
+              className={`bg-white border-0 block ${framed ? "shadow-2xl rounded-xl ring-1 ring-black/10" : ""}`}
               style={{
                 width: screenW ?? "100%",
                 /**
@@ -787,6 +917,15 @@ export default function BoxDemoPage() {
             />
           </div>
         </div>
+        {/* THE WAY OUT NEVER HIDES. The bar steps aside so the page gets the whole window; leaving without a
+            way back would be a trap, so this pill stays put and also brings the bar back. */}
+        {!barShown && (
+          <button
+            onClick={() => setPreview(false)}
+            onPointerEnter={() => setBarShown(true)}
+            className="absolute bottom-4 right-4 z-20 inline-flex items-center gap-1 text-xs px-3 py-2 rounded-full bg-indigo-600/90 text-white shadow-lg backdrop-blur hover:bg-indigo-700"
+          ><X className="w-3.5 h-3.5" /> Exit preview</button>
+        )}
       </div>
     );
   }
@@ -809,7 +948,10 @@ export default function BoxDemoPage() {
         <ToolDivider />
 
         {/* Page tabs */}
-        <div className="relative flex items-center gap-0.5 rounded-xl bg-gray-100 dark:bg-white/5 p-1" role="group" aria-label="Pages">
+        {/* `shrink-0`, for the same reason as `ToolBtn`: at 768px the flex row squeezed this group until the
+            home page's name read "Hom". A tab already truncates at 9rem when a NAME is long — being clipped
+            because the window is narrow is a different thing, and not one the user can do anything about. */}
+        <div className="relative flex items-center gap-0.5 rounded-xl bg-gray-100 dark:bg-white/5 p-1 shrink-0" role="group" aria-label="Pages">
           {site.pages.map((p) => (
             <button key={p.id} onClick={() => switchPage(p.id)} aria-current={p.id === activePage.id} title={p.name} className={`inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-xs font-medium max-w-[9rem] truncate ${p.id === activePage.id ? "bg-white dark:bg-white/15 text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50 shadow-sm" : "text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 hover:text-gray-800 dark:hover:text-gray-200 midnight:hover:text-cyan-100 purple:hover:text-pink-100"}`}>{p.id === site.homeId && <Home className="w-3 h-3 shrink-0" />}{p.name}</button>
           ))}
@@ -882,7 +1024,7 @@ export default function BoxDemoPage() {
               {bulk ? (
                 <BulkInspector count={selectedIds.length} theme={renderTheme} sample={(() => { const f = findBox(root, selectedIds[0]); return f ? resolveResponsive(f, bp) : null; })()} onStepWidth={bulkStepWidth} onStepHeight={bulkStepHeight} onPatch={bulkPatch} onDuplicate={bulkDuplicate} onDelete={bulkDelete} onFloatAll={bulkFloat} onGroup={bulkGroup} />
               ) : selected ? (
-                <BoxInspector node={bp === "base" ? selected : resolveResponsive(selected, bp)} theme={renderTheme} onPatch={onPatch} onAddChild={addChildSection} onFloat={floatSelected} onUnfloat={unfloatSelected} onLayer={layerSelected} onAlignInRow={(j) => commit(alignInRow(root, selected.id, j))} rowJustify={alignInRowOf(root, selected.id)} onSectionWidth={pageBandOf(root, selected.id) ? (v) => commit(setSectionWidth(root, selected.id, v)) : undefined} sectionWidth={sectionWidthOf(root, selected.id)} canFloat={selected.id !== root.id} inGrid={gridTrack !== undefined} inMasonry={parentGrid?.rowFlow === "masonry"} gridTrack={gridTrack} onSetFraction={setFraction} onRetrack={retrackSelected} breakpoint={bp} overridden={hasOverride(selected, bp)} onResetOverride={resetOverride} pages={pageList} currentPageId={activePage.id} />
+                <BoxInspector pinBlockedBy={blockedByLabel(pinBlockedBy(root, selected.id, bp))} fixedBlockedBy={blockedByLabel(fixedBlockedBy(root, selected.id, bp))} pinScope={pinScopeWords(root, selected.id, bp)} node={bp === "base" ? selected : resolveResponsive(selected, bp)} theme={renderTheme} onPatch={onPatch} onAddChild={addChildSection} onFloat={floatSelected} onUnfloat={unfloatSelected} onLayer={layerSelected} onAlignInRow={(j) => commit(alignInRow(root, selected.id, j))} rowJustify={alignInRowOf(root, selected.id)} onSectionWidth={pageBandOf(root, selected.id) ? (v) => commit(setSectionWidth(root, selected.id, v)) : undefined} sectionWidth={sectionWidthOf(root, selected.id)} canFloat={selected.id !== root.id} inGrid={gridTrack !== undefined} inMasonry={parentGrid?.rowFlow === "masonry"} gridTrack={gridTrack} onSetFraction={setFraction} onRetrack={retrackSelected} breakpoint={bp} overridden={hasOverride(selected, bp)} onResetOverride={resetOverride} pages={pageList} currentPageId={activePage.id} />
               ) : (
                 <div className="p-6 text-xs text-gray-400 text-center mt-6">Click a block to edit it — or drag a box on empty canvas to select several at once.</div>
               )}

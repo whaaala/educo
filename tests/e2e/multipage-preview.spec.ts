@@ -62,6 +62,22 @@ test.describe("Multi-page preview", () => {
     // `page:` destinations are resolved to the real filenames that ship — exactly what a visitor clicks.
     await expect(frame.locator('a[href="admissions.html"]')).toBeVisible();
 
+    /**
+     * THE CONTROLS ARE PUT AWAY FIRST, because this site's own header sits exactly where they do.
+     *
+     * The preview bar floats OVER the page — it has to, or the page would be handed a shorter viewport than
+     * the visitor's and "one screen tall" would mean something different here than on the published site.
+     * The cost is that the top ~48px of the page is behind it, and a nav a user built at the top of their
+     * own header is in that strip. Playwright reports it as "subtree intercepts pointer events"; a person
+     * sees their own menu not responding to a click.
+     *
+     * So the bar is dismissed the way a person dismisses it. This test used to pass without doing anything,
+     * because the bar hid ITSELF after a couple of seconds — which is the behaviour that made the controls
+     * unreachable in six other guards. Depending on it here was the same bug wearing a different hat.
+     */
+    await page.getByRole("button", { name: "Hide the preview controls" }).click();
+    await expect(page.getByRole("button", { name: "Show the preview controls" })).toBeVisible();
+
     await frame.locator('a[href="admissions.html"]').click();
     await page.waitForTimeout(1200);
     await expect(frame.locator("body")).toContainText("How to apply");

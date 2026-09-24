@@ -297,6 +297,200 @@ Feature: Placing blocks beside one another in the Box Builder
     Then it gives its child real room, so the child keeps its own pin
     Because hoisting there would stick the whole band instead of the block
 
+  Scenario: Choosing between the two ways of staying put
+    Given any block that sits in the layout — a section, a stack, a grid, a
+      heading, a button, an image or a component
+    Then I can choose "Sticks when reached" or "Floats on screen"
+    And each one is shown as a PICTURE of the page before and after a scroll
+    And the first keeps its own place in the layout
+    And the second is lifted off the page, which runs underneath it
+    Because the two words alone could not be told apart in use, and the control
+      lived under "Arrange" where only a container could ever reach it — so the
+      "Apply now" button that "Floats on screen" exists for could not be pinned
+
+  Scenario: The line underneath says where THIS block lets go
+    Given a block placed straight on the page
+    Then it says it holds "for the rest of the page"
+    Because the builder gives every block a band of its own, the band hugs it,
+      and the pin is carried up to the band — whose parent is the page. It used
+      to promise it would "leave with its section", which no such block does
+
+  Scenario: Named for what it really lets go with
+    Given a block pinned inside a Stack
+    Then the line names that Stack
+    And a block beside a neighbour names the row of blocks it sits in
+    And a grid cell names the GRID, because a pinned cell was measured still
+      held 900 pixels into the next row and let go only when the grid ended
+
+  Scenario: A block that floats on screen says what it covers
+    Given a block held "Floats on screen" against the top or the bottom
+    Then the inspector says it covers the top of the page, or sits over the
+      footer, because it keeps no space
+    And it offers "Keep its space instead", which switches it to the mechanism
+      that does
+    Because a 64-pixel bar was measured hiding 56 pixels of the block beneath it
+      the moment the page opened — and space is a decision here, never a default
+
+  Scenario: A block that floats on screen is actually visible
+    Given a full-width bar held "Floats on screen"
+    Then it is full width on the canvas and on the published page
+    Because out of flow it takes no size from its row or grid: it rendered ZERO
+      pixels wide in both, and every guard measured where it sat, never how wide
+
+  Scenario: A block placed freely can still hold on screen
+    Given a stack lifted onto its own free-floating layer and dragged into place
+    When I choose "Floats on screen"
+    Then it holds exactly where I placed it, however far the page scrolls
+    And it does not jump when I choose it
+    Because free placement and holding on screen are the same property doing the
+      same job — measured, the block travelled 0 pixels over a 900-pixel scroll
+      while the floating one lost all 900. It does not jump because its place is
+      MEASURED at that moment: its stored left and top are percentages of the
+      section it sits in, and a percentage of a tall section is not the same
+      place as a percentage of the window — 720 pixels became 240
+
+  Scenario: The preview is the screen the visitor is actually on
+    Given I open the preview
+    Then the page fills my whole window — its width AND its height
+    And there is no frame, no padding and no rounded corner around it
+    And the bar steps out of the way, leaving an Exit pill I can always reach
+    Because a preview that letterboxes the page inside a card hands it a width
+      no browser would give it, and "one screen tall" is a real decision here
+
+  Scenario: A device preset still looks like a device
+    Given I pick a phone or a tablet from the screen menu
+    Then it keeps the card look, centred, at that device's own size
+    Because framing is right for a device and wrong for "show me my site"
+
+  Scenario: Sweeping the width to find the breakpoints
+    Given the preview is on Responsive
+    When I drag either edge inwards
+    Then the page narrows from BOTH sides and stays centred
+    And the readout names the width and the rung it lands on
+    And a double-click on an edge gives the whole window back
+
+  Scenario: Every screen in the catalogue, not a sample of it
+    Given the preview offers sixty named screens — iPhone, Android, foldables,
+      tablets, laptops and monitors, at their real CSS-pixel sizes
+    Then a page is checked against EVERY one of them, from the 320-pixel
+      iPhone 5 to a 5120-pixel super-ultrawide
+    And none of them makes the page scroll sideways or pushes a block past the
+      edge of the screen
+    Because a list of devices in a menu is a promise, and the only way to keep
+      it is to walk the list — the guard enumerates the very list the person
+      chooses from, so a device added tomorrow is covered the day it appears
+
+  Scenario: A held block that an ancestor captures does not pretend to hold
+    Given a block set to "Floats on screen" inside a tilted block, a component
+      or the glass Alert
+    Then the editor shows it travelling with the page, exactly as the published
+      page will
+    Because that ancestor makes its own frame and captures it — which is what
+      the inspector warns about, so drawing it holding would have the builder
+      contradicting its own warning
+
+  Scenario: A published page starts at the very edge
+    Given any full-width band
+    Then it starts at the edge of the window, with no white line beside it
+    Because the browser gives BODY an 8px margin unless it is told otherwise,
+      and the exporter never told it — so every published page was inset 8px on
+      all four sides, and only blocks measured against the VIEWPORT reached the
+      edges, which is what made floated bars look different from everything else
+  Scenario: A held block holds IN THE EDITOR, not only on the published page
+    Given any block set to "Floats on screen"
+    When I scroll the canvas
+    Then it stays where it is on screen
+    And a block placed flush against the top stays flush, with no gap above it
+    Because the editor cannot use the property at all: the page frame declares
+      a container-type so container queries work, and that captures every fixed
+      descendant — so the canvas keeps the block in the page and offsets it by
+      its own scroll, less the padding the canvas puts around the page. Reported
+      twice from screenshots: first it scrolled away with the page, then it held
+      with that padding showing as a gap above it
+
+  Scenario: And it is told which one cannot work, rather than being ignored
+    Given a block lifted onto its own free-floating layer
+    Then "Sticks when reached" is not offered, and the inspector says it needs
+      the block back in the layout
+    Because sticky holds a box against where it sits in the FLOW, and a freely
+      placed block gave that place up — forced, it was measured jumping back
+      into the layout and taking space again. Making it work needs a zero-height
+      sticky wrapper, the same structural edit that defers "hold until a block
+      you choose"
+
+  Scenario: Choosing what a pinned block becomes once the page moves
+    Given a pinned block
+    Then I can choose an arrival: Nothing, Shadow, Solid, Glass, Rule or Condense
+    And each is shown as a picture of the bar before and after a scroll
+    And "Nothing" is the default, so nothing arrives that nobody asked for
+    And I choose how much scrolling it takes, which is a distance in rem — the
+      builder's fluid unit is tied to the CONTAINER'S WIDTH, and using it made
+      "500 pixels of scrolling" resolve to 64
+
+  Scenario: An arrival only happens once the page has moved
+    Given a bar with a Shadow arrival
+    Then it is flat while it is still sitting in the page
+    And lifted once the page has scrolled under it
+    And it is measured on the canvas and on the published page, which agree
+
+  Scenario: Condense says so when there is nothing to condense
+    Given a block with no height and no inner spacing of its own
+    When I choose the Condense arrival
+    Then the inspector says there is nothing to condense yet, and what to do
+    Because a bar whose height is simply its text has nothing to take away, and
+      a control that appears to work while doing nothing is the worst kind
+
+  Scenario: An entrance and an arrival are both kept
+    Given a block with an entrance effect AND a pinned arrival
+    Then the browser runs both animations
+    Because they write the same CSS properties on the same element, so the rule
+      emitted last silently took the block over — measured, only the arrival ran
+
+  Scenario: A reader who asked for less motion gets the resting look
+    Given any arrival
+    When the reader prefers reduced motion
+    Then nothing animates, and the block is still pinned
+    Because the arrival is decoration and the pin is the feature
+
+  Scenario: Pinning is a per-device choice that survives a save
+    Given a block pinned on the desktop
+    When I turn it off for phones
+    Then it scrolls away on a phone and still holds on a desktop, after a reload
+    And a pin set only for phones holds there, and nowhere else
+    Because a clear at a rung was stored as "undefined", which JSON drops — the
+      desktop's pin came back on the phone after every save — and the band read
+      its children as the DESKTOP had them, so a phone-only pin was never carried
+
+  Scenario: Only the one that can use them offers the sides and corners
+    Given a block held "Floats on screen"
+    Then it can be held against any edge, or in any corner
+    But a block held "Sticks when reached" is offered only top and bottom
+    Because sticky is measured against a vertical scroll, and two insets at once
+      is exactly how a sticky block ends up present in the CSS and doing nothing
+
+  Scenario: A fixed block does not float over the editor
+    Given a block held "Floats on screen"
+    When I look at it on the canvas
+    Then it is held against the page I am designing, not the editor window
+    Because otherwise it covers the toolbar and the inspector, where it cannot
+      be selected or dragged — the same containing block that breaks fixed by
+      accident everywhere else, used here on purpose
+
+  Scenario: The block that captures a fixed block is named
+    Given a block held "Floats on screen" inside a tilted block, a component,
+      or the glass Alert
+    Then the inspector says it will not stay on screen, and names that block
+    Because a transform, a container-type or a backdrop-filter makes its own
+      frame and a fixed block inside holds against that instead of the window —
+      with no error, and nothing to connect the cause to the effect
+
+  Scenario: A warning nobody can see is not a warning
+    Given the inspector knows which block is stopping a pin from working
+    Then that message actually renders
+    Because it was written, documented and declared as a property, and no caller
+      ever passed it — so the one silent failure the feature knew how to explain
+      went on being silent
+
   Scenario: What the canvas shows is what the page publishes
     Then a pinned block behaves identically in the editor and in the export
     Because the canvas held it correctly for the whole life of the feature
@@ -317,3 +511,35 @@ Feature: Placing blocks beside one another in the Box Builder
     Then a line packed to the start is already as short as the child,
       so the stretch achieves nothing and 360 pixels of the box stay empty
     Because nothing in either rule mentions the other
+
+  # ── An empty coloured band reaches the page ───────────────────────────────
+  # tests/e2e/empty-band-shows.spec.ts
+
+  Scenario Outline: A band I coloured and left empty is the size the builder showed
+    Given a band with a background holding <contents>
+    When I preview it, or publish it
+    Then it is the same height there as it is on the canvas
+    And it is a band I can see, not a sliver
+
+    Examples:
+      | contents                     |
+      | nothing at all               |
+      | an empty box                 |
+      | an empty grid                |
+      | an empty box inside an empty box |
+
+    # Reported with screenshots: an orange band at the top of a page showed in the
+    # builder and looked missing in the preview. It was not missing — it was 40px
+    # instead of 128px, and against a tall row of cells underneath, a third of the
+    # size is indistinguishable from gone. Two causes, the first hiding the second:
+    # a floor the CODE derived was allowed to veto the rule ("unless something is
+    # already set"), and "empty" meant an empty children array rather than nothing
+    # that renders — so a band holding one empty box was never considered empty.
+
+  Scenario: A height I set myself is never overridden by that floor
+    Given a coloured empty band I resized to 24px
+    Then it is 24px in the builder and 24px on the page
+
+  Scenario: A band with content in it takes its height from the content
+    Given a coloured band holding a line of text
+    Then it is as tall as the text, not 128px

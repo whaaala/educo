@@ -9,9 +9,9 @@
  */
 
 import type { CSSProperties } from "react";
-import {
+import { pinArrivalCss, pinArrivalKeyframes, floatHoldCSS,
   type BoxNode, type Breakpoint, BP_ORDER, containerStyle, childStyle, hostSizedFor, marginCSS, sizeToCSS, radiusCSS, SHADOW_CSS, u, baseUnit, fadedPaint, boxOpacity, backgroundCss, paintLayerCss,
-  resolveResponsive, floatStacksOnMobile, alertToastCss, accordionClasses, bandClasses, videoEmbedSrc, isContainer, sanitizeCssDeclarations, expandScopedCss, COMPONENT_PARTS, itemFloatContextCss, itemOverrideCss, itemNumberVars, richBody, plainBody, componentTextCss, componentBoxCss, renderAlertHTML, alertDismissScript, masonryMeasureAttr, masonryMeasureScript, isPager, pagerNavHTML, pagerScript, pagerStripCss, pagerSlideId, bgShowThroughCss, blockContainmentCss, COMPONENT_ITEM_SEL, remLen, imageSizing, hasIntrinsicSize, itemNeedsClass, itemScope, floatZIndex, typoRole, typoRootVars, typoCascadeCss, bandEdgeCSS,
+  resolveResponsive, floatStacksOnMobile, isFloating, floatingReserve, alertToastCss, accordionClasses, bandClasses, videoEmbedSrc, isContainer, sanitizeCssDeclarations, expandScopedCss, COMPONENT_PARTS, itemFloatContextCss, itemOverrideCss, itemNumberVars, richBody, plainBody, componentTextCss, componentBoxCss, renderAlertHTML, alertDismissScript, masonryMeasureAttr, masonryMeasureScript, isPager, pagerNavHTML, pagerScript, pagerStripCss, pagerSlideId, bgShowThroughCss, blockContainmentCss, COMPONENT_ITEM_SEL, remLen, imageSizing, hasIntrinsicSize, itemNeedsClass, itemScope, floatZIndex, typoRole, typoRootVars, typoCascadeCss, bandEdgeCSS,
 } from "@/lib/box-model";
 import { isRegistryComponent, renderComponent, componentScripts } from "@/lib/educo-ui/registry";
 import { iconSvg } from "@/lib/educo-ui/icon-svg";
@@ -274,10 +274,11 @@ const RUNG_MIN_EM: Record<Exclude<Breakpoint, "phone">, number> = {
   wide: BREAKPOINTS_EM.wide, // 1800px
 };
 /** One bucket of rules per rung. The phone rung is the unqualified base of a mobile-first sheet. */
-type Sheet = { rungs: Record<Breakpoint, string[]>; reveals: Set<string> };
+type Sheet = { rungs: Record<Breakpoint, string[]>; reveals: Set<string>; arrivals: Set<string> };
 export const emptySheet = (): Sheet => ({
   rungs: { phone: [], tabletPortrait: [], tabletLandscape: [], base: [], wide: [] },
   reveals: new Set<string>(),
+  arrivals: new Set<string>(),
 });
 const classFor = (id: string) => "bx-" + id.replace(/[^A-Za-z0-9_-]/g, "-");
 // When a property is set at BASE but dropped at a breakpoint, we must actively neutralise it (the base rule
@@ -294,6 +295,42 @@ const RESET: Record<string, string> = {
   // through the base rule — and the shorthand `gap` at the wider rung would not neutralise the longhands.
   columnGap: "normal", rowGap: "normal",
 };
+
+/**
+ * Does this subtree put ANYTHING on the page?
+ *
+ * "Empty" used to mean "has no children", which is a fact about an array rather than about what a visitor
+ * sees: a coloured band holding one empty box has a child and shows nothing. A node renders something if it
+ * has words, a picture, or a component of its own — or if anything inside it paints or renders.
+ */
+function rendersNothing(node: BoxNode): boolean {
+  if (node.text?.trim() || node.src || node.type === "component") return false;
+  if (!isContainer(node) && node.type !== "container") return false; // an element with no text still draws (a divider, a button)
+  for (const c of node.children ?? []) {
+    if (c.background || c.bgImage || c.bgOverlay) return false;
+    if (!rendersNothing(c)) return false;
+  }
+  return true;
+}
+
+/**
+ * Is the height already there SMALLER than the empty-band floor — and therefore safe to raise?
+ *
+ * The floor must beat a floor the code derived (that veto is what hid an empty band at 40px), and must never
+ * touch a real height. Dropping the "only if nothing is set" guard outright did both, and the gate caught it
+ * immediately: a FULL-SCREEN section carries `min-height: 100svh` through the same field, so an 8rem band
+ * was written straight over one screen and the hero rendered 772px instead of the window.
+ *
+ * So only a plain, absolute, comparable length may be raised. A viewport unit, a percentage or a `calc()`
+ * means something this cannot reason about, and anything it cannot reason about it leaves exactly alone.
+ */
+function belowFloor(current: CSSProperties["minHeight"]): boolean {
+  if (current == null || current === "") return true;
+  if (typeof current === "number") return current < 128;
+  const m = /^([\d.]+)(px|rem)$/.exec(current.trim());
+  if (!m) return false; // svh / vh / % / calc() — a real decision by something else; never overwritten
+  return Number(m[1]) * (m[2] === "rem" ? 16 : 1) < 128;
+}
 
 /** The full style object for a node at a breakpoint — mirrors BoxCanvas's wrapStyle so editor == export. */
 function styleAt(node: BoxNode, rawParent: BoxNode | null, bp: Breakpoint, theme: SiteTheme, hostSized = false): CSSProperties {
@@ -316,7 +353,7 @@ function styleAt(node: BoxNode, rawParent: BoxNode | null, bp: Breakpoint, theme
     opacity: !isComp ? boxOpacity(r) : undefined, // paint-only fades live in the colours (fadedPaint), not here
     overflow: stacked ? "visible" : (!selfPaint && (r.clip || radiusCSS(r))) ? "hidden" : undefined,
     ...(floating
-      ? { left: `${r.left ?? 0}%`, top: `${r.top ?? 0}%`, width: sizeToCSS(r.width), height: r.height ? sizeToCSS(r.height) : undefined, minHeight: r.minHeight, zIndex: floatZIndex(r) } // no width ⇒ auto ⇒ hug content (never a wide default box)
+      ? { left: `${r.left ?? 0}%`, top: `${r.top ?? 0}%`, width: sizeToCSS(r.width), height: r.height ? sizeToCSS(r.height) : undefined, minHeight: r.minHeight, zIndex: floatZIndex(r), ...floatHoldCSS(r) } // no width ⇒ auto ⇒ hug content; a floated block may still hold on screen
       : stacked
       ? { position: "relative", width: "100%", height: "auto", minHeight: "auto", zIndex: "auto" } // full-width flow, grows with content
       // The PAGE ROOT publishes the theme's typography as the role defaults everything below inherits — which
@@ -340,9 +377,31 @@ function styleAt(node: BoxNode, rawParent: BoxNode | null, bp: Breakpoint, theme
     // them because its "drag a block in" hint gave them height. Canvas ≠ export, in the direction where the
     // editor lies to you, which is the worst of the two. The band stays, and the rows sharing the height
     // evenly (`minmax(min-content, 1fr)`) is what stops it distorting a row that has real content in it.
-    const empty = !(r.children && r.children.length);
+    /**
+     * …AND THE FLOOR HAS TO BEAT THE ONE THE CODE DERIVED, OR IT NEVER APPLIES.
+     *
+     * Reported with screenshots: a band added at the top of a page, given a colour and left empty, showed in
+     * the editor and was missing from the preview. It was not missing — it was a THIRD of its size, which
+     * against a tall row of cells underneath is indistinguishable from gone. Measured, editor → page:
+     *
+     *     band with a background, empty              128px → 40px
+     *     band with a background, holding an empty box   128px → 40px
+     *     band with a background, holding an empty grid  128px → 40px
+     *
+     * Two separate reasons, and the first hid the second:
+     *
+     *   • `cs.minHeight == null` — `containerStyle` has already derived a floor of its own by this point, so
+     *     the guard was false and the 8rem band was never written. A floor the CODE worked out must not be
+     *     allowed to veto a rule about what the USER can see; only a height the user set themselves may.
+     *   • `empty` meant "no children". A band holding one empty box has a child, so it was not empty — while
+     *     nothing inside it renders anything at all. Emptiness is about what appears, not about array length.
+     *
+     * A floating child's reserved height is still respected, because the floor is the LARGER of the two.
+     */
     const paints = !selfPaint && (r.bgImage || r.background || r.bgOverlay);
-    if (empty && paints && r.minHeight == null && r.height == null && cs.minHeight == null && cs.height == null) cs.minHeight = "8rem";
+    if (paints && rendersNothing(r) && r.minHeight == null && r.height == null && belowFloor(cs.minHeight)) {
+      cs.minHeight = remLen(Math.max(128, floatingReserve(r, bp))); // 8rem, in rem — never a stored pixel (field guide ②)
+    }
     return cs;
   }
   // Elements apply their OWN minHeight/height (containers get it from containerStyle) so a height-resized
@@ -401,6 +460,10 @@ function renderNode(node: BoxNode, rawParent: BoxNode | null, theme: SiteTheme, 
   // alert messages — its wrapper's direct children are a <style> tag and the component itself.
   const rev = revealCss(`.${cls}`, r, { staggerSelector: r.component ? COMPONENT_ITEM_SEL[r.component] : undefined });
   if (rev) { sheet.rungs.phone.push(rev); if (r.revealEffect) sheet.reveals.add(r.revealEffect); }
+  // ARRIVAL (Step 2b) — what a pinned block becomes once the page has moved under it. Same resolver the
+  // canvas calls, so the editor cannot show an arrival the published page will not play.
+  const arrive = pinArrivalCss(`.${cls}`, r);
+  if (arrive) { sheet.rungs.phone.push(arrive); if (r.pinArrival) sheet.arrivals.add(r.pinArrival); }
   // An ITEM's entrance needs its keyframes on the page too. They are emitted once, at assembly, from this
   // set — so an item effect whose id never reached it would animate to a name that does not exist, which is
   // silently nothing at all.
@@ -454,6 +517,8 @@ function sheetCss(sheet: Sheet): string {
   return [
     // One copy of each entrance's keyframes, for the effects this page actually uses.
     revealKeyframes(sheet.reveals),
+    // …and one copy of each arrival’s, for the same reason.
+    pinArrivalKeyframes(sheet.arrivals),
     sheet.rungs.phone.join(""),
     // In ladder order, so a wider rung's rules come later and win on the cascade — which is the whole reason
     // a mobile-first sheet needs no specificity tricks.
@@ -464,6 +529,52 @@ function sheetCss(sheet: Sheet): string {
 
 /** Render one page's tree to an HTML fragment. The page's own responsive stylesheet is emitted as a leading
  *  `<style>` block (a passed `sheet` instead accumulates into a shared document-level sheet, no inline block). */
+/**
+ * WHAT A VISITOR SEES BELOW A PAGE THAT DOES NOT FILL THEIR SCREEN.
+ *
+ * Measured on an iPad Pro 11 (834 × 1210) with a real three-band page: the content ended at 410px and **800
+ * pixels of white followed it** — two thirds of the screen, directly under a dark footer. Reported exactly as
+ * it looks: "it looks like a user is seeing what they have not added."
+ *
+ * Nothing was being added. `<body>` is white by default, the document is taller than the page, and the
+ * leftover is the browser's own backdrop. But a slab of white under a dark footer reads as an empty block,
+ * and the fact that it is technically nothing is no help to the person looking at it.
+ *
+ * THE FIX ADDS NOTHING — no element, no space, no setting, no height. The DOCUMENT is simply painted the
+ * colour of the band that ends the page, so the last band appears to run to the bottom of the screen. On a
+ * page taller than the screen it is invisible (you never see past the content). On a short one the footer
+ * finishes the page instead of a white void. It is a background, so it is responsive by construction: every
+ * screen, every orientation, nothing to recompute and nothing to maintain.
+ *
+ * The alternatives were both worse and both were rejected. STRETCHING the last band to `100vh` changes the
+ * user's own layout and makes a 90px footer 800px tall — adding exactly the empty space this is about. A
+ * PER-PAGE SETTING asks someone to fix a problem they did not cause.
+ *
+ * Deliberately conservative about what counts as "the band that ends the page":
+ *   • floating blocks are skipped — they are on their own layer, not the bottom of the flow;
+ *   • a block hidden at every rung is skipped — it ends nothing;
+ *   • a band carrying a background IMAGE contributes only its colour, never the image: repeating a photograph
+ *     below the fold would be adding something, which is the one thing this must not do;
+ *   • nothing suitable → nothing is emitted, and the browser default stands exactly as before.
+ */
+export function documentEdgeCss(root: BoxNode): string {
+  const kids = [...(root.children ?? [])].reverse();
+  for (const raw of kids) {
+    const k = resolveResponsive(raw, "base");
+    if (isFloating(k)) continue;
+    if (k.hidden && !raw.responsive) continue;
+    // A row band is structural — the colour lives on what is inside it.
+    const source = k.rowBand ? [...(k.children ?? [])].reverse().map((c) => resolveResponsive(c, "base")).find((c) => !isFloating(c)) : k;
+    const colour = source?.background;
+    if (!colour || !colour.trim()) continue;
+    // A gradient is a paint, not a colour: `background-color` cannot take one, and `background` on <html>
+    // would draw the whole gradient again below the page. The first usable flat colour wins instead.
+    if (colour.includes("gradient(")) continue;
+    return `html{background-color:${colour}}`;
+  }
+  return "";
+}
+
 export function renderPageHTML(root: BoxNode, theme: SiteTheme, pageMap: Map<string, string> = new Map(), sheet?: Sheet): string {
   if (sheet) return renderNode(root, null, theme, pageMap, sheet); // shared sheet → caller emits the CSS
   const own: Sheet = emptySheet();
@@ -549,7 +660,8 @@ export function renderSitePage(site: BoxSite, theme: SiteTheme, pageId: string, 
   const markup = renderPageHTML(page.root, theme, files, sheet);
   const components = subsetCss(COMPONENT_CSS, usedEuClasses(markup));
   const shared = opts.inlineShared ? `${sharedCss(theme)}\n${SITE_CHROME_CSS}` : undefined;
-  return pageDocument(theme, page.name, markup, [components, sheetCss(sheet)].filter(Boolean).join("\n"), shared);
+  // Per PAGE, not per site: each page ends with its own band, and two pages need not end the same way.
+  return pageDocument(theme, page.name, markup, [components, sheetCss(sheet), documentEdgeCss(page.root)].filter(Boolean).join("\n"), shared);
 }
 
 /**
@@ -590,7 +702,9 @@ export function renderSiteFiles(site: BoxSite, theme: SiteTheme, fontCss = ""): 
     // Only the component rules this page's markup actually uses — read from the RENDERED HTML, so it
     // cannot disagree with what the page contains.
     const components = subsetCss(COMPONENT_CSS, usedEuClasses(markup));
-    out[files.get(page.id)!] = pageDocument(theme, page.name, markup, [components, sheetCss(sheet)].filter(Boolean).join("\n"), undefined, prefetchLinks(files, page.id));
+    // Per PAGE, and so NOT in the shared stylesheet: each page ends with its own band, and two pages need
+    // not end the same way. A downloaded site gets exactly what the preview showed.
+    out[files.get(page.id)!] = pageDocument(theme, page.name, markup, [components, sheetCss(sheet), documentEdgeCss(page.root)].filter(Boolean).join("\n"), undefined, prefetchLinks(files, page.id));
   }
 
   // The SHARED sheet is only what is identical everywhere — tokens, base, site chrome. The component
@@ -639,7 +753,19 @@ function sharedCss(theme: SiteTheme): string {
  * which is precisely where it was before. Removing `hidden` outright would have traded a dead feature for a
  * horizontally scrolling page on those browsers.
  */
+/**
+ * AND `margin: 0`, WHICH EVERY PUBLISHED PAGE HAS BEEN MISSING.
+ *
+ * A browser gives `<body>` an 8px margin of its own unless it is told otherwise. Nothing here ever told it,
+ * so every exported site sat **8px in from all four edges**: an "edge to edge" band was not edge to edge,
+ * a full-width photo strip had a white line down each side, and the only things that reached the real edges
+ * were blocks measured against the VIEWPORT rather than the page — which is exactly what a user noticed and
+ * reported, seeing floated bars spanning the window while everything else kept a sliver of white.
+ *
+ * Measured on a 1440px window before the fix: a full-width block ran 8 → 1432 and was 1424px wide.
+ */
 const SITE_CHROME_CSS = `html,body{max-width:100%;overflow-x:hidden}
+body{margin:0}
 @supports (overflow-x:clip){html,body{overflow-x:clip}}`;
 
 /**

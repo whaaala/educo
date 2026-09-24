@@ -15,7 +15,7 @@ import { isRegistryComponent, defaultComponentFields, defaultComponentWidth, com
 import { iconSvg } from "@/lib/educo-ui/icon-svg";
 import { BREAKPOINTS_EM } from "@/lib/educo-ui/base";
 import { RUNG_MEASURE, type RungName } from "@/lib/educo-ui/layout";
-import { hasItemEffects, itemEffectsCss } from "@/lib/interactions";
+import { hasItemEffects, itemEffectsCss, revealEffect, REVEAL_DUR, REVEAL_EASE, REVEAL_VIEW_RANGE } from "@/lib/interactions";
 import { PAGE_Z, clampPageZ } from "@/lib/educo-ui/stacking";
 import { colorToCSS } from "@/components/shared/ColorPalettePicker";
 
@@ -343,12 +343,60 @@ export interface BoxNode {
    * you down a desktop is useful, and the same sidebar pinned on a phone eats a screen that has none to
    * spare. Set it at the base and turn it off at `phone`.
    */
-  pin?: "top" | "bottom";
+  pin?: "top" | "bottom" | "left" | "right"
+      | "top-left" | "top-right" | "bottom-left" | "bottom-right";
   /** How far from that edge it comes to rest, in px (emitted as rem). Default 0 — flush against the edge. */
   pinOffset?: number;
+  /**
+   * WHICH KIND of staying put — and they are genuinely different things, not a preference.
+   *
+   * `sticky` (the default, and what every page saved before this field existed means) keeps the block in the
+   * flow: it holds against its edge while its PARENT is on screen and leaves with the parent, so it occupies
+   * real space and can never cover the footer.
+   *
+   * `fixed` takes the block out of the document entirely and measures it against the VIEWPORT. It holds
+   * whatever you scroll, ignores its column and its gutters, reserves no space — so the page runs underneath
+   * it — and it can sit in a corner, which sticky cannot. A cookie bar, a back-to-top button, a chat bubble.
+   *
+   * Absent means `sticky`, so not one saved page changes the day this ships.
+   */
+  hold?: "sticky" | "fixed";
+  /**
+   * HOW IT ARRIVES once the page has moved — Step 2b of the Layout System.
+   *
+   * A bar that looks the same held as it did sitting in the page tells the reader nothing about what just
+   * happened. These are the five changes worth making, and absent means NOTHING changes: rule 11, nothing
+   * arrives that nobody asked for.
+   */
+  pinArrival?: "shadow" | "solid" | "glass" | "rule" | "condense";
+  /** How much scrolling the arrival takes to complete, in the fluid base unit. Default 12 (~120px). */
+  pinArrivalAfter?: number;
+  /**
+   * WHERE A FLOATED BLOCK HOLDS ON SCREEN — px from the top-left of the box it is measured against.
+   *
+   * A block placed freely stores `left`/`top` as a PERCENTAGE of the section it sits in. Lifted to the
+   * window those percentages mean something else entirely: measured, a block resting 720px down a tall
+   * section landed at 240px once fixed, because 30% of a 2400px section is not 30% of an 800px window.
+   * So the moment a floated block is set to float on screen, its place is measured and kept here in a unit
+   * that means the same in both boxes. `left`/`top` are untouched, so returning it puts it back exactly.
+   */
+  pinX?: number;
+  pinY?: number;
 
   // ── free / floating position (escape the flow: lift a section onto its OWN layer to OVERLAP others) ──
   position?: "flow" | "absolute"; // default "flow" (in the row-band stack); "absolute" = free-floating layer
+  /**
+   * WHAT THE BLOCK WAS BEFORE IT WAS LIFTED — so putting it back is a round trip and not an edit.
+   *
+   * Floating turns a block into a card: it writes a definite height and drops the block's own `minHeight`.
+   * Returning it used to delete both, which threw the ORIGINAL size away — measured, a 120px stack came
+   * back 49px tall (the height of its text), and floating it again started from that. Two or three cycles
+   * and an empty box has nothing left to see or click, which is exactly what a user reported.
+   *
+   * `sized` records what the float itself wrote, so a size the USER changed while it floated can be told
+   * apart from the one the builder wrote — theirs is kept, the builder's is undone.
+   */
+  floatFrom?: { width?: string; height?: string; minHeight?: number; clip?: boolean; sized?: string; sizedMin?: number };
   left?: number;            // absolute only: X offset as % of the positioning parent's content box (responsive)
   top?: number;             // absolute only: Y offset as % of the positioning parent's content box
   zIndex?: number;          // absolute only: stacking order among floating siblings (higher = on top)
@@ -495,6 +543,21 @@ export function isContainer(node: BoxNode): boolean {
 export function containerLabel(node: BoxNode): string {
   if (node.layout === "grid") return "Grid";
   return (node.direction ?? "column") === "row" ? "Side by side" : "Stack";
+}
+
+/**
+ * What to CALL a block when a warning has to name it — “the Card around it”, “the Grid around it”.
+ *
+ * `containerLabel` answers for containers and would call a Card a “Stack”, which is worse than saying
+ * nothing: the user would look for a Stack and find none. A component is named for what it is, and the
+ * null case is carried here so both pin warnings read from one function rather than each guarding it.
+ */
+export function blockedByLabel(node: BoxNode | null): string | null {
+  if (!node) return null;
+  if (node.type === "component" && node.component) {
+    return node.component.charAt(0).toUpperCase() + node.component.slice(1);
+  }
+  return isContainer(node) ? containerLabel(node) : "block";
 }
 
 /** Lifted out of the flow onto its own free-floating layer (can overlap siblings)? */
@@ -768,7 +831,21 @@ export function createElement(type: Exclude<BoxType, "container">, overrides: Pa
   switch (type) {
     case "heading": return { ...base, text: "New heading", fontSize: 32, bold: true, ...overrides };
     case "button": return { ...base, text: "Button", href: "#", ...overrides };
-    case "image": return { ...base, src: "", width: "100%", height: "260px", ...overrides };
+    /**
+     * `height: "auto"` — NOT a stored pixel. A picture's shape is a fact to be discovered, not a default.
+     *
+     * It used to be born carrying `260px`, and because `imageSizing` rightly lets a stated height win, that
+     * birth default beat the photograph's own measured shape for ever. Measured through the real route:
+     * add an Image block from the menu, upload a 4:3 photograph, and the block still said `260px` while
+     * `imgW: 4, imgH: 3` sat beside it unused — rendered 1024×260, cropped to a letterbox at every screen
+     * size. The very same photograph DROPPED onto the canvas came out at its natural 4:3, because that path
+     * passes `height: "auto"` explicitly. Two routes, two answers, and the common one was wrong.
+     *
+     * `"auto"` is not a size: `sizeToCSS` returns undefined for it, so `imageSizing` still falls back to the
+     * 260px letterbox while the shape is genuinely unknown, and still crops to any height the user types.
+     * All that changes is that a shape we DO know is no longer overruled by a number nobody chose.
+     */
+    case "image": return { ...base, src: "", width: "100%", height: "auto", ...overrides };
     case "video": return { ...base, src: "", width: "100%", height: "315px", ...overrides };
     case "icon": return { ...base, icon: "Star", fontSize: 32, ...overrides };
     case "divider": return { ...base, width: "fill", ...overrides };
@@ -1825,6 +1902,22 @@ export function treeHasToast(node: BoxNode): boolean {
   return (node.children ?? []).some(treeHasToast);
 }
 
+/**
+ * Does anything in this tree hold itself FIXED? The same question `treeHasToast` asks, for the same reason.
+ *
+ * A toast has been `position: fixed` all along, and the canvas already answers it by making the page root a
+ * containing block — so the toast pins to the PAGE FRAME while editing and to the viewport once published.
+ * Identical CSS, and it can never float over the editor's own toolbar where nobody could click it.
+ *
+ * A user-held fixed block needs exactly that, so it asks through the same door rather than growing a second
+ * mechanism beside it. The irony is worth keeping: a containing block is what BREAKS fixed by accident
+ * everywhere else in this file, and it is what CONTAINS it on purpose here.
+ */
+export function treeHasFixedHold(node: BoxNode): boolean {
+  if (node.pin && node.hold === "fixed") return true;
+  return (node.children ?? []).some(treeHasFixedHold);
+}
+
 /** The opt-in dismiss script for the export (guarded global; canvas doesn't need it). */
 export function alertDismissScript(node: BoxNode): string {
   const auto = Math.max(0, Math.round(node.alertAutoSeconds ?? 0));
@@ -2276,8 +2369,15 @@ export function floatBox(root: BoxNode, id: string, targetParentId: string, left
   const sizing: Partial<BoxNode> = hugging
     ? { minHeight: Math.max(8, Math.round(height)), height: undefined, clip: undefined }
     : { width: geom.width, height: remLen(Math.max(8, Math.round(height)), rootFontPx()), minHeight: undefined, clip: true };
+  // Remembered BEFORE the card sizing is written over it — the whole point is to be able to undo exactly this.
+  const was = findBox(root, id);
+  const floatFrom: NonNullable<BoxNode["floatFrom"]> = {
+    width: was?.width, height: was?.height, minHeight: was?.minHeight, clip: was?.clip,
+    sized: sizing.height as string | undefined, sizedMin: sizing.minHeight as number | undefined,
+  };
   let next = moveBox(root, id, targetParentId, tp?.children?.length ?? 0);
   next = updateBox(next, id, {
+    floatFrom,
     // A free-floating layer is a fixed-size CARD: a DEFINITE height (not a min-height floor that content can grow
     // past) so the box, its parent's reserved height, and the export all agree on exactly how tall it is. `clip`
     // lets the width AND height handles shrink it below its content.
@@ -2298,11 +2398,46 @@ export function floatBox(root: BoxNode, id: string, targetParentId: string, left
  *  the user had set on the section, months earlier and for their own reasons: float a grid inside a 400px
  *  section, return it, and the section collapsed to its content — so the grid came back at 60px instead of the
  *  400 it had filled. Floating and un-floating is a round trip; it has to land where it started. */
+/**
+ * PUT IT BACK — and putting it back is a ROUND TRIP, never an edit.
+ *
+ * This used to delete the height AND the `minHeight`, on the reasoning that both were the float's doing.
+ * Only one of them was: floating writes a definite height and clears the block's own floor, so deleting
+ * both threw away a size the user had set long before they ever floated it. Measured on a 120px stack:
+ * float, put back, and it returned 49px tall — the height of the text inside it. Float it again and the
+ * next round trip started from 49. An empty box ends up with nothing left to see or to click, which is
+ * what "I don't see the stack any more" was.
+ *
+ * So `floatFrom` is restored, with one exception that matters more than the rule: if the block was RESIZED
+ * while it floated, that size is the user's own and is kept — as a floor, so content can still grow it.
+ *
+ * The pin's free placement goes too. `pinX`/`pinY` are where a FLOATING block holds on screen; back in the
+ * layout the block holds against an edge instead, and stale coordinates would place it somewhere nobody
+ * chose. The pin itself is kept: "floats on screen" is a decision about scrolling, not about placement.
+ */
 export function unfloatBox(root: BoxNode, id: string): BoxNode {
   const node = findBox(root, id);
-  // Drop everything the float set: geometry, the auto `clip`, and the card's `minHeight` (so the box hugs its
-  // content again). A COMPONENT also returns to full width (its compact fixed px width was only for the card).
-  const patch: Partial<BoxNode> = { position: undefined, left: undefined, top: undefined, zIndex: undefined, clip: undefined, minHeight: undefined, height: undefined };
+  const patch: Partial<BoxNode> = {
+    position: undefined, left: undefined, top: undefined, zIndex: undefined, clip: undefined,
+    minHeight: undefined, height: undefined, floatFrom: undefined, pinX: undefined, pinY: undefined,
+  };
+  const was = node?.floatFrom;
+  if (was) {
+    const resized = node?.height !== was.sized || node?.minHeight !== was.sizedMin;
+    if (resized) {
+      // Their size, kept as a floor rather than a hard height, so the box can still grow with its content.
+      // `lenToPx` is this file's own converter — it understands rem as well as px, which is the whole
+      // reason it exists: reading only px silently treated every rem height as "no height".
+      const kept = lenToPx(node?.height, rootFontPx());
+      patch.minHeight = node?.minHeight ?? (kept != null ? Math.round(kept) : was.minHeight);
+    } else {
+      patch.width = was.width;
+      patch.height = was.height;
+      patch.minHeight = was.minHeight;
+      patch.clip = was.clip;
+    }
+  }
+  // A COMPONENT returns to full width — its compact fixed px width was only ever for the card.
   if (node?.type === "component") patch.width = "100%";
   return updateBox(root, id, patch);
 }
@@ -2432,6 +2567,9 @@ export function resolveResponsive(node: BoxNode, bp: Breakpoint): BoxNode {
   if (bp === "base" || !node.responsive) return node;
   const ov: ResponsiveOverride = {};
   for (const slot of RUNG_CASCADE[bp]) Object.assign(ov, node.responsive[slot] ?? {});
+  // A stored `null` is a CLEAR made at this rung (see `updateBoxResponsive`): it resolves to the default,
+  // which is ABSENT — never to a null value that a `!== undefined` check downstream would take for a setting.
+  for (const k of Object.keys(ov) as (keyof ResponsiveOverride)[]) if (ov[k] === null) ov[k] = undefined;
   return Object.keys(ov).length ? { ...node, ...ov } : node;
 }
 
@@ -2443,7 +2581,18 @@ export function updateBoxResponsive(root: BoxNode, id: string, patch: Partial<Bo
   // Always the NEW slot name: it is last in the rung's cascade, so it wins over anything the three-layer
   // model left behind without having to rewrite that older value.
   const prev = node.responsive?.[bp] ?? {};
-  return updateBox(root, id, { responsive: { ...node.responsive, [bp]: { ...prev, ...patch } } });
+  /**
+   * A CLEAR AT A RUNG IS STORED AS `null`, because `undefined` does not survive being saved.
+   *
+   * Every control that goes back to its default writes `undefined` — "Scrolls away", "Fit content", no
+   * entrance. At the base that is right: absent IS the default. At a rung it must OVERRIDE the base, and
+   * `{ pin: undefined }` did, for exactly as long as the tab stayed open: `JSON.stringify` drops the key, so
+   * the save held `{ phone: {} }` and the reload brought the desktop's pin back onto the phone. "Stop pinning
+   * this on phones" — the spec's whole answer to a header eating a small screen — could not be kept.
+   * `resolveResponsive` turns the `null` back into absent, so nothing downstream ever sees one.
+   */
+  const stored = Object.fromEntries(Object.entries(patch).map(([k, v]) => [k, v === undefined ? null : v])) as ResponsiveOverride;
+  return updateBox(root, id, { responsive: { ...node.responsive, [bp]: { ...prev, ...stored } } });
 }
 
 /** Does this box carry any override OF ITS OWN at this rung? Inherited ones belong to the rung above. */
@@ -2539,7 +2688,7 @@ export function typoRootVars(theme: { text: string; textMuted: string; headingFo
     [TYPO_VAR.muted]: theme.textMuted,
     [TYPO_VAR.headingFont]: theme.headingFont,
     [TYPO_VAR.bodyFont]: theme.bodyFont,
-    [TYPO_VAR.size]: u(16),
+    [TYPO_VAR.size]: textUnit(), // fluid like everything else, but never below a readable floor — see `textUnit`
     [TYPO_VAR.headingWeight]: 600,
     [TYPO_VAR.bodyWeight]: 400,
   } as CSSProperties;
@@ -2643,18 +2792,83 @@ export function gridColumnsAt(node: BoxNode, bp: Breakpoint = "base"): number {
  * When the USER has stated the count at this rung they are already speaking in that rung's units, so the span
  * is taken at face value and only clamped. Rescaling their number would be the builder arguing with them.
  */
+/**
+ * Has the RESPONSIVE LADDER narrowed this grid's track at `bp` — rather than the user stating the count?
+ *
+ * The distinction decides whether the cells' stored placement is still speaking the same language as the
+ * track they are being placed into. Shared, so the canvas, the export and the guards give one answer.
+ */
+export function gridReflowsAt(parent: BoxNode, bp: Breakpoint = "base"): boolean {
+  // Stated AT this rung — so the count is not the base's, whatever number it happens to be.
+  if (setAtRung(parent, "columns", bp)) return true;
+  return gridColumnsAt(parent, bp) !== gridColumns(parent); // …or the ladder narrowed it by itself
+}
+
+/**
+ * A child's effective span and start at a rung, in that rung's own track units.
+ *
+ * WHEN THE LADDER NARROWS THE TRACK, EXPLICIT PLACEMENT IS DROPPED AND THE CELLS AUTO-FLOW.
+ *
+ * This is the half that was missing, and it made blocks VANISH. Spans were re-fitted proportionally, but a
+ * `colStart` written in twelve-column units was merely rescaled and then clamped into the narrow track — and
+ * a clamp is not an injection. Measured on three cells at columns 1 / 5 / 9 (span 4), reported by a user who
+ * watched the top of their page empty out as they dragged the preview narrower:
+ *
+ *   1400px → columns 1, 5, 9     three cells across, correct
+ *    820px → columns 1, 2, 2     the second cell sits UNDER the third — one block invisible
+ *    580px → columns 1, 1, 1     all three in one cell — only the LAST one can be seen
+ *
+ * Nothing overflowed and nothing errored: two blocks were simply painted on top of each other, which is
+ * indistinguishable from having been deleted. Auto-placement cannot rescue them, because placement that is
+ * stated explicitly is honoured exactly — including when it is stated on top of something else.
+ *
+ * So at a rung the ladder narrowed, a placed cell becomes an auto-placed one and the grid flows it after the
+ * cell before it — which is precisely what an UNPLACED cell has always done correctly at the same widths.
+ * The span still rescales (a third of twelve is a third of two), so the row keeps its proportions; only the
+ * absolute position, which can no longer be expressed in the narrower track, is given up.
+ *
+ * WHOSE UNITS IS A PLACEMENT WRITTEN IN? The track it was AUTHORED AGAINST — which is the cell's own
+ * question, never the row's.
+ *
+ * This was first written as "the user's own column count at that rung is not touched: there they are already
+ * speaking in the rung's units." That is true of the COUNT and false of the CELLS. Setting Columns on a
+ * device is a control the guide actively recommends — and nobody restates every cell's *Start at column*
+ * while doing it. So a row of three cells at columns 1 / 5 / 9 of twelve, given `columns: 3` on a tablet,
+ * had all three starts taken at face value and clamped into a three-track row:
+ *
+ *     span  = min(3, 4)               = 3   → every cell fills the row
+ *     start = min(3 − 3 + 1, 1|5|9)   = 1   → every cell begins in column 1
+ *
+ * All three landed in the same cell, drawn one on top of another, and only the last could be seen. Swept
+ * across every width, it began at 820px and never recovered. It is the same defect as the ladder case
+ * below, reached by the one route that had been deliberately exempted from the fix.
+ *
+ * So the rule is per-CELL, and it is the only rule that holds in both directions: a span or start the CHILD
+ * states at this rung is already in this rung's units and is honoured exactly; one inherited from the base
+ * is written in the BASE row's units, so when the track differs the span is rescaled proportionally and the
+ * start is given up — the cell auto-flows, which is what an unplaced cell has always done correctly.
+ */
 export function gridPlacementAt(parent: BoxNode, child: BoxNode, bp: Breakpoint = "base"): { track: number; span: number; start: number | null } {
   const track = gridColumnsAt(parent, bp);
   const stored = gridColumns(parent);
-  const rescale = track !== stored && !setAtRung(parent, "columns", bp);
-  const fit = (v: number) => (rescale ? Math.max(1, Math.round((v * track) / stored)) : v);
+  const reflow = gridReflowsAt(parent, bp);
+  /**
+   * `stored` IS ALREADY THE RUNG'S COUNT when the row states one there — `gridColumnsAt` is handed a
+   * RESOLVED node, so `node.columns` has been overwritten by the override and the base number is gone. The
+   * first attempt at this fix compared `track` with `stored`, found them equal, concluded nothing had
+   * changed, and left every placement at face value: the bug survived the fix untouched.
+   *
+   * There is nothing to rescale proportionally in that case, so the span is only CLAMPED to the track. A
+   * quarter of twelve becomes the whole of a three-track row, the starts are given up, and the cells flow
+   * one per row — wider than ideal, and every one of them visible, which is the property that matters.
+   */
+  const fit = (v: number) => (reflow && track !== stored && !setAtRung(child, "colSpan", bp) ? Math.max(1, Math.round((v * track) / stored)) : v);
   const span = Math.min(track, fit(Math.max(1, Math.round(child.colSpan ?? 1))));
   if (child.colStart == null) return { track, span, start: null };
-  const raw = rescale
-    ? Math.round(((Math.round(child.colStart) - 1) * track) / stored) + 1
-    : Math.round(child.colStart);
+  if (reflow && !setAtRung(child, "colStart", bp)) return { track, span, start: null };
   // Clamped to a track the block can actually FINISH inside, so it never lands in an implicit column and
   // stretches the row past the edge of the screen.
+  const raw = Math.round(child.colStart);
   return { track, span, start: Math.min(track - span + 1, Math.max(1, raw)) };
 }
 
@@ -3518,6 +3732,35 @@ export function baseUnit(baseFontPx = 10): string {
   return `clamp(${lo}rem, ${cqw}cqw, ${hi}rem)`;
 }
 
+/** A body-text floor, in rem, below which no reading size may be emitted — the browser's own default. */
+export const TEXT_FLOOR_REM = 1;
+
+/**
+ * READING SIZE IS NOT A SPACING SIZE — the same lesson as `scrollLen` above, on the axis that matters most.
+ *
+ * `--box-u` is the right unit for a gap or a padding: on a narrow screen those SHOULD close up. Text must
+ * not, and while the text size was simply `u(16)` it did, all the way down. Measured on the exported page at
+ * ten widths:
+ *
+ *     320px → 11.2px    375px → 11.2px    414px → 11.2px    619px → 11.2px    768px → 12.3px
+ *     1024px → 16.4px   1280px → 20.5px   1536px → 22.4px   1920px → 22.4px
+ *
+ * Every phone, and a Fold opened out, rendered body copy at 11.2px — and the roles are multiples of this
+ * one value, so a button label came out at 0.875 × 11.2 = 9.8px. Reported as content "becoming smaller" as
+ * the preview narrows, which is exactly what it was doing.
+ *
+ * The fluid growth is kept, because that part was right: text still tracks the container's width through
+ * `cqw`, and still tops out at the same ceiling, so nothing changes at 1024px and above. Only the bottom is
+ * held — at `1rem`, the reader's own default size, so it honours a browser text setting instead of
+ * overriding it. Above ~1000px the fluid term wins and this floor is invisible.
+ *
+ * `max()` rather than a wider `clamp()` on purpose: the ceiling already lives inside `--box-u`, so the floor
+ * is the only thing being added, and a page's `baseFont` still scales the whole ramp.
+ */
+export function textUnit(): string {
+  return `max(${TEXT_FLOOR_REM}rem, ${u(16)})`;
+}
+
 /**
  * The space BETWEEN children, across and down.
  *
@@ -3768,8 +4011,16 @@ export function childStyle(child: BoxNode, parent: BoxNode, bp: Breakpoint = "ba
     else {
       // No rung re-fit and no clamp: rows are implicit, so the grid simply makes as many as the placement asks
       // for — a block on row 4 of a two-row grid creates rows 3 and 4 rather than overflowing.
+      //
+      // …EXCEPT at a rung the ladder narrowed, where the row is given up together with the column. The two
+      // halves of a placement only mean anything together: releasing the column while holding "row 1" pins
+      // every cell of that row back into one row, and with the columns now auto they either pile up again or
+      // generate implicit columns and push the page sideways. Both were measured. Dropping both is what lets
+      // the grid do the one thing that works at these widths — flow the cells one after another.
       const rowSpan = Math.max(1, Math.round(child.rowSpan ?? 1));
-      const rowStart = child.rowStart == null ? null : Math.max(1, Math.round(child.rowStart));
+      // Same per-cell question as the column: a row stated AT this rung is in this rung's terms and is kept.
+      const rowGivenUp = gridReflowsAt(parent, bp) && !setAtRung(child, "rowStart", bp);
+      const rowStart = child.rowStart == null || rowGivenUp ? null : Math.max(1, Math.round(child.rowStart));
       if (rowStart != null) s.gridRow = `${rowStart} / span ${rowSpan}`;
       else if (rowSpan > 1) s.gridRow = `span ${rowSpan}`;
     }
@@ -3783,7 +4034,7 @@ export function childStyle(child: BoxNode, parent: BoxNode, bp: Breakpoint = "ba
     // …and pinning after even that: it writes `position`, which none of the above touches, and it must
     // land identically on a grid child and a flex child or "stays visible while scrolling" would depend
     // on which engine the parent happens to use.
-    Object.assign(s, pinCSS(child, parent));
+    Object.assign(s, pinCSS(child, parent, bp));
     /**
      * AN EMPTY CELL KEEPS A FLOOR — and it took being wrong about this twice to pin down when it matters.
      *
@@ -3958,7 +4209,7 @@ export function childStyle(child: BoxNode, parent: BoxNode, bp: Breakpoint = "ba
   // hug-to-content `alignSelf` just above): a block told where to sit goes there.
   Object.assign(s, placeCSS(child, parent));
   // …and pinning after even that — see the matching line in the grid branch above.
-  Object.assign(s, pinCSS(child, parent));
+  Object.assign(s, pinCSS(child, parent, bp));
   return s;
 }
 
@@ -4045,21 +4296,72 @@ export function combineMinHeight(own: string | undefined, screen: BoxNode["scree
  * Only a band that HUGS. A band carrying its own height gives its child real travel, and hoisting there
  * would change a working case into a different one — the whole band would stick instead of the block.
  * Returns the child whose pin is being carried, so both sides of the decision read from one function.
+ *
+ * AT THE RUNG BEING DRAWN. `resolveResponsive` resolves a node and not its children, so the band arrived with
+ * its children as the DESKTOP had them. A pin set only on phones was therefore never carried — the block went
+ * sticky inside a band that hugs it, the zero-travel shape above, and did nothing — while a pin turned OFF on
+ * phones was still carried, so the band went on sticking. Resolving each child here is the whole fix.
  */
-export function bandCarriesPin(band: BoxNode): BoxNode | null {
+export function bandCarriesPin(band: BoxNode, bp: Breakpoint = "base"): BoxNode | null {
   if (!band.rowBand || band.pin || band.minHeight != null || band.height != null) return null;
-  const inFlow = (band.children ?? []).filter((k) => !isFloating(k));
-  return inFlow.length === 1 && inFlow[0].pin ? inFlow[0] : null;
+  const inFlow = (band.children ?? []).map((k) => resolveResponsive(k, bp)).filter((k) => !isFloating(k));
+  const only = inFlow.length === 1 ? inFlow[0] : null;
+  // STICKY ONLY. The hoist exists to buy TRAVEL inside a parent, and a fixed block does not travel inside
+  // anything — it is measured against the viewport. Hoisting it would move the pin onto a band that is not
+  // the thing the user pinned, for no gain at all.
+  return only?.pin && (only.hold ?? "sticky") === "sticky" ? only : null;
 }
 
-export function pinCSS(node: BoxNode, parent?: BoxNode): CSSProperties {
+/** Which physical edges a pin names. A corner is two, which is why only `fixed` may use one. */
+const PIN_EDGES: Record<NonNullable<BoxNode["pin"]>, ("top" | "right" | "bottom" | "left")[]> = {
+  top: ["top"], right: ["right"], bottom: ["bottom"], left: ["left"],
+  "top-left": ["top", "left"], "top-right": ["top", "right"],
+  "bottom-left": ["bottom", "left"], "bottom-right": ["bottom", "right"],
+};
+
+/**
+ * The one edge a STICKY block may hold, whatever the stored value says.
+ *
+ * Sticky is measured against a scroll container, and a page scrolls vertically — so `left`/`right` need a
+ * horizontally scrolling parent, which is never what "a rail on the right" means, and a CORNER writes two
+ * insets, which is precisely how a sticky block ends up inert (the clause above). The UI offers neither for
+ * sticky, but the model can still hold one after a user switches from fixed back to sticky, so it resolves
+ * here rather than trusting the control to have tidied up.
+ */
+const stickyEdge = (pin: NonNullable<BoxNode["pin"]>): "top" | "bottom" =>
+  PIN_EDGES[pin].includes("bottom") ? "bottom" : "top";
+
+export function pinCSS(node: BoxNode, parent?: BoxNode, bp: Breakpoint = "base"): CSSProperties {
   // The child half of the hoist above: it stands down so the band alone writes `position`.
-  if (parent && bandCarriesPin(parent)?.id === node.id) return {};
+  if (parent && bandCarriesPin(parent, bp)?.id === node.id) return {};
   // The band half: it pins on behalf of the child it wraps, at that child's edge and offset.
-  const src = bandCarriesPin(node) ?? node;
+  const src = bandCarriesPin(node, bp) ?? node;
   if (!src.pin) return {};
   if (src.position === "absolute" || node.position === "absolute") return {}; // clause 1 — free positioning wins
-  const css: CSSProperties = { position: "sticky", [src.pin]: u(src.pinOffset ?? 0), zIndex: PAGE_Z.sticky };
+  const fixed = (src.hold ?? "sticky") === "fixed";
+  const offset = u(src.pinOffset ?? 0);
+  const css: CSSProperties = { position: fixed ? "fixed" : "sticky", zIndex: PAGE_Z.sticky };
+  /**
+   * CLAUSE 5 — A FIXED BLOCK HAS TO BE GIVEN ITS WIDTH, because nothing else will.
+   *
+   * Out of flow, a block takes no size from the row, band or grid it came from: `flex-basis` and
+   * `grid-column` simply do not reach it. Measured on BOTH engines before this line existed, a full-width
+   * bar set to "Floats on screen" rendered **0px wide** — an invisible block on the canvas, unclickable, and
+   * an invisible block on the published page. The feature shipped that way, and its guards passed, because
+   * every one of them measured WHERE the bar was and never how wide.
+   *
+   * The floating (`position: absolute`) branch of both renderers has always written the width itself for
+   * exactly this reason; fixed is the same shape of thing and now does it in the one resolver. A width of
+   * `auto` is left alone: that is a block told to hug its content, and a chat bubble or an "Apply now"
+   * button should be exactly as wide as what is in it.
+   */
+  if (fixed) {
+    const w = sizeToCSS(src.width);
+    if (w) css.width = w;
+  }
+  // Fixed may hold a corner — two insets against the viewport. Sticky gets exactly one, resolved above.
+  if (fixed) for (const edge of PIN_EDGES[src.pin]) css[edge] = offset;
+  else css[stickyEdge(src.pin)] = offset;
   /**
    * CLAUSE 3 — A BLOCK STRETCHED TO ITS PARENT'S HEIGHT HAS NOWHERE TO TRAVEL.
    *
@@ -4079,9 +4381,305 @@ export function pinCSS(node: BoxNode, parent?: BoxNode): CSSProperties {
    * both satisfiable, and pinning is the thing they asked for. `flex-start` rather than `start` to match
    * every other alignment this file writes; it is valid in grid too.
    */
-  const stretchesChildren = !!parent && (parent.layout === "grid" || (parent.direction ?? "column") === "row");
+  // …and only for STICKY. A fixed block is out of the flow, so its parent's alignment reaches it no more
+  // than its parent's width does — writing `align-self` there would be a declaration about nothing.
+  const stretchesChildren = !fixed && !!parent && (parent.layout === "grid" || (parent.direction ?? "column") === "row");
   if (stretchesChildren) css.alignSelf = "flex-start";
   return css;
+}
+
+// ── Arrival: what changes once the page has moved under a pinned block (Step 2b) ─────────────────────
+
+export type PinArrival = NonNullable<BoxNode["pinArrival"]>;
+
+/** The five arrivals, in the order they are offered. Absent is the default and changes nothing. */
+export const PIN_ARRIVALS: { id: PinArrival; label: string; hint: string }[] = [
+  { id: "shadow", label: "Shadow", hint: "lifts off the page" },
+  { id: "solid", label: "Solid", hint: "fills in behind it" },
+  { id: "glass", label: "Glass", hint: "frosted, with the page showing through" },
+  { id: "rule", label: "Rule", hint: "a hairline underneath" },
+  { id: "condense", label: "Condense", hint: "it gets shorter" },
+];
+
+/** How much scrolling an arrival takes by default, in px at ordinary text size — the distance Elementor uses. */
+export const PIN_ARRIVAL_AFTER = 120;
+
+/**
+ * A SCROLL DISTANCE IS NOT A LAYOUT SIZE, and `u()` — the builder's fluid unit — is the wrong tool for it.
+ *
+ * Measured: `--box-u` resolves to `clamp(0.4375rem, 1cqw, 0.875rem)`, which is deliberately tied to the
+ * CONTAINER'S WIDTH, so "50 units of scrolling" came out as 64px and an arrival the user had set to take
+ * 500px of scroll was over in 64. Scrolling has nothing to do with how wide a box is.
+ *
+ * `remLen` instead — the file's existing px→rem converter: it scales with the reader's own text size, which
+ * is what a scroll distance should follow, and it keeps the rule that no stored pixel reaches the page.
+ */
+const scrollLen = (px: number) => remLen(px);
+
+/**
+ * THE CANVAS CANNOT USE `position: fixed` AT ALL — and must still SHOW what it does.
+ *
+ * Reported by the user, and reproduced exactly: a block set to float on screen kept its place on the
+ * published page and scrolled away in the editor, travelling the full 600px of a canvas scroll. The reason
+ * is not a bug that can be removed. A fixed box is measured against the viewport UNLESS an ancestor carries
+ * a transform, a filter or a `container-type` — and the builder's page frame declares
+ * `container-type: inline-size`, because that is what makes container queries work at all. So inside the
+ * canvas, fixed is always captured by the frame, which scrolls with the page. Removing the containment
+ * would only hand the block to the frame above it; taking the container-type away would break every
+ * component's responsiveness.
+ *
+ * So the canvas stops pretending and simulates instead: the block stays positioned in the page and is
+ * offset by however far the canvas has been scrolled, which is what "it does not move on screen" means.
+ * The export keeps real `position: fixed`; this is the editor's picture of it, from the same declarations.
+ *
+ * `translate` rather than `transform` for the bottom case: a block may carry a tilt, and `transform` is
+ * where that lives — writing it here would silently erase it.
+ */
+export function canvasFixedStyle(css: CSSProperties): CSSProperties {
+  if (css.position !== "fixed") return css;
+  /**
+   * THE PAGE IS INSET INSIDE THE CANVAS, AND THE OFFSET HAS TO PAY FOR IT.
+   *
+   * Reported second time round: a bar placed flush against the top of the page held with a visible gap
+   * above it once the canvas was scrolled. The block is positioned inside the PAGE, and the page sits a
+   * padding's width below the top of the scrolling area — so "the scroll" alone holds it level with where
+   * the page's top edge used to be, not with the top of what is on screen. `--canvas-top` is that inset,
+   * and taking it off puts the block against the visible edge, which is what the window does on the
+   * published page. `max(0px, …)` keeps it honest before the page's top has scrolled away at all: there
+   * the page top IS the top of the view, and the block belongs exactly where it was placed.
+   */
+  /**
+   * …AND LESS WHERE THE BLOCK'S OWN HOLDER SITS. An absolute box is measured from its nearest POSITIONED
+   * ancestor, which for a block in the layout is the band it lives in — not the page. A bar in the first
+   * band is a few pixels from the page's top, so it looked right and the guard passed; a block further down
+   * landed at its band instead, measured 1,488px down the page. `--holder-top` is that distance, written on
+   * the element by the canvas, so every held block is measured from the same origin the window would use.
+   */
+  const scroll = "max(0px, var(--canvas-scroll, 0px) - var(--canvas-top, 0px)) - var(--holder-top, 0px)";
+  const view = "var(--canvas-h, 100%)";
+  const { bottom, ...rest } = css;
+  const out: CSSProperties = { ...rest, position: "absolute" };
+  if (bottom != null) {
+    // Held against the bottom of the screen: the scroll, plus the height of the visible canvas, less the
+    // distance from that edge — then pulled back by its own height, which only `translate` knows.
+    out.top = `calc(${scroll} + ${view} - (${String(bottom)}))`;
+    out.translate = "0 -100%";
+  } else {
+    out.top = `calc(${scroll} + (${String(css.top ?? "0px")}))`;
+  }
+  return out;
+}
+
+/**
+ * A FLOATED BLOCK CAN STILL BE LIFTED TO THE WINDOW — and only to the window.
+ *
+ * Asked directly: "if I float a stack and then make it sticky or fixed, it should work, right?" For FIXED,
+ * yes, and it was refused only because clause 1 threw away the pin for anything floating. Measured on a real
+ * page: the same block emitted as `fixed` travelled 0px over a 900px scroll while the `absolute` one lost
+ * the whole 900. Free placement and floating on screen are not in conflict — the place you dragged it to
+ * simply becomes the place it holds.
+ *
+ * For STICKY they ARE in conflict, and the measurement says why rather than the spec: forced to `sticky`,
+ * the block returns to its position in the FLOW and starts taking space again — it stops being where you
+ * put it. Sticky holds a box relative to where it sits in the document, and a floated block does not sit
+ * there. Making that work needs a zero-height sticky wrapper around it, a structural edit to the user's
+ * tree — the same reason "hold until a block you choose" is deferred. The Inspector says so instead.
+ */
+export function floatHoldCSS(node: BoxNode): CSSProperties {
+  if (!isFloating(node) || !node.pin || (node.hold ?? "sticky") !== "fixed") return {};
+  const css: CSSProperties = { position: "fixed" };
+  // Measured at the moment it was lifted, so it does not jump — see `pinX`/`pinY`. Absent (an older page,
+  // or a tree built by hand) leaves the float's own left/top in place rather than moving it somewhere new.
+  if (node.pinX != null) css.left = remLen(node.pinX);
+  if (node.pinY != null) css.top = remLen(node.pinY);
+  return css;
+}
+
+const ARRIVE_SHADOW = "0 0.6rem 1.4rem rgba(2, 6, 23, 0.20)";
+const ARRIVE_RULE = "0 1px 0 0 var(--eu-color-border, #e2e7ee)";
+const ARRIVE_SURFACE = "var(--eu-color-surface, #ffffff)";
+
+/**
+ * ONE SET OF KEYFRAMES PER ARRIVAL, and the per-block values ride in custom properties.
+ *
+ * A keyframes block per pinned block would be the easy way and the wrong one: the same page can pin several
+ * blocks, and each would carry a near-identical copy of the same animation. The properties a block differs
+ * in — the shadow it already had, the colour it fills to, the height it condenses from — are variables set
+ * on the block itself, which is also what keeps the canvas and the export reading from one definition.
+ */
+const PIN_ARRIVAL_KEYFRAMES: Record<PinArrival, string> = {
+  shadow: `@keyframes eu-arrive-shadow{from{box-shadow:var(--eu-arrive-rest,none)}to{box-shadow:var(--eu-arrive-on,${ARRIVE_SHADOW})}}`,
+  rule: `@keyframes eu-arrive-rule{from{box-shadow:var(--eu-arrive-rest,none)}to{box-shadow:var(--eu-arrive-on,${ARRIVE_RULE})}}`,
+  solid: `@keyframes eu-arrive-solid{from{background-color:transparent}to{background-color:var(--eu-arrive-bg,${ARRIVE_SURFACE})}}`,
+  // Both spellings: Safari still needs the prefix, and a bar that is meant to be frosted must not simply be
+  // transparent there — the background-color half carries the look on its own if the blur never applies.
+  glass: `@keyframes eu-arrive-glass{from{background-color:transparent;-webkit-backdrop-filter:blur(0);backdrop-filter:blur(0)}`
+    + `to{background-color:var(--eu-arrive-bg,color-mix(in srgb, ${ARRIVE_SURFACE} 72%, transparent));-webkit-backdrop-filter:blur(0.6rem);backdrop-filter:blur(0.6rem)}}`,
+  condense: `@keyframes eu-arrive-condense{from{padding-block:var(--eu-arrive-pad-rest,0);min-height:var(--eu-arrive-h-rest,auto)}`
+    + `to{padding-block:var(--eu-arrive-pad-on,0);min-height:var(--eu-arrive-h-on,auto)}}`,
+};
+
+/** The keyframes a page actually uses — emitted once, exactly like the entrance effects. */
+export function pinArrivalKeyframes(used: Set<PinArrival | string>): string {
+  return [...used].map((id) => PIN_ARRIVAL_KEYFRAMES[id as PinArrival] ?? "").join("");
+}
+
+/** The vertical padding a block rests at, in base units — both sides, per-side winning over the shorthand. */
+const ownPadBlock = (node: BoxNode): number =>
+  Math.max(node.paddingTop ?? node.padding ?? 0, node.paddingBottom ?? node.padding ?? 0);
+
+/**
+ * CONDENSE NEEDS SOMETHING TO CONDENSE. A bar whose height is simply its text has no padding and no
+ * min-height, so "it gets shorter" would be a promise the page never keeps — and a control that appears to
+ * work and does nothing is the defect this project meets most. The Inspector asks this and says so.
+ */
+export function pinArrivalHasEffect(node: BoxNode): boolean {
+  if (!node.pinArrival) return false;
+  if (node.pinArrival !== "condense") return true;
+  return ownPadBlock(node) > 0 || (node.minHeight ?? 0) > 0;
+}
+
+/** A block's own colour, when it has a flat one to fill to — a gradient or a photo is not a colour. */
+const flatColour = (bg?: string): string | null =>
+  bg && !bg.startsWith("gradient:") && !bg.startsWith("url(") && !bg.includes("linear-gradient") ? bg : null;
+
+/** The per-block variables one arrival needs: what it looks like at rest, and what it becomes. */
+function arrivalVars(node: BoxNode, fx: PinArrival): string {
+  const rest = node.shadow ? SHADOW_CSS[node.shadow] : "none";
+  const add = (extra: string) => (rest === "none" ? extra : `${rest}, ${extra}`);
+  switch (fx) {
+    // The block KEEPS the shadow it already had and gains the arrival on top, rather than having its own
+    // design overwritten by an effect — the two are different decisions.
+    case "shadow": return `--eu-arrive-rest:${rest};--eu-arrive-on:${add(ARRIVE_SHADOW)}`;
+    case "rule": return `--eu-arrive-rest:${rest};--eu-arrive-on:${add(ARRIVE_RULE)}`;
+    case "solid": return `--eu-arrive-bg:${flatColour(node.background) ?? ARRIVE_SURFACE}`;
+    case "glass": return `--eu-arrive-bg:color-mix(in srgb, ${flatColour(node.background) ?? ARRIVE_SURFACE} 72%, transparent)`;
+    case "condense": {
+      const pad = ownPadBlock(node), h = node.minHeight ?? 0;
+      // 60% of itself, with a floor: the research is blunt that a bar on a phone lives between 48 and 56px,
+      // and condensing past that trades one problem for a smaller tap target.
+      const padOn = pad ? Math.max(pad * 0.4, 0) : 0;
+      const hOn = h ? Math.max(h * 0.6, 48) : 0;
+      return `--eu-arrive-pad-rest:${u(pad)};--eu-arrive-pad-on:${u(padOn)}`
+        + (h ? `;--eu-arrive-h-rest:${u(h)};--eu-arrive-h-on:${u(Math.min(hOn, h))}` : "");
+    }
+  }
+}
+
+/**
+ * ONE BLOCK'S ARRIVAL — the single resolver, called by the canvas and the exporter, like everything else
+ * about pinning.
+ *
+ * The timeline is the SCROLL of the nearest scroll container over a distance, not `scroll-state(stuck:)`:
+ * that would be the exact question to ask, and it is Chrome and Edge only at ~72%, needs a wrapper because
+ * an element cannot query its own state, and would leave Safari and Firefox showing nothing. A scroll
+ * timeline is ~84% and includes Firefox, and this codebase already ships one for entrances.
+ *
+ * It is emitted on the BLOCK, never on the band that may be carrying the pin: the band is transparent
+ * scaffolding, so a colour filling in there would sit behind the block's own background and be invisible.
+ * The trigger is the page's scroll, which does not care which element holds the position.
+ */
+export function pinArrivalCss(scope: string, node: BoxNode): string {
+  const fx = node.pinArrival;
+  if (!fx || !node.pin || !pinArrivalHasEffect(node)) return "";
+  const after = scrollLen(node.pinArrivalAfter ?? PIN_ARRIVAL_AFTER);
+  let css = `${scope}{${arrivalVars(node, fx)}}`;
+  /**
+   * AN ENTRANCE AND AN ARRIVAL ARE TWO DECISIONS, AND THE ELEMENT CAN ONLY HAVE ONE `animation-name` RULE.
+   *
+   * `revealCss` writes the entrance on this same block, so the rule emitted LAST takes the element over
+   * completely. Measured in a browser with both chosen: the only animation running was the arrival, and the
+   * entrance the user had picked was simply gone. Nothing errored, and the editor showed the same.
+   *
+   * Both are therefore declared here, in one rule, as the lists CSS was designed for — this rule is emitted
+   * after the entrance's by both engines, so it is the one that stands. Staggered entrances are untouched:
+   * those animate the block's CHILDREN, which never collide with the block's own arrival.
+   */
+  const rev = node.revealStagger ? null : revealEffect(node.revealEffect);
+  const names = rev ? `eu-reveal-${rev.id},eu-arrive-${fx}` : `eu-arrive-${fx}`;
+  const durs = rev ? `${REVEAL_DUR},auto` : "auto";
+  const eases = rev ? `${REVEAL_EASE},linear` : "linear";
+  const fills = rev ? "both,both" : "both";
+  const timelines = rev ? `${node.revealScroll ? "view()" : "auto"},scroll()` : "scroll()";
+  const ranges = rev ? `${node.revealScroll ? REVEAL_VIEW_RANGE : "normal"},0 ${after}` : `0 ${after}`;
+  /**
+   * LONGHANDS, and `animation-duration: auto` written out. The `animation` shorthand resets duration to 0s,
+   * and a 0s animation on a progress timeline is finished before the range begins — the arrival would appear
+   * fully applied from the very first pixel. `auto` is what makes the animation take the whole range.
+   */
+  css += `@supports (animation-timeline: scroll()){${scope}{`
+    + `animation-name:${names};animation-duration:${durs};animation-timing-function:${eases};`
+    + `animation-fill-mode:${fills};animation-timeline:${timelines};animation-range:${ranges}}}`;
+  // Decorative, so reduced motion simply gets the resting look. Nothing is lost: the block is still pinned.
+  css += `@media (prefers-reduced-motion:reduce){${scope}{animation:none !important}}`;
+  return css;
+}
+
+/** Every arrival rule in a tree, plus one copy of each keyframes it needs — the canvas's half. */
+export function treePinArrivalCss(node: BoxNode, scopeFor: (id: string) => string): string {
+  const used = new Set<PinArrival>();
+  const walk = (n: BoxNode): string => {
+    if (n.pinArrival && pinArrivalHasEffect(n)) used.add(n.pinArrival);
+    return pinArrivalCss(scopeFor(n.id), n) + (n.children ?? []).map(walk).join("");
+  };
+  const rules = walk(node);
+  return rules ? pinArrivalKeyframes(used) + rules : "";
+}
+
+/**
+ * Does an ancestor stop this block from ever being FIXED? The mirror of `pinBlockedBy`, and sharper.
+ *
+ * `position: fixed` is measured against the viewport — UNLESS an ancestor carries `transform`, `filter`,
+ * `backdrop-filter`, `perspective`, `will-change` or `container-type`. Any one of those makes that ancestor
+ * the containing block, and the fixed element quietly holds itself against a box halfway down the page
+ * instead. No error, no warning; it simply stops staying on screen.
+ *
+ * This builder emits three of them, and none of the three looks like it has anything to do with pinning:
+ *
+ *   • `container-type: inline-size` on every COMPONENT that is not hugging — the container queries that let
+ *     a Card tighten its own padding in a narrow column.
+ *   • `transform: rotate()` on any block given a TILT.
+ *   • `backdrop-filter` on the Alert's GLASS design.
+ *
+ * So "my fixed bar stopped working when I tilted the section" is a sentence a user could otherwise never
+ * explain. Returns the nearest offending ancestor so the inspector can name the block rather than say
+ * "something above this".
+ */
+/**
+ * Does THIS block make its own frame, capturing any fixed descendant? One predicate, two callers.
+ *
+ * The warning that names the offender and the canvas that decides whether to SHOW a block holding have to
+ * agree exactly, or the editor tells you a bar will not stay on screen while drawing it staying on screen.
+ * `transform`, `container-type` and `backdrop-filter` all do it, and this builder emits all three: a tilt,
+ * every non-hugging component, and the glass Alert.
+ */
+export function capturesFixed(node: BoxNode): boolean {
+  if (node.rotate) return true;                                   // transform: rotate()
+  if (node.type === "component" && !hugsContent(node)) return true; // container-type: inline-size
+  return !!node.variant?.includes("glass");                        // backdrop-filter
+}
+
+export function fixedBlockedBy(root: BoxNode, id: string, bp: Breakpoint = "base"): BoxNode | null {
+  const walk = (node: BoxNode, trail: BoxNode[]): BoxNode[] | null => {
+    const path = [...trail, node];
+    if (node.id === id) return path;
+    for (const kid of node.children ?? []) {
+      const hit = walk(kid, path);
+      if (hit) return hit;
+    }
+    return null;
+  };
+  // Every node AT THE RUNG being edited — a tilt or a pin set only on phones is as real as a desktop one.
+  const path = walk(root, [])?.map((n) => resolveResponsive(n, bp));
+  if (!path) return null;
+  const self = path[path.length - 1];
+  if (!self.pin || (self.hold ?? "sticky") !== "fixed") return null;
+  // Nearest first. The block's OWN transform is irrelevant — an element does not contain itself — and the
+  // page root is excluded, since containing a fixed block to the page is what the canvas does deliberately.
+  for (let i = path.length - 2; i >= 1; i--) {
+    if (capturesFixed(path[i])) return path[i];
+  }
+  return null;
 }
 
 /**
@@ -4097,7 +4695,7 @@ export function pinCSS(node: BoxNode, parent?: BoxNode): CSSProperties {
  *
  * Returns the nearest offending ancestor, so the inspector can name it rather than say "something above".
  */
-export function pinBlockedBy(root: BoxNode, id: string): BoxNode | null {
+export function pinBlockedBy(root: BoxNode, id: string, bp: Breakpoint = "base"): BoxNode | null {
   // The chain from the root down to the block, or null when it is not in this tree.
   const walk = (node: BoxNode, trail: BoxNode[]): BoxNode[] | null => {
     const path = [...trail, node];
@@ -4108,7 +4706,7 @@ export function pinBlockedBy(root: BoxNode, id: string): BoxNode | null {
     }
     return null;
   };
-  const path = walk(root, []);
+  const path = walk(root, [])?.map((n) => resolveResponsive(n, bp)); // at the rung — see fixedBlockedBy
   if (!path) return null;
   const self = path[path.length - 1];
   if (!self.pin) return null;
@@ -4119,6 +4717,58 @@ export function pinBlockedBy(root: BoxNode, id: string): BoxNode | null {
     if (a.clip || radiusCSS(a)) return a;
   }
   return null;
+}
+
+/**
+ * WHERE A STICKY BLOCK LETS GO — the box it travels inside, so the Inspector can say it in words.
+ *
+ * Sticky holds a box inside its containing block and nowhere else, so "until when does it hold?" has exactly
+ * one true answer, and it is not "its section". The Inspector said that for months and it was wrong in the
+ * case a user meets first: `normalizeRowBands` wraps EVERY block in a band of its own, the band hugs it, and
+ * `bandCarriesPin` moves the pin up onto that band — whose parent, for a block placed straight on the page,
+ * is the page. So a pinned header holds for the whole page, and the line underneath promised it would leave.
+ *
+ *   • `"page"` — the thing that sticks sits directly in the page: it holds to the very end.
+ *   • `"row"`  — it shares a band with blocks beside it, and lets go when that row of blocks does.
+ *   • a block  — the nearest real container around it, to be NAMED ("the Stack around it", "the Grid…").
+ *
+ * A GRID CELL IS THE LAST CASE, NOT THE ROW CASE — and that was measured, not reasoned. The first version of
+ * this returned "row" for a grid cell on the strength of "a grid item's containing block is its grid area",
+ * and the browser disagreed: a pinned cell in row 1 of a two-row grid was still held 900px into row 2, and
+ * let go only when the whole grid did. Words written from the spec would have told the user the wrong thing.
+ *
+ * `null` when sticky does not apply at all: not pinned, held fixed (measured against the window, so it never
+ * lets go), or floating (clause 1 of `pinCSS` — free positioning wins and the pin is ignored).
+ */
+export function pinScope(root: BoxNode, id: string, bp: Breakpoint = "base"): "page" | "row" | BoxNode | null {
+  const walk = (node: BoxNode, trail: BoxNode[]): BoxNode[] | null => {
+    const path = [...trail, node];
+    if (node.id === id) return path;
+    for (const kid of node.children ?? []) {
+      const hit = walk(kid, path);
+      if (hit) return hit;
+    }
+    return null;
+  };
+  const path = walk(root, [])?.map((n) => resolveResponsive(n, bp)); // at the rung — see fixedBlockedBy
+  if (!path || path.length < 2) return null;
+  const self = path[path.length - 1];
+  if (!self.pin || (self.hold ?? "sticky") !== "sticky" || isFloating(self)) return null;
+  const parent = path[path.length - 2];
+  // The band carries the pin when it hugs this block alone — then the BAND is what sticks, inside ITS parent.
+  const carried = bandCarriesPin(parent, bp)?.id === self.id;
+  const container = carried ? path[path.length - 3] : parent;
+  if (!container || container.id === root.id) return "page";
+  if (container.rowBand) return "row";
+  return container;
+}
+
+/** `pinScope` in the words the Inspector says: the page, the row, or the NAME of the block around it. */
+export type PinScopeWords = "page" | "row" | { around: string };
+export function pinScopeWords(root: BoxNode, id: string, bp: Breakpoint = "base"): PinScopeWords | null {
+  const scope = pinScope(root, id, bp);
+  if (scope === null || scope === "page" || scope === "row") return scope;
+  return { around: blockedByLabel(scope) ?? "block" };
 }
 
 // ── Band edges: sloped and curved section boundaries ─────────────────────────

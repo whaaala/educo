@@ -42,6 +42,47 @@ describe("hasIntrinsicSize", () => {
   });
 });
 
+describe("an image block as it is actually CREATED", () => {
+  /**
+   * EVERY OTHER TEST IN THIS FILE HAND-WRITES `height: "auto"`, AND THAT IS HOW THE BUG GOT THROUGH.
+   *
+   * `imageNode()` passes a patch to `createElement`, and the browser spec's upload test seeds the node with
+   * `height: "auto"` already set — so nothing here ever saw what the block is actually born with. It was born
+   * with `260px`, and since a stated height rightly beats a measured shape, that number overruled every
+   * photograph for ever.
+   *
+   * Measured through the real UI before the fix: add an Image block from the menu, upload a 4:3 photograph,
+   * and the stored node still read `height: "260px"` with `imgW: 4, imgH: 3` sitting unused beside it — the
+   * picture rendered 1024×260, a 3.94:1 letterbox. The identical photograph DROPPED onto the canvas came out
+   * 1024×768, because that path passes `height: "auto"` itself. Two routes, two answers.
+   *
+   * So this asserts the DEFAULT, with no patch to hide behind.
+   */
+  it("carries no stored pixel height — a picture's shape is discovered, not decided in advance", () => {
+    const fresh = createElement("image");
+    expect(fresh.height, "a pixel height at birth outranks the photograph's own shape for ever").not.toMatch(/px$/);
+    expect(fresh.height).toBe("auto");
+  });
+
+  it("…so a measured photograph takes its own shape by WHICHEVER route it arrived", () => {
+    // The palette route: create the block, then the upload patches in src + the measurement.
+    const uploaded = { ...createElement("image"), src: "data:image/png;base64,AAAA", imgW: 4, imgH: 3 };
+    expect(imageSizing(uploaded)).toEqual({ height: "auto", aspectRatio: "4 / 3" });
+    // The drag-and-drop route, which always worked — both must now agree.
+    const dropped = createElement("image", { src: "data:image/png;base64,AAAA", imgW: 4, imgH: 3, height: "auto" });
+    expect(imageSizing(dropped)).toEqual(imageSizing(uploaded));
+  });
+
+  it("…and a height the user really does type still crops, exactly as before", () => {
+    expect(imageSizing({ ...createElement("image"), imgW: 4, imgH: 3, height: "420px" })).toEqual({ height: "420px" });
+  });
+
+  it("…while a block with no picture yet still has a visible box to drop one into", () => {
+    // The letterbox remains the honest answer for an UNKNOWN shape — that is the one thing not changing.
+    expect(imageSizing(createElement("image"))).toEqual({ height: "260px" });
+  });
+});
+
 describe("imageSizing", () => {
   it("keeps a height the user set, because cropping to a shape is a design choice", () => {
     expect(imageSizing(imageNode({ height: "420px", imgW: 1600, imgH: 900 })))

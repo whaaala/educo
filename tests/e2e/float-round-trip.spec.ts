@@ -110,6 +110,49 @@ test.describe("floating a parent and putting it back", () => {
     expect((await geo(page, "sec")).h, "and the section is still that tall").toBeGreaterThanOrEqual(400);
   });
 
+  /**
+   * THE BLOCK'S OWN SIZE, which is the same bug one level down and was found the same way — by a user.
+   *
+   * Floating turns a block into a card: it writes a definite height and drops the block's own `minHeight`.
+   * Putting it back deleted BOTH, so the size the user had set before they ever floated it was gone.
+   * Measured: a 120px stack came back 49px tall — the height of the text inside it — and floating it again
+   * started from 49. Two or three cycles and an empty box has nothing left to see or to click: "when I
+   * float it again, I don't see the stack any more".
+   */
+  test("the BLOCK's own height survives a round trip, and survives doing it twice", async ({ page }) => {
+    await seed(page);
+    await select(page, "sec", "sec");
+    for (const round of [1, 2]) {
+      await page.keyboard.press("Alt+f");
+      await page.waitForTimeout(450);
+      expect((await nodeOf(page, "sec"))!.position, `round ${round}: it never floated`).toBe("absolute");
+      await page.keyboard.press("Alt+f");
+      await page.waitForTimeout(450);
+      /**
+       * BOTH the stored floor and the rendered height. The first version of this asserted only the rendered
+       * height and PASSED with the fix switched off, while the section had already collapsed to 60px — a
+       * guard that cannot fail is the bug, not the proof.
+       */
+      expect((await nodeOf(page, "sec"))!.minHeight, `round ${round}: the height the user set is gone`).toBe(400);
+      expect((await geo(page, "sec")).h, `round ${round}: it came back short`).toBeGreaterThanOrEqual(396);
+    }
+  });
+
+  test("a size set WHILE it floats is kept when it goes back — that one is the user's own", async ({ page }) => {
+    await seed(page);
+    await select(page, "sec", "sec");
+    await page.keyboard.press("Alt+f");
+    await page.waitForTimeout(400);
+    const height = page.getByLabel("Height", { exact: true }).first();
+    await height.fill("260px");
+    await height.press("Enter");
+    await page.waitForTimeout(400);
+    await page.keyboard.press("Alt+f");
+    await page.waitForTimeout(450);
+    const after = (await geo(page, "sec")).h;
+    expect(after, `it came back ${after}px; 260 was asked for`).toBeGreaterThanOrEqual(250);
+  });
+
   test("an individual child can float on its own, leaving its siblings alone", async ({ page }) => {
     await seed(page);
     const siblingBefore = await geo(page, "c1");
