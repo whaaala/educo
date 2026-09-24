@@ -132,6 +132,12 @@ Everything the tiles make is ordinary blocks. Edit the second hero's headline by
 
 The builder measures a photograph when you upload it and tells the browser its size up front, so **the space is reserved before the picture arrives**. Without that, text jumps down the page as each photo loads and readers lose their place — the single most irritating thing a photo-heavy site can do.
 
+> **Your photograph arrives at its own shape now, whichever way you added it.** Until recently an Image block
+> came with a fixed height already on it, so a tall or square picture added *from the Blocks panel* was
+> cropped to a letterbox — while the same picture *dragged* onto the page came out correctly. Two routes, two
+> results, and the common one was wrong. A picture's shape is now taken from the picture; a height you set
+> yourself still crops, exactly as before.
+
 ### Components (design‑system pieces)
 These are ready‑made, themed pieces. **Each one is a fully editable tree** — click any inner part (a card's title, its button, a rating's star) and you get that part's full controls.
 
@@ -262,6 +268,26 @@ The builder is responsive by design, and you can fine‑tune per size.
 3. On narrow screens, side‑by‑side items **stack automatically** and nothing forces a horizontal scrollbar.
 
 **Base size** (top bar) sets the rem base everything scales from — bump it up and the whole page scales proportionally while staying readable.
+
+### Everything scales with the screen — except below what can be read
+
+Your text, your spacing and your pictures all follow the width of the screen, so a page looks deliberate on
+a phone and on a 27‑inch monitor rather than being the same layout squeezed. Text grows from **16px** on a
+phone to about **22px** on a large desktop, and every other size — headings, buttons, captions — is a
+proportion of that one value, so they scale together and keep their relationship to each other.
+
+> **16px is a floor, not a size.** Spacing *should* close up on a narrow screen; text should not, and for a
+> while it did — body copy came out at **11.2px on every phone** and a button label at under 10px, because
+> the reading size was following the same unit as the gaps. It now stops at `1rem` and grows from there.
+> That floor is in `rem`, so a reader who has set a larger text size in their own browser still gets it.
+
+**A photograph keeps its own proportions at every width.** A 4:3 picture is 4:3 on a 320px phone and on a 4K
+monitor — only its size changes — and it never runs off the side of the screen. If you want it cropped to a
+shape of your own, set a **Height** and that is what you get.
+
+**The builder's own toolbar follows the same rule.** Narrow the window and the top bar **wraps onto more
+rows** rather than pushing Preview, Export and the device chips off the side. Every control stays on the
+screen at any width, and at desktop sizes it is the single row it always was.
 
 ---
 
@@ -654,6 +680,7 @@ One difference worth knowing: an item's entrance never staggers its own parts. A
 - **"My block box is bigger than its content."** With **Width → Fit** a block always hugs its content exactly (in the layout and when floating) — no empty stretched box. If you *want* a larger box (e.g. a tall badge), size it with **Width/Height** and use **Content position** to place the content inside it.
 - **"The page shows two sections I didn't add."** That's old saved data. Click **Reset** for a clean, blank page.
 - **"Text size / bold / colour didn't change my component."** Make sure you selected the exact inner piece (the card's *title*, not the card). Each piece is edited on its own.
+- **"I clicked a text block, started typing, and nothing appeared."** Fixed. Clicking a text block selects the band around it first — that is the drill‑down rule, and it is deliberate — but for a short while the editor read that as "you did not mean to be in this text" and took the cursor away a fraction of a second after the click. Click and type; the words land. The same fix cured its opposite: clicking the empty part of a box used to leave the cursor stranded in whatever text was nearest, and while it sat there **every keyboard shortcut silently did nothing** — Delete, `Ctrl+D`, the arrows, all of them.
 - **Everything saves automatically** to your browser. **Reset** wipes the current site back to a blank page — use it deliberately.
 
 ---
