@@ -18,12 +18,14 @@ Run through this checklist BEFORE writing any code:
 - [ ] **No `alert()`, `confirm()`, `prompt()`** — plan to use modal/dialog components
 - [ ] **No hardcoded colors or inline styles** — use Tailwind theme classes and shared components
 - [ ] **Plan for accessibility** — aria labels, keyboard navigation, color contrast, focus management
+- [ ] **Plan the UAT passes, one per change (RULE X)** — list the changes you are about to make, in order. Each one gets its own trip through the real UI in a real browser before the next one starts, in every combination it can appear in. If the app isn't running yet, start it now — you cannot UAT what you cannot open. See [docs/UAT_EVERY_CHANGE.md](docs/UAT_EVERY_CHANGE.md).
 
 ## ✅ AFTER Completing Any Implementation
 
 Run through this checklist BEFORE telling the user it's done:
 
 - [ ] **⛔ EVERY BUG IN THE LEDGER READS FIXED** — no exceptions. Restate the ledger and the status of each line. A bug you found is a bug you FIX, in the same change, with a **mutation-proven** guard: no severity threshold, no "pre-existing", no "out of scope", no "noted for later", and it includes **bugs in tests** (a guard that cannot fail, or a flaky one). A line that is genuinely not a defect closes as NOT A BUG **with the measurement that shows it**. Choosing not to fix one is the USER'S call, never yours — say so explicitly and ask. See [docs/FIX_WHAT_YOU_FIND.md](docs/FIX_WHAT_YOU_FIND.md).
+- [ ] **⛔ RULE X — YOU SAW IT IN THE UI, AFTER EACH CHANGE** — every change, however small, driven in a real browser from the user's point of view before moving to the next one. Ten changes = ten UAT passes, in order. Each one checked in EVERY combination it can appear in (themes · 375/768/1280+ · device presets · every entry point · each state ON and OFF), trying hard to break it. State what you drove and what you saw. **The user must never be the one who finds it.** See [docs/UAT_EVERY_CHANGE.md](docs/UAT_EVERY_CHANGE.md).
 - [ ] **Every button/toggle/input works** — click every interactive element, verify it does its job
 - [ ] **All entry points tested** — menu items, toolbar buttons, keyboard shortcuts, right-click
 - [ ] **Side effects verified** — if feature A blocks B/C/D, test ALL of B/C/D are blocked
@@ -163,12 +165,20 @@ Run through this checklist BEFORE telling the user it's done:
   initial commit until 2026-09-06, so 4,755 problems — including real dead code and three conditional-hook
   bugs — were invisible. A tool that cannot start looks exactly like a tool that passes.
 
-### 12. The lettered rules — S · T · U · V · W (MANDATORY, every component)
+### 12. The lettered rules — S · T · U · V · W · X (MANDATORY, every component)
 - **RULE S — Design galleries you can SEE.** Every component SHOWS its designs as live visual previews through the shared `DesignGallery`, never a list of text chips. A tile renders the real thing, so it can never promise a look the canvas will not deliver.
 - **RULE T — Variations must be visibly different, AND combine.** Every design and every fine-tuning option is asserted **in a browser** to render differently from every other, and the axes are independent so they combine rather than replace one another. One flat exclusive list is the bug this exists to prevent.
 - **RULE U — Playwright-test EVERYTHING, from the user's point of view.** Every component, every function, every item, the look and feel, and every rule above — driven in a real browser, not sampled. Unit tests alone are never sufficient.
 - **RULE V — Fix what you find.** See rule 8 above and [docs/FIX_WHAT_YOU_FIND.md](docs/FIX_WHAT_YOU_FIND.md).
 - **RULE W — Clean code always.** See rule 10 below.
+- **RULE X — SEE IT YOURSELF FIRST: UAT every change in the UI, one change at a time.** No change is too
+  small to look at. **After EACH change — not after the batch** — open the real app in a real browser, do the
+  thing a user would do, and LOOK at what they would see. Ten changes means ten UAT passes, in order.
+  And when you check one, check **every combination it can appear in**: each theme, each screen size,
+  each entry point, each state ON and OFF, each device preset — try hard to break it. Only then move on.
+  **The user must never be the one who finds it.** Every bug in this file's history was found by them
+  first and reproduced by me afterwards; that order is the bug this rule exists to end.
+  See [docs/UAT_EVERY_CHANGE.md](docs/UAT_EVERY_CHANGE.md).
 
 ### 13. Capability parity & the component workflow (MANDATORY)
 - **Rule A — capability parity.** Every capability built for ONE component becomes the baseline for **every** component where it applies: editable items, part-CSS overrides, per-item/part colour + font + size + position, editable numbers, detach / float / group / position, no clipping.
