@@ -82,6 +82,19 @@ const RULES: [name: string, mustSay: RegExp][] = [
   ["Why: Yoga cannot render what the builder emits", /Yoga: flexbox only/i],
   ["The built site lives inside the existing Educo app, not an app per school", /not an app\s*\n?\s*per school/i],
   ["Tablet is not a third build", /Tablet is not a third build/i],
+
+  /**
+   * THE UNITS HIERARCHY. Rule 16 said "rem / clamp() units — never a stored pixel" for months, and the product
+   * shipped stored pixels in four block types, every corner radius and every shadow the whole time. A rule
+   * with no guard is a rule that is not followed, so these cases pin the ORDER and the one exception, and
+   * `units-not-pixels.test.ts` enforces it against the real catalogue.
+   */
+  ["rem and em come first", /`rem` \/ `em` first/],
+  ["percent is for what is relative to its parent", /relative to its PARENT/],
+  ["px only for a hairline", /1px hairline/i],
+  ["a fluid clamp carries a rem in its ideal term", /carries a `rem` in its IDEAL term/],
+  ["the units rule covers media too", /applies to MEDIA too/],
+  ["…and it is guarded rather than merely written down", /units-not-pixels/],
 ];
 
 describe("CLAUDE.md is the complete rule register", () => {

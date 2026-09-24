@@ -18,7 +18,7 @@ import {
   updateBox, removeBox, insertBox, moveBoxStep, duplicateBox, moveBox, cloneBox, findParent, isAncestor, isContainer, containerLabel, widthPct, stackWithBlock, fitBand,
   isFloating, floatBox, unfloatBox, groupBoxes, ungroupBoxes, bringToFront, sendToBack, bringForward, sendBackward,
   shouldTakeMirrorBox, hostSizedFor, type MirrorBox, type MirrorChase, fadedPaint, boxOpacity, backgroundCss, treePaintLayerCss, radiusCSS, isClipped, SHADOW_CSS, videoEmbedSrc, sanitizeCssDeclarations, expandScopedCss, ACCORDION_CSS_PARTS, itemOverrideCss, itemHasOverride, itemNumberVars, richBody, componentTextCss, componentBoxCss, bgShowThroughCss, resizeTopEdge, blockContainmentCss, alertToastCss, treeHasToast, treeHasFixedHold, accordionClasses, bandClasses, advancedCssStyle, alertActionsHTML, hugsContent, itemFloatContextCss, COMPONENT_ITEM_SEL, clampContentScale, MIN_CONTENT_SCALE, isMultiItemComponent, comfortableWidth, remLen, rootFontPx, isDefiniteLen, addItemAfter, duplicateItem, duplicateChildItem, removeItem, removeChildItem, moveItem, moveChildItem, updateItem, updateChildItem, ALERT_SEVERITY_ICON, alertPartInline, alertIconInline, collectAlertItemStyles,
-  type Breakpoint, resolveResponsive, updateBoxResponsive, treePinArrivalCss, floatHoldCSS, canvasFixedStyle, capturesFixed, imageSizing, importPhoto, treeItemEffectsCss, itemNeedsClass, floatZIndex, gridPlacementAt, gridColumnsAt, masonryMeasureAttr, masonryMeasurePass, pinStackMarker, pinStackPass, isPager, pagerStripCss, pagerNavHTML, selectionChain, typoRole, typoRootVars, typoCascadeCss, bandEdgeCSS,
+  type Breakpoint, resolveResponsive, updateBoxResponsive, treePinArrivalCss, floatHoldCSS, canvasFixedStyle, capturesFixed, imageSizing, importPhoto, treeItemEffectsCss, itemNeedsClass, floatZIndex, gridPlacementAt, gridColumnsAt, masonryMeasureAttr, masonryMeasurePass, baseUnitParts, pinStackMarker, pinStackPass, isPager, pagerStripCss, pagerNavHTML, selectionChain, typoRole, typoRootVars, typoCascadeCss, bandEdgeCSS,
 } from "@/lib/box-model";
 import { ICON_SET } from "./icons";
 import { PortalMenu, MenuItem, MenuHeader, MenuSep } from "./ui";
@@ -86,10 +86,18 @@ function measureBoxU(el: HTMLElement, baseFont: number): number {
   let cq: HTMLElement | null = el.parentElement;
   while (cq && getComputedStyle(cq).containerType === "normal") cq = cq.parentElement;
   const cqw = (cq?.clientWidth ?? doc.defaultView?.innerWidth ?? 1000) / 100;
-  const lo = ((baseFont * 0.7) / 16) * rem;
-  const hi = ((baseFont * 1.4) / 16) * rem;
-  const mid = (baseFont / 10) * cqw;
-  return Math.min(hi, Math.max(lo, mid)) || 10;
+  /**
+   * THE NUMBERS COME FROM `baseUnitParts`, never from a second copy of the formula written out here.
+   *
+   * They used to be re-typed: `const mid = (baseFont / 10) * cqw`, the old bare-`cqw` ideal. When the CSS
+   * unit gained its rem term (Core Rule 16 — the reader's text size must move the page) this was not
+   * changed with it, so the drag converted pixels using one unit while the page rendered with another, and
+   * the edge-anchored bottom drifted 3px. Rule 19's fourth outing, and the first caused by a seam rather
+   * than by the resize maths.
+   */
+  const { loRem, hiRem, remHalf, cqwHalf } = baseUnitParts(baseFont);
+  const mid = remHalf * rem + cqwHalf * cqw;
+  return Math.min(hiRem * rem, Math.max(loRem * rem, mid)) || 10;
 }
 
 const round1 = (n: number) => Math.round(n * 10) / 10;
@@ -2073,9 +2081,31 @@ export default function BoxCanvas({
         const rise = Math.max(-selfSlack, Math.min(-dy, aboveGap0 + aboveSlack));
         const fromGap = Math.min(Math.max(rise, 0), aboveGap0); // only GROWING eats the gap
         const fromPartner = rise - fromGap;                     // negative → the block above grows instead
-        const h = Math.max(MIN_ROW_PX, Math.round(H0 + rise));
         const ah = Math.max(MIN_ROW_PX, Math.round(aboveH0 - fromPartner));
         const mt = pxU(Math.max(0, Math.round(aboveGap0 - fromGap)));
+        /**
+         * THE HEIGHT IS DERIVED FROM THE MARGIN THAT WAS ACTUALLY STORED — rule 19, held by construction
+         * rather than by arithmetic that happens to round nicely.
+         *
+         * `h` used to be `H0 + rise`, rounded to whole PIXELS, while `mt` is quantised to whole stored UNITS
+         * by `pxU`. The bottom edge sits at `flowOrigin + margin_px + height`, so pinning it needs that sum to
+         * be exact — and two independent roundings do not add up. It looked correct for a long time only
+         * because the fluid unit happened to be 1.28px at the widths the guards used, so the error cancelled.
+         * The moment `--box-u` gained its rem term (Core Rule 16) the numbers stopped cancelling and the
+         * anchored bottom drifted 3px. That is rule 19's fourth outing, and the first one caused by a unit.
+         *
+         * So the margin is quantised FIRST, converted back to the pixels it really means, and the height is
+         * whatever is left between the flow origin and the bottom the drag must not move. The origin itself
+         * moves when the block above changes height, which is what `(ah - aboveH0)` accounts for.
+         */
+        const mtPx = (boxU * mt) / 10;
+        /**
+         * NOT ROUNDED TO A WHOLE PIXEL. `mtPx` is fractional — a whole number of stored units is rarely a
+         * whole number of pixels — so rounding the height leaves that fraction unabsorbed and the anchored
+         * bottom lands up to a pixel out. The height is emitted through `remLen`, which keeps three decimals,
+         * so it can carry the remainder exactly and the sum closes.
+         */
+        const h = Math.max(MIN_ROW_PX, Math.round((startBotPx - (flowY + (ah - aboveH0)) - mtPx) * 1000) / 1000);
         const scN = fitScale(h, naturalH);
         tree = writeBox(tree, id, isComp
           ? { height: remLen(h, rootPx), minHeight: undefined, clip: undefined, marginTop: mt, contentScale: scN < 1 ? scN : undefined }

@@ -204,7 +204,22 @@ Run through this checklist BEFORE telling the user it's done:
 ### 16. Responsive Field Guide — the four ingredients (MANDATORY, everywhere)
 Every content item and component, existing and future, across the whole app:
 - **Fluid layouts** — intrinsic auto-fit grids that STACK on narrow, never crammed columns
-- **`rem` / `clamp()` units** — never a stored pixel reaching the page
+- **`rem` / `clamp()` units** — never a stored pixel reaching the page. **The hierarchy, in order:**
+  1. **`rem` / `em` first** — anything a reader should be able to enlarge: type, spacing, padding, gaps,
+     radii, shadows, offsets, block heights, media boxes. `remLen(px)` is the converter; use it.
+  2. **`%` where the thing is relative to its PARENT** rather than to text — fluid widths, free positions,
+     `max-width: 100%` on media.
+  3. **`px` only where nothing else is meaningful** — a **1px hairline** (a border, a rule) is one device
+     pixel by definition. That is the whole list. "It was easier" is not on it.
+  - **Every fluid `clamp()` carries a `rem` in its IDEAL term**, not only in its bounds:
+    `clamp(min, <rem> + <cqw|vw>, max)`. A bare `1cqw` middle means the reader's browser text size changes
+    nothing between the bounds — measured, setting a browser to 24px moved this product's spacing by **0px**.
+  - **It applies to MEDIA too**: an image, an SVG or an embed is sized by `%` + `aspect-ratio` + `rem`, never
+    a fixed pixel box.
+  - **Guarded, not merely written down:** `tests/unit/units-not-pixels.test.ts` enumerates the component
+    catalogue and fails on any stored pixel a block emits, so a component added later is covered the day it
+    appears. This rule existed for months with no guard and was broken the whole time — that is why it has
+    one now.
 - **Flexible media** — `max-width: 100%`, intrinsic dimensions set so nothing jumps as it loads
 - **Container queries** — a component adapts to ITS OWN box, never the viewport
 

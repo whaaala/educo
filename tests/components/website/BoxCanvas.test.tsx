@@ -4,7 +4,7 @@ import { render, screen, fireEvent } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import BoxCanvas from "@/components/website/box/BoxCanvas";
 import { DEFAULT_THEME } from "@/lib/site-storage";
-import { createContainer, createGrid, createElement, findBox, makeRowBand, normalizeRowBands, type BoxNode } from "@/lib/box-model";
+import { createContainer, createGrid, createElement, findBox, makeRowBand, normalizeRowBands, remLen, type BoxNode } from "@/lib/box-model";
 
 function Harness({ initial, initialSel = null as string | null, minHeight }: { initial: BoxNode; initialSel?: string | null; minHeight?: number }) {
   const [root, setRoot] = useState(initial);
@@ -683,8 +683,25 @@ describe("BoxCanvas (box-model editor)", () => {
     const t = createContainer("column", { id: "root", baseFont: 10, children: [] } as Partial<BoxNode>);
     const { container } = render(<BoxCanvas root={t} theme={DEFAULT_THEME} onChange={() => {}} />);
     const el = container.querySelector<HTMLElement>('[data-box-id="root"]')!;
-    // clamp(minRem, cqw, maxRem): rem bounds keep it browser-relative; cqw scales with the container width
-    expect(el.style.getPropertyValue("--box-u")).toBe("clamp(0.4375rem, 1cqw, 0.875rem)");
+    const u = el.style.getPropertyValue("--box-u");
+    /**
+     * ASSERTED AS THE PROPERTY, because this test named the right thing and pinned the wrong value.
+     *
+     * It said "scales with the canvas width + browser (WCAG)" and then required
+     * `clamp(0.4375rem, 1cqw, 0.875rem)` — whose middle term is a bare `1cqw` and therefore does NOT scale
+     * with the browser at all. Between the bounds, which is nearly always, a reader who enlarged their text
+     * got no change: measured on the exported page at 1280px, setting the browser to 24px moved the page's
+     * spacing by 0px. A literal is a weak assertion; it pinned the bug in place and read as if it forbade it.
+     *
+     * The three halves of the real rule, each checked on its own:
+     */
+    expect(u, "the unit must be a clamp — a floor, an ideal and a ceiling").toMatch(/^clamp\(/);
+    expect(u, "the BOUNDS are rem, so the extremes follow the reader").toMatch(/clamp\(\s*[\d.]+rem\s*,.*,\s*[\d.]+rem\s*\)$/);
+    expect(u, "the CONTAINER term — it still tracks the box it is in").toMatch(/cqw/);
+    expect(u, "and the IDEAL term carries a rem, or the reader's text size changes nothing between the bounds")
+      // No `\b` around rem: in `0.3125rem` the digit and the `r` are both word characters, so there is no
+      // boundary between them and `\brem\b` never matches a real length. It cost one run to notice.
+      .toMatch(/clamp\([^,]+,[^,]*rem[^,]*cqw/);
   });
 
   // ── Floating layers (free overlap) ───────────────────────────────────────────────────────────────
@@ -845,7 +862,7 @@ describe("BoxCanvas (box-model editor)", () => {
     expect(el.style.border).toContain("3px");
     expect(el.style.border).toContain("dashed");
     expect(el.style.boxShadow).not.toBe("");
-    expect(el.style.borderRadius).toBe("0px 10px 10px 10px"); // TL overridden to 0
+    expect(el.style.borderRadius).toBe([0, 10, 10, 10].map((n) => remLen(n)).join(" ")); // rem, never px — Core Rule 16 // TL overridden to 0
     expect(el.style.transform).toBe("rotate(15deg)");
   });
 

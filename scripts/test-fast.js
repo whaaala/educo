@@ -69,6 +69,7 @@ const INVARIANT_SPECS = [
   "tests/e2e/item-effects.spec.ts",
   "tests/e2e/stacking.spec.ts",
   "tests/e2e/twelve-columns.spec.ts",
+  "tests/e2e/every-component-fills-the-row.spec.ts",
   "tests/e2e/grid-cell-resize.spec.ts",
   "tests/e2e/add-grid-in-grid.spec.ts",
   "tests/e2e/drag-grid-in.spec.ts",

@@ -579,3 +579,31 @@ Feature: The twelve-column grid in the Box Builder
       three-track row put every cell in column 1, drawn one on top of another, from
       820px down. Restating a cell's own start at that device is still honoured
       exactly: there I really am speaking in that row's units.
+
+  # ── The last row fills, for every block in the catalogue ───────────────────
+  # tests/e2e/every-component-fills-the-row.spec.ts
+
+  Scenario: A narrowed grid never leaves half a row of background
+    Given a three-across grid inside a section with a background colour
+    When the page is viewed between 620px and 880px, where the track caps at two
+    Then the cell that wraps onto the last row stretches to fill it
+    Because any count that does not divide by the narrowed track leaves an orphan
+      — measured, a three-card row stopped 310px short of a 620px grid and the
+      gap was the section's own colour. Four cards divided evenly and filled,
+      which is why nobody had seen it. A three-card row is Scenario B of our own
+      user guide.
+
+  Scenario: …and that holds for every block the palette can add
+    Given one grid per kind — every primitive and every catalogue component
+    When each is viewed at twelve widths either side of every rung boundary
+    Then not one of them leaves a gap beside its last row
+    Because a per-component test is exactly the test that will not exist for the
+      component nobody wrote one for. The sweep enumerates the catalogue, so a
+      component added tomorrow is covered the day it appears. Measured without
+      the fix: 80 of 240 checks left a hole, across all twenty kinds.
+
+  Scenario: A layout the user made themselves is left alone
+    Given a twelve-column row holding two cells of four columns each
+    Then the third of the row they left empty stays empty
+    Because filling it would be the builder arguing with a design. Only a grid
+      the responsive ladder NARROWED is stretched.

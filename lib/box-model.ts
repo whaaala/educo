@@ -846,12 +846,13 @@ export function createElement(type: Exclude<BoxType, "container">, overrides: Pa
      * All that changes is that a shape we DO know is no longer overruled by a number nobody chose.
      */
     case "image": return { ...base, src: "", width: "100%", height: "auto", ...overrides };
-    case "video": return { ...base, src: "", width: "100%", height: "315px", ...overrides };
+    // 315px was the 16:9 height of a 560px embed. In rem it follows the reader, like every other size here.
+    case "video": return { ...base, src: "", width: "100%", height: remLen(315), ...overrides };
     case "icon": return { ...base, icon: "Star", fontSize: 32, ...overrides };
     case "divider": return { ...base, width: "fill", ...overrides };
     case "list": return { ...base, listStyle: "bullet", listItems: ["First item", "Second item", "Third item"], fontSize: 16, ...overrides };
     case "embed": return { ...base, width: "100%", height: "260px", html: "", ...overrides };
-    case "spacer": return { ...base, width: "100%", height: "48px", ...overrides };
+    case "spacer": return { ...base, width: "100%", height: remLen(48), ...overrides };
     default: return { ...base, type: "text", text: "New text — click to edit.", ...overrides };
   }
 }
@@ -2619,12 +2620,19 @@ export function clearOverride(root: BoxNode, id: string, bp: Breakpoint): BoxNod
 
 // ── Decoration (border / shadow / corners / rotation) ────────────────────────
 
-/** Preset drop shadows (elevation scale). Kept subtle + theme-neutral (soft black). */
+/**
+ * Preset drop shadows (elevation scale). Kept subtle + theme-neutral (soft black).
+ *
+ * IN `rem`, LIKE EVERY OTHER SIZE. An elevation is part of the design: when a reader enlarges their browser
+ * text the card grows, and a shadow still measured in device pixels becomes a hairline under a large card
+ * rather than the lift it was drawn to be. `1px` offsets and spreads are left alone — a hairline is one
+ * device pixel by definition, which is the one case the units rule admits px for.
+ */
 export const SHADOW_CSS: Record<NonNullable<BoxNode["shadow"]>, string> = {
   sm: "0 1px 2px rgba(0,0,0,0.08), 0 1px 1px rgba(0,0,0,0.06)",
-  md: "0 4px 8px rgba(0,0,0,0.10), 0 2px 4px rgba(0,0,0,0.06)",
-  lg: "0 12px 24px rgba(0,0,0,0.12), 0 4px 8px rgba(0,0,0,0.08)",
-  xl: "0 24px 48px rgba(0,0,0,0.18), 0 8px 16px rgba(0,0,0,0.10)",
+  md: "0 0.25rem 0.5rem rgba(0,0,0,0.10), 0 0.125rem 0.25rem rgba(0,0,0,0.06)",
+  lg: "0 0.75rem 1.5rem rgba(0,0,0,0.12), 0 0.25rem 0.5rem rgba(0,0,0,0.08)",
+  xl: "0 1.5rem 3rem rgba(0,0,0,0.18), 0 0.5rem 1rem rgba(0,0,0,0.10)",
 };
 
 /** Per-corner border-radius (px) → CSS, falling back to the all-corners `radius`. Undefined when none set. */
@@ -2632,7 +2640,18 @@ export function radiusCSS(node: BoxNode): string | undefined {
   const r = node.radius;
   const tl = node.radiusTopLeft ?? r, tr = node.radiusTopRight ?? r, br = node.radiusBottomRight ?? r, bl = node.radiusBottomLeft ?? r;
   if (tl == null && tr == null && br == null && bl == null) return undefined;
-  return `${tl ?? 0}px ${tr ?? 0}px ${br ?? 0}px ${bl ?? 0}px`;
+  /**
+   * IN `rem`, BECAUSE A CORNER IS PART OF THE DESIGN AND THE DESIGN FOLLOWS THE READER.
+   *
+   * This emitted raw pixels for its whole life, and because rule 3 makes it the ONE resolver every block and
+   * every future component goes through, that was every rounded corner in the product pinned to a size that
+   * ignores a reader who has enlarged their browser text — while the text beside it grew. A 16px radius on a
+   * card whose type has doubled is not the same design; it is a tighter one.
+   *
+   * Fixing it in the single resolver is the whole value of having a single resolver: nothing had to be found,
+   * and a component added tomorrow inherits it by existing.
+   */
+  return `${remLen(tl ?? 0)} ${remLen(tr ?? 0)} ${remLen(br ?? 0)} ${remLen(bl ?? 0)}`;
 }
 
 /** Does this box round or clip its content (so overflow must be hidden)? */
@@ -2870,6 +2889,67 @@ export function gridPlacementAt(parent: BoxNode, child: BoxNode, bp: Breakpoint 
   // stretches the row past the edge of the screen.
   const raw = Math.round(child.colStart);
   return { track, span, start: Math.min(track - span + 1, Math.max(1, raw)) };
+}
+
+/**
+ * THE LAST ROW FILLS. When the responsive ladder narrows a grid's track, the cells must still tile the row.
+ *
+ * Reported from a real page, with a screenshot: a 3×3 grid inside a dark stack, previewed narrower, showed a
+ * column of content with the stack's background filling the rest — "the three rows and three columns doesn't
+ * fully expand on the width". Measured on the exported page across ten widths, and it is not that layout, it
+ * is ARITHMETIC:
+ *
+ *     width 620–880 → the ladder caps the track at 2 (tablet portrait)
+ *     3 cards        → 2 up, 1 alone, HALF A ROW of background
+ *     9 cells        → 4 rows of 2, 1 alone, same
+ *     4 cards        → 2 up, 2 up, fills — which is why nobody had seen it
+ *
+ * Any count that does not divide by the narrowed track leaves an orphan, and that includes the three-card row
+ * this project's own guide teaches as Scenario B. The 2-across cap is deliberate and tested ("two up, and the
+ * third wraps"), so the fix is not to change the ladder: the wrapped cell STRETCHES to fill what is left.
+ *
+ * ONLY WHEN THE LADDER REFLOWED, never at a width the user laid out themselves. A row of two span-4 cells in a
+ * twelve-column grid leaves a third of the row empty on purpose, and filling that would be the builder
+ * arguing with a design. `gridReflowsAt` is the same test every other rung-aware resolver asks.
+ *
+ * Returns the span this child should take, which is its ordinary span except for the one cell that ends a
+ * short final row.
+ */
+export function gridSpanAt(parent: BoxNode, child: BoxNode, bp: Breakpoint = "base"): number {
+  const own = gridPlacementAt(parent, child, bp).span;
+  if (parent.layout !== "grid") return own;
+  /**
+   * THE LADDER NARROWED IT, AND THE PERSON DID NOT ASK FOR THIS COUNT — both halves, and the first version of
+   * this line had neither.
+   *
+   * It asked `gridReflowsAt`, which looked like the right question and is not: `setAtRung(node, key, "base")`
+   * returns TRUE unconditionally, because the base IS the node's own value. So `gridReflowsAt` is true at base
+   * for every grid that has ever been given a column count — harmless where it is used for PLACEMENT, which
+   * also requires the track to have actually changed, and not harmless here. Measured: a deliberate
+   * two-thirds row at 1440px had its second cell stretched to `span 8` and the empty third filled in.
+   *
+   * The guard that caught it is the one written for exactly this — "a layout the person made themselves is
+   * left alone" — which is why it was written at the same time as the rule rather than afterwards.
+   *
+   * And a count stated AT a rung is a decision too: three columns asked for on a phone with four cells leaves
+   * a short last row, and that is the person's arithmetic, not the ladder's.
+   */
+  const narrowed = !setAtRung(parent, "columns", bp) && gridColumnsAt(parent, bp) < gridColumns(parent);
+  if (!narrowed) return own;
+  if (isMasonry(parent, bp)) return own; // a masonry track is a measuring unit, not a row to fill
+  const kids = (parent.children ?? []).filter((c) => !isFloating(c) && !resolveResponsive(c, bp).hidden);
+  if (kids.length < 2) return own; // one cell already spans what it was given
+  const track = gridColumnsAt(parent, bp);
+  // The same walk `gridRowTracks` makes, so the two cannot disagree about where a row breaks.
+  let used = 0;
+  for (const c of kids) {
+    const span = gridPlacementAt(parent, c, bp).span;
+    if (used + span > track) used = 0;
+    used += span;
+  }
+  if (used === 0 || used >= track) return own;      // the final row filled by itself
+  if (kids[kids.length - 1].id !== child.id) return own; // only the cell that ends it stretches
+  return Math.min(track, own + (track - used));
 }
 
 /**
@@ -3728,8 +3808,52 @@ export function u(px: number): string {
 export function baseUnit(baseFontPx = 10): string {
   const lo = +((baseFontPx * 0.7) / 16).toFixed(4);   // rem floor (≈0.7× base)
   const hi = +((baseFontPx * 1.4) / 16).toFixed(4);   // rem ceiling (≈1.4× base)
-  const cqw = +(baseFontPx / 10).toFixed(4);          // 1cqw ≈ base at a 1000px-wide container
-  return `clamp(${lo}rem, ${cqw}cqw, ${hi}rem)`;
+  /**
+   * THE IDEAL TERM CARRIES A `rem`, AND IT DID NOT USED TO — which is how the whole page stopped listening to
+   * the reader's own text size.
+   *
+   * It was a bare `1cqw`. The floor and the ceiling are rem, so they follow a reader who has enlarged their
+   * browser text — but between them, which is nearly always, the unit was 1% of the CONTAINER and knew nothing
+   * about font size at all. Measured on the exported page at 1280px wide:
+   *
+   *     reader 16px → section padding 2.56px      reader 24px → 2.56px      reader 32px → 2.8px
+   *
+   * Setting the browser to 24px changed the spacing of the page by NOTHING. Text scaled (it has its own rem
+   * floor); every gap, pad, radius and offset in the product did not. That is the opposite of what
+   * `--box-u` exists for, and it silently failed the accessibility promise the 62.5% note in the Responsive
+   * Field Guide makes explicitly — the whole design is supposed to scale WITH the reader's preference.
+   *
+   * The Field Guide's own formula was right all along and this was not following it: `clamp(2rem, 1rem + 5vw,
+   * 4.5rem)` — the ideal is a rem PLUS a viewport term, never a viewport term alone.
+   *
+   * SPLIT HALF AND HALF at the reference width, so the unit is unchanged where it was calibrated: at a
+   * 1000px container with a 16px reader, `base/32 rem` = base/2 px and `base/20 cqw` = base/2 px, which sum
+   * to exactly the `baseFontPx` this has always resolved to. Narrower and wider it now moves a little less
+   * with the container and a great deal more with the reader, which is the trade this is for.
+   */
+  const { remHalf, cqwHalf } = baseUnitParts(baseFontPx);
+  return `clamp(${lo}rem, calc(${remHalf}rem + ${cqwHalf}cqw), ${hi}rem)`;
+}
+
+/**
+ * THE FLUID UNIT'S FOUR NUMBERS, IN ONE PLACE — because there are two consumers and they must never drift.
+ *
+ * `baseUnit()` writes them as a CSS `clamp()`; the canvas's `measureBoxU` resolves the same formula to a live
+ * pixel value so an edge-anchored drag can convert a measured offset into the stored unit. Those were two
+ * hand-written copies of one rule, and the day the CSS gained its rem term the JavaScript kept the old bare
+ * `cqw` — so the drag did its arithmetic in a unit the page was not using, and the anchored bottom edge
+ * drifted 3px. Rule 19, broken a fourth time, by a seam rather than by the resize logic.
+ *
+ * One definition, two renderings of it. The same remedy the Hub records for every other case of this:
+ * collapse onto one emitter rather than fix both.
+ */
+export function baseUnitParts(baseFontPx = 10): { loRem: number; hiRem: number; remHalf: number; cqwHalf: number } {
+  return {
+    loRem: +((baseFontPx * 0.7) / 16).toFixed(4),   // rem floor (≈0.7× base)
+    hiRem: +((baseFontPx * 1.4) / 16).toFixed(4),   // rem ceiling (≈1.4× base)
+    remHalf: +(baseFontPx / 32).toFixed(4),         // half the unit, in rem — follows the READER
+    cqwHalf: +(baseFontPx / 20).toFixed(4),         // the other half, in cqw — follows the CONTAINER
+  };
 }
 
 /** A body-text floor, in rem, below which no reading size may be emitted — the browser's own default. */
@@ -4000,7 +4124,10 @@ export function childStyle(child: BoxNode, parent: BoxNode, bp: Breakpoint = "ba
     // Re-fitted to the track the row actually has AT THIS RUNG (see `gridPlacementAt`). A span of 8 left over
     // from a twelve-column desktop would otherwise generate implicit columns on a phone and blow the row's
     // width past the screen — the horizontal-scrollbar bug guarded against in three other places already.
-    const { span, start } = gridPlacementAt(parent, child, bp);
+    const { start } = gridPlacementAt(parent, child, bp);
+    // …and the cell that ends a SHORT final row stretches to fill it, so a narrowed grid never leaves half a
+    // row of the section's background showing beside the content. See `gridSpanAt`.
+    const span = gridSpanAt(parent, child, bp);
     const place = start != null ? `${start} / span ${span}` : span > 1 ? `span ${span}` : undefined;
     if (place) s.gridColumn = place;
     // The down axis. On a MASONRY grid it is computed, not stored: the cell claims as many measuring units as

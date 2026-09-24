@@ -11,6 +11,7 @@ import {
   isCssBg, bgImageLayer, renderAlertHTML, bgShowThroughCss,
   radiusCSS, isClipped, SHADOW_CSS, videoEmbedSrc,
   resolveResponsive, updateBoxResponsive, hasOverride, clearOverride, BP_ORDER,
+  remLen,
   type BoxNode,
 } from "@/lib/box-model";
 
@@ -802,7 +803,7 @@ describe("box-model — the five-rung ladder", () => {
 
 describe("box-model — content types", () => {
   it("createElement builds the new element types with sensible defaults", () => {
-    expect(createElement("video").height).toBe("315px");
+    expect(createElement("video").height).toBe(remLen(315)); // rem, never px — Core Rule 16
     expect(createElement("icon").icon).toBe("Star");
     expect(createElement("list").listStyle).toBe("bullet");
     expect(createElement("list").listItems?.length).toBe(3);
@@ -822,9 +823,9 @@ describe("box-model — content types", () => {
 describe("box-model — decoration (border / shadow / corners)", () => {
   it("radiusCSS falls back to the all-corners radius, then honours per-corner overrides", () => {
     expect(radiusCSS(createContainer("column", {} as Partial<BoxNode>))).toBeUndefined(); // nothing set
-    expect(radiusCSS(createContainer("column", { radius: 12 } as Partial<BoxNode>))).toBe("12px 12px 12px 12px");
+    expect(radiusCSS(createContainer("column", { radius: 12 } as Partial<BoxNode>))).toBe([12,12,12,12].map((n) => remLen(n)).join(" "));
     const s = radiusCSS(createContainer("column", { radius: 12, radiusTopLeft: 0, radiusBottomRight: 40 } as Partial<BoxNode>));
-    expect(s).toBe("0px 12px 40px 12px"); // TL, TR(=radius), BR, BL(=radius)
+    expect(s).toBe([0,12,40,12].map((n) => remLen(n)).join(" ")); // TL, TR(=radius), BR, BL(=radius)
   });
 
   it("isClipped is true when clipped OR rounded (so overflow is hidden)", () => {
