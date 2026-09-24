@@ -4331,6 +4331,162 @@ const PIN_EDGES: Record<NonNullable<BoxNode["pin"]>, ("top" | "right" | "bottom"
 const stickyEdge = (pin: NonNullable<BoxNode["pin"]>): "top" | "bottom" =>
   PIN_EDGES[pin].includes("bottom") ? "bottom" : "top";
 
+/**
+ * The marker both renderers put on a block that holds its place: which edge it is held against.
+ *
+ * It names the VERTICAL edge only, because that is the axis bars stack down. A block pinned to `left` or
+ * `right` alone spans the height and has nothing to stack under, so it carries no marker and the pass never
+ * sees it.
+ *
+ * The same standing-down rule as `pinCSS`: when a band is carrying the pin on its child's behalf, the marker
+ * belongs on the band, since the band is the element that will actually be `fixed` or `sticky`.
+ */
+export function pinStackAttr(node: BoxNode, parent?: BoxNode, bp: Breakpoint = "base"): "top" | "bottom" | null {
+  if (parent && bandCarriesPin(parent, bp)?.id === node.id) return null;
+  const src = bandCarriesPin(node, bp) ?? node;
+  if (!src.pin) return null;
+  if (src.position === "absolute" || node.position === "absolute") return null;
+  /**
+   * ONLY "FLOATS ON SCREEN" STACKS — `hold: "fixed"` — AND NOT "STICKS WHEN REACHED".
+   *
+   * Scoped deliberately, and a guard caught the version that was not. A fixed block is held against the
+   * WINDOW, so every fixed block on a page shares one coordinate space and "which is above which" has an
+   * answer. A sticky block is held against its own scroll container and keeps its place in the layout, so two
+   * sticky blocks in two different sections are never on screen as a pair — stacking them would move a block
+   * for a collision that cannot happen.
+   *
+   * Reaching for them anyway did exactly that: a fixture with a sticky rail in one band and another in a
+   * second band had its blocks shoved 160px down the page, and `pinning-warnings.spec.ts` failed because the
+   * block it clicks was no longer where it had been drawn.
+   *
+   * Making sticky stack properly means asking WHICH scroll container each block resolves against — Step 2e's
+   * shared resolver, which is not built. Until it is, this answers the case that was actually reported:
+   * three bands all set to stay on screen, all held to the top, all on top of one another.
+   */
+  if ((src.hold ?? "sticky") !== "fixed") return null;
+  // Bars queue DOWN a screen, never across it, so a pure left/right rail joins no stack.
+  if (!PIN_EDGES[src.pin].some((e) => e === "top" || e === "bottom")) return null;
+  return stickyEdge(src.pin);
+}
+
+/**
+ * ONE measuring pass that stacks the pinned bars, as plain DOM.
+ *
+ * THE CANVAS CALLS THIS FUNCTION AND THE EXPORT SHIPS ITS SOURCE, exactly as `masonryMeasurePass` does, and
+ * for the same reason: two implementations of one algorithm is a canvas ≠ export bug with a delay on it.
+ *
+ * WHY A MEASUREMENT IS UNAVOIDABLE. To put the second bar under the first, its offset must be the first
+ * bar's RENDERED height — and CSS cannot ask that question. The two alternatives were considered and are
+ * worse: summing the heights the user happened to TYPE is silently wrong for a bar whose height is just its
+ * text (the common case) and wrong again at any width where that text wraps to a second line; and refusing to
+ * stack at all leaves the reported bug in place.
+ *
+ * IT READS THE COMPUTED POSITION RATHER THAN THE MARKUP, which is what makes it right per device for free. A
+ * bar whose pin is turned off at the phone rung still carries `data-eu-pin` — the attribute is static — but
+ * its computed `position` is not `fixed` or `sticky` there, so it takes up no room in the stack. A guess from
+ * the breakpoint would have had to be kept in step with the CSS; a measurement cannot drift from it.
+ *
+ * Setting the property cannot feed back into the measurement: `--eu-pin-above` moves a bar's inset, and an
+ * inset does not change a height. One pass settles, and there is nothing here to ratchet.
+ */
+export function pinStackPass(root: ParentNode): void {
+  const all = Array.from(root.querySelectorAll("[data-eu-pin]")) as HTMLElement[];
+  // Cleared first, every time: a bar that has stopped being pinned at this width would otherwise keep the
+  // offset it was given at the last one, and sit that far down the screen for no visible reason.
+  for (const el of all) el.style.removeProperty("--eu-pin-above");
+  for (const edge of ["top", "bottom"]) {
+    const held = all.filter((el) => {
+      if (el.getAttribute("data-eu-pin") !== edge) return false;
+      /**
+       * `absolute` IS ON THIS LIST BECAUSE THE CANVAS CANNOT USE `fixed` AT ALL.
+       *
+       * The builder's page frame declares `container-type: inline-size` — which is what makes container
+       * queries work — and that makes it the containing block for anything fixed inside it. So the editor
+       * renders a held block as `absolute` with a computed offset (`canvasFixedStyle`) instead.
+       *
+       * Measured before this line existed: on the exported page the three bars stacked correctly, and on the
+       * canvas all three sat at the same 88px with `--eu-pin-above` never set — canvas ≠ export, in the
+       * direction where the editor lies to you, which the Definition of Done forbids outright.
+       *
+       * Widening it costs nothing, because the filter has already required `data-eu-pin`, and that marker is
+       * only ever written for a block that is pinned, held FIXED, and not freely positioned. So an absolute
+       * element carrying this marker is a canvas-held bar and nothing else.
+       */
+      const p = getComputedStyle(el).position;
+      return p === "fixed" || p === "sticky" || p === "absolute";
+    });
+    // Down the page for a top edge; up it for a bottom one — in both cases, nearest the edge is first.
+    const order = edge === "top" ? held : held.slice().reverse();
+    let above = 0;
+    for (const el of order) {
+      el.style.setProperty("--eu-pin-above", above + "px");
+      above += el.getBoundingClientRect().height;
+    }
+  }
+}
+
+/**
+ * The script the export ships for the stacking — one guarded global, in the established pattern.
+ *
+ * Zero JS stays the default: `pinStackNeeded` decides, and a page with fewer than two bars at one edge gets
+ * nothing at all. It re-runs whenever a height it measured could have changed — the window resizing, the web
+ * fonts landing — because each of those lands after the first pass and silently invalidates it.
+ */
+export function pinStackScript(): string {
+  return `<script>(function(){if(window.__euPinStack)return;window.__euPinStack=1;
+var pass=${String(pinStackPass)};
+var queued=0;
+function all(){queued=0;try{pass(document);}catch(e){}}
+function soon(){if(queued)return;queued=1;requestAnimationFrame(all);}
+soon();
+addEventListener('resize',soon);
+addEventListener('load',soon);
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(soon).catch(function(){});
+})();</script>`;
+}
+
+/**
+ * Does this page actually stack pinned bars? Two or more held against the SAME edge, at any rung.
+ *
+ * Every rung is checked, not just the base: "a header on desktop and an announcement bar on phones" is two
+ * bars that never meet, and shipping a script for it would be paying for nothing. The reverse matters more —
+ * a stack that only exists at one rung still needs the script at that rung.
+ */
+const PIN_RUNGS: Breakpoint[] = ["base", "phone", "tabletPortrait", "tabletLandscape", "wide"];
+
+/**
+ * The marker for the MARKUP — which is written once and must serve every rung.
+ *
+ * The CSS is emitted per rung; the HTML is not. So this asks "is this block held at ANY width?", and the
+ * script sorts out where it actually holds by reading the computed position at the width in front of it.
+ *
+ * Known limit, written down rather than left to be found: a block held at the TOP on a desktop and at the
+ * BOTTOM on a phone can only carry one edge in one attribute, and takes the first rung that pins it. Nothing
+ * in the Inspector encourages that, and the cost if someone does it is a bar that does not join the stack at
+ * one rung — not a broken page.
+ */
+export function pinStackMarker(node: BoxNode, parent?: BoxNode): "top" | "bottom" | null {
+  for (const bp of PIN_RUNGS) {
+    const edge = pinStackAttr(node, parent, bp);
+    if (edge) return edge;
+  }
+  return null;
+}
+
+export function pinStackNeeded(root: BoxNode): boolean {
+  for (const bp of PIN_RUNGS) {
+    const count = { top: 0, bottom: 0 };
+    const walk = (n: BoxNode, parent?: BoxNode): void => {
+      const edge = pinStackAttr(n, parent, bp);
+      if (edge) count[edge]++;
+      for (const k of n.children ?? []) walk(k, n);
+    };
+    walk(root);
+    if (count.top > 1 || count.bottom > 1) return true;
+  }
+  return false;
+}
+
 export function pinCSS(node: BoxNode, parent?: BoxNode, bp: Breakpoint = "base"): CSSProperties {
   // The child half of the hoist above: it stands down so the band alone writes `position`.
   if (parent && bandCarriesPin(parent, bp)?.id === node.id) return {};
@@ -4359,9 +4515,26 @@ export function pinCSS(node: BoxNode, parent?: BoxNode, bp: Breakpoint = "base")
     const w = sizeToCSS(src.width);
     if (w) css.width = w;
   }
+  /**
+   * CLAUSE 6 — TWO BARS HELD AT THE SAME EDGE SIT UNDER ONE ANOTHER, NOT ON TOP OF EACH OTHER.
+   *
+   * Reported by the user: three bands each set to stay on screen all pinned to the top and covered each
+   * other, so two of the three were simply invisible. Every one of them is doing exactly what it was told —
+   * "hold against the top" — and with one offset each, the top is where they all go.
+   *
+   * The vertical inset therefore carries `--eu-pin-above`: how much pinned bar is already stacked at this
+   * edge. The horizontal insets of a CORNER do not, because bars stack down a screen and not across it.
+   *
+   * `var(--eu-pin-above, 0rem)` is the whole compatibility story. Nothing sets that property until the
+   * measuring pass runs, so a page without it behaves precisely as it did before — the bars overlap, which is
+   * the state this is improving on rather than a regression. See `pinStackPass` for why a measurement is
+   * unavoidable here.
+   */
+  const stacked = `calc(var(--eu-pin-above, 0rem) + ${offset})`;
+  const vertical = stickyEdge(src.pin);
   // Fixed may hold a corner — two insets against the viewport. Sticky gets exactly one, resolved above.
-  if (fixed) for (const edge of PIN_EDGES[src.pin]) css[edge] = offset;
-  else css[stickyEdge(src.pin)] = offset;
+  if (fixed) for (const edge of PIN_EDGES[src.pin]) css[edge] = edge === vertical ? stacked : offset;
+  else css[vertical] = stacked;
   /**
    * CLAUSE 3 — A BLOCK STRETCHED TO ITS PARENT'S HEIGHT HAS NOWHERE TO TRAVEL.
    *

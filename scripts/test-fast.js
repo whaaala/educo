@@ -53,6 +53,7 @@ const INVARIANT_SPECS = [
   "tests/e2e/pinning-warnings.spec.ts",
   "tests/e2e/pinning-explained.spec.ts",
   "tests/e2e/pin-arrival.spec.ts",
+  "tests/e2e/pins-stack.spec.ts",
   "tests/e2e/float-pin.spec.ts",
   "tests/e2e/preview-fills-the-screen.spec.ts",
   "tests/e2e/every-screen-size.spec.ts",

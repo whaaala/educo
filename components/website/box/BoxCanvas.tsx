@@ -18,7 +18,7 @@ import {
   updateBox, removeBox, insertBox, moveBoxStep, duplicateBox, moveBox, cloneBox, findParent, isAncestor, isContainer, containerLabel, widthPct, stackWithBlock, fitBand,
   isFloating, floatBox, unfloatBox, groupBoxes, ungroupBoxes, bringToFront, sendToBack, bringForward, sendBackward,
   shouldTakeMirrorBox, hostSizedFor, type MirrorBox, type MirrorChase, fadedPaint, boxOpacity, backgroundCss, treePaintLayerCss, radiusCSS, isClipped, SHADOW_CSS, videoEmbedSrc, sanitizeCssDeclarations, expandScopedCss, ACCORDION_CSS_PARTS, itemOverrideCss, itemHasOverride, itemNumberVars, richBody, componentTextCss, componentBoxCss, bgShowThroughCss, resizeTopEdge, blockContainmentCss, alertToastCss, treeHasToast, treeHasFixedHold, accordionClasses, bandClasses, advancedCssStyle, alertActionsHTML, hugsContent, itemFloatContextCss, COMPONENT_ITEM_SEL, clampContentScale, MIN_CONTENT_SCALE, isMultiItemComponent, comfortableWidth, remLen, rootFontPx, isDefiniteLen, addItemAfter, duplicateItem, duplicateChildItem, removeItem, removeChildItem, moveItem, moveChildItem, updateItem, updateChildItem, ALERT_SEVERITY_ICON, alertPartInline, alertIconInline, collectAlertItemStyles,
-  type Breakpoint, resolveResponsive, updateBoxResponsive, treePinArrivalCss, floatHoldCSS, canvasFixedStyle, capturesFixed, imageSizing, importPhoto, treeItemEffectsCss, itemNeedsClass, floatZIndex, gridPlacementAt, gridColumnsAt, masonryMeasureAttr, masonryMeasurePass, isPager, pagerStripCss, pagerNavHTML, selectionChain, typoRole, typoRootVars, typoCascadeCss, bandEdgeCSS,
+  type Breakpoint, resolveResponsive, updateBoxResponsive, treePinArrivalCss, floatHoldCSS, canvasFixedStyle, capturesFixed, imageSizing, importPhoto, treeItemEffectsCss, itemNeedsClass, floatZIndex, gridPlacementAt, gridColumnsAt, masonryMeasureAttr, masonryMeasurePass, pinStackMarker, pinStackPass, isPager, pagerStripCss, pagerNavHTML, selectionChain, typoRole, typoRootVars, typoCascadeCss, bandEdgeCSS,
 } from "@/lib/box-model";
 import { ICON_SET } from "./icons";
 import { PortalMenu, MenuItem, MenuHeader, MenuSep } from "./ui";
@@ -694,7 +694,13 @@ export default function BoxCanvas({
   useEffect(() => {
     const host = canvasRef.current;
     if (!host) return;
-    const run = () => host.querySelectorAll<HTMLElement>("[data-eu-masonry]").forEach((g) => masonryMeasurePass(g));
+    const run = () => {
+      host.querySelectorAll<HTMLElement>("[data-eu-masonry]").forEach((g) => masonryMeasurePass(g));
+      // STACKED PINS (Step 2c) — the same function the export ships the source of, so two bars held at one
+      // edge sit under one another on the canvas exactly as they will on the page. It rides in this pass
+      // because it needs the same triggers: a re-render, a resize, a font landing, a photo decoding.
+      pinStackPass(host);
+    };
     run();
     // A ResizeObserver catches what a render does not: a photo decoding, a web font landing, the device frame
     // being dragged. The pass is idempotent, so a re-run that changes nothing writes the same spans and the
@@ -2281,7 +2287,12 @@ export default function BoxCanvas({
      */
     const canvasStyle = capturedAbove ? wrapStyle : canvasFixedStyle(wrapStyle);
     // Marked so the measuring pass below can find every held block and tell it where its holder sits.
-    const heldAttr = canvasStyle !== wrapStyle ? { "data-held": "1" } : {};
+    const heldAttr = {
+      ...(canvasStyle !== wrapStyle ? { "data-held": "1" } : {}),
+      // STACKED PINS (Step 2c) — the SAME marker the export writes, from the same resolver, so the editor
+      // stacks the bars the way the published page will. See `pinStackMarker`.
+      ...((m) => (m ? { "data-eu-pin": m } : {}))(pinStackMarker(rawNode, parent ?? undefined)),
+    };
 
     // Visible drag-to-resize handles on every edge + corner, so you can resize from any side.
     const resizeHandles = isSolo && editable && !isRoot && !node.locked ? (

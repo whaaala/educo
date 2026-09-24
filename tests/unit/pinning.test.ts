@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   pinCSS, pinBlockedBy, fixedBlockedBy, blockedByLabel, bandCarriesPin, pinScope, childStyle, createContainer, createGrid,
   createElement, normalizeRowBands, resolveResponsive, updateBoxResponsive, pinArrivalCss, pinArrivalKeyframes,
-  pinArrivalHasEffect, treePinArrivalCss, PIN_ARRIVALS, SHADOW_CSS, floatHoldCSS, canvasFixedStyle, type BoxNode,
+  pinArrivalHasEffect, treePinArrivalCss, PIN_ARRIVALS, SHADOW_CSS, floatHoldCSS, canvasFixedStyle, pinStackAttr, pinStackNeeded, type BoxNode,
 } from "@/lib/box-model";
 import { PAGE_Z } from "@/lib/educo-ui/stacking";
 
@@ -47,6 +47,69 @@ describe("pinCSS — the one resolver", () => {
     const css = pinCSS(box({ pin: "top", pinOffset: 24 }));
     expect(String(css.top)).not.toMatch(/\d+px/);
     expect(String(css.top)).toContain("var(--box-u");
+  });
+
+  it("…and carries how much pinned bar is already stacked above it (Step 2c)", () => {
+    /**
+     * Two bars held at the same edge must sit under one another rather than on top of each other, and the
+     * offset that separates them is the first bar's RENDERED height — which CSS cannot ask for. So the
+     * vertical inset reads a custom property that the measuring pass sets.
+     *
+     * The fallback is `0rem` rather than `0px`, which the guard above caught and was right to: a page that
+     * never runs the pass falls back to today's behaviour, and the rule that no raw pixel reaches the page
+     * has no exception for a value that happens to be zero.
+     */
+    const top = String(pinCSS(box({ pin: "top", pinOffset: 24 })).top);
+    expect(top, "the stacking offset is missing, so two top bars will cover each other").toContain("var(--eu-pin-above");
+    expect(top, "the fallback must be a zero that is not a pixel").toContain("0rem");
+
+    // A CORNER stacks down the screen and not across it, so only the vertical inset carries it.
+    const corner = pinCSS(box({ pin: "top-right", pinOffset: 24, hold: "fixed" }));
+    expect(String(corner.top), "a corner's vertical inset stacks").toContain("var(--eu-pin-above");
+    expect(String(corner.right), "a corner's horizontal inset must NOT stack — bars do not queue sideways").not.toContain("--eu-pin-above");
+  });
+
+  describe("only “Floats on screen” joins a stack (Step 2c, scoped)", () => {
+    /**
+     * A fixed block is held against the WINDOW, so every fixed block on a page shares one coordinate space
+     * and "which is above which" has an answer. A sticky block is held against its own scroll container and
+     * keeps its place in the layout, so two sticky blocks in two different sections are never on screen as a
+     * pair — stacking them moves a block for a collision that cannot happen.
+     *
+     * This is scoped rather than complete, and saying so is the point: making sticky stack properly needs
+     * Step 2e's "which scroll container does this resolve against?" resolver, which is not built.
+     *
+     * It is not a theoretical distinction. The first version reached for sticky too, and `pinning-warnings`
+     * failed because a sticky rail in one band and another in a second band were shoved 160px down the page
+     * — far enough that the test's click no longer landed on the block it had measured.
+     */
+    it("a FIXED block carries the marker, at the edge it is held against", () => {
+      expect(pinStackAttr(box({ pin: "top", hold: "fixed" }))).toBe("top");
+      expect(pinStackAttr(box({ pin: "bottom-right", hold: "fixed" }))).toBe("bottom");
+    });
+
+    it("a STICKY block does not — it is held inside its own box, not against the window", () => {
+      expect(pinStackAttr(box({ pin: "top" }))).toBeNull();                  // sticky is the default
+      expect(pinStackAttr(box({ pin: "top", hold: "sticky" }))).toBeNull();
+    });
+
+    it("a side rail carries nothing either — bars queue down a screen, never across it", () => {
+      expect(pinStackAttr(box({ pin: "left", hold: "fixed" }))).toBeNull();
+      expect(pinStackAttr(box({ pin: "right", hold: "fixed" }))).toBeNull();
+    });
+
+    it("the script is shipped only when two bars really do share an edge", () => {
+      const page = (kids: BoxNode[]) => createContainer("column", { children: kids } as Partial<BoxNode>);
+      const barTop = (id: string) => box({ id, pin: "top", hold: "fixed" });
+      expect(pinStackNeeded(page([barTop("a")])), "one bar has nothing to stack under").toBe(false);
+      expect(pinStackNeeded(page([barTop("a"), barTop("b")])), "two bars at one edge do").toBe(true);
+      expect(
+        pinStackNeeded(page([barTop("a"), box({ id: "b", pin: "bottom", hold: "fixed" })])),
+        "a top bar and a bottom bar are two stacks of one",
+      ).toBe(false);
+      expect(pinStackNeeded(page([box({ id: "a", pin: "top" }), box({ id: "b", pin: "top" })])),
+        "two STICKY blocks are not a stack").toBe(false);
+    });
   });
 
   it("a FLOATING block is never pinned — the two are the same CSS property", () => {

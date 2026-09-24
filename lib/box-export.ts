@@ -11,7 +11,7 @@
 import type { CSSProperties } from "react";
 import { pinArrivalCss, pinArrivalKeyframes, floatHoldCSS,
   type BoxNode, type Breakpoint, BP_ORDER, containerStyle, childStyle, hostSizedFor, marginCSS, sizeToCSS, radiusCSS, SHADOW_CSS, u, baseUnit, fadedPaint, boxOpacity, backgroundCss, paintLayerCss,
-  resolveResponsive, floatStacksOnMobile, isFloating, floatingReserve, alertToastCss, accordionClasses, bandClasses, videoEmbedSrc, isContainer, sanitizeCssDeclarations, expandScopedCss, COMPONENT_PARTS, itemFloatContextCss, itemOverrideCss, itemNumberVars, richBody, plainBody, componentTextCss, componentBoxCss, renderAlertHTML, alertDismissScript, masonryMeasureAttr, masonryMeasureScript, isPager, pagerNavHTML, pagerScript, pagerStripCss, pagerSlideId, bgShowThroughCss, blockContainmentCss, COMPONENT_ITEM_SEL, remLen, imageSizing, hasIntrinsicSize, itemNeedsClass, itemScope, floatZIndex, typoRole, typoRootVars, typoCascadeCss, bandEdgeCSS,
+  resolveResponsive, floatStacksOnMobile, isFloating, floatingReserve, alertToastCss, accordionClasses, bandClasses, videoEmbedSrc, isContainer, sanitizeCssDeclarations, expandScopedCss, COMPONENT_PARTS, itemFloatContextCss, itemOverrideCss, itemNumberVars, richBody, plainBody, componentTextCss, componentBoxCss, renderAlertHTML, alertDismissScript, masonryMeasureAttr, masonryMeasureScript, pinStackMarker, pinStackNeeded, pinStackScript, isPager, pagerNavHTML, pagerScript, pagerStripCss, pagerSlideId, bgShowThroughCss, blockContainmentCss, COMPONENT_ITEM_SEL, remLen, imageSizing, hasIntrinsicSize, itemNeedsClass, itemScope, floatZIndex, typoRole, typoRootVars, typoCascadeCss, bandEdgeCSS,
 } from "@/lib/box-model";
 import { isRegistryComponent, renderComponent, componentScripts } from "@/lib/educo-ui/registry";
 import { iconSvg } from "@/lib/educo-ui/icon-svg";
@@ -477,7 +477,12 @@ function renderNode(node: BoxNode, rawParent: BoxNode | null, theme: SiteTheme, 
   // marker the script counts pages by; without it a nav or a toolbar inside the strip would be counted
   // as a page.
   const inPager = !!rawParent && isPager(resolveResponsive(rawParent, "base"));
-  const idAttr = inPager ? ` id="${esc(pagerSlideId(r))}" data-eu-slide` : r.anchor ? ` id="${esc(r.anchor)}"` : "";
+  const idAttr = (inPager ? ` id="${esc(pagerSlideId(r))}" data-eu-slide` : r.anchor ? ` id="${esc(r.anchor)}"` : "")
+    // STACKED PINS (Step 2c). The marker names the edge this block is ever held against; the measuring pass
+    // reads the computed position to decide whether it is held HERE, so one static attribute serves every
+    // rung. Folded into `idAttr` deliberately — four return paths below write it, and adding it to one of
+    // them and forgetting the others is exactly the seam this project keeps paying for.
+    + ((m) => (m ? ` data-eu-pin="${m}"` : ""))(pinStackMarker(node, rawParent ?? undefined));
   // A structural band also carries its layout classes — computed by box-model, so the canvas gets the same ones.
   const allCls = [cls, bandClasses(r, isPageSection)].filter(Boolean).join(" ");
   if (isContainer(r)) {
@@ -576,10 +581,16 @@ export function documentEdgeCss(root: BoxNode): string {
 }
 
 export function renderPageHTML(root: BoxNode, theme: SiteTheme, pageMap: Map<string, string> = new Map(), sheet?: Sheet): string {
-  if (sheet) return renderNode(root, null, theme, pageMap, sheet); // shared sheet → caller emits the CSS
+  /**
+   * STACKED PINS (Step 2c) ride with the PAGE, not with a block — because the thing being measured is the
+   * relationship BETWEEN blocks, and no one of them owns it. `pinStackNeeded` is what keeps zero-JS the
+   * default: fewer than two bars at one edge and nothing is emitted at all, at any rung.
+   */
+  const stack = pinStackNeeded(root) ? pinStackScript() : "";
+  if (sheet) return renderNode(root, null, theme, pageMap, sheet) + stack; // shared sheet → caller emits the CSS
   const own: Sheet = emptySheet();
   const body = renderNode(root, null, theme, pageMap, own);
-  return `<style>${sheetCss(own)}</style>${body}`;
+  return `<style>${sheetCss(own)}</style>${body}${stack}`;
 }
 
 

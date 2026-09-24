@@ -43,11 +43,13 @@ const BROWSER_ALLOWED = new Set([
   // Passes the canvas CALLS and the export ships the SOURCE of — one algorithm, never two.
   "pagerWire",
   "masonryMeasurePass",
+  "pinStackPass",
   // Builders of <script> strings. Their `document.` lives inside a template literal: it is text the exported
   // page will run, not something this module does.
   "alertDismissScript",
   "pagerScript",
   "masonryMeasureScript",
+  "pinStackScript",
   // Genuinely browser-only, and each needs a React Native equivalent on the day:
   "measureImage",   // new Image() + decode
   "importPhoto",    // FileReader + a canvas to downscale through
