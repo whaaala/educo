@@ -306,16 +306,30 @@ describe("a twelve-column row STACKS on a narrow screen", () => {
     // The bug this guards, found in a browser: clamping a span of 4-of-12 into a 2-track row gives 2, which is
     // the whole row — so a three-card row stacked completely on a tablet held upright and the two-column rung
     // did nothing at all. A third of twelve is a third of two, which is one column, which is two cards across.
+    /**
+     * A SIX-ACROSS ROW, because a three-card row is no longer narrowed here and would test nothing.
+     *
+     * The tablet cap now asks whether a cell would be too NARROW to read rather than counting columns (see
+     * `CELL_MIN_REM`): six across at 600px is 100px a cell, so it narrows; three across is 200px, so it does
+     * not. The proportion rule this test guards is unchanged — it simply needs a row the rule still applies
+     * to, and the three-card case moved down to its own assertion below.
+     */
+    const six = grid(12, Array.from({ length: 6 }, () => ({ colSpan: 2 })));
+    expect(gridPlacementAt(six, kid(six, 0), "tabletPortrait")).toEqual({ track: 2, span: 1, start: null });
+
     const g = grid(12, [{ colSpan: 4 }, { colSpan: 4 }, { colSpan: 4 }]);
-    expect(gridPlacementAt(g, kid(g, 0), "tabletPortrait")).toEqual({ track: 2, span: 1, start: null });
     expect(gridPlacementAt(g, kid(g, 0), "phone")).toEqual({ track: 1, span: 1, start: null });
+    // THREE CARDS KEEP THEIR SHAPE on a tablet held upright: 200px a card is readable, so there is nothing
+    // for the cap to fix — and shearing them to two left an orphan that looked wrong stretched OR left alone.
+    expect(gridPlacementAt(g, kid(g, 0), "tabletPortrait")).toEqual({ track: 12, span: 4, start: null });
+
     // A full-width block stays full width — the proportion is what is preserved, not the number.
     const full = grid(12, [{ colSpan: 12 }]);
-    expect(gridPlacementAt(full, kid(full, 0), "tabletPortrait").span).toBe(2);
+    expect(gridPlacementAt(full, kid(full, 0), "tabletPortrait").span).toBe(12);
     // An OFFSET is not re-fitted — it is given up, and the cell auto-flows. See the suite below: rescaling a
     // start and then clamping it into the narrow track is what stacked three cells into one and made two of
     // them invisible. This line used to assert `start: 2`, which is precisely the behaviour that shipped.
-    const offset = grid(12, [{ colSpan: 6, colStart: 7 }]);
+    const offset = grid(12, Array.from({ length: 6 }, (_, i) => (i === 0 ? { colSpan: 6, colStart: 7 } : { colSpan: 2 })));
     expect(gridPlacementAt(offset, kid(offset, 0), "tabletPortrait")).toEqual({ track: 2, span: 1, start: null });
   });
 
@@ -446,7 +460,13 @@ describe("the export writes the same layout the canvas shows", () => {
     css.match(new RegExp(`@media \\(min-width:${em}em\\)\\{([\\s\\S]*?\\})\\}`))?.[1] ?? "";
 
   it("stacks the row in the base rule and builds it back up rung by rung (mobile-first)", () => {
-    const css = cssOf(gridPage([{ colSpan: 4 }]));
+    /**
+     * SIX ACROSS, so the tablet rung really is a step. A row of span-4 cells is three across at 200px a cell
+     * on a 600px tablet, which is readable, so the cap leaves it alone and there is no middle step to see.
+     * Six across is 100px a cell, which is not — so this row still climbs 1 → 2 → 12 and the mobile-first
+     * build-up is visible at every rung.
+     */
+    const css = cssOf(gridPage(Array.from({ length: 6 }, () => ({ colSpan: 2 }))));
     // The phone rung is the UNQUALIFIED rule: one column, and a span of 1 needs no `grid-column` at all.
     expect(css.split("@media")[0]).toContain("grid-template-columns:repeat(1, minmax(0, 1fr))");
     // Two columns on a tablet held upright…
@@ -456,8 +476,13 @@ describe("the export writes the same layout the canvas shows", () => {
     // twelve and a rung that changes nothing emits nothing.
     const landscape = atRung(css, BREAKPOINTS_EM.tabletLandscape);
     expect(landscape).toContain("grid-template-columns:repeat(12, minmax(0, 1fr))");
-    expect(landscape).toContain("grid-column:span 4");
+    expect(landscape).toContain("grid-column:span 2");
     expect(atRung(css, BREAKPOINTS_EM.desktop)).not.toContain("grid-template-columns");
+
+    // AND THE THREE-CARD ROW, which is the one that changed: it is readable at a tablet, so it goes straight
+    // from the phone's single column to its full twelve with no two-column step in between.
+    const cards = cssOf(gridPage([{ colSpan: 4 }, { colSpan: 4 }, { colSpan: 4 }]));
+    expect(atRung(cards, BREAKPOINTS_EM.tabletPortrait)).toContain("grid-template-columns:repeat(12, minmax(0, 1fr))");
   });
 
   it("takes an order back at the rung above, instead of letting the narrow value leak upward", () => {
@@ -469,9 +494,22 @@ describe("the export writes the same layout the canvas shows", () => {
   });
 
   it("emits a per-rung span exactly where the user set it", () => {
-    // Both rungs state a column count, so the narrow-screen clamp stands aside and the spans are the user's.
+    /**
+     * IT LANDS AT THE RUNG THE CASCADE SAYS, WHICH IS tabletPortrait — not at the slot it was typed into.
+     *
+     * `RUNG_CASCADE.tabletPortrait` is `["tablet", "tabletLandscape", "tabletPortrait"]`, so a value written
+     * at tabletLandscape applies from tabletPortrait upward. The export diffs each rung against the one below
+     * it, so the rule is emitted once, at the narrowest rung it applies to, and tabletLandscape repeats
+     * nothing.
+     *
+     * This test used to require it at tabletLandscape and passed only because the tablet cap forced a
+     * DIFFERENT span at tabletPortrait, which made the landscape rung a change worth emitting. It was
+     * asserting a side effect of the cap rather than the per-rung span it names. Verified by printing the
+     * stylesheet: `@media (min-width:37.5em)` carries `grid-column:span 6`, and 75em restores span 12.
+     */
     const css = cssOf(gridPage([{ colSpan: 12, responsive: { tabletLandscape: { colSpan: 6 } } }], 12));
-    expect(atRung(css, BREAKPOINTS_EM.tabletLandscape)).toContain("grid-column:span 6");
+    expect(atRung(css, BREAKPOINTS_EM.tabletPortrait), "the user's span applies from the rung the cascade gives it").toContain("grid-column:span 6");
+    expect(atRung(css, BREAKPOINTS_EM.tabletLandscape), "and is not repeated where nothing changed").not.toContain("grid-column:span 6");
     expect(atRung(css, BREAKPOINTS_EM.desktop)).toContain("grid-column:span 12");
   });
 });

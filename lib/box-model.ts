@@ -14,7 +14,7 @@ import type { CSSProperties } from "react";
 import { isRegistryComponent, defaultComponentFields, defaultComponentWidth, componentIsColumn } from "@/lib/educo-ui/registry";
 import { iconSvg } from "@/lib/educo-ui/icon-svg";
 import { BREAKPOINTS_EM } from "@/lib/educo-ui/base";
-import { RUNG_MEASURE, type RungName } from "@/lib/educo-ui/layout";
+import { RUNG_MEASURE, RUNG_PX, type RungName } from "@/lib/educo-ui/layout";
 import { hasItemEffects, itemEffectsCss, revealEffect, REVEAL_DUR, REVEAL_EASE, REVEAL_VIEW_RANGE } from "@/lib/interactions";
 import { PAGE_Z, clampPageZ } from "@/lib/educo-ui/stacking";
 import { colorToCSS } from "@/components/shared/ColorPalettePicker";
@@ -2791,11 +2791,61 @@ function setAtRung(node: BoxNode, key: keyof ResponsiveOverride, bp: Breakpoint)
  * the clamp off from that rung down — a two-up phone photo gallery is one click, and it is stated in data
  * rather than guessed at.
  */
+/**
+ * How narrow a cell may get before the row must shed a column, in rem.
+ *
+ * `12rem` is 192px at a default browser, which is about the narrowest a card with a heading and a line of
+ * text reads properly. In REM rather than px so the whole decision follows the reader's own text size: a
+ * person who has enlarged their browser text gets fewer columns sooner, which is the point of the rule.
+ */
+export const CELL_MIN_REM = 12;
+
+/**
+ * How many blocks a row puts ACROSS at the stored count — which is not the track count.
+ *
+ * A twelve-track row of span-4 cells is THREE across, and the difference is the whole reason the old cap was
+ * wrong: it reduced tracks, and reducing 12 tracks to 2 turns three cards into two.
+ */
+function acrossAt(node: BoxNode, cols: number, bp: Breakpoint): number {
+  const kids = node.children ?? [];
+  // RESOLVED at this rung: a cell can carry a per-rung span, and the count across is what decides whether a
+  // cell would be too narrow. Reading the base span would answer for a layout that is not on screen.
+  const spans = kids.map((c) => Math.max(1, Math.round(resolveResponsive(c, bp).colSpan ?? 1)));
+  const span = spans.length ? Math.min(...spans) : 1;
+  return Math.max(1, Math.floor(cols / span));
+}
+
 export function gridColumnsAt(node: BoxNode, bp: Breakpoint = "base"): number {
   const cols = gridColumns(node);
   if (setAtRung(node, "columns", bp)) return cols;
   if (bp === "phone") return 1;
-  if (bp === "tabletPortrait") return Math.min(cols, 2);
+  if (bp === "tabletPortrait") {
+    /**
+     * THE CAP IS ABOUT HOW NARROW A CELL WOULD GET, NOT ABOUT A NUMBER — and capping by the number was wrong.
+     *
+     * `Math.min(cols, 2)` sheared every row to two across on a tablet held upright, whatever it held. For a
+     * twelve-cell row that is right and necessary. For a THREE-CARD row — the commonest layout on a school
+     * site, and Scenario B of this project's own guide — it is not: three cards do not tile two columns, so
+     * one is orphaned and the result is wrong whichever way the orphan is treated. Both were rendered and
+     * looked at, at 760px:
+     *
+     *   • orphan left as it fell → half a row of the section's background beside it. Reported, with a
+     *     screenshot, as the grid "not fully expanding on the width".
+     *   • orphan stretched to fill → a full-width card carrying one line of text, twice the width of its
+     *     siblings. It reads as a mistake rather than a design.
+     *
+     * And three across at that width was neither: three equal 250px cards, balanced, nothing left over. The
+     * cells were never too narrow, so there was never anything to fix by capping them.
+     *
+     * So the question asked is the one the cap always meant: at the NARROWEST width this rung covers, would a
+     * cell fall below what can be read? If it would not, the row keeps its shape. `RUNG_PX.tabletPortrait` is
+     * that width, taken from the ladder rather than re-typed.
+     */
+    const across = acrossAt(node, cols, bp);
+    const cellPx = RUNG_PX.tabletPortrait / across;
+    if (cellPx >= CELL_MIN_REM * 16) return cols;
+    return Math.min(cols, 2);
+  }
   return cols;
 }
 

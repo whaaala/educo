@@ -459,14 +459,43 @@ test.describe("twelve columns", () => {
     expect(overflow, "no horizontal scrollbar on a phone").toBeLessThanOrEqual(1);
   });
 
-  test("a tablet held upright gets two columns, and a wider one gets all twelve", async ({ page }) => {
-    const html = gridPage([{ colSpan: 4 }, { colSpan: 4 }, { colSpan: 4 }]);
-    await load(page, html, RUNG_PX.tabletPortrait + 80);
-    let cells = [await box(page, "#c0"), await box(page, "#c1"), await box(page, "#c2")];
-    expect(Math.abs(cells[0].top - cells[1].top), "two up").toBeLessThan(2);
-    expect(cells[2].top, "and the third wraps").toBeGreaterThan(cells[0].bottom - 1);
+  test("a tablet held upright sheds a column only when a cell would be too NARROW to read", async ({ page }) => {
+    /**
+     * THIS TEST USED TO PIN THE MECHANISM — "two up, and the third wraps" — and the mechanism was wrong.
+     *
+     * The cap was `Math.min(cols, 2)`: every row sheared to two across on a tablet held upright, whatever it
+     * held. For a twelve-cell row that is right. For a THREE-CARD row it is not, because three cards do not
+     * tile two columns — one is orphaned, and the result is wrong whichever way the orphan is treated. Both
+     * were rendered and looked at, at 760px: left as it fell it leaves half a row of the section's background
+     * (reported with a screenshot), and stretched to fill it becomes a full-width card carrying one line of
+     * text, twice the width of its siblings. Three across at that width was neither — three equal 250px
+     * cards, nothing left over. The cells were never too narrow, so there was nothing to fix by capping.
+     *
+     * So the assertion is the REASON the cap exists: no cell falls below what can be read, and a row is not
+     * left with a hole. The three-card case and the twelve-cell case are both here, because a rule that only
+     * ever sees the case it was written for is how the last one survived.
+     */
+    const READABLE_PX = 12 * 16; // CELL_MIN_REM — a card narrower than this cannot carry a heading and a line
 
-    await load(page, html, RUNG_PX.tabletLandscape + 80);
+    // THREE CARDS — they fit, so the row keeps its shape.
+    const three = gridPage([{ colSpan: 4 }, { colSpan: 4 }, { colSpan: 4 }]);
+    await load(page, three, RUNG_PX.tabletPortrait + 80);
+    let cells = [await box(page, "#c0"), await box(page, "#c1"), await box(page, "#c2")];
+    expect(Math.abs(cells[0].top - cells[2].top), "three cards still sit three up — they are wide enough to").toBeLessThan(2);
+    for (const c of cells) expect(c.width, `a card came out ${Math.round(c.width)}px wide`).toBeGreaterThanOrEqual(READABLE_PX - 1);
+    const row = await box(page, "#grid");
+    expect(Math.abs((cells[2].left + cells[2].width) - (row.left + row.width)), "and the row is full — no hole beside them").toBeLessThan(3);
+
+    // TWELVE CELLS — they do not fit, so the cap does its job.
+    const twelve = gridPage(Array.from({ length: 12 }, () => ({ colSpan: 1 })));
+    await load(page, twelve, RUNG_PX.tabletPortrait + 80);
+    const many = [await box(page, "#c0"), await box(page, "#c1"), await box(page, "#c2")];
+    expect(Math.abs(many[0].top - many[1].top), "two up").toBeLessThan(2);
+    expect(many[2].top, "and the third wraps, because twelve slivers is what the cap is FOR").toBeGreaterThan(many[0].bottom - 1);
+    for (const c of many) expect(c.width, "…and the two that remain are readable").toBeGreaterThanOrEqual(READABLE_PX - 1);
+
+    // A WIDER TABLET — every row is back to its full twelve.
+    await load(page, three, RUNG_PX.tabletLandscape + 80);
     cells = [await box(page, "#c0"), await box(page, "#c1"), await box(page, "#c2")];
     expect(Math.abs(cells[0].top - cells[2].top), "three up, once the row is twelve columns again").toBeLessThan(2);
   });
