@@ -222,6 +222,28 @@ Every content item and component, existing and future, across the whole app:
 - A drag is clamped to what the partner on the far side can actually give — **never write a size and hope something absorbs it**. Where the partner cannot give, the edge stops; it does not grow out of the far side.
 - **Test an edge at the width where the partner RUNS OUT**, not where it is comfortable. The grid cell never had this rule, and the guard asserting it passed the whole time because it only ever built a two-cell row — where the partner always has room.
 
+### 20. One engine, three surfaces — web, phone, tablet (decided 2026-09-24)
+- **The WEB builder is finished first.** The model still changes weekly; building a second builder beside it
+  means every change lands twice and the second one is permanently behind. Two half-built builders are worse
+  than one finished one.
+- **The ENGINE is the shared asset and stays portable.** `lib/box-model.ts` + `lib/box-export.ts` never import
+  React as a value and never touch the DOM outside a named allow-list — guarded by
+  `tests/unit/engine-stays-portable.test.ts`, whose allow-list IS the porting surface. The 5,271 lines of
+  `BoxCanvas` + `BoxInspector` are React DOM and are not portable; the 5,696 lines of engine are.
+- **A native canvas is never a second renderer.** React Native's layout is Yoga: flexbox only — no CSS Grid,
+  no media queries, no container queries, no `position: sticky`, no `clamp()`, no pseudo-elements, all of
+  which are load-bearing in what this builder emits. Any RN re-render can only APPROXIMATE the published page,
+  which makes canvas ≠ export permanent — this project's most expensive bug class. **The canvas on a phone or
+  tablet is a WEBVIEW over the real exported HTML**, with native chrome around it.
+- **The site a school builds becomes its section INSIDE the existing Educo app** (`apps/mobile/`) — not an app
+  per school. One store listing, one review, and a teacher's edit goes live with no app release. What makes it
+  an app rather than a bookmark (and clears App Store guideline 4.2) is the native layer: push for closures and
+  newsletters, term dates offline, deep links into the Fees / Messages / Reports screens that already exist.
+- **Tablet is not a third build.** `apps/mobile/` serves phone and tablet through `isTablet` — two targets of
+  one app. A feature is done when both are done.
+- **Builder-only work has no mobile counterpart today**, and saying so is not a skipped checklist item: the
+  mobile app has no canvas, no box model and no image block. Ask the parity question for anything else.
+
 ---
 
 ## Project Structure

@@ -70,6 +70,18 @@ const RULES: [name: string, mustSay: RegExp][] = [
   ["Merge through a pull request", /PULL REQUEST/],
   ["The gate is green at the merged commit", /green at the commit being merged/i],
   ["Delete the branch after merging", /delete the branch/i],
+
+  /**
+   * RULE 20 — one engine, three surfaces. Each line is here because losing it costs a rewrite, not a tidy-up:
+   * a second renderer in React Native would make canvas ≠ export permanent, and an app per school would make
+   * a teacher's edit wait on an App Store review.
+   */
+  ["The web builder is finished first", /WEB builder is finished first/i],
+  ["The engine stays portable, and is guarded", /engine-stays-portable/],
+  ["A phone or tablet canvas is a WebView, never a second renderer", /canvas on a phone or\s*\n?\s*tablet is a WEBVIEW/i],
+  ["Why: Yoga cannot render what the builder emits", /Yoga: flexbox only/i],
+  ["The built site lives inside the existing Educo app, not an app per school", /not an app\s*\n?\s*per school/i],
+  ["Tablet is not a third build", /Tablet is not a third build/i],
 ];
 
 describe("CLAUDE.md is the complete rule register", () => {
