@@ -4,7 +4,7 @@ import { BREAKPOINTS_EM } from "@/lib/educo-ui/base";
 import {
   createContainer, createGrid, createElement, createComponent,
   addItem, removeItem, moveItem, updateItem, addChildItem, updateChildItem, removeChildItem, moveChildItem, sanitizeCssDeclarations, expandScopedCss, ACCORDION_CSS_PARTS, itemOverrideCss, itemHasOverride, itemFloatReserveRem, richBody, plainBody, isEmptyBox,
-  findBox, findParent, isAncestor, updateBox, insertBox, removeBox, moveBoxStep, moveBox,
+  findBox, findParent, isAncestor, updateBox, insertBox, removeBox, deleteBox, moveBoxStep, moveBox,
   containerStyle, childStyle, paddingCSS, marginCSS, sizeToCSS, flexForWidth, fillMainAxis, u, newBoxId, dropIndexAmong, EMPTY_BOX_MIN, fitRowWidths,
   makeRowBand, normalizeRowBands, clampRowWidths, widthPct,
   isFloating, floatBox, unfloatBox, groupBoxes, ungroupBoxes, alignInRow, alignInRowOf, bringToFront, sendToBack, bringForward, sendBackward, floatingZRange, cloneBox,
@@ -1014,5 +1014,107 @@ describe("accItems → items rename: old documents still open with their content
         { id: "a", type: "component", component: "alert", items: [{ id: "i1", title: "New", body: "A" }] },
       ] } }] };
     expect(coerceSite(modern)!.pages[0].root.children![0].items?.[0].title).toBe("New");
+  });
+});
+
+/**
+ * A ROW STILL FILLS ITS WIDTH AFTER ONE OF ITS BLOCKS IS REMOVED.
+ *
+ * Behaviours: tests/features/components/website/box-builder-layout.feature.
+ *
+ * Reported by the user as empty space beside a stack that no dragging would close. Measured: three blocks at
+ * 20% · 20% · 60% filled the row exactly, and deleting the middle one left the other two still saying 20% and
+ * 60% — **197px of the row simply dead**, permanently. A drag cannot recover it either, because a drag moves
+ * the boundary BETWEEN two blocks and faithfully preserves their total; that is right for a drag and no use
+ * at all here.
+ */
+describe("removing a block from a row hands its width back", () => {
+  const row = (kids: Array<Partial<BoxNode>>): BoxNode => ({
+    id: "band", type: "container", direction: "row", rowBand: true, width: "fill", padding: 0, gap: 0,
+    children: kids.map((k) => ({ type: "container", direction: "column", padding: 0, gap: 0, children: [], ...k })),
+  } as unknown as BoxNode);
+  const widths = (n: BoxNode) => (n.children ?? []).map((c) => c.width);
+
+  it("shares the freed width IN PROPORTION, so the blocks keep their relationship", () => {
+    const before = row([{ id: "a", width: "20%" }, { id: "b", width: "20%" }, { id: "c", width: "60%" }]);
+    expect(widths(deleteBox(before, "b")), "20 and 60 become 25 and 75, still totalling 100").toEqual(["25%", "75%"]);
+  });
+
+  it("the row totals 100% again whichever block goes", () => {
+    const before = row([{ id: "a", width: "25%" }, { id: "b", width: "25%" }, { id: "c", width: "50%" }]);
+    for (const gone of ["a", "b", "c"]) {
+      const after = deleteBox(before, gone);
+      const total = (after.children ?? []).reduce((s, c) => s + parseFloat(String(c.width)), 0);
+      expect(Math.round(total), `removing ${gone} left the row at ${total}%`).toBe(100);
+    }
+  });
+
+  it("a single survivor takes the whole row", () => {
+    const before = row([{ id: "a", width: "30%" }, { id: "b", width: "70%" }]);
+    expect(widths(deleteBox(before, "a"))).toEqual(["100%"]);
+  });
+
+  /**
+   * IT STANDS DOWN WHERE PERCENTAGES ARE NOT THE LANGUAGE. These are the cases a fix that simply rewrote every
+   * sibling would break, and each is a real arrangement rather than a hypothetical.
+   */
+  it("leaves a COLUMN alone — stacked blocks do not share a width", () => {
+    const col: BoxNode = { id: "stack", type: "container", direction: "column", padding: 0, gap: 0, children: [
+      { id: "a", type: "container", direction: "column", width: "40%", padding: 0, gap: 0, children: [] },
+      { id: "b", type: "container", direction: "column", width: "60%", padding: 0, gap: 0, children: [] },
+    ] } as unknown as BoxNode;
+    expect(widths(deleteBox(col, "a"))).toEqual(["60%"]);
+  });
+
+  it("leaves a GRID alone — a grid places by colSpan, not by width", () => {
+    const grid: BoxNode = { id: "g", type: "container", layout: "grid", columns: 12, direction: "row", padding: 0, gap: 0, children: [
+      { id: "a", type: "container", direction: "column", width: "20%", colSpan: 4, padding: 0, gap: 0, children: [] },
+      { id: "b", type: "container", direction: "column", width: "20%", colSpan: 8, padding: 0, gap: 0, children: [] },
+    ] } as unknown as BoxNode;
+    expect(widths(deleteBox(grid, "a"))).toEqual(["20%"]);
+  });
+
+  it("leaves the row alone when a sibling is Fit or Full — it already takes up the slack", () => {
+    const before = row([{ id: "a", width: "20%" }, { id: "b", width: "auto" }, { id: "c", width: "60%" }]);
+    expect(widths(deleteBox(before, "a"))).toEqual(["auto", "60%"]);
+  });
+
+  it("removing a block DEEPER in the tree does not touch the row it is not in", () => {
+    const before = row([{ id: "a", width: "30%" }, { id: "b", width: "70%", children: [
+      { id: "deep", type: "container", direction: "column", width: "50%", padding: 0, gap: 0, children: [] },
+    ] as unknown as BoxNode[] }]);
+    expect(widths(deleteBox(before, "deep")), "the row is unchanged").toEqual(["30%", "70%"]);
+  });
+});
+
+/**
+ * …AND MOVING A BLOCK MUST NOT HEAL ANYTHING. The mistake this pair exists to stop coming back.
+ *
+ * `moveBox` is `removeBox` followed by `insertBox`, and so are "turn this slot into a column" and grouping.
+ * Putting the row-healing inside `removeBox` therefore fired on every one of them: dragging a block within
+ * the page redistributed its siblings' widths and then put the block back, leaving the row over 100%. Two
+ * browser guards caught it in one gate — `stack-under-column.spec.ts`, "the neighbour did not move or resize"
+ * and "it took the room that was there".
+ *
+ * Deleting is the only operation that leaves a gap behind, so it is the only one that closes it.
+ */
+describe("removeBox stays dumb, because everything that restructures is built on it", () => {
+  const row = (kids: Array<Partial<BoxNode>>): BoxNode => ({
+    id: "band", type: "container", direction: "row", rowBand: true, width: "fill", padding: 0, gap: 0,
+    children: kids.map((k) => ({ type: "container", direction: "column", padding: 0, gap: 0, children: [], ...k })),
+  } as unknown as BoxNode);
+  const widths = (n: BoxNode) => (n.children ?? []).map((c) => c.width);
+
+  it("removeBox leaves every other width exactly as it was", () => {
+    const before = row([{ id: "a", width: "20%" }, { id: "b", width: "20%" }, { id: "c", width: "60%" }]);
+    expect(widths(removeBox(before, "b")), "the survivors are untouched").toEqual(["20%", "60%"]);
+  });
+
+  it("so a MOVE within the row leaves the row adding up to exactly what it did", () => {
+    const before = row([{ id: "a", width: "20%" }, { id: "b", width: "20%" }, { id: "c", width: "60%" }]);
+    const after = moveBox(before, "c", "band", 0); // drag the wide one to the front
+    const total = (after.children ?? []).reduce((s, k) => s + parseFloat(String(k.width)), 0);
+    expect(Math.round(total), `the row came to ${total}% after a move`).toBe(100);
+    expect(widths(after), "and each block kept its own width").toEqual(["60%", "20%", "20%"]);
   });
 });

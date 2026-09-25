@@ -319,3 +319,114 @@ test.describe("a pinned block holds while the page scrolls", () => {
     expect(r.movedWithPage, "so it travels with the page, the full distance").toBeGreaterThan(SCROLL_BY - 60);
   });
 });
+
+/**
+ * A RAIL HELD AGAINST A VERTICAL EDGE SPANS THE HEIGHT — the mirror of clause 5.
+ *
+ * Behaviours: tests/features/components/website/box-builder-floating.feature.
+ *
+ * Reported by the user: *"the stack on the left, when I make it sticky or fixed, in the preview it's just
+ * completely wrong — it doesn't take over the whole view height."* Measured beside a 900px column: the rail
+ * rendered **300px**, short by 600.
+ *
+ * Out of flow a block takes no size from its row, which is exactly why clause 5 has to hand a fixed BAR its
+ * width — a full-width bar once rendered 0px wide on both engines. Nobody then asked the same question of the
+ * vertical case, so a RAIL collapsed to the height of its contents and sat as a stub at the top of the screen.
+ * A bar is held against a horizontal edge and spans the width; a rail is held against a vertical edge and
+ * spans the height.
+ *
+ * ONLY A PURE LEFT OR RIGHT EDGE. A corner means "sit in that corner" — a chat bubble, a back-to-top button —
+ * and stretching one to full height is the opposite of what it is for. That case is asserted here too, because
+ * a fix that stretched everything would pass a test written only for the rail.
+ */
+const sideRailPage = (railExtra: Record<string, unknown>): BoxNode => ({
+  id: "root", type: "container", direction: "column", padding: 0, gap: 0, children: [
+    { id: "band", type: "container", direction: "row", rowBand: true, width: "fill", padding: 0, gap: 0, children: [
+      { id: "rail", type: "container", direction: "column", padding: 0, gap: 0, width: "20%", minHeight: 240,
+        background: "#0d3b1e", children: [], ...railExtra } as unknown as BoxNode,
+      tall("main", 2000, "#f8fafc", { width: "80%" }),
+    ] } as unknown as BoxNode,
+  ],
+} as unknown as BoxNode);
+
+async function railInExport(page: Page, root: BoxNode, route: string) {
+  await page.route(`**${route}`, (r) => r.fulfill({ contentType: "text/html", body: exportDoc(root) }));
+  await page.goto(route);
+  await page.waitForTimeout(400);
+  return page.evaluate(() => {
+    const el = document.querySelector<HTMLElement>(".bx-rail")!;
+    const b = el.getBoundingClientRect();
+    return {
+      h: Math.round(b.height), top: Math.round(b.top), position: getComputedStyle(el).position,
+      viewportH: window.innerHeight,
+    };
+  });
+}
+
+test.describe("a rail held against a vertical edge fills the screen", () => {
+  test("held LEFT, it spans the whole viewport height rather than hugging its contents", async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    const r = await railInExport(page, sideRailPage({ pin: "left", hold: "fixed" }), "/__rail_left");
+    expect(r.position, "it really is held on screen").toBe("fixed");
+    expect(
+      r.h,
+      `the rail is ${r.h}px tall in an ${r.viewportH}px window — it collapsed to its contents instead of spanning the edge it is held against`,
+    ).toBeGreaterThanOrEqual(r.viewportH - 2);
+  });
+
+  test("held RIGHT, the same", async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    const r = await railInExport(page, sideRailPage({ pin: "right", hold: "fixed" }), "/__rail_right");
+    expect(r.h, `the rail is ${r.h}px tall in an ${r.viewportH}px window`).toBeGreaterThanOrEqual(r.viewportH - 2);
+  });
+
+  test("a CORNER still hugs — a chat bubble is not a sidebar", async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    const r = await railInExport(page, sideRailPage({ pin: "bottom-left", hold: "fixed" }), "/__rail_corner");
+    expect(r.h, `a corner-held block grew to ${r.h}px — it should be the size of its contents`).toBeLessThan(600);
+  });
+
+  test("a height the user set themselves still wins", async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    const r = await railInExport(page, sideRailPage({ pin: "left", hold: "fixed", height: "18rem" }), "/__rail_fixedh");
+    expect(r.h, `the user asked for 18rem and got ${r.h}px`).toBeLessThan(400);
+  });
+});
+
+/**
+ * A STICKY SIDEBAR IS THE HEIGHT OF THE SCREEN — and still sticks, which is the whole risk of saying so.
+ *
+ * Clause 3 refuses to let a row stretch a sticky block, and it has to: stretched to the 2000px column beside
+ * it, a sticky block has ZERO travel and can never stick. So it cannot be as tall as its neighbour. It can be
+ * as tall as the SCREEN, which is what a sidebar is — 100dvh against a taller column leaves a full column of
+ * travel. Measured before this: 300px beside a 900px column.
+ */
+test.describe("a sticky sidebar fills the screen and keeps its travel", () => {
+  test("it is the height of the window, not of its contents", async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    const r = await railInExport(page, sideRailPage({ pin: "top" }), "/__sticky_rail");
+    expect(r.position, "it really is sticky").toBe("sticky");
+    expect(r.h, `the rail is ${r.h}px in an ${r.viewportH}px window`).toBeGreaterThanOrEqual(r.viewportH - 2);
+  });
+
+  test("…and it STILL HOLDS when the page scrolls — a full-height rail with no travel would be inert", async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    const r = await heldInExport(page, sideRailPage({ pin: "top" }), "rail");
+    expect(r.position).toBe("sticky");
+    expect(r.movedWithPage, `it travelled ${r.movedWithPage}px with the page — it is not holding at all`).toBeLessThan(40);
+  });
+
+  test("a sticky BUTTON in a row is NOT stretched — a button is not a sidebar", async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    const root: BoxNode = {
+      id: "root", type: "container", direction: "column", padding: 0, gap: 0, children: [
+        { id: "band", type: "container", direction: "row", rowBand: true, width: "fill", padding: 0, gap: 0, children: [
+          { id: "rail", type: "button", text: "Apply now", width: "20%", pin: "top" } as unknown as BoxNode,
+          tall("main", 2000, "#f8fafc", { width: "80%" }),
+        ] } as unknown as BoxNode,
+      ],
+    } as unknown as BoxNode;
+    const r = await railInExport(page, root, "/__sticky_button");
+    expect(r.h, `the button grew to ${r.h}px`).toBeLessThan(200);
+  });
+});

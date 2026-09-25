@@ -2067,12 +2067,69 @@ export function insertBox(root: BoxNode, parentId: string, index: number, node: 
 }
 
 /** Remove the node with `id` (cannot remove the root). */
+/**
+ * A ROW STILL FILLS ITS WIDTH AFTER ONE OF ITS BLOCKS IS TAKEN OUT.
+ *
+ * Reported by the user as empty space beside a stack that no amount of dragging would close, and measured:
+ * three blocks at 20% · 20% · 60% filled the row exactly; deleting the middle one left the other two still
+ * saying 20% and 60%, so **197px of the row was simply dead**. Nothing closes it afterwards either — a drag
+ * moves the boundary BETWEEN two blocks and faithfully preserves their total, which is correct for a drag and
+ * useless here, so the hole is permanent and the only way back is undo.
+ *
+ * The freed width is handed out IN PROPORTION, so 20/60 becomes 25/75: the blocks keep their relationship to
+ * one another, which is what someone who chose those widths meant by them. Giving it all to one neighbour
+ * would silently redesign the row around whichever block happened to be adjacent.
+ *
+ * It stands down wherever percentages are not the language being spoken — a grid places by `colSpan`, and a
+ * sibling set to Fit or Full is already sized by its content or the row, so there is nothing to hand it.
+ */
+function healRowWidths(parent: BoxNode, kept: BoxNode[], gone: BoxNode): BoxNode[] {
+  const isRow = !!parent.rowBand || (parent.direction ?? "column") === "row";
+  if (!isRow || parent.layout === "grid" || !kept.length) return kept;
+  const pct = (n: BoxNode) => {
+    const w = typeof n.width === "string" ? n.width.trim() : "";
+    if (!w.endsWith("%")) return null;
+    const v = parseFloat(w);
+    return Number.isFinite(v) ? v : null;
+  };
+  const freed = pct(gone);
+  if (freed == null || freed <= 0) return kept;
+  const shares = kept.map(pct);
+  if (shares.some((s) => s == null)) return kept; // a Fit or Full sibling takes up the slack by itself
+  const total = (shares as number[]).reduce((a, b) => a + b, 0);
+  if (total <= 0) return kept;
+  return kept.map((k, i) => ({ ...k, width: `${round1((shares[i] as number) * (1 + freed / total))}%` }));
+}
+
+/**
+ * DETACH a node, changing nothing else. The plumbing every restructuring move is built out of.
+ *
+ * It must stay exactly this dumb: `moveBox` is `removeBox` followed by `insertBox`, and so are "turn this
+ * slot into a column" and grouping. Healing the row here looked right and broke all three — dragging a block
+ * within the page redistributed its siblings' widths and then put the block back, so the row ended up over
+ * 100%. Two browser guards caught it within one gate. Deleting is the only operation that leaves a gap;
+ * `deleteBox` is the one that heals.
+ */
 export function removeBox(root: BoxNode, id: string): BoxNode {
   if (!root.children) return root;
   return {
     ...root,
     children: root.children.filter((c) => c.id !== id).map((c) => removeBox(c, id)),
   };
+}
+
+/**
+ * REMOVE a block for good, and let the row it was in close up behind it.
+ *
+ * The user-facing delete — the Delete key, the ⋯ menu, a bulk delete, and a cut, which takes the block out of
+ * the page just as finally. Everything else that calls `removeBox` is putting the block back somewhere else in
+ * the same breath and must not touch the widths.
+ */
+export function deleteBox(root: BoxNode, id: string): BoxNode {
+  if (!root.children) return root;
+  const gone = root.children.find((c) => c.id === id);
+  const kept = root.children.filter((c) => c.id !== id).map((c) => deleteBox(c, id));
+  return { ...root, children: gone ? healRowWidths(root, kept, gone) : kept };
 }
 
 /** Reorder a node within its own parent by one step (dir -1 up / +1 down). */
@@ -4811,6 +4868,28 @@ export function pinCSS(node: BoxNode, parent?: BoxNode, bp: Breakpoint = "base")
     if (w) css.width = w;
   }
   /**
+   * CLAUSE 5b — AND A RAIL HELD AGAINST A VERTICAL EDGE HAS TO BE GIVEN ITS HEIGHT.
+   *
+   * The exact mirror of clause 5, and it was missing for the whole life of the feature. Out of flow a block
+   * takes no size from its row, so a rail set to "Floats on screen" against the LEFT edge collapsed to the
+   * height of its contents and sat as a stub at the top of the screen. Reported by the user as *"when I make
+   * it sticky or fixed, in the preview it's just completely wrong — it doesn't take over the whole view
+   * height"*, and measured: beside a 900px column the rail rendered **300px**, short by 600.
+   *
+   * Clause 5 fixed the horizontal case because a full-width bar rendered 0px wide; nobody then asked the same
+   * question of the vertical one. A bar is held against a horizontal edge and spans the width; a rail is held
+   * against a vertical edge and spans the height. That is the whole of it.
+   *
+   * ONLY A PURE LEFT OR RIGHT EDGE. A CORNER means "sit in that corner" — a chat bubble, a back-to-top
+   * button — and stretching one to the full height is the opposite of what it is for. And a height the user
+   * set themselves always wins: this supplies the one nothing else will, it does not overrule a decision.
+   */
+  if (fixed && !src.height) {
+    const edges = PIN_EDGES[src.pin];
+    const verticalEdge = edges.length === 1 && (edges[0] === "left" || edges[0] === "right");
+    if (verticalEdge) { css.top = offset; css.bottom = offset; }
+  }
+  /**
    * CLAUSE 6 — TWO BARS HELD AT THE SAME EDGE SIT UNDER ONE ANOTHER, NOT ON TOP OF EACH OTHER.
    *
    * Reported by the user: three bands each set to stay on screen all pinned to the top and covered each
@@ -4853,6 +4932,29 @@ export function pinCSS(node: BoxNode, parent?: BoxNode, bp: Breakpoint = "base")
   // than its parent's width does — writing `align-self` there would be a declaration about nothing.
   const stretchesChildren = !fixed && !!parent && (parent.layout === "grid" || (parent.direction ?? "column") === "row");
   if (stretchesChildren) css.alignSelf = "flex-start";
+  /**
+   * CLAUSE 3b — A STICKY SIDEBAR IS THE HEIGHT OF THE SCREEN.
+   *
+   * Reported alongside the fixed rail: *"when I make it sticky or fixed… it doesn't take over the whole view
+   * height."* Clause 3 above has just refused to let the row stretch this block, and it has to — stretched to
+   * a 2400px column a sticky block has **zero travel** and can never stick, which is the silent failure that
+   * clause existed to end. So it cannot be as tall as the thing beside it. It can be as tall as the SCREEN,
+   * and that is what a sidebar is: 100dvh against a taller column leaves it a full column of travel.
+   *
+   * `dvh` rather than `vh` because a phone's toolbars come and go, and `vh` measures the tallest case — the
+   * one where the bottom of the rail is behind the browser's own chrome.
+   *
+   * WHERE THE ROW IS SHORTER THAN THE SCREEN nothing overflows: the row takes its height from its items, so a
+   * 100dvh rail simply makes the row that tall, and there was nothing to scroll past anyway.
+   *
+   * SCOPED TO A CONTAINER IN A ROW. A Stack beside a column of content is a sidebar; a sticky BUTTON or
+   * heading in a row is not, and stretching one to the height of the screen would be absurd. A grid is left
+   * out too — its cells are placed by track, and a cell is not a sidebar. And a height the user set
+   * themselves always wins.
+   */
+  if (stretchesChildren && isContainer(src) && !src.height && (parent!.direction ?? "column") === "row" && parent!.layout !== "grid") {
+    css.height = `calc(100dvh - ${offset})`;
+  }
   return css;
 }
 
@@ -4927,7 +5029,22 @@ export function canvasFixedStyle(css: CSSProperties): CSSProperties {
   const view = "var(--canvas-h, 100%)";
   const { bottom, ...rest } = css;
   const out: CSSProperties = { ...rest, position: "absolute" };
-  if (bottom != null) {
+  if (css.top != null && bottom != null) {
+    /**
+     * A FULL-HEIGHT RAIL — held against a vertical edge, so clause 5b gave it BOTH vertical insets.
+     *
+     * Two insets against the window mean "stretch between them", and this is the one case where that is the
+     * point rather than a mistake. The editor cannot use them both: an absolute box here is measured from the
+     * band it lives in, not the viewport, so `bottom` would be a distance from the wrong edge. The height is
+     * therefore stated outright — the visible canvas, less the insets — and the top follows the scroll like
+     * every other held block.
+     *
+     * Missing this left the canvas showing a 300px stub while the published page showed the full-height rail
+     * the user asked for: canvas ≠ export, in the direction where the editor lies to you.
+     */
+    out.top = `calc(${scroll} + (${String(css.top)}))`;
+    out.height = `calc(${view} - (${String(css.top)}) - (${String(bottom)}))`;
+  } else if (bottom != null) {
     // Held against the bottom of the screen: the scroll, plus the height of the visible canvas, less the
     // distance from that edge — then pulled back by its own height, which only `translate` knows.
     out.top = `calc(${scroll} + ${view} - (${String(bottom)}))`;

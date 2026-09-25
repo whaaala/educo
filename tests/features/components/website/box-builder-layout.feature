@@ -543,3 +543,67 @@ Feature: Placing blocks beside one another in the Box Builder
   Scenario: A band with content in it takes its height from the content
     Given a coloured band holding a line of text
     Then it is as tall as the text, not 128px
+
+  # ── Reported by the user: empty space in a row, and a rail that will not fill the screen ──
+
+  Scenario: A row still fills its width after one of its blocks is removed
+    Given three blocks side by side at 20%, 20% and 60%
+    When the middle one is deleted
+    Then the remaining two become 25% and 75%, and the row is full again
+    Because the freed width used to be left behind: the other two still said 20%
+      and 60%, so 197px of the row was simply dead — and permanently, since a
+      drag moves the boundary BETWEEN two blocks and faithfully preserves their
+      total. That is right for a drag and no use at all here. The width is handed
+      out in proportion so the blocks keep the relationship the user chose.
+
+  Scenario: Only a row heals — a column and a grid are left alone
+    Given blocks stacked in a column, or placed in a grid
+    When one of them is deleted
+    Then no other block's width is touched
+    Because stacked blocks do not share a width, and a grid places by colSpan.
+      A sibling set to Fit or Full is left alone too — it already takes up the
+      slack by itself.
+
+  Scenario: A rail held against a vertical edge spans the whole screen
+    Given a stack beside a column of content, set to "Floats on screen" at the left
+    Then it fills the height of the window rather than hugging its contents
+    Because out of flow a block takes no size from its row. That is exactly why a
+      fixed BAR has to be handed its width — a full-width bar once rendered 0px
+      wide on both engines — and nobody then asked the same question of the
+      vertical case. Measured beside a 900px column: the rail rendered 300px,
+      short by 600. A bar is held against a horizontal edge and spans the width;
+      a rail is held against a vertical edge and spans the height.
+
+  Scenario: A corner still hugs, and a height you set yourself still wins
+    Given a block held at a corner, or one given an explicit height
+    Then neither is stretched
+    Because a corner means "sit in that corner" — a chat bubble, a back-to-top
+      button — and stretching one is the opposite of what it is for. The rule
+      supplies the size nothing else will; it does not overrule a decision.
+
+  Scenario: The editor shows the same rail the published page will
+    Given the same rail on the canvas
+    Then it fills the visible canvas, not a stub at the top of it
+    Because the editor cannot use `position: fixed` at all, so it simulates one —
+      and its converter had only ever kept a single inset. Two insets against a
+      vertical edge mean "stretch between them", which is the one case where that
+      is the point. Missing it left the canvas showing 300px while the published
+      page showed the full-height rail: canvas ≠ export, in the direction where
+      the editor lies to you.
+
+  Scenario: A sticky sidebar is the height of the screen, and still sticks
+    Given a Stack beside a tall column, set to "Sticks when reached"
+    Then it fills the height of the window
+    And it still holds its place as the page scrolls
+    Because it cannot be as tall as the column beside it — stretched to its
+      neighbour's height a sticky block has zero travel and can never stick,
+      which is the silent failure the no-stretch rule exists to end. It can be as
+      tall as the SCREEN, and against a taller column that leaves it a full
+      column of travel. Asserting the height alone would pass on a sidebar that
+      had stopped sticking, so the travel is asserted too.
+
+  Scenario: A sticky button in a row is not a sidebar
+    Given a button beside a column of content, set to "Sticks when reached"
+    Then it keeps the size of its contents
+    Because a Stack beside content is a sidebar and a button is not, and
+      stretching one to the height of the screen would be absurd.

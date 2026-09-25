@@ -14,7 +14,7 @@ import { DEFAULT_THEME, resolveSiteTheme } from "@/lib/site-storage";
 import { THEMES, type ThemeId } from "@/lib/theme-config";
 import { RUNG_LABEL, RUNG_ORDER, RUNG_PX } from "@/lib/educo-ui/layout";
 import {
-  type BoxNode, type Breakpoint, createContainer, findBox, findParent, updateBox, insertBox, removeBox, duplicateBox, widthPct, makeRowBand, normalizeRowBands, groupBoxes, alignInRow, alignInRowOf, setSectionWidth, sectionWidthOf, pageBandOf,
+  type BoxNode, type Breakpoint, createContainer, findBox, findParent, updateBox, insertBox, deleteBox, duplicateBox, widthPct, makeRowBand, normalizeRowBands, groupBoxes, alignInRow, alignInRowOf, setSectionWidth, sectionWidthOf, pageBandOf,
   floatBox, unfloatBox, bringToFront, bringForward, sendBackward, sendToBack,
   resolveResponsive, updateBoxResponsive, clearOverride, hasOverride,
   gridColumns, retrackGrid, setColumnFraction, pinBlockedBy, fixedBlockedBy, blockedByLabel, pinScopeWords, isFloating,
@@ -562,7 +562,7 @@ export default function BoxDemoPage() {
     }, root));
   };
   const bulkDuplicate = () => { commit(selectedIds.reduce((next, id) => duplicateBox(next, id), root)); };
-  const bulkDelete = () => { commit(selectedIds.reduce((next, id) => (id !== root.id ? removeBox(next, id) : next), root)); setSelectedIds([]); };
+  const bulkDelete = () => { commit(selectedIds.reduce((next, id) => (id !== root.id ? deleteBox(next, id) : next), root)); setSelectedIds([]); };
   const bulkFloat = () => { commit(selectedIds.reduce((next, id) => { const g = measureFloatGeom(next, id); return g ? floatBox(next, id, g.parentId, g.left, g.top, g.width, g.height) : next; }, root)); };
   const bulkGroup = () => {
     const g = measureGroupGeom(root, selectedIds);
