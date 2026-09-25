@@ -49,11 +49,44 @@ const EASING: Record<string, string> = {
   out: "cubic-bezier(0, 0, 0.2, 1)", "in-out": "cubic-bezier(0.4, 0, 0.2, 1)",
   emphasized: "cubic-bezier(0.2, 0, 0, 1.2)",
 };
-const SHADOW: Record<string, string> = {
-  sm: "0 1px 2px rgba(0,0,0,0.08), 0 1px 1px rgba(0,0,0,0.06)",
-  md: "0 4px 8px rgba(0,0,0,0.10), 0 2px 4px rgba(0,0,0,0.06)",
-  lg: "0 12px 24px rgba(0,0,0,0.12), 0 4px 8px rgba(0,0,0,0.08)",
-  xl: "0 24px 48px rgba(0,0,0,0.18), 0 8px 16px rgba(0,0,0,0.10)",
+/**
+ * A stored pixel length as `rem` — the converter the whole product sizes through.
+ *
+ * IT LIVES HERE, IN THE TOKEN MODULE, AND IS RE-EXPORTED BY `box-model`, so there is exactly one of it. It
+ * used to be defined in `box-model` alone, which left the token system with no way to express a length in the
+ * unit its own rule demands — and so the radius and shadow scales below stayed in pixels while everything
+ * that went through `box-model` moved to rem. Core Rule 17 puts the radius, shadow and spacing tokens here;
+ * the converter they need belongs here with them.
+ *
+ * Three decimals: enough to carry a measured remainder exactly (see the edge-anchored resize), short enough
+ * that the emitted CSS stays readable.
+ */
+export function remLen(px: number, rootPx = 16): string {
+  return `${Math.round((px / (rootPx || 16)) * 1000) / 1000}rem`;
+}
+
+/**
+ * THE ELEVATION SCALE — one definition, which is the whole point of this comment.
+ *
+ * There were two, byte for byte: this one and `SHADOW_CSS` in `box-model`. When shadows were moved to rem so
+ * a reader's enlarged text did not leave a card lifted by a hairline, only one of them was changed — so the
+ * design-system components (`--eu-shadow-*`, which every Card, Alert and Accordion reads) kept the pixel
+ * version while blocks got the rem one. Nobody would have seen it until a card and a section sat side by side
+ * at a large text size.
+ *
+ * `box-model` now imports this and re-exports it as `SHADOW_CSS`, so the two names remain and the values
+ * cannot diverge again.
+ *
+ * ALL FOUR ARE FULLY rem, INCLUDING `sm`. The first pass left `sm` as `0 1px 2px` on the reasoning that 1px
+ * is a hairline — but an offset and a blur radius are distances, not hairlines, and leaving them made `sm`
+ * the one step of the scale that did not grow with the reader. The exception Core Rule 16 allows is a 1px
+ * BORDER, and nothing else. At the default text size these values are identical to what they replaced.
+ */
+export const SHADOW_SCALE: Record<"sm" | "md" | "lg" | "xl", string> = {
+  sm: "0 0.0625rem 0.125rem rgba(0,0,0,0.08), 0 0.0625rem 0.0625rem rgba(0,0,0,0.06)",
+  md: "0 0.25rem 0.5rem rgba(0,0,0,0.10), 0 0.125rem 0.25rem rgba(0,0,0,0.06)",
+  lg: "0 0.75rem 1.5rem rgba(0,0,0,0.12), 0 0.25rem 0.5rem rgba(0,0,0,0.08)",
+  xl: "0 1.5rem 3rem rgba(0,0,0,0.18), 0 0.5rem 1rem rgba(0,0,0,0.10)",
 };
 
 /** A brand-tinted neutral: the brand's hue at a tiny chroma → greys that lean subtly toward the brand. */
@@ -77,8 +110,17 @@ export function tokensFromTheme(theme: SiteTheme): EducoTokens {
     },
     font: { heading: theme.headingFont, body: theme.bodyFont, mono: "'IBM Plex Mono', ui-monospace, monospace" },
     text: TYPE_SCALE, weight: WEIGHTS, leading: LEADING, tracking: TRACKING, space: SPACE,
-    radius: { sm: `${Math.round(r * 0.375)}px`, md: `${Math.round(r * 0.75)}px`, lg: `${r}px`, xl: `${Math.round(r * 1.5)}px`, full: "9999px" },
-    shadow: SHADOW, duration: DURATION, easing: EASING,
+    /**
+     * IN `rem`, so a corner is part of a design that scales with the reader rather than a fixed dent in it.
+     * `full` is the pill — "arbitrarily large" in any unit, and expressed in rem so it needs no exception to
+     * the units rule. These feed `--eu-radius-*`, which every design-system component reads, so this one line
+     * governs the corners of every Card, Alert, Badge and Accordion at once.
+     */
+    radius: {
+      sm: remLen(Math.round(r * 0.375)), md: remLen(Math.round(r * 0.75)), lg: remLen(r),
+      xl: remLen(Math.round(r * 1.5)), full: remLen(9999),
+    },
+    shadow: SHADOW_SCALE, duration: DURATION, easing: EASING,
   };
 }
 

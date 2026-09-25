@@ -1,6 +1,8 @@
 import { describe, it, expect } from "vitest";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
+import { tokensFromTheme } from "@/lib/educo-ui/tokens";
+import { DEFAULT_THEME } from "@/lib/site-storage";
 
 /**
  * Locks the Educo UI "token bridge" (State 1): both globals.css files must map semantic Tailwind
@@ -43,10 +45,45 @@ describe("Educo UI token bridge (globals.css)", () => {
         }
       });
 
-      it("exposes the theme-independent tokens (spacing / radius / type) on :root", () => {
-        expect(css).toContain("--eu-space-4: 1rem");
-        expect(css).toContain("--eu-radius-lg: 16px");
-        expect(css).toContain("--eu-text-base: 1rem");
+      it("exposes the theme-independent tokens on :root, and they MATCH the generated scale", () => {
+        /**
+         * THIS USED TO SAMPLE THREE VALUES, one of which it pinned as `--eu-radius-lg: 16px`.
+         *
+         * These declarations are a hand-written copy of what `tokensFromTheme()` generates — necessary,
+         * because the app CHROME sits outside `.eu-root` and cannot read the generated set. A copy that is
+         * only spot-checked drifts, and this one had: spacing and type were rem and matched, while the whole
+         * radius scale sat in pixels. So every rounded corner in the app chrome ignored a reader who had
+         * enlarged their browser text, and the numbers silently disagreed with `--eu-radius-*` inside the
+         * builder — where they had been moved to rem for Core Rule 16.
+         *
+         * It was found by MEASURING, not by reading: a card's computed radius scaled correctly while
+         * `--eu-radius-lg` read `16px` off the document element, and that contradiction exposed the copy.
+         *
+         * So the copy is now compared with the generator, key by key. A scale written twice is checked twice.
+         */
+        const t = tokensFromTheme(DEFAULT_THEME);
+        // `.75rem` and `0.75rem` are the same length; the shells write the shorter form.
+        const norm = (v: string) => v.trim().replace(/(^|\s)\./g, "$10.");
+        const declared = (name: string) => {
+          const m = new RegExp(`--eu-${name}\\s*:\\s*([^;]+);`).exec(css);
+          return m ? norm(m[1]) : null;
+        };
+
+        for (const [k, want] of Object.entries(t.radius)) {
+          expect(declared(`radius-${k}`), `--eu-radius-${k} is missing or has drifted from tokensFromTheme()`).toBe(norm(want));
+        }
+        // The shells carry a SUBSET of the spacing and type steps, so only what they declare is compared —
+        // a missing step is a different (and harmless) thing from a step that disagrees.
+        for (const [k, want] of Object.entries(t.space)) {
+          const got = declared(`space-${k}`);
+          if (got !== null) expect(got, `--eu-space-${k} has drifted`).toBe(norm(want));
+        }
+        for (const [k, want] of Object.entries(t.text)) {
+          const got = declared(`text-${k}`);
+          if (got !== null) expect(got, `--eu-text-${k} has drifted`).toBe(norm(want));
+        }
+        // …and at least the anchors are present, so "they all matched" can never mean "none were declared".
+        for (const k of ["radius-lg", "space-4", "text-base"]) expect(declared(k), `--eu-${k} is not declared at all`).not.toBeNull();
       });
 
       it("makes the Educo UI layout utilities available APP-WIDE (not scoped under .eu-root)", () => {

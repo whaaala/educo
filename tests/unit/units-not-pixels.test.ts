@@ -80,14 +80,32 @@ describe("the unit system reaches the page, and stored pixels do not", () => {
     expect(Object.keys(report), `blocks emitting stored pixels: ${Object.keys(report).join(", ")}`).toEqual([]);
   });
 
-  it("…and the shared stylesheet's own pixels are listed, so they stay a decision", () => {
+  it("…and the SHARED framework stylesheet holds to the same rule", () => {
     /**
-     * The framework sheet is allowed its hairlines and its pill radius, but not silently: this prints what it
-     * uses so a number that creeps in is visible in a diff rather than discovered on a phone.
+     * THIS USED TO MERELY LIST THEM, capped at fourteen. That was the honest state at the time — the blocks
+     * had been converted and the framework had not — but a guard that tolerates the thing it is named for is
+     * a guard that stops being read. There were ten, and they were not incidental:
+     *
+     *   • the RADIUS token scale was emitted in px, and `--eu-radius-*` is what every Card, Alert, Badge and
+     *     Accordion reads, so every corner in the design system ignored a reader's text size;
+     *   • the SHADOW scale existed TWICE, byte for byte, here and in `box-model`. Only one copy was moved to
+     *     rem, so blocks lifted in rem while components lifted in pixels — invisible until the two sat side
+     *     by side at a large text size;
+     *   • focus rings, accent bars and decorative borders throughout the component sheet.
+     *
+     * One change to the token module fixed eight of the ten, because the tokens are what everything reads.
+     * The rule now applies to the framework exactly as it applies to a block: `1px` for a hairline border,
+     * and nothing else.
      */
     const sheet = pageFor("container").replace(/\.bx-[a-zA-Z0-9_-]+\s*\{[^}]*\}/g, "");
     const px = storedPixels(sheet).sort((a, b) => parseFloat(a) - parseFloat(b));
-    console.log("pixels in the SHARED sheet: " + px.join(", "));
-    expect(px.length, "the shared sheet has grown a lot of raw pixels — check what was added").toBeLessThanOrEqual(14);
+    expect(px, `the framework stylesheet emitted stored pixels: ${px.join(", ")}`).toEqual([]);
   });
+
+  /**
+   * The app shells' hand-copied token scales are guarded in `educo-bridge.test.ts`, which already owns that
+   * question — a duplicate here was written before noticing it existed, and two guards asking one question
+   * is the thing this codebase keeps paying for. It compares every key against `tokensFromTheme()` now,
+   * rather than sampling three.
+   */
 });

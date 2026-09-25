@@ -79,7 +79,10 @@ ${LAYOUT_CSS}
  */
 
 /* ── Basic user interface + accessibility ──────────────────────────────────── */
-.eu-root :focus-visible { outline: 2px solid var(--eu-color-brand); outline-offset: 2px; border-radius: 3px; }
+/* The focus ring is in rem, and that is an accessibility decision rather than a tidy-up: a reader who has
+   enlarged their browser text gets larger type AND a proportionally larger ring, instead of a 2px hairline
+   around 32px words that is harder to see than the one around 16px words. Identical at the default size. */
+.eu-root :focus-visible { outline: 0.125rem solid var(--eu-color-brand); outline-offset: 0.125rem; border-radius: 0.1875rem; }
 .eu-root :focus:not(:focus-visible) { outline: none; }
 .eu-root ::selection { background: var(--eu-color-primary-200); color: var(--eu-color-text); }
 .eu-root ::placeholder { color: var(--eu-color-muted); opacity: 1; }

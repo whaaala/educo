@@ -46,7 +46,7 @@ export const COMPONENT_CSS = `
   padding: var(--eu-space-3) var(--eu-space-4);
   transition: border-color var(--eu-dur-fast) var(--eu-ease-standard), box-shadow var(--eu-dur-fast) var(--eu-ease-standard);
 }
-.eu-root .eu-input:focus-visible, .eu-root .eu-select:focus-visible, .eu-root .eu-textarea:focus-visible { border-color: var(--eu-color-brand); outline: none; box-shadow: 0 0 0 3px var(--eu-color-primary-100); }
+.eu-root .eu-input:focus-visible, .eu-root .eu-select:focus-visible, .eu-root .eu-textarea:focus-visible { border-color: var(--eu-color-brand); outline: none; box-shadow: 0 0 0 0.1875rem var(--eu-color-primary-100); }
 .eu-root .eu-input[aria-invalid="true"] { border-color: var(--eu-color-danger); }
 .eu-root .eu-field { display: flex; flex-direction: column; gap: var(--eu-space-2); }
 .eu-root .eu-label { font-size: var(--eu-text-sm); font-weight: var(--eu-weight-medium); color: var(--eu-color-text); }
@@ -72,7 +72,7 @@ export const COMPONENT_CSS = `
 .eu-root .eu-quote { container-type: inline-size; display: flex; flex-direction: column; gap: var(--eu-space-2); margin: 0; }
 .eu-root .eu-quote__text { margin: 0; font-family: var(--eu-font-heading); font-style: italic; color: var(--eu-color-text); font-size: 1.6em; line-height: var(--eu-leading-snug); }
 .eu-root .eu-quote__author { color: var(--eu-color-muted); font-size: 0.9em; }
-.eu-root .eu-quote--bordered { border-inline-start: 4px solid var(--eu-color-brand); padding-inline-start: clamp(var(--eu-space-3), 3cqi, var(--eu-space-5)); }
+.eu-root .eu-quote--bordered { border-inline-start: 0.25rem solid var(--eu-color-brand); padding-inline-start: clamp(var(--eu-space-3), 3cqi, var(--eu-space-5)); }
 .eu-root .eu-quote--large .eu-quote__text { font-size: 2.1em; }
 
 /* ── Stat (big number + label) ──────────────────────────────────────────────── */
@@ -121,14 +121,14 @@ export const COMPONENT_CSS = `
 .eu-root .eu-alert--solid { background: var(--al-c); border-color: transparent; }
 .eu-root .eu-alert--solid .eu-alert__icon, .eu-root .eu-alert--solid .eu-alert__title, .eu-root .eu-alert--solid .eu-alert__body { color: var(--eu-color-on-brand); }
 .eu-root .eu-alert--solid .eu-alert__action { background: var(--eu-color-on-brand); color: var(--al-c); border-color: transparent; }
-.eu-root .eu-alert--outline { background: transparent; border: 1.5px solid var(--al-c); }
-.eu-root .eu-alert--accent { background: var(--eu-color-surface); border: 1px solid var(--eu-color-border); border-inline-start: 4px solid var(--al-c); }
-.eu-root .eu-alert--top { background: var(--al-tint); border: 1px solid var(--al-line); border-block-start: 4px solid var(--al-c); }
+.eu-root .eu-alert--outline { background: transparent; border: 0.0938rem solid var(--al-c); }
+.eu-root .eu-alert--accent { background: var(--eu-color-surface); border: 1px solid var(--eu-color-border); border-inline-start: 0.25rem solid var(--al-c); }
+.eu-root .eu-alert--top { background: var(--al-tint); border: 1px solid var(--al-line); border-block-start: 0.25rem solid var(--al-c); }
 .eu-root .eu-alert--card { background: var(--eu-color-surface); border: 1px solid var(--eu-color-border); box-shadow: var(--eu-shadow-lg); }
-.eu-root .eu-alert--glass { background: color-mix(in oklab, var(--eu-color-surface) 55%, transparent); -webkit-backdrop-filter: blur(12px) saturate(1.5); backdrop-filter: blur(12px) saturate(1.5); border: 1px solid color-mix(in oklab, var(--al-c) 30%, transparent); box-shadow: var(--eu-shadow-lg); }
+.eu-root .eu-alert--glass { background: color-mix(in oklab, var(--eu-color-surface) 55%, transparent); -webkit-backdrop-filter: blur(0.75rem) saturate(1.5); backdrop-filter: blur(0.75rem) saturate(1.5); border: 1px solid color-mix(in oklab, var(--al-c) 30%, transparent); box-shadow: var(--eu-shadow-lg); }
 /* ── form factors ── */
 .eu-root .eu-alert--banner { border-radius: 0; border-inline: 0; }
-.eu-root .eu-alert--callout { background: var(--eu-color-surface); border: 1px solid var(--eu-color-border); border-inline-start: 4px solid var(--al-c); }
+.eu-root .eu-alert--callout { background: var(--eu-color-surface); border: 1px solid var(--eu-color-border); border-inline-start: 0.25rem solid var(--al-c); }
 /* responsive: stack the action under the text on very narrow blocks */
 @container (max-width: 22rem) { .eu-root .eu-alert { flex-wrap: wrap; } }
 /* ── multi-item stack + form factors + parts ── */
@@ -159,7 +159,7 @@ export const COMPONENT_CSS = `
 .eu-root .eu-alert--ticket::before, .eu-root .eu-alert--ticket::after { content: ""; position: absolute; inline-size: 0.9rem; block-size: 0.9rem; border-radius: var(--eu-radius-full); background: var(--eu-color-bg); inset-block-start: calc(50% - 0.45rem); }
 .eu-root .eu-alert--ticket::before { inset-inline-start: -0.5rem; }
 .eu-root .eu-alert--ticket::after { inset-inline-end: -0.5rem; }
-.eu-root .eu-alert--note { background: var(--al-tint); border: 0; border-radius: var(--eu-radius-sm); box-shadow: var(--eu-shadow-md); border-block-end: 3px solid var(--al-c); }
+.eu-root .eu-alert--note { background: var(--al-tint); border: 0; border-radius: var(--eu-radius-sm); box-shadow: var(--eu-shadow-md); border-block-end: 0.1875rem solid var(--al-c); }
 .eu-root .eu-alert--terminal { background: var(--eu-color-neutral-900); border: 1px solid var(--al-c); border-radius: var(--eu-radius-sm); font-family: var(--eu-font-mono); }
 .eu-root .eu-alert--terminal .eu-alert__title, .eu-root .eu-alert--terminal .eu-alert__icon { color: var(--al-c); }
 .eu-root .eu-alert--terminal .eu-alert__body { color: var(--eu-color-neutral-200); }
@@ -167,10 +167,10 @@ export const COMPONENT_CSS = `
 .eu-root .eu-alert--bubble::after { content: ""; position: absolute; inset-block-end: -0.55rem; inset-inline-start: var(--eu-space-6); inline-size: 0.9rem; block-size: 0.9rem; background: var(--al-tint); border-inline-end: 1px solid var(--al-line); border-block-end: 1px solid var(--al-line); transform: rotate(45deg); }
 .eu-root .eu-alert--stripe { background: var(--eu-color-surface); border: 1px solid var(--eu-color-border); position: relative; overflow: hidden; padding-inline-start: var(--eu-space-6); }
 .eu-root .eu-alert--stripe::before { content: ""; position: absolute; inset-block: 0; inset-inline-start: 0; inline-size: 0.5rem; background: repeating-linear-gradient(45deg, var(--al-c) 0 0.28rem, transparent 0.28rem 0.56rem); }
-.eu-root .eu-alert--inset { background: var(--al-tint); border: 0; box-shadow: inset 0 2px 6px color-mix(in oklab, var(--al-c) 25%, transparent); }
-.eu-root .eu-alert--underline { background: transparent; border: 0; border-block-end: 2px solid var(--al-c); border-radius: 0; padding-inline: 0; }
-.eu-root .eu-alert--bracket { background: transparent; border: 0; border-inline-start: 2px solid var(--al-c); border-block-start: 2px solid var(--al-c); border-block-end: 2px solid var(--al-c); border-start-start-radius: var(--eu-radius-md); border-end-start-radius: var(--eu-radius-md); }
-.eu-root .eu-alert--frame { background: var(--eu-color-surface); border: 2px solid var(--al-c); outline: 1px solid var(--al-line); outline-offset: 3px; }
+.eu-root .eu-alert--inset { background: var(--al-tint); border: 0; box-shadow: inset 0 0.125rem 0.375rem color-mix(in oklab, var(--al-c) 25%, transparent); }
+.eu-root .eu-alert--underline { background: transparent; border: 0; border-block-end: 0.125rem solid var(--al-c); border-radius: 0; padding-inline: 0; }
+.eu-root .eu-alert--bracket { background: transparent; border: 0; border-inline-start: 0.125rem solid var(--al-c); border-block-start: 0.125rem solid var(--al-c); border-block-end: 0.125rem solid var(--al-c); border-start-start-radius: var(--eu-radius-md); border-end-start-radius: var(--eu-radius-md); }
+.eu-root .eu-alert--frame { background: var(--eu-color-surface); border: 0.125rem solid var(--al-c); outline: 1px solid var(--al-line); outline-offset: 0.1875rem; }
 .eu-root .eu-alert--shadowed { background: var(--eu-color-surface); border: 1px solid var(--al-line); box-shadow: 0.35rem 0.35rem 0 color-mix(in oklab, var(--al-c) 30%, transparent); }
 .eu-root .eu-alert--elevated { background: var(--eu-color-surface); border: 0; border-radius: var(--eu-radius-lg); box-shadow: var(--eu-shadow-lg); }
 .eu-root .eu-alert--gradient { background: linear-gradient(135deg, var(--al-c), color-mix(in oklab, var(--al-c) 45%, var(--eu-color-surface))); border-color: transparent; }
@@ -180,7 +180,7 @@ export const COMPONENT_CSS = `
 /* Icon treatment */
 .eu-root .eu-alert.eu-alert--icon-square .eu-alert__icon { background: var(--al-c); color: var(--eu-color-on-brand); padding: var(--eu-space-2); border-radius: var(--eu-radius-sm); }
 .eu-root .eu-alert.eu-alert--icon-circle .eu-alert__icon { background: var(--al-c); color: var(--eu-color-on-brand); padding: var(--eu-space-2); border-radius: var(--eu-radius-full); }
-.eu-root .eu-alert.eu-alert--icon-outline .eu-alert__icon { border: 1.5px solid var(--al-c); padding: var(--eu-space-2); border-radius: var(--eu-radius-full); }
+.eu-root .eu-alert.eu-alert--icon-outline .eu-alert__icon { border: 0.0938rem solid var(--al-c); padding: var(--eu-space-2); border-radius: var(--eu-radius-full); }
 .eu-root .eu-alert.eu-alert--icon-top { flex-direction: column; align-items: flex-start; }
 .eu-root .eu-alert.eu-alert--icon-right { flex-direction: row-reverse; }
 .eu-root .eu-alert.eu-alert--icon-big .eu-alert__icon { font-size: 1.75em; }
@@ -194,9 +194,9 @@ export const COMPONENT_CSS = `
 .eu-root .eu-alert.eu-alert--lean { border-start-start-radius: var(--eu-radius-xl); border-end-end-radius: var(--eu-radius-xl); border-start-end-radius: var(--eu-radius-sm); border-end-start-radius: var(--eu-radius-sm); }
 
 /* Border and rule */
-.eu-root .eu-alert.eu-alert--dashed {  border: 1.5px dashed var(--al-c); }
-.eu-root .eu-alert.eu-alert--dotted {  border: 2px dotted var(--al-c); }
-.eu-root .eu-alert.eu-alert--double {  border: 4px double var(--al-c); }
+.eu-root .eu-alert.eu-alert--dashed {  border: 0.0938rem dashed var(--al-c); }
+.eu-root .eu-alert.eu-alert--dotted {  border: 0.125rem dotted var(--al-c); }
+.eu-root .eu-alert.eu-alert--double {  border: 0.25rem double var(--al-c); }
 .eu-root .eu-alert.eu-alert--thick-left {  border: 1px solid var(--eu-color-border); border-inline-start: 0.5rem solid var(--al-c); }
 .eu-root .eu-alert.eu-alert--thick-top {  border: 1px solid var(--eu-color-border); border-block-start: 0.4rem solid var(--al-c); }
 .eu-root .eu-alert.eu-alert--thick-bottom {  border: 1px solid var(--eu-color-border); border-block-end: 0.4rem solid var(--al-c); }
@@ -242,7 +242,7 @@ export const COMPONENT_CSS = `
 .eu-root .eu-alert__action--link::after { content: " →"; }
 .eu-root .eu-alert__action:hover { filter: brightness(1.06); }
 .eu-root .eu-alert__action--secondary:hover { background: color-mix(in oklab, var(--al-c) 12%, transparent); }
-.eu-root .eu-alert__action:focus-visible { outline: 2px solid var(--al-c); outline-offset: 2px; }
+.eu-root .eu-alert__action:focus-visible { outline: 0.125rem solid var(--al-c); outline-offset: 0.125rem; }
 
 /* On a SOLID or LOUD alert the surface is already the severity colour, so an action painted in it would vanish.
    These flip to the on-brand colour instead — checked per design rather than assumed. */
@@ -288,13 +288,13 @@ export const COMPONENT_CSS = `
 .eu-root .eu-alert-stack--toast { align-items: stretch; }
 .eu-root .eu-alert-stack--toast .eu-alert { box-shadow: var(--eu-shadow-lg); }
 .eu-root .eu-alert__meta { margin-inline-start: auto; color: var(--eu-color-muted); font-size: 0.85em; align-self: flex-start; }
-.eu-root .eu-alert__sub { display: flex; flex-direction: column; gap: var(--eu-space-2); margin-block-start: var(--eu-space-2); padding-inline-start: var(--eu-space-3); border-inline-start: 2px solid color-mix(in oklab, var(--al-c) 30%, transparent); }
+.eu-root .eu-alert__sub { display: flex; flex-direction: column; gap: var(--eu-space-2); margin-block-start: var(--eu-space-2); padding-inline-start: var(--eu-space-3); border-inline-start: 0.125rem solid color-mix(in oklab, var(--al-c) 30%, transparent); }
 .eu-root .eu-alert__sub .eu-alert { padding: var(--eu-space-3) var(--eu-space-4); }
 .eu-root .eu-alert__body a { color: inherit; text-decoration: underline; }
 
 /* ── Link + section ────────────────────────────────────────────────────────── */
 .eu-root .eu-link { color: var(--eu-color-brand); text-decoration: underline; text-underline-offset: .15em; }
-.eu-root .eu-link:hover { text-decoration-thickness: 2px; }
+.eu-root .eu-link:hover { text-decoration-thickness: 0.125rem; }
 .eu-root .eu-section { padding-block: clamp(var(--eu-space-12), 6vw, var(--eu-space-24)); }
 .eu-root .eu-divider { border: 0; border-top: 1px solid var(--eu-color-border); margin-block: var(--eu-space-6); }
 
@@ -317,7 +317,7 @@ export const COMPONENT_CSS = `
 }
 .eu-root .eu-accordion__header:hover { background: var(--eu-color-surface-2); }
 /* a11y: a clear keyboard focus ring on the header (inset so overflow:hidden never clips it) */
-.eu-root .eu-accordion__header:focus-visible { outline: none; box-shadow: inset 0 0 0 2px var(--eu-color-brand); }
+.eu-root .eu-accordion__header:focus-visible { outline: none; box-shadow: inset 0 0 0 0.125rem var(--eu-color-brand); }
 .eu-root .eu-accordion__header::-webkit-details-marker { display: none; }
 .eu-root .eu-accordion__header::after { content: "+"; flex: 0 0 auto; color: var(--eu-color-muted); font-weight: var(--eu-weight-normal); transition: transform var(--eu-dur-base) var(--eu-ease-standard); }
 .eu-root .eu-accordion__item[open] > .eu-accordion__header::after { content: "\\2212"; } /* minus */
@@ -342,11 +342,11 @@ export const COMPONENT_CSS = `
 .eu-root .eu-accordion__search-ico { position: absolute; inset-inline-start: 0.9em; inset-block-start: 50%; transform: translateY(-50%); display: inline-flex; color: var(--eu-color-muted); font-size: 1.05em; pointer-events: none; }
 .eu-root .eu-accordion__search input { inline-size: 100%; box-sizing: border-box; padding: clamp(var(--eu-space-2), 2cqi, var(--eu-space-3)); padding-inline-start: 2.6em; border: 1px solid var(--eu-color-border); border-radius: var(--eu-radius-lg); background: var(--eu-color-surface); color: var(--eu-color-text); font: inherit; transition: border-color var(--eu-dur-base) var(--eu-ease-standard), box-shadow var(--eu-dur-base) var(--eu-ease-standard); }
 .eu-root .eu-accordion__search input::placeholder { color: var(--eu-color-muted); }
-.eu-root .eu-accordion__search input:focus-visible { outline: none; border-color: var(--eu-color-brand); box-shadow: 0 0 0 3px color-mix(in oklab, var(--eu-color-brand) 22%, transparent); }
+.eu-root .eu-accordion__search input:focus-visible { outline: none; border-color: var(--eu-color-brand); box-shadow: 0 0 0 0.1875rem color-mix(in oklab, var(--eu-color-brand) 22%, transparent); }
 .eu-root .eu-accordion__noresults { color: var(--eu-color-muted); font-size: var(--eu-text-sm); padding: var(--eu-space-3) var(--eu-space-1); }
 .eu-root .eu-accordion__controls button { font: inherit; font-size: var(--eu-text-xs); font-weight: var(--eu-weight-medium); cursor: pointer; padding: .3em .75em; border-radius: var(--eu-radius-sm); border: 1px solid var(--eu-color-border); background: var(--eu-color-surface); color: var(--eu-color-muted); transition: background-color var(--eu-dur-fast) var(--eu-ease-standard), color var(--eu-dur-fast) var(--eu-ease-standard); }
 .eu-root .eu-accordion__controls button:hover { background: var(--eu-color-surface-2); color: var(--eu-color-text); }
-.eu-root .eu-accordion__controls button:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--eu-color-brand); }
+.eu-root .eu-accordion__controls button:focus-visible { outline: none; box-shadow: 0 0 0 0.125rem var(--eu-color-brand); }
 
 /* flush — borderless, hairline dividers only (Bootstrap-flush / ultra-minimal) */
 .eu-root .eu-accordion--flush { gap: 0; }
@@ -359,16 +359,16 @@ export const COMPONENT_CSS = `
 .eu-root .eu-accordion--filled .eu-accordion__item[open] > .eu-accordion__header { background: var(--eu-color-primary-50); color: var(--eu-color-brand); }
 .eu-root .eu-accordion--filled .eu-accordion__item[open] > .eu-accordion__header::after { color: var(--eu-color-brand); }
 /* accent — the OPEN item gets a brand left rail (FAQ style) */
-.eu-root .eu-accordion--accent .eu-accordion__item[open] { border-inline-start: 3px solid var(--eu-color-brand); }
+.eu-root .eu-accordion--accent .eu-accordion__item[open] { border-inline-start: 0.1875rem solid var(--eu-color-brand); }
 /* chevron — a rotating chevron indicator instead of +/− (uses currentColor, em-sized) */
-.eu-root .eu-accordion--chevron .eu-accordion__header::after { content: ""; width: .5em; height: .5em; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: rotate(45deg); opacity: .55; }
+.eu-root .eu-accordion--chevron .eu-accordion__header::after { content: ""; width: .5em; height: .5em; border-right: 0.125rem solid currentColor; border-bottom: 0.125rem solid currentColor; transform: rotate(45deg); opacity: .55; }
 .eu-root .eu-accordion--chevron .eu-accordion__item[open] > .eu-accordion__header::after { transform: rotate(-135deg); }
 /* numbered — 01 / 02 / 03 leading counter */
 .eu-root .eu-accordion--numbered { counter-reset: eu-acc; }
 .eu-root .eu-accordion--numbered .eu-accordion__header { counter-increment: eu-acc; }
 .eu-root .eu-accordion--numbered .eu-accordion__header::before { content: var(--eu-n0, "01"); flex: 0 0 auto; font-family: var(--eu-font-mono); font-size: var(--eu-text-xs); color: var(--eu-color-muted); margin-inline-end: var(--eu-space-1); }
 /* plus-circle — the +/− sits inside a round badge that fills with brand when open */
-.eu-root .eu-accordion--plus-circle .eu-accordion__header::after { display: grid; place-items: center; width: 1.6em; height: 1.6em; border-radius: 999px; background: var(--eu-color-surface-2); color: var(--eu-color-muted); font-size: .8em; }
+.eu-root .eu-accordion--plus-circle .eu-accordion__header::after { display: grid; place-items: center; width: 1.6em; height: 1.6em; border-radius: 62.4375rem; background: var(--eu-color-surface-2); color: var(--eu-color-muted); font-size: .8em; }
 .eu-root .eu-accordion--plus-circle .eu-accordion__item[open] > .eu-accordion__header::after { background: var(--eu-color-brand); color: var(--eu-color-on-brand); }
 /* arrow — a small triangle caret that flips 180° on open */
 .eu-root .eu-accordion--arrow .eu-accordion__header::after { content: "\\25BE"; color: var(--eu-color-muted); }
@@ -376,7 +376,7 @@ export const COMPONENT_CSS = `
 /* left — indicator moves to the LEADING edge, title after it */
 .eu-root .eu-accordion--left .eu-accordion__header { flex-direction: row-reverse; justify-content: flex-end; }
 /* pill — fully-rounded items (soften to xl when open so the body reads cleanly) */
-.eu-root .eu-accordion--pill .eu-accordion__item { border-radius: 999px; }
+.eu-root .eu-accordion--pill .eu-accordion__item { border-radius: 62.4375rem; }
 .eu-root .eu-accordion--pill .eu-accordion__item[open] { border-radius: var(--eu-radius-xl); }
 /* ghost — no border, no surface: text + indicator only, tight rhythm */
 .eu-root .eu-accordion--ghost { gap: var(--eu-space-1); }
@@ -389,7 +389,7 @@ export const COMPONENT_CSS = `
 .eu-root .eu-accordion--brand-header .eu-accordion__header::after { color: var(--eu-color-brand); }
 /* underline — flush with a brand underline under the open header */
 .eu-root .eu-accordion--underline .eu-accordion__item { border: 0; border-bottom: 1px solid var(--eu-color-border); border-radius: 0; background: transparent; }
-.eu-root .eu-accordion--underline .eu-accordion__item[open] > .eu-accordion__header { box-shadow: inset 0 -2px 0 var(--eu-color-brand); color: var(--eu-color-brand); }
+.eu-root .eu-accordion--underline .eu-accordion__item[open] > .eu-accordion__header { box-shadow: inset 0 -0.125rem 0 var(--eu-color-brand); color: var(--eu-color-brand); }
 /* large — spacious, bigger type */
 .eu-root .eu-accordion--large .eu-accordion__header { padding: var(--eu-space-6); font-size: var(--eu-text-lg); }
 .eu-root .eu-accordion--large .eu-accordion__body { padding: 0 var(--eu-space-6) var(--eu-space-6); }
@@ -405,10 +405,10 @@ export const COMPONENT_CSS = `
 /* square — sharp corners */
 .eu-root .eu-accordion--square .eu-accordion__item { border-radius: 0; }
 /* rail — a permanent muted left rail that turns brand when open */
-.eu-root .eu-accordion--rail .eu-accordion__item { border-inline-start: 3px solid var(--eu-color-border); }
+.eu-root .eu-accordion--rail .eu-accordion__item { border-inline-start: 0.1875rem solid var(--eu-color-border); }
 .eu-root .eu-accordion--rail .eu-accordion__item[open] { border-inline-start-color: var(--eu-color-brand); }
 /* switch — a pill toggle indicator that slides/colours on open */
-.eu-root .eu-accordion--switch .eu-accordion__header::after { content: ""; width: 2em; height: 1.1em; border-radius: 999px; background: var(--eu-color-surface-2); box-shadow: inset -1.1em 0 0 -0.15em var(--eu-color-muted); transition: box-shadow var(--eu-dur-base) var(--eu-ease-standard), background-color var(--eu-dur-base) var(--eu-ease-standard); }
+.eu-root .eu-accordion--switch .eu-accordion__header::after { content: ""; width: 2em; height: 1.1em; border-radius: 62.4375rem; background: var(--eu-color-surface-2); box-shadow: inset -1.1em 0 0 -0.15em var(--eu-color-muted); transition: box-shadow var(--eu-dur-base) var(--eu-ease-standard), background-color var(--eu-dur-base) var(--eu-ease-standard); }
 .eu-root .eu-accordion--switch .eu-accordion__item[open] > .eu-accordion__header::after { background: var(--eu-color-brand); box-shadow: inset 1.1em 0 0 -0.15em var(--eu-color-on-brand); }
 /* gradient — open header gets a soft brand→accent wash (modern) */
 .eu-root .eu-accordion--gradient .eu-accordion__item[open] > .eu-accordion__header { background: linear-gradient(90deg, var(--eu-color-primary-50), var(--eu-color-accent-50)); color: var(--eu-color-brand); }
@@ -418,7 +418,7 @@ export const COMPONENT_CSS = `
 .eu-root .eu-accordion--soft .eu-accordion__item { border: 0; background: var(--eu-color-surface-2); border-radius: var(--eu-radius-xl); }
 .eu-root .eu-accordion--soft .eu-accordion__header:hover { background: transparent; }
 /* tag — a leading status dot that lights up to brand when open (modern dropdown) */
-.eu-root .eu-accordion--tag .eu-accordion__header::before { content: ""; flex: 0 0 auto; width: .55em; height: .55em; border-radius: 999px; background: var(--eu-color-muted); margin-inline-end: var(--eu-space-2); transition: background-color var(--eu-dur-base) var(--eu-ease-standard); }
+.eu-root .eu-accordion--tag .eu-accordion__header::before { content: ""; flex: 0 0 auto; width: .55em; height: .55em; border-radius: 62.4375rem; background: var(--eu-color-muted); margin-inline-end: var(--eu-space-2); transition: background-color var(--eu-dur-base) var(--eu-ease-standard); }
 .eu-root .eu-accordion--tag .eu-accordion__item[open] > .eu-accordion__header::before { background: var(--eu-color-brand); }
 /* line — the very simplest: a single hairline over each row, flush to the edges */
 .eu-root .eu-accordion--line { gap: 0; }
@@ -427,21 +427,21 @@ export const COMPONENT_CSS = `
 /* stepper — a circular number badge that fills with brand when open (e-learning) */
 .eu-root .eu-accordion--stepper { counter-reset: eu-step; }
 .eu-root .eu-accordion--stepper .eu-accordion__header { counter-increment: eu-step; }
-.eu-root .eu-accordion--stepper .eu-accordion__header::before { content: var(--eu-n, "1"); flex: 0 0 auto; width: 1.8em; height: 1.8em; display: grid; place-items: center; border-radius: 999px; background: var(--eu-color-surface-2); color: var(--eu-color-muted); font-family: var(--eu-font-mono); font-size: .8em; margin-inline-end: var(--eu-space-3); }
+.eu-root .eu-accordion--stepper .eu-accordion__header::before { content: var(--eu-n, "1"); flex: 0 0 auto; width: 1.8em; height: 1.8em; display: grid; place-items: center; border-radius: 62.4375rem; background: var(--eu-color-surface-2); color: var(--eu-color-muted); font-family: var(--eu-font-mono); font-size: .8em; margin-inline-end: var(--eu-space-3); }
 .eu-root .eu-accordion--stepper .eu-accordion__item[open] > .eu-accordion__header::before { background: var(--eu-color-brand); color: var(--eu-color-on-brand); }
 /* outline — transparent items with an outlined edge that turns brand when open */
 .eu-root .eu-accordion--outline .eu-accordion__item { background: transparent; }
 .eu-root .eu-accordion--outline .eu-accordion__item[open] { border-color: var(--eu-color-brand); }
 /* glass — frosted translucent panels that glow on open (FreeFrontend gradient/frosted) */
-.eu-root .eu-accordion--glass .eu-accordion__item { background: color-mix(in oklab, var(--eu-color-surface) 62%, transparent); border-color: color-mix(in oklab, var(--eu-color-border) 60%, transparent); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-radius: var(--eu-radius-lg); }
+.eu-root .eu-accordion--glass .eu-accordion__item { background: color-mix(in oklab, var(--eu-color-surface) 62%, transparent); border-color: color-mix(in oklab, var(--eu-color-border) 60%, transparent); backdrop-filter: blur(0.625rem); -webkit-backdrop-filter: blur(0.625rem); border-radius: var(--eu-radius-lg); }
 .eu-root .eu-accordion--glass .eu-accordion__item[open] { box-shadow: var(--eu-shadow-lg); border-color: color-mix(in oklab, var(--eu-color-brand) 45%, transparent); }
 .eu-root .eu-accordion--glass .eu-accordion__header:hover { background: color-mix(in oklab, var(--eu-color-surface-2) 55%, transparent); }
 /* timeline — a vertical axis with a node dot per item that fills brand on open (FreeFrontend scroll timeline) */
 .eu-root .eu-accordion--timeline { position: relative; gap: 0; padding-inline-start: 1.5rem; }
-.eu-root .eu-accordion--timeline::before { content: ""; position: absolute; inset-block: 0.6rem 0.6rem; inset-inline-start: 0.4rem; width: 2px; background: var(--eu-color-border); }
+.eu-root .eu-accordion--timeline::before { content: ""; position: absolute; inset-block: 0.6rem 0.6rem; inset-inline-start: 0.4rem; width: 0.125rem; background: var(--eu-color-border); }
 .eu-root .eu-accordion--timeline .eu-accordion__item { border: 0; background: transparent; border-radius: 0; }
 .eu-root .eu-accordion--timeline .eu-accordion__header { position: relative; }
-.eu-root .eu-accordion--timeline .eu-accordion__header::before { content: ""; position: absolute; inset-inline-start: -1.35rem; top: 1.4em; width: 0.7em; height: 0.7em; border-radius: 999px; background: var(--eu-color-surface); border: 2px solid var(--eu-color-border); }
+.eu-root .eu-accordion--timeline .eu-accordion__header::before { content: ""; position: absolute; inset-inline-start: -1.35rem; top: 1.4em; width: 0.7em; height: 0.7em; border-radius: 62.4375rem; background: var(--eu-color-surface); border: 0.125rem solid var(--eu-color-border); }
 .eu-root .eu-accordion--timeline .eu-accordion__item[open] > .eu-accordion__header::before { background: var(--eu-color-brand); border-color: var(--eu-color-brand); }
 /* minimal — the quietest: hairline rows, flush, title turns brand when open (Colorlib V18/V19) */
 .eu-root .eu-accordion--minimal { gap: 0; }
@@ -457,7 +457,7 @@ export const COMPONENT_CSS = `
 .eu-root .eu-accordion__media { flex: 0 0 auto; inline-size: 2.75em; block-size: 2.75em; max-inline-size: 100%; border-radius: var(--eu-radius-md); object-fit: cover; background: var(--eu-color-surface-2); }
 .eu-root .eu-accordion__media--wide { inline-size: 4em; block-size: 2.5em; }
 /* nested — an accordion inside a body panel gets indented with a subtle guide rule (Colorlib profile V04/V05/V08/V15) */
-.eu-root .eu-accordion .eu-accordion { margin-block-start: var(--eu-space-2); margin-inline-start: var(--eu-space-3); border-inline-start: 2px solid var(--eu-color-border); padding-inline-start: var(--eu-space-3); gap: var(--eu-space-1); }
+.eu-root .eu-accordion .eu-accordion { margin-block-start: var(--eu-space-2); margin-inline-start: var(--eu-space-3); border-inline-start: 0.125rem solid var(--eu-color-border); padding-inline-start: var(--eu-space-3); gap: var(--eu-space-1); }
 .eu-root .eu-accordion .eu-accordion .eu-accordion__header { padding-block: var(--eu-space-2); font-size: 0.95em; font-weight: var(--eu-weight-medium); }
 
 /* ============================================================
@@ -516,21 +516,21 @@ export const COMPONENT_CSS = `
 .eu-root .eu-accordion--bignum .eu-accordion__item[open] > .eu-accordion__header::before { color: var(--eu-color-brand); }
 .eu-root .eu-accordion--bignum .eu-accordion__body { padding-inline: 0; }
 /* __media--round — circular avatar/thumbnail, e.g. for pill rows (Dribbble kffein) */
-.eu-root .eu-accordion__media--round { border-radius: 999px; }
+.eu-root .eu-accordion__media--round { border-radius: 62.4375rem; }
 /* qa — a FAQ identity: a brand "Q" badge on the header, a muted "A" badge on the answer (Dribbble/Colorlib FAQ) */
 .eu-root .eu-accordion--qa .eu-accordion__header::before { content: "Q"; flex: 0 0 auto; display: grid; place-items: center; inline-size: 1.9em; block-size: 1.9em; border-radius: var(--eu-radius-md); background: var(--eu-color-brand); color: var(--eu-color-on-brand); font-family: var(--eu-font-heading); font-weight: var(--eu-weight-bold); margin-inline-end: var(--eu-space-2); }
 .eu-root .eu-accordion--qa .eu-accordion__body { display: flex; gap: var(--eu-space-3); align-items: flex-start; padding-top: var(--eu-space-2); }
 .eu-root .eu-accordion--qa .eu-accordion__body::before { content: "A"; flex: 0 0 auto; display: grid; place-items: center; inline-size: 1.9em; block-size: 1.9em; border-radius: var(--eu-radius-md); background: var(--eu-color-surface-2); color: var(--eu-color-muted); font-family: var(--eu-font-heading); font-weight: var(--eu-weight-bold); }
 /* callout — each item is an info-box: a coloured left border over a brand-tinted panel (Dribbble highlighted-open) */
 .eu-root .eu-accordion--callout { gap: var(--eu-space-3); }
-.eu-root .eu-accordion--callout .eu-accordion__item { border: 0; border-inline-start: 3px solid var(--eu-color-brand); border-radius: var(--eu-radius-sm); background: var(--eu-color-primary-50); }
+.eu-root .eu-accordion--callout .eu-accordion__item { border: 0; border-inline-start: 0.1875rem solid var(--eu-color-brand); border-radius: var(--eu-radius-sm); background: var(--eu-color-primary-50); }
 .eu-root .eu-accordion--callout .eu-accordion__header { color: var(--eu-color-brand); }
 .eu-root .eu-accordion--callout .eu-accordion__header:hover { background: transparent; }
 .eu-root .eu-accordion--callout .eu-accordion__body { color: var(--eu-color-text); }
 /* float — flat cards that lift with a big shadow when open (Dribbble card list) */
 .eu-root .eu-accordion--float { gap: var(--eu-space-3); }
 .eu-root .eu-accordion--float .eu-accordion__item { border: 0; border-radius: var(--eu-radius-lg); background: var(--eu-color-surface); box-shadow: var(--eu-shadow-sm); transition: box-shadow var(--eu-dur-base) var(--eu-ease-standard), transform var(--eu-dur-base) var(--eu-ease-standard); }
-.eu-root .eu-accordion--float .eu-accordion__item[open] { box-shadow: var(--eu-shadow-xl); transform: translateY(-2px); }
+.eu-root .eu-accordion--float .eu-accordion__item[open] { box-shadow: var(--eu-shadow-xl); transform: translateY(-0.125rem); }
 /* folder — headers shaped like file-folder tabs; open tab fills brand and joins its body (Articulate tabcordion) */
 .eu-root .eu-accordion--folder { gap: var(--eu-space-2); }
 .eu-root .eu-accordion--folder .eu-accordion__item { border: 0; background: transparent; overflow: visible; }
@@ -540,17 +540,17 @@ export const COMPONENT_CSS = `
 .eu-root .eu-accordion--folder .eu-accordion__body { border: 1px solid var(--eu-color-border); border-radius: 0 var(--eu-radius-md) var(--eu-radius-md) var(--eu-radius-md); padding-top: var(--eu-space-4); }
 /* news — editorial broadsheet: heavy top rules, heading-font titles, flush to the edges (Dribbble editorial) */
 .eu-root .eu-accordion--news { gap: 0; }
-.eu-root .eu-accordion--news .eu-accordion__item { border: 0; border-block-start: 2px solid var(--eu-color-text); border-radius: 0; background: transparent; }
-.eu-root .eu-accordion--news .eu-accordion__item:last-child { border-block-end: 2px solid var(--eu-color-text); }
+.eu-root .eu-accordion--news .eu-accordion__item { border: 0; border-block-start: 0.125rem solid var(--eu-color-text); border-radius: 0; background: transparent; }
+.eu-root .eu-accordion--news .eu-accordion__item:last-child { border-block-end: 0.125rem solid var(--eu-color-text); }
 .eu-root .eu-accordion--news .eu-accordion__header { font-family: var(--eu-font-heading); font-size: var(--eu-text-lg); padding-inline: 0; }
 .eu-root .eu-accordion--news .eu-accordion__body { padding-inline: 0; }
 /* ring — an outlined circular step number that turns brand when open (Dribbble big-number/step) */
 .eu-root .eu-accordion--ring { counter-reset: eu-ring; }
 .eu-root .eu-accordion--ring .eu-accordion__header { counter-increment: eu-ring; gap: var(--eu-space-3); }
-.eu-root .eu-accordion--ring .eu-accordion__header::before { content: var(--eu-n, "1"); flex: 0 0 auto; display: grid; place-items: center; inline-size: 2em; block-size: 2em; border-radius: 999px; border: 2px solid var(--eu-color-border); color: var(--eu-color-muted); font-weight: var(--eu-weight-semibold); font-size: 0.85em; }
+.eu-root .eu-accordion--ring .eu-accordion__header::before { content: var(--eu-n, "1"); flex: 0 0 auto; display: grid; place-items: center; inline-size: 2em; block-size: 2em; border-radius: 62.4375rem; border: 0.125rem solid var(--eu-color-border); color: var(--eu-color-muted); font-weight: var(--eu-weight-semibold); font-size: 0.85em; }
 .eu-root .eu-accordion--ring .eu-accordion__item[open] > .eu-accordion__header::before { border-color: var(--eu-color-brand); color: var(--eu-color-brand); }
 /* stripe — a permanent, multi-colour left bar per item, cycling the token ramps (Dribbble colour fan) */
-.eu-root .eu-accordion--stripe .eu-accordion__item { border-inline-start: 4px solid var(--eu-color-brand); }
+.eu-root .eu-accordion--stripe .eu-accordion__item { border-inline-start: 0.25rem solid var(--eu-color-brand); }
 .eu-root .eu-accordion--stripe .eu-accordion__item:nth-child(3n+2) { border-inline-start-color: var(--eu-color-accent-500); }
 .eu-root .eu-accordion--stripe .eu-accordion__item:nth-child(3n+3) { border-inline-start-color: var(--eu-color-success); }
 /* dashed — a playful dashed frame that snaps to a solid brand outline when open */
@@ -562,7 +562,7 @@ export const COMPONENT_CSS = `
 .eu-root .eu-accordion--enclosed .eu-accordion__item + .eu-accordion__item { border-block-start: 1px solid var(--eu-color-border); }
 /* menu — big rounded "button list" rows that morph from pill to card when open (Dribbble kffein) */
 .eu-root .eu-accordion--menu { gap: var(--eu-space-2); }
-.eu-root .eu-accordion--menu .eu-accordion__item { border: 0; background: var(--eu-color-surface-2); border-radius: 999px; overflow: hidden; transition: border-radius var(--eu-dur-base) var(--eu-ease-standard), box-shadow var(--eu-dur-base) var(--eu-ease-standard); }
+.eu-root .eu-accordion--menu .eu-accordion__item { border: 0; background: var(--eu-color-surface-2); border-radius: 62.4375rem; overflow: hidden; transition: border-radius var(--eu-dur-base) var(--eu-ease-standard), box-shadow var(--eu-dur-base) var(--eu-ease-standard); }
 .eu-root .eu-accordion--menu .eu-accordion__item[open] { border-radius: var(--eu-radius-xl); background: var(--eu-color-surface); box-shadow: var(--eu-shadow-md); }
 .eu-root .eu-accordion--menu .eu-accordion__header { padding-block: var(--eu-space-4); font-size: var(--eu-text-lg); }
 .eu-root .eu-accordion--menu .eu-accordion__item[open] > .eu-accordion__header { color: var(--eu-color-brand); }
@@ -584,7 +584,7 @@ export const COMPONENT_CSS = `
 .eu-root .eu-accordion--gradient-full .eu-accordion__header:hover { background: linear-gradient(90deg, var(--eu-color-primary-500), var(--eu-color-accent-500)); color: var(--eu-color-on-brand); }
 .eu-root .eu-accordion--gradient-full .eu-accordion__header::after { color: var(--eu-color-on-brand); }
 /* spotlight — the open item lights up with a soft brand glow ring */
-.eu-root .eu-accordion--spotlight .eu-accordion__item[open] { border-color: var(--eu-color-brand); box-shadow: 0 0 0 3px color-mix(in oklab, var(--eu-color-brand) 22%, transparent); }
+.eu-root .eu-accordion--spotlight .eu-accordion__item[open] { border-color: var(--eu-color-brand); box-shadow: 0 0 0 0.1875rem color-mix(in oklab, var(--eu-color-brand) 22%, transparent); }
 /* corner — a folded dog-ear in the top corner that turns brand when open */
 .eu-root .eu-accordion--corner .eu-accordion__item { position: relative; overflow: hidden; }
 .eu-root .eu-accordion--corner .eu-accordion__item::before { content: ""; position: absolute; inset-block-start: 0; inset-inline-end: 0; border-width: 0 var(--eu-space-5) var(--eu-space-5) 0; border-style: solid; border-color: var(--eu-color-primary-100) transparent; transition: border-color var(--eu-dur-base) var(--eu-ease-standard); }
@@ -608,7 +608,7 @@ export const COMPONENT_CSS = `
 
 /* ── Tabs — styles; the export injects a tiny vanilla toggle (aria-selected / [hidden]) ──────── */
 .eu-root .eu-tabs__list { display: flex; flex-wrap: wrap; gap: var(--eu-space-1); border-bottom: 1px solid var(--eu-color-border); }
-.eu-root .eu-tab { appearance: none; border: 0; background: none; cursor: pointer; padding: var(--eu-space-3) var(--eu-space-4); font-family: var(--eu-font-body); font-weight: var(--eu-weight-medium); color: var(--eu-color-muted); border-bottom: 2px solid transparent; margin-bottom: -1px; }
+.eu-root .eu-tab { appearance: none; border: 0; background: none; cursor: pointer; padding: var(--eu-space-3) var(--eu-space-4); font-family: var(--eu-font-body); font-weight: var(--eu-weight-medium); color: var(--eu-color-muted); border-bottom: 0.125rem solid transparent; margin-bottom: -1px; }
 .eu-root .eu-tab:hover { color: var(--eu-color-text); }
 .eu-root .eu-tab[aria-selected="true"] { color: var(--eu-color-brand); border-bottom-color: var(--eu-color-brand); }
 .eu-root .eu-tabs__panel { padding-block: var(--eu-space-4); }

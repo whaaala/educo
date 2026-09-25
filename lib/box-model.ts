@@ -17,6 +17,7 @@ import { BREAKPOINTS_EM } from "@/lib/educo-ui/base";
 import { RUNG_MEASURE, RUNG_PX, type RungName } from "@/lib/educo-ui/layout";
 import { hasItemEffects, itemEffectsCss, revealEffect, REVEAL_DUR, REVEAL_EASE, REVEAL_VIEW_RANGE } from "@/lib/interactions";
 import { PAGE_Z, clampPageZ } from "@/lib/educo-ui/stacking";
+import { remLen, SHADOW_SCALE } from "@/lib/educo-ui/tokens";
 import { colorToCSS } from "@/components/shared/ColorPalettePicker";
 
 export type BoxType = "container" | "text" | "heading" | "button" | "image" | "video" | "icon" | "divider" | "list" | "embed" | "spacer" | "component";
@@ -2628,12 +2629,15 @@ export function clearOverride(root: BoxNode, id: string, bp: Breakpoint): BoxNod
  * rather than the lift it was drawn to be. `1px` offsets and spreads are left alone — a hairline is one
  * device pixel by definition, which is the one case the units rule admits px for.
  */
-export const SHADOW_CSS: Record<NonNullable<BoxNode["shadow"]>, string> = {
-  sm: "0 1px 2px rgba(0,0,0,0.08), 0 1px 1px rgba(0,0,0,0.06)",
-  md: "0 0.25rem 0.5rem rgba(0,0,0,0.10), 0 0.125rem 0.25rem rgba(0,0,0,0.06)",
-  lg: "0 0.75rem 1.5rem rgba(0,0,0,0.12), 0 0.25rem 0.5rem rgba(0,0,0,0.08)",
-  xl: "0 1.5rem 3rem rgba(0,0,0,0.18), 0 0.5rem 1rem rgba(0,0,0,0.10)",
-};
+/**
+ * The elevation scale — ONE definition, which lives with the other design tokens and is re-exported here.
+ *
+ * It was declared in both places, byte for byte. Moving shadows to rem changed only this copy, so every block
+ * lifted in rem while every design-system component (`--eu-shadow-*`) stayed in pixels — invisible until a
+ * card and a section sat side by side at a large text size. The name stays so nothing that imports it has to
+ * change; the values can no longer diverge because there is only one set.
+ */
+export const SHADOW_CSS: Record<NonNullable<BoxNode["shadow"]>, string> = SHADOW_SCALE;
 
 /** Per-corner border-radius (px) → CSS, falling back to the all-corners `radius`. Undefined when none set. */
 export function radiusCSS(node: BoxNode): string | undefined {
@@ -3834,9 +3838,11 @@ export function isDefiniteLen(token?: string): boolean {
   return lenToPx(token) !== null;
 }
 
-export function remLen(px: number, rootPx = 16): string {
-  return `${Math.round((px / (rootPx || 16)) * 1000) / 1000}rem`;
-}
+/**
+ * Re-exported from the token module, where it now lives beside the radius and shadow scales that need it.
+ * Defined only there, so the token system and the block model convert lengths the same way by construction.
+ */
+export { remLen };
 
 /** The document's root font size — the basis for every rem the editor writes. */
 export function rootFontPx(): number {
