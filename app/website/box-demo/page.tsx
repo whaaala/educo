@@ -313,8 +313,36 @@ export default function BoxDemoPage() {
       const a = (e.target as HTMLElement | null)?.closest?.("a[href]") as HTMLAnchorElement | null;
       if (!a) return;
       const href = a.getAttribute("href") ?? "";
+      /**
+       * AN IN-PAGE LINK HAS TO BE SCROLLED BY HAND IN HERE — the preview is a `srcDoc` document.
+       *
+       * Its URL is `about:srcdoc`, and Chrome updates `location.hash` for a fragment link without ever
+       * performing the scroll. Measured: clicking a link to `#term-dates` set the hash and left `scrollTop`
+       * at **0**, so a nav pointing at sections of the same page — the commonest navigation a school site
+       * has — did nothing at all in the one place a teacher goes to check it, while working perfectly on the
+       * published page. The guide promises the preview shows "exactly what a visitor sees".
+       *
+       * `scrollIntoView` in the same document does work, and it honours `scroll-padding-top`, so the target
+       * lands below a pinned bar exactly as it does when published (Step 2d).
+       */
+      if (href.startsWith("#") && href.length > 1) {
+        const target = doc.getElementById(decodeURIComponent(href.slice(1)));
+        /**
+         * …BUT NEVER A LINK THE PAGER OWNS, and this was measured the hard way.
+         *
+         * A pager's dots point at its slides, and `scrollIntoView` scrolls EVERY scrollable ancestor — so
+         * moving the strip sideways dragged the whole page down with it. That is the exact nudge `pagerScript`
+         * exists to prevent (240px with the strip in full view, 480px below the fold), and this reintroduced
+         * it: `pager-hero.spec.ts` had guarded it since the day it was measured and failed immediately.
+         *
+         * The pager moves its own strip, so the click is left to it — which is what happened before this
+         * branch existed, and `about:srcdoc` ignoring the fragment is exactly what that script relies on.
+         */
+        if (target && !target.closest("[data-eu-pager]")) { e.preventDefault(); target.scrollIntoView(); }
+        return;
+      }
       const pageId = fileToPage.get(href);
-      if (!pageId) return;              // external or in-page link — leave it alone
+      if (!pageId) return;              // external link — leave it alone
       e.preventDefault();
       switchPage(pageId);
     });

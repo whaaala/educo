@@ -4605,6 +4605,31 @@ export function pinStackPass(root: ParentNode): void {
       el.style.setProperty("--eu-pin-above", above + "px");
       above += el.getBoundingClientRect().height;
     }
+    /**
+     * STEP 2d — AND THE SAME MEASUREMENT ANSWERS "WHERE IS THE TOP OF THE PAGE?"
+     *
+     * A held bar is out of the flow, so the browser's idea of the top of the scrollport is still y=0 —
+     * several centimetres above anything the reader can see. Follow a link to `#term-dates` and the section
+     * lands at 0, behind the bar: measured at y=0 under a bar reaching y=62. `scroll-padding-top` states the
+     * usable top instead, and every scroll the browser performs itself respects it — a fragment link,
+     * `scrollIntoView`, Page Down, snapping.
+     *
+     * It is the height of the whole TOP stack, which is exactly the number this loop has just finished
+     * totalling, so 2d costs one assignment rather than a second mechanism. A bottom stack covers the end of
+     * the page, where nothing is scrolled TO, so it is not owed any.
+     *
+     * ONLY WHEN THIS PASS IS RUNNING OVER A WHOLE DOCUMENT (`nodeType === 9`) — the published page or the
+     * preview. On the canvas the pass is given the canvas host, and the document it belongs to is the
+     * BUILDER's, whose scrollport is the editor itself; padding that would be meddling with the app's own
+     * scrolling to fix a link the canvas never follows.
+     */
+    if (edge === "top" && root.nodeType === 9) {
+      const scroller = (root as Document).scrollingElement as HTMLElement | null;
+      if (scroller) {
+        if (above > 0) scroller.style.setProperty("scroll-padding-top", above + "px");
+        else scroller.style.removeProperty("scroll-padding-top"); // nothing held here now — owe nothing
+      }
+    }
   }
 }
 
@@ -4667,7 +4692,32 @@ export function pinStackNeeded(root: BoxNode): boolean {
     walk(root);
     if (count.top > 1 || count.bottom > 1) return true;
   }
-  return false;
+  return pinPaddingNeeded(root);
+}
+
+/**
+ * STEP 2d's half of the question: does this page need the pass for `scroll-padding-top` alone?
+ *
+ * Stacking needs TWO bars at an edge; the padding needs only ONE, because a single held bar hides whatever a
+ * link scrolls to just as completely. But a page with a held bar and nothing to scroll TO is owed nothing, and
+ * zero JS stays the default — so both halves have to be true.
+ *
+ * "Something to scroll to" is an anchor on any box or component item, or any `#` link. The TARGET is what
+ * matters as much as the link: a visitor can arrive from another page at `term-dates.html#autumn`, in which
+ * case the link does not live on this page at all. A pager is deliberately not counted — it ships its own
+ * script precisely because a bare fragment link nudges the page, and that script does the scrolling itself.
+ */
+export function pinPaddingNeeded(root: BoxNode): boolean {
+  let held = false;
+  let scrollTarget = false;
+  const walk = (n: BoxNode, parent?: BoxNode): void => {
+    for (const bp of PIN_RUNGS) if (pinStackAttr(n, parent, bp) === "top") { held = true; break; }
+    if (n.anchor || (n.items ?? []).some((it) => it.anchor)) scrollTarget = true;
+    if (typeof n.href === "string" && n.href.startsWith("#") && n.href.length > 1) scrollTarget = true;
+    for (const k of n.children ?? []) walk(k, n);
+  };
+  walk(root);
+  return held && scrollTarget;
 }
 
 export function pinCSS(node: BoxNode, parent?: BoxNode, bp: Breakpoint = "base"): CSSProperties {

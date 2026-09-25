@@ -227,3 +227,42 @@ Feature: Box Builder — floating layers (free overlap)
       delete, nudge, float, group, lock, the z-order pair, the panel, and Escape to
       step OUT of text. There was no way IN, so a keyboard-only user could select a
       heading and never type a word into it.
+
+  # ── Step 2d: a link must not send the reader behind the bar ──
+
+  Scenario: Following an in-page link clears the bar held over the page
+    Given a page with a bar set to stay on screen at the top
+    And a link pointing at a section further down that page
+    When a visitor follows the link
+    Then the section comes to rest just below the bar, fully readable
+    Because a held bar reserves no space, so the browser's idea of the top of
+      the page is still y=0 — several centimetres above anything the reader can
+      see. Measured before this existed: the section landed at y=0 under a bar
+      reaching y=62. `scroll-padding-top` states the usable top instead, and
+      every scroll the browser performs itself then respects it.
+
+  Scenario: The padding is the bar's rendered height, not a number typed into it
+    Given two bars of different heights stacked at the top
+    Then the landing clears both of them together
+    Because summing the heights someone entered is wrong for a bar whose height
+      is just its text, and wrong again wherever that text wraps. It is the same
+      argument Step 2c settled, so this rides on 2c's single measuring pass
+      rather than adding a second mechanism.
+
+  Scenario: A page with nothing pinned is left exactly as it was
+    Given the same page with no bar held over it
+    Then no scroll padding is applied and the target lands at the very top
+    Because nothing is owed, and zero cost stays the default: the pass is only
+      shipped when a held top bar and something to scroll to both exist.
+
+  Scenario: An in-page link works in the Preview too
+    Given the same page, opened with Preview
+    When the link is followed inside the preview
+    Then the preview scrolls and the section lands below the bar
+    Because the preview renders the real exported page but as a `srcDoc`
+      document, and Chrome updates the hash for a fragment link there without
+      ever performing the scroll — measured, the hash changed and the scroll
+      position stayed at 0. The same export served over http scrolled correctly,
+      so the fault existed only in the one place a teacher would check their own
+      navigation. The preview now performs that scroll itself, honouring the
+      same padding.
