@@ -235,9 +235,13 @@ Overrides that apply only on the current device size (see §8).
   and a back-to-top button. Each keeps its own height, and the one nearest the edge is the first of them down
   the page (at the bottom, the last). It used to be that three bands all set to stay on screen pinned to the
   same place and covered each other, so two of the three were simply invisible — each doing exactly what it was
-  told. The page now measures how much bar is already there, so they queue instead. This applies to *Floats on
-  screen* only: *Sticks when reached* holds a block inside its own box rather than against the window, so two
-  of those in different sections are never on screen together anyway.
+  told. The page now measures how much bar is already there, so they queue instead.
+
+  **And it works for *Sticks when reached* too**, with one sensible difference: those bars queue only behind
+  bars they can actually meet. Two of them **in the same box** — side by side in a Stack, or a header and an
+  announcement bar both dropped on the page — do cover each other, so they queue. Two in **different sections**
+  never share a screen at all: the first lets go exactly as the second arrives, so neither is moved. Nothing is
+  shifted to avoid a collision that cannot happen.
 
   Both take a *distance from the edge*, and both are **per device**: turn pinning off for phones on the **Per-device** tab and it stays off there, on every reload. If something is stopping it working, the Inspector says so and **names the block**: a block that clips its contents (which includes simply having rounded corners) stops anything inside from holding its place, and a block that's been **tilted** — or a component, or the glass Alert — makes its own frame, so anything fixed inside holds against that instead of the window.
 - **The handles stay on the block, all the way.** However far you drag, the eight handles and the little toolbar ride with the edge you're moving — they never come adrift and leave you dragging a block whose handles are sitting somewhere else on the page.

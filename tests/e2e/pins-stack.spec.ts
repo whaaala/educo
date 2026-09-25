@@ -72,6 +72,7 @@ async function show(page: Page, root: BoxNode, route = "/__pins") {
   await page.route(`**${route}`, (r) => r.fulfill({ contentType: "text/html", body: html }));
   await page.goto(route);
   await page.waitForTimeout(400); // the pass runs in a frame, then again on load
+  return html; // so a test can also assert what was — or was not — shipped
 }
 
 const rect = (page: Page, id: string) => page.evaluate((i) => {
@@ -201,5 +202,162 @@ test.describe("pinned bars stack instead of covering each other", () => {
     const html3 = renderSitePage(site3, DEFAULT_THEME, site3.homeId, { inlineShared: true });
     expect(html3.includes("__euPinStack"), "three bars at one edge need the script and did not get it").toBe(true);
     await page.goto("about:blank"); // the fixture above is a pure-string assertion; keep the browser quiet
+  });
+});
+
+/**
+ * STICKY BARS STACK TOO — but only against bars they can actually meet (Step 2e).
+ *
+ * 2c was scoped to "Floats on screen" because offsetting sticky bars without knowing which box each one holds
+ * within moved a rail 160px for a collision that could not happen (F15). 2e's resolver supplies that, and
+ * measuring three arrangements first showed the feature has two real cases and one trap:
+ *
+ *     siblings in one Stack          40px of overlap   → same holder, must stack
+ *     both straight on the page      40px of overlap   → both hold within the page, must stack
+ *     one per section                 0px of overlap   → they hand over, must NOT be touched
+ *
+ * The middle case is the commonest real shape — a header and an announcement bar — and it is the reported bug's
+ * own shape with the other mechanism chosen. The third is the regression guard: a passing "sticky bars stack"
+ * test that never checks it would re-admit F15.
+ */
+const sticky = (id: string, h: number, bg: string, extra: Record<string, unknown> = {}) =>
+  ({
+    id, type: "container", direction: "column", width: "100%", padding: 0, gap: 0, minHeight: h,
+    background: bg, pin: "top", hold: "sticky", ...extra,
+  } as unknown as BoxNode);
+
+const tall = (id: string, h: number, bg: string) =>
+  ({ id, type: "container", direction: "column", width: "100%", padding: 0, gap: 0, minHeight: h, background: bg, children: [] } as unknown as BoxNode);
+
+/** Two sticky bars as siblings inside one Stack — one holder, so they must queue. */
+const stickySiblings = (): BoxNode => ({
+  id: "root", type: "container", direction: "column", padding: 0, gap: 0, children: [
+    { id: "wrap", type: "container", direction: "column", width: "100%", padding: 0, gap: 0, children: [
+      sticky("s1", 56, "#0d3b1e"), sticky("s2", 40, "#8c0f52"), tall("sbody", 2400, "#eef2ff"),
+    ] } as unknown as BoxNode,
+  ],
+} as unknown as BoxNode);
+
+/** Two sticky bars placed straight on the page — both hold within the page, so they must queue. */
+const stickyOnPage = (): BoxNode => ({
+  id: "root", type: "container", direction: "column", padding: 0, gap: 0, children: [
+    sticky("p1", 56, "#0d3b1e"), sticky("p2", 40, "#8c0f52"), tall("pbody", 2400, "#eef2ff"),
+  ],
+} as unknown as BoxNode);
+
+/** One sticky bar per section — different holders, so neither may be moved. */
+const stickyPerSection = (): BoxNode => ({
+  id: "root", type: "container", direction: "column", padding: 0, gap: 0, children: [
+    { id: "sec1", type: "container", direction: "column", width: "100%", padding: 0, gap: 0, children: [
+      sticky("q1", 56, "#0d3b1e"), tall("q1body", 1400, "#eef2ff"),
+    ] } as unknown as BoxNode,
+    { id: "sec2", type: "container", direction: "column", width: "100%", padding: 0, gap: 0, children: [
+      sticky("q2", 40, "#8c0f52"), tall("q2body", 1400, "#ecfdf5"),
+    ] } as unknown as BoxNode,
+  ],
+} as unknown as BoxNode);
+
+test.describe("sticky bars stack against the bars they can actually meet", () => {
+  test("two sticky bars in ONE Stack sit under one another once both are held", async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await show(page, stickySiblings(), "/__sticky1");
+    await page.evaluate(() => window.scrollTo(0, 600));
+    await page.waitForTimeout(300);
+
+    const a = (await rect(page, "s1"))!;
+    const b = (await rect(page, "s2"))!;
+    expect(a.h, "the first bar is really rendered").toBeGreaterThan(0);
+    expect(b.h, "and so is the second").toBeGreaterThan(0);
+    expect(a.top, "the first holds at the top").toBeLessThanOrEqual(1);
+    expect(b.top, `the second starts at ${b.top}, but the first ends at ${a.bottom}`).toBeGreaterThanOrEqual(a.bottom - 1);
+    expect(a.top < b.bottom && b.top < a.bottom, "the two are drawn on top of each other").toBe(false);
+  });
+
+  test("two sticky bars placed straight on the PAGE do the same — the commonest shape", async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await show(page, stickyOnPage(), "/__sticky2");
+    await page.evaluate(() => window.scrollTo(0, 600));
+    await page.waitForTimeout(300);
+
+    const a = (await rect(page, "p1"))!;
+    const b = (await rect(page, "p2"))!;
+    expect(a.top, "the first holds at the top").toBeLessThanOrEqual(1);
+    expect(b.top, `the second starts at ${b.top}, but the first ends at ${a.bottom}`).toBeGreaterThanOrEqual(a.bottom - 1);
+    expect(a.top < b.bottom && b.top < a.bottom, "the two are drawn on top of each other").toBe(false);
+  });
+
+  /**
+   * THE REGRESSION GUARD. These two never share a screen, so offsetting either one is movement the reader did
+   * not ask for — and it is exactly what happened when 2c reached for sticky: a rail dropped 160px down the
+   * page and `pinning-warnings.spec.ts` failed because the block it clicks had moved.
+   */
+  test("a sticky bar in its OWN section is never pushed down for one in another section", async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await show(page, stickyPerSection(), "/__sticky3");
+
+    // Scroll to where the SECOND section's bar is the one being held.
+    await page.evaluate(() => window.scrollTo(0, 1500));
+    await page.waitForTimeout(300);
+    const second = (await rect(page, "q2"))!;
+    expect(second.h, "the second section's bar is rendered").toBeGreaterThan(0);
+    expect(
+      second.top,
+      `it is held at ${second.top} instead of the top — it has been offset for a bar it can never meet`,
+    ).toBeLessThanOrEqual(1);
+
+    // …and the first, while IT is the one held, is at the top too.
+    await page.evaluate(() => window.scrollTo(0, 400));
+    await page.waitForTimeout(300);
+    const first = (await rect(page, "q1"))!;
+    expect(first.top, "the first section's bar holds at the top").toBeLessThanOrEqual(1);
+  });
+
+  test("a page with one sticky bar per section ships NO stacking script — nothing can collide", async ({ page }) => {
+    const html = await show(page, stickyPerSection(), "/__sticky4");
+    expect(html.includes("__euPinStack"), "a script was shipped for bars that never meet").toBe(false);
+  });
+
+  /**
+   * AND THE CANVAS STACKS STICKY BARS TOO — the parity case, which the 2c test could not cover.
+   *
+   * That test asserts the canvas for FIXED bars, where the editor's own containing block forces `absolute` and
+   * where the first version silently disagreed with the published page. Sticky takes a different route through
+   * the same pass — it stays `sticky` on the canvas — so "the export is right" says nothing about it. Canvas ≠
+   * export is this project's most expensive bug class, and the way it keeps arriving is a second route that
+   * nobody measured.
+   */
+  test("the CANVAS stacks STICKY bars too, not only the fixed ones", async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await seedSite(page, {
+      homeId: "p1",
+      pages: [{ id: "p1", name: "Home", path: "/", root: stickyOnPage() }],
+    });
+    await page.waitForSelector('[data-box-id="p2"]', { timeout: 30000 });
+    await page.waitForTimeout(700); // the measuring pass runs in a frame after the render
+
+    const offsets = await page.evaluate(() => ["p1", "p2"].map((id) => {
+      const el = document.querySelector<HTMLElement>(`[data-box-id="${id}"]`);
+      if (!el) return null;
+      // The BAND carries the pin, so the offset is written on whichever element the marker landed on.
+      const marked = el.closest("[data-eu-pin]") ?? el.querySelector("[data-eu-pin]");
+      return {
+        id,
+        above: marked ? (marked as HTMLElement).style.getPropertyValue("--eu-pin-above").trim() : null,
+        group: marked ? marked.getAttribute("data-eu-pin-in") : null,
+        h: Math.round(el.getBoundingClientRect().height),
+      };
+    }));
+    const [a, b] = offsets;
+    expect(a && b, "a pinned band is missing from the canvas").toBeTruthy();
+    // THE PROPERTY, not the key. Both bars hold within the same box, so they must land in the SAME queue —
+    // whatever that queue happens to be called. Writing the expected string here instead ("page") failed on a
+    // correct build, because a band whose parent is the page root is grouped by that root's id.
+    expect(a!.group, "the first bar joined no queue at all").toBeTruthy();
+    expect(b!.group, "both hold within the same box, so they share one queue").toBe(a!.group);
+    expect(a!.above, "the first bar is at the edge, so nothing is above it").toBe("0px");
+    expect(
+      parseFloat(b!.above || "0"),
+      `the second bar was offset by ${b!.above}, but the first is ${a!.h}px tall`,
+    ).toBeGreaterThanOrEqual(a!.h - 1);
   });
 });

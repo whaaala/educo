@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   pinCSS, pinBlockedBy, fixedBlockedBy, blockedByLabel, bandCarriesPin, pinScope, childStyle, createContainer, createGrid,
   createElement, normalizeRowBands, resolveResponsive, updateBoxResponsive, pinArrivalCss, pinArrivalKeyframes,
-  pinArrivalHasEffect, treePinArrivalCss, PIN_ARRIVALS, SHADOW_CSS, floatHoldCSS, canvasFixedStyle, pinStackAttr, pinStackNeeded, type BoxNode,
+  pinArrivalHasEffect, treePinArrivalCss, PIN_ARRIVALS, SHADOW_CSS, floatHoldCSS, canvasFixedStyle, pinStackAttr, pinStackNeeded, pinStackGroup, scrollContainerOf, fixedContainerOf, pinHolder, type BoxNode,
 } from "@/lib/box-model";
 import { PAGE_Z } from "@/lib/educo-ui/stacking";
 
@@ -69,28 +69,35 @@ describe("pinCSS — the one resolver", () => {
     expect(String(corner.right), "a corner's horizontal inset must NOT stack — bars do not queue sideways").not.toContain("--eu-pin-above");
   });
 
-  describe("only “Floats on screen” joins a stack (Step 2c, scoped)", () => {
+  describe("a bar stacks against the bars it can actually meet (Step 2c, completed by 2e)", () => {
     /**
-     * A fixed block is held against the WINDOW, so every fixed block on a page shares one coordinate space
-     * and "which is above which" has an answer. A sticky block is held against its own scroll container and
-     * keeps its place in the layout, so two sticky blocks in two different sections are never on screen as a
-     * pair — stacking them moves a block for a collision that cannot happen.
+     * ── WHAT 2e CHANGED HERE, AND WHY THESE TWO CASES WERE REWRITTEN RATHER THAN DELETED ──
      *
-     * This is scoped rather than complete, and saying so is the point: making sticky stack properly needs
-     * Step 2e's "which scroll container does this resolve against?" resolver, which is not built.
+     * 2c was scoped to `hold: "fixed"` and two cases below asserted exactly that: a sticky block carried no
+     * marker, and two sticky blocks were never a stack. Both were TRUE OF 2c and both are now wrong, because
+     * 2e supplies the thing 2c was missing — a way to say which box each bar holds within.
      *
-     * It is not a theoretical distinction. The first version reached for sticky too, and `pinning-warnings`
-     * failed because a sticky rail in one band and another in a second band were shoved 160px down the page
-     * — far enough that the test's click no longer landed on the block it had measured.
+     * The distinction 2c could not make is still the whole point, and it is why the scoping existed at all: a
+     * fixed bar is held against the WINDOW, so all of them share one queue; a sticky bar is held against the
+     * box it travels inside, so two of them stack only when that box is the same one. Reaching for sticky
+     * without that shoved a rail 160px down the page for a collision that could not happen.
+     *
+     * So the claim these cases make is now the stronger one: sticky DOES stack, and it stacks per box. Left as
+     * they were, they would have described a product we deliberately moved past — which the rules call worse
+     * than no test, because it is trusted and wrong.
      */
     it("a FIXED block carries the marker, at the edge it is held against", () => {
       expect(pinStackAttr(box({ pin: "top", hold: "fixed" }))).toBe("top");
       expect(pinStackAttr(box({ pin: "bottom-right", hold: "fixed" }))).toBe("bottom");
     });
 
-    it("a STICKY block does not — it is held inside its own box, not against the window", () => {
-      expect(pinStackAttr(box({ pin: "top" }))).toBeNull();                  // sticky is the default
-      expect(pinStackAttr(box({ pin: "top", hold: "sticky" }))).toBeNull();
+    it("a STICKY block carries it too now — and is grouped by the box it holds within, not the window", () => {
+      expect(pinStackAttr(box({ pin: "top" })), "sticky is the default").toBe("top");
+      expect(pinStackAttr(box({ pin: "top", hold: "sticky" }))).toBe("top");
+      // The grouping is what keeps it honest: fixed shares one queue, sticky queues per box.
+      expect(pinStackGroup(box({ pin: "top", hold: "fixed" })), "all fixed bars meet at the viewport").toBe("window");
+      const parent = createContainer("column", { id: "wrap" } as Partial<BoxNode>);
+      expect(pinStackGroup(box({ pin: "top" }), parent), "a sticky bar queues inside its own box").toBe("wrap");
     });
 
     it("a side rail carries nothing either — bars queue down a screen, never across it", () => {
@@ -98,7 +105,7 @@ describe("pinCSS — the one resolver", () => {
       expect(pinStackAttr(box({ pin: "right", hold: "fixed" }))).toBeNull();
     });
 
-    it("the script is shipped only when two bars really do share an edge", () => {
+    it("the script is shipped only when two bars really do share an edge AND a box", () => {
       const page = (kids: BoxNode[]) => createContainer("column", { children: kids } as Partial<BoxNode>);
       const barTop = (id: string) => box({ id, pin: "top", hold: "fixed" });
       expect(pinStackNeeded(page([barTop("a")])), "one bar has nothing to stack under").toBe(false);
@@ -107,8 +114,18 @@ describe("pinCSS — the one resolver", () => {
         pinStackNeeded(page([barTop("a"), box({ id: "b", pin: "bottom", hold: "fixed" })])),
         "a top bar and a bottom bar are two stacks of one",
       ).toBe(false);
-      expect(pinStackNeeded(page([box({ id: "a", pin: "top" }), box({ id: "b", pin: "top" })])),
-        "two STICKY blocks are not a stack").toBe(false);
+      // Two STICKY bars sharing a box DO need it — the case 2c left on the table.
+      expect(
+        pinStackNeeded(page([box({ id: "a", pin: "top" }), box({ id: "b", pin: "top" })])),
+        "two sticky bars in the same box cover each other",
+      ).toBe(true);
+      // …and two in DIFFERENT boxes do not, which is the regression 2c was scoped to avoid.
+      const section = (id: string, kid: BoxNode) =>
+        createContainer("column", { id, children: [kid] } as Partial<BoxNode>);
+      expect(
+        pinStackNeeded(page([section("s1", box({ id: "a", pin: "top" })), section("s2", box({ id: "b", pin: "top" }))])),
+        "two sticky bars that hand over are not a stack",
+      ).toBe(false);
     });
   });
 
@@ -735,5 +752,80 @@ describe("canvasFixedStyle — what the editor draws instead", () => {
     expect(css.transform).toBe("rotate(3deg)");
     expect(css.zIndex).toBe(30);
     expect(css.left).toBe("4rem");
+  });
+});
+
+/**
+ * STEP 2e — ONE RESOLVER FOR "WHICH BOX DOES THIS BLOCK RESOLVE AGAINST?"
+ *
+ * Four features asked that question and each had written its own walk of the same chain: the sticky warning,
+ * the fixed warning, the Inspector's "where it lets go", and — now — which sticky bars can cover each other.
+ * These assert the resolvers directly, because the wrappers above can only show that the ANSWERS still agree;
+ * they cannot show that the distinction sticky stacking needs is available at all.
+ */
+describe("the shared scroll-container resolver", () => {
+  const shaped = (children: BoxNode[]) =>
+    normalizeRowBands(createContainer("column", { id: "root", children } as Partial<BoxNode>));
+  const pinned = (id: string, extra: Partial<BoxNode> = {}) =>
+    createContainer("column", { id, pin: "top", minHeight: 64, ...extra } as Partial<BoxNode>);
+
+  it("a rounded ancestor IS the scroll container — which is why rounding a section switches sticky off", () => {
+    const root = shaped([createContainer("column", { id: "card", radius: 12, minHeight: 900, children: [pinned("rail")] } as Partial<BoxNode>)]);
+    expect(scrollContainerOf(root, "rail")?.id).toBe("card");
+  });
+
+  it("nothing above it means the PAGE, which is the answer the browser gives too", () => {
+    const root = shaped([pinned("nav"), createContainer("column", { id: "body", minHeight: 3000 } as Partial<BoxNode>)]);
+    expect(scrollContainerOf(root, "nav")).toBeNull();
+  });
+
+  it("the block's OWN radius does not capture it — an element is not inside itself", () => {
+    const root = shaped([pinned("nav", { radius: 12 }), createContainer("column", { id: "body", minHeight: 3000 } as Partial<BoxNode>)]);
+    expect(scrollContainerOf(root, "nav")).toBeNull();
+  });
+
+  it("a tilted ancestor captures a FIXED block, and that is a different question from clipping", () => {
+    const root = shaped([createContainer("column", { id: "tilted", rotate: 3, minHeight: 900, children: [pinned("bar", { hold: "fixed" })] } as Partial<BoxNode>)]);
+    expect(fixedContainerOf(root, "bar")?.id).toBe("tilted");
+    expect(scrollContainerOf(root, "bar"), "a tilt does not clip, so it is not a scroll container").toBeNull();
+  });
+
+  it("the two warnings still read the same answers through the resolver", () => {
+    const rounded = shaped([createContainer("column", { id: "card", radius: 12, minHeight: 900, children: [pinned("rail")] } as Partial<BoxNode>)]);
+    expect(pinBlockedBy(rounded, "rail")?.id).toBe("card");
+    // …and neither fires on a block that is not pinned at all.
+    const plain = shaped([createContainer("column", { id: "card", radius: 12, children: [createContainer("column", { id: "inner" } as Partial<BoxNode>)] } as Partial<BoxNode>)]);
+    expect(pinBlockedBy(plain, "inner")).toBeNull();
+    expect(fixedBlockedBy(plain, "inner")).toBeNull();
+  });
+
+  /**
+   * THE DISTINCTION `pinScope` CANNOT MAKE, and the reason `pinHolder` exists.
+   *
+   * `pinScope` says "row" for a block sharing a band, because that is what the Inspector should call a band the
+   * user never made. Two bars in two DIFFERENT bands both come back as "row" — identical strings for boxes that
+   * are not the same box. Grouping sticky bars on that would stack bars that can never cover each other, which
+   * is the F15 regression that shoved a rail 160px down the page.
+   */
+  it("pinHolder gives the box's IDENTITY where pinScope only gives the word", () => {
+    const bandWith = (id: string, railId: string) => ({
+      ...createContainer("row", { id, rowBand: true } as Partial<BoxNode>),
+      children: [pinned(railId, { width: "30%" }), createContainer("column", { id: `${id}-main`, width: "70%", minHeight: 1200 } as Partial<BoxNode>)],
+    });
+    const root = shaped([bandWith("b1", "r1"), bandWith("b2", "r2")]);
+
+    expect(pinScope(root, "r1"), "the Inspector's word for both").toBe("row");
+    expect(pinScope(root, "r2")).toBe("row");
+
+    const h1 = pinHolder(root, "r1"), h2 = pinHolder(root, "r2");
+    expect(typeof h1 === "object" && h1?.id).toBe("b1");
+    expect(typeof h2 === "object" && h2?.id).toBe("b2");
+    expect(h1, "two different boxes, so they can never cover each other").not.toBe(h2);
+  });
+
+  it("a block straight on the page holds within the PAGE, so two of them share one holder", () => {
+    const root = shaped([pinned("nav"), pinned("notice"), createContainer("column", { id: "body", minHeight: 2400 } as Partial<BoxNode>)]);
+    expect(pinHolder(root, "nav")).toBe("page");
+    expect(pinHolder(root, "notice"), "the same holder — which is why these two DO cover each other").toBe("page");
   });
 });

@@ -4530,26 +4530,42 @@ export function pinStackAttr(node: BoxNode, parent?: BoxNode, bp: Breakpoint = "
   if (!src.pin) return null;
   if (src.position === "absolute" || node.position === "absolute") return null;
   /**
-   * ONLY "FLOATS ON SCREEN" STACKS — `hold: "fixed"` — AND NOT "STICKS WHEN REACHED".
+   * BOTH MECHANISMS STACK NOW — but only against bars they can actually meet (Step 2e).
    *
-   * Scoped deliberately, and a guard caught the version that was not. A fixed block is held against the
-   * WINDOW, so every fixed block on a page shares one coordinate space and "which is above which" has an
-   * answer. A sticky block is held against its own scroll container and keeps its place in the layout, so two
-   * sticky blocks in two different sections are never on screen as a pair — stacking them would move a block
-   * for a collision that cannot happen.
+   * 2c was scoped to `hold: "fixed"` and said so here, because reaching for sticky without a way to tell
+   * WHICH box each bar holds within shoved a sticky rail 160px down the page: it was offset for a collision
+   * that could not happen. The missing piece was the resolver, and `pinStackGroup` is it.
    *
-   * Reaching for them anyway did exactly that: a fixture with a sticky rail in one band and another in a
-   * second band had its blocks shoved 160px down the page, and `pinning-warnings.spec.ts` failed because the
-   * block it clicks was no longer where it had been drawn.
+   * A fixed bar is held against the WINDOW, so every fixed bar on a page shares one coordinate space. A sticky
+   * bar is held against the box it travels inside, so two sticky bars stack only when that box is the same one.
+   * Measured across three arrangements:
    *
-   * Making sticky stack properly means asking WHICH scroll container each block resolves against — Step 2e's
-   * shared resolver, which is not built. Until it is, this answers the case that was actually reported:
-   * three bands all set to stay on screen, all held to the top, all on top of one another.
+   *     two sticky bars as siblings in one Stack     40px of overlap   → same holder, must stack
+   *     two sticky bars placed straight on the page   40px of overlap   → both hold within the page
+   *     two sticky bars in different sections          0px             → they hand over, must NOT be moved
+   *
+   * The middle one is the common shape — a header and an announcement bar — and it is the reported bug's own
+   * shape with the other mechanism selected. Leaving it out would have fixed the symptom for one setting only.
    */
-  if ((src.hold ?? "sticky") !== "fixed") return null;
   // Bars queue DOWN a screen, never across it, so a pure left/right rail joins no stack.
   if (!PIN_EDGES[src.pin].some((e) => e === "top" || e === "bottom")) return null;
   return stickyEdge(src.pin);
+}
+
+/**
+ * WHICH SET OF BARS THIS ONE CAN COVER — the grouping key, emitted so the measuring pass can use it.
+ *
+ * `"window"` for a fixed bar: every one of them is held against the viewport, so they share a single queue.
+ * For a sticky bar it is the box it holds within, and that is simply **the parent of the element carrying the
+ * marker** — which is exact, not an approximation. When a band carries the pin on its child's behalf the
+ * marker is on the BAND, so the band's parent is the holder; when a block is pinned directly the marker is on
+ * the block, so its parent is. Both cases are the same lookup, and `"page"` names the root.
+ */
+export function pinStackGroup(node: BoxNode, parent?: BoxNode, bp: Breakpoint = "base"): string | null {
+  if (!pinStackAttr(node, parent, bp)) return null; // this element does not join a stack at all
+  const src = bandCarriesPin(node, bp) ?? node;
+  if ((src.hold ?? "sticky") === "fixed") return "window";
+  return parent?.id ?? "page";
 }
 
 /**
@@ -4598,12 +4614,31 @@ export function pinStackPass(root: ParentNode): void {
       const p = getComputedStyle(el).position;
       return p === "fixed" || p === "sticky" || p === "absolute";
     });
-    // Down the page for a top edge; up it for a bottom one — in both cases, nearest the edge is first.
-    const order = edge === "top" ? held : held.slice().reverse();
-    let above = 0;
-    for (const el of order) {
-      el.style.setProperty("--eu-pin-above", above + "px");
-      above += el.getBoundingClientRect().height;
+    /**
+     * QUEUED PER GROUP (2e), not per edge. A fixed bar is held against the window so all of them share one
+     * queue (`"window"`); a sticky bar is held against the box it travels inside, so it queues only behind
+     * bars in that same box. Without this, two sticky bars in different sections were offset for a collision
+     * that cannot happen — measured at 160px of unwanted movement on a rail.
+     *
+     * `querySelectorAll` returns document order, so each group is already in the order it appears.
+     */
+    const groups = new Map<string, HTMLElement[]>();
+    for (const el of held) {
+      const key = el.getAttribute("data-eu-pin-in") || "window";
+      const members = groups.get(key);
+      if (members) members.push(el);
+      else groups.set(key, [el]);
+    }
+    let windowStack = 0; // the FIXED bars' total, which is the only one 2d's padding may use
+    for (const [key, members] of groups) {
+      // Down the page for a top edge; up it for a bottom one — in both cases, nearest the edge is first.
+      const order = edge === "top" ? members : members.slice().reverse();
+      let above = 0;
+      for (const el of order) {
+        el.style.setProperty("--eu-pin-above", above + "px");
+        above += el.getBoundingClientRect().height;
+      }
+      if (key === "window") windowStack = above;
     }
     /**
      * STEP 2d — AND THE SAME MEASUREMENT ANSWERS "WHERE IS THE TOP OF THE PAGE?"
@@ -4626,7 +4661,10 @@ export function pinStackPass(root: ParentNode): void {
     if (edge === "top" && root.nodeType === 9) {
       const scroller = (root as Document).scrollingElement as HTMLElement | null;
       if (scroller) {
-        if (above > 0) scroller.style.setProperty("scroll-padding-top", above + "px");
+        // The FIXED bars only. A sticky bar covers the top of the screen just while it is stuck, and
+        // `scroll-padding-top` is one static number — padding for it would push every landing down the page
+        // at every other moment.
+        if (windowStack > 0) scroller.style.setProperty("scroll-padding-top", windowStack + "px");
         else scroller.style.removeProperty("scroll-padding-top"); // nothing held here now — owe nothing
       }
     }
@@ -4681,16 +4719,29 @@ export function pinStackMarker(node: BoxNode, parent?: BoxNode): "top" | "bottom
   return null;
 }
 
+/** The group marker, taken from the same rung as the edge marker so the pair can never describe two states. */
+export function pinStackGroupMarker(node: BoxNode, parent?: BoxNode): string | null {
+  for (const bp of PIN_RUNGS) {
+    if (pinStackAttr(node, parent, bp)) return pinStackGroup(node, parent, bp);
+  }
+  return null;
+}
+
 export function pinStackNeeded(root: BoxNode): boolean {
   for (const bp of PIN_RUNGS) {
-    const count = { top: 0, bottom: 0 };
+    // PER EDGE **AND** PER GROUP (2e): two bars only need a pass if they can actually cover each other. Counting
+    // by edge alone would ship a script for two sticky bars in different sections, which hand over untouched.
+    const count = new Map<string, number>();
     const walk = (n: BoxNode, parent?: BoxNode): void => {
       const edge = pinStackAttr(n, parent, bp);
-      if (edge) count[edge]++;
+      if (edge) {
+        const key = `${edge}|${pinStackGroup(n, parent, bp)}`;
+        count.set(key, (count.get(key) ?? 0) + 1);
+      }
       for (const k of n.children ?? []) walk(k, n);
     };
     walk(root);
-    if (count.top > 1 || count.bottom > 1) return true;
+    for (const n of count.values()) if (n > 1) return true;
   }
   return pinPaddingNeeded(root);
 }
@@ -4711,7 +4762,18 @@ export function pinPaddingNeeded(root: BoxNode): boolean {
   let held = false;
   let scrollTarget = false;
   const walk = (n: BoxNode, parent?: BoxNode): void => {
-    for (const bp of PIN_RUNGS) if (pinStackAttr(n, parent, bp) === "top") { held = true; break; }
+    /**
+     * A FIXED top bar only — `group === "window"`. Asked explicitly rather than inherited from
+     * `pinStackAttr`, which is the trap 2e nearly walked into: 2d was written while that function returned
+     * null for sticky, so "a held top bar" and "a FIXED top bar" were accidentally the same question. Dropping
+     * that restriction for sticky stacking would silently have started padding the page for a sticky bar too.
+     *
+     * And the padding would be wrong if it did: `scroll-padding-top` is one static number, while a sticky bar
+     * covers the top of the screen only while it happens to be stuck. A fixed bar covers it always.
+     */
+    for (const bp of PIN_RUNGS) {
+      if (pinStackAttr(n, parent, bp) === "top" && pinStackGroup(n, parent, bp) === "window") { held = true; break; }
+    }
     if (n.anchor || (n.items ?? []).some((it) => it.anchor)) scrollTarget = true;
     if (typeof n.href === "string" && n.href.startsWith("#") && n.href.length > 1) scrollTarget = true;
     for (const k of n.children ?? []) walk(k, n);
@@ -5065,7 +5127,23 @@ export function capturesFixed(node: BoxNode): boolean {
   return !!node.variant?.includes("glass");                        // backdrop-filter
 }
 
-export function fixedBlockedBy(root: BoxNode, id: string, bp: Breakpoint = "base"): BoxNode | null {
+/**
+ * ── STEP 2e · WHICH BOX DOES THIS BLOCK RESOLVE AGAINST? ──────────────────────────────────────────────
+ *
+ * Four features asked that question and each had written its own answer: `pinBlockedBy` (does a scroll
+ * container capture a sticky block?), `fixedBlockedBy` (does an ancestor capture a fixed one?), `pinScope`
+ * (which box does a sticky block hold within, so the Inspector can name it) and — from 2e onwards — which
+ * sticky bars can be on screen together and therefore have to stack. All four walked the same chain with the
+ * same `resolveResponsive` map and the same rung caveat, three times over.
+ *
+ * Collapsing them is not tidying. Building this kind of thing separately is how they drift, and this file has
+ * paid for that repeatedly: one seam per feature is the rule the build spec draws from Phase 2's three
+ * picker-vs-drag bugs. There is one walk here, and each resolver is the predicate that walks it.
+ *
+ * `null` from a container resolver means "nothing above this captures it" — the page for sticky, the window
+ * for fixed — which is the answer the browser gives too.
+ */
+function chainTo(root: BoxNode, id: string, bp: Breakpoint): BoxNode[] | null {
   const walk = (node: BoxNode, trail: BoxNode[]): BoxNode[] | null => {
     const path = [...trail, node];
     if (node.id === id) return path;
@@ -5075,17 +5153,78 @@ export function fixedBlockedBy(root: BoxNode, id: string, bp: Breakpoint = "base
     }
     return null;
   };
-  // Every node AT THE RUNG being edited — a tilt or a pin set only on phones is as real as a desktop one.
-  const path = walk(root, [])?.map((n) => resolveResponsive(n, bp));
-  if (!path) return null;
-  const self = path[path.length - 1];
-  if (!self.pin || (self.hold ?? "sticky") !== "fixed") return null;
-  // Nearest first. The block's OWN transform is irrelevant — an element does not contain itself — and the
-  // page root is excluded, since containing a fixed block to the page is what the canvas does deliberately.
+  // Every node AT THE RUNG BEING DRAWN. `resolveResponsive` resolves a node and not its children, so a tilt or
+  // a pin that exists only on phones is invisible to a walk that reads the base values — which is the bug F10
+  // was, in a different resolver.
+  return walk(root, [])?.map((n) => resolveResponsive(n, bp)) ?? null;
+}
+
+/**
+ * The nearest ancestor that CLIPS, which is the scroll container a sticky block is measured against.
+ *
+ * `overflow: hidden` makes a scroll container, and in this builder a block clips whenever `clip` is set **or it
+ * has a corner radius** — so rounding a section, an entirely ordinary thing to do, silently re-points every
+ * sticky block inside it. The page root is excluded: the page is the thing being scrolled.
+ */
+export function scrollContainerOf(root: BoxNode, id: string, bp: Breakpoint = "base"): BoxNode | null {
+  const path = chainTo(root, id, bp);
+  return path ? scrollContainerIn(path) : null;
+}
+
+/** The predicate itself, over a chain already walked — so a caller that needs both does not walk twice. */
+function scrollContainerIn(path: BoxNode[]): BoxNode | null {
+  // The block's OWN clipping is irrelevant — an element is not inside itself.
+  for (let i = path.length - 2; i >= 1; i--) {
+    const a = path[i];
+    if (a.clip || radiusCSS(a)) return a;
+  }
+  return null;
+}
+
+/**
+ * The nearest ancestor that makes its own containing block, which a FIXED block holds against instead of the
+ * window. A transform, `container-type` or `backdrop-filter` each do it — see `capturesFixed`.
+ */
+export function fixedContainerOf(root: BoxNode, id: string, bp: Breakpoint = "base"): BoxNode | null {
+  const path = chainTo(root, id, bp);
+  return path ? fixedContainerIn(path) : null;
+}
+
+function fixedContainerIn(path: BoxNode[]): BoxNode | null {
   for (let i = path.length - 2; i >= 1; i--) {
     if (capturesFixed(path[i])) return path[i];
   }
   return null;
+}
+
+/**
+ * The box a sticky block HOLDS WITHIN — its identity, not the Inspector's words for it.
+ *
+ * `"page"` when that box is the page itself. This is what `pinScope` says in words and what sticky stacking
+ * groups by: two sticky bars can only cover each other if they hold within the SAME box, and two that do not
+ * hand over instead (measured: 40px of overlap for siblings in one Stack and for two bars placed straight on
+ * the page, 0px for two in different sections).
+ */
+export function pinHolder(root: BoxNode, id: string, bp: Breakpoint = "base"): BoxNode | "page" | null {
+  const path = chainTo(root, id, bp);
+  return path ? holderIn(root, path, bp) : null;
+}
+
+function holderIn(root: BoxNode, path: BoxNode[], bp: Breakpoint): BoxNode | "page" | null {
+  if (path.length < 2) return null;
+  const parent = path[path.length - 2];
+  // The band carries the pin when it hugs this block alone — then the BAND sticks, inside ITS parent.
+  const carried = bandCarriesPin(parent, bp)?.id === path[path.length - 1].id;
+  const container = carried ? path[path.length - 3] : parent;
+  if (!container || container.id === root.id) return "page";
+  return container;
+}
+
+export function fixedBlockedBy(root: BoxNode, id: string, bp: Breakpoint = "base"): BoxNode | null {
+  const path = chainTo(root, id, bp);
+  const self = path?.at(-1);
+  if (!self?.pin || (self.hold ?? "sticky") !== "fixed") return null; // only a FIXED block can be captured this way
+  return fixedContainerIn(path!);
 }
 
 /**
@@ -5102,27 +5241,10 @@ export function fixedBlockedBy(root: BoxNode, id: string, bp: Breakpoint = "base
  * Returns the nearest offending ancestor, so the inspector can name it rather than say "something above".
  */
 export function pinBlockedBy(root: BoxNode, id: string, bp: Breakpoint = "base"): BoxNode | null {
-  // The chain from the root down to the block, or null when it is not in this tree.
-  const walk = (node: BoxNode, trail: BoxNode[]): BoxNode[] | null => {
-    const path = [...trail, node];
-    if (node.id === id) return path;
-    for (const kid of node.children ?? []) {
-      const hit = walk(kid, path);
-      if (hit) return hit;
-    }
-    return null;
-  };
-  const path = walk(root, [])?.map((n) => resolveResponsive(n, bp)); // at the rung — see fixedBlockedBy
-  if (!path) return null;
-  const self = path[path.length - 1];
-  if (!self.pin) return null;
-  // Nearest first, and the block's OWN clipping is irrelevant — it is an ANCESTOR's scroll container that
-  // captures it. The root is excluded: the page itself is the thing being scrolled.
-  for (let i = path.length - 2; i >= 1; i--) {
-    const a = path[i];
-    if (a.clip || radiusCSS(a)) return a;
-  }
-  return null;
+  const path = chainTo(root, id, bp);
+  const self = path?.at(-1);
+  if (!self?.pin) return null; // nothing to warn about on a block that is not pinned
+  return scrollContainerIn(path!);
 }
 
 /**
@@ -5147,26 +5269,14 @@ export function pinBlockedBy(root: BoxNode, id: string, bp: Breakpoint = "base")
  * lets go), or floating (clause 1 of `pinCSS` — free positioning wins and the pin is ignored).
  */
 export function pinScope(root: BoxNode, id: string, bp: Breakpoint = "base"): "page" | "row" | BoxNode | null {
-  const walk = (node: BoxNode, trail: BoxNode[]): BoxNode[] | null => {
-    const path = [...trail, node];
-    if (node.id === id) return path;
-    for (const kid of node.children ?? []) {
-      const hit = walk(kid, path);
-      if (hit) return hit;
-    }
-    return null;
-  };
-  const path = walk(root, [])?.map((n) => resolveResponsive(n, bp)); // at the rung — see fixedBlockedBy
-  if (!path || path.length < 2) return null;
-  const self = path[path.length - 1];
-  if (!self.pin || (self.hold ?? "sticky") !== "sticky" || isFloating(self)) return null;
-  const parent = path[path.length - 2];
-  // The band carries the pin when it hugs this block alone — then the BAND is what sticks, inside ITS parent.
-  const carried = bandCarriesPin(parent, bp)?.id === self.id;
-  const container = carried ? path[path.length - 3] : parent;
-  if (!container || container.id === root.id) return "page";
-  if (container.rowBand) return "row";
-  return container;
+  const path = chainTo(root, id, bp);
+  const self = path?.at(-1);
+  if (!self?.pin || (self.hold ?? "sticky") !== "sticky" || isFloating(self)) return null;
+  const holder = holderIn(root, path!, bp);
+  if (holder === null || holder === "page") return holder;
+  // The only difference from the identity: a structural band is scaffolding the user never made, so it is
+  // described as "the row it sits in" rather than named.
+  return holder.rowBand ? "row" : holder;
 }
 
 /** `pinScope` in the words the Inspector says: the page, the row, or the NAME of the block around it. */

@@ -266,3 +266,47 @@ Feature: Box Builder — floating layers (free overlap)
       so the fault existed only in the one place a teacher would check their own
       navigation. The preview now performs that scroll itself, honouring the
       same padding.
+
+  # ── Step 2e: one resolver, and sticky bars stack against bars they can meet ──
+
+  Scenario: Two bars that stick within the same box sit under one another
+    Given two blocks set to "Sticks when reached" inside one Stack
+    When the page is scrolled until both are held
+    Then the second rests directly below the first, and neither is hidden
+    Because they hold within the same box, so they are on screen together for
+      most of that box's travel. Measured before this shipped: 40px of overlap,
+      the shorter bar buried entirely behind the taller one.
+
+  Scenario: Two bars placed straight on the page do the same
+    Given a header and an announcement bar, both set to "Sticks when reached"
+    Then they queue rather than covering each other
+    Because each gets a band of its own and the band hugs it, so the pin is
+      carried up to a band whose parent is the page — and both then hold for the
+      whole page. This is the commonest real shape, and it is the reported bug's
+      own shape with the other mechanism chosen.
+
+  Scenario: A bar in its own section is never pushed down for one elsewhere
+    Given two sections, each with its own block set to "Sticks when reached"
+    When the page is scrolled to where each one holds in turn
+    Then each holds at the very top, unmoved
+    Because they hand over instead of coinciding: the first lets go exactly as
+      the second arrives. Offsetting them is movement nobody asked for, and it is
+      what happened when Step 2c first reached for sticky — a rail dropped 160px
+      down the page and the warning test failed because the block it clicks had
+      moved.
+
+  Scenario: A page whose sticky bars cannot collide ships no stacking script
+    Given one block set to "Sticks when reached" in each of two sections
+    Then the exported page contains no stacking script at all
+    Because zero JavaScript stays the default, and it is now decided per edge AND
+      per box rather than per edge alone.
+
+  Scenario: The editor stacks sticky bars the same way the published page does
+    Given the same two bars on the canvas
+    Then the second carries an offset of at least the first bar's height
+    And both are recorded as belonging to the same queue
+    Because sticky takes a different route through the pass than fixed does — it
+      stays `sticky` in the editor, where a fixed block becomes `absolute` — so
+      "the export is right" says nothing about it. Canvas ≠ export is this
+      project's most expensive bug class, and it arrives through the second route
+      nobody measured.

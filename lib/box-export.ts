@@ -11,7 +11,7 @@
 import type { CSSProperties } from "react";
 import { pinArrivalCss, pinArrivalKeyframes, floatHoldCSS,
   type BoxNode, type Breakpoint, BP_ORDER, containerStyle, childStyle, hostSizedFor, marginCSS, sizeToCSS, radiusCSS, SHADOW_CSS, u, baseUnit, fadedPaint, boxOpacity, backgroundCss, paintLayerCss,
-  resolveResponsive, floatStacksOnMobile, isFloating, floatingReserve, alertToastCss, accordionClasses, bandClasses, videoEmbedSrc, isContainer, sanitizeCssDeclarations, expandScopedCss, COMPONENT_PARTS, itemFloatContextCss, itemOverrideCss, itemNumberVars, richBody, plainBody, componentTextCss, componentBoxCss, renderAlertHTML, alertDismissScript, masonryMeasureAttr, masonryMeasureScript, pinStackMarker, pinStackNeeded, pinStackScript, isPager, pagerNavHTML, pagerScript, pagerStripCss, pagerSlideId, bgShowThroughCss, blockContainmentCss, COMPONENT_ITEM_SEL, remLen, imageSizing, hasIntrinsicSize, itemNeedsClass, itemScope, floatZIndex, typoRole, typoRootVars, typoCascadeCss, bandEdgeCSS,
+  resolveResponsive, floatStacksOnMobile, isFloating, floatingReserve, alertToastCss, accordionClasses, bandClasses, videoEmbedSrc, isContainer, sanitizeCssDeclarations, expandScopedCss, COMPONENT_PARTS, itemFloatContextCss, itemOverrideCss, itemNumberVars, richBody, plainBody, componentTextCss, componentBoxCss, renderAlertHTML, alertDismissScript, masonryMeasureAttr, masonryMeasureScript, pinStackMarker, pinStackGroupMarker, pinStackNeeded, pinStackScript, isPager, pagerNavHTML, pagerScript, pagerStripCss, pagerSlideId, bgShowThroughCss, blockContainmentCss, COMPONENT_ITEM_SEL, remLen, imageSizing, hasIntrinsicSize, itemNeedsClass, itemScope, floatZIndex, typoRole, typoRootVars, typoCascadeCss, bandEdgeCSS,
 } from "@/lib/box-model";
 import { isRegistryComponent, renderComponent, componentScripts } from "@/lib/educo-ui/registry";
 import { iconSvg } from "@/lib/educo-ui/icon-svg";
@@ -482,7 +482,9 @@ function renderNode(node: BoxNode, rawParent: BoxNode | null, theme: SiteTheme, 
     // reads the computed position to decide whether it is held HERE, so one static attribute serves every
     // rung. Folded into `idAttr` deliberately — four return paths below write it, and adding it to one of
     // them and forgetting the others is exactly the seam this project keeps paying for.
-    + ((m) => (m ? ` data-eu-pin="${m}"` : ""))(pinStackMarker(node, rawParent ?? undefined));
+    + ((m) => (m ? ` data-eu-pin="${m}"` : ""))(pinStackMarker(node, rawParent ?? undefined))
+    // WHICH stack it joins (2e) — the window for a fixed bar, the box it travels inside for a sticky one.
+    + ((g) => (g ? ` data-eu-pin-in="${esc(g)}"` : ""))(pinStackGroupMarker(node, rawParent ?? undefined));
   // A structural band also carries its layout classes — computed by box-model, so the canvas gets the same ones.
   const allCls = [cls, bandClasses(r, isPageSection)].filter(Boolean).join(" ");
   if (isContainer(r)) {
