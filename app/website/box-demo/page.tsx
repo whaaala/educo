@@ -29,7 +29,7 @@ import { warmIcons, hasIcon } from "@/lib/educo-ui/icon-svg";
 import BoxCanvas, { measureFloatGeom, measureFixedGeom, measureGroupGeom } from "@/components/website/box/BoxCanvas";
 import BoxInspector from "@/components/website/box/BoxInspector";
 import BulkInspector from "@/components/website/box/BulkInspector";
-import BlocksPanel from "@/components/website/box/BlocksPanel";
+import BlocksPanel, { LAUNCHER_GUTTER_REM } from "@/components/website/box/BlocksPanel";
 import ThemeSwitcher from "@/components/shared/ThemeSwitcher";
 import { ToolBtn, ToolDivider, Segmented } from "@/components/website/box/ui";
 import PageLoader from "@/components/shared/PageLoader";
@@ -1024,7 +1024,11 @@ export default function BoxDemoPage() {
         {/* The Blocks panel floats over this column, so the canvas keeps its full width. */}
         <div className="relative flex-1 min-w-0 flex">
           <div className="flex-1 min-w-0 overflow-auto">
-            <div className="p-8 flex justify-center min-h-full">
+            {/* The Blocks launcher floats in the left gutter, so the gutter RESERVES its exact footprint. Without
+                this the centred page slid under the button and the first word of the first block could not be
+                clicked. Reserved whether the panel is open or shut, so opening it never reflows the page under
+                the cursor. */}
+            <div className="p-8 flex justify-center min-h-full" style={{ paddingLeft: `${LAUNCHER_GUTTER_REM}rem` }}>
               <div className={`shadow-sm rounded-xl ring-1 ring-black/10 dark:ring-white/10 shrink-0 h-fit transition-[width] duration-300 ${device === "full" ? "w-full max-w-5xl" : ""}`} style={{ width: frameW ?? undefined, background: renderTheme.background, color: renderTheme.text, fontFamily: renderTheme.bodyFont, containerType: "inline-size" }}>
                 <BoxCanvas root={root} theme={renderTheme} minHeight={PAGE_MIN_H} selectedIds={selectedIds} onSelectIds={selectByUser} onChange={commit} breakpoint={bp} />
               </div>

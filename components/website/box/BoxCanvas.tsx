@@ -207,6 +207,98 @@ const HANDLES: { edge: Edge; pos: string; cursor: string; label: string; title: 
   { edge: "sw", pos: "-bottom-1 -left-1 w-3 h-3 rounded-full", cursor: "cursor-nesw-resize", label: "bottom-left corner", title: "Drag the bottom-left corner" },
 ];
 
+/** The caret after the last character, so the user carries on typing rather than overwrites. */
+function caretToEnd(host: HTMLElement) {
+  const sel = window.getSelection();
+  if (!sel) return;
+  const range = document.createRange();
+  range.selectNodeContents(host);
+  range.collapse(false);
+  sel.removeAllRanges();
+  sel.addRange(range);
+}
+
+/** Put the caret exactly where the pointer was, with whichever of the two APIs this browser provides. */
+function placeCaretAt(host: HTMLElement, x: number, y: number) {
+  const sel = window.getSelection();
+  if (!sel) return;
+  const d = document as Document & {
+    caretRangeFromPoint?: (x: number, y: number) => Range | null;
+    caretPositionFromPoint?: (x: number, y: number) => { offsetNode: Node; offset: number } | null;
+  };
+  let range: Range | null = null;
+  if (typeof d.caretRangeFromPoint === "function") range = d.caretRangeFromPoint(x, y);
+  else if (typeof d.caretPositionFromPoint === "function") {
+    const p = d.caretPositionFromPoint(x, y);
+    if (p) { range = document.createRange(); range.setStart(p.offsetNode, p.offset); range.collapse(true); }
+  }
+  // Better a caret at the end of the right block than no caret at all.
+  if (!range || !host.contains(range.startContainer)) { caretToEnd(host); return; }
+  sel.removeAllRanges();
+  sel.addRange(range);
+}
+
+/**
+ * The block's OWN text, never a descendant block's — so Enter on a Stack does not silently reach inside it and
+ * start editing the first heading it happens to contain.
+ */
+function ownEditable(id: string): HTMLElement | undefined {
+  const blockEl = document.querySelector<HTMLElement>(`[data-box-id="${id}"]`);
+  if (!blockEl) return undefined;
+  return Array.from(blockEl.querySelectorAll<HTMLElement>('[contenteditable="true"]'))
+    .find((el) => el.closest("[data-box-id]") === blockEl);
+}
+
+/**
+ * A RESIZE IS A DRAG; A CLICK IS A CLICK.
+ *
+ * Every block is created with `padding: 0` (Rule 3), so its text starts exactly at its edge — and the edge
+ * handles straddle that edge, 4px outside and 6px INSIDE, so they always sit over the first letters. Measured on
+ * a fresh Heading: 3 of 21 plausible aim points across the words could not place a caret, because the pointer
+ * landed on "Resize left edge" instead. A user aiming at the first word gets a resize drag and their typing
+ * goes nowhere.
+ *
+ * Moving the handles fully outside would only hand the same problem to the NEIGHBOUR in a zero-gap row, so the
+ * fix is behavioural rather than geometric: if the pointer never moved, this was not a resize, and the click
+ * belongs to whatever sits underneath. Resize geometry is untouched (Rule 19).
+ */
+function caretFallthrough(e: React.MouseEvent) {
+  const startX = e.clientX, startY = e.clientY;
+  const onUp = (ev: MouseEvent) => {
+    document.removeEventListener("mouseup", onUp, true);
+    if (Math.abs(ev.clientX - startX) > 2 || Math.abs(ev.clientY - startY) > 2) return; // a real drag — leave it alone
+    /**
+     * Peel the chrome at the point until the text appears, asking the DOM each time rather than holding the
+     * handle from `mousedown`: starting a resize re-renders, and a captured node can be detached by the time
+     * this runs — measured, the stale reference was switched off while the live handle still blocked the point,
+     * so nothing was ever found underneath. Corners and edges also overlap near a box's start, hence a few
+     * layers rather than one.
+     */
+    // Nothing to look through with, so leave the resize alone rather than throwing inside a global listener —
+    // jsdom has no `elementFromPoint`, and an exception here took two unrelated canvas tests down with it.
+    if (typeof document.elementFromPoint !== "function") return;
+    const peeled: { el: HTMLElement; prev: string }[] = [];
+    let host: HTMLElement | null = null;
+    for (let i = 0; i < 4; i++) {
+      const el = document.elementFromPoint(ev.clientX, ev.clientY) as HTMLElement | null;
+      if (!el) break;
+      const ce = el.closest<HTMLElement>('[contenteditable="true"]');
+      if (ce) { host = ce; break; }
+      peeled.push({ el, prev: el.style.pointerEvents });
+      el.style.pointerEvents = "none";
+    }
+    /**
+     * Place the caret WHILE THE CHROME IS STILL SWITCHED OFF. Working out which character was clicked means
+     * hit-testing the point a second time, so with the handle live again the browser finds the handle, decides
+     * the point is not in any text, and the caret falls back to the end of the block — measured: clicking the
+     * first letter of "Riverside Primary School" and typing gave "Riverside Primary SchoolSt ".
+     */
+    if (host) { host.focus(); placeCaretAt(host, ev.clientX, ev.clientY); }
+    for (const p of peeled) p.el.style.pointerEvents = p.prev; // put the chrome back, always
+  };
+  document.addEventListener("mouseup", onUp, true);
+}
+
 const ADD_ITEMS: { type: BoxType | "row" | "grid" | "accordion"; label: string; Icon: typeof Type }[] = [
   // The same names as the palette — see `containerLabel` in lib/box-model.ts for why they are named for the
   // arrangement they produce. This menu was missed by that rename and still said "Section (stack)"/"Row".
@@ -833,6 +925,17 @@ export default function BoxCanvas({
       else if (e.key === "ArrowDown" && id && !rn.locked) { if (floating) onChange(writeBox(root, id, { top: round1((rn.top ?? 0) + stepPct("y")) })); else onChange(moveBoxStep(root, id, 1)); e.preventDefault(); }
       else if (e.key === "ArrowLeft" && id && floating && !rn.locked) { onChange(writeBox(root, id, { left: round1((rn.left ?? 0) - stepPct("x")) })); e.preventDefault(); }
       else if (e.key === "ArrowRight" && id && floating && !rn.locked) { onChange(writeBox(root, id, { left: round1((rn.left ?? 0) + stepPct("x")) })); e.preventDefault(); }
+      // ── ENTER / F2 BEGINS EDITING — the way IN that Escape's way OUT always implied ──
+      // Every other operation on this canvas had a shortcut, but editing the WORDS — the commonest act in a
+      // website builder — was mouse-only, so a keyboard user could select a heading and never type into it.
+      // Measured before this existed: Enter on a freshly added Heading left `activeElement` on BODY and the
+      // typing went nowhere (WCAG 2.1.1, and Core Rule 2's "no feature should be mouse-only").
+      // Neither key collides: inside the text Enter already means "commit", and this handler declines outright
+      // while an editable holds the focus.
+      else if ((e.key === "Enter" || e.key === "F2") && id && !rn.locked) {
+        const host = ownEditable(id);
+        if (host) { host.focus(); caretToEnd(host); e.preventDefault(); }
+      }
       // Escape steps OUT one level — the other half of "click goes inside". From the outermost block (or from
       // nothing in particular) it clears the selection, so Escape still always ends somewhere predictable.
       else if (e.key === "Escape") {
@@ -2328,7 +2431,7 @@ export default function BoxCanvas({
     const resizeHandles = isSolo && editable && !isRoot && !node.locked ? (
       <>
         {HANDLES.map((h) => (
-          <div key={h.edge} onMouseDown={(e) => startResize(e, node.id, h.edge)} aria-label={`Resize ${h.label}`} title={h.title} className={`absolute ${h.pos} ${h.cursor} bg-indigo-500 border-2 border-white shadow`} style={{ zIndex: CHROME_Z.handle, pointerEvents: "auto" }} />
+          <div key={h.edge} onMouseDown={(e) => { caretFallthrough(e); startResize(e, node.id, h.edge); }} aria-label={`Resize ${h.label}`} title={h.title} className={`absolute ${h.pos} ${h.cursor} bg-indigo-500 border-2 border-white shadow`} style={{ zIndex: CHROME_Z.handle, pointerEvents: "auto" }} />
         ))}
       </>
     ) : null;

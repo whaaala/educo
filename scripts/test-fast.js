@@ -60,6 +60,7 @@ const INVARIANT_SPECS = [
   "tests/e2e/builder-chrome-fits.spec.ts",
   "tests/e2e/grid-cells-never-overlap.spec.ts",
   "tests/e2e/keyboard-survives-selection.spec.ts",
+  "tests/e2e/text-is-reachable.spec.ts",
   "tests/e2e/empty-band-shows.spec.ts",
   "tests/e2e/exported-site.spec.ts",
   "tests/e2e/layout-bands.spec.ts",

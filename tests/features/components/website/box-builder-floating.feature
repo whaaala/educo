@@ -184,3 +184,46 @@ Feature: Box Builder — floating layers (free overlap)
     Then the exported page contains no stacking script at all
     Because zero JavaScript stays the default: a bar with nothing to stack under
       must not cost the page a script it cannot use.
+
+  # ── Reaching the words: the chrome that floats over the canvas must not steal them ──
+
+  Scenario: The blocks launcher sits beside the page, never on it
+    Given the builder is open at a width where the page fills its column
+    Then the launcher's right edge is outside the page's left edge
+    Because the launcher is a button that opens a panel, so it cannot fall through
+      to anything underneath: the only correct state is not covering the page at
+      all. Measured at 1440px before the gutter reserved its footprint — the page
+      began at 32px and the button ended at 56px, so the first word of the first
+      block opened the panel instead of taking the caret.
+
+  Scenario: Clicking a word puts the caret in that word, anywhere along the line
+    Given a selected heading whose text starts flush against its box
+    When each of a spread of plausible aim points across the words is clicked
+    Then the caret arrives at the point that was aimed at, every time
+    Because the edge handles straddle the box edge — 4px out and 6px in — and a
+      block is created with no padding, so they sit over the first letters. Asking
+      "is the caret in this block" proves nothing here: selecting the heading means
+      clicking its words, so the caret was already there and a swallowed click
+      still left it there. The caret has to MOVE to where the user pointed.
+
+  Scenario: A resize is a drag, so a click on a handle belongs to the text
+    Given a selected block with its text under the left edge handle
+    When the pointer goes down on the handle and up again without moving
+    Then the caret lands in the text under the pointer
+    But when the pointer is dragged, the block resizes and the far edge stays put
+    Because moving the handles fully outside would only hand the same problem to
+      the neighbour in a zero-gap row. The caret is placed while the chrome is
+      still switched off: working out which character was clicked hit-tests the
+      point a second time, and with the handle live again the caret fell back to
+      the end of the block instead.
+
+  Scenario: Text can be reached without a mouse
+    Given a heading that has just been added from the palette and is selected
+    Then nothing holds the caret yet
+    When Enter or F2 is pressed
+    Then editing begins with the caret at the END of the existing words
+    And typing adds to them rather than replacing them
+    Because every other operation on the canvas had a shortcut — undo, duplicate,
+      delete, nudge, float, group, lock, the z-order pair, the panel, and Escape to
+      step OUT of text. There was no way IN, so a keyboard-only user could select a
+      heading and never type a word into it.

@@ -1,7 +1,8 @@
 "use client";
 
 /**
- * Blocks palette — a FLOATING insert panel. A COMPACT launcher tucked in the left gutter (off the page) opens a
+ * Blocks palette — a FLOATING insert panel. A COMPACT launcher sits in the canvas gutter, which reserves the
+ * button's exact footprint (`LAUNCHER_GUTTER_REM`) so it is genuinely off the page rather than over it, and opens a
  * modern, spacious flyout that floats OVER the canvas (the canvas keeps its full width). Search to filter, category
  * tabs to jump, big tiles you DRAG onto the page (a glowing drop line shows where) or CLICK to pick a style.
  * Toggle with the launcher, the ✕, a click outside, Escape, or the keyboard (B toggles, / opens + focuses search).
@@ -30,6 +31,23 @@ import { CHROME_Z } from "@/lib/educo-ui/stacking";
 
 /** The catalogue names its icon as a string so it can stay React-free; this maps those names to the icons. */
 export const COMPONENT_ICONS: Record<string, LucideIcon> = { PanelTopOpen, BellRing, LayoutGrid, MessageSquareQuote, Hash, BadgeCheck, Star };
+
+/**
+ * The launcher's FOOTPRINT in the canvas gutter — ONE definition, shared with the canvas.
+ *
+ * The button is the only piece of builder chrome that sits over the editing surface, so the canvas reserves
+ * exactly `LAUNCHER_GUTTER_REM` down its left side and the page can never slide underneath it. It has to be one
+ * definition because it was two: the inset and the size lived only in this file's Tailwind classes (`left-3
+ * w-11`) while the canvas padded itself `p-8`, and nothing made the two agree. Measured at a 1440px window, the
+ * page's left edge landed at 32px and the button's right edge at 56px — so the first word of the first block was
+ * under the button and could not be clicked or typed into at all.
+ *
+ * In `rem`, not pixels, so the gutter grows with the reader's text size exactly as the button does (Core Rule 16).
+ */
+export const LAUNCHER_INSET_REM = 0.75; // from the column's left edge
+export const LAUNCHER_SIZE_REM = 2.75; // the square button itself
+export const LAUNCHER_GAP_REM = 0.75; // breathing room before the page begins
+export const LAUNCHER_GUTTER_REM = LAUNCHER_INSET_REM + LAUNCHER_SIZE_REM + LAUNCHER_GAP_REM;
 
 type Block = { kind: string; label: string; Icon: LucideIcon; hint: string };
 
@@ -196,8 +214,9 @@ export default function BlocksPanel({ theme, onDragKind, onPick, defaultOpen = f
           aria-label="Open blocks panel"
           aria-expanded={false}
           title="Add blocks (B)"
-          style={{ zIndex: CHROME_Z.panel }}
-          className="absolute top-4 left-3 grid place-items-center w-11 h-11 rounded-2xl bg-gradient-to-br from-brand to-brand-600 text-brand-fg shadow-lg ring-1 ring-black/5 hover:shadow-xl hover:scale-105 transition"
+          /* Geometry inline so it is the SAME value the canvas reserves as a gutter; colour stays in classes. */
+          style={{ zIndex: CHROME_Z.panel, left: `${LAUNCHER_INSET_REM}rem`, width: `${LAUNCHER_SIZE_REM}rem`, height: `${LAUNCHER_SIZE_REM}rem` }}
+          className="absolute top-4 grid place-items-center rounded-2xl bg-gradient-to-br from-brand to-brand-600 text-brand-fg shadow-lg ring-1 ring-black/5 hover:shadow-xl hover:scale-105 transition"
         >
           <Blocks className="w-5 h-5" strokeWidth={1.9} />
         </button>
@@ -209,8 +228,8 @@ export default function BlocksPanel({ theme, onDragKind, onPick, defaultOpen = f
           ref={panelRef}
           role="dialog"
           aria-label="Blocks"
-          style={{ zIndex: CHROME_Z.panel }}
-          className={`absolute top-4 left-3 flex w-[20rem] max-w-[calc(100%-1.5rem)] max-h-[calc(100%-2rem)] flex-col rounded-2xl border border-line bg-surface shadow-2xl shadow-black/10 overflow-hidden transition duration-200 ease-out motion-reduce:transition-none ${shown ? "opacity-100 translate-x-0 scale-100" : "opacity-0 -translate-x-2 scale-[0.98]"}`}
+          style={{ zIndex: CHROME_Z.panel, left: `${LAUNCHER_INSET_REM}rem` }}
+          className={`absolute top-4 flex w-[20rem] max-w-[calc(100%-1.5rem)] max-h-[calc(100%-2rem)] flex-col rounded-2xl border border-line bg-surface shadow-2xl shadow-black/10 overflow-hidden transition duration-200 ease-out motion-reduce:transition-none ${shown ? "opacity-100 translate-x-0 scale-100" : "opacity-0 -translate-x-2 scale-[0.98]"}`}
         >
           {/* Header */}
           <div className="flex items-center gap-2.5 px-4 pt-3.5 pb-3">

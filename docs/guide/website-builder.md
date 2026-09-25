@@ -530,6 +530,7 @@ Click a block and you select the **outermost** box you clicked into — usually 
 
 | Action | Shortcut |
 |--------|----------|
+| **Edit the selected block's text** | **Enter** or **F2** (the caret lands at the end, so you carry on typing) |
 | Undo / Redo | Ctrl+Z / Ctrl+Y |
 | Copy / Cut / Paste | Ctrl+C / Ctrl+X / Ctrl+V |
 | Duplicate | Ctrl+D |
@@ -690,6 +691,8 @@ One difference worth knowing: an item's entrance never staggers its own parts. A
 - **"The page shows two sections I didn't add."** That's old saved data. Click **Reset** for a clean, blank page.
 - **"Text size / bold / colour didn't change my component."** Make sure you selected the exact inner piece (the card's *title*, not the card). Each piece is edited on its own.
 - **"I clicked a text block, started typing, and nothing appeared."** Fixed. Clicking a text block selects the band around it first — that is the drill‑down rule, and it is deliberate — but for a short while the editor read that as "you did not mean to be in this text" and took the cursor away a fraction of a second after the click. Click and type; the words land. The same fix cured its opposite: clicking the empty part of a box used to leave the cursor stranded in whatever text was nearest, and while it sat there **every keyboard shortcut silently did nothing** — Delete, `Ctrl+D`, the arrows, all of them.
+- **"I clicked the first word of a heading and got something else."** Fixed, twice over. The **Blocks** launcher used to float over the top‑left corner of the page, so the first word of the first block opened the panel instead of taking the cursor — the canvas now reserves the button its own gutter, so it sits beside the page rather than on it. And the **resize handles** straddle a block's edge, which is where you grab to resize; because a block starts with no padding, its first letters sit under the left handle. A *drag* on a handle still resizes, but a *click* now goes through to the text under the pointer, with the cursor landing on the letter you actually aimed at.
+- **"I can't get into the text without a mouse."** Fixed — select the block and press **Enter** (or **F2**). The cursor lands at the end of the existing words so you carry on typing; **Escape** steps back out.
 - **Everything saves automatically** to your browser. **Reset** wipes the current site back to a blank page — use it deliberately.
 
 ---
