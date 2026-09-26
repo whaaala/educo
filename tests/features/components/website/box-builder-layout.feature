@@ -607,3 +607,64 @@ Feature: Placing blocks beside one another in the Box Builder
     Then it keeps the size of its contents
     Because a Stack beside content is a sidebar and a button is not, and
       stretching one to the height of the screen would be absurd.
+
+  Scenario: A block dropped into the hole above a stack takes that hole
+    Given two stacks side by side
+    And the right one shrunk from its TOP edge, leaving empty space above it
+    When a Stack is dropped into that empty space
+    Then the newcomer fills the space, closing right up to the block below it
+    And that block's bottom edge does not move
+    Because the space a top-edge drag opens is a `margin-top`, and a margin is
+      not a box — there is nothing in it to drop into, so the drop landed on the
+      band instead. It did add a block, and the margin rode along with the target
+      into the new column: the hole was still there AND the newcomer sat above
+      it. Measured, the block was pushed from y=287 to y=336 with the 199px hole
+      intact — reported as "nothing appears and it breaks the positions of the
+      stacks". The margin is now handed over rather than duplicated.
+
+  Scenario: The newcomer fills the hole rather than being sized to it
+    Given the same drop
+    Then the newcomer is given no fixed height at all
+    Because spacing is emitted in the builder's fluid unit and a size is not: a
+      stored 200 renders as a margin of 157.2px at 1024, 182.8px at 1280 and
+      198.8px at 1440, while a min-height of 200 is 200px at every one of them.
+      Sizing the newcomer from the stored number matched the hole at exactly one
+      window width and drifted at every other, and would have gone on drifting as
+      the window resized. Filling asks no unit question at all.
+
+  Scenario: The bottom edge alone cannot tell the fix from the bug
+    Given the same drop with the margin NOT handed over
+    Then the block's bottom edge is still in the same place
+    But the newcomer stops short of it, leaving the hole open
+    Because the newcomer simply takes less room in front of the block, so the
+      bottom lands identically either way. The guard asserts that the newcomer
+      REACHES the block — proven by mutation, since the bottom-edge assertion
+      passed with the fix removed.
+
+  Scenario: Shrinking a block you just dropped lets the next one ride up
+    Given a stack dropped into the empty space beside another
+    When that new stack is dragged shorter
+    Then the stack below it moves up to meet it
+    And the room that was freed pools at the END of the column
+    Because a dropped block is wrapped in a band marked "fill" so it takes the
+      space that is really there — and the height is then written on the BLOCK
+      while the fill lives on the BAND, so the band never found out. Measured:
+      the newcomer went 400 to 300 while its band held all 400, leaving a 100px
+      hole with the block below stranded. The agreed rule is that the one which
+      follows moves with it, and whatever is genuinely left over collects at the
+      end where it can be built on.
+
+  Scenario: A band that must go on filling is left alone
+    Given a band holding several blocks, or a block that is not a band
+    Then its fill is untouched however its contents are sized
+    Because no single block speaks for a band holding several, and the fill this
+      rule spends is the one the drop puts on a band. A blunter version that
+      dropped every fill would pass the case above while quietly undoing the
+      behaviour the drop exists for — it fails four cases here.
+
+  Scenario: The stretch a drop writes is not a height somebody chose
+    Given a freshly dropped block, before it has been resized
+    Then its band is still filling
+    Because the drop writes `100%` on the block so it stretches inside its band.
+      Counting that as a height would switch the fill off the instant it was
+      created.

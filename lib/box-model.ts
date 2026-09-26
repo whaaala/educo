@@ -2170,7 +2170,29 @@ export function stackWithBlock(root: BoxNode, id: string, node: BoxNode, before 
   const info = findParent(root, id);
   if (!target || !info) return root;
   const column = createContainer("column", { width: target.width ?? "100%", padding: 0, gap: 0, align: "stretch", justify: "start" });
-  const inner: BoxNode = { ...target, width: "100%" };
+  /**
+   * THE NEWCOMER TAKES THE HOLE THE TARGET'S OWN MARGIN OPENED, AND THE TARGET DOES NOT MOVE.
+   *
+   * Dragging a block's TOP edge down opens a `margin-top` — deliberately, where the block sits BESIDE a
+   * neighbour rather than below one, because then no single block owns that edge. The space that appears is
+   * therefore a margin, and a margin is not a box: there is nothing there to drop into, and aiming at it hit
+   * the band instead. Reported as *"I cannot add a stack… wherever there's an empty space"*.
+   *
+   * Dropping there did add a block, and made things worse in the two ways the user described. The margin rode
+   * along on `{ ...target }` into the new column, so the hole was still there AND the newcomer was above it:
+   * measured, the existing stack was pushed from y=287 to y=336 while the 199px hole remained. "Nothing
+   * appears and it breaks the positions of the stacks."
+   *
+   * So the hole is handed over: the margin is CLEARED and the newcomer fills the space it was holding open.
+   *
+   * IT MUST NOT BE SIZED FROM THE STORED NUMBER, which is the version of this that was written first. Spacing
+   * is emitted in the builder's FLUID unit and a size is not — measured, a stored `200` renders as a margin of
+   * 157.2px at 1024, 182.8px at 1280 and 198.8px at 1440, while a `minHeight` of 200 is 200px at every one of
+   * them. Handing the newcomer `minHeight: 200` therefore matched the hole at exactly one width and drifted at
+   * every other, and would have gone on drifting as the window resized. Filling asks no unit question at all.
+   */
+  const holeAbove = before ? Math.max(0, Math.round(target.marginTop ?? target.margin ?? 0)) : 0;
+  const inner: BoxNode = { ...target, width: "100%", ...(holeAbove > 0 ? { marginTop: 0 } : {}) };
   /**
    * THE NEWCOMER TAKES THE SPACE THAT IS ACTUALLY THERE.
    *
@@ -4308,7 +4330,30 @@ export function childStyle(child: BoxNode, parent: BoxNode, bp: Breakpoint = "ba
     return s;
   }
   const isRow = (parent.direction ?? "column") === "row";
-  const mainToken = isRow ? child.width : child.height;   // grows/divides along the main axis
+  /**
+   * A BAND STOPS FILLING THE MOMENT THE BLOCK INSIDE IT IS GIVEN A HEIGHT.
+   *
+   * A block dropped beside another is wrapped in a band marked `height: "fill"`, so it takes the space that is
+   * actually there rather than arriving at a courtesy size. `stackWithBlock` already states the rule that
+   * follows from that — *"dragging its height afterwards writes a real height and takes the fill off"* — but
+   * the height is written on the BLOCK and the fill lives on the BAND, so the band never found out.
+   *
+   * Reported by the user, with a screenshot: shrink the stack you just dropped and the one below it stays
+   * where it was. Measured — the newcomer went 400 → 300 while its band went on holding all 400, leaving a
+   * **100px hole** and the block below stranded at y=488.
+   *
+   * Asked here rather than at every place a height can be written, because there are several — the edge drag,
+   * the Band height slider, the Per‑device tab — and a rule that has to be remembered by each of them is the
+   * shape of bug this file already records twice. A band's fill is a rendering decision, so it is decided
+   * where the rendering happens.
+   *
+   * `100%` is NOT a height for this purpose: it is what the drop writes on the block so that it stretches
+   * inside its band, so counting it would switch the fill off the instant it was created.
+   */
+  const sizedByHand = (n: BoxNode) => !!n.minHeight || (!!n.height && n.height !== "100%" && n.height !== "fill");
+  const fillSpent = !isRow && child.rowBand === true && child.height === "fill"
+    && (child.children ?? []).length === 1 && sizedByHand((child.children ?? [])[0]);
+  const mainToken = isRow ? child.width : (fillSpent ? undefined : child.height); // grows/divides along the main axis
   const crossToken = isRow ? child.height : child.width;  // fixed size across the main axis
   const parentMain = isRow ? parent.width : parent.height;
   // "Definite" main size means the child should fill+follow it. For a column, an explicit height OR a

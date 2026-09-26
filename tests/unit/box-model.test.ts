@@ -4,7 +4,7 @@ import { BREAKPOINTS_EM } from "@/lib/educo-ui/base";
 import {
   createContainer, createGrid, createElement, createComponent,
   addItem, removeItem, moveItem, updateItem, addChildItem, updateChildItem, removeChildItem, moveChildItem, sanitizeCssDeclarations, expandScopedCss, ACCORDION_CSS_PARTS, itemOverrideCss, itemHasOverride, itemFloatReserveRem, richBody, plainBody, isEmptyBox,
-  findBox, findParent, isAncestor, updateBox, insertBox, removeBox, deleteBox, moveBoxStep, moveBox,
+  findBox, findParent, isAncestor, updateBox, insertBox, removeBox, deleteBox, stackWithBlock, moveBoxStep, moveBox,
   containerStyle, childStyle, paddingCSS, marginCSS, sizeToCSS, flexForWidth, fillMainAxis, u, newBoxId, dropIndexAmong, EMPTY_BOX_MIN, fitRowWidths,
   makeRowBand, normalizeRowBands, clampRowWidths, widthPct,
   isFloating, floatBox, unfloatBox, groupBoxes, ungroupBoxes, alignInRow, alignInRowOf, bringToFront, sendToBack, bringForward, sendBackward, floatingZRange, cloneBox,
@@ -1116,5 +1116,145 @@ describe("removeBox stays dumb, because everything that restructures is built on
     const total = (after.children ?? []).reduce((s, k) => s + parseFloat(String(k.width)), 0);
     expect(Math.round(total), `the row came to ${total}% after a move`).toBe(100);
     expect(widths(after), "and each block kept its own width").toEqual(["60%", "20%", "20%"]);
+  });
+});
+
+/**
+ * DROPPING INTO THE HOLE A BLOCK'S OWN MARGIN OPENED — the newcomer takes the hole, nothing moves.
+ *
+ * Behaviours: tests/features/components/website/box-builder-layout.feature.
+ *
+ * Reported by the user, twice, and the second time exactly: *"I cannot add a stack… wherever there's an empty
+ * space"*, and then *"nothing appears and it breaks the positions of the stacks"*.
+ *
+ * Dragging a block's TOP edge down opens a `margin-top` — deliberately, where the block sits BESIDE a
+ * neighbour rather than below one, because there no single block owns that edge. But a margin is not a box.
+ * There is nothing in that space to drop into, and a drop aimed at it hit the band.
+ *
+ * It did then add a block, and made both of the things the user described happen at once: the margin rode
+ * along on `{ ...target }` into the new column, so the hole was STILL THERE and the newcomer sat above it.
+ * Measured in a browser: the existing stack was pushed from y=287 to y=336 while the 199px hole remained.
+ */
+describe("a block dropped into a margin hole takes the hole", () => {
+  const withHole = (holePx: number): BoxNode => ({
+    id: "band", type: "container", direction: "row", rowBand: true, width: "fill", padding: 0, gap: 0,
+    children: [
+      { id: "left", type: "container", direction: "column", padding: 0, gap: 0, width: "28%", minHeight: 320, children: [] },
+      { id: "right", type: "container", direction: "column", padding: 0, gap: 0, width: "72%", minHeight: 72, marginTop: holePx, children: [] },
+    ],
+  } as unknown as BoxNode);
+  const newcomer = (): BoxNode => createContainer("column", { id: "fresh" } as Partial<BoxNode>);
+  /** The column `stackWithBlock` puts in the target's place. */
+  const columnFor = (tree: BoxNode) => (tree.children ?? []).find((c) => c.id !== "left")!;
+
+  /**
+   * IT FILLS THE HOLE RATHER THAN BEING SIZED TO IT, and that is not a detail — it is the difference between
+   * a fix that works at one window width and one that works at all of them. Spacing is emitted in the
+   * builder's FLUID unit and a size is not: measured, a stored `200` renders as a margin of 157.2px at 1024,
+   * 182.8px at 1280 and 198.8px at 1440, while a `minHeight` of 200 is 200px at every one. The first version
+   * of this handed the newcomer `minHeight: 200` and it drifted at every width but one.
+   */
+  it("the newcomer FILLS the hole — it is never sized from the stored number", () => {
+    const after = stackWithBlock(withHole(199), "right", newcomer(), true);
+    const band = (columnFor(after).children ?? [])[0];
+    expect(band.height, "it takes the space that is there").toBe("fill");
+    expect(band.minHeight, "a fixed size would match the fluid margin at exactly one width").toBeUndefined();
+  });
+
+  it("…and the target's margin is cleared, so it does not move", () => {
+    const after = stackWithBlock(withHole(199), "right", newcomer(), true);
+    const keep = (columnFor(after).children ?? [])[1];
+    const moved = (keep.children ?? [])[0];
+    expect(moved.id).toBe("right");
+    expect(moved.marginTop, "the hole was handed over, not duplicated").toBe(0);
+  });
+
+  it("the newcomer goes FIRST — into the hole, not under the block", () => {
+    const after = stackWithBlock(withHole(199), "right", newcomer(), true);
+    const order = (columnFor(after).children ?? []).map((b) => (b.children ?? [])[0]?.id);
+    expect(order).toEqual(["fresh", "right"]);
+  });
+
+  /**
+   * WITH NO HOLE IT MUST STILL FILL, which is the behaviour the drop already had and the one a user aims at
+   * when they point at the gap under a short column. A fix that gave every newcomer a fixed height would pass
+   * the three cases above and silently undo that.
+   */
+  it("with no margin it fills too — the behaviour a user aims at under a short column", () => {
+    const after = stackWithBlock(withHole(0), "right", newcomer(), true);
+    const band = (columnFor(after).children ?? [])[0];
+    expect(band.height, "no hole to take, so it takes what is left").toBe("fill");
+    expect(band.minHeight).toBeUndefined();
+  });
+
+  it("dropping BELOW is untouched — there is no hole under a block's top margin", () => {
+    const after = stackWithBlock(withHole(199), "right", newcomer(), false);
+    const order = (columnFor(after).children ?? []).map((b) => (b.children ?? [])[0]?.id);
+    expect(order).toEqual(["right", "fresh"]);
+    const keep = (columnFor(after).children ?? [])[0];
+    expect((keep.children ?? [])[0].marginTop, "the margin above it is still its own").toBe(199);
+  });
+});
+
+/**
+ * A BAND STOPS FILLING ONCE THE BLOCK INSIDE IT HAS BEEN GIVEN A HEIGHT.
+ *
+ * Behaviours: tests/features/components/website/box-builder-layout.feature.
+ *
+ * A block dropped beside another is wrapped in a band marked `height: "fill"`, so it takes the space that is
+ * really there instead of arriving at a courtesy size. `stackWithBlock` already states the rule that has to
+ * follow — *"dragging its height afterwards writes a real height and takes the fill off"* — but the height is
+ * written on the BLOCK and the fill lives on the BAND, so the band never found out.
+ *
+ * Reported by the user with a screenshot: shrink the stack you just dropped and the one below it stays put.
+ * Measured — the newcomer went 400 → 300 while its band held all 400, leaving a **100px hole** and the block
+ * below stranded at y=488. With the fill spent, the block below rides up and the leftover pools at the bottom
+ * of the column, which is where it can be built on.
+ */
+describe("a band's fill is spent once its block is sized", () => {
+  const column = (): BoxNode => createContainer("column", { id: "col" } as Partial<BoxNode>);
+  const band = (only: Partial<BoxNode>): BoxNode => ({
+    ...createContainer("column", { id: "band", rowBand: true, height: "fill" } as Partial<BoxNode>),
+    children: [createContainer("column", { id: "inner", ...only } as Partial<BoxNode>)],
+  });
+
+  it("fills while the block inside it has no height of its own", () => {
+    // `100%` is what the drop writes so the block stretches INSIDE its band — it is not a height someone set.
+    expect(childStyle(band({ height: "100%" }), column()).flex, "still filling").toBe("1 1 0%");
+  });
+
+  it("stops filling once that block is given a min-height — the user dragged it", () => {
+    expect(childStyle(band({ height: "100%", minHeight: 300 }), column()).flex).not.toBe("1 1 0%");
+  });
+
+  it("stops filling for a real height too, not only a min-height", () => {
+    expect(childStyle(band({ height: "18rem" }), column()).flex).not.toBe("1 1 0%");
+  });
+
+  /**
+   * THE CASES A BLUNTER RULE WOULD BREAK. Each is a band that must go on filling, and a fix that simply
+   * dropped every `fill` would pass the three above while quietly undoing the behaviour the drop exists for.
+   */
+  it("a band holding SEVERAL blocks still fills — no single block speaks for it", () => {
+    const many: BoxNode = {
+      ...createContainer("column", { id: "band", rowBand: true, height: "fill" } as Partial<BoxNode>),
+      children: [
+        createContainer("column", { id: "a", minHeight: 100 } as Partial<BoxNode>),
+        createContainer("column", { id: "b" } as Partial<BoxNode>),
+      ],
+    };
+    expect(childStyle(many, column()).flex).toBe("1 1 0%");
+  });
+
+  it("a plain block that is not a band is untouched", () => {
+    const notABand = createContainer("column", { id: "x", height: "fill", minHeight: 300 } as Partial<BoxNode>);
+    expect(childStyle(notABand, column()).flex, "only a BAND carries this fill").toBe("1 1 0%");
+  });
+
+  it("and in a ROW the rule changes nothing — there height is the cross axis", () => {
+    const row = createContainer("row", { id: "row" } as Partial<BoxNode>);
+    // The PROPERTY, not a literal: sizing the block must make no difference at all when the main axis is width.
+    expect(childStyle(band({ height: "100%", minHeight: 300 }), row).flex)
+      .toBe(childStyle(band({ height: "100%" }), row).flex);
   });
 });

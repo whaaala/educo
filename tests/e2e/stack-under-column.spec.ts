@@ -178,3 +178,189 @@ test.describe("a block dropped under one column", () => {
     expect(shape.every((s) => typeof s === "string"), "and none of them was wrapped in a Stack").toBe(true);
   });
 });
+
+/**
+ * …AND THE SAME FOR THE HOLE ABOVE A BLOCK, which is the one the user could not fill.
+ *
+ * Dragging a block's TOP edge down opens a `margin-top` — deliberately, where the block sits BESIDE a
+ * neighbour rather than below one, because there no single block owns that edge. But a margin is not a box:
+ * there is nothing in that space to drop into, and a drop aimed at it hits the band.
+ *
+ * It did add a block, and produced both halves of what was reported — *"nothing appears and it breaks the
+ * positions of the stacks"*. The margin rode along into the new column, so the hole was still there AND the
+ * newcomer sat above it: measured, the existing block was pushed from y=287 to y=336 while the 199px hole
+ * remained. The newcomer now takes the hole and the margin is handed over, so the block does not move.
+ */
+test.describe("a block dropped into the hole above a column", () => {
+  async function seedHole(page: Page) {
+    await seedSite(page, sitePage([
+      { id: "L", type: "container", direction: "column", padding: 0, gap: 0, width: "28%", minHeight: 320, background: "#c7d2fe", children: [] },
+      // `marginTop` is what dragging R's TOP edge down writes when R sits beside a neighbour.
+      { id: "R", type: "container", direction: "column", padding: 0, gap: 0, width: "72%", minHeight: 72, marginTop: 200, background: "#a5b4fc", children: [] },
+    ]));
+    await page.waitForSelector('[data-box-id="R"]', { timeout: 15000 });
+    await page.waitForTimeout(350);
+  }
+  const rectOf = (page: Page, id: string) => page.evaluate((i) => {
+    const el = document.querySelector<HTMLElement>(`[data-box-id="${i}"]`);
+    if (!el) return null;
+    const b = el.getBoundingClientRect();
+    return { y: Math.round(b.y), h: Math.round(b.height), bottom: Math.round(b.bottom) };
+  }, id);
+
+  test("the newcomer fills the hole and the block below it does NOT move", async ({ page }) => {
+    await seedHole(page);
+    const before = (await rectOf(page, "R"))!;
+    const hole = await page.evaluate(() => {
+      const band = document.querySelector('[data-box-id="band"]')!.getBoundingClientRect();
+      const r = document.querySelector('[data-box-id="R"]')!.getBoundingClientRect();
+      return { x: Math.round(r.left + r.width / 2), y: Math.round(band.top + (r.top - band.top) / 2), h: Math.round(r.top - band.top) };
+    });
+    expect(hole.h, "there really is a hole to aim at").toBeGreaterThan(150);
+
+    await dragOver(page, hole.x, hole.y);
+    await drop(page, hole.x, hole.y);
+
+    const after = (await rectOf(page, "R"))!;
+    /**
+     * THE BOTTOM EDGE — the one that was NOT grabbed — must not move. The hole is opened by dragging the top
+     * edge DOWN, so the bottom is where the block is anchored, and this builder's standing rule is that the
+     * edge you did not grab stays put. The top legitimately changes: inside the new column the block stops
+     * being stretched by the band and takes its own height, while the newcomer fills the space above it.
+     */
+    expect(
+      Math.abs(after.bottom - before.bottom),
+      `the block's bottom moved from ${before.bottom} to ${after.bottom}`,
+    ).toBeLessThan(3);
+
+    /**
+     * AND THE HOLE IS ACTUALLY GONE, which is the assertion that does the work.
+     *
+     * The bottom edge alone CANNOT tell the fix from the bug: leaving the margin in place still lands the
+     * block's bottom in the same spot, because the newcomer simply takes less room in front of it. Proven by
+     * mutation — with the handover removed this test passed. What changes is whether the newcomer REACHES the
+     * block: handed the hole it closes right up to it, and left as a margin it stops 199px short.
+     */
+    const gap = await page.evaluate(() => {
+      const r = document.querySelector('[data-box-id="R"]')!.getBoundingClientRect();
+      // The nearest block ABOVE R that shares R's column — which excludes the tall neighbour beside it.
+      const above = Array.from(document.querySelectorAll<HTMLElement>("[data-box-id]"))
+        .filter((el) => el.getAttribute("data-box-id") !== "R")
+        .map((el) => el.getBoundingClientRect())
+        .filter((b) => b.bottom <= r.top + 2 && b.height > 4 && b.left < r.right - 2 && b.right > r.left + 2)
+        .sort((a, b) => b.bottom - a.bottom)[0];
+      return above ? Math.round(r.top - above.bottom) : null;
+    });
+    expect(gap, "no block was put above it at all").not.toBeNull();
+    expect(
+      gap!,
+      `the newcomer stops ${gap}px short of the block — the hole is still there, held open by the old margin`,
+    ).toBeLessThan(6);
+  });
+});
+
+/**
+ * …AND SHRINKING THE BLOCK YOU JUST DROPPED LETS THE ONE BELOW RIDE UP.
+ *
+ * The user's own sequence, reported with a screenshot: put a stack beside another, drop a second one above it,
+ * then drag that new one shorter — and the stack below stayed exactly where it was, with a hole between them.
+ *
+ * The cause is the band. A dropped block is wrapped in one marked `height: "fill"` so it takes the space that
+ * is really there; give that block a height afterwards and the fill has to be spent, or the band goes on
+ * holding all of it. Measured before the fix: the newcomer went 400 → 300 while its band kept all 400, leaving
+ * a 100px hole and the block below stranded at y=488.
+ *
+ * The agreed rule, in the user's words: the one that follows moves with it, and whatever room is genuinely
+ * left over pools at the END of the column — which is where you can then build.
+ */
+test.describe("shrinking a dropped block lets the next one follow", () => {
+  /** The user's shape: a tall column beside a block pushed down by a margin, so there is a hole to drop into. */
+  async function seedPair(page: Page) {
+    await seedSite(page, sitePage([
+      { id: "L", type: "container", direction: "column", padding: 0, gap: 0, width: "20%", minHeight: 600, background: "#c7d2fe", children: [] },
+      { id: "R", type: "container", direction: "column", padding: 0, gap: 0, width: "80%", minHeight: 200, marginTop: 300, background: "#a5b4fc", children: [] },
+    ]));
+    await page.waitForSelector('[data-box-id="R"]', { timeout: 15000 });
+    await page.waitForTimeout(350);
+  }
+
+  const rect = (page: Page, id: string) => page.evaluate((i) => {
+    const el = document.querySelector<HTMLElement>(`[data-box-id="${i}"]`);
+    if (!el) return null;
+    const b = el.getBoundingClientRect();
+    return { top: Math.round(b.top), bottom: Math.round(b.bottom), h: Math.round(b.height) };
+  }, id);
+
+  /** The block the drop added: the newest one with no block inside it. */
+  const newcomerId = (page: Page, before: string[]) => page.evaluate((old) => {
+    const fresh = Array.from(document.querySelectorAll<HTMLElement>("[data-box-id]"))
+      .filter((el) => !old.includes(el.getAttribute("data-box-id")!));
+    const leaf = fresh.find((el) => el.querySelectorAll("[data-box-id]").length === 0);
+    return leaf ? leaf.getAttribute("data-box-id") : null;
+  }, before);
+
+  const idsNow = (page: Page) => page.evaluate(() =>
+    Array.from(document.querySelectorAll("[data-box-id]")).map((e) => e.getAttribute("data-box-id")!));
+
+  async function selectBlock(page: Page, id: string) {
+    const b = (await page.locator(`[data-box-id="${id}"]`).boundingBox())!;
+    for (let i = 0; i < 7; i++) {
+      const sel = await page.evaluate(() => document.querySelector(".outline-indigo-500")?.getAttribute("data-box-id") ?? null);
+      if (sel === id) return true;
+      await page.mouse.click(b.x + Math.min(40, b.width / 2), b.y + Math.min(20, b.height / 2));
+      await page.waitForTimeout(200);
+    }
+    return false;
+  }
+
+  test("the block below rides up, and the leftover pools at the END of the column", async ({ page }) => {
+    await seedPair(page);
+    const before = await idsNow(page);
+
+    // Drop a Stack into the hole above R.
+    const hole = await page.evaluate(() => {
+      const band = document.querySelector('[data-box-id="band"]')!.getBoundingClientRect();
+      const r = document.querySelector('[data-box-id="R"]')!.getBoundingClientRect();
+      return { x: Math.round(r.left + r.width / 2), y: Math.round(band.top + (r.top - band.top) / 2) };
+    });
+    await dragOver(page, hole.x, hole.y);
+    await drop(page, hole.x, hole.y);
+
+    const fresh = await newcomerId(page, before);
+    expect(fresh, "the drop added a block").not.toBeNull();
+
+    const rBefore = (await rect(page, "R"))!;
+    const nBefore = (await rect(page, fresh!))!;
+    expect(nBefore.h, "the newcomer took the space that was there").toBeGreaterThan(200);
+
+    // Now drag the newcomer shorter — the gesture that used to strand the block below.
+    expect(await selectBlock(page, fresh!), "the newcomer could not be selected").toBe(true);
+    const handle = (await page.locator('[aria-label="Resize bottom edge"]').boundingBox())!;
+    const cx = handle.x + handle.width / 2, cy = handle.y + handle.height / 2;
+    await page.mouse.move(cx, cy);
+    await page.mouse.down();
+    for (let i = 1; i <= 12; i++) { await page.mouse.move(cx, cy - (100 * i) / 12); await page.waitForTimeout(12); }
+    await page.mouse.up();
+    await page.waitForTimeout(700);
+
+    const nAfter = (await rect(page, fresh!))!;
+    const rAfter = (await rect(page, "R"))!;
+    const column = (await rect(page, "L"))!; // the tall neighbour is what makes the column tall
+
+    expect(nBefore.h - nAfter.h, "the newcomer really did get shorter").toBeGreaterThan(40);
+    expect(
+      Math.round(rAfter.top - nAfter.bottom),
+      `a ${Math.round(rAfter.top - nAfter.bottom)}px hole was left between them — the band is still filling`,
+    ).toBeLessThan(6);
+    expect(
+      rBefore.top - rAfter.top,
+      `the block below did not follow: it was at ${rBefore.top} and is now at ${rAfter.top}`,
+    ).toBeGreaterThan(40);
+
+    // …and the room that was freed is at the END of the column, which is where it can be built on.
+    expect(
+      Math.round(column.bottom - rAfter.bottom),
+      "the leftover should pool at the bottom of the column",
+    ).toBeGreaterThan(40);
+  });
+});
