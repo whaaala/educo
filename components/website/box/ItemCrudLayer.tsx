@@ -18,7 +18,22 @@ import { CHROME_Z } from "@/lib/educo-ui/stacking";
 export type SelectedItem = { id: string; parentId?: string };
 
 type Box = { top: number; left: number; width: number; height: number };
-type Placement = Box & { barTop: number; barLeft: number; side: "right" | "above" | "below" };
+export type Placement = Box & { barTop: number; barLeft: number; side: "right" | "above" | "below" };
+
+/**
+ * The SAME object when nothing moved by half a pixel or more — which is what makes the measuring effect below safe
+ * to run after every render. Return a fresh object each time and every render schedules another: "Maximum update
+ * depth exceeded", a frozen editor. Named and exported so that property is unit-tested directly — a render test
+ * of the loop HANGS rather than failing, which is no guard at all (measured 2026-09-26).
+ */
+export function keepPlacementIfUnmoved(prev: Placement | null, next: Placement | null): Placement | null {
+  if (prev === next) return prev;
+  if (!prev || !next) return next;
+  const near = (a: number, b: number) => Math.abs(a - b) < 0.5;
+  const same = near(prev.top, next.top) && near(prev.left, next.left) && near(prev.width, next.width)
+    && near(prev.height, next.height) && near(prev.barTop, next.barTop) && near(prev.barLeft, next.barLeft);
+  return same ? prev : next;
+}
 
 const BAR_W = 168; // the toolbar's widest form — used to decide whether it fits beside the item
 const BAR_H = 34;
@@ -86,14 +101,7 @@ export default function ItemCrudLayer({
       const barLeft = side === "right" ? box.left + box.width + GAP : box.left;
       next = { ...box, barTop, barLeft, side };
     }
-    setPlace((prev) => {
-      if (prev === next) return prev;
-      if (!prev || !next) return next;
-      const near = (a: number, b: number) => Math.abs(a - b) < 0.5;
-      const same = near(prev.top, next.top) && near(prev.left, next.left) && near(prev.width, next.width)
-        && near(prev.height, next.height) && near(prev.barTop, next.barTop) && near(prev.barLeft, next.barLeft);
-      return same ? prev : next; // keep the identity when nothing moved → no re-render, no loop
-    });
+    setPlace((prev) => keepPlacementIfUnmoved(prev, next));
   });
 
   // Escape clears the item selection — the same key that closes every other editor surface.

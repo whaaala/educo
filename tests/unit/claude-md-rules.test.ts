@@ -26,6 +26,7 @@ const RULES: [name: string, mustSay: RegExp][] = [
   ["Fix what you find (RULE V)", /a bug you find is a bug you \*\*fix\*\*|BUG LEDGER/i],
   ["…and it covers bugs in TESTS", /bugs in \*\*tests\*\*|bugs in TESTS/i],
   ["…and skipping one is the user's call", /never your|USER'S call/i],
+  ["…nothing moves on while the ledger has an open line, at every level", /NOTHING MOVES ON WHILE THE LEDGER HAS AN OPEN LINE/],
   ["Clean code — zero errors, no `any` (RULE W)", /ZERO ERRORS/],
   ["Design galleries you can see (RULE S)", /RULE S/],
   ["Distinct, combining variations (RULE T)", /RULE T/],
@@ -54,6 +55,21 @@ const RULES: [name: string, mustSay: RegExp][] = [
   ["…functional + regression + UAT, every time", /the \*\*regression\*\* test|All three kinds, every time/i],
   ["…both axes, both directions, every arrangement", /BOTH AXES, BOTH DIRECTIONS/i],
   ["…running the suite is not the same thing", /is not this rule/i],
+
+  /**
+   * RULE Q — asked for on 2026-09-26 while the width round trip was being fixed: the repro passing is where
+   * the UAT starts, and the sweep around it (structures × gestures × screens × states) is what makes a fix
+   * hold for the 99th percentile of what a user actually does.
+   */
+  ["Sweep the combinations — the 99th percentile (RULE Q)", /RULE Q/],
+  ["…the repro passing is the start, not the end", /repro passing is the START/i],
+  ["…an enumerated MATRIX, not hand-picked cases", /MATRIX that is enumerated/i],
+  ["…simple → medium → extremely complicated structures", /SIMPLE → MEDIUM → EXTREMELY COMPLICATED/],
+  ["…real sites (awwwards.com + similar) are the benchmark, not invented shapes", /REAL SITES ARE THE BENCHMARK[\s\S]*awwwards\.com/],
+  ["…on the production build, fresh after every change, in parallel", /ON THE PRODUCTION BUILD, FRESH, IN PARALLEL/],
+  ["…every pass ends in Preview at every rung, units + 150% text checked", /EVERY PASS ENDS IN PREVIEW, AT EVERY RUNG, WITH THE UNITS CHECKED/],
+  ["…responsive and mobile, in the same sweep — every breakpoint", /RESPONSIVE AND MOBILE, IN THE SAME SWEEP/],
+  ["…every test type from the get-go: BDD → unit → integration → functional → UAT → regression", /EVERY TEST TYPE, FROM THE GET-GO, NO EXCEPTION/],
 
   ["Build it through the UI (RULE Y)", /RULE Y/],
   ["…seeding state is not UAT", /Seeding state is not UAT/i],

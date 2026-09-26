@@ -134,6 +134,10 @@ Run through this checklist BEFORE telling the user it's done:
 - **Write every bug into a visible BUG LEDGER the moment you find it**, and close every line before reporting done. Outstanding is for **unbuilt features**, never for defects
 - Closing a line as NOT A BUG requires the **measurement**, not an opinion
 - **It is never your decision to skip one.** State it plainly and let the user choose
+- **NOTHING MOVES ON WHILE THE LEDGER HAS AN OPEN LINE — at every test level** (unit · functional · integration ·
+  regression · UAT). Either fix it the moment it is found, or finish the current test pass, fix EVERY bug it
+  logged, and RE-RUN that pass to prove them fixed — then, and only then, the next task. A logged bug that is
+  left there is a bug forgotten (the user, 2026-09-26: *"don't just log it and leave it there"*).
 
 ### 9. Branching & merging (MANDATORY)
 - **One branch per AREA of work, and it starts from a fresh `master`.** Never carry on down a branch because it is already checked out.
@@ -201,6 +205,54 @@ Run through this checklist BEFORE telling the user it's done:
     in the UI, in minutes.
   - **"I ran the suite" is not this rule.** The suite runs what somebody already thought of. This rule is
     about the combination nobody has written a test for yet — which is where the bug is.
+- **RULE Q — THE 99TH PERCENTILE: SWEEP THE COMBINATIONS AROUND IT, NOT THE ONE PATH (MANDATORY — every
+  feature, every fix, every test, from 2026-09-26 on).** The user's words: *"try so many different
+  combinations… so many different structures… fix it to the 99 percentile — ninety-nine percent is not going
+  to break no matter what a user does."*
+  - **The repro passing is the START of the UAT, not the end.** Once the reported path works, go looking
+    around it: every **structure** it can sit in (2 · 3 · 4 siblings, unequal sizes, nested in a stack / row /
+    grid cell, beside a component, with a gap, first · middle · last), every **gesture** (both edges, both
+    directions, small · large · past the limit, repeated, reversed mid-drag), every **screen** (each rung),
+    every **state** (fresh · already resized · wrapped · after undo · after reload).
+  - **Written as a MATRIX that is enumerated**, not a list of cases picked by hand — a hand-written list
+    quietly omits the combination that breaks.
+  - **SIMPLE → MEDIUM → EXTREMELY COMPLICATED structures, every time.** This is a website builder: a real page
+    is bands inside bands, rows inside stacks inside grid cells, components beside stacks, sticky and floating
+    blocks among them. Two blocks side by side is the FIRST tier, never the last. The complicated tier is where
+    the user's bugs live.
+  - **REAL SITES ARE THE BENCHMARK, NOT SHAPES I INVENT.** The structures a sweep builds come from
+    `docs/LAYOUT_BENCHMARK.md` — page structures studied on **https://www.awwwards.com/** (EVERY category with
+    equal weight — e-commerce, corporate, agencies, portfolio, education and all the rest — every page type they
+    contain, and Sites of the Day/Month/Year) and similar showcases (SiteInspire, Godly, Land-book, Lapa Ninja,
+    One Page Love, CSS Design Awards, Webflow/Framer showcases, real school sites). Every layout feature is
+    tested against that catalogue, built through the UI, simple → medium → extremely complicated; a structure a
+    real site uses that the builder cannot build is a gap to record, not a case to skip.
+  - **EVERY PASS ENDS IN PREVIEW, AT EVERY RUNG, WITH THE UNITS CHECKED.** No test pass is complete until the
+    same pages have been opened in the real **Preview** (the exported HTML) at Mobile 375 · Tablet 768 · Laptop
+    1024 · Desktop 1280 · Wide 1920 and the device presets, asserting: no sideways overflow, no overlaps,
+    canvas == preview (rule 11), the exported CSS uses **% for widths/gaps and rem/em for everything else — px only
+    for a 1px hairline** (rule 16), and a **150% browser text size** still lays out and actually grows the page
+    (WCAG 1.4.4). Pixels in a test's OUTPUT are measurements; pixels in what the builder STORES or EXPORTS are bugs.
+  - **RESPONSIVE AND MOBILE, IN THE SAME SWEEP.** Every combination is driven at EVERY breakpoint — the canvas
+    device presets (Mobile 375 · Tablet 768 · Laptop 1024 · Desktop 1280 · Wide 1920) AND a real browser
+    viewport at those widths — and asserted functionally there: what was built on desktop must not break any
+    page at any rung, and a change made at one rung must not leak into another. The same ladder of test types
+    applies to the MOBILE surfaces (the phone/tablet webview over the builder's export, and `apps/mobile/`)
+    as each is built — phone AND tablet, locked in from the start rather than added later.
+  - **ON THE PRODUCTION BUILD, FRESH, IN PARALLEL.** Every sweep, functional, regression and UAT pass runs
+    against `next build` + `next start` — what ships, served in ~20ms instead of compiled per request — never
+    `next dev`, which serialises parallel runs and hides build breaks. **Rebuild after EVERY code change** and
+    run `node scripts/check-fresh-build.js` — it must print FRESH — before trusting a result: measured 2026-09-26, half a sweep ran
+    on a build from before three fixes and had to be thrown away. Independent combinations run in parallel
+    (≈6 browser contexts); vitest and Playwright never at the same time. The dev server is for the user's own
+    hands-on use only.
+  - **EVERY TEST TYPE, FROM THE GET-GO, NO EXCEPTION — in this order:** BDD (`.feature` first) → unit →
+    integration → functional → UAT through the UI; the regression suite collects all of it at the end (integration
+    and regression may share a spec). **Measured, 2026-09-26:** the width fix passed its repro and a two-block
+    sweep, and the user found a hole beside a wrapped neighbour by hand in minutes — which my own screenshot
+    had shown and I had accepted.
+  - **Every bug the sweep turns up goes in the ledger and is fixed in the same change** (RULE V). A sweep
+    that found nothing is reported with what it covered, so the user can see its breadth.
 - **RULE Y — BUILD IT THROUGH THE UI. Seeding state is not UAT (MANDATORY, no exceptions).**
   **The state under test is CONSTRUCTED THROUGH THE INTERFACE** — open the blocks panel, drag the tile,
   drop it, click the handle, drag the edge. Writing a tree into `localStorage` and calling that a repro is

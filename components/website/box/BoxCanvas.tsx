@@ -16,7 +16,7 @@ import {
   type BoxNode, type BoxType,
   containerStyle, childStyle, marginCSS, sizeToCSS, u, baseUnit, floatingReserve, floatStacksOnMobile, createContainer, createElement, createComponent,
   updateBox, deleteBox, insertBox, moveBoxStep, duplicateBox, moveBox, cloneBox, findParent, isAncestor, isContainer, containerLabel, widthPct, stackWithBlock, fitBand,
-  isFloating, floatBox, unfloatBox, groupBoxes, ungroupBoxes, bringToFront, sendToBack, bringForward, sendBackward,
+  isFloating, floatBox, unfloatBox, groupBoxes, ungroupBoxes, bringToFront, sendToBack, bringForward, sendBackward, packRowLines,
   shouldTakeMirrorBox, hostSizedFor, type MirrorBox, type MirrorChase, fadedPaint, boxOpacity, backgroundCss, treePaintLayerCss, radiusCSS, isClipped, SHADOW_CSS, videoEmbedSrc, sanitizeCssDeclarations, expandScopedCss, ACCORDION_CSS_PARTS, itemOverrideCss, itemHasOverride, itemNumberVars, richBody, componentTextCss, componentBoxCss, bgShowThroughCss, resizeTopEdge, blockContainmentCss, alertToastCss, treeHasToast, treeHasFixedHold, accordionClasses, bandClasses, advancedCssStyle, alertActionsHTML, hugsContent, itemFloatContextCss, COMPONENT_ITEM_SEL, clampContentScale, MIN_CONTENT_SCALE, isMultiItemComponent, comfortableWidth, remLen, rootFontPx, isDefiniteLen, addItemAfter, duplicateItem, duplicateChildItem, removeItem, removeChildItem, moveItem, moveChildItem, updateItem, updateChildItem, ALERT_SEVERITY_ICON, alertPartInline, alertIconInline, collectAlertItemStyles,
   type Breakpoint, resolveResponsive, updateBoxResponsive, treePinArrivalCss, floatHoldCSS, canvasFixedStyle, capturesFixed, imageSizing, importPhoto, treeItemEffectsCss, itemNeedsClass, floatZIndex, gridPlacementAt, gridColumnsAt, masonryMeasureAttr, masonryMeasurePass, mirrorMeasuresNow, baseUnitParts, pinStackMarker, pinStackGroupMarker, pinStackPass, isPager, pagerStripCss, pagerNavHTML, selectionChain, typoRole, typoRootVars, typoCascadeCss, bandEdgeCSS,
 } from "@/lib/box-model";
@@ -1348,7 +1348,7 @@ export default function BoxCanvas({
     // A block landing on a line that is already full has to come from somewhere, so the line is shared out
     // (`fitBand`). This runs on the ADD and nowhere else: a width the user dragged is theirs, and is left
     // free to push a neighbour onto the next line. Doing it on every commit is what made wrapping impossible.
-    onChange(fitBand(insertBox(rootRef.current, parentId, index, node), parentId));
+    onChange(fitBand(insertBox(rootRef.current, parentId, index, node), parentId, node.id));
   };
 
   /**
@@ -1831,6 +1831,14 @@ export default function BoxCanvas({
       maxW = (pEl.clientWidth - padL - padR) || 1;
     }
     const pct = (px: number) => `${Math.max(3, Math.min(100, (px / maxW) * 100)).toFixed(2)}%`;
+    /**
+     * What is LEFT of a line once this block has taken its rounded share — floored, never rounded.
+     *
+     * Two shares rounded separately can sum to 100.01%, and a wrapping row wraps on a hundredth: the neighbour
+     * drops to the next line over a tenth of a pixel. Taking the partner's share as the remainder of the one
+     * just written keeps the pair's sum at or under the line, by construction.
+     */
+    const remainderPct = (totalPct: number, ownToken: string) => `${Math.max(3, Math.floor((totalPct - parseFloat(ownToken)) * 100 + 1e-6) / 100).toFixed(2)}%`;
 
     // Parent content-box origin — for measuring the section's edges and clamping every drag to the page.
     const prRect = pEl ? pEl.getBoundingClientRect() : null;
@@ -1892,7 +1900,12 @@ export default function BoxCanvas({
     const bn = resolveResponsive(findByIdLocal(base, id) ?? node, breakpoint); // effective margins at this breakpoint
     const ML0 = bn.marginLeft ?? bn.margin ?? 0; // stored (u) units after anchoring
     const MT0 = bn.marginTop ?? bn.margin ?? 0;
-    const ML0px = (boxU * ML0) / 10, MT0px = (boxU * MT0) / 10;
+    // A gap on a LINE is stored as a share of it (`marginLeftPct`) and wins over the length when rendered, so it
+    // has to win here too. Reading only `marginLeft` put the flow origin where the block STARTS rather than where
+    // its slot starts: the left edge of a block that had opened a space could not be dragged back out, and the
+    // release cleared the gap without restoring the width — the right edge jumped 120px left, dragging its
+    // neighbour with it. Found by the RULE Q sweep, 2026-09-26.
+    const ML0px = bn.marginLeftPct != null ? (bn.marginLeftPct / 100) * maxW : (boxU * ML0) / 10, MT0px = (boxU * MT0) / 10;
 
     // Measured edges (relative to the parent content box) + the fixed FLOW origin (the section's position
     // from previous siblings, independent of its margin). Every drag is clamped to [flow origin … page
@@ -1963,18 +1976,61 @@ export default function BoxCanvas({
      * Both sides are needed because either edge can be the one you grab: the right edge spends the block
      * after this one, the left edge spends the block before it.
      */
+    /**
+     * THE PARTNER IS FOUND IN THE TREE, AND ITS WIDTH IS READ FROM THE TREE.
+     *
+     * This used to take whatever was DRAWN on this block's visual line. Once the neighbour wrapped to the next
+     * line it stopped matching, the block believed it had no partner, and narrowing it released the width to
+     * nobody — measured from inside the drag: `nextSibId: null, gapPx: 200`. A width round trip went
+     * 512 / 512 → 224 / 712 and never came back (rule 7).
+     *
+     * Two things fix it, and each alone was tried and failed:
+     *   • the partner is the next / previous STRUCTURAL sibling, and whether it shares this line is decided by
+     *     `packRowLines` — the same packing the renderer uses — so it cannot depend on paint timing;
+     *   • its width is its STORED share. A block wrapped onto a line by itself GROWS to fill it (1024px for a
+     *     block storing 50%), so its rendered width is the wrong number to do arithmetic with.
+     * A wrapped neighbour is `nextWrapped`, handled in percent-of-row below: narrowing first gives the line
+     * back until the neighbour fits on it again, and only then does the boundary become shared.
+     */
     let nextSibId: string | null = null, nextLeftPx = maxW, nextWidth0 = 0;
-    let prevSibId: string | null = null, prevRightPx = 0, prevWidth0 = 0;
+    let prevSibId: string | null = null, prevWidth0 = 0;
+    /**
+     * The blocks AFTER this one, in order, when the next has wrapped: the width each RESTS at (its `restWidth` if a
+     * neighbour's drag squeezed it, else its stored width), its current stored width, and its margin — all px.
+     */
+    type Follower = { id: string; w: number; cur: number; ml: number };
+    let nextWrapped: Follower[] | null = null;
+    /** When the next block SHARES the line: its rest width, and the blocks wrapped onto later lines behind it. */
+    let nextRest = 0, nextSqueezed = false, prevRest = 0;
+    let wrappedBehindNext: Follower[] = [];
     if (parentRow && info) {
-      for (const c of info.parent.children!) {
-        if (c.id === id) continue;
-        const e2 = document.querySelector<HTMLElement>(`[data-box-id="${c.id}"]`);
-        if (!e2) continue;
-        const r2 = e2.getBoundingClientRect();
-        if (!(r2.top < rect.bottom && rect.top < r2.bottom)) continue; // not on this visual line
-        const cl = r2.left - contentLeftPx, cr = r2.right - contentLeftPx;
-        if (cl >= startRightPx - 1 && cl < nextLeftPx) { nextLeftPx = cl; nextSibId = c.id; nextWidth0 = r2.width; }
-        if (cr <= startLeftPx + 1 && cr > prevRightPx) { prevRightPx = cr; prevSibId = c.id; prevWidth0 = r2.width; }
+      const kids = info.parent.children!.filter((c) => !isFloating(c) && !c.hidden).map((c) => resolveResponsive(c, breakpoint));
+      const lines = packRowLines(kids);
+      const at = kids.findIndex((c) => c.id === id);
+      /** A sibling's width as the LAYOUT states it — its stored share where it has one, else what is drawn. */
+      const storedPx = (c: BoxNode, r2: DOMRect) => (c.width?.trim().endsWith("%") ? (widthPct(c.width) / 100) * maxW : r2.width);
+      const measure = (c: BoxNode | undefined) => {
+        if (!c) return null;
+        const e2 = document.querySelector<HTMLElement>(`[data-box-id="${CSS.escape(c.id)}"]`);
+        return e2 ? { c, e2, r2: e2.getBoundingClientRect() } : null;
+      };
+      const restPx = (c: BoxNode, r2: DOMRect) => (c.restWidth?.trim().endsWith("%") ? (widthPct(c.restWidth) / 100) * maxW : storedPx(c, r2));
+      const followers = (from: number) => kids.slice(from).map(measure).filter((m): m is NonNullable<ReturnType<typeof measure>> => !!m)
+        .map((m) => ({ id: m.c.id, w: restPx(m.c, m.r2), cur: storedPx(m.c, m.r2), ml: parseFloat(getComputedStyle(m.e2).marginLeft) || 0 }));
+      const nx = at >= 0 ? measure(kids[at + 1]) : null;
+      if (nx && lines[at + 1] === lines[at]) {
+        nextSibId = nx.c.id; nextLeftPx = nx.r2.left - contentLeftPx; nextWidth0 = storedPx(nx.c, nx.r2);
+        nextRest = restPx(nx.c, nx.r2); nextSqueezed = !!nx.c.restWidth;
+        // Only the blocks on LATER lines are waiting to come back; those still on this line are not.
+        wrappedBehindNext = followers(at + 2).filter((_, k) => lines[at + 2 + k] > lines[at]);
+      } else if (nx) {
+        nextWrapped = followers(at + 1);
+      }
+      const pv = at > 0 ? measure(kids[at - 1]) : null;
+      // A previous sibling on an EARLIER line owns no boundary with this block: its left edge starts a line,
+      // so it is an outer edge and the gap behaviour below is right for it.
+      if (pv && lines[at - 1] === lines[at]) {
+        prevSibId = pv.c.id; prevWidth0 = storedPx(pv.c, pv.r2); prevRest = restPx(pv.c, pv.r2);
       }
     }
 
@@ -2151,6 +2207,25 @@ export default function BoxCanvas({
      */
     const neighbourMinPx = Math.min(maxW, 14 * rootPx);
 
+    const P = (px: number) => (px / maxW) * 100;
+    const floor2 = (v: number) => Math.floor(v * 100 + 1e-6) / 100;
+    /**
+     * REFILL `freedPct` OF A LINE WITH THE BLOCKS WAITING BEHIND, in order: each at the width it RESTS at while it
+     * fits, and the last one to come back takes whatever is left, so no hole opens. A block brought back below its
+     * rest width remembers that width (`restWidth`), which is what lets a round trip made of separate drags return.
+     * "A hair over is still one line" — the same 0.5 tolerance `packRowLines` uses — and the last one is trimmed.
+     */
+    const refill = (t: BoxNode, freedPct: number, fs: Follower[]): { tree: BoxNode; pulled: number } => {
+      let acc = 0; const got: Follower[] = [];
+      for (const f of fs) { const need = P(f.w) + P(f.ml); if (acc + need > freedPct + 0.5) break; got.push(f); acc += need; }
+      got.forEach((f, k) => {
+        const rest = floor2(P(f.w));
+        const w = k === got.length - 1 ? floor2(freedPct - acc + P(f.w)) : rest;
+        t = writeBox(t, f.id, { width: `${w.toFixed(2)}%`, restWidth: w < rest - 0.005 ? `${rest.toFixed(2)}%` : undefined });
+      });
+      return { tree: t, pulled: got.length };
+    };
+
     setResizeCursor(cursorFor(edge));
     setResizing(true);
     let raf = 0; let pending: BoxNode | null = null;
@@ -2162,7 +2237,53 @@ export default function BoxCanvas({
       // RIGHT edge: grows/shrinks up to the next section's left; the NEXT section stays exactly where it is
       // (its margin-left absorbs the gap) — so you fill the gap and the neighbour never moves. LEFT edge:
       // shifts right with margin-left, keeping this section's right edge fixed (a gap opens on the left).
-      if (hasE) {
+      if (hasE && nextWrapped) {
+        /**
+         * THE NEIGHBOUR HAS WRAPPED — and it comes back up the moment there is room for it.
+         *
+         * `rejoinAt` is the width at which the neighbour fits on this line again AT ITS FLOOR — the same
+         * `neighbourMinPx` the widening squeezes it to before it wraps, so the two directions are mirror images.
+         * From there down the boundary is shared: every pixel this block gives up is a pixel the neighbour gains,
+         * and its width is simply the remainder of the line.
+         *
+         * An earlier version of this branch waited for the neighbour's OLD stored share to fit, and narrowed
+         * this block into empty space until then. Reported by the user with a screenshot, 2026-09-26: the block
+         * narrowed and a hole opened at the end of its line while the neighbour sat underneath at full width.
+         * Nothing asked for that space, and the neighbour could have filled it. The probe's own "mid-narrow"
+         * screenshot had shown the same hole and it was read as an outer-edge space — it is not: an edge whose
+         * structural neighbour could fill the line is a joined edge.
+         *
+         * The round trip still returns (rule 7), because the neighbour's width is always "the rest of the line":
+         * widen 50/50 until it wraps, drag back to 50, and it is 50 beside you. The attempt before either of
+         * these shared the boundary while still wrapped, which grew the neighbour as fast as this block shrank,
+         * held the pair at 150% and kept it wrapped forever.
+         */
+        //
+        // …AND EVERY BLOCK THAT WRAPPED COMES BACK, IN ORDER. With three in a row, widening the first pushes the
+        // second AND the third below. Bringing back only the next one and handing it the whole rest of the line
+        // left the third stranded: a 33/33/33 round trip came home as 33/67 with one block underneath (RULE Q
+        // sweep, 2026-09-26). So the freed line is refilled the way it was emptied — each wrapped block at its
+        // OWN stored width while it fits, and the last one to come back takes whatever is left, so no hole opens.
+        // Where not even the first fits at its width, it still comes back at its floor and takes the rest.
+        const room = maxW - startLeftPx;
+        const w = Math.min(room, Math.max(minWpx, W0 + dx));
+        const scE = selfSizing ? fitScale(w, naturalW) : 1;
+        const own = pct(w);
+        tree = writeBox(tree, id, { width: own, widthByHand: true, restWidth: undefined, ...(selfSizing ? { contentScale: scE < 1 ? scE : undefined } : {}) });
+        const freed = P(room) - parseFloat(own);
+        const r = refill(tree, freed, nextWrapped);
+        tree = r.tree;
+        if (!r.pulled) {
+          // Not even the first fits at its rest width — it still comes back at its FLOOR and takes the rest of the
+          // line, and remembers the width it rests at so a later drag can give it back.
+          const f = nextWrapped[0];
+          if (freed >= P(neighbourMinPx) + P(f.ml)) {
+            const w = floor2(freed - P(f.ml)), rest = floor2(P(f.w));
+            tree = writeBox(tree, f.id, { width: `${w.toFixed(2)}%`, restWidth: w < rest - 0.005 ? `${rest.toFixed(2)}%` : undefined });
+          }
+        }
+      }
+      if (hasE && !nextWrapped) {
         // SHARED BOUNDARY. The edge you grab moves and the block after it gives up exactly what you take —
         // so the line stays full and the pair's widths always sum to what they summed to before. Keeping
         // that sum constant also matters downstream: `clampRowWidths` rescales a row whose widths exceed
@@ -2178,7 +2299,12 @@ export default function BoxCanvas({
          * the neighbour nothing and must not move it: the space is already free. Spending its width anyway
          * would shrink a block the user sized in order to fill space that belonged to nobody.
          */
-        const gapPx = Math.max(0, nextLeftPx - startRightPx);
+        // Under a pixel is NOT a gap. Two touching shares render a hair apart (41.41% ends at 424.04px, the
+        // floored remainder beside it starts at 424.03), and reading that hair as "space between us" sent the
+        // next narrowing down the gap branch: it wrote a 198-unit margin on the neighbour instead of widening
+        // it, and a space nobody opened stayed on the page. Measured on a width round trip, 2026-09-26.
+        const rawGapPx = nextLeftPx - startRightPx;
+        const gapPx = rawGapPx < 1 ? 0 : rawGapPx;
         const give = nextSibId
           ? gapPx + Math.max(0, nextWidth0 - neighbourMinPx)
           : Math.max(0, maxW - startRightPx);
@@ -2203,7 +2329,8 @@ export default function BoxCanvas({
         const wraps = !!nextSibId && !!band && !!bandUp && wanted > startRightPx + give + WRAP_PULL;
         const right = wraps ? maxW : Math.min(startRightPx + give, wanted);
         const scE = selfSizing ? fitScale(right - startLeftPx, naturalW) : 1;
-        tree = writeBox(tree, id, { width: pct(right - startLeftPx), ...(selfSizing ? { contentScale: scE < 1 ? scE : undefined } : {}) });
+        const own = pct(right - startLeftPx);
+        tree = writeBox(tree, id, { width: own, widthByHand: true, restWidth: undefined, ...(selfSizing ? { contentScale: scE < 1 ? scE : undefined } : {}) });
         if (wraps) {
           /**
            * IT WRAPS BY ITSELF — nothing is moved.
@@ -2217,19 +2344,49 @@ export default function BoxCanvas({
            * (`clampRowWidths` no longer rescales a row that can wrap). Widen and the neighbour drops below;
            * narrow and it comes back up beside you. Nothing is remembered because nothing changed.
            *
-           * The neighbour is RESTORED to the width it had when the drag began rather than left at the floor
-           * it was squeezed to on the way — so what comes back is the block the user had, not a sliver.
+           * The neighbour is RESTORED to the width it RESTS at — not the floor it was squeezed to on the way, and
+           * not merely its width when THIS drag began, which an earlier drag may already have squeezed — so what
+           * comes back is the block the user had, not a sliver.
            */
-          tree = writeBox(tree, nextSibId!, { width: pct(nextWidth0) });
+          tree = writeBox(tree, nextSibId!, { width: pct(nextRest || nextWidth0), restWidth: undefined });
         } else if (nextSibId && gapPx > 0) {
           // A GAP between us: the neighbour's margin absorbs the change so it stays EXACTLY where it is,
           // and only what is taken PAST its left edge comes out of its width. Narrowing re-opens the gap
           // rather than handing width back — the space was nobody's to begin with.
-          if (right <= nextLeftPx) tree = writeBox(tree, nextSibId, { marginLeft: Math.max(0, pxU(nextLeftPx - right)) });
-          else tree = writeBox(tree, nextSibId, { marginLeft: 0, width: pct(nextWidth0 - (right - nextLeftPx)) });
+          //
+          // THE GAP IS A SHARE OF THE LINE, like the widths either side of it — the same cure the left edge
+          // already had (`marginLeftPct`). Written as a length it sat beside percentages that scale with the row
+          // while it did not, so at any other screen width the line no longer added up and could wrap. The three
+          // are taken from one stored total so they can neither overflow nor drift across repeated drags.
+          const ownStored = bn.width?.trim().endsWith("%") ? widthPct(bn.width) : (W0 / maxW) * 100;
+          const total = ownStored + ((gapPx + nextWidth0) / maxW) * 100;
+          const nPct = (nextWidth0 / maxW) * 100;
+          if (right <= nextLeftPx) {
+            const gapPct = Math.max(0, Math.floor((total - parseFloat(own) - nPct) * 100 + 1e-6) / 100);
+            tree = writeBox(tree, nextSibId, { marginLeftPct: gapPct > 0 ? gapPct : undefined, marginLeft: undefined });
+          } else {
+            tree = writeBox(tree, nextSibId, { marginLeftPct: undefined, marginLeft: undefined, width: remainderPct(total, own) });
+          }
         } else if (nextSibId) {
-          // TOUCHING: a shared boundary. Narrowing hands the space back, the same arithmetic sign-reversed.
-          tree = writeBox(tree, nextSibId, { width: pct(nextWidth0 - (right - startRightPx)) });
+          // TOUCHING: a shared boundary. Narrowing hands the space back, the same arithmetic sign-reversed —
+          // taken as the REMAINDER of the pair's stored sum, so it can neither overflow the line nor drift.
+          const ownStored = bn.width?.trim().endsWith("%") ? widthPct(bn.width) : (W0 / maxW) * 100;
+          const nNewTok = remainderPct(ownStored + P(nextWidth0), own);
+          const nNew = parseFloat(nNewTok), rest = floor2(P(nextRest || nextWidth0));
+          if (nNew < rest - 0.005) {
+            // Squeezed below the width it rests at: remember that width, so it can be given back.
+            tree = writeBox(tree, nextSibId, { width: nNewTok, restWidth: `${rest.toFixed(2)}%` });
+          } else {
+            // BACK AT REST — and a block that had been squeezed stops there: anything more goes to the blocks that
+            // wrapped behind it, in order, so a round trip made of SEPARATE drags returns (rule 7). Measured before:
+            // widen until the others wrapped, nudge back, drag to the start — 33/33/33 came home as 33/67 with one
+            // block stranded below, because the squeezed neighbour went on growing past its own width.
+            // Only a block that WAS squeezed stops at its rest; an ordinary shared boundary keeps giving it the width.
+            const r = nextSqueezed ? refill(tree, nNew - rest, wrappedBehindNext) : { tree, pulled: 0 };
+            tree = r.pulled
+              ? writeBox(r.tree, nextSibId, { width: `${rest.toFixed(2)}%`, restWidth: undefined })
+              : writeBox(tree, nextSibId, { width: nNewTok, restWidth: undefined });
+          }
         }
       }
       if (hasW) {
@@ -2255,13 +2412,21 @@ export default function BoxCanvas({
         const outerPct = share(startRightPx - flowX); // what this block occupied, gap included
         const gapPct = prevSibId ? 0 : Math.max(0, share(left - flowX));
         const widthPct = Math.max(3, Math.min(100, outerPct - gapPct));
+        const ownW = prevSibId ? pct(startRightPx - left) : `${widthPct}%`;
         tree = writeBox(tree, id, {
-          width: prevSibId ? pct(startRightPx - left) : `${widthPct}%`,
+          width: ownW, widthByHand: true, restWidth: undefined,
           // One field owns this gap. The old length is cleared so the two can never disagree about it.
           ...(prevSibId ? {} : { marginLeftPct: gapPct > 0 ? gapPct : undefined, marginLeft: undefined }),
           ...(selfSizing ? { contentScale: scW < 1 ? scW : undefined } : {}),
         });
-        if (prevSibId) tree = writeBox(tree, prevSibId, { width: pct(prevWidth0 - (startLeftPx - left)) });
+        // The block BEFORE takes the REMAINDER of the pair's stored sum — the right edge's rule, mirrored. Two
+        // separately rounded shares summed to 100.01% and this block wrapped onto the next line, leaving an 800px
+        // hole behind it (RULE Q sweep, 2026-09-26).
+        if (prevSibId) {
+          const ownStored = bn.width?.trim().endsWith("%") ? parseFloat(bn.width) : (W0 / maxW) * 100;
+          const pTok = remainderPct(ownStored + P(prevWidth0), ownW), pRest = floor2(P(prevRest || prevWidth0));
+          tree = writeBox(tree, prevSibId, { width: pTok, restWidth: parseFloat(pTok) < pRest - 0.005 ? `${pRest.toFixed(2)}%` : undefined });
+        }
       }
       // ── HEIGHT ── the height you drag sets a MIN-HEIGHT (a floor), not a fixed height. The section HUGS
       // its content, so growing a child grows the section; shrinking below the content does nothing (the
@@ -2851,7 +3016,10 @@ export default function BoxCanvas({
             // for a hint that is not even part of the page. Absolutely positioned it contributes nothing to
             // its parent's height, so an empty box is exactly the height it was given, and `overflow-hidden`
             // lets the hint clip away quietly when that height is smaller than the words.
-            <div data-ph className="absolute inset-0 flex flex-col items-center justify-center gap-1.5 overflow-hidden text-gray-400 dark:text-gray-500 border border-dashed border-gray-300/80 dark:border-white/15 pointer-events-none" style={{ fontSize: u(11), borderRadius: "inherit" }}>
+            // CENTRED, WITH ROOM AT THE SIDES. A narrowed stack (224px, its reflow floor) held the whole sentence
+            // on one 221px line flush against the dashes, so "Empty" lost its E under the border and the resize
+            // handle; narrower still it wrapped left-aligned. Found by the RULE Q sweep, 2026-09-26.
+            <div data-ph className="absolute inset-0 flex flex-col items-center justify-center gap-1.5 overflow-hidden text-center text-gray-400 dark:text-gray-500 border border-dashed border-gray-300/80 dark:border-white/15 pointer-events-none" style={{ fontSize: u(11), paddingInline: u(12), borderRadius: "inherit" }}>
               {/* A REAL BUTTON, because the line under it says "click to add" and nothing did.
                   The pill was a `<span>` inside a `pointer-events-none` hint, so an empty box contained
                   exactly zero buttons: measured three clicks on one, no menu, no child, nothing but the box

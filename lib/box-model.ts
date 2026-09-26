@@ -271,6 +271,20 @@ export interface BoxNode {
    * the gap scales with the page instead of being frozen at one size. `marginCSS` prefers it over `marginLeft`.
    */
   marginLeftPct?: number;
+  /**
+   * The user has dragged THIS block's own width (never set on a neighbour that merely gave way). Rule 2: a block
+   * never resized fills a line it is pushed onto; one somebody sized keeps that size. Without it a block wrapped
+   * onto its own line could not be narrowed — the grow handed the space straight back.
+   */
+  widthByHand?: boolean;
+  /**
+   * The width this block RESTS at, recorded while a NEIGHBOUR's drag has squeezed it below that (never set by a
+   * drag of its own edge). It is what makes a round trip made of SEPARATE drags come back (rule 7): growing again,
+   * the block stops at this width and hands any further space to the blocks that wrapped behind it, in order.
+   * Cleared as soon as the block is back at rest, or when the user sizes it by hand — so nothing accumulates.
+   * Editor bookkeeping only; the export ignores it.
+   */
+  restWidth?: string;
   radius?: number;          // px corner radius (all corners)
   radiusTopLeft?: number; radiusTopRight?: number; radiusBottomRight?: number; radiusBottomLeft?: number; // per-corner overrides
   opacity?: number;         // 0–100 (%), default 100 (fully opaque) — the BOX's own paint, not its contents
@@ -2343,12 +2357,56 @@ export function fitRowWidths(row: BoxNode): BoxNode {
   return { ...row, children: kids.map((k) => ({ ...k, width: `${Math.max(3, Math.round(widthPct(k.width) * f))}%` })) };
 }
 
-/** Share out the widths of the band `bandId` so its children fit on one line. Used when a block is added. */
-export function fitBand(root: BoxNode, bandId: string): BoxNode {
+/**
+ * Share out the widths of the band `bandId` when a block is added to it.
+ *
+ * WITH `newId` — the ordinary drop — ONLY THE LINE THE BLOCK LANDS ON is shared out, and the newcomer takes an
+ * EQUAL share of it (1 / n) while the blocks already there keep their proportions in the rest.
+ *
+ * It used to scale the WHOLE ROW by 100 / sum and round to whole percents. A block dropped onto a full line
+ * arrives at 100%, so 50/50 + 100 became 25/25/50 — the newcomer took half, not a third — and the next drop
+ * made 12.5 round up to 13: 13/13/25/50 = **101%**, so the fourth block wrapped the moment it landed and left
+ * a 502px hole on a page nobody had resized (found by the RULE Q sweep, 2026-09-26). Scaling the whole row
+ * also squashed a line the user had deliberately pushed onto the next row.
+ *
+ * Shares are FLOORED to hundredths and the newcomer takes the exact remainder, so a line can never add up past
+ * 100% — a wrapping row wraps on a hundredth. A line that still has room is left alone: the drop has already
+ * sized the newcomer to that room.
+ */
+export function fitBand(root: BoxNode, bandId: string, newId?: string): BoxNode {
   const band = findBox(root, bandId);
   if (!band?.rowBand) return root;
-  const fitted = fitRowWidths(band);
-  return fitted === band ? root : updateBox(root, bandId, { children: fitted.children });
+  if (!newId) {
+    const fitted = fitRowWidths(band);
+    return fitted === band ? root : updateBox(root, bandId, { children: fitted.children });
+  }
+  const kids = (band.children ?? []).filter((k) => !isFloating(k) && !k.hidden);
+  const at = kids.findIndex((k) => k.id === newId);
+  if (at < 0) return root;
+  const others = kids.filter((k) => k.id !== newId);
+  const lines = packRowLines(others);
+  // The line it joins: the one of the block it was dropped AFTER, else the one it was dropped before.
+  const anchorIdx = at > 0 ? at - 1 : 0;
+  if (!others.length) return root;
+  const line = lines[anchorIdx];
+  const members = others.filter((_, i) => lines[i] === line);
+  const isPct = (k: BoxNode) => typeof k.width === "string" && k.width.trim().endsWith("%");
+  if (!members.every(isPct)) return root; // a Fit / Full block already on the line sizes itself
+  const used = members.reduce((s, k) => s + widthPct(k.width), 0);
+  // A HUGGING newcomer (a Stat, a Fit block) keeps hugging where the line has room. On a FULL line it has
+  // nowhere to hug, so it wrapped below at its floor — measured: a Stat dropped beside two 50% stacks landed on
+  // the next line at 224px. There it takes an equal share like anything else dropped onto a full line.
+  if (!isPct(kids[at])) { if (used < 99.5) return root; }
+  else if (used + widthPct(kids[at].width) <= 100.5) return root;  // it fits as it is
+  const n = members.length + 1;
+  const newShare = 100 / n;
+  const factor = (100 - newShare) / Math.max(used, 1e-6);
+  const floor2 = (v: number) => Math.floor(v * 100 + 1e-6) / 100;
+  const widths = new Map<string, string>();
+  let spent = 0;
+  for (const k of members) { const w = Math.max(3, floor2(widthPct(k.width) * factor)); widths.set(k.id, `${w}%`); spent += w; }
+  widths.set(newId, `${Math.max(3, floor2(100 - spent))}%`);
+  return updateBox(root, bandId, { children: (band.children ?? []).map((k) => (widths.has(k.id) ? { ...k, width: widths.get(k.id)! } : k)) });
 }
 
 /** Canonicalize a container tree RECURSIVELY: every CONTENT container (the page root, a section, a block)
@@ -3886,19 +3944,35 @@ export async function importPhoto(file: File): Promise<{ src: string; imgW?: num
 export function aloneOnItsLine(parent: BoxNode, child: BoxNode): boolean {
   const kids = (parent.children ?? []).filter((k) => !isFloating(k) && !k.hidden);
   if (kids.length < 2) return false;                    // the only child already fills the row by other means
-  let line: BoxNode[] = [];
-  let used = 0;
-  let lineIndex = 0;
+  const lines = packRowLines(kids);
+  const at = kids.findIndex((k) => k.id === child.id);
+  if (at < 0) return false;
+  return lines[at] > 0 && lines.filter((l) => l === lines[at]).length === 1;
+}
+
+/**
+ * WHICH LINE OF A WRAPPING ROW EACH BLOCK LANDS ON — decided from the STORED widths, never by asking the page.
+ *
+ * The resize used to find a block's neighbour by looking for whatever was drawn on the same visual line. The
+ * moment the neighbour wrapped it stopped matching, so narrowing the block again released width to nobody —
+ * measured `nextSibId: null, gapPx: 200` from inside the drag — and a width round trip never came back
+ * (start 512 / 512, end 224 / 712). Rendered geometry is also timing-dependent, so two identical runs could
+ * disagree. The stored widths are the layout's own answer and are the same every time.
+ *
+ * ONE packing, shared by the renderer (`aloneOnItsLine`, which decides who grows) and the resize (which decides
+ * who shares a boundary), so the two can never disagree about where a line ends. A hair over 100 is still one
+ * line — percentages that round to 100.4 are meant to be a full line.
+ */
+export function packRowLines(kids: BoxNode[]): number[] {
+  const out: number[] = [];
+  let used = 0, line = 0, count = 0;
   for (const k of kids) {
-    const w = widthPct(k.width) || 100;
-    // A hair over 100 is still one line — percentages that round to 100.4 are meant to be a full line.
-    if (line.length && used + w > 100.5) {
-      if (line.some((n) => n.id === child.id)) return lineIndex > 0 && line.length === 1;
-      line = []; used = 0; lineIndex++;
-    }
-    line.push(k); used += w;
+    // A gap on a line is a share of it too (`marginLeftPct`) — the browser counts it, so the packing must.
+    const w = (widthPct(k.width) || 100) + (k.marginLeftPct ?? 0);
+    if (count && used + w > 100.5) { line++; used = 0; count = 0; }
+    out.push(line); used += w; count++;
   }
-  return lineIndex > 0 && line.length === 1 && line.some((n) => n.id === child.id);
+  return out;
 }
 
 export function flexForWidth(token?: string, fillsItsLine = false): string | undefined {
@@ -4459,7 +4533,7 @@ export function childStyle(child: BoxNode, parent: BoxNode, bp: Breakpoint = "ba
   // line gets leftover space — so every block became un-shrinkable the moment it stopped sharing a full line.
   s.flex = fillsMain || ((!mainToken || mainToken === "auto") && parentDefinite && !siblingClaimsIt)
     ? "1 1 auto"
-    : flexForWidth(mainToken, !!parent.rowBand && isRow && aloneOnItsLine(parent, child));
+    : flexForWidth(mainToken, !!parent.rowBand && isRow && !child.widthByHand && aloneOnItsLine(parent, child));
   // A box can pin its OWN cross-axis alignment (used by edge-anchored resize to keep the far edge fixed
   // even when the parent centres/stretches its children).
   if (child.alignSelf) s.alignSelf = child.alignSelf;

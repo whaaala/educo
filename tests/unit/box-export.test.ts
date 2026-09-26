@@ -1,4 +1,5 @@
 import { describe, it, expect } from "vitest";
+import type { CSSProperties } from "react";
 import { createContainer, createElement, createComponent, makeRowBand, type BoxNode } from "@/lib/box-model";
 import { siteFromRoot, emptyPageRoot } from "@/lib/box-site";
 import { styleString, renderPageHTML, renderSiteFiles, renderSitePage, downloadSite } from "@/lib/box-export";
@@ -18,6 +19,17 @@ describe("box-export — static HTML", () => {
   it("styleString serialises a style object (kebab props, px on bare numbers, unitless kept)", () => {
     expect(styleString({ backgroundColor: "#fff", minHeight: 40, opacity: 0.5, zIndex: 3 }))
       .toBe("background-color:#fff;min-height:40px;opacity:0.5;z-index:3");
+  });
+
+  /** Behaviours: box-builder-layout.feature — "A number in a style means the same on the canvas and on the published page". */
+  it("a bare number means what it means on the canvas — React's unitless rules, not a short list of our own", () => {
+    // Custom properties never gain a unit: the theme's heading weight became "600px" and the page dropped it.
+    expect(styleString({ "--bx-weight-heading": 600, "--bx-weight-body": 400 } as CSSProperties)).toBe("--bx-weight-heading:600;--bx-weight-body:400");
+    // Properties the canvas (React) treats as unitless stay unitless.
+    expect(styleString({ gridColumnStart: 2, gridRowEnd: 3, aspectRatio: 1.5, zoom: 2, scale: 1.1, columnCount: 3, lineClamp: 2, tabSize: 4, fontWeight: 700 } as CSSProperties))
+      .toBe("grid-column-start:2;grid-row-end:3;aspect-ratio:1.5;zoom:2;scale:1.1;column-count:3;line-clamp:2;tab-size:4;font-weight:700");
+    // …and a length still gains px — the one case that should.
+    expect(styleString({ width: 12, marginTop: 0 })).toBe("width:12px;margin-top:0px");
   });
 
   it("renders elements to their tags with content", () => {

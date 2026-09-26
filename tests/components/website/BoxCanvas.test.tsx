@@ -645,7 +645,33 @@ describe("BoxCanvas (box-model editor)", () => {
     const last = onChange.mock.calls.at(-1)![0];
     expect(parseFloat(findBox(last, "a")!.width!)).toBeGreaterThan(30); // a grew into the gap
     expect(findBox(last, "b")?.width).toBe("40%");                      // the neighbour's WIDTH is untouched
-    expect(findBox(last, "b")?.marginLeft).toBe(0);                     // its margin absorbed the fill → it stayed put, gap closed
+    // Its margin absorbed the fill → it stayed put, gap closed. The gap is a SHARE of the line now
+    // (`marginLeftPct`) and the old length is cleared, so "no gap" is asserted on both fields.
+    expect(findBox(last, "b")?.marginLeft ?? 0).toBe(0);
+    expect(findBox(last, "b")?.marginLeftPct ?? 0).toBe(0);
+  });
+
+  it("a PARTIAL fill leaves the rest of the gap as a share of the line, never as a length", () => {
+    const initial = createContainer("row", {
+      id: "root", direction: "row",
+      children: [
+        createContainer("column", { id: "a", width: "30%" } as Partial<BoxNode>),
+        createContainer("column", { id: "b", width: "40%", marginLeft: 300 } as Partial<BoxNode>),
+      ],
+    } as Partial<BoxNode>);
+    const onChange = vi.fn();
+    const { container } = render(<BoxCanvas root={initial} theme={DEFAULT_THEME} selectedId="a" onChange={onChange} />);
+    const rootEl = container.querySelector<HTMLElement>('[data-box-id="root"]')!;
+    stubRect(rootEl, { top: 0, left: 0, width: 600, height: 100 }); stubClientWidth(rootEl, 600);
+    stubRect(container.querySelector<HTMLElement>('[data-box-id="a"]')!, { top: 0, left: 0, width: 180, height: 100 });
+    stubRect(container.querySelector<HTMLElement>('[data-box-id="b"]')!, { top: 0, left: 360, width: 240, height: 100 });
+    fireEvent.mouseDown(screen.getByLabelText("Resize right edge"), { clientX: 0, clientY: 0 });
+    fireEvent.mouseMove(document, { clientX: 60, clientY: 0 }); // a grows 60 of the 180 gap
+    fireEvent.mouseUp(document);
+    const b = findBox(onChange.mock.calls.at(-1)![0], "b")!;
+    expect(b.marginLeft).toBeUndefined();              // not a length…
+    expect(b.marginLeftPct).toBeCloseTo(20, 0);         // …but 120px of a 600px line = 20%
+    expect(b.width).toBe("40%");
   });
 
   it("resizing a ROW section's LEFT edge moves the left edge and HOLDS the right edge (margin-left); neighbour untouched", () => {

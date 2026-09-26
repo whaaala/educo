@@ -26,7 +26,23 @@ import { familiesInUse } from "@/lib/educo-ui/font-embed";
 import { zipSync, strToU8 } from "fflate";
 import { hoverCss, revealCss, revealKeyframes, itemEffectsCss } from "@/lib/interactions";
 
-const UNITLESS = new Set(["opacity", "zIndex", "lineHeight", "fontWeight", "flexGrow", "flexShrink", "order", "flex"]);
+/**
+ * The properties a bare number is UNITLESS for — React's own list, because React is what draws the canvas.
+ *
+ * This used to be eight properties of our own choosing, so anything else stored as a number was right on the canvas
+ * and wrong in the export: `grid-column-start: 2px` is not a grid line, and it is simply dropped. Custom properties
+ * were worse — React never gives them a unit, this did, and the theme's heading weight went out as "600px", which is
+ * not a weight at all, so the published page lost it while the canvas showed 600 (found by the Preview units check,
+ * 2026-09-26). One list, the canvas's, is the only way the two cannot disagree (rule 11).
+ */
+const UNITLESS = new Set([
+  "animationIterationCount", "aspectRatio", "borderImageOutset", "borderImageSlice", "borderImageWidth", "boxFlex",
+  "boxFlexGroup", "boxOrdinalGroup", "columnCount", "columns", "flex", "flexGrow", "flexPositive", "flexShrink",
+  "flexNegative", "flexOrder", "gridArea", "gridRow", "gridRowEnd", "gridRowSpan", "gridRowStart", "gridColumn",
+  "gridColumnEnd", "gridColumnSpan", "gridColumnStart", "fontWeight", "lineClamp", "lineHeight", "opacity", "order",
+  "orphans", "scale", "tabSize", "widows", "zIndex", "zoom", "fillOpacity", "floodOpacity", "stopOpacity",
+  "strokeDasharray", "strokeDashoffset", "strokeMiterlimit", "strokeOpacity", "strokeWidth",
+]);
 
 /** Serialize a React style object to an inline CSS string (px added to bare numbers except unitless props). */
 export function styleString(css: CSSProperties): string {
@@ -34,7 +50,8 @@ export function styleString(css: CSSProperties): string {
     .filter(([, v]) => v != null && v !== "")
     .map(([k, v]) => {
       const prop = k.startsWith("--") ? k : k.replace(/[A-Z]/g, (m) => `-${m.toLowerCase()}`);
-      const raw = typeof v === "number" && !UNITLESS.has(k) ? `${v}px` : String(v);
+      // A custom property never gains a unit — React writes it as given, and so must we.
+      const raw = typeof v === "number" && !UNITLESS.has(k) && !k.startsWith("--") ? `${v}px` : String(v);
       // Escape double quotes so a value that legitimately contains them — a font stack like
       // "Playfair Display", serif or a background-image url("data:…") — can't close the HTML style="…"
       // attribute early and corrupt the rest of the document. Browsers decode &quot; back to " in the value.

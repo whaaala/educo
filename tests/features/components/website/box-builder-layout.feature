@@ -769,3 +769,82 @@ Feature: Placing blocks beside one another in the Box Builder
     Because the negative margin is only the mechanism, and a future fix that
       reached the same wrong picture another way would slip past a test watching
       the number.
+
+  # ── Width round trips (rule 7) — 2026-09-26 ────────────────────────────────────────────
+  Scenario: A width round trip returns the page to where it was
+    Given two stacks side by side at 50% and 50%, built by dropping one beside the other
+    When I widen the left stack until the right one wraps to the next line
+    And I drag the same edge back to where it started
+    Then both stacks are side by side again at 50% and 50%
+    And doing it three times gives the same result every time
+    Because the partner used to be found by VISUAL line: once it wrapped it was
+      no longer found, and narrowing released 200px to nobody — measured
+      512 / 512 becoming 224 / 712. The partner is now the next block in the
+      TREE, and whether it shares the line is read from the stored widths.
+
+  Scenario: A wrapped neighbour's width is its stored share, not what it draws
+    Given a stack wrapped onto a line by itself, drawn 1024px wide while storing 30%
+    Then a resize beside it does its arithmetic from the 30%, not the 1024px
+
+  Scenario: Narrowing beside a wrapped neighbour never leaves a hole
+    Given the left stack has been widened until its neighbour wrapped below
+    When I narrow the left stack
+    Then the neighbour comes back up beside it as soon as it fits at its minimum
+    And it takes the rest of the line, so no empty space opens at the line's end
+    Because the user found, by hand, a hole beside the narrowed stack while the
+      neighbour sat underneath at full width — nothing asked for that space and
+      the neighbour could have filled it.
+
+  Scenario: Two touching blocks a hair apart are still touching
+    Given two blocks whose shares round to 41.41% and 58.59%
+    When I narrow the left one
+    Then the right one widens to match
+    And no margin is written on it
+    Because a 0.01px difference was read as a gap, and the gap branch wrote a
+      198-unit margin on the neighbour: a space nobody opened.
+
+  # ── Dropping beside a full line ────────────────────────────────────────────────────────
+  Scenario: A block dropped onto a full line takes an equal share of THAT line
+    Given two stacks side by side at 50% and 50%
+    When I drop a third stack beside the second
+    Then the three share the line at a third each
+    And a fourth dropped beside them makes four quarters on one line
+    And the shares never add up past the line, so nothing wraps and no hole appears
+    Because the newcomer used to arrive at 100% and the WHOLE row was scaled down
+      and rounded to whole percents: 25/25/50, then 13/13/25/50 = 101%, so the
+      fourth wrapped at once and left a 502px hole on a page nobody had resized.
+
+  Scenario: Only the line the block lands on is shared out
+    Given a row whose second line holds a block the user pushed there
+    When I drop a block onto the first line
+    Then the second line's block keeps its width
+
+  Scenario: A block pushed onto its own line fills it — until you size it yourself
+    Given a stack wrapped onto a line by itself, which fills that line
+    When I drag its own right edge in by 300px
+    Then it is 300px narrower, and stays that size
+    And a block that has never been resized still fills a line it is pushed onto
+    Because rule 2: "don't grow me" starts when you drag, not before. Measured
+      before the fix: two 300px drags stored 70.70% and the block went on drawing
+      1024px wide — the grow handed the space straight back, a dead control.
+
+  Scenario: A space opened at the far left closes again
+    Given the first of two stacks side by side
+    When I drag its left edge 120px to the right
+    Then a space opens at the far left and its right edge stays where it was
+    When I drag the left edge back
+    Then the space closes and the stack is its old width again, its right edge unmoved
+    Because the drag read that space from the wrong field, so it believed there
+      was none: the space vanished, the width did not return, and the right edge
+      jumped 120px left, dragging the neighbour with it.
+
+  # ── Canvas == export: numbers in styles ────────────────────────────────────────────────
+  Scenario: A number in a style means the same on the canvas and on the published page
+    Given a style value written as a bare number
+    When the page is exported
+    Then a custom property keeps the bare number, as the canvas does
+    And every property the canvas treats as unitless stays unitless — weights, grid lines, aspect ratio, zoom
+    And only a length gains "px"
+    Because the export added "px" to custom properties: the theme's heading weight
+      became "600px", which is not a weight at all, so the published page dropped it
+      while the canvas showed 600. Found by the Preview units check, 2026-09-26.

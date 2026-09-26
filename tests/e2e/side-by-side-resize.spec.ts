@@ -130,11 +130,23 @@ test.describe("two blocks sharing a line", () => {
     // Pulled back far enough that the two genuinely FIT on one line again. They come back when they fit and
     // not a moment before, which is the honest behaviour of a wrapping row: at 51% + 50% there is still no
     // room, so R would rightly stay below. This is a measurement of the rule, not a tolerance.
+    //
+    // DECIDED 2026-09-26 (the user, with a screenshot of the hole it used to leave): the neighbour comes back as soon
+    // as it fits and FILLS the rest of the line — it no longer waits at its old width with empty space beside it.
+    // Narrowed PAST where it started, L leaves more room, so R is wider than its old 50% and the line is full.
     await dragHandle(page, "Resize right edge", -470);
     const l = await widthOf(page, "L"), r = await widthOf(page, "R");
-    expect(l.pct + r.pct, "the two now fit on one line").toBeLessThanOrEqual(100.5);
     expect(Math.abs(r.box.y - l.box.y), "R is back on L's line").toBeLessThan(4);
-    expect(r.pct, "at the width it had before any of it").toBe(50);
+    expect(l.pct + r.pct, "the line is FULL — no hole at its end").toBeGreaterThan(99.5);
+    expect(l.pct + r.pct, "…and does not overflow").toBeLessThanOrEqual(100.5);
+
+    // Rule 7 — back to EXACTLY where it started, and the pair is exactly what it was.
+    // L's right edge back to the middle of the row: the row is L's drawn width ÷ its share.
+    const h = (await page.locator('[aria-label="Resize right edge"]').first().boundingBox())!;
+    await dragHandle(page, "Resize right edge", (l.box.x + l.box.width * (50 / l.pct)) - (h.x + h.width / 2));
+    const l2 = await widthOf(page, "L"), r2 = await widthOf(page, "R");
+    expect(Math.abs(l2.pct - 50), `L back at 50 (got ${l2.pct})`).toBeLessThanOrEqual(0.3);
+    expect(Math.abs(r2.pct - 50), `R back at 50 (got ${r2.pct})`).toBeLessThanOrEqual(0.3);
 
     const bands = await page.evaluate(() => {
       const site = JSON.parse(localStorage.getItem("educo_box_site_v1") || "{}");
@@ -172,10 +184,12 @@ test.describe("two blocks sharing a line", () => {
       expect(seen[i], `step ${i + 1} narrowed further (${seen.map((n) => Math.round(n)).join(" → ")})`)
         .toBeLessThan(seen[i - 1] - 40);
     }
-    // …and by the end the neighbour has come home, at the width it always had.
+    // …and by the end the neighbour has come home and FILLS the rest of the line — no hole beside it (decided
+    // 2026-09-26: it used to wait at its old 50% with empty space at the end of the line).
     const l = await widthOf(page, "L"), r = await widthOf(page, "R");
     expect(Math.abs(r.box.y - l.box.y), "R is back on the first row").toBeLessThan(4);
-    expect(r.pct, "at its original width").toBe(50);
+    expect(l.pct + r.pct, "the line is full — no hole").toBeGreaterThan(99.5);
+    expect(l.pct + r.pct).toBeLessThanOrEqual(100.5);
   });
 
   test("a block alone on its line fills that line", async ({ page }) => {

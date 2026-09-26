@@ -6,7 +6,7 @@ import {
   addItem, removeItem, moveItem, updateItem, addChildItem, updateChildItem, removeChildItem, moveChildItem, sanitizeCssDeclarations, expandScopedCss, ACCORDION_CSS_PARTS, itemOverrideCss, itemHasOverride, itemFloatReserveRem, richBody, plainBody, isEmptyBox,
   findBox, findParent, isAncestor, updateBox, insertBox, removeBox, deleteBox, stackWithBlock, moveBoxStep, moveBox,
   containerStyle, childStyle, paddingCSS, marginCSS, sizeToCSS, flexForWidth, fillMainAxis, u, newBoxId, dropIndexAmong, EMPTY_BOX_MIN, fitRowWidths,
-  makeRowBand, normalizeRowBands, clampRowWidths, widthPct,
+  makeRowBand, normalizeRowBands, clampRowWidths, widthPct, fitBand, packRowLines, aloneOnItsLine,
   isFloating, floatBox, unfloatBox, groupBoxes, ungroupBoxes, alignInRow, alignInRowOf, bringToFront, sendToBack, bringForward, sendBackward, floatingZRange, cloneBox,
   isCssBg, bgImageLayer, renderAlertHTML, bgShowThroughCss,
   radiusCSS, isClipped, SHADOW_CSS, videoEmbedSrc,
@@ -482,6 +482,101 @@ describe("box-model — mutations are immutable and correct", () => {
     // normalizeRowBands leaves a band's deliberate overflow alone.
     const root = createContainer("column", { id: "root", children: [band] } as Partial<BoxNode>);
     expect(normalizeRowBands(root, 0).children![0].children!.map((c) => c.width)).toEqual(["100%", "100%"]);
+  });
+
+  /** Behaviours: box-builder-layout.feature — "A block dropped onto a full line takes an equal share of THAT line". */
+  describe("fitBand — a drop shares out only the line it lands on", () => {
+    const col = (id: string, width: string) => createContainer("column", { id, width } as Partial<BoxNode>);
+    const pageWith = (kids: BoxNode[]) => createContainer("column", { id: "root", children: [makeRowBand(kids, 0)] } as Partial<BoxNode>);
+    const widthsOf = (root: BoxNode) => root.children![0].children!.map((c) => c.width);
+    const sumOf = (ws: (string | undefined)[]) => ws.reduce((s, w) => s + widthPct(w), 0);
+    const drop = (kids: BoxNode[], at: number, fresh: BoxNode) => {
+      const root = pageWith(kids);
+      const bandId = root.children![0].id;
+      return fitBand(insertBox(root, bandId, at, fresh), bandId, fresh.id);
+    };
+
+    it("a third block on a full 50/50 line makes thirds, not 25/25/50", () => {
+      const ws = widthsOf(drop([col("a", "50%"), col("b", "50%")], 2, col("n", "100%")));
+      ws.forEach((w) => expect(widthPct(w)).toBeCloseTo(33.33, 1));
+      expect(sumOf(ws)).toBeLessThanOrEqual(100);
+    });
+
+    it("a fourth makes quarters — and the line NEVER adds up past 100 (it wrapped at 101%)", () => {
+      let kids = [col("a", "50%"), col("b", "50%")];
+      for (const id of ["n1", "n2"]) {
+        const root = drop(kids, kids.length, col(id, "100%"));
+        kids = root.children![0].children!;
+        expect(sumOf(kids.map((k) => k.width))).toBeLessThanOrEqual(100);
+      }
+      kids.forEach((k) => expect(widthPct(k.width)).toBeCloseTo(25, 1));
+      expect(packRowLines(kids)).toEqual([0, 0, 0, 0]);
+    });
+
+    it("the blocks already there keep their proportions", () => {
+      const ws = widthsOf(drop([col("a", "20%"), col("b", "80%")], 1, col("n", "100%"))).map(widthPct);
+      expect(ws[1]).toBeCloseTo(33.33, 1);            // the newcomer's equal share
+      expect(ws[2] / ws[0]).toBeCloseTo(4, 1);         // 20 : 80 survives
+    });
+
+    it("a HUGGING block (a Stat) dropped onto a FULL line takes an equal share too — it has nowhere to hug", () => {
+      const ws = widthsOf(drop([col("a", "50%"), col("b", "50%")], 2, col("n", "auto")));
+      ws.forEach((w) => expect(widthPct(w)).toBeCloseTo(33.33, 1));
+    });
+
+    it("…but on a line WITH room it keeps hugging", () => {
+      const root = pageWith([col("a", "40%")]);
+      const bandId = root.children![0].id;
+      const withNew = insertBox(root, bandId, 1, col("n", "auto"));
+      expect(fitBand(withNew, bandId, "n")).toBe(withNew);
+    });
+
+    it("a line with room is left alone — the drop already sized the newcomer to it", () => {
+      const root = pageWith([col("a", "40%")]);
+      const bandId = root.children![0].id;
+      const withNew = insertBox(root, bandId, 1, col("n", "60%"));
+      expect(fitBand(withNew, bandId, "n")).toBe(withNew);
+    });
+
+    it("only the line it lands on is shared — a block the user pushed to the next line keeps its width", () => {
+      const ws = widthsOf(drop([col("a", "50%"), col("b", "50%"), col("c", "70%")], 1, col("n", "100%")));
+      expect(ws[3]).toBe("70%");
+      expect(sumOf(ws.slice(0, 3))).toBeLessThanOrEqual(100);
+    });
+  });
+
+  describe("packRowLines — where a wrapping row breaks, from the stored widths", () => {
+    const col = (id: string, width?: string) => createContainer("column", { id, width } as Partial<BoxNode>);
+    it("fills a line to 100% then starts the next", () => {
+      expect(packRowLines([col("a", "50%"), col("b", "50%"), col("c", "30%")])).toEqual([0, 0, 1]);
+      expect(packRowLines([col("a", "100%"), col("b", "30.47%")])).toEqual([0, 1]);
+    });
+    it("a hair over 100 is still one line (rounding), a hundredth-and-a-half is not", () => {
+      expect(packRowLines([col("a", "50.3%"), col("b", "50.1%")])).toEqual([0, 0]);
+      expect(packRowLines([col("a", "50.3%"), col("b", "50.3%")])).toEqual([0, 1]);
+    });
+    it("a block pushed onto its own line fills it — until the user sizes it by hand (rule 2)", () => {
+      const row = makeRowBand([col("a", "100%"), col("b", "30%")], 0);
+      const [, b] = row.children!;
+      expect(childStyle(b, row).flex).toBe("1 1 30%");                               // never resized: fills
+      expect(childStyle({ ...b, widthByHand: true }, row).flex).toBe("0 1 30%");       // sized by hand: keeps it
+    });
+    it("a gap on the line counts toward it, as the browser counts it", () => {
+      const gapped = createContainer("column", { id: "b", width: "50%", marginLeftPct: 10 } as Partial<BoxNode>);
+      expect(packRowLines([col("a", "50%"), gapped])).toEqual([0, 1]);
+      expect(packRowLines([col("a", "40%"), gapped])).toEqual([0, 0]);
+    });
+    it("a block with no width takes a whole line", () => {
+      expect(packRowLines([col("a", "50%"), col("b")])).toEqual([0, 1]);
+    });
+    it("aloneOnItsLine reads the same packing — only a block pushed onto a LATER line by itself", () => {
+      const row = makeRowBand([col("a", "100%"), col("b", "30%")], 0);
+      const [a, b] = row.children!;
+      expect(aloneOnItsLine(row, a)).toBe(false);   // first line: shows the width the user set
+      expect(aloneOnItsLine(row, b)).toBe(true);
+      const three = makeRowBand([col("a", "100%"), col("b", "30%"), col("c", "30%")], 0);
+      expect(aloneOnItsLine(three, three.children![1])).toBe(false);
+    });
   });
 
   it("normalizeRowBands RESPECTS the user's margins on every section (never strips them)", () => {
