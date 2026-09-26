@@ -25,6 +25,9 @@ Run through this checklist BEFORE writing any code:
 Run through this checklist BEFORE telling the user it's done:
 
 - [ ] **⛔ EVERY BUG IN THE LEDGER READS FIXED** — no exceptions. Restate the ledger and the status of each line. A bug you found is a bug you FIX, in the same change, with a **mutation-proven** guard: no severity threshold, no "pre-existing", no "out of scope", no "noted for later", and it includes **bugs in tests** (a guard that cannot fail, or a flaky one). A line that is genuinely not a defect closes as NOT A BUG **with the measurement that shows it**. Choosing not to fix one is the USER'S call, never yours — say so explicitly and ask. See [docs/FIX_WHAT_YOU_FIND.md](docs/FIX_WHAT_YOU_FIND.md).
+- [ ] **⛔ RULE Y — YOU BUILT IT THROUGH THE UI** — the state you tested was made by dragging, dropping and
+  clicking, never written into `localStorage`. A seeded tree is allowed only to pin a repro you already found
+  through the interface. **Could not reproduce what the user reported? Then you did not build it their way.**
 - [ ] **⛔ RULE X — YOU SAW IT IN THE UI, AFTER EACH CHANGE** — every change, however small, driven in a real browser from the user's point of view before moving to the next one. Ten changes = ten UAT passes, in order. Each one checked in EVERY combination it can appear in (themes · 375/768/1280+ · device presets · every entry point · each state ON and OFF), trying hard to break it. State what you drove and what you saw. **The user must never be the one who finds it.** See [docs/UAT_EVERY_CHANGE.md](docs/UAT_EVERY_CHANGE.md).
 - [ ] **Every button/toggle/input works** — click every interactive element, verify it does its job
 - [ ] **All entry points tested** — menu items, toolbar buttons, keyboard shortcuts, right-click
@@ -179,6 +182,42 @@ Run through this checklist BEFORE telling the user it's done:
   **The user must never be the one who finds it.** Every bug in this file's history was found by them
   first and reproduced by me afterwards; that order is the bug this rule exists to end.
   See [docs/UAT_EVERY_CHANGE.md](docs/UAT_EVERY_CHANGE.md).
+- **RULE Z — DRIVE IT VISIBLY IN A BROWSER, EVERY COMBINATION, EVERY TIME (MANDATORY — applies to EVERY
+  feature, fix and implementation, not just layout).**
+  - **HEADED, NOT HEADLESS. Always.** Open a real, visible browser — Playwright MCP, or Playwright launched
+    with `headless: false` — and drive it the way the user would, so that anyone watching sees exactly what
+    they would see. Headless is for the CI gate, never for deciding that something works.
+  - **Screenshot each step and READ the image.** A DOM measurement answers the question you thought to ask;
+    the picture shows the one you did not. Never report a behaviour you have not looked at.
+  - **All three kinds, every time, and kept up to date:** the **functional** test (does it do the thing),
+    the **regression** test (is what used to work still working), and the **UAT** pass (drive it as the
+    user, in their flow, and judge whether it is right). A change that adds none of these is not finished.
+  - **BOTH AXES, BOTH DIRECTIONS, EVERY ARRANGEMENT.** Changed something about resizing? Then: width AND
+    height · grow AND shrink · joined AND outer · side-by-side AND stacked AND nested · repeated until it
+    either settles or drifts. Enumerate them; a list you wrote by hand quietly omits the one that breaks.
+  - **Measured, 2026-09-26:** a reversibility fix was verified on the bottom edge of a vertical stack of
+    three, and reported as done. The **width** round trip was never driven once — and it lost blocks, failed
+    to return to its original size, and left a stack missing from the second row. The user found all of it,
+    in the UI, in minutes.
+  - **"I ran the suite" is not this rule.** The suite runs what somebody already thought of. This rule is
+    about the combination nobody has written a test for yet — which is where the bug is.
+- **RULE Y — BUILD IT THROUGH THE UI. Seeding state is not UAT (MANDATORY, no exceptions).**
+  **The state under test is CONSTRUCTED THROUGH THE INTERFACE** — open the blocks panel, drag the tile,
+  drop it, click the handle, drag the edge. Writing a tree into `localStorage` and calling that a repro is
+  **not** allowed, and it is not "close enough": it tests a shape *I* invented instead of the one the
+  product builds. Every seeded shape behaves, which is precisely why seeding proves nothing.
+  - **Measured, 2026-09-26:** three separate user reports could not be reproduced across six hand-seeded
+    shapes — all six behaved perfectly — because the real drop pipeline puts wrappers, widths and stored
+    fields in the tree that no hand-written seed had. Building the same layout through the palette took
+    one pass. The user had to say *"I don't know why we're not following that rule"* before it was noticed.
+  - **A seeded tree is allowed in ONE place only:** a narrow regression guard, *after* the bug has been
+    reproduced through the UI, to pin the exact geometry. Never to investigate, never to reproduce, never
+    to decide that something works.
+  - **Every scenario, driven:** every block, every element, every component, every container (stack, row,
+    grid, grid cell) — added, edited, moved, resized, nested, deleted through the UI, in every combination
+    RULE X lists. A path you did not drive is a path you did not test.
+  - **If you cannot reproduce it, you have not built it the way the user did.** That is the first thing to
+    doubt — before the user's description, and before the code.
 
 ### 13. Capability parity & the component workflow (MANDATORY)
 - **Rule A — capability parity.** Every capability built for ONE component becomes the baseline for **every** component where it applies: editable items, part-CSS overrides, per-item/part colour + font + size + position, editable numbers, detach / float / group / position, no clipping.

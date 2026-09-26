@@ -24,7 +24,7 @@
 
 const { spawn, spawnSync } = require("node:child_process");
 const http = require("node:http");
-const { existsSync } = require("node:fs");
+const { existsSync, readFileSync } = require("node:fs");
 
 const PORT = Number(process.env.TEST_PORT ?? 3100);
 const BASE_URL = `http://localhost:${PORT}`;
@@ -62,6 +62,7 @@ const INVARIANT_SPECS = [
   "tests/e2e/keyboard-survives-selection.spec.ts",
   "tests/e2e/text-is-reachable.spec.ts",
   "tests/e2e/pinned-bar-anchors.spec.ts",
+  "tests/e2e/resize-leaves-no-gap.spec.ts",
   "tests/e2e/empty-band-shows.spec.ts",
   "tests/e2e/exported-site.spec.ts",
   "tests/e2e/layout-bands.spec.ts",
@@ -101,6 +102,8 @@ const INVARIANT_SPECS = [
   "tests/e2e/chrome-follows-resize.spec.ts",
   "tests/e2e/dropped-block-fills-space.spec.ts",
   "tests/e2e/vertical-edges-anchored.spec.ts",
+  "tests/e2e/page-height-is-content.spec.ts",
+  "tests/e2e/parity-every-arrangement.spec.ts",
 ];
 
 const argv = process.argv.slice(2);
@@ -121,15 +124,19 @@ function run(cmd, args, extraEnv = {}) {
  * test fail on its own wait — which says nothing about the real cause. A 5xx here is a broken build, and
  * saying so once beats hundreds of timeouts that do not.
  */
-function waitForServer(timeoutMs = 60_000) {
+function waitForServer(timeoutMs = 60_000, probePath = "/") {
   const deadline = Date.now() + timeoutMs;
   return new Promise((resolve, reject) => {
     const poll = () => {
-      const req = http.get(BASE_URL, (res) => {
-        res.resume();
-        if (res.statusCode < 500) resolve();
-        else if (Date.now() > deadline) reject(new Error(`${BASE_URL} answers ${res.statusCode} — the build cannot be served. Run a clean \`next build\` (a dev server may have overwritten .next).`));
-        else setTimeout(poll, 300);
+      const req = http.get(BASE_URL + probePath, (res) => {
+        let body = "";
+        res.setEncoding("utf8");
+        res.on("data", (c) => { if (body.length < 400_000) body += c; });
+        res.on("end", () => {
+          if (res.statusCode < 500) resolve(body);
+          else if (Date.now() > deadline) reject(new Error(`${BASE_URL} answers ${res.statusCode} — the build cannot be served. Run a clean \`next build\` (a dev server may have overwritten .next).`));
+          else setTimeout(poll, 300);
+        });
       });
       req.on("error", () => {
         if (Date.now() > deadline) reject(new Error(`no server on ${BASE_URL} after ${timeoutMs}ms`));
@@ -138,6 +145,47 @@ function waitForServer(timeoutMs = 60_000) {
     };
     poll();
   });
+}
+
+/**
+ * IS ANYTHING ALREADY ON THE PORT? Asked BEFORE spawning, because `next start` on a taken port does not fail
+ * loudly enough to notice — and `waitForServer` then greets the squatter as if it were ours.
+ */
+function portTaken(timeoutMs = 2_000) {
+  return new Promise((resolve) => {
+    const req = http.get(BASE_URL, (res) => { res.resume(); resolve(true); });
+    req.on("error", () => resolve(false));
+    req.setTimeout(timeoutMs, () => { req.destroy(); resolve(false); });
+  });
+}
+
+/**
+ * IS THE SERVER SERVING *THIS* BUILD? A readiness check that accepts any response under 500 cannot tell.
+ *
+ * Measured, and the whole reason this exists: a `next start` left over from an earlier run — started 28
+ * minutes before the build under test — sat on the port serving its OWN prerendered HTML. That HTML named a
+ * page chunk this build had since deleted, so the browser got **400 Bad Request** for
+ * `app/website/box-demo/page-<hash>.js`, the builder never hydrated, and **263 of 491 browser tests** timed
+ * out. Nothing in the output said "stale server": it read exactly like a product regression, and the first
+ * hour went into looking for one.
+ *
+ * Next stamps `BUILD_ID` into every prerendered page, so one string comparison settles it — and it catches
+ * the whole class: a squatter from another build, a `--no-build` run against a `.next` rebuilt underneath a
+ * live server, and any in-memory HTML left over from a previous build.
+ */
+function assertServingThisBuild(html) {
+  let id = "";
+  try { id = readFileSync(".next/BUILD_ID", "utf8").trim(); } catch { /* no build to compare against */ }
+  if (!id) return;
+  if (html.includes(id)) return;
+  throw new Error(
+    `${BASE_URL} is NOT serving this build.\n` +
+    `  .next/BUILD_ID is ${id}, and the page the server returned does not carry it.\n` +
+    "  Almost always a `next start` left over from an earlier run holding the port. It answers 200, so every\n" +
+    "  suite would silently test the WRONG build and fail on its own wait. Free the port and run again:\n" +
+    `    netstat -ano | grep ":${PORT} .*LISTENING"   then   taskkill /pid <pid> /T /F     (Windows)\n` +
+    `    lsof -ti:${PORT} | xargs kill                                                     (macOS/Linux)`,
+  );
 }
 
 /**
@@ -176,6 +224,17 @@ const devContaminated = () => existsSync(".next/server/chunks/ssr/[turbopack]_ru
     if (code !== 0) { console.error("\nBuild failed — the suites would only test a stale .next."); process.exit(code); }
   }
 
+  if (await portTaken()) {
+    console.error(
+      `\nSomething is ALREADY answering on ${BASE_URL} — almost certainly a \`next start\` left behind by an\n` +
+      "earlier run. It would serve its own, older build while these suites assumed ours, so the run is\n" +
+      "stopping here rather than reporting hundreds of timeouts. Free the port and try again:\n" +
+      `  netstat -ano | grep ":${PORT} .*LISTENING"   then   taskkill /pid <pid> /T /F     (Windows)\n` +
+      `  lsof -ti:${PORT} | xargs kill                                                     (macOS/Linux)`,
+    );
+    process.exit(1);
+  }
+
   console.log(`\n=== serving the build on ${BASE_URL} ===`);
   const server = spawn(npx, ["next", "start", "-p", String(PORT)], { stdio: ["ignore", "pipe", "pipe"], shell: useShell });
   server.stdout.on("data", (b) => process.stdout.write(`[server] ${b}`));
@@ -186,9 +245,10 @@ const devContaminated = () => existsSync(".next/server/chunks/ssr/[turbopack]_ru
   process.on("SIGTERM", bail);
 
   try {
-    await waitForServer();
+    const html = await waitForServer();
+    assertServingThisBuild(html);
   } catch (err) {
-    console.error(String(err));
+    console.error(String(err instanceof Error ? err.message : err));
     stop(server);
     process.exit(1);
   }

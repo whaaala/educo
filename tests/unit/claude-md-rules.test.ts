@@ -34,6 +34,31 @@ const RULES: [name: string, mustSay: RegExp][] = [
   ["…after EACH change, not after the batch", /after EACH change/i],
   ["…in every combination it can appear in", /EVERY combination|every combination it can appear in/i],
   ["…so the user is never the one who finds it", /user must never be the one who finds it/i],
+
+  /**
+   * RULE Y — the loophole RULE X left open, and fell through on 2026-09-26.
+   *
+   * "Drive the real UI in a real browser" was satisfied, on paper, by a real browser with a tree written
+   * straight into `localStorage`. Six hand-seeded shapes all behaved perfectly while three separate user
+   * reports stayed unreproducible, because the real drop pipeline puts wrappers, widths and stored fields
+   * in the tree that no hand-written seed had. The user noticed before I did.
+   */
+  /**
+   * RULE Z — the one that would have caught what RULE Y did not. A reversibility fix was driven on ONE
+   * combination (the bottom edge of a vertical stack) and reported as done; the WIDTH round trip was never
+   * run, and it lost blocks and never returned to its original size. The user found it in minutes.
+   */
+  ["Drive it visibly in a browser (RULE Z)", /RULE Z/],
+  ["…headed, never headless, for deciding it works", /HEADED, NOT HEADLESS/],
+  ["…screenshot and READ the image", /READ the image/i],
+  ["…functional + regression + UAT, every time", /the \*\*regression\*\* test|All three kinds, every time/i],
+  ["…both axes, both directions, every arrangement", /BOTH AXES, BOTH DIRECTIONS/i],
+  ["…running the suite is not the same thing", /is not this rule/i],
+
+  ["Build it through the UI (RULE Y)", /RULE Y/],
+  ["…seeding state is not UAT", /Seeding state is not UAT/i],
+  ["…a seeded tree only pins a repro already found", /narrow regression guard/i],
+  ["…an unreproducible bug means you built it wrong", /you have not built it the way the user did/i],
   ["Capability parity (Rule A)", /Rule A — capability parity/i],
   ["Full CRUD per item (Rule B)", /Rule B/],
   ["The component workflow needs approval", /get approval|→ \*\*get approval\*\*/i],
