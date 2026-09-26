@@ -561,7 +561,15 @@ describe("BoxCanvas (box-model editor)", () => {
     const n = findBox(onChange.mock.calls.at(-1)![0], "t1");
     expect(n?.width).toMatch(/%$/);            // the edge itself resized the WIDTH
     expect(n?.alignSelf).toBe("flex-start");   // top-left anchored (one consistent model)
-    expect(n?.marginLeft).toBeGreaterThan(0);  // box shifts right so the RIGHT edge stays fixed
+    /**
+     * THE GAP IS A SHARE OF THE LINE, NOT A LENGTH — `marginLeftPct`.
+     *
+     * This asserted `marginLeft > 0` and was right about the property and wrong about the unit. A length
+     * cannot sum with the percentage widths beside it: measured, a 140.15px margin next to widths of 35.83%
+     * and 50% came to 988.15px in a 988px row, and the block beside it wrapped onto a second line.
+     */
+    expect(n?.marginLeftPct, "the box shifts right so the RIGHT edge stays fixed").toBeGreaterThan(0);
+    expect(n?.marginLeft, "and the old length is cleared, so the two cannot disagree").toBeUndefined();
   });
 
   it("resizing a ROW section is EDGE-ANCHORED, and the neighbour GIVES UP exactly what you take", () => {
@@ -656,7 +664,8 @@ describe("BoxCanvas (box-model editor)", () => {
     fireEvent.mouseUp(document);
     const last = onChange.mock.calls.at(-1)![0];
     expect(findBox(last, "a")?.width).toMatch(/%$/);
-    expect(findBox(last, "a")?.marginLeft).toBeGreaterThan(0); // shifted right so the RIGHT edge stays put
+    // A SHARE OF THE LINE, not a length — see `marginLeftPct`. Shifted right so the RIGHT edge stays put.
+    expect(findBox(last, "a")?.marginLeftPct).toBeGreaterThan(0);
     expect(findBox(last, "b")?.width).toBe("40%");             // the neighbour is untouched
   });
 

@@ -668,3 +668,104 @@ Feature: Placing blocks beside one another in the Box Builder
     Because the drop writes `100%` on the block so it stretches inside its band.
       Counting that as a height would switch the fill off the instant it was
       created.
+
+  # ── The whole rule: no gap between stacks; only an OUTER edge may open one ──
+
+  Scenario: Resizing against a neighbour never leaves a gap between two stacks
+    Given two stacks touching, side by side or one above the other
+    When the shared edge between them is dragged, from either side
+    Then the neighbour gives or takes the room and the two stay touching
+    Because the boundary belongs to both of them. Asserted as the gap BETWEEN
+      them, which is what a person sees, rather than as either block's stored
+      size — the widths were arithmetically right throughout the fault this
+      exists to catch, and the row still broke.
+
+  Scenario: Only an edge facing nothing may open a space
+    Given a stack with nothing beyond the edge being dragged
+    When that edge is dragged inward
+    Then a space opens there and the other stack is not disturbed at all
+    Because that is the one case with no boundary to share. It is the user's own
+      statement of the rule: a space is right on the far left when nothing is to
+      its left, and the same at the right, the top and the bottom.
+
+  Scenario: The gap on a line is a share of that line, not a length
+    Given the left edge of the leftmost stack dragged inward
+    Then the stack beside it stays on the same line
+    Because the gap has to ADD UP with the percentage widths beside it. Written
+      as a length it could not: measured, a 140.15px margin beside widths of
+      35.83% and 50% came to 988.15px in a 988px row — an overflow of 0.15px —
+      and the stack beside it wrapped onto a second line and doubled the band's
+      height. A percentage margin resolves against the parent, so the row adds up
+      exactly at every width and the gap scales with the page.
+
+  Scenario: The gap and the width are one sum
+    Given the same drag
+    Then the width is the remainder of what the block already occupied
+    Because rounding the two separately leaves the pair 0.01% adrift, which is a
+      tenth of a pixel at that width and is precisely what wrapped the row.
+
+  Scenario: All eight ways are checked, not one
+    Given each of the four edges, with a neighbour beyond it and without
+    Then every one behaves
+    Because the fault was found in the case nobody had tried, and a matrix cannot
+      quietly omit a corner the way a list of hand-written tests can.
+
+  # ── An edge that meets SEVERAL stacks ───────────────────────────────────────
+  # The user asked whether stacks could be "grouped" so they adjust together.
+  # They already are: two columns side by side live in one BAND, and the band is
+  # what a shared edge really belongs to.
+
+  Scenario: Closing a boundary that meets several stacks moves them all
+    Given a band holding a stack beside a column of two rows
+    And another stack below that band
+    When the lower stack's top edge is dragged down
+    Then the band, the stack and the column all follow the boundary together
+    And no hole opens between the column's last row and the stack below it
+    Because writing the height to the band moved both columns but did not reach
+      the rows INSIDE one: measured, the band went 300 → 366, the stack and the
+      column both followed to 366, and the last row stayed at 120 — a 66px hole.
+      In the user's words, "when I decrease the height from the top it creates a
+      space at the bottom of the ones on the right".
+
+  Scenario: A band that has been given a height says so to what it stretches
+    Given a band with a height of its own
+    Then a column inside it is sized by that band, and its rows fill it
+    Because a band is scaffolding only until a gesture writes a height onto one.
+      The resolver passed the question straight through, so the column went on
+      hugging its own rows while the band stretched it.
+
+  Scenario: The edge stops dead when the stacks above have nothing left to give
+    Given the band above is already at its content floor
+    When the lower stack's top edge is dragged up
+    Then nothing moves at all
+    And no gap is torn open to pay for the gesture
+    Because it is the user's own call, asked and answered: the edge stops. It
+      does not grow out of the far side.
+
+  Scenario: A repeated drag does not ratchet the height upward
+    Given the top edge dragged up three times in a row
+    Then the height settles and the later drags change nothing
+    Because a gesture that re-reads a page the previous one made taller would
+      grow again each time. Measured: 300 → 396 → 396 → 396, the header giving
+      way to its 24px floor and the edge then stopping dead.
+
+  # ── A neighbour BESIDE you is not the same as nothing above you ─────────────
+
+  Scenario: A stack with a neighbour beside it still has something above it
+    Given a stack with a taller stack beside it, in a band below a header
+    When its top edge is dragged up
+    Then it stays inside its own band and never covers the header
+    And the header gives way instead, and the stack beside it comes along
+    Because the block-above lookup gave up on meeting a sibling sharing the line.
+      That sibling owns no boundary — which is not the same claim as "nothing
+      does". With no partner found the edge was clamped against the PAGE top
+      instead: measured, margin-top -160.034px, the stack 160px above its own
+      band and sitting on the header. The user: "it went way above the whole page
+      on the top side".
+
+  Scenario: The overlap is what is asserted, not the margin
+    Given the same drag
+    Then the test measures whether the stack covers what is above it
+    Because the negative margin is only the mechanism, and a future fix that
+      reached the same wrong picture another way would slip past a test watching
+      the number.

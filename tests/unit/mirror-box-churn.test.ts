@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { shouldTakeMirrorBox, type MirrorBox, type MirrorChase } from "@/lib/box-model";
+import { shouldTakeMirrorBox, mirrorMeasuresNow, type MirrorBox, type MirrorChase } from "@/lib/box-model";
 
 /**
  * THE SELECTION CHROME'S MEASURE LOOP IS BOUNDED — WITHOUT LOSING THE BLOCK.
@@ -148,5 +148,34 @@ describe("shouldTakeMirrorBox", () => {
     const { shown, takes } = runLoop([...drift, ...rest]);
     expect(takes, "the runaway was cut short").toBeLessThanOrEqual(MAX + 1);
     expect(shown, "and the chrome is on the block once it holds still").toEqual(box({ height: 120 }));
+  });
+});
+
+/**
+ * THE OTHER HALF OF THE RUNAWAY: what a mirror is allowed to do when it MOUNTS.
+ *
+ * Behaviours: tests/features/components/website/box-builder-layout.feature.
+ *
+ * The churn budget above bounds a mirror arguing with an unsettled layout WITHIN one mount. It cannot help
+ * when the mirror is remounted on every render, because every piece of the guard — the measured flag, the
+ * budget, the last box — lived in a `useRef`, and a ref is born again with the component. The first
+ * measurement of a mount is deliberately synchronous, so that arrangement is measure → setState → render →
+ * remount → measure with no frame boundary anywhere: "Maximum update depth exceeded", which the user hit
+ * twice and which no reproduction attempt has ever caught in a browser.
+ *
+ * So the rule is tested instead of the symptom — the same decision `shouldTakeMirrorBox` records above.
+ */
+describe("when a freshly mounted mirror may measure synchronously", () => {
+  it("YES the very first time a block is selected — the handles must not lag a frame behind the click", () => {
+    expect(mirrorMeasuresNow(false, false)).toBe(true);
+  });
+
+  it("NO on a remount, because the box is already known and there is no lag to avoid", () => {
+    expect(mirrorMeasuresNow(false, true), "this is the case that made the chain unbounded").toBe(false);
+  });
+
+  it("NO once this mount has measured — every later pass waits for a frame", () => {
+    expect(mirrorMeasuresNow(true, false)).toBe(false);
+    expect(mirrorMeasuresNow(true, true)).toBe(false);
   });
 });

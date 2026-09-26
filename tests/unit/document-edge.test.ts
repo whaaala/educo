@@ -1,9 +1,9 @@
 import { describe, it, expect } from "vitest";
-import { documentEdgeCss } from "@/lib/box-export";
-import { normalizeRowBands, type BoxNode } from "@/lib/box-model";
+import { documentBackdropCss } from "@/lib/box-export";
+import type { SiteTheme } from "@/lib/site-storage";
 
 /**
- * A PAGE SHORTER THAN THE SCREEN ENDS IN ITS OWN COLOUR — never in a slab of white nobody added.
+ * A PAGE SHORTER THAN THE SCREEN ENDS IN ITS OWN BACKGROUND — never in a slab of white nobody added.
  *
  * Behaviours: tests/features/components/website/box-builder-site.feature.
  *
@@ -11,59 +11,49 @@ import { normalizeRowBands, type BoxNode } from "@/lib/box-model";
  * of white followed it, directly beneath a dark footer. Two thirds of the screen. Reported as exactly what
  * it looks like — "it looks like a user is seeing what they have not added."
  *
- * The rule chosen, and the two that were rejected:
- *   • CHOSEN — paint the DOCUMENT the colour of the band that ends the page. Adds no element, no space, no
- *     height and no setting; invisible on any page taller than the screen; responsive by construction.
+ * The rule chosen, and the three that were rejected:
+ *   • CHOSEN — paint the DOCUMENT with the PAGE'S OWN BACKGROUND. One sentence a user already understands,
+ *     theirs to set rather than the system guessing, and the same colour the builder paints the page with —
+ *     so the two surfaces agree by construction rather than through a mirroring rule kept in sync by hand.
+ *   • rejected — INFER the colour from the last band. This is what shipped first, and it works only when
+ *     that band is a single full-width block. On a band holding two columns it picked ONE of them and
+ *     painted the FULL WIDTH with it: a 28%-wide green stack produced a green slab beneath the entire page.
+ *     Reported as "it covers everything, which is wrong". Abandoned rather than patched, because the
+ *     condition for it being right could not be stated to a user in a sentence.
  *   • rejected — stretch the last band to `100vh`: that changes the user's layout and turns a 90px footer
  *     into an 800px one, which is adding the empty space this exists to remove.
  *   • rejected — a per-page setting: asking someone to fix a problem they did not cause.
  */
 
-const band = (id: string, background?: string, extra: Record<string, unknown> = {}): BoxNode =>
-  ({ id, type: "container", direction: "column", width: "100%", padding: 0, gap: 0, minHeight: 80, background, ...extra } as unknown as BoxNode);
-
-const page = (kids: BoxNode[]): BoxNode =>
-  ({ id: "root", type: "container", direction: "column", padding: 0, gap: 0, children: kids } as unknown as BoxNode);
+const theme = (background: string): SiteTheme => ({ background } as unknown as SiteTheme);
 
 describe("the colour a short page ends in", () => {
-  it("is the background of the band that ends the page", () => {
-    expect(documentEdgeCss(page([band("a", "#0d3b1e"), band("b", "#ffffff"), band("c", "#1f2937")])))
-      .toBe("html{background-color:#1f2937}");
+  it("is the page's own background", () => {
+    expect(documentBackdropCss(theme("#1f2937"))).toBe("html{background-color:#1f2937}");
   });
 
-  it("is found through the ROW BANDS the builder wraps every block in", () => {
-    // The shape the BUILDER makes, not a hand-built tree: every top-level child gets its own band, so the
-    // colour is one level deeper than it looks. A guard written against the raw tree would pass while the
-    // real page — the only one a visitor ever sees — emitted nothing at all.
-    const built = normalizeRowBands(page([band("a", "#0d3b1e"), band("c", "#1f2937")]), 0);
-    expect(built.children?.[0].rowBand, "the fixture really is banded").toBe(true);
-    expect(documentEdgeCss(built)).toBe("html{background-color:#1f2937}");
+  it("is the page's background even when it is white — that is a choice, not an accident", () => {
+    expect(documentBackdropCss(theme("#ffffff"))).toBe("html{background-color:#ffffff}");
   });
 
-  it("ignores a FLOATING block — it is on its own layer, not the bottom of the page", () => {
-    const floatOnTop = band("card", "#ff00ff", { position: "absolute", left: 10, top: 10 });
-    expect(documentEdgeCss(page([band("a", "#0d3b1e"), band("c", "#1f2937"), floatOnTop])))
-      .toBe("html{background-color:#1f2937}");
+  /**
+   * THE CASE THAT KILLED THE OLD RULE. Whatever the page is made of — one band, two columns, a footer in a
+   * colour of its own — the backdrop is the PAGE's background and nothing else. The old rule read the
+   * layout and could therefore be surprised by it; this one cannot be, which is the entire point.
+   */
+  it("does not depend on the layout at all", () => {
+    const dark = documentBackdropCss(theme("#0d3b1e"));
+    expect(dark).toBe("html{background-color:#0d3b1e}");
+    // Same theme, and it cannot differ — there is nothing about the page for it to read.
+    expect(documentBackdropCss(theme("#0d3b1e"))).toBe(dark);
   });
 
-  it("ignores a block that is hidden, since it ends nothing", () => {
-    expect(documentEdgeCss(page([band("c", "#1f2937"), band("gone", "#ff00ff", { hidden: true })])))
-      .toBe("html{background-color:#1f2937}");
+  it("emits nothing for a gradient — `background-color` cannot take one", () => {
+    expect(documentBackdropCss(theme("linear-gradient(#fff, #000)"))).toBe("");
   });
 
-  it("takes the first band that HAS a colour, looking upward", () => {
-    expect(documentEdgeCss(page([band("a", "#0d3b1e"), band("plain")])))
-      .toBe("html{background-color:#0d3b1e}");
-  });
-
-  it("refuses a GRADIENT rather than repeating it below the page", () => {
-    // `background-color` cannot take a gradient, and `background` on <html> would paint the whole gradient
-    // again under the content — which is adding something, the one thing this must not do.
-    expect(documentEdgeCss(page([band("g", "linear-gradient(180deg, #000, #fff)")]))).toBe("");
-  });
-
-  it("emits NOTHING when no band carries a colour, leaving the browser exactly as it was", () => {
-    expect(documentEdgeCss(page([band("a"), band("b")]))).toBe("");
-    expect(documentEdgeCss(page([]))).toBe("");
+  it("emits nothing when the theme carries no background, leaving the browser default", () => {
+    expect(documentBackdropCss(theme(""))).toBe("");
+    expect(documentBackdropCss(theme("   "))).toBe("");
   });
 });

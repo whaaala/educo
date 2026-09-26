@@ -11,7 +11,7 @@ import {
   isCssBg, bgImageLayer, renderAlertHTML, bgShowThroughCss,
   radiusCSS, isClipped, SHADOW_CSS, videoEmbedSrc,
   resolveResponsive, updateBoxResponsive, hasOverride, clearOverride, BP_ORDER,
-  remLen,
+  remLen, hostSizedFor,
   type BoxNode,
 } from "@/lib/box-model";
 
@@ -1258,3 +1258,59 @@ describe("a band's fill is spent once its block is sized", () => {
       .toBe(childStyle(band({ height: "100%" }), row).flex);
   });
 });
+
+/**
+ * WHO IS GIVEN THEIR HEIGHT BY SOMETHING ELSE?
+ *
+ * `hostSizedFor` answers it for a node's children, and the canvas and the export BOTH call it — so the two
+ * agree by construction rather than by luck. Two cases were missing, and together they left a hole a user
+ * could see: a band that has been given a height did not say so, and a section a row stretches did not pass
+ * the answer on. Measured in a browser: the band 300 → 366, the column inside it 300 → 366, and the last row
+ * in that column still 120 — a 66px hole above the stack below.
+ */
+describe("box-model — hostSizedFor: who is handed their height", () => {
+  const band = (extra: Partial<BoxNode> = {}) => createContainer("row", { id: "band", rowBand: true, align: "stretch", ...extra } as Partial<BoxNode>);
+  const col = (extra: Partial<BoxNode> = {}) => createContainer("column", { id: "col", ...extra } as Partial<BoxNode>);
+
+  it("a band with no height of its own passes the question through, as it always did", () => {
+    expect(hostSizedFor(band(), false, null)).toBe(false);
+    expect(hostSizedFor(band(), true, null)).toBe(true);
+  });
+
+  it("a band that HAS been given a height answers yes — it stretches what is inside it", () => {
+    expect(hostSizedFor(band({ minHeight: 366 }), false, null)).toBe(true);
+    expect(hostSizedFor(band({ height: "30rem" }), false, null)).toBe(true);
+  });
+
+  it("a section in a stretching row passes the answer DOWN to its own rows", () => {
+    // The column stores nothing; the band above it is what has the height.
+    expect(hostSizedFor(col(), true, band({ minHeight: 366 }))).toBe(true);
+  });
+
+  /**
+   * IT ANSWERS YES EVEN WHEN THE ROW STORES NOTHING — which is the opposite of what this test asserted when
+   * it was written a few hours earlier, and the change is deliberate.
+   *
+   * A row hands its children its own height HOWEVER that height arose, and most of the time it arose from
+   * the tallest child with nothing stored anywhere. Requiring a stored number missed exactly that case:
+   * drag one stack's bottom edge down, the band grows because that stack is now the tallest, the column
+   * beside it stretches to match, and the rows inside that column go on hugging — a 200px hole under the
+   * last one.
+   */
+  it("…and says so even when the row stores no height, because the tallest child gave it one", () => {
+    expect(hostSizedFor(col(), false, band())).toBe(true);
+  });
+
+  it("a row told to align its children some other way is handing out no height", () => {
+    expect(hostSizedFor(col(), true, createContainer("row", { id: "r", align: "start" } as Partial<BoxNode>))).toBe(false);
+  });
+
+  it("a column parent is unchanged — it stacks its children, it does not stretch them", () => {
+    expect(hostSizedFor(col(), true, createContainer("column", { id: "outer", minHeight: 400 } as Partial<BoxNode>))).toBe(false);
+  });
+
+  it("a block with its own height always answers for itself", () => {
+    expect(hostSizedFor(col({ minHeight: 200 }), false, createContainer("column", { id: "outer" } as Partial<BoxNode>))).toBe(true);
+  });
+});
+

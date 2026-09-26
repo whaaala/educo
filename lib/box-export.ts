@@ -11,7 +11,7 @@
 import type { CSSProperties } from "react";
 import { pinArrivalCss, pinArrivalKeyframes, floatHoldCSS,
   type BoxNode, type Breakpoint, BP_ORDER, containerStyle, childStyle, hostSizedFor, marginCSS, sizeToCSS, radiusCSS, SHADOW_CSS, u, baseUnit, fadedPaint, boxOpacity, backgroundCss, paintLayerCss,
-  resolveResponsive, floatStacksOnMobile, isFloating, floatingReserve, alertToastCss, accordionClasses, bandClasses, videoEmbedSrc, isContainer, sanitizeCssDeclarations, expandScopedCss, COMPONENT_PARTS, itemFloatContextCss, itemOverrideCss, itemNumberVars, richBody, plainBody, componentTextCss, componentBoxCss, renderAlertHTML, alertDismissScript, masonryMeasureAttr, masonryMeasureScript, pinStackMarker, pinStackGroupMarker, pinStackNeeded, pinStackScript, isPager, pagerNavHTML, pagerScript, pagerStripCss, pagerSlideId, bgShowThroughCss, blockContainmentCss, COMPONENT_ITEM_SEL, remLen, imageSizing, hasIntrinsicSize, itemNeedsClass, itemScope, floatZIndex, typoRole, typoRootVars, typoCascadeCss, bandEdgeCSS,
+  resolveResponsive, floatStacksOnMobile, floatingReserve, alertToastCss, accordionClasses, bandClasses, videoEmbedSrc, isContainer, sanitizeCssDeclarations, expandScopedCss, COMPONENT_PARTS, itemFloatContextCss, itemOverrideCss, itemNumberVars, richBody, plainBody, componentTextCss, componentBoxCss, renderAlertHTML, alertDismissScript, masonryMeasureAttr, masonryMeasureScript, pinStackMarker, pinStackGroupMarker, pinStackNeeded, pinStackScript, isPager, pagerNavHTML, pagerScript, pagerStripCss, pagerSlideId, bgShowThroughCss, blockContainmentCss, COMPONENT_ITEM_SEL, remLen, imageSizing, hasIntrinsicSize, itemNeedsClass, itemScope, floatZIndex, typoRole, typoRootVars, typoCascadeCss, bandEdgeCSS,
 } from "@/lib/box-model";
 import { isRegistryComponent, renderComponent, componentScripts } from "@/lib/educo-ui/registry";
 import { iconSvg } from "@/lib/educo-ui/icon-svg";
@@ -564,22 +564,37 @@ function sheetCss(sheet: Sheet): string {
  *     below the fold would be adding something, which is the one thing this must not do;
  *   • nothing suitable → nothing is emitted, and the browser default stands exactly as before.
  */
-export function documentEdgeCss(root: BoxNode): string {
-  const kids = [...(root.children ?? [])].reverse();
-  for (const raw of kids) {
-    const k = resolveResponsive(raw, "base");
-    if (isFloating(k)) continue;
-    if (k.hidden && !raw.responsive) continue;
-    // A row band is structural — the colour lives on what is inside it.
-    const source = k.rowBand ? [...(k.children ?? [])].reverse().map((c) => resolveResponsive(c, "base")).find((c) => !isFloating(c)) : k;
-    const colour = source?.background;
-    if (!colour || !colour.trim()) continue;
-    // A gradient is a paint, not a colour: `background-color` cannot take one, and `background` on <html>
-    // would draw the whole gradient again below the page. The first usable flat colour wins instead.
-    if (colour.includes("gradient(")) continue;
-    return `html{background-color:${colour}}`;
-  }
-  return "";
+/**
+ * BELOW YOUR CONTENT IS YOUR PAGE'S OWN BACKGROUND. That is the whole rule, and it replaces one that tried
+ * to be cleverer.
+ *
+ * The problem is real and unchanged: a page shorter than the screen leaves the browser's own backdrop
+ * below it, and a slab of white under a dark footer reads as an empty block somebody added by mistake.
+ * Measured on an iPad Pro 11 with a real three-band page: content ended at 410px and **800 pixels of white
+ * followed it**.
+ *
+ * WHAT THIS USED TO DO was infer the colour from the last band. That works only when the last band is a
+ * single full-width block, and silently misbehaves otherwise: on a band holding two columns it picked ONE
+ * of them and painted the FULL WIDTH with it, so a 28%-wide green stack produced a green slab under the
+ * entire page. Reported as *"it covers everything, which is wrong"* — and it was, in the export as well as
+ * in the builder, which is why inferring was abandoned rather than patched.
+ *
+ * The page background is better on every count that matters here. It is ONE sentence a user already
+ * understands, it is theirs to set rather than the system guessing, and the builder paints the page with
+ * that same colour — so the two surfaces agree by construction instead of by a mirroring rule somebody has
+ * to keep in sync. A dark site is dark below its content because the site is dark, not because a footer
+ * happened to be.
+ *
+ * It adds no element, no height and no space, exactly as before: only the document is painted, so a page
+ * taller than the screen never shows it at all.
+ */
+export function documentBackdropCss(theme: SiteTheme): string {
+  const colour = theme.background;
+  if (!colour || !colour.trim()) return "";
+  // A gradient is a paint, not a colour: `background-color` cannot take one, and `background` on <html>
+  // would draw the whole gradient again below the page.
+  if (colour.includes("gradient(")) return "";
+  return `html{background-color:${colour}}`;
 }
 
 export function renderPageHTML(root: BoxNode, theme: SiteTheme, pageMap: Map<string, string> = new Map(), sheet?: Sheet): string {
@@ -674,7 +689,7 @@ export function renderSitePage(site: BoxSite, theme: SiteTheme, pageId: string, 
   const components = subsetCss(COMPONENT_CSS, usedEuClasses(markup));
   const shared = opts.inlineShared ? `${sharedCss(theme)}\n${SITE_CHROME_CSS}` : undefined;
   // Per PAGE, not per site: each page ends with its own band, and two pages need not end the same way.
-  return pageDocument(theme, page.name, markup, [components, sheetCss(sheet), documentEdgeCss(page.root)].filter(Boolean).join("\n"), shared);
+  return pageDocument(theme, page.name, markup, [components, sheetCss(sheet), documentBackdropCss(theme)].filter(Boolean).join("\n"), shared);
 }
 
 /**
@@ -717,7 +732,7 @@ export function renderSiteFiles(site: BoxSite, theme: SiteTheme, fontCss = ""): 
     const components = subsetCss(COMPONENT_CSS, usedEuClasses(markup));
     // Per PAGE, and so NOT in the shared stylesheet: each page ends with its own band, and two pages need
     // not end the same way. A downloaded site gets exactly what the preview showed.
-    out[files.get(page.id)!] = pageDocument(theme, page.name, markup, [components, sheetCss(sheet), documentEdgeCss(page.root)].filter(Boolean).join("\n"), undefined, prefetchLinks(files, page.id));
+    out[files.get(page.id)!] = pageDocument(theme, page.name, markup, [components, sheetCss(sheet), documentBackdropCss(theme)].filter(Boolean).join("\n"), undefined, prefetchLinks(files, page.id));
   }
 
   // The SHARED sheet is only what is identical everywhere — tokens, base, site chrome. The component

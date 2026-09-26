@@ -18,7 +18,7 @@ import {
   updateBox, deleteBox, insertBox, moveBoxStep, duplicateBox, moveBox, cloneBox, findParent, isAncestor, isContainer, containerLabel, widthPct, stackWithBlock, fitBand,
   isFloating, floatBox, unfloatBox, groupBoxes, ungroupBoxes, bringToFront, sendToBack, bringForward, sendBackward,
   shouldTakeMirrorBox, hostSizedFor, type MirrorBox, type MirrorChase, fadedPaint, boxOpacity, backgroundCss, treePaintLayerCss, radiusCSS, isClipped, SHADOW_CSS, videoEmbedSrc, sanitizeCssDeclarations, expandScopedCss, ACCORDION_CSS_PARTS, itemOverrideCss, itemHasOverride, itemNumberVars, richBody, componentTextCss, componentBoxCss, bgShowThroughCss, resizeTopEdge, blockContainmentCss, alertToastCss, treeHasToast, treeHasFixedHold, accordionClasses, bandClasses, advancedCssStyle, alertActionsHTML, hugsContent, itemFloatContextCss, COMPONENT_ITEM_SEL, clampContentScale, MIN_CONTENT_SCALE, isMultiItemComponent, comfortableWidth, remLen, rootFontPx, isDefiniteLen, addItemAfter, duplicateItem, duplicateChildItem, removeItem, removeChildItem, moveItem, moveChildItem, updateItem, updateChildItem, ALERT_SEVERITY_ICON, alertPartInline, alertIconInline, collectAlertItemStyles,
-  type Breakpoint, resolveResponsive, updateBoxResponsive, treePinArrivalCss, floatHoldCSS, canvasFixedStyle, capturesFixed, imageSizing, importPhoto, treeItemEffectsCss, itemNeedsClass, floatZIndex, gridPlacementAt, gridColumnsAt, masonryMeasureAttr, masonryMeasurePass, baseUnitParts, pinStackMarker, pinStackGroupMarker, pinStackPass, isPager, pagerStripCss, pagerNavHTML, selectionChain, typoRole, typoRootVars, typoCascadeCss, bandEdgeCSS,
+  type Breakpoint, resolveResponsive, updateBoxResponsive, treePinArrivalCss, floatHoldCSS, canvasFixedStyle, capturesFixed, imageSizing, importPhoto, treeItemEffectsCss, itemNeedsClass, floatZIndex, gridPlacementAt, gridColumnsAt, masonryMeasureAttr, masonryMeasurePass, mirrorMeasuresNow, baseUnitParts, pinStackMarker, pinStackGroupMarker, pinStackPass, isPager, pagerStripCss, pagerNavHTML, selectionChain, typoRole, typoRootVars, typoCascadeCss, bandEdgeCSS,
 } from "@/lib/box-model";
 import { ICON_SET } from "./icons";
 import { PortalMenu, MenuItem, MenuHeader, MenuSep } from "./ui";
@@ -348,8 +348,25 @@ const ADD_ITEMS: { type: BoxType | "row" | "grid" | "accordion"; label: string; 
  *
  * The guard was written, correct, and unreachable. Keeping this at module scope is what makes it run.
  */
+/**
+ * WHAT THE MIRROR REMEMBERS ACROSS A REMOUNT — and why it cannot live in a ref.
+ *
+ * Every protection this component has — the "already measured once" flag, the churn budget, the last box —
+ * was held in a `useRef`, and a ref is born again with the component. So none of them survive a remount, and
+ * the first measurement after each mount is deliberately SYNCHRONOUS (so selecting a block shows its handles
+ * without a frame of lag). A mirror that remounts on every render therefore runs measure → setState → render
+ * → measure synchronously, with no bound and no frame boundary, which is exactly what React reports as
+ * "Maximum update depth exceeded". Reported twice by the user; the guard added last time could not help,
+ * because it was one of the refs being reset.
+ *
+ * Keyed by block id and outside the component, so a remount picks up where the last mount left off: the box
+ * it already knew (no flicker, no synchronous re-measure) and the churn budget it had already spent.
+ */
+const mirrorMemory = new Map<string, { box: MirrorBox | null; chase: MirrorChase }>();
+
 function ChromeMirror({ blockId, children }: { blockId: string; children: ReactNode }) {
-  const [box, setBox] = useState<{ left: number; top: number; width: number; height: number } | null>(null);
+  const remembered = mirrorMemory.get(blockId);
+  const [box, setBox] = useState<{ left: number; top: number; width: number; height: number } | null>(remembered?.box ?? null);
   const [, remeasure] = useReducer((n: number) => n + 1, 0);
 
   // Scrolling and window resizing move the block without re-rendering anything here, so they have to ask.
@@ -368,10 +385,22 @@ function ChromeMirror({ blockId, children }: { blockId: string; children: ReactN
      * Gated on the button being DOWN, so hovering the page does not quietly switch the bound off — capture
      * phase, because the handle's own mousedown stops propagation before any bubble listener would see it.
      */
+    /**
+     * …BUT A GESTURE RESTORES THE BUDGET, IT DOES NOT ABOLISH IT.
+     *
+     * Re-arming on every `pointermove` meant the bound was switched OFF for as long as the pointer was down —
+     * which is exactly when the user hit "Maximum update depth exceeded". A drag is a real signal, so it may
+     * buy more frames; it may not buy unlimited ones, or the protection is not a protection.
+     *
+     * `REARMS_PER_GESTURE` frames of chasing is far more than any honest drag needs — the drag commits a tree
+     * per frame and the mirror follows it — and still a finite number.
+     */
+    const REARMS_PER_GESTURE = 120;
     let gesturing = false;
+    let rearms = 0;
     const rearm = () => { churn.current = { churn: 0, seen: churn.current.seen }; };
-    const onDown = () => { gesturing = true; rearm(); };
-    const onDrag = () => { if (gesturing) rearm(); };
+    const onDown = () => { gesturing = true; rearms = 0; rearm(); };
+    const onDrag = () => { if (gesturing && rearms++ < REARMS_PER_GESTURE) rearm(); };
     const onUp = () => { gesturing = false; };
     window.addEventListener("scroll", onMove, true);
     window.addEventListener("resize", onMove);
@@ -421,9 +450,14 @@ function ChromeMirror({ blockId, children }: { blockId: string; children: ReactN
    * and React may call it twice, which would double-count the churn and halve the budget.
    */
   const MAX_CHURN = 8;
-  const churn = useRef<MirrorChase>({ churn: 0, seen: null });
-  const boxRef = useRef<MirrorBox | null>(null);
-  useEffect(() => { churn.current = { churn: 0, seen: null }; }, [blockId]);
+  // Seeded from what the last mount knew — see `mirrorMemory`. A remount must not hand the loop a fresh budget.
+  const churn = useRef<MirrorChase>(remembered?.chase ?? { churn: 0, seen: null });
+  const boxRef = useRef<MirrorBox | null>(remembered?.box ?? null);
+  useEffect(() => {
+    const prior = mirrorMemory.get(blockId);
+    churn.current = prior?.chase ?? { churn: 0, seen: null };
+    boxRef.current = prior?.box ?? null;
+  }, [blockId]);
   useEffect(() => {
     const measure = () => {
       const el = document.querySelector<HTMLElement>(`[data-box-id="${CSS.escape(blockId)}"]`);
@@ -434,6 +468,9 @@ function ChromeMirror({ blockId, children }: { blockId: string; children: ReactN
       // the only honest guard for it.
       const verdict = shouldTakeMirrorBox(boxRef.current, next, churn.current, MAX_CHURN);
       churn.current = verdict.state;
+      // Written out on EVERY pass, not only when the box is taken: the budget is the half that has to
+      // survive a remount, and a mirror that gives up is precisely the one that must not forget it did.
+      mirrorMemory.set(blockId, { box: verdict.take ? next : boxRef.current, chase: verdict.state });
       if (!verdict.take) return;
       boxRef.current = next;
       setBox(next);
@@ -442,7 +479,14 @@ function ChromeMirror({ blockId, children }: { blockId: string; children: ReactN
     // deferring that one put the chrome a frame behind the click, which is exactly the kind of lag that
     // makes an editor feel loose. Every measurement AFTER it waits for a frame, and that is the one that
     // matters: a re-measure is the only one that can chain, and a frame boundary is what stops it.
-    if (!measured.current) { measured.current = true; measure(); return; }
+    /**
+     * …AND ONLY FOR A BLOCK THIS MIRROR HAS NEVER MEASURED. On a REMOUNT the box is already known, so there
+     * is no lag to avoid — and taking the synchronous path again is what turns a remount-per-render into an
+     * unbounded synchronous chain. Deferring it hands the loop a frame boundary, which is the one thing that
+     * reliably ends it.
+     */
+    if (mirrorMeasuresNow(measured.current, !!remembered)) { measured.current = true; measure(); return; }
+    measured.current = true;
     const raf = requestAnimationFrame(measure);
     return () => cancelAnimationFrame(raf);
   });
@@ -1952,6 +1996,20 @@ export default function BoxCanvas({
      * block's line sits BESIDE it, not above, so the top edge is not its boundary at all: there the drag
      * keeps the old margin behaviour, because no single block owns that edge.
      */
+    /**
+     * ONE LOOKUP, BOTH DIRECTIONS — because the bottom edge has exactly the same partner problem as the top.
+     *
+     * The top edge has spent the block above it for a while. The BOTTOM edge never spent the block below:
+     * `hasS` simply wrote this block's own height, so dragging a stack shorter left the one beneath it to
+     * slide up and the column came up short. Measured on the user's own shape: the neighbour grew **0px**,
+     * its far edge moved **-140px**, and **140px of space appeared at the foot of the column** — space they
+     * had not asked for, since they never touched that block's bottom edge.
+     *
+     * The mirror is the same walk with its comparisons reversed, so it is taken with a direction rather than
+     * written out twice. Two copies of this arithmetic is precisely how rule 19 has been broken three times.
+     */
+    type Partner = { sibId: string | null; h0: number; slack: number; isComp: boolean; gap0: number };
+    const partnerAcross = (dir: "up" | "down"): Partner => {
     let aboveSibId: string | null = null, aboveH0 = 0, aboveSlack = 0, aboveIsComp = false, aboveGap0 = 0;
     {
       /**
@@ -1977,18 +2035,30 @@ export default function BoxCanvas({
         if (!up) break;
         const kids = up.parent.children ?? [];
         const at = kids.findIndex((c) => c.id === cursor);
-        let beside = false, found: { c: BoxNode; r: DOMRect } | null = null;
-        for (let i = at - 1; i >= 0; i--) {
+        let found: { c: BoxNode; r: DOMRect } | null = null;
+        const step = dir === "up" ? -1 : 1;
+        for (let i = at + step; i >= 0 && i < kids.length; i += step) {
           const c = kids[i];
           if (isFloating(c)) continue;
           const e2 = document.querySelector<HTMLElement>(`[data-box-id="${CSS.escape(c.id)}"]`);
           if (!e2) continue;
           const r2 = e2.getBoundingClientRect();
-          if (r2.bottom > rect.top + 2) { beside = true; break; } // shares this block's line: beside, not above
+          /**
+           * Shares this block's LINE — beside it, not across the edge being dragged, so it owns no boundary
+           * here. We stop LOOKING PAST it, but we do NOT give up: this used to abandon the search outright,
+           * and that is a different claim altogether — "the block next to me owns no boundary" is not
+           * "nothing does". The climb below already decides the question properly, by checking whether this
+           * edge really is the parent's edge.
+           *
+           * Measured, and the user's report — *"it went way above the whole page on the top side"*: a stack
+           * with a neighbour beside it found no partner above, so its top edge was clamped to the PAGE top
+           * instead of to anything nearby, and dragging it up wrote **margin-top: -160px**. The stack lifted
+           * clean out of its own band and sat on top of the header.
+           */
+          if (dir === "up" ? r2.bottom > rect.top + 2 : r2.top < rect.bottom - 2) break;
           found = { c, r: r2 };
           break;
         }
-        if (beside) break;
         if (found) {
           /**
            * …AND THEN DESCEND TO THE BLOCK THAT ACTUALLY OWNS THAT HEIGHT.
@@ -2022,16 +2092,49 @@ export default function BoxCanvas({
           aboveSlack = Math.max(0, aboveH0 - Math.max(naturalHeightOf(ownerEl), MIN_ROW_PX));
           aboveIsComp = owner.type === "component" || owner.type === "button";
           // The space ALREADY between them — outer spacing the user asked for, and the parent's own gap.
-          aboveGap0 = Math.max(0, rect.top - ownerRect.bottom);
+          aboveGap0 = Math.max(0, dir === "up" ? rect.top - ownerRect.bottom : ownerRect.top - rect.bottom);
           break;
         }
-        // Nothing before it here — climb, but only while this block's top edge really is the parent's.
+        // Nothing that way here — climb, but only while THIS block's edge really is the parent's edge.
         const upEl = document.querySelector<HTMLElement>(`[data-box-id="${CSS.escape(up.parent.id)}"]`);
         if (!upEl || isFloating(up.parent)) break;
-        if (Math.abs(upEl.getBoundingClientRect().top - rect.top) > 2) break; // padding/border between them
+        const pr = upEl.getBoundingClientRect();
+        if (Math.abs(dir === "up" ? pr.top - rect.top : pr.bottom - rect.bottom) > 2) break; // padding/border between them
         cursor = up.parent.id;
       }
     }
+      return { sibId: aboveSibId, h0: aboveH0, slack: aboveSlack, isComp: aboveIsComp, gap0: aboveGap0 };
+    };
+    const above = partnerAcross("up");
+    const below = partnerAcross("down");
+    /**
+     * THE BAND THAT CAPS THIS BLOCK'S COLUMN — and why growing has to raise it.
+     *
+     * A band holding a height of its own fixes how much room everything inside it has to share. Grow one
+     * block in there and the room does not grow with it, so the space has to come out of a sibling — and the
+     * first sibling to give is any block sized `fill`, whose height is leftover by definition and therefore
+     * collapses to nothing without resisting.
+     *
+     * Measured on the user's own page: the brown stack's bottom edge dragged down 90px grew it 140 → 230,
+     * and the `fill` block above it went **61 → 0**. The band rose only 201 → 230, so 61 of the 90 was taken
+     * from above: the block's TOP edge moved up 61px while its bottom was being dragged down. That is RULE 19
+     * broken — the anchored edge moved — and it is the third time today the same root cause has surfaced:
+     * a size stored as LEFTOVER rather than as a quantity of its own.
+     *
+     * So an outward drag raises the capping band by exactly what the block gained. The room grows with the
+     * block, nothing above is squeezed, and the top edge stays where it was put.
+     */
+    const cappingBand = (() => {
+      let cur = id;
+      for (let hop = 0; hop < 8; hop++) {
+        const up = findParent(rootRef.current, cur);
+        if (!up) return null;
+        if (up.parent.rowBand && up.parent.minHeight != null) return { id: up.parent.id, h0: up.parent.minHeight };
+        cur = up.parent.id;
+      }
+      return null;
+    })();
+    const { sibId: aboveSibId, h0: aboveH0, slack: aboveSlack, isComp: aboveIsComp, gap0: aboveGap0 } = above;
     /** And what THIS block can give back — what bounds the same boundary dragged DOWNWARD. */
     const selfSlack = Math.max(0, H0 - Math.max(naturalHeightOf(el), MIN_ROW_PX));
 
@@ -2136,9 +2239,26 @@ export default function BoxCanvas({
         const give = prevSibId ? Math.max(0, prevWidth0 - neighbourMinPx) : Math.max(0, startLeftPx - flowX);
         const left = Math.max(startLeftPx - give, wanted);
         const scW = selfSizing ? fitScale(startRightPx - left, naturalW) : 1;
+        /**
+         * THE GAP AND THE WIDTH ARE ONE SUM, so they are taken from one basis and in one unit.
+         *
+         * With nothing before it on the line there is no boundary to share, so the left edge opens a gap — and
+         * that gap has to ADD UP with the percentage widths beside it. Written as a length it cannot: measured,
+         * a 140.15px margin beside widths of 35.83% + 50% came to 988.15px in a 988px row, and the block beside
+         * it wrapped onto a second line and doubled the band's height. An overflow of **0.15px**.
+         *
+         * So the gap is a percentage (`marginLeftPct`) and the width is the REMAINDER of what this block
+         * already occupied — not a second independent rounding. Rounding each separately leaves the pair
+         * 0.01% adrift, which is a tenth of a pixel at this width and is exactly what wrapped the row.
+         */
+        const share = (px: number) => Math.round(((px / maxW) * 100 + Number.EPSILON) * 100) / 100;
+        const outerPct = share(startRightPx - flowX); // what this block occupied, gap included
+        const gapPct = prevSibId ? 0 : Math.max(0, share(left - flowX));
+        const widthPct = Math.max(3, Math.min(100, outerPct - gapPct));
         tree = writeBox(tree, id, {
-          width: pct(startRightPx - left),
-          ...(prevSibId ? {} : { marginLeft: Math.max(0, pxU(left - flowX)) }),
+          width: prevSibId ? pct(startRightPx - left) : `${widthPct}%`,
+          // One field owns this gap. The old length is cleared so the two can never disagree about it.
+          ...(prevSibId ? {} : { marginLeftPct: gapPct > 0 ? gapPct : undefined, marginLeft: undefined }),
           ...(selfSizing ? { contentScale: scW < 1 ? scW : undefined } : {}),
         });
         if (prevSibId) tree = writeBox(tree, prevSibId, { width: pct(prevWidth0 - (startLeftPx - left)) });
@@ -2150,11 +2270,88 @@ export default function BoxCanvas({
       // element (which FILLS the box via height:100%) actually grows/shrinks with the drag. A normal element/section
       // uses min-height (a floor it hugs up from) so it can still grow with its content.
       const isComp = node.type === "component" || node.type === "button";
-      if (hasS) {
+      if (hasS && below.sibId) {
+        /**
+         * THE MIRROR OF THE TOP EDGE: the block BELOW owns this boundary, so it absorbs what this one releases.
+         *
+         * Reported by the user with screenshots: shrink a stack and *"the one at the bottom of it just moves up
+         * with it — it doesn't stay at the bottom and increase"*. It did exactly that, because this branch only
+         * ever wrote THIS block's height and left the one beneath to slide. Measured on their shape: the
+         * neighbour grew **0px**, its far edge moved **-140px**, and **140px of space appeared at the foot of
+         * the column** — which they had not asked for, having never touched that block's bottom edge.
+         *
+         * A space at the foot is only ever theirs to make: it comes from dragging the LAST block's bottom edge,
+         * the one that faces nothing. That case still opens one, because `below.sibId` is null there.
+         *
+         * No margin arithmetic here, unlike the top edge. This block's TOP does not move, so its height is
+         * simply what the drag asked for — there is no stored margin under the pointer whose rounding could
+         * push the anchored edge about (rule 19's fourth outing).
+         */
+        // The height is EXACTLY what the drag asked for — the same expression as the no-partner case below,
+        // deliberately, so a partner can never change what a drag stores. Three guards assert that directly.
+        const h = Math.round(Math.max(startTopPx + minHpx, startBotPx + dy) - startTopPx);
+        const scS = fitScale(h, naturalH);
+        tree = writeBox(tree, id, isComp
+          ? { height: remLen(h, rootPx), minHeight: undefined, clip: undefined, contentScale: scS < 1 ? scS : undefined }
+          : { minHeight: h, height: undefined });
+        // …AND THE ROOM GROWS WITH IT (see `cappingBand`). Without this the gain is taken from whatever sits
+        // above inside the same capped band — a `fill` block gives it up without resisting, because its height
+        // is leftover — and the anchored TOP edge moves. Measured on the user's page: 61px of a 90px drag.
+        const grewS = Math.round(h - H0);
+        if (cappingBand && grewS > 0) tree = writeBox(tree, cappingBand.id, { minHeight: Math.round(cappingBand.h0 + grewS) });
+        /**
+         * ONLY WHAT WAS RELEASED, AND ONLY WHEN SHRINKING.
+         *
+         * Shrinking hands the room to the block below, which grows into it so its own bottom edge does not
+         * move — the user's report: *"it doesn't stay at the bottom and increase"*.
+         *
+         * GROWING does NOT squeeze it. A row has a fixed width its blocks must share, so taking width there
+         * has to come from a neighbour; a column can simply get taller, so taking height pushes the block
+         * below DOWN and the page grows. Squeezing it instead would shrink content nobody touched.
+         */
+        /**
+         * THE BOUNDARY MOVES BOTH WAYS, and it has to, or the page can never come back.
+         *
+         * This used to be one-directional: shrinking handed the room to the block below so no gap opened,
+         * while growing deliberately did NOT take it back — the reasoning being that a column can simply get
+         * taller, so the block below is pushed down and the page grows rather than squeezing content nobody
+         * touched. Each half is defensible on its own. Together they are a RATCHET.
+         *
+         * Measured, six times around: drag this edge down 80 and back up 80, over and over. The block below
+         * went **208 → 288 → 368 → 448 → 528 → 608** and the page **464 → 864**, while the block being
+         * dragged sat at 128 the whole time. Every round trip made the neighbour 80px taller and nothing
+         * ever gave it back. Reported as the page "fidgeting" when resized repeatedly, and as the reason a
+         * layout could not be returned to where it was.
+         *
+         * So growing RECLAIMS what shrinking gave — as far as the block below can give, never past its own
+         * content — and only what it cannot supply grows the page. One rule for the boundary instead of two
+         * opposite ones, and `slack` is what makes it safe: content is never squeezed, the edge simply stops.
+         */
+        const released = H0 - h;
+        if (released > 0) {
+          const bh = Math.max(MIN_ROW_PX, Math.round(below.h0 + released));
+          tree = writeBox(tree, below.sibId, below.isComp
+            ? { height: remLen(bh, rootPx), minHeight: undefined }
+            : { minHeight: bh, height: undefined });
+        } else if (released < 0) {
+          const taken = Math.min(-released, below.slack);
+          if (taken > 0) {
+            const bh = Math.max(MIN_ROW_PX, Math.round(below.h0 - taken));
+            tree = writeBox(tree, below.sibId, below.isComp
+              ? { height: remLen(bh, rootPx), minHeight: undefined }
+              : { minHeight: bh, height: undefined });
+          }
+        }
+      } else if (hasS) {
+        // Nothing below it: the bottom edge faces open space, so it simply opens some. Top fixed, bottom moves.
         const h = Math.round(Math.max(startTopPx + minHpx, startBotPx + dy) - startTopPx);
         const sc = fitScale(h, naturalH);
         tree = writeBox(tree, id, isComp ? { height: remLen(h, rootPx), minHeight: undefined, clip: undefined, contentScale: sc < 1 ? sc : undefined } : { minHeight: h, height: undefined });
-      } // top fixed, bottom moves
+        // GROWING RAISES THE ROOM IT GROWS IN (see `cappingBand`), so the gain never comes out of a sibling
+        // above. Shrinking leaves the band alone: that space is the one the gesture is deliberately opening.
+        const grew = Math.round(h - H0);
+        if (cappingBand && grew > 0) tree = writeBox(tree, cappingBand.id, { minHeight: Math.round(cappingBand.h0 + grew) });
+      }
       if (hasN && aboveSibId) {
         /**
          * A SHARED BOUNDARY, on the vertical axis — the same bargain the east and west edges have always
@@ -2222,9 +2419,10 @@ export default function BoxCanvas({
         // origin, which pinned the first block and made top-resize do nothing).
         // Clamped to the PAGE TOP (see PAGE BOUNDS above) so growing upward can never push the block — and its
         // resize handle — off the page. Below the page top it is still free to grow up past its own section.
-        // AT THE WALL the drag must not go dead (a block sitting flush against the page top is the common case
-        // for a first block): whatever you drag past the page top is added to the BOTTOM instead, so the block
-        // still grows by exactly the distance you dragged and still never leaves the page.
+        // AT THE WALL THE EDGE STOPS DEAD. It does not grow out of the far side, and it does not keep pace with
+        // the pointer once there is nothing left above to give — RULE 19, and the user's own call when asked.
+        // (An earlier note here described the opposite, added-to-the-bottom behaviour. `resizeTopEdge` has never
+        // done that; the note outlived the code and is the reason a runaway height was misdiagnosed here.)
         // `resizeTopEdge` (box-model) owns the maths + the page clamp so the rule is unit-testable.
         const { top, height: h } = resizeTopEdge(startTopPx, startBotPx, dy, minHpx, pageTopPx ?? flowY);
         const mt = pxU(top - flowY); // may be negative → the block grows upward past its flow origin
@@ -2238,6 +2436,64 @@ export default function BoxCanvas({
       if (raf) { cancelAnimationFrame(raf); flush(); }
       setResizing(false); setResizeCursor(null);
       document.removeEventListener("mousemove", onMove); document.removeEventListener("mouseup", onUp);
+      /**
+       * OUTWARD GROWS THE BAND; INWARD SHRINKS THE BLOCK — decided here, because only here is the outcome known.
+       *
+       * Starting the drag un-stretches the block (`alignSelf: "flex-start"` in the cross-axis anchor above) so a
+       * stretched box does not jump the instant you grab it. That is right for the gesture and wrong to KEEP:
+       * un-stretched is permanent, so the block never follows its band again.
+       *
+       * Measured, and the user's report — *"the stack on the left starts creating space, which is not needed"*:
+       * drag the navy stack's bottom edge down (it un-stretches, minHeight 440), then drag the brown stack below
+       * it down. The band grows to 490, the navy stays at 440, and a **50px hole** opens under it that nobody
+       * asked for. The height was theirs; the hole was not.
+       *
+       * So the anchor is released again whenever the block ends the drag FILLING its band. A block deliberately
+       * dragged SHORTER than its band keeps it, because that space is the one thing the user did ask for — which
+       * is the whole rule in one line: a space belongs to the edge you dragged, and to no other gesture.
+       */
+      if ((hasN || hasS) && !hasE && !hasW && parentRow) {
+        const meEl = document.querySelector<HTMLElement>(`[data-box-id="${CSS.escape(id)}"]`);
+        /**
+         * THE TEST IS THE DIRECTION YOU DRAGGED, not whether the block happens to fill its band.
+         *
+         * Asking "does it fill its band?" reads as the same question and is circular: a band holding a
+         * deliberately-sized block HUGS it (see `holdsADeliberateSize` in box-model), so the block fills its
+         * band by construction, always — the anchor was therefore cleared every time and the shrink undone
+         * the instant you let go. Measured: dragging a stack's bottom edge up 120px moved it 0px.
+         *
+         * Grew or unchanged → it is following its band again, so release the anchor. Ended SHORTER than it
+         * started → that is the space being asked for, and the anchor is what keeps it.
+         */
+        const paEl = meEl?.parentElement?.closest<HTMLElement>("[data-box-id]");
+        if (meEl && paEl) {
+          /**
+           * A SPACE IS A MARGIN, NOT A LEFTOVER — which is what the top edge has always done, and what the
+           * bottom edge did not.
+           *
+           * Dragging the bottom edge up used to leave the block short and let the space fall out of whatever
+           * the layout had spare. That reads the same and behaves completely differently, because leftover is
+           * recomputed every time anything changes: the space then ABSORBS every later growth instead of
+           * staying the size it was asked to be. Measured, and reported — *"I am only decreasing the height
+           * from the top of the grey one"* — growing the band above by 90px grew the stack beside it to 390
+           * and left the brown stack at 276, so a **90px hole** appeared under it that no gesture had asked
+           * for.
+           *
+           * Written as a margin it is a fixed quantity: the block goes back to stretching with its band, the
+           * space stays exactly as wide as the user made it, and growth from anywhere else is absorbed by the
+           * block rather than added to the gap. Measured while `alignSelf` still pins the block, because once
+           * it stretches the block fills its band by definition and the space measures zero.
+           */
+          const cs = getComputedStyle(paEl);
+          const pa = paEl.getBoundingClientRect();
+          const floor = pa.bottom - (parseFloat(cs.paddingBottom) || 0);
+          const below = Math.round(floor - meEl.getBoundingClientRect().bottom);
+          onChange(writeBox(rootRef.current, id, {
+            alignSelf: undefined,
+            marginBottom: hasS && below > 2 ? pxU(below) : undefined,
+          }));
+        }
+      }
       onResized?.(id, (hasS || hasN) && !hasE && !hasW ? "height" : "width");
     };
     document.addEventListener("mousemove", onMove);

@@ -357,10 +357,22 @@ test.describe("shrinking a dropped block lets the next one follow", () => {
       `the block below did not follow: it was at ${rBefore.top} and is now at ${rAfter.top}`,
     ).toBeGreaterThan(40);
 
-    // …and the room that was freed is at the END of the column, which is where it can be built on.
+    /**
+     * …AND THE COLUMN STAYS FULL: the block below GROWS into the room, it does not slide up and leave a
+     * space at the foot.
+     *
+     * This asserted the opposite at first — that the freed room pooled at the end — which was the rule as it
+     * stood then. The user corrected it from a screenshot: *"it doesn't stay at the bottom and increase"*.
+     * A space at the foot of a column is only theirs to make, by dragging the LAST block's bottom edge, the
+     * one that faces nothing. It is not something a drag higher up may leave behind.
+     */
     expect(
       Math.round(column.bottom - rAfter.bottom),
-      "the leftover should pool at the bottom of the column",
+      "a space was left at the foot of the column that nobody asked for",
+    ).toBeLessThan(6);
+    expect(
+      rAfter.h - rBefore.h,
+      "the block below should have GROWN into the room, not slid up",
     ).toBeGreaterThan(40);
   });
 });

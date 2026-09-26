@@ -258,6 +258,19 @@ export interface BoxNode {
   paddingTop?: number; paddingRight?: number; paddingBottom?: number; paddingLeft?: number; // per-side overrides
   margin?: number;          // px outer margin (all sides)
   marginTop?: number; marginRight?: number; marginBottom?: number; marginLeft?: number;     // per-side overrides
+  /**
+   * THE GAP BEFORE THIS BLOCK ON ITS LINE, AS A % OF THE ROW — not a length, deliberately.
+   *
+   * Every other margin is emitted in the fluid unit, which is a `clamp()` and therefore NOT proportional to
+   * the row. That is right for spacing you choose and wrong for a gap that has to SUM with the percentage
+   * widths beside it: measured, dragging the left edge of a 50% block wrote a 140.15px margin next to widths
+   * of 35.83% + 50% = 848.0px, making 988.15px in a 988px row — an overflow of **0.15px**, and the block
+   * beside it wrapped onto a second line and doubled the band's height.
+   *
+   * A percentage margin resolves against the parent's width, so the row adds up exactly at every width and
+   * the gap scales with the page instead of being frozen at one size. `marginCSS` prefers it over `marginLeft`.
+   */
+  marginLeftPct?: number;
   radius?: number;          // px corner radius (all corners)
   radiusTopLeft?: number; radiusTopRight?: number; radiusBottomRight?: number; radiusBottomLeft?: number; // per-corner overrides
   opacity?: number;         // 0–100 (%), default 100 (fully opaque) — the BOX's own paint, not its contents
@@ -639,6 +652,25 @@ export type MirrorBox = { left: number; top: number; width: number; height: numb
  * is driven in a real browser by `tests/e2e/chrome-follows-resize.spec.ts`.
  */
 export type MirrorChase = { churn: number; seen: MirrorBox | null };
+
+/**
+ * MAY A FRESHLY-MOUNTED MIRROR MEASURE SYNCHRONOUSLY, OR MUST IT WAIT FOR A FRAME?
+ *
+ * The first measurement of a block is deliberately synchronous, so selecting it shows its toolbar and handles
+ * without a frame of lag. That is right exactly once. On a REMOUNT the box is already known, so there is no
+ * lag to avoid — and measuring synchronously again is what turns a mirror that remounts on every render into
+ * an unbounded synchronous chain: measure → setState → render → remount → measure, with no frame boundary to
+ * end it. React reports that as "Maximum update depth exceeded", which the user hit twice.
+ *
+ * The guard written last time could not help, because every piece of it — the measured flag, the churn
+ * budget, the last box — lived in a `useRef`, and a ref is born again with the component.
+ *
+ * Kept here, pure, for the reason `shouldTakeMirrorBox` is: the browser condition that triggers the runaway
+ * has resisted every attempt to reproduce, so testing the rule is the only honest guard for it.
+ */
+export function mirrorMeasuresNow(hasMeasured: boolean, remembersBlock: boolean): boolean {
+  return !hasMeasured && !remembersBlock;
+}
 
 export function shouldTakeMirrorBox(
   prev: MirrorBox | null,
@@ -4051,7 +4083,9 @@ export function marginCSS(node: BoxNode): CSSProperties {
     marginTop: m(node.marginTop),
     marginRight: m(node.marginRight),
     marginBottom: m(node.marginBottom),
-    marginLeft: m(node.marginLeft),
+    // A gap on a LINE is a share of that line — see `marginLeftPct`. It wins, because the two describe the
+    // same space and a length cannot be made to sum exactly with the percentage widths beside it.
+    marginLeft: node.marginLeftPct !== undefined ? `${node.marginLeftPct}%` : m(node.marginLeft),
   };
 }
 
@@ -4230,8 +4264,21 @@ function fillsGivenHeight(node: BoxNode): boolean {
  * which is the reported case. "The immediate parent" is too narrow: that is the band, always unsized.
  */
 export function hostSizedFor(node: BoxNode, inheritedHostSized: boolean, parent?: BoxNode | null): boolean {
-  if (node.rowBand) return inheritedHostSized;                        // scaffolding — pass it through
   const ownSize = node.minHeight != null || node.height != null || !!node.screenHeight;
+  /**
+   * A BAND IS SCAFFOLDING — UNTIL SOMEONE GIVES IT A HEIGHT.
+   *
+   * Passing the question straight through was right while a band only ever hugged its child, and wrong the
+   * moment a gesture wrote a height onto one: closing the boundary between two stacks writes the new height
+   * to the BAND, because that is the thing both columns sit in. The band then stretched its children and
+   * told them nothing, so a column inside it went on hugging its own rows.
+   *
+   * Measured, and the user's report in their words — *"when I decrease the height from the top it creates a
+   * space at the bottom of the ones on the right"*: dragging the teal stack's top edge down moved the shared
+   * boundary 300 → 366, the green stack and the right-hand column both followed to 366, and the tan row
+   * inside that column stayed at 120 — leaving a **66px hole** between it and the teal stack below.
+   */
+  if (node.rowBand) return inheritedHostSized || ownSize;
   /**
    * A GRID CELL IS GIVEN ITS HEIGHT BY THE ROW, and stores nothing to say so.
    *
@@ -4246,6 +4293,21 @@ export function hostSizedFor(node: BoxNode, inheritedHostSized: boolean, parent?
    * still applies. Sized grid, sized cells; unsized grid, unsized cells.
    */
   if (parent?.layout === "grid") return inheritedHostSized || ownSize;
+  /**
+   * …AND SO IS A SECTION IN A ROW THAT STRETCHES, for exactly the grid cell's reason above: the row hands it
+   * a height and it stores nothing to say so. Without this the answer stopped at the band — the band knew it
+   * had a height, the column it stretched did not pass that on, and the column's last row still hugged.
+   *
+   * It answers YES OUTRIGHT, not "yes if the row stored a height". A row hands its children its own height
+   * however that height arose — and most of the time it arose from the TALLEST CHILD, with nothing stored
+   * anywhere. Asking for a stored number missed exactly that case: drag the navy stack's bottom edge down and
+   * the band grows because the navy is now the tallest, the column beside it stretches to match, and the rows
+   * inside that column go on hugging — measured, a **200px hole** under the last one.
+   *
+   * `align: stretch` is the default a band is built with, so the common case is the one that needs it; a row
+   * told to align its children any other way is not handing out a height and is left alone.
+   */
+  if (parent?.direction === "row" && (parent.align ?? "stretch") === "stretch") return true;
   return ownSize;
 }
 
@@ -4369,10 +4431,33 @@ export function childStyle(child: BoxNode, parent: BoxNode, bp: Breakpoint = "ba
   // `!isRow` — because in a row the main axis is width, and a grid should take its share of the width like
   // anything else, not all of it.
   const fillsMain = !isRow && fillsGivenHeight(child) && (!mainToken || mainToken === "auto");
+  /**
+   * WHO GETS THE LEFTOVER — because "everyone, equally" is not an answer, it is a way of losing track of it.
+   *
+   * A definite parent hands `1 1 auto` to every child with no size of its own, so they share what is spare in
+   * equal parts. That is right when they are peers and nothing else is claiming it, and wrong the moment
+   * something IS, because the space then lands half where it was meant and half as a hole somewhere else.
+   *
+   * ONE thing claims it, and it is the user speaking rather than the layout guessing: A SIBLING SAYS `fill`.
+   * That block exists to take the space. Measured, and reported with three screenshots: a 70px gap opened
+   * above a stack, then a Stack dropped into it. The newcomer's band said `fill` and the stack's band hugged
+   * 93px of content — and both were given `flex-grow: 1`, so the 70 split down the middle. The newcomer came
+   * out **35px tall**, a sliver, and the other 35 became a hole under the stack below it. One gesture, two
+   * spaces, neither asked for.
+   *
+   * A DELIBERATE SPACE IS NOT HANDLED HERE, and two clauses that tried to were deleted rather than kept.
+   * They froze a column while one of its blocks held a size, so the space stopped being the size the user
+   * made and started absorbing every later growth: grow the band by 90 from somewhere else entirely and the
+   * gap became 90 bigger. A space is written as a MARGIN by the resize instead (see the mouse-up in
+   * BoxCanvas) — a fixed quantity that survives growth, which is what the top edge had always done and the
+   * bottom edge had not.
+   */
+  const inFlowKids = (parent.children ?? []).filter((c) => !isFloating(c));
+  const siblingClaimsIt = !isRow && inFlowKids.some((c) => c.id !== child.id && c.height === "fill");
   // A section of a ROW BAND fills its line ONLY when it is alone on it (`aloneOnItsLine`). Granting the grow
   // unconditionally looks equivalent and is not: grow spends leftover space, and narrowing a block is how a
   // line gets leftover space — so every block became un-shrinkable the moment it stopped sharing a full line.
-  s.flex = fillsMain || ((!mainToken || mainToken === "auto") && parentDefinite)
+  s.flex = fillsMain || ((!mainToken || mainToken === "auto") && parentDefinite && !siblingClaimsIt)
     ? "1 1 auto"
     : flexForWidth(mainToken, !!parent.rowBand && isRow && aloneOnItsLine(parent, child));
   // A box can pin its OWN cross-axis alignment (used by edge-anchored resize to keep the far edge fixed
