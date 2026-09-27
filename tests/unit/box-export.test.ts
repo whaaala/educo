@@ -32,6 +32,16 @@ describe("box-export — static HTML", () => {
     expect(styleString({ width: 12, marginTop: 0 })).toBe("width:12px;margin-top:0px");
   });
 
+  /** Behaviours: box-builder-layout.feature — "Preview uses the same fonts as the published site". */
+  it("Preview carries the SAME embedded fonts as the download, ahead of every other rule", () => {
+    const site = siteFromRoot(createContainer("column", { id: "root", children: [createElement("heading", { id: "h", text: "Hi" })] } as Partial<BoxNode>));
+    const face = "@font-face{font-family:'Poppins';src:url(data:font/woff2;base64,AAAA)}";
+    const withFonts = renderSitePage(site, DEFAULT_THEME, site.homeId, { inlineShared: true, fontCss: face });
+    expect(withFonts).toContain(face);
+    expect(withFonts.indexOf(face)).toBeLessThan(withFonts.indexOf("--eu-"));   // defined before any rule asks for it
+    expect(renderSitePage(site, DEFAULT_THEME, site.homeId, { inlineShared: true })).not.toContain("@font-face{font-family:'Poppins'");
+  });
+
   it("renders elements to their tags with content", () => {
     const root = createContainer("column", {
       id: "r",
@@ -45,7 +55,7 @@ describe("box-export — static HTML", () => {
       } as Partial<BoxNode>)])],
     } as Partial<BoxNode>);
     const html = renderPageHTML(root, DEFAULT_THEME);
-    expect(html).toContain("<h2");
+    expect(html).toContain("<h1"); // the page's first heading is its title (semantics B1) — it used to be an <h2> always
     expect(html).toContain("Hello");
     expect(html).toContain("<ol");
     expect(html).toContain("<li>a</li>");

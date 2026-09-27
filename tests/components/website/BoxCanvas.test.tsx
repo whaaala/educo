@@ -610,6 +610,99 @@ describe("BoxCanvas (box-model editor)", () => {
     expect(findBox(last, "a")?.marginLeft ?? 0, "a right-edge drag never touches the margin").toBe(0);
   });
 
+  it("a drag that ends where it began leaves every STORED width exactly as it was — even blocks drawn at their 14rem floor (#61)", () => {
+    // Five 20% stacks on a 1000px row are DRAWN at the 224px floor (20% = 200px). The resize works in drawn widths
+    // (#58); writing them back would store 22.4% — and on a wider screen five that fitted would become four plus one.
+    const ids = ["a", "b", "c", "d", "e"];
+    const initial = createContainer("row", {
+      id: "root", direction: "row",
+      children: ids.map((id) => createContainer("column", { id, width: "20%" } as Partial<BoxNode>)),
+    } as Partial<BoxNode>);
+    const onChange = vi.fn();
+    const { container } = render(<BoxCanvas root={initial} theme={DEFAULT_THEME} selectedId="a" onChange={onChange} />);
+    const rootEl = container.querySelector<HTMLElement>('[data-box-id="root"]')!;
+    stubRect(rootEl, { top: 0, left: 0, width: 1000, height: 200 }); stubClientWidth(rootEl, 1000);
+    ids.forEach((id, i) => stubRect(container.querySelector<HTMLElement>(`[data-box-id="${id}"]`)!, i < 4 ? { top: 0, left: i * 224, width: 224, height: 100 } : { top: 100, left: 0, width: 224, height: 100 }));
+    fireEvent.mouseDown(screen.getByLabelText("Resize right edge"), { clientX: 0, clientY: 0 });
+    fireEvent.mouseMove(document, { clientX: 40, clientY: 0 });
+    fireEvent.mouseMove(document, { clientX: 0, clientY: 0 }); // …and back to where it began
+    fireEvent.mouseUp(document);
+    const last = onChange.mock.calls.at(-1)?.[0] ?? initial;
+    ids.forEach((id) => expect(findBox(last, id)!.width, id).toBe("20%"));
+  });
+
+  it("a round trip made of SEPARATE drags comes home to the widths it STORED, even below the floor (#65)", () => {
+    const ids = ["a", "b", "c", "d", "e"];
+    const start = createContainer("row", {
+      id: "root", direction: "row",
+      children: ids.map((id) => createContainer("column", { id, width: "20%" } as Partial<BoxNode>)),
+    } as Partial<BoxNode>);
+    // One drag on a freshly rendered canvas whose blocks are drawn at `drawn` (px) — what the app does between drags.
+    const drag = (root: BoxNode, drawn: number[], dx: number): BoxNode => {
+      const onChange = vi.fn();
+      const { container, unmount } = render(<BoxCanvas root={root} theme={DEFAULT_THEME} selectedId="a" onChange={onChange} />);
+      const rootEl = container.querySelector<HTMLElement>('[data-box-id="root"]')!;
+      stubRect(rootEl, { top: 0, left: 0, width: 1000, height: 200 }); stubClientWidth(rootEl, 1000);
+      let x = 0;
+      ids.forEach((id, i) => {
+        const wrapped = i === 4;
+        stubRect(container.querySelector<HTMLElement>(`[data-box-id="${id}"]`)!, wrapped ? { top: 100, left: 0, width: drawn[i], height: 100 } : { top: 0, left: x, width: drawn[i], height: 100 });
+        if (!wrapped) x += drawn[i];
+      });
+      fireEvent.mouseDown(screen.getByLabelText("Resize right edge"), { clientX: 0, clientY: 0 });
+      fireEvent.mouseMove(document, { clientX: dx, clientY: 0 });
+      fireEvent.mouseUp(document);
+      const out = onChange.mock.calls.at(-1)?.[0] ?? root;
+      unmount();
+      return out;
+    };
+    const out = drag(start, [224, 224, 224, 224, 224], 80);
+    expect(findBox(out, "a")!.width).not.toBe("20%");                 // it really moved
+    const back = drag(out, [304, 224, 224, 224, 224], -80);
+    ids.forEach((id) => expect(findBox(back, id)!.width, id).toBe("20%"));
+  });
+
+  it("a column is never STORED narrower than the floor it is drawn at — 3rem once sized by hand (#67, #75)", () => {
+    const ids = ["a", "b", "c", "d"];
+    const initial = createContainer("row", {
+      id: "root", direction: "row",
+      children: ids.map((id) => createContainer("column", { id, width: "25%" } as Partial<BoxNode>)),
+    } as Partial<BoxNode>);
+    const onChange = vi.fn();
+    const { container } = render(<BoxCanvas root={initial} theme={DEFAULT_THEME} selectedId="c" onChange={onChange} />);
+    const rootEl = container.querySelector<HTMLElement>('[data-box-id="root"]')!;
+    stubRect(rootEl, { top: 0, left: 0, width: 900, height: 200 }); stubClientWidth(rootEl, 900);
+    ids.forEach((id, i) => stubRect(container.querySelector<HTMLElement>(`[data-box-id="${id}"]`)!, { top: 0, left: i * 225, width: 225, height: 100 }));
+    fireEvent.mouseDown(screen.getByLabelText("Resize right edge"), { clientX: 0, clientY: 0 });
+    fireEvent.mouseMove(document, { clientX: -200, clientY: 0 }); // far past the floor
+    fireEvent.mouseUp(document);
+    const last = onChange.mock.calls.at(-1)?.[0] ?? initial;
+    // Dragged, it is sized by hand: its floor is 3rem (48px here), not the 14rem an untouched column keeps (#75).
+    expect(parseFloat(findBox(last, "c")!.width!)).toBeGreaterThanOrEqual((48 / 900) * 100 - 0.01);
+  });
+
+  it("after any drag, the stored widths of a line never add up to MORE than 100% — a browser wraps on anything over (#66)", () => {
+    const ids = ["a", "b", "c", "d"];
+    const initial = createContainer("row", {
+      id: "root", direction: "row",
+      children: ids.map((id, i) => createContainer("column", { id, width: ["24.99%", "24.99%", "25%", "25.02%"][i] } as Partial<BoxNode>)),
+    } as Partial<BoxNode>);
+    for (const dx of [20, 40, 80, 96, 97, 120, 150]) { // 96 and 97 leave a hundredth over — the browser case
+      const onChange = vi.fn();
+      const { container, unmount } = render(<BoxCanvas root={initial} theme={DEFAULT_THEME} selectedId="a" onChange={onChange} />);
+      const rootEl = container.querySelector<HTMLElement>('[data-box-id="root"]')!;
+      stubRect(rootEl, { top: 0, left: 0, width: 1280, height: 200 }); stubClientWidth(rootEl, 1280);
+      ids.forEach((id, i) => stubRect(container.querySelector<HTMLElement>(`[data-box-id="${id}"]`)!, { top: 0, left: i * 320, width: 320, height: 100 }));
+      fireEvent.mouseDown(screen.getByLabelText("Resize right edge"), { clientX: 0, clientY: 0 });
+      fireEvent.mouseMove(document, { clientX: dx, clientY: 0 });
+      fireEvent.mouseUp(document);
+      const last = onChange.mock.calls.at(-1)![0];
+      const sum = ids.reduce((s, id) => s + parseFloat(findBox(last, id)!.width!), 0);
+      expect(sum, `+${dx}px`).toBeLessThanOrEqual(100.001);
+      unmount();
+    }
+  });
+
   it("dragging the TOP edge sets a MIN-HEIGHT (floor), keeping the box a hug-content box (no fixed height)", () => {
     const onChange = vi.fn();
     const { container } = render(<BoxCanvas root={tree()} theme={DEFAULT_THEME} selectedId="t1" onChange={onChange} />);
@@ -974,14 +1067,22 @@ describe("BoxCanvas (box-model editor)", () => {
       children: [createElement("heading", { id: "h", text: "Hi", fontFamily: "Georgia, serif", fontWeight: 300, lineHeight: 1.8, letterSpacing: 2, italic: true, underline: true, textTransform: "uppercase" } as Partial<BoxNode>)],
     } as Partial<BoxNode>);
     const { container } = render(<BoxCanvas root={t} theme={DEFAULT_THEME} onChange={() => {}} />);
-    const h = container.querySelector<HTMLElement>('[data-box-id="h"] h2')!;
+    const h = container.querySelector<HTMLElement>('[data-box-id="h"] :is(h1,h2,h3,h4,h5,h6)')!; // its LEVEL follows the page (semantics B1)
     expect(h.style.fontFamily).toContain("Georgia");
     expect(h.style.fontWeight).toBe("300");
     expect(h.style.lineHeight).toBe("1.8");
-    expect(h.style.letterSpacing).toBe("2px");
+    expect(h.style.letterSpacing).toBe("0.125rem"); // rem, not px — rule 16 (2px at the 16px base)
     expect(h.style.fontStyle).toBe("italic");
     expect(h.style.textDecoration).toBe("underline");
     expect(h.style.textTransform).toBe("uppercase");
+  });
+
+  it("the page starts from the PUBLISHED page's letter spacing, not the editor's", () => {
+    // The editor tracks its own text (`body { letter-spacing: 0.02em }`); the canvas page inherited it, so every word
+    // was wider than on the published page, whose root sets nothing. Found by the Preview check, 2026-09-27.
+    const t = createContainer("column", { id: "root", children: [createElement("text", { id: "p", text: "Hello" })] } as Partial<BoxNode>);
+    const { container } = render(<BoxCanvas root={t} theme={DEFAULT_THEME} onChange={() => {}} />);
+    expect(container.querySelector<HTMLElement>('[data-box-id="root"]')!.style.letterSpacing).toBe("normal");
   });
 
   it("a divider honours its line style (dashed) and a leaf element can float over others", () => {
@@ -1023,5 +1124,50 @@ describe("BoxCanvas (box-model editor)", () => {
     // jsdom has no elementsFromPoint, so it appends to the page — a heading node now exists in the tree.
     const found = (function walk(n: BoxNode): boolean { return n.type === "heading" || (n.children ?? []).some(walk); })(tree);
     expect(found).toBe(true);
+  });
+});
+
+describe("the canvas and the published page share one paragraph measure (#74)", () => {
+  it("both cap a paragraph at the same measure — the canvas does not load BASE_CSS, so it carries the rule itself", async () => {
+    const { BASE_CSS, measureCss } = await import("@/lib/educo-ui/base");
+    const root = createContainer("column", { id: "root", children: [] } as Partial<BoxNode>);
+    const { container } = render(<BoxCanvas root={root} theme={DEFAULT_THEME} onChange={() => {}} />);
+    const css = Array.from(container.querySelectorAll("style")).map((s) => s.textContent).join("\n");
+    expect(css).toContain(measureCss(".eu-tokens"));
+    expect(BASE_CSS).toContain(measureCss(".eu-root"));
+  });
+});
+
+describe("narrow columns and no fill jump (decided with the user 2026-09-27, #75)", () => {
+  // The row sits INSIDE a page, as in the app — a row that is the page itself has nowhere to wrap to, and its edge rightly stops.
+  const pair = (w1: string, w2: string) => createContainer("column", { id: "page", children: [createContainer("row", { id: "root", direction: "row",
+    children: [createContainer("column", { id: "a", width: w1 } as Partial<BoxNode>), createContainer("column", { id: "b", width: w2 } as Partial<BoxNode>)] } as Partial<BoxNode>)] } as Partial<BoxNode>);
+  const dragA = (root: BoxNode, wa: number, wb: number, dx: number) => {
+    const onChange = vi.fn();
+    const { container, unmount } = render(<BoxCanvas root={root} theme={DEFAULT_THEME} selectedId="a" onChange={onChange} />);
+    const rootEl = container.querySelector<HTMLElement>('[data-box-id="root"]')!;
+    stubRect(rootEl, { top: 0, left: 0, width: 1000, height: 200 }); stubClientWidth(rootEl, 1000);
+    stubRect(container.querySelector<HTMLElement>('[data-box-id="a"]')!, { top: 0, left: 0, width: wa, height: 100 });
+    stubRect(container.querySelector<HTMLElement>('[data-box-id="b"]')!, { top: 0, left: wa, width: wb, height: 100 });
+    fireEvent.mouseDown(screen.getByLabelText("Resize right edge"), { clientX: 0, clientY: 0 });
+    fireEvent.mouseMove(document, { clientX: dx, clientY: 0 });
+    fireEvent.mouseUp(document);
+    const out = onChange.mock.calls.at(-1)![0]; unmount(); return out;
+  };
+  it("a 10/90 row can be built by dragging — the column you size is no longer held at 14rem", () => {
+    const out = dragA(pair("50%", "50%"), 500, 500, -400);
+    expect(parseFloat(findBox(out, "a")!.width!)).toBeCloseTo(10, 0);
+    expect(parseFloat(findBox(out, "b")!.width!)).toBeCloseTo(90, 0);
+  });
+  it("a 90/10 row can be built — the NEIGHBOUR squeezed across the shared edge counts as sized by hand (#76)", () => {
+    const out = dragA(pair("50%", "50%"), 500, 500, 400);
+    expect(parseFloat(findBox(out, "a")!.width!)).toBeCloseTo(90, 0);
+    expect(parseFloat(findBox(out, "b")!.width!)).toBeCloseTo(10, 0);
+    expect(findBox(out, "b")!.widthByHand).toBe(true);
+  });
+  it("widening until the neighbour wraps does NOT fill the line — the block stops where it was dragged", () => {
+    const out = dragA(pair("50%", "50%"), 500, 500, 340); // b (floor 224px) no longer fits beside 840px
+    expect(parseFloat(findBox(out, "a")!.width!)).toBeCloseTo(84, 0);
+    expect(parseFloat(findBox(out, "a")!.width!)).toBeLessThan(99);
   });
 });

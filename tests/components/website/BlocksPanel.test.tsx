@@ -126,3 +126,28 @@ describe("BlocksPanel (floating insert palette)", () => {
     expect(screen.queryByLabelText(/Add Card/)).not.toBeInTheDocument();    // Components hidden
   });
 });
+
+describe("BlocksPanel — docked beside the page on a laptop screen and up (#55)", () => {
+  it("floating (not docked): a click outside closes it, as before", () => {
+    render(<BlocksPanel theme={DEFAULT_THEME} defaultOpen />);
+    fireEvent.mouseDown(document.body);
+    expect(screen.queryByRole("dialog", { name: "Blocks" })).not.toBeInTheDocument();
+  });
+  it("docked: it stays open while the user clicks and edits on the page", () => {
+    render(<BlocksPanel theme={DEFAULT_THEME} defaultOpen docked />);
+    fireEvent.mouseDown(document.body);
+    expect(screen.getByRole("dialog", { name: "Blocks" })).toBeInTheDocument();
+  });
+  it("docked: its close button still closes it", () => {
+    render(<BlocksPanel theme={DEFAULT_THEME} defaultOpen docked />);
+    fireEvent.click(screen.getByLabelText("Close blocks panel"));
+    expect(screen.queryByRole("dialog", { name: "Blocks" })).not.toBeInTheDocument();
+  });
+  it("tells the page when it opens and closes, so the page can make room", () => {
+    const seen: boolean[] = [];
+    render(<BlocksPanel theme={DEFAULT_THEME} docked onOpenChange={(o) => seen.push(o)} />);
+    fireEvent.click(screen.getByLabelText("Open blocks panel"));
+    fireEvent.click(screen.getByLabelText("Close blocks panel"));
+    expect(seen).toEqual([false, true, false]);
+  });
+});

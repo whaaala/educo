@@ -247,7 +247,7 @@ test.describe("twelve columns", () => {
     const site = siteFromRoot(root);
     await load(page, renderSitePage(site, DEFAULT_THEME, site.homeId, { inlineShared: true }), DESKTOP);
     const styleOf = (sel: string) => page.locator(sel).evaluate((el) => {
-      const t = el.querySelector("h2, p") ?? el;
+      const t = el.querySelector("h1, h2, h3, h4, h5, h6, p") ?? el; // a heading at whatever level the page gives it (B1)
       const cs = getComputedStyle(t);
       return { color: cs.color, family: cs.fontFamily, size: parseFloat(cs.fontSize) };
     });

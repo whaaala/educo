@@ -848,3 +848,103 @@ Feature: Placing blocks beside one another in the Box Builder
     Because the export added "px" to custom properties: the theme's heading weight
       became "600px", which is not a weight at all, so the published page dropped it
       while the canvas showed 600. Found by the Preview units check, 2026-09-26.
+
+  # ── Units reach the published page as % / rem / em (rule 16) ─────────────────────────────
+  Scenario: Every block a user can drop exports without a stored pixel
+    Given every palette tile, as the palette actually inserts it
+    When each is exported on its own
+    Then its styles and its inline styles carry no pixel length but a 1px hairline or zero
+    Because a Card's image went out as "flex: 0 1 160px", a button as "gap: 8px" and
+      "border-radius: 9999px", an embed and an unknown-shape image as "260px", a
+      divider as "2px" and a spacer as "48px" — and the guard missed every one: it
+      treated anything ending in 0px or 1px as zero or a hairline, and never read
+      inline styles. Found by the Preview units check, 2026-09-27.
+
+  # ── Canvas == published: typography (rule 11) ────────────────────────────────────────────
+  Scenario: A heading looks the same in the editor as on the published page
+    Given a heading on the canvas and the same heading in Preview, at the same width
+    Then they have the same line height, letter spacing and wrapping
+    And a block holding a heading is the same height in both
+    Because the canvas and the export each had their own copy of the typography
+      helper, and only the export's base stylesheet made headings tight — every
+      heading was 1.5× on the canvas and 1.15× published (55px vs 42px). One
+      resolver, blockTypography, now serves both. Found by the Preview check.
+
+  Scenario: Preview uses the same fonts as the published site
+    Given a page whose theme uses web fonts (Poppins headings, DM Sans body)
+    When I open Preview
+    Then Preview draws them in the site's own fonts, embedded exactly as the download embeds them
+    Because Preview rendered the export without its font step, so every page appeared
+      in the browser's fallback sans-serif — a heading measured 13% wider in Preview than
+      on the canvas — while the downloaded site used the school's chosen typeface.
+
+  Scenario: The canvas starts from the published page's defaults, not the editor's
+    Given the editor's own interface text is letter-spaced
+    Then text on the canvas is spaced exactly as on the published page
+    Because the canvas page inherited the editor's 0.02em tracking, so every word
+      was wider while editing than it would be for a visitor.
+
+  Scenario: Text wraps at the same place on the canvas and on the published page
+    Given a heading in a narrow column, close to wrapping
+    Then it wraps onto the same number of lines on the canvas and in Preview
+    Because the editable text carried 8px of padding its margins hid from the layout
+      but not from the text, so it wrapped a line sooner while editing (57px vs 35px).
+
+  # ── #43 — widening in a row of three or more (decided 2026-09-27) ─────────────────────
+  Scenario: Widening one block in a busy row takes exactly the width you dragged
+    Given four stats side by side at 25% each
+    When I drag the first stat's right edge 80px past where its neighbour can give
+    Then the first stat is exactly as wide as I dragged it — it does not jump to the full row
+    And the blocks after it stay on the line in order while they fit
+    And the last one that fits takes up any leftover, so no hole opens
+    And only the blocks that no longer fit move to the next line
+    When I drag the edge back to where it started
+    Then all four are back on one line at 25% each
+    Because the dragged block used to jump to 100% and push all three others down —
+      an 80px drag became a 770px jump, breaking "the size you drag is the size you get".
+
+  # ── Where space comes from, and where it goes back (#53 · #58 · #59 · #60) ──
+  # tests/unit/box-model.test.ts (allocateLine: replayed stories + matrix) · scripts/uat/uat43m.js (headed matrix)
+  Scenario: A row reads its blocks as they are DRAWN, not only as they are stored
+    Given five stacks sharing a row at 20% each, on a page where 20% is narrower than a stack's 14rem minimum
+    Then the fifth is on the next line, and the resize knows it
+    When I widen and narrow any of them and drag back to where I started
+    Then the row comes home exactly as it was drawn
+
+  Scenario: Space that was empty stays empty, and is used first
+    Given a row with room at its end, because I narrowed its last block earlier
+    When I widen the first block
+    Then it uses the empty space first, and its neighbour keeps its width
+    When I drag it back
+    Then the empty space returns to the end of the row, and the neighbour still keeps its width
+
+  Scenario: Shrinking a block hands its space to the block beside it
+    Given three blocks filling a row
+    When I narrow the first from its right edge
+    Then the second grows by exactly what the first gave up, and the third does not change
+
+  Scenario: The last block squeezed is the first given its width back
+    Given I widened the middle block earlier, squeezing the last one
+    When I take the first block out and back, far enough that the others wrap below
+    Then every block comes home to the width it had, the earlier squeeze included
+
+  # ── Decided with the user 2026-09-27 (#75): narrow columns · phones stack · no fill jump ──
+  # tests/unit/box-model.test.ts ("the column floor") · tests/components/website/BoxCanvas.test.tsx · scripts/uat/uat-structures.js
+  Scenario: A column I size myself can be narrow
+    Given two columns side by side
+    When I drag the first one's right edge until it is 10% of the row
+    Then it stays 10% on a desktop and a tablet, as narrow as I made it (down to 3rem)
+    And a column I have never sized still keeps the 14rem minimum, so untouched rows wrap into readable widths
+    Because real sites are full of 10/90 label columns and six-across rows, and about 3,000 real sections could not be built
+
+  Scenario: On a phone every row stacks
+    Given any row of columns, however I sized them
+    When the page is shown on a phone
+    Then each column takes the whole width, one under another — nothing narrow is ever squeezed
+
+  Scenario: Widening a block never makes it jump
+    Given two blocks side by side
+    When I widen the first until the second no longer fits beside it
+    Then the second moves to the next line and the first stops exactly where I dragged it
+    And the rest of the line stays empty — an outer edge
+    And dragging back brings everything home

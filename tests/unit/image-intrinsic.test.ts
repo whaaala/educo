@@ -79,7 +79,7 @@ describe("an image block as it is actually CREATED", () => {
 
   it("…while a block with no picture yet still has a visible box to drop one into", () => {
     // The letterbox remains the honest answer for an UNKNOWN shape — that is the one thing not changing.
-    expect(imageSizing(createElement("image"))).toEqual({ height: "260px" });
+    expect(imageSizing(createElement("image"))).toEqual({ height: "16.25rem" }); // 260px as rem — no stored pixel reaches the page (rule 16)
   });
 });
 
@@ -102,8 +102,8 @@ describe("imageSizing", () => {
   it("falls back to the letterbox when the shape is unknown, or the box would collapse to nothing", () => {
     // `object-fit: cover` inside a `height: auto` box with no aspect-ratio has no height at all: the picture
     // would vanish. The old fixed height is the only safe answer without a measurement.
-    expect(imageSizing(imageNode({ height: "auto" }))).toEqual({ height: "260px" });
-    expect(imageSizing(imageNode({}))).toEqual({ height: "260px" });
+    expect(imageSizing(imageNode({ height: "auto" }))).toEqual({ height: "16.25rem" }); // 260px as rem (rule 16)
+    expect(imageSizing(imageNode({}))).toEqual({ height: "16.25rem" });
   });
 
   it("resolves 'fill' like any other explicit size", () => {

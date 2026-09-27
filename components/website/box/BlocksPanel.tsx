@@ -48,6 +48,10 @@ export const LAUNCHER_INSET_REM = 0.75; // from the column's left edge
 export const LAUNCHER_SIZE_REM = 2.75; // the square button itself
 export const LAUNCHER_GAP_REM = 0.75; // breathing room before the page begins
 export const LAUNCHER_GUTTER_REM = LAUNCHER_INSET_REM + LAUNCHER_SIZE_REM + LAUNCHER_GAP_REM;
+/** The open panel's width — ONE number, used by the panel and by the gutter the page leaves for it (#55). */
+export const PANEL_WIDTH_REM = 20;
+/** The room the page leaves on its left while the panel is open and DOCKED, so nothing is ever hidden under it. */
+export const PANEL_GUTTER_REM = LAUNCHER_INSET_REM + PANEL_WIDTH_REM + LAUNCHER_GAP_REM;
 
 type Block = { kind: string; label: string; Icon: LucideIcon; hint: string };
 
@@ -107,13 +111,22 @@ const TABS: { name: string; Icon: LucideIcon }[] = [
 
 type Anchor = { top: number; left: number; bottom: number; right: number };
 
-export default function BlocksPanel({ theme, onDragKind, onPick, defaultOpen = false }: {
+export default function BlocksPanel({ theme, onDragKind, onPick, defaultOpen = false, docked = false, onOpenChange }: {
   theme?: SiteTheme;
   onDragKind?: (kind: string | null) => void;
   onPick?: (kind: string, patch?: Partial<BoxNode>) => void; // click-to-add with an optional style variation
   defaultOpen?: boolean;
+  /**
+   * DOCKED: the page has made room for the panel (#55), so it behaves as a sidebar — it stays open while the user
+   * clicks and edits on the page, and closes with its ✕, Escape or B. Closing it on every click outside, as the
+   * floating overlay does, would slide the page back under the pointer on each click.
+   */
+  docked?: boolean;
+  /** Told whenever the panel opens or closes, so the page can make room for it. */
+  onOpenChange?: (open: boolean) => void;
 }) {
   const [open, setOpen] = useState(defaultOpen);
+  useEffect(() => { onOpenChange?.(open); }, [open]);
   const [shown, setShown] = useState(defaultOpen); // drives the enter transition
   const [q, setQ] = useState("");
   const [tab, setTab] = useState("All");
@@ -131,14 +144,14 @@ export default function BlocksPanel({ theme, onDragKind, onPick, defaultOpen = f
 
   // Click-outside closes (the panel floats over the canvas). Skipped while the portaled variation picker is open.
   useEffect(() => {
-    if (!open) return;
+    if (!open || docked) return;
     const onDown = (e: MouseEvent) => {
       if (menu) return;
       if (panelRef.current && !panelRef.current.contains(e.target as Node)) setOpen(false);
     };
     document.addEventListener("mousedown", onDown);
     return () => document.removeEventListener("mousedown", onDown);
-  }, [open, menu]);
+  }, [open, menu, docked]);
 
   // Keyboard: B toggles, / opens + focuses search, Esc closes. Ignored while typing in a field.
   useEffect(() => {
@@ -228,8 +241,8 @@ export default function BlocksPanel({ theme, onDragKind, onPick, defaultOpen = f
           ref={panelRef}
           role="dialog"
           aria-label="Blocks"
-          style={{ zIndex: CHROME_Z.panel, left: `${LAUNCHER_INSET_REM}rem` }}
-          className={`absolute top-4 flex w-[20rem] max-w-[calc(100%-1.5rem)] max-h-[calc(100%-2rem)] flex-col rounded-2xl border border-line bg-surface shadow-2xl shadow-black/10 overflow-hidden transition duration-200 ease-out motion-reduce:transition-none ${shown ? "opacity-100 translate-x-0 scale-100" : "opacity-0 -translate-x-2 scale-[0.98]"}`}
+          style={{ zIndex: CHROME_Z.panel, left: `${LAUNCHER_INSET_REM}rem`, width: `${PANEL_WIDTH_REM}rem` }}
+          className={`absolute top-4 flex max-w-[calc(100%-1.5rem)] max-h-[calc(100%-2rem)] flex-col rounded-2xl border border-line bg-surface shadow-2xl shadow-black/10 overflow-hidden transition duration-200 ease-out motion-reduce:transition-none ${shown ? "opacity-100 translate-x-0 scale-100" : "opacity-0 -translate-x-2 scale-[0.98]"}`}
         >
           {/* Header */}
           <div className="flex items-center gap-2.5 px-4 pt-3.5 pb-3">

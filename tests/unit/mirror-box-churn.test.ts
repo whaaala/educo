@@ -179,3 +179,16 @@ describe("when a freshly mounted mirror may measure synchronously", () => {
     expect(mirrorMeasuresNow(true, true)).toBe(false);
   });
 });
+
+describe("the chrome is clipped to the canvas it belongs to (#49)", () => {
+  it("a block that holds still while its visible area changes is re-measured — the clip is part of the box", () => {
+    const shown = box({ clipPath: "inset(0px 0px 0px 0px)" });
+    const next = box({ clipPath: "inset(0px 120px 0px 0px)" }); // the Inspector now covers its right 120px
+    expect(shouldTakeMirrorBox(shown, next, fresh(), MAX).take).toBe(true);
+  });
+  it("the same clip twice is no change, so it cannot feed the churn budget", () => {
+    const a = box({ clipPath: "inset(-4px 0px 0px 0px)" });
+    const s1 = shouldTakeMirrorBox(null, a, fresh(), MAX).state;
+    expect(shouldTakeMirrorBox(a, box({ clipPath: "inset(-4px 0px 0px 0px)" }), s1, MAX).take).toBe(false);
+  });
+});

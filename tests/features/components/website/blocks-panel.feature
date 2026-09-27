@@ -142,3 +142,25 @@ Feature: A floating Blocks panel — modern, spacious, out of the way
     Given the Blocks panel is open
     Then it is a rounded, shadowed, translucent card with generous spacing
     And each tile shows the icon in a tinted rounded square, the name, and a one-line hint
+
+  # ── Docked beside the page (#55) ───────────────────────────────────────────
+  # tests/components/website/BlocksPanel.test.tsx · scripts/uat/uat55.js (headed, real window sizes)
+  Scenario: On a laptop screen and up, the open panel sits beside the page, not over it
+    Given my screen is 1536 by 864
+    When I open the blocks panel
+    Then the page moves over to make room, and no block is hidden under the panel
+    And I can drop a block into every stack of a row, including the first
+    And a device canvas that no longer fits is shrunk to fit, with the percentage stated
+    Because floating over the page it hid the left third: the first stack of a row showed
+      4px and another none, so nothing could be dropped into them
+
+  Scenario: The docked panel stays open while I work on the page
+    Given the blocks panel is open beside the page
+    When I click a block on the page to select or edit it
+    Then the panel stays open and the page does not move under my pointer
+    And the ✕ button, Escape or B still close it, and the page slides back
+
+  Scenario: On a phone the panel still floats over the page
+    Given a phone-sized window
+    When I open the blocks panel
+    Then it floats over the page, and a click outside closes it, as before

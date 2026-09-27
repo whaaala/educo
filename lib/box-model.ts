@@ -278,13 +278,29 @@ export interface BoxNode {
    */
   widthByHand?: boolean;
   /**
-   * The width this block RESTS at, recorded while a NEIGHBOUR's drag has squeezed it below that (never set by a
-   * drag of its own edge). It is what makes a round trip made of SEPARATE drags come back (rule 7): growing again,
-   * the block stops at this width and hands any further space to the blocks that wrapped behind it, in order.
+   * The width this block RESTS at, recorded while a NEIGHBOUR's drag holds it away from that — squeezed below it, or
+   * stretched past it as the last block on a line taking the leftover (never set by a drag of its own edge). It is
+   * what makes a round trip made of SEPARATE drags come back (rule 7): each drag starts from the rest widths, so
+   * the leftover one drag handed out never becomes anybody's new normal.
    * Cleared as soon as the block is back at rest, or when the user sizes it by hand — so nothing accumulates.
    * Editor bookkeeping only; the export ignores it.
    */
   restWidth?: string;
+  /**
+   * WHEN it was pulled away from `restWidth` (a drag's start time). Space handed back goes to the most recently
+   * squeezed block first, so a round trip returns exactly even when an EARLIER drag also squeezed a block (#53).
+   * Editor bookkeeping only; cleared with `restWidth`.
+   */
+  restAt?: number;
+  /**
+   * Space at the END of its line that this block's widening used up, still owed back to it. Narrowing the block returns
+   * it there before giving its neighbour anything, so a round trip comes home (#59). Editor bookkeeping only.
+   */
+  endOwed?: number;
+  /** The block whose widening pushed this one onto the next line — it waits to come home before that block's `endOwed` is paid. */
+  wrapBy?: string;
+  /** The width it STORED before a drag rewrote it in drawn terms (it was below its 14rem floor) — written back when it returns (#65). */
+  origWidth?: string;
   radius?: number;          // px corner radius (all corners)
   radiusTopLeft?: number; radiusTopRight?: number; radiusBottomRight?: number; radiusBottomLeft?: number; // per-corner overrides
   opacity?: number;         // 0–100 (%), default 100 (fully opaque) — the BOX's own paint, not its contents
@@ -452,6 +468,13 @@ export interface BoxNode {
   href?: string;          // button/link target: external URL, "#anchor", or "page:<id>"
   newTab?: boolean;       // open the link in a new tab
   anchor?: string;        // a named anchor on ANY box — rendered as its id so links can scroll to it
+  // ── HTML5 semantics (lib/semantics.ts resolves them; the canvas and the export both use that resolver) ──
+  /** What this CONTAINER is — "What is this block?" in the Inspector. Absent = a plain `div`. */
+  tag?: import("./semantics").SemanticTag;
+  /** A HEADING's level, set by hand (1–6). Absent = automatic, following the page (decision B1). */
+  level?: number;
+  /** A name for a landmark ("Main menu", "School news") — announced by screen readers. */
+  landmarkName?: string;
   src?: string;           // image / video URL (data URL for uploads)
   // What the image SAYS, for someone who cannot see it — and for search engines. The export hardcoded alt="",
   // which tells a screen reader the picture is decorative and to skip it, so every photo a school added was
@@ -619,7 +642,7 @@ export function isEmptyBox(node: BoxNode): boolean {
 const NO_HEIGHT_OF_ITS_OWN = new Set<BoxType>(["divider"]);
 
 /** A measured rectangle, as the editor's selection chrome mirrors it. */
-export type MirrorBox = { left: number; top: number; width: number; height: number };
+export type MirrorBox = { left: number; top: number; width: number; height: number; clipPath?: string };
 
 /**
  * SHOULD THE SELECTION CHROME TAKE THIS NEW MEASUREMENT, or has the layout stopped settling?
@@ -695,7 +718,7 @@ export function shouldTakeMirrorBox(
   const near = (a: number, b: number) => Math.abs(a - b) < 0.5;
   const same = (a: MirrorBox | null, b: MirrorBox | null) =>
     a && b
-      ? near(a.left, b.left) && near(a.top, b.top) && near(a.width, b.width) && near(a.height, b.height)
+      ? near(a.left, b.left) && near(a.top, b.top) && near(a.width, b.width) && near(a.height, b.height) && a.clipPath === b.clipPath
       : a === b;
 
   const settled = same(state.seen, next);   // the layout gave the same answer twice running
@@ -898,7 +921,7 @@ export function createElement(type: Exclude<BoxType, "container">, overrides: Pa
     case "icon": return { ...base, icon: "Star", fontSize: 32, ...overrides };
     case "divider": return { ...base, width: "fill", ...overrides };
     case "list": return { ...base, listStyle: "bullet", listItems: ["First item", "Second item", "Third item"], fontSize: 16, ...overrides };
-    case "embed": return { ...base, width: "100%", height: "260px", html: "", ...overrides };
+    case "embed": return { ...base, width: "100%", height: "16.25rem", html: "", ...overrides };
     case "spacer": return { ...base, width: "100%", height: remLen(48), ...overrides };
     default: return { ...base, type: "text", text: "New text — click to edit.", ...overrides };
   }
@@ -2397,7 +2420,7 @@ export function fitBand(root: BoxNode, bandId: string, newId?: string): BoxNode 
   // nowhere to hug, so it wrapped below at its floor — measured: a Stat dropped beside two 50% stacks landed on
   // the next line at 224px. There it takes an equal share like anything else dropped onto a full line.
   if (!isPct(kids[at])) { if (used < 99.5) return root; }
-  else if (used + widthPct(kids[at].width) <= 100.5) return root;  // it fits as it is
+  else if (used + widthPct(kids[at].width) <= 100.001) return root;  // it fits as it is — as strictly as a browser measures (#69)
   const n = members.length + 1;
   const newShare = 100 / n;
   const factor = (100 - newShare) / Math.max(used, 1e-6);
@@ -2872,6 +2895,32 @@ export const typoRole = {
   /** `mult` is the role's share of the inherited text size — 2 for a heading, 1 for body, 0.875 for a button. */
   size: (mult: number) => (mult === 1 ? `var(${TYPO_VAR.size})` : `calc(var(${TYPO_VAR.size}) * ${mult})`),
 } as const;
+
+/**
+ * A BLOCK'S OWN TYPOGRAPHY — the ONE resolver the canvas and the export both call (rule 11).
+ *
+ * There were two copies, `typoStyle` in the canvas and `typoCss` in the export, nearly identical, and neither set a
+ * heading's line height: the export got it from its base stylesheet (`.eu-root h1…h6 { line-height: tight }`),
+ * which the editor never loads and whose `.eu-root` no canvas heading sits inside. So every heading was 1.5× on
+ * the canvas and 1.15× on the published page — measured 55px vs 42px at desktop — and every block holding one was
+ * taller in the editor than on the real site (found by the Preview check, 2026-09-27).
+ *
+ * The role defaults now live HERE, as tokens with their real values as fallbacks (the editor does not define the
+ * `--eu-*` tokens): a heading is tight, tightly tracked and balanced; body text is normal. A value the user set
+ * still wins. Letter spacing is rem, not px — the units rule (rule 16) — through the same `remLen` everything uses.
+ */
+export function blockTypography(node: BoxNode, role: "heading" | "body", weight: number): CSSProperties {
+  return {
+    fontFamily: node.fontFamily || typoRole.font(role),
+    fontWeight: node.fontWeight ?? (node.bold ? 800 : typoRole.weight(role, weight)),
+    lineHeight: node.lineHeight ?? (role === "heading" ? "var(--eu-leading-tight, 1.15)" : "var(--eu-leading-normal, 1.5)"),
+    letterSpacing: node.letterSpacing != null ? remLen(node.letterSpacing) : role === "heading" ? "var(--eu-tracking-tight, -0.025em)" : undefined,
+    textWrap: role === "heading" ? "balance" : undefined,
+    fontStyle: node.italic ? "italic" : undefined,
+    textDecoration: node.underline ? "underline" : undefined,
+    textTransform: node.textTransform && node.textTransform !== "none" ? node.textTransform : undefined,
+  };
+}
 
 /** The role defaults a PAGE ROOT publishes, from the site theme. Everything below inherits these. */
 export function typoRootVars(theme: { text: string; textMuted: string; headingFont: string; bodyFont: string }): CSSProperties {
@@ -3474,6 +3523,15 @@ export const MASONRY_ROW_REM = 0.5;
 export const EMPTY_BOX_MIN = "2.5rem";
 
 /**
+ * FULLY ROUND — the pill a button starts as. One value, used by the canvas and the export alike.
+ *
+ * It was `9999px` in both, the web's usual idiom, and the one pixel length the units rule (rule 16: px only for a
+ * 1px hairline) had no reason to allow: a radius larger than any box is round in any unit, so a rem says the same
+ * thing without a pixel reaching the page. Found by the Preview units check, 2026-09-27.
+ */
+export const PILL = "999rem";
+
+/**
  * The shape assumed for a cell whose height CANNOT be known statically — a card, a caption, any text.
  *
  * Something has to be assumed or such a cell claims one unit and renders 8px tall, which is not "approximate",
@@ -3807,7 +3865,7 @@ export function imageSizing(node: BoxNode): { height: string; aspectRatio?: stri
   // No height asked for. Take the photo's own shape if we know it; otherwise fall back to the letterbox,
   // because an image of unknown shape with `height:auto` and `object-fit:cover` collapses to nothing.
   if (hasIntrinsicSize(node)) return { height: "auto", aspectRatio: `${node.imgW} / ${node.imgH}` };
-  return { height: "260px" };
+  return { height: "16.25rem" }; // the letterbox, in rem — a stored pixel box for media breaks rule 16
 }
 
 /** How long to wait for a decode before giving up and letting the picture through unmeasured. */
@@ -3950,6 +4008,128 @@ export function aloneOnItsLine(parent: BoxNode, child: BoxNode): boolean {
   return lines[at] > 0 && lines.filter((l) => l === lines[at]).length === 1;
 }
 
+/** One block after the dragged one, as `allocateLine` needs it — all in % of the row. */
+export type LineFollower = {
+  id: string; rest: number; floor: number; gap: number;
+  /** when it was squeezed (none = at rest) */ at?: number;
+  /** the width it HOLDS when the drag starts (defaults to `rest`) — what it keeps if it wraps (#53) */ cur?: number;
+  /** pushed below by THIS block (on its line when the drag began, or `wrapBy` names it) — owed its way home first */ pending?: boolean;
+  /** below since BEFORE this block's drags (another drag put it there) — it only comes back once every block before it on the line is back at its REST, never by squeezing them (#62) */ late?: boolean;
+};
+/**
+ * WHERE THE WIDTH COMES FROM when one block on a line is resized from its right edge — a pure function, so every
+ * row, width and drag position can be tested (decided with the user 2026-09-27, #43).
+ *
+ * `own` is the width the pointer asks for; `room` is the line from the dragged block's left edge to the row's end.
+ * The blocks after it (in order) share the rest:
+ *   • each takes its REST width while the line allows it;
+ *   • short of room, they give it back NEAREST FIRST — the next block shrinks to its floor, then the one after it;
+ *   • when even their floors do not fit, the LAST one wraps, then the next-to-last — only what no longer fits
+ *     moves down, and flexbox's order is respected (a later block can never stay while an earlier one wraps);
+ *   • the last block still on the line takes any leftover, so no hole opens.
+ * It used to wrap the IMMEDIATE neighbour — and, flexbox being ordered, everything after it — and then widen the
+ * dragged block to the whole line: an 80px drag in a row of four became a 770px jump. Only when nothing at all
+ * stays beside it does the dragged block fill the line, because then nothing else can.
+ *
+ * Stateless in the pointer: the answer depends only on `own` and each block's rest width, so dragging back to where
+ * the edge started returns every width exactly (rule 7).
+ */
+export function allocateLine(own: number, room: number, followers: LineFollower[], opts: {
+  fillWhenAlone?: boolean;
+  /**
+   * Space at the END of the line that belonged to nobody when the drag began, and the dragged block's width then.
+   * Widening SPENDS that space first; whatever of it is left stays empty rather than being handed to the last block —
+   * handing it over made a row that started with room at its end come home one block wider (#58, five stacks at 1024).
+   */
+  endSpace?: number; own0?: number;
+  /** End-of-line space this block's earlier widening SPENT, still owed back to the line's end (`endOwed`). */
+  owed?: number;
+} = {}): {
+  own: number; widths: Map<string, { width: number; rest?: number }>; wrapped: string[];
+  /** what the dragged block still owes the end of its line after this drag — store it as `endOwed` */ owed: number;
+} {
+  const r2 = (v: number) => Math.floor(v * 100 + 1e-6) / 100;
+  const widths = new Map<string, { width: number; rest?: number }>();
+  let a = Math.max(0, Math.min(room, own));
+  // The longest PREFIX whose floors (plus gaps) fit beside the dragged block.
+  const fit = (rem: number) => {
+    let k = 0, used = 0, usedAtRest = 0;
+    for (const f of followers) {
+      const need = Math.min(f.floor, f.rest) + f.gap;
+      // A LATE block needs the blocks before it at their rest, not squeezed to their floors, to make room for it —
+      // otherwise a block an earlier drag pushed below comes back by taking a neighbour's width (#62).
+      if (f.late ? usedAtRest + need > rem + 0.05 : used + need > rem + 0.05) break;
+      used += need; usedAtRest += (f.late ? need : Math.max(need, f.rest + f.gap)); k++;
+    }
+    return k;
+  };
+  const k = fit(room - a);
+  // Nothing can stay beside it — it fills the line rather than leave a hole. Not when they were ALREADY below
+  // before the drag (`fillWhenAlone: false`): then narrowing it is the user opening space, and it must be allowed
+  // to narrow a step at a time until the next one fits again (#6, #45).
+  if (k === 0 && followers.length && opts.fillWhenAlone !== false) a = room;
+  const rem = room - a;
+  const kept = followers.slice(0, k);
+  const wrapped = followers.slice(k);
+  // Start every kept block at its floor, then hand back towards REST from the FARTHEST first — the mirror of
+  // "nearest gives first", so the nearest block is the one that stays squeezed longest.
+  const w = kept.map((f) => Math.min(f.floor, f.rest));
+  let slack = rem - kept.reduce((s, f, i) => s + w[i] + f.gap, 0);
+  /**
+   * WHO GETS SPACE BACK FIRST — last squeezed, first restored (#53). Blocks at their rest come back first (farthest
+   * first, so the NEAREST is the one that gives first when this drag widens), then blocks an earlier drag squeezed,
+   * most recent first. Farthest-first alone gave a drag's space to a block an OLDER drag had squeezed: a round trip
+   * of the first block turned 341/459/224 into 342/342/341 even dragged back to the pixel it started from.
+   */
+  const order = kept.map((_, i) => i).sort((i, j) => {
+    const ai = kept[i].at, aj = kept[j].at;
+    if ((ai === undefined) !== (aj === undefined)) return ai === undefined ? -1 : 1;
+    if (ai !== undefined && aj !== undefined && ai !== aj) return aj - ai;
+    return j - i;
+  });
+  for (const i of order) { if (slack <= 0) break; const add = Math.min(slack, kept[i].rest - w[i]); w[i] += add; slack -= add; }
+  /**
+   * WHERE WHAT IS LEFT GOES — remembering where space came from, so every round trip comes home (#58, #59).
+   *
+   * WIDENING spends the empty space at the end of the line FIRST (a neighbour does not balloon into it, #59), and the
+   * block records what it spent (`owed`). If a neighbour wraps, the last block still on the line takes the rest, so no
+   * sudden gap opens.
+   *
+   * NARROWING is the exact mirror: squeezed blocks get their width back (above, most recent first), then the space this
+   * block once took from the END of the line goes back there, and only THEN does anything more go to the NEIGHBOUR
+   * ACROSS THE JOINED EDGE — the rule agreed with the user: shrinking a block hands its space to the block beside it.
+   * Handing everything to the neighbour made a row that began with room at its end come home one block wider; handing
+   * nothing to it left a gap at a joined edge. Both were measured.
+   */
+  const end0 = opts.endSpace ?? 0, owed0 = opts.owed ?? 0;
+  const widening = opts.own0 === undefined || a > opts.own0 + 1e-9;
+  let owed = owed0;
+  if (widening) {
+    const keepEmpty = opts.own0 === undefined ? 0 : Math.max(0, end0 - (a - opts.own0));
+    owed = owed0 + (opts.own0 === undefined ? 0 : end0 - keepEmpty);
+    slack -= Math.min(slack, keepEmpty);
+    if (kept.length && slack > 0) w[kept.length - 1] += slack;
+  } else {
+    const beyond = Math.max(0, slack - end0);          // what this narrowing freed past the space already empty
+    // …returned to the end of the line, up to what was taken from it — but only once the NEXT block is back on the line.
+    // While it still waits below, what this frees is ITS space on the way home, not the end's: paying the debt then
+    // spent it early, and the neighbour ballooned on its return (a 30/30 pair came home 30/46).
+    const waiting = wrapped.some((f) => f.pending);    // a block this one pushed below is not home yet
+    const back = kept.length && !waiting ? Math.min(beyond, owed0) : 0;
+    owed = owed0 - back;
+    slack -= Math.min(slack, end0 + back);
+    if (kept.length && slack > 0) w[0] += slack;       // the rest to the neighbour across the joined edge
+  }
+  // A block away from its rest width — squeezed OR stretched by taking the leftover — REMEMBERS it. Forgetting it
+  // when stretched made the leftover its new normal, and a round trip of separate drags came home 255/417/352 with
+  // the last block stranded below (#45, found by the HEADED UAT, 2026-09-27).
+  kept.forEach((f, i) => { const v = r2(w[i]); widths.set(f.id, { width: v, rest: Math.abs(v - f.rest) > 0.05 ? r2(f.rest) : undefined }); });
+  // A block that wraps KEEPS THE WIDTH IT HELD, and its memory — writing it back at its rest threw away a squeeze an
+  // earlier drag had made, so the round trip could not come home (#53, the matrix's "unequal" row).
+  wrapped.forEach((f) => { const c = f.cur ?? f.rest; widths.set(f.id, { width: r2(c), rest: Math.abs(c - f.rest) > 0.05 ? r2(f.rest) : undefined }); });
+  return { own: r2(a), widths, wrapped: wrapped.map((f) => f.id), owed: owed > 0.005 ? r2(owed) : 0 };
+}
+
 /**
  * WHICH LINE OF A WRAPPING ROW EACH BLOCK LANDS ON — decided from the STORED widths, never by asking the page.
  *
@@ -3963,13 +4143,26 @@ export function aloneOnItsLine(parent: BoxNode, child: BoxNode): boolean {
  * who shares a boundary), so the two can never disagree about where a line ends. A hair over 100 is still one
  * line — percentages that round to 100.4 are meant to be a full line.
  */
-export function packRowLines(kids: BoxNode[]): number[] {
+/**
+ * THE NARROWEST A COLUMN IN A ROW IS DRAWN (decided with the user 2026-09-27, #75). A column nobody has sized keeps the
+ * 14rem reflow floor, so rows of untouched columns still wrap into readable widths. A column the user SIZED BY HAND keeps
+ * the size they chose, down to 3rem — real sites are full of 10/90 label columns and six-across logo rows, and the 14rem
+ * floor made roughly 3,000 real sections impossible to build. On a PHONE every column stacks full-width (childStyle), so
+ * a narrow column is never squeezed there.
+ */
+export const REFLOW_FLOOR_REM = 14;
+export const HAND_FLOOR_REM = 3;
+export const floorRemOf = (k: BoxNode) => (k.widthByHand ? HAND_FLOOR_REM : REFLOW_FLOOR_REM);
+
+export function packRowLines(kids: BoxNode[], minPct: number | ((k: BoxNode) => number) = 0): number[] {
   const out: number[] = [];
   let used = 0, line = 0, count = 0;
   for (const k of kids) {
     // A gap on a line is a share of it too (`marginLeftPct`) — the browser counts it, so the packing must.
-    const w = (widthPct(k.width) || 100) + (k.marginLeftPct ?? 0);
-    if (count && used + w > 100.5) { line++; used = 0; count = 0; }
+    // `minPct` is the reflow floor as a share of THIS row (14rem at the width being shown): a block stored below it is
+    // DRAWN at it, and the browser wraps on what it draws. Omitted, the packing is the stored one (#58).
+    const w = Math.max(widthPct(k.width) || 100, typeof minPct === "function" ? minPct(k) : minPct) + (k.marginLeftPct ?? 0);
+    if (count && used + w > 100.001) { line++; used = 0; count = 0; }
     out.push(line); used += w; count++;
   }
   return out;
@@ -4629,7 +4822,9 @@ export function childStyle(child: BoxNode, parent: BoxNode, bp: Breakpoint = "ba
   // A section inside a ROW BAND keeps a usable minimum width (`min(100%, 14rem)`): its siblings stay side-by-side
   // while they fit, but once the row is too narrow for everyone at that minimum, it WRAPS — so on a phone the
   // sections stack (each ~14rem-or-full) instead of cramming into unreadable columns. Doesn't touch resize/grow.
-  if (parent.rowBand && isRow && !child.clip && !isEmptyBox(child) && isContainer(child)) s.minWidth = "min(100%, 14rem)"; // only SECTIONS get the reflow floor; elements/components hug their content
+  // Only SECTIONS get the floor; elements/components hug their content. A hand-sized column keeps its size down to 3rem;
+  // on a PHONE every column takes the whole line, so rows stack and nothing narrow is squeezed (#75).
+  if (parent.rowBand && isRow && !child.clip && !isEmptyBox(child) && isContainer(child)) s.minWidth = bp === "phone" ? "100%" : `min(100%, ${floorRemOf(child)}rem)`;
   const crossCss = sizeToCSS(crossToken);
   // RULE O — inside a ROW a block's height is its CROSS size. For a self-painting block (component/button) that
   // must be a FLOOR, not a cap: a hard height here is what let the content spill out below the box after the

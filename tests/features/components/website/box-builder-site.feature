@@ -119,6 +119,38 @@ Feature: Box Builder — multi-page site, preview & export
     When I type the letter H
     Then the controls do not move
 
+  # ── The EDITOR canvas on a real screen (#48 · #49) ────────────────────────
+  # tests/unit/zoom-of.test.ts · tests/unit/mirror-box-churn.test.ts · scripts/uat/ (headed, real window sizes)
+
+  Scenario: A canvas size wider than the room is shrunk to fit, like the preview
+    Given my screen is 1536 by 864 and the Inspector is open
+    When I choose the Desktop 1280 canvas
+    Then the whole page is visible beside the panels, with no sideways scroll
+    And it says "Fitted to screen" with the percentage it is shown at
+    And the page is still laid out at 1280 — the same rung, the same layout that publishes
+    Because it used to run on under the Inspector: the right of the page could not be
+      seen, and its handles were painted on top of the Inspector
+
+  Scenario: The size I drag is the size I get, even when the canvas is shrunk
+    Given the canvas is fitted to screen at less than 100%
+    When I drag an edge, a grid cell, a floating block or a floating item
+    Then what is stored is the size on the page, not the smaller size on my screen
+    And the same drag at 100% and at the fitted size ends at the same place on the page
+
+  Scenario: A block's handles never draw outside the canvas
+    When a selected block is scrolled under the toolbar or beside the Inspector
+    Then its handles and toolbar are cut off at the edge of the canvas
+    And nothing of the canvas is ever painted over the Inspector or the toolbar
+
+  Scenario: On a phone the Inspector slides over the page instead of squeezing it
+    Given the builder is open in a phone-sized window
+    Then the page has the whole width and the Inspector starts closed
+    When I open the Inspector from its rail
+    Then it slides over the page
+    And Escape or its close button puts it away again
+    Because it was a fixed 22rem column: on a 393px phone the page was left 41px, less
+      its padding — nothing to click, under an Inspector saying "click a block to edit it"
+
   Scenario: Choosing a zoom myself
     When I pick an explicit percentage instead of "Fit to window"
     Then it is obeyed exactly, and the stage scrolls if it overflows

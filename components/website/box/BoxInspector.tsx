@@ -8,7 +8,7 @@
  */
 
 import { useState, useRef } from "react";
-import { Plus, X, Rows3, Columns3, Upload, ArrowRight, AlignLeft, AlignCenter, AlignRight, Layers, Move, BringToFront, SendToBack, ChevronUp, ChevronDown, Italic, Underline, LayoutGrid, Maximize2, Sparkles, Paintbrush, Ruler, Type as TypeIcon, MonitorSmartphone, Bookmark, Lock, LockOpen } from "lucide-react";
+import { Plus, X, Tags, Rows3, Columns3, Upload, ArrowRight, AlignLeft, AlignCenter, AlignRight, Layers, Move, BringToFront, SendToBack, ChevronUp, ChevronDown, Italic, Underline, LayoutGrid, Maximize2, Sparkles, Paintbrush, Ruler, Type as TypeIcon, MonitorSmartphone, Bookmark, Lock, LockOpen } from "lucide-react";
 import type { SiteTheme } from "@/lib/site-storage";
 import type { BoxNode, FlexAlign, FlexJustify, AccPartStyle, Breakpoint, PagerNav, PinScopeWords } from "@/lib/box-model";
 import { RUNG_LABEL } from "@/lib/educo-ui/layout";
@@ -30,6 +30,7 @@ import EducoColorField from "@/components/shared/EducoColorField";
 import Slider from "@/components/shared/Slider";
 import CompactField from "@/components/shared/CompactField";
 import CompactSelect from "@/components/shared/CompactSelect";
+import { CONTAINER_TAGS, type SemanticTag } from "@/lib/semantics";
 import CompactTextarea from "@/components/shared/CompactTextarea";
 
 const label = "text-[0.6875rem] font-semibold text-muted";
@@ -633,6 +634,43 @@ export default function BoxInspector({ node, theme, onPatch, onAddChild, onFloat
       {/* ─────────────── DESIGN ─────────────── */}
       {tab === "design" && (
         <div>
+          {/* MEANING — what this block IS, so the page publishes as correct HTML5 however it was built (semantics,
+              lib/semantics.ts). Plain words; the element and what a screen reader announces are shown underneath. */}
+          {(isContainer(node) || node.type === "heading") && (
+            <Accordion title="Meaning" icon={Tags} defaultOpen={false}>
+              {isContainer(node) && (() => {
+                const cur = CONTAINER_TAGS.find((t) => t.tag === (node.tag ?? "div")) ?? CONTAINER_TAGS[0];
+                const named = node.tag === "nav" || node.tag === "section" || node.tag === "aside" || node.tag === "article";
+                return (
+                  <>
+                    <CompactSelect label="What is this block?" ariaLabel="What is this block"
+                      value={node.tag ?? "div"}
+                      onChange={(v) => onPatch({ tag: v === "div" ? undefined : (v as SemanticTag) })}
+                      options={CONTAINER_TAGS.map((t) => ({ value: t.tag, label: t.label }))} />
+                    <p className="text-[0.625rem] text-gray-500 dark:text-gray-400 midnight:text-slate-400 purple:text-purple-200">
+                      {cur.hint}. Published as <code>&lt;{cur.tag}&gt;</code>; a screen reader announces: {cur.announces}.
+                    </p>
+                    {named && (
+                      <CompactField label="Name (read out by screen readers)" ariaLabel="Name for screen readers"
+                        value={node.landmarkName ?? ""} placeholder={node.tag === "nav" ? "e.g. Main menu" : "e.g. School news"}
+                        onChange={(v) => onPatch({ landmarkName: String(v).trim() ? String(v) : undefined })} />
+                    )}
+                  </>
+                );
+              })()}
+              {node.type === "heading" && (
+                <>
+                  <CompactSelect label="Heading level" ariaLabel="Heading level"
+                    value={node.level ? String(node.level) : ""}
+                    onChange={(v) => onPatch({ level: v ? Number(v) : undefined })}
+                    options={[{ value: "", label: "Automatic — follows the page" }, ...[1, 2, 3, 4, 5, 6].map((l) => ({ value: String(l), label: `Level ${l}${l === 1 ? " — the page's title" : ""}` }))]} />
+                  <p className="text-[0.625rem] text-gray-500 dark:text-gray-400 midnight:text-slate-400 purple:text-purple-200">
+                    The level is its place in the page&rsquo;s outline, not its size — change the size under Text.
+                  </p>
+                </>
+              )}
+            </Accordion>
+          )}
           {canFloat && (
             <Accordion title="Placement" icon={Move}>
               <Segmented full ariaLabel="Placement" value={floating ? "float" : "flow"} onChange={(v) => (v === "float" ? onFloat?.() : onUnfloat?.())}

@@ -49,7 +49,10 @@ export function EditableText({
       onInput={(e) => onChange?.((e.currentTarget.textContent || ""))}
       onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); (e.currentTarget as HTMLElement).blur(); } }}
       onClick={(e) => e.stopPropagation()}
-      className={`${className} inline-block outline-none rounded px-1 -mx-1 cursor-text transition-shadow hover:shadow-[0_0_0_2px_rgba(129,140,248,0.55)] focus:shadow-[0_0_0_2px_rgba(99,102,241,0.95)] empty:before:content-[attr(data-placeholder)] empty:before:opacity-40`}
+      // No padding: `px-1 -mx-1` kept the OUTER width right but left the text 8px less room inside, so near the edge
+      // it wrapped a line sooner than the published page did (a stat measured 57px on the canvas, 35px published).
+      // The hover/focus ring is a box-shadow and draws outside the box without it. Found by the Preview check.
+      className={`${className} inline-block outline-none rounded cursor-text transition-shadow hover:shadow-[0_0_0_2px_rgba(129,140,248,0.55)] focus:shadow-[0_0_0_2px_rgba(99,102,241,0.95)] empty:before:content-[attr(data-placeholder)] empty:before:opacity-40`}
       style={style}
     />
   );

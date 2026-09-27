@@ -6,7 +6,7 @@ import {
   addItem, removeItem, moveItem, updateItem, addChildItem, updateChildItem, removeChildItem, moveChildItem, sanitizeCssDeclarations, expandScopedCss, ACCORDION_CSS_PARTS, itemOverrideCss, itemHasOverride, itemFloatReserveRem, richBody, plainBody, isEmptyBox,
   findBox, findParent, isAncestor, updateBox, insertBox, removeBox, deleteBox, stackWithBlock, moveBoxStep, moveBox,
   containerStyle, childStyle, paddingCSS, marginCSS, sizeToCSS, flexForWidth, fillMainAxis, u, newBoxId, dropIndexAmong, EMPTY_BOX_MIN, fitRowWidths,
-  makeRowBand, normalizeRowBands, clampRowWidths, widthPct, fitBand, packRowLines, aloneOnItsLine,
+  makeRowBand, normalizeRowBands, clampRowWidths, widthPct, fitBand, packRowLines, allocateLine, aloneOnItsLine, blockTypography,
   isFloating, floatBox, unfloatBox, groupBoxes, ungroupBoxes, alignInRow, alignInRowOf, bringToFront, sendToBack, bringForward, sendBackward, floatingZRange, cloneBox,
   isCssBg, bgImageLayer, renderAlertHTML, bgShowThroughCss,
   radiusCSS, isClipped, SHADOW_CSS, videoEmbedSrc,
@@ -545,15 +545,291 @@ describe("box-model — mutations are immutable and correct", () => {
     });
   });
 
+  /** Behaviours: box-builder-layout.feature — "A heading looks the same in the editor as on the published page". */
+  describe("blockTypography — the one typography resolver the canvas and the export share", () => {
+    const el = (p: Partial<BoxNode> = {}) => createElement("heading", p);
+    it("a heading is TIGHT by default — the 1.15 the published page always had, now on the canvas too", () => {
+      const t = blockTypography(el(), "heading", 600);
+      expect(t.lineHeight).toBe("var(--eu-leading-tight, 1.15)");
+      expect(t.letterSpacing).toBe("var(--eu-tracking-tight, -0.025em)");
+      expect(t.textWrap).toBe("balance");
+    });
+    it("body text is NORMAL, and is not tracked or balanced", () => {
+      const t = blockTypography(el(), "body", 400);
+      expect(t.lineHeight).toBe("var(--eu-leading-normal, 1.5)");
+      expect(t.letterSpacing).toBeUndefined();
+      expect(t.textWrap).toBeUndefined();
+    });
+    it("a value the user set wins — and letter spacing is rem, never px (rule 16)", () => {
+      const t = blockTypography(el({ lineHeight: 2, letterSpacing: 4 } as Partial<BoxNode>), "heading", 600);
+      expect(t.lineHeight).toBe(2);
+      expect(String(t.letterSpacing)).toMatch(/rem$/);
+    });
+  });
+
+  describe("allocateLine — widening one block in a full row (#43)", () => {
+    const F = (id: string, rest: number, floor = 8, gap = 0) => ({ id, rest, floor, gap });
+    const sum = (r: ReturnType<typeof allocateLine>, fs: { id: string; gap: number }[]) =>
+      r.own + fs.filter((f) => !r.wrapped.includes(f.id)).reduce((s, f) => s + r.widths.get(f.id)!.width + f.gap, 0);
+
+    it("the reported case: a row of four, the first widened 25→35 — the next one gives, nothing jumps", () => {
+      const fs = [F("b", 25), F("c", 25), F("d", 25)];
+      const r = allocateLine(35, 100, fs);
+      expect(r.own).toBe(35);               // not 100 — the jump that was the bug
+      expect(r.wrapped).toEqual([]);
+      expect(r.widths.get("b")).toEqual({ width: 15, rest: 25 }); // nearest gives first, remembers its rest
+      expect(r.widths.get("c")).toEqual({ width: 25, rest: undefined });
+      expect(r.widths.get("d")).toEqual({ width: 25, rest: undefined });
+    });
+    it("once the nearest is at its floor, the next one gives", () => {
+      const r = allocateLine(50, 100, [F("b", 25, 10), F("c", 25, 10), F("d", 25, 10)]);
+      expect(r.widths.get("b")!.width).toBe(10);
+      expect(r.widths.get("c")!.width).toBe(15);
+      expect(r.widths.get("d")!.width).toBe(25);
+    });
+    it("when floors no longer fit, the LAST wraps first, keeping its rest width", () => {
+      const r = allocateLine(80, 100, [F("b", 25, 10), F("c", 25, 10), F("d", 25, 10)]);
+      expect(r.wrapped).toEqual(["d"]);
+      expect(r.widths.get("d")).toEqual({ width: 25 });
+      expect(r.widths.get("b")!.width + r.widths.get("c")!.width).toBeCloseTo(20, 1);
+    });
+    it("only when nothing can stay beside it does the dragged block fill the line", () => {
+      const r = allocateLine(95, 100, [F("b", 25, 10)]);
+      expect(r.wrapped).toEqual(["b"]);
+      expect(r.own).toBe(100);
+    });
+    it("with its neighbours ALREADY below, it narrows a step at a time instead of filling the line (#45)", () => {
+      const fs = [F("b", 50, 22)];
+      const r = allocateLine(90, 100, fs, { fillWhenAlone: false });
+      expect(r.own).toBe(90);
+      expect(r.wrapped).toEqual(["b"]);
+      expect(allocateLine(90, 100, fs).own).toBe(100); // the default: pushed off during this drag → fill
+      expect(allocateLine(70, 100, fs, { fillWhenAlone: false }).wrapped).toEqual([]); // room for its floor → back up
+    });
+    /**
+     * SEPARATE drags, carrying the stored state from one to the next exactly as the canvas does: which blocks share
+     * the line at the start of a drag, each one's rest width, and a block on a later line only coming up at its rest.
+     */
+    const replay = (n: number, steps: number[], floor = 22.4) => {
+      const start = 100 / (n + 1);
+      let own = start;
+      let st = Array.from({ length: n }, (_, i) => ({ id: `f${i}`, w: start, rest: undefined as number | undefined }));
+      for (const d of steps) {
+        let used = own, open = true;
+        const same = st.map((f) => { used += f.w; open = open && used <= 100.5; return open; });
+        const fs = st.map((f, k) => ({ id: f.id, rest: f.rest ?? f.w, gap: 0, floor: same[k] || k === 0 ? Math.min(floor, f.rest ?? f.w) : (f.rest ?? f.w) }));
+        const r = allocateLine(own + d, 100, fs, { fillWhenAlone: same.some(Boolean) });
+        own = r.own;
+        st = st.map((f, k) => {
+          if (!same[k] && r.wrapped.includes(f.id)) return f;
+          const w = r.widths.get(f.id)!;
+          return { id: f.id, w: w.width, rest: w.rest };
+        });
+      }
+      return { own, st, start };
+    };
+    /** Nudge out `k` times, then nudge back until the edge is where it STARTED — a user drags back to the spot, not
+     *  back the same number of times (a nudge that pushed everything off fills the line, so the counts differ). */
+    const outAndBack = (n: number, step: number, k: number, extra: number[] = []) => {
+      const out = replay(n, Array(k).fill(step));
+      const back: number[] = [];
+      let at = out.own;
+      while (at - step > out.start + 1e-9) { back.push(-step); at -= step; }
+      back.push(out.start - at);
+      return replay(n, [...Array(k).fill(step), ...back, ...extra]);
+    };
+    it.each([1, 2, 3, 4, 5])("a round trip of SEPARATE drags comes home — %i followers, every step size and distance (#45)", (n) => {
+      for (const step of [1, 4, 8, 12, 20]) for (const k of [1, 2, 3, 6, 10]) {
+        const { own, st, start } = outAndBack(n, step, k);
+        expect(own, `step ${step} × ${k}`).toBeCloseTo(start, 1);
+        st.forEach((f) => { expect(f.w, `${f.id} step ${step} × ${k}`).toBeCloseTo(start, 0); expect(f.rest, `${f.id} step ${step} × ${k}`).toBeUndefined(); });
+      }
+    });
+    it("…and a long drag out and back after the nudges comes home too", () => {
+      const { own, st, start } = outAndBack(3, 8, 6, [48, -48]);
+      expect(own).toBeCloseTo(start, 1);
+      st.forEach((f) => expect(f.w).toBeCloseTo(start, 0));
+    });
+    /** A row where ANY block can be dragged, carrying width, rest and squeeze time between drags as the canvas does. */
+    type B = { id: string; w: number; rest?: number; at?: number; owed?: number; wrapBy?: string };
+    const dragAt = (row: B[], k: number, delta: number, stamp: number): B[] => {
+      const before = row.slice(0, k).reduce((s, b) => s + b.w, 0);
+      const fs = row.slice(k + 1).map((b) => ({ id: b.id, rest: b.rest ?? b.w, gap: 0, floor: Math.min(22.4, b.rest ?? b.w), at: b.rest !== undefined ? b.at : undefined }));
+      const r = allocateLine(row[k].w + delta, 100 - before, fs);
+      return row.map((b, i) => {
+        if (i === k) return { id: b.id, w: r.own };
+        if (i < k) return b;
+        const w = r.widths.get(b.id)!;
+        return { id: b.id, w: w.width, rest: w.rest, at: w.rest !== undefined ? (b.rest !== undefined ? b.at : stamp) : undefined };
+      });
+    };
+    const widths = (row: B[]) => row.map((b) => b.w);
+    it("a block squeezed by an EARLIER drag does not take this drag's space back — the round trip returns exactly (#53)", () => {
+      let row: B[] = [{ id: "a", w: 33.33 }, { id: "b", w: 33.33 }, { id: "c", w: 33.33 }];
+      row = dragAt(row, 1, 8, 1);                             // the user widens the MIDDLE block: c is squeezed
+      const start = widths(row);
+      expect(row[2].rest).toBeDefined();
+      for (const d of [4, 4, 4]) row = dragAt(row, 0, d, 2); // then the FIRST block, out…
+      for (const d of [-4, -4, -4]) row = dragAt(row, 0, d, 3); // …and back to the pixel it started from
+      widths(row).forEach((w, i) => expect(w, `block ${i}`).toBeCloseTo(start[i], 1));
+    });
+    it("…and a single drag of the first block that goes nowhere changes nothing at all", () => {
+      let row: B[] = [{ id: "a", w: 33.33 }, { id: "b", w: 33.33 }, { id: "c", w: 33.33 }];
+      row = dragAt(row, 1, 8, 1);
+      const start = widths(row);
+      widths(dragAt(row, 0, 0, 2)).forEach((w, i) => expect(w, `block ${i}`).toBeCloseTo(start[i], 1));
+    });
+    /** The same row, now WRAPPING as the browser does: lines packed on max(width, floor), blocks on later lines come
+     *  up only at the width they hold, a wrapped block keeps its width and memory — exactly what the canvas passes. */
+    const FLOOR = 22.4;
+    const dragWrap = (row: B[], k: number, delta: number, stamp: number, floor = FLOOR): B[] => {
+      const eff = (b: B) => Math.max(b.w, floor);
+      let used = 0, line = 0; const lineOf = row.map((b, i) => { if (i && used + eff(b) > 100.5) { line++; used = 0; } used += eff(b); return line; });
+      const lineStart = row.findIndex((_, i) => lineOf[i] === lineOf[k]);
+      const before = row.slice(lineStart, k).reduce((s, b) => s + eff(b), 0);
+      const after = row.slice(k + 1);
+      const fs = after.map((b, j) => {
+        const same = lineOf[k + 1 + j] === lineOf[k];
+        const rest = Math.max(b.rest ?? b.w, floor), cur = Math.max(b.w, floor);
+        return { id: b.id, rest, cur, gap: 0, at: b.rest !== undefined ? b.at : undefined, floor: Math.min(floor, rest), pending: same || b.wrapBy === row[k].id, late: !same && j !== 0 && b.wrapBy !== row[k].id };
+      });
+      const startKept = after.filter((_, j) => lineOf[k + 1 + j] === lineOf[k]).length;
+      const own0 = Math.max(row[k].w, floor);
+      const endSpace = Math.max(0, 100 - before - own0 - fs.filter((_, j) => lineOf[k + 1 + j] === lineOf[k]).reduce((s2, f) => s2 + f.cur, 0));
+      const r = allocateLine(own0 + delta, 100 - before, fs, { fillWhenAlone: startKept > 0, endSpace, own0, owed: row[k].owed ?? 0 });
+      return row.map((b, i) => {
+        if (i === k) return { id: b.id, w: r.own, owed: r.owed || undefined };
+        if (i < k) return b;
+        const same = lineOf[i] === lineOf[k];
+        if (!same && r.wrapped.includes(b.id)) return b;       // already below, still below: untouched
+        const w = r.widths.get(b.id)!;
+        const wrapBy = r.wrapped.includes(b.id) ? (same ? row[k].id : b.wrapBy) : undefined;
+        return { id: b.id, w: w.width, rest: w.rest, at: w.rest !== undefined ? (b.rest !== undefined ? b.at : stamp) : undefined, wrapBy };
+      });
+    };
+    const outBack = (row0: B[], k: number, step: number, n: number) => {
+      let row = row0; let t = 10;
+      for (let i = 0; i < n; i++) row = dragWrap(row, k, step, t++);
+      const target = Math.max(row0[k].w, FLOOR);
+      for (let i = 0; i < 40 && Math.abs(Math.max(row[k].w, FLOOR) - target) > 0.01; i++) {
+        const d = target - Math.max(row[k].w, FLOOR);
+        row = dragWrap(row, k, Math.sign(d) * Math.min(Math.abs(step), Math.abs(d)), t++); // |step|: an INWARD first move comes back OUT
+      }
+      return row;
+    };
+    const drawn = (row: B[]) => row.map((b) => Math.round(Math.max(b.w, FLOOR) * 10) / 10);
+
+    it("packRowLines packs on what is DRAWN when given the floor — five 20% stacks at a 21.875% floor wrap the fifth (#58)", () => {
+      const kids = Array.from({ length: 5 }, (_, i) => createContainer("column", { id: `s${i}`, width: "20%" } as Partial<BoxNode>));
+      expect(packRowLines(kids)).toEqual([0, 0, 0, 0, 0]);
+      expect(packRowLines(kids, 21.875)).toEqual([0, 0, 0, 0, 1]);
+    });
+    it("narrowing hands space to the NEIGHBOUR across the joined edge when nothing is owed to the end — the agreed rule", () => {
+      const r = allocateLine(40, 100, [{ id: "b", rest: 50, cur: 50, floor: 22.4, gap: 0 }], { endSpace: 0, own0: 50, owed: 0 });
+      expect(r.widths.get("b")!.width).toBe(60);
+    });
+    it("with THREE on a full line, narrowing the first gives to the SECOND (the joined edge), not the last (#60)", () => {
+      const r = allocateLine(23.33, 100, [
+        { id: "b", rest: 33.33, cur: 33.33, floor: 22.4, gap: 0 },
+        { id: "c", rest: 33.34, cur: 33.34, floor: 22.4, gap: 0 },
+      ], { endSpace: 0, own0: 33.33, owed: 0 });
+      expect(r.widths.get("b")!.width).toBeCloseTo(43.33, 1);
+      expect(r.widths.get("c")!.width).toBeCloseTo(33.34, 1);
+    });
+    it("…but first pays back what this block once took from the END of the line (#59)", () => {
+      const r = allocateLine(40, 100, [{ id: "b", rest: 30, cur: 30, floor: 22.4, gap: 0 }], { endSpace: 20, own0: 50, owed: 20 });
+      expect(r.widths.get("b")!.width).toBe(30);                     // the neighbour is not handed anything
+      expect(r.owed).toBe(10);                                            // 10 of the 20 went back to the end
+    });
+    it("widening a row that has empty space at its end SPENDS that space first — the neighbour does not balloon into it (#59)", () => {
+      // 30 + 30 on a line leaves 40 empty; widen the first by 10 → the neighbour stays 30 and 30 stays empty
+      const r = allocateLine(40, 100, [{ id: "b", rest: 30, cur: 30, floor: 22.4, gap: 0 }], { endSpace: 40, own0: 30 });
+      expect(r.own).toBe(40);
+      expect(r.widths.get("b")).toEqual({ width: 30, rest: undefined });
+    });
+    it("a wrapped block keeps the width it HELD and its memory, not its rest (#53)", () => {
+      const r = allocateLine(90, 100, [{ id: "c", rest: 33.34, cur: 21.87, floor: 21.87, gap: 0, at: 1 }]);
+      expect(r.wrapped).toEqual(["c"]);
+      expect(r.widths.get("c")).toEqual({ width: 21.87, rest: 33.34 });
+    });
+    it.each([
+      ["the 'unequal' row, first block far out and back (both followers wrap)", [{ id: "a", w: 33.33 }, { id: "b", w: 44.27 }, { id: "c", w: 22.4, rest: 33.34, at: 1 }], 0, 8, 6],
+      ["the 'unequal' row, middle block out and back", [{ id: "a", w: 33.33 }, { id: "b", w: 44.27 }, { id: "c", w: 22.4, rest: 33.34, at: 1 }], 1, 8, 6],
+      ["five 20% stacks at a 22.4% floor (the fifth already below), first out and back (#58)", Array.from({ length: 5 }, (_, i) => ({ id: `s${i}`, w: 20 })), 0, 8, 6],
+      ["five 20% stacks, middle out and back", Array.from({ length: 5 }, (_, i) => ({ id: `s${i}`, w: 20 })), 2, 8, 6],
+      ["five 20% stacks, one long drag and back", Array.from({ length: 5 }, (_, i) => ({ id: `s${i}`, w: 20 })), 0, 48, 1],
+      ["two blocks with room at the end (the last narrowed earlier), first out and back (#59)", [{ id: "a", w: 30 }, { id: "b", w: 30 }], 0, 8, 6],
+      ["three with room at the end, middle out and back", [{ id: "a", w: 25 }, { id: "b", w: 25 }, { id: "c", w: 25 }], 1, 8, 4],
+      ["a full 50/50 pair, first IN and back out — the joined edge", [{ id: "a", w: 50 }, { id: "b", w: 50 }], 0, -8, 3],
+      ["a block an EARLIER drag pushed below stays below; the first's round trip returns (#62, 'unequal' at 1366)", [{ id: "a", w: 33.33 }, { id: "b", w: 66.67 }, { id: "c", w: 33.33, wrapBy: "b" }], 0, 8, 3],
+    ] as [string, B[], number, number, number][])("%s comes home to what was drawn", (_name, row0, k, step, n) => {
+      const end = outBack(row0, k, step, n);
+      expect(drawn(end)).toEqual(drawn(row0));
+    });
+    it("dragging back to where it started returns every width exactly", () => {
+      const fs = [F("b", 25), F("c", 25), F("d", 25)];
+      allocateLine(70, 100, fs);
+      const r = allocateLine(25, 100, fs);
+      expect(r.own).toBe(25);
+      fs.forEach((f) => expect(r.widths.get(f.id)).toEqual({ width: 25, rest: undefined }));
+    });
+    it("gaps count against the line", () => {
+      const r = allocateLine(40, 100, [F("b", 30, 10, 5), F("c", 25, 10, 5)]);
+      expect(r.wrapped).toEqual([]);
+      expect(sum(r, [F("b", 30, 10, 5), F("c", 25, 10, 5)])).toBeCloseTo(100, 1);
+    });
+
+    // The enumerated matrix: 1–4 followers × unequal rests × floors × gaps × every drag position, 0→room.
+    const rows: ReturnType<typeof F>[][] = [];
+    for (const n of [1, 2, 3, 4]) for (const floor of [5, 12]) for (const gap of [0, 2]) for (const shape of ["equal", "unequal"]) {
+      const rest = (i: number) => shape === "equal" ? (100 - 20) / n - gap : [30, 20, 15, 10][i] - gap;
+      rows.push(Array.from({ length: n }, (_, i) => F(`f${i}`, rest(i), Math.min(floor, rest(i)), gap)));
+    }
+    it.each(rows.map((fs, i) => [i, fs] as const))("matrix row %i holds every invariant at every drag position", (_i, fs) => {
+      let prevKept = Infinity;
+      for (let own = 0; own <= 100; own += 2.5) {
+        const r = allocateLine(own, 100, fs);
+        const kept = fs.filter((f) => !r.wrapped.includes(f.id));
+        // wrapped blocks are always a SUFFIX (flex order)
+        expect(r.wrapped).toEqual(fs.slice(kept.length).map((f) => f.id));
+        // no hole, no overflow: the line is exactly full
+        if (kept.length) expect(sum(r, fs)).toBeGreaterThan(99.9 - 0.05 * fs.length);
+        expect(sum(r, fs)).toBeLessThanOrEqual(100.001);
+        // the dragged block gets what it asked for unless nothing could stay beside it
+        if (kept.length) expect(r.own).toBeCloseTo(Math.min(own, 100), 1); else if (fs.length) expect(r.own).toBe(100);
+        // nobody below its floor; only the last one on the line may exceed its rest
+        kept.forEach((f, i) => {
+          const w = r.widths.get(f.id)!;
+          expect(w.width).toBeGreaterThanOrEqual(Math.min(f.floor, f.rest) - 0.01);
+          if (i < kept.length - 1) expect(w.width).toBeLessThanOrEqual(f.rest + 0.01);
+          expect(w.rest !== undefined).toBe(Math.abs(w.width - f.rest) > 0.05);
+        });
+        // a block wraps ONLY when it could not stay: the first wrapped one's floor did not fit beside the rest
+        if (kept.length < fs.length) {
+          const used = Math.min(own, 100) + kept.reduce((s, f) => s + Math.min(f.floor, f.rest) + f.gap, 0);
+          const next = fs[kept.length];
+          expect(used + Math.min(next.floor, next.rest) + next.gap).toBeGreaterThan(100);
+        }
+        // widening never brings a wrapped block back
+        expect(kept.length).toBeLessThanOrEqual(prevKept);
+        prevKept = kept.length;
+      }
+    });
+  });
+
   describe("packRowLines — where a wrapping row breaks, from the stored widths", () => {
     const col = (id: string, width?: string) => createContainer("column", { id, width } as Partial<BoxNode>);
     it("fills a line to 100% then starts the next", () => {
       expect(packRowLines([col("a", "50%"), col("b", "50%"), col("c", "30%")])).toEqual([0, 0, 1]);
       expect(packRowLines([col("a", "100%"), col("b", "30.47%")])).toEqual([0, 1]);
     });
-    it("a hair over 100 is still one line (rounding), a hundredth-and-a-half is not", () => {
-      expect(packRowLines([col("a", "50.3%"), col("b", "50.1%")])).toEqual([0, 0]);
-      expect(packRowLines([col("a", "50.3%"), col("b", "50.3%")])).toEqual([0, 1]);
+    it("a line breaks exactly where a BROWSER breaks it — even a hair over 100% wraps (#69)", () => {
+      // This used to allow 100.5 ("a hair over is still one line"). A browser allows nothing: flex lines break on each
+      // block's full basis, so 50.3 + 50.1 is two lines on the page — and the model disagreed with every page it drew.
+      expect(packRowLines([col("a", "50%"), col("b", "50%")])).toEqual([0, 0]);
+      expect(packRowLines([col("a", "66.66%"), col("b", "33.34%")])).toEqual([0, 0]);
+      expect(packRowLines([col("a", "50.3%"), col("b", "50.1%")])).toEqual([0, 1]);
+      expect(packRowLines([col("a", "66.67%"), col("b", "33.34%")])).toEqual([0, 1]);
     });
     it("a block pushed onto its own line fills it — until the user sizes it by hand (rule 2)", () => {
       const row = makeRowBand([col("a", "100%"), col("b", "30%")], 0);
@@ -1409,3 +1685,23 @@ describe("box-model — hostSizedFor: who is handed their height", () => {
   });
 });
 
+
+describe("the column floor (#75): 14rem untouched · 3rem sized by hand · full width on a phone", () => {
+  const band = (kids: BoxNode[]) => makeRowBand(kids, 0);
+  it("each column's floor, at each screen", () => {
+    // With content: an EMPTY column is an editor-only drop target and deliberately has no floor.
+    const txt = () => createElement("text", { text: "Words" } as Partial<BoxNode>);
+    const row = band([createContainer("column", { id: "u", width: "50%", children: [txt()] } as Partial<BoxNode>), createContainer("column", { id: "h", width: "10%", widthByHand: true, children: [txt()] } as Partial<BoxNode>)]);
+    const [u, h] = row.children!;
+    expect(childStyle(u, row, "base").minWidth).toBe("min(100%, 14rem)");
+    expect(childStyle(h, row, "base").minWidth).toBe("min(100%, 3rem)");
+    expect(childStyle(h, row, "tabletPortrait").minWidth).toBe("min(100%, 3rem)");
+    expect(childStyle(u, row, "phone").minWidth).toBe("100%");
+    expect(childStyle(h, row, "phone").minWidth).toBe("100%");
+  });
+  it("packRowLines packs each column on its OWN floor", () => {
+    const kids = [createContainer("column", { id: "a", width: "10%", widthByHand: true } as Partial<BoxNode>), createContainer("column", { id: "b", width: "90%" } as Partial<BoxNode>)];
+    expect(packRowLines(kids, (k) => (k.widthByHand ? 4.7 : 21.9))).toEqual([0, 0]);
+    expect(packRowLines(kids, 21.9)).toEqual([0, 1]); // one floor for all would wrap a 10% label column
+  });
+});

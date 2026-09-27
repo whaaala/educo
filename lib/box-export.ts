@@ -9,12 +9,14 @@
  */
 
 import type { CSSProperties } from "react";
-import { pinArrivalCss, pinArrivalKeyframes, floatHoldCSS,
+import { PILL, blockTypography, pinArrivalCss, pinArrivalKeyframes, floatHoldCSS,
   type BoxNode, type Breakpoint, BP_ORDER, containerStyle, childStyle, hostSizedFor, marginCSS, sizeToCSS, radiusCSS, SHADOW_CSS, u, baseUnit, fadedPaint, boxOpacity, backgroundCss, paintLayerCss,
   resolveResponsive, floatStacksOnMobile, floatingReserve, alertToastCss, accordionClasses, bandClasses, videoEmbedSrc, isContainer, sanitizeCssDeclarations, expandScopedCss, COMPONENT_PARTS, itemFloatContextCss, itemOverrideCss, itemNumberVars, richBody, plainBody, componentTextCss, componentBoxCss, renderAlertHTML, alertDismissScript, masonryMeasureAttr, masonryMeasureScript, pinStackMarker, pinStackGroupMarker, pinStackNeeded, pinStackScript, isPager, pagerNavHTML, pagerScript, pagerStripCss, pagerSlideId, bgShowThroughCss, blockContainmentCss, COMPONENT_ITEM_SEL, remLen, imageSizing, hasIntrinsicSize, itemNeedsClass, itemScope, floatZIndex, typoRole, typoRootVars, typoCascadeCss, bandEdgeCSS,
 } from "@/lib/box-model";
 import { isRegistryComponent, renderComponent, componentScripts } from "@/lib/educo-ui/registry";
 import { iconSvg } from "@/lib/educo-ui/icon-svg";
+import { resolvePage, type PageSemantics } from "@/lib/semantics";
+import { PAGE_Z_CEILING } from "@/lib/educo-ui/stacking";
 import type { BoxSite } from "@/lib/box-site";
 import type { SiteTheme } from "@/lib/site-storage";
 import { colorToCSS } from "@/components/shared/ColorPalettePicker";
@@ -90,15 +92,7 @@ function decorCss(node: BoxNode): CSSProperties {
  * role vars (see TYPO_VAR) carry the same defaults while still letting any ancestor redefine them.
  */
 function typoCss(node: BoxNode, role: "heading" | "body", weight: number): CSSProperties {
-  return {
-    fontFamily: node.fontFamily || typoRole.font(role),
-    fontWeight: node.fontWeight ?? (node.bold ? 800 : typoRole.weight(role, weight)),
-    lineHeight: node.lineHeight,
-    letterSpacing: node.letterSpacing != null ? `${node.letterSpacing}px` : undefined,
-    fontStyle: node.italic ? "italic" : undefined,
-    textDecoration: node.underline ? "underline" : undefined,
-    textTransform: node.textTransform && node.textTransform !== "none" ? node.textTransform : undefined,
-  };
+  return blockTypography(node, role, weight); // the SAME resolver the canvas calls — see blockTypography
 }
 
 /**
@@ -113,18 +107,34 @@ const hrefFor = (node: BoxNode, pageMap: Map<string, string>): string => {
   return h;
 };
 
+/**
+ * THE PAGE'S SEMANTICS for the page being rendered (lib/semantics.ts — the SAME resolver the canvas uses). Set by
+ * `renderPageHTML` for the length of one render; null for a fragment rendered on its own, which then keeps plain divs.
+ */
+let SEM: PageSemantics | null = null;
+
+/** The first thing on every page: keyboard users jump straight past the header (WCAG 2.4.1). System colours — no hex. */
+export const SKIP_LINK_HTML = `<a class="eu-skip" href="#main">Skip to content</a>`;
+export const SKIP_LINK_CSS = ".eu-skip{position:absolute;left:-999rem;top:0}.eu-skip:focus{left:1rem;top:1rem;z-index:" + PAGE_Z_CEILING + ";padding:0.5rem 1rem;background:Canvas;color:CanvasText;outline:0.125rem solid CanvasText;font:inherit}"
+  // The AUTOMATIC main wraps whole bands without changing the layout; a list the user chose loses the browser's bullets
+  // and indent, so choosing "List" changes the meaning and never the look.
+  + ".eu-main{display:contents}.eu-list{list-style:none;margin:0;padding-left:0}.eu-li{display:contents}"
+  // The skip link's TARGET: a <main> with display:contents has no box and cannot take focus, so Enter on the link left
+  // focus where it was (#72). This marker can — and, out of the layout, it adds no gap.
+  + ".eu-main-start{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}";
+
 /** Render a single element's inner HTML (its wrapper div is added by renderNode). */
 function elementHTML(node: BoxNode, theme: SiteTheme, pageMap: Map<string, string>): string {
   // Emitted only when the block itself sets one — a hard-coded "left" is an explicit value, and an explicit
   // value on the child beats the alignment its container was told to have.
   const align = node.textAlign;
   switch (node.type) {
-    case "heading": return `<h2 style="${styleString({ color: node.color || typoRole.color("text"), fontSize: node.fontSize != null ? u(node.fontSize) : typoRole.size(2), textAlign: align, width: "100%", ...typoCss(node, "heading", 600) })}">${esc(node.text ?? "")}</h2>`;
+    case "heading": { const hl = SEM?.byId.get(node.id)?.level ?? 2; return `<h${hl} style="${styleString({ color: node.color || typoRole.color("text"), fontSize: node.fontSize != null ? u(node.fontSize) : typoRole.size(2), textAlign: align, width: "100%", ...typoCss(node, "heading", 600) })}">${esc(node.text ?? "")}</h${hl}>`; }
     case "text": return `<p style="${styleString({ color: node.color || typoRole.color("muted"), fontSize: node.fontSize != null ? u(node.fontSize) : typoRole.size(1), textAlign: align, width: "100%", ...typoCss(node, "body", 400) })}">${esc(node.text ?? "")}</p>`;
     case "button": { // fills its box + paints its own visual + centres its label (matches the editor) — one shape when resized
       const fp = (v?: string) => (v === "center" ? "center" : v === "end" ? "flex-end" : "flex-start");
       const deco = decorCss(node);
-      return `<a href="${esc(hrefFor(node, pageMap))}"${node.newTab ? ' target="_blank" rel="noopener noreferrer"' : ""} style="${styleString({ display: "flex", width: "100%", height: "100%", boxSizing: "border-box", alignItems: fp(node.contentY ?? "center"), justifyContent: fp(node.contentX ?? "center"), gap: "8px", background: node.background ? colorToCSS(node.background) : colorToCSS(theme.primary), color: node.color || "#fff", fontSize: node.fontSize != null ? u(node.fontSize) : typoRole.size(0.875), padding: `${u(12)} ${u(24)}`, textDecoration: "none", ...deco, borderRadius: deco.borderRadius ?? "9999px", ...typoCss(node, "body", 600) })}">${esc(node.text ?? "")}</a>`;
+      return `<a href="${esc(hrefFor(node, pageMap))}"${node.newTab ? ' target="_blank" rel="noopener noreferrer"' : ""} style="${styleString({ display: "flex", width: "100%", height: "100%", boxSizing: "border-box", alignItems: fp(node.contentY ?? "center"), justifyContent: fp(node.contentX ?? "center"), gap: u(8), background: node.background ? colorToCSS(node.background) : colorToCSS(theme.primary), color: node.color || "var(--eu-color-on-brand)", fontSize: node.fontSize != null ? u(node.fontSize) : typoRole.size(0.875), padding: `${u(12)} ${u(24)}`, textDecoration: "none", ...deco, borderRadius: deco.borderRadius ?? PILL, ...typoCss(node, "body", 600) })}">${esc(node.text ?? "")}</a>`;
     }
     // `loading`/`decoding` are set from the block's own settings: a hero must load eagerly or the page opens
     // blank at the top, while a photo further down should wait until it is nearly on screen.
@@ -138,10 +148,10 @@ function elementHTML(node: BoxNode, theme: SiteTheme, pageMap: Map<string, strin
       return `<img src="${esc(node.src)}" alt="${esc(node.alt ?? "")}"${dims} loading="${node.eager ? "eager" : "lazy"}" decoding="async" style="${styleString({ width: "100%", height, aspectRatio, objectFit: "cover", display: "block" })}" />`;
     }
     case "video": { const embed = videoEmbedSrc(node.src); const h = sizeToCSS(node.height) ?? "315px"; if (embed) return `<iframe src="${esc(embed)}" title="Video" allowfullscreen style="${styleString({ width: "100%", height: h, border: "0" })}"></iframe>`; return node.src ? `<video src="${esc(node.src)}" controls style="${styleString({ width: "100%", height: h })}"></video>` : ""; }
-    case "divider": return `<div aria-hidden="true" style="${styleString({ width: "100%", borderTopWidth: node.borderWidth || 2, borderTopStyle: node.borderStyle ?? "solid", borderTopColor: node.color ? colorToCSS(node.color) : node.borderColor ? colorToCSS(node.borderColor) : typoRole.color("muted") })}"></div>`;
+    case "divider": return `<div aria-hidden="true" style="${styleString({ width: "100%", borderTopWidth: node.borderWidth || "0.125rem", borderTopStyle: node.borderStyle ?? "solid", borderTopColor: node.color ? colorToCSS(node.color) : node.borderColor ? colorToCSS(node.borderColor) : typoRole.color("muted") })}"></div>`;
     case "list": { const items = (node.listItems ?? []).map((it) => `<li>${esc(it)}</li>`).join(""); const st = styleString({ color: node.color || typoRole.color("text"), fontSize: node.fontSize != null ? u(node.fontSize) : typoRole.size(1), textAlign: align, width: "100%", paddingLeft: u(22), ...typoCss(node, "body", 400) }); return node.listStyle === "number" ? `<ol style="${st}">${items}</ol>` : `<ul style="${st}">${items}</ul>`; }
     case "embed": return node.html ?? "";
-    case "spacer": return `<div aria-hidden="true" style="${styleString({ width: "100%", height: sizeToCSS(node.height) ?? "48px" })}"></div>`;
+    case "spacer": return `<div aria-hidden="true" style="${styleString({ width: "100%", height: sizeToCSS(node.height) ?? "3rem" })}"></div>`;
     case "icon": { const svg = iconSvg(node.icon ?? "Star"); return svg ? `<span aria-hidden="true" style="${styleString({ display: "inline-flex", color: node.color ? colorToCSS(node.color) : typoRole.color("text"), fontSize: node.fontSize != null ? u(node.fontSize) : typoRole.size(1.5) })}">${svg}</span>` : ""; }
     case "component": return componentHTML(node);
     default: return "";
@@ -457,7 +467,15 @@ function diffStyle(base: CSSProperties, bp: CSSProperties): string {
 function renderNode(node: BoxNode, rawParent: BoxNode | null, theme: SiteTheme, pageMap: Map<string, string>, sheet: Sheet, isPageSection = false, hostSized = false): string {
   const r = resolveResponsive(node, "base");
   if (r.hidden && !node.responsive) return ""; // hidden at base with no per-device un-hide → skip entirely
+  const sem = SEM?.byId.get(node.id);
+  if (sem?.omit) return ""; // an empty heading is not published (semantics, C1)
   const cls = classFor(node.id);
+  // The ELEMENT this block publishes as (lib/semantics.ts). A list item that is otherwise a plain block becomes the <li>
+  // itself; one with a meaning of its own (a card = <article>) is wrapped in a layout-neutral <li>.
+  const own = sem && isContainer(r) && sem.tag && !/^h[1-6]$/.test(sem.tag) ? sem.tag : "div";
+  const el = sem?.listItem && own === "div" ? "li" : own;
+  const wrapLi = (html: string) => (sem?.listItem && el !== "li" ? `<li class="eu-li">${html}</li>` : html);
+  const semAttr = (sem?.label ? ` aria-label="${esc(sem.label)}"` : "") + (el === "main" && !r.anchor ? ' id="main" tabindex="-1"' : "");
   // Build UP: the phone layout is the unqualified rule and every wider rung adds only what CHANGES from the
   // rung below it. Diffing against the neighbour rather than the base is what keeps the sheet small — a rung
   // that changes nothing emits nothing at all.
@@ -503,17 +521,22 @@ function renderNode(node: BoxNode, rawParent: BoxNode | null, theme: SiteTheme, 
     // WHICH stack it joins (2e) — the window for a fixed bar, the box it travels inside for a sticky one.
     + ((g) => (g ? ` data-eu-pin-in="${esc(g)}"` : ""))(pinStackGroupMarker(node, rawParent ?? undefined));
   // A structural band also carries its layout classes — computed by box-model, so the canvas gets the same ones.
-  const allCls = [cls, bandClasses(r, isPageSection)].filter(Boolean).join(" ");
+  const allCls = [cls, bandClasses(r, isPageSection), el === "ul" || el === "ol" ? "eu-list" : ""].filter(Boolean).join(" ");
   if (isContainer(r)) {
     // Children of the PAGE ROOT (the only call with no parent) are the page's sections; nothing deeper is.
     const kidsAreSections = rawParent === null;
-    const kids = (r.children ?? []).map((c) => renderNode(c, node, theme, pageMap, sheet, kidsAreSections, hostSizedFor(node, hostSized, rawParent))).join("");
+    const kidList = (r.children ?? []).map((c) => renderNode(c, node, theme, pageMap, sheet, kidsAreSections, hostSizedFor(node, hostSized, rawParent)));
+    // A1 — the AUTOMATIC <main>: the page's bands between its header and footer regions, wrapped without a box of its own.
+    const mw = rawParent === null ? SEM?.mainWrap : null;
+    const kids = mw
+      ? kidList.slice(0, mw.start).join("") + `<main class="eu-main"><span id="main" tabindex="-1" class="eu-main-start"></span>${kidList.slice(mw.start, mw.end).join("")}</main>` + kidList.slice(mw.end).join("")
+      : kidList.join("");
     // MASONRY, measured (C). The marker and the script ride WITH the gallery, in the same shape the Alert's
     // dismiss script uses: one guarded global, so ten measured galleries still run one copy, and a page with
     // none ships no script at all. The attribute's value is the down-gap in row units — the one number the
     // script cannot read back, because masonry spends that gap as empty units rather than as `row-gap`.
     const mGap = masonryMeasureAttr(r);
-    if (mGap != null) return `<div${idAttr} class="${allCls}" data-eu-masonry="${mGap}">${kids}${masonryMeasureScript()}</div>`;
+    if (mGap != null) return wrapLi(`<${el}${idAttr}${semAttr} class="${allCls}" data-eu-masonry="${mGap}">${kids}${masonryMeasureScript()}</${el}>`);
     // SHOW ONE AT A TIME. The strip carries the marker the script looks for; the nav is a sibling of the
     // strip rather than a child of it, or it would become a page of its own and scroll away with them.
     //
@@ -526,14 +549,14 @@ function renderNode(node: BoxNode, rawParent: BoxNode | null, theme: SiteTheme, 
       // `tabindex="0"` + a label is the whole keyboard story, and it needs no script at all: an overflow
       // container is not focusable by default, and once it is, one arrow key moves exactly one page —
       // measured, with the page itself never moving.
-      return `<div${idAttr} class="${allCls}">`
+      return wrapLi(`<${el}${idAttr}${semAttr} class="${allCls}">`
         + `<div data-eu-pager${auto} tabindex="0" role="group" aria-roledescription="carousel"`
         + ` aria-label="One at a time" style="${styleString(pagerStripCss())}">${kids}</div>`
-        + `${nav}${script}</div>`;
+        + `${nav}${script}</${el}>`);
     }
-    return `<div${idAttr} class="${allCls}">${kids}</div>`;
+    return wrapLi(`<${el}${idAttr}${semAttr} class="${allCls}">${kids}</${el}>`);
   }
-  return `<div${idAttr} class="${allCls}">${elementHTML(r, theme, pageMap)}</div>`;
+  return wrapLi(`<${el}${idAttr}${semAttr} class="${allCls}">${elementHTML(r, theme, pageMap)}</${el}>`);
 }
 
 /** Turn the collected rules into a stylesheet: the phone layout first, then each wider screen adds to it. */
@@ -621,10 +644,13 @@ export function renderPageHTML(root: BoxNode, theme: SiteTheme, pageMap: Map<str
    * default: fewer than two bars at one edge and nothing is emitted at all, at any rung.
    */
   const stack = pinStackNeeded(root) ? pinStackScript() : "";
-  if (sheet) return renderNode(root, null, theme, pageMap, sheet) + stack; // shared sheet → caller emits the CSS
-  const own: Sheet = emptySheet();
-  const body = renderNode(root, null, theme, pageMap, own);
-  return `<style>${sheetCss(own)}</style>${body}${stack}`;
+  const prev = SEM; SEM = resolvePage(root);
+  try {
+    if (sheet) return SKIP_LINK_HTML + renderNode(root, null, theme, pageMap, sheet) + stack; // shared sheet → caller emits the CSS
+    const own: Sheet = emptySheet();
+    const body = renderNode(root, null, theme, pageMap, own);
+    return `<style>${sheetCss(own)}${SKIP_LINK_CSS}</style>${SKIP_LINK_HTML}${body}${stack}`;
+  } finally { SEM = prev; }
 }
 
 
@@ -697,14 +723,17 @@ function orderedPages(site: BoxSite) {
  * same result — only how it arrives differs, and it has to, because a srcdoc document has nothing to resolve a
  * relative URL against.
  */
-export function renderSitePage(site: BoxSite, theme: SiteTheme, pageId: string, opts: { inlineShared?: boolean } = {}): string {
+export function renderSitePage(site: BoxSite, theme: SiteTheme, pageId: string, opts: { inlineShared?: boolean; fontCss?: string } = {}): string {
   const files = siteFileMap(site);
   const page = site.pages.find((p) => p.id === pageId) ?? orderedPages(site)[0];
   if (!page) return "";
   const sheet: Sheet = emptySheet();
   const markup = renderPageHTML(page.root, theme, files, sheet);
   const components = subsetCss(COMPONENT_CSS, usedEuClasses(markup));
-  const shared = opts.inlineShared ? `${sharedCss(theme)}\n${SITE_CHROME_CSS}` : undefined;
+  // Fonts go FIRST, exactly as the downloaded stylesheet has them (see renderSiteFiles). Without them Preview drew
+  // every page in the browser's fallback sans-serif while the download used the school's chosen typeface — a
+  // heading measured 13% wider in Preview than on the canvas (found by the Preview check, 2026-09-27).
+  const shared = opts.inlineShared ? [opts.fontCss, sharedCss(theme), SITE_CHROME_CSS].filter(Boolean).join("\n") : undefined;
   // Per PAGE, not per site: each page ends with its own band, and two pages need not end the same way.
   return pageDocument(theme, page.name, markup, [components, sheetCss(sheet), documentBackdropCss(theme)].filter(Boolean).join("\n"), shared);
 }
@@ -770,7 +799,8 @@ export function renderSiteFiles(site: BoxSite, theme: SiteTheme, fontCss = ""): 
 function sharedCss(theme: SiteTheme): string {
   // Comments are for whoever maintains this stylesheet, not for a parent loading it on a phone. The component
   // half already drops them; the shared half was shipping every one of its own to every visitor of every page.
-  return stripComments(`${tokensToCss(tokensFromTheme(theme))}\n${BASE_CSS}`);
+  // + the skip link, the automatic main and the list resets (semantics) — every page needs them.
+  return stripComments(`${tokensToCss(tokensFromTheme(theme))}\n${BASE_CSS}\n${SKIP_LINK_CSS}`);
 }
 
 /**

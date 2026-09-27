@@ -126,7 +126,7 @@ test.describe("an image that knows its own shape", () => {
       { waitUntil: "domcontentloaded" });
 
     const img = await page.locator("img").boundingBox();
-    const heading = await page.locator("h2").boundingBox();
+    const heading = await page.locator("h1, h2, h3, h4, h5, h6").first().boundingBox(); // its level follows the page (B1)
     expect(img!.height, "the box is reserved from the very first paint").toBeGreaterThan(100);
     expect(heading!.y, "the heading already sits below the reserved box").toBeGreaterThan(img!.y + img!.height - 2);
   });

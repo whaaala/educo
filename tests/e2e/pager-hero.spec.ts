@@ -241,7 +241,7 @@ test.describe("the hero", () => {
     await seedHero(page);
     const ratio = await page.evaluate(async () => {
       const hero = document.querySelector('[data-box-id="hero"]') as HTMLElement;
-      const h = hero.querySelector("h2") as HTMLElement;
+      const h = hero.querySelector("h1, h2, h3, h4, h5, h6") as HTMLElement; // its level follows the page (semantics B1)
       const box = h.getBoundingClientRect();
       // Read the pixel just LEFT of the words, at their vertical middle — the background the eye compares
       // the text against, composited by the browser rather than computed by us.

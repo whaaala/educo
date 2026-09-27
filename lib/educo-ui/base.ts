@@ -24,6 +24,13 @@ import { LAYOUT_CSS, RUNG_PX, RUNG_EM } from "./layout";
  */
 export { RUNG_PX as BREAKPOINTS, RUNG_EM as BREAKPOINTS_EM };
 
+/**
+ * A COMFORTABLE MEASURE — paragraphs under 75 characters a line (design foundation, Web Design Rule #1, p. 102). ONE rule,
+ * used by the published page (BASE_CSS) and by the canvas, which does not load BASE_CSS: without it a long paragraph ran
+ * the full width of its block in the editor and stopped at 68ch on the page — canvas ≠ published (#74).
+ */
+export const measureCss = (scope: string) => `${scope} p { max-width: 68ch; }`;
+
 export const BASE_CSS = `
 /* ── Reset ─────────────────────────────────────────────────────────────────── */
 .eu-root *, .eu-root *::before, .eu-root *::after { box-sizing: border-box; }
@@ -55,7 +62,7 @@ export const BASE_CSS = `
 .eu-root h1 { font-size: clamp(var(--eu-text-3xl), 4vw + 1rem, var(--eu-text-6xl)); }
 .eu-root h2 { font-size: clamp(var(--eu-text-2xl), 3vw + 1rem, var(--eu-text-4xl)); }
 .eu-root h3 { font-size: clamp(var(--eu-text-xl), 2vw + 1rem, var(--eu-text-3xl)); }
-.eu-root p  { max-width: 68ch; } /* comfortable measure */
+${measureCss(".eu-root")} /* comfortable measure */
 .eu-root a  { color: var(--eu-color-brand); }
 .eu-root code, .eu-root pre { font-family: var(--eu-font-mono); }
 

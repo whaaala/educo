@@ -52,8 +52,11 @@ test.describe("Multi-page preview", () => {
   test("NOTHING is injected above the page — it is what the user designed", async ({ page }) => {
     const frame = page.frameLocator('iframe[title="Site preview"]');
     await expect(frame.locator(".eu-site-nav"), "the builder's old bar is gone").toHaveCount(0);
-    // And the first thing in the document is the user's own band, not chrome in front of it.
-    const firstText = await frame.locator("body *").first().textContent();
+    // The ONE thing allowed in front of the user's page is the "Skip to content" link (semantics, WCAG 2.4.1): it is
+    // invisible until a keyboard reaches it, so what a visitor SEES first is still the user's own band.
+    const firstEl = frame.locator("body > *").first();
+    await expect(firstEl, "the only addition is the skip link").toHaveClass(/eu-skip/);
+    const firstText = await frame.locator("body > *:not(.eu-skip)").first().textContent();
     expect(firstText ?? "", "the page opens on the user's content").toContain("Welcome to our school");
   });
 

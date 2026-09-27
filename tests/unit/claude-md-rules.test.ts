@@ -51,6 +51,14 @@ const RULES: [name: string, mustSay: RegExp][] = [
    */
   ["Drive it visibly in a browser (RULE Z)", /RULE Z/],
   ["…headed, never headless, for deciding it works", /HEADED, NOT HEADLESS/],
+  ["…every run labelled, and only a HEADED UAT closes a ledger line", /only a HEADED UAT closes a bug/i],
+  ["…a headed UAT is the WHOLE matrix, several visible windows in parallel", /A HEADED UAT IS THE WHOLE MATRIX, RUN FAST/],
+  ["…every combination at every test level, for everything, ordered 80/20", /EVERY COMBINATION, AT EVERY TEST LEVEL, FOR EVERYTHING[\s\S]*Ordered 80\/20/],
+  ["…in order: UAT the function, then Preview at every size, then all combinations", /UAT → PREVIEW → ALL COMBINATIONS/],
+  ["…and every step at every screen size, breakpoint and view", /EVERY STEP, AT EVERY SCREEN SIZE AND EVERY VIEW/],
+  ["The design foundation is followed in everything (RULE F)", /RULE F — THE DESIGN FOUNDATION IS FOLLOWED IN EVERYTHING/],
+  ["…stored in docs/web-anatomy/design-foundation/", /docs\/web-anatomy\/design-foundation\//],
+  ["…with its MUST-FOLLOW checklist", /THE MUST-FOLLOW CHECKLIST is `docs\/web-anatomy\/design-foundation\/README\.md`/],
   ["…screenshot and READ the image", /READ the image/i],
   ["…functional + regression + UAT, every time", /the \*\*regression\*\* test|All three kinds, every time/i],
   ["…both axes, both directions, every arrangement", /BOTH AXES, BOTH DIRECTIONS/i],
@@ -70,6 +78,15 @@ const RULES: [name: string, mustSay: RegExp][] = [
   ["…every pass ends in Preview at every rung, units + 150% text checked", /EVERY PASS ENDS IN PREVIEW, AT EVERY RUNG, WITH THE UNITS CHECKED/],
   ["…responsive and mobile, in the same sweep — every breakpoint", /RESPONSIVE AND MOBILE, IN THE SAME SWEEP/],
   ["…every test type from the get-go: BDD → unit → integration → functional → UAT → regression", /EVERY TEST TYPE, FROM THE GET-GO, NO EXCEPTION/],
+
+  /**
+   * RULE R — the user, 2026-09-27: the builder is general-purpose (schools first, decoupled later), the research
+   * is stored once in docs/web-anatomy/ + LAYOUT_BENCHMARK and it is FOLLOWED before any builder feature is built.
+   */
+  ["The research is the reference (RULE R)", /RULE R — THE RESEARCH IS THE REFERENCE/],
+  ["…the builder is general-purpose, schools first", /builder is GENERAL-PURPOSE/],
+  ["…read the research before building any builder feature", /Before building any builder feature, read what the research says/],
+  ["…captured once, extended forever", /Captured once, extended forever/],
 
   ["Build it through the UI (RULE Y)", /RULE Y/],
   ["…seeding state is not UAT", /Seeding state is not UAT/i],

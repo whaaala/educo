@@ -46,10 +46,13 @@ function pageFor(kind: string): string {
  *
  * Kept as a named list rather than a loose regex so that adding to it is a decision someone has to write down.
  */
+// ANCHORED — each is the WHOLE value. Unanchored, `/0px/` matched "160px", "20px", "240px": every pixel length that
+// ends in 0 passed as "zero", which is how a Card's `flex: 0 1 160px` reached the page unseen (found by the Preview
+// units check, 2026-09-27).
 const LEGITIMATE = [
-  /0px/,                       // zero is zero in every unit
-  /1px/,                       // a hairline is one device pixel by definition — a rule, a border, a divider
-  /\b(?:0?\.\d+)px/,           // sub-pixel, only ever from a computed hairline
+  /^-?0px$/,                   // zero is zero in every unit
+  /^-?1px$/,                   // a hairline is one device pixel by definition — a rule, a border, a divider
+  /^-?0?\.\d+px$/,             // sub-pixel, only ever from a computed hairline
 ];
 
 /** Every `<n>px` that is a real, stored size. */
@@ -67,7 +70,10 @@ function storedPixels(css: string): string[] {
  * decisions, while a size the BUILDER writes from a user's model is the one Core Rule 16 is about.
  */
 const blockRules = (css: string): string =>
-  [...css.matchAll(/\.bx-[a-zA-Z0-9_-]+\s*\{[^}]*\}/g)].map((m) => m[0]).join("\n");
+  [...css.matchAll(/\.bx-[a-zA-Z0-9_-]+\s*\{[^}]*\}/g)].map((m) => m[0]).join("\n")
+  // …AND the inline styles a block writes on its own markup. A button's `gap: 8px` and `border-radius: 9999px` lived
+  // in its `<a style="…">`, which the rule-only scan never read.
+  + "\n" + [...css.matchAll(/style="([^"]*)"/g)].map((m) => m[1]).join("\n");
 
 describe("the unit system reaches the page, and stored pixels do not", () => {
   it("no block the builder emits carries a stored pixel size", () => {

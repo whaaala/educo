@@ -690,6 +690,36 @@ One difference worth knowing: an item's entrance never staggers its own parts. A
 
 ---
 
+## 14b. Pages everyone can use — meaning, headings and the Page check
+
+Your page is published as proper HTML5, however you built it — you do not need to know what that means.
+
+- **The main part of the page is found for you.** Mark your top band **Page header** and your last band **Page footer**
+  (select it → Design → **Meaning** → *What is this block?*) and everything between becomes the page's main content.
+  Mark nothing and the whole page is the main content. A **Skip to content** link is added for keyboard users — it is
+  invisible until someone presses Tab.
+- **Headings follow the page.** The first heading of your content is the page's title (level 1), later ones level 2, and
+  a heading inside a **Section** or **Article / card** sits one level below. You can set a level by hand under
+  **Meaning → Heading level**; the size is separate, under Text.
+- **Cards and quotes are already right** — a Card is published as an article, a Quote as a figure.
+- **The Page check** (toolbar) shows a number when something needs *your* words: a picture with no description
+  ("Describe this picture for people who can't see it" — type it right there, or choose *It's only decoration*), or a
+  button with no words. Everything else is fixed for you and listed under *Fixed for you*.
+
+## 14c. Sizing columns, and working on a smaller screen
+
+- **A column you size yourself can be as narrow as you like** (down to about 3rem) — a 10/90 label column, six logos
+  across. Columns you never sized keep a comfortable minimum so they wrap neatly. **On a phone every row stacks**, one
+  column under another, so nothing is ever squeezed.
+- **Widening a block never makes it jump.** Pull it until its neighbour no longer fits, and the neighbour moves to the
+  next line while your block stops exactly where you let go. Drag back and everything comes home.
+- **On a smaller screen the page is shrunk to fit.** Choose Desktop 1280 on a laptop and the page is shown smaller
+  (*Fitted to screen · 83%*) so all of it sits beside the panels — it is still laid out, and published, at full size.
+  Everything you drag is still exact.
+- **The Add-a-block panel sits beside the page** on a laptop and up, so nothing is ever hidden under it. It stays open
+  while you work; close it with its ✕, **Esc** or **B**. On a phone it floats over the page and the Inspector slides in
+  from the side.
+
 ## 15. Tips, gotchas & FAQ
 
 - **"There's an empty container/row wrapping my block."** There isn't — the structural row and the page itself are invisible scaffolding: they're never selectable and never highlight on hover, so nothing empty appears around your block. Click your block (or anywhere in its row) and you select the block itself; the only highlight you see is the block's own selection box, hugging its content.

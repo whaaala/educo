@@ -9,7 +9,7 @@
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Plus, Smartphone, Tablet, Laptop, Monitor, Tv, Maximize2, RotateCw, Undo2, Redo2, Eye, X, Home, Trash2, Files, Download, Settings2, Palette, SlidersHorizontal, PanelRightClose, PanelRightOpen, AlertTriangle, ChevronUp, ChevronDown } from "lucide-react";
+import { Plus, Smartphone, Tablet, Laptop, Monitor, Tv, Maximize2, RotateCw, Undo2, Redo2, Eye, ShieldCheck, X, Home, Trash2, Files, Download, Settings2, Palette, SlidersHorizontal, PanelRightClose, PanelRightOpen, AlertTriangle, ChevronUp, ChevronDown } from "lucide-react";
 import { DEFAULT_THEME, resolveSiteTheme } from "@/lib/site-storage";
 import { THEMES, type ThemeId } from "@/lib/theme-config";
 import { RUNG_LABEL, RUNG_ORDER, RUNG_PX } from "@/lib/educo-ui/layout";
@@ -29,12 +29,13 @@ import { warmIcons, hasIcon } from "@/lib/educo-ui/icon-svg";
 import BoxCanvas, { measureFloatGeom, measureFixedGeom, measureGroupGeom } from "@/components/website/box/BoxCanvas";
 import BoxInspector from "@/components/website/box/BoxInspector";
 import BulkInspector from "@/components/website/box/BulkInspector";
-import BlocksPanel, { LAUNCHER_GUTTER_REM } from "@/components/website/box/BlocksPanel";
+import BlocksPanel, { LAUNCHER_GUTTER_REM, PANEL_GUTTER_REM } from "@/components/website/box/BlocksPanel";
 import ThemeSwitcher from "@/components/shared/ThemeSwitcher";
 import { ToolBtn, ToolDivider, Segmented } from "@/components/website/box/ui";
 import PageLoader from "@/components/shared/PageLoader";
 import CompactSelect from "@/components/shared/CompactSelect";
 import DeleteConfirmationModal from "@/components/shared/DeleteConfirmationModal";
+import PageCheck, { pageCheckCount } from "@/components/website/box/PageCheck";
 
 const KEY = "educo_box_site_v1"; // multi-page site
 const LEGACY_KEY = "educo_box_demo_v9"; // old single-tree document (migrated on load)
@@ -131,7 +132,65 @@ export default function BoxDemoPage() {
   const [preview, setPreview] = useState(false);
   const [pageMenu, setPageMenu] = useState(false); // page-settings popover open
   const [confirmDeletePage, setConfirmDeletePage] = useState(false); // delete-page confirmation modal
+  const [pageCheckOpen, setPageCheckOpen] = useState(false); // the Page check (semantics C1)
   const [inspectorOpen, setInspectorOpen] = useState(true); // right Inspector panel collapsed?
+  /**
+   * BELOW LAPTOP WIDTH THE INSPECTOR SLIDES OVER THE PAGE instead of taking a column beside it (#48).
+   *
+   * It was a fixed 22rem column that never shrank. On a 393px phone that left the page about 41px, less its
+   * padding — the page was simply not there, and a user saw an Inspector saying "click a block to edit it" with no
+   * block anywhere to click. So on a narrow screen it starts CLOSED, opens over the page from its rail, and Escape
+   * or its close button puts it away; the page keeps the whole width underneath.
+   */
+  /**
+   * THE PAGE IS SHRUNK TO FIT WHEN THE CHOSEN DEVICE IS WIDER THAN THE ROOM (#49, decided by the user 2026-09-27).
+   *
+   * On a 1536×864 screen with the Inspector open, the Desktop 1280 canvas did not fit: the right of the page slid
+   * under the Inspector and needed a sideways scroll. Now the frame keeps its true width — so the layout, container
+   * queries and sticky/fixed blocks are exactly what publishes — and CSS `zoom` shows it smaller. The drag code reads
+   * the same zoom (`zoomOf` in BoxCanvas) so the size you drag is still the size you get.
+   */
+  const [roomW, setRoomW] = useState<number | null>(null);
+  const roomObserver = useRef<ResizeObserver | null>(null);
+  const canvasRoomRef = useCallback((el: HTMLDivElement | null) => {
+    roomObserver.current?.disconnect();
+    roomObserver.current = null;
+    if (!el) return;
+    const measure = () => {
+      const cs = getComputedStyle(el);
+      setRoomW(el.clientWidth - (parseFloat(cs.paddingLeft) || 0) - (parseFloat(cs.paddingRight) || 0));
+    };
+    measure();
+    roomObserver.current = new ResizeObserver(measure);
+    roomObserver.current.observe(el);
+  }, []);
+  /**
+   * THE PAGE MAKES ROOM FOR THE OPEN BLOCKS PANEL on a laptop screen and up (#55). Floating over the page, the panel
+   * hid its left third: at a real 1536×864 screen the first stack of a row showed 4px and another none, so nothing
+   * could be dropped into them. Docked, the panel stays open while you work and the page sits beside it — a device
+   * canvas that no longer fits is shrunk to fit by the same `fit` as #49. On a phone there is no room for both, so
+   * it stays a floating overlay there.
+   */
+  const [blocksOpen, setBlocksOpen] = useState(false);
+  const [wideScreen, setWideScreen] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 64em)");
+    const on = () => setWideScreen(mq.matches);
+    on(); mq.addEventListener("change", on);
+    return () => mq.removeEventListener("change", on);
+  }, []);
+  const panelDocked = blocksOpen && wideScreen;
+  const NARROW = "(max-width: 63.99em)";
+  const inspectorOpenRef = useRef(inspectorOpen);
+  inspectorOpenRef.current = inspectorOpen;
+  useEffect(() => {
+    if (window.matchMedia(NARROW).matches) setInspectorOpen(false);
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && inspectorOpenRef.current && window.matchMedia(NARROW).matches) setInspectorOpen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
 
   const site = hist?.present ?? null;
   const activePage = site ? (site.pages.find((p) => p.id === activePageId) ?? site.pages[0]) : null;
@@ -268,9 +327,23 @@ export default function BoxDemoPage() {
   // The preview shows the REAL exported page — same markup, same nav, same links — one page at a time, exactly
   // as a visitor meets it. (It inlines the shared stylesheet because a srcdoc document has no styles.css to
   // fetch; that is the only difference between this and the file on disk.)
+  /**
+   * THE FONTS THE DOWNLOAD EMBEDS, embedded for Preview too. The download runs `embedFontCss` — its one asynchronous
+   * step — and Preview never did, so Preview showed every page in the fallback sans-serif while the published file
+   * used the school's typeface: the one surface meant to show the real thing showed the wrong font. Fetched once per
+   * set of families, only while Preview is open.
+   */
+  const fontFamilyKey = site ? fontFamiliesInSite(site, renderTheme).join("|") : "";
+  const [previewFontCss, setPreviewFontCss] = useState("");
+  useEffect(() => {
+    if (!preview || !fontFamilyKey) return;
+    let live = true;
+    embedFontCss(fontFamilyKey.split("|")).then((css) => { if (live) setPreviewFontCss(css); }).catch(() => { /* the fallback font applies, exactly as a failed download would */ });
+    return () => { live = false; };
+  }, [preview, fontFamilyKey]);
   const previewHTML = useMemo(
-    () => (preview && site && activePage ? renderSitePage(site, renderTheme, activePage.id, { inlineShared: true }) : ""),
-    [preview, site, activePage, renderTheme],
+    () => (preview && site && activePage ? renderSitePage(site, renderTheme, activePage.id, { inlineShared: true, fontCss: previewFontCss }) : ""),
+    [preview, site, activePage, renderTheme, previewFontCss],
   );
 
 
@@ -673,7 +746,19 @@ export default function BoxDemoPage() {
   // e.g. behind a floating sibling on the overlay layer). The reveal id is consumed by the effect below.
   const revealBox = (id: string) => { pendingReveal.current = id; autoSelectedId.current = id; setSelectedIds([id]); };
 
-  const frameW = DEVICES.find((d) => d.id === device)!.w;
+  /**
+   * FULL WIDTH KEEPS ITS WIDTH WHILE THE PANEL IS DOCKED (#57). Full width is fluid, so the room the docked panel
+   * takes used to RE-LAY OUT the page: a four-across row became three plus one the moment the panel opened — the page
+   * being designed changed shape because a panel opened. Now it keeps the width it had with the panel shut (capped at
+   * the same 64rem as `max-w-5xl`) and is shrunk to fit, exactly like a device size.
+   */
+  const rootPx = typeof window === "undefined" ? 16 : parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+  const fullWhileDocked = device === "full" && panelDocked && roomW
+    ? Math.round(Math.min(64 * rootPx, roomW + (PANEL_GUTTER_REM - LAUNCHER_GUTTER_REM) * rootPx))
+    : null;
+  const frameW = fullWhileDocked ?? DEVICES.find((d) => d.id === device)!.w;
+  /** How much the frame is shrunk to fit: 1 when it fits, never above 1, two decimals so it does not jitter. */
+  const fit = frameW && roomW && roomW < frameW ? Math.max(0.25, Math.floor((roomW / frameW) * 100) / 100) : 1;
   const pageList = site.pages.map((p) => ({ id: p.id, name: p.name }));
 
   /**
@@ -1027,6 +1112,11 @@ export default function BoxDemoPage() {
           <ToolBtn onClick={redo} disabled={!canRedo} ariaLabel="Redo" title="Redo (Ctrl+Y)"><Redo2 className="w-4 h-4" /></ToolBtn>
         </div>
         <ToolDivider />
+        {(() => { const n = pageCheckCount(root); return (
+          <ToolBtn onClick={() => setPageCheckOpen(true)} title={n ? `${n} thing${n === 1 ? "" : "s"} on this page need${n === 1 ? "s" : ""} your words` : "Everyone can use this page"} ariaLabel={`Page check${n ? `, ${n} to do` : ""}`}>
+            <ShieldCheck className="w-3.5 h-3.5" /> Page check{n ? <span className="ml-1 rounded-full bg-amber-500 px-1.5 text-[0.625rem] font-bold text-white">{n}</span> : null}
+          </ToolBtn>
+        ); })()}
         <ToolBtn onClick={() => setPreview(true)} title="See it as a visitor"><Eye className="w-3.5 h-3.5" /> Preview</ToolBtn>
         <ToolBtn onClick={onExport} title="Download the whole site as HTML"><Download className="w-3.5 h-3.5" /> Export</ToolBtn>
         <ToolBtn onClick={() => resetSite(siteFromRoot(starter()))} title="Start over">Reset</ToolBtn>
@@ -1048,25 +1138,30 @@ export default function BoxDemoPage() {
       </header>
 
       {/* ── Body: Canvas (with the FLOATING Blocks panel over it) · Inspector ── */}
-      <div className="flex-1 flex min-h-0">
+      <div className="relative flex-1 flex min-h-0">
         {/* The Blocks panel floats over this column, so the canvas keeps its full width. */}
         <div className="relative flex-1 min-w-0 flex">
-          <div className="flex-1 min-w-0 overflow-auto">
+          <div data-canvas-scroller className="flex-1 min-w-0 overflow-auto">
             {/* The Blocks launcher floats in the left gutter, so the gutter RESERVES its exact footprint. Without
                 this the centred page slid under the button and the first word of the first block could not be
                 clicked. Reserved whether the panel is open or shut, so opening it never reflows the page under
                 the cursor. */}
-            <div className="p-8 flex justify-center min-h-full" style={{ paddingLeft: `${LAUNCHER_GUTTER_REM}rem` }}>
-              <div className={`shadow-sm rounded-xl ring-1 ring-black/10 dark:ring-white/10 shrink-0 h-fit transition-[width] duration-300 ${device === "full" ? "w-full max-w-5xl" : ""}`} style={{ width: frameW ?? undefined, background: renderTheme.background, color: renderTheme.text, fontFamily: renderTheme.bodyFont, containerType: "inline-size" }}>
+            <div ref={canvasRoomRef} className="relative p-2 sm:p-8 flex justify-center min-h-full transition-[padding] duration-200 motion-reduce:transition-none" style={{ paddingLeft: `${panelDocked ? PANEL_GUTTER_REM : LAUNCHER_GUTTER_REM}rem` }}>
+              {fit < 1 && (
+                <span role="status" className="absolute top-1 right-3 text-[0.6875rem] font-medium text-gray-500 dark:text-gray-400 midnight:text-slate-400 purple:text-purple-200" title={`The ${frameW}px page is shown at ${Math.round(fit * 100)}% so all of it fits beside the panels. It is laid out and published at its full width.`}>
+                  Fitted to screen · {Math.round(fit * 100)}%
+                </span>
+              )}
+              <div className={`shadow-sm rounded-xl ring-1 ring-black/10 dark:ring-white/10 midnight:ring-white/10 purple:ring-white/10 shrink-0 h-fit transition-[width] duration-300 ${device === "full" && !fullWhileDocked ? "w-full max-w-5xl" : ""}`} style={{ width: frameW ?? undefined, zoom: fit < 1 ? fit : undefined, background: renderTheme.background, color: renderTheme.text, fontFamily: renderTheme.bodyFont, containerType: "inline-size" }}>
                 <BoxCanvas root={root} theme={renderTheme} minHeight={PAGE_MIN_H} selectedIds={selectedIds} onSelectIds={selectByUser} onChange={commit} breakpoint={bp} />
               </div>
             </div>
           </div>
-          <BlocksPanel theme={renderTheme} onPick={insertBlock} />
+          <BlocksPanel theme={renderTheme} onPick={insertBlock} docked={wideScreen} onOpenChange={setBlocksOpen} />
         </div>
 
-        {inspectorOpen ? (
-          <aside className="w-[22rem] shrink-0 border-l border-line bg-surface flex flex-col">
+        {inspectorOpen && (
+          <aside aria-label="Inspector" className="absolute inset-y-0 right-0 z-40 w-[min(22rem,100%)] shadow-xl lg:static lg:z-auto lg:w-[22rem] lg:shadow-none shrink-0 border-l border-line bg-surface flex flex-col">
             <div className="h-11 shrink-0 flex items-center gap-2 px-3.5 border-b border-line">
               <span className="grid place-items-center w-6 h-6 rounded-lg bg-indigo-50 dark:bg-indigo-500/15 text-indigo-600 dark:text-indigo-300"><SlidersHorizontal className="w-3.5 h-3.5" strokeWidth={2} /></span>
               <span className="flex-1 text-xs font-bold uppercase tracking-wide text-gray-500 dark:text-gray-400">Inspector</span>
@@ -1082,14 +1177,18 @@ export default function BoxDemoPage() {
               )}
             </div>
           </aside>
-        ) : (
-          <aside className="w-11 shrink-0 border-l border-line bg-surface flex flex-col items-center pt-3 gap-2">
+        )}
+        {/* THE RAIL STAYS WHERE IT IS below laptop width, under the Inspector sliding over it — taking it away as
+            the panel opened moved the whole page 44px sideways (#51). On a laptop and up, the open panel replaces it. */}
+          <aside className={`w-11 shrink-0 border-l border-line bg-surface flex flex-col items-center pt-3 gap-2 ${inspectorOpen ? "lg:hidden" : ""}`}>
             <button onClick={() => setInspectorOpen(true)} aria-label="Expand inspector" title="Open Inspector" className="p-1.5 rounded-lg text-gray-500 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-gray-100 dark:hover:bg-white/10 transition-colors"><PanelRightOpen className="w-4 h-4" /></button>
             <span className="mt-1 text-[0.625rem] font-semibold uppercase tracking-wide text-gray-400 [writing-mode:vertical-rl] rotate-180">Inspector</span>
           </aside>
-        )}
       </div>
 
+      <PageCheck root={root} isOpen={pageCheckOpen} onClose={() => setPageCheckOpen(false)}
+        onShow={(id) => { setPageCheckOpen(false); revealBox(id); }}
+        onPatch={(id, patch) => commit(updateBox(root, id, patch))} />
       <DeleteConfirmationModal
         isOpen={confirmDeletePage}
         onClose={() => setConfirmDeletePage(false)}

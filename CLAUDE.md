@@ -203,6 +203,31 @@ Run through this checklist BEFORE telling the user it's done:
     three, and reported as done. The **width** round trip was never driven once — and it lost blocks, failed
     to return to its original size, and left a stack missing from the second row. The user found all of it,
     in the UI, in minutes.
+  - **LABEL EVERY RUN, AND ONLY A HEADED UAT CLOSES A BUG.** Every test run reported to the user says what it
+    was: `HEADLESS GATE` (regression — a spec, possibly seeded) or `HEADED UAT` (a visible browser, the state
+    built through the UI, the screenshots read). **A ledger line closes only on a HEADED UAT**; a headless pass
+    can reopen a bug, never close one. Measured, 2026-09-27: #43 was wired, a headless spec run went green, a
+    ledger line was closed on it and the next bug started — the user asked why no browser had opened.
+  - **A HEADED UAT IS THE WHOLE MATRIX, RUN FAST.** Every UAT drives every combination a user can make around the
+    change — structures × gestures × screens × states, enumerated (RULE Q) — never one path; aim at the 99th
+    percentile, so the user's own UAT finds nothing. Run it FAST: several visible browser windows side by side,
+    each taking a slice of the matrix, on the fresh production build — the user's words, 2026-09-27: *"test all
+    the possible combination… as quick as possible. Make this a rule."*
+  - **EVERY COMBINATION, AT EVERY TEST LEVEL, FOR EVERYTHING — now and every future feature.** Unit · component ·
+    functional · integration · regression · UAT all enumerate the combinations, not one case. For page layout
+    the combinations ARE the research: every page structure in `docs/LAYOUT_BENCHMARK.md` and the crawl, built
+    through the UI. **Ordered 80/20:** first the 20% of combinations that cover 80% of real use (the structures
+    real sites use most, measured from the crawl), then widen until the 99th percentile is covered.
+  - **THE ORDER, FOR EVERY FUNCTION: UAT → PREVIEW → ALL COMBINATIONS.** (1) Drive the function through the UI as
+    a user. (2) Open the real **Preview** and look at what a visitor sees, at every screen size and device preset
+    (phone · tablet · laptop · desktop · wide). (3) The whole matrix, 80/20 first, repeating 1 and 2 in each. A
+    function checked on the canvas but never in Preview is not tested — the visitor only ever sees the Preview.
+  - **EVERY STEP, AT EVERY SCREEN SIZE AND EVERY VIEW.** Make the change → UAT it → Preview it → all combinations,
+    and each of those at: every canvas breakpoint (Mobile 375 · Tablet 768 · Laptop 1024 · Desktop 1280 · Wide 1920
+    · Full width), every real browser window a user has (phone · tablet portrait and landscape · laptop · the
+    user's own 1536×864 · desktop · wide), and every view we have (editor canvas · Preview · the phone/tablet app
+    surfaces as they exist). For ALL functionality, now and future — the user's words, 2026-09-27: *"for all
+    screen sizes, all responsiveness, all mobile tablets, whatever view that we have. This must be a rule."*
   - **"I ran the suite" is not this rule.** The suite runs what somebody already thought of. This rule is
     about the combination nobody has written a test for yet — which is where the bug is.
 - **RULE Q — THE 99TH PERCENTILE: SWEEP THE COMBINATIONS AROUND IT, NOT THE ONE PATH (MANDATORY — every
@@ -253,6 +278,36 @@ Run through this checklist BEFORE telling the user it's done:
     had shown and I had accepted.
   - **Every bug the sweep turns up goes in the ledger and is fixed in the same change** (RULE V). A sweep
     that found nothing is reported with what it covered, so the user can see its breadth.
+- **RULE R — THE RESEARCH IS THE REFERENCE (MANDATORY — every builder feature, from 2026-09-27).**
+  - **The builder is GENERAL-PURPOSE.** Schools are the first use, but it will be decoupled to build any kind of
+    site — so every piece of research covers websites in general, with school requirements as one layer on top,
+    never the whole of it.
+  - **The stored research is the foundation, and it is FOLLOWED:** `docs/web-anatomy/` (HTML semantics from the
+    WHATWG Living Standard + MDN + ARIA-in-HTML · every component/interaction pattern · motion & effects · page
+    regions + education) and `docs/LAYOUT_BENCHMARK.md` with the real-site crawl in `docs/layout-benchmark/`.
+    **Before building any builder feature, read what the research says about it** — the right element and
+    landmark, the component's anatomy/keyboard/ARIA, the motion tokens and reduced-motion fallback, how real
+    sites structure it — and build to that. No research for it yet? Researching it is the first step.
+  - **Captured once, extended forever.** A link the user shares is studied properly, expanded online, and STORED
+    there; stored research is never redone, only extended. A crawl stores raw HTML so a later question is answered
+    from the archive, not a re-crawl.
+- **RULE F — THE DESIGN FOUNDATION IS FOLLOWED IN EVERYTHING (MANDATORY — from 2026-09-27, every feature,
+  especially the website builder).** The user's course deck `theory-lectures-v2-BEST.pdf` (Jonas Schmedtmann's
+  HTML & CSS theory lectures, 404 pages) is THE foundation for how everything is designed and built: the HTML/CSS
+  fundamentals, **Web Design Rules #1–#10** (typography · colours · images · icons · shadows · border-radius ·
+  whitespace · visual hierarchy · UX · elements, components and layout patterns), the website-personalities
+  framework, the 7 steps, and responsive design (principles, media queries, breakpoints).
+  - **Stored, not re-read:** distilled page by page, with page numbers, in `docs/web-anatomy/design-foundation/`.
+    Before building or changing anything, read the parts that apply and build to them — alongside RULE R's research.
+  - **THE MUST-FOLLOW CHECKLIST is `docs/web-anatomy/design-foundation/README.md`:** typography · colour · images
+    (incl. lazy loading and performance) · icons · shadows · border-radius · whitespace · visual hierarchy · UX and
+    personalities · components and layout patterns · the 7 steps · responsive design and breakpoints. Every feature is
+    checked against it.
+  - **Component-based, building on top:** the deck's elements → components → section components → layout
+    patterns is how the builder is composed; each level is built from the one below, never one-offs.
+  - **Checked, not assumed:** every feature's definition of done includes "follows the design foundation", and a
+    place where the builder does not follow it is a gap in the ledger, fixed like any bug. The user's words: *"make it
+    a rule and make it a foundation of everything we do… that's how we get it smooth, sleek and nice."*
 - **RULE Y — BUILD IT THROUGH THE UI. Seeding state is not UAT (MANDATORY, no exceptions).**
   **The state under test is CONSTRUCTED THROUGH THE INTERFACE** — open the blocks panel, drag the tile,
   drop it, click the handle, drag the edge. Writing a tree into `localStorage` and calling that a repro is

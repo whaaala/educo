@@ -61,7 +61,7 @@ export function getPresets(kind: string, theme: SiteTheme): Preset[] {
     case "image": return [
       { id: "square", label: "Square", patch: { radius: 0 } },
       { id: "rounded", label: "Rounded", patch: { radius: 16 } },
-      { id: "circle", label: "Circle", patch: { radius: 999, width: "160px", height: "160px" } },
+      { id: "circle", label: "Circle", patch: { radius: 999, width: "10rem", height: "10rem" } },
       { id: "shadow", label: "Shadow", patch: { radius: 12, shadow: "lg" } },
     ];
     case "video": return [
