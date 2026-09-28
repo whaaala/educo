@@ -11,7 +11,7 @@ import {
   isCssBg, bgImageLayer, renderAlertHTML, bgShowThroughCss,
   radiusCSS, isClipped, SHADOW_CSS, videoEmbedSrc,
   resolveResponsive, updateBoxResponsive, hasOverride, clearOverride, BP_ORDER,
-  remLen, hostSizedFor,
+  remLen, hostSizedFor, restForDrag, balancedLines, tabletPlaces, onManyColumnLine, columnFloorRem,
   type BoxNode,
 } from "@/lib/box-model";
 
@@ -651,19 +651,68 @@ describe("box-model — mutations are immutable and correct", () => {
       st.forEach((f) => expect(f.w).toBeCloseTo(start, 0));
     });
     /** A row where ANY block can be dragged, carrying width, rest and squeeze time between drags as the canvas does. */
-    type B = { id: string; w: number; rest?: number; at?: number; owed?: number; wrapBy?: string };
+    type B = { id: string; w: number; rest?: number; at?: number; owed?: number; wrapBy?: string; restBy?: string };
     const dragAt = (row: B[], k: number, delta: number, stamp: number): B[] => {
       const before = row.slice(0, k).reduce((s, b) => s + b.w, 0);
-      const fs = row.slice(k + 1).map((b) => ({ id: b.id, rest: b.rest ?? b.w, gap: 0, floor: Math.min(22.4, b.rest ?? b.w), at: b.rest !== undefined ? b.at : undefined }));
+      // each follower's rest as the canvas passes it: its memory only when THIS block's drag made it (#77)
+      const own = (b: B) => restForDrag(b, b.w, row[k].id);
+      const fs = row.slice(k + 1).map((b) => ({ id: b.id, rest: own(b).rest, cur: b.w, gap: 0, floor: Math.min(22.4, own(b).rest), at: own(b).at }));
       const r = allocateLine(row[k].w + delta, 100 - before, fs);
       return row.map((b, i) => {
         if (i === k) return { id: b.id, w: r.own };
         if (i < k) return b;
         const w = r.widths.get(b.id)!;
-        return { id: b.id, w: w.width, rest: w.rest, at: w.rest !== undefined ? (b.rest !== undefined ? b.at : stamp) : undefined };
+        if (own(b).foreign && Math.abs(w.width - b.w) < 0.05) return b; // untouched: another drag's memory is kept whole
+        return { id: b.id, w: w.width, rest: w.rest, at: w.rest !== undefined ? (own(b).at ?? stamp) : undefined, restBy: w.rest !== undefined ? row[k].id : undefined };
       });
     };
     const widths = (row: B[]) => row.map((b) => b.w);
+    /** #77, as built through the UI: three columns sized 30 / 30 / 40 by dragging edge 1 then edge 2. */
+    const sized303040 = () => {
+      let row: B[] = [{ id: "a", w: 33.33 }, { id: "b", w: 33.33 }, { id: "c", w: 33.34 }];
+      row = dragWrap(row, 0, -3.33, 1);   // edge 1 to 30%: b takes the space across the joined edge
+      row = dragWrap(row, 1, -6.67, 2);   // edge 2 to 60%: c takes it, remembering its 33.34 (b's memory)
+      return row;
+    };
+    it("#77: a later out-and-back on edge 1 leaves column 3 alone — every step size", () => {
+      for (const step of [1, 3, 5.85, 10, 20]) {
+        let row = sized303040();
+        const start = widths(row);
+        expect(start.map((w) => Math.round(w))).toEqual([30, 30, 40]);
+        row = dragWrap(row, 0, step, 3);
+        // the NEAREST gives first: column 3 is untouched while column 2 still has room above its floor
+        if (step <= start[1] - FLOOR) expect(row[2].w, `step ${step}: the nearest gives first, not column 3`).toBeCloseTo(start[2], 1);
+        else expect(row[1].w, `step ${step}: column 2 gives down to its floor first`).toBeCloseTo(FLOOR, 1);
+        row = dragWrap(row, 0, -step, 4);
+        widths(row).forEach((w, i) => expect(w, `step ${step}, column ${i + 1}`).toBeCloseTo(start[i], 1));
+      }
+    });
+    it("#77: …and edge 2's OWN round trip still comes home afterwards — its memory was kept", () => {
+      let row = sized303040();
+      row = dragWrap(row, 0, 5.85, 3); row = dragWrap(row, 0, -5.85, 4);
+      row = dragWrap(row, 1, 6.67, 5);   // edge 2 back to where it began
+      expect(row[1].w).toBeCloseTo(36.67, 1);
+      expect(row[2].w).toBeCloseTo(33.34, 1);
+      expect(row[2].rest).toBeUndefined();
+    });
+    it("#77: nudged out several times and back, and far enough that the others wrap — comes home to what was drawn", () => {
+      for (const [step, n] of [[4, 3], [8, 6]] as const) {
+        const row0 = sized303040();
+        let row = row0; let t = 10;
+        for (let i = 0; i < n; i++) row = dragWrap(row, 0, step, t++);
+        for (let i = 0; i < 40 && Math.abs(Math.max(row[0].w, FLOOR) - Math.max(row0[0].w, FLOOR)) > 0.01; i++) {
+          const d = Math.max(row0[0].w, FLOOR) - Math.max(row[0].w, FLOOR);
+          row = dragWrap(row, 0, Math.sign(d) * Math.min(step, Math.abs(d)), t++);
+        }
+        expect(drawn(row), `${n} × ${step}`).toEqual(drawn(row0));
+      }
+    });
+    it("restForDrag: a rest is spent only by the drag that made it; an older one with no owner is honoured as before", () => {
+      expect(restForDrag({ rest: 33, at: 1, restBy: "b" }, 40, "a")).toEqual({ rest: 40, at: undefined, foreign: true });
+      expect(restForDrag({ rest: 33, at: 1, restBy: "a" }, 40, "a")).toEqual({ rest: 33, at: 1, foreign: false });
+      expect(restForDrag({ rest: 33, at: 1 }, 40, "a")).toEqual({ rest: 33, at: 1, foreign: false });
+      expect(restForDrag({}, 40, "a")).toEqual({ rest: 40, at: undefined, foreign: false });
+    });
     it("a block squeezed by an EARLIER drag does not take this drag's space back — the round trip returns exactly (#53)", () => {
       let row: B[] = [{ id: "a", w: 33.33 }, { id: "b", w: 33.33 }, { id: "c", w: 33.33 }];
       row = dragAt(row, 1, 8, 1);                             // the user widens the MIDDLE block: c is squeezed
@@ -690,8 +739,8 @@ describe("box-model — mutations are immutable and correct", () => {
       const after = row.slice(k + 1);
       const fs = after.map((b, j) => {
         const same = lineOf[k + 1 + j] === lineOf[k];
-        const rest = Math.max(b.rest ?? b.w, floor), cur = Math.max(b.w, floor);
-        return { id: b.id, rest, cur, gap: 0, at: b.rest !== undefined ? b.at : undefined, floor: Math.min(floor, rest), pending: same || b.wrapBy === row[k].id, late: !same && j !== 0 && b.wrapBy !== row[k].id };
+        const cur = Math.max(b.w, floor), mine = restForDrag({ ...b, rest: b.rest === undefined ? undefined : Math.max(b.rest, floor) }, cur, row[k].id), rest = mine.rest;
+        return { id: b.id, rest, cur, gap: 0, at: mine.at, foreign: mine.foreign, floor: Math.min(floor, rest), pending: same || b.wrapBy === row[k].id, late: !same && j !== 0 && b.wrapBy !== row[k].id };
       });
       const startKept = after.filter((_, j) => lineOf[k + 1 + j] === lineOf[k]).length;
       const own0 = Math.max(row[k].w, floor);
@@ -704,7 +753,9 @@ describe("box-model — mutations are immutable and correct", () => {
         if (!same && r.wrapped.includes(b.id)) return b;       // already below, still below: untouched
         const w = r.widths.get(b.id)!;
         const wrapBy = r.wrapped.includes(b.id) ? (same ? row[k].id : b.wrapBy) : undefined;
-        return { id: b.id, w: w.width, rest: w.rest, at: w.rest !== undefined ? (b.rest !== undefined ? b.at : stamp) : undefined, wrapBy };
+        const f = fs[i - k - 1];
+        if (f.foreign && Math.abs(w.width - f.cur) < 0.05 && wrapBy === b.wrapBy) return b; // another drag's memory, untouched
+        return { id: b.id, w: w.width, rest: w.rest, at: w.rest !== undefined ? (f.at ?? stamp) : undefined, restBy: w.rest !== undefined ? row[k].id : undefined, wrapBy };
       });
     };
     const outBack = (row0: B[], k: number, step: number, n: number) => {
@@ -1694,8 +1745,9 @@ describe("the column floor (#75): 14rem untouched · 3rem sized by hand · full 
     const row = band([createContainer("column", { id: "u", width: "50%", children: [txt()] } as Partial<BoxNode>), createContainer("column", { id: "h", width: "10%", widthByHand: true, children: [txt()] } as Partial<BoxNode>)]);
     const [u, h] = row.children!;
     expect(childStyle(u, row, "base").minWidth).toBe("min(100%, 14rem)");
-    expect(childStyle(h, row, "base").minWidth).toBe("min(100%, 3rem)");
-    expect(childStyle(h, row, "tabletPortrait").minWidth).toBe("min(100%, 3rem)");
+    // drawn no narrower than its own longest word (#102) — it can still be DRAGGED to 3rem, see the canvas tests
+    expect(childStyle(h, row, "base").minWidth).toBe("min-content");
+    expect(childStyle(h, row, "tabletPortrait").minWidth).toBe("min-content");
     expect(childStyle(u, row, "phone").minWidth).toBe("100%");
     expect(childStyle(h, row, "phone").minWidth).toBe("100%");
   });
@@ -1703,5 +1755,112 @@ describe("the column floor (#75): 14rem untouched · 3rem sized by hand · full 
     const kids = [createContainer("column", { id: "a", width: "10%", widthByHand: true } as Partial<BoxNode>), createContainer("column", { id: "b", width: "90%" } as Partial<BoxNode>)];
     expect(packRowLines(kids, (k) => (k.widthByHand ? 4.7 : 21.9))).toEqual([0, 0]);
     expect(packRowLines(kids, 21.9)).toEqual([0, 1]); // one floor for all would wrap a 10% label column
+  });
+});
+
+describe("rows of four or more (#78): one row on a desktop and a laptop · at most three per line on a tablet · stacked on a phone", () => {
+  const txt = () => createElement("text", { text: "Words" } as Partial<BoxNode>);
+  const cols = (widths: string[], extra: Partial<BoxNode>[] = []) => makeRowBand(widths.map((w, i) => createContainer("column", { id: `c${i}`, width: w, children: [txt()], ...(extra[i] ?? {}) } as Partial<BoxNode>)), 0);
+  const even = (n: number) => cols(Array.from({ length: n }, () => `${+(100 / n).toFixed(4)}%`));
+  const basisPct = (flex: unknown) => parseFloat(String(flex).split(" ")[2]);
+  /** The lines the browser makes of flex bases in %: a column goes down when it no longer fits (what flex-wrap does). */
+  const wrapByBasis = (row: BoxNode, bp: "tabletPortrait") => {
+    const out: number[] = []; let used = 0;
+    for (const k of row.children!) { const w = basisPct(childStyle(k, row, bp).flex); if (used && used + w > 100.0001) { out.push(0); used = 0; } if (!out.length) out.push(0); out[out.length - 1]++; used += w; }
+    return out;
+  };
+
+  it("balancedLines: as few lines as three across allows, as even as they can be", () => {
+    expect(balancedLines(3)).toEqual([3]);
+    expect(balancedLines(4)).toEqual([2, 2]);
+    expect(balancedLines(5)).toEqual([3, 2]);
+    expect(balancedLines(6)).toEqual([3, 3]);
+    expect(balancedLines(7)).toEqual([3, 2, 2]);
+    expect(balancedLines(8)).toEqual([3, 3, 2]);
+    expect(balancedLines(9)).toEqual([3, 3, 3]);
+    expect(balancedLines(12)).toEqual([3, 3, 3, 3]);
+  });
+
+  it("on a desktop, a laptop and a wide screen a column on a line of 4+ floors at 3rem — so the line is never broken", () => {
+    for (const n of [4, 5, 6, 8]) for (const bp of ["base", "tabletLandscape", "wide"] as const) {
+      const row = even(n);
+      for (const k of row.children!) expect(childStyle(k, row, bp).minWidth, `${n} at ${bp}`).toBe("min-content");
+    }
+  });
+
+  it("a line of three or fewer keeps the 14rem reflow floor, at every rung but the phone", () => {
+    const row = even(3);
+    for (const bp of ["base", "tabletLandscape", "tabletPortrait", "wide"] as const) expect(childStyle(row.children![0], row, bp).minWidth).toBe("min(100%, 14rem)");
+    expect(tabletPlaces(row, "tabletPortrait")).toBeNull();
+  });
+
+  it("on a tablet held upright, the line is rearranged to the balanced counts, each line full", () => {
+    for (const [n, want] of [[4, [2, 2]], [5, [3, 2]], [6, [3, 3]], [7, [3, 2, 2]], [8, [3, 3, 2]]] as const) {
+      const row = even(n);
+      expect(wrapByBasis(row, "tabletPortrait"), `${n} columns`).toEqual(want);
+      // every line adds up to (just under) the whole row — no hole at the end of a line
+      let i = 0;
+      for (const across of want) { const sum = row.children!.slice(i, i + across).reduce((t, k) => t + basisPct(childStyle(k, row, "tabletPortrait").flex), 0); i += across; expect(sum).toBeGreaterThan(99.99); expect(sum).toBeLessThanOrEqual(100); }
+    }
+  });
+
+  it("uneven columns keep their proportions within their tablet line", () => {
+    const row = cols(["10%", "40%", "25%", "25%"]);
+    const b = row.children!.map((k) => basisPct(childStyle(k, row, "tabletPortrait").flex));
+    expect(b[0]).toBeCloseTo(20, 2); expect(b[1]).toBeCloseTo(80, 2); expect(b[2]).toBeCloseTo(50, 2); expect(b[3]).toBeCloseTo(50, 2);
+  });
+
+  it("a gap between the columns is taken out of the line before it is shared", () => {
+    const row = even(6); row.gap = 20;
+    const f = String(childStyle(row.children![0], row, "tabletPortrait").flex);
+    expect(f).toMatch(/^1 1 calc\(\(100% - 0% - 2 \* calc\(var\(--box-u, 0\.625rem\) \* 2\)\) \* 0\.33333\)$/);
+  });
+
+  it("a gap-margin on the line is taken out too", () => {
+    const row = cols(["20%", "20%", "20%", "20%"], [{}, { marginLeftPct: 20 } as Partial<BoxNode>]);
+    const b = row.children!.map((k) => basisPct(childStyle(k, row, "tabletPortrait").flex));
+    expect(b[0] + b[1]).toBeCloseTo(80, 2);
+  });
+
+  it("the tablet arrangement is the tablet's alone — a laptop, a desktop and a phone are not rearranged", () => {
+    const row = even(6);
+    for (const bp of ["base", "tabletLandscape", "wide", "phone"] as const) expect(tabletPlaces(row, bp), bp).toBeNull();
+    expect(childStyle(row.children![0], row, "phone").minWidth).toBe("100%");
+  });
+
+  it("a width set AT the tablet wins; the rest of ITS line shares what it leaves, and the other lines stay put", () => {
+    let row = even(6);
+    row = { ...row, children: row.children!.map((k, i) => (i === 0 ? { ...k, responsive: { tabletPortrait: { width: "60%" } } } : k)) };
+    const places = tabletPlaces(row, "tabletPortrait")!;
+    expect(places.has("c0")).toBe(false);
+    // the lines are still counted over all six (3 + 3): the two free columns on line one share the 40% it leaves,
+    // and line two is untouched — a tablet drag must never reshuffle the lines after it
+    expect([...places.values()].map((p) => p.across)).toEqual([2, 2, 3, 3, 3]);
+    expect(basisPct(childStyle(row.children![1], row, "tabletPortrait").flex)).toBeCloseTo(20, 2);
+    expect(basisPct(childStyle(row.children![3], row, "tabletPortrait").flex)).toBeCloseTo(33.333, 2);
+    const r0 = resolveResponsive(row.children![0], "tabletPortrait");
+    expect(childStyle(r0, row, "tabletPortrait").flex).toBe("0 1 60%");
+  });
+
+  it("a row the user already wrapped is rearranged LINE BY LINE — and only the lines of four or more", () => {
+    // 4 × 25% then 3 × 33%: the first stored line becomes 2 + 2, the second is left as three
+    const row = cols(["25%", "25%", "25%", "25%", "33%", "33%", "33%"]);
+    const places = tabletPlaces(row, "tabletPortrait")!;
+    expect([...places.keys()]).toEqual(["c0", "c1", "c2", "c3"]);
+    expect(onManyColumnLine(row, "c0")).toBe(true);
+    expect(onManyColumnLine(row, "c5")).toBe(false);
+    expect(columnFloorRem(row, row.children![5])).toBe(14);
+  });
+
+  it("a hidden or floating column does not count towards the four", () => {
+    const row = cols(["25%", "25%", "25%", "25%"], [{}, {}, {}, { hidden: true } as Partial<BoxNode>]);
+    expect(onManyColumnLine(row, "c0")).toBe(false);
+    expect(tabletPlaces(row, "tabletPortrait")).toBeNull();
+  });
+
+  it("only a ROW BAND is rearranged — a plain row the user built is left alone", () => {
+    const row = { ...even(5), rowBand: false };
+    expect(tabletPlaces(row, "tabletPortrait")).toBeNull();
+    expect(onManyColumnLine(row, "c0")).toBe(false);
   });
 });

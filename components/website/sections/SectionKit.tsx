@@ -47,8 +47,17 @@ export function EditableText({
       title="Click to edit"
       data-placeholder={placeholder}
       onInput={(e) => onChange?.((e.currentTarget.textContent || ""))}
-      onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); (e.currentTarget as HTMLElement).blur(); } }}
-      onClick={(e) => e.stopPropagation()}
+      // Enter commits; ESCAPE IS THE WAY OUT (#87) — it leaves the words, keeps what was typed and the block selected.
+      // It stops here: the canvas's own Escape steps out a level, and one press doing both skipped a level.
+      onKeyDown={(e) => {
+        if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); (e.currentTarget as HTMLElement).blur(); }
+        else if (e.key === "Escape") { e.preventDefault(); e.stopPropagation(); e.nativeEvent.stopImmediatePropagation(); (e.currentTarget as HTMLElement).blur(); }
+      }}
+      // Stops here — and CANCELS the click's default (#105). Stopping it alone kept the click from the link's own
+      // "don't follow me in the editor" handler, so the browser followed the link: clicking the words of a Button or
+      // Link that had a web address took the whole builder away to that address. A caret is placed on mousedown, so
+      // cancelling the click takes nothing from editing.
+      onClick={(e) => { e.stopPropagation(); e.preventDefault(); }}
       // No padding: `px-1 -mx-1` kept the OUTER width right but left the text 8px less room inside, so near the edge
       // it wrapped a line sooner than the published page did (a stat measured 57px on the canvas, 35px published).
       // The hover/focus ring is a box-shadow and draws outside the box without it. Found by the Preview check.

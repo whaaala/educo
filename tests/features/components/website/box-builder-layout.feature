@@ -942,6 +942,77 @@ Feature: Placing blocks beside one another in the Box Builder
     When the page is shown on a phone
     Then each column takes the whole width, one under another — nothing narrow is ever squeezed
 
+  # ── #85 (decided with the user 2026-09-27): one rule for rows and grids ──
+  # tests/e2e/grid-cell-resize.spec.ts ("a 90/10 grid") · scripts/uat/probe-section.js (headed)
+  Scenario: A grid cell squeezed across a shared edge can be as narrow as a row's column
+    Given a grid of two cells side by side
+    When I drag the first cell's right edge until the second is one track wide
+    Then the grid is 11 and 1, the narrow cell still beside the wide one
+    And pulling further moves it to the next row, keeping its width, just as a row does
+
+  # ── #87: Escape is the way out of the words ──
+  # tests/components/website/EditableText.test.tsx · headed: scripts/uat/probe (Escape while editing)
+  Scenario: Escape leaves the text I am typing in, and keeps the block selected
+    Given I am typing in a heading, a paragraph or a button
+    When I press Escape
+    Then the caret leaves the text, what I typed is kept, and the block is still selected
+    And pressing Escape again steps out to the block around it, as it always does
+
+  # ── #86: a comfortable measure, counted ──
+  # tests/e2e/paragraph-measure.spec.ts
+  Scenario: Paragraphs keep a comfortable measure in every font
+    Given a long paragraph in a wide column
+    When the page is shown on any screen, in any body font of the library
+    Then no line runs past 75 characters, and a line averages 45–75 (design foundation, Rule 1.9)
+
+  # ── #77: one edge's round trip never moves a column another edge sized ──
+  # tests/unit/box-model.test.ts ("#77") · scripts/uat/probe77.js (headed)
+  Scenario: A later out-and-back on the first edge leaves the third column alone
+    Given three columns I sized 30 / 30 / 40 by dragging the first edge, then the second
+    When I drag the first edge out and back to where it was
+    Then the columns are 30 / 30 / 40 again — the nearest column gave the width and got it back
+    And dragging the second edge back afterwards still returns the third column to where it began
+
+  # ── Decided with the user 2026-09-27 (#78): rows of four or more columns ──
+  # tests/unit/box-model.test.ts ("rows of four or more") · scripts/uat/uat78.js (headed) · scripts/uat/previewcheck.js
+  Scenario Outline: A row of four or more columns stays one row on a desktop and a laptop
+    Given I drop <n> stacks side by side
+    When the page is shown at <screen>
+    Then all <n> columns sit on one line, none of them wrapped
+    Examples:
+      | n | screen |
+      | 4 | Laptop 1024 |
+      | 5 | Laptop 1024 |
+      | 6 | Laptop 1024 |
+      | 6 | Desktop 1280 |
+      | 6 | Wide 1920 |
+
+  Scenario Outline: On a tablet they rearrange to at most three per line, balanced
+    Given I drop <n> stacks side by side
+    When the page is shown on a tablet
+    Then the columns sit <lines> per line, each filling its share of its own line with no hole
+    Examples:
+      | n | lines |
+      | 4 | 2+2 |
+      | 5 | 3+2 |
+      | 6 | 3+3 |
+      | 7 | 3+2+2 |
+
+  Scenario: Uneven columns keep their proportions on a tablet
+    Given four columns I sized 10% · 40% · 25% · 25%
+    When the page is shown on a tablet
+    Then the first line holds the 10% and 40% columns in a 1:4 ratio, the second the two 25% ones side by side
+
+  Scenario: A width I set for the tablet wins over the rearranging
+    Given a row of six columns
+    When I set one column's width on the tablet
+    Then that column keeps the width I set there, and the desktop is unchanged
+
+  Scenario: Three columns are not touched
+    Given three columns side by side
+    When the page is shown on a tablet
+    Then they stay three across, as before
+
   Scenario: Widening a block never makes it jump
     Given two blocks side by side
     When I widen the first until the second no longer fits beside it

@@ -499,3 +499,22 @@ describe("box-export — static HTML", () => {
     expect(() => downloadSite({ "index.html": "<html></html>" })).not.toThrow();
   });
 });
+
+describe("rows of four or more in the published page (#78)", () => {
+  const words = () => createElement("text", { text: "Words" } as Partial<BoxNode>);
+  const doc = () => pageDoc(createContainer("column", { id: "page", children: [makeRowBand(["c0", "c1", "c2", "c3", "c4"].map((id) =>
+    createContainer("column", { id, width: "20%", children: [words()] } as Partial<BoxNode>)), 0)] } as Partial<BoxNode>));
+  const ruleIn = (css: string, id: string) => (css.match(new RegExp(`\.bx-${id}\{([^}]*)\}`)) ?? [])[1] ?? "";
+  it("a tablet held upright gets 3 + 2 (each line full); a laptop takes the row back to five across on one line", () => {
+    const d = doc();
+    // the whole rung block: from its query to the next query (a block's own rules may end in "}}")
+    const block = (em: number) => { const at = d.indexOf(`@media (min-width:${em}em){`); return at < 0 ? "" : d.slice(at, d.indexOf("@media", at + 1)); };
+    const tablet = block(BREAKPOINTS_EM.tabletPortrait), laptop = block(BREAKPOINTS_EM.tabletLandscape);
+    expect(ruleIn(tablet, "c0")).toMatch(/flex:1 1 33\.333%/);
+    expect(ruleIn(tablet, "c4")).toMatch(/flex:1 1 50%/);
+    expect(ruleIn(laptop, "c0")).toMatch(/flex:0 1 20%/);
+    expect(ruleIn(laptop, "c4")).toMatch(/flex:0 1 20%/);
+    // one line on a laptop: the 3rem floor, not the 14rem that wrapped five into 4 + 1 at 1024px
+    expect(d).not.toMatch(/\.bx-c0\{[^}]*min-width:min\(100%, 14rem\)/);
+  });
+});

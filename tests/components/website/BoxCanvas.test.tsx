@@ -229,6 +229,18 @@ describe("BoxCanvas (box-model editor)", () => {
     expect(getByTestId("sel").textContent).toBe(""); // deselected, not "band"
   });
 
+  it("…but INSIDE a stack, the empty part of a line of several blocks selects that STACK — it is the stack's space (#88)", () => {
+    // A header (logo | menu | button) had every line holding several blocks, so its empty space cleared the selection and
+    // the header could not be selected by clicking in it at all. The line's space belongs to the box it sits in.
+    const band = makeRowBand([createElement("text", { id: "a" } as Partial<BoxNode>), createElement("text", { id: "b" } as Partial<BoxNode>)]); band.id = "band";
+    const stack = createContainer("column", { id: "hdr", children: [band] } as Partial<BoxNode>);
+    const root = createContainer("column", { id: "root", children: [stack] } as Partial<BoxNode>);
+    function H() { const [r, setR] = useState(root); const [sel, setSel] = useState<string | null>(null); return <><BoxCanvas root={r} theme={DEFAULT_THEME} selectedId={sel} onSelectId={setSel} onChange={setR} /><div data-testid="sel">{sel ?? ""}</div></>; }
+    const { container, getByTestId } = render(<H />);
+    fireEvent.mouseDown(container.querySelector('[data-box-id="band"]')!);
+    expect(getByTestId("sel").textContent).toBe("hdr"); // the stack — not nothing, and never the band
+  });
+
   it("copy + paste a floating GROUP: a full OFFSET copy appears (floating, fresh ids), not hiding the original", () => {
     const group = createContainer("column", { id: "g", group: true, position: "absolute", left: 10, top: 10, children: [createElement("text", { id: "a", text: "x" } as Partial<BoxNode>)] } as unknown as Partial<BoxNode>);
     const initial = createContainer("column", { id: "root", children: [group] } as Partial<BoxNode>);
@@ -1169,5 +1181,66 @@ describe("narrow columns and no fill jump (decided with the user 2026-09-27, #75
     const out = dragA(pair("50%", "50%"), 500, 500, 340); // b (floor 224px) no longer fits beside 840px
     expect(parseFloat(findBox(out, "a")!.width!)).toBeCloseTo(84, 0);
     expect(parseFloat(findBox(out, "a")!.width!)).toBeLessThan(99);
+  });
+});
+
+describe("rows of four or more on a tablet (decided with the user 2026-09-27, #78)", () => {
+  const words = () => createElement("text", { text: "Words" } as Partial<BoxNode>);
+  const fourRow = () => createContainer("column", { id: "page", children: [makeRowBand(["c0", "c1", "c2", "c3"].map((id) =>
+    createContainer("column", { id, width: "25%", children: [words()] } as Partial<BoxNode>)), 0)] } as Partial<BoxNode>);
+  const basis = (el: HTMLElement) => el.style.flex.split(" ").slice(2).join(" ");
+
+  it("the canvas draws each column at its share of its tablet line (2 + 2), and at its own 25% on a laptop", () => {
+    const t = render(<BoxCanvas root={fourRow()} theme={DEFAULT_THEME} breakpoint="tabletPortrait" onChange={() => {}} />);
+    for (const id of ["c0", "c1", "c2", "c3"]) expect(basis(t.container.querySelector<HTMLElement>(`[data-box-id="${id}"]`)!)).toBe("50%");
+    t.unmount();
+    const l = render(<BoxCanvas root={fourRow()} theme={DEFAULT_THEME} breakpoint="tabletLandscape" onChange={() => {}} />);
+    const c0 = l.container.querySelector<HTMLElement>('[data-box-id="c0"]')!;
+    expect(basis(c0)).toBe("25%");
+    expect(c0.style.minWidth).toBe("min-content"); // one line on a laptop, never 4 + wrapped
+  });
+
+  it("a drag on the tablet works from the DRAWN shares: the neighbour on its tablet line gives, the base is untouched", () => {
+    const onChange = vi.fn();
+    const root = fourRow();
+    const { container } = render(<BoxCanvas root={root} theme={DEFAULT_THEME} selectedId="c0" breakpoint="tabletPortrait" onChange={onChange} />);
+    const band = container.querySelector<HTMLElement>(`[data-box-id="${root.children![0].id}"]`)!;
+    stubRect(band, { top: 0, left: 0, width: 1000, height: 200 }); stubClientWidth(band, 1000);
+    [["c0", 0, 0], ["c1", 500, 0], ["c2", 0, 100], ["c3", 500, 100]].forEach(([id, left, top]) =>
+      stubRect(container.querySelector<HTMLElement>(`[data-box-id="${id}"]`)!, { top: top as number, left: left as number, width: 500, height: 100 }));
+    fireEvent.mouseDown(screen.getByLabelText("Resize right edge"), { clientX: 0, clientY: 0 });
+    fireEvent.mouseMove(document, { clientX: -100, clientY: 0 });
+    fireEvent.mouseUp(document);
+    const out = onChange.mock.calls.at(-1)![0] as BoxNode;
+    const w = (id: string) => parseFloat(findBox(out, id)!.responsive?.tabletPortrait?.width ?? "NaN");
+    expect(w("c0")).toBeCloseTo(40, 0);
+    expect(w("c1")).toBeCloseTo(60, 0);
+    expect(findBox(out, "c0")!.width).toBe("25%"); // the desktop keeps its four across
+    expect(findBox(out, "c2")!.responsive?.tabletPortrait?.width).toBeUndefined(); // the second line is not touched
+  });
+});
+
+describe("the remembered original width follows the floor a column is DRAWN at (#82)", () => {
+  it("a four-column row: nudging the first edge home never writes a stale 16% back into the second column", () => {
+    const words = () => createElement("text", { text: "Words" } as Partial<BoxNode>);
+    const band = makeRowBand([
+      createContainer("column", { id: "c0", width: "27.8%", widthByHand: true, children: [words()] } as Partial<BoxNode>),
+      createContainer("column", { id: "c1", width: "22.2%", widthByHand: true, origWidth: "16.07%", restWidth: "22.4%", restBy: "c0", children: [words()] } as Partial<BoxNode>),
+      createContainer("column", { id: "c2", width: "25%", widthByHand: true, children: [words()] } as Partial<BoxNode>),
+      createContainer("column", { id: "c3", width: "25%", widthByHand: true, children: [words()] } as Partial<BoxNode>),
+    ], 0);
+    const root = createContainer("column", { id: "page", children: [band] } as Partial<BoxNode>);
+    const onChange = vi.fn();
+    const { container } = render(<BoxCanvas root={root} theme={DEFAULT_THEME} selectedId="c0" onChange={onChange} />);
+    const bandEl = container.querySelector<HTMLElement>(`[data-box-id="${band.id}"]`)!;
+    stubRect(bandEl, { top: 0, left: 0, width: 1000, height: 100 }); stubClientWidth(bandEl, 1000);
+    [["c0", 0, 278], ["c1", 278, 222], ["c2", 500, 250], ["c3", 750, 250]].forEach(([id, left, width]) =>
+      stubRect(container.querySelector<HTMLElement>(`[data-box-id="${id}"]`)!, { top: 0, left: left as number, width: width as number, height: 100 }));
+    // c1 comes home at 22.4% — exactly where a 14rem floor sits in a 1000px row, the coincidence the 1366 window hit
+    fireEvent.mouseDown(screen.getByLabelText("Resize right edge"), { clientX: 0, clientY: 0 });
+    fireEvent.mouseMove(document, { clientX: -2, clientY: 0 });
+    fireEvent.mouseUp(document);
+    const out = onChange.mock.calls.at(-1)![0] as BoxNode;
+    expect(parseFloat(findBox(out, "c1")!.width!)).toBeCloseTo(22.4, 0); // was written back as 16.07% — an 81px hole
   });
 });

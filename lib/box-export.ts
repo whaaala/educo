@@ -10,7 +10,7 @@
 
 import type { CSSProperties } from "react";
 import { PILL, blockTypography, pinArrivalCss, pinArrivalKeyframes, floatHoldCSS,
-  type BoxNode, type Breakpoint, BP_ORDER, containerStyle, childStyle, hostSizedFor, marginCSS, sizeToCSS, radiusCSS, SHADOW_CSS, u, baseUnit, fadedPaint, boxOpacity, backgroundCss, paintLayerCss,
+  type BoxNode, type Breakpoint, BP_ORDER, containerStyle, childStyle, hostSizedFor, marginCSS, sizeToCSS, radiusCSS, SHADOW_CSS, u, textLen, baseUnit, fadedPaint, boxOpacity, backgroundCss, paintLayerCss,
   resolveResponsive, floatStacksOnMobile, floatingReserve, alertToastCss, accordionClasses, bandClasses, videoEmbedSrc, isContainer, sanitizeCssDeclarations, expandScopedCss, COMPONENT_PARTS, itemFloatContextCss, itemOverrideCss, itemNumberVars, richBody, plainBody, componentTextCss, componentBoxCss, renderAlertHTML, alertDismissScript, masonryMeasureAttr, masonryMeasureScript, pinStackMarker, pinStackGroupMarker, pinStackNeeded, pinStackScript, isPager, pagerNavHTML, pagerScript, pagerStripCss, pagerSlideId, bgShowThroughCss, blockContainmentCss, COMPONENT_ITEM_SEL, remLen, imageSizing, hasIntrinsicSize, itemNeedsClass, itemScope, floatZIndex, typoRole, typoRootVars, typoCascadeCss, bandEdgeCSS,
 } from "@/lib/box-model";
 import { isRegistryComponent, renderComponent, componentScripts } from "@/lib/educo-ui/registry";
@@ -129,12 +129,14 @@ function elementHTML(node: BoxNode, theme: SiteTheme, pageMap: Map<string, strin
   // value on the child beats the alignment its container was told to have.
   const align = node.textAlign;
   switch (node.type) {
-    case "heading": { const hl = SEM?.byId.get(node.id)?.level ?? 2; return `<h${hl} style="${styleString({ color: node.color || typoRole.color("text"), fontSize: node.fontSize != null ? u(node.fontSize) : typoRole.size(2), textAlign: align, width: "100%", ...typoCss(node, "heading", 600) })}">${esc(node.text ?? "")}</h${hl}>`; }
-    case "text": return `<p style="${styleString({ color: node.color || typoRole.color("muted"), fontSize: node.fontSize != null ? u(node.fontSize) : typoRole.size(1), textAlign: align, width: "100%", ...typoCss(node, "body", 400) })}">${esc(node.text ?? "")}</p>`;
+    case "heading": { const hl = SEM?.byId.get(node.id)?.level ?? 2; return `<h${hl} style="${styleString({ color: node.color || typoRole.color("text"), fontSize: node.fontSize != null ? textLen(node.fontSize) : typoRole.size(2), textAlign: align, width: "100%", ...typoCss(node, "heading", 600) })}">${esc(node.text ?? "")}</h${hl}>`; }
+    case "text": return `<p style="${styleString({ color: node.color || typoRole.color("muted"), fontSize: node.fontSize != null ? textLen(node.fontSize) : typoRole.size(1), textAlign: align, width: "100%", ...typoCss(node, "body", 400) })}">${esc(node.text ?? "")}</p>`;
+    // A LINK: a plain <a href>, styled as words in the brand colour — never a button's pill (html-semantics.md).
+    case "link": return `<a href="${esc(hrefFor(node, pageMap))}"${node.newTab ? ' target="_blank" rel="noopener noreferrer"' : ""} style="${styleString({ color: node.color || "var(--bx-link, var(--eu-color-brand))", fontSize: node.fontSize != null ? textLen(node.fontSize) : typoRole.size(1), textAlign: align, textUnderlineOffset: "0.15em", ...typoCss(node, "body", 500), textDecoration: node.underline ? "underline" : "none" })}">${esc(node.text ?? "")}</a>`; // "off" is WRITTEN — a browser underlines every <a> (#106)
     case "button": { // fills its box + paints its own visual + centres its label (matches the editor) — one shape when resized
       const fp = (v?: string) => (v === "center" ? "center" : v === "end" ? "flex-end" : "flex-start");
       const deco = decorCss(node);
-      return `<a href="${esc(hrefFor(node, pageMap))}"${node.newTab ? ' target="_blank" rel="noopener noreferrer"' : ""} style="${styleString({ display: "flex", width: "100%", height: "100%", boxSizing: "border-box", alignItems: fp(node.contentY ?? "center"), justifyContent: fp(node.contentX ?? "center"), gap: u(8), background: node.background ? colorToCSS(node.background) : colorToCSS(theme.primary), color: node.color || "var(--eu-color-on-brand)", fontSize: node.fontSize != null ? u(node.fontSize) : typoRole.size(0.875), padding: `${u(12)} ${u(24)}`, textDecoration: "none", ...deco, borderRadius: deco.borderRadius ?? PILL, ...typoCss(node, "body", 600) })}">${esc(node.text ?? "")}</a>`;
+      return `<a href="${esc(hrefFor(node, pageMap))}"${node.newTab ? ' target="_blank" rel="noopener noreferrer"' : ""} style="${styleString({ display: "flex", width: "100%", height: "100%", boxSizing: "border-box", alignItems: fp(node.contentY ?? "center"), justifyContent: fp(node.contentX ?? "center"), gap: u(8), background: node.background ? colorToCSS(node.background) : colorToCSS(theme.primary), color: node.color || "var(--eu-color-on-brand)", fontSize: node.fontSize != null ? textLen(node.fontSize) : typoRole.size(0.875), padding: `${u(12)} ${u(24)}`, textDecoration: "none", ...deco, borderRadius: deco.borderRadius ?? PILL, ...typoCss(node, "body", 600) })}">${esc(node.text ?? "")}</a>`;
     }
     // `loading`/`decoding` are set from the block's own settings: a hero must load eagerly or the page opens
     // blank at the top, while a photo further down should wait until it is nearly on screen.
@@ -149,7 +151,7 @@ function elementHTML(node: BoxNode, theme: SiteTheme, pageMap: Map<string, strin
     }
     case "video": { const embed = videoEmbedSrc(node.src); const h = sizeToCSS(node.height) ?? "315px"; if (embed) return `<iframe src="${esc(embed)}" title="Video" allowfullscreen style="${styleString({ width: "100%", height: h, border: "0" })}"></iframe>`; return node.src ? `<video src="${esc(node.src)}" controls style="${styleString({ width: "100%", height: h })}"></video>` : ""; }
     case "divider": return `<div aria-hidden="true" style="${styleString({ width: "100%", borderTopWidth: node.borderWidth || "0.125rem", borderTopStyle: node.borderStyle ?? "solid", borderTopColor: node.color ? colorToCSS(node.color) : node.borderColor ? colorToCSS(node.borderColor) : typoRole.color("muted") })}"></div>`;
-    case "list": { const items = (node.listItems ?? []).map((it) => `<li>${esc(it)}</li>`).join(""); const st = styleString({ color: node.color || typoRole.color("text"), fontSize: node.fontSize != null ? u(node.fontSize) : typoRole.size(1), textAlign: align, width: "100%", paddingLeft: u(22), ...typoCss(node, "body", 400) }); return node.listStyle === "number" ? `<ol style="${st}">${items}</ol>` : `<ul style="${st}">${items}</ul>`; }
+    case "list": { const items = (node.listItems ?? []).map((it) => `<li>${esc(it)}</li>`).join(""); const st = styleString({ color: node.color || typoRole.color("text"), fontSize: node.fontSize != null ? textLen(node.fontSize) : typoRole.size(1), textAlign: align, width: "100%", paddingLeft: u(22), ...typoCss(node, "body", 400) }); return node.listStyle === "number" ? `<ol style="${st}">${items}</ol>` : `<ul style="${st}">${items}</ul>`; }
     case "embed": return node.html ?? "";
     case "spacer": return `<div aria-hidden="true" style="${styleString({ width: "100%", height: sizeToCSS(node.height) ?? "3rem" })}"></div>`;
     case "icon": { const svg = iconSvg(node.icon ?? "Star"); return svg ? `<span aria-hidden="true" style="${styleString({ display: "inline-flex", color: node.color ? colorToCSS(node.color) : typoRole.color("text"), fontSize: node.fontSize != null ? u(node.fontSize) : typoRole.size(1.5) })}">${svg}</span>` : ""; }
@@ -261,7 +263,7 @@ function componentHTML(node: BoxNode): string {
 function componentTypoCss(node: BoxNode): CSSProperties {
   const s: CSSProperties = {};
   if (node.fontFamily) s.fontFamily = node.fontFamily;
-  if (node.fontSize) s.fontSize = u(node.fontSize);
+  if (node.fontSize) s.fontSize = textLen(node.fontSize);
   if (node.fontWeight) s.fontWeight = node.fontWeight;
   if (node.lineHeight) s.lineHeight = node.lineHeight;
   if (node.letterSpacing != null) s.letterSpacing = `${node.letterSpacing}px`;

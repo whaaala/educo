@@ -9,11 +9,11 @@
  */
 
 import { measureCss } from "@/lib/educo-ui/base";
-import { floorRemOf, HAND_FLOOR_REM } from "@/lib/box-model";
+import { columnFloorRem, HAND_FLOOR_REM, restForDrag, tabletPlaces } from "@/lib/box-model";
 import { resolvePage } from "@/lib/semantics";
 import { Fragment, useEffect, useLayoutEffect, useMemo, useReducer, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { createPortal } from "react-dom";
-import { Plus, ChevronUp, ChevronDown, Copy, Scissors, ClipboardPaste, Trash2, Upload, GripVertical, MoreVertical, Rows3, Columns3, Grid3x3, Type, Heading as HeadingIcon, MousePointerClick, Image as ImageIcon, Layers, BringToFront, SendToBack, Video as VideoIcon, Sparkles, Minus as MinusIcon, List as ListIcon, Code2, Star, Lock, LockOpen, Ungroup } from "lucide-react";
+import { Link2, Plus, ChevronUp, ChevronDown, Copy, Scissors, ClipboardPaste, Trash2, Upload, GripVertical, MoreVertical, Rows3, Columns3, Grid3x3, Type, Heading as HeadingIcon, MousePointerClick, Image as ImageIcon, Layers, BringToFront, SendToBack, Video as VideoIcon, Sparkles, Minus as MinusIcon, List as ListIcon, Code2, Star, Lock, LockOpen, Ungroup } from "lucide-react";
 import type { SiteTheme } from "@/lib/site-storage";
 import {
   type BoxNode, type BoxType,
@@ -21,7 +21,7 @@ import {
   updateBox, deleteBox, insertBox, moveBoxStep, duplicateBox, moveBox, cloneBox, findParent, isAncestor, isContainer, containerLabel, widthPct, stackWithBlock, fitBand, PILL, blockTypography,
   isFloating, floatBox, unfloatBox, groupBoxes, ungroupBoxes, bringToFront, sendToBack, bringForward, sendBackward, packRowLines, allocateLine, type LineFollower,
   shouldTakeMirrorBox, hostSizedFor, type MirrorBox, type MirrorChase, fadedPaint, boxOpacity, backgroundCss, treePaintLayerCss, radiusCSS, isClipped, SHADOW_CSS, videoEmbedSrc, sanitizeCssDeclarations, expandScopedCss, ACCORDION_CSS_PARTS, itemOverrideCss, itemHasOverride, itemNumberVars, richBody, componentTextCss, componentBoxCss, bgShowThroughCss, resizeTopEdge, blockContainmentCss, alertToastCss, treeHasToast, treeHasFixedHold, accordionClasses, bandClasses, advancedCssStyle, alertActionsHTML, hugsContent, itemFloatContextCss, COMPONENT_ITEM_SEL, clampContentScale, MIN_CONTENT_SCALE, isMultiItemComponent, comfortableWidth, remLen, rootFontPx, isDefiniteLen, addItemAfter, duplicateItem, duplicateChildItem, removeItem, removeChildItem, moveItem, moveChildItem, updateItem, updateChildItem, ALERT_SEVERITY_ICON, alertPartInline, alertIconInline, collectAlertItemStyles,
-  type Breakpoint, resolveResponsive, updateBoxResponsive, treePinArrivalCss, floatHoldCSS, canvasFixedStyle, capturesFixed, imageSizing, importPhoto, treeItemEffectsCss, itemNeedsClass, floatZIndex, gridPlacementAt, gridColumnsAt, masonryMeasureAttr, masonryMeasurePass, mirrorMeasuresNow, baseUnitParts, pinStackMarker, pinStackGroupMarker, pinStackPass, isPager, pagerStripCss, pagerNavHTML, selectionChain, typoRole, typoRootVars, typoCascadeCss, bandEdgeCSS,
+  type Breakpoint, resolveResponsive, updateBoxResponsive, treePinArrivalCss, floatHoldCSS, canvasFixedStyle, capturesFixed, imageSizing, importPhoto, treeItemEffectsCss, itemNeedsClass, floatZIndex, gridPlacementAt, gridColumnsAt, masonryMeasureAttr, masonryMeasurePass, mirrorMeasuresNow, baseUnitParts, pinStackMarker, pinStackGroupMarker, pinStackPass, isPager, pagerStripCss, pagerNavHTML, selectionChain, textLen, typoRole, typoRootVars, typoCascadeCss, bandEdgeCSS,
 } from "@/lib/box-model";
 import { ICON_SET } from "./icons";
 import { PortalMenu, MenuItem, MenuHeader, MenuSep } from "./ui";
@@ -339,6 +339,7 @@ const ADD_ITEMS: { type: BoxType | "row" | "grid" | "accordion"; label: string; 
   { type: "heading", label: "Heading", Icon: HeadingIcon },
   { type: "text", label: "Text", Icon: Type },
   { type: "button", label: "Button", Icon: MousePointerClick },
+  { type: "link", label: "Link", Icon: Link2 },
   { type: "image", label: "Image", Icon: ImageIcon },
   { type: "video", label: "Video", Icon: VideoIcon },
   { type: "icon", label: "Icon", Icon: Sparkles },
@@ -1052,6 +1053,7 @@ export default function BoxCanvas({
     const t = n.text?.trim();
     if (n.type === "heading") return t ? `Heading: ${t.slice(0, 18)}` : "Heading";
     if (n.type === "button") return t ? `Button: ${t.slice(0, 14)}` : "Button";
+    if (n.type === "link") return t ? `Link: ${t.slice(0, 16)}` : "Link";
     if (n.type === "image") return "Image";
     if (n.type === "video") return "Video";
     if (n.type === "icon") return `Icon: ${n.icon ?? "Star"}`;
@@ -1631,6 +1633,17 @@ export default function BoxCanvas({
     const me = row.findIndex((s) => s.id === id);
     const spanOf = (n: BoxNode) => gridPlacementAt(info.parent, n, breakpoint).span;
     const track = colLines.length - 1;
+    /**
+     * HOW NARROW A NEIGHBOUR MAY BE SQUEEZED ACROSS A SHARED EDGE BEFORE IT WRAPS — the same rule a row has (#85, #76).
+     *
+     * Squeezing a cell across the edge it shares IS sizing it by hand, so it may go down to the narrowest thing that is
+     * still usable: the fewest tracks at least 3rem wide (one track on any real screen). A fixed quarter of the row
+     * (`NEIGHBOUR_MIN`) made 90/10, 80/20 and 20/60/20 grids impossible to drag into shape from the wide cell's edge —
+     * the narrow cell wrapped at three tracks — while a row beside it allowed exactly those (decided with the user
+     * 2026-09-27: one rule for rows and grids). Pull further and it still wraps, keeping its span.
+     */
+    const trackPx = colLines.length > 1 ? colLines[1] - colLines[0] : 0;
+    const handSpan = trackPx > 0 ? Math.max(1, Math.ceil((HAND_FLOOR_REM * rootFontPx() * Z) / trackPx)) : NEIGHBOUR_MIN;
     if (!row[me] && !(info.parent.children ?? []).some((c) => c.id === id)) return;
     // THE PARTNER IS THE NEXT (or previous) SIBLING, in DOCUMENT order — never "the next cell measured on this
     // row". Once a neighbour has been pushed onto the row below it is no longer on this row by measurement, so
@@ -1793,7 +1806,7 @@ export default function BoxCanvas({
         if (neighbour) {
           const beside = pairBudget - span;                    // what the neighbour needs to fit alongside
           const nSpan = spanOf(neighbour.node);
-          tree = writeBox(tree, neighbour.id, { colSpan: beside >= (hasE ? NEIGHBOUR_MIN : 1) ? beside : nSpan });
+          tree = writeBox(tree, neighbour.id, { colSpan: beside >= (hasE ? handSpan : 1) ? beside : nSpan });
         }
       }
       // ── DOWN: the grabbed edge moves, and THIS row is the one that changes size ──
@@ -2058,14 +2071,24 @@ export default function BoxCanvas({
      * A block AFTER this one: the width it RESTS at (its `restWidth` if a
      * neighbour's drag squeezed it, else its stored width), its current stored width, and its margin — all px.
      */
-    type Follower = { id: string; w: number; cur: number; ml: number; at?: number; wrapBy?: string; min: number; floorPx: number };
+    type Follower = { id: string; w: number; cur: number; ml: number; at?: number; wrapBy?: string; min: number; floorPx: number; foreign?: boolean };
     /** When the next block SHARES the line: its rest width. */
     let nextRest = 0, prevRest = 0;
     let prevAt: number | undefined; // when the block before was squeezed, if it was (#53)
     /** EVERY block after this one, in order, and whether it shares this block's line when the drag starts. */
     let after: (Follower & { sameLine: boolean })[] = [];
+    /**
+     * The floor each column was drawn at BEFORE anyone sized it, px — 14rem, or 3rem on a line of four or more (#78). It is
+     * what a stored original below the floor was drawn at, so it is what `origWidth` is measured against (#65, #82).
+     */
+    const drawnFloorPx = new Map<string, number>();
     if (parentRow && info) {
-      const kids = info.parent.children!.filter((c) => !isFloating(c) && !c.hidden).map((c) => resolveResponsive(c, breakpoint));
+      const rowAt = resolveResponsive(info.parent, breakpoint);
+      // On a tablet a line of four or more is REARRANGED (#78): each column is drawn at its share of its tablet line,
+      // so that share is its width here — the resize must work from what is drawn, as everywhere else in this row.
+      const places = tabletPlaces(rowAt, breakpoint);
+      const kids = info.parent.children!.filter((c) => !isFloating(c) && !c.hidden).map((c) => resolveResponsive(c, breakpoint))
+        .map((c) => { const pl = places?.get(c.id); return pl ? { ...c, width: `${+(pl.share * (100 - pl.marginsPct)).toFixed(4)}%` } : c; });
       /**
        * THE REFLOW FLOOR, IN THIS ROW'S TERMS (#58). A section in a row is drawn no narrower than min(100%, 14rem), so
        * five blocks storing 20% on a 1024px page are DRAWN at 224px and the fifth wraps — while the stored widths
@@ -2073,7 +2096,16 @@ export default function BoxCanvas({
        * holes and round trips that never came home. Lines and widths are therefore read as the browser draws them.
        */
       // Each column's OWN floor: 14rem untouched, 3rem once sized by hand (#75) — as childStyle draws it.
-      const floorPxOf = (c: BoxNode) => Math.min(maxW, floorRemOf(c) * rootFontPx() * Z);
+      // A column on the 3rem floor is DRAWN no narrower than its longest word (#102, `childStyle`), so that is its floor
+      // here too — measured once per column per drag — or the packing below would call a line that the browser wraps "full".
+      const contentMin = new Map<string, number>();
+      const minOf = (c: BoxNode) => { if (!contentMin.has(c.id)) { const e2 = document.querySelector<HTMLElement>(`[data-box-id="${CSS.escape(c.id)}"]`); contentMin.set(c.id, e2 ? minContentPx(e2) : 0); } return contentMin.get(c.id)!; };
+      const floorPxOf = (c: BoxNode) => {
+        const rem = places?.has(c.id) ? HAND_FLOOR_REM : columnFloorRem(rowAt, c, breakpoint);
+        const px = rem * rootFontPx() * Z;
+        return Math.min(maxW, rem === HAND_FLOOR_REM ? Math.max(px, minOf(c)) : px);
+      };
+      kids.forEach((c) => drawnFloorPx.set(c.id, Math.min(maxW, columnFloorRem(rowAt, { ...c, widthByHand: false }, breakpoint) * rootFontPx() * Z)));
       const lines = packRowLines(kids, (c) => (floorPxOf(c) / maxW) * 100);
       const at = kids.findIndex((c) => c.id === id);
       /** A sibling's width as the LAYOUT states it — its stored share where it has one, else what is drawn. */
@@ -2085,11 +2117,18 @@ export default function BoxCanvas({
       };
       const restPx = (c: BoxNode, r2: DOMRect) => (c.restWidth?.trim().endsWith("%") ? Math.max(floorPxOf(c), (widthPct(c.restWidth) / 100) * maxW) : storedPx(c, r2));
       const followers = (from: number) => kids.slice(from).map(measure).filter((m): m is NonNullable<ReturnType<typeof measure>> => !!m)
-        .map((m) => { const min = minContentPx(m.e2); return { floorPx: floorPxOf(m.c), id: m.c.id, w: Math.max(min, restPx(m.c, m.r2)), cur: Math.max(min, storedPx(m.c, m.r2)), ml: (parseFloat(getComputedStyle(m.e2).marginLeft) || 0) * Z, at: m.c.restWidth ? m.c.restAt : undefined, wrapBy: m.c.wrapBy, min }; });
+        // A column REARRANGED on a tablet (#78) has no floor below its share: the arrangement placed it, so one on a later
+        // line comes up only whole — never squeezed onto a line whose count the arrangement already decided.
+        .map((m) => {
+          const min = minContentPx(m.e2), cur = Math.max(min, storedPx(m.c, m.r2));
+          // Its remembered rest only if THIS block's drag made it (#77) — to anyone else's drag it is the width it holds.
+          const own = restForDrag({ rest: m.c.restWidth ? Math.max(min, restPx(m.c, m.r2)) : undefined, at: m.c.restAt, restBy: m.c.restBy }, cur, id);
+          return { floorPx: places?.has(m.c.id) ? storedPx(m.c, m.r2) : floorPxOf(m.c), id: m.c.id, w: own.rest, cur, ml: (parseFloat(getComputedStyle(m.e2).marginLeft) || 0) * Z, at: own.at, foreign: own.foreign, wrapBy: m.c.wrapBy, min };
+        });
       const nx = at >= 0 ? measure(kids[at + 1]) : null;
       if (nx && lines[at + 1] === lines[at]) {
         nextSibId = nx.c.id; nextLeftPx = nx.r2.left - contentLeftPx; nextWidth0 = storedPx(nx.c, nx.r2);
-        nextRest = restPx(nx.c, nx.r2);
+        nextRest = restForDrag({ rest: nx.c.restWidth ? restPx(nx.c, nx.r2) : undefined, restBy: nx.c.restBy }, nextWidth0, id).rest;
       }
       // By id, not by index: `followers` drops a block that is not drawn, which would shift every index after it.
       const lineOf = new Map(kids.map((c, i) => [c.id, lines[i]]));
@@ -2098,7 +2137,9 @@ export default function BoxCanvas({
       // A previous sibling on an EARLIER line owns no boundary with this block: its left edge starts a line,
       // so it is an outer edge and the gap behaviour below is right for it.
       if (pv && lines[at - 1] === lines[at]) {
-        prevSibId = pv.c.id; prevWidth0 = storedPx(pv.c, pv.r2); prevRest = restPx(pv.c, pv.r2); prevAt = pv.c.restWidth ? pv.c.restAt : undefined;
+        prevSibId = pv.c.id; prevWidth0 = storedPx(pv.c, pv.r2);
+        const pr = restForDrag({ rest: pv.c.restWidth ? restPx(pv.c, pv.r2) : undefined, at: pv.c.restAt, restBy: pv.c.restBy }, prevWidth0, id);
+        prevRest = pr.rest; prevAt = pr.at;
       }
     }
 
@@ -2374,15 +2415,18 @@ export default function BoxCanvas({
          * drag brings it back to exactly what that original draws at, the original is written back and the memory goes —
          * otherwise a round trip made of separate drags could not come home, and a wider screen showed a different layout.
          */
-        const floorPct = P(neighbourMinPx);
+        // …against the floor THIS column is drawn at, never a fixed 14rem: a column on a line of four, or sized by hand, is
+        // drawn down to 3rem, so a stored 16% is not "below its floor" and must never be written back as its original —
+        // that put a 144px column and an 81px hole in a four-column row after a reload (#82).
         const widthFor = (node0: BoxNode | null | undefined, value: number): Partial<BoxNode> => {
+          const floorPct = P((node0 && drawnFloorPx.get(node0.id)) ?? neighbourMinPx);
           const tok = node0?.width;
           const origin = node0?.origWidth ?? (tok?.trim().endsWith("%") && widthPct(tok) < Math.max(floorPct, widthPct(tok)) - 0.05 ? tok : undefined);
           if (origin && same(value, Math.max(floorPct, widthPct(origin)))) return { width: origin, origWidth: undefined };
           return { width: `${value.toFixed(2)}%`, origWidth: origin };
         };
         const ownStored0 = bn.width?.trim().endsWith("%") ? widthPct(bn.width) : null;
-        if (!same(r.own, own0) || (ownStored0 !== null && ownStored0 > r.own + 0.001) || (r.owed || 0) !== (bn.endOwed || 0)) tree = writeBox(tree, id, { ...widthFor(bn, r.own), widthByHand: true, restWidth: undefined, restAt: undefined, endOwed: r.owed || undefined, ...(selfSizing ? { contentScale: scE < 1 ? scE : undefined } : {}) });
+        if (!same(r.own, own0) || (ownStored0 !== null && ownStored0 > r.own + 0.001) || (r.owed || 0) !== (bn.endOwed || 0)) tree = writeBox(tree, id, { ...widthFor(bn, r.own), widthByHand: true, restWidth: undefined, restAt: undefined, restBy: undefined, endOwed: r.owed || undefined, ...(selfSizing ? { contentScale: scE < 1 ? scE : undefined } : {}) });
         after.forEach((f) => {
           const w = r.widths.get(f.id);
           // A block that stays where it was — already below, and still below — is not touched.
@@ -2396,7 +2440,9 @@ export default function BoxCanvas({
           // the last block dropped and left a hole (#66). A stored value BELOW it (20% drawn at the floor, #61) is safe.
           const stored0 = node0?.width?.trim().endsWith("%") ? widthPct(node0.width) : null;
           if (same(w.width, P(f.cur)) && (stored0 === null || stored0 <= w.width + 0.001) && (w.rest === undefined) === !node0?.restWidth && wrapBy === node0?.wrapBy) return;
-          tree = writeBox(tree, f.id, { ...widthFor(node0, w.width), widthByHand: node0?.widthByHand || !r.wrapped.includes(f.id) || undefined, restWidth: w.rest !== undefined ? `${w.rest.toFixed(2)}%` : undefined, restAt: w.rest !== undefined ? (f.at ?? dragStamp) : undefined, wrapBy });
+          // Another drag's memory, and this drag did not move it: keep that memory whole (#77) — it is how THAT edge comes home.
+          if (f.foreign && same(w.width, P(f.cur)) && (stored0 === null || stored0 <= w.width + 0.001) && wrapBy === node0?.wrapBy) return;
+          tree = writeBox(tree, f.id, { ...widthFor(node0, w.width), widthByHand: node0?.widthByHand || !r.wrapped.includes(f.id) || undefined, restWidth: w.rest !== undefined ? `${w.rest.toFixed(2)}%` : undefined, restAt: w.rest !== undefined ? (f.at ?? dragStamp) : undefined, restBy: w.rest !== undefined ? id : undefined, wrapBy });
         });
       }
       if (hasE && nextSibId && gapE > 0) {
@@ -2438,7 +2484,7 @@ export default function BoxCanvas({
         const right = wraps ? maxW : Math.min(startRightPx + give, wanted);
         const scE = selfSizing ? fitScale(right - startLeftPx, naturalW) : 1;
         const own = pct(right - startLeftPx);
-        tree = writeBox(tree, id, { width: own, widthByHand: true, restWidth: undefined, restAt: undefined, endOwed: undefined, ...(selfSizing ? { contentScale: scE < 1 ? scE : undefined } : {}) });
+        tree = writeBox(tree, id, { width: own, widthByHand: true, restWidth: undefined, restAt: undefined, restBy: undefined, endOwed: undefined, ...(selfSizing ? { contentScale: scE < 1 ? scE : undefined } : {}) });
         if (wraps) {
           /**
            * IT WRAPS BY ITSELF — nothing is moved.
@@ -2456,7 +2502,7 @@ export default function BoxCanvas({
            * not merely its width when THIS drag began, which an earlier drag may already have squeezed — so what
            * comes back is the block the user had, not a sliver.
            */
-          tree = writeBox(tree, nextSibId!, { width: pct(nextRest || nextWidth0), restWidth: undefined, restAt: undefined });
+          tree = writeBox(tree, nextSibId!, { width: pct(nextRest || nextWidth0), restWidth: undefined, restAt: undefined, restBy: undefined });
         } else if (nextSibId && gapPx > 0) {
           // A GAP between us: the neighbour's margin absorbs the change so it stays EXACTLY where it is,
           // and only what is taken PAST its left edge comes out of its width. Narrowing re-opens the gap
@@ -2502,7 +2548,7 @@ export default function BoxCanvas({
         const widthPct = Math.max(3, Math.min(100, outerPct - gapPct));
         const ownW = prevSibId ? pct(startRightPx - left) : `${widthPct}%`;
         tree = writeBox(tree, id, {
-          width: ownW, widthByHand: true, restWidth: undefined, restAt: undefined, endOwed: undefined,
+          width: ownW, widthByHand: true, restWidth: undefined, restAt: undefined, restBy: undefined, endOwed: undefined,
           // One field owns this gap. The old length is cleared so the two can never disagree about it.
           ...(prevSibId ? {} : { marginLeftPct: gapPct > 0 ? gapPct : undefined, marginLeft: undefined }),
           ...(selfSizing ? { contentScale: scW < 1 ? scW : undefined } : {}),
@@ -2513,7 +2559,7 @@ export default function BoxCanvas({
         if (prevSibId) {
           const ownStored = bn.width?.trim().endsWith("%") ? parseFloat(bn.width) : (W0 / maxW) * 100;
           const pTok = remainderPct(ownStored + P(prevWidth0), ownW), pRest = floor2(P(prevRest || prevWidth0));
-          tree = writeBox(tree, prevSibId, { width: pTok, restWidth: parseFloat(pTok) < pRest - 0.005 ? `${pRest.toFixed(2)}%` : undefined, restAt: parseFloat(pTok) < pRest - 0.005 ? (prevAt ?? dragStamp) : undefined });
+          tree = writeBox(tree, prevSibId, { width: pTok, restWidth: parseFloat(pTok) < pRest - 0.005 ? `${pRest.toFixed(2)}%` : undefined, restAt: parseFloat(pTok) < pRest - 0.005 ? (prevAt ?? dragStamp) : undefined, restBy: parseFloat(pTok) < pRest - 0.005 ? id : undefined });
         }
       }
       // ── HEIGHT ── the height you drag sets a MIN-HEIGHT (a floor), not a fixed height. The section HUGS
@@ -2974,9 +3020,15 @@ export default function BoxCanvas({
       // DEEPEST block's — the click stops propagating there — so this walks back UP and takes the outermost
       // block first, stepping one level deeper each time the user clicks inside what is already selected.
       // A ROW BAND is scaffolding the user never created, so it is never itself selectable. With one block in
-      // it the click plainly meant that block; with several it is ambiguous, and clearing is honest.
+      // it the click plainly meant that block. With several, the empty part of the line is the space of the box the
+      // line sits IN, so the click means that box (#88) — clearing made a stack whose every line holds several blocks
+      // (a header: logo | menu | button) impossible to select by clicking in it. Only a line at PAGE level, whose box
+      // is the page itself, clears — that space is the canvas.
       const kids = node.children ?? [];
-      const deepest = node.rowBand ? (kids.length === 1 ? kids[0].id : undefined) : node.id;
+      const bandHost = node.rowBand && kids.length !== 1 ? findParent(rootRef.current, node.id)?.parent : undefined;
+      const deepest = node.rowBand
+        ? (kids.length === 1 ? kids[0].id : bandHost && bandHost.id !== rootRef.current.id && !bandHost.rowBand ? bandHost.id : undefined)
+        : node.id;
       if (!deepest) { select(null); closeMenu(); startMarqueeArm(e); return; }
       /**
        * IT DESCENDS, AND THEN IT STOPS. It used to wrap around to the outermost again.
@@ -3843,7 +3895,7 @@ function ComponentView({ node, editable, onPatchNode, breakpoint = "base", itemS
   // Typography set on the wrapper cascades into the component's text (titles/bodies inherit family + size).
   const typo: React.CSSProperties = {};
   if (node.fontFamily) typo.fontFamily = node.fontFamily;
-  if (node.fontSize) typo.fontSize = u(node.fontSize);
+  if (node.fontSize) typo.fontSize = textLen(node.fontSize);
   if (node.fontWeight) typo.fontWeight = node.fontWeight;
   if (node.lineHeight) typo.lineHeight = node.lineHeight;
   if (node.letterSpacing != null) typo.letterSpacing = `${node.letterSpacing}px`;
@@ -4049,8 +4101,13 @@ function ElementView({ node, headingLevel, theme, editable, selected, onText, on
     case "heading": {
       // The LEVEL the page gives it (lib/semantics.ts) — the size is separate and unchanged.
       const H = `h${headingLevel ?? 2}` as "h2";
-      return <H style={{ color: node.color || typoRole.color("text"), fontSize: node.fontSize != null ? u(node.fontSize) : typoRole.size(2), textAlign: align, width: "100%", ...typoStyle(node, "heading", 600) }}><EditableText value={node.text} editable={editable} onChange={onText} placeholder="Heading" /></H>;
+      return <H style={{ color: node.color || typoRole.color("text"), fontSize: node.fontSize != null ? textLen(node.fontSize) : typoRole.size(2), textAlign: align, width: "100%", ...typoStyle(node, "heading", 600) }}><EditableText value={node.text} editable={editable} onChange={onText} placeholder="Heading" /></H>;
     }
+    // A LINK — words that go somewhere, the same <a> the page publishes. A click in the editor edits it, never follows it.
+    case "link":
+      return <a href={node.href || "#"} target={node.newTab ? "_blank" : undefined} rel={node.newTab ? "noopener noreferrer" : undefined} onClick={(e) => editable && e.preventDefault()}
+        style={{ color: node.color || "var(--bx-link, var(--eu-color-brand))", fontSize: node.fontSize != null ? textLen(node.fontSize) : typoRole.size(1), textAlign: align, textUnderlineOffset: "0.15em", ...typoStyle(node, "body", 500), textDecoration: node.underline ? "underline" : "none" }}>
+        <EditableText value={node.text} editable={editable} onChange={onText} placeholder="Link" /></a>;
     case "button": {
       // The button FILLS its box and paints its OWN visual (bg + radius + border/shadow), so resizing the box grows
       // the button itself (one shape — no duplicate wrapper behind it) and the label re-positions inside it. Content
@@ -4060,7 +4117,7 @@ function ElementView({ node, headingLevel, theme, editable, selected, onText, on
         style={{ display: "flex", width: "100%", height: "100%", boxSizing: "border-box", gap: u(8),
           alignItems: flexPos(node.contentY ?? "center"), justifyContent: flexPos(node.contentX ?? "center"),
           background: node.background ? colorToCSS(node.background) : colorToCSS(theme.primary), color: node.color || "var(--eu-color-on-brand)",
-          fontSize: node.fontSize != null ? u(node.fontSize) : typoRole.size(0.875), padding: `${u(12)} ${u(24)}`, textDecoration: "none",
+          fontSize: node.fontSize != null ? textLen(node.fontSize) : typoRole.size(0.875), padding: `${u(12)} ${u(24)}`, textDecoration: "none",
           ...deco, borderRadius: deco.borderRadius ?? PILL, ...typoStyle(node, "body", 600) }}>
         <EditableText value={node.text} editable={editable} onChange={onText} placeholder="Button" /></a>;
     }
@@ -4144,7 +4201,7 @@ function ElementView({ node, headingLevel, theme, editable, selected, onText, on
     case "list": {
       const items = node.listItems ?? [];
       const numbered = node.listStyle === "number";
-      const style: React.CSSProperties = { color: node.color || typoRole.color("text"), fontSize: node.fontSize != null ? u(node.fontSize) : typoRole.size(1), textAlign: align, width: "100%", paddingLeft: u(22), listStyleType: numbered ? "decimal" : "disc", ...typoStyle(node, "body", 400) };
+      const style: React.CSSProperties = { color: node.color || typoRole.color("text"), fontSize: node.fontSize != null ? textLen(node.fontSize) : typoRole.size(1), textAlign: align, width: "100%", paddingLeft: u(22), listStyleType: numbered ? "decimal" : "disc", ...typoStyle(node, "body", 400) };
       return numbered
         ? <ol style={style}>{items.map((it, i) => <li key={i} style={{ marginBottom: u(4) }}>{it}</li>)}</ol>
         : <ul style={style}>{items.map((it, i) => <li key={i} style={{ marginBottom: u(4) }}>{it}</li>)}</ul>;
@@ -4154,6 +4211,6 @@ function ElementView({ node, headingLevel, theme, editable, selected, onText, on
         ? <div className="w-full" style={{ height: sizeToCSS(node.height) ?? 260, pointerEvents: editable ? "none" : "auto" }} dangerouslySetInnerHTML={{ __html: node.html }} />
         : <div className="w-full flex items-center justify-center gap-1.5 text-gray-400 border border-dashed border-gray-300 dark:border-gray-600 rounded-lg" style={{ height: sizeToCSS(node.height) ?? 120, fontSize: u(12) }}><Code2 className="w-4 h-4" /> Paste HTML / embed code in the inspector</div>;
     default:
-      return <p style={{ color: node.color || typoRole.color("muted"), fontSize: node.fontSize != null ? u(node.fontSize) : typoRole.size(1), textAlign: align, width: "100%", ...typoStyle(node, "body", 400) }}><EditableText value={node.text} editable={editable} onChange={onText} placeholder="Add text" /></p>;
+      return <p style={{ color: node.color || typoRole.color("muted"), fontSize: node.fontSize != null ? textLen(node.fontSize) : typoRole.size(1), textAlign: align, width: "100%", ...typoStyle(node, "body", 400) }}><EditableText value={node.text} editable={editable} onChange={onText} placeholder="Add text" /></p>;
   }
 }

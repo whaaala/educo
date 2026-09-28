@@ -83,6 +83,17 @@ const RULES: [name: string, mustSay: RegExp][] = [
    * RULE R — the user, 2026-09-27: the builder is general-purpose (schools first, decoupled later), the research
    * is stored once in docs/web-anatomy/ + LAYOUT_BENCHMARK and it is FOLLOWED before any builder feature is built.
    */
+  /**
+   * RULES C · P · D — the user, 2026-09-27: the deck's component/layout patterns, the website personalities and tone,
+   * and the web design rules + framework (with responsive design) are each a rule that MUST be followed.
+   */
+  ["Component and layout patterns from the deck (RULE C)", /RULE C — COMPONENT AND LAYOUT PATTERNS FROM THE DECK ARE FOLLOWED/],
+  ["…elements → components → section components → layout patterns → pages", /elements → components → section components → layout patterns → pages/],
+  ["…a missing component is a placeholder AND a recorded gap", /docs\/COMPONENT_GAPS\.md/],
+  ["Website personality and tone (RULE P)", /RULE P — WEBSITE PERSONALITY AND TONE ARE FOLLOWED/],
+  ["…every template/theme/page declares one personality", /declares one personality/],
+  ["The web design rules and framework (RULE D)", /RULE D — THE WEB DESIGN RULES AND FRAMEWORK ARE FOLLOWED/],
+  ["…checked by measuring, never assumed", /Checked by measuring, never assumed/],
   ["The research is the reference (RULE R)", /RULE R — THE RESEARCH IS THE REFERENCE/],
   ["…the builder is general-purpose, schools first", /builder is GENERAL-PURPOSE/],
   ["…read the research before building any builder feature", /Before building any builder feature, read what the research says/],

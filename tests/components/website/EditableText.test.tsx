@@ -1,5 +1,5 @@
 import { describe, it, expect, afterEach } from "vitest";
-import { render, cleanup } from "@testing-library/react";
+import { render, cleanup, fireEvent } from "@testing-library/react";
 import { EditableText } from "@/components/website/sections/SectionKit";
 
 /**
@@ -22,5 +22,38 @@ describe("EditableText gives its text exactly the room the published page does",
     for (const c of ["px-1", "-mx-1", "px-0.5", "pl-1", "pr-1"]) expect(cls, `editable text carries "${c}"`).not.toContain(c);
     // …and still shows a ring on hover / focus — it is a box-shadow, not a padding.
     expect(span.className).toMatch(/focus:shadow-/);
+  });
+});
+
+describe("Escape is the way out of the words (#87)", () => {
+  afterEach(cleanup);
+  it("Escape leaves the text, keeps what was typed, and does not travel on to the canvas", () => {
+    const seen: string[] = []; const outer = (e: KeyboardEvent) => seen.push(e.key);
+    document.addEventListener("keydown", outer);
+    let v = "Hello";
+    const { container } = render(<EditableText value={v} editable onChange={(x) => { v = x; }} />);
+    const span = container.querySelector<HTMLElement>("[contenteditable]")!;
+    span.focus(); expect(document.activeElement).toBe(span);
+    span.textContent = "Hello there"; fireEvent.input(span);
+    fireEvent.keyDown(span, { key: "Escape" });
+    expect(document.activeElement, "the caret has left the text").not.toBe(span);
+    expect(v).toBe("Hello there");
+    // The canvas's own Escape steps OUT a level — it must not also fire, or one press would do both.
+    expect(seen).not.toContain("Escape");
+    document.removeEventListener("keydown", outer);
+  });
+});
+
+describe("clicking words inside a link edits them — it never follows the link (#105)", () => {
+  afterEach(cleanup);
+  it("a click on editable words inside <a href> is not allowed to navigate", () => {
+    const { container } = render(<a href="https://example.org/x"><EditableText value="Apply now" editable onChange={() => {}} /></a>);
+    const span = container.querySelector<HTMLElement>("[contenteditable]")!;
+    // fireEvent returns false when the default action was prevented — here, following the link away from the editor
+    expect(fireEvent.click(span)).toBe(false);
+  });
+  it("on the published page (not editable) the words are plain and the link works as a link", () => {
+    const { container } = render(<a href="https://example.org/x"><EditableText value="Apply now" editable={false} /></a>);
+    expect(container.querySelector("[contenteditable]")).toBeNull();
   });
 });

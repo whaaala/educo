@@ -12,7 +12,7 @@ import { Plus, X, Tags, Rows3, Columns3, Upload, ArrowRight, AlignLeft, AlignCen
 import type { SiteTheme } from "@/lib/site-storage";
 import type { BoxNode, FlexAlign, FlexJustify, AccPartStyle, Breakpoint, PagerNav, PinScopeWords } from "@/lib/box-model";
 import { RUNG_LABEL } from "@/lib/educo-ui/layout";
-import { type ItemAction, TOAST_CORNERS, isContainer, containerLabel, isFloating, isCssBg, addItem, removeItem, moveItem, updateItem, addChildItem, updateChildItem, removeChildItem, moveChildItem , isMultiItemComponent, hasIntrinsicSize, sizeToCSS, GRID_MAX, COLUMN_FRACTIONS, columnFractionOf, canSetColumnFraction, gridColumns, bandEdgeCSS, PIN_ARRIVALS, PIN_ARRIVAL_AFTER, pinArrivalHasEffect } from "@/lib/box-model";
+import { type ItemAction, TOAST_CORNERS, isContainer, containerLabel, isFloating, isCssBg, addItem, removeItem, moveItem, updateItem, addChildItem, updateChildItem, removeChildItem, moveChildItem , isMultiItemComponent, hasIntrinsicSize, sizeToCSS, GRID_MAX, COLUMN_FRACTIONS, columnFractionOf, canSetColumnFraction, gridColumns, bandEdgeCSS, PIN_ARRIVALS, PIN_ARRIVAL_AFTER, pinArrivalHasEffect, linkLineGap } from "@/lib/box-model";
 import { ACCORDION_DESIGNS, ACCORDION_DESIGN_COUNT, ACCORDION_AXES } from "@/lib/educo-ui/accordions";
 import { ALERT_DESIGNS, ALERT_DESIGN_COUNT, ALERT_AXES } from "@/lib/educo-ui/alerts";
 import { COMPONENT_REGISTRY, isRegistryComponent, defaultComponentFields, renderComponent } from "@/lib/educo-ui/registry";
@@ -522,7 +522,9 @@ export default function BoxInspector({ node, theme, onPatch, onAddChild, onFloat
   const container = isContainer(node);
   const isGrid = node.layout === "grid";
   const floating = isFloating(node);
-  const textual = node.type === "text" || node.type === "heading" || node.type === "button" || node.type === "list";
+  /** Does this block hold a line of links or buttons side by side (a menu)? Its gaps are the links' spacing. */
+  const holdsLinks = (node.children ?? []).some((k) => linkLineGap(k, node) != null);
+  const textual = node.type === "text" || node.type === "heading" || node.type === "button" || node.type === "link" || node.type === "list";
   // A design-system TREE (Card, Quote, Stat, Badge, Rating) is structurally a container, so it used to say
   // "Editing: Section" — telling a user they had selected something they had not. `preset` knows what it
   // really is, and a `component` node knows its own name, so both say what the user actually picked.
@@ -1007,8 +1009,10 @@ export default function BoxInspector({ node, theme, onPatch, onAddChild, onFloat
                   spacing you wanted was to type a guess, look, and type another — and spacing is judged by
                   eye, never by arithmetic. A slider is the control for a value you sweep until it looks
                   right, and it is the same gesture as every other spacing control in this panel. */}
-              <GapRange label="Space across" value={node.gapX} fallback={node.gap ?? 16} onChange={(n) => onPatch({ gapX: n })} onMatch={() => onPatch({ gapX: undefined })} />
-              <GapRange label="Space down" value={node.gapY} fallback={node.gap ?? 16} onChange={(n) => onPatch({ gapY: n })} onMatch={() => onPatch({ gapY: undefined })} />
+              {/* A block holding LINKS side by side: the sliders start where the links are (2rem / 0.75rem at the default
+                  16px, `linkLineGap`), so the first nudge moves the space from what is on screen instead of jumping it. */}
+              <GapRange label="Space across" value={node.gapX} fallback={holdsLinks ? 32 : node.gap ?? 16} onChange={(n) => onPatch({ gapX: n })} onMatch={() => onPatch({ gapX: undefined })} />
+              <GapRange label="Space down" value={node.gapY} fallback={holdsLinks ? 12 : node.gap ?? 16} onChange={(n) => onPatch({ gapY: n })} onMatch={() => onPatch({ gapY: undefined })} />
             </Accordion>
           )}
 
@@ -1335,10 +1339,10 @@ export default function BoxInspector({ node, theme, onPatch, onAddChild, onFloat
           ) : (
             <>
               <Accordion title="Content" icon={TypeIcon}>
-                {(node.type === "text" || node.type === "heading" || node.type === "button") && (
+                {(node.type === "text" || node.type === "heading" || node.type === "button" || node.type === "link") && (
                   <CompactTextarea label="Text" value={node.text ?? ""} onChange={(v) => onPatch({ text: v })} rows={2} />
                 )}
-                {node.type === "button" && (
+                {(node.type === "button" || node.type === "link") && (
                   <>
                     <CompactField label="Link (web address or #bookmark)" ariaLabel="Link" value={node.href ?? ""} onChange={(v) => onPatch({ href: v })} placeholder="https://… or #pricing" />
                     {pages && pages.filter((p) => p.id !== currentPageId).length > 0 && (

@@ -308,6 +308,30 @@ Run through this checklist BEFORE telling the user it's done:
   - **Checked, not assumed:** every feature's definition of done includes "follows the design foundation", and a
     place where the builder does not follow it is a gap in the ledger, fixed like any bug. The user's words: *"make it
     a rule and make it a foundation of everything we do… that's how we get it smooth, sleek and nice."*
+- **RULE C — COMPONENT AND LAYOUT PATTERNS FROM THE DECK ARE FOLLOWED (MANDATORY — from 2026-09-27, every component,
+  section and page).** `docs/web-anatomy/design-foundation/03-components-and-layout-patterns.md` Parts 3–7 (deck pp. 256–350):
+  - **Built in layers: elements → components → section components → layout patterns → pages**, each made from the layer
+    below (pp. 259–260). A section is composed of components; a page is composed of sections and a layout pattern.
+  - **Every component, section and layout pattern in the deck's gallery is the reference** for its anatomy and layout —
+    the checklist table at the end of `03` names them (hero, navigation, cards, features, testimonials, pricing, FAQ,
+    footer, sidebar, grid layouts…). Build to it; where the builder has none yet, a clearly marked PLACEHOLDER is built
+    from existing blocks and the gap is recorded in `docs/COMPONENT_GAPS.md` to be built properly.
+- **RULE P — WEBSITE PERSONALITY AND TONE ARE FOLLOWED (MANDATORY — from 2026-09-27).** The Website Personalities
+  Framework, `03` Part 2 (pp. 235–255): **seven personalities** (serious/elegant · minimalist/simple · plain/neutral ·
+  bold/confident · calm/peaceful · startup/upbeat · playful/fun), each fixing typography, colours, images, icons,
+  shadows, border-radius and layout; bold, calm and playful traits can be injected onto a base (pp. 252–255).
+  - Every template, theme, style preset and generated page **declares one personality** and every choice in it follows
+    that personality's column — no mixing a playful radius into a serious page. Tone of the copy matches it too.
+- **RULE D — THE WEB DESIGN RULES AND FRAMEWORK ARE FOLLOWED (MANDATORY — from 2026-09-27).** Web Design Rules #1–#10
+  (`02-web-design-rules-1-9.md`, `03` Part 1 for UX), the **7 steps** (`04`, pp. 353–360) and **responsive design**
+  (`04`, pp. 361–404, with Core Rules 16 and 18):
+  - Typography · colour · images · icons · shadows · border-radius · whitespace · visual hierarchy · UX · components and
+    layout — every number the rules give (body 16–32px, lines under ~75 characters, line-height 1.5–2, spacing on a
+    16px-based scale, contrast 4.5:1, one or two typefaces) is a requirement, not a suggestion.
+  - **Checked by measuring, never assumed:** `scripts/uat/page-audit.js` measures these on every page built, at every
+    screen size, in the real Preview. A rule it cannot measure is checked by looking at the screenshots (RULE Z).
+  - Measured, 2026-09-27: the paragraph measure read "68ch" and set 76–99 characters a line in all 27 body fonts —
+    written down as following Rule #1.9 and never counted (#86).
 - **RULE Y — BUILD IT THROUGH THE UI. Seeding state is not UAT (MANDATORY, no exceptions).**
   **The state under test is CONSTRUCTED THROUGH THE INTERFACE** — open the blocks panel, drag the tile,
   drop it, click the handle, drag the edge. Writing a tree into `localStorage` and calling that a repro is

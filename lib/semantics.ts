@@ -108,6 +108,8 @@ export function resolvePage(root: BoxNode): PageSemantics {
   // Headings in the main content get numbered FIRST, so the main content owns the H1 even though the header comes first.
   // `own` is the level of headings directly in this block; `inner` is where a sectioning block nested in it sits. A
   // section's OWN heading is at the level the section sits at, and only what is nested inside it goes one deeper (#64).
+  /** Lines of a list that hold several blocks side by side — each becomes the list itself (#104). */
+  const lineAsList = new Map<string, SemanticTag>();
   const walk = (n: BoxNode, own: number, inner: number, where: "header" | "footer" | "main", parentTag: string, pass: "main" | "rest") => {
     for (const c of n.children ?? []) {
       const inMainNow = where === "main";
@@ -125,6 +127,15 @@ export function resolvePage(root: BoxNode): PageSemantics {
       }
       let tag = isTag(c.tag) ? c.tag : "div";
       let corrected: string | undefined;
+      /**
+       * A LIST WHOSE LINES HOLD SEVERAL BLOCKS (#104). Blocks side by side sit in an invisible LINE, so the line — not the
+       * blocks — was the list's child, and four menu links published as ONE <li>. Only <li> may sit inside <ul>, so the
+       * line itself becomes the list and each block on it an item; the line keeps its side-by-side layout, and the box
+       * the user marked becomes a plain wrapper. A list of one block per line is unchanged.
+       */
+      const listLines = (tag === "ul" || tag === "ol") && (c.children ?? []).some((k) => k.rowBand && (k.children ?? []).length > 1);
+      if (listLines) { for (const k of c.children ?? []) if (k.rowBand) lineAsList.set(k.id, tag); tag = "div"; }
+      else if (c.rowBand && lineAsList.has(c.id)) tag = lineAsList.get(c.id)!;
       if (pass === "main") {
         if (tag === "main" && c.id !== explicitMain) { tag = "div"; corrected = "There can be only one main content area, so this one is published as a plain block."; }
         if (tag === "header" && n === root && !pageHeaders.has(c.id)) { tag = "div"; corrected = "A page header belongs at the top of the page, so this one is published as a plain block."; }
@@ -173,6 +184,8 @@ export function pageCheck(root: BoxNode, sem: PageSemantics = resolvePage(root))
       if (c.hidden) continue;
       if (c.type === "image" && c.src && c.alt === undefined)
         out.push({ id: c.id, kind: "image-description", blocks: true, message: "Describe this picture for people who can't see it — or mark it as only decoration." });
+      if (c.type === "link" && !hasText(c))
+        out.push({ id: c.id, kind: "link-words", blocks: true, message: "This link has no words, so nobody knows where it goes. Add words to it." });
       if (c.type === "button" && !hasText(c))
         out.push({ id: c.id, kind: "button-words", blocks: true, message: "This button has no words, so nobody knows what it does. Add words to it." });
       const r = sem.byId.get(c.id);

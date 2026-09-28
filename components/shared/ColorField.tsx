@@ -7,7 +7,7 @@
  * midnight/purple), keyboard + screen-reader accessible. Use this everywhere a single colour is chosen.
  */
 
-import { useEffect, useId, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { Pipette, Wand2 } from "lucide-react";
 import ErrorMessage from "./ErrorMessage";
 import { contrastRatio, nearestAccessibleColor } from "@/lib/educo-ui/color";
@@ -57,16 +57,20 @@ export default function ColorField({
 
   const normalized = normalizeHex(value) ?? "#000000";
 
+  // TYPING BELONGS TO THE FIELD IT WAS TYPED FOR (#89) — see EducoColorField: a blur that arrives after the field has
+  // been re-rendered for something else must not commit there, and a blur after Enter commits nothing.
+  const pending = useRef<{ onChange: (v: string) => void } | null>(null);
   const commitText = (raw: string) => {
+    const target = pending.current?.onChange; pending.current = null;
+    if (!target) return;
     const n = normalizeHex(raw);
-    if (n) onChange(n);
+    if (n) target(n);
     else setText(value); // revert invalid entry to the last good value
   };
 
   const pickWithEyeDropper = async () => {
     try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const res = await new (window as any).EyeDropper().open();
+      const res = await new (window as unknown as { EyeDropper: new () => { open: () => Promise<{ sRGBHex: string }> } }).EyeDropper().open();
       if (res?.sRGBHex) onChange(res.sRGBHex);
     } catch { /* user cancelled */ }
   };
@@ -89,7 +93,7 @@ export default function ColorField({
         </span>
         <input
           id={id} type="text" inputMode="text" value={text} disabled={disabled}
-          onChange={(e) => setText(e.target.value)}
+          onChange={(e) => { setText(e.target.value); pending.current = { onChange }; }}
           onBlur={(e) => commitText(e.target.value)}
           onKeyDown={(e) => { if (e.key === "Enter") commitText((e.target as HTMLInputElement).value); }}
           className="w-full min-w-0 bg-transparent font-mono text-sm text-gray-700 outline-none placeholder:text-gray-400 dark:text-gray-200 midnight:text-slate-200 purple:text-purple-100"

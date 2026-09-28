@@ -50,5 +50,30 @@ Feature: Box Builder — content types & links
     Then the button links there, opening a new tab when chosen
     And any box can be given an Anchor name (slugified) so a "#anchor" link scrolls to it
 
+  # ── A LINK is words that go somewhere (user, 2026-09-27: "buttons are buttons, menus are menus") ──
+  # tests/unit/link-block.test.ts · tests/components/website/BoxCanvas.test.tsx · scripts/uat (headed)
+  Scenario: A Link block is words that go somewhere
+    Given I add a Link from the Text group of the blocks panel
+    When I type its words and give it a web address, a #bookmark or another page
+    Then the published page has a real <a href> — styled as words, underlined, in the brand colour, never as a button
+    And it opens in a new tab only when I ask, with rel="noopener"
+    And it can be reached with Tab and shows a focus ring
+    And clicking it in the editor edits it, it does not navigate away
+
+  Scenario: A menu is a list of links
+    Given a row of Links side by side, in a block I marked "Menu", inside a block I marked "List"
+    When the page is published
+    Then it is <nav><ul><li><a>…</a></li>…</ul></nav> — one list item per link, no bullets, laid out in a row
+    And a screen reader announces "navigation, list, 4 items"
+
+  # user, 2026-09-27: "make sure that there's always spaces between the links … the user can select what kind of space
+  # they want, both … horizontally" and down. tests/unit/link-spacing.test.ts · scripts/uat/uat-link.js (headed)
+  Scenario: Links side by side are always spaced, and I choose how much
+    Given a menu of links side by side, or a footer list of links one under another
+    Then they are spaced from the start — 2rem between links across, 0.75rem between lines down
+    When I select the menu (or the list) and move "Space across" or "Space down"
+    Then the space between the links follows it, across and down separately, on the canvas and the published page
+    And rows of columns are not affected — only rows of links and buttons
+
   Scenario: New content types work across themes, screen sizes and are accessible
     Then each renders correctly in light/dark/midnight/purple, reflows responsively, and exposes aria labels

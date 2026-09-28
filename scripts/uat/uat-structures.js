@@ -105,7 +105,8 @@ const bugs = []; const log = (s) => console.log(s); const bug = (s) => { bugs.pu
       if (w === 375 && pv.lines < Math.min(sp.n, 2) && sp.n > 1 && pv.minW < 150) bug(`Preview 375: ${sp.n} columns squeezed side by side (narrowest ${Math.round(pv.minW)}px) instead of stacking`);
       if (w === 1280 && pv.lines === 1 && cShares.length === pv.shares.length) {
         const diff = Math.max(...pv.shares.map((s, i) => Math.abs(s - cShares[i])));
-        if (diff > 1.5) bug(`Preview 1280 differs from the canvas by ${diff.toFixed(1)}% (${pv.shares.map(Math.round).join('/')} vs ${cShares.map(Math.round).join('/')})`);
+        // The desktop scrollbar's share is the one accepted difference (#41) — see PREVIEW_SHARE_TOL in h.js.
+        if (diff > H.PREVIEW_SHARE_TOL) bug(`Preview 1280 differs from the canvas by ${diff.toFixed(1)}% (${pv.shares.map(Math.round).join('/')} vs ${cShares.map(Math.round).join('/')})`);
       }
       if (w === 375) await page.screenshot({ path: path.join(__dirname, `uatshape-${idx}-preview375.png`) });
     }

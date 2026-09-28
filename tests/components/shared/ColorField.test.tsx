@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import ColorField from "@/components/shared/ColorField";
 
@@ -73,5 +73,25 @@ describe("ColorField", () => {
     const fixed = onChange.mock.calls[0][0] as string;
     const { contrastRatio } = await import("@/lib/educo-ui/color");
     expect(contrastRatio(fixed, "#ffffff")).toBeGreaterThanOrEqual(4.5);
+  });
+});
+
+describe("ColorField — a colour belongs to what it was typed for (#89)", () => {
+  it("after Enter, a later blur commits nothing to whatever the field shows next", () => {
+    const first = vi.fn(), next = vi.fn();
+    const { rerender } = render(<ColorField label="Brand" value="#000000" onChange={first} />);
+    const hex = screen.getByLabelText("Brand hex value");
+    fireEvent.change(hex, { target: { value: "#1e3a8a" } }); fireEvent.keyDown(hex, { key: "Enter" });
+    expect(first).toHaveBeenCalledWith("#1e3a8a");
+    rerender(<ColorField label="Brand" value="#000000" onChange={next} />); fireEvent.blur(hex);
+    expect(next).not.toHaveBeenCalled();
+  });
+  it("typed, not committed, then the field shows something else: it goes where it was typed", () => {
+    const first = vi.fn(), next = vi.fn();
+    const { rerender } = render(<ColorField label="Brand" value="#000000" onChange={first} />);
+    const hex = screen.getByLabelText("Brand hex value");
+    fireEvent.change(hex, { target: { value: "#1e3a8a" } });
+    rerender(<ColorField label="Brand" value="#000000" onChange={next} />); fireEvent.blur(hex);
+    expect(next).not.toHaveBeenCalled(); expect(first).toHaveBeenCalledWith("#1e3a8a");
   });
 });

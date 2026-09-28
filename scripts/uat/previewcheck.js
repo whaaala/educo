@@ -77,8 +77,10 @@ async function checkPage(browser, pname) {
       if (pv.overflowX > 1) probs.push(`sideways overflow ${pv.overflowX}px`);
       if (pv.overlaps.length) probs.push(`overlaps ${pv.overlaps.slice(0, 4).join(' ')}`);
       const missing = ids.filter((id) => !pv.geo[id]).length; if (missing) probs.push(`${missing} blocks missing from the export`);
-      // canvas == preview: horizontal shares within 1.5%, heights within 4px
-      const drift = ids.filter((id) => pv.geo[id] && (Math.abs(pv.geo[id].l - cg[id].l) > 1.5 || Math.abs(pv.geo[id].w - cg[id].w) > 1.5 || (!cg[id].empty && Math.abs(pv.geo[id].h - cg[id].h) > 4)))
+      // canvas == preview, within the ONE accepted difference (#41): the desktop scrollbar's ≤0.6% of the page across,
+      // and 4px of text rounding down. See PREVIEW_SHARE_TOL in h.js — a larger drift is a bug, a smaller one never is.
+      const T = H.PREVIEW_SHARE_TOL, TH = H.PREVIEW_HEIGHT_TOL;
+      const drift = ids.filter((id) => pv.geo[id] && (Math.abs(pv.geo[id].l - cg[id].l) > T || Math.abs(pv.geo[id].w - cg[id].w) > T || (!cg[id].empty && Math.abs(pv.geo[id].h - cg[id].h) > TH)))
         .map((id) => `${id.slice(-4)} canvas ${cg[id].l.toFixed(1)}%+${cg[id].w.toFixed(1)}% ${Math.round(cg[id].h)}h vs preview ${pv.geo[id].l.toFixed(1)}%+${pv.geo[id].w.toFixed(1)}% ${Math.round(pv.geo[id].h)}h`);
       if (drift.length) probs.push(`canvas≠preview ${drift.length}: ${drift.slice(0, 3).join('; ')}`);
       if (!units) units = pixelFindings(await fh.getAttribute('srcdoc') || '');

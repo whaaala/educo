@@ -18,10 +18,15 @@ Run from the repo root with `NODE_PATH=node_modules` (the scripts `require('play
 | `inspectorpass.js` | Drives the Inspector controls on built pages. |
 | `catbuild.js` | Builds one catalogue page and leaves it open to look at. |
 | `uat43m.js` | The row-resize matrix (#43/#45/#47): structures × canvas sizes × real window sizes × edge × gesture × fresh/reload, six visible windows at once. `node scripts/uat/uat43m.js --all`. The template for any new matrix. |
+| `uat78.js` | Rows of 4+ columns (#78): one row on desktop/laptop/wide, ≤3 per line on a tablet, stacked on a phone — canvas, a tablet drag and back, reload, Preview. |
 | `img/` | Real photos used by `fillImages`. |
 
 **Windows are real screen sizes** — the user's own screen is 1536×864 (a 1520×720 page). A window wider than the
 screen hides the Inspector and masks bugs (it hid #49).
+
+**The one accepted canvas ≠ Preview difference (#41):** a desktop scrollbar makes a block's share of the page differ by
+~0.4%. Every Preview check allows `H.PREVIEW_SHARE_TOL` (0.6%) across and `H.PREVIEW_HEIGHT_TOL` (4px) down — never a
+number of its own. More than that is a bug.
 
 Label every run you report: `HEADED UAT` (this folder, visible windows) or `HEADLESS GATE` (the `tests/e2e` specs).
 Only a HEADED UAT closes a ledger line.

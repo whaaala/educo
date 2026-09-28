@@ -33,10 +33,24 @@ const clickTile = async (page, t) => {
 const dropTile = async (page, tileText, x, y) => {
   const tile = tileLoc(page, tileText); await tile.scrollIntoViewIfNeeded();
   const b = await tile.boundingBox(); if (!b) throw new Error('no tile ' + tileText);
+  // Counted BEFORE the drag. A count taken after it compared the page with itself and dropped a second copy.
+  const countBefore = await page.evaluate(() => document.querySelectorAll('[data-box-id]').length);
   await page.mouse.move(b.x + b.width / 2, b.y + b.height / 2); await page.mouse.down();
   const steps = 16;
   for (let i = 1; i <= steps; i++) { await page.mouse.move(b.x + b.width / 2 + ((x - b.x - b.width / 2) * i) / steps, b.y + b.height / 2 + ((y - b.y - b.height / 2) * i) / steps); await page.waitForTimeout(PACE); }
-  await page.waitForTimeout(PACE * 3); await page.mouse.up(); await page.waitForTimeout(PACE * 4 + 600);
+  await page.waitForTimeout(PACE * 3);
+  // WAS THE DROP OFFERED? The canvas paints its drop marker (a dashed box, or a glowing line) while a palette drag is
+  // over it. No marker at the moment of release = the drag never reached the canvas (a missed pick-up) — a person
+  // just drags again. A marker AND nothing added afterwards is a product bug, and `newestLeaf` says so.
+  page.__dropOffered = await page.evaluate(() => Array.from(document.body.children).some((e) => e.getAttribute('aria-hidden') === 'true' && getComputedStyle(e).position === 'fixed' && /outline-dashed|shadow-\[0_0_10px/.test(e.className)));
+  await page.mouse.up(); await page.waitForTimeout(PACE * 4 + 600);
+  if (!page.__dropOffered && !page.__redrag) {
+    await page.waitForTimeout(400);
+    if (countBefore === await page.evaluate(() => document.querySelectorAll('[data-box-id]').length)) {
+      page.__missedDrags = (page.__missedDrags || 0) + 1;
+      page.__redrag = true; try { await dropTile(page, tileText, x, y); } finally { page.__redrag = false; }
+    }
+  }
 };
 /** Leaf blocks (no block inside), with their rects. */
 const leaves = (page) => page.evaluate(() => Array.from(document.querySelectorAll('[data-box-id]'))
@@ -70,10 +84,23 @@ async function select(page, id) {
   await page.locator(`[data-box-id="${id}"]`).scrollIntoViewIfNeeded().catch(() => {});
   for (let i = 0; i < 6; i++) {
     if ((await selected(page)) === id) return true;
+    // Centred on screen, as a person scrolls to it — "into view" can leave it at the very top, under a sticky header.
+    await page.evaluate((id) => { const e = document.querySelector(`[data-box-id="${id}"]`); const r = e?.getBoundingClientRect(); if (e && r && (r.top < 90 || r.bottom > innerHeight - 20)) e.scrollIntoView({ block: 'center' }); }, id);
+    await page.waitForTimeout(120);
     const b = await page.locator(`[data-box-id="${id}"]`).boundingBox();
     if (!b) return false;
-    // Open space: the lower-right quarter — clear of the floating toolbar (top-left) and the add pill (centre).
-    await page.mouse.click(b.x + b.width * 0.8, b.y + b.height * 0.8);
+    // Open space: the lower-right quarter — clear of the floating toolbar (top-left) and the add pill (centre) — but only
+    // a point where the pointer actually lands ON this block (or inside it): a pinned header or a floating block over it
+    // would take the click, and a person aims at the part they can see.
+    const pt = await page.evaluate(([id, bx]) => {
+      const me = document.querySelector(`[data-box-id="${id}"]`);
+      for (const [fx, fy] of [[0.8, 0.8], [0.8, 0.5], [0.5, 0.8], [0.95, 0.95], [0.5, 0.5], [0.2, 0.8], [0.05, 0.95]]) {
+        const x = bx.x + bx.width * fx, y = bx.y + bx.height * fy; const hit = document.elementFromPoint(x, y);
+        if (hit && me && me.contains(hit)) return [x, y];
+      }
+      return [bx.x + bx.width * 0.8, bx.y + bx.height * 0.8];
+    }, [id, b]);
+    await page.mouse.click(pt[0], pt[1]);
     await page.waitForTimeout(250);
     // The click went INSIDE it (a child took it, as "click goes inside" means it should): step OUT with Escape, the
     // way a person reaches a parent — the builder's own shortcut, one level per press.
@@ -180,7 +207,16 @@ async function fillStacks(page) {
   await panel(page, false);
   return n;
 }
+/**
+ * THE ONE KNOWN canvas ≠ Preview DIFFERENCE, and how much of it is accepted (#41, decided with the user 2026-09-27).
+ * A desktop browser's classic vertical scrollbar takes ~15px out of the Preview's page but not out of the canvas, so a
+ * block's share of the page can differ by about 0.4% at desktop widths. That is accepted, with headroom: a horizontal
+ * share (left or width, % of the page) may differ by up to 0.6% and it is NOT a bug. Anything more is — report it.
+ * Heights have their own 4px allowance (text rounding). Every Preview check uses these two, never a number of its own.
+ */
+const PREVIEW_SHARE_TOL = 0.6;
+const PREVIEW_HEIGHT_TOL = 4;
 const shot = (page, name) => page.screenshot({ path: path.join(OUT, name) });
 const same = (a, b, tol = 1) => a.kids.length === b.kids.length && a.kids.every((k, i) => k.id === b.kids[i].id && k.t === b.kids[i].t && Math.abs(k.l - b.kids[i].l) <= tol && Math.abs(k.w - b.kids[i].w) <= tol);
 const fmt = (row) => row.kids.map((k) => `${k.id.slice(-4)}@${k.l},${k.t}:${k.w}`).join(' ');
-module.exports = { fillStacks, fillImages, visibleRect, dropInto, open, panel, clickTile, dropTile, dropBeside, leaves, select, selected, handleOf, dragEdge, rowOf, storedRow, tree, rowProblems, shot, same, fmt, OUT };
+module.exports = { PREVIEW_SHARE_TOL, PREVIEW_HEIGHT_TOL, fillStacks, fillImages, visibleRect, dropInto, open, panel, clickTile, dropTile, dropBeside, leaves, select, selected, handleOf, dragEdge, rowOf, storedRow, tree, rowProblems, shot, same, fmt, OUT };

@@ -1,4 +1,10 @@
 Feature: Pages publish as correct HTML5, however they were built
+
+  # #104 — measured through the UI: four links side by side in a List published ONE <li> holding all four
+  Scenario: Blocks side by side in a List are each an item of it
+    Given a block marked "List" with four blocks side by side in it
+    When the page is published
+    Then the list has four <li>, one per block, and still lays them out side by side
   Decided with the user 2026-09-27 (A1 · B1 · C1), plan https://claude.ai/artifact/21gRsmKjw9RZTgdVbqNMmQ.
   Research: docs/web-anatomy/html-semantics.md. Engine: lib/semantics.ts (shared by the canvas and the export).
   Tests: tests/unit/semantics.test.ts · the export tests · scripts/uat (headed, built through the UI).

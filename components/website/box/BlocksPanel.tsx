@@ -15,7 +15,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   LayoutPanelTop, Columns3, Rows3, MoveVertical, Minus, GalleryHorizontal, GalleryThumbnails, Sunrise,
-  Heading as HeadingIcon, Pilcrow, MousePointerClick, ListOrdered,
+  Heading as HeadingIcon, Pilcrow, MousePointerClick, ListOrdered, Link2,
   Image as ImageIcon, Film, Shapes, CodeXml,
   PanelTopOpen, LayoutGrid, MessageSquareQuote, Hash, BadgeCheck, Star, BellRing,
   Blocks, LayoutTemplate, Type, Images, Component, Search, X, Plus, Sparkles, ChevronDown, type LucideIcon,
@@ -87,6 +87,7 @@ const GROUPS: { name: string; Icon: LucideIcon; blocks: Block[] }[] = [
     { kind: "heading", label: "Heading", Icon: HeadingIcon, hint: "A big title" },
     { kind: "text", label: "Text", Icon: Pilcrow, hint: "A paragraph" },
     { kind: "button", label: "Button", Icon: MousePointerClick, hint: "A clickable button" },
+    { kind: "link", label: "Link", Icon: Link2, hint: "Words that go to a page — menus, footers" },
     { kind: "list", label: "List", Icon: ListOrdered, hint: "Bulleted or numbered" },
   ] },
   { name: "Media", Icon: Images, blocks: [

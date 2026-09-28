@@ -18,9 +18,10 @@ import { RUNG_MEASURE, RUNG_PX, type RungName } from "@/lib/educo-ui/layout";
 import { hasItemEffects, itemEffectsCss, revealEffect, REVEAL_DUR, REVEAL_EASE, REVEAL_VIEW_RANGE } from "@/lib/interactions";
 import { PAGE_Z, clampPageZ } from "@/lib/educo-ui/stacking";
 import { remLen, SHADOW_SCALE } from "@/lib/educo-ui/tokens";
+import { contrastRatio, hexToRgb, oklchToRgb, rgbToHex, rgbToOklch } from "@/lib/educo-ui/color";
 import { colorToCSS } from "@/components/shared/ColorPalettePicker";
 
-export type BoxType = "container" | "text" | "heading" | "button" | "image" | "video" | "icon" | "divider" | "list" | "embed" | "spacer" | "component";
+export type BoxType = "container" | "text" | "heading" | "button" | "link" | "image" | "video" | "icon" | "divider" | "list" | "embed" | "spacer" | "component";
 
 /** One row of an accordion component (title + body, plus optional media thumbnail / right-aligned meta). */
 /** Point-and-click styling for one PART (the header, or the content/body) of a single accordion item. */
@@ -292,6 +293,12 @@ export interface BoxNode {
    * Editor bookkeeping only; cleared with `restWidth`.
    */
   restAt?: number;
+  /**
+   * WHOSE drag pulled it away from `restWidth` — the id of the block whose edge was dragged (#77). The memory is that
+   * drag's to spend: another block's drag sees this block at the width it HOLDS (see `restForDrag`). Editor
+   * bookkeeping only; cleared with `restWidth`. Absent on older pages, which keep the behaviour they always had.
+   */
+  restBy?: string;
   /**
    * Space at the END of its line that this block's widening used up, still owed back to it. Narrowing the block returns
    * it there before giving its neighbour anything, so a round trip comes home (#59). Editor bookkeeping only.
@@ -901,6 +908,13 @@ export function createElement(type: Exclude<BoxType, "container">, overrides: Pa
   switch (type) {
     case "heading": return { ...base, text: "New heading", fontSize: 32, bold: true, ...overrides };
     case "button": return { ...base, text: "Button", href: "#", ...overrides };
+    /**
+     * A LINK — words that GO somewhere (user, 2026-09-27: "buttons are buttons, menus are menus"). Published as a plain
+     * `<a href>` styled as text: underlined by default (WCAG 1.4.1 — a link in running text must not be told apart by
+     * colour alone), the Underline toggle takes it off for a menu. A button DOES something (html-semantics.md, "Buttons
+     * vs links"); until this block existed a menu could only be built from buttons.
+     */
+    case "link": return { ...base, text: "New link", href: "#", underline: true, ...overrides };
     /**
      * `height: "auto"` — NOT a stored pixel. A picture's shape is a fact to be discovered, not a default.
      *
@@ -2946,7 +2960,7 @@ export function typoCascadeCss(node: BoxNode): CSSProperties {
   const s: Record<string, string | number> = {};
   if (node.color) { s[TYPO_VAR.text] = node.color; s[TYPO_VAR.muted] = node.color; s.color = node.color; }
   if (node.fontFamily) { s[TYPO_VAR.headingFont] = node.fontFamily; s[TYPO_VAR.bodyFont] = node.fontFamily; s.fontFamily = node.fontFamily; }
-  if (node.fontSize != null) s[TYPO_VAR.size] = u(node.fontSize);
+  if (node.fontSize != null) s[TYPO_VAR.size] = textLen(node.fontSize);
   if (node.fontWeight != null) { s[TYPO_VAR.headingWeight] = node.fontWeight; s[TYPO_VAR.bodyWeight] = node.fontWeight; s.fontWeight = node.fontWeight; }
   else if (node.bold) { s[TYPO_VAR.headingWeight] = 800; s[TYPO_VAR.bodyWeight] = 800; s.fontWeight = 800; }
   // These have no per-role default to preserve, so plain inheritance already carries them — they only have to
@@ -4008,6 +4022,27 @@ export function aloneOnItsLine(parent: BoxNode, child: BoxNode): boolean {
   return lines[at] > 0 && lines.filter((l) => l === lines[at]).length === 1;
 }
 
+/**
+ * THE REST A FOLLOWER BRINGS TO A DRAG — its remembered rest only when THIS block's drag made it (#77).
+ *
+ * A remembered rest exists so that one edge's round trip comes home: the block it squeezed or stretched is handed
+ * back exactly what it lost. Another edge's drag must not spend that memory. Measured through the UI, three columns
+ * sized 30 / 30 / 40 by dragging edge 2 (column 3 stretched from 33.34 to 40, remembering 33.34): taking edge 1 out
+ * by 60px shrank COLUMN 3 back towards 33.34 — not the nearest block — and bringing it back handed the space to column 2
+ * (the joined edge). Out and back ended 30 / 36.64 / 33.34. Nothing a user did asked for column 3 to change.
+ *
+ * So to any OTHER block's drag, a block away from its rest is simply the width it holds, at rest there: the nearest
+ * gives first as everywhere else, and the round trip comes home. The memory itself is kept unless this drag moves the
+ * block (the canvas writes nothing for a block whose width did not change), so edge 2's own round trip still works.
+ * A rest with no `restBy` predates this and is honoured as before, so no saved page changes on load.
+ */
+export function restForDrag(b: { rest?: number; at?: number; restBy?: string }, cur: number, draggedId: string): { rest: number; at?: number; foreign: boolean } {
+  // Any unit, so long as `rest` and `cur` share it — the canvas works in px, the replayed stories in %.
+  if (b.rest === undefined) return { rest: cur, at: undefined, foreign: false };
+  const foreign = b.restBy !== undefined && b.restBy !== draggedId;
+  return foreign ? { rest: cur, at: undefined, foreign } : { rest: b.rest, at: b.at, foreign };
+}
+
 /** One block after the dragged one, as `allocateLine` needs it — all in % of the row. */
 export type LineFollower = {
   id: string; rest: number; floor: number; gap: number;
@@ -4168,6 +4203,99 @@ export function packRowLines(kids: BoxNode[], minPct: number | ((k: BoxNode) => 
   return out;
 }
 
+/**
+ * ROWS OF FOUR OR MORE COLUMNS (decided with the user 2026-09-27, #78).
+ *
+ * A row the user dropped four or more columns into is a DESIGN — a logo strip, a four-up of courses, a five-column
+ * footer — and it stays one row on a desktop and a laptop. The 14rem reflow floor did not respect that: six columns
+ * wrapped 5 + 1 at 1280px and five wrapped 4 + 1 at 1024px, leaving one orphan under a full line. On those screens a
+ * column on such a line is floored at 3rem instead, like a column sized by hand.
+ *
+ * On a TABLET HELD UPRIGHT (600–900px) the line rearranges to at most three per line, BALANCED rather than filled
+ * first: 4 → 2 + 2, 5 → 3 + 2, 6 → 3 + 3, 7 → 3 + 2 + 2. Each column takes its share of its OWN line in proportion to
+ * the width it has on the desktop, so a 10 / 40 pair keeps its 1 : 4 look. On a phone every column stacks (#75).
+ *
+ * "A line" is a STORED line (`packRowLines` on the desktop widths), so a row the user already wrapped on purpose is
+ * rearranged line by line. A column with its own width set at the tablet keeps it — a per-device setting always wins.
+ */
+export const MANY_COLUMNS = 4;
+export const TABLET_MOST_ACROSS = 3;
+
+/** How many columns each line gets: as few lines as allow `most` across, and as even as they can be. */
+export function balancedLines(n: number, most = TABLET_MOST_ACROSS): number[] {
+  if (n <= 0) return [];
+  const lines = Math.ceil(n / most), each = Math.floor(n / lines), extra = n % lines;
+  return Array.from({ length: lines }, (_, i) => each + (i < extra ? 1 : 0));
+}
+
+/** The row band's in-flow columns AT a rung, in order — the set every line decision is made over. */
+function rowColumnsAt(parent: BoxNode, bp: Breakpoint): BoxNode[] {
+  return (parent.children ?? []).filter((k) => !isFloating(k) && !resolveResponsive(k, bp).hidden);
+}
+
+/** Is this column on a stored line of four or more (so it keeps its line on a desktop and a laptop)? */
+export function onManyColumnLine(parent: BoxNode, childId: string, bp: Breakpoint = "base"): boolean {
+  if (!parent.rowBand) return false;
+  const kids = rowColumnsAt(parent, bp);
+  const lines = packRowLines(kids);
+  const at = kids.findIndex((k) => k.id === childId);
+  return at >= 0 && lines.filter((l) => l === lines[at]).length >= MANY_COLUMNS;
+}
+
+/** The floor a column in a row band is DRAWN at, in rem — shared by `childStyle` and the canvas resize maths. */
+export function columnFloorRem(parent: BoxNode, child: BoxNode, bp: Breakpoint = "base"): number {
+  return onManyColumnLine(parent, child.id, bp) ? HAND_FLOOR_REM : floorRemOf(child);
+}
+
+/** One column's place on a tablet: its share of its line (0–1), how many share that line, and their gap-margins (%). */
+export type TabletPlace = { share: number; across: number; marginsPct: number };
+
+/**
+ * Where each column of a row band sits on a TABLET HELD UPRIGHT, or `null` for a column that is not rearranged (not
+ * that rung, not a row band, a line of three or fewer, or a column whose tablet width the user set themselves).
+ */
+export function tabletPlaces(parent: BoxNode, bp: Breakpoint): Map<string, TabletPlace> | null {
+  if (bp !== "tabletPortrait" || !parent.rowBand || (parent.direction ?? "column") !== "row") return null;
+  const kids = rowColumnsAt(parent, bp);
+  const lines = packRowLines(kids);
+  const out = new Map<string, TabletPlace>();
+  for (let line = 0, from = 0; from < kids.length; line++) {
+    const onLine = kids.filter((_, i) => lines[i] === line);
+    from += onLine.length;
+    if (onLine.length < MANY_COLUMNS) continue;
+    /**
+     * A column the user sized AT the tablet is theirs, and keeps its place in the grouping: the lines are counted over
+     * EVERY column, and the free ones on a line share what the sized ones leave of it. Grouping only the free ones
+     * looked equivalent and is not — a tablet drag sizes the dragged column and its neighbour, and every line after
+     * them would be re-balanced without them, reshuffling the whole row under the pointer.
+     */
+    let i = 0;
+    for (const across of balancedLines(onLine.length)) {
+      const group = onLine.slice(i, i + across); i += across;
+      const own = (k: BoxNode) => setAtRung(k, "width", bp);
+      const free = group.filter((k) => !own(k));
+      const taken = group.filter(own).reduce((n, k) => n + widthPct(resolveResponsive(k, bp).width), 0);
+      const left = taken < 99 ? (100 - taken) / 100 : 1; // nothing left: the free ones share a line of their own
+      const total = free.reduce((n, k) => n + widthPct(k.width), 0) || 1;
+      const marginsPct = free.reduce((n, k) => n + (k.marginLeftPct ?? 0), 0);
+      for (const k of free) out.set(k.id, { share: (widthPct(k.width) / total) * left, across: free.length, marginsPct });
+    }
+  }
+  return out.size ? out : null;
+}
+
+/**
+ * The flex basis a rearranged column is drawn at: its share of what its line has left after the gaps between the
+ * columns on it and their gap-margins. Floored to a thousandth of a percent so a line of shares can never add up to
+ * a hair over 100% and push its last column down; the `1` grow hands that thousandth back.
+ */
+export function tabletBasis(place: TabletPlace, gapPx: number): string {
+  const pct = Math.floor(place.share * (100 - place.marginsPct) * 1000) / 1000;
+  const gaps = place.across - 1;
+  if (!gapPx || !gaps) return `${pct}%`;
+  return `calc((100% - ${place.marginsPct}% - ${gaps} * ${u(gapPx)}) * ${Math.floor(place.share * 1e5) / 1e5})`;
+}
+
 export function flexForWidth(token?: string, fillsItsLine = false): string | undefined {
   if (token === "fill") return "1 1 0%";
   if (!token || token === "auto") return "0 0 auto";
@@ -4315,6 +4443,20 @@ export const TEXT_FLOOR_REM = 1;
  * `max()` rather than a wider `clamp()` on purpose: the ceiling already lives inside `--box-u`, so the floor
  * is the only thing being added, and a page's `baseFont` still scales the whole ramp.
  */
+/**
+ * A SIZE SOMEBODY GAVE TEXT, with a readable floor (#107). Explicit sizes were written in the SPACING unit, which is 0.7× on
+ * a phone and has no floor: a card title of 22 drew at 15.4px (smaller than the 16px body beside it) and a caption of 14
+ * at 9.8px — measured on a dressed page at 375px. Reading size is not a spacing size (see `textUnit`).
+ *
+ * The size stays fluid, but never below a floor in rem — so a reader's own text size still moves it (WCAG 1.4.4):
+ * a size of 16 or less never shrinks below itself; a larger one keeps at least half of what it has above 16. So on a
+ * phone a 22 title is 19, a 44 stat 30 — still above body text, in the same order: the hierarchy survives.
+ */
+export function textLen(px: number): string {
+  const floorPx = px <= 16 ? px : 16 + (px - 16) / 2;
+  return `max(${+(floorPx / 16).toFixed(4)}rem, ${u(px)})`;
+}
+
 export function textUnit(): string {
   return `max(${TEXT_FLOOR_REM}rem, ${u(16)})`;
 }
@@ -4384,7 +4526,99 @@ export function floatingReserve(node: BoxNode, bp: Breakpoint = "base"): number 
 }
 
 /** The container's own layout CSS (flex or grid), as inline style. `bp` makes the floating reserve device-aware. */
+/**
+ * A BAND'S COLOUR SCHEME FOLLOWS ITS BACKGROUND (#92). Contrast is asserted, never assumed (Core Rule 17, Rule D).
+ *
+ * Measured through the UI: a call-to-action band and a footer coloured dark blue kept the page's dark words — 71 text
+ * elements under WCAG contrast on one dressed page, and a Quote dropped on the band read dark-on-dark too. Switching
+ * only the words would not do: components paint from the SITE tokens, so a white Card on that band would have got
+ * light words. So a band with a solid background switches EVERY colour token inside it — words, muted words, surfaces,
+ * borders, links and the focus ring — to the scheme that reads on it, the way a design system nests a dark section.
+ *
+ * The side is decided by which reads better on it: light words where white out-contrasts black, dark words otherwise.
+ * The colours are computed FROM the band (below) — a hex typed in code would ignore the band it sits on. A colour the
+ * user set on a block still wins — it is set on the block. A background that cannot be read (a photo, a gradient, a token, one
+ * that is see-through) imposes nothing.
+ */
+export function bandScheme(bg: string | undefined): { dark: boolean; vars: Record<string, string> } | null {
+  const hex = solidHex(bg); if (!hex) return null;
+  // Light words where white out-contrasts black; dark words otherwise — the side that CAN reach the ratios.
+  const dark = contrastRatio("#ffffff", hex) > contrastRatio("#000000", hex);
+  const base = rgbToOklch(hexToRgb(hex));
+  const at = (L: number, C = base.C) => rgbToHex(oklchToRgb({ L: Math.max(0, Math.min(1, L)), C, h: base.h }));
+  /**
+   * The words are COMPUTED from the band, not picked from a ramp — measured, no ramp shade could do it: on a mid-tone
+   * band (a dusky pink, a mid grey) even the darkest token read 4.3:1. Each colour keeps the band's own hue at a whisper
+   * of chroma (Rule #2.9: never pure black or white — a tint), and moves away from the band's lightness until it reads:
+   * 7:1 for words, 4.5:1 for muted words, against the band AND against a card's surface lifted from it. Where the band is
+   * so mid-tone that no colour can reach a ratio, the most extreme one — the best there is — is used.
+   */
+  // A card's surface moves AWAY from the words — darker on a dark band, lighter on a light one. Lifted towards them, a
+  // mid-grey band's cards took light words down to 4.29:1 (measured by the sweep in tests/unit/band-scheme.test.ts).
+  const surface = at(base.L + (dark ? -0.06 : 0.03), base.C * 0.8);
+  const border = at(base.L + (dark ? 0.16 : -0.12), base.C * 0.6);
+  const reads = (ratio: number) => {
+    const C = Math.min(base.C, 0.02);
+    for (let k = 0; k <= 100; k++) {
+      const L = dark ? base.L + (k / 100) * (1 - base.L) : base.L - (k / 100) * base.L;
+      const c = at(L, C);
+      if (Math.min(contrastRatio(c, hex), contrastRatio(c, surface)) >= ratio) return c;
+    }
+    return dark ? "#ffffff" : "#000000"; // nothing reaches it — the extreme is the best there is
+  };
+  const text = reads(7), muted = reads(4.5);
+  const vars = {
+    "--bx-text": text, "--bx-text-muted": muted, "--bx-link": text, "--bx-focus": text,
+    "--eu-color-text": text, "--eu-color-muted": muted, "--eu-color-surface": surface, "--eu-color-border": border,
+  };
+  return { dark, vars };
+}
+/** A solid, opaque colour as #rrggbb — or null when it is not one (see-through, a gradient, a token, a photo). */
+function solidHex(bg: string | undefined): string | null {
+  const v = bg?.trim().toLowerCase(); if (!v) return null;
+  let m = /^#([0-9a-f]{3})$/.exec(v); if (m) return "#" + m[1].split("").map((c) => c + c).join("");
+  m = /^#([0-9a-f]{6})([0-9a-f]{2})?$/.exec(v); if (m) return m[2] && parseInt(m[2], 16) < 230 ? null : "#" + m[1];
+  const r = /^rgba?\(\s*(\d+)[\s,]+(\d+)[\s,]+(\d+)(?:[\s,/]+([\d.]+%?))?\s*\)$/.exec(v);
+  if (r) { const a = r[4] == null ? 1 : r[4].endsWith("%") ? parseFloat(r[4]) / 100 : parseFloat(r[4]); if (a < 0.9) return null; return "#" + [r[1], r[2], r[3]].map((x) => Math.min(255, +x).toString(16).padStart(2, "0")).join(""); }
+  return null;
+}
+
+/**
+ * LINKS ARE ALWAYS SPACED, AND THE PERSON CHOOSES HOW MUCH (user, 2026-09-27: "make sure that there's always spaces
+ * between the links … the user can select what kind of space they want"). Measured through the UI: a menu of four Links
+ * published as "AboutAdmissionsNewsContact" — every block starts with no space (Core Rule 3), and the line that holds
+ * them side by side is scaffolding nobody can select, so there was no way to space them at all.
+ *
+ * So a LINE OF MENU ITEMS (links and buttons, two or more) takes its spacing from the block it sits in — the menu or
+ * list the person can select: "Space across" between items, "Space down" between wrapped lines ("Space between blocks"
+ * sets both). Until they choose, it is the design foundation's grouping space (Rule #7): 2rem across, 0.75rem down, in
+ * rem so it grows with the reader's text. Rows of COLUMNS are never touched — their widths are shares of the line.
+ */
+export const LINK_GAP_ACROSS = "2rem";
+export const LINK_GAP_DOWN = "0.75rem";
+const isMenuItem = (k: BoxNode) => k.type === "link" || k.type === "button";
+export function linkLineGap(line: BoxNode, parent: BoxNode): CSSProperties | null {
+  if (!line.rowBand) return null;
+  const kids = (line.children ?? []).filter((k) => !isFloating(k) && !k.hidden);
+  if (kids.length < 2 || !kids.every(isMenuItem)) return null;
+  const chosen = (v?: number) => (v != null && v > 0 ? v : undefined); // a 0 "Space between blocks" is the untouched default
+  const across = parent.gapX ?? chosen(parent.gap), down = parent.gapY ?? chosen(parent.gap);
+  return { gap: undefined, columnGap: across != null ? u(across) : LINK_GAP_ACROSS, rowGap: down != null ? u(down) : LINK_GAP_DOWN };
+}
+/** …and a LIST of menu items one per line is spaced down the same way (a footer column of links). */
+function listLinesGap(node: BoxNode): CSSProperties | null {
+  if ((node.tag !== "ul" && node.tag !== "ol") || (node.direction ?? "column") !== "column" || node.gapY != null || (node.gap ?? 0) > 0) return null;
+  const items = (node.children ?? []).flatMap((k) => (k.rowBand ? k.children ?? [] : [k]));
+  return items.length > 1 && items.every(isMenuItem) ? { rowGap: LINK_GAP_DOWN } : null;
+}
+
 export function containerStyle(node: BoxNode, bp: Breakpoint = "base"): CSSProperties {
+  const scheme = node.bgImage ? null : bandScheme(node.background);
+  const s = containerStyleOf(node, bp);
+  const lines = listLinesGap(node);
+  return { ...s, ...(lines ?? {}), ...((scheme?.vars ?? {}) as CSSProperties) };
+}
+function containerStyleOf(node: BoxNode, bp: Breakpoint = "base"): CSSProperties {
   // Computed in px (measurements are px) but EMITTED in rem, per the field guide: a stored size must never
   // reach the page as a pixel value, or a reader who has raised their base font gets a box that ignores them.
   const minHpx = Math.max(node.minHeight ?? 0, floatingReserve(node, bp)) || undefined;
@@ -4824,7 +5058,23 @@ export function childStyle(child: BoxNode, parent: BoxNode, bp: Breakpoint = "ba
   // sections stack (each ~14rem-or-full) instead of cramming into unreadable columns. Doesn't touch resize/grow.
   // Only SECTIONS get the floor; elements/components hug their content. A hand-sized column keeps its size down to 3rem;
   // on a PHONE every column takes the whole line, so rows stack and nothing narrow is squeezed (#75).
-  if (parent.rowBand && isRow && !child.clip && !isEmptyBox(child) && isContainer(child)) s.minWidth = bp === "phone" ? "100%" : `min(100%, ${floorRemOf(child)}rem)`;
+  // …and a column on a line of four or more keeps that line on a desktop and a laptop (#78): it floors at 3rem too.
+  /**
+   * …and a narrow column is never DRAWN narrower than its own longest word (#102). Since #75 it could be drawn at 3rem
+   * whatever it held, so in a crowded line the browser broke words letter by letter ("Thi / s / cha / nge") or let the
+   * content spill out of the column at 150% text — both measured on a dressed page. It can still be DRAGGED down to 3rem
+   * (the canvas clamps there); on screen the floor is its content's, and a line too full for it wraps instead.
+   */
+  if (parent.rowBand && isRow && !child.clip && !isEmptyBox(child) && isContainer(child)) {
+    const floor = columnFloorRem(parent, child, bp);
+    s.minWidth = bp === "phone" ? "100%" : floor === HAND_FLOOR_REM ? "min-content" : `min(100%, ${floor}rem)`;
+  }
+  // On a tablet held upright that line is rearranged, at most three across and balanced (#78, `tabletPlaces`).
+  const place = isRow ? tabletPlaces(parent, bp)?.get(child.id) : undefined;
+  if (place) {
+    s.flex = `1 1 ${tabletBasis(place, parent.gapX ?? parent.gap ?? 16)}`;
+    if (isContainer(child) && !child.clip && !isEmptyBox(child)) s.minWidth = "min-content"; // never narrower than its longest word (#102)
+  }
   const crossCss = sizeToCSS(crossToken);
   // RULE O — inside a ROW a block's height is its CROSS size. For a self-painting block (component/button) that
   // must be a FLOOR, not a cap: a hard height here is what let the content spill out below the box after the
@@ -4849,6 +5099,8 @@ export function childStyle(child: BoxNode, parent: BoxNode, bp: Breakpoint = "ba
   Object.assign(s, placeCSS(child, parent));
   // …and pinning after even that — see the matching line in the grid branch above.
   Object.assign(s, pinCSS(child, parent, bp));
+  // A line of menu items is spaced by the block it sits in (`linkLineGap`) — the only one of the two you can select.
+  const lg = linkLineGap(child, parent); if (lg) Object.assign(s, lg);
   return s;
 }
 

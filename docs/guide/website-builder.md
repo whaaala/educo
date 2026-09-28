@@ -333,6 +333,7 @@ screen at any width, and at desktop sizes it is the single row it always was.
 - **Zoom** is yours: *Fit to window* shrinks a big screen until it fits, or pick 50–200% and it's obeyed exactly. Zoom past the window and the preview scrolls — every part of the page stays reachable.
 - **A band you coloured and left empty is the same size on the page as on the canvas.** An empty band — including one holding a box or a grid you haven't filled yet — keeps its visible height when published, so a coloured strip at the top of your page is still there when a visitor arrives. A height you set yourself always wins over that, and a band with something in it takes its height from the content as usual.
 - **A page shorter than the screen ends in its own colour.** If your content doesn't fill a visitor's window, the space below it takes the colour of the band your page ends on — so a dark footer simply runs to the bottom instead of stopping against a slab of white that looks like an empty block you never added. **Nothing is stretched and nothing is inserted:** your layout is untouched, it costs no height, there's no setting to find, and on any page taller than the screen you'll never see it at all.
+- **The one known difference from the canvas — a desktop scrollbar.** On a desktop browser that shows a classic scrollbar, the Preview's page is about 15px narrower than the canvas, so a block's share of the width can differ by up to about **0.4%**. That is expected and accepted; our checks allow up to **0.6%** for it. Anything larger between the canvas and the Preview is a bug — please report it.
 - **Previewing changes nothing.** Choosing a screen to look at doesn't touch your canvas or which per‑device layer you're editing; that stays with the editor's own device switcher in the top bar. Looking is not editing.
 - **The size you pick is the size the page really gets.** Choose *Wide* and the page is laid out at a genuine 1920 × 1080, so it picks the layout a 1920px screen gets — even when your own screen is smaller. It's scaled down to fit and the bar states both numbers (e.g. `1920 px · 73%`). It's never cut off, and never quietly re-laid out at your screen's size instead.
 - **Nothing is added on top of your page.** The preview shows what you designed and only that. Earlier versions prepended a navigation bar of their own; it's gone, from the preview *and* the exported site. To let visitors move between pages, build your own header and set a block's link to **another page** — it resolves to the right file when you export. While you're in the preview, the page tabs in the toolbar walk you around the site without touching the design.
@@ -711,6 +712,11 @@ Your page is published as proper HTML5, however you built it — you do not need
 - **A column you size yourself can be as narrow as you like** (down to about 3rem) — a 10/90 label column, six logos
   across. Columns you never sized keep a comfortable minimum so they wrap neatly. **On a phone every row stacks**, one
   column under another, so nothing is ever squeezed.
+- **Rows of four or more columns** — a logo strip, four courses, a five-column footer — **stay one row on a desktop,
+  a laptop and a wide screen**. **On a tablet** they rearrange by themselves to at most three per line, as evenly as
+  they can: 4 → 2 + 2, 5 → 3 + 2, 6 → 3 + 3, 7 → 3 + 2 + 2. Each column keeps its proportions within its line, so a
+  narrow column stays narrow beside a wide one. Want something else on the tablet? Switch the editor to **Tablet** and
+  size a column there — what you set on a device always wins, and the desktop is untouched.
 - **Widening a block never makes it jump.** Pull it until its neighbour no longer fits, and the neighbour moves to the
   next line while your block stops exactly where you let go. Drag back and everything comes home.
 - **On a smaller screen the page is shrunk to fit.** Choose Desktop 1280 on a laptop and the page is shown smaller

@@ -156,6 +156,22 @@ test.describe("resizing a grid cell's height", () => {
     expect((await spansOf(page)).reduce((a, b) => a + b, 0), "and the row fills the twelve again").toBe(12);
   });
 
+  test("a 90/10 grid can be dragged into shape from the WIDE cell — the neighbour narrows to one track, as a row's does (#85)", async ({ page }) => {
+    // Decided with the user 2026-09-27: one rule for rows and grids. The narrow cell used to wrap at a quarter of the
+    // row (three tracks), so 90/10, 80/20 and 20/60/20 grids — ~400 sections in the crawl — could not be built from the
+    // wide cell's edge, while a row beside them could (#76). Reproduced through the UI first (scripts/uat/probe-section.js).
+    await seedGrid(page, 2, 1);
+    await selectCell(page, "c0");
+    const grid = (await page.locator('[data-box-id="tgt"]').boundingBox())!;
+    const topOf = async (id: string) => (await rectOf(page, id)).top;
+    const rowOne = await topOf("c1");
+    await dragHandle(page, "Resize right edge", grid.width * (5 / 12), 0);
+    expect(await spansOf(page), "eleven and one — the narrow cell stays beside it").toEqual([11, 1]);
+    expect(Math.abs((await topOf("c1")) - rowOne), "…on the same row").toBeLessThan(3);
+    await dragHandle(page, "Resize right edge", -grid.width * (5 / 12), 0);
+    expect(await spansOf(page), "and back").toEqual([6, 6]);
+  });
+
   test("out and back in ONE drag leaves the row exactly as it was", async ({ page }) => {
     // Every position of the pointer must give one answer, whichever direction it was reached from. It did not:
     // the neighbour was moved by a delta accumulated against a snapshot, so returning to the starting width

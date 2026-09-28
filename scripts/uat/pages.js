@@ -6,12 +6,15 @@ const allIds = (page) => page.evaluate(() => Array.from(document.querySelectorAl
 const ids = async (page) => new Set(await allIds(page));
 /** The OUTERMOST block that appeared since `before` — a Card, not the image inside it. */
 const newestLeaf = async (page, before) => {
-  const got = await page.evaluate((b) => { const was = new Set(b); const fresh = Array.from(document.querySelectorAll('[data-box-id]')).filter((e) => !was.has(e.getAttribute('data-box-id')));
+  // WAIT for it: a drop is committed on the next render, and looking once, at once, failed a build that had worked
+  // ("the drop added nothing" — 1 in ~4 runs, gone on a re-run). A flaky check is itself a bug (RULE V).
+  let got = null;
+  for (let t = 0; t < 12 && !got; t++) { if (t) await page.waitForTimeout(250); got = await page.evaluate((b) => { const was = new Set(b); const fresh = Array.from(document.querySelectorAll('[data-box-id]')).filter((e) => !was.has(e.getAttribute('data-box-id')));
     const outer = fresh.filter((e) => !fresh.some((o) => o !== e && o.contains(e)));
     // Skip bare scaffolding bands: prefer an outer block that is not a row band wrapping exactly one new block.
     const pick = outer.map((e) => { let x = e; while (x.children.length && Array.from(x.querySelectorAll(':scope > [data-box-id]')).length === 1 && getComputedStyle(x).flexDirection === 'row' && x.querySelector(':scope > [data-box-id]') && fresh.includes(x.querySelector(':scope > [data-box-id]'))) x = x.querySelector(':scope > [data-box-id]'); return x; });
-    return pick.length ? pick[pick.length - 1].getAttribute('data-box-id') : null; }, [...before]);
-  if (!got) { await page.screenshot({ path: require('path').join(__dirname, 'pg-nothing.png') }); throw new Error('the drop added nothing (after: ' + (page.__step || '?') + ')'); }
+    return pick.length ? pick[pick.length - 1].getAttribute('data-box-id') : null; }, [...before]); }
+  if (!got) { await page.screenshot({ path: require('path').join(__dirname, 'pg-nothing.png') }); throw new Error((page.__dropOffered ? 'PRODUCT: the canvas offered the drop and added nothing' : 'the drop added nothing (the drag never reached the canvas, twice)') + ' (after: ' + (page.__step || '?') + ')'); }
   return { id: got };
 };
 /** Answer the Grid picker: N across, M down. */
