@@ -47,6 +47,7 @@ export type Resolved = {
   listItem?: boolean;     // wrap this block in <li> (it is a child of a list)
   omit?: boolean;         // not published (an empty heading)
   corrected?: string;     // what was fixed automatically, in plain words (shown in the Page check as "fixed for you")
+  selfContained?: boolean; // a heading inside an article / aside / figure / nav — never the page's title (#118)
 };
 
 export type PageSemantics = {
@@ -99,9 +100,18 @@ export function resolvePage(root: BoxNode): PageSemantics {
 
   // ── HEADINGS (B1) ──
   let firstMainHeading = true;
-  const headingLevel = (n: BoxNode, ctx: number, inMain: boolean): number => {
+  /**
+   * A SELF-CONTAINED piece never titles the page (#118). The first heading of the main content is the page's title —
+   * but a card's title, a quote's caption or a sidebar's heading is the title of THAT piece, not of the page. Measured
+   * on a dressed home page with no hero whose first section was a row of cards: "Card title" was published as the
+   * <h1>, at 19px under the 24px section headings that followed it.
+   */
+  // (A page header's or footer's heading is never in the main pass, so neither needs listing: the site name in the header
+  // is still the fallback title of a page whose content has no heading of its own.)
+  const SELF_CONTAINED = new Set(["article", "aside", "figure", "nav"]);
+  const headingLevel = (n: BoxNode, ctx: number, inMain: boolean, inSelf: boolean): number => {
     if (typeof n.level === "number" && n.level >= 1 && n.level <= 6) return n.level; // the user's, never renumbered
-    if (inMain && firstMainHeading) { firstMainHeading = false; return 1; }
+    if (inMain && !inSelf && firstMainHeading) { firstMainHeading = false; return 1; }
     return Math.min(6, Math.max(2, ctx));
   };
 
@@ -110,15 +120,15 @@ export function resolvePage(root: BoxNode): PageSemantics {
   // section's OWN heading is at the level the section sits at, and only what is nested inside it goes one deeper (#64).
   /** Lines of a list that hold several blocks side by side — each becomes the list itself (#104). */
   const lineAsList = new Map<string, SemanticTag>();
-  const walk = (n: BoxNode, own: number, inner: number, where: "header" | "footer" | "main", parentTag: string, pass: "main" | "rest") => {
+  const walk = (n: BoxNode, own: number, inner: number, where: "header" | "footer" | "main", parentTag: string, pass: "main" | "rest", inSelf = false) => {
     for (const c of n.children ?? []) {
       const inMainNow = where === "main";
       const listItem = parentTag === "ul" || parentTag === "ol";
       if (c.type === "heading") {
         if ((pass === "main") !== inMainNow) continue;
         if (!hasText(c)) { byId.set(c.id, { tag: "div", omit: true, listItem, corrected: "An empty heading is not published until it has words." }); continue; }
-        const level = headingLevel(c, own, inMainNow);
-        byId.set(c.id, { tag: `h${level}`, level, listItem });
+        const level = headingLevel(c, own, inMainNow, inSelf);
+        byId.set(c.id, { tag: `h${level}`, level, listItem, selfContained: inSelf || undefined });
         continue;
       }
       if (c.type !== "container" && c.type !== "component") {
@@ -145,16 +155,37 @@ export function resolvePage(root: BoxNode): PageSemantics {
         byId.set(c.id, { tag, label: c.landmarkName || undefined, listItem, corrected });
       }
       const nextWhere = n === root ? (pageHeaders.has(c.id) ? "header" : pageFooters.has(c.id) ? "footer" : "main") : where;
-      if (SECTIONING.has(tag) && ownsHeading(c)) walk(c, inner, Math.min(6, inner + 1), nextWhere, tag, pass);
-      else walk(c, own, inner, nextWhere, tag, pass);
+      const nextSelf = inSelf || SELF_CONTAINED.has(tag);
+      if (SECTIONING.has(tag) && ownsHeading(c)) walk(c, inner, Math.min(6, inner + 1), nextWhere, tag, pass, nextSelf);
+      else walk(c, own, inner, nextWhere, tag, pass, nextSelf);
     }
   };
   walk(root, 2, 2, "main", "div", "main");
   walk(root, 2, 2, "main", "div", "rest");
-  // No heading in the main content at all: the first heading anywhere becomes the H1.
+  // No page-titling heading in the main content at all: the first heading anywhere that is not inside a self-contained
+  // piece becomes the H1 — the site name in the header, typically — and only failing that, the first heading of any kind.
   if (firstMainHeading) {
-    const firstAny = [...byId.entries()].find(([, v]) => v.level && !v.omit);
+    const all = [...byId.entries()].filter(([, v]) => v.level && !v.omit);
+    const firstAny = all.find(([, v]) => !v.selfContained) ?? all[0];
     if (firstAny) { const [id, v] = firstAny; byId.set(id, { ...v, tag: "h1", level: 1 }); }
+  }
+  /**
+   * THE SECTION THE PAGE TITLE HEADS (#121). A section's own heading sits at the section's level and what is nested
+   * inside it goes one deeper — worked out before it is known that this heading becomes the page's H1. So the cards
+   * inside the first section published as h3 under an h1: a skipped level (S37) on every page whose title opens a
+   * section. Once the H1 is known, everything inside its section comes up one level, except a level the user set.
+   */
+  const h1 = [...byId.entries()].find(([, v]) => v.level === 1 && !v.omit)?.[0];
+  if (h1) {
+    const holder = (n: BoxNode): BoxNode | null => { for (const c of n.children ?? []) { if (c.id === h1) return n; const f = holder(c); if (f) return f; } return null; };
+    let owner = holder(root);
+    // up through the bands the heading sits in, to the SECTIONING block whose own heading it is
+    const parentOf = (id: string): BoxNode | null => { const f = (n: BoxNode): BoxNode | null => { for (const c of n.children ?? []) { if (c.id === id) return n; const r = f(c); if (r) return r; } return null; }; return f(root); };
+    while (owner && owner !== root && !(SECTIONING.has(byId.get(owner.id)?.tag ?? "") && ownsHeading(owner))) owner = parentOf(owner.id);
+    if (owner && owner !== root) {
+      const lift = (n: BoxNode) => { for (const c of n.children ?? []) { const r = byId.get(c.id); if (c.type === "heading" && r?.level && r.level >= 3 && c.id !== h1 && typeof c.level !== "number") byId.set(c.id, { ...r, level: r.level - 1, tag: `h${r.level - 1}` }); lift(c); } };
+      lift(owner);
+    }
   }
 
   // Repeated menus need names to be told apart; name the unnamed ones by where they are.

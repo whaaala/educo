@@ -316,6 +316,23 @@ Run through this checklist BEFORE telling the user it's done:
     the checklist table at the end of `03` names them (hero, navigation, cards, features, testimonials, pricing, FAQ,
     footer, sidebar, grid layouts…). Build to it; where the builder has none yet, a clearly marked PLACEHOLDER is built
     from existing blocks and the gap is recorded in `docs/COMPONENT_GAPS.md` to be built properly.
+  - **COMPONENTS ARE PLACEHOLDERS DURING LAYOUT WORK (decided 2026-09-28).** Every component will later be rebuilt from
+    scratch, one by one, each with all its variations — so no component is built inside the layout work. Test pages use
+    REALISTIC placeholders made from existing blocks (a fake nav, sidebar, hamburger, calendar, form, pricing, logos…),
+    each recorded in `docs/COMPONENT_GAPS.md` and NAMED in the page report, so a missing component is never mistaken
+    for a layout bug or silently skipped. Building one needs the user's approval (the Navigation component plan first).
+- **RULE E — EVERY LAYOUT TEST IS A REALISTIC, DRESSED PAGE (MANDATORY — standing rule, the user 2026-09-28, no
+  exceptions).** Never bare boxes. Every structure under test is a real web page: coloured bands, a header with a real
+  menu (a list of Link blocks, not buttons), a hero, body sections that fit the page's TYPE, a sidebar where the crawl has
+  one, a CTA band and a footer — HTML5-semantic (header/nav/main/aside/section/footer, correct heading levels) — built
+  THROUGH THE UI so a user could build the same thing. The structures come from the crawl, `scripts/uat/page-cover.json`,
+  tier by tier (14 pages = 80%, +135 = 95%, +403 = 99% of 4,147 pages), then the innovative structures beyond it (a grid
+  in a stack in a grid cell, sticky beside floating, asymmetric bands, magazine layouts). **A structure the builder cannot
+  build is a GAP to fix, not a case to skip.** Bare structures (`uat-structures --top=80`) do not count as done.
+  Measured: #92, #102, #107, #108 and #111 only appeared once pages were dressed — bare rows passed every one.
+  **The layout engine must let ANY user build ANY layout imaginable**; the sweep and the component catalogue are the
+  vocabulary of the LLM website builder that comes after Task 1 (v1 deterministic composer, v2 a Claude call), and the
+  page audit, semantic auto-correct, RULE P and RULE D are its critic.
 - **RULE P — WEBSITE PERSONALITY AND TONE ARE FOLLOWED (MANDATORY — from 2026-09-27).** The Website Personalities
   Framework, `03` Part 2 (pp. 235–255): **seven personalities** (serious/elegant · minimalist/simple · plain/neutral ·
   bold/confident · calm/peaceful · startup/upbeat · playful/fun), each fixing typography, colours, images, icons,

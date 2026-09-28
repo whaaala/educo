@@ -14,6 +14,7 @@ const COPY = {
   cta: ['Come and see us', 'Open mornings run every Tuesday in term time. Book a place in two minutes.'],
   foot: [['Visit', ['Term dates', 'Open mornings', 'Find us']], ['Learning', ['Curriculum', 'Clubs', 'Library']], ['Families', ['Letters home', 'Uniform', 'Lunch menu']], ['Contact', ['Office', 'Admissions', 'Careers']]],
 };
+const SECTION_TITLES = ['What we offer', 'Life at Hillside', 'Our results', 'From the classroom', 'Meet the team', 'Dates for your diary', 'How to apply'];
 const TINT = { Light: '#eef2ff', Dark: '#1f2937', Midnight: '#0f1f3d', 'Purple Dream': '#2e1065' };
 const INK = { Light: '#1e3a8a', Dark: '#111827', Midnight: '#020617', 'Purple Dream': '#3b0764' };
 
@@ -43,8 +44,12 @@ async function addHeroTile(page, afterId, kind) {
   // …and "Add hero" only once the photos have loaded and it is ENABLED — a person waits for it to light up
   // EXACT name: "starts with Add hero" also matched the palette tile ("Add Hero — drag onto the page…"), and clicking
   // the tile closed the popover instead of adding the hero.
-  const add = page.getByRole('button', { name: `Add ${kind.toLowerCase()}`, exact: true }).first();
-  for (let k = 0; k < 40 && !(await add.isEnabled().catch(() => false)); k++) await page.waitForTimeout(250);
+  // "Add hero" for one photo, "Add hero of 3" for a rotating one (GallerySetupMenu MODE_COPY) — an exact "Add rotating hero"
+  // matched nothing, so both carousel pages of the sweep "never became available" (#124).
+  const add = page.getByRole('button', { name: /^Add hero( of \d+)?$/ }).first();
+  // Three photographs are downscaled in the browser before the button lights up — under six windows at once that took
+  // longer than the 10s first allowed (a sweep page failed on "never became available"); a person simply waits.
+  for (let k = 0; k < 120 && !(await add.isEnabled().catch(() => false)); k++) await page.waitForTimeout(250);
   if (!(await add.isEnabled().catch(() => false))) throw new Error(`"Add ${kind.toLowerCase()}" never became available after choosing photos`);
   await add.click(); await page.waitForTimeout(1200);
   return (await P.newestLeaf(page, before)).id;
@@ -77,6 +82,10 @@ class Dresser {
     for (let i = 0; i < links.length; i++) await this.words(links[i], COPY.nav[i]);
     await I.meaning(p, hdr, 'Page header'); await I.meaning(p, nav, 'Menu'); await I.meaning(p, list, 'List');
     for (const l of links) await I.textToggle(p, l, 'Underline', false); // a menu's links are told apart by place, not underline
+    // The menu HUGS its links, as a person sizes a real header: dropped beside the logo it arrived at 70.5% of the band,
+    // and logo + 70.5% + "Apply now" is wider than a tablet (202 + 541 + 111 > 768, measured) — so the button wrapped
+    // onto a second line at 768px (#101). That is the row doing what it is told; the page was the thing to correct.
+    await I.widthMode(p, nav, 'Fit');
     if (this.r.header === 'sticky') await I.sticky(p, hdr);
     if (this.r.header === 'two-rows') {
       const sub = await P.tileAfter(p, hdr, 'Stack'); const sl = await P.into(p, sub, 'Stack');
@@ -108,10 +117,12 @@ class Dresser {
         await H.panel(p, false); await this.words(h, COPY.hero[0]); await this.words(t, COPY.hero[1]); await this.words(b1, 'Book a visit'); await this.words(b2, 'Prospectus');
         await new Builder(p).sizeColumns([text, img], [55, 45]); await H.panel(p, false);
         await this.band(id, { bg: TINT[this.t], width: 'Edge to edge' });
+        await I.textSize(p, h, 48); // the page title is the biggest words on the page — in a 55% column its default size fell under the section headings (Rule #7)
       } else { // banner — a coloured band, words centred in a measured column
         const h = await P.into(p, id, 'Heading'); const t = await P.under(p, h, 'Text'); const b1 = await P.under(p, t, 'Button');
         await H.panel(p, false); await this.words(h, COPY.hero[0]); await this.words(t, COPY.hero[1]); await this.words(b1, 'Book a visit');
         await this.band(id, { bg: INK[this.t], width: 'Centred column' });
+        await I.textSize(p, h, 48);
       }
       await H.panel(p, true);
     }
@@ -127,7 +138,24 @@ class Dresser {
       if (host) { sec = i === 0 ? await P.into(p, host, 'Stack') : await b.addLine(host, 'Stack', ids[i - 1]); }
       else sec = await P.tileAfter(p, this.last, 'Stack');
       ids.push(sec); this.last = host ? this.last : sec;
-      await b.fill(s.tree, sec, { firstInSection: true, sectionIndex: i + 1, dress: true });
+      // EVERY SECTION OPENS WITH A HEADING (deck: a section component is titled; HTML: a <section> needs a heading or a
+      // name). A crawled section that starts with a row of cards would otherwise have none — and on a page with no hero
+      // the first card's title was published as the page's <h1> (#118). The words fit the page type.
+      let after = null;
+      if (!(s.tree.kind === 'stack' && s.tree.parts[0]?.kind === 'leaf')) {
+        after = await b.addLine(sec, 'Heading', null);
+        await H.panel(p, false); await this.words(after, SECTION_TITLES[(i + this.r.type.length) % SECTION_TITLES.length]); await H.panel(p, true);
+      }
+      const lastLine = await b.fill(s.tree, sec, { firstInSection: !after, sectionIndex: i + 1, dress: true }, after);
+      // NO HERO: the first section's heading IS the page title, and a title is the biggest words on the page (Rule #7,
+      // visual hierarchy) — a person sizes it up. Measured: left at the section size, the h1 read 24px under 31px h2s.
+      if (i === 0 && this.r.hero === 'none') {
+        // The heading BLOCK itself — the block the heading element sits in — never the band around it: a band is
+        // scaffolding and cannot be selected (page 13 failed on exactly that, twice).
+        const title = after ?? await p.evaluate((id) => document.querySelector(`[data-box-id="${id}"] h1, [data-box-id="${id}"] h2, [data-box-id="${id}"] h3`)?.closest('[data-box-id]')?.getAttribute('data-box-id') ?? null, sec);
+        if (title) { await H.panel(p, false); await I.textSize(p, title, 44); await H.panel(p, true); }
+      }
+      void lastLine;
       if (!host) {
         await H.panel(p, false);
         await this.band(sec, { bg: i % 2 ? TINT[this.t] : undefined, width: s.width === 'full' ? 'Edge to edge' : 'Centred column' });
@@ -200,7 +228,10 @@ class Dresser {
     await H.panel(p, false); await this.words(ah, 'In this section');
     await I.meaning(p, aside, 'Sidebar'); await I.meaning(p, main, 'Main content');
     if (side === 'right-sticky') await I.sticky(p, aside);
-    await new Builder(p).sizeColumns([main, aside], side === 'left' ? [25, 75] : [70, 30]);
+    // The MAIN column is the wide one on either side: [main, aside] = 75/25 for a left sidebar (the aside is then moved
+    // before it). It was written [25, 75] — a 25% main column — and every left-sidebar page squeezed its body into a
+    // quarter of the page (#128: broken words, wrapped stats, holes, all from the dresser, none from the engine).
+    await new Builder(p).sizeColumns([main, aside], side === 'left' ? [75, 25] : [70, 30]);
     if (side === 'left') { /* a left sidebar: the aside is dragged before the main column with the keyboard — Ctrl+Up is move-up */ await H.select(p, aside); await p.keyboard.press('ArrowUp'); await p.waitForTimeout(300); }
     await H.panel(p, true);
     this.last = row; this.sections.push({ role: 'sidebar-layout', id: row });

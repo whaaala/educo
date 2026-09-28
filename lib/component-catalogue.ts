@@ -95,7 +95,9 @@ function makeCard(): BoxNode {
 function makeQuote(): BoxNode {
   return createContainer("column", { preset: "quote", tag: "figure", width: "100%", padding: 20, paddingLeft: 24, gap: 8, borderWidth: 0, align: "start", children: [
     createElement("text", { text: "“This changed everything for us — we couldn't be happier.”", fontSize: 22, italic: true, width: "100%", color: "var(--eu-color-text)" }),
-    createElement("text", { text: "— Happy Customer", fontSize: 14, width: "100%", color: "var(--eu-color-muted)" }),
+    // Body-sized, never smaller: a caption at 14 drew below the 16px floor Web Design Rule #1 sets for every paragraph
+    // (measured by the page audit on every dressed page, #93). Muted colour already sets it apart from the quote.
+    createElement("text", { text: "— Happy Customer", fontSize: 16, width: "100%", color: "var(--eu-color-muted)" }),
   ] });
 }
 

@@ -11,7 +11,7 @@
 import type { CSSProperties } from "react";
 import { PILL, blockTypography, pinArrivalCss, pinArrivalKeyframes, floatHoldCSS,
   type BoxNode, type Breakpoint, BP_ORDER, containerStyle, childStyle, hostSizedFor, marginCSS, sizeToCSS, radiusCSS, SHADOW_CSS, u, textLen, baseUnit, fadedPaint, boxOpacity, backgroundCss, paintLayerCss,
-  resolveResponsive, floatStacksOnMobile, floatingReserve, alertToastCss, accordionClasses, bandClasses, videoEmbedSrc, isContainer, sanitizeCssDeclarations, expandScopedCss, COMPONENT_PARTS, itemFloatContextCss, itemOverrideCss, itemNumberVars, richBody, plainBody, componentTextCss, componentBoxCss, renderAlertHTML, alertDismissScript, masonryMeasureAttr, masonryMeasureScript, pinStackMarker, pinStackGroupMarker, pinStackNeeded, pinStackScript, isPager, pagerNavHTML, pagerScript, pagerStripCss, pagerSlideId, bgShowThroughCss, blockContainmentCss, COMPONENT_ITEM_SEL, remLen, imageSizing, hasIntrinsicSize, itemNeedsClass, itemScope, floatZIndex, typoRole, typoRootVars, typoCascadeCss, bandEdgeCSS,
+  resolveResponsive, floatStacksOnMobile, floatingReserve, alertToastCss, accordionClasses, bandClasses, videoEmbedSrc, isContainer, sanitizeCssDeclarations, expandScopedCss, COMPONENT_PARTS, itemFloatContextCss, itemOverrideCss, itemNumberVars, richBody, plainBody, componentTextCss, componentBoxCss, renderAlertHTML, alertDismissScript, masonryMeasureAttr, masonryMeasureScript, pinStackMarker, pinStackGroupMarker, pinStackNeeded, pinStackScript, isPager, pagerNavHTML, pagerScript, pagerStripCss, pagerSlideId, bgShowThroughCss, blockContainmentCss, COMPONENT_ITEM_SEL, remLen, imageSizing, hasIntrinsicSize, itemNeedsClass, itemScope, floatZIndex, typoRole, typoRootVars, typoCascadeCss, bandEdgeCSS, LINK_COLOR_CSS, gridQueryCss,
 } from "@/lib/box-model";
 import { isRegistryComponent, renderComponent, componentScripts } from "@/lib/educo-ui/registry";
 import { iconSvg } from "@/lib/educo-ui/icon-svg";
@@ -132,7 +132,7 @@ function elementHTML(node: BoxNode, theme: SiteTheme, pageMap: Map<string, strin
     case "heading": { const hl = SEM?.byId.get(node.id)?.level ?? 2; return `<h${hl} style="${styleString({ color: node.color || typoRole.color("text"), fontSize: node.fontSize != null ? textLen(node.fontSize) : typoRole.size(2), textAlign: align, width: "100%", ...typoCss(node, "heading", 600) })}">${esc(node.text ?? "")}</h${hl}>`; }
     case "text": return `<p style="${styleString({ color: node.color || typoRole.color("muted"), fontSize: node.fontSize != null ? textLen(node.fontSize) : typoRole.size(1), textAlign: align, width: "100%", ...typoCss(node, "body", 400) })}">${esc(node.text ?? "")}</p>`;
     // A LINK: a plain <a href>, styled as words in the brand colour — never a button's pill (html-semantics.md).
-    case "link": return `<a href="${esc(hrefFor(node, pageMap))}"${node.newTab ? ' target="_blank" rel="noopener noreferrer"' : ""} style="${styleString({ color: node.color || "var(--bx-link, var(--eu-color-brand))", fontSize: node.fontSize != null ? textLen(node.fontSize) : typoRole.size(1), textAlign: align, textUnderlineOffset: "0.15em", ...typoCss(node, "body", 500), textDecoration: node.underline ? "underline" : "none" })}">${esc(node.text ?? "")}</a>`; // "off" is WRITTEN — a browser underlines every <a> (#106)
+    case "link": return `<a href="${esc(hrefFor(node, pageMap))}"${node.newTab ? ' target="_blank" rel="noopener noreferrer"' : ""} style="${styleString({ color: node.color || LINK_COLOR_CSS, fontSize: node.fontSize != null ? textLen(node.fontSize) : typoRole.size(1), textAlign: align, textUnderlineOffset: "0.15em", ...typoCss(node, "body", 500), textDecoration: node.underline ? "underline" : "none" })}">${esc(node.text ?? "")}</a>`; // "off" is WRITTEN — a browser underlines every <a> (#106)
     case "button": { // fills its box + paints its own visual + centres its label (matches the editor) — one shape when resized
       const fp = (v?: string) => (v === "center" ? "center" : v === "end" ? "flex-end" : "flex-start");
       const deco = decorCss(node);
@@ -303,11 +303,12 @@ const RUNG_MIN_EM: Record<Exclude<Breakpoint, "phone">, number> = {
   wide: BREAKPOINTS_EM.wide, // 1800px
 };
 /** One bucket of rules per rung. The phone rung is the unqualified base of a mobile-first sheet. */
-type Sheet = { rungs: Record<Breakpoint, string[]>; reveals: Set<string>; arrivals: Set<string> };
+type Sheet = { rungs: Record<Breakpoint, string[]>; reveals: Set<string>; arrivals: Set<string>; queries: string[] };
 export const emptySheet = (): Sheet => ({
   rungs: { phone: [], tabletPortrait: [], tabletLandscape: [], base: [], wide: [] },
   reveals: new Set<string>(),
   arrivals: new Set<string>(),
+  queries: [], // container queries — a grid narrowing by its own box (`gridQueryCss`), emitted after every rung
 });
 const classFor = (id: string) => "bx-" + id.replace(/[^A-Za-z0-9_-]/g, "-");
 // When a property is set at BASE but dropped at a breakpoint, we must actively neutralise it (the base rule
@@ -509,6 +510,10 @@ function renderNode(node: BoxNode, rawParent: BoxNode | null, theme: SiteTheme, 
     const diff = diffStyle(byRung[i - 1], byRung[i]);
     if (diff) sheet.rungs[BP_ORDER[i]].push(`.${cls}{${diff}}`);
   }
+  // A grid narrows by ITS OWN box too (#111) — the same emitter the canvas injects; "above the phone" is the tablet
+  // rung's media query here, so the two-across rule can never widen the phone's single column.
+  const gq = gridQueryCss(`.${cls}`, r, (id) => `.${classFor(id)}`, (css) => `@media (min-width:${RUNG_MIN_EM.tabletPortrait}em){${css}}`);
+  if (gq) sheet.queries.push(gq);
   // A PAGE of a pager always carries an id, because the dots link to it — `pagerSlideId` is the one
   // function that decides what it is, so the link and the target cannot disagree. It also carries the
   // marker the script counts pages by; without it a nav or a toolbar inside the strip would be counted
@@ -573,6 +578,8 @@ function sheetCss(sheet: Sheet): string {
     // a mobile-first sheet needs no specificity tricks.
     ...BP_ORDER.slice(1).map((bp) =>
       sheet.rungs[bp].length ? `@media (min-width:${RUNG_MIN_EM[bp as Exclude<Breakpoint, "phone">]}em){${sheet.rungs[bp].join("")}}` : ""),
+    // LAST: a grid's own-box narrowing only ever takes columns away, so it sits after every rung it can override.
+    sheet.queries.join(""),
   ].filter(Boolean).join("");
 }
 

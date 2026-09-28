@@ -51,7 +51,12 @@ if (!process.argv.includes('--one')) {
     console.log(`\n${all.length} pages in ${Math.round((Date.now() - t0) / 60000)} min · ${all.filter((r) => r.crashed || r.buildError).length} could not be built`);
     console.log('FINDINGS (errors), grouped:');
     Object.entries(by).sort((a, b) => b[1].length - a[1].length).forEach(([k, v]) => console.log(`  ${String(v.length).padStart(4)}× ${k}\n        e.g. ${[...new Set(v)].slice(0, 3).join(' · ')}`));
-    fs.writeFileSync(path.join(OUTDIR, `summary-tier${TIER}.json`), JSON.stringify({ pages: all.map((r) => ({ idx: r.idx, site: r.site, page: r.page, ok: !(r.findings || []).some((f) => f.kind === 'err') && !r.buildError && !r.crashed, buildError: r.buildError, secs: r.secs })), grouped: by }, null, 1));
+    // PLACEHOLDERS, NAMED (RULE C / RULE E): the components these pages stood in for with existing blocks — recorded in
+    // docs/COMPONENT_GAPS.md — so a missing component is never mistaken for a layout bug, and never silently skipped.
+    const ph = {}; for (const r of all) for (const p of r.placeholders || []) (ph[p] = ph[p] || []).push(r.idx);
+    if (Object.keys(ph).length) { console.log('PLACEHOLDERS (components not built yet — docs/COMPONENT_GAPS.md), pages that used each:');
+      Object.entries(ph).sort((a, b) => b[1].length - a[1].length).forEach(([k, v]) => console.log(`  ${String(v.length).padStart(4)}× ${k}`)); }
+    fs.writeFileSync(path.join(OUTDIR, `summary-tier${TIER}.json`), JSON.stringify({ pages: all.map((r) => ({ idx: r.idx, site: r.site, page: r.page, ok: !(r.findings || []).some((f) => f.kind === 'err') && !r.buildError && !r.crashed, buildError: r.buildError, secs: r.secs, placeholders: r.placeholders })), grouped: by, placeholders: ph }, null, 1));
   };
   for (let s = 0; s < Math.min(JOBS, LIST.length); s++) next(s);
   return;
@@ -83,7 +88,10 @@ const canvasGeo = (page) => page.evaluate(() => {
   const root = document.querySelector('[data-box-id]'); const rr = root.getBoundingClientRect(); const Z = root.currentCSSZoom || 1;
   return Object.fromEntries(Array.from(document.querySelectorAll('[data-box-id]')).slice(1).map((e) => { const r = e.getBoundingClientRect();
     const empty = !!e.querySelector('[data-ph]') || e.hasAttribute('data-ph') || Array.from(e.querySelectorAll('button')).some((b) => /^\s*Upload\s*$/.test(b.textContent || ''));
-    return [e.getAttribute('data-box-id').replace(/[^A-Za-z0-9_-]/g, '-'), { l: ((r.left - rr.left) / rr.width) * 100, w: (r.width / rr.width) * 100, h: r.height / Z, empty }]; }));
+    // A block measured against the SCREEN (a full-screen hero: `100svh`) is as tall as the window it is drawn in — the
+    // editor's 720 and the Preview's 900 differ by design, not by a bug, so its height (and its children's) is not compared.
+    const vh = !!e.closest('[style*="svh"], [style*="vh"]') || !!e.querySelector('[style*="svh"], [style*="vh"]'); // …or the band around one, which is as tall as it
+    return [e.getAttribute('data-box-id').replace(/[^A-Za-z0-9_-]/g, '-'), { l: ((r.left - rr.left) / rr.width) * 100, w: (r.width / rr.width) * 100, h: r.height / Z, empty, vh }]; }));
 });
 
 (async () => {
@@ -146,8 +154,8 @@ const canvasGeo = (page) => page.evaluate(() => {
         // canvas == Preview at this rung, within the accepted 0.6% (#41) and 4px of text rounding
         const cg = canvas[d.rung.preset]; const drift = [];
         for (const [id, g] of Object.entries(a.geo)) { const c = cg[id]; if (!c) continue;
-          if (Math.abs(c.l - g.l) > H.PREVIEW_SHARE_TOL || Math.abs(c.w - g.w) > H.PREVIEW_SHARE_TOL || (!c.empty && Math.abs(c.h - g.h) > H.PREVIEW_HEIGHT_TOL)) drift.push(`${id.slice(-4)} ${c.w.toFixed(1)}%×${Math.round(c.h)} vs ${g.w.toFixed(1)}%×${Math.round(g.h)}`); }
-        if (drift.length) find('err', `Preview ${d.name}`, `R11 canvas≠Preview on ${drift.length} blocks (${drift.slice(0, 3).join('; ')})`);
+          if (Math.abs(c.l - g.l) > H.PREVIEW_SHARE_TOL || Math.abs(c.w - g.w) > H.PREVIEW_SHARE_TOL || (!c.empty && !c.vh && !g.vh && Math.abs(c.h - g.h) > Math.max(H.PREVIEW_HEIGHT_TOL, c.h * H.PREVIEW_SHARE_TOL / 100))) drift.push( /* a 3,000px column may differ by the accepted 0.6% (#41), as widths may */`${id.slice(-4)} ${c.w.toFixed(1)}%×${Math.round(c.h)} vs ${g.w.toFixed(1)}%×${Math.round(g.h)}`); }
+        if (drift.length) find('err', `Preview ${d.name}`, `R11 canvas≠Preview on ${drift.length} blocks (${drift.slice(0, 12).join('; ')})`);
         // a full-page picture of what a visitor sees
         await page.setViewportSize({ width: d.w + 20, height: Math.min(6000, Math.max(900, a.height)) }); await page.waitForTimeout(400);
         await shot(page, `preview-${d.w}`);

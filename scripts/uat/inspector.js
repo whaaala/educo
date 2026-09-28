@@ -36,6 +36,12 @@ async function contentWidth(page, id, which) {
   const b = page.getByRole('group', { name: 'Content width' }).getByRole('button', { name: which }).or(page.getByRole('radio', { name: which })).first();
   if (!(await b.count())) return false; await b.click(); await page.waitForTimeout(250); return true;
 }
+/** A block's width mode — "Fit" (hug its content) · "Full" · "Custom" — under Design → Size. */
+async function widthMode(page, id, which) {
+  await H.select(page, id); await tab(page, 'Design'); if (!(await section(page, 'Size'))) return false;
+  const b = page.getByRole('group', { name: 'Width' }).getByRole('button', { name: which, exact: true }).or(page.getByRole('radio', { name: which, exact: true })).first();
+  if (!(await b.count())) return false; await b.scrollIntoViewIfNeeded(); await b.click(); await page.waitForTimeout(250); return true;
+}
 /** Background colour, typed into the hex field and confirmed with Enter. */
 async function background(page, id, hex) {
   await H.select(page, id); await tab(page, 'Design'); if (!(await section(page, 'Background'))) return false;
@@ -81,4 +87,15 @@ async function spacing(page, id, name, px) {
   }
   await page.waitForTimeout(300); return true;
 }
-module.exports = { spacing, textToggle, section, tab, meaning, sticky, contentWidth, background, text, phoneOnly };
+/** A block's "Text size" slider moved with the arrow keys to `px` (the Content tab for a single block, Design for a box). */
+async function textSize(page, id, px) {
+  await H.select(page, id);
+  let s = null;
+  // The slider lives inside the "Text style" section (collapsed by default) — a person opens it first.
+  for (const t of ['Content', 'Design']) { await tab(page, t); await section(page, 'Text style( \\(everything inside\\))?'); const c = page.getByRole('slider', { name: /^Text size/ }).first(); if (await c.count()) { s = c; break; } }
+  if (!s) return false;
+  await s.scrollIntoViewIfNeeded(); await s.focus();
+  for (let k = 0; k < 200; k++) { const now = +(await s.getAttribute('aria-valuenow') ?? await s.inputValue()); if (now === px) break; await page.keyboard.press(now < px ? 'ArrowRight' : 'ArrowLeft'); }
+  await page.waitForTimeout(300); await tab(page, 'Design'); return true;
+}
+module.exports = { spacing, textToggle, section, tab, meaning, sticky, contentWidth, background, text, phoneOnly, widthMode, textSize };

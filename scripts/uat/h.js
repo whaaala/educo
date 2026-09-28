@@ -94,11 +94,15 @@ async function select(page, id) {
     // would take the click, and a person aims at the part they can see.
     const pt = await page.evaluate(([id, bx]) => {
       const me = document.querySelector(`[data-box-id="${id}"]`);
-      for (const [fx, fy] of [[0.8, 0.8], [0.8, 0.5], [0.5, 0.8], [0.95, 0.95], [0.5, 0.5], [0.2, 0.8], [0.05, 0.95]]) {
-        const x = bx.x + bx.width * fx, y = bx.y + bx.height * fy; const hit = document.elementFromPoint(x, y);
+      // Only the part of the block that is ON SCREEN can be aimed at: a column taller than the window (an article
+      // beside a sidebar) had its 80%-down point below the viewport, and the click landed on whatever the window's
+      // bottom edge held instead — four dressed pages "could not select" the main column for exactly this reason.
+      const top = Math.max(bx.y, 0), bottom = Math.min(bx.y + bx.height, innerHeight), h = Math.max(1, bottom - top);
+      for (const [fx, fy] of [[0.8, 0.8], [0.8, 0.5], [0.5, 0.8], [0.95, 0.95], [0.5, 0.5], [0.2, 0.8], [0.05, 0.95], [0.8, 0.2], [0.5, 0.1]]) {
+        const x = bx.x + bx.width * fx, y = top + h * fy; const hit = document.elementFromPoint(x, y);
         if (hit && me && me.contains(hit)) return [x, y];
       }
-      return [bx.x + bx.width * 0.8, bx.y + bx.height * 0.8];
+      return [bx.x + bx.width * 0.8, top + h * 0.8];
     }, [id, b]);
     await page.mouse.click(pt[0], pt[1]);
     await page.waitForTimeout(250);

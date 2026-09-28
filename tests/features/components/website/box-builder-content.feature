@@ -75,5 +75,14 @@ Feature: Box Builder — content types & links
     Then the space between the links follows it, across and down separately, on the canvas and the published page
     And rows of columns are not affected — only rows of links and buttons
 
+  Scenario: A link reads on every website theme
+    Given a menu of links on a page with no band colour, in the Midnight, Dark or Purple theme
+    Then each link reads at least 4.5:1 against the page background, and against a card's surface
+    And on the Light theme the brand colour is used as it is, because it already reads
+    Because the brand is chosen for white words on a button (7:1), not for words on a
+      dark page: measured on every dressed page, the indigo read 3.02:1 on Midnight and
+      2.9:1 on Dark. The link now has its own token — the brand moved in lightness until
+      it reads — and both engines fall back to it before the brand.
+
   Scenario: New content types work across themes, screen sizes and are accessible
     Then each renders correctly in light/dark/midnight/purple, reflows responsively, and exposes aria labels

@@ -36,6 +36,13 @@ Feature: Pages publish as correct HTML5, however they were built
     Given a section headed "Our values" holding three cards marked "Article / card", each with a heading
     Then "Our values" is an H2 and each card's heading is an H3
 
+  Scenario: A card's title never becomes the page's title
+    Given a page with no hero whose content starts with a row of three cards, each with a heading, then a section headed "What we offer"
+    Then "What we offer" is the H1 and each card's heading is an H2 or lower
+    And on a page whose content holds only cards, the school's name in the header is the H1
+    Because a card, a quote, a sidebar or a menu is a self-contained piece: its heading titles that piece, not the page.
+      Measured on a dressed home page: "Card title" was published as the H1, at 19px under the 24px headings after it.
+
   Scenario: A level I choose is mine
     When I set a heading to level 4 by hand
     Then it stays level 4 however the page changes

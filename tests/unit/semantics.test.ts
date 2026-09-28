@@ -70,6 +70,42 @@ describe("B1 — heading levels follow the page", () => {
     const s = resolvePage(page(box({ tag: "header" }, [heading("Oakfield", { id: "o" })]), box({ id: "body" })));
     expect(lvl(s, "o")).toBe(1);
   });
+  // #118 — a self-contained piece never titles the page
+  it("a card's title never becomes the page's title: the first heading OUTSIDE any article does", () => {
+    const card = (id: string) => box({ tag: "article" }, [heading("Card title", { id })]);
+    const s = resolvePage(page(box({ tag: "header" }, [heading("Oakfield", { id: "name" })]), box({ rowBand: true }, [card("c1"), card("c2"), card("c3")]), box({ tag: "section" }, [heading("What we offer", { id: "w" })])));
+    expect(lvl(s, "w")).toBe(1);
+    expect(lvl(s, "c1")).toBeGreaterThanOrEqual(2);
+    expect(lvl(s, "name")).toBe(2);
+  });
+  it("…and a page whose content holds only cards titles itself with the header's name, not a card", () => {
+    const card = (id: string) => box({ tag: "article" }, [heading("Card title", { id })]);
+    const s = resolvePage(page(box({ tag: "header" }, [heading("Oakfield", { id: "name" })]), box({ rowBand: true }, [card("c1"), card("c2")])));
+    expect(lvl(s, "name")).toBe(1);
+    expect(lvl(s, "c1")).toBe(2);
+    expect([...s.byId.values()].filter((v) => v.level === 1)).toHaveLength(1);
+  });
+  it("a quote's caption, a sidebar's heading and a menu's heading are self-contained too", () => {
+    for (const tag of ["figure", "aside", "nav"] as const) {
+      const s = resolvePage(page(box({ tag }, [heading("Inside", { id: "in" })]), box({}, [heading("Welcome", { id: "w" })])));
+      expect(lvl(s, "w"), tag).toBe(1);
+      expect(lvl(s, "in"), tag).toBeGreaterThanOrEqual(2);
+    }
+  });
+  // #121 — the section the page title heads
+  it("cards inside the section the H1 heads are H2, not H3 — no level is skipped", () => {
+    const card = (id: string) => box({ tag: "article" }, [heading("Card", { id })]);
+    const s = resolvePage(page(box({ tag: "section" }, [heading("What we offer", { id: "t" }), card("c1"), card("c2")]), box({ tag: "section" }, [heading("Next", { id: "n" }), card("c3")])));
+    expect(lvl(s, "t")).toBe(1);
+    expect(lvl(s, "c1")).toBe(2);
+    expect(lvl(s, "n")).toBe(2);
+    expect(lvl(s, "c3")).toBe(3);
+  });
+  it("…but a level the user set inside that section is kept", () => {
+    const s = resolvePage(page(box({ tag: "section" }, [heading("Title", { id: "t" }), box({ tag: "article" }, [heading("Mine", { id: "m", level: 4 })])])));
+    expect(lvl(s, "t")).toBe(1);
+    expect(lvl(s, "m")).toBe(4);
+  });
 });
 
 describe("C1 — fixed for you, asked only for your words", () => {

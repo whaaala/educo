@@ -60,22 +60,30 @@ class Builder {
   async sizeColumns(ids, shares) {
     const page = this.page; const sum = shares.reduce((a, b) => a + b, 0) || 1;
     if (ids.length < 2 || shares.every((s) => Math.abs(s - shares[0]) < 6)) return; // equal: already equal
-    let cum = 0;
     // Measure with the blocks panel CLOSED — the panel docks beside the page and shrinks the canvas to fit, so a distance
     // measured with it open is the wrong distance once it is closed for the drag.
     await H.panel(page, false);
+    // A column can be dragged no narrower than 3rem (the hand floor), so a crawled share below it — a 5% column of a
+    // 720px main column is 36px — is raised to the floor and the others give way in proportion. Asking for the crawl's
+    // number as written left the first drag clamped and every later edge aimed at the wrong place (#129).
+    let targets = null;
     for (let i = 0; i < ids.length - 1; i++) {
-      cum += shares[i] / sum;
       await H.select(page, ids[i]);
       // the row OR grid the columns sit in: its content box, and this column's right edge within it
       const m = await page.evaluate(([first, id]) => {
         const a = document.querySelector(`[data-box-id="${first}"]`), b = document.querySelector(`[data-box-id="${id}"]`); if (!a || !b) return null;
         const host = a.parentElement; const cs = getComputedStyle(host); const hr = host.getBoundingClientRect();
         const left = hr.left + parseFloat(cs.paddingLeft), inner = hr.width - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
-        return { inner, right: b.getBoundingClientRect().right - left };
+        const Z = document.querySelector('[data-box-id]').currentCSSZoom || 1;
+        return { inner, right: b.getBoundingClientRect().right - left, floor: 3.25 * 16 * Z };
       }, [ids[0], ids[i]]);
       if (!m) break;
-      const dx = Math.round(cum * m.inner - m.right);
+      if (!targets) {
+        let px = shares.map((s) => (s / sum) * m.inner);
+        for (let k = 0; k < 4; k++) { const short = px.map((v) => Math.max(0, m.floor - v)); const need = short.reduce((a, b) => a + b, 0); if (!need) break; const room = px.reduce((a, v) => a + Math.max(0, v - m.floor), 0) || 1; px = px.map((v) => (v < m.floor ? m.floor : v - (need * Math.max(0, v - m.floor)) / room)); }
+        targets = []; let c = 0; for (const v of px) { c += v; targets.push(c); }
+      }
+      const dx = Math.round(targets[i] - m.right);
       if (Math.abs(dx) < 4) continue;
       await H.dragEdge(page, 'right', dx);
     }
@@ -90,9 +98,12 @@ class Builder {
     if (t.plusStack) { lineAfter = await this.leaf(container, lineAfter, { ...ctx, lines: 2, lastLine: false }); ctx = { ...ctx, firstInSection: false }; }
     for (let r = 0; r < repeat; r++) {
       if (t.kind === 'grid') {
+        // The NEXT LINE of the section, then the Grid dropped into it — never at the bottom of the line before: aimed
+        // there, the grid landed INSIDE that line's middle column (a 120px one on a six-column row) and drew three
+        // quotes one letter wide. A person adds the line first ("Add a block inside") and drops the grid into it.
+        const box = lineAfter ? await this.addLine(container, 'Stack', lineAfter) : container;
         const before = await P.ids(this.page);
-        if (lineAfter) { const v = await H.visibleRect(this.page, lineAfter); await H.dropTile(this.page, 'Grid', Math.round(v.l + v.w / 2), Math.round(v.b - 4)); }
-        else { const v = await H.visibleRect(this.page, container); await H.dropTile(this.page, 'Grid', Math.round(v.l + v.w / 2), Math.round(v.t + v.h / 2)); }
+        await H.dropInto(this.page, 'Grid', box);
         const cell = this.page.locator(`[role="gridcell"][aria-label="${n} across, 1 down"]`);
         if (await cell.count()) { await cell.click(); await this.page.waitForTimeout(700); }
         const g = (await P.newestLeaf(this.page, before)).id; this.steps++;
@@ -124,13 +135,13 @@ class Builder {
 
   async leaf(container, last, ctx) { return this.addLine(container, leafTile(ctx), last); }
 
-  /** Fill `container` (an empty box) with structure `t`. */
-  async fill(t, container, ctx) {
-    if (t.kind === 'leaf') return this.leaf(container, null, { ...ctx, lines: 1, lastLine: true });
-    if (t.kind === 'row' || t.kind === 'grid') return this.columns(t, container, null, ctx);
+  /** Fill `container` (an empty box) with structure `t` — after the line `after`, when the box already holds one. */
+  async fill(t, container, ctx, after = null) {
+    if (t.kind === 'leaf') return this.leaf(container, after, { ...ctx, lines: 1, lastLine: true });
+    if (t.kind === 'row' || t.kind === 'grid') return this.columns(t, container, after, ctx);
     // a STACK: its described lines, then plain lines up to its count
     const lines = Math.min(Math.max(t.n, t.parts.length), MAX_LINES);
-    let last = null;
+    let last = after;
     for (let i = 0; i < lines; i++) {
       const part = t.parts[i] ?? { kind: 'leaf' };
       const lctx = { ...ctx, firstInSection: ctx.firstInSection && i === 0, lines, lastLine: i === lines - 1 };

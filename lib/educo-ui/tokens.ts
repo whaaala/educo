@@ -8,7 +8,7 @@
  */
 
 import type { SiteTheme } from "@/lib/site-storage";
-import { type Ramp, type Shade, SHADES, rampFromHex, hexToOklch, oklchToHex } from "./color";
+import { type Ramp, type Shade, SHADES, rampFromHex, hexToOklch, oklchToHex, nearestAccessibleColor, contrastRatio } from "./color";
 import { LETTER_SPACING } from "./fonts";
 
 export interface EducoTokens {
@@ -18,6 +18,8 @@ export interface EducoTokens {
     // semantic roles (what components actually reference)
     bg: string; surface: string; text: string; muted: string; border: string;
     brand: string; onBrand: string;
+    /** The brand, as WORDS on the page: nudged until it reads 4.5:1 on the background and on a card's surface. */
+    link: string;
   };
   font: { heading: string; body: string; mono: string };
   text: Record<string, string>;   // rem type scale
@@ -95,6 +97,25 @@ function neutralRamp(brandHex: string): Ramp {
   return rampFromHex(oklchToHex({ L: 0.6, C: 0.012, h }));
 }
 
+/**
+ * THE BRAND AS A LINK COLOUR — readable on the page, not merely the brand.
+ *
+ * A link was painted in the brand colour itself, and the brand is chosen to carry WHITE words on a button (7:1 for the
+ * default indigo). On a dark page the same indigo is the words, and there it read **3.02:1** against the Midnight
+ * background, 2.9:1 on Dark — measured on every dressed page by the page audit (#108), on every menu link, on
+ * three of the four themes. The button was always fine; the link never was.
+ *
+ * So the link gets its own token: the brand's hue and chroma, moved in lightness (`nearestAccessibleColor`) until
+ * it clears 4.5:1 on the background AND on a card's surface — a link inside a card has the surface behind it. On a
+ * light theme the indigo already reads and is returned untouched, so nothing that was right changes.
+ */
+export function readableLink(brand: string, bg: string, surface: string): string {
+  const onBg = nearestAccessibleColor(brand, bg);
+  if (contrastRatio(onBg, surface) >= 4.5) return onBg;
+  const onSurface = nearestAccessibleColor(onBg, surface);
+  return contrastRatio(onSurface, bg) >= 4.5 ? onSurface : onBg;
+}
+
 /** Build the full token set from our existing SiteTheme (brand colour + surfaces + fonts + radius). */
 export function tokensFromTheme(theme: SiteTheme): EducoTokens {
   const primary = rampFromHex(theme.primary);
@@ -107,6 +128,7 @@ export function tokensFromTheme(theme: SiteTheme): EducoTokens {
       success: "#16a34a", warning: "#d97706", danger: "#dc2626", info: "#0284c7",
       bg: theme.background, surface: theme.surface, text: theme.text, muted: theme.textMuted, border: neutral[200],
       brand: theme.primary, onBrand: "#ffffff",
+      link: readableLink(theme.primary, theme.background, theme.surface),
     },
     font: { heading: theme.headingFont, body: theme.bodyFont, mono: "'IBM Plex Mono', ui-monospace, monospace" },
     text: TYPE_SCALE, weight: WEIGHTS, leading: LEADING, tracking: TRACKING, space: SPACE,
@@ -130,7 +152,7 @@ export function tokensToCss(t: EducoTokens, selector = ":root"): string {
   const ramp = (name: string, r: Ramp) => SHADES.forEach((s: Shade) => lines.push(`--eu-color-${name}-${s}:${r[s]};`));
   ramp("primary", t.color.primary); ramp("accent", t.color.accent); ramp("neutral", t.color.neutral);
   lines.push(`--eu-color-success:${t.color.success};`, `--eu-color-warning:${t.color.warning};`, `--eu-color-danger:${t.color.danger};`, `--eu-color-info:${t.color.info};`);
-  lines.push(`--eu-color-bg:${t.color.bg};`, `--eu-color-surface:${t.color.surface};`, `--eu-color-text:${t.color.text};`, `--eu-color-muted:${t.color.muted};`, `--eu-color-border:${t.color.border};`, `--eu-color-brand:${t.color.brand};`, `--eu-color-on-brand:${t.color.onBrand};`);
+  lines.push(`--eu-color-bg:${t.color.bg};`, `--eu-color-surface:${t.color.surface};`, `--eu-color-text:${t.color.text};`, `--eu-color-muted:${t.color.muted};`, `--eu-color-border:${t.color.border};`, `--eu-color-brand:${t.color.brand};`, `--eu-color-on-brand:${t.color.onBrand};`, `--eu-color-link:${t.color.link};`);
   lines.push(`--eu-font-heading:${t.font.heading};`, `--eu-font-body:${t.font.body};`, `--eu-font-mono:${t.font.mono};`);
   Object.entries(t.text).forEach(([k, v]) => lines.push(`--eu-text-${k}:${v};`));
   Object.entries(t.weight).forEach(([k, v]) => lines.push(`--eu-weight-${k}:${v};`));

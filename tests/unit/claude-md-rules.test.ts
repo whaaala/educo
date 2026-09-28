@@ -90,6 +90,18 @@ const RULES: [name: string, mustSay: RegExp][] = [
   ["Component and layout patterns from the deck (RULE C)", /RULE C — COMPONENT AND LAYOUT PATTERNS FROM THE DECK ARE FOLLOWED/],
   ["…elements → components → section components → layout patterns → pages", /elements → components → section components → layout patterns → pages/],
   ["…a missing component is a placeholder AND a recorded gap", /docs\/COMPONENT_GAPS\.md/],
+  /**
+   * Decided 2026-09-28: no component is built during the layout work — realistic placeholders, recorded and NAMED in
+   * the page report; and every layout test is a dressed, realistic page (RULE E), never bare boxes.
+   */
+  ["…components stay placeholders during layout work", /COMPONENTS ARE PLACEHOLDERS DURING LAYOUT WORK/],
+  ["…a placeholder is NAMED in the page report", /NAMED in the page report/],
+  ["Every layout test is a realistic, dressed page (RULE E)", /RULE E — EVERY LAYOUT TEST IS A REALISTIC, DRESSED PAGE/],
+  ["…a menu is a list of Link blocks, not buttons", /a list of Link blocks, not buttons/],
+  ["…the structures come from the crawl, tier by tier", /page-cover\.json[\s\S]*tier by tier/],
+  ["…a structure the builder cannot build is a gap to fix", /A structure the builder cannot[\s\S]*build is a GAP to fix, not a case to skip/],
+  ["…bare structures do not count", /Bare structures[\s\S]*do not count/],
+  ["…any user, any layout imaginable — the vocabulary of the LLM builder", /ANY user build ANY layout imaginable/],
   ["Website personality and tone (RULE P)", /RULE P — WEBSITE PERSONALITY AND TONE ARE FOLLOWED/],
   ["…every template/theme/page declares one personality", /declares one personality/],
   ["The web design rules and framework (RULE D)", /RULE D — THE WEB DESIGN RULES AND FRAMEWORK ARE FOLLOWED/],

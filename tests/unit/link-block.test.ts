@@ -23,7 +23,7 @@ describe("the Link block", () => {
     const a = anchor(doc(page([createElement("link", { text: "Term dates", href: "/term-dates" } as Partial<BoxNode>)])), "Term dates");
     expect(a).toMatch(/^<a href="\/term-dates"/);
     expect(a).toMatch(/text-decoration:underline/);
-    expect(a).toMatch(/color:var\(--bx-link, var\(--eu-color-brand\)\)/); // the band's link colour, else the brand (#92)
+    expect(a).toMatch(/color:var\(--bx-link, var\(--eu-color-link, var\(--eu-color-brand\)\)\)/); // the band's link colour, else the READABLE link token, else the brand (#92, #108)
     expect(a).not.toMatch(/border-radius|background|padding/); // none of a button's look
     expect(a).not.toMatch(/target=/);
   });

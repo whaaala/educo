@@ -32,7 +32,7 @@ export const COMPONENT_CSS = `
 
 /* ── Card ──────────────────────────────────────────────────────────────────── */
 /* container-type + fluid padding: the card tightens its own padding when placed in a narrow column */
-.eu-root .eu-card { container-type: inline-size; background: var(--eu-color-surface); border: 1px solid var(--eu-color-border); border-radius: var(--eu-radius-lg); padding: clamp(var(--eu-space-4), 4cqi, var(--eu-space-6)); box-shadow: var(--eu-shadow-sm); }
+.eu-root .eu-card { container-type: inline-size; min-inline-size: min(100%, 10rem); /* size containment hides the card's words from a column's min-content floor (ledger 127) — this floor stands in for them */ background: var(--eu-color-surface); border: 1px solid var(--eu-color-border); border-radius: var(--eu-radius-lg); padding: clamp(var(--eu-space-4), 4cqi, var(--eu-space-6)); box-shadow: var(--eu-shadow-sm); }
 .eu-root .eu-card--flat { box-shadow: none; }
 .eu-root .eu-card--raised { box-shadow: var(--eu-shadow-lg); }
 .eu-root .eu-card__title { font-family: var(--eu-font-heading); font-weight: var(--eu-weight-bold); font-size: 1.35em; margin-block-end: var(--eu-space-2); }
@@ -69,14 +69,14 @@ export const COMPONENT_CSS = `
 .eu-root .eu-card__action { align-self: flex-start; margin-block-start: var(--eu-space-1); }
 
 /* ── Quote (blockquote) ─────────────────────────────────────────────────────── */
-.eu-root .eu-quote { container-type: inline-size; display: flex; flex-direction: column; gap: var(--eu-space-2); margin: 0; }
+.eu-root .eu-quote { display: flex; /* no size containment: it hid the quote's longest word from the column floor (ledger 127) and nothing queried it */ flex-direction: column; gap: var(--eu-space-2); margin: 0; }
 .eu-root .eu-quote__text { margin: 0; font-family: var(--eu-font-heading); font-style: italic; color: var(--eu-color-text); font-size: 1.6em; line-height: var(--eu-leading-snug); }
 .eu-root .eu-quote__author { color: var(--eu-color-muted); font-size: 0.9em; }
 .eu-root .eu-quote--bordered { border-inline-start: 0.25rem solid var(--eu-color-brand); padding-inline-start: clamp(var(--eu-space-3), 3cqi, var(--eu-space-5)); }
 .eu-root .eu-quote--large .eu-quote__text { font-size: 2.1em; }
 
 /* ── Stat (big number + label) ──────────────────────────────────────────────── */
-.eu-root .eu-stat { container-type: inline-size; display: flex; flex-direction: column; gap: var(--eu-space-1); align-items: center; text-align: center; }
+.eu-root .eu-stat { display: flex; /* no size containment: "1,000+" broke across lines in a column the floor could not see (ledger 127) */ flex-direction: column; gap: var(--eu-space-1); align-items: center; text-align: center; }
 .eu-root .eu-stat__value { font-family: var(--eu-font-heading); font-weight: var(--eu-weight-bold); line-height: 1; color: var(--eu-color-text); font-size: 3.4em; }
 .eu-root .eu-stat__label { color: var(--eu-color-muted); font-size: 0.95em; }
 .eu-root .eu-stat--brand .eu-stat__value { color: var(--eu-color-brand); }
@@ -321,7 +321,7 @@ export const COMPONENT_CSS = `
 .eu-root .eu-accordion__header::-webkit-details-marker { display: none; }
 .eu-root .eu-accordion__header::after { content: "+"; flex: 0 0 auto; color: var(--eu-color-muted); font-weight: var(--eu-weight-normal); transition: transform var(--eu-dur-base) var(--eu-ease-standard); }
 .eu-root .eu-accordion__item[open] > .eu-accordion__header::after { content: "\\2212"; } /* minus */
-.eu-root .eu-accordion__body { padding: 0 clamp(var(--eu-space-3), 3.2cqi, var(--eu-space-4)) clamp(var(--eu-space-3), 3.2cqi, var(--eu-space-4)); font-size: clamp(0.85rem, 0.8rem + 0.7cqi, 1rem); color: var(--eu-color-muted); }
+.eu-root .eu-accordion__body { padding: 0 clamp(var(--eu-space-3), 3.2cqi, var(--eu-space-4)) clamp(var(--eu-space-3), 3.2cqi, var(--eu-space-4)); font-size: max(1rem, clamp(0.85rem, 0.8rem + 0.7cqi, 1rem)); color: var(--eu-color-muted); } /* never under the reader's 1rem: an answer read 15.1px on a 320px phone (ledger 122, Web Design Rule 1 — body 16px or more) */
 /* rich answer body (safe markdown-lite → links / bold / lists) */
 .eu-root .eu-accordion__body p { margin: 0 0 var(--eu-space-2); }
 .eu-root .eu-accordion__body p:last-child { margin-bottom: 0; }

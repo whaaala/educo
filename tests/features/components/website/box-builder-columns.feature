@@ -607,3 +607,23 @@ Feature: The twelve-column grid in the Box Builder
     Then the third of the row they left empty stays empty
     Because filling it would be the builder arguing with a design. Only a grid
       the responsive ladder NARROWED is stretched.
+
+  Scenario: A grid narrows by its own box, not only by the screen
+    Given a three-cell grid whose middle cell holds another three-cell grid of quotes
+    When the page is viewed at 768px, where the ladder says three across
+    Then the outer grid is three across, because its box (the page) has room for three readable cells
+    And the inner grid is ONE column, because its box (a 256px cell) has room for one
+    And no word in any quote is broken across lines, on the canvas and in the Preview alike
+    Because the ladder reasons from the screen: measured, the inner grid drew each
+      quote 85px wide — twelve tracks of 21px — and broke "everything" letter by
+      letter, in both engines, while by the screen three across was right.
+      So below across × 12rem of ITS OWN width a grid goes two across, and below
+      24rem one — a container query on the box that holds it, one emitter for
+      both engines (Responsive Field Guide ingredient ④).
+
+  Scenario: The own-box rule only ever takes columns away
+    Given a grid on the phone rung, where the ladder already says one column
+    Then the two-across rule never runs there, in either engine
+    And a count the user set at any rung switches the rule off for that grid
+    And a masonry gallery and a pager keep their tracks
+    Because a per-device setting always wins, and a masonry track is a ruler, not a row.

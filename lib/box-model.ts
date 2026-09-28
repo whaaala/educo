@@ -3154,9 +3154,14 @@ export function gridReflowsAt(parent: BoxNode, bp: Breakpoint = "base"): boolean
  * start is given up — the cell auto-flows, which is what an unplaced cell has always done correctly.
  */
 export function gridPlacementAt(parent: BoxNode, child: BoxNode, bp: Breakpoint = "base"): { track: number; span: number; start: number | null } {
-  const track = gridColumnsAt(parent, bp);
+  return placementForTrack(parent, child, gridColumnsAt(parent, bp), { reflow: gridReflowsAt(parent, bp), spanSet: setAtRung(child, "colSpan", bp), startSet: setAtRung(child, "colStart", bp) });
+}
+/**
+ * The same placement for ANY track count — the rung's (`gridPlacementAt`) or one a container query narrows to
+ * (`gridQueryCss`). `spanSet` / `startSet`: did the person state the span / start in THIS track's units?
+ */
+function placementForTrack(parent: BoxNode, child: BoxNode, track: number, o: { reflow: boolean; spanSet: boolean; startSet: boolean }): { track: number; span: number; start: number | null } {
   const stored = gridColumns(parent);
-  const reflow = gridReflowsAt(parent, bp);
   /**
    * `stored` IS ALREADY THE RUNG'S COUNT when the row states one there — `gridColumnsAt` is handed a
    * RESOLVED node, so `node.columns` has been overwritten by the override and the base number is gone. The
@@ -3167,10 +3172,10 @@ export function gridPlacementAt(parent: BoxNode, child: BoxNode, bp: Breakpoint 
    * quarter of twelve becomes the whole of a three-track row, the starts are given up, and the cells flow
    * one per row — wider than ideal, and every one of them visible, which is the property that matters.
    */
-  const fit = (v: number) => (reflow && track !== stored && !setAtRung(child, "colSpan", bp) ? Math.max(1, Math.round((v * track) / stored)) : v);
+  const fit = (v: number) => (o.reflow && track !== stored && !o.spanSet ? Math.max(1, Math.round((v * track) / stored)) : v);
   const span = Math.min(track, fit(Math.max(1, Math.round(child.colSpan ?? 1))));
   if (child.colStart == null) return { track, span, start: null };
-  if (reflow && !setAtRung(child, "colStart", bp)) return { track, span, start: null };
+  if (o.reflow && !o.startSet) return { track, span, start: null };
   // Clamped to a track the block can actually FINISH inside, so it never lands in an implicit column and
   // stretches the row past the edge of the screen.
   const raw = Math.round(child.colStart);
@@ -3224,18 +3229,96 @@ export function gridSpanAt(parent: BoxNode, child: BoxNode, bp: Breakpoint = "ba
   if (!narrowed) return own;
   if (isMasonry(parent, bp)) return own; // a masonry track is a measuring unit, not a row to fill
   const kids = (parent.children ?? []).filter((c) => !isFloating(c) && !resolveResponsive(c, bp).hidden);
+  return lastRowFills(kids, child, own, gridColumnsAt(parent, bp), (c) => gridPlacementAt(parent, c, bp).span);
+}
+/** The cell that ENDS a short final row stretches to fill it — for the rung's track or a container query's. */
+function lastRowFills(kids: BoxNode[], child: BoxNode, own: number, track: number, spanOf: (c: BoxNode) => number): number {
   if (kids.length < 2) return own; // one cell already spans what it was given
-  const track = gridColumnsAt(parent, bp);
   // The same walk `gridRowTracks` makes, so the two cannot disagree about where a row breaks.
   let used = 0;
   for (const c of kids) {
-    const span = gridPlacementAt(parent, c, bp).span;
+    const span = spanOf(c);
     if (used + span > track) used = 0;
     used += span;
   }
   if (used === 0 || used >= track) return own;      // the final row filled by itself
   if (kids[kids.length - 1].id !== child.id) return own; // only the cell that ends it stretches
   return Math.min(track, own + (track - used));
+}
+
+// ── A GRID NARROWS BY ITS OWN BOX (Responsive Field Guide ④ — container queries) ─────────────────────
+/**
+ * THE LADDER KNOWS THE SCREEN; IT DOES NOT KNOW THE BOX.
+ *
+ * `gridColumnsAt` caps a grid on a tablet by asking how narrow a cell would get at the rung's narrowest width — as if
+ * every grid were as wide as the page. A grid nested in a column, or in another grid's cell, is not. Measured on a
+ * dressed page (#111): a three-quote grid dropped into the middle cell of a three-cell grid drew each quote **85px**
+ * wide at 768px — its twelve tracks 21px each — and broke every word letter by letter ("ev / er / yt / hi / ng"), on
+ * the canvas and in the Preview alike. By the screen the ladder was right: 768 / 3 is a readable cell. By the box it
+ * was three cells in 256px.
+ *
+ * So a grid also narrows by ITS OWN width, through a container query on the box that holds it: below
+ * `across × CELL_MIN_REM` (the same 12rem floor the ladder uses) it goes two across; below `2 × CELL_MIN_REM`, one.
+ *
+ *   • Only ever NARROWER than the ladder. The two-across rule is guarded so it never runs on the phone rung (where
+ *     the ladder already says one); the one-across rule agrees with every rung it could meet.
+ *   • Never for a grid whose count somebody set at a rung — a per-device setting always wins — nor a masonry gallery
+ *     or a pager, whose tracks are not rows.
+ *   • `!important`, because the canvas draws the rung's columns as an INLINE style and a stylesheet cannot otherwise
+ *     reach past one; the export carries the same mark so the two engines cannot differ. The user cannot set these
+ *     properties by hand, so nothing of theirs is overridden.
+ *   • The HOST (the band or cell holding the grid) becomes the query container (`hostsNarrowingGrid` →
+ *     `container-type: inline-size`) — never a hugging box, whose width would then have nothing to come from.
+ */
+export function gridNarrowsAt(node: BoxNode): { two: number | null; one: number } | null {
+  if (node.layout !== "grid" || isPager(node) || node.rowFlow === "masonry") return null;
+  if (BP_ORDER.some((bp) => bp !== "base" && setAtRung(node, "columns", bp))) return null;
+  /**
+   * "Across" is how many cells actually SHARE THE FIRST ROW by their spans — not `acrossAt`, which divides the track
+   * by the smallest span. An 11 / 1 split (a wide cell dragged against a one-track neighbour) is two across; by the
+   * smallest span it read as twelve, so the rule fired below 144rem and re-fitted the pair onto two tracks: the
+   * narrow cell dropped to a new row and the wide cell's far edge moved 414px in a resize guard (test:fast, 3 specs).
+   */
+  const cols = gridColumns(node);
+  let used = 0, across = 0;
+  for (const c of (node.children ?? []).filter((k) => !isFloating(k))) { const s = Math.min(cols, Math.max(1, Math.round(c.colSpan ?? 1))); if (used + s > cols) break; used += s; across++; }
+  if (across < 2) return null;
+  return { two: across > 2 ? across * CELL_MIN_REM : null, one: 2 * CELL_MIN_REM };
+}
+/** Does this box hold a grid that narrows by the box's width? Then it is that grid's query container. */
+export function hostsNarrowingGrid(node: BoxNode): boolean {
+  if (!isContainer(node) || hugsContent(node) || node.layout === "grid") return false;
+  return (node.children ?? []).some((c) => c.layout === "grid" && !!gridNarrowsAt(c));
+}
+/**
+ * The container-query rules for one grid: `scope` selects the grid, `cellScope(id)` a cell, and `aboveThePhone` wraps
+ * the two-across rule in whatever says "not the phone rung" in that engine (the export: the tablet rung's media query;
+ * the canvas: nothing at all when the preset is not the phone, and the rule left out when it is).
+ */
+export function gridQueryCss(scope: string, node: BoxNode, cellScope: (id: string) => string, aboveThePhone: (css: string) => string): string {
+  const n = gridNarrowsAt(node); if (!n) return "";
+  const kids = (node.children ?? []).filter((c) => !isFloating(c));
+  const at = (track: number) => {
+    const spanOf = (c: BoxNode) => placementForTrack(node, c, track, { reflow: true, spanSet: false, startSet: false }).span;
+    const cells = kids.map((c) => {
+      const p = placementForTrack(node, c, track, { reflow: true, spanSet: false, startSet: false });
+      const span = lastRowFills(kids, c, p.span, track, spanOf);
+      const col = p.start != null ? `${p.start} / span ${span}` : span > 1 ? `span ${span}` : "auto";
+      const rowSpan = Math.max(1, Math.round(c.rowSpan ?? 1)); // the row's START is given up with the column (see childStyle)
+      return `${cellScope(c.id)}{grid-column:${col} !important;grid-row:${rowSpan > 1 ? `span ${rowSpan}` : "auto"} !important}`;
+    }).join("");
+    return `${scope}{grid-template-columns:repeat(${track},minmax(0,1fr)) !important}${cells}`;
+  };
+  // Strictly BELOW the threshold, in the unit the floor is written in.
+  const below = (rem: number, css: string) => `@container (max-width:${rem - 0.01}rem){${css}}`;
+  return (n.two != null ? aboveThePhone(below(n.two, at(2))) : "") + below(n.one, at(1));
+}
+/** Every grid's query rules on a page — the canvas's per-tree stylesheet; the export walks its own render. */
+export function treeGridQueryCss(root: BoxNode, scopeFor: (id: string) => string, aboveThePhone: (css: string) => string): string {
+  let out = "";
+  const walk = (n: BoxNode) => { if (n.layout === "grid") out += gridQueryCss(scopeFor(n.id), n, scopeFor, aboveThePhone); for (const c of n.children ?? []) walk(c); };
+  walk(root);
+  return out;
 }
 
 /**
@@ -3397,7 +3480,7 @@ export function pagerNavHTML(node: BoxNode): string {
         // indigo on a dark navy hero. White reads on a dark photograph, the ring reads on a pale one, and
         // between them the pair is legible on any picture at all.
         `<a href="#${pagerSlideId(s)}" data-eu-pager-dot="${i}" aria-label="Show ${i + 1} of ${slides.length}"`
-        + ` style="width:.7rem;height:.7rem;border-radius:999px;background:#fff;opacity:.55;`
+        + ` style="width:.7rem;height:.7rem;border-radius:50%;background:#fff;opacity:.55;`
         + `box-shadow:0 0 0 1px rgba(0,0,0,.45)"></a>`).join("")
       + `</div>`
     : "";
@@ -3412,7 +3495,7 @@ export function pagerNavHTML(node: BoxNode): string {
     `<a href="#" hidden data-eu-pager-${dir} aria-label="${dir === "prev" ? "Show the previous one" : "Show the next one"}"`
     // Same reasoning as the dots: white on a soft dark disc, so it reads over any photograph, rather
     // than `currentColor` — which on an `<a>` is the link colour and came out indigo on a navy hero.
-    + ` style="width:2.25rem;height:2.25rem;border-radius:999px;border:1px solid rgba(255,255,255,.7);`
+    + ` style="width:2.25rem;height:2.25rem;border-radius:50%;border:1px solid rgba(255,255,255,.7);`
     + `background:rgba(0,0,0,.3);text-align:center;line-height:2.15rem;text-decoration:none;color:#fff">`
     + `${dir === "prev" ? "&#8249;" : "&#8250;"}</a>`;
   const body = wants("arrows") ? `${arrow("prev")}${dots}${arrow("next")}` : dots;
@@ -4596,6 +4679,12 @@ function solidHex(bg: string | undefined): string | null {
  */
 export const LINK_GAP_ACROSS = "2rem";
 export const LINK_GAP_DOWN = "0.75rem";
+/**
+ * A LINK'S COLOUR, in both engines: the band's own link colour when the band has a colour scheme (`bandScheme`), else the
+ * theme's READABLE link token (`readableLink` — the brand moved until it reads 4.5:1 on the page), else the brand. The
+ * brand alone read 3.02:1 on the Midnight page (#108); the middle fallback is what fixed it.
+ */
+export const LINK_COLOR_CSS = "var(--bx-link, var(--eu-color-link, var(--eu-color-brand)))";
 const isMenuItem = (k: BoxNode) => k.type === "link" || k.type === "button";
 export function linkLineGap(line: BoxNode, parent: BoxNode): CSSProperties | null {
   if (!line.rowBand) return null;
@@ -4695,6 +4784,8 @@ function containerStyleOf(node: BoxNode, bp: Breakpoint = "base"): CSSProperties
     ...gapCSS(node),
     alignItems: ALIGN_CSS[node.align ?? "stretch"],
     justifyContent: JUSTIFY_CSS[node.justify ?? "start"],
+    // The box a grid measures ITSELF against (`gridNarrowsAt`): a nested grid narrows by this width, not the screen's.
+    ...(hostsNarrowingGrid(node) ? { containerType: "inline-size" as const } : {}),
     // Responsive Field Guide: a ROW BAND always allows wrapping so its sections REFLOW (stack) on narrow
     // screens instead of shrinking to unreadable slivers. On desktop they still sit side-by-side (they fit).
     flexWrap: node.wrap || node.rowBand ? "wrap" : "nowrap",
@@ -5892,6 +5983,7 @@ export function treePinArrivalCss(node: BoxNode, scopeFor: (id: string) => strin
 export function capturesFixed(node: BoxNode): boolean {
   if (node.rotate) return true;                                   // transform: rotate()
   if (node.type === "component" && !hugsContent(node)) return true; // container-type: inline-size
+  if (hostsNarrowingGrid(node)) return true;                      // container-type: inline-size, for the grid it holds
   return !!node.variant?.includes("glass");                        // backdrop-filter
 }
 

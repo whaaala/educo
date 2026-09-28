@@ -315,6 +315,7 @@ screen at any width, and at desktop sizes it is the single row it always was.
 
 - Colours come from the site's **design tokens** (an OKLCH colour system) — pick from themed swatches, a spectrum, a hex field, or the eyedropper. There are **no hardcoded colours**, so switching the Website theme re‑skins everything consistently.
 - Colour fields show a **WCAG contrast** readout so text stays legible.
+- **Links read on every Website theme.** A link's colour is your brand colour, moved lighter or darker only as far as it needs to read (4.5:1) on that theme's page and on a card — on Light the brand is used as it is; on Dark, Midnight and Purple it is lifted so a menu is legible. A link inside a coloured band takes the band's own link colour instead.
 - Every control is keyboard‑accessible and labelled.
 
 ---
@@ -464,6 +465,10 @@ A twelve‑column row **stacks to one column on a phone** and to two on a tablet
 **If you placed the cells yourself, the placement is released when the row narrows.** *Start at column* and *Start at row* are written in the wide row's twelve columns, and there is nowhere to put "column 9" in a row that now has one. So at those sizes the cells simply **flow** — one after another, in the order you added them, wrapping onto new rows — and each keeps its share of the width as above. You will see three hand‑placed cells go two‑up on a tablet and fully stacked on a phone, the same as any other row.
 
 > It used to try to keep them where you put them, which sounds better and is not: two cells rescaled into the same column are both drawn, one on top of the other, and the one underneath looks like it was deleted.
+
+**A grid inside something narrow narrows by its own box, too.** Put a three‑across grid inside a sidebar, a column, or another grid's cell, and it goes to two across once its *own* box is narrower than three readable cells (about 36rem), and to one column below about 24rem — on a desktop as much as on a tablet, because what matters is the room the grid actually has, not the size of the screen. A grid the full width of the page never notices this rule (the page has room); a grid you gave a column count for a device keeps your number.
+
+> Before this, a three‑quote grid nested in the middle cell of a three‑cell grid drew each quote 85px wide on a tablet and broke every word letter by letter — the screen had room for three across, the cell did not.
 
 **Setting Columns for a device works the same way.** Your *Start at column* was written in the twelve-column row's units, so it's released there too and the cells flow. If you want an exact placement at that size, set **Start at column** on the cell *while that device is picked* — then it's read in that row's own units and honoured exactly.
 
@@ -702,6 +707,10 @@ Your page is published as proper HTML5, however you built it — you do not need
 - **Headings follow the page.** The first heading of your content is the page's title (level 1), later ones level 2, and
   a heading inside a **Section** or **Article / card** sits one level below. You can set a level by hand under
   **Meaning → Heading level**; the size is separate, under Text.
+- **A card's title is never the page's title.** A card, a quote, a sidebar or a menu is a self‑contained piece, so its
+  heading titles that piece, not the page. If your content opens with a row of cards, the first heading *outside* them
+  becomes the title; a page whose content is only cards is titled by the school's name in the header. And when the title
+  heads a section, the cards inside that section sit one level under it (2), not two — no level is skipped.
 - **Cards and quotes are already right** — a Card is published as an article, a Quote as a figure.
 - **The Page check** (toolbar) shows a number when something needs *your* words: a picture with no description
   ("Describe this picture for people who can't see it" — type it right there, or choose *It's only decoration*), or a

@@ -9,10 +9,18 @@ const newestLeaf = async (page, before) => {
   // WAIT for it: a drop is committed on the next render, and looking once, at once, failed a build that had worked
   // ("the drop added nothing" — 1 in ~4 runs, gone on a re-run). A flaky check is itself a bug (RULE V).
   let got = null;
-  for (let t = 0; t < 12 && !got; t++) { if (t) await page.waitForTimeout(250); got = await page.evaluate((b) => { const was = new Set(b); const fresh = Array.from(document.querySelectorAll('[data-box-id]')).filter((e) => !was.has(e.getAttribute('data-box-id')));
+  // Up to 8s: with six windows building at once a drop that was offered took longer than 3s to appear on one page
+  // of seventy, and the page's saved tree held the block the check had called missing.
+  for (let t = 0; t < 32 && !got; t++) { if (t) await page.waitForTimeout(250); got = await page.evaluate((b) => { const was = new Set(b); const fresh = Array.from(document.querySelectorAll('[data-box-id]')).filter((e) => !was.has(e.getAttribute('data-box-id')));
     const outer = fresh.filter((e) => !fresh.some((o) => o !== e && o.contains(e)));
     // Skip bare scaffolding bands: prefer an outer block that is not a row band wrapping exactly one new block.
-    const pick = outer.map((e) => { let x = e; while (x.children.length && Array.from(x.querySelectorAll(':scope > [data-box-id]')).length === 1 && getComputedStyle(x).flexDirection === 'row' && x.querySelector(':scope > [data-box-id]') && fresh.includes(x.querySelector(':scope > [data-box-id]'))) x = x.querySelector(':scope > [data-box-id]'); return x; });
+    // A NEW BAND HOLDING SEVERAL BLOCKS is scaffolding too: dropping beside a column re-made the band around both
+    // columns, so the newest "outer" block was the band — which cannot be selected (page 38: "could not select o-32
+    // (got o-33)", the column inside it). The answer is the fresh block INSIDE it that is not a band.
+    const isRow = (x) => getComputedStyle(x).display.includes('flex') && getComputedStyle(x).flexDirection === 'row';
+    const kidsOf = (x) => Array.from(x.querySelectorAll(':scope > [data-box-id]'));
+    const cands = outer.flatMap((e) => (isRow(e) && kidsOf(e).length > 1 ? kidsOf(e).filter((k) => fresh.includes(k)) : [e]));
+    const pick = (cands.length ? cands : outer).map((e) => { let x = e; while (x.children.length && kidsOf(x).length === 1 && isRow(x) && fresh.includes(kidsOf(x)[0])) x = kidsOf(x)[0]; return x; });
     return pick.length ? pick[pick.length - 1].getAttribute('data-box-id') : null; }, [...before]); }
   if (!got) { await page.screenshot({ path: require('path').join(__dirname, 'pg-nothing.png') }); throw new Error((page.__dropOffered ? 'PRODUCT: the canvas offered the drop and added nothing' : 'the drop added nothing (the drag never reached the canvas, twice)') + ' (after: ' + (page.__step || '?') + ')'); }
   return { id: got };
