@@ -30,6 +30,12 @@ describe("the link token reads 4.5:1 on the page and on a card, in every website
     expect(contrastRatio(t.primary, t.background)).toBeLessThan(4.5); // the measured 3.02:1 — the precondition is real
     expect(readableLink(t.primary, t.background, t.surface)).not.toBe(t.primary);
   });
+  it("the Stat's number — the brand as words — reads through the link token too (#139)", async () => {
+    const { buildCatalogueComponent } = await import("@/lib/component-catalogue");
+    const stat = buildCatalogueComponent("stat")!;
+    const number = (stat.children ?? []).find((c) => c.type === "heading")!;
+    expect(number.color).toBe("var(--eu-color-link, var(--eu-color-brand))");
+  });
   it("is emitted as --eu-color-link, and both engines' links fall back to it before the brand", () => {
     expect(tokensToCss(tokensFromTheme(resolveSiteTheme(DEFAULT_THEME, "midnight")))).toMatch(/--eu-color-link:#[0-9a-f]{6};/);
     expect(LINK_COLOR_CSS).toBe("var(--bx-link, var(--eu-color-link, var(--eu-color-brand)))");

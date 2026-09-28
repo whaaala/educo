@@ -11,7 +11,7 @@ const newestLeaf = async (page, before) => {
   let got = null;
   // Up to 8s: with six windows building at once a drop that was offered took longer than 3s to appear on one page
   // of seventy, and the page's saved tree held the block the check had called missing.
-  for (let t = 0; t < 32 && !got; t++) { if (t) await page.waitForTimeout(250); got = await page.evaluate((b) => { const was = new Set(b); const fresh = Array.from(document.querySelectorAll('[data-box-id]')).filter((e) => !was.has(e.getAttribute('data-box-id')));
+  for (let t = 0; t < 60 && !got; t++) { if (t) await page.waitForTimeout(250); got = await page.evaluate((b) => { const was = new Set(b); const fresh = Array.from(document.querySelectorAll('[data-box-id]')).filter((e) => !was.has(e.getAttribute('data-box-id')));
     const outer = fresh.filter((e) => !fresh.some((o) => o !== e && o.contains(e)));
     // Skip bare scaffolding bands: prefer an outer block that is not a row band wrapping exactly one new block.
     // A NEW BAND HOLDING SEVERAL BLOCKS is scaffolding too: dropping beside a column re-made the band around both

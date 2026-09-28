@@ -9,11 +9,12 @@
 //   NODE_PATH=node_modules node scripts/uat/uat-pages.js [--tier=80] [--from=0] [--count=N] [--jobs=6] [--only=site]
 const fs = require('fs'); const path = require('path');
 const arg = (k, d) => { const a = process.argv.find((x) => x.startsWith(`--${k}=`)); return a ? a.split('=').slice(1).join('=') : d; };
-const OUTDIR = path.join(__dirname, arg('plan', '') === 'dressed' ? 'dressed-out' : 'pages-out'); fs.mkdirSync(OUTDIR, { recursive: true });
-// --plan=dressed: the all-pairs plan of DRESSED pages (page-plan.js → dress.js); otherwise the crawl cover (page-cover.js)
-const DRESSED = arg('plan', '') === 'dressed';
+// --plan=dressed: the all-pairs plan of DRESSED pages (page-plan.js → dress.js); --plan=dressed95 / dressed99 / dressedinnovative:
+// the dressed plans of the wider tiers (page-plan-<tier>.json); otherwise the bare crawl cover (page-cover.js)
+const PLAN = arg('plan', ''); const DRESSED = PLAN.startsWith('dressed'); const PLAN_SUFFIX = DRESSED ? PLAN.slice(7) : '';
+const OUTDIR = path.join(__dirname, DRESSED ? `dressed${PLAN_SUFFIX}-out` : 'pages-out'); fs.mkdirSync(OUTDIR, { recursive: true });
 const COVER = DRESSED
-  ? JSON.parse(fs.readFileSync(path.join(__dirname, 'page-plan.json'), 'utf8')).map((r) => ({ ...r, tier: 0, site: `${r.type}·${r.header}·${r.hamburger ? 'burger' : 'links'}·${r.sidebar}·${r.hero}·${r.theme}`, page: r.source }))
+  ? JSON.parse(fs.readFileSync(path.join(__dirname, PLAN_SUFFIX ? `page-plan-${PLAN_SUFFIX}.json` : 'page-plan.json'), 'utf8')).map((r) => ({ ...r, tier: 0, site: `${r.type}·${r.header}·${r.hamburger ? 'burger' : 'links'}·${r.sidebar}·${r.hero}·${r.theme}`, page: r.source }))
   : JSON.parse(fs.readFileSync(path.join(__dirname, 'page-cover.json'), 'utf8'));
 const TIER = +arg('tier', 80), FROM = +arg('from', 0), JOBS = +arg('jobs', 6);
 let LIST = COVER.map((p, i) => ({ ...p, idx: i })).filter((p) => DRESSED || p.tier <= TIER);
@@ -41,7 +42,7 @@ if (!process.argv.includes('--one')) {
   const next = (slot) => {
     if (!queue.length) { if (!running) report(); return; }
     const p = queue.shift(); running++;
-    const c = spawn(process.execPath, [__filename, '--one', `--idx=${p.idx}`, `--slot=${slot}`, ...(DRESSED ? ['--plan=dressed'] : [])], { env: process.env, stdio: ['ignore', 'pipe', 'pipe'] });
+    const c = spawn(process.execPath, [__filename, '--one', `--idx=${p.idx}`, `--slot=${slot}`, ...(DRESSED ? [`--plan=${PLAN}`] : [])], { env: process.env, stdio: ['ignore', 'pipe', 'pipe'] });
     let buf = ''; c.stdout.on('data', (d) => { buf += d; }); c.stderr.on('data', (d) => { buf += d; });
     c.on('exit', () => { running--; done.push(p.idx); const last = buf.trim().split('\n').pop(); console.log(`[${done.length}/${LIST.length}] ${p.site}/${p.page}: ${last}`); next(slot); });
   };

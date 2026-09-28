@@ -25,8 +25,9 @@ function auditDoc(opts) {
   if (ov > 1) err.push(`L1 page scrolls sideways by ${ov}px`);
   for (const m of document.querySelectorAll('img, video, iframe, svg')) {
     if (!visible(m) || !m.parentElement) continue; const r = m.getBoundingClientRect(); const p = m.parentElement.getBoundingClientRect();
-    if (r.width > p.width + 1) err.push(`L2 ${m.tagName.toLowerCase()} wider than its box (${Math.round(r.width)} > ${Math.round(p.width)})`);
-    if (r.right > W + 1) err.push(`L2 ${m.tagName.toLowerCase()} runs off the page`);
+    const inBlock = m.closest('[class*="bx-"]'); const bid = inBlock ? idOf(inBlock).slice(-4) : '?';
+    if (r.width > p.width + 1) err.push(`L2 ${m.tagName.toLowerCase()} wider than its box (${Math.round(r.width)} > ${Math.round(p.width)}) in ${bid}`);
+    if (r.right > W + 1) err.push(`L2 ${m.tagName.toLowerCase()} runs off the page — ${Math.round(r.width)}px wide at x=${Math.round(r.left)} in ${bid} (block ${Math.round(inBlock ? inBlock.getBoundingClientRect().width : 0)}px)`);
   }
   // overlaps between blocks that are neither nested nor floating
   // …and nothing INSIDE a pinned block either: a sticky header's band carries the pin (`bandCarriesPin`), so the header
@@ -49,7 +50,7 @@ function auditDoc(opts) {
   // rows: on a phone nothing sits side by side narrower than a readable column; on a tablet no line holds more than three (#78)
   const rows = flow.filter((e) => getComputedStyle(e).flexDirection === 'row' && getComputedStyle(e).display.includes('flex'));
   for (const row of rows) {
-    const kids = Array.from(row.children).filter((k) => k.className.includes('bx-') && visible(k) && !['absolute', 'fixed'].includes(getComputedStyle(k).position));
+    const kids = Array.from(row.children).filter((k) => k.className.includes('bx-') && visible(k) && !['absolute', 'fixed', 'sticky'].includes(getComputedStyle(k).position)); // a sticky aside is pinned, not wrapped
     if (kids.length < 2) continue; const lines = {};
     kids.forEach((k) => { const t = Math.round(k.getBoundingClientRect().top); const key = Object.keys(lines).find((x) => Math.abs(x - t) <= 2) ?? t; (lines[key] = lines[key] || []).push(k); });
     for (const ks of Object.values(lines)) {
@@ -170,12 +171,19 @@ async function canvasAudit(page) {
       // LAYOUT px — so the padding is scaled by the zoom before the two are put in one sum. Unscaled, a 96px contained-band
       // inset at 82% read as a line running 17px "into its padding" (and 158px at 55%), on the canvas only, on every page.
       const padR = parseFloat(cs.paddingRight) * Z;
-      const kids = Array.from(row.children).filter((k) => k.hasAttribute('data-box-id') && !['absolute', 'fixed'].includes(getComputedStyle(k).position) && k.getBoundingClientRect().width > 0);
+      // …and not a STICKY child either: "Sticks when reached" moves the aside's rect down the page as it scrolls, so it read as a
+      // second LINE under the main column and the main column's free space as a HOLE the aside's exact width — at every
+      // preset, on every page with a sticky sidebar (tier 80 and 95). It has not wrapped; it is pinned by design.
+      const kids = Array.from(row.children).filter((k) => k.hasAttribute('data-box-id') && !['absolute', 'fixed', 'sticky'].includes(getComputedStyle(k).position) && k.getBoundingClientRect().width > 0);
       const lines = {}; kids.forEach((k) => { const t = Math.round(k.getBoundingClientRect().top); const key = Object.keys(lines).find((x) => Math.abs(x - t) <= 2) ?? t; (lines[key] = lines[key] || []).push(k); });
       for (const ks of Object.values(lines)) { const right = Math.max(...ks.map((k) => k.getBoundingClientRect().right)); const edge = r.right - padR; if (right > edge + 2) out.push(`a line of ${row.getAttribute('data-box-id').slice(-4)} runs ${Math.round(right - edge)}px past its row's content edge${right <= r.right ? ' (into its padding)' : ''}`); }
       const tops = Object.keys(lines).map(Number).sort((a, b) => a - b);
-      for (let i = 0; i + 1 < tops.length; i++) { const ks = lines[tops[i]]; const free = (r.right - padR) - Math.max(...ks.map((k) => k.getBoundingClientRect().right)); const nextW = lines[tops[i + 1]][0].getBoundingClientRect().width; const gap = (parseFloat(cs.columnGap) || 0) * Z;
-        if (free >= Math.min(nextW, 224 * Z) + gap + 2 && free > 40) out.push(`HOLE ${Math.round(free / Z)}px at the end of a line of ${row.getAttribute('data-box-id').slice(-4)} while a block waits below`); }
+      for (let i = 0; i + 1 < tops.length; i++) { const ks = lines[tops[i]]; const free = (r.right - padR) - Math.max(...ks.map((k) => k.getBoundingClientRect().right)); const next = lines[tops[i + 1]][0]; const nextW = next.getBoundingClientRect().width; const gap = (parseFloat(cs.columnGap) || 0) * Z;
+        // A block floored at its longest word (`min-width: min-content` — sized by hand, or on a line of four or more) needs the
+        // width it is DRAWN at, not 14rem: with the 14rem assumption a 300px column waiting under 230px of free space read as a
+        // hole, and it could never have fitted. Only a 14rem-floored block may be assumed to shrink to 14rem.
+        const needs = getComputedStyle(next).minWidth === 'min-content' ? nextW : Math.min(nextW, 224 * Z);
+        if (free >= needs + gap + 2 && free > 40) out.push(`HOLE ${Math.round(free / Z)}px at the end of a line of ${row.getAttribute('data-box-id').slice(-4)} while a block waits below`); }
     }
     const sc = document.scrollingElement; if (sc.scrollWidth - sc.clientWidth > 1) out.push(`the editor scrolls sideways by ${sc.scrollWidth - sc.clientWidth}px`);
     const collapsed = Array.from(document.querySelectorAll('[data-box-id]')).filter((e) => { const r = e.getBoundingClientRect(); return e.textContent.trim() && (r.width < 2 || r.height < 2) && getComputedStyle(e).display !== 'none'; }).length;

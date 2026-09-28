@@ -109,8 +109,14 @@ async function select(page, id) {
     // The click went INSIDE it (a child took it, as "click goes inside" means it should): step OUT with Escape, the
     // way a person reaches a parent — the builder's own shortcut, one level per press.
     const got = await selected(page);
-    if (got && got !== id && await page.evaluate(([p, c]) => !!document.querySelector(`[data-box-id="${p}"] [data-box-id="${c}"]`), [id, got])) {
+    const inside = got && got !== id && await page.evaluate(([p, c]) => !!document.querySelector(`[data-box-id="${p}"] [data-box-id="${c}"]`), [id, got]);
+    if (inside) {
       for (let k = 0; k < 6 && (await selected(page)) !== id; k++) { await page.keyboard.press('Escape'); await page.waitForTimeout(150); }
+    } else if (got && got !== id && i >= 1 && !(await page.evaluate(([p, c]) => !!document.querySelector(`[data-box-id="${c}"] [data-box-id="${p}"]`), [id, got]))) {
+      // A SIBLING took the click (a neighbour's resize handle or toolbar sits over this block's edge). Aim at something that
+      // is unmistakably INSIDE the block — the centre of its first child — then step out to the block with Escape.
+      const kid = await page.evaluate((p) => { const k = document.querySelector(`[data-box-id="${p}"] [data-box-id]`); if (!k) return null; const r = k.getBoundingClientRect(); return [r.left + r.width / 2, Math.max(0, r.top) + Math.min(r.height, innerHeight - Math.max(0, r.top)) / 2]; }, id);
+      if (kid) { await page.mouse.click(kid[0], kid[1]); await page.waitForTimeout(250); for (let k = 0; k < 6 && (await selected(page)) !== id; k++) { await page.keyboard.press('Escape'); await page.waitForTimeout(150); } }
     }
   }
   if ((await selected(page)) !== id) throw new Error(`could not select ${id.slice(-4)} (got ${(await selected(page) || "none").slice(-4)})`);

@@ -1019,3 +1019,22 @@ Feature: Placing blocks beside one another in the Box Builder
     Then the second moves to the next line and the first stops exactly where I dragged it
     And the rest of the line stays empty — an outer edge
     And dragging back brings everything home
+
+  Scenario: A word a hair wider than its column never wraps the neighbour (decided 2026-09-28, D)
+    Given a row of three columns I sized to 15 / 25 / 60
+    And the longest word in the first column needs one pixel more than 15%
+    Then the row stays on one line on the canvas and in the Preview alike
+    Because the last column of the line lends one pixel (0.0625rem) of slack, as a margin — no column changes size
+      — measured before: 154px on the canvas, 155px in the Preview, and only the Preview wrapped the third column
+    And a word that is genuinely too wide still moves the neighbour to the next line, as before
+
+  Scenario: Type scales with the page, spacing with the box (decided 2026-09-28, A)
+    Given a section heading in a 30% sidebar and a card title in a wide band
+    Then the section heading is the larger, as the page's hierarchy says — wherever each sits
+    And a card's padding still tightens in a narrow column
+    Because text sizes read the page's own fluid unit (fixed at the page root), while spacing reads the box's
+
+  Scenario: The fluid spacing tokens follow the reader's text size (decided 2026-09-28, A)
+    Given a reader whose browser text is set to 24px
+    Then the page gutter and the section, group and element gaps all grow with it between their bounds
+    Because each is clamp(min, rem + cqw, max) — never a bare container term

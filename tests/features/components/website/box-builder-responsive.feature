@@ -32,7 +32,10 @@ Feature: Box Builder — responsive per-breakpoint overrides
     Given a section
     When I tick "Hidden on mobile"
     Then it is dropped from the live mobile site
-    But in the editor it stays faintly visible so I can select and un-hide it
+    And at the Mobile preset it is gone from the canvas too — it takes no space and moves nothing, exactly as published
+    And "Show hidden blocks" (beside the device chips) draws it faintly so I can select it and un-hide it
+    Because drawn faintly by default it wrapped the header onto two lines on the canvas and one in the Preview
+      on every dressed page with a phone-only menu (decided 2026-09-28)
 
   Scenario: All resize / drag / nudge / bulk edits are breakpoint-aware
     When I resize, free-drag, arrow-nudge, or bulk-edit at tablet or mobile

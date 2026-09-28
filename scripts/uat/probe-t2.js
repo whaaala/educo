@@ -4,7 +4,7 @@
 const fs = require('fs'); const path = require('path');
 const H = require('./h.js'); const P = require('./pages.js').helpers; const { Builder } = require('./build-page.js'); const { canvasAudit } = require('./page-audit.js');
 const arg = (k, d) => { const a = process.argv.find((x) => x.startsWith(`--${k}=`)); return a ? a.split('=').slice(1).join('=') : d; };
-const PLAN = JSON.parse(fs.readFileSync(path.join(__dirname, 'page-plan.json'), 'utf8'));
+const PLAN = JSON.parse(fs.readFileSync(path.join(__dirname, arg('planfile', '') ? `page-plan-${arg('planfile', '')}.json` : 'page-plan.json'), 'utf8')); // --planfile=95|99|innovative
 const sec = PLAN[+arg('plan', 1)].body[+arg('section', 3)]; const PRESET = arg('preset', 'Laptop (1024px)'); const W = +arg('w', 1024);
 const OUT = path.join(__dirname, 'probe-t2-out'); fs.mkdirSync(OUT, { recursive: true });
 
@@ -31,7 +31,9 @@ const storedRows = () => { const s = JSON.parse(localStorage.getItem('educo_box_
     const s = await P.first(page, 'Stack'); const b = new Builder(page, (m) => console.log(m)); b.dress = true;
     // --sidebar=right|left: the section sits in the MAIN column of a 70/30 sidebar row, as the dressed page has it
     let host = s; const side = arg('sidebar', 'none');
-    if (side !== 'none') { const main = await P.into(page, s, 'Stack'); const aside = await P.beside(page, main, 'Stack'); await P.into(page, aside, 'List'); await b.sizeColumns([main, aside], side === 'left' ? [75, 25] : [70, 30]); await H.panel(page, true); host = await P.into(page, main, 'Stack'); }
+    if (side !== 'none') { const main = await P.into(page, s, 'Stack'); const aside = await P.beside(page, main, 'Stack'); const ah = await P.into(page, aside, 'Heading'); await P.under(page, ah, 'List'); await P.under(page, ah, 'Card'); await b.sizeColumns([main, aside], side === 'left' ? [75, 25] : [70, 30]);
+      if (arg('sticky', '') === '1') { const I = require('./inspector.js'); await H.panel(page, false); await I.sticky(page, aside); } // --sticky=1: the dressed page's "Sticks when reached" aside
+      await H.panel(page, true); host = await P.into(page, main, 'Stack'); }
     await b.fill(sec.tree, host, { firstInSection: true, sectionIndex: +arg('sectionIndex', 1), dress: true });
     await H.panel(page, false); await H.fillImages(page);
     fs.writeFileSync(path.join(OUT, 'tree.txt'), await H.tree(page));

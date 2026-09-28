@@ -122,11 +122,14 @@ const LAYOUT_TEMPLATE = `
    capped) where a visitor at 375px gets 1rem: every contained section was 74% wide on the canvas and 91.5% in the
    Preview, measured on every dressed page. The editor's frame is a size container, so cqw reads the frame there; a
    published page has no container above its root, where cqw falls back to the viewport — the same number as before. */
+/* …and a rem IN THE IDEAL TERM (Core Rule 16; decided 2026-09-28): a bare container term ignores the reader's own text
+   size between the bounds — measured before, a 24px browser setting moved the gutter 0px. Split so the value at a 16px
+   reader stays within a few px of the old one: 375px 19 (was 16) · 768px 31 (31) · 1280px 46 (48). */
 @SCOPE@ {
-  --eu-gutter-page:    clamp(1rem, 4cqw, 3rem);
-  --eu-gap-section:    clamp(2.5rem, 6cqw, 6rem);
-  --eu-gap-group:      clamp(1.25rem, 2.5cqw, 2.5rem);
-  --eu-gap-element:    clamp(0.5rem, 1cqw, 1rem);
+  --eu-gutter-page:    clamp(1rem, 0.5rem + 3cqw, 3rem);
+  --eu-gap-section:    clamp(2.5rem, 1rem + 4.5cqw, 6rem);
+  --eu-gap-group:      clamp(1.25rem, 0.5rem + 1.8cqw, 2.5rem);
+  --eu-gap-element:    clamp(0.5rem, 0.25rem + 0.7cqw, 1rem);
 }
 /* The tiers are shipped as TOKENS, not as utility classes.
  *

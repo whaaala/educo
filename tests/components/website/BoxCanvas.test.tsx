@@ -1041,7 +1041,9 @@ describe("BoxCanvas (box-model editor)", () => {
     expect(mob.container.querySelector<HTMLElement>('[data-box-id="s"]')!.style.backgroundColor).toBe("rgb(255, 0, 0)");
   });
 
-  it("a box hidden on a breakpoint is dropped on the live site but kept (faint) in the editor", () => {
+  it("a box hidden on a breakpoint is gone on the live site AND on the canvas — faint only when hidden blocks are asked for", () => {
+    // Decided with the user 2026-09-28 (#132): drawn faintly by default, the hidden phone menu wrapped the header onto
+    // two lines on the canvas and one in the Preview. It takes no space now; "Show hidden blocks" brings it back faintly.
     const t = createContainer("column", {
       id: "root",
       children: [createContainer("column", { id: "h", responsive: { mobile: { hidden: true } } } as Partial<BoxNode>)],
@@ -1050,9 +1052,15 @@ describe("BoxCanvas (box-model editor)", () => {
     expect(live.container.querySelector('[data-box-id="h"]')).toBeNull(); // not rendered live
     live.unmount();
     const edit = render(<BoxCanvas root={t} theme={DEFAULT_THEME} breakpoint="phone" editable onChange={() => {}} />);
-    const el = edit.container.querySelector<HTMLElement>('[data-box-id="h"]')!;
+    expect(edit.container.querySelector('[data-box-id="h"]')).toBeNull(); // …nor on the canvas at that device
+    edit.unmount();
+    const shown = render(<BoxCanvas root={t} theme={DEFAULT_THEME} breakpoint="phone" editable showHidden onChange={() => {}} />);
+    const el = shown.container.querySelector<HTMLElement>('[data-box-id="h"]')!;
     expect(el).toBeTruthy();
-    expect(el.style.opacity).toBe("0.35"); // faint in the editor so you can still select + un-hide it
+    expect(el.style.opacity).toBe("0.35"); // faint, so it can be selected and un-hidden
+    shown.unmount();
+    const desktop = render(<BoxCanvas root={t} theme={DEFAULT_THEME} breakpoint="base" editable onChange={() => {}} />);
+    expect(desktop.container.querySelector<HTMLElement>('[data-box-id="h"]')!.style.opacity).not.toBe("0.35"); // not hidden there
   });
 
   it("resizing at a breakpoint writes an OVERRIDE, leaving the base width untouched", () => {

@@ -4096,6 +4096,15 @@ export async function importPhoto(file: File): Promise<{ src: string; imgW?: num
  * because something was pushed onto it, and there the fill is what they asked for — "when they move to the
  * bottom, they should occupy the width of that row".
  */
+/** Is this column the LAST on its stored line — the one whose right edge ends the line (#131, the pixel of slack)? */
+export function lastOnItsLine(parent: BoxNode, child: BoxNode): boolean {
+  const kids = (parent.children ?? []).filter((k) => !isFloating(k) && !k.hidden);
+  if (kids.length < 2) return false;
+  const lines = packRowLines(kids);
+  const at = kids.findIndex((k) => k.id === child.id);
+  if (at < 0) return false;
+  return !lines.some((l, i) => i > at && l === lines[at]);
+}
 export function aloneOnItsLine(parent: BoxNode, child: BoxNode): boolean {
   const kids = (parent.children ?? []).filter((k) => !isFloating(k) && !k.hidden);
   if (kids.length < 2) return false;                    // the only child already fills the row by other means
@@ -4537,11 +4546,31 @@ export const TEXT_FLOOR_REM = 1;
  */
 export function textLen(px: number): string {
   const floorPx = px <= 16 ? px : 16 + (px - 16) / 2;
-  return `max(${+(floorPx / 16).toFixed(4)}rem, ${u(px)})`;
+  return `max(${+(floorPx / 16).toFixed(4)}rem, ${t(px)})`;
 }
 
 export function textUnit(): string {
-  return `max(${TEXT_FLOOR_REM}rem, ${u(16)})`;
+  return `max(${TEXT_FLOOR_REM}rem, ${t(16)})`;
+}
+
+/**
+ * TYPE SCALES WITH THE PAGE, SPACING WITH THE BOX (decided with the user 2026-09-28, option A of #133).
+ *
+ * `--box-u` is the SPACING unit and is meant to be read per box: 1% of the nearest container, so a card's padding
+ * tightens in a narrow column. Type used the same unit — so a section heading in a 30% sidebar drew 19px while a card's
+ * title in a wide band drew 20px, and a page title in a 55% hero column came out under the section headings below it.
+ * The design rules make hierarchy a PAGE decision (Rule #7): an h2 is one size wherever it sits.
+ *
+ * So type has its own unit, `--box-t`: the same fluid formula, but REGISTERED (`@property`, syntax `<length>`) and set on
+ * the page root — a registered length is computed where it is declared, so its `cqw` reads the page's frame (the
+ * editor's frame is a size container; a published page's root has none above it and reads the viewport), and every box
+ * inherits the resolved length rather than the formula. Both engines emit the registration (`TYPE_UNIT_PROPERTY_CSS`)
+ * and set the root value (`baseUnit`); a browser without `@property` falls back to the inherited formula, which is what
+ * it had before.
+ */
+export const TYPE_UNIT_PROPERTY_CSS = "@property --box-t{syntax:'<length>';inherits:true;initial-value:0px}";
+export function t(px: number): string {
+  return `calc(var(--box-t, var(--box-u, 0.625rem)) * ${+(px / 10).toFixed(4)})`;
 }
 
 /**
@@ -5052,6 +5081,22 @@ export function childStyle(child: BoxNode, parent: BoxNode, bp: Breakpoint = "ba
   s.flex = fillsMain || ((!mainToken || mainToken === "auto") && parentDefinite && !siblingClaimsIt)
     ? "1 1 auto"
     : flexForWidth(mainToken, !!parent.rowBand && isRow && !child.widthByHand && aloneOnItsLine(parent, child));
+  /**
+   * ONE PIXEL OF SLACK ON EVERY LINE THAT HOLDS A HAND-SIZED COLUMN (decided with the user 2026-09-28, option D of #131).
+   *
+   * A hand-sized column's floor is its longest word (#102). When that word is a hair wider than the share, the column
+   * is drawn a hair wider — and a line of shares that added up to 100% no longer fits, so the NEXT column drops to the
+   * next line and leaves a hole. Measured on a dressed page: a 15.8% column at 154px on the canvas and 155px in the
+   * Preview — the same word, one pixel of font rendering apart — and only the Preview wrapped. A 70 / 30 sidebar row
+   * did the same at 768px.
+   *
+   * The slack is a NEGATIVE RIGHT MARGIN of 0.0625rem on the LAST column of the line, never a smaller share: a smaller
+   * share moved edges (measured: the far edge of a pair 2.09px off, a width round trip 510 for 512), and "the size you
+   * drag is the size you get" is a rule. A margin changes no box; the line simply has one pixel more room in its sum, so
+   * a hair never wraps a neighbour, while a word that is GENUINELY too wide still wraps as before. A margin the user set
+   * on that column is theirs and is left alone.
+   */
+  if (parent.rowBand && isRow && lastOnItsLine(parent, child) && child.marginRight == null && child.margin == null && (parent.children ?? []).some((k) => k.widthByHand)) s.marginRight = "-0.0625rem";
   // A box can pin its OWN cross-axis alignment (used by edge-anchored resize to keep the far edge fixed
   // even when the parent centres/stretches its children).
   if (child.alignSelf) s.alignSelf = child.alignSelf;

@@ -21,7 +21,7 @@ import {
   updateBox, deleteBox, insertBox, moveBoxStep, duplicateBox, moveBox, cloneBox, findParent, isAncestor, isContainer, containerLabel, widthPct, stackWithBlock, fitBand, PILL, blockTypography,
   isFloating, floatBox, unfloatBox, groupBoxes, ungroupBoxes, bringToFront, sendToBack, bringForward, sendBackward, packRowLines, allocateLine, type LineFollower,
   shouldTakeMirrorBox, hostSizedFor, type MirrorBox, type MirrorChase, fadedPaint, boxOpacity, backgroundCss, treePaintLayerCss, radiusCSS, isClipped, SHADOW_CSS, videoEmbedSrc, sanitizeCssDeclarations, expandScopedCss, ACCORDION_CSS_PARTS, itemOverrideCss, itemHasOverride, itemNumberVars, richBody, componentTextCss, componentBoxCss, bgShowThroughCss, resizeTopEdge, blockContainmentCss, alertToastCss, treeHasToast, treeHasFixedHold, accordionClasses, bandClasses, advancedCssStyle, alertActionsHTML, hugsContent, itemFloatContextCss, COMPONENT_ITEM_SEL, clampContentScale, MIN_CONTENT_SCALE, isMultiItemComponent, comfortableWidth, remLen, rootFontPx, isDefiniteLen, addItemAfter, duplicateItem, duplicateChildItem, removeItem, removeChildItem, moveItem, moveChildItem, updateItem, updateChildItem, ALERT_SEVERITY_ICON, alertPartInline, alertIconInline, collectAlertItemStyles,
-  type Breakpoint, resolveResponsive, updateBoxResponsive, treePinArrivalCss, floatHoldCSS, canvasFixedStyle, capturesFixed, imageSizing, importPhoto, treeItemEffectsCss, itemNeedsClass, floatZIndex, gridPlacementAt, gridColumnsAt, masonryMeasureAttr, masonryMeasurePass, mirrorMeasuresNow, baseUnitParts, pinStackMarker, pinStackGroupMarker, pinStackPass, isPager, pagerStripCss, pagerNavHTML, selectionChain, textLen, typoRole, typoRootVars, typoCascadeCss, bandEdgeCSS, LINK_COLOR_CSS, treeGridQueryCss,
+  type Breakpoint, resolveResponsive, updateBoxResponsive, treePinArrivalCss, floatHoldCSS, canvasFixedStyle, capturesFixed, imageSizing, importPhoto, treeItemEffectsCss, itemNeedsClass, floatZIndex, gridPlacementAt, gridColumnsAt, masonryMeasureAttr, masonryMeasurePass, mirrorMeasuresNow, baseUnitParts, pinStackMarker, pinStackGroupMarker, pinStackPass, isPager, pagerStripCss, pagerNavHTML, selectionChain, textLen, typoRole, typoRootVars, typoCascadeCss, bandEdgeCSS, LINK_COLOR_CSS, treeGridQueryCss, TYPE_UNIT_PROPERTY_CSS,
 } from "@/lib/box-model";
 import { ICON_SET } from "./icons";
 import { PortalMenu, MenuItem, MenuHeader, MenuSep } from "./ui";
@@ -552,7 +552,7 @@ function ChromeMirror({ blockId, children }: { blockId: string; children: ReactN
 }
 
 export default function BoxCanvas({
-  root, theme, editable = true, selectedId, onSelectId, selectedIds, onSelectIds, onChange, onResized, minHeight = 600, breakpoint = "base",
+  root, theme, editable = true, selectedId, onSelectId, selectedIds, onSelectIds, onChange, onResized, minHeight = 600, breakpoint = "base", showHidden = false,
 }: {
   root: BoxNode;
   theme: SiteTheme;
@@ -565,6 +565,7 @@ export default function BoxCanvas({
   onResized?: (id: string, axis: "width" | "height") => void;
   minHeight?: number; // the page's minimum height (≈ a viewport); the page GROWS past this with content
   breakpoint?: Breakpoint; // active responsive breakpoint — edits at tablet/mobile write per-breakpoint overrides
+  showHidden?: boolean;    // draw blocks hidden at this breakpoint faintly (off: they are gone, as on the published page)
 }) {
   const [menuFor, setMenuFor] = useState<string | null>(null); // which box's actions dropdown is open
   // The "add a block inside" menu an EMPTY box's own + opens. Separate from `menuFor`, which is the whole
@@ -2901,9 +2902,10 @@ export default function BoxCanvas({
     const isSel = editable && selSet.has(node.id);
     const isSolo = isSel && selSet.size === 1; // per-box toolbar + resize handles only when EXACTLY one is selected
     const isRoot = parent === null;
-    // Hidden on this breakpoint: skip entirely on the live site; in the editor keep it faintly visible so
-    // it can still be selected and un-hidden.
-    if (node.hidden && !editable) return null;
+    // Hidden on this breakpoint: gone, exactly as on the published page — it takes no space and moves nothing (decided
+    // with the user 2026-09-28, #132: drawn faintly it wrapped the header onto two lines on the canvas and one in the
+    // Preview). "Show hidden blocks" brings it back, faint, so it can be selected and un-hidden.
+    if (node.hidden && (!editable || !showHidden)) return null;
     // "STACK on narrow": on mobile a (non-pinned) float drops back into normal flow — full-width, content-height —
     // so it can never clip its content or overflow its parent on a phone. Editor MUST match the export here.
     const stacked = breakpoint === "phone" && !isRoot && floatStacksOnMobile(rawNode);
@@ -2949,6 +2951,7 @@ export default function BoxCanvas({
             width: "100%",
             minHeight: Math.max((node.children?.length ?? 0) ? 0 : minHeight, floatingReserve(node, breakpoint)),
             ["--box-u" as string]: baseUnit(node.baseFont ?? 10),
+            ["--box-t" as string]: baseUnit(node.baseFont ?? 10), // the TYPE unit, computed here at the page root (#133)
             // The role defaults everything below inherits — the SAME set the export writes on the page root,
             // or a font set on a section would cascade while you edit and not on the published site.
             ...typoRootVars(theme),
@@ -3462,7 +3465,8 @@ export default function BoxCanvas({
         const staggerFor = (n: { component?: string }) => (n.component ? COMPONENT_ITEM_SEL[n.component] : undefined);
         // The SEE-THROUGH paint layer for any box fading a background IMAGE — a `::before` cannot be an
         // inline style, so it rides in this same stylesheet, from the same emitter the export uses.
-        const css = treeHoverCss(root, scopeFor)
+        const css = TYPE_UNIT_PROPERTY_CSS // `--box-t` registered as a length, so it resolves at the page root (#133)
+          + treeHoverCss(root, scopeFor)
           + treeRevealCss(root, scopeFor, staggerFor)
           + treeItemEffectsCss(root)
           // The pinned block’s ARRIVAL, from the same resolver the export uses.

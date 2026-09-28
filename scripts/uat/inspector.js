@@ -57,12 +57,16 @@ async function text(page, id, words) {
 /** Hidden on phones (or shown only on phones: `show` = true hides it everywhere else). */
 async function phoneOnly(page, id, { hideOnPhone = false, onlyOnPhone = false } = {}) {
   const chip = (n) => page.getByRole('button', { name: n }).first();
+  // A block hidden at this device is GONE from the canvas (decided 2026-09-28) — to select one, a person turns on
+  // "Show hidden blocks" beside the device chips, and turns it off again when done.
+  const showHidden = async (on) => { const b = page.getByRole('button', { name: 'Show hidden blocks' }).first(); if (await b.count() && ((await b.getAttribute('aria-pressed')) === 'true') !== on) { await b.click(); await page.waitForTimeout(300); } };
   if (onlyOnPhone) { await H.select(page, id); await tab(page, 'Per-device'); const c = page.getByLabel(/Hidden everywhere/).first(); if (!(await c.count())) return false; await c.check(); await page.waitForTimeout(200); }
   await chip('Mobile (375px)').click(); await page.waitForTimeout(500);
+  if (onlyOnPhone) await showHidden(true); // hidden everywhere so far — bring it back to un-hide it on the phone
   await H.select(page, id); await tab(page, 'Per-device');
-  const c = page.getByLabel(/Hidden on (mobile|phone)/i).first(); if (!(await c.count())) { await chip('Full width').click(); return false; }
+  const c = page.getByLabel(/Hidden on (mobile|phone)/i).first(); if (!(await c.count())) { await showHidden(false); await chip('Full width').click(); return false; }
   if (hideOnPhone) await c.check(); if (onlyOnPhone) await c.uncheck();
-  await page.waitForTimeout(200); await tab(page, 'Design');
+  await page.waitForTimeout(200); await tab(page, 'Design'); await showHidden(false);
   await chip('Full width').click(); await page.waitForTimeout(500); return true;
 }
 /** A Text style toggle ("Bold" · "Italic" · "Underline") set to on or off. */
@@ -95,7 +99,11 @@ async function textSize(page, id, px) {
   for (const t of ['Content', 'Design']) { await tab(page, t); await section(page, 'Text style( \\(everything inside\\))?'); const c = page.getByRole('slider', { name: /^Text size/ }).first(); if (await c.count()) { s = c; break; } }
   if (!s) return false;
   await s.scrollIntoViewIfNeeded(); await s.focus();
-  for (let k = 0; k < 200; k++) { const now = +(await s.getAttribute('aria-valuenow') ?? await s.inputValue()); if (now === px) break; await page.keyboard.press(now < px ? 'ArrowRight' : 'ArrowLeft'); }
+  // Typed straight into the range (Playwright's fill sets the value and fires input/change, as a drag would); the arrow
+  // keys are the fallback for a slider that is not an <input> — measured: the key loop left a hero title at 33, not 48.
+  let done = false;
+  try { await s.fill(String(px)); done = +(await s.inputValue()) === px; } catch { done = false; }
+  if (!done) for (let k = 0; k < 200; k++) { const now = +(await s.getAttribute('aria-valuenow') ?? await s.inputValue()); if (now === px) break; await page.keyboard.press(now < px ? 'ArrowRight' : 'ArrowLeft'); await page.waitForTimeout(20); }
   await page.waitForTimeout(300); await tab(page, 'Design'); return true;
 }
 module.exports = { spacing, textToggle, section, tab, meaning, sticky, contentWidth, background, text, phoneOnly, widthMode, textSize };

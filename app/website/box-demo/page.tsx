@@ -129,6 +129,7 @@ export default function BoxDemoPage() {
    */
   const selectByUser = useCallback((ids: string[]) => { autoSelectedId.current = null; lastInsertParent.current = null; setSelectedIds(ids); }, []);
   const [device, setDevice] = useState<Device>("full");
+  const [showHidden, setShowHidden] = useState(false); // blocks hidden at this device: gone from the canvas unless asked for (#132)
   const [preview, setPreview] = useState(false);
   const [pageMenu, setPageMenu] = useState(false); // page-settings popover open
   const [confirmDeletePage, setConfirmDeletePage] = useState(false); // delete-page confirmation modal
@@ -1126,6 +1127,12 @@ export default function BoxDemoPage() {
             else had been rescued. `ml-auto` still pushes it right whenever there IS room. */}
         <div className="ml-auto flex flex-wrap items-center justify-end gap-2 gap-y-1.5">
           <Segmented ariaLabel="Preview screen size" value={device} onChange={setDevice} options={DEVICES.map((d) => ({ value: d.id, Icon: d.Icon, title: `${d.label}${d.w ? ` (${d.w}px)` : ""}` }))} />
+          {/* A block hidden on this device is GONE from the canvas, as it is from the published page (#132). This brings
+              the hidden ones back faintly, so one can be selected and un-hidden. */}
+          <button type="button" aria-pressed={showHidden} aria-label="Show hidden blocks" title={showHidden ? "Hidden blocks are shown faintly — click to draw the page as it publishes" : "Show blocks hidden on this device, faintly, so you can select them"} onClick={() => setShowHidden((v) => !v)}
+            className={`inline-flex items-center gap-1 rounded-lg border px-2 py-1 text-[0.6875rem] ${showHidden ? "border-indigo-400 bg-indigo-50 text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-300 midnight:bg-indigo-950/40 midnight:text-indigo-300 purple:bg-indigo-950/40 purple:text-indigo-300" : "border-gray-200 text-gray-500 dark:border-gray-700 dark:text-gray-400 midnight:border-gray-700 midnight:text-gray-400 purple:border-gray-700 purple:text-gray-400"}`}>
+            <Eye className="w-3.5 h-3.5" aria-hidden="true" /><span className="hidden lg:inline">Hidden</span>
+          </button>
           <label className="flex items-center gap-1 text-[0.6875rem] text-gray-400" title="Base size in px — everything scales off this so text stays readable when zoomed (WCAG)">
             <span className="hidden lg:inline">Base size</span>
             <input type="number" min={6} max={24} value={root.baseFont ?? 10} onChange={(e) => commit(updateBox(root, root.id, { baseFont: Number(e.target.value) || 10 }))} aria-label="Base size (px)" className="w-12 text-xs px-1.5 py-1 rounded-lg border border-line bg-transparent" />
@@ -1153,7 +1160,7 @@ export default function BoxDemoPage() {
                 </span>
               )}
               <div className={`shadow-sm rounded-xl ring-1 ring-black/10 dark:ring-white/10 midnight:ring-white/10 purple:ring-white/10 shrink-0 h-fit transition-[width] duration-300 ${device === "full" && !fullWhileDocked ? "w-full max-w-5xl" : ""}`} style={{ width: frameW ?? undefined, zoom: fit < 1 ? fit : undefined, background: renderTheme.background, color: renderTheme.text, fontFamily: renderTheme.bodyFont, containerType: "inline-size" }}>
-                <BoxCanvas root={root} theme={renderTheme} minHeight={PAGE_MIN_H} selectedIds={selectedIds} onSelectIds={selectByUser} onChange={commit} breakpoint={bp} />
+                <BoxCanvas root={root} theme={renderTheme} minHeight={PAGE_MIN_H} selectedIds={selectedIds} onSelectIds={selectByUser} onChange={commit} breakpoint={bp} showHidden={showHidden} />
               </div>
             </div>
           </div>

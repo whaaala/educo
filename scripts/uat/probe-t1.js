@@ -7,7 +7,8 @@
 const fs = require('fs'); const path = require('path');
 const H = require('./h.js'); const { Dresser } = require('./dress.js'); const { canvasAudit } = require('./page-audit.js');
 const PLAN = JSON.parse(fs.readFileSync(path.join(__dirname, 'page-plan.json'), 'utf8'));
-const recipe = { type: 'home', header: 'scrolls', hamburger: false, sidebar: 'none', hero: 'photo', theme: 'Midnight', body: [PLAN[3].body[0]], source: 'probe' };
+const argv = (k, d) => { const a = process.argv.find((x) => x.startsWith(`--${k}=`)); return a ? a.split('=').slice(1).join('=') : d; };
+const recipe = { type: 'home', header: 'scrolls', hamburger: false, sidebar: 'none', hero: argv('hero', 'photo'), theme: argv('theme', 'Midnight'), body: [PLAN[3].body[0]], source: 'probe' }; // --hero=photo|split|banner|none --theme=…
 const OUT = path.join(__dirname, 'probe-t1-out'); fs.mkdirSync(OUT, { recursive: true });
 
 const gridsAndHeader = () => {

@@ -11,7 +11,7 @@
 import type { CSSProperties } from "react";
 import { PILL, blockTypography, pinArrivalCss, pinArrivalKeyframes, floatHoldCSS,
   type BoxNode, type Breakpoint, BP_ORDER, containerStyle, childStyle, hostSizedFor, marginCSS, sizeToCSS, radiusCSS, SHADOW_CSS, u, textLen, baseUnit, fadedPaint, boxOpacity, backgroundCss, paintLayerCss,
-  resolveResponsive, floatStacksOnMobile, floatingReserve, alertToastCss, accordionClasses, bandClasses, videoEmbedSrc, isContainer, sanitizeCssDeclarations, expandScopedCss, COMPONENT_PARTS, itemFloatContextCss, itemOverrideCss, itemNumberVars, richBody, plainBody, componentTextCss, componentBoxCss, renderAlertHTML, alertDismissScript, masonryMeasureAttr, masonryMeasureScript, pinStackMarker, pinStackGroupMarker, pinStackNeeded, pinStackScript, isPager, pagerNavHTML, pagerScript, pagerStripCss, pagerSlideId, bgShowThroughCss, blockContainmentCss, COMPONENT_ITEM_SEL, remLen, imageSizing, hasIntrinsicSize, itemNeedsClass, itemScope, floatZIndex, typoRole, typoRootVars, typoCascadeCss, bandEdgeCSS, LINK_COLOR_CSS, gridQueryCss,
+  resolveResponsive, floatStacksOnMobile, floatingReserve, alertToastCss, accordionClasses, bandClasses, videoEmbedSrc, isContainer, sanitizeCssDeclarations, expandScopedCss, COMPONENT_PARTS, itemFloatContextCss, itemOverrideCss, itemNumberVars, richBody, plainBody, componentTextCss, componentBoxCss, renderAlertHTML, alertDismissScript, masonryMeasureAttr, masonryMeasureScript, pinStackMarker, pinStackGroupMarker, pinStackNeeded, pinStackScript, isPager, pagerNavHTML, pagerScript, pagerStripCss, pagerSlideId, bgShowThroughCss, blockContainmentCss, COMPONENT_ITEM_SEL, remLen, imageSizing, hasIntrinsicSize, itemNeedsClass, itemScope, floatZIndex, typoRole, typoRootVars, typoCascadeCss, bandEdgeCSS, LINK_COLOR_CSS, gridQueryCss, TYPE_UNIT_PROPERTY_CSS,
 } from "@/lib/box-model";
 import { isRegistryComponent, renderComponent, componentScripts } from "@/lib/educo-ui/registry";
 import { iconSvg } from "@/lib/educo-ui/icon-svg";
@@ -388,7 +388,7 @@ function styleAt(node: BoxNode, rawParent: BoxNode | null, bp: Breakpoint, theme
       ? { position: "relative", width: "100%", height: "auto", minHeight: "auto", zIndex: "auto" } // full-width flow, grows with content
       // The PAGE ROOT publishes the theme's typography as the role defaults everything below inherits — which
       // is what lets a block stop hard-coding them and a section start overriding them.
-      : parent ? childStyle(r, parent, bp, hostSized) : { width: "100%", ["--box-u" as string]: baseUnit(r.baseFont ?? 10), ...typoRootVars(theme) }),
+      : parent ? childStyle(r, parent, bp, hostSized) : { width: "100%", ["--box-u" as string]: baseUnit(r.baseFont ?? 10), ["--box-t" as string]: baseUnit(r.baseFont ?? 10), ...typoRootVars(theme) }),
     // A CONTAINER hands its typography down to everything inside it (see typoCascadeCss).
     ...(isContainer(r) ? typoCascadeCss(r) : {}),
     ...(selfPaint ? {} : bgCss(r)), // background styles the block element (component/button), not this wrapper
@@ -569,6 +569,8 @@ function renderNode(node: BoxNode, rawParent: BoxNode | null, theme: SiteTheme, 
 /** Turn the collected rules into a stylesheet: the phone layout first, then each wider screen adds to it. */
 function sheetCss(sheet: Sheet): string {
   return [
+    // The type unit's registration, so `--box-t` is computed at the page root and inherited as a length (#133).
+    TYPE_UNIT_PROPERTY_CSS,
     // One copy of each entrance's keyframes, for the effects this page actually uses.
     revealKeyframes(sheet.reveals),
     // …and one copy of each arrival’s, for the same reason.

@@ -1,3 +1,9 @@
+---
+title: Website Builder — reference guide
+sidebar_position: 2
+description: Every control of the website builder, by section — read the layout story first.
+---
+
 # Website Builder Guide
 
 Build and maintain your school's public website by dragging blocks onto a page — no code. This is the same idea as Wix, Canva or WordPress's block editor, but tuned for a school and wired into Educo's themes and design system.
@@ -315,6 +321,8 @@ screen at any width, and at desktop sizes it is the single row it always was.
 
 - Colours come from the site's **design tokens** (an OKLCH colour system) — pick from themed swatches, a spectrum, a hex field, or the eyedropper. There are **no hardcoded colours**, so switching the Website theme re‑skins everything consistently.
 - Colour fields show a **WCAG contrast** readout so text stays legible.
+- **Text follows the page, space follows the box.** A heading is one size wherever it sits — in a sidebar, a card or a
+  wide band — so the page's hierarchy holds; a card's padding still tightens in a narrow column. (Decided 2026‑09‑28.)
 - **Links read on every Website theme.** A link's colour is your brand colour, moved lighter or darker only as far as it needs to read (4.5:1) on that theme's page and on a card — on Light the brand is used as it is; on Dark, Midnight and Purple it is lifted so a menu is legible. A link inside a coloured band takes the band's own link colour instead.
 - Every control is keyboard‑accessible and labelled.
 

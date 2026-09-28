@@ -102,6 +102,21 @@ const RULES: [name: string, mustSay: RegExp][] = [
   ["…a structure the builder cannot build is a gap to fix", /A structure the builder cannot[\s\S]*build is a GAP to fix, not a case to skip/],
   ["…bare structures do not count", /Bare structures[\s\S]*do not count/],
   ["…any user, any layout imaginable — the vocabulary of the LLM builder", /ANY user build ANY layout imaginable/],
+  /** The user, 2026-09-28: a story-like layout documentation when the layout closes, and a status line on every reply. */
+  ["The layout is documented as a story a user can follow (RULE L)", /RULE L — THE LAYOUT IS DOCUMENTED AS A STORY A USER CAN FOLLOW/],
+  ["…kept in docs/guide/layout-story.md", /docs\/guide\/layout-story\.md/],
+  ["…scenario by scenario, by example, before templates/components/LLM start", /scenario by scenario, by example[\s\S]*written BEFORE they start/],
+  ["…and it grows as we go: every finished area adds its story in the same change", /IT GROWS AS WE GO — A MUST[\s\S]*added to this[\s\S]*documentation in the SAME change/],
+  ["Every reply ends with where the work is and what comes next", /STATUS, ALWAYS[\s\S]*Every reply ends with where the work is and what comes next/],
+  /** The user, 2026-09-28: documentation is written for and published with Docusaurus, every time. */
+  ["Documentation is written for, and published with, Docusaurus (RULE DOC)", /RULE DOC — DOCUMENTATION IS WRITTEN FOR, AND PUBLISHED WITH, DOCUSAURUS/],
+  ["…stored research in docs/DOCUSAURUS.md, the Markdown in docs/guide is the single source", /docs\/DOCUSAURUS\.md[\s\S]*single source/],
+  /** The user, 2026-09-28: the Ponytail discipline (github.com/dietrichgebert/ponytail) is a must on every change. */
+  ["Ponytail — the least code that solves it correctly (RULE M)", /RULE M — PONYTAIL: THE LEAST CODE THAT SOLVES IT CORRECTLY/],
+  ["…its ladder, in order, from YAGNI to the minimum that works", /does this need to exist[\s\S]*already in this codebase[\s\S]*standard library[\s\S]*native platform feature[\s\S]*installed dependency[\s\S]*one line[\s\S]*the minimum that works/i],
+  ["…stored research in docs/PONYTAIL.md", /docs\/PONYTAIL\.md/],
+  ["…never on the chopping block: validation, error handling, security, accessibility", /Never on the[\s\S]*chopping block:[\s\S]*validation at trust boundaries[\s\S]*security, accessibility/],
+  ["…in every session, every context, and in how the agent itself works", /IN EVERY SESSION, EVERY SECTION, EVERY CONTEXT — and in how the agent itself works/],
   ["Website personality and tone (RULE P)", /RULE P — WEBSITE PERSONALITY AND TONE ARE FOLLOWED/],
   ["…every template/theme/page declares one personality", /declares one personality/],
   ["The web design rules and framework (RULE D)", /RULE D — THE WEB DESIGN RULES AND FRAMEWORK ARE FOLLOWED/],

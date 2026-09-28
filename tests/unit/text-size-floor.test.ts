@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { textLen, u } from "@/lib/box-model";
+import { textLen, u, t } from "@/lib/box-model";
 
 /**
  * #107 — measured on a dressed page at 375px: a card title set to 22 drew at 15.4px (smaller than the 16px body beside it),
@@ -12,7 +12,7 @@ const floorRem = (css: string) => parseFloat((css.match(/^max\(([\d.]+)rem, /) ?
 
 describe("textLen — a text size with a readable floor", () => {
   it("is the fluid size, never below a floor in rem (so the reader's own text size still counts)", () => {
-    expect(textLen(22)).toBe(`max(${19 / 16}rem, ${u(22)})`);
+    expect(textLen(22)).toBe(`max(${19 / 16}rem, ${t(22)})`); // the TYPE unit, fixed at the page (#133, decided 2026-09-28)
   });
   it.each([[14, 14], [16, 16], [12, 12], [22, 19], [32, 24], [44, 30], [52, 34]])("a size of %i never draws below %ipx", (px, floor) => {
     expect(floorRem(textLen(px)) * 16).toBeCloseTo(floor, 3);

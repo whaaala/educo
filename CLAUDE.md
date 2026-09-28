@@ -333,6 +333,44 @@ Run through this checklist BEFORE telling the user it's done:
   **The layout engine must let ANY user build ANY layout imaginable**; the sweep and the component catalogue are the
   vocabulary of the LLM website builder that comes after Task 1 (v1 deterministic composer, v2 a Claude call), and the
   page audit, semantic auto-correct, RULE P and RULE D are its critic.
+- **RULE L — THE LAYOUT IS DOCUMENTED AS A STORY A USER CAN FOLLOW (MANDATORY — the user, 2026-09-28).** When the layout
+  work closes (every tier swept, the innovative shapes built, the decisions implemented), a **complete, simple, clean,
+  easy-to-read documentation of the layout** is written and kept in `docs/guide/layout-story.md` (and its published
+  Artifact): **scenario by scenario, by example, told like a story** a teacher can read and follow — "I want a photo
+  beside my words", "three cards across that stack on a phone", "a sidebar that stays put" — each with what to click,
+  what happens on every screen, and why. Not a step-by-step manual and not a feature list: the existing guide is a
+  reference; this is the thing a person reads first. It contains the simple rules too (rows, stacks, grids, bands,
+  sizing, hiding per device, the responsive ladder), in plain words. **Every later piece of work builds on this
+  documentation** — templates, components and the LLM builder all read it — so it is written BEFORE they start, never
+  hunted for at the end. Kept true in the same change as any layout behaviour it describes (rule 14).
+  **IT GROWS AS WE GO — A MUST: every time a section or an area of work is finished, its story is added to this
+  documentation in the SAME change** (the user, 2026-09-28: "every time we finish a particular area, we would add it to
+  the documentation, make it a must"). A finished area with no story in `docs/guide/layout-story.md` is not finished.
+- **RULE M — PONYTAIL: THE LEAST CODE THAT SOLVES IT CORRECTLY (MANDATORY — the user, 2026-09-28, every change).**
+  The discipline of https://github.com/dietrichgebert/ponytail, studied and stored in [docs/PONYTAIL.md](docs/PONYTAIL.md).
+  Before writing anything, once the problem is understood, climb its ladder in order: **(1) does this need to exist —
+  no → skip it (YAGNI) · (2) already in this codebase → reuse it · (3) the standard library does it → use it · (4) a
+  native platform feature does it → use it · (5) an installed dependency does it → use it, never add one · (6) one line →
+  one line · (7) only then, the minimum that works.** "Deletion over addition. Boring over clever. Fewest files possible.
+  The shortest working diff wins." Fix the root cause, never the symptom. Every non-trivial piece of logic gets one
+  small runnable check. Mark a deliberate simplification with a known limit with a `ponytail:` comment. **Never on the
+  chopping block:** understanding the problem first, validation at trust boundaries, error handling that prevents data
+  loss, security, accessibility, explicit requirements. The project's scope rules decide WHAT is built (all platforms,
+  themes, sizes); Ponytail decides HOW LITTLE code builds it.
+  **IN EVERY SESSION, EVERY SECTION, EVERY CONTEXT — and in how the agent itself works** (the user, 2026-09-28: "must be
+  used by any session at any time… bring down the cost"): the fewest tool calls that answer the question, the shortest
+  diff that fixes the bug, a summary read instead of a file dump, a subagent for reading, one probe → one failing test →
+  one fix, never a re-read of what is already in the conversation. Ponytail is not a mode to switch on; it is how
+  everything here is done.
+- **RULE DOC — DOCUMENTATION IS WRITTEN FOR, AND PUBLISHED WITH, DOCUSAURUS (MANDATORY — the user, 2026-09-28).**
+  https://github.com/facebook/docusaurus, studied and stored in [docs/DOCUSAURUS.md](docs/DOCUSAURUS.md). Every piece of
+  user-facing documentation is Markdown/MDX in `docs/guide/` in the story's voice (RULE L), organised the Docusaurus way
+  (one page per area, front matter, a sidebar that puts the story first), and rendered by the `docs-site/` Docusaurus
+  site once it exists — set up as the first thing after the layout work closes, before templates, components or the
+  LLM builder. The Markdown is the single source; the site never becomes a second copy. This is the format every time,
+  going forward, so everyone knows what the documentation is and where it lives.
+- **STATUS, ALWAYS (the user, 2026-09-28).** Every reply ends with where the work is and what comes next — one line, a
+  pointer the user can act on — so the user never has to ask "where are you?".
 - **RULE P — WEBSITE PERSONALITY AND TONE ARE FOLLOWED (MANDATORY — from 2026-09-27).** The Website Personalities
   Framework, `03` Part 2 (pp. 235–255): **seven personalities** (serious/elegant · minimalist/simple · plain/neutral ·
   bold/confident · calm/peaceful · startup/upbeat · playful/fun), each fixing typography, colours, images, icons,

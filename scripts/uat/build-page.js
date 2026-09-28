@@ -108,9 +108,12 @@ class Builder {
         if (await cell.count()) { await cell.click(); await this.page.waitForTimeout(700); }
         const g = (await P.newestLeaf(this.page, before)).id; this.steps++;
         const cells = await kidsOf(this.page, g);
+        const gsum = t.cols.slice(0, n).reduce((a, b) => a + b, 0) || 1;
         for (let c = 0; c < cells.length; c++) {
           const x = t.inner[c];
-          if (x && x.length > 1) { const a = await P.into(this.page, cells[c], 'Stack'); const ids = await P.row(this.page, a, Array(Math.min(x.length, 4) - 1).fill('Stack')); for (const id of ids) await P.into(this.page, id, 'Text'); }
+          if (c < n && (t.cols[c] / gsum) * 100 < 12) { await P.into(this.page, cells[c], 'Icon'); this.steps++; continue; } // a narrow cell holds an icon (#136)
+          if (x && x.kind) { const a = await P.into(this.page, cells[c], 'Stack'); await this.fill(x, a, { ...ctx, firstInSection: false, sectionIndex: ctx.sectionIndex + c + 1 }); } // a whole structure in this cell (beyond the crawl)
+          else if (x && x.length > 1) { const a = await P.into(this.page, cells[c], 'Stack'); const ids = await P.row(this.page, a, Array(Math.min(x.length, 4) - 1).fill('Stack')); for (const id of ids) await P.into(this.page, id, 'Text'); }
           else await P.into(this.page, cells[c], leafTile({ ...ctx, firstInSection: ctx.firstInSection && c === 0, inGrid: true, col: c, cols: n }));
           this.steps++;
         }
@@ -119,9 +122,15 @@ class Builder {
       } else {
         const c0 = await this.addLine(container, 'Stack', lineAfter);
         const ids = await P.row(this.page, c0, Array(n - 1).fill('Stack')); this.steps += n - 1;
+        const sum = t.cols.slice(0, n).reduce((a, b) => a + b, 0) || 1;
         for (let c = 0; c < ids.length; c++) {
           const x = t.inner[c];
-          if (x && x.length > 1) { const a = await P.into(this.page, ids[c], 'Stack'); const inner = await P.row(this.page, a, Array(Math.min(x.length, 4) - 1).fill('Stack')); for (const id of inner) await P.into(this.page, id, 'Text'); await this.sizeColumns(inner, x); }
+          // A NARROW column of a real page (under ~12% — a 5% column beside a 65% one) holds an ICON or a small picture, never
+          // a paragraph: words there have nowhere to go, so the column grew to its longest word and pushed the neighbour to
+          // the next line on every page that had one (tier 95, #136). Built as the site built it.
+          if ((t.cols[c] / sum) * 100 < 12) { await P.into(this.page, ids[c], 'Icon'); this.steps++; continue; }
+          if (x && x.kind) { const a = await P.into(this.page, ids[c], 'Stack'); await this.fill(x, a, { ...ctx, firstInSection: false, sectionIndex: ctx.sectionIndex + c + 1 }); }
+          else if (x && x.length > 1) { const a = await P.into(this.page, ids[c], 'Stack'); const inner = await P.row(this.page, a, Array(Math.min(x.length, 4) - 1).fill('Stack')); const isum = x.reduce((p, q) => p + q, 0) || 1; for (const [k, id] of inner.entries()) await P.into(this.page, id, (x[k] / isum) * 100 < 12 ? 'Icon' : 'Text'); await this.sizeColumns(inner, x); }
           else await P.into(this.page, ids[c], leafTile({ ...ctx, firstInSection: ctx.firstInSection && c === 0, inRow: true, col: c, cols: n }));
           this.steps++;
         }

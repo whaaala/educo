@@ -31,7 +31,9 @@ function parseStructure(src) {
     }
     const cols = shares() ?? Array(n).fill(100 / n);
     const inner = [];
-    while (peek() === '(') { i++; let s = ''; while (peek() !== ')') s += src[i++]; i++; inner.push(s ? s.split('/').map(Number) : null); }
+    // per column: "(35/25)" the shares of columns nested inside it — or, BEYOND THE CRAWL (page-plan-innovative.js), a whole
+    // structure in that column: "(stack2{·,grid2[50/50]})" is a grid inside a stack inside this cell.
+    while (peek() === '(') { i++; if (/[a-z·]/.test(src[i] || '')) { inner.push(node()); if (peek() !== ')') throw new Error(`) expected at ${i} in "${src}"`); i++; continue; } let s = ''; while (peek() !== ')') s += src[i++]; i++; inner.push(s ? s.split('/').map(Number) : null); }
     let lines = 1; if (peek() === 'x') { i++; lines = num(); }
     let plusStack = false; if (src.startsWith('+stack', i)) { i += 6; plusStack = true; }
     return { kind: m[1], n, cols, inner, lines, plusStack };

@@ -34,6 +34,22 @@ function allPairs() {
   }
   return rows;
 }
+// --tier=95|99: ONE DRESSED PAGE PER COVER PAGE of that tier (scripts/uat/page-cover.json — the fewest crawled pages that
+// hold every nesting combination real sites use, 80 → 95 → 99%). The body is the whole crawled page (up to six sections);
+// header · hamburger · sidebar · hero · theme rotate so every value recurs across the tier. Writes page-plan-<tier>.json.
+const TIER = process.argv.find((a) => a.startsWith('--tier='))?.slice(7);
+if (TIER) {
+  const cover = JSON.parse(fs.readFileSync(path.join(__dirname, 'page-cover.json'), 'utf8')).filter((p) => String(p.tier) === TIER);
+  const rot = (k, i) => FACTORS[k][i % FACTORS[k].length];
+  const plan = cover.map((p, i) => {
+    const type = FACTORS.type.includes(p.type) ? p.type : 'about';
+    const secs = G.parsePage(p.layout).slice(0, 6);
+    return { idx: i, type, header: rot('header', i), hamburger: rot('hamburger', i >> 1), sidebar: rot('sidebar', i >> 2), hero: rot('hero', i * 3), theme: rot('theme', i * 5 + 1), source: `${p.site}/${p.page}`, sourceType: p.type, tier: p.tier, body: secs };
+  });
+  fs.writeFileSync(path.join(__dirname, `page-plan-${TIER}.json`), JSON.stringify(plan, null, 1));
+  console.log(`${plan.length} dressed pages for the ${TIER}% tier → page-plan-${TIER}.json`);
+  process.exit(0);
+}
 // Articles and legal pages rarely open with a big hero — a hero there is kept, but "none" is what real ones do most.
 const rows = allPairs();
 const pages = G.loadPages().filter((p) => p.layout);
