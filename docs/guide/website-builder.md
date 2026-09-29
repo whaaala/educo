@@ -74,6 +74,8 @@ exists.)
 ### Media
 **Image**, **Photo gallery**, **Slider**, **Video** (YouTube/Vimeo/MP4), **Icon** (searchable symbol), **Embed** (paste an iframe/HTML).
 
+**Every block publishes the box it is drawn in.** An Icon, a List and a Divider are exactly as big on the published page as in the editor, at every screen size — an icon 22px tall on a phone is 22px published, and a list keeps the same space under each item. They are never padded out to the minimum size an *empty* box is given so that you can grab it.
+
 ### Photo gallery — many photographs at once
 
 The Image block adds **one** picture. **Photo gallery** adds a whole set in a single step, and it's the block to reach for when you're putting up sports day, the fete or an open day.

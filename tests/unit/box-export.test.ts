@@ -58,7 +58,7 @@ describe("box-export — static HTML", () => {
     expect(html).toContain("<h1"); // the page's first heading is its title (semantics B1) — it used to be an <h2> always
     expect(html).toContain("Hello");
     expect(html).toContain("<ol");
-    expect(html).toContain("<li>a</li>");
+    expect(html).toMatch(/<ol[^>]*><li style="margin-bottom:[^"]+">a<\/li><li style="margin-bottom:[^"]+">b<\/li><\/ol>/); // each item carries the space the canvas draws under it (#135)
     expect(html).toContain('target="_blank"');
   });
 

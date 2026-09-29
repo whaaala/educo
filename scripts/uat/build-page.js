@@ -26,6 +26,18 @@ function leafTile(ctx) {
   return 'Text';
 }
 
+// WHAT A COLUMN CAN HOLD IS DECIDED BY ITS WIDTH, NOT ITS SHARE. "Under 12% → an icon" was right on a full-width row and
+// wrong everywhere else: 16.6% of a main column beside a sidebar is 111px, and the Quote put there is wider than that by
+// its longest word — so the column was drawn wider than its share and the next one dropped a line (tier 99, page 64); a
+// Card in a grid cell two columns of twelve wide broke "description" in two (23 pages, 905 words). Real pages put small
+// things in small columns. The width is the one a visitor has at 900px, the narrowest screen that shows a row as designed.
+const TEXT_MIN = 96;        // 6rem — "description" at body size is 86px
+// A Card's own floor is 10rem, and "1,000+" in a Stat and "everything" in a Quote need 150px. The estimate is a share of the
+// editor's page scaled to 900px, and a centred column is NOT a share of the page (it has gutters and a measure of its own):
+// measured on page 211, four Stats judged to have 150px had 120 at 900px. The floor carries that fifth.
+const COMPONENT_MIN = 190;
+const fitTile = (px, tile) => (px < TEXT_MIN ? 'Icon' : px < COMPONENT_MIN && ['Quote', 'Card', 'Stat'].includes(tile) ? 'Text' : tile);
+
 /** The id of the row band a column sits in (its parent block). */
 const bandOf = (page, colId) => page.evaluate((id) => document.querySelector(`[data-box-id="${id}"]`)?.parentElement?.closest('[data-box-id]')?.getAttribute('data-box-id') ?? null, colId);
 /** Direct child blocks of a block, in order. */
@@ -56,6 +68,22 @@ class Builder {
     return P.under(this.page, last, tile);
   }
 
+  /** Are the columns ALL still on one line — or has one of them dropped to the next? (Any of them: widening the first column
+   *  of three that are already at their floor drops the THIRD, and the second stays where it was.) */
+  onOneLine(ids) {
+    return this.page.evaluate((ids) => { const r = ids.map((id) => document.querySelector(`[data-box-id="${id}"]`)?.getBoundingClientRect()).filter(Boolean);
+      return r.length === ids.length && r.every((x) => x.top < r[0].bottom - 2 && x.top > r[0].top - 2); }, ids);
+  }
+
+  /** How wide each column will be, in px, on a 900px screen — its share of the row, the row's share of the page. */
+  async widthsAsDesigned(ids, shares, within = null) {
+    const sum = shares.reduce((a, b) => a + b, 0) || 1;
+    if (within != null) return shares.map((s) => (s / sum) * within);
+    const m = await this.page.evaluate((first) => { const a = document.querySelector(`[data-box-id="${first}"]`); if (!a) return null; const host = a.parentElement; const cs = getComputedStyle(host);
+      return { inner: host.getBoundingClientRect().width - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight), frame: document.querySelector('[data-box-id]').getBoundingClientRect().width }; }, ids[0]);
+    return shares.map((s) => (m ? (s / sum) * (m.inner / m.frame) * 900 : Infinity));
+  }
+
   /** Size the columns of a row (ids in order) to `shares` by dragging each shared edge, left to right. */
   async sizeColumns(ids, shares) {
     const page = this.page; const sum = shares.reduce((a, b) => a + b, 0) || 1;
@@ -63,6 +91,26 @@ class Builder {
     // Measure with the blocks panel CLOSED — the panel docks beside the page and shrinks the canvas to fit, so a distance
     // measured with it open is the wrong distance once it is closed for the drag.
     await H.panel(page, false);
+    // THE ROW HAS TO BE ON ONE LINE BEFORE ITS EDGES MEAN ANYTHING. A section keeps a 14rem reflow floor, so three columns
+    // need 672px: in a 668px main column the third had already dropped to the next line, the dresser sized the first two
+    // regardless, and the row stored 50 + 25 + 33.34 — a HOLE at every wide screen (tier 99, 29 pages). A person laying out
+    // a desktop row on a small editor chooses a wider screen size first, and goes back afterwards.
+    let widened = false;
+    for (const preset of ['Desktop (1280px)', 'Wide (1920px)']) { if (await this.onOneLine(ids)) break; await page.getByRole('button', { name: preset }).first().click(); await page.waitForTimeout(800); widened = true; }
+    if (widened) page.__widerToSize = (page.__widerToSize || 0) + 1;
+    // …AND WHERE NO SCREEN SIZE HOLDS IT ON ONE LINE, IT IS LEFT AS THE BUILDER LAID IT OUT, AND SAID SO (RULE E: a gap is
+    // recorded, never skipped in silence). Six columns need 6 × 14rem = 1344px of row; a main column beside a sidebar has
+    // that on no screen size the editor offers.
+    const gap = (why) => { (page.__gaps = page.__gaps || []).push(`a row of ${ids.length} asked for ${shares.join(' · ')} — ${why}`); };
+    const fullWidth = async () => { if (widened) { await page.getByRole('button', { name: 'Full width' }).first().click(); await page.waitForTimeout(800); } await H.panel(page, true); };
+    if (!(await this.onOneLine(ids))) { gap('it is on one line at no screen size the editor has, so it was left as dropped'); await fullWidth(); return; }
+    try { await this.dragToShares(ids, shares, sum); }
+    catch (e) { if (!widened) throw e; gap(`at the wider screen size its edges could not be reached (${e.message.split('\n')[0]})`); }
+    await fullWidth();
+  }
+
+  async dragToShares(ids, shares, sum) {
+    const page = this.page;
     // A column can be dragged no narrower than 3rem (the hand floor), so a crawled share below it — a 5% column of a
     // 720px main column is 36px — is raised to the floor and the others give way in proportion. Asking for the crawl's
     // number as written left the first drag clamped and every later edge aimed at the wrong place (#129).
@@ -84,10 +132,28 @@ class Builder {
         targets = []; let c = 0; for (const v of px) { c += v; targets.push(c); }
       }
       const dx = Math.round(targets[i] - m.right);
-      if (Math.abs(dx) < 4) continue;
-      await H.dragEdge(page, 'right', dx);
+      const say = async (what) => { if (process.env.DEBUG) console.log(`  size ${ids[i].slice(-4)} [${shares.join(",")}] ${what}: inner ${Math.round(m.inner)} right ${Math.round(m.right)} target ${Math.round(targets[i])} dx ${dx} · stored ${((await H.storedRow(page, ids[i])) || []).map((c) => c.w).join(" + ")}`); };
+      if (Math.abs(dx) < 4) { await say("already there"); continue; }
+      const wasBeside = await this.onOneLine(ids);
+      await H.dragEdge(page, 'right', dx); await say("dragged");
+      // A PERSON WATCHES WHAT THE DRAG DID. Pull past what the neighbour can give (a row's 14rem reflow floor, a grid's
+      // hand floor) and it drops to the next line, keeping its width — by design, "make this one full width". Nobody
+      // sizing three columns means that: they see it drop and bring the edge back until it is beside them again. Asking
+      // for the crawl's share regardless stored 50 + 25 + 33.34 in a row (a HOLE at every wide screen, tier 99, 29 pages)
+      // and 11 + 6 in a grid, whose free half-row then offered "Add a block here" to the next click.
+      //
+      // UNDO, THEN A LITTLE LESS — never a second drag the other way. Dragging back does not take a row back: the neighbour
+      // that dropped kept its width, so the pair now owns more than it did and the third column can never return. Measured:
+      // twelve drags back left a grid cell one column wide (41px) with a Quote in it (tier 99, page 33). Ctrl+Z is the
+      // state the row was in, exactly; then the same edge, one step short of where it went wrong.
+      const step = Math.max(24, Math.round(m.inner / 12) + 4); const sign = Math.sign(dx); let want = dx;
+      for (let back = 0; wasBeside && back < 12 && !(await this.onOneLine(ids)); back++) {
+        await page.keyboard.press('Control+z'); await page.waitForTimeout(400);
+        want -= sign * step; page.__cameBack = (page.__cameBack || 0) + 1; // reported: how often the crawl asked for a share this screen cannot hold
+        if (want * sign < 4) break; // nothing shorter is left to try — the row stays as it was, on one line
+        await H.select(page, ids[i]); await H.dragEdge(page, 'right', want); await say(`undone, dragged ${want}px instead`);
+      }
     }
-    await H.panel(page, true);
   }
 
   /** Columns side by side as the next line of `container` — then each filled. Returns the id to put the next line under. */
@@ -104,17 +170,26 @@ class Builder {
         const box = lineAfter ? await this.addLine(container, 'Stack', lineAfter) : container;
         const before = await P.ids(this.page);
         await H.dropInto(this.page, 'Grid', box);
-        const cell = this.page.locator(`[role="gridcell"][aria-label="${n} across, 1 down"]`);
-        if (await cell.count()) { await cell.click(); await this.page.waitForTimeout(700); }
+        // THE PICKER OFFERS 1 · 2 · 3 · 4 · 6 · 12 ACROSS — twelve columns divide into those. Five is asked for by real pages
+        // and is not among them: the harness found no such square, clicked nothing, and the picker sat open while the
+        // build failed on "the drop added nothing" (tier 99, pages 219 and 249). A person takes the next size up and
+        // deletes the cell they do not need — and that the picker has no five is reported as a gap.
+        this.page.__step = `grid(${n} across)`;
+        const offered = [1, 2, 3, 4, 6, 12].find((k) => k >= n) ?? 12;
+        if (offered !== n) (this.page.__gaps = this.page.__gaps || []).push(`a grid of ${n} across is not in the picker (1 · 2 · 3 · 4 · 6 · 12) — built as ${offered} with ${offered - n} cell${offered - n > 1 ? 's' : ''} deleted`);
+        const cell = this.page.locator(`[role="gridcell"][aria-label="${offered} across, 1 down"]`);
+        await cell.click(); await this.page.waitForTimeout(700);
         const g = (await P.newestLeaf(this.page, before)).id; this.steps++;
-        const cells = await kidsOf(this.page, g);
-        const gsum = t.cols.slice(0, n).reduce((a, b) => a + b, 0) || 1;
+        let cells = await kidsOf(this.page, g);
+        for (const extra of cells.slice(n)) { await H.panel(this.page, false); await H.select(this.page, extra); await this.page.keyboard.press('Delete'); await this.page.waitForTimeout(400); await H.panel(this.page, true); }
+        cells = (await kidsOf(this.page, g)).slice(0, n);
+        const gw = await this.widthsAsDesigned(cells.slice(0, n), t.cols.slice(0, n));
         for (let c = 0; c < cells.length; c++) {
           const x = t.inner[c];
-          if (c < n && (t.cols[c] / gsum) * 100 < 12) { await P.into(this.page, cells[c], 'Icon'); this.steps++; continue; } // a narrow cell holds an icon (#136)
+          if (c < n && gw[c] < TEXT_MIN) { await P.into(this.page, cells[c], 'Icon'); this.steps++; continue; } // a narrow cell holds an icon (#136)
           if (x && x.kind) { const a = await P.into(this.page, cells[c], 'Stack'); await this.fill(x, a, { ...ctx, firstInSection: false, sectionIndex: ctx.sectionIndex + c + 1 }); } // a whole structure in this cell (beyond the crawl)
-          else if (x && x.length > 1) { const a = await P.into(this.page, cells[c], 'Stack'); const ids = await P.row(this.page, a, Array(Math.min(x.length, 4) - 1).fill('Stack')); for (const id of ids) await P.into(this.page, id, 'Text'); }
-          else await P.into(this.page, cells[c], leafTile({ ...ctx, firstInSection: ctx.firstInSection && c === 0, inGrid: true, col: c, cols: n }));
+          else if (x && x.length > 1) { const a = await P.into(this.page, cells[c], 'Stack'); const ids = await P.row(this.page, a, Array(Math.min(x.length, 4) - 1).fill('Stack')); const iw = await this.widthsAsDesigned(ids, Array(ids.length).fill(1), gw[c] ?? Infinity); for (const [k, id] of ids.entries()) await P.into(this.page, id, fitTile(iw[k], 'Text')); }
+          else await P.into(this.page, cells[c], fitTile(gw[c] ?? Infinity, leafTile({ ...ctx, firstInSection: ctx.firstInSection && c === 0, inGrid: true, col: c, cols: n })));
           this.steps++;
         }
         await this.sizeColumns(cells.slice(0, n), t.cols.slice(0, n));
@@ -122,16 +197,16 @@ class Builder {
       } else {
         const c0 = await this.addLine(container, 'Stack', lineAfter);
         const ids = await P.row(this.page, c0, Array(n - 1).fill('Stack')); this.steps += n - 1;
-        const sum = t.cols.slice(0, n).reduce((a, b) => a + b, 0) || 1;
+        const rw = await this.widthsAsDesigned(ids, t.cols.slice(0, n));
         for (let c = 0; c < ids.length; c++) {
           const x = t.inner[c];
           // A NARROW column of a real page (under ~12% — a 5% column beside a 65% one) holds an ICON or a small picture, never
           // a paragraph: words there have nowhere to go, so the column grew to its longest word and pushed the neighbour to
           // the next line on every page that had one (tier 95, #136). Built as the site built it.
-          if ((t.cols[c] / sum) * 100 < 12) { await P.into(this.page, ids[c], 'Icon'); this.steps++; continue; }
+          if (rw[c] < TEXT_MIN) { await P.into(this.page, ids[c], 'Icon'); this.steps++; continue; }
           if (x && x.kind) { const a = await P.into(this.page, ids[c], 'Stack'); await this.fill(x, a, { ...ctx, firstInSection: false, sectionIndex: ctx.sectionIndex + c + 1 }); }
-          else if (x && x.length > 1) { const a = await P.into(this.page, ids[c], 'Stack'); const inner = await P.row(this.page, a, Array(Math.min(x.length, 4) - 1).fill('Stack')); const isum = x.reduce((p, q) => p + q, 0) || 1; for (const [k, id] of inner.entries()) await P.into(this.page, id, (x[k] / isum) * 100 < 12 ? 'Icon' : 'Text'); await this.sizeColumns(inner, x); }
-          else await P.into(this.page, ids[c], leafTile({ ...ctx, firstInSection: ctx.firstInSection && c === 0, inRow: true, col: c, cols: n }));
+          else if (x && x.length > 1) { const a = await P.into(this.page, ids[c], 'Stack'); const inner = await P.row(this.page, a, Array(Math.min(x.length, 4) - 1).fill('Stack')); const iw = await this.widthsAsDesigned(inner, x.slice(0, inner.length), rw[c]); for (const [k, id] of inner.entries()) await P.into(this.page, id, fitTile(iw[k], 'Text')); await this.sizeColumns(inner, x); }
+          else await P.into(this.page, ids[c], fitTile(rw[c], leafTile({ ...ctx, firstInSection: ctx.firstInSection && c === 0, inRow: true, col: c, cols: n })));
           this.steps++;
         }
         await this.sizeColumns(ids, t.cols.slice(0, n));

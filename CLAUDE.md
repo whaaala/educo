@@ -8,6 +8,7 @@
 
 Run through this checklist BEFORE writing any code:
 
+- [ ] **READ THE TASK TREE** — [docs/TASK_TREE.md](docs/TASK_TREE.md) holds everything any session has said it will do, as one tree. Find **YOU ARE HERE** before doing anything else, and put every new promise into it the moment it is made.
 - [ ] **Open a BUG LEDGER** — from this point on, every bug you find gets written into your reply as a numbered line the moment you find it, BEFORE deciding anything about it. See [docs/FIX_WHAT_YOU_FIND.md](docs/FIX_WHAT_YOU_FIND.md).
 - [ ] **Check existing shared components** — search `components/shared/` for `Button`, `FormDropdown`, `CustomDropdown`, `FormInput`, `Modal`, `EditorDialog`, `ColorPickerPopover`, `DataTable`, etc. NEVER duplicate what exists.
 - [ ] **IMPLEMENT for ALL platforms AND screen sizes** — web (desktop 1280px+, tablet 768px, mobile 375px) AND React Native mobile/tablet app (`apps/mobile/`). Every feature MUST be built for BOTH web responsive AND the native mobile/tablet app. Neither is optional.
@@ -29,6 +30,7 @@ Run through this checklist BEFORE telling the user it's done:
   clicking, never written into `localStorage`. A seeded tree is allowed only to pin a repro you already found
   through the interface. **Could not reproduce what the user reported? Then you did not build it their way.**
 - [ ] **⛔ RULE X — YOU SAW IT IN THE UI, AFTER EACH CHANGE** — every change, however small, driven in a real browser from the user's point of view before moving to the next one. Ten changes = ten UAT passes, in order. Each one checked in EVERY combination it can appear in (themes · 375/768/1280+ · device presets · every entry point · each state ON and OFF), trying hard to break it. State what you drove and what you saw. **The user must never be the one who finds it.** See [docs/UAT_EVERY_CHANGE.md](docs/UAT_EVERY_CHANGE.md).
+- [ ] **⛔ THE TASK TREE IS UP TO DATE** — [docs/TASK_TREE.md](docs/TASK_TREE.md) shows what this change closed (with its commit or measurement), every new promise made along the way, and **YOU ARE HERE** on the next leaf. Work is not done while the tree still describes the state before it.
 - [ ] **Every button/toggle/input works** — click every interactive element, verify it does its job
 - [ ] **All entry points tested** — menu items, toolbar buttons, keyboard shortcuts, right-click
 - [ ] **Side effects verified** — if feature A blocks B/C/D, test ALL of B/C/D are blocked
@@ -126,6 +128,20 @@ Run through this checklist BEFORE telling the user it's done:
   - **Blockers or open questions**
 - Save to `memory/project_last_session.md` (overwrite each time) and keep `MEMORY.md` index updated
 - This is NON-NEGOTIABLE — never end a session without saving this state
+- **THE TASK TREE IS THE MAP (MANDATORY, no exceptions — the user, 2026-09-29: "it's a rule that must be followed").** [docs/TASK_TREE.md](docs/TASK_TREE.md) is one tree of every task,
+  sub-task and promise from every session — parents, children, and their children — each marked done, in progress, not
+  started, waiting on the user, or parked. Sessions change and context is lost; the tree is not.
+  - **Start of a session:** read it, find **YOU ARE HERE**, continue from that leaf.
+  - **During:** anything a session says it will do goes into the tree under its parent AT ONCE; the bug ledger hangs
+    under the work that found it. Work that is interrupted stays in the tree as in progress, never dropped.
+  - **End of a session:** move **YOU ARE HERE**, mark what closed with its commit or measurement, and commit the file.
+  - Nothing is deleted from it. A branch closes only when its children are closed or the user decides otherwise.
+  - **THE MOMENT THE USER SAYS "new session"** (or the context is about to run out): stop, and write the handover into
+    the tree BEFORE anything else — a line in its SESSION LOG saying where this session STARTED FROM, where it GOT TO, and
+    where the next one CONTINUES FROM — then move **YOU ARE HERE** and commit. The user never has to ask for it.
+  - **IT REMINDS THE USER TOO.** The first reply of every session says, from the tree: where we were, what was promised
+    and is still open, and asks — continue there, or leave it and do something else? A branch is left only on the
+    user's word, and the tree records that they said so.
 
 ### 8. Fix What You Find (MANDATORY — the rule most often broken)
 - **A bug you find is a bug you FIX**, in the same change, with a mutation-proven guard — see [docs/FIX_WHAT_YOU_FIND.md](docs/FIX_WHAT_YOU_FIND.md)

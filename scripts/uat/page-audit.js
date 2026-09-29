@@ -27,7 +27,11 @@ function auditDoc(opts) {
     if (!visible(m) || !m.parentElement) continue; const r = m.getBoundingClientRect(); const p = m.parentElement.getBoundingClientRect();
     const inBlock = m.closest('[class*="bx-"]'); const bid = inBlock ? idOf(inBlock).slice(-4) : '?';
     if (r.width > p.width + 1) err.push(`L2 ${m.tagName.toLowerCase()} wider than its box (${Math.round(r.width)} > ${Math.round(p.width)}) in ${bid}`);
-    if (r.right > W + 1) err.push(`L2 ${m.tagName.toLowerCase()} runs off the page — ${Math.round(r.width)}px wide at x=${Math.round(r.left)} in ${bid} (block ${Math.round(inBlock ? inBlock.getBoundingClientRect().width : 0)}px)`);
+    // THE LINE'S ONE PIXEL OF SLACK IS NOT "OFF THE PAGE" (decision 1D): the last column of a line that holds a hand-sized
+    // column lends 0.0625rem at its end — 1px, 1.5px at 150% text — so a picture filling that column ends that far past the
+    // row, plus the half pixel a share rounds to. Measured on the 12 pages that reported it: 1–2px, every one, and the
+    // page does not scroll sideways on any of them (L1). Anything further is still an error.
+    if (r.right > W + parseFloat(getComputedStyle(document.documentElement).fontSize) / 16 + 0.5) err.push(`L2 ${m.tagName.toLowerCase()} runs off the page — ${Math.round(r.width)}px wide at x=${Math.round(r.left)} in ${bid} (block ${Math.round(inBlock ? inBlock.getBoundingClientRect().width : 0)}px)`);
   }
   // overlaps between blocks that are neither nested nor floating
   // …and nothing INSIDE a pinned block either: a sticky header's band carries the pin (`bandCarriesPin`), so the header

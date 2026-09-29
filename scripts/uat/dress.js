@@ -138,6 +138,11 @@ class Dresser {
       if (host) { sec = i === 0 ? await P.into(p, host, 'Stack') : await b.addLine(host, 'Stack', ids[i - 1]); }
       else sec = await P.tileAfter(p, this.last, 'Stack');
       ids.push(sec); this.last = host ? this.last : sec;
+      // THE SECTION'S WIDTH FIRST, THEN WHAT GOES IN IT. What a column can hold is judged by the width it will have
+      // (build-page `fitTile`); set afterwards, "Centred column" narrowed a row that had been filled for the full page, and
+      // a Quote judged to have 150px had 111 (tier 99, pages 64 and 211: a hole, and "1,000+" broken in two).
+      const width = s.width === 'full' ? 'Edge to edge' : 'Centred column';
+      if (!host) { await H.panel(p, false); await this.band(sec, { width }); await H.panel(p, true); }
       // EVERY SECTION OPENS WITH A HEADING (deck: a section component is titled; HTML: a <section> needs a heading or a
       // name). A crawled section that starts with a row of cards would otherwise have none — and on a page with no hero
       // the first card's title was published as the page's <h1> (#118). The words fit the page type.
@@ -158,7 +163,7 @@ class Dresser {
       void lastLine;
       if (!host) {
         await H.panel(p, false);
-        await this.band(sec, { bg: i % 2 ? TINT[this.t] : undefined, width: s.width === 'full' ? 'Edge to edge' : 'Centred column' });
+        await this.band(sec, { bg: i % 2 ? TINT[this.t] : undefined });
         await I.meaning(p, sec, 'Section'); await H.panel(p, true);
       }
       this.sections.push({ role: 'body', id: sec, structure: s.tree.kind });

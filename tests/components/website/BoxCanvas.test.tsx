@@ -4,7 +4,9 @@ import { render, screen, fireEvent } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import BoxCanvas from "@/components/website/box/BoxCanvas";
 import { DEFAULT_THEME } from "@/lib/site-storage";
-import { createContainer, createGrid, createElement, findBox, makeRowBand, normalizeRowBands, remLen, type BoxNode } from "@/lib/box-model";
+import { createContainer, createGrid, createElement, findBox, makeRowBand, normalizeRowBands, remLen, u, LIST_ITEM_GAP, EMPTY_BOX_MIN, type BoxNode } from "@/lib/box-model";
+import { renderToStaticMarkup } from "react-dom/server";
+import { renderPageHTML } from "@/lib/box-export";
 
 function Harness({ initial, initialSel = null as string | null, minHeight }: { initial: BoxNode; initialSel?: string | null; minHeight?: number }) {
   const [root, setRoot] = useState(initial);
@@ -1026,6 +1028,50 @@ describe("BoxCanvas (box-model editor)", () => {
     const btn = container.querySelector<HTMLAnchorElement>('[data-box-id="bt"] a')!;
     expect(btn.target).toBe("_blank");
     expect(container.querySelector('#cta')).toBeTruthy(); // anchor id rendered on the box
+  });
+
+  // #143 — THE BOX AROUND A BLOCK IS THE SAME IN BOTH ENGINES, FOR EVERY KIND OF BLOCK. Measured by the tier-99 sweep and
+  // probe-t7: an Icon was 22px on the canvas and 40px published on a phone, because `isEmptyBox` counted a block that
+  // draws its own content as empty (floor: 2.5rem each way) and the canvas then threw the floor's height away while the
+  // export kept it. The record below is keyed by the TYPE, so a block type added later fails to compile until it is listed.
+  const EVERY_ELEMENT: Record<Exclude<BoxNode["type"], "container" | "component">, true> = { text: true, heading: true, button: true, link: true, image: true, video: true, icon: true, divider: true, list: true, embed: true, spacer: true };
+  const boxOf = (css: string) => Object.fromEntries(["min-width", "min-height", "width", "height"].map((k) => [k, (new RegExp(`(?:^|;)\\s*${k}:([^;}]*)`).exec(css)?.[1] ?? "").trim().replace(/^0px$/, "0")]));
+  const bothBoxes = (type: keyof typeof EVERY_ELEMENT, patch: Partial<BoxNode> = {}) => {
+    const t = normalizeRowBands(createContainer("column", { id: "root", width: "fill", children: [createElement(type, { id: "el", ...patch } as Partial<BoxNode>)] } as Partial<BoxNode>));
+    const drawn = renderToStaticMarkup(<BoxCanvas root={t} theme={DEFAULT_THEME} editable={false} onChange={() => {}} />);
+    return { canvas: boxOf(/<[a-z0-9]+[^>]*data-box-id="el"[^>]*style="([^"]*)"/.exec(drawn)?.[1] ?? "missing"), page: boxOf(/\.bx-el\{([^}]*)\}/.exec(renderPageHTML(t, DEFAULT_THEME))?.[1] ?? "absent") };
+  };
+  it.each(Object.keys(EVERY_ELEMENT) as (keyof typeof EVERY_ELEMENT)[])("a %s has the same box on the canvas and on the published page", (type) => {
+    const { canvas, page } = bothBoxes(type);
+    expect(page).toEqual(canvas);
+    const sized = bothBoxes(type, { minHeight: 120 });
+    expect(sized.page).toEqual(sized.canvas);
+    expect(sized.page["min-height"]).toBe(remLen(120)); // a height somebody set is kept, in both
+  });
+  it.each(["icon", "list", "divider"] as const)("a %s draws its own content, so it never gets the empty-box floor", (type) => {
+    const { canvas, page } = bothBoxes(type);
+    for (const box of [canvas, page]) { expect(box["min-height"]).not.toBe(EMPTY_BOX_MIN); expect(box["min-width"]).not.toBe(EMPTY_BOX_MIN); }
+  });
+  it("an EMPTY box still gets the floor, in both — it is what lets a person see and grab it", () => {
+    const t = normalizeRowBands(createContainer("column", { id: "root", width: "fill", children: [createContainer("column", { id: "el" } as Partial<BoxNode>)] } as Partial<BoxNode>));
+    expect(renderPageHTML(t, DEFAULT_THEME)).toMatch(new RegExp(`\\.bx-el\\{[^}]*min-height:${EMPTY_BOX_MIN.replace(".", "\\.")}`));
+  });
+
+  // #135 — measured by the tier-99 dressed sweep on 145 pages: a List was 8–17px SHORTER on the published page than on
+  // the canvas at every screen size, because the canvas spaced its items and the export did not.
+  it.each(["bullet", "number"] as const)("a %s List publishes the box the canvas draws — the same space under every item, the same indent", (listStyle) => {
+    const t = createContainer("column", { id: "root", children: [createElement("list", { id: "ls", listStyle, listItems: ["one", "two", "three"] } as Partial<BoxNode>)] } as Partial<BoxNode>);
+    // Read as MARKUP, both of them: jsdom's style object drops any value it cannot parse — `calc(var(--box-u) * 0.4)` is
+    // one — so `li.style.marginBottom` reads "" on a canvas that has the space, and the comparison passes on two blanks.
+    const drawn = renderToStaticMarkup(<BoxCanvas root={t} theme={DEFAULT_THEME} editable={false} onChange={() => {}} />);
+    const sent = renderPageHTML(t, DEFAULT_THEME);
+    const tag = listStyle === "number" ? "ol" : "ul";
+    const declared = (html: string, el: string, prop: string) => Array.from(html.matchAll(new RegExp(`<${el}\\b[^>]*style="([^"]*)"`, "g")))
+      .map((m) => new RegExp(`(?:^|;)\\s*${prop}:([^;]*)`).exec(m[1])?.[1].trim() ?? "");
+    expect(declared(drawn, "li", "margin-bottom")).toEqual(Array(3).fill(u(LIST_ITEM_GAP)));
+    expect(declared(sent, "li", "margin-bottom")).toEqual(declared(drawn, "li", "margin-bottom"));
+    expect(declared(drawn, tag, "padding-left")).toEqual([u(22)]);
+    expect(declared(sent, tag, "padding-left")).toEqual(declared(drawn, tag, "padding-left"));
   });
 
   // ── Responsive per-breakpoint overrides ──────────────────────────────────────────────────────────

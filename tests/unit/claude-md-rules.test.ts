@@ -183,6 +183,11 @@ const RULES: [name: string, mustSay: RegExp][] = [
   ["Mobile + tablet parity", /apps\/mobile\//],
   ["Verify on both emulators", /emulator/i],
   ["Session continuity — save state at the end", /project_last_session/],
+  ["The task tree is the map across sessions", /THE TASK TREE IS THE MAP/],
+  ["…and it is read before anything else", /READ THE TASK TREE/],
+  ["…the handover is written the moment the user says new session", /THE MOMENT THE USER SAYS "new session"/],
+  ["…and the tree reminds the user what is still open", /IT REMINDS THE USER TOO/],
+  ["…and it is checked before anything is called done", /THE TASK TREE IS UP TO DATE/],
   ["Reuse-first component architecture", /components\/shared\//],
   ["One branch per AREA, named for the area", /One branch per AREA/],
   ["…and named for the area, not the audience", /never the audience/i],
@@ -236,6 +241,13 @@ describe("CLAUDE.md is the complete rule register", () => {
 
   it("links the detail rather than burying it, so the file stays readable", () => {
     expect(CLAUDE).toMatch(/docs\/FIX_WHAT_YOU_FIND\.md/);
+  });
+
+  it("has a task tree with exactly ONE place marked YOU ARE HERE, so a new session knows where to start", () => {
+    const tree = readFileSync(resolve(process.cwd(), "docs/TASK_TREE.md"), "utf8").replace(/\r\n/g, "\n");
+    expect(tree.match(/← YOU ARE HERE/g) ?? []).toHaveLength(1);
+    expect(tree, "every session leaves a line in the log").toMatch(/## Session log/);
+    expect(tree).toMatch(/Last updated: \*\*\d{4}-\d{2}-\d{2}\*\*/);
   });
 
   it("numbers its Core Rules in order, so a reader can tell none is missing", () => {

@@ -621,6 +621,15 @@ Feature: The twelve-column grid in the Box Builder
       24rem one — a container query on the box that holds it, one emitter for
       both engines (Responsive Field Guide ingredient ④).
 
+  Scenario: A narrowed grid has the same rows in the editor as on the page
+    Given a grid of an icon, a short text and a long text, 1 · 3 · 8 columns wide, in the main column beside a sidebar
+    When I look at it at the Tablet size, where its own box makes it two across
+    Then the editor draws two rows, exactly as the published page does, and every cell is the same height in both
+    And the editor's "Add a block here" offer is not drawn, because a narrowed grid's last row is always full
+    Because the offer was worked out from the screen's columns while the grid had narrowed by its own box: it
+      appeared as a cell of its own on a third row, and every real cell lost a third of its height to it —
+      116px in the editor, 174px on the page (tier-99 sweep, pages 254 and 285)
+
   Scenario: The own-box rule only ever takes columns away
     Given a grid on the phone rung, where the ladder already says one column
     Then the two-across rule never runs there, in either engine

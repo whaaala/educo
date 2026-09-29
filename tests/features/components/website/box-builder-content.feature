@@ -91,5 +91,21 @@ Feature: Box Builder — content types & links
     Because the inline SVG used to sit in a normal line box on the published page and came out 40px tall for a 32px icon
       (measured by the dressed sweep, canvas ≠ export in the block itself)
 
+  Scenario: A block that draws something is never treated as an empty box
+    Given an Icon, a List or a Divider — blocks that draw their own content and hold no words or picture
+    Then none of them is given the empty-box floor, in the editor or on the published page
+    And every kind of block has the same minimum width, minimum height, width and height in both
+    And at 150% browser text an Icon still fits a narrow column instead of spilling out of it
+    Because the floor exists so an EMPTY box can be seen and grabbed, and these were counted as empty: a 22px icon
+      published in a 40px box on a phone (185 pages of the tier-99 sweep), and its 2.5rem minimum width became
+      60px at 150% text and spilled out of a 55px column (9 pages)
+
+  Scenario: A List publishes the box it is drawn in
+    Given a List block with three items, bulleted or numbered
+    Then every item on the published page has the same space under it as on the canvas, and the same indent
+    And the list is the same height in the editor and in the Preview at every screen size
+    Because the canvas spaced its items and the published page did not, so a List came out 8–17px shorter than it was
+      drawn on 145 pages of the tier-99 dressed sweep (canvas ≠ export in the block itself)
+
   Scenario: New content types work across themes, screen sizes and are accessible
     Then each renders correctly in light/dark/midnight/purple, reflows responsively, and exposes aria labels

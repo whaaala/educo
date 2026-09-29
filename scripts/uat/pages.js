@@ -22,7 +22,7 @@ const newestLeaf = async (page, before) => {
     const cands = outer.flatMap((e) => (isRow(e) && kidsOf(e).length > 1 ? kidsOf(e).filter((k) => fresh.includes(k)) : [e]));
     const pick = (cands.length ? cands : outer).map((e) => { let x = e; while (x.children.length && kidsOf(x).length === 1 && isRow(x) && fresh.includes(kidsOf(x)[0])) x = kidsOf(x)[0]; return x; });
     return pick.length ? pick[pick.length - 1].getAttribute('data-box-id') : null; }, [...before]); }
-  if (!got) { await page.screenshot({ path: require('path').join(__dirname, 'pg-nothing.png') }); throw new Error((page.__dropOffered ? 'PRODUCT: the canvas offered the drop and added nothing' : 'the drop added nothing (the drag never reached the canvas, twice)') + ' (after: ' + (page.__step || '?') + ')'); }
+  if (!got) { await page.screenshot({ path: require('path').join(__dirname, 'pg-nothing.png') }); throw new Error((page.__dropOffered ? 'PRODUCT: the canvas offered the drop and added nothing' : 'the drop added nothing (the drag never reached the canvas, twice)') + ' (after: ' + (page.__step || '?') + ')' + (page.__dropAt ? ' · released at ' + page.__dropAt : '')); }
   return { id: got };
 };
 /** Answer the Grid picker: N across, M down. */

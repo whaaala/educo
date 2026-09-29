@@ -123,6 +123,13 @@ Feature: Placing blocks beside one another in the Box Builder
     But the gap stays the size of one movement however long the drag runs
     And the moment I stop, the chrome is on the block again
 
+  Scenario: Choosing another screen size
+    Given a block I have selected
+    When I choose Mobile, Wide, Tablet, Desktop, Laptop or Full width, one after another
+    Then the handles and the toolbar come to rest on the block at every one of them
+    Because the page frame changes width by a 300ms transition with no render, and the handles stayed where the
+      block had been — drawn at 97…1107 around a block that was now at 415…790
+
   Scenario: A layout that argues with itself is still given up on
     Given a layout whose measurement never settles
     Then the chrome stops chasing it after a bounded number of frames
@@ -139,6 +146,14 @@ Feature: Placing blocks beside one another in the Box Builder
 
   # ── A dropped block takes the room it lands in ────────────────────────────
   # tests/e2e/dropped-block-fills-space.spec.ts
+
+  Scenario: Letting go of a block over the selected block's toolbar
+    Given a heading I have selected, whose toolbar hangs under it — over the text on the next line
+    When I drag a Stack from the blocks panel and let go on any part of that toolbar
+    Then the Stack lands on the page beneath the toolbar, where the drop marker was showing
+    And the toolbar works as before once the drag is over
+    Because the toolbar took the release: the marker showed, and nothing was added — three times out of three on
+      the toolbar, never beside it — and 15 of 403 real pages could not be built for it (tier-99 sweep)
 
   Scenario: Dropping a block into a box with room in it
     Given a section I have given a height of 400 pixels

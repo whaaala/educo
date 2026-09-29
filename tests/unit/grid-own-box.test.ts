@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { createContainer, createElement, makeRowBand, normalizeRowBands, gridNarrowsAt, hostsNarrowingGrid, gridQueryCss, treeGridQueryCss, containerStyle, capturesFixed, gridPlacementAt, CELL_MIN_REM, type BoxNode } from "@/lib/box-model";
+import { createContainer, createElement, makeRowBand, normalizeRowBands, gridNarrowsAt, hostsNarrowingGrid, gridQueryCss, treeGridQueryCss, gridLeftoverAt, gridColumnsAt, containerStyle, capturesFixed, gridPlacementAt, CELL_MIN_REM, type BoxNode } from "@/lib/box-model";
 import { tableGrid } from "@/lib/box-presets";
 import { renderPageHTML } from "@/lib/box-export";
 import { DEFAULT_THEME } from "@/lib/site-storage";
@@ -101,5 +101,38 @@ describe("the box holding such a grid is its query container — in both engines
     expect(css).toContain(`[data-box-id="${outer.id}"]{grid-template-columns:repeat(2`);
     expect(css).toContain(`[data-box-id="${inner.id}"]{grid-template-columns:repeat(2`);
     expect(css).toContain(`[data-box-id="${inner.id}"]{grid-template-columns:repeat(1`);
+  });
+  it("the columns the editor may offer are counted ROW BY ROW — a cell that wraps leaves its hole behind it", () => {
+    const gridOf = (...spans: number[]): BoxNode => { const g = tableGrid(spans.length, 1); (g.children ?? []).forEach((c, i) => { c.colSpan = spans[i]; }); return g; };
+    // every arrangement, with what is really free at the END of the last row (twelve columns)
+    const cases: [number[], number][] = [[[4, 4, 4], 0], [[4, 4], 4], [[1, 3, 8], 0], [[6, 6, 6], 6], [[8, 8], 4], [[8, 8, 4], 0], [[12], 0], [[5], 7], [[7, 6, 6], 0], [[10, 3], 9]];
+    for (const [spans, free] of cases) expect(gridLeftoverAt(gridOf(...spans)), `${spans.join(" + ")} of 12`).toBe(free);
+    // The arithmetic it replaces, `used % track`, is right only when the cells pack tightly: it says 8 for 8 + 8, where 4
+    // are free, and 5 for 7 + 6 + 6, where nothing is free at all — the two sixes fill the second row.
+    expect((12 - ((8 + 8) % 12)) % 12).toBe(8);
+    expect((12 - ((7 + 6 + 6) % 12)) % 12).toBe(5);
+    expect(gridLeftoverAt(createContainer("column", { layout: "grid", columns: 12, children: [] } as Partial<BoxNode>))).toBe(0);
+    // WHERE THE LADDER NARROWED THE GRID the last row is always filled (the cell that ends it stretches), whatever the
+    // spans were on the desktop — so at every narrowed rung there is nothing to offer, for every arrangement above.
+    for (const [spans] of cases) for (const bp of ["tabletPortrait", "phone"] as const) {
+      const g = gridOf(...spans);
+      if (gridColumnsAt(g, bp) < 12) expect(gridLeftoverAt(g, bp), `${spans.join(" + ")} at ${bp}`).toBe(0);
+    }
+    expect(gridColumnsAt(gridOf(11, 1), "tabletPortrait"), "the case measured in the browser: 11 + 1 is two across on a tablet").toBe(2);
+  });
+
+  it("the editor can add its own rules INSIDE each query — and the published page carries none of them", () => {
+    const g = quoteGrid();
+    const ghost = (scope: string) => `${scope}>[data-gridghost]{display:none !important}`;
+    const canvas = gridQueryCss(scope(g.id), g, scope, aboveThePhone, ghost);
+    // once per narrowing (two across, one across), and INSIDE the query: outside it the offer would vanish on a wide grid too
+    const [outside, ...queries] = canvas.split("@container");
+    expect(queries).toHaveLength(2);
+    for (const q of queries) expect(q).toContain(`${scope(g.id)}>[data-gridghost]{display:none !important}`);
+    expect(outside).not.toContain("gridghost");
+    expect(gridQueryCss(scope(g.id), g, scope, aboveThePhone)).not.toContain("gridghost");
+    expect(renderPageHTML(normalizeRowBands(createContainer("column", { width: "fill", children: [g] })), DEFAULT_THEME)).not.toContain("gridghost");
+    const root = createContainer("column", { width: "fill", children: [makeRowBand([g])] });
+    expect(treeGridQueryCss(root, scope, (c) => c, ghost)).toContain(`${scope(g.id)}>[data-gridghost]{display:none !important}`);
   });
 });

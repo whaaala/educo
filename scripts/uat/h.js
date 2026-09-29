@@ -43,6 +43,8 @@ const dropTile = async (page, tileText, x, y) => {
   // over it. No marker at the moment of release = the drag never reached the canvas (a missed pick-up) — a person
   // just drags again. A marker AND nothing added afterwards is a product bug, and `newestLeaf` says so.
   page.__dropOffered = await page.evaluate(() => Array.from(document.body.children).some((e) => e.getAttribute('aria-hidden') === 'true' && getComputedStyle(e).position === 'fixed' && /outline-dashed|shadow-\[0_0_10px/.test(e.className)));
+  // WHAT IS UNDER THE POINTER AS IT LETS GO — kept for the report when a drop that was offered adds nothing (c-5).
+  page.__dropAt = await page.evaluate(([x, y]) => { const e = document.elementFromPoint(x, y); if (!e) return `(${x},${y}) nothing`; const b = e.closest("[data-box-id]"); const chrome = e.closest("[data-chrome-mirror],[role=toolbar],[data-gridghost]"); return `(${x},${y}) on <${e.tagName.toLowerCase()}>${e.getAttribute("aria-label") ? " \"" + e.getAttribute("aria-label") + "\"" : ""}${chrome ? " — EDITOR CHROME: " + (chrome.getAttribute("aria-label") || chrome.getAttribute("data-chrome-mirror") || "offer") : ""}${b ? " in block " + b.getAttribute("data-box-id").slice(-4) : ""}`; }, [x, y]);
   await page.mouse.up(); await page.waitForTimeout(PACE * 4 + 600);
   if (!page.__dropOffered && !page.__redrag) {
     await page.waitForTimeout(400);
@@ -92,18 +94,26 @@ async function select(page, id) {
     // Open space: the lower-right quarter — clear of the floating toolbar (top-left) and the add pill (centre) — but only
     // a point where the pointer actually lands ON this block (or inside it): a pinned header or a floating block over it
     // would take the click, and a person aims at the part they can see.
-    const pt = await page.evaluate(([id, bx]) => {
+    const pts = await page.evaluate(([id, bx]) => {
       const me = document.querySelector(`[data-box-id="${id}"]`);
       // Only the part of the block that is ON SCREEN can be aimed at: a column taller than the window (an article
       // beside a sidebar) had its 80%-down point below the viewport, and the click landed on whatever the window's
       // bottom edge held instead — four dressed pages "could not select" the main column for exactly this reason.
       const top = Math.max(bx.y, 0), bottom = Math.min(bx.y + bx.height, innerHeight), h = Math.max(1, bottom - top);
+      const ok = [];
       for (const [fx, fy] of [[0.8, 0.8], [0.8, 0.5], [0.5, 0.8], [0.95, 0.95], [0.5, 0.5], [0.2, 0.8], [0.05, 0.95], [0.8, 0.2], [0.5, 0.1]]) {
         const x = bx.x + bx.width * fx, y = top + h * fy; const hit = document.elementFromPoint(x, y);
-        if (hit && me && me.contains(hit)) return [x, y];
+        if (hit && me && me.contains(hit)) ok.push([x, y]);
       }
-      return [bx.x + bx.width * 0.8, top + h * 0.8];
+      return ok.length ? ok : [[bx.x + bx.width * 0.8, top + h * 0.8]];
     }, [id, b]);
+    // THE POINTER ARRIVES BEFORE IT CLICKS, and a person sees what is under it. The free columns at the end of a grid's row
+    // offer "Add a block here" — invisible until the pointer is over them — and a click meant to SELECT landed on the offer
+    // instead and added an empty cell (tier 99, page 254: four grids). Nobody clicks a button that has just said what it
+    // will do in order to do something else: the next open point is taken.
+    let pt = pts[0];
+    for (const p of pts) { await page.mouse.move(p[0], p[1]); await page.waitForTimeout(80); pt = p;
+      if (!(await page.evaluate(([x, y]) => !!document.elementFromPoint(x, y)?.closest('[data-gridghost]'), p))) break; }
     await page.mouse.click(pt[0], pt[1]);
     await page.waitForTimeout(250);
     // The click went INSIDE it (a child took it, as "click goes inside" means it should): step OUT with Escape, the
@@ -151,7 +161,7 @@ const storedRow = (page, anyChildId) => page.evaluate((id) => {
 }, anyChildId);
 const tree = (page) => page.evaluate(() => {
   const s = JSON.parse(localStorage.getItem('educo_box_site_v1')); const out = [];
-  const walk = (n, d) => { out.push('  '.repeat(d) + n.id.slice(-4) + ' ' + (n.type || '') + (n.rowBand ? ' BAND' : '') + (n.direction === 'row' ? ' ROW' : '') + (n.width ? ' w=' + n.width : '') + (n.marginLeft ? ' ml=' + n.marginLeft : '') + (n.marginLeftPct ? ' mlp=' + n.marginLeftPct : '')); (n.children || []).forEach((c) => walk(c, d + 1)); };
+  const walk = (n, d) => { out.push('  '.repeat(d) + n.id.slice(-4) + ' ' + (n.type || '') + (n.rowBand ? ' BAND' : '') + (n.direction === 'row' ? ' ROW' : '') + (n.layout === 'grid' ? ' GRID' + (n.columns || 12) : '') + (n.colSpan ? ' span=' + n.colSpan : '') + (n.width ? ' w=' + n.width : '') + (n.marginLeft ? ' ml=' + n.marginLeft : '') + (n.marginLeftPct ? ' mlp=' + n.marginLeftPct : '')); (n.children || []).forEach((c) => walk(c, d + 1)); };
   walk(s.pages[0].root, 0); return out.join('\n');
 });
 /** Lines of a row: each line's blocks touch, and no line runs past the row. Returns problems. */

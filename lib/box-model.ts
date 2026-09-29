@@ -640,8 +640,15 @@ export function floatStacksOnMobile(node: BoxNode): boolean {
 
 const round1 = (n: number) => Math.round(n * 10) / 10;
 
-/** A box with nothing inside — no children, no text, no image. It can shrink to ~1px. */
+/**
+ * A box with nothing inside — no children, no text, no image. It can shrink to ~1px.
+ *
+ * A BLOCK THAT DRAWS ITS OWN CONTENT IS NOT EMPTY (#143). An Icon, a Divider and a List hold no words, picture or
+ * children, so they were counted as empty and given the empty-box floor (2.5rem each way): a 22px icon published in a
+ * 40px box on a phone, and its minimum width became 60px at 150% browser text and spilled out of a 55px column.
+ */
 export function isEmptyBox(node: BoxNode): boolean {
+  if (node.type === "icon" || node.type === "divider" || (node.listItems?.length ?? 0) > 0) return false;
   return (node.children?.length ?? 0) === 0 && !node.text && !node.src && node.type !== "component";
 }
 
@@ -3246,6 +3253,29 @@ function lastRowFills(kids: BoxNode[], child: BoxNode, own: number, track: numbe
   return Math.min(track, own + (track - used));
 }
 
+/**
+ * THE COLUMNS LEFT FREE AT THE END OF A GRID'S LAST ROW — what the editor may offer as "Add a block here".
+ *
+ * The same walk once more, because the offer was counted as `used % track`, which assumes the cells pack tightly. They
+ * do not: a cell that does not fit what is left of a row starts the next one and leaves its hole BEHIND it. Measured at
+ * the Tablet size on an icon cell beside a text cell (1 + 2 columns of 2): one column "free", the offer drawn after the
+ * text on a third row of its own, and every real cell a third shorter in the editor than on the page (116px · 174px).
+ *
+ * Counted in the spans the cells are DRAWN at (`gridSpanAt`): where the ladder narrowed the grid, the cell that ends a
+ * short last row stretches to fill it, so there is nothing left to offer — 11 + 1 of twelve is two full rows of two.
+ */
+export function gridLeftoverAt(node: BoxNode, bp: Breakpoint = "base"): number {
+  const track = gridColumnsAt(node, bp);
+  let used = 0;
+  for (const c of node.children ?? []) {
+    if (isFloating(c) || resolveResponsive(c, bp).hidden) continue;
+    const span = Math.min(track, gridSpanAt(node, c, bp));
+    if (used + span > track) used = 0;
+    used += span;
+  }
+  return used ? track - used : 0;
+}
+
 // ── A GRID NARROWS BY ITS OWN BOX (Responsive Field Guide ④ — container queries) ─────────────────────
 /**
  * THE LADDER KNOWS THE SCREEN; IT DOES NOT KNOW THE BOX.
@@ -3295,7 +3325,13 @@ export function hostsNarrowingGrid(node: BoxNode): boolean {
  * the two-across rule in whatever says "not the phone rung" in that engine (the export: the tablet rung's media query;
  * the canvas: nothing at all when the preset is not the phone, and the rule left out when it is).
  */
-export function gridQueryCss(scope: string, node: BoxNode, cellScope: (id: string) => string, aboveThePhone: (css: string) => string): string {
+/**
+ * `editorOnly` — rules the CANVAS adds inside each query, for things that exist only while editing. A narrowed grid's
+ * last row is always full (`lastRowFills`), so the editor's "Add a block here" offer has no leftover columns to stand in;
+ * worked out from the screen's columns it appeared anyway, as a cell on a row of its own, and every real cell lost a
+ * share of the height to it (116px drawn, 174px published). The export passes nothing and carries none of it.
+ */
+export function gridQueryCss(scope: string, node: BoxNode, cellScope: (id: string) => string, aboveThePhone: (css: string) => string, editorOnly: (scope: string) => string = () => ""): string {
   const n = gridNarrowsAt(node); if (!n) return "";
   const kids = (node.children ?? []).filter((c) => !isFloating(c));
   const at = (track: number) => {
@@ -3307,16 +3343,16 @@ export function gridQueryCss(scope: string, node: BoxNode, cellScope: (id: strin
       const rowSpan = Math.max(1, Math.round(c.rowSpan ?? 1)); // the row's START is given up with the column (see childStyle)
       return `${cellScope(c.id)}{grid-column:${col} !important;grid-row:${rowSpan > 1 ? `span ${rowSpan}` : "auto"} !important}`;
     }).join("");
-    return `${scope}{grid-template-columns:repeat(${track},minmax(0,1fr)) !important}${cells}`;
+    return `${scope}{grid-template-columns:repeat(${track},minmax(0,1fr)) !important}${cells}${editorOnly(scope)}`;
   };
   // Strictly BELOW the threshold, in the unit the floor is written in.
   const below = (rem: number, css: string) => `@container (max-width:${rem - 0.01}rem){${css}}`;
   return (n.two != null ? aboveThePhone(below(n.two, at(2))) : "") + below(n.one, at(1));
 }
 /** Every grid's query rules on a page — the canvas's per-tree stylesheet; the export walks its own render. */
-export function treeGridQueryCss(root: BoxNode, scopeFor: (id: string) => string, aboveThePhone: (css: string) => string): string {
+export function treeGridQueryCss(root: BoxNode, scopeFor: (id: string) => string, aboveThePhone: (css: string) => string, editorOnly?: (scope: string) => string): string {
   let out = "";
-  const walk = (n: BoxNode) => { if (n.layout === "grid") out += gridQueryCss(scopeFor(n.id), n, scopeFor, aboveThePhone); for (const c of n.children ?? []) walk(c); };
+  const walk = (n: BoxNode) => { if (n.layout === "grid") out += gridQueryCss(scopeFor(n.id), n, scopeFor, aboveThePhone, editorOnly); for (const c of n.children ?? []) walk(c); };
   walk(root);
   return out;
 }
@@ -4452,6 +4488,10 @@ export function u(px: number): string {
   return `calc(var(--box-u, 0.625rem) * ${+(px / 10).toFixed(4)})`;
 }
 
+/** The space under every item of a List, in the spacing unit — ONE number for the canvas and the export (#135): the
+ *  canvas had it and the published page did not, so a List was shorter in the Preview than it was drawn. */
+export const LIST_ITEM_GAP = 4;
+
 /**
  * The page base unit as a FLUID length: `clamp(minRem, cqw, maxRem)`.
  *  - the `cqw` middle scales with the container (canvas/screen) WIDTH — so text/spacing shrink on mobile
@@ -5136,7 +5176,8 @@ export function childStyle(child: BoxNode, parent: BoxNode, bp: Breakpoint = "ba
   // or drag by any of its handles. `holdsNothingTall` is deliberately NARROW: whether a box is EMPTY is
   // `isEmptyBox`'s question, and treating the two as one floored a box holding an empty grid, which has a
   // rule of its own ("a box holding an empty grid shrinks too").
-  if (!child.clip && !isEmptyBox(child) && holdsNothingTall(child)
+  // A BOX holding only a divider — never the divider itself, which is a line and is as tall as it is drawn (#143).
+  if (!child.clip && isContainer(child) && !isEmptyBox(child) && holdsNothingTall(child)
       && child.minHeight == null && child.height == null && !child.screenHeight) {
     s.minHeight = EMPTY_BOX_MIN;
   }

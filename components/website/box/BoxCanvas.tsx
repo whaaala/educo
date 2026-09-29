@@ -9,7 +9,7 @@
  */
 
 import { measureCss } from "@/lib/educo-ui/base";
-import { columnFloorRem, HAND_FLOOR_REM, restForDrag, tabletPlaces } from "@/lib/box-model";
+import { columnFloorRem, gridLeftoverAt, HAND_FLOOR_REM, LIST_ITEM_GAP, restForDrag, tabletPlaces } from "@/lib/box-model";
 import { resolvePage } from "@/lib/semantics";
 import { Fragment, useEffect, useLayoutEffect, useMemo, useReducer, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { createPortal } from "react-dom";
@@ -21,7 +21,7 @@ import {
   updateBox, deleteBox, insertBox, moveBoxStep, duplicateBox, moveBox, cloneBox, findParent, isAncestor, isContainer, containerLabel, widthPct, stackWithBlock, fitBand, PILL, blockTypography,
   isFloating, floatBox, unfloatBox, groupBoxes, ungroupBoxes, bringToFront, sendToBack, bringForward, sendBackward, packRowLines, allocateLine, type LineFollower,
   shouldTakeMirrorBox, hostSizedFor, type MirrorBox, type MirrorChase, fadedPaint, boxOpacity, backgroundCss, treePaintLayerCss, radiusCSS, isClipped, SHADOW_CSS, videoEmbedSrc, sanitizeCssDeclarations, expandScopedCss, ACCORDION_CSS_PARTS, itemOverrideCss, itemHasOverride, itemNumberVars, richBody, componentTextCss, componentBoxCss, bgShowThroughCss, resizeTopEdge, blockContainmentCss, alertToastCss, treeHasToast, treeHasFixedHold, accordionClasses, bandClasses, advancedCssStyle, alertActionsHTML, hugsContent, itemFloatContextCss, COMPONENT_ITEM_SEL, clampContentScale, MIN_CONTENT_SCALE, isMultiItemComponent, comfortableWidth, remLen, rootFontPx, isDefiniteLen, addItemAfter, duplicateItem, duplicateChildItem, removeItem, removeChildItem, moveItem, moveChildItem, updateItem, updateChildItem, ALERT_SEVERITY_ICON, alertPartInline, alertIconInline, collectAlertItemStyles,
-  type Breakpoint, resolveResponsive, updateBoxResponsive, treePinArrivalCss, floatHoldCSS, canvasFixedStyle, capturesFixed, imageSizing, importPhoto, treeItemEffectsCss, itemNeedsClass, floatZIndex, gridPlacementAt, gridColumnsAt, masonryMeasureAttr, masonryMeasurePass, mirrorMeasuresNow, baseUnitParts, pinStackMarker, pinStackGroupMarker, pinStackPass, isPager, pagerStripCss, pagerNavHTML, selectionChain, textLen, typoRole, typoRootVars, typoCascadeCss, bandEdgeCSS, LINK_COLOR_CSS, treeGridQueryCss, TYPE_UNIT_PROPERTY_CSS,
+  type Breakpoint, resolveResponsive, updateBoxResponsive, treePinArrivalCss, floatHoldCSS, canvasFixedStyle, capturesFixed, imageSizing, importPhoto, treeItemEffectsCss, itemNeedsClass, floatZIndex, gridPlacementAt, masonryMeasureAttr, masonryMeasurePass, mirrorMeasuresNow, baseUnitParts, pinStackMarker, pinStackGroupMarker, pinStackPass, isPager, pagerStripCss, pagerNavHTML, selectionChain, textLen, typoRole, typoRootVars, typoCascadeCss, bandEdgeCSS, LINK_COLOR_CSS, treeGridQueryCss, TYPE_UNIT_PROPERTY_CSS,
 } from "@/lib/box-model";
 import { ICON_SET } from "./icons";
 import { PortalMenu, MenuItem, MenuHeader, MenuSep } from "./ui";
@@ -400,6 +400,8 @@ function ChromeMirror({ blockId, children }: { blockId: string; children: ReactN
   const remembered = mirrorMemory.get(blockId);
   const [box, setBox] = useState<{ left: number; top: number; width: number; height: number } | null>(remembered?.box ?? null);
   const [, remeasure] = useReducer((n: number) => n + 1, 0);
+  const blockIdRef = useRef(blockId);
+  useEffect(() => { blockIdRef.current = blockId; }, [blockId]);
 
   // Scrolling and window resizing move the block without re-rendering anything here, so they have to ask.
   useEffect(() => {
@@ -434,6 +436,23 @@ function ChromeMirror({ blockId, children }: { blockId: string; children: ReactN
     const onDown = () => { gesturing = true; rearms = 0; rearm(); };
     const onDrag = () => { if (gesturing && rearms++ < REARMS_PER_GESTURE) rearm(); };
     const onUp = () => { gesturing = false; };
+    /**
+     * A TRANSITION MOVES THE BLOCK WITH NO RENDER AT ALL, so it has to be followed by its own events (c-15).
+     *
+     * Choosing another screen size animates the page frame's width for 300ms (and docking the blocks panel animates the
+     * room around it). The render that started it measured the block where it still WAS, nothing rendered again, and
+     * the handles and toolbar stayed there — 97…1107 around a block that had come to rest at 415…790. Followed frame
+     * by frame while anything that HOLDS this block is in transition, and measured once more when the last one ends.
+     */
+    const moving = new Set<EventTarget>();
+    let follow = 0;
+    const holdsBlock = (t: EventTarget | null) => { const el = document.querySelector(`[data-box-id="${CSS.escape(blockIdRef.current)}"]`); return !!el && t instanceof Node && t.contains(el); };
+    const tick = () => { onMove(); follow = moving.size ? requestAnimationFrame(tick) : 0; };
+    const onTransitionRun = (e: TransitionEvent) => { if (!holdsBlock(e.target)) return; moving.add(e.target!); if (!follow) follow = requestAnimationFrame(tick); };
+    const onTransitionDone = (e: TransitionEvent) => { if (moving.delete(e.target!) || holdsBlock(e.target)) onMove(); };
+    window.addEventListener("transitionrun", onTransitionRun, true);
+    window.addEventListener("transitionend", onTransitionDone, true);
+    window.addEventListener("transitioncancel", onTransitionDone, true);
     window.addEventListener("scroll", onMove, true);
     window.addEventListener("resize", onMove);
     window.addEventListener("pointerdown", onDown, true);
@@ -441,6 +460,10 @@ function ChromeMirror({ blockId, children }: { blockId: string; children: ReactN
     window.addEventListener("pointerup", onUp, true);
     window.addEventListener("pointercancel", onUp, true);
     return () => {
+      cancelAnimationFrame(follow);
+      window.removeEventListener("transitionrun", onTransitionRun, true);
+      window.removeEventListener("transitionend", onTransitionDone, true);
+      window.removeEventListener("transitioncancel", onTransitionDone, true);
       window.removeEventListener("scroll", onMove, true);
       window.removeEventListener("resize", onMove);
       window.removeEventListener("pointerdown", onDown, true);
@@ -689,7 +712,11 @@ export default function BoxCanvas({
     measure();
     window.addEventListener("scroll", measure, true);
     window.addEventListener("resize", measure);
-    return () => { window.removeEventListener("scroll", measure, true); window.removeEventListener("resize", measure); };
+    // …AND WHEN THE PAGE ITSELF CHANGES SIZE (c-20). Docking the blocks panel refits the page (to 77% in a 1520px window)
+    // and choosing a screen size changes its width — both by a transition, neither a scroll nor a resize. The block moved
+    // up under the 36px line and the bar stayed above it, over the top edge of the page, until the block was re-selected.
+    window.addEventListener("transitionend", measure, true);
+    return () => { window.removeEventListener("scroll", measure, true); window.removeEventListener("resize", measure); window.removeEventListener("transitionend", measure, true); };
   }, [soloId]);
 
   // Style/geometry writes (resize, drag, nudge) go to the active breakpoint's override when not on base,
@@ -1369,6 +1396,28 @@ export default function BoxCanvas({
     document.addEventListener("mousemove", onDragMove);
     document.addEventListener("mouseup", onDragUp);
   };
+
+  /**
+   * WHILE SOMETHING IS BEING DRAGGED IN, THE EDITOR'S OWN CHROME LETS THE POINTER THROUGH (tier 99, c-5).
+   *
+   * The selected block's toolbar hangs just under it — which is over whatever comes next on the page — and it takes the
+   * pointer, as a toolbar must. So a tile let go "just under this block" was let go ON the toolbar: the drop marker had
+   * been showing, and nothing was added. Measured through the UI (scripts/uat/probe-t9.js): three releases on the
+   * toolbar added nothing, two a few pixels beside it added the block; 15 of 403 real pages could not be built for it.
+   * Nobody uses a toolbar with a block in their hand, so for as long as a drag is over the window the chrome is not
+   * there for the pointer — the drop lands on the page beneath it, where the marker said it would.
+   *
+   * Every drag, not only a palette tile: a photograph dragged in from the desktop never fires `dragstart` in this
+   * document, so `dragenter` and `dragover` raise the flag too, and leaving the window lowers it.
+   */
+  useEffect(() => {
+    const raise = () => { if (document.body.dataset.boxDragIn === undefined) document.body.dataset.boxDragIn = ""; };
+    const lower = () => { delete document.body.dataset.boxDragIn; };
+    const left = (e: Event) => { if (!(e as DragEvent).relatedTarget) lower(); };
+    const wired: [string, (e: Event) => void][] = [["dragstart", raise], ["dragenter", raise], ["dragover", raise], ["drop", lower], ["dragend", lower], ["dragleave", left]];
+    for (const [name, fn] of wired) window.addEventListener(name, fn, true);
+    return () => { for (const [name, fn] of wired) window.removeEventListener(name, fn, true); lower(); };
+  }, []);
 
   // ── Drag a NEW block from the palette onto the canvas (native HTML5 DnD) ──────────────────────────
   // The palette sets `application/x-box-block` = the block kind; the canvas shows the same drop line and
@@ -3215,9 +3264,7 @@ export default function BoxCanvas({
               not there. Empty space in a layout is a legitimate design choice — a permanent dashed box in it
               reads as an error to be fixed, and nags a user into filling a gap they meant to leave. */}
           {editable && node.layout === "grid" && kids.length > 0 && (() => {
-            const track = gridColumnsAt(node, breakpoint);
-            const used = kids.reduce((n, c) => n + gridPlacementAt(node, c, breakpoint).span, 0);
-            const free = (track - (used % track)) % track;
+            const free = gridLeftoverAt(node, breakpoint); // counted row by row — a cell that wraps leaves its hole behind it
             if (!free) return null;
             return (
               <button
@@ -3263,7 +3310,9 @@ export default function BoxCanvas({
           // A self-painting block is a COLUMN FLEX whose stored height is a FLOOR: the box grows if its content
           // needs more room (never a spill), while its `.eu-root` stretches to fill it (never an empty gap).
           ...(selfPaint ? { display: "flex", flexDirection: "column" } : {}),
-          minHeight: selfPaint && node.height ? sizeToCSS(node.height) : (node.minHeight != null ? remLen(node.minHeight) : undefined),
+          // With no height of its own the block keeps what `childStyle` decided — as the export does. Writing
+          // `undefined` here threw that away, so the two engines disagreed on seven kinds of block (#143).
+          minHeight: selfPaint && node.height ? sizeToCSS(node.height) : (node.minHeight != null ? remLen(node.minHeight) : (canvasStyle as React.CSSProperties).minHeight),
           height: !selfPaint && node.height ? sizeToCSS(node.height) : (wrapStyle as React.CSSProperties).height,
           // Content position → the wrapper flexes so the content re-positions as the block grows. A BUTTON fills its
           // box itself and positions its own label, so it opts out here (otherwise the two would fight).
@@ -3454,7 +3503,9 @@ export default function BoxCanvas({
         // on load, before this stylesheet is mounted. An inline style beats any selector at any specificity, so
         // the reveal has to out-rank it; the same reason the contained-band padding is marked.
         "[data-box-id]:hover>[data-gridghost],[data-gridghost]:focus-visible,[data-gridghost][data-armed]{opacity:1 !important}" +
-        "@media (prefers-reduced-motion:reduce){[data-gridghost]{transition:none}}" }} />
+        "@media (prefers-reduced-motion:reduce){[data-gridghost]{transition:none}}" +
+        // WHILE SOMETHING IS BEING DRAGGED IN, THE SELECTION'S OWN CHROME LETS THE POINTER THROUGH (see `data-box-drag-in`).
+        "body[data-box-drag-in] [data-chrome-mirror] *{pointer-events:none !important}" }} />
       {/* Hover & focus (Interactions 1a). One stylesheet for the whole tree, scoped per block by its
           `data-box-id`, because a hover cannot be expressed as an inline style. The rules come from the SAME
           emitter the export uses, so what you hover in the builder is what a visitor gets. */}
@@ -3475,7 +3526,7 @@ export default function BoxCanvas({
           // A grid narrowing by ITS OWN box (#111), from the emitter the export uses. The canvas draws a rung by its
           // preset, not by a media query, so "above the phone" is decided here: the two-across rule is left out
           // entirely at the phone preset and unguarded at every other.
-          + treeGridQueryCss(root, scopeFor, (css) => (breakpoint === "phone" ? "" : css));
+          + treeGridQueryCss(root, scopeFor, (css) => (breakpoint === "phone" ? "" : css), (grid) => `${grid}>[data-gridghost]{display:none !important}`);
         return css ? <style dangerouslySetInnerHTML={{ __html: css }} /> : null;
       })()}
       {renderNode(root, null)}
@@ -4211,8 +4262,8 @@ function ElementView({ node, headingLevel, theme, editable, selected, onText, on
       const numbered = node.listStyle === "number";
       const style: React.CSSProperties = { color: node.color || typoRole.color("text"), fontSize: node.fontSize != null ? textLen(node.fontSize) : typoRole.size(1), textAlign: align, width: "100%", paddingLeft: u(22), listStyleType: numbered ? "decimal" : "disc", ...typoStyle(node, "body", 400) };
       return numbered
-        ? <ol style={style}>{items.map((it, i) => <li key={i} style={{ marginBottom: u(4) }}>{it}</li>)}</ol>
-        : <ul style={style}>{items.map((it, i) => <li key={i} style={{ marginBottom: u(4) }}>{it}</li>)}</ul>;
+        ? <ol style={style}>{items.map((it, i) => <li key={i} style={{ marginBottom: u(LIST_ITEM_GAP) }}>{it}</li>)}</ol>
+        : <ul style={style}>{items.map((it, i) => <li key={i} style={{ marginBottom: u(LIST_ITEM_GAP) }}>{it}</li>)}</ul>;
     }
     case "embed":
       return node.html

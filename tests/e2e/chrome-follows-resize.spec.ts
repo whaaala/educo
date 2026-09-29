@@ -178,4 +178,34 @@ test.describe("the selection chrome follows the block it is drawn on", () => {
     const bar = (await page.locator('[role="toolbar"][aria-label="Block toolbar"]').boundingBox())!;
     expect(Math.abs(bar.x - b.x), "the toolbar sits on the block's left edge, wherever that now is").toBeLessThan(6);
   });
+  /**
+   * CHOOSING ANOTHER SCREEN SIZE MOVES THE BLOCK TOO — by a 300ms transition of the page frame, and with no render.
+   *
+   * Found by READING a screenshot of a page built through the UI (scripts/uat/probe-t7.js, canvas-375.png): the block
+   * had come to rest at 415…790 and its handles were still drawn at 97…1107, where it was at the size before. Nothing
+   * measured it, because the render that began the transition is the last one there is.
+   *
+   * EVERY preset, there and back, in one run — the mirror must survive the sequence, not only the first switch.
+   */
+  test("the handles and toolbar come to rest ON the block after every change of screen size", async ({ page }) => {
+    await seedOne(page);
+    await select(page, "B");
+    const presets = ["Mobile (375px)", "Wide (1920px)", "Tablet (768px)", "Desktop (1280px)", "Laptop (1024px)", "Full width", "Mobile (375px)", "Full width"];
+    let last = (await page.locator('[data-box-id="B"]').boundingBox())!;
+    let moved = 0;
+    for (const preset of presets) {
+      await page.getByRole("button", { name: preset }).first().click();
+      await page.waitForTimeout(700); // the frame's transition is 300ms
+      const b = (await page.locator('[data-box-id="B"]').boundingBox())!;
+      // Two sizes that are both fitted to the same room draw the same box (Desktop → Laptop in this window), so the
+      // precondition is counted over the run rather than demanded of every step.
+      if (Math.abs(b.width - last.width) + Math.abs(b.x - last.x) > 20) moved++;
+      last = b;
+      expect(await gapToEdge(page, "Resize right edge", "B", "right"), `${preset}: the right handle is on the right edge`).toBeLessThan(4);
+      expect(await gapToEdge(page, "Resize bottom edge", "B", "bottom"), `${preset}: the bottom handle is on the bottom edge`).toBeLessThan(4);
+      const bar = (await page.locator('[role="toolbar"][aria-label="Block toolbar"]').boundingBox())!;
+      expect(Math.abs(bar.x - b.x), `${preset}: the toolbar sits on the block's left edge`).toBeLessThan(6);
+    }
+    expect(moved, "the block really did move, at most of the changes — or this proved nothing").toBeGreaterThanOrEqual(5);
+  });
 });

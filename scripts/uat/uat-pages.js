@@ -6,7 +6,7 @@
 //      turned sideways, and both sides of every breakpoint — layout, typography, hierarchy, contrast (page-audit.js)
 //   4. at the five rungs: canvas == Preview (within the accepted 0.6%, #41), 150% text, a full-page screenshot
 //   5. units in the exported CSS (rule 16) and the semantics of the exported HTML
-//   NODE_PATH=node_modules node scripts/uat/uat-pages.js [--tier=80] [--from=0] [--count=N] [--jobs=6] [--only=site]
+//   NODE_PATH=node_modules node scripts/uat/uat-pages.js [--tier=80] [--from=0] [--count=N] [--jobs=6] [--only=site] [--pages=21,139]
 const fs = require('fs'); const path = require('path');
 const arg = (k, d) => { const a = process.argv.find((x) => x.startsWith(`--${k}=`)); return a ? a.split('=').slice(1).join('=') : d; };
 // --plan=dressed: the all-pairs plan of DRESSED pages (page-plan.js → dress.js); --plan=dressed95 / dressed99 / dressedinnovative:
@@ -19,8 +19,10 @@ const COVER = DRESSED
 const TIER = +arg('tier', 80), FROM = +arg('from', 0), JOBS = +arg('jobs', 6);
 let LIST = COVER.map((p, i) => ({ ...p, idx: i })).filter((p) => DRESSED || p.tier <= TIER);
 if (arg('only', '')) LIST = LIST.filter((p) => p.site.includes(arg('only', '')));
+if (arg('pages', '')) LIST = LIST.filter((p) => arg('pages', '').split(',').includes(String(p.idx))); // --pages=21,139: re-run the pages a fix touched
 LIST = LIST.slice(FROM, arg('count', '') ? FROM + +arg('count', '') : undefined);
 
+const EDITOR_H = 720; // the editor window the page is built and measured in
 const RUNGS = [{ w: 375, preset: 'Mobile (375px)' }, { w: 768, preset: 'Tablet (768px)' }, { w: 1024, preset: 'Laptop (1024px)' }, { w: 1280, preset: 'Desktop (1280px)' }, { w: 1920, preset: 'Wide (1920px)' }];
 const PRESETS = [...RUNGS.map((r) => r.preset), 'Full width'];
 function devices() {
@@ -57,6 +59,11 @@ if (!process.argv.includes('--one')) {
     const ph = {}; for (const r of all) for (const p of r.placeholders || []) (ph[p] = ph[p] || []).push(r.idx);
     if (Object.keys(ph).length) { console.log('PLACEHOLDERS (components not built yet — docs/COMPONENT_GAPS.md), pages that used each:');
       Object.entries(ph).sort((a, b) => b[1].length - a[1].length).forEach(([k, v]) => console.log(`  ${String(v.length).padStart(4)}× ${k}`)); }
+    // GAPS, NAMED (RULE E): what a real page asked for that could not be built as asked — reported, never skipped in silence.
+    const gaps = all.flatMap((r) => (r.gaps || []).map((g) => `${g}   (page ${r.idx})`));
+    const asked = all.reduce((n, r) => n + (r.widerToSize || 0), 0), back = all.reduce((n, r) => n + (r.cameBack || 0), 0);
+    if (asked || back) console.log(`SIZING: ${asked} rows were laid out at a wider screen size (they did not fit one line in the editor's window) · ${back} times an edge was brought back because the neighbour had dropped a line`);
+    if (gaps.length) { console.log(`GAPS (${gaps.length}) — asked for by a real page and not built as asked:`); gaps.slice(0, 40).forEach((g) => console.log(`   ${g}`)); }
     fs.writeFileSync(path.join(OUTDIR, `summary-tier${TIER}.json`), JSON.stringify({ pages: all.map((r) => ({ idx: r.idx, site: r.site, page: r.page, ok: !(r.findings || []).some((f) => f.kind === 'err') && !r.buildError && !r.crashed, buildError: r.buildError, secs: r.secs, placeholders: r.placeholders })), grouped: by, placeholders: ph }, null, 1));
   };
   for (let s = 0; s < Math.min(JOBS, LIST.length); s++) next(s);
@@ -96,7 +103,7 @@ const canvasGeo = (page) => page.evaluate(() => {
 });
 
 (async () => {
-  const { browser, page, errs } = await H.open({ headed: true, w: 1520, h: 720, pos: [(slot % 3) * 500, Math.floor(slot / 3) * 420] });
+  const { browser, page, errs } = await H.open({ headed: true, w: 1520, h: EDITOR_H, pos: [(slot % 3) * 500, Math.floor(slot / 3) * 420] });
   const t0 = Date.now();
   page.setDefaultTimeout(10000); // a step that cannot happen fails in 10s, not 30s × every later step
   try {
@@ -113,7 +120,7 @@ const canvasGeo = (page) => page.evaluate(() => {
     }
     await H.panel(page, false);
     R.images = await H.fillImages(page); R.words = await typeWords(page);
-    R.missedDrags = page.__missedDrags || 0; R.heroRetries = page.__heroRetries || 0;
+    R.missedDrags = page.__missedDrags || 0; R.heroRetries = page.__heroRetries || 0; R.cameBack = page.__cameBack || 0; R.widerToSize = page.__widerToSize || 0; R.gaps = page.__gaps || [];
     R.blocks = await page.evaluate(() => document.querySelectorAll('[data-box-id]').length); R.buildSecs = Math.round((Date.now() - t0) / 1000);
     // The tree the UI produced — kept to READ when diagnosing (never loaded back to test anything: RULE Y).
     fs.writeFileSync(path.join(OUTDIR, `page-${idx}.tree.txt`), await H.tree(page));
@@ -147,7 +154,10 @@ const canvasGeo = (page) => page.evaluate(() => {
     const html = await (await page.$('iframe')).getAttribute('srcdoc') || '';
     const px = pixelFindings(html); if (px.length) find('err', 'export CSS', `U16 ${px.length} pixel lengths — ${px.slice(0, 6).map(([k, n]) => `${k}×${n}`).join(', ')}`);
     let first = true; const sizes = devices(); R.sizes = sizes.length;
-    for (const d of [...RUNGS.map((r) => ({ name: r.preset, w: r.w, h: 900, rung: r })), ...sizes]) {
+    // AT THE RUNGS THE PREVIEW WINDOW IS AS TALL AS THE EDITOR's. A block measured against the SCREEN — a sticky sidebar is 100dvh, and
+    // the row beside it stretches to match — is 720 in a 720 window and 900 in a 900 one: by design, and reported as canvas≠Preview on
+    // every block of the row (tier 99, idx 141). Same window, same answer; a real difference still shows.
+    for (const d of [...RUNGS.map((r) => ({ name: r.preset, w: r.w, h: EDITOR_H, rung: r })), ...sizes]) {
       const f = await frameAt(d.w, Math.min(d.h, 1400));
       const a = await f.evaluate(auditDoc, { semantics: first, rowBands: true }); first = false;
       a.err.forEach((m) => find('err', `Preview ${d.name}`, m)); a.warn.forEach((m) => find('warn', `Preview ${d.name}`, m));

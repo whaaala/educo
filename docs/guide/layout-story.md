@@ -133,7 +133,39 @@ colour: the brand, moved only as far as it needs to read on that theme's backgro
 that is the brand itself; on Dark, Midnight and Purple it is lifted. Maya never checks a contrast number; the page is
 never below one.
 
-## 9. What is published
+## 9. Small things stay the size they look
+
+Beside each club, Maya puts a small **Icon** in a narrow column, the words next to it, and a **List** of meeting days
+underneath. Three things she can rely on:
+
+- **An icon is exactly as big as it is drawn — no invisible box around it.** On a phone her star is 22px tall in the
+  editor and 22px on the published page. (It used to publish inside a 40px box: the builder counted an Icon, a List and
+  a Divider as "empty boxes" because they hold no words or picture, and gave them the floor that keeps an empty box
+  big enough to grab.)
+- **A list has the same space under every item in both.** Three items are 80px tall on a phone, in the editor and
+  published alike.
+- **When the reader makes their text bigger, a narrow icon column still fits.** At 150% browser text the icon grows
+  with everything else and stays inside its column.
+
+**In a grid, the editor never adds a row of its own.** When a row has columns left over, the editor offers them
+("Add a block here"). When the grid has narrowed by its own box, its last row is always full, so nothing is offered —
+and the grid has the same rows, the same heights, as the published page.
+
+**She can let go of a block anywhere the marker shows — even over the toolbar.** The toolbar of the block she has
+selected hangs just under it, which is over the next line of the page. When Maya drags a Stack from the panel and lets
+go "just under this heading", she is letting go on that toolbar. While anything is being dragged, the toolbar and the
+handles step aside for the pointer, so the block lands on the page where the dashed marker said it would. (It used to
+land nowhere: the marker showed, and nothing was added.)
+
+**The toolbar keeps to the side that has room.** Near the top of the page there is no room above a block, so its
+toolbar hangs below it. That is re-decided whenever the page changes size — opening the blocks panel, choosing another
+screen — not only when the block is selected, so the toolbar never sticks out over the top of the page.
+
+**The handles follow the block when she changes screen size.** Maya selects a block and clicks Mobile, then Tablet,
+then Desktop to check it. The page glides to each width, and the toolbar and the eight handles glide with the block
+and come to rest on it.
+
+## 10. What is published
 
 Everything above becomes proper HTML5: `header`, `nav`, `main`, `aside`, `section`, `footer`; one `h1`; heading levels
 that follow the page (a card's title is never the page's title; nothing skips a level); a skip link for keyboard
@@ -160,3 +192,11 @@ never touched by a phone edit.
 Tier 80 of the crawled structures (70 dressed pages, swept three times), and the four decisions of 2026-09-28: the one
 pixel of slack, hidden blocks leaving the canvas, type following the page, and the spacing tokens carrying a rem term.
 Tiers 95 and 99 and the shapes beyond the crawl are being swept; their stories are added here as they close.
+
+From the tier-99 sweep (403 dressed pages, 2026-09-29), so far: small blocks publish at the size they are drawn
+(section 9), a narrowed grid has the same rows in the editor and on the page, the handles follow a change of
+screen size, a block can be let go over the selected block's toolbar, and the toolbar re-chooses its side when the page
+is refitted.
+
+**What a real page asked for that the builder does not offer yet** (recorded, not skipped): a grid of *five* across —
+the picker offers 1, 2, 3, 4, 6 and 12, the counts twelve columns divide into. Today Maya takes six and deletes a cell.
