@@ -158,6 +158,24 @@ Last updated: **2026-09-29**, session df7557b5, branch `builder/layout-uat`.
       "403 pages in N min": `node scripts/uat/triage.js scripts/uat/dressed99-out` and
       `node scripts/uat/triage-r11.js scripts/uat/dressed99-out`, compare with the baseline (17 clean, 52 not built),
       and put every class into this ledger **← YOU ARE HERE**
+  - `[ ]` **SPACE BY DEFAULT — words never touch an edge** (the user, 2026-09-29: "I hope you are considering the margin
+    and padding… some tests are very close to the edge… the user can override, but it is already considered")
+    - MEASURED 2026-09-29: it was NOT considered. CLAUDE.md rule 3 says "Spacing is a decision, never a default"
+      (`gap: 0`, `padding: 0`); a new section is edge to edge; the page audit has no check for words near an edge or
+      for space between sections; design-foundation Rule #7 (96–192px between sections, ~24px within a group, a
+      16px scale, pp. 185–196) is written down and not enforced
+    - `[ ]` Rewrite rule 3 in CLAUDE.md — "a sensible default, always overridable, down to zero" — and its guard in
+      `tests/unit/claude-md-rules.test.ts`; BDD scenarios first
+    - `[ ]` Engine, from the spacing tokens (rem + cqw), in BOTH engines by one emitter: a side gutter for every
+      section's content even when its background runs edge to edge (only pictures and backgrounds bleed) · space
+      above and below a section · a gap between the blocks of a stack and the columns of a row · inner padding for
+      any box that has a background or a border
+    - `[ ]` Audit: two new checks on every page at every size — words within N px of the page edge or of the edge
+      of the coloured box they sit in · space between sections under the floor
+    - `[ ]` The dresser stops compensating (it sets "Centred column" to get an inset) once the default exists
+    - `[ ]` Story and guide; then THE WHOLE TIER IS SWEPT AGAIN — every page's geometry changes
+    - `[?]` The user's decision: pages already saved keep their spacing (defaults for NEW blocks only — recommended),
+      or take the new defaults too?
   - `[ ]` **RULE AF harness additions** (promised 2026-09-28)
     - `[ ]` Page-weight audit in every page report (HTML+CSS+JS ≤ 100 KB compressed · first view ≤ 500 KB at 360px ·
       images sized and lazy · ≤ 2 font families)
@@ -260,12 +278,15 @@ out) — where the session STARTED FROM, where it GOT TO, and where the next one
   still running, do nothing to `scripts/uat/` and take c-11, c-12 and c-6 by READING only, or wait.
 - **Then, in order:** c-3 · c-6 · c-11 · c-12 → the RULE AF harness (page weight, Slow 3G) → the innovative plan (19 pages)
   → the 19 tier-95 failures → story and artifacts → gate → pull request to `master` → Tasks 2, 3, 4 → the original queue.
+- **Added after the handover, same day:** the user asked that space is there BY DEFAULT (words never against an edge,
+  always overridable) — tree 1.1.1 → "SPACE BY DEFAULT". It reverses rule 3 and means one more whole-tier sweep.
 - **Decisions waiting on the user (none blocks the work):**
   1. c-7 — a column nobody sized, beside columns that were: keep its share (today), or take what is left of the line?
   2. c-8 — words in a grid cell narrower than the longest word: break the word (today), narrow the grid, or warn?
   3. c-21 — the edge handles cover the last letter of a block that hugs its words: leave, or draw them outside?
   4. a grid of five across is not in the picker (1 · 2 · 3 · 4 · 6 · 12): leave, or offer any count up to 12?
   5. which list is Tasks 2–4 — the original (wrapper dissolve · column outer-edge space · parity spec), as assumed?
+  6. space by default: do pages already saved keep their spacing (recommended), or take the new defaults too?
 - **Not done this session, and said so:** the mobile app (`apps/mobile/`) has no canvas, so none of this has a native
   counterpart (rule 20); the published artifacts (Builder Hub, Layout System, Parity Audit) were NOT updated — the guide
   and the story were. They are a line in 1.1.1 and must be done before the pull request.
