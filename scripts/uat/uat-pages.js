@@ -38,7 +38,7 @@ const PARAS = [
 
 if (!process.argv.includes('--one')) {
   const { spawn } = require('child_process'); const queue = [...LIST]; let running = 0; const t0 = Date.now(); const done = [];
-  console.log(`HEADED UAT — ${LIST.length} real pages (tier ≤ ${TIER}%), ${devices().length} Preview sizes each, ${JOBS} windows at a time`);
+  console.log(`HEADED UAT — ${LIST.length} real pages (${DRESSED ? `plan ${PLAN}` : `tier ≤ ${TIER}%`}), ${devices().length} Preview sizes each, ${JOBS} windows at a time`);
   const next = (slot) => {
     if (!queue.length) { if (!running) report(); return; }
     const p = queue.shift(); running++;

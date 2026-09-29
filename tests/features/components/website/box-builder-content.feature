@@ -84,5 +84,12 @@ Feature: Box Builder — content types & links
       2.9:1 on Dark. The link now has its own token — the brand moved in lightness until
       it reads — and both engines fall back to it before the brand.
 
+  Scenario: An Icon publishes the box it is drawn in
+    Given an Icon block left at its default size
+    Then the published icon is exactly the size the canvas draws it — 32 in the spacing unit, 1em square, in the brand colour
+    And it adds no leading of its own above or below
+    Because the inline SVG used to sit in a normal line box on the published page and came out 40px tall for a 32px icon
+      (measured by the dressed sweep, canvas ≠ export in the block itself)
+
   Scenario: New content types work across themes, screen sizes and are accessible
     Then each renders correctly in light/dark/midnight/purple, reflows responsively, and exposes aria labels

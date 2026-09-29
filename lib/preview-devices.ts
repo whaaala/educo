@@ -69,6 +69,10 @@ export const PREVIEW_PRESETS: { group: string; items: Preset[] }[] = [
     items: [
       { id: "galaxy-s25", label: "Galaxy S23 · S24 · S25 — 360 × 780", w: 360, h: 780 },
       { id: "galaxy-a55", label: "Galaxy A55 — 360 × 800", w: 360, h: 800 },
+      // The phones most visitors in Nigeria, Ghana and much of Africa actually hold (RULE AF, docs/DEVELOPING_COUNTRIES_FIRST.md)
+      { id: "tecno-infinix", label: "Tecno Spark · Infinix Hot — 360 × 800", w: 360, h: 800 },
+      { id: "itel-budget", label: "itel A · budget Android — 360 × 640", w: 360, h: 640 },
+      { id: "redmi-camon", label: "Redmi · Tecno Camon — 393 × 851", w: 393, h: 851 },
       { id: "galaxy-s23-plus", label: "Galaxy S21 · S23+ — 384 × 854", w: 384, h: 854 },
       { id: "oppo-find-x8", label: "OPPO Find X8 Pro — 395 × 869", w: 395, h: 869 },
       { id: "pixel-9-pro", label: "Pixel 9 · 10 Pro — 410 × 914", w: 410, h: 914 },

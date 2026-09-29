@@ -50,7 +50,11 @@ describe("Educo UI base stylesheet — the four responsive ingredients", () => {
   it("carries no container-query scaffolding, because nothing could opt a block into it", () => {
     // .eu-container-ctx and .eu-cq-* were shipped to every page and no renderer ever emitted one. Container
     // queries return with the Phase 2 controls that put a block into a query context.
-    expect(BASE_CSS).not.toContain("container-type: inline-size");
+    // ONE size container is deliberate: the page itself (#137), so page-relative units read the page's content width
+    // and not the window with its scrollbar. Anything else declaring one is the scaffolding coming back.
+    const containers = stripComments(BASE_CSS).match(/[^{}]*\{[^{}]*container-type[^{}]*\}/g) ?? [];
+    expect(containers.map((rule) => rule.trim())).toEqual([".eu-root { container-type: inline-size; }"]);
+    expect(stripComments(BASE_CSS)).not.toMatch(/\.eu-(container-ctx|cq-)/);
     expect(BASE_CSS).not.toContain("@container");
   });
 

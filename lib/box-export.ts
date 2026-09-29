@@ -154,7 +154,10 @@ function elementHTML(node: BoxNode, theme: SiteTheme, pageMap: Map<string, strin
     case "list": { const items = (node.listItems ?? []).map((it) => `<li>${esc(it)}</li>`).join(""); const st = styleString({ color: node.color || typoRole.color("text"), fontSize: node.fontSize != null ? textLen(node.fontSize) : typoRole.size(1), textAlign: align, width: "100%", paddingLeft: u(22), ...typoCss(node, "body", 400) }); return node.listStyle === "number" ? `<ol style="${st}">${items}</ol>` : `<ul style="${st}">${items}</ul>`; }
     case "embed": return node.html ?? "";
     case "spacer": return `<div aria-hidden="true" style="${styleString({ width: "100%", height: sizeToCSS(node.height) ?? "3rem" })}"></div>`;
-    case "icon": { const svg = iconSvg(node.icon ?? "Star"); return svg ? `<span aria-hidden="true" style="${styleString({ display: "inline-flex", color: node.color ? colorToCSS(node.color) : typoRole.color("text"), fontSize: node.fontSize != null ? u(node.fontSize) : typoRole.size(1.5) })}">${svg}</span>` : ""; }
+    // THE SAME BOX THE CANVAS DRAWS (#143): a wrapper with no line-height (an inline SVG in a normal line box gained the
+    // leading — 40px published for a 32px icon on the canvas), the icon exactly 1em square, the same default size (32 in
+    // the spacing unit) and the same default colour (the brand, as the canvas has always drawn it).
+    case "icon": { const svg = iconSvg(node.icon ?? "Star"); return svg ? `<div style="${styleString({ textAlign: align, color: node.color ? colorToCSS(node.color) : colorToCSS(theme.primary), width: "100%", lineHeight: 0 })}"><span aria-hidden="true" style="${styleString({ display: "inline-flex", fontSize: u(node.fontSize ?? 32), width: "1em", height: "1em" })}">${svg}</span></div>` : ""; }
     case "component": return componentHTML(node);
     default: return "";
   }

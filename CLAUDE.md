@@ -291,6 +291,16 @@ Run through this checklist BEFORE telling the user it's done:
   - **Captured once, extended forever.** A link the user shares is studied properly, expanded online, and STORED
     there; stored research is never redone, only extended. A crawl stores raw HTML so a later question is answered
     from the archive, not a re-crawl.
+  - **MDN IS THE SOURCE FOR THE ELEMENTS AND THE DOM (the user, 2026-09-28 — a rule every session follows).** Every HTML
+    element (https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements) is stored in
+    `docs/web-anatomy/html-semantics.md` with its role and what a block may do with it; the DOM `Element` interface
+    (https://developer.mozilla.org/en-US/docs/Web/API/Element — properties, methods, and every event: pointer, mouse,
+    touch, keyboard, focus, transition, animation, scroll, and their cancel forms) is stored in
+    `docs/web-anatomy/dom-element-api.md` with how the builder uses each. **Every block publishes the element MDN says
+    it is; every interaction is written against the DOM API as MDN documents it** (pointer events with capture and
+    `pointercancel` handled, keyboard and focus first-class, transitions awaited by their `end` events); a component or
+    element the builder does not have yet is built from these two references, then from crawled examples of its
+    variations, exactly as the layout was.
 - **RULE F — THE DESIGN FOUNDATION IS FOLLOWED IN EVERYTHING (MANDATORY — from 2026-09-27, every feature,
   especially the website builder).** The user's course deck `theory-lectures-v2-BEST.pdf` (Jonas Schmedtmann's
   HTML & CSS theory lectures, 404 pages) is THE foundation for how everything is designed and built: the HTML/CSS
@@ -362,6 +372,70 @@ Run through this checklist BEFORE telling the user it's done:
   diff that fixes the bug, a summary read instead of a file dump, a subagent for reading, one probe → one failing test →
   one fix, never a re-read of what is already in the conversation. Ponytail is not a mode to switch on; it is how
   everything here is done.
+- **RULE AF — DEVELOPING COUNTRIES FIRST: AFRICA FACING, WORLD READY (MANDATORY — the user, 2026-09-28, every change,
+  every feature).** The builder and everything built with it are made first for Nigeria, Ghana and the rest of Africa, and
+  for developing countries generally — low-cost Android phones at 360px, 3G or throttled 4G, data paid per megabyte, power
+  and signal that drop — and work everywhere else as a consequence. Detail and the measurable targets:
+  [docs/DEVELOPING_COUNTRIES_FIRST.md](docs/DEVELOPING_COUNTRIES_FIRST.md). Every definition of done asks, and MEASURES:
+  - **Weight budget:** HTML + CSS + JS ≤ 100 KB compressed per page, first view on a 360px phone ≤ 500 KB with images;
+    images resized to their shown width, `width`/`height` set, lazy below the fold; at most two font families, subset,
+    `font-display: swap`; nothing loaded that is not used. The sweep prints the numbers; over budget is a finding.
+  - **Slow network is a test profile:** the first band renders within 5 s on Slow 3G and the page stays usable.
+  - **Low-cost devices are in the device list** (Tecno, Infinix, itel, Samsung A-series: 360 × 640 up to 393 × 851) and in
+    every sweep beside the iPhones and iPads.
+  - **Offline first** for the application layer: published pages cached, forms that queue without signal and send when
+    it returns, and say which they did.
+  - **Payments and messaging people use:** Paystack and Flutterwave (cards, bank transfer, mobile money) before Stripe;
+    WhatsApp and SMS before email; phone numbers formatted for the country.
+  - **Cheap to host and own:** static export to free or near-free hosts, local domains (`.ng`, `.com.gh`…) in the flow,
+    plans that work on prepaid money.
+  - **Languages are content:** English first, and every page and component takes a second language version (Yoruba, Hausa,
+    Igbo, Twi, Ga, Ewe, Swahili, French, Arabic, Portuguese…) with `lang` per page and per block, right-to-left where
+    needed, the same semantic and design rules applied; the builder's own interface translates the same way.
+  - **Templates from the region** beside the awwwards catalogue; **distribution through the people who already serve
+    these institutions** is planned as product work.
+- **RULE RK — THE TWO RISKS ARE MITIGATED BY RULE, NEVER LEFT TO CHANCE (MANDATORY — the user, 2026-09-28: "make sure
+  where the risk sits is addressed… minimise the risk to the minimum").** Named in `docs/RISKS.md` and re-read at the start
+  of every area of work. The two risks: **scope** (rules for layout, components, semantics, documentation, budgets,
+  offline, payments, languages add up to years if done as features) and **distribution** (a better builder does not spread
+  by itself in a market whose customers are not looking for one). The mitigations, each a rule:
+  - **One area at a time, measured clean before the next.** An area is a sweep-backed slice (a tier, a component, a
+    language); work starts on the next only when the current one's sweep is clean or its open lines are the user's
+    decisions. No parallel half-built areas. Work in progress is one area.
+  - **Every area ships something a real school can use the day it closes** — a page, a template, a component on a live
+    demo site — never only code. The demo site is rebuilt from the sweep's own dressed pages, so what is shown is what is
+    measured.
+  - **The three parts nobody else has are non-negotiable and never watered down:** the engine proven against real pages
+    by the dressed sweeps (RULE E); the LLM builder emitting the block model, never raw HTML; developing countries first
+    (RULE AF). A change that weakens one of them is a bug in the ledger, not a trade-off.
+  - **A pilot cohort before the components finish:** ten real schools (Nigeria and Ghana first) recruited while the
+    components are being built, each building its own site with the placeholders that exist, their feedback entering
+    the ledger and their pages entering the sweep as new structures. Adoption is measured (sites published, pages kept
+    up to date, a second person editing) and reported beside the sweep numbers.
+  - **Distribution is planned as product work with an owner and a date**, through the people who already serve these
+    institutions (school-management vendors, parent groups, church and mosque networks, local government), and a
+    one-hour "show it once" path a non-technical person can run; documented in the story (RULE L) like any feature.
+  - **Every rule has a measurement or it is not done** — a number in a report, a test that fails, a page on the demo site.
+    A rule with no measurement is the way scope creeps and distribution is forgotten.
+- **RULE APP — ONE ENGINE, ONE CATALOGUE, ONE METHOD FOR THE WHOLE OF EDUCO AND FOR THE APPLICATION BUILDER (MANDATORY
+  — the user, 2026-09-28).** The website builder is the FIRST customer of the engine; the Educo application (web and the
+  `apps/mobile/` app) is the second; a general application builder a product manager can describe screens to is the
+  third. Everything proven for the first is reused, never rebuilt, for the others:
+  - **The block model is the app model.** A screen is a tree of the same blocks (bands, rows, grids, cards, lists, forms,
+    data-bound components), laid out by the same engine, measured by the same sweeps, told in the same story (RULE L).
+  - **The component catalogue is Educo's design system.** Every component researched and built for the builder — with all
+    its variations, tokens and accessibility floor — is the component the school app uses. One catalogue, one token
+    system, for both products; the native app renders the same catalogue and tokens through rule 20 (engine portable,
+    React Native implementations of the same variations, tested for phone and tablet by the same ladder).
+  - **From this rule on, every new or rebuilt Educo feature is built from the shared model and catalogue**, never as a
+    one-off screen; existing screens migrate one area at a time as their components land (RULE RK: one area at a time).
+  - **The LLM builder becomes the application composer:** v1 deterministic, v2 a Claude call, emitting the app model
+    (screens, forms bound to records, flows) — never code, never raw HTML — validated by the page audit, the semantics
+    auto-correct, RULE P, RULE D and RULE AF before anything renders. That is the "describe it and it exists" path for a
+    product manager, and it is safe only because every emitted screen is made of proven parts.
+  - **The application layer (data, forms that submit and queue offline, permissions, payments, messaging) is its own
+    area, researched first** (RULE R), with its own model, sweeps and story — validation at trust boundaries and error
+    handling that prevents data loss are never cut (RULE M).
 - **RULE DOC — DOCUMENTATION IS WRITTEN FOR, AND PUBLISHED WITH, DOCUSAURUS (MANDATORY — the user, 2026-09-28).**
   https://github.com/facebook/docusaurus, studied and stored in [docs/DOCUSAURUS.md](docs/DOCUSAURUS.md). Every piece of
   user-facing documentation is Markdown/MDX in `docs/guide/` in the story's voice (RULE L), organised the Docusaurus way

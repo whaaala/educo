@@ -108,6 +108,26 @@ const RULES: [name: string, mustSay: RegExp][] = [
   ["…scenario by scenario, by example, before templates/components/LLM start", /scenario by scenario, by example[\s\S]*written BEFORE they start/],
   ["…and it grows as we go: every finished area adds its story in the same change", /IT GROWS AS WE GO — A MUST[\s\S]*added to this[\s\S]*documentation in the SAME change/],
   ["Every reply ends with where the work is and what comes next", /STATUS, ALWAYS[\s\S]*Every reply ends with where the work is and what comes next/],
+  /** The user, 2026-09-28: developing countries first — Africa facing, world ready — on every change. */
+  ["Developing countries first — Africa facing, world ready (RULE AF)", /RULE AF — DEVELOPING COUNTRIES FIRST: AFRICA FACING, WORLD READY/],
+  ["…a measured weight budget", /Weight budget:[\s\S]*100 KB compressed[\s\S]*500 KB with images/],
+  ["…slow network as a test profile, low-cost devices in the list", /Slow network is a test profile[\s\S]*Low-cost devices are in the device list/],
+  ["…offline first, local payments and messaging, cheap hosting", /Offline first[\s\S]*Paystack and Flutterwave[\s\S]*Cheap to host and own/],
+  ["…languages are content: Yoruba, Hausa, Igbo, Twi and more, lang per page and block", /Languages are content:[\s\S]*Yoruba, Hausa,[\s\S]*Igbo, Twi[\s\S]*`lang` per page and per block/],
+  ["…detail in docs/DEVELOPING_COUNTRIES_FIRST.md", /docs\/DEVELOPING_COUNTRIES_FIRST\.md/],
+  /** The user, 2026-09-28: one engine, one catalogue, one method for the whole of Educo and the application builder. */
+  ["One engine, one catalogue, one method for the whole of Educo (RULE APP)", /RULE APP — ONE ENGINE, ONE CATALOGUE, ONE METHOD FOR THE WHOLE OF EDUCO AND FOR THE APPLICATION BUILDER/],
+  ["…the block model is the app model; the catalogue is Educo's design system", /The block model is the app model[\s\S]*The component catalogue is Educo's design system/],
+  ["…every new or rebuilt Educo feature is built from the shared model and catalogue", /every new or rebuilt Educo feature is built from the shared model and catalogue/],
+  ["…the LLM builder becomes the application composer, emitting the app model, never code", /LLM builder becomes the application composer[\s\S]*never code, never raw HTML/],
+  /** The user, 2026-09-28: the two risks (scope, distribution) are mitigated by rule, never omitted. */
+  ["The two risks are mitigated by rule (RULE RK)", /RULE RK — THE TWO RISKS ARE MITIGATED BY RULE, NEVER LEFT TO CHANCE/],
+  ["…one area at a time, measured clean before the next", /One area at a time, measured clean before the next/],
+  ["…every area ships something a real school can use the day it closes", /ships something a real school can use the day it closes/],
+  ["…the three rare parts are non-negotiable", /non-negotiable and never watered down/],
+  ["…a pilot cohort before the components finish, distribution with an owner and a date", /pilot cohort before the components finish[\s\S]*Distribution is planned as product work with an owner and a date/],
+  ["…every rule has a measurement or it is not done", /Every rule has a measurement or it is not done/],
+  ["…the register lives in docs/RISKS.md", /docs\/RISKS\.md/],
   /** The user, 2026-09-28: documentation is written for and published with Docusaurus, every time. */
   ["Documentation is written for, and published with, Docusaurus (RULE DOC)", /RULE DOC — DOCUMENTATION IS WRITTEN FOR, AND PUBLISHED WITH, DOCUSAURUS/],
   ["…stored research in docs/DOCUSAURUS.md, the Markdown in docs/guide is the single source", /docs\/DOCUSAURUS\.md[\s\S]*single source/],
@@ -125,6 +145,10 @@ const RULES: [name: string, mustSay: RegExp][] = [
   ["…the builder is general-purpose, schools first", /builder is GENERAL-PURPOSE/],
   ["…read the research before building any builder feature", /Before building any builder feature, read what the research says/],
   ["…captured once, extended forever", /Captured once, extended forever/],
+  /** The user, 2026-09-28: MDN's element reference and the DOM Element interface are stored and followed everywhere. */
+  ["MDN is the source for the elements and the DOM", /MDN IS THE SOURCE FOR THE ELEMENTS AND THE DOM/],
+  ["…every element stored in html-semantics.md, the DOM Element interface in dom-element-api.md", /docs\/web-anatomy\/html-semantics\.md[\s\S]*docs\/web-anatomy\/dom-element-api\.md/],
+  ["…every block publishes the element MDN says it is; every interaction is written against the DOM API", /Every block publishes the element MDN says[\s\S]*it is; every interaction is written against the DOM API/],
 
   ["Build it through the UI (RULE Y)", /RULE Y/],
   ["…seeding state is not UAT", /Seeding state is not UAT/i],

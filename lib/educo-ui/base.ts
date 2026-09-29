@@ -44,6 +44,13 @@ export const BASE_CSS = `
 .eu-root *, .eu-root *::before, .eu-root *::after { box-sizing: border-box; }
 .eu-root * { margin: 0; }
 .eu-root { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+/* THE PAGE IS A SIZE CONTAINER (#137, 2026-09-28): every container-relative unit on the page (the type unit --box-t, the
+   spacing unit --box-u on top-level bands, the page gutter) reads the page's CONTENT width here, not the window's — the
+   window includes the scrollbar, so a 1024px page read 1041 and set its type 1.7% larger than the editor's 1024px frame,
+   and headings wrapped in the Preview that did not on the canvas. Measured in this Chromium (probe-t6): a size container
+   does NOT capture a fixed descendant (container-type applies no layout containment since the 2023 spec change), so
+   "Floats on screen" bars still hold against the window. */
+.eu-root { container-type: inline-size; }
 
 /* ── Responsive units: respect the user's browser font size (percentage, never fixed px) ── */
 :root { font-size: 100%; } /* 1rem = the user's base (16px default); scales with their preference */
