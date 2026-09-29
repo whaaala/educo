@@ -58,13 +58,14 @@ Last updated: **2026-09-29**, session df7557b5, branch `builder/layout-uat`.
       - `[x]` c-2 · **List shorter in the Preview** (#135) — 145 pages, −8 … −17px. Root cause: the canvas spaced its
         items, the export did not. Fixed with one shared `LIST_ITEM_GAP`, guard mutation-proven. HEADED UAT probe-t7 on
         build DM9hSozR: identical at all five rungs (80.4 · 82.6 · 84.9 · 95.7 · 117.6px); same five pages at 0 errors
-      - `[>]` c-3 · **Heading / text wraps differently in the Preview** — 77 pages at Tablet 768 (+33 / +50px), 28 at
+      - `[ ]` c-3 · **Heading / text wraps differently in the Preview** — 77 pages at Tablet 768 (+33 / +50px), 28 at
         Desktop. #137 (page as a size container) is in `bc89d68`. Pages 139, 63, 10 carried it and are at 0 errors on
-        the fresh build; re-run 58, 56, 65, 73, 177, 296 to close
-      - `[>]` c-4 · **Build failed: could not select a column** — 36 pages (incl. page 199). Measured on all 36: the
-        click selected an ANCESTOR every time (its grid ×21, a stack ×13, nothing ×2) and six more clicks never reached
-        the column. Next: log each click of `H.select` on the quickest of them (298, 37, 122) and watch it
-        **← YOU ARE HERE**
+        the fresh build; the full re-run (d) closes it or reopens it
+      - `[x]` c-4 · **Build failed: could not select a column** — 36 pages (incl. page 199). HARNESS. Measured on all 36:
+        the click selected an ANCESTOR every time (its grid ×21, a stack ×13, nothing ×2). Logged click by click on
+        pages 298, 37, 122: each click goes one box deeper, the column is SEVEN boxes down on a sidebar page, and the
+        harness stopped at six. It clicks until it is there now (up to 16). Pages 298, 37, 122, 199, 266, 185 re-run
+        headed: all six build, all six at 0 errors
         - `[x]` the harness's "come back" misfired once it existed: dragging back cannot restore a row whose neighbour
           dropped (page 33: a cell left 41px wide). It UNDOES the drag and tries one step less now
       - `[x]` c-5 · **Build failed: the canvas offered the drop and added nothing** — 15 pages (9 "under", 6 "into"),
@@ -150,7 +151,13 @@ Last updated: **2026-09-29**, session df7557b5, branch `builder/layout-uat`.
       - `[x]` c-13 · Sweep header said "tier ≤ 80%" on a tier-99 run — names the plan now (`uat-pages.js`)
       - `[x]` c-14 · Two unit guards were wrong about what ships (base budget counted comments; scaffolding guard
         forbade the page's own size container) — both measure the shipped sheet now, mutation-proven, `bc89d68`
-    - `[ ]` d · Re-run every affected page on the fixed build; then the whole tier once, clean
+    - `[>]` d · **The whole tier re-run on the fixed build** — 39 affected pages re-run headed first, 35 of them at 0
+      errors. The full run (403 pages, about 11.5 hours, no tokens spent) was STARTED 2026-09-29 on build wg5lR_xU:
+      log `scripts/uat/logs/sweep99-rerun.log`, results `scripts/uat/dressed99-out`, the first run kept in
+      `scripts/uat/dressed99-baseline-out`. **DO NOT edit `scripts/uat/*.js` while it runs.** When the log ends with
+      "403 pages in N min": `node scripts/uat/triage.js scripts/uat/dressed99-out` and
+      `node scripts/uat/triage-r11.js scripts/uat/dressed99-out`, compare with the baseline (17 clean, 52 not built),
+      and put every class into this ledger **← YOU ARE HERE**
   - `[ ]` **RULE AF harness additions** (promised 2026-09-28)
     - `[ ]` Page-weight audit in every page report (HTML+CSS+JS ≤ 100 KB compressed · first view ≤ 500 KB at 360px ·
       images sized and lazy · ≤ 2 font families)
@@ -236,16 +243,29 @@ Last updated: **2026-09-29**, session df7557b5, branch `builder/layout-uat`.
 One entry per session, newest first. Written the moment the user says "new session" (or the context is about to run
 out) — where the session STARTED FROM, where it GOT TO, and where the next one CONTINUES FROM.
 
-### 2026-09-29 · session df7557b5 · branch `builder/layout-uat`
+### 2026-09-29 · session df7557b5 · branch `builder/layout-uat` — HANDOVER (the user asked for a new session, to bring the cost down)
 
-- **Started from:** `919d731` with uncommitted work; the tier-99 sweep finished and untriaged (tree 1.1.1, tier 99, a).
-- **Got to (second commit of the session):** twelve tier-99 classes closed — c-1 Icon, c-2 List, c-5 drop over the toolbar,
-  c-7 holes, c-8 words (harness half), c-9 image slack, c-10, c-15 handles, c-17 grid rows, c-18, c-19, c-20 toolbar side;
-  27 sweep pages re-run headed, 25 at 0 errors. Gate: typecheck 0 · eslint 0 · vitest 3,739 · test:fast 640.
-- **Got to (first commit):** log copied and baseline kept · gate green and `bc89d68` pushed · tier 99 triaged into classes c-1 … c-14 ·
-  the original Tasks 2–4 recovered from the 2026-09-26 handoff note · this tree created and made a rule ·
-  List fix (c-2) written with its guard, not yet rebuilt or UAT'd · headed re-run of 6 pages showed the Icon (c-1) is
-  still open on the fresh build.
-- **Continue from:** 1.1.1 → tier 99 → c-4 (could not select, 36 pages), then c-3, c-6, c-11, c-12, then the whole tier re-run.
-- **Decisions waiting on the user:** c-7 (an unsized column beside sized ones) · c-8 (words in a cell narrower than the longest
-  word) · c-21 (edge handles over the last letter) · a grid of five across · which list is Tasks 2–4.
+- **Started from:** `919d731` with uncommitted work; the tier-99 sweep finished and untriaged.
+- **Got to:** three commits pushed — `bc89d68` (the uncommitted work secured), `e4a16f6` (the tier-99 fixes), and the
+  handover commit (the last harness fix and this tree). Gate at `e4a16f6`: typecheck 0 · eslint 0 errors · vitest 3,739 ·
+  test:fast 640.
+  - Tier 99 triaged: 403 pages, 688 min, 52 could not be built, 17 clean — 21 ledger lines (c-1 … c-21).
+  - CLOSED, each with a guard that was red first and a headed UAT through the UI: c-1 Icon · c-2 List · c-4 could not
+    select · c-5 drop over the toolbar · c-7 holes · c-8 words (harness half) · c-9 image slack · c-10 150% text ·
+    c-13 · c-14 · c-15 handles · c-16 (not a bug) · c-17 grid rows · c-18 · c-19 · c-20 toolbar side.
+  - 39 sweep pages re-run headed on fixed builds: 35 at 0 errors (the first run had 17 clean of 403).
+  - The user's ORIGINAL Tasks 2–4 recovered and recorded (1.1.2 – 1.1.4); this tree created and made a rule.
+- **Running when this was written:** the whole tier 99 again, on the fixed build (tree 1.1.1 → tier 99 → d).
+- **Continue from:** tree 1.1.1 → tier 99 → d. If the run has finished, triage it and compare with the baseline; if it is
+  still running, do nothing to `scripts/uat/` and take c-11, c-12 and c-6 by READING only, or wait.
+- **Then, in order:** c-3 · c-6 · c-11 · c-12 → the RULE AF harness (page weight, Slow 3G) → the innovative plan (19 pages)
+  → the 19 tier-95 failures → story and artifacts → gate → pull request to `master` → Tasks 2, 3, 4 → the original queue.
+- **Decisions waiting on the user (none blocks the work):**
+  1. c-7 — a column nobody sized, beside columns that were: keep its share (today), or take what is left of the line?
+  2. c-8 — words in a grid cell narrower than the longest word: break the word (today), narrow the grid, or warn?
+  3. c-21 — the edge handles cover the last letter of a block that hugs its words: leave, or draw them outside?
+  4. a grid of five across is not in the picker (1 · 2 · 3 · 4 · 6 · 12): leave, or offer any count up to 12?
+  5. which list is Tasks 2–4 — the original (wrapper dissolve · column outer-edge space · parity spec), as assumed?
+- **Not done this session, and said so:** the mobile app (`apps/mobile/`) has no canvas, so none of this has a native
+  counterpart (rule 20); the published artifacts (Builder Hub, Layout System, Parity Audit) were NOT updated — the guide
+  and the story were. They are a line in 1.1.1 and must be done before the pull request.

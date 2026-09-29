@@ -84,7 +84,11 @@ const selected = (page) => page.evaluate(() => document.querySelector('.outline-
 async function select(page, id) {
   // A person scrolls to what they want before clicking it (a block below the fold took the click of the one above).
   await page.locator(`[data-box-id="${id}"]`).scrollIntoViewIfNeeded().catch(() => {});
-  for (let i = 0; i < 6; i++) {
+  // EACH CLICK GOES ONE BOX DEEPER ("click selects the box, click again goes inside"), and a person keeps clicking until
+  // they are on the one they want. Six clicks was the limit here, and a column in a row in a stack in the main column of
+  // a sidebar page is SEVEN boxes down: logged on three pages, the sixth click had reached its parent every time and the
+  // seventh was never made — 34 of the 36 pages of tier 99 that "could not select" (got its grid ×21, a stack ×13).
+  for (let i = 0; i < 16; i++) {
     if ((await selected(page)) === id) return true;
     // Centred on screen, as a person scrolls to it — "into view" can leave it at the very top, under a sticky header.
     await page.evaluate((id) => { const e = document.querySelector(`[data-box-id="${id}"]`); const r = e?.getBoundingClientRect(); if (e && r && (r.top < 90 || r.bottom > innerHeight - 20)) e.scrollIntoView({ block: 'center' }); }, id);
@@ -116,6 +120,7 @@ async function select(page, id) {
       if (!(await page.evaluate(([x, y]) => !!document.elementFromPoint(x, y)?.closest('[data-gridghost]'), p))) break; }
     await page.mouse.click(pt[0], pt[1]);
     await page.waitForTimeout(250);
+    if (process.env.DEBUG_SELECT) console.log(`  select ${id.slice(-4)} · click ${i + 1} at ${Math.round(pt[0])},${Math.round(pt[1])} (box ${Math.round(b.x)},${Math.round(b.y)} ${Math.round(b.width)}×${Math.round(b.height)}, ${pts.length} open points) → ${((await selected(page)) || 'none').slice(-4)}`);
     // The click went INSIDE it (a child took it, as "click goes inside" means it should): step OUT with Escape, the
     // way a person reaches a parent — the builder's own shortcut, one level per press.
     const got = await selected(page);
