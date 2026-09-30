@@ -198,11 +198,11 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
     words closer than the gutter floor to the page or their coloured box's edge · (3) audit check: sections closer than
     the section floor · (4) the old "never a default" wording in the four places left (layout feature 347,
     `text-is-reachable.spec.ts` 34, design-foundation `02` 485, memory `feedback_radius_and_spacing.md`)
-- **← YOU ARE HERE: BATCH E-0 below** (S-3, queued 2026-09-30, waits behind it)
+- **← YOU ARE HERE: BATCH L-1 below** (E-0 closed 2026-09-30; Z-1 follows L-1; S-3 queued)
 - `[ ]` **BATCH S-3 · The editor's Page check warns about space** (area: spacing · 1 change, queued 2026-09-30): the
   in-app Page check reports words closer than 1rem to the page edge or touching their coloured box (W7a) and two
   sections closer than 1rem (W7b), as warnings, the way `page-audit.js` measures them — the scenario already exists
-- `[>]` **BATCH E-0 · The build failures that stayed when run alone** (area: sweep harness/drop · OPENED 2026-09-30) — the re-run of
+- `[x]` **BATCH E-0 · The build failures that stayed when run alone** — CLOSED 2026-09-30 (commits `78cc6ee`, `0ae9b5f`; gate: vitest 3,903 · eslint 0 errors · test:fast 737; E0-a…h ticked, E0-f recorded as a gap → Z-1) (area: sweep harness/drop) — the re-run of
   e-2/e-3 was STOPPED by the user at 3 of 14 (2026-09-30), on build OvtY9uAA, HEADED UAT:
   - page 68 (sonicdrive, blog index) — built, 0 errors ALONE → it was the machine
   - page 145 (soul-trane, about) — STILL FAILED alone on OvtY9uAA: a click timed out after 10 s. **Re-run alone
@@ -251,11 +251,11 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
     over the menu) and **397** ("the canvas offered the drop and added nothing", into an icon cell = e-1). **337** failed
     in parallel with the same e-1 message (it built before) → to re-run alone. Every other finding is a queued class:
     words broken (c-8), HOLE (c-7), canvas≠Preview (e-4), Tablet 4 columns (e-6)
-  - `[?]` E0-f · **a column too narrow on screen to drop into** (page 334, fails alone): its recipe is a 5-column row with
+  - `[x]` E0-f · **a column too narrow on screen to drop into** (page 334, fails alone): its recipe is a 5-column row with
     4 hand-sized columns inside the 28% one, so in the editor window each is ~40px and the 4th Stack's target 3px; the
     builder obeys the sizes, and the canvas is always "Fitted to screen" — there is NO ZOOM, so no person could drop there
-    either. WAITING ON THE USER (asked 2026-09-30): (1) canvas zoom, recommended · (2) place from the Inspector's "Add a
-    block inside" · (3) record as a gap
+    either. DECIDED by the user 2026-09-30 ("go" on the recommendation): RECORDED AS A GAP here, and canvas zoom is
+    built as its own batch — BATCH Z-1, queued straight after L-1 (a new feature, one area at a time, RULE RK)
   - `[x]` E0-g · **a block dropped just under an ICON: the drop was offered and NOTHING was added** — 4 of 4 through the UI
     (`probe-icon-cell.js`), and page 397's failure. MEASURED: no `drop` event reached the page; the element under the last
     `dragover` was the icon's `<path>`, and at `dragend` it was no longer in the page — React re-set the SVG markup while
@@ -272,7 +272,7 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
   - `[x]` the user's icon-cell CHECK — answered by E0-g and E0-h above
   - **337** fails alone with and WITHOUT E0-e (bisected on a build with E0-e reverted: it failed at another drop step)
     → not a regression; its drop failures join e-1 / e-3 in L-1. **397** was E0-g
-  - **← YOU ARE HERE:** E0-g/h committed `0ae9b5f` (gate: vitest 3,903 · eslint 0 errors · test:fast 737; HEADED 4 themes). E-0 closes on the user's E0-f answer (zoom · Inspector · record); then BATCH L-1
+  - E-0 CLOSED 2026-09-30. Next: BATCH L-1
   - page 393 (elytetemplate, services) — STILL FAILS alone: the drag never reached the canvas, twice → a bug (e-3)
   - not yet re-run: 23, 334, 335, 336, 337, 396, 397, 398, 399, 400, 401
 - `[ ]` **BATCH L-1 · Tier-99: blocks that would not drop or select** (area: drop / select · 5 changes, queued)
@@ -284,6 +284,12 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
   - page 38 of tier 80 · could not select the 2nd of 4 card columns
   - the 19 tier-95 build failures (could-not-select ×9 · drop-offered-nothing ×7 · barely visible ×1 · click timeout ×2)
   - previewcheck B30 / P4 · the harness's drop and select steps
+- `[ ]` **BATCH Z-1 · Canvas zoom** (area: editor navigation · 1 change, queued 2026-09-30 after L-1 — the user's "go" on
+  E0-f): the canvas is always "Fitted to screen", so a hand-sized column ~40px wide (tier-99 page 334) cannot be dropped
+  into, selected or resized by anyone. Zoom in / out / back to fit — buttons beside "Fitted to screen", Ctrl + / Ctrl − /
+  Ctrl 0, Ctrl + scroll — with the page scrolling in both directions while zoomed, drops, selection, resize handles and
+  the marquee all correct at every zoom, canvas = Preview unchanged. Research first (RULE R: how Figma, Canva, Webflow,
+  Framer zoom), plan artifact, then build; page 334 re-run alone is its acceptance test
 - `[ ]` **BATCH L-2 · Tier-99: the editor and the Preview disagree** (area: canvas = Preview · 4 changes, queued)
   - e-4 · canvas≠Preview — 13 pages: headings, links and buttons 0.4–3.6% narrower in the Preview, text wrapping to other
     heights, 4 containers 122–198px shorter at Wide (idx 109, 141 carry most). **A clean repro, built through the UI
@@ -524,7 +530,7 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
         - `[ ]` e-10 · canvas≠Preview on one block 28px taller — 1 page (idx 272)
         - `[ ]` **Re-run e-2 and e-3** — in PARALLEL; only a page that fails there is re-run alone (RULE Z, the user 2026-09-30) (idx 23, 68, 145, 334–337, 393, 396–401) on a FRESH build —
           a failure that goes away alone was the machine, one that stays is a bug — STOPPED by the user at 3 of 14, the rest
-          moved to BATCH E-0 (top of this file). **YOU ARE HERE is BATCH E-0** (S-1 and S-2 closed 2026-09-30)
+          moved to BATCH E-0 (top of this file). **YOU ARE HERE is BATCH L-1** (S-1, S-2 and E-0 closed 2026-09-30)
         - NOT A BUG, expected: 379 pages warn "things need the user's words" (the dressed placeholders' empty text)
       - `[ ]` c-22 · **A page that BUILT in the baseline does not build on the fixed build** — the first page logged
         (nodenza.com/partners_ross_morton): baseline 182 blocks, 2 errors; re-run BUILD FAILED at 80 blocks, "the canvas
@@ -688,6 +694,22 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
 One entry per session, newest first. Written the moment the user says "new session" (or the context is about to run
 out) — where the session STARTED FROM, where it GOT TO, and where the next one CONTINUES FROM.
 
+### 2026-09-30 · session 25f18c91 · branch `builder/layout-uat` — HANDOVER (recommended: long context, clean boundary, L-1 heavy)
+
+- **Started from:** `ec8195c`, BATCH S-2 coded, its HEADED UAT not run.
+- **Got to:** S-2 CLOSED (`60a2051`: S2-f components keep the page gutter via `pageBandInset`; S2-i dead sidebar links
+  hidden, `UNBUILT`, the user's decision) and E-0 CLOSED (`78cc6ee`, `0ae9b5f`): E0-a audit L4 measures gutter-band
+  columns · E0-b menu line longhand gap, no band gutter · E0-d harness clips to the Inspector · E0-e `@property --bx-gut`
+  (a band holding a narrowing grid is a size container, `cqw` split the unit) · E0-g injected SVGs never pointer
+  targets (a drop onto a re-rendered `<path>` was lost) · E0-h a host-stretched column's LAST block takes the spare
+  height (the user's decision) · E0-f recorded → BATCH Z-1 canvas zoom. RULE Z "PARALLEL IS THE DEFAULT" written into
+  CLAUDE.md, its guard, this tree, UAT_EVERY_CHANGE.md and memory (the user: "correct everywhere"). Gate at `0ae9b5f`:
+  typecheck 0 · eslint 0 errors · vitest 3,903 · test:fast 737.
+- **Continue from:** BATCH L-1 (YOU ARE HERE in BATCHES): write its checklist first, re-run its pages in PARALLEL
+  (e-1 pages 2, 87, 142, 153, 227, 278, 385 + 337, which fails alone with and without E0-e), trace each drop/select
+  failure through the UI with a real mouse drag, fix + guard; then Z-1, L-2 … L-6, D-1; S-3 when the user places it.
+- **Not done, and said so:** the published artifacts (end of Task 1); mobile has no canvas (rule 20).
+
 ### 2026-09-30 · session 1fba35cf · branch `builder/layout-uat` — HANDOVER (recommended before the heavy S-2 UAT pass)
 
 - **Started from:** `5ed8d5f`, BATCH S-2 open at change (5), nothing coded.
@@ -755,7 +777,7 @@ out) — where the session STARTED FROM, where it GOT TO, and where the next one
 - **Decided by the user this session (each recorded under its line):** c-7 B · c-8 B · c-21 B · grid picker B (any
   count up to 12) · Tasks 2–4 = the original list · saved pages keep their spacing · the default spacing values ·
   c-11c B (an icon cell does not count for the tablet rule).
-- **Continue from:** 1.1.1 → tier 99 → d → "re-run e-2 and e-3 alone first" (YOU ARE HERE). Then SPACE BY DEFAULT (the
+- **Continue from:** 1.1.1 → tier 99 → d → "re-run e-2 and e-3 alone first" (YOU ARE HERE) [SUPERSEDED 2026-09-30: parallel is the default, only a failure is re-run alone — RULE Z]. Then SPACE BY DEFAULT (the
   engine, the two audit checks, the old wording in six places, c-23, c-24), then e-1 · e-4 · e-5 · e-6 · e-7 and the
   rest, each at its root, guard red first, HEADED UAT, `--pages=`; then the four decided engine changes (c-7, c-8, c-21,
   grid picker) and c-11c.
