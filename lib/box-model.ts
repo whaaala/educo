@@ -4606,7 +4606,11 @@ export function textUnit(): string {
  * and set the root value (`baseUnit`); a browser without `@property` falls back to the inherited formula, which is what
  * it had before.
  */
-export const TYPE_UNIT_PROPERTY_CSS = "@property --box-t{syntax:'<length>';inherits:true;initial-value:0px}";
+// …and the columns' GUTTER, `--bx-gut` (E0-e): a band is a size container, so `--box-u`'s `cqw` read the section outside
+// it for the band's reach and the BAND for its columns' margins — 16.07px out, 11.2px back, a column 5px past its section
+// in every narrow one. Registered, it resolves once on the band and the columns inherit that length.
+export const TYPE_UNIT_PROPERTY_CSS = "@property --box-t{syntax:'<length>';inherits:true;initial-value:0px}"
+  + "@property --bx-gut{syntax:'<length>';inherits:true;initial-value:0px}";
 export function t(px: number): string {
   return `calc(var(--box-t, var(--box-u, 0.625rem)) * ${+(px / 10).toFixed(4)})`;
 }
@@ -4622,7 +4626,11 @@ export function gapCSS(node: BoxNode): CSSProperties {
   const d = spaceDefaults(node);
   const base = node.gap;
   const x = node.gapX ?? base ?? d.gapX, y = node.gapY ?? base ?? d.gapY;
-  if (node.rowBand && x > 0) return { columnGap: u(0), rowGap: u(y) }; // across is the columns' gutter (`gutterCSS`)
+  // across is the columns' gutter (`gutterCSS`), resolved ONCE here on the band as `--bx-gut` (E0-e)
+  if (node.rowBand && x > 0) {
+    const gut = bandGutter(node);
+    return { columnGap: u(0), rowGap: u(y), ...(gut > 0 ? { ["--bx-gut" as string]: u(gut) } : {}) } as CSSProperties;
+  }
   return x === y ? { gap: u(x) } : { columnGap: u(x), rowGap: u(y) };
 }
 
@@ -4910,13 +4918,19 @@ export const LINK_GAP_DOWN = "0.75rem";
  */
 export const LINK_COLOR_CSS = "var(--bx-link, var(--eu-color-link, var(--eu-color-brand)))";
 const isMenuItem = (k: BoxNode) => k.type === "link" || k.type === "button";
-export function linkLineGap(line: BoxNode, parent: BoxNode): CSSProperties | null {
-  if (!line.rowBand) return null;
+/** A band holding a line of menu items (Links, Buttons) — spaced by `linkLineGap`, never by the columns' gutter. */
+function isMenuLine(line: BoxNode): boolean {
+  if (!line.rowBand) return false;
   const kids = (line.children ?? []).filter((k) => !isFloating(k) && !k.hidden);
-  if (kids.length < 2 || !kids.every(isMenuItem)) return null;
+  return kids.length >= 2 && kids.every(isMenuItem);
+}
+export function linkLineGap(line: BoxNode, parent: BoxNode): CSSProperties | null {
+  if (!isMenuLine(line)) return null;
   const chosen = (v?: number) => (v != null && v > 0 ? v : undefined); // a 0 "Space between blocks" is the untouched default
   const across = parent.gapX ?? chosen(parent.gap), down = parent.gapY ?? chosen(parent.gap);
-  return { gap: undefined, columnGap: across != null ? u(across) : LINK_GAP_ACROSS, rowGap: down != null ? u(down) : LINK_GAP_DOWN };
+  // LONGHANDS ONLY (E0-b): they override a `gap` shorthand in either engine, and a `gap: undefined` beside them made React
+  // drop both on the canvas — its links sat 18px apart while the published page had 2rem.
+  return { columnGap: across != null ? u(across) : LINK_GAP_ACROSS, rowGap: down != null ? u(down) : LINK_GAP_DOWN };
 }
 /** …and a LIST of menu items one per line is spaced down the same way (a footer column of links). */
 function listLinesGap(node: BoxNode): CSSProperties | null {
@@ -5439,7 +5453,8 @@ export function childStyle(child: BoxNode, parent: BoxNode, bp: Breakpoint = "ba
 
 /** The gap across a row band — its columns' GUTTER (S1-a). 0 for a band saved before space by default. */
 export function bandGutter(band: BoxNode): number {
-  return band.rowBand ? gapOf(band).x : 0;
+  // A line of menu items is spaced by its own gap (`linkLineGap`): a gutter on top put the links 2rem + 1rem apart (E0-b).
+  return band.rowBand && !isMenuLine(band) ? gapOf(band).x : 0;
 }
 
 /**
@@ -5455,14 +5470,16 @@ export function bandGutter(band: BoxNode): number {
  */
 function gutterCSS(s: CSSProperties, child: BoxNode, parent: BoxNode): void {
   const bandG = child.rowBand && (parent.direction ?? "column") !== "row" ? bandGutter(child) : 0;
+  // THE BAND'S OWN `--bx-gut` (`gapCSS`), for the reach AND the columns: one length, resolved on the band (E0-e).
+  const GUT = "var(--bx-gut)";
   if (bandG > 0) {
-    s.marginLeft = s.marginRight = u(-bandG / 2);
-    s.width = `calc(100% + ${u(bandG)})`;
+    s.marginLeft = s.marginRight = `calc(${GUT} * -0.5)`;
+    s.width = `calc(100% + ${GUT})`;
     s.maxWidth = "none";
   }
   const g = parent.rowBand && (parent.direction ?? "column") === "row" ? bandGutter(parent) : 0;
   if (!g) return;
-  const G = u(g), half = u(g / 2);
+  const G = GUT, half = `calc(${GUT} / 2)`;
   const basis = typeof s.flex === "string" ? /^(\d) (\d) (\d+(?:\.\d+)?)%$/.exec(s.flex) : null;
   // `%` here is already the WIDENED band (the line plus one gap), so the slot is the stored share of it as written.
   if (basis && +basis[3] > 0) s.flex = `${basis[1]} ${basis[2]} calc(${basis[3]}% - ${G})`;

@@ -202,10 +202,51 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
 - `[ ]` **BATCH S-3 · The editor's Page check warns about space** (area: spacing · 1 change, queued 2026-09-30): the
   in-app Page check reports words closer than 1rem to the page edge or touching their coloured box (W7a) and two
   sections closer than 1rem (W7b), as warnings, the way `page-audit.js` measures them — the scenario already exists
-- `[ ]` **BATCH E-0 · The build failures that stayed when run alone** (area: sweep harness/drop · queued) — the re-run of
+- `[>]` **BATCH E-0 · The build failures that stayed when run alone** (area: sweep harness/drop · OPENED 2026-09-30) — the re-run of
   e-2/e-3 was STOPPED by the user at 3 of 14 (2026-09-30), on build OvtY9uAA, HEADED UAT:
   - page 68 (sonicdrive, blog index) — built, 0 errors ALONE → it was the machine
-  - page 145 (soul-trane, about) — STILL FAILS alone: a click timed out after 10 s → a bug (e-2 click class)
+  - page 145 (soul-trane, about) — STILL FAILED alone on OvtY9uAA: a click timed out after 10 s. **Re-run alone
+    2026-09-30 on EQ3zdB: it BUILDS (151 blocks)** — the click timeout is gone (not reproduced on a build with S-1/S-2) —
+    but reported 81 errors, which gave E0-a/b/c. After their fixes, on W2q1ZFy1: 1 error, the e-4 case below
+  - LEDGER of E-0:
+    - `[x]` E0-a · HARNESS: `page-audit.js` L4 counted the S1-a gutter band's intended half-gap reach as "content spills
+      out sideways" — 76 of page 145's 81 errors, and every page built since S-1. FIXED: a child reaching out with a
+      negative side margin has its COLUMNS measured instead. Guard `tests/e2e/page-audit-spill.spec.ts` (a row of
+      coloured columns in a section: no spill; a block really wider than its box: a spill), 4 red without the fix; in test:fast
+    - `[x]` E0-b · **a menu's links were 18px apart on the canvas and 50px in the Preview** (page 145, every size ≥ 768:
+      the menu, "Apply now" and the line shifted ~12%). Two faults, found by `probe-e0b.js` (the dresser's own burger
+      header, built through the UI): (1) `linkLineGap` returned `gap: undefined` beside its longhands and React dropped
+      both on the canvas (its inline style had no column-gap at all); (2) since S1-a a menu line was ALSO a band with a
+      gutter, so every link took half a gap each side on top of its 2rem. FIXED: longhands only; `bandGutter` is 0 for a
+      line of menu items (`isMenuLine`). Guard `space-by-default.test.ts` "E0-b" (both mutations red). SEEN: canvas =
+      Preview, 0 blocks differ at 1280, links 2rem apart in both
+    - `[x]` E0-c · the 96px HOLE at the end of the menu's line on the canvas at 1280 — the same fault as E0-b; gone with it
+    - `[x]` E0-d · HARNESS: `h.js` `visibleRect` clipped a target to the blocks panel on the left but not to the Inspector
+      on the right — page 393's drop "beside" was released on the Inspector's "Outline style" button. FIXED: clipped to
+      `aside[aria-label="Inspector"]` too. (393 itself built on the next run; the clip is exercised by every page run)
+    - `[x]` E0-e · **a column 4–7px wider than the section it sits in** (L4 on 4 tier-99 pages: 337, 393, 398, 399, 1024 →
+      1920) — the ENGINE, found once the E0-a audit fix measured band columns: a band that holds a narrowing grid is a size
+      container (`hostsNarrowingGrid`), and `--box-u` carries `0.5cqw`, so the band's reach read the section OUTSIDE it
+      (16.07px) while its columns read the band itself (11.2px, the clamp's floor) — 5px out, never given back. FIXED at
+      the root, the way `--box-t` was (#133): the band declares the gap ONCE as a registered length (`@property --bx-gut`,
+      in `TYPE_UNIT_PROPERTY_CSS`, emitted by both engines), and the reach and every column's margin, basis, max- and
+      min-width read `var(--bx-gut)`. Guard `page-audit-spill.spec.ts` "a row of columns inside a NARROW column" (a 6+6
+      grid as the full-width column of a band in a 30% column): 2 red on the old CSS, green now; S1-a's evaluator in
+      `space-by-default.test.ts` now substitutes `--bx-gut` and still sums every line of shares to the band exactly
+  - **E-0 run 2026-09-30, in PARALLEL (6 windows, build W2q1ZF), the 11 pages not yet re-run:** 6 built (335, 337, 398,
+    399, 400, 401), 5 failed (23, 336, 396: scroll timeout · 334: "only 3px visible" after the build had already gone
+    wrong — a 40px Stack, overlapping headings · 397: "the canvas offered the drop and added nothing", = e-1). Their
+    findings sorted: L4 spill → E0-e (fixed) · words broken ("afternoon", "welcomed", "1,000+") → c-8 / e-7 in L-4 ·
+    HOLE → c-7 / e-9 in L-4 · canvas≠Preview → e-4 in L-2 · Tablet 4 columns → e-6 in L-3. Page 393's second run
+    crashed mid-audit ("execution context was destroyed") under that load
+  - `[ ]` **CHECK asked by the user 2026-09-30** (from a screenshot of the E-0 run: "Meet the team", four star icons each
+    in a column as tall as the quotes beside it): a block dropped UNDER an icon in such a cell lands under it in the same
+    column (not as a new grid cell), canvas and Preview, every rung; and a cell can be set to hug its content instead of
+    stretching. Built through the UI after the runs finish; anything else → the E-0 ledger. Also noted: the harness fills
+    a cell narrower than TEXT_MIN with an Icon, so a "team" section shows stars instead of photos — a realism limit of the
+    dressed pages to record in the sweep report
+  - **NOW (build Sb_l4U):** 335/337/398/399/400/401 again in parallel (the spill must be gone), then the failures ALONE,
+    one by one: 23, 334, 336, 396, 397, 393 — logs `scripts/uat/logs/e0-regress.log`, `e0-alone-<page>.log`
   - page 393 (elytetemplate, services) — STILL FAILS alone: the drag never reached the canvas, twice → a bug (e-3)
   - not yet re-run: 23, 334, 335, 336, 337, 396, 397, 398, 399, 400, 401
 - `[ ]` **BATCH L-1 · Tier-99: blocks that would not drop or select** (area: drop / select · 5 changes, queued)
@@ -219,7 +260,9 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
   - previewcheck B30 / P4 · the harness's drop and select steps
 - `[ ]` **BATCH L-2 · Tier-99: the editor and the Preview disagree** (area: canvas = Preview · 4 changes, queued)
   - e-4 · canvas≠Preview — 13 pages: headings, links and buttons 0.4–3.6% narrower in the Preview, text wrapping to other
-    heights, 4 containers 122–198px shorter at Wide (idx 109, 141 carry most)
+    heights, 4 containers 122–198px shorter at Wide (idx 109, 141 carry most). **A clean repro, built through the UI
+    (E-0, 2026-09-30):** `probe-e0b.js --w=1920` — the burger header's hugged menu is 419.3px on BOTH sides, yet the
+    zoomed canvas measures the link words a few px wider and wraps "Contact" (menu 79 vs 63px tall); page 145 at Wide
   - e-8 · a component 20–24px taller in the Preview — 2 pages (idx 209 and one more)
   - e-10 · one block 28px taller in the Preview — 1 page (idx 272)
   - #144 · the canvas copy of fixed blocks — checked in WebKit and Firefox before it is removed
@@ -441,9 +484,9 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
           385): "into" ×4, "under" ×2, "beside" ×1. = c-22, now 7 pages
         - `[ ]` e-2 · not built: **scroll / click timeouts** — 9 (idx 393, 396–401 scroll; 68, 145, 400 click). Six of
           the scroll timeouts are the LAST pages of the night, in a row — INFERRED the machine, not the page (screen
-          lock or load); re-run them alone first. = c-6
+          lock or load); re-run them in PARALLEL, and only a page that fails there alone (RULE Z). = c-6
         - `[ ]` e-3 · not built: **the drag never reached the canvas, twice** — 4 (idx 23, 334, 335, 337; three in a
-          row) · and 1 "cannot drop into m-2a: only 0px visible" (idx 336). Same clustering: re-run alone first
+          row) · and 1 "cannot drop into m-2a: only 0px visible" (idx 336). Same clustering: re-run in PARALLEL, a failure there alone (RULE Z)
         - `[ ]` e-4 · **canvas≠Preview (R11)** — 13 pages, 37 findings, every screen size; 6 pages carry most of it
           (idx 109, 141): headings, links and buttons 0.4–3.6% narrower in the Preview, text wrapping to other heights
           (−24 … +10px); 4 containers 122–198px shorter at Wide. = c-3, reopened
@@ -453,7 +496,7 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
         - `[ ]` e-8 · canvas≠Preview on a component 20–24px taller in the Preview — 2 pages (idx 209 and one more)
         - `[ ]` e-9 · HOLE at the end of a line — 2 pages (idx 210 at Wide 228px; one at Mobile). = c-7 (decided B)
         - `[ ]` e-10 · canvas≠Preview on one block 28px taller — 1 page (idx 272)
-        - `[ ]` **NEXT: re-run e-2 and e-3 alone first** (idx 23, 68, 145, 334–337, 393, 396–401) on a FRESH build —
+        - `[ ]` **Re-run e-2 and e-3** — in PARALLEL; only a page that fails there is re-run alone (RULE Z, the user 2026-09-30) (idx 23, 68, 145, 334–337, 393, 396–401) on a FRESH build —
           a failure that goes away alone was the machine, one that stays is a bug — STOPPED by the user at 3 of 14, the rest
           moved to BATCH E-0 (top of this file). **YOU ARE HERE is BATCH E-0** (S-1 and S-2 closed 2026-09-30)
         - NOT A BUG, expected: 379 pages warn "things need the user's words" (the dressed placeholders' empty text)

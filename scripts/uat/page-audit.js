@@ -49,7 +49,10 @@ function auditDoc(opts) {
   // content spilling out of its block (text or a child wider/taller than the block that holds it, with no clip)
   let spill = 0; const spEx = [];
   for (const e of flow) { const cs = getComputedStyle(e); if (cs.overflow !== 'visible') continue; const r = e.getBoundingClientRect();
-    for (const k of e.children) { if (!visible(k) || ['absolute', 'fixed'].includes(getComputedStyle(k).position)) continue; const q = k.getBoundingClientRect(); if (q.right > r.right + 2 || q.left < r.left - 2) { spill++; if (spEx.length < 3) spEx.push(`${idOf(e).slice(-4)} ${Math.round(r.width)}px holds ${k.tagName.toLowerCase()}${k.className.includes('bx-') ? ' ' + idOf(k).slice(-4) : ''} ${Math.round(q.width)}px`); break; } } }
+    // A band with a GUTTER (S1-a) reaches half a gap past each side on purpose, with its columns half a gap in: what could
+    // spill is its COLUMNS, so they are measured instead of the band (E0-a: 76 false spills on one page).
+    const reach = (k) => { const c = getComputedStyle(k); return parseFloat(c.marginLeft) < 0 || parseFloat(c.marginRight) < 0 ? [...k.children] : [k]; };
+    for (const k of [...e.children].flatMap(reach)) { if (!visible(k) || ['absolute', 'fixed'].includes(getComputedStyle(k).position)) continue; const q = k.getBoundingClientRect(); if (q.right > r.right + 2 || q.left < r.left - 2) { spill++; if (spEx.length < 3) spEx.push(`${idOf(e).slice(-4)} ${Math.round(r.width)}px holds ${k.tagName.toLowerCase()}${k.className.includes('bx-') ? ' ' + idOf(k).slice(-4) : ''} ${Math.round(q.width)}px`); break; } } }
   if (spill) err.push(`L4 ${spill} blocks whose content spills out sideways (${spEx.join(' ')})`);
   // rows: on a phone nothing sits side by side narrower than a readable column; on a tablet no line holds more than three (#78)
   const rows = flow.filter((e) => getComputedStyle(e).flexDirection === 'row' && getComputedStyle(e).display.includes('flex'));

@@ -272,6 +272,10 @@ Run through this checklist BEFORE telling the user it's done:
     percentile, so the user's own UAT finds nothing. Run it FAST: several visible browser windows side by side,
     each taking a slice of the matrix, on the fresh production build — the user's words, 2026-09-27: *"test all
     the possible combination… as quick as possible. Make this a rule."*
+    **PARALLEL IS THE DEFAULT, "ALONE" IS NEVER A PLAN (the user, 2026-09-30).** Every re-run, sweep and UAT starts with
+    as many windows as the machine takes. Only a page or case that FAILED in parallel is re-run alone, to tell load from a
+    bug. An older note that says "alone" means exactly that, never "one at a time for everything" — measured, 2026-09-30:
+    a session ran E-0's pages one by one (3–4 hours planned) until the user asked why.
   - **EVERY COMBINATION, AT EVERY TEST LEVEL, FOR EVERYTHING — now and every future feature.** Unit · component ·
     functional · integration · regression · UAT all enumerate the combinations, not one case. For page layout
     the combinations ARE the research: every page structure in `docs/LAYOUT_BENCHMARK.md` and the crawl, built

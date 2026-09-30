@@ -152,6 +152,7 @@ const canvasGeo = (page) => page.evaluate(() => {
       return f;
     };
     const html = await (await page.$('iframe')).getAttribute('srcdoc') || '';
+    fs.writeFileSync(path.join(OUTDIR, `page-${idx}.export.html`), html); // kept, so a finding is traced from the page's own CSS (E0-e)
     const px = pixelFindings(html); if (px.length) find('err', 'export CSS', `U16 ${px.length} pixel lengths — ${px.slice(0, 6).map(([k, n]) => `${k}×${n}`).join(', ')}`);
     let first = true; const sizes = devices(); R.sizes = sizes.length;
     // AT THE RUNGS THE PREVIEW WINDOW IS AS TALL AS THE EDITOR's. A block measured against the SCREEN — a sticky sidebar is 100dvh, and

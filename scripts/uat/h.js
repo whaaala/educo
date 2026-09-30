@@ -72,7 +72,11 @@ const visibleRect = (page, id) => page.evaluate(async (id) => {
   const card = panel ? panel.closest('[class*="fixed"], [class*="absolute"]') || panel : null;
   const cover = card ? card.getBoundingClientRect().right + 10 : 0;
   const l = Math.max(b.left, b.top < 1000 ? cover : 0);
-  return { l, r: b.right, t: b.top, b: b.bottom, h: b.height, w: Math.max(0, b.right - l), hidden: b.right - l < 24 };
+  // …and the INSPECTOR on the right: a block running under it cannot be aimed at there — a drop "beside" one was
+  // released on the Inspector's "Outline style" button, and nothing was added (E0-d, tier 99 page 393).
+  const ins = document.querySelector('aside[aria-label="Inspector"]');
+  const r = Math.min(b.right, ins && ins.getBoundingClientRect().width ? ins.getBoundingClientRect().left - 10 : Infinity);
+  return { l, r, t: b.top, b: b.bottom, h: b.height, w: Math.max(0, r - l), hidden: r - l < 24 };
 }, id);
 /** Drop `tile` beside the block `id`, at its right (or left) edge. */
 const dropBeside = async (page, tile, id, side = 'right') => {

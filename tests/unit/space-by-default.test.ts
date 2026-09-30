@@ -36,7 +36,7 @@ describe("the defaults (the user's values, 2026-09-29)", () => {
     expect(gapCSS(createContainer("row"))).toEqual({ gap: u(SPACE_DEFAULT.columns) });
     expect(gapOf(createGrid(3))).toEqual({ x: SPACE_DEFAULT.columns, y: SPACE_DEFAULT.stack });
     // A band's gap across is the columns' GUTTER (S1-a), never a flex gap — see "columns side by side" below.
-    expect(gapCSS(makeRowBand())).toEqual({ columnGap: u(0), rowGap: u(SPACE_DEFAULT.stack) });
+    expect(gapCSS(makeRowBand())).toEqual({ columnGap: u(0), rowGap: u(SPACE_DEFAULT.stack), "--bx-gut": u(SPACE_DEFAULT.columns) }); // the gutter, resolved once on the band (E0-e)
   });
 
   it("a box gets inner padding only once it has an edge you can see", () => {
@@ -81,6 +81,7 @@ describe("the defaults (the user's values, 2026-09-29)", () => {
  */
 describe("columns side by side (S1-a)", () => {
   const G = SPACE_DEFAULT.columns;
+  const GUT = "var(--bx-gut)"; // the band declares it (`gapCSS`); the reach and the columns read the ONE value (E0-e)
   const three = () => ["a", "b", "c"].map((id) => ({ ...createContainer("column", { children: [blockForKind("text")] }), id, width: "33.33%" }));
 
   it("a band made from now on has a 1rem gap across and down; an old one keeps none", () => {
@@ -93,8 +94,8 @@ describe("columns side by side (S1-a)", () => {
   it("the band reaches half a gap past each side, so the outer columns still meet the page edge", () => {
     const band = makeRowBand(three());
     const s = childStyle(band, createRoot());
-    expect([s.marginLeft, s.marginRight]).toEqual([u(-G / 2), u(-G / 2)]);
-    expect(s.width).toBe(`calc(100% + ${u(G)})`);
+    expect([s.marginLeft, s.marginRight]).toEqual([`calc(${GUT} * -0.5)`, `calc(${GUT} * -0.5)`]);
+    expect(s.width).toBe(`calc(100% + ${GUT})`);
     expect(s.maxWidth).toBe("none");
   });
 
@@ -103,22 +104,23 @@ describe("columns side by side (S1-a)", () => {
     for (const c of band.children!) {
       const s = childStyle(c, band);
       // `%` resolves against the band, which is ALREADY the line plus one gap — so the slot is the share as stored
-      expect(String(s.flex)).toContain(`calc(33.33% - ${u(G)})`);
-      expect([s.marginLeft, s.marginRight]).toEqual([`calc(0px + ${u(G / 2)})`, `calc(0px + ${u(G / 2)})`]);
-      expect(s.minWidth).toBe(`min(100% - ${u(G)}, 14rem)`);
+      expect(String(s.flex)).toContain(`calc(33.33% - ${GUT})`);
+      expect([s.marginLeft, s.marginRight]).toEqual([`calc(0px + calc(${GUT} / 2))`, `calc(0px + calc(${GUT} / 2))`]);
+      expect(s.minWidth).toBe(`min(100% - ${GUT}, 14rem)`);
     }
     // …and never wider than the line less one gap: `max-width: 100%` of the widened band let an Alert at fit width run
     // one gap (11px) past a 375 phone's edge (export-layout-invariants, 2026-09-30)
-    for (const c of band.children!) expect(childStyle(c, band).maxWidth).toBe(`calc(100% - ${u(G)})`);
+    for (const c of band.children!) expect(childStyle(c, band).maxWidth).toBe(`calc(100% - ${GUT})`);
     // Stacked on a phone, a column is the whole line less its gutter.
-    expect(childStyle(band.children![0], band, "phone").minWidth).toBe(`calc(100% - ${u(G)})`);
+    expect(childStyle(band.children![0], band, "phone").minWidth).toBe(`calc(100% - ${GUT})`);
   });
 
   /**
    * The emitted CSS EVALUATED, not read: `%` is the band (the page plus one gap), the unit is 10px. A basis that added the
    * gap twice read plausibly and overflowed the line by one gap — the third column wrapped in the HEADED UAT, 2026-09-30.
    */
-  const px = (css: string, band: number) => Function(`return ${css.replace(/var\(--box-u, 0\.625rem\)/g, "10").replace(/calc/g, "").replace(/(\d)px/g, "$1").replace(/(\d+(?:\.\d+)?)%/g, (_, n) => `(${n} * ${band} / 100)`)}`)() as number;
+  // `var(--bx-gut)` is the band's `gapCSS` value — u(G) — evaluated with the same 10px unit
+  const px = (css: string, band: number) => Function(`return ${css.replace(/var\(--bx-gut\)/g, `(${G / 10} * 10)`).replace(/var\(--box-u, 0\.625rem\)/g, "10").replace(/calc/g, "").replace(/(\d)px/g, "$1").replace(/(\d+(?:\.\d+)?)%/g, (_, n) => `(${n} * ${band} / 100)`)}`)() as number;
   it.each([[["33.33%", "33.33%", "33.34%"]], [["70%", "30%"]], [["25%", "25%", "25%", "25%"]], [["100%"]]])("a full line of %j fits its band exactly, with a gap between each", (widths) => {
     const band = makeRowBand(widths.map((w, i) => ({ ...createContainer("column", { children: [blockForKind("text")] }), id: `k${i}`, width: w })));
     const B = 1280 + 16; // the page is 1280, the band reaches half a gap past each side
@@ -129,7 +131,7 @@ describe("columns side by side (S1-a)", () => {
 
   it("a margin the user set on a column is kept, on top of its half gap", () => {
     const band = makeRowBand([{ ...createContainer("column"), id: "a", width: "50%", marginLeftPct: 10 }]);
-    expect(childStyle(band.children![0], band).marginLeft).toBe(`calc(10% + ${u(G / 2)})`);
+    expect(childStyle(band.children![0], band).marginLeft).toBe(`calc(10% + calc(${GUT} / 2))`);
   });
 
   it("an old band publishes its columns exactly as before — no gutter", () => {
@@ -138,6 +140,30 @@ describe("columns side by side (S1-a)", () => {
     expect(s.flex).toBe("0 1 33.33%");
     expect(s.marginLeft).toBeUndefined();
     expect(childStyle(saved, createRoot()).marginLeft).toBeUndefined();
+  });
+});
+
+describe("E0-b: a line of menu links is spaced by the menu gap, the same on the canvas and the page", () => {
+  const menu = () => {
+    const links = ["About", "Admissions", "News", "Contact"].map((t) => ({ ...blockForKind("link"), text: t } as BoxNode));
+    const line = makeRowBand(links);
+    const list = createContainer("column", { tag: "ul", children: [line] });
+    return { links, line, list };
+  };
+  it("the line gets 2rem across as LONGHANDS only — a `gap` key beside them made React drop both on the canvas", () => {
+    const { line, list } = menu();
+    const s = childStyle(line, list);
+    expect("gap" in s).toBe(false);
+    expect(s.columnGap).toBe("2rem");
+  });
+  it("its links take no columns' gutter on top of it (2rem apart, not 2rem + 1rem)", () => {
+    const { links, line } = menu();
+    for (const l of links) { const s = childStyle(l, line); expect(String(s.marginLeft ?? "")).not.toContain("calc"); expect(String(s.marginRight ?? "")).not.toContain("calc"); }
+    expect(childStyle(line, menu().list).marginLeft).toBeUndefined(); // the line does not reach past its list either
+  });
+  it("a row of columns keeps its gutter", () => {
+    const band = makeRowBand([createContainer("column"), createContainer("column")]);
+    expect(String(childStyle(band.children![0], band).marginLeft)).toContain("calc");
   });
 });
 

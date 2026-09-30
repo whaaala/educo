@@ -1021,7 +1021,7 @@ describe("box-model — layout CSS mapping", () => {
     // a non-clipped section inside it keeps a usable minimum → wraps to a new line rather than shrinking below ~14rem
     const section = band.children![0];
     // …less the one gap its slot gives up to the band's gutter (S1-a)
-    expect(childStyle(section, band).minWidth).toBe(`min(100% - ${u(16)}, 14rem)`);
+    expect(childStyle(section, band).minWidth).toBe("min(100% - var(--bx-gut), 14rem)"); // the band's one gutter (E0-e)
     // a CLIPPED (explicitly resized) section still drops to 0 — reflow never overrides an intentional resize
     const clipped = childStyle(createContainer("column", { width: "40%", clip: true } as Partial<BoxNode>), band);
     expect(clipped.minWidth).toBe(0);

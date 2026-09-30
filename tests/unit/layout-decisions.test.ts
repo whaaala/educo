@@ -44,7 +44,8 @@ describe("3A — type scales with the page, spacing with the box", () => {
     expect(u(16)).not.toContain("--box-t");
   });
   it("the type unit is a registered length that inherits, with a zero initial value (no stored pixel)", () => {
-    expect(TYPE_UNIT_PROPERTY_CSS).toBe("@property --box-t{syntax:'<length>';inherits:true;initial-value:0px}");
+    expect(TYPE_UNIT_PROPERTY_CSS).toBe("@property --box-t{syntax:'<length>';inherits:true;initial-value:0px}"
+      + "@property --bx-gut{syntax:'<length>';inherits:true;initial-value:0px}"); // + the columns gutter (E0-e)
   });
   it("the published page's root is a size container, so the unit reads the page's content width — not the window with its scrollbar (#137)", async () => {
     const { BASE_CSS } = await import("@/lib/educo-ui/base");

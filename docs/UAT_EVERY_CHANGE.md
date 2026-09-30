@@ -72,6 +72,10 @@ mutation-proven guard. See [FIX_WHAT_YOU_FIND.md](FIX_WHAT_YOU_FIND.md).
 
 - **Playwright MCP** for exploring and for looking: navigate, click, drag, screenshot, read computed style.
   It is a real Chrome, so what it shows is what a visitor gets.
+- **In parallel, always** (CLAUDE.md RULE Z, the user 2026-09-30): a pass, a sweep or a re-run opens as many visible
+  windows as the machine takes (`--jobs=6`, probes side by side with `--pos=`). Only a case that FAILED in parallel is
+  re-run alone, to tell load from a bug — "alone" in an older note means that, never "one at a time for everything".
+  Never run vitest while these windows are open (rule 15).
 - **Seed the page, drive the UI.** Writing `educo_box_site_v1` into `localStorage` gets you to the state in
   one step, but the *interaction under test* is still performed through the real controls.
 - **Measure, don't reason.** Read `getBoundingClientRect()` and `getComputedStyle()` rather than arguing
