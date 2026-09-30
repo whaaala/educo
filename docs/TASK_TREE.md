@@ -272,7 +272,7 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
   - `[x]` the user's icon-cell CHECK — answered by E0-g and E0-h above
   - **337** fails alone with and WITHOUT E0-e (bisected on a build with E0-e reverted: it failed at another drop step)
     → not a regression; its drop failures join e-1 / e-3 in L-1. **397** was E0-g
-  - **NEXT:** E0-g/h mutation proof on the served build, the gate, commit; then E0-f on the user's answer; then close E-0
+  - **← YOU ARE HERE:** E0-g/h committed `0ae9b5f` (gate: vitest 3,903 · eslint 0 errors · test:fast 737; HEADED 4 themes). E-0 closes on the user's E0-f answer (zoom · Inspector · record); then BATCH L-1
   - page 393 (elytetemplate, services) — STILL FAILS alone: the drag never reached the canvas, twice → a bug (e-3)
   - not yet re-run: 23, 334, 335, 336, 337, 396, 397, 398, 399, 400, 401
 - `[ ]` **BATCH L-1 · Tier-99: blocks that would not drop or select** (area: drop / select · 5 changes, queued)
