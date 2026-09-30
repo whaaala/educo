@@ -75,6 +75,14 @@ across, but the box does not — so the inner grid goes two across, and inside a
 to one. Nothing squeezes to a sliver, and no word is ever broken letter by letter. (Before this rule, exactly that
 happened: three quotes 85px wide, "ev / er / yt / hi / ng".)
 
+**A small thing beside a tall one.** In "Meet the team" Maya puts a star icon in the first cell and a long quote in each
+of the others. The star's cell is as tall as the quotes — the row stays lined up — but the star itself stays star-sized
+at the top. She drags a **Text** from the blocks panel and lets go just under the star: it lands right there, one gap
+below the star, in the same cell. The spare height of the cell goes to the last block, below its words, never into a hole
+between the two — so when she later drags the edge of the band below further down, the last coloured row of a column
+stretches to meet it too. (A cell holding just one Card is different on purpose: the Card grows to the row's height, so a row of
+Cards keeps its buttons in line.)
+
 ## 4. "A sidebar that stays put"
 
 The term-dates page has a long article and a short "In this section" list. Maya drops a Stack, puts the article in

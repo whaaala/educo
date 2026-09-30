@@ -3767,7 +3767,7 @@ function AlertItemView({ item, sev, treat, dismiss, editable, parentId, onEdit, 
       {/* A plain <img>, deliberately: this is a user upload, often a data: URL that next/image cannot
           process, and the export emits a plain <img> too — which canvas = export requires us to match. */}
       {item.media ? <img className="eu-alert__media" src={item.media} alt={item.mediaAlt ?? ""} loading="lazy" decoding="async" /> : null}
-      {svg ? <span className="eu-alert__icon" aria-hidden="true" style={inlineToStyle(alertIconInline(item))} dangerouslySetInnerHTML={{ __html: svg }} /> : null}
+      {svg ? <span className="eu-alert__icon" aria-hidden="true" style={{ ...inlineToStyle(alertIconInline(item)), pointerEvents: "none" }} dangerouslySetInnerHTML={{ __html: svg }} /> : null}
       <div className="eu-alert__content">
         {(item.title || editable) && (
           <div className="eu-alert__title" style={inlineToStyle(alertPartInline(item.headerStyle))}>
@@ -4060,7 +4060,7 @@ function ComponentView({ node, editable, onPatchNode, breakpoint = "base", itemS
               onPointerDown={editable && it.float && floatsActive ? (e) => crud.startItemDrag(e, it, floatsActive) : undefined}
               open={editable ? true : it.open} name={node.accMultiOpen ? undefined : `acc-${node.id}`}>
               <summary className="eu-accordion__header" onClick={editable ? (e) => e.preventDefault() : undefined}>
-                {it.icon && iconSvg(it.icon) ? <span className="eu-accordion__icon" aria-hidden="true" dangerouslySetInnerHTML={{ __html: iconSvg(it.icon) }} /> : null}
+                {it.icon && iconSvg(it.icon) ? <span className="eu-accordion__icon" aria-hidden="true" style={{ pointerEvents: "none" }} dangerouslySetInnerHTML={{ __html: iconSvg(it.icon) }} /> : null}
                 {/* A plain <img>, as above: a user upload, matched to what the export emits. */}
                 {it.media ? <img className="eu-accordion__media" src={it.media} alt={it.mediaAlt ?? ""} loading="lazy" decoding="async" /> : null}
                 <span className="eu-accordion__title"><EditableText value={it.title} editable={editable} onChange={(v) => setItem(it.id, { title: v })} placeholder="Question" /></span>
@@ -4281,12 +4281,15 @@ function ElementView({ node, headingLevel, theme, editable, selected, onText, on
     case "icon": {
       // Render via iconSvg (all four libraries) so the canvas matches the export exactly. `fontSize` drives
       // the em box (the inline SVG is 1em). Falls back to a lucide Star component if the SVG isn't ready.
+      // The SVG is NEVER a pointer target (E0-g): React re-set its markup while a drag passed over it, so a block released
+      // on the icon was dropped onto a `<path>` no longer in the page — the drop never reached the canvas, the marker
+      // stayed, nothing was added (4 of 4). The pointer lands on this block's own box instead, which stays put.
       const svg = iconSvg(node.icon ?? "Star");
       const size = u(node.fontSize ?? 32);
       return (
         <div style={{ textAlign: align, color: node.color ? colorToCSS(node.color) : theme.primary, width: "100%", lineHeight: 0 }}>
           {svg
-            ? <span aria-hidden="true" style={{ display: "inline-flex", fontSize: size, width: "1em", height: "1em" }} dangerouslySetInnerHTML={{ __html: svg }} />
+            ? <span aria-hidden="true" style={{ display: "inline-flex", fontSize: size, width: "1em", height: "1em", pointerEvents: "none" }} dangerouslySetInnerHTML={{ __html: svg }} />
             : <Star style={{ width: size, height: size, display: "inline-block" }} />}
         </div>
       );

@@ -5252,7 +5252,13 @@ export function childStyle(child: BoxNode, parent: BoxNode, bp: Breakpoint = "ba
   // min-height (set by resizing the section's height) both count — so children fill/shrink with the floor.
   // …and a GRID CELL is definite too, though it stores nothing: the row hands it a height (`hostSizedFor`).
   // Without this clause a block dropped into a cell hugged its content and left the rest of the cell empty.
-  const parentDefinite = (!!parentMain && parentMain !== "auto" && parentMain !== "fill") || (!isRow && !!parent.minHeight) || (!isRow && hostSized);
+  // A column stretched by its host (a grid cell, a column beside a taller one, a shared edge dragged) keeps its blocks at
+  // the TOP with the normal gap, and its LAST block takes the spare height (E0-h, the user 2026-09-30: "last block takes
+  // it"). Shared between all of them it opened a 55px hole under an icon; given to none, a dragged shared edge left a
+  // hole at the column's foot. A lone block is its own last one, so a row of Cards stays equal height.
+  const hostKids = (parent.children ?? []).filter((c) => !isFloating(c));
+  const hostFills = hostSized && hostKids[hostKids.length - 1]?.id === child.id;
+  const parentDefinite = (!!parentMain && parentMain !== "auto" && parentMain !== "fill") || (!isRow && !!parent.minHeight) || (!isRow && hostFills);
   // When the child has no explicit MAIN size and the parent's main axis is DEFINITE (e.g. a section with a
   // set height), the child FILLS + follows the parent (`1 1 auto`: grow to fill, shrink to fit, content
   // basis) — so shrinking the parent's height shrinks its children. Otherwise it hugs / uses its token

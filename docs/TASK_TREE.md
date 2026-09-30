@@ -245,8 +245,34 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
     stretching. Built through the UI after the runs finish; anything else → the E-0 ledger. Also noted: the harness fills
     a cell narrower than TEXT_MIN with an Icon, so a "team" section shows stars instead of photos — a realism limit of the
     dressed pages to record in the sweep report
-  - **NOW (build Sb_l4U):** 335/337/398/399/400/401 again in parallel (the spill must be gone), then the failures ALONE,
-    one by one: 23, 334, 336, 396, 397, 393 — logs `scripts/uat/logs/e0-regress.log`, `e0-alone-<page>.log`
+  - **Run on build Sb_l4U (committed `78cc6ee`, gate: vitest 3,900 · eslint 0 errors · test:fast 736):** the spill is
+    GONE everywhere (399: 34 → 1 error, 398: 32 → 13). ALONE, 23 · 336 · 396 · 393 BUILD (their parallel failures were
+    load). STILL FAILING ALONE → bugs: **334** (the build goes wrong before "only 3px visible": a 40px Stack, headings
+    over the menu) and **397** ("the canvas offered the drop and added nothing", into an icon cell = e-1). **337** failed
+    in parallel with the same e-1 message (it built before) → to re-run alone. Every other finding is a queued class:
+    words broken (c-8), HOLE (c-7), canvas≠Preview (e-4), Tablet 4 columns (e-6)
+  - `[?]` E0-f · **a column too narrow on screen to drop into** (page 334, fails alone): its recipe is a 5-column row with
+    4 hand-sized columns inside the 28% one, so in the editor window each is ~40px and the 4th Stack's target 3px; the
+    builder obeys the sizes, and the canvas is always "Fitted to screen" — there is NO ZOOM, so no person could drop there
+    either. WAITING ON THE USER (asked 2026-09-30): (1) canvas zoom, recommended · (2) place from the Inspector's "Add a
+    block inside" · (3) record as a gap
+  - `[x]` E0-g · **a block dropped just under an ICON: the drop was offered and NOTHING was added** — 4 of 4 through the UI
+    (`probe-icon-cell.js`), and page 397's failure. MEASURED: no `drop` event reached the page; the element under the last
+    `dragover` was the icon's `<path>`, and at `dragend` it was no longer in the page — React re-set the SVG markup while
+    the drag passed over it, and the browser delivered the drop to the detached node. FIXED: an injected decorative SVG is
+    never a pointer target (`pointer-events: none` on the icon block, the Alert's icon, the Accordion's icons); the pointer
+    lands on the block's own box. SEEN: 4 themes, the Text in the icon's cell, the grid still 3 cells, canvas = Preview at
+    every rung. Guard `tests/e2e/drop-under-icon.spec.ts` — a REAL mouse drag (a synthetic drop cannot show it)
+  - `[x]` E0-h · **the spare height of a column stretched by its neighbour was SHARED between its blocks** — the Text
+    landed 55px under the icon (its band grew to 73px around a 36px icon). DECIDED by the user 2026-09-30: "blocks at the
+    top", then — when the gate showed it opened a hole at a column's foot after a shared edge is dragged
+    (`resize-leaves-no-gap.spec.ts`, 66px) — "LAST BLOCK TAKES IT". FIXED (`hostFills`, `childStyle`): in a host-stretched
+    column only the last block grows; a lone block still fills it (equal-height Cards); a height the user set shares as before. Guards: `space-by-default.test.ts` "E0-h" (red on
+    the old rule), and `drop-under-icon.spec.ts` asserts one stack gap under the icon
+  - `[x]` the user's icon-cell CHECK — answered by E0-g and E0-h above
+  - **337** fails alone with and WITHOUT E0-e (bisected on a build with E0-e reverted: it failed at another drop step)
+    → not a regression; its drop failures join e-1 / e-3 in L-1. **397** was E0-g
+  - **NEXT:** E0-g/h mutation proof on the served build, the gate, commit; then E0-f on the user's answer; then close E-0
   - page 393 (elytetemplate, services) — STILL FAILS alone: the drag never reached the canvas, twice → a bug (e-3)
   - not yet re-run: 23, 334, 335, 336, 337, 396, 397, 398, 399, 400, 401
 - `[ ]` **BATCH L-1 · Tier-99: blocks that would not drop or select** (area: drop / select · 5 changes, queued)

@@ -167,6 +167,23 @@ describe("E0-b: a line of menu links is spaced by the menu gap, the same on the 
   });
 });
 
+describe("E0-h: a column stretched by its host keeps its blocks at the top; the LAST takes the spare (the user, 2026-09-30)", () => {
+  // `hostSized` = the column is as tall as its row because a neighbour is taller (or a shared edge was dragged)
+  it("two blocks: the first keeps its size, the last takes the spare — nothing opens between them", () => {
+    const cell = createContainer("column", { children: [makeRowBand([blockForKind("icon")]), makeRowBand([blockForKind("text")])] });
+    expect(childStyle(cell.children![0], cell, "base", true).flex).not.toBe("1 1 auto");
+    expect(childStyle(cell.children![1], cell, "base", true).flex).toBe("1 1 auto");
+  });
+  it("one block: it still fills the column, so a row of Cards stays equal height", () => {
+    const cell = createContainer("column", { children: [makeRowBand([blockForKind("card")])] });
+    expect(childStyle(cell.children![0], cell, "base", true).flex).toBe("1 1 auto");
+  });
+  it("a height the user SET still shares its space as before", () => {
+    const sec = createContainer("column", { height: "30rem", children: [makeRowBand([blockForKind("icon")]), makeRowBand([blockForKind("text")])] } as Partial<BoxNode>);
+    for (const band of sec.children!) expect(childStyle(band, sec).flex).toBe("1 1 auto");
+  });
+});
+
 describe("always overridable, and saved pages keep what they had", () => {
   it("a stored 0 is the user's zero — on every side, and on the gap", () => {
     const n = createContainer("row", { background: "#eee", padding: 0, gap: 0 });

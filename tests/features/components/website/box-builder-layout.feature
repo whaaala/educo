@@ -1053,3 +1053,19 @@ Feature: Placing blocks beside one another in the Box Builder
     Given a reader whose browser text is set to 24px
     Then the page gutter and the section, group and element gaps all grow with it between their bounds
     Because each is clamp(min, rem + cqw, max) — never a bare container term
+
+  # ── A block under an icon, in a column stretched by its neighbour (E-0, asked by the user 2026-09-30) ──
+
+  Scenario: A block dropped under an icon lands under it, in the same column
+    Given a grid of three columns, an icon in the first and a long quote in the second
+    When I drag a Text from the blocks panel and let go just under the icon
+    Then the Text is added under the icon in the icon's own column
+    And the grid still has three columns — no new cell appears
+    And the drop never shows a marker and then adds nothing
+
+  Scenario: A stretched column keeps its blocks at the top, and its last block takes the spare height (decided 2026-09-30)
+    Given the icon's column is as tall as the quote beside it
+    Then the Text sits one stack gap under the icon, and the spare height is taken by the last block, below its words
+    And after I drag a shared edge down, the last coloured row in the other column grows to meet it — no hole at its foot
+    And a column holding a single block — a Card — still fills its height, so a row of Cards stays equal
+    And a section whose height I set myself still shares its space among its blocks as before
