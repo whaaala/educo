@@ -120,7 +120,21 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
     included. **DECIDED by the user 2026-09-30 ("go with your recommendation"):** every block placed straight on the page —
     components and buttons included — gets the section space above and below, OUTSIDE its own painted box, so coloured
     sections still meet; **1rem**; a stack inside a stack is spaced by its parent's gap; never a per-block bottom margin.
-    **← YOU ARE HERE** (first in S-2)
+    **← YOU ARE HERE** (first in S-2). Where it is in the code: `leafPaddingCSS` (lib/box-model.ts) returns {} for
+    `button` and `component`; the section space for them belongs on their TRANSPARENT wrapper (a self-painting block
+    paints its own element), so the space falls outside the painted box and coloured sections still meet
+  - checklist (written 2026-09-30, BEFORE the pass; each at 375 · 768 · 1024 · 1280 · 1920, canvas AND Preview, 4 themes):
+    - `[ ]` (5) a Card, a Button, a Quote and an Alert dropped one under another straight on the page: 1rem above and below
+      each, OUTSIDE its painted box; the gutter at both sides; two coloured sections still meet edge to edge
+    - `[ ]` (5) the same components inside one Stack: spaced by the stack gap only — never doubled
+    - `[ ]` (5) each set to 0 through Spacing → 0 on canvas and Preview, after a reload; Back to default returns 1rem
+    - `[ ]` (5) a page saved before this change opens exactly as it was (`probe-saved-page.js`, with a component added)
+    - `[ ]` (1) every component in the catalogue (enumerated, not listed by hand): a gap between its parts, and its words
+      at least the inner padding from its own visible edge
+    - `[ ]` (2) the page audit flags words closer than the gutter floor to the page edge or their coloured box's edge on
+      a page built with a 0 gutter, and flags NOTHING on a default page
+    - `[ ]` (3) the page audit flags two sections closer than the section floor, and nothing on a default page
+    - `[ ]` (4) the old "never a default" wording: 0 hits for it in the four places named above
   - (1) a gap between a component's parts and padding from its own visible edge, the whole catalogue · (2) audit check:
     words closer than the gutter floor to the page or their coloured box's edge · (3) audit check: sections closer than
     the section floor · (4) the old "never a default" wording in the four places left (layout feature 347,
@@ -537,6 +551,20 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
 
 One entry per session, newest first. Written the moment the user says "new session" (or the context is about to run
 out) — where the session STARTED FROM, where it GOT TO, and where the next one CONTINUES FROM.
+
+### 2026-09-30 · session 30a96c03 · branch `builder/layout-uat` — HANDOVER (recommended: S-2 is heavy, the context is large)
+
+- **Started from:** `56b19d8`, BATCH S-1 open at S1-a.
+- **Got to:** `1cfcfc1` + this tree update. **BATCH S-1 CLOSED** — S1-a (the column GUTTER: 1rem across, 1rem down, the
+  line still fits) and S1-b…S1-p (13 more lines, all fixed, see the S-1 ledger), every checklist line seen in a HEADED
+  UAT (build u8hfywi0, 4 themes × 5 rungs, canvas + Preview, 124 checks each, 0 findings) plus `probe-saved-page.js`
+  CLEAN and `probe-room-marquee.js` PASS. Gate at `1cfcfc1`: typecheck 0 · eslint 0 errors · vitest 3,794 · test:fast
+  640. Story chapter "My words never touch an edge" added to `docs/guide/layout-story.md`.
+  - The user DECIDED S-2 (5): section space (1rem) around every block placed straight on the page, components and buttons
+    included, outside their painted box; never a per-block bottom margin. The S-2 checklist is written.
+- **Continue from:** BATCH S-2 → change (5) (YOU ARE HERE), then (1) components breathe, (2)+(3) the audit checks, (4)
+  the old wording → ONE HEADED UAT for S-2 → close it → E-0.
+- **Not done, and said so:** the published artifacts (end of Task 1); the mobile app has no builder canvas (rule 20).
 
 ### 2026-09-30 · session 3c675738 · branch `builder/layout-uat` — HANDOVER (the user moved to a new session to keep the cost down)
 
