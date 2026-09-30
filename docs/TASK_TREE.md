@@ -83,6 +83,8 @@ Last updated: **2026-09-29**, session df7557b5, branch `builder/layout-uat`.
         - `[?]` GAP, the user's decision: **a grid of five across cannot be chosen** (nor 5, 7, 8… — only what
           twelve divides into). A leave, take six and delete one · B let the picker offer any count up to 12 (a grid
           already stores its own column count)
+          - `[ ]` **DECIDED by the user 2026-09-29: B** — the picker offers any count up to 12. Before building: drive
+            how a cell resizes on a count twelve does not divide into (5, 7, 8, 9, 10, 11). Not started
       - `[x]` c-20 · **The toolbar kept the side it chose when the block was selected** — dock the blocks panel and the
         page is refitted to 77%, the block moves to within 36px of the top, and the bar stayed ABOVE it, over the top
         edge of the page. It re-measures on `transitionend` now. Browser guard, red on the old build, green on TylJ2DR6
@@ -90,7 +92,15 @@ Last updated: **2026-09-29**, session df7557b5, branch `builder/layout-uat`.
         offe", probe-t9 screenshots). The handles are centred ON the edge, so half of each lies inside the block. The
         user's decision — it moves every handle: A leave · B draw the edge handles outside the block · C fade a handle
         that lies over words. Recommended: B
+        - `[ ]` **DECIDED by the user 2026-09-29: B** — the edge handles are drawn outside the block. The UAT drives a
+          block flush against the page edge, where a handle has no room outside. Not started
       - `[ ]` c-6 · **Build failed: timeout** — 1 page (+2 click timeouts that also could not select)
+        - READ ONLY, 2026-09-29. idx 38 (altamedfoundation.org/help_campaign): `scrollIntoViewIfNeeded` timed out
+          after 10 s waiting for a palette tile, 209 blocks built; its screenshot shows the blocks panel CLOSED.
+          INFERRED: a harness step closed the panel and did not reopen it — which step is not recorded (`__step` is
+          not saved in the report; that is a gap in the harness to close). idx 234 and 327: "could not select", then a
+          click timeout AFTER the build had failed (most likely the Upload click on a card squeezed to 45px) — the
+          class c-4 fixed. No sign of the app hanging. The re-run says whether the three still fail
       - `[x]` c-7 · **HOLE at the end of a line at canvas Wide 1920** — 29 pages, 44 findings. Every such row stores
         widths summing over 100% (50 + 25 + 33.34). MEASURED (page 101 with step logging, probe-t8 --row --main=62):
         three columns need 3 × 14rem = 672px; in a 668px main column the third had ALREADY dropped to the next line when
@@ -103,6 +113,8 @@ Last updated: **2026-09-29**, session df7557b5, branch `builder/layout-uat`.
           gets 50 + 25 + 33.34, and a hole on every wider screen. A keep as is (the size you drag is the size you get,
           and an unsized column keeps the share it was dropped with) · B a column nobody has sized by hand takes what
           is left of its line · C the editor warns when a line adds up to more than 100%. Recommended: B
+          - `[ ]` **DECIDED by the user 2026-09-29: B** — a column nobody has sized by hand takes what is left of its
+            line; under its floor it drops to the next line as today. Not started
       - `[ ]` c-8 · **Words broken across lines in the Preview** — 23 pages, 905 instances, column width median 77px.
         Text placed in a column narrower than its longest word ("1,000+", "everything", "description"). Measured:
         a Card in a grid cell 2 columns of 12 wide, inside a 70% main column (119px). Two halves:
@@ -114,6 +126,9 @@ Last updated: **2026-09-29**, session df7557b5, branch `builder/layout-uat`.
         - `[?]` ENGINE, the user's decision: what a grid does when words are put in a cell narrower than the longest
           word — A break the word (today) · B narrow the grid by its narrowest cell that holds words · C leave it
           and have the Page check say so. (A row column is already never narrower than its longest word.)
+          - `[ ]` **DECIDED by the user 2026-09-29: B** — the grid narrows by its narrowest cell that holds words;
+            breaking the word stays as the last resort when one column cannot hold it. The largest of the decisions:
+            read how the grid narrows by its own box before choosing how. Not started
       - `[x]` c-9 · **Image runs off the page by 1px** (#142) — 12 pages at 600–899px. Right edge lands at 769 on a
         768 page: decision 1D's −0.0625rem slack on the last column (1px, 1.5px at 150% text) plus sub-pixel rounding.
         The page does not scroll sideways (L1 is clean on all 12). NOT A BUG in the engine (measured: 1–2px on every one
@@ -122,7 +137,45 @@ Last updated: **2026-09-29**, session df7557b5, branch `builder/layout-uat`.
         Same root as c-1 (the floor's 2.5rem minimum width is 60px at 150%). Pages 119, 285, 378, 328, 254 re-run
         headed: no spill and no overlap left
       - `[ ]` c-11 · **Tablet: 4 columns on one line** (L6, #78) — 3 pages
+        - READ ONLY, 2026-09-29 (the sweep was running; nothing driven yet). Pages idx 223 (5 rows), 359 (2 rows),
+          382 (1 row, only at 800–876). MEASURED from the baseline trees: all 8 flagged rows store widths that add up
+          to 100.01 – 100.19% (70.04 · 9.99 · 10.14 · 10.02); of 984 rows of four or more, the 965 that add up to
+          100.001 or less are all clean, and the 8 are among the 19 that add up to more
+        - `[ ]` c-11a · ENGINE, MEASURED in the file: `packRowLines` (`lib/box-model.ts` 4328) starts a new line at
+          `> 100.001`, while its own comment (4306) says "percentages that round to 100.4 are meant to be a full
+          line". INFERRED, to be driven: the stored packing says 3 + 1, so `tabletPlaces` finds no line of four and
+          the #78 rule is skipped, while the browser draws all four on one line. Guard first:
+          `packRowLines([70.04, 9.99, 10.14, 10.02])`, red before the fix; then HEADED UAT at 768 reading each
+          column's computed `flex` and `margin-right`
+        - `[ ]` c-11b · **Rows that store more than 100%** — 19 in the baseline, against "every probe on one line
+          stores 100%" (c-7). Count them in the re-run's trees; if they are still there, find whether the drag or the
+          dresser writes them, through the UI
+        - `[?]` c-11c · The user's decision: **does a cell holding one icon count as a column for the tablet rule?**
+          On all three pages the three narrow "columns" are single-icon cells of 8–10% beside the words (a table of
+          ticks). A yes, four is four (today's check) · B a line of four is rearranged only when at least two of them
+          hold words or a card. Asked, not assumed
+          - `[ ]` **DECIDED by the user 2026-09-29: B** — a line of four is rearranged on a tablet only when at least
+            two of its cells hold words or a card; a cell holding one icon does not count. The engine (`tabletPlaces`)
+            and the audit's L6 check take the SAME rule, in the same change. Not started
       - `[ ]` c-12 · **React error #185** (max update depth, #134) — 2 pages (idx 34, 43)
+        - READ ONLY, 2026-09-29. MEASURED: idx 34 is 522 blocks, idx 43 is 156; the editor survived and both audits
+          finished; the two share nothing the other 401 lack (7 pages of the same recipe ran clean); the same error
+          is in tier 95 (page 0) and tier 80 (page 26) on other recipes — so timing, not structure. No stack, step or
+          screen size was recorded
+        - INFERRED from the React 19.2 source and the code path, NOT reproduced: every keystroke is a synchronous
+          commit of the whole site (`SectionKit.tsx` 49 → `BoxCanvas.tsx` 3323 → `commit` in `box-demo/page.tsx`
+          260) followed by a save of the whole site to localStorage (230–242); the harness types 150 characters with
+          no delay; more than 50 such commits while another update waits (the handles' next measurement, the scroll
+          re-measure) and React throws #185 in the next `setState`. None of the canvas's measuring loops can reach it
+          alone (default priority, frame budget)
+        - `[ ]` c-12a · Reproduce through the UI (a long page, type 3 × 150 characters, repeated), full stack kept;
+          guard red first: a `pageerror` matching #185 fails the spec
+        - `[ ]` c-12b · **Typing re-renders and saves the whole site on every key** — beyond the error, this is what
+          a teacher on a low-cost phone feels as lag on a long page (RULE AF). To be MEASURED (time per keystroke at
+          150 and 520 blocks) before anything is changed. The fix changes what one Undo takes back while typing, so
+          the user is asked first
+        - `[ ]` c-12c · HARNESS: a page error keeps only its first line (`h.js` 11) and is attached once at the end
+          (`uat-pages.js` 184), so neither the stack nor the step is known — same gap as c-6. After the sweep
       - `[x]` c-15 · **Selection handles stay at the previous screen size** — the page frame changes width by a 300ms
         transition with no render, so the handles were never re-measured (97…1107 around a block at 415…790). The
         mirror now follows `transitionrun` / `transitionend` of anything that holds the block. Guard in
@@ -157,15 +210,69 @@ Last updated: **2026-09-29**, session df7557b5, branch `builder/layout-uat`.
       `scripts/uat/dressed99-baseline-out`. **DO NOT edit `scripts/uat/*.js` while it runs.** When the log ends with
       "403 pages in N min": `node scripts/uat/triage.js scripts/uat/dressed99-out` and
       `node scripts/uat/triage-r11.js scripts/uat/dressed99-out`, compare with the baseline (17 clean, 52 not built),
-      and put every class into this ledger **← YOU ARE HERE**
+      and put every class into this ledger — DONE 2026-09-30, see below
+      - RE-STARTED 2026-09-29 11:05 (sweep pid 18896, server pid 8384 on 3100, six windows). Read at 11:09 by
+        session 6c14c5c8: alive, 1 of 403 logged
+      - `[x]` **FINISHED 2026-09-30 03:1x — 403 pages in 957 min.** Page 402 hung 45 min, was stopped and re-run alone
+        (15 min, built, 0 errors). Every page a HEADED UAT on build wg5lR_xU (checked FRESH). Triage in
+        `scripts/uat/logs/triage99-rerun.txt` and `triage99-rerun-r11.txt`. **Against the baseline:** clean 17 → **356**
+        · built and audited 351 → **382** · not built 52 → **21** · pages with 0 errors **373**
+      - The classes of the re-run, 80/20 (pages affected):
+        - `[ ]` e-1 · not built: **the canvas offered the drop and added nothing** — 7 (idx 2, 87, 142, 153, 227, 278,
+          385): "into" ×4, "under" ×2, "beside" ×1. = c-22, now 7 pages
+        - `[ ]` e-2 · not built: **scroll / click timeouts** — 9 (idx 393, 396–401 scroll; 68, 145, 400 click). Six of
+          the scroll timeouts are the LAST pages of the night, in a row — INFERRED the machine, not the page (screen
+          lock or load); re-run them alone first. = c-6
+        - `[ ]` e-3 · not built: **the drag never reached the canvas, twice** — 4 (idx 23, 334, 335, 337; three in a
+          row) · and 1 "cannot drop into m-2a: only 0px visible" (idx 336). Same clustering: re-run alone first
+        - `[ ]` e-4 · **canvas≠Preview (R11)** — 13 pages, 37 findings, every screen size; 6 pages carry most of it
+          (idx 109, 141): headings, links and buttons 0.4–3.6% narrower in the Preview, text wrapping to other heights
+          (−24 … +10px); 4 containers 122–198px shorter at Wide. = c-3, reopened
+        - `[ ]` e-5 · **React #185** — 9 pages (was 2). = c-12
+        - `[ ]` e-6 · **Tablet: 4 columns on one line** — 8 pages, 142 findings (was 3). = c-11
+        - `[ ]` e-7 · **Words broken across lines** — 4 pages, 58 ("1,000+" in 165px Stat columns). = c-8 (decided B)
+        - `[ ]` e-8 · canvas≠Preview on a component 20–24px taller in the Preview — 2 pages (idx 209 and one more)
+        - `[ ]` e-9 · HOLE at the end of a line — 2 pages (idx 210 at Wide 228px; one at Mobile). = c-7 (decided B)
+        - `[ ]` e-10 · canvas≠Preview on one block 28px taller — 1 page (idx 272)
+        - `[ ]` **NEXT: re-run e-2 and e-3 alone first** (idx 23, 68, 145, 334–337, 393, 396–401) on a FRESH build —
+          a failure that goes away alone was the machine, one that stays is a bug **← YOU ARE HERE**
+        - NOT A BUG, expected: 379 pages warn "things need the user's words" (the dressed placeholders' empty text)
+      - `[ ]` c-22 · **A page that BUILT in the baseline does not build on the fixed build** — the first page logged
+        (nodenza.com/partners_ross_morton): baseline 182 blocks, 2 errors; re-run BUILD FAILED at 80 blocks, "the canvas
+        offered the drop and added nothing (after: under(2-2h,tack))", released at (422,646) on a `<span>` in block
+        2-2h. c-5's signature, but NOT on the toolbar. One page so far: a regression from c-5 / c-20, or a race — the
+        finished run gives the count; then reproduced through the UI before it is called either
   - `[ ]` **SPACE BY DEFAULT — words never touch an edge** (the user, 2026-09-29: "I hope you are considering the margin
     and padding… some tests are very close to the edge… the user can override, but it is already considered")
     - MEASURED 2026-09-29: it was NOT considered. CLAUDE.md rule 3 says "Spacing is a decision, never a default"
       (`gap: 0`, `padding: 0`); a new section is edge to edge; the page audit has no check for words near an edge or
       for space between sections; design-foundation Rule #7 (96–192px between sections, ~24px within a group, a
       16px scale, pp. 185–196) is written down and not enforced
-    - `[ ]` Rewrite rule 3 in CLAUDE.md — "a sensible default, always overridable, down to zero" — and its guard in
-      `tests/unit/claude-md-rules.test.ts`; BDD scenarios first
+    - `[>]` BDD scenarios DRAFTED 2026-09-29 while the sweep runs (the user chose "A": read c-11, c-12, c-6 and
+      draft this; nothing built or run): `tests/features/components/website/box-builder-spacing.feature`, uncommitted.
+      The default VALUES and the saved-pages scenario wait on the user
+    - `[?]` The user's decision: **the default values** — proposed from the tokens and deck Rule #7: side gutter
+      1rem → 2rem · section space 2rem → 4rem a side (64 → 128px between two sections) · stack gap 1rem · column gap
+      1.5rem · inner padding of a coloured or bordered box 1.5rem, 1rem in a narrow box
+      - `[x]` **DECIDED by the user 2026-09-29: as proposed** ("I will go with your recommendation. For all of it.")
+    - `[>]` Rule 3 REWRITTEN in CLAUDE.md 2026-09-29, at the user's word ("it should be for every element in every
+      component and everything added on the layout… you should have added it as a rule"), with three lines in
+      `tests/unit/claude-md-rules.test.ts`. NOT YET RUN — vitest waits for the sweep. Uncommitted
+      - `[ ]` The old wording is still in: `GallerySetupMenu.tsx` 62 · `lib/box-presets.ts` 200 ·
+        `box-builder-layout.feature` 347 · `tests/e2e/text-is-reachable.spec.ts` 34 (a guard that asserts a heading
+        FLUSH against its box by default — it changes with the engine) · design-foundation `02` line 485 · memory
+        `feedback_radius_and_spacing.md`. Each corrected in the same change as the engine
+    - The user, 2026-09-29, watching the sweep: **"for the logo and the link at the very top it doesn't seem like the
+      margin or padding is being considered"**. TRUE, and expected on this build: the sweep runs the build from
+      BEFORE space by default, where a header is created with `padding: 0`. The header scenario is in the feature
+      file; the whole tier is swept again after the engine change
+    - `[ ]` c-23 · **A plain element cannot be given inner spacing.** MEASURED in the file: `BoxInspector.tsx` 1139
+      offers "Inner spacing" only to a container or a component; a Heading, Text, Link, Button, Image or Icon gets
+      outer spacing only (1140). Against the rule as the user states it (every element). To be confirmed through the
+      UI, block by block, then fixed with the enumerated guard
+    - `[ ]` c-24 · **The bulk inspector shows 1.5rem of inner spacing for blocks that have none.** MEASURED in the
+      file: `BulkInspector.tsx` 62–63 falls back to `padding ?? 24` while blocks are created with 0 / unset. To be
+      confirmed through the UI (select two blocks, read the slider, measure the blocks)
     - `[ ]` Engine, from the spacing tokens (rem + cqw), in BOTH engines by one emitter: a side gutter for every
       section's content even when its background runs edge to edge (only pictures and backgrounds bleed) · space
       above and below a section · a gap between the blocks of a stack and the columns of a row · inner padding for
@@ -176,6 +283,7 @@ Last updated: **2026-09-29**, session df7557b5, branch `builder/layout-uat`.
     - `[ ]` Story and guide; then THE WHOLE TIER IS SWEPT AGAIN — every page's geometry changes
     - `[?]` The user's decision: pages already saved keep their spacing (defaults for NEW blocks only — recommended),
       or take the new defaults too?
+      - `[x]` **DECIDED by the user 2026-09-29: saved pages KEEP their spacing**; the defaults are for new blocks
   - `[ ]` **RULE AF harness additions** (promised 2026-09-28)
     - `[ ]` Page-weight audit in every page report (HTML+CSS+JS ≤ 100 KB compressed · first view ≤ 500 KB at 360px ·
       images sized and lazy · ≤ 2 font families)
@@ -202,6 +310,8 @@ Last updated: **2026-09-29**, session df7557b5, branch `builder/layout-uat`.
   Today it covers Stack / Side by side / Grid only
 - `[?]` **Which list is Tasks 2–4?** A 2026-09-28 session wrote a different one (semantic layer · template feature ·
   template library) and marked it "correct this if different"; never confirmed. The original above is assumed
+  - `[x]` **CONFIRMED by the user 2026-09-29: the ORIGINAL list** — wrapper dissolve · column outer-edge space ·
+    parity spec extended
 
 ### 1.2 · The original queue (after the four tasks)
 
@@ -260,6 +370,24 @@ Last updated: **2026-09-29**, session df7557b5, branch `builder/layout-uat`.
 
 One entry per session, newest first. Written the moment the user says "new session" (or the context is about to run
 out) — where the session STARTED FROM, where it GOT TO, and where the next one CONTINUES FROM.
+
+### 2026-09-29 → 30 · session 6c14c5c8 · branch `builder/layout-uat` — HANDOVER (the user stopped for the night)
+
+- **Started from:** `66b6896`, the tier-99 re-run 4 minutes in.
+- **Got to:** the re-run FINISHED and TRIAGED — 403 pages in 957 min; clean 17 → 356, not built 52 → 21; ten classes
+  e-1 … e-10 in the ledger (1.1.1 → tier 99 → d). Read-only findings on c-6, c-11, c-12 in the tree. Rule 3 in `CLAUDE.md`
+  REWRITTEN to "space by default, always overridable" for every element and component, guard updated and green
+  (`claude-md-rules.test.ts`, 150 passed); scenarios in `box-builder-spacing.feature`. c-23, c-24 found by reading.
+- **Decided by the user this session (each recorded under its line):** c-7 B · c-8 B · c-21 B · grid picker B (any
+  count up to 12) · Tasks 2–4 = the original list · saved pages keep their spacing · the default spacing values ·
+  c-11c B (an icon cell does not count for the tablet rule).
+- **Continue from:** 1.1.1 → tier 99 → d → "re-run e-2 and e-3 alone first" (YOU ARE HERE). Then SPACE BY DEFAULT (the
+  engine, the two audit checks, the old wording in six places, c-23, c-24), then e-1 · e-4 · e-5 · e-6 · e-7 and the
+  rest, each at its root, guard red first, HEADED UAT, `--pages=`; then the four decided engine changes (c-7, c-8, c-21,
+  grid picker) and c-11c.
+- **Not done, and said so:** the full gate did NOT run at this commit (only the rules guard; no app code changed); the
+  production server on 3100 was stopped; the mobile app has no builder canvas (rule 20); the published artifacts are
+  still not updated.
 
 ### 2026-09-29 · session df7557b5 · branch `builder/layout-uat` — HANDOVER (the user asked for a new session, to bring the cost down)
 

@@ -1,0 +1,34 @@
+403 pages · 382 built and audited · 21 could not be built · 356 clean · 5549 page-minutes
+errors per page: 0 errors ×373 · 1 errors ×10 · 6 errors ×4 · 32 errors ×3 · 4 errors ×3 · 16 errors ×3 · 3 errors ×1 · 2 errors ×1
+
+ 379 pages ·   379×  warn  # things need the user's words (expected: empty text/pictures)
+      where: page check ×379
+      e.g. idx 0 home·scrolls·burger·none·split·Dark/elowenchetan.framer.website/home @page check: 10 things need the user's words (expected: empty text/pictures)
+
+  13 pages ·    37×  error R# canvas≠Preview on # blocks (<id> #%×# vs #%×#; <id> #%×# vs #%×#; <id> #%×# vs #%×#; <id> #%×# vs #%×#; <id
+      where: Preview <600 ×9 · Preview ≥1800 ×9 · Preview 900–1199 ×7 · Preview 600–899 ×6 · Preview 1200–1799 ×6
+      e.g. idx 109 home·sticky·burger·right-sticky·photo·Midnight/ladolfinajumping.com/home @Preview Mobile (375px): R11 canvas≠Preview on 74 blocks (uc-5 45.2%×28 vs 49.7%×28; 1x-8 22.9%×38 vs 22.7%×38; b1-7 27.2%×38 vs 26.2%×38; 64-q 100.0%×3652 vs 100.0%×3629; 5-18 100.0%×3652 vs 100.0%×3629; 4-17 100.0%×3652 vs 
+
+   9 pages ·     9×  error page errors: Minified React error ##; visit https://react.dev/errors/# for the full message or use the non-min
+      where: console ×9
+      e.g. idx 141 about·scrolls·burger·right-sticky·carousel·Midnight/drool.community/community @console: page errors: Minified React error #185; visit https://react.dev/errors/185 for the full message or use the non-minified dev environment for full errors and additional helpful warnings.
+
+   8 pages ·   142×  error L# tablet: # columns on one line in <id> (at most #, ##)
+      where: Preview 600–899 ×108 · Preview <600 ×27 · Preview 150% text ×7
+      e.g. idx 0 home·scrolls·burger·none·split·Dark/elowenchetan.framer.website/home @Preview Tablet (768px): L6 tablet: 4 columns on one line in 4-1t (at most 3, #78)
+
+   4 pages ·    58×  error L# # words broken across lines — "…" in <id>
+      where: Preview <600 ×18 · Preview 900–1199 ×14 · Preview 600–899 ×11 · Preview 1200–1799 ×9 · Preview ≥1800 ×6
+      e.g. idx 132 careers·scrolls·burger·right·banner·Dark/chapter.framer.ai/careers @Preview Xiaomi Pad 6 — 900 × 1440 (landscape): L8 4 words broken across lines — "1,000+" in 6-7o 165px "1,000+" in 3-8e 165px "1,000+" in h-94 165px
+
+   2 pages ·     8×  error R# canvas≠Preview on # blocks (<id> #%×# vs #%×#; <id> #%×# vs #%×#; <id> #%×# vs #%×#; <id> #%×# vs #%×#)
+      where: Preview 600–899 ×2 · Preview 900–1199 ×2 · Preview 1200–1799 ×2 · Preview ≥1800 ×2
+      e.g. idx 209 faq·two-rows·burger·none·photo·Midnight/femme-128.webflow.io/faq @Preview Tablet (768px): R11 canvas≠Preview on 4 blocks (w-67 100.0%×255 vs 100.0%×279; w-66 100.0%×255 vs 100.0%×279; t-6e 100.0%×222 vs 100.0%×246; t-6a 74.6%×222 vs 71.0%×246)
+
+   2 pages ·     2×  error HOLE #px at the end of a line of <id> while a block waits below
+      where: canvas Wide ×1 · canvas Mobile ×1
+      e.g. idx 210 home·scrolls·links·none·split·Purple Dream/verdentix.webflow.io/home @canvas Wide (1920px): HOLE 228px at the end of a line of q-2h while a block waits below
+
+   1 pages ·     1×  error R# canvas≠Preview on # blocks (<id> #%×# vs #%×#)
+      where: Preview 1200–1799 ×1
+      e.g. idx 272 home·two-rows·burger·none·banner·Dark/spragadheeshraj.com/home @Preview Desktop (1280px): R11 canvas≠Preview on 1 blocks (m-1m 24.8%×109 vs 24.8%×137)
