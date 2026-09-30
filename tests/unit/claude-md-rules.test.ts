@@ -36,6 +36,7 @@ const RULES: [name: string, mustSay: RegExp][] = [
   ["…the tree is the Bible: every request answered with where we are, where it goes, what I will do", /THE TREE IS THE BIBLE FOR EVERY REQUEST/],
   ["…every handover ends with the next session's prompt, unasked", /EVERY HANDOVER ENDS WITH THE NEXT SESSION'S PROMPT/],
   ["…say when it is time for a new session, before the heavy work", /SAY WHEN IT IS TIME FOR A NEW SESSION/],
+  ["…but hand over ONLY when it is necessary: a long context AND a clean boundary", /HAND OVER ONLY WHEN IT IS NECESSARY/],
   ["…a batch is one area, at most 6 changes, its checklist written first", /at most 6 changes[\s\S]*checklist is written FIRST/],
   ["…typecheck and the unit guard still after every change", /After EVERY change, still/],
   ["…in every combination it can appear in", /EVERY combination|every combination it can appear in/i],

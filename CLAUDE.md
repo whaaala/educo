@@ -166,6 +166,14 @@ Run through this checklist BEFORE telling the user it's done:
   - **SAY WHEN IT IS TIME FOR A NEW SESSION (the user, 2026-09-30).** Watch the cost: when the context has grown large
     (a batch closed, or a heavy piece of work is next), recommend handing over BEFORE starting it, so work continues the
     same day in a fresh, cheaper session instead of waiting hours for a limit to reset.
+  - **HAND OVER ONLY WHEN IT IS NECESSARY (the user, 2026-09-30 — "only when it's essential").** A handover costs a
+    re-read of the tree, the rules and memory, loses whatever was not written down, and takes the user's time — so it is
+    never recommended on a borderline call. Recommend one ONLY when BOTH are true: (1) the context is genuinely LONG (the
+    conversation has been summarised/compacted once, or it holds several batches' worth of work), AND (2) the work is
+    at a clean boundary (everything committed, a batch closed or its code complete) with a heavy job next. Otherwise:
+    keep working. A short or medium session is never cut, whatever the boundary. The recommendation states which of the
+    two conditions holds and why; if it cannot name both, it is not made. (Measured, 2026-09-30: session 1fba35cf
+    recommended a handover after one batch's code — a borderline call the user questioned.)
   - **IT REMINDS THE USER TOO.** The first reply of every session says, from the tree: where we were, what was promised
     and is still open, and asks — continue there, or leave it and do something else? A branch is left only on the
     user's word, and the tree records that they said so.
