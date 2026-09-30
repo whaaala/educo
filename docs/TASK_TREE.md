@@ -239,7 +239,7 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
     findings sorted: L4 spill → E0-e (fixed) · words broken ("afternoon", "welcomed", "1,000+") → c-8 / e-7 in L-4 ·
     HOLE → c-7 / e-9 in L-4 · canvas≠Preview → e-4 in L-2 · Tablet 4 columns → e-6 in L-3. Page 393's second run
     crashed mid-audit ("execution context was destroyed") under that load
-  - `[ ]` **CHECK asked by the user 2026-09-30** (from a screenshot of the E-0 run: "Meet the team", four star icons each
+  - `[x]` **CHECK asked by the user 2026-09-30** (DONE — answered by E0-g and E0-h below, HEADED 4 themes) (from a screenshot of the E-0 run: "Meet the team", four star icons each
     in a column as tall as the quotes beside it): a block dropped UNDER an icon in such a cell lands under it in the same
     column (not as a new grid cell), canvas and Preview, every rung; and a cell can be set to hug its content instead of
     stretching. Built through the UI after the runs finish; anything else → the E-0 ledger. Also noted: the harness fills
