@@ -264,6 +264,36 @@ Feature: Space by default — words never touch an edge
     Then the gutter, the section space, the gaps and the inner padding are all larger than at 100%
     And the page still does not scroll sideways at Phone 360
 
+  # ── Blocks that paint their own box (S-2 (5), decided by the user 2026-09-30) ──
+
+  Scenario: Components and buttons placed one under another on the page never touch
+    Given an empty page
+    When I drag a Card, a Button, a Quote and an Alert onto the page, one under another
+    Then each has 1rem above and below it, OUTSIDE its coloured box
+    And each keeps the page gutter at both sides, and a Card that fills the line still ends inside the page
+    And the selection outline sits on the coloured box, not around the space
+
+  Scenario: Two coloured sections still meet
+    Given two Stacks with a background, one under the other, straight on the page
+    Then they meet edge to edge — a section paints no box of its own
+
+  Scenario: Inside a Stack, the Stack's gap spaces them — never twice
+    Given a Stack on the page holding a Card, a Button, a Quote and an Alert
+    Then they are spaced by the Stack's gap only
+
+  Scenario: In a row of columns, the band's gutter spaces them across
+    Given a Button beside a Card in a row on the page
+    Then each has 1rem above and below, and the columns' gutter between them
+
+  Scenario: Outer spacing shows the space and takes it back to 0
+    Given a Card straight on the page, selected
+    Then Spacing → Outer spacing reads "Default · 2rem" with 1rem top and bottom and 2rem at the sides
+    And Inner spacing is the Card's own padding, which is drawn
+    When I set Outer spacing to 0
+    Then the Card touches the block above and below on the canvas and in the Preview, and still does after a reload
+    When I press "Back to default"
+    Then the 1rem comes back
+
   # ── Pages that already exist (THE USER'S DECISION — recommended: they keep their spacing) ──
 
   Scenario: A page saved before this change looks the same after it

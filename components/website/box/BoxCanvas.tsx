@@ -17,7 +17,7 @@ import { Link2, Plus, ChevronUp, ChevronDown, Copy, Scissors, ClipboardPaste, Tr
 import type { SiteTheme } from "@/lib/site-storage";
 import {
   type BoxNode, type BoxType,
-  containerStyle, childStyle, marginCSS, leafPaddingCSS, sectionContent, sizeToCSS, u, baseUnit, floatingReserve, floatStacksOnMobile, createContainer, createElement, createComponent,
+  containerStyle, childStyle, marginCSS, leafPaddingCSS, outerSpaceCSS, sectionContent, sizeToCSS, u, baseUnit, floatingReserve, floatStacksOnMobile, createContainer, createElement, createComponent,
   updateBox, deleteBox, insertBox, moveBoxStep, duplicateBox, moveBox, cloneBox, findParent, isAncestor, isContainer, containerLabel, widthPct, stackWithBlock, fitBand, PILL, blockTypography,
   isFloating, floatBox, unfloatBox, groupBoxes, ungroupBoxes, bringToFront, sendToBack, bringForward, sendBackward, packRowLines, allocateLine, type LineFollower,
   shouldTakeMirrorBox, hostSizedFor, type MirrorBox, type MirrorChase, fadedPaint, boxOpacity, backgroundCss, treePaintLayerCss, radiusCSS, isClipped, SHADOW_CSS, videoEmbedSrc, sanitizeCssDeclarations, expandScopedCss, ACCORDION_CSS_PARTS, itemOverrideCss, itemHasOverride, itemNumberVars, richBody, componentTextCss, componentBoxCss, bgShowThroughCss, resizeTopEdge, blockContainmentCss, alertToastCss, treeHasToast, treeHasFixedHold, accordionClasses, bandClasses, advancedCssStyle, alertActionsHTML, hugsContent, itemFloatContextCss, COMPONENT_ITEM_SEL, clampContentScale, MIN_CONTENT_SCALE, isMultiItemComponent, comfortableWidth, remLen, rootFontPx, isDefiniteLen, addItemAfter, duplicateItem, duplicateChildItem, removeItem, removeChildItem, moveItem, moveChildItem, updateItem, updateChildItem, ALERT_SEVERITY_ICON, alertPartInline, alertIconInline, collectAlertItemStyles,
@@ -3058,6 +3058,8 @@ export default function BoxCanvas({
       // A CONTAINER hands its typography down to everything inside it (see typoCascadeCss) — the same
       // declarations the export writes, so the canvas shows the cascade a visitor will get.
       ...(isContainer(node) ? typoCascadeCss(node) : {}),
+      // The space OUTSIDE a block that paints its own box (S-2 (5)) — after the sizing it corrects, before Advanced CSS.
+      ...(floating || stacked ? {} : outerSpaceCSS(node, section && (parent?.rowBand ? "band" : "page"))),
       ...advancedCssStyle(node),
     };
 

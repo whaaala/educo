@@ -4661,9 +4661,11 @@ export function spaceDefaults(node: BoxNode, section = false): { pad: [number, n
   // stack (the user, 2026-09-30: "1rem down too").
   const gapX = across ? SPACE_DEFAULT.columns : SPACE_DEFAULT.stack;
   const gapY = scaffold || node.layout === "grid" ? SPACE_DEFAULT.stack : gapX;
-  if (scaffold) return { pad: [0, 0, 0, 0], gapX, gapY };
+  // A self-painting block's own padding is part of its design (`componentBoxCss` draws only what is set), so its
+  // default is 0 — its section space lives OUTSIDE it (`outerDefaults`), and the control never shows space not drawn (S2-a).
+  if (scaffold || selfPaints(node)) return { pad: [0, 0, 0, 0], gapX, gapY };
   const inner = hasVisibleEdge(node) ? SPACE_DEFAULT.inner : 0;
-  if (section && !BLEEDS.has(node.type)) {
+  if (section && !BLEEDS.has(node.type) && !node.preset) { // a Card or a Quote is spaced OUTSIDE its box (`outerSpaceCSS`)
     // The page's header and footer are BARS, not bands: 1rem above and below keeps a logo and a menu breathing
     // without a tall strip (the user, 2026-09-30). The side gutter is the page's, like any section.
     const bar = node.tag === "header" || node.tag === "footer";
@@ -4671,6 +4673,55 @@ export function spaceDefaults(node: BoxNode, section = false): { pad: [number, n
     return { pad: [s, g, s, g], gapX, gapY };
   }
   return { pad: [inner, inner, inner, inner], gapX, gapY };
+}
+
+/** Blocks that paint their own element (a component, a button): the wrapper around them stays transparent. */
+export function selfPaints(node: BoxNode): boolean {
+  return node.type === "component" || node.type === "button";
+}
+
+/** Where a page section's content sits: straight on the page, or as a column of a band of the page. */
+export type SectionPlace = "page" | "band";
+
+/**
+ * The space OUTSIDE a block that paints its own box — a component, a button, or a component built as a tree (a
+ * Card, a Quote…) — when it is a section of the page (S-2 (5), the user 2026-09-30): the section space above and
+ * below, and on the page the gutter at the sides (in a band the columns' gutter already spaces them across). So
+ * blocks one under another never touch, and two coloured sections, which paint no box of their own, still meet.
+ * Shown as Outer spacing's default; deeper blocks are spaced by their parent's gap.
+ */
+export function outerDefaults(node: BoxNode, place?: SectionPlace | false): [number, number, number, number] {
+  if (!place || !node.spaced || !(selfPaints(node) || node.preset)) return [0, 0, 0, 0];
+  const s = SPACE_DEFAULT.section, g = place === "page" ? SPACE_DEFAULT.gutter : 0;
+  return [s, g, s, g];
+}
+
+/**
+ * `outerDefaults` as CSS: a MARGIN on each side the user has not set (a side they set is `marginCSS`'s), and a
+ * block that fills the line gives the side margins back from its width, so it never runs past the page.
+ * Applied last, over the block's own sizing, by the canvas and the export alike.
+ */
+export function outerSpaceCSS(node: BoxNode, place: SectionPlace | false | undefined): CSSProperties {
+  const d = outerDefaults(node, place);
+  const out: CSSProperties = {};
+  let across = 0;
+  (["Top", "Right", "Bottom", "Left"] as const).forEach((k, i) => {
+    if (!d[i] || (node[`margin${k}`] ?? node.margin) !== undefined) return;
+    out[`margin${k}`] = u(d[i]);
+    if (i % 2) across += d[i];
+  });
+  if (across) {
+    out.maxWidth = `calc(100% - ${u(across)})`;
+    if (node.width === "100%") out.width = out.maxWidth; // `childStyle` writes a stored 100% as width: 100%
+  }
+  return out;
+}
+
+/** Where `id` sits as a page section — the inspector's question, answered as the canvas and export answer it. */
+export function sectionPlaceIn(root: BoxNode, id: string): SectionPlace | undefined {
+  const p = findParent(root, id);
+  if (!p || !isSectionContentIn(root, id)) return undefined;
+  return p.parent.rowBand ? "band" : "page";
 }
 
 /** One side's inner spacing in stored px, default included — for the geometry that has to agree with `paddingCSS`. */
@@ -4700,10 +4751,12 @@ export function paddingCSS(node: BoxNode, section = false): CSSProperties {
 /**
  * Inner spacing on a block that is NOT a container (a Heading, Text, Link, Image, Icon…), which had none at all
  * (c-23). Only emitted when there is some, so a page saved before this publishes byte for byte what it did.
- * A self-painting block (button, component) is left to its own element: its padding is part of its design.
+ * A self-painting block (button, component) keeps its padding on its own element: its padding is part of its
+ * design. Its section space is OUTSIDE the painted box — see `outerSpaceCSS`.
  */
 export function leafPaddingCSS(node: BoxNode, section = false): CSSProperties {
-  if (isContainer(node) || node.type === "button" || node.type === "component") return {};
+  if (isContainer(node)) return {};
+  if (selfPaints(node)) return {};
   const s = paddingCSS(node, section);
   return Object.values(s).every((v) => v === u(0)) ? {} : s;
 }

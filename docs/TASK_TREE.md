@@ -120,9 +120,21 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
     included. **DECIDED by the user 2026-09-30 ("go with your recommendation"):** every block placed straight on the page —
     components and buttons included — gets the section space above and below, OUTSIDE its own painted box, so coloured
     sections still meet; **1rem**; a stack inside a stack is spaced by its parent's gap; never a per-block bottom margin.
-    **← YOU ARE HERE** (first in S-2). Where it is in the code: `leafPaddingCSS` (lib/box-model.ts) returns {} for
-    `button` and `component`; the section space for them belongs on their TRANSPARENT wrapper (a self-painting block
-    paints its own element), so the space falls outside the painted box and coloured sections still meet
+    **CODED 2026-09-30, waiting for the S-2 UAT pass.** The user decided the same day: it is shown and overridden
+    by **Outer spacing** ("Default · 2rem", Back to default); Inner spacing stays the component's own padding. Built
+    as a MARGIN (`outerDefaults` / `outerSpaceCSS` / `sectionPlaceIn` in `lib/box-model.ts`, one call in the canvas and
+    one in the export), so the selection outline stays on the painted box. It covers the `component` nodes, the Button
+    AND the catalogue components built as trees (Card, Quote, Stat, Badge, Rating — they are containers with a
+    `preset`, which the first version missed). Straight on the page: 1rem above/below + 2rem gutter each side, and a
+    block stored at width 100% gives the side margins back (`calc(100% − 4rem)`); a column of a band: 1rem above/below
+    only (the band's gutter spaces it across); in a stack: nothing. Guard `space-by-default.test.ts` "S-2 (5)" (75
+    tests, red first, mutation-proven on the export line); scenarios added to `box-builder-spacing.feature`
+  - LEDGER of S-2:
+    - `[x]` S2-a · a component's Inner spacing read "Default · 1rem/2rem" on the page though nothing was drawn (its own
+      padding is only drawn once set) — FIXED: a self-painting block's inner default is 0 (`spaceDefaults`); guarded
+    - `[x]` S2-b · the Inner/Outer spacing side boxes had `dark:border-white/10` with no midnight / purple variant — FIXED
+    - `[ ]` S2-c · a Card built as a tree carried the section padding INSIDE its painted box (2rem gutter inside, touching
+      its neighbours) — FIXED in code (tree presets skip the section branch of `spaceDefaults`); to be SEEN in the UAT
   - checklist (written 2026-09-30, BEFORE the pass; each at 375 · 768 · 1024 · 1280 · 1920, canvas AND Preview, 4 themes):
     - `[ ]` (5) a Card, a Button, a Quote and an Alert dropped one under another straight on the page: 1rem above and below
       each, OUTSIDE its painted box; the gutter at both sides; two coloured sections still meet edge to edge
@@ -135,7 +147,7 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
       a page built with a 0 gutter, and flags NOTHING on a default page
     - `[ ]` (3) the page audit flags two sections closer than the section floor, and nothing on a default page
     - `[ ]` (4) the old "never a default" wording: 0 hits for it in the four places named above
-  - (1) a gap between a component's parts and padding from its own visible edge, the whole catalogue · (2) audit check:
+  - (1) a gap between a component's parts and padding from its own visible edge, the whole catalogue **← YOU ARE HERE** · (2) audit check:
     words closer than the gutter floor to the page or their coloured box's edge · (3) audit check: sections closer than
     the section floor · (4) the old "never a default" wording in the four places left (layout feature 347,
     `text-is-reachable.spec.ts` 34, design-foundation `02` 485, memory `feedback_radius_and_spacing.md`)

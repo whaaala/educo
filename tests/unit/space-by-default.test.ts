@@ -1,9 +1,12 @@
 import { describe, it, expect } from "vitest";
+import type { CSSProperties } from "react";
 import type { BoxNode } from "@/lib/box-model";
-import { createContainer, createGrid, makeRowBand, createRoot, childStyle, paddingCSS, gapCSS, leafPaddingCSS, spaceDefaults, gapOf, SPACE_DEFAULT, u, padSide, isSectionContentIn } from "@/lib/box-model";
+import { createContainer, createGrid, makeRowBand, createRoot, childStyle, paddingCSS, gapCSS, leafPaddingCSS, spaceDefaults, gapOf, SPACE_DEFAULT, u, padSide, isSectionContentIn, outerDefaults, outerSpaceCSS, isContainer } from "@/lib/box-model";
 import { blockForKind } from "@/lib/box-presets";
 import { COMPONENT_CATALOGUE } from "@/lib/component-catalogue";
 
+import { DEFAULT_THEME } from "@/lib/site-storage";
+import { renderPageHTML } from "@/lib/box-export";
 /**
  * SPACE BY DEFAULT — words never touch an edge (CLAUDE.md rule 3; tests/features/components/website/box-builder-spacing.feature).
  * Enumerates the palette and the component catalogue, so a block added later is covered the day it appears.
@@ -161,5 +164,68 @@ describe("always overridable, and saved pages keep what they had", () => {
     const h = blockForKind("heading", { padding: 12 } as Partial<BoxNode>);
     expect(leafPaddingCSS(h)).toEqual({ paddingTop: u(12), paddingRight: u(12), paddingBottom: u(12), paddingLeft: u(12) });
     expect(padSide(blockForKind("text"), "Top")).toBe(0); // the bulk inspector showed 1.5rem for this
+  });
+});
+
+describe("S-2 (5): a block that paints its own box keeps the section space OUTSIDE it", () => {
+  // Every catalogue component (the `component` nodes AND the ones built as a tree — Card, Quote…) and the Button.
+  const SELF_PAINTING = ["button", ...COMPONENT_CATALOGUE.map((c) => c.name)];
+  const { section: s, gutter: g } = SPACE_DEFAULT;
+  const margins = (t: number, r: number, b: number, l: number) => ({ marginTop: u(t), marginRight: u(r), marginBottom: u(b), marginLeft: u(l) });
+  const pick = (css: CSSProperties) => Object.fromEntries(Object.entries(css).filter(([k]) => k.startsWith("margin")));
+
+  it.each(SELF_PAINTING)("%s straight on the page: 1rem above and below and the gutter, as a margin outside its box", (kind) => {
+    const b = blockForKind(kind);
+    expect(outerDefaults(b, "page")).toEqual([s, g, s, g]); // what Outer spacing shows as its default
+    expect(pick(outerSpaceCSS(b, "page"))).toEqual(margins(s, g, s, g));
+    // …and the space is not ALSO put inside the box (a Card at the page's edge would be inset twice)
+    expect(leafPaddingCSS(b, true)).toEqual({});
+    if (isContainer(b)) expect(spaceDefaults(b, true).pad.every((v) => v === 0 || v === SPACE_DEFAULT.inner), kind).toBe(true);
+  });
+
+  it.each(SELF_PAINTING)("%s as a column of a band: 1rem above and below; the band's gutter spaces it across", (kind) => {
+    expect(pick(outerSpaceCSS(blockForKind(kind), "band"))).toEqual({ marginTop: u(s), marginBottom: u(s) });
+  });
+
+  it.each(SELF_PAINTING)("%s inside a stack: the stack's gap spaces it, never a second space", (kind) => {
+    expect(outerSpaceCSS(blockForKind(kind), undefined)).toEqual({});
+  });
+
+  it.each(SELF_PAINTING)("%s: a component's own inner spacing default is 0 — the control never shows space that is not drawn (S2-a)", (kind) => {
+    const b = blockForKind(kind, { background: "#eee" } as Partial<BoxNode>);
+    if (!isContainer(b)) expect(spaceDefaults(b, true).pad).toEqual([0, 0, 0, 0]);
+  });
+
+  it("a block that fills the line gives the side margins back from its width, so it never runs past the page", () => {
+    const card = blockForKind("card");
+    expect(card.width).toBe("100%");
+    const css = outerSpaceCSS(card, "page");
+    expect(css.width).toBe(`calc(100% - ${u(2 * g)})`);
+    expect(css.maxWidth).toBe(css.width);
+    expect(outerSpaceCSS(blockForKind("button"), "page").width).toBeUndefined(); // a button hugs its words
+  });
+
+  it("Outer spacing overrides it: one side set, that side's default goes; all set to 0 → nothing", () => {
+    expect(pick(outerSpaceCSS(blockForKind("button", { marginTop: 4 } as Partial<BoxNode>), "page"))).toEqual({ marginRight: u(g), marginBottom: u(s), marginLeft: u(g) });
+    expect(outerSpaceCSS(blockForKind("button", { margin: 0 } as Partial<BoxNode>), "page")).toEqual({});
+  });
+
+  it("a plain Stack or a coloured section gets none — coloured sections still meet edge to edge", () => {
+    expect(outerDefaults(blockForKind("container", { background: "#eee" } as Partial<BoxNode>), "page")).toEqual([0, 0, 0, 0]);
+    expect(outerDefaults(blockForKind("heading"), "page")).toEqual([0, 0, 0, 0]);
+  });
+
+  it("a block saved before this change publishes exactly as it did", () => {
+    expect(outerSpaceCSS({ id: "c", type: "component", component: "alert" } as BoxNode, "page")).toEqual({});
+    expect(outerSpaceCSS({ id: "b", type: "button" } as BoxNode, "page")).toEqual({});
+    expect(outerSpaceCSS({ id: "k", type: "container", preset: "card", padding: 24 } as BoxNode, "page")).toEqual({});
+  });
+
+  it("the published page carries it: a Card and a Button on the page, 1rem apart from each other", () => {
+    const root = createRoot();
+    root.children = [blockForKind("card"), blockForKind("button")];
+    const html = renderPageHTML(root, DEFAULT_THEME);
+    expect(html).toContain(`margin-top:${u(s)}`);
+    expect(html).toContain(`width:calc(100% - ${u(2 * g)})`);
   });
 });

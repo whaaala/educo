@@ -10,7 +10,7 @@
 
 import type { CSSProperties } from "react";
 import { PILL, blockTypography, pinArrivalCss, pinArrivalKeyframes, floatHoldCSS,
-  type BoxNode, type Breakpoint, BP_ORDER, containerStyle, childStyle, hostSizedFor, marginCSS, leafPaddingCSS, sectionContent, sizeToCSS, radiusCSS, SHADOW_CSS, u, LIST_ITEM_GAP, textLen, baseUnit, fadedPaint, boxOpacity, backgroundCss, paintLayerCss,
+  type BoxNode, type Breakpoint, BP_ORDER, containerStyle, childStyle, hostSizedFor, marginCSS, leafPaddingCSS, outerSpaceCSS, sectionContent, sizeToCSS, radiusCSS, SHADOW_CSS, u, LIST_ITEM_GAP, textLen, baseUnit, fadedPaint, boxOpacity, backgroundCss, paintLayerCss,
   resolveResponsive, floatStacksOnMobile, floatingReserve, alertToastCss, accordionClasses, bandClasses, videoEmbedSrc, isContainer, sanitizeCssDeclarations, expandScopedCss, COMPONENT_PARTS, itemFloatContextCss, itemOverrideCss, itemNumberVars, richBody, plainBody, componentTextCss, componentBoxCss, renderAlertHTML, alertDismissScript, masonryMeasureAttr, masonryMeasureScript, pinStackMarker, pinStackGroupMarker, pinStackNeeded, pinStackScript, isPager, pagerNavHTML, pagerScript, pagerStripCss, pagerSlideId, bgShowThroughCss, blockContainmentCss, COMPONENT_ITEM_SEL, remLen, imageSizing, hasIntrinsicSize, itemNeedsClass, itemScope, floatZIndex, typoRole, typoRootVars, typoCascadeCss, bandEdgeCSS, LINK_COLOR_CSS, gridQueryCss, TYPE_UNIT_PROPERTY_CSS,
 } from "@/lib/box-model";
 import { isRegistryComponent, renderComponent, componentScripts } from "@/lib/educo-ui/registry";
@@ -403,6 +403,8 @@ function styleAt(node: BoxNode, rawParent: BoxNode | null, bp: Breakpoint, theme
     ...(selfPaint ? {} : bgCss(r)), // background styles the block element (component/button), not this wrapper
     ...(isComp ? componentTypoCss(r) : {}),
   };
+  // The space OUTSIDE a block that paints its own box (S-2 (5)) — the canvas writes the same, from the same helper.
+  if (!floating && !stacked) Object.assign(wrap, outerSpaceCSS(r, section && (rawParent?.rowBand ? "band" : "page")));
   if (r.hidden) wrap.display = "none"; // hidden-on-this-device → removed at that breakpoint
   if (isContainer(r)) {
     const cs: CSSProperties = { ...containerStyle(r, bp, section), ...wrap };
