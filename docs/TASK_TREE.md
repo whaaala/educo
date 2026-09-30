@@ -135,6 +135,7 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
     - `[x]` S2-b · the Inner/Outer spacing side boxes had `dark:border-white/10` with no midnight / purple variant — FIXED
     - `[ ]` S2-c · a Card built as a tree carried the section padding INSIDE its painted box (2rem gutter inside, touching
       its neighbours) — FIXED in code (tree presets skip the section branch of `spaceDefaults`); to be SEEN in the UAT
+  - **← YOU ARE HERE: the S-2 HEADED UAT pass** (fresh build, 4 themes) — then close S-2
   - checklist (written 2026-09-30, BEFORE the pass; each at 375 · 768 · 1024 · 1280 · 1920, canvas AND Preview, 4 themes):
     - `[ ]` (5) a Card, a Button, a Quote and an Alert dropped one under another straight on the page: 1rem above and below
       each, OUTSIDE its painted box; the gutter at both sides; two coloured sections still meet edge to edge
@@ -147,7 +148,21 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
       a page built with a 0 gutter, and flags NOTHING on a default page
     - `[ ]` (3) the page audit flags two sections closer than the section floor, and nothing on a default page
     - `[ ]` (4) the old "never a default" wording: 0 hits for it in the four places named above
-  - (1) a gap between a component's parts and padding from its own visible edge, the whole catalogue **← YOU ARE HERE** · (2) audit check:
+    - `[x]` S2-d · **every Stat design: the number sat 1.2px above its label** (the comma of "1,000+" on "Happy") —
+      FIXED: the Stat's gap 0.25rem → 0.5rem; found by the new `component-breathing.spec.ts`
+    - `[x]` S2-e · NOT A BUG, measured: sections stretched to share a short page's window in my test pages — the test
+      helper `createRoot()` has a 600px floor; the app's page root (`emptyPageRoot`, `box-site.ts:37`) has none, and the
+      published page measured 27px per Text on it. The audit spec builds on `emptyPageRoot`
+  - CODED 2026-09-30 (waiting for the S-2 UAT pass), the user's decision the same day: **"never touch"** — each design
+    keeps its own spacing; the floor is 0.25rem in the designs' fluid unit, not the page defaults:
+    - (1) `tests/e2e/component-breathing.spec.ts`: every catalogue component × every design it offers (enumerated
+      from the catalogue, 34 × 375/1280 = 68 tests), through the export — words ≥ 0.25rem from their visible box,
+      words/icons of two parts ≥ 0.25rem apart. Red on S2-d; mutation-proven (Card padding 0 → red)
+    - (2)+(3) `scripts/uat/page-audit.js` W7a (words < 1rem from the page edge; words touching their coloured box)
+      and W7b (two sections' words < 1rem apart), as WARNINGS; `tests/e2e/page-audit-whitespace.spec.ts`: a
+      default page reports nothing at 375 · 768 · 1280 · 1920, a 0 gutter / 0 inner / 0 section space each flagged
+    - (4) the old wording rewritten in all four places; the two hits left (CLAUDE.md, this tree) describe the reversal
+  - (1) a gap between a component's parts and padding from its own visible edge, the whole catalogue · (2) audit check:
     words closer than the gutter floor to the page or their coloured box's edge · (3) audit check: sections closer than
     the section floor · (4) the old "never a default" wording in the four places left (layout feature 347,
     `text-is-reachable.spec.ts` 34, design-foundation `02` 485, memory `feedback_radius_and_spacing.md`)

@@ -31,7 +31,7 @@ import type { BoxNode } from "@/lib/box-model";
  * reserves its exact footprint as a gutter.
  */
 
-/** A heading flush against its box, which is the default (Rule 3: padding is a decision, never a default). */
+/** A heading flush against its box: padding set to 0 by hand (a saved page, or the user's own 0 — rule 3's space by default is always overridable). */
 const page1 = () => sitePage([
   {
     id: "sec", type: "container", direction: "column", padding: 0, gap: 0, width: "100%", minHeight: 300,

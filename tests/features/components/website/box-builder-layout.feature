@@ -344,7 +344,7 @@ Feature: Placing blocks beside one another in the Box Builder
     And it offers "Keep its space instead", which switches it to the mechanism
       that does
     Because a 64-pixel bar was measured hiding 56 pixels of the block beneath it
-      the moment the page opened — and space is a decision here, never a default
+      the moment the page opened — so a bar that covers the page says so, and keeping its space is one click
 
   Scenario: A block that floats on screen is actually visible
     Given a full-width bar held "Floats on screen"

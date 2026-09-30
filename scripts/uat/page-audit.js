@@ -80,6 +80,7 @@ function auditDoc(opts) {
   }
   if (broken) err.push(`L8 ${broken} words broken across lines — ${brEx.join(' ')}`);
 
+
   // ── TYPOGRAPHY ──
   const texts = Array.from(document.querySelectorAll('p, li, h1, h2, h3, h4, h5, h6, a, button, span, blockquote')).filter((e) => visible(e) && Array.from(e.childNodes).some((n) => n.nodeType === 3 && n.textContent.trim()));
   const body = texts.filter((e) => /^(P|LI|BLOCKQUOTE)$/.test(e.tagName));
@@ -125,6 +126,41 @@ function auditDoc(opts) {
   for (const e of texts) { const rr = e.getBoundingClientRect(); if (rr.right <= 0 || rr.left >= W) continue; // parked off-screen (the skip link until focused): nobody reads it there
     const bg = bgOf(e); if (!bg) continue; const a = lum(getComputedStyle(e).color), b = lum(bg); if (a == null || b == null) continue; const ratio = (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05); const large = px(getComputedStyle(e).fontSize) >= 24 || (px(getComputedStyle(e).fontSize) >= 18.6 && +getComputedStyle(e).fontWeight >= 700); if (ratio < (large ? 3 : 4.5)) { lowC++; if (lowEx.length < 3) lowEx.push(ex(e, ` ${ratio.toFixed(2)}:1 ${getComputedStyle(e).color} on ${bg}`)); } }
   if (lowC) err.push(`C29 ${lowC} text elements below WCAG contrast — ${lowEx.join(' ')}`);
+
+  // ── WHITESPACE (Rule #7; space by default, CLAUDE.md rule 3) — `warn`: the user may have set a 0 on purpose ──
+  // Floors in rem, so they grow with the reader's text size like the space they measure. The page edge is held to 1rem
+  // (the default gutter is 2rem); a box with a visible edge only to "never touch", 0.25rem — a button's or a badge's
+  // padding is its design (S-2 (1), the user 2026-09-30); two sections' words to 1rem (the default gives them 2rem).
+  const rem = px(getComputedStyle(document.documentElement).fontSize);
+  const edged = (e) => { const cs = getComputedStyle(e); return cs.backgroundImage !== 'none' || rgbOf(cs.backgroundColor).a > 0 || ['top', 'right', 'bottom', 'left'].some((s) => px(cs.getPropertyValue(`border-${s}-width`)) > 0); };
+  const runs = []; // every drawn run of words, with the element it sits in
+  { const tw = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+    for (let t = tw.nextNode(); t; t = tw.nextNode()) { const e = t.parentElement; if (!t.textContent.trim() || !e || !e.checkVisibility() || e.closest('.eu-skip') || pinned(e)) continue; const rg = document.createRange(); rg.selectNodeContents(t); const r = rg.getBoundingClientRect(); if (r.width > 0) runs.push({ e, r }); } }
+  let nearPage = 0, nearBox = 0; const npEx = [], nbEx = [];
+  for (const { e, r } of runs) {
+    let box = e; while (box && box !== document.body && !edged(box)) box = box.parentElement;
+    const d = Math.min(r.left, W - r.right);
+    if (d < rem - 0.5) { nearPage++; if (npEx.length < 3) npEx.push(ex(e, ` ${Math.round(d)}px`)); }
+    if (box && box !== document.body) { const b = box.getBoundingClientRect(); const db = Math.min(r.left - b.left, b.right - r.right, r.top - b.top, b.bottom - r.bottom);
+      if (db < rem / 4 - 0.5) { nearBox++; if (nbEx.length < 3) nbEx.push(ex(e, ` ${Math.round(db)}px from its box`)); } }
+  }
+  if (nearPage) warn.push(`W7a ${nearPage} runs of words closer than 1rem to the page edge — ${npEx.join(' ')}`);
+  if (nearBox) warn.push(`W7a ${nearBox} runs of words touching the edge of their coloured box — ${nbEx.join(' ')}`);
+  // Sections: the page's own blocks, one under another (a band counts as one). Their WORDS are measured, not their boxes:
+  // two coloured sections meet edge to edge by design, and it is the space inside them that keeps the words apart.
+  const pageRoot = blocks.find((b) => !b.parentElement.closest('[class*="bx-"]'));
+  if (pageRoot) {
+    const secs = Array.from(pageRoot.querySelectorAll('[class*="bx-"]')).filter((s) => s.parentElement.closest('[class*="bx-"]') === pageRoot && visible(s) && !pinned(s));
+    const wordsOf = (s) => runs.filter((x) => s.contains(x.e)).map((x) => x.r);
+    const tight = [];
+    for (let i = 1; i < secs.length; i++) {
+      const a = wordsOf(secs[i - 1]), b = wordsOf(secs[i]); if (!a.length || !b.length) continue;
+      const d = Math.min(...b.map((q) => q.top)) - Math.max(...a.map((q) => q.bottom));
+      if (d > -2 && d < rem - 0.5) tight.push(`${idOf(secs[i - 1]).slice(-4)}→${idOf(secs[i]).slice(-4)} ${Math.round(d)}px`); // side by side (d < 0) is not one under another
+    }
+    if (tight.length) warn.push(`W7b ${tight.length} sections whose words are closer than 1rem — ${tight.slice(0, 3).join(' ')}`);
+  }
+
 
   // ── SEMANTICS (viewport-independent: the caller runs these once) ──
   if (opts.semantics) {

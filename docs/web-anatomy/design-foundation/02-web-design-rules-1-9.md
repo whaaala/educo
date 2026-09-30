@@ -482,8 +482,10 @@ Visual Hierarchy, UX, Elements and Components).
    **96px** (a multiple of 16) appears on this slide.
 
 **For the builder**
-- This is the deck's direct source for the project's spacing rule ("Spacing is a decision, never a default...
-  Containers are created with `gap: 0` and `padding: 0`" — `CLAUDE.md` rule 3): the slide's own "start with a
+- This is the deck's direct source for the project's spacing rule ("Space by default, always overridable — words
+  never touch an edge", `CLAUDE.md` rule 3, the user 2026-09-29, which REVERSED the earlier "never a default"): a
+  2rem side gutter, 1rem around a section, 1rem gaps, 1.5rem inside a box with a visible edge, each overridable to
+  0 and measured by the page audit (W7a/W7b). The slide's own "start with a
   lot, then remove" (rule 6) and "law of proximity" (rule 5) are exactly the reasoning a spacing-scale UI
   should encode — gaps between *sections* should default larger than gaps between *elements in a group*.
 - The spacing **token scale should be built on a base unit (16px, rule 8)** — matches the project's rem-based

@@ -102,7 +102,8 @@ function makeQuote(): BoxNode {
 }
 
 function makeStat(): BoxNode {
-  return createContainer("column", { preset: "stat", width: "auto", padding: 16, gap: 4, align: "center", children: [
+  // gap 0.5rem, not 0.25: at 0.25 the comma of "1,000+" sat 1.2px above its label (S2-d, `component-breathing.spec.ts`).
+  return createContainer("column", { preset: "stat", width: "auto", padding: 16, gap: 8, align: "center", children: [
     // The brand AS WORDS is the readable link token (the brand moved until it reads on the page): the raw brand read
     // 2.95:1 on Purple Dream and Midnight, on every stat of every dressed page (#139).
     createElement("heading", { text: "1,000+", fontSize: 44, bold: true, textAlign: "center", color: "var(--eu-color-link, var(--eu-color-brand))" }),
