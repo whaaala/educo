@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import type { BoxNode } from "@/lib/box-model";
-import { createContainer, createGrid, makeRowBand, createRoot, paddingCSS, gapCSS, leafPaddingCSS, spaceDefaults, gapOf, SPACE_DEFAULT, u, padSide, isSectionContentIn } from "@/lib/box-model";
+import { createContainer, createGrid, makeRowBand, createRoot, childStyle, paddingCSS, gapCSS, leafPaddingCSS, spaceDefaults, gapOf, SPACE_DEFAULT, u, padSide, isSectionContentIn } from "@/lib/box-model";
 import { blockForKind } from "@/lib/box-presets";
 import { COMPONENT_CATALOGUE } from "@/lib/component-catalogue";
 
@@ -32,7 +32,8 @@ describe("the defaults (the user's values, 2026-09-29)", () => {
     expect(gapCSS(createContainer("column"))).toEqual({ gap: u(SPACE_DEFAULT.stack) });
     expect(gapCSS(createContainer("row"))).toEqual({ gap: u(SPACE_DEFAULT.columns) });
     expect(gapOf(createGrid(3))).toEqual({ x: SPACE_DEFAULT.columns, y: SPACE_DEFAULT.stack });
-    expect(gapCSS(makeRowBand())).toEqual({ gap: u(0) });
+    // A band's gap across is the columns' GUTTER (S1-a), never a flex gap — see "columns side by side" below.
+    expect(gapCSS(makeRowBand())).toEqual({ columnGap: u(0), rowGap: u(SPACE_DEFAULT.stack) });
   });
 
   it("a box gets inner padding only once it has an edge you can see", () => {
@@ -66,6 +67,74 @@ describe("the defaults (the user's values, 2026-09-29)", () => {
     const css = Object.values(paddingCSS(createContainer("column"), true)).join(" ");
     expect(css).not.toMatch(/\d+px/);
     expect(css).toContain("--box-u");
+  });
+});
+
+/**
+ * S1-a — COLUMNS SIDE BY SIDE ON THE PAGE (the user, 2026-09-30): a 1rem gap between them, 1rem down when they wrap or
+ * stack, and each column gives up its share so the line still fits. It is a GUTTER, not a flex gap: the band reaches
+ * half a gap past each side and every column gives up one gap and takes half a gap of margin each side — so a line of
+ * stored shares that adds up to 100% fits exactly however many columns share it, and a stored % means what it did.
+ */
+describe("columns side by side (S1-a)", () => {
+  const G = SPACE_DEFAULT.columns;
+  const three = () => ["a", "b", "c"].map((id) => ({ ...createContainer("column", { children: [blockForKind("text")] }), id, width: "33.33%" }));
+
+  it("a band made from now on has a 1rem gap across and down; an old one keeps none", () => {
+    expect(gapOf(makeRowBand())).toEqual({ x: G, y: SPACE_DEFAULT.stack });
+    const saved = { id: "b", type: "container", direction: "row", rowBand: true, gap: 0 } as BoxNode;
+    expect(gapOf(saved)).toEqual({ x: 0, y: 0 });
+    expect(gapCSS(saved)).toEqual({ gap: u(0) }); // byte for byte what it published before
+  });
+
+  it("the band reaches half a gap past each side, so the outer columns still meet the page edge", () => {
+    const band = makeRowBand(three());
+    const s = childStyle(band, createRoot());
+    expect([s.marginLeft, s.marginRight]).toEqual([u(-G / 2), u(-G / 2)]);
+    expect(s.width).toBe(`calc(100% + ${u(G)})`);
+    expect(s.maxWidth).toBe("none");
+  });
+
+  it("each column gives up one gap and takes half a gap each side — a full line of shares fits exactly", () => {
+    const band = makeRowBand(three());
+    for (const c of band.children!) {
+      const s = childStyle(c, band);
+      // `%` resolves against the band, which is ALREADY the line plus one gap — so the slot is the share as stored
+      expect(String(s.flex)).toContain(`calc(33.33% - ${u(G)})`);
+      expect([s.marginLeft, s.marginRight]).toEqual([`calc(0px + ${u(G / 2)})`, `calc(0px + ${u(G / 2)})`]);
+      expect(s.minWidth).toBe(`min(100% - ${u(G)}, 14rem)`);
+    }
+    // …and never wider than the line less one gap: `max-width: 100%` of the widened band let an Alert at fit width run
+    // one gap (11px) past a 375 phone's edge (export-layout-invariants, 2026-09-30)
+    for (const c of band.children!) expect(childStyle(c, band).maxWidth).toBe(`calc(100% - ${u(G)})`);
+    // Stacked on a phone, a column is the whole line less its gutter.
+    expect(childStyle(band.children![0], band, "phone").minWidth).toBe(`calc(100% - ${u(G)})`);
+  });
+
+  /**
+   * The emitted CSS EVALUATED, not read: `%` is the band (the page plus one gap), the unit is 10px. A basis that added the
+   * gap twice read plausibly and overflowed the line by one gap — the third column wrapped in the HEADED UAT, 2026-09-30.
+   */
+  const px = (css: string, band: number) => Function(`return ${css.replace(/var\(--box-u, 0\.625rem\)/g, "10").replace(/calc/g, "").replace(/(\d)px/g, "$1").replace(/(\d+(?:\.\d+)?)%/g, (_, n) => `(${n} * ${band} / 100)`)}`)() as number;
+  it.each([[["33.33%", "33.33%", "33.34%"]], [["70%", "30%"]], [["25%", "25%", "25%", "25%"]], [["100%"]]])("a full line of %j fits its band exactly, with a gap between each", (widths) => {
+    const band = makeRowBand(widths.map((w, i) => ({ ...createContainer("column", { children: [blockForKind("text")] }), id: `k${i}`, width: w })));
+    const B = 1280 + 16; // the page is 1280, the band reaches half a gap past each side
+    const slots = band.children!.map((c) => { const s = childStyle(c, band); return px(String(s.flex).split(" ").slice(2).join(" "), B) + px(String(s.marginLeft), B) + px(String(s.marginRight), B); });
+    expect(slots.reduce((a, b) => a + b, 0)).toBeCloseTo(B, 3);
+    for (const c of band.children!) expect(px(String(childStyle(c, band).marginLeft), B) * 2).toBeCloseTo(G, 6); // one gap between two columns
+  });
+
+  it("a margin the user set on a column is kept, on top of its half gap", () => {
+    const band = makeRowBand([{ ...createContainer("column"), id: "a", width: "50%", marginLeftPct: 10 }]);
+    expect(childStyle(band.children![0], band).marginLeft).toBe(`calc(10% + ${u(G / 2)})`);
+  });
+
+  it("an old band publishes its columns exactly as before — no gutter", () => {
+    const saved = { id: "b", type: "container", direction: "row", rowBand: true, gap: 0, children: three() } as BoxNode;
+    const s = childStyle(saved.children![0], saved);
+    expect(s.flex).toBe("0 1 33.33%");
+    expect(s.marginLeft).toBeUndefined();
+    expect(childStyle(saved, createRoot()).marginLeft).toBeUndefined();
   });
 });
 

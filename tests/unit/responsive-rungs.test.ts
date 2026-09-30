@@ -28,7 +28,7 @@ const page = (overrides: Record<string, unknown>, base: Record<string, unknown> 
     id: "root",
     children: [makeRowBand([
       createElement("text", { id: "t", text: "Hello", ...base, responsive: overrides } as Partial<BoxNode>),
-    ])],
+    ], 0)],
   } as Partial<BoxNode>);
 
 const cssOf = (root: BoxNode): string => {

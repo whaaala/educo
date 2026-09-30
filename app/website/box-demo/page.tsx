@@ -42,7 +42,6 @@ const KEY = "educo_box_site_v1"; // multi-page site
 const LEGACY_KEY = "educo_box_demo_v9"; // old single-tree document (migrated on load)
 const CLEANED_KEY = "educo_box_site_cleaned_v1"; // one-time flag: empty-section chrome already pruned
 const PAGE_MIN_H = 160;
-const ROW_GAP = 0;
 const SECTION_TINTS = ["#eef2ff", "#faf5ff", "#ecfeff", "#fef2f2", "#f0fdf4", "#fffbeb"];
 
 type Device = "mobile" | "tablet" | "laptop" | "desktop" | "wide" | "full";
@@ -86,7 +85,7 @@ function pageRoot(rows: BoxNode[] = []): BoxNode {
   r.children = rows;
   return r;
 }
-const makeRow = (sections: BoxNode[] = []): BoxNode => makeRowBand(sections, ROW_GAP);
+const makeRow = (sections: BoxNode[] = []): BoxNode => makeRowBand(sections);
 const makeSection = (bg: string): BoxNode => createContainer("column", { direction: "column", wrap: false, width: "100%", padding: 48, gap: 0, align: "stretch", justify: "start", background: bg });
 const makeBlock = (bg: string, width: string): BoxNode => createContainer("column", { direction: "column", wrap: false, width, padding: 24, gap: 0, align: "stretch", justify: "start", background: bg });
 // A fresh page starts BLANK — an empty, transparent canvas. Blocks you drop land standalone (no tinted band
@@ -154,7 +153,9 @@ export default function BoxDemoPage() {
    */
   const [roomW, setRoomW] = useState<number | null>(null);
   const roomObserver = useRef<ResizeObserver | null>(null);
+  const roomEl = useRef<HTMLDivElement | null>(null); // the grey room, for the canvas's box-select (S1-i)
   const canvasRoomRef = useCallback((el: HTMLDivElement | null) => {
+    roomEl.current = el;
     roomObserver.current?.disconnect();
     roomObserver.current = null;
     if (!el) return;
@@ -211,7 +212,7 @@ export default function BoxDemoPage() {
         }
       } catch { /* ignore */ }
     }
-    const s = normalizeSite(loaded ?? siteFromRoot(starter()), ROW_GAP);
+    const s = normalizeSite(loaded ?? siteFromRoot(starter()));
     setHist({ present: s, past: [], future: [] });
     setActivePageId(s.homeId);
   }, []);
@@ -266,17 +267,18 @@ export default function BoxDemoPage() {
   const mergeAt = useRef<{ key: string; at: number } | null>(null);
 
   const pushSite = (next: BoxSite) => setHist((h) => (h ? { present: next, past: [...h.past, h.present].slice(-HIST_CAP), future: [] } : h));
-  const resetSite = (next: BoxSite) => { const s = normalizeSite(next, ROW_GAP); setHist({ present: s, past: [], future: [] }); setActivePageId(s.homeId); setSelectedIds([]); };
+  const resetSite = (next: BoxSite) => { const s = normalizeSite(next); setHist({ present: s, past: [], future: [] }); setActivePageId(s.homeId); setSelectedIds([]); };
   // An edit to the ACTIVE page's tree.
   const commit = (nextRoot: BoxNode, mergeKey?: string) => {
     // Worked out BEFORE the updater, never inside it: a state updater may be called more than once for one
     // update, and a ref written in there would see the second call as a repeat of the first.
     const now = Date.now();
-    const merge = !!mergeKey && mergeAt.current?.key === mergeKey && now - mergeAt.current.at < MERGE_MS;
+    // A canvas GESTURE (a drag, a resize) is one step however long it is held still; a slider merges only while it moves.
+    const merge = !!mergeKey && mergeAt.current?.key === mergeKey && (mergeKey.startsWith("gesture:") || now - mergeAt.current.at < MERGE_MS);
     mergeAt.current = mergeKey ? { key: mergeKey, at: now } : null;
     setHist((h) => {
       if (!h || !activePage) return h;
-      const present = setPageRoot(h.present, activePage.id, normalizeRowBands(nextRoot, ROW_GAP));
+      const present = setPageRoot(h.present, activePage.id, normalizeRowBands(nextRoot));
       // Merging REPLACES what the gesture has produced so far and leaves `past` alone, so the entry already
       // sitting there is still the state from before the gesture began — which is what one Ctrl+Z returns to.
       return merge ? { ...h, present } : { present, past: [...h.past, h.present].slice(-HIST_CAP), future: [] };
@@ -289,7 +291,7 @@ export default function BoxDemoPage() {
     if (!h || !activePage) return h;
     const cur = h.present.pages.find((p) => p.id === activePage.id)?.root;
     if (!cur) return h;
-    const next = normalizeRowBands(fn(cur), ROW_GAP);
+    const next = normalizeRowBands(fn(cur));
     return { present: setPageRoot(h.present, activePage.id, next), past: [...h.past, h.present].slice(-HIST_CAP), future: [] };
   });
 
@@ -1161,7 +1163,7 @@ export default function BoxDemoPage() {
                 </span>
               )}
               <div className={`shadow-sm rounded-xl ring-1 ring-black/10 dark:ring-white/10 midnight:ring-white/10 purple:ring-white/10 shrink-0 h-fit transition-[width] duration-300 ${device === "full" && !fullWhileDocked ? "w-full max-w-5xl" : ""}`} style={{ width: frameW ?? undefined, zoom: fit < 1 ? fit : undefined, background: renderTheme.background, color: renderTheme.text, fontFamily: renderTheme.bodyFont, containerType: "inline-size" }}>
-                <BoxCanvas root={root} theme={renderTheme} minHeight={PAGE_MIN_H} selectedIds={selectedIds} onSelectIds={selectByUser} onChange={commit} breakpoint={bp} showHidden={showHidden} />
+                <BoxCanvas root={root} theme={renderTheme} minHeight={PAGE_MIN_H} selectedIds={selectedIds} onSelectIds={selectByUser} onChange={commit} breakpoint={bp} showHidden={showHidden} marqueeRoom={roomEl} />
               </div>
             </div>
           </div>

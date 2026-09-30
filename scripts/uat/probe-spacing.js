@@ -50,9 +50,16 @@ const check = (where, w, m) => {
     const oneLine = Math.abs(m.col1.t - m.col3.t) < 2; const gap = m.col2.l - (m.col1.l + m.col1.w);
     if (w >= 1024 && !oneLine) bad(`${where} ${w}: the row of three is NOT on one line`);
     if (oneLine && gap < 12) bad(`${where} ${w}: column gap ${gap.toFixed(1)}px`); else if (oneLine) ok(`${where} ${w}: columns on one line, gap ${gap.toFixed(1)}px`);
+    // S1-a: the coloured columns still reach the page's edges (the gap is a gutter BETWEEN them, never outside them)
+    if (oneLine && (m.col1.l > 1.5 || m.col3.r > 1.5)) bad(`${where} ${w}: the outer columns do not meet the page edges (${m.col1.l.toFixed(1)} / ${m.col3.r.toFixed(1)}px in)`);
+    else if (oneLine) ok(`${where} ${w}: outer columns flush with the page edges`);
+    // …and 1rem DOWN when they wrap or stack (the user, 2026-09-30). 1rem is FLUID: 11.2px on a phone, so the floor is the stack gap's 10
+    if (!oneLine) { const down = m.col2.t - m.col1.b; if (down < 10) bad(`${where} ${w}: wrapped columns ${down.toFixed(1)}px apart down`); else ok(`${where} ${w}: wrapped/stacked columns ${down.toFixed(1)}px apart down`); }
   }
   if (m.grid && !m.grid.missing) { if (m.grid.gap[1] < 12 && w >= 768) bad(`${where} ${w}: grid gap across ${m.grid.gap[1]}px`); else ok(`${where} ${w}: grid gap ${m.grid.gap.join('/')}px`); }
   if (m.image && !m.image.missing) { if (m.image.l > 1 || m.image.r > 1) bad(`${where} ${w}: the picture does not bleed (${m.image.l.toFixed(1)} / ${m.image.r.toFixed(1)}px from the edges)`); else ok(`${where} ${w}: picture edge to edge`); }
+  for (const k of ['bordText', 'picText']) { const s2 = m[k]?.inHolder; if (!s2) { if (m[k] && !m[k].missing) bad(`${where} ${w}: "${k}" found no visible edge around it`); continue; } const lo = Math.min(s2.l, s2.t, s2.b); if (lo < 12) bad(`${where} ${w}: words in the ${k === 'bordText' ? 'BORDERED' : 'PICTURE'} box ${lo.toFixed(1)}px from its edge`); else ok(`${where} ${w}: ${k === 'bordText' ? 'bordered' : 'picture'} box words ${Math.round(s2.t)}/${Math.round(s2.l)}px in`); }
+  if (m.zero && !m.zero.missing) { if (m.zero.pad.some((v) => v !== 0)) bad(`${where} ${w}: the section set to 0 draws ${m.zero.pad.join('/')}`); else ok(`${where} ${w}: the section set to 0 is 0`); }
   if (m.plain && !m.plain.missing && m.plain.pad.some((v) => v > 0)) bad(`${where} ${w}: a PLAIN box inside a section has padding ${m.plain.pad.join('/')}`);
   if (m.scrollX) bad(`${where} ${w}: the page scrolls sideways`);
 };
@@ -70,11 +77,15 @@ const check = (where, w, m) => {
     for (let i = 2; i <= 4; i++) l = await P.beside(page, l, 'Link'); ids.link4 = l;
     // A STACK SECTION: Heading · Text · Button
     ids.stackSec = await P.tileAfter(page, ids.header, 'Stack'); ids.stack = ids.stackSec;
-    ids.head = await P.into(page, ids.stackSec, 'Heading'); ids.text = await P.under(page, ids.head, 'Text'); await P.under(page, ids.text, 'Button');
+    ids.head = await P.into(page, ids.stackSec, 'Heading'); ids.text = await P.under(page, ids.head, 'Text'); ids.button = await P.under(page, ids.text, 'Button'); ids.icon = await P.under(page, ids.button, 'Icon');
     // A COLOURED SECTION, words inside
     ids.colSec = await P.tileAfter(page, ids.stackSec, 'Stack'); ids.colText = await P.into(page, ids.colSec, 'Text');
     // A ROW OF THREE COLUMNS, a Text in each
-    const c1 = await P.tileAfter(page, ids.colSec, 'Stack'); const cols = await P.row(page, c1, ['Stack', 'Stack']);
+    // S1-k: a BORDERED box, a PICTURE-BACKGROUND box, and a coloured section whose inner spacing is set to 0 and must stay 0
+    ids.bord = await P.tileAfter(page, ids.colSec, 'Stack'); ids.bordText = await P.into(page, ids.bord, 'Text');
+    ids.pic = await P.tileAfter(page, ids.bord, 'Stack'); ids.picText = await P.into(page, ids.pic, 'Text');
+    ids.zero = await P.tileAfter(page, ids.pic, 'Stack'); ids.zeroText = await P.into(page, ids.zero, 'Text');
+    const c1 = await P.tileAfter(page, ids.zero, 'Stack'); const cols = await P.row(page, c1, ['Stack', 'Stack']);
     [ids.col1, ids.col2, ids.col3] = cols; for (const c of cols) await P.into(page, c, 'Text');
     // A PICTURE on the page, and a PLAIN box inside a section (the grid goes INTO that section below: a picture added
     // after a grid landed IN it as a seventh cell and the next drop added nothing, 4 of 4 windows — BATCH L-1's repro)
@@ -88,6 +99,14 @@ const check = (where, w, m) => {
     await H.fillImages(page);
     await I.meaning(page, ids.header, 'Page header'); await I.meaning(page, nav, 'Menu'); await I.meaning(page, ids.footer, 'Page footer');
     await I.background(page, ids.colSec, '#eef2ff');
+    // the border and the picture through their own controls (Outline & effects → Border; Background → image URL)
+    await H.select(page, ids.bord); await I.tab(page, 'Design'); await I.section(page, 'Outline & effects');
+    { const b = page.getByRole('slider', { name: /^Border/ }).first(); await b.scrollIntoViewIfNeeded(); await b.focus(); for (let k = 0; k < 2; k++) await page.keyboard.press('ArrowRight'); }
+    await H.select(page, ids.pic); await I.tab(page, 'Design'); await I.section(page, 'Background');
+    await page.getByLabel('Background image URL').first().fill('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2240%22 height=%2240%22%3E%3Crect width=%2240%22 height=%2240%22 fill=%22%23336%22/%3E%3C/svg%3E');
+    await page.keyboard.press('Tab'); await page.waitForTimeout(300);
+    await I.background(page, ids.zero, '#fef3c7');
+    for (const [c, hex] of [[ids.col1, '#fde68a'], [ids.col2, '#bbf7d0'], [ids.col3, '#fecaca']]) await I.background(page, c, hex); // S1-a: coloured columns would touch
     await page.screenshot({ path: path.join(OUT, 'built.png') });
     fs.writeFileSync(path.join(OUT, 'tree.txt'), await H.tree(page));
 
@@ -98,9 +117,17 @@ const check = (where, w, m) => {
     const shown = await page.locator('text=/Default · /').first().textContent().catch(() => null);
     if (!shown) bad('inspector: the coloured section\'s Inner spacing does not read "Default · size"'); else ok(`inspector reads "${shown.trim()}"`);
     await page.screenshot({ path: path.join(OUT, 'inspector-default.png') });
-    for (const [k, lab] of [['head', 'Heading'], ['text', 'Text'], ['link4', 'Link'], ['image', 'Image']]) { // c-23
-      await spacingOpen(ids[k]); if (!(await slider('Inner spacing').count())) bad(`c-23: a ${lab} offers no Inner spacing`); else ok(`c-23: ${lab} has Inner spacing`);
+    for (const [k, lab] of [['head', 'Heading'], ['text', 'Text'], ['link4', 'Link'], ['image', 'Image'], ['icon', 'Icon']]) { // c-23
+      await spacingOpen(ids[k]); const sl = slider('Inner spacing'); if (!(await sl.count())) { bad(`c-23: a ${lab} offers no Inner spacing`); continue; }
+      await sl.focus(); for (let i = 0; i < 4; i++) await page.keyboard.press('ArrowRight'); await page.waitForTimeout(350);
+      const got = (await page.evaluate(measure, ['canvas', { x: ids[k] }])).x.pad;
+      if (!(got[0] > 0)) bad(`c-23: a ${lab} given inner spacing still draws ${got.join('/')}`); else ok(`c-23: ${lab} given inner spacing → ${got.join('/')}px`);
+      await page.keyboard.press('Escape'); await page.keyboard.press('Control+z'); await page.waitForTimeout(350);
     }
+    // S1-k: the zeroed section — set 0 through its slider, then it must read 0 after a reload and at every rung, canvas and Preview
+    await spacingOpen(ids.zero); { const z = slider('Inner spacing'); await z.focus(); await page.keyboard.press('Home'); await page.waitForTimeout(400); }
+    await page.keyboard.press('Escape'); await page.reload(); await page.waitForSelector('[data-box-id]'); await page.waitForTimeout(1200);
+    { const z = await page.evaluate(measure, ['canvas', { zero: ids.zero }]); if (z.zero.missing || z.zero.pad.some((v) => v !== 0)) bad(`after a reload the zeroed section has ${z.zero.pad}`); else ok('after a reload the zeroed section is still 0/0/0/0'); }
     // 0 stays 0 · Back to default · Ctrl+Z
     await spacingOpen(ids.colSec); const s = slider('Inner spacing'); await s.focus(); await page.keyboard.press('Home'); await page.waitForTimeout(400);
     let m = await page.evaluate(measure, ['canvas', { colSec: ids.colSec }]); if (m.colSec.pad.some((v) => v !== 0)) bad(`set to 0, the coloured section still has ${m.colSec.pad.join('/')}`); else ok('Inner spacing 0 → 0/0/0/0 on the canvas');
@@ -116,10 +143,37 @@ const check = (where, w, m) => {
     // several blocks are selected by DRAGGING A BOX around them from the empty canvas (there is no shift-click)
     await page.keyboard.press('Escape'); const hb = await page.locator(`[data-box-id="${ids.head}"]`).boundingBox(); const tb = await page.locator(`[data-box-id="${ids.text}"]`).boundingBox();
     const pg = await page.locator('[data-box-id]').first().boundingBox();
-    await page.mouse.move(pg.x - 20, hb.y - 4); await page.mouse.down(); await page.mouse.move(tb.x + tb.width + 10, tb.y + tb.height + 2, { steps: 12 }); await page.mouse.up(); await page.waitForTimeout(600);
-    const bulk = await page.locator('text=/^Inner spacing: /').first().textContent().catch(() => null);
+    const right = Math.max(hb.x + hb.width, tb.x + tb.width) + 10; // the box must ENCLOSE both: a Heading is wider than its Text
+    await page.mouse.move(pg.x - 20, hb.y - 4); await page.mouse.down(); await page.mouse.move(right, tb.y + tb.height + 2, { steps: 12 }); await page.mouse.up(); await page.waitForTimeout(600);
+    let bulk = await page.locator('text=/^Inner spacing: /').first().textContent().catch(() => null);
+    if (bulk == null) {
+      // What is under the grey space beside the page, where a user starts a box? (S1-i)
+      console.log('  under the start point: ' + await page.evaluate(([x, y]) => { const e = document.elementFromPoint(x, y); return e ? `${e.tagName}.${String(e.className).slice(0, 60)} in-canvas=${!!e.closest('[data-box-id]') || !!e.closest('.eu-tokens')}` : 'nothing'; }, [pg.x - 20, hb.y - 4]));
+      await page.keyboard.press('Escape'); await page.mouse.click(5, 5).catch(() => {});
+      await page.mouse.move(tb.x + tb.width + 40, hb.y - 4); await page.mouse.down(); await page.mouse.move(pg.x + 4, tb.y + tb.height + 2, { steps: 12 }); await page.mouse.up(); await page.waitForTimeout(600);
+      bulk = await page.locator('text=/^Inner spacing: /').first().textContent().catch(() => null);
+      if (bulk != null) bad('S1-i: a box started in the grey space beside the page selected nothing; started inside the section it worked');
+    }
     if (bulk == null) bad('c-24: the bulk inspector did not open for two blocks'); else if (!/: 0rem/.test(bulk)) bad(`c-24: two plain blocks read "${bulk}"`); else ok(`c-24: "${bulk}"`);
     await page.screenshot({ path: path.join(OUT, 'bulk.png') }); await page.keyboard.press('Escape');
+
+    // ── S1-a: drag the boundary between the first two columns — only the held edge moves, the gap stays ──
+    await page.getByRole('button', { name: 'Desktop (1280px)' }).first().click(); await page.waitForTimeout(800);
+    const cols3 = { col1: ids.col1, col2: ids.col2, col3: ids.col3 };
+    const b0 = await page.evaluate(measure, ['canvas', cols3]);
+    await H.select(page, ids.col1); const Zc = await page.evaluate(() => document.querySelector('[data-box-id]').currentCSSZoom || 1);
+    if (!(await H.dragEdge(page, 'right', 60))) bad('S1-a resize: the first column offered no right-edge handle');
+    else {
+      const b1 = await page.evaluate(measure, ['canvas', cols3]);
+      const grew = b1.col1.w - b0.col1.w, want = 60 / Zc, gap0 = b0.col2.l - (b0.col1.l + b0.col1.w), gap1 = b1.col2.l - (b1.col1.l + b1.col1.w);
+      const still = Math.abs(b1.col1.l - b0.col1.l) < 1 && Math.abs(b1.col3.r - b0.col3.r) < 1 && Math.abs(b1.col1.t - b1.col3.t) < 2;
+      if (Math.abs(grew - want) > 2 || !still || Math.abs(gap1 - gap0) > 1) bad(`S1-a resize: dragged ${want.toFixed(1)}, the column grew ${grew.toFixed(1)} · left ${b0.col1.l.toFixed(1)}→${b1.col1.l.toFixed(1)} · far right ${b0.col3.r.toFixed(1)}→${b1.col3.r.toFixed(1)} · gap ${gap0.toFixed(1)}→${gap1.toFixed(1)}`);
+      else ok(`S1-a resize: dragged ${want.toFixed(1)}, grew ${grew.toFixed(1)}, outer edges still, gap ${gap1.toFixed(1)}px, one line`);
+      await page.screenshot({ path: path.join(OUT, 'resize-columns.png') });
+      await page.keyboard.press('Escape'); await page.keyboard.press('Control+z'); await page.waitForTimeout(500);
+      const b2 = await page.evaluate(measure, ['canvas', cols3]);
+      if (Math.abs(b2.col1.w - b0.col1.w) > 1) bad(`S1-a resize: Ctrl+Z left the first column at ${b2.col1.w.toFixed(1)} (was ${b0.col1.w.toFixed(1)})`); else ok('S1-a resize: Ctrl+Z put it back');
+    }
 
     // ── CANVAS at every rung, then the PREVIEW ──
     for (const [w, preset] of RUNGS) { await page.getByRole('button', { name: preset }).first().click(); await page.waitForTimeout(800); const c = await page.evaluate(measure, ['canvas', ids]); check('canvas', w, c); await page.screenshot({ path: path.join(OUT, `canvas-${w}.png`), fullPage: true }); }

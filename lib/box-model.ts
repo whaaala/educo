@@ -2308,9 +2308,9 @@ export function stackWithBlock(root: BoxNode, id: string, node: BoxNode, before 
   // cross-axis there). With only the first the band filled and the block sat 40px tall inside it, which
   // looks exactly like the bug it was meant to fix.
   const fills = !(node.height || node.minHeight);
-  const newBand = makeRowBand([fills ? { ...node, height: "100%" } : node], 0);
+  const newBand = makeRowBand([fills ? { ...node, height: "100%" } : node]);
   if (fills) newBand.height = "fill";
-  const keepBand = makeRowBand([inner], 0);
+  const keepBand = makeRowBand([inner]);
   column.children = before ? [newBand, keepBand] : [keepBand, newBand];
   return insertBox(removeBox(root, id), info.parent.id, info.index, column);
 }
@@ -2340,8 +2340,9 @@ export function dropIndexAmong(mids: number[], pointer: number): number {
 
 /** A structural ROW band: a full-width horizontal container that lays its sections out side-by-side.
  *  The page is a vertical stack of these. `gap` is the spacing between sections within the row. */
-export function makeRowBand(children: BoxNode[] = [], gap = 0): BoxNode {
-  const r = createContainer("row", { rowBand: true, width: "fill", padding: 0, gap, wrap: false, align: "stretch", justify: "start" });
+export function makeRowBand(children: BoxNode[] = [], gap?: number): BoxNode {
+  // No gap given → left UNSET, so the band takes the columns' default gutter (S1-a). A given one — 0 included — is kept.
+  const r = createContainer("row", { rowBand: true, width: "fill", padding: 0, ...(gap !== undefined ? { gap } : {}), wrap: false, align: "stretch", justify: "start" });
   r.children = children;
   return r;
 }
@@ -2456,7 +2457,7 @@ export function fitBand(root: BoxNode, bandId: string, newId?: string): BoxNode 
  *  wrapped in its OWN full-width row → so dragging an item down makes a NEW row. Empty rows are pruned.
  *  Widths are clamped ≤100% (shrink-to-fit). The user's MARGINS are respected (never stripped). Items keep
  *  their id. Recurses into every item so a child-of-a-child behaves exactly the same. Idempotent in shape. */
-export function normalizeRowBands(node: BoxNode, gap = 0): BoxNode {
+export function normalizeRowBands(node: BoxNode, gap?: number): BoxNode {
   if (!isContainer(node)) return node; // leaf — nothing to organize
   if (node.rowBand) {
     // A ROW: recurse into its items (each may itself be a content container / leaf).
@@ -4410,15 +4411,15 @@ export function tabletPlaces(parent: BoxNode, bp: Breakpoint): Map<string, Table
 }
 
 /**
- * The flex basis a rearranged column is drawn at: its share of what its line has left after the gaps between the
- * columns on it and their gap-margins. Floored to a thousandth of a percent so a line of shares can never add up to
+ * The flex basis a rearranged column is drawn at: its share of what its line has left after its gap-margins, less
+ * the one gap its slot gives up (the band's gutter, `gutterCSS`). Floored to a thousandth of a percent so a line of shares can never add up to
  * a hair over 100% and push its last column down; the `1` grow hands that thousandth back.
  */
 export function tabletBasis(place: TabletPlace, gapPx: number): string {
   const pct = Math.floor(place.share * (100 - place.marginsPct) * 1000) / 1000;
-  const gaps = place.across - 1;
-  if (!gapPx || !gaps) return `${pct}%`;
-  return `calc((100% - ${place.marginsPct}% - ${gaps} * ${u(gapPx)}) * ${Math.floor(place.share * 1e5) / 1e5})`;
+  if (!gapPx) return `${pct}%`;
+  // The band's gap is a GUTTER (`gutterCSS`): each column's slot is its share of the line, and it gives up one gap.
+  return `calc((100% - ${place.marginsPct}%) * ${Math.floor(place.share * 1e5) / 1e5} - ${u(gapPx)})`;
 }
 
 export function flexForWidth(token?: string, fillsItsLine = false): string | undefined {
@@ -4621,6 +4622,7 @@ export function gapCSS(node: BoxNode): CSSProperties {
   const d = spaceDefaults(node);
   const base = node.gap;
   const x = node.gapX ?? base ?? d.gapX, y = node.gapY ?? base ?? d.gapY;
+  if (node.rowBand && x > 0) return { columnGap: u(0), rowGap: u(y) }; // across is the columns' gutter (`gutterCSS`)
   return x === y ? { gap: u(x) } : { columnGap: u(x), rowGap: u(y) };
 }
 
@@ -4655,8 +4657,10 @@ export function spaceDefaults(node: BoxNode, section = false): { pad: [number, n
   if (!node.spaced) return { pad: [0, 0, 0, 0], gapX: 16, gapY: 16 };
   const scaffold = !!node.rowBand;
   const across = node.layout === "grid" || (node.direction ?? "column") === "row";
-  const gapX = scaffold ? 0 : across ? SPACE_DEFAULT.columns : SPACE_DEFAULT.stack;
-  const gapY = scaffold ? 0 : node.layout === "grid" ? SPACE_DEFAULT.stack : gapX;
+  // A band's gap across is its columns' gutter (`gutterCSS`), and down is the space between lines once they wrap or
+  // stack (the user, 2026-09-30: "1rem down too").
+  const gapX = across ? SPACE_DEFAULT.columns : SPACE_DEFAULT.stack;
+  const gapY = scaffold || node.layout === "grid" ? SPACE_DEFAULT.stack : gapX;
   if (scaffold) return { pad: [0, 0, 0, 0], gapX, gapY };
   const inner = hasVisibleEdge(node) ? SPACE_DEFAULT.inner : 0;
   if (section && !BLEEDS.has(node.type)) {
@@ -5361,7 +5365,46 @@ export function childStyle(child: BoxNode, parent: BoxNode, bp: Breakpoint = "ba
   Object.assign(s, pinCSS(child, parent, bp));
   // A line of menu items is spaced by the block it sits in (`linkLineGap`) — the only one of the two you can select.
   const lg = linkLineGap(child, parent); if (lg) Object.assign(s, lg);
+  gutterCSS(s, child, parent);
   return s;
+}
+
+/** The gap across a row band — its columns' GUTTER (S1-a). 0 for a band saved before space by default. */
+export function bandGutter(band: BoxNode): number {
+  return band.rowBand ? gapOf(band).x : 0;
+}
+
+/**
+ * COLUMNS SIDE BY SIDE KEEP A GAP, AND THE LINE STILL FITS (S1-a; the user, 2026-09-30: 1rem, the widths give way).
+ *
+ * A flex `gap` on a band that WRAPS is added on top of the shares, so three 33.33% columns plus two gaps no longer fit
+ * and the third drops to a second line. The gap is a GUTTER instead, the way Bootstrap's rows do it: the band reaches
+ * half a gap past each side of its parent, and every column gives up one gap from its share of that wider line and
+ * takes half a gap of margin on each side. A line of shares that adds up to 100% then fits EXACTLY, however many
+ * columns share it — so wrapping one column never resizes the others — the outer columns still meet the page edge,
+ * and a stored % still means "this share of the line": the canvas resize measures each column's SLOT (the column plus
+ * its half gaps), which is exactly what the % describes.
+ */
+function gutterCSS(s: CSSProperties, child: BoxNode, parent: BoxNode): void {
+  const bandG = child.rowBand && (parent.direction ?? "column") !== "row" ? bandGutter(child) : 0;
+  if (bandG > 0) {
+    s.marginLeft = s.marginRight = u(-bandG / 2);
+    s.width = `calc(100% + ${u(bandG)})`;
+    s.maxWidth = "none";
+  }
+  const g = parent.rowBand && (parent.direction ?? "column") === "row" ? bandGutter(parent) : 0;
+  if (!g) return;
+  const G = u(g), half = u(g / 2);
+  const basis = typeof s.flex === "string" ? /^(\d) (\d) (\d+(?:\.\d+)?)%$/.exec(s.flex) : null;
+  // `%` here is already the WIDENED band (the line plus one gap), so the slot is the stored share of it as written.
+  if (basis && +basis[3] > 0) s.flex = `${basis[1]} ${basis[2]} calc(${basis[3]}% - ${G})`;
+  s.maxWidth = `calc(100% - ${G})`; // `100%` is the widened band: a block that fills its width would run one gap past the edge
+  if (s.minWidth === "100%") s.minWidth = `calc(100% - ${G})`;
+  else if (typeof s.minWidth === "string" && s.minWidth.startsWith("min(100%,")) s.minWidth = s.minWidth.replace("min(100%,", `min(100% - ${G},`);
+  const m = marginCSS(child);
+  const side = (v: unknown) => (v === "auto" ? "auto" : `calc(${v ?? "0px"} + ${half})`);
+  s.marginLeft = side(s.marginLeft ?? m.marginLeft);
+  s.marginRight = side(s.marginRight ?? m.marginRight);
 }
 
 /**

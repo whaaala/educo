@@ -1020,7 +1020,8 @@ describe("box-model — layout CSS mapping", () => {
     expect(containerStyle(band).flexWrap).toBe("wrap");
     // a non-clipped section inside it keeps a usable minimum → wraps to a new line rather than shrinking below ~14rem
     const section = band.children![0];
-    expect(childStyle(section, band).minWidth).toBe("min(100%, 14rem)");
+    // …less the one gap its slot gives up to the band's gutter (S1-a)
+    expect(childStyle(section, band).minWidth).toBe(`min(100% - ${u(16)}, 14rem)`);
     // a CLIPPED (explicitly resized) section still drops to 0 — reflow never overrides an intentional resize
     const clipped = childStyle(createContainer("column", { width: "40%", clip: true } as Partial<BoxNode>), band);
     expect(clipped.minWidth).toBe(0);
@@ -1810,10 +1811,10 @@ describe("rows of four or more (#78): one row on a desktop and a laptop · at mo
     expect(b[0]).toBeCloseTo(20, 2); expect(b[1]).toBeCloseTo(80, 2); expect(b[2]).toBeCloseTo(50, 2); expect(b[3]).toBeCloseTo(50, 2);
   });
 
-  it("a gap between the columns is taken out of the line before it is shared", () => {
+  it("a gap between the columns is a gutter: each slot is its share of the line, and gives up one gap (S1-a)", () => {
     const row = even(6); row.gap = 20;
     const f = String(childStyle(row.children![0], row, "tabletPortrait").flex);
-    expect(f).toMatch(/^1 1 calc\(\(100% - 0% - 2 \* calc\(var\(--box-u, 0\.625rem\) \* 2\)\) \* 0\.33333\)$/);
+    expect(f).toBe(`1 1 calc((100% - 0%) * 0.33333 - ${u(20)})`);
   });
 
   it("a gap-margin on the line is taken out too", () => {

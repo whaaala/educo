@@ -17,7 +17,7 @@ function setup(overrides: Partial<Parameters<typeof BulkInspector>[0]> = {}) {
 describe("BulkInspector (multi-select bulk edits)", () => {
   it("shows how many sections are selected", () => {
     setup({ count: 4 });
-    expect(screen.getByText(/4 sections selected/)).toBeInTheDocument();
+    expect(screen.getByText(/4 blocks selected/)).toBeInTheDocument();
   });
 
   it("the quick steppers grow/shrink width & height for ALL selected", () => {

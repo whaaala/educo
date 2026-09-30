@@ -46,8 +46,13 @@ const UNITLESS = new Set([
   "strokeDasharray", "strokeDashoffset", "strokeMiterlimit", "strokeOpacity", "strokeWidth",
 ]);
 
-/** Serialize a React style object to an inline CSS string (px added to bare numbers except unitless props). */
-export function styleString(css: CSSProperties): string {
+/**
+ * Serialize a React style object to CSS declarations (px added to bare numbers except unitless props), for WHERE it goes:
+ * an `attr` (style="…", quotes entity-escaped) or a `sheet` rule inside <style>, where entities are never decoded — so
+ * quotes stay quotes and only `<` is escaped, the CSS way, so no value can close the element. Using the attribute form in
+ * the sheet published `url(&quot;…&quot;)`: every picture background and quoted font stack dropped from the Preview.
+ */
+export function styleString(css: CSSProperties, into: "attr" | "sheet" = "attr"): string {
   return Object.entries(css)
     .filter(([, v]) => v != null && v !== "")
     .map(([k, v]) => {
@@ -57,7 +62,7 @@ export function styleString(css: CSSProperties): string {
       // Escape double quotes so a value that legitimately contains them — a font stack like
       // "Playfair Display", serif or a background-image url("data:…") — can't close the HTML style="…"
       // attribute early and corrupt the rest of the document. Browsers decode &quot; back to " in the value.
-      const val = raw.replace(/"/g, "&quot;");
+      const val = into === "attr" ? raw.replace(/"/g, "&quot;") : raw.replace(/</g, "\\3c ");
       return `${prop}:${val}`;
     })
     .join(";");
@@ -457,7 +462,7 @@ function styleAt(node: BoxNode, rawParent: BoxNode | null, bp: Breakpoint, theme
 
 /** Properties of `bp` that DIFFER from `base` (missing-at-bp keys reset to their initial), as a CSS string. */
 function diffStyle(base: CSSProperties, bp: CSSProperties): string {
-  const ser = (k: string, v: unknown) => (v == null || v === "" ? "" : styleString({ [k]: v } as CSSProperties));
+  const ser = (k: string, v: unknown) => (v == null || v === "" ? "" : styleString({ [k]: v } as CSSProperties, "sheet"));
   const keys = new Set([...Object.keys(base), ...Object.keys(bp)]);
   const out: string[] = [];
   for (const k of keys) {
@@ -465,7 +470,7 @@ function diffStyle(base: CSSProperties, bp: CSSProperties): string {
     const pv = (bp as Record<string, unknown>)[k];
     if (ser(k, bv) === ser(k, pv)) continue;
     const val = pv != null && pv !== "" ? pv : (RESET[k] ?? "revert");
-    out.push(styleString({ [k]: val } as CSSProperties));
+    out.push(styleString({ [k]: val } as CSSProperties, "sheet"));
   }
   return out.filter(Boolean).join(";");
 }
@@ -488,7 +493,7 @@ function renderNode(node: BoxNode, rawParent: BoxNode | null, theme: SiteTheme, 
   // that changes nothing emits nothing at all.
   const byRung = BP_ORDER.map((bp) => styleAt(node, rawParent, bp, theme, hostSized, section));
   const ov = overridesCss(r);
-  sheet.rungs.phone.push(`.${cls}{${[styleString(byRung[0]), ov].filter(Boolean).join(";")}}`);
+  sheet.rungs.phone.push(`.${cls}{${[styleString(byRung[0], "sheet"), ov].filter(Boolean).join(";")}}`);
   // Hover & focus (Interactions 1a) — the SAME emitter the canvas uses, so the builder shows exactly what a
   // visitor gets. Pure CSS: a page with no effects ships nothing extra.
   const hov = hoverCss(`.${cls}`, r.hoverEffect);

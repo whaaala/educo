@@ -10,7 +10,7 @@ import { DEFAULT_THEME } from "@/lib/site-storage";
  * leave the canvas) is a canvas behaviour and is guarded in tests/e2e/hidden-blocks-leave-the-canvas.spec.ts.
  */
 describe("1D — one pixel of slack on a line that holds a hand-sized column", () => {
-  const row = (kids: BoxNode[]) => { const r = makeRowBand(kids); return r; };
+  const row = (kids: BoxNode[]) => { const r = makeRowBand(kids, 0); return r; };
   const col = (width: string, byHand: boolean, extra: Partial<BoxNode> = {}) => createContainer("column", { width, widthByHand: byHand, children: [createElement("text", { text: "words" })], ...extra });
   it("the LAST column of the line carries a −0.0625rem right margin; every share stays exactly what was dragged", () => {
     const a = col("30%", true), b = col("70%", true);

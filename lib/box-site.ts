@@ -35,8 +35,8 @@ export function uniquePath(site: BoxSite, base: string, ignoreId?: string): stri
 /** A fresh empty page tree (a page root with one starter section). */
 export function emptyPageRoot(section?: BoxNode): BoxNode {
   const r = createContainer("column", { layout: "flex", direction: "column", wrap: false, padding: 0, gap: 0, width: "fill", align: "stretch", justify: "start", baseFont: 10 });
-  r.children = section ? [makeRowBand([section], 0)] : [];
-  return normalizeRowBands(r, 0);
+  r.children = section ? [makeRowBand([section])] : [];
+  return normalizeRowBands(r);
 }
 
 export function makeBoxPage(name: string, root: BoxNode, path?: string): BoxPage {
@@ -95,7 +95,7 @@ export function setHomePage(site: BoxSite, id: string): BoxSite {
 }
 
 /** Normalize every page's tree (used on load / after edits). */
-export function normalizeSite(site: BoxSite, gap = 0): BoxSite {
+export function normalizeSite(site: BoxSite, gap?: number): BoxSite {
   return { ...site, pages: site.pages.map((p) => ({ ...p, root: normalizeRowBands(p.root, gap) })) };
 }
 

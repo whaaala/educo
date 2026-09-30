@@ -38,41 +38,89 @@ written BEFORE the pass; one HEADED UAT on a fresh production build ticks every 
 only when every line is ticked and every bug it found is fixed and re-checked. Guarded by
 `tests/unit/task-tree-batches.test.ts`. Every item names what it IS in words, never a bare number.
 
-- `[>]` **BATCH S-1 · Spacing — the engine and the inspector** (area: spacing · 6 changes) — tree 1.1.1 → SPACE BY DEFAULT
+- `[x]` **BATCH S-1 · Spacing — the engine and the inspector** — CLOSED 2026-09-30 (final HEADED UAT on build u8hfywi0, 4 themes, 124 checks each, 0 findings; gate: vitest 3,794 · eslint 0 · test:fast 640) (area: spacing · 6 changes) — tree 1.1.1 → SPACE BY DEFAULT
   - changes: (1) section gutter + section space · (2) header/footer bar 1rem · (3) coloured/bordered box 1.5rem, plain box 0
-    · (4) gaps: stack 1rem, columns 1.5rem, grid both · (5) inspector shows "Default · size", Back to default, inner
+    · (4) gaps: stack 1rem, columns 1rem (a gutter, S1-a), grid both · (5) inspector shows "Default · size", Back to default, inner
     spacing on every element (c-23) · (6) bulk inspector reads the real padding (c-24)
-  - LEDGER of the S-1 pass (HEADED UAT 2026-09-30, build l-Q5HJ74r, 4 themes × 5 rungs, canvas + Preview; 69 checks
-    passed per theme, the same 11 findings in every theme):
-    - `[>]` S1-a · **columns side by side at page level touch** **← YOU ARE HERE** (column gap 0 at 768–1920, canvas and Preview): three
-      columns dropped beside each other sit in the page band, which has no gap — only each column's own side gutter
-      keeps their words apart; coloured columns would touch. DECIDED by the user 2026-09-30: add a gap, widths shrink so
-      the line still fits — **1rem** (changed from 1.5rem the same day: "do one rem… let the user decide"). The default
-      value is set (`SPACE_DEFAULT.columns` 16, also the grid's gap across); the ENGINE work for the page band is NOT started
-    - `[ ]` S1-b · **the Spacing controls say "rem" for a number that is not rem**: "Default · 3.2rem" for a gutter of
-      ~2rem (22px phone, 36px laptop) — the inspector shows stored px ÷ 10 (`toRem`, BoxInspector 38, BulkInspector 20).
-      Predates space by default. DECIDED by the user 2026-09-30: REAL rem. Fixed: `toRem`/`fromRem` are ÷16 / ×16 in the
-      inspector, the bulk inspector and the gallery setup; BoxInspector tests updated (84 passed). Closes on the re-run
-    - `[ ]` S1-c · HARNESS: the probe divided COMPUTED padding by the canvas zoom — read 40.7px for the 16px header bar at
-      Wide canvas (Preview 1920 right). Fixed in `probe-spacing.js`; closes on the re-run
-    - `[ ]` S1-d · HARNESS: the probe shift-clicked for two blocks (there is no shift-click; it selected text). Now drags a
-      box from the empty canvas; c-24 closes on the re-run
-    - `[ ]` S1-e · the top space was too big (4rem) → 1rem, the user's value. Preview measured: 11px at 375 · 18px at 1280 ·
-      22px at 1920 above and below (gutter 22 · 36 · 45px). Canvas = Preview still to be shown on the re-run (S1-c)
-  - checklist (each at Mobile 375 · Tablet 768 · Laptop 1024 · Desktop 1280 · Wide 1920, canvas AND Preview, all four themes):
-    - `[ ]` a Heading dragged onto an empty page: words off the page edge by the gutter, both sides; no sideways scroll
-    - `[ ]` two sections one under the other: section space above, between and below
-    - `[ ]` a header with a logo and four links: 1rem above and below, gutter at both ends, links spaced
-    - `[ ]` a coloured section, a bordered box, a picture-background box: words 1.5rem from their edge; a plain box adds 0
-    - `[ ]` a picture dropped on the page still reaches both edges
-    - `[ ]` a stack of three blocks, a row of three columns (still on one line at 1280), a 3×2 grid: the default gaps
-    - `[ ]` inspector: each control reads "Default · size"; set 0 → 0 on canvas and Preview, after reload, at every size;
-      one side changed, the others keep the default; Back to default; Ctrl+Z; keyboard and screen-reader label
-    - `[ ]` a Heading, Text, Link, Image and Icon each given inner spacing through the inspector (c-23)
-    - `[ ]` two blocks selected: the bulk slider shows what they have (c-24)
-    - `[ ]` a page saved before this change opens exactly as it was; a block added to it arrives with the defaults
-    - `[ ]` 150% browser text: every default space grows; the exported CSS has no pixel spacing
-- `[ ]` **BATCH S-2 · Spacing — components breathe, the audit measures it** (area: spacing · 4 changes, queued)
+  - LEDGER of the S-1 pass (first HEADED UAT 2026-09-30, build l-Q5HJ74r: 69 checks per theme, the same 11 findings in
+    every theme; RE-RUN the same day on build eglndaoX, 4 themes × 5 rungs, canvas + Preview: **92 checks per theme, 0
+    findings**):
+    - `[x]` S1-a · **columns side by side at page level touched** — FIXED: a band's gap across is a GUTTER (`gutterCSS`,
+      `bandGutter` in `lib/box-model.ts`): the band reaches half a gap past each side, each column gives up one gap from
+      its share and takes half a gap each side, so a full line of shares fits exactly however many share it; 1rem DOWN too
+      (the user, 2026-09-30); tablet basis `(100% − m%) × share − gap`; the canvas resize measures each column's SLOT.
+      Bands made from now on only (`makeRowBand` without a gap); a saved band stored 0 and publishes byte for byte as it
+      did. Seen: one line with a 14 · 16 · 18 · 22px gap at 768 · 1024 · 1280 · 1920, outer columns flush with the page
+      edges, 11px apart down on a phone, canvas = Preview; a boundary dragged 73.2px grew the column 73.2px, outer edges
+      still, gap unchanged. Guard `space-by-default.test.ts` "columns side by side" (the CSS EVALUATED, mutation-proven)
+    - `[x]` S1-b · the Spacing controls showed stored px ÷ 10 as "rem" — REAL rem now; seen: "Default · 2rem"
+    - `[x]` S1-c · HARNESS: computed padding divided by the zoom — seen: header bar 16 · 18 · 22px at 1024 · 1280 · 1920, canvas = Preview
+    - `[x]` S1-d · HARNESS: shift-click for two blocks — the box is dragged; and it now ENCLOSES both (the Heading is wider
+      than its Text, the box was drawn to the Text's edge and selected one). Seen: "Inner spacing: 0rem" for two
+    - `[x]` S1-e · top space 4rem → 1rem — seen: section 18.2/36.5px at 1280 (1rem fluid), canvas = Preview
+    - `[x]` S1-f · **my S1-a basis added the gap twice** (`W% × (100% + gap) − gap` where `%` is already the widened band)
+      — the third column wrapped at every rung in the first re-run. FIXED; the old unit test had pinned the wrong STRING,
+      so the guard now EVALUATES the CSS and sums the slots (red on the old formula, green now)
+    - `[x]` S1-g · HARNESS: the gap-down floor was 12px while 1rem is fluid (11.2px on a phone) — now the stack gap's 10
+    - `[x]` S1-h · **one drag was one undo step PER FRAME**: Ctrl+Z after a column resize undid 6 of 73px (predates S-1).
+      FIXED: every canvas gesture (resize, free drag, floating resize) carries one merge key (`gesture:<time>`), and the
+      page merges a gesture however long it is held. Seen: Ctrl+Z put the column back, 4 themes
+    - `[x]` S1-i · **a box dragged from the grey space beside the page selected nothing** — the room around the page was
+      outside the canvas, though the inspector says "drag a box on empty canvas". FIXED (`marqueeRoom`); seen through the
+      UI: failed on build GyQCN, `probe-room-marquee.js` PASS on eglndaoX
+    - `[x]` S1-j · the bulk inspector said "2 sections selected" for a Heading and a Text, and its line had no midnight /
+      purple colour — now "2 blocks selected", all four themes; test + scenario updated
+    - `[x]` S1-l · **the gate was misread**: `test:fast | tail` reported the PIPE's exit (0) while 7 width-round-trip tests
+      had FAILED — the "7 failed" heading was cut off by the tail. Every gate run now writes its log and its own exit code
+    - `[x]` S1-m · `width-round-trip.spec.ts` measured the old rule (columns touch, each exactly 1/n): it now measures each
+      column's SLOT (its box plus the band's half gap each side) — the same definition the canvas resize uses — and asserts
+      a gap ≥ 10px is drawn between them
+    - `[x]` S1-n · **a left-edge round trip came home at 50.02% beside 50%** (100.02%: the line no longer added up) — the
+      left edge re-measured its total in pixels, and a gap puts columns on fractional pixels. FIXED: closing gives back the
+      STORED total (width + gap-margin), and the width is stored to two decimals; guarded by that spec (red → green)
+    - `[x]` S1-o · **an Alert or a Quote at fit width ran 11px past a 375 phone's edge** (export-layout-invariants, 3
+      tests): `max-width: 100%` of a widened band is the line PLUS a gap. FIXED: every column in a gutter band is capped at
+      `calc(100% − gap)`; guard in `space-by-default.test.ts`; 640 browser tests green
+    - `[x]` S1-p · **every picture background and quoted font stack was dropped from the published page** (predates S-1;
+      found by the new picture-background box: canvas had it, Preview did not): the stylesheet rules were serialised for an
+      ATTRIBUTE, `url(&quot;…&quot;)`, and a `<style>` block never decodes entities. FIXED: `styleString(css, "sheet")`
+      keeps quotes and escapes `<` the CSS way; the old test that PINNED `&quot;` in the sheet is corrected; guard
+      mutation-proven
+    - `[x]` S1-k · **the checklist lines the probe did not drive** — now driven through the UI (seen below): a BORDERED box and a
+      PICTURE-BACKGROUND box (only coloured + plain were built); 0 in the PREVIEW, after a RELOAD and at every size (only
+      the canvas); ICON inner spacing (Heading, Text, Link, Image were); a page SAVED BEFORE space by default opened in the
+      browser (unit guard only). `probe-spacing.js` extended + `probe-saved-page.js`; all four lines ticked below
+  - checklist (each at Mobile 375 · Tablet 768 · Laptop 1024 · Desktop 1280 · Wide 1920, canvas AND Preview, all four
+    themes) — ticked from the re-run on eglndaoX (Light · Dark · Midnight · Purple Dream, 92 checks each, 0 findings):
+    - `[x]` a Heading dragged onto an empty page: every block's words ≥ the gutter floor from both page edges; no sideways
+      scroll at any rung (heading 22px from the left at 375)
+    - `[x]` two sections one under the other: section space above and below: 16 · 18 · 22px at 1024 · 1280 · 1920, canvas = Preview
+    - `[x]` a header with a logo and four links: bar 16 · 18 · 22px above and below at 1024 · 1280 · 1920, gutter at both ends, links spaced
+    - `[x]` a coloured section, a bordered box, a picture-background box: words 1.5rem from their edge; a plain box adds 0
+      — coloured 17/22 · 27/36 · 34/45px in at 375 · 1280 · 1920; bordered 18/24 · 29/38 · 35/46; picture 17/22 · 27/36 ·
+      34/45 (it reached the Preview only after S1-p); plain box 0
+    - `[x]` a picture dropped on the page still reaches both edges (0 / 0px at every rung)
+    - `[x]` a stack of three blocks (stack gap), a row of three columns (one line at 768–1920, see S1-a), a 3×2 grid
+      (gap across and down) — the default gaps at every rung
+    - `[x]` inspector: each control reads "Default · size"; set 0 → 0 on canvas and Preview, after reload, at every size;
+      one side changed, the others keep the default; Back to default; Ctrl+Z; keyboard and screen-reader label — SEEN:
+      "Default · 2rem", 0 → 0 on the canvas (by keyboard, Home, on the slider found by its accessible name), one side,
+      Back to default, Ctrl+Z; a section set to 0 is still 0/0/0/0 after a reload and at every rung, canvas and Preview
+    - `[x]` a Heading, Text, Link, Image and Icon each given inner spacing through the inspector (c-23) — each drew
+      4/4/4/4px on the canvas after one step, then Ctrl+Z
+    - `[x]` two blocks selected: the bulk slider shows what they have — "Inner spacing: 0rem" (c-24), from the grey room
+    - `[x]` a page saved before this change opens exactly as it was; a block added to it arrives with the defaults —
+      `probe-saved-page.js`: the saved columns still touch, padding still 0; a Stack added through the UI arrives 16/32px
+    - `[x]` 150% browser text: the section space grows (18.1/36.2 → 22.1/44.2px at 1280); the exported CSS has no pixel spacing
+- `[>]` **BATCH S-2 · Spacing — components breathe, the audit measures it** (area: spacing · 5 changes, OPEN 2026-09-30)
+  - (5) **blocks placed one under another touch** (asked by the user 2026-09-30, seen in the S-1 screenshots): a
+    component or button placed straight on the page gets NONE of the section space (`leafPaddingCSS` skips self-painting
+    blocks) and the page itself has gap 0, so a component sits against the one above/below it; coloured sections, a row
+    of columns and a picture also meet with no space. The user suggests 0.5–0.8rem, "mostly bottom margin", stacks not
+    included. **DECIDED by the user 2026-09-30 ("go with your recommendation"):** every block placed straight on the page —
+    components and buttons included — gets the section space above and below, OUTSIDE its own painted box, so coloured
+    sections still meet; **1rem**; a stack inside a stack is spaced by its parent's gap; never a per-block bottom margin.
+    **← YOU ARE HERE** (first in S-2)
   - (1) a gap between a component's parts and padding from its own visible edge, the whole catalogue · (2) audit check:
     words closer than the gutter floor to the page or their coloured box's edge · (3) audit check: sections closer than
     the section floor · (4) the old "never a default" wording in the four places left (layout feature 347,
@@ -330,7 +378,7 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
         - `[ ]` e-10 · canvas≠Preview on one block 28px taller — 1 page (idx 272)
         - `[ ]` **NEXT: re-run e-2 and e-3 alone first** (idx 23, 68, 145, 334–337, 393, 396–401) on a FRESH build —
           a failure that goes away alone was the machine, one that stays is a bug — STOPPED by the user at 3 of 14, the rest
-          moved to BATCH E-0 (top of this file). **YOU ARE HERE is BATCH S-1**
+          moved to BATCH E-0 (top of this file). **YOU ARE HERE is BATCH S-2** (S-1 closed 2026-09-30)
         - NOT A BUG, expected: 379 pages warn "things need the user's words" (the dressed placeholders' empty text)
       - `[ ]` c-22 · **A page that BUILT in the baseline does not build on the fixed build** — the first page logged
         (nodenza.com/partners_ross_morton): baseline 182 blocks, 2 errors; re-run BUILD FAILED at 80 blocks, "the canvas

@@ -40,7 +40,7 @@ const dropTileAt = async (page: Page, text: string, x: number, y: number) => {
 };
 
 type Kid = { id: string; l: number; t: number; w: number };
-type Row = { inner: number; kids: Kid[] };
+type Row = { inner: number; kids: Kid[]; gap?: number };
 
 /** The row a block sits in, as drawn: each child's left, top and width relative to the row's content box. */
 const rowOf = (page: Page, id: string) => page.evaluate((id): Row => {
@@ -49,9 +49,14 @@ const rowOf = (page: Page, id: string) => page.evaluate((id): Row => {
   const row = el.parentElement!, rr = row.getBoundingClientRect(), cs = getComputedStyle(row);
   const padL = parseFloat(cs.paddingLeft) || 0, padR = parseFloat(cs.paddingRight) || 0;
   const kids = Array.from(row.children).filter((k) => k.hasAttribute("data-box-id")) as HTMLElement[];
+  // Each column's SLOT (S1-a): a band with a gutter reaches half a gap past each side and draws every column one gap
+  // narrower than its share, so a column is measured with half a gap either side — what its stored % describes, and
+  // what the canvas resize measures. A band saved without a gutter has hg = 0 and reads exactly as before.
+  const hg = Math.max(0, -(parseFloat(cs.marginLeft) || 0));
   return {
     inner: Math.round(rr.width - padL - padR),
-    kids: kids.map((k) => { const r = k.getBoundingClientRect(); return { id: k.getAttribute("data-box-id")!, l: Math.round(r.left - rr.left - padL), t: Math.round(r.top - rr.top), w: Math.round(r.width) }; }),
+    kids: kids.map((k) => { const r = k.getBoundingClientRect(); return { id: k.getAttribute("data-box-id")!, l: Math.round(r.left - hg - rr.left - padL), t: Math.round(r.top - rr.top), w: Math.round(r.width + 2 * hg) }; }),
+    gap: 2 * hg,
   };
 }, id);
 
@@ -204,7 +209,8 @@ test.describe("width round trips come back, and nothing leaves a hole", () => {
     const back = await rowOf(page, id);
     // Measured before the fix: the space vanished but the width did not come back, so the right edge jumped
     // 120px left and pulled the neighbour with it — the drag read the gap from `marginLeft` only.
-    expect(sameRow(back, start), `did not return: ${JSON.stringify(back.kids)}`).toBe(true);
+    const storedW = await page.evaluate(() => { const s = JSON.parse(localStorage.getItem("educo_box_site_v1")!); const out: unknown[] = []; const walk = (n: { rowBand?: boolean; width?: string; marginLeftPct?: number; widthByHand?: boolean; children?: unknown[] }) => { if (n.rowBand && (n.children ?? []).length === 2) out.push((n.children as typeof n[]).map((c) => [c.width, c.marginLeftPct, c.widthByHand])); (n.children ?? []).forEach((c) => walk(c as typeof n)); }; walk(s.pages[0].root); return out; });
+    expect(sameRow(back, start), `did not return: ${JSON.stringify(back.kids)} from ${JSON.stringify(start.kids)} stored ${JSON.stringify(storedW)}`).toBe(true);
   });
 
   for (const n of [3, 4, 5]) {
@@ -215,6 +221,8 @@ test.describe("width round trips come back, and nothing leaves a hole", () => {
       expect(onFirstLine.length, `${n} blocks: only ${onFirstLine.length} fit on the line`).toBe(n);
       for (const k of row.kids) expect(Math.abs(k.w - row.inner / n), `${n} blocks: ${JSON.stringify(row.kids)}`).toBeLessThanOrEqual(2);
       expect(rowProblems(row)).toEqual([]);
+      // …and the columns themselves never touch: a 1rem gap is drawn between them (S1-a)
+      expect(row.gap ?? 0, `${n} blocks: no gap drawn between the columns`).toBeGreaterThanOrEqual(10);
     });
   }
 });

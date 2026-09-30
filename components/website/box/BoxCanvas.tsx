@@ -575,7 +575,7 @@ function ChromeMirror({ blockId, children }: { blockId: string; children: ReactN
 }
 
 export default function BoxCanvas({
-  root, theme, editable = true, selectedId, onSelectId, selectedIds, onSelectIds, onChange, onResized, minHeight = 600, breakpoint = "base", showHidden = false,
+  root, theme, editable = true, selectedId, onSelectId, selectedIds, onSelectIds, onChange, onResized, minHeight = 600, breakpoint = "base", showHidden = false, marqueeRoom,
 }: {
   root: BoxNode;
   theme: SiteTheme;
@@ -584,8 +584,11 @@ export default function BoxCanvas({
   onSelectId?: (id: string | null) => void;
   selectedIds?: string[];                          // MULTI selection (marquee): takes precedence when provided
   onSelectIds?: (ids: string[]) => void;
-  onChange: (root: BoxNode) => void;
+  /** `mergeKey`: every change carrying the same key is ONE undo step — a drag is one gesture, not one step per frame. */
+  onChange: (root: BoxNode, mergeKey?: string) => void;
   onResized?: (id: string, axis: "width" | "height") => void;
+  /** The grey space around the page: a box dragged from THERE selects too, as the inspector's hint promises (S1-i). */
+  marqueeRoom?: React.RefObject<HTMLElement | null>;
   minHeight?: number; // the page's minimum height (≈ a viewport); the page GROWS past this with content
   breakpoint?: Breakpoint; // active responsive breakpoint — edits at tablet/mobile write per-breakpoint overrides
   showHidden?: boolean;    // draw blocks hidden at this breakpoint faintly (off: they are gone, as on the published page)
@@ -780,7 +783,7 @@ export default function BoxCanvas({
   // plain click still single-selects). On release, every box FULLY ENCLOSED by the rectangle is selected,
   // keeping only the OUTERMOST of any nested pair — so a big drag grabs whole sections, a tight drag inside
   // one section grabs its blocks. Structural row bands + the page root are never selectable.
-  const startMarqueeArm = (e: React.MouseEvent) => {
+  const startMarqueeArm = (e: { clientX: number; clientY: number }) => {
     if (!editable) return;
     const x0 = e.clientX, y0 = e.clientY;
     let active = false;
@@ -808,6 +811,16 @@ export default function BoxCanvas({
     };
     document.addEventListener("mousemove", onMove); document.addEventListener("mouseup", onUp);
   };
+  // …and from the grey room around the page (S1-i). Refs + [] (rule 2): the latest arm, one listener.
+  const armFromRoom = useRef((e: MouseEvent) => { select(null); startMarqueeArm(e); });
+  armFromRoom.current = (e: MouseEvent) => { select(null); startMarqueeArm(e); };
+  useEffect(() => {
+    const room = marqueeRoom?.current;
+    if (!room || !editable) return;
+    const down = (e: MouseEvent) => { if (e.button === 0 && !canvasRef.current?.contains(e.target as Node)) { e.preventDefault(); armFromRoom.current(e); } };
+    room.addEventListener("mousedown", down);
+    return () => room.removeEventListener("mousedown", down);
+  }, []);
 
   // ── Copy / cut / paste (mouse buttons + keyboard). Paste drops INSIDE a selected container, else
   // right AFTER the selected box; with nothing selected it appends to the page. ──
@@ -1334,13 +1347,14 @@ export default function BoxCanvas({
   // everything and OVERLAPS its siblings. As it moves, its edges + centre SNAP to the edges/centres of
   // sibling boxes and the parent's centre, and bright guide lines show the alignment. rAF-batched.
   const startFreeDrag = (e: React.MouseEvent, node: BoxNode, lift: boolean) => {
+    const gk = `gesture:${Date.now()}`; // one undo step for the whole gesture, however many frames it paints
     e.preventDefault(); e.stopPropagation();
     const id = node.id;
     const el = document.querySelector<HTMLElement>(`[data-box-id="${id}"]`);
     if (!el) return;
     const g = measureFloatGeom(rootRef.current, id);
     if (!g) return;
-    if (lift && !isFloating(node)) onChange(floatBox(rootRef.current, id, g.parentId, g.left, g.top, g.width, g.height)); // lift the flow box onto its own layer, exactly where it sits
+    if (lift && !isFloating(node)) onChange(floatBox(rootRef.current, id, g.parentId, g.left, g.top, g.width, g.height), gk); // lift the flow box onto its own layer, exactly where it sits
     const pEl = document.querySelector<HTMLElement>(`[data-box-id="${g.parentId}"]`);
     if (!pEl) return;
     const pr = pEl.getBoundingClientRect(), cs = getComputedStyle(pEl);
@@ -1359,7 +1373,7 @@ export default function BoxCanvas({
     const TH = 6; // snap threshold (px)
     setResizing(true); setResizeCursor("grabbing"); document.body.style.userSelect = "none";
     let raf = 0, pending: BoxNode | null = null;
-    const flush = () => { raf = 0; if (pending) { onChange(pending); pending = null; } };
+    const flush = () => { raf = 0; if (pending) { onChange(pending, gk); pending = null; } };
     const onMove = (ev: MouseEvent) => {
       let nx = startPxX + (ev.clientX - startX), ny = startPxY + (ev.clientY - startY);
       const guides: { left: number; top: number; width: number; height: number }[] = [];
@@ -1524,6 +1538,7 @@ export default function BoxCanvas({
   // respect). Right/bottom grow keeping the top-left fixed; left/top grow keeping the far edge fixed
   // (left/top compensate). Height is a min-height floor so the box still grows with content.
   const startResizeAbsolute = (e: React.MouseEvent, id: string, edge: Edge) => {
+    const gk = `gesture:${Date.now()}`; // one undo step for the whole gesture, however many frames it paints
     e.preventDefault(); e.stopPropagation();
     const el = document.querySelector<HTMLElement>(`[data-box-id="${id}"]`);
     const info = findParent(rootRef.current, id);
@@ -1542,7 +1557,7 @@ export default function BoxCanvas({
     const startX = e.clientX, startY = e.clientY;
     setResizeCursor(cursorFor(edge)); setResizing(true);
     let raf = 0, pending: BoxNode | null = null;
-    const flush = () => { raf = 0; if (pending) { onChange(pending); pending = null; } };
+    const flush = () => { raf = 0; if (pending) { onChange(pending, gk); pending = null; } };
     const onMove = (ev: MouseEvent) => {
       const dx = ev.clientX - startX, dy = ev.clientY - startY;
       const patch: Partial<BoxNode> = {};
@@ -1920,6 +1935,7 @@ export default function BoxCanvas({
   };
 
   const startResize = (e: React.MouseEvent, id: string, edge: Edge) => {
+    const gk = `gesture:${Date.now()}`; // one undo step for the whole gesture, however many frames it paints
     if (!editable) return;
     const node = findByIdLocal(root, id);
     if (node && isFloating(node)) { startResizeAbsolute(e, id, edge); return; } // floating boxes resize freely (no flow walls)
@@ -1930,9 +1946,20 @@ export default function BoxCanvas({
     if (!el || !node) return;
     const rect = el.getBoundingClientRect();
     const hasE = edge.includes("e"), hasW = edge.includes("w"), hasS = edge.includes("s"), hasN = edge.includes("n");
-    const startX = e.clientX, startY = e.clientY, W0 = rect.width, H0 = rect.height;
+    /**
+     * A COLUMN'S SLOT (S1-a). In a band with a gutter (`gutterCSS`) a column is drawn one gap narrower than its share
+     * and sits half a gap in from each side of it. A stored % describes the SLOT, so every column is measured as its
+     * slot here — its box plus half a gap each side — and all the line maths below works on the same widths the % means.
+     * The band reaches half a gap out on each side, so half its (negative) margin is exactly that half gap.
+     */
+    const HG = (() => {
+      const band = findParent(root, id)?.parent;
+      if (!pEl || !band?.rowBand || (band.direction ?? "column") !== "row") return 0;
+      return Math.max(0, -(parseFloat(getComputedStyle(pEl).marginLeft) || 0)) * zoomOf(el);
+    })();
+    const startX = e.clientX, startY = e.clientY, W0 = rect.width + 2 * HG, H0 = rect.height;
     const dragStamp = Date.now(); // when this drag squeezed a block — see `restAt`
-    const ownMinPx = minContentPx(el); // its content's own minimum (#68)
+    const ownMinPx = minContentPx(el) + 2 * HG; // its content's own minimum (#68), as a slot
 
     const info = findParent(root, id);
     const parentGrid = info?.parent.layout === "grid";
@@ -2019,7 +2046,7 @@ export default function BoxCanvas({
       if ((hasN || hasS) && parentRow) { anchor.alignSelf = "flex-start"; anchor.minHeight = lay(H0); anchor.marginTop = pxU(rect.top - flowTopPx); } // height is CROSS (row) → un-stretch so the floor governs + pin vertical
     }
     if (Object.keys(anchor).length) { base = writeBox(base, id, anchor); changed = true; }
-    if (changed) onChange(base);
+    if (changed) onChange(base, gk);
 
     const bn = resolveResponsive(findByIdLocal(base, id) ?? node, breakpoint); // effective margins at this breakpoint
     const ML0 = bn.marginLeft ?? bn.margin ?? 0; // stored (u) units after anchoring
@@ -2034,7 +2061,7 @@ export default function BoxCanvas({
     // Measured edges (relative to the parent content box) + the fixed FLOW origin (the section's position
     // from previous siblings, independent of its margin). Every drag is clamped to [flow origin … page
     // edge] so a section can NEVER be dragged off the page, while the opposite edge stays anchored.
-    const startLeftPx = rect.left - contentLeftPx, startRightPx = rect.right - contentLeftPx;
+    const startLeftPx = rect.left - HG - contentLeftPx, startRightPx = rect.right + HG - contentLeftPx;
     const startTopPx = rect.top - contentTopPx, startBotPx = rect.bottom - contentTopPx;
     const flowX = startLeftPx - ML0px, flowY = startTopPx - MT0px;
     // RULE G/O — a component (or button) must never be CROPPED by a resize. Down to the size its own content
@@ -2149,17 +2176,17 @@ export default function BoxCanvas({
       // A column on the 3rem floor is DRAWN no narrower than its longest word (#102, `childStyle`), so that is its floor
       // here too — measured once per column per drag — or the packing below would call a line that the browser wraps "full".
       const contentMin = new Map<string, number>();
-      const minOf = (c: BoxNode) => { if (!contentMin.has(c.id)) { const e2 = document.querySelector<HTMLElement>(`[data-box-id="${CSS.escape(c.id)}"]`); contentMin.set(c.id, e2 ? minContentPx(e2) : 0); } return contentMin.get(c.id)!; };
+      const minOf = (c: BoxNode) => { if (!contentMin.has(c.id)) { const e2 = document.querySelector<HTMLElement>(`[data-box-id="${CSS.escape(c.id)}"]`); contentMin.set(c.id, e2 ? minContentPx(e2) + 2 * HG : 0); } return contentMin.get(c.id)!; };
       const floorPxOf = (c: BoxNode) => {
         const rem = places?.has(c.id) ? HAND_FLOOR_REM : columnFloorRem(rowAt, c, breakpoint);
-        const px = rem * rootFontPx() * Z;
+        const px = rem * rootFontPx() * Z + 2 * HG;
         return Math.min(maxW, rem === HAND_FLOOR_REM ? Math.max(px, minOf(c)) : px);
       };
-      kids.forEach((c) => drawnFloorPx.set(c.id, Math.min(maxW, columnFloorRem(rowAt, { ...c, widthByHand: false }, breakpoint) * rootFontPx() * Z)));
+      kids.forEach((c) => drawnFloorPx.set(c.id, Math.min(maxW, columnFloorRem(rowAt, { ...c, widthByHand: false }, breakpoint) * rootFontPx() * Z + 2 * HG)));
       const lines = packRowLines(kids, (c) => (floorPxOf(c) / maxW) * 100);
       const at = kids.findIndex((c) => c.id === id);
       /** A sibling's width as the LAYOUT states it — its stored share where it has one, else what is drawn. */
-      const storedPx = (c: BoxNode, r2: DOMRect) => Math.max(floorPxOf(c), c.width?.trim().endsWith("%") ? (widthPct(c.width) / 100) * maxW : r2.width);
+      const storedPx = (c: BoxNode, r2: DOMRect) => Math.max(floorPxOf(c), c.width?.trim().endsWith("%") ? (widthPct(c.width) / 100) * maxW : r2.width + 2 * HG);
       const measure = (c: BoxNode | undefined) => {
         if (!c) return null;
         const e2 = document.querySelector<HTMLElement>(`[data-box-id="${CSS.escape(c.id)}"]`);
@@ -2170,14 +2197,14 @@ export default function BoxCanvas({
         // A column REARRANGED on a tablet (#78) has no floor below its share: the arrangement placed it, so one on a later
         // line comes up only whole — never squeezed onto a line whose count the arrangement already decided.
         .map((m) => {
-          const min = minContentPx(m.e2), cur = Math.max(min, storedPx(m.c, m.r2));
+          const min = minContentPx(m.e2) + 2 * HG, cur = Math.max(min, storedPx(m.c, m.r2));
           // Its remembered rest only if THIS block's drag made it (#77) — to anyone else's drag it is the width it holds.
           const own = restForDrag({ rest: m.c.restWidth ? Math.max(min, restPx(m.c, m.r2)) : undefined, at: m.c.restAt, restBy: m.c.restBy }, cur, id);
-          return { floorPx: places?.has(m.c.id) ? storedPx(m.c, m.r2) : floorPxOf(m.c), id: m.c.id, w: own.rest, cur, ml: (parseFloat(getComputedStyle(m.e2).marginLeft) || 0) * Z, at: own.at, foreign: own.foreign, wrapBy: m.c.wrapBy, min };
+          return { floorPx: places?.has(m.c.id) ? storedPx(m.c, m.r2) : floorPxOf(m.c), id: m.c.id, w: own.rest, cur, ml: Math.max(0, (parseFloat(getComputedStyle(m.e2).marginLeft) || 0) * Z - HG), at: own.at, foreign: own.foreign, wrapBy: m.c.wrapBy, min };
         });
       const nx = at >= 0 ? measure(kids[at + 1]) : null;
       if (nx && lines[at + 1] === lines[at]) {
-        nextSibId = nx.c.id; nextLeftPx = nx.r2.left - contentLeftPx; nextWidth0 = storedPx(nx.c, nx.r2);
+        nextSibId = nx.c.id; nextLeftPx = nx.r2.left - HG - contentLeftPx; nextWidth0 = storedPx(nx.c, nx.r2);
         nextRest = restForDrag({ rest: nx.c.restWidth ? restPx(nx.c, nx.r2) : undefined, restBy: nx.c.restBy }, nextWidth0, id).rest;
       }
       // By id, not by index: `followers` drops a block that is not drawn, which would shift every index after it.
@@ -2364,7 +2391,7 @@ export default function BoxCanvas({
      * learned the hard way. Where the partner cannot give, the edge does not move — it never grows out of
      * the far side instead.
      */
-    const neighbourMinPx = Math.min(maxW, 14 * rootPx);
+    const neighbourMinPx = Math.min(maxW, 14 * rootPx + 2 * HG);
 
     const P = (px: number) => (px / maxW) * 100;
     const floor2 = (v: number) => Math.floor(v * 100 + 1e-6) / 100;
@@ -2384,7 +2411,7 @@ export default function BoxCanvas({
     setResizeCursor(cursorFor(edge));
     setResizing(true);
     let raf = 0; let pending: BoxNode | null = null;
-    const flush = () => { raf = 0; if (pending) { onChange(pending); pending = null; } };
+    const flush = () => { raf = 0; if (pending) { onChange(pending, gk); pending = null; } };
     const onMove = (ev: MouseEvent) => {
       const dx = ev.clientX - startX, dy = ev.clientY - startY;
       let tree = base;
@@ -2416,7 +2443,7 @@ export default function BoxCanvas({
         // Never below the floor it is DRAWN at (#67): a section in a row is drawn no narrower than min(100%, 14rem), so a
         // smaller stored width changes nothing on screen — it only makes the stored widths disagree with the page, and
         // every later drag flipped the last block between its line and the next. Self-sizing blocks have no such floor.
-        const want = Math.min(room, Math.max(minWpx, selfSizing ? 0 : Math.max(Math.min(maxW, HAND_FLOOR_REM * rootPx), ownMinPx), W0 + dx));
+        const want = Math.min(room, Math.max(minWpx, selfSizing ? 0 : Math.max(Math.min(maxW, HAND_FLOOR_REM * rootPx + 2 * HG), ownMinPx), W0 + dx));
         const R = P(room);
         const fs: LineFollower[] = after.map((f, k) => ({
           id: f.id, rest: P(f.w), gap: P(f.ml), at: f.at, cur: P(f.cur), pending: f.sameLine || f.wrapBy === id,
@@ -2593,9 +2620,13 @@ export default function BoxCanvas({
          * 0.01% adrift, which is a tenth of a pixel at this width and is exactly what wrapped the row.
          */
         const share = (px: number) => Math.round(((px / maxW) * 100 + Number.EPSILON) * 100) / 100;
-        const outerPct = share(startRightPx - flowX); // what this block occupied, gap included
+        // What this block occupied, gap included — its STORED total when it has one, so opening a space and closing it
+        // again gives back exactly what was there. Re-measured, a column on fractional pixels (the band's half gaps,
+        // S1-a) came home at 50.02% beside a 50% neighbour, and the line no longer added up.
+        const storedOuter = bn.width?.trim().endsWith("%") ? parseFloat(bn.width) + (bn.marginLeftPct ?? 0) : null;
+        const outerPct = storedOuter ?? share(startRightPx - flowX);
         const gapPct = prevSibId ? 0 : Math.max(0, share(left - flowX));
-        const widthPct = Math.max(3, Math.min(100, outerPct - gapPct));
+        const widthPct = Math.max(3, Math.min(100, Math.round((outerPct - gapPct) * 100) / 100)); // two decimals, like every stored share
         const ownW = prevSibId ? pct(startRightPx - left) : `${widthPct}%`;
         tree = writeBox(tree, id, {
           width: ownW, widthByHand: true, restWidth: undefined, restAt: undefined, restBy: undefined, endOwed: undefined,
@@ -2844,7 +2875,7 @@ export default function BoxCanvas({
           onChange(writeBox(rootRef.current, id, {
             alignSelf: undefined,
             marginBottom: hasS && below > 2 ? pxU(below) : undefined,
-          }));
+          }), gk);
         }
       }
       onResized?.(id, (hasS || hasN) && !hasE && !hasW ? "height" : "width");

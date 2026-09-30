@@ -388,8 +388,10 @@ describe("box-export — static HTML", () => {
     const acc = createComponent("accordion", { fontFamily: '"Playfair Display", serif', items: [{ id: "i", title: "T", body: "B" }] } as Partial<BoxNode>);
     const sec = createContainer("column", { bgImage: "data:image/png;base64,AAAA", children: [makeRowBand([acc])] } as Partial<BoxNode>);
     const html = renderPageHTML(sec, DEFAULT_THEME);
-    expect(html).toContain("&quot;Playfair Display&quot;");
-    expect(html).toContain("background-image:url(&quot;data:image/png;base64,AAAA&quot;)");
+    // In a style ATTRIBUTE the quotes are entities; in the STYLESHEET they are real quotes (entities are never decoded
+    // there — this line used to expect `url(&quot;…&quot;)` in the sheet, which is what dropped the picture, 2026-09-30)
+    expect(html).toMatch(/(&quot;|")Playfair Display(&quot;|")/);
+    expect(html).toContain('background-image:url("data:image/png;base64,AAAA")');
     // every style attribute is closed properly (no stray unescaped quote inside a style="…")
     for (const m of html.matchAll(/style="([^"]*)"/g)) expect(m[1]).not.toContain('"');
   });
@@ -399,13 +401,33 @@ describe("box-export — static HTML", () => {
     const root = createContainer("column", { children: [makeRowBand([acc])] } as Partial<BoxNode>);
     const html = renderPageHTML(root, DEFAULT_THEME);
     // styles are class rules (so media queries can override them); every base rule caps at its container
-    for (const m of html.matchAll(/\.bx-[A-Za-z0-9_-]+\{([^}]*)\}/g)) expect(m[1]).toContain("max-width:100%");
+    // …except a band with a gutter (S1-a), which reaches half a gap past each side ON PURPOSE so its outer columns meet
+    // the edge; the body's overflow-x:clip below keeps that from ever scrolling.
+    for (const m of html.matchAll(/\.bx-[A-Za-z0-9_-]+\{([^}]*)\}/g)) {
+      if (m[1].includes("max-width:none")) expect(m[1]).toMatch(/width:calc\(100% \+ /);
+      else expect(m[1]).toMatch(/max-width:(100%|calc\(100% - )/); // a column in that band: the line less one gap
+
+    }
     // No inline LAYOUT/paint styles a media query could never beat. CSS custom-property data vars (--eu-n ordinals) are exempt.
     for (const m of html.matchAll(/\sstyle="([^"]*)"/g))
       for (const decl of m[1].split(";").filter(Boolean)) expect(decl.trim().startsWith("--")).toBe(true);
     // the exported document body never scrolls horizontally
     const doc = pageDoc(createContainer("column", {} as Partial<BoxNode>), "P");
     expect(doc).toContain("html,body{max-width:100%;overflow-x:hidden}");
+  });
+
+  it("a quoted value in a STYLESHEET rule keeps its quotes — a picture background and a font stack reach the Preview", () => {
+    // Measured 2026-09-30 (S-1 re-run): `url(&quot;data:…&quot;)` in the <style> block, where entities are never decoded —
+    // invalid CSS, so every picture background (and every quoted font stack) was dropped from the published page.
+    const box = createContainer("column", { id: "pic", bgImage: 'data:image/svg+xml,%3Csvg%3E%3C/svg%3E', fontFamily: '"Playfair Display", serif', children: [makeRowBand([createElement("text", { text: "x" } as Partial<BoxNode>)])] } as Partial<BoxNode>);
+    const html = renderPageHTML(createContainer("column", { children: [makeRowBand([box])] } as Partial<BoxNode>), DEFAULT_THEME);
+    const sheet = [...html.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/g)].map((m) => m[1]).join("\n");
+    expect(sheet).toContain('url("data:image/svg+xml');
+    expect(sheet).not.toContain("&quot;");
+    // …and a value can never close the <style> element: `<` is escaped the CSS way
+    expect(styleString({ backgroundImage: 'url("</style><script>")' } as CSSProperties, "sheet")).not.toContain("</style");
+    // In an ATTRIBUTE the quotes are still entity-escaped, so they cannot close style="…"
+    expect(styleString({ fontFamily: '"A", serif' })).toBe("font-family:&quot;A&quot;, serif");
   });
 
   it("RESPONSIVE EXPORT is MOBILE-FIRST: the phone layout is the base rule and wider screens add to it", () => {

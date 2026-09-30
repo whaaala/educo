@@ -111,6 +111,19 @@ moves nothing, so the header that is one line on the phone site is one line on t
 the hidden menu back to edit it, the **Hidden** toggle beside the device chips draws it faintly; click again and it
 is gone.
 
+## 6½. "My words never touch an edge" — space by default
+
+I drop a Heading on an empty page. Its words sit a gutter in from both edges (about 2rem; a little less on a phone),
+with a little space above and below — I never set any of it. I drop three Stacks beside each other and colour them: a
+**1rem gap** runs between them, the first still starts at the page's left edge and the last ends at its right, and all
+three stay on one line — each column quietly gave up a share of the gap so the line still fits. On a phone they stack,
+1rem apart. A box I colour or give a border keeps its words 1.5rem in from its edge; a plain box adds nothing, because
+there is no edge to keep away from.
+
+Every one of these is mine to change, down to zero: select the block, open **Spacing**, and each control says
+"Default · 2rem" (real rem) until I move it, with **Back to default** to undo my change. A page I saved before these
+defaults existed opens exactly as it was; only what I add from now on arrives with the space.
+
 ## 7. Text and space: which one follows what
 
 Two fluid units run the page, and they answer different questions.

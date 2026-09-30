@@ -53,7 +53,7 @@ export default function BulkInspector({ count, theme, sample, sampleSection = fa
   const pad = s ? (s.padding ?? padSide(s, "Top", sampleSection)) : 0;
   return (
     <div className="p-4 space-y-3">
-      <div className="flex items-center gap-1.5 text-[0.6875rem] font-semibold text-indigo-600 dark:text-indigo-300"><Layers className="w-3.5 h-3.5" /> {count} sections selected</div>
+      <div className="flex items-center gap-1.5 text-[0.6875rem] font-semibold text-indigo-600 dark:text-indigo-300 midnight:text-indigo-300 purple:text-purple-200"><Layers className="w-3.5 h-3.5" aria-hidden="true" /> {count} blocks selected</div>
       <p className="text-[0.625rem] text-gray-400">Every change below applies to all {count} at once.</p>
 
       {/* ── Quick steppers (their exact ask: grow/shrink width & height together) ── */}

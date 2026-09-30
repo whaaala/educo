@@ -6,7 +6,7 @@ Feature: Space by default — words never touch an edge
   # BUILT 2026-09-30 (batch S-1, docs/TASK_TREE.md). The user's values: side gutter 2rem (≈22px on a 360px phone, fluid) ·
   # section space 1rem above and below · header/footer bar 1rem · stack gap 1rem · column and grid gap 1rem · inner
   # padding 1.5rem in a box with a visible edge, 0 in a plain box · saved pages keep their spacing. The controls show
-  # real rem. Open: the gap between columns side by side on the page (S1-a).
+  # real rem. Columns side by side keep a 1rem GUTTER across and 1rem down (S1-a): each gives up one gap from its share.
   # Every default comes from the spacing tokens, in rem with a fluid term, from ONE emitter for canvas and export.
 
   Background:
@@ -104,6 +104,51 @@ Feature: Space by default — words never touch an edge
     And the widths and the gaps on the line add up to the line
     Because the gap is a share of the line and one sum with the widths; a default must never push a column down
 
+  Scenario Outline: Columns side by side on the page keep a 1rem gap and still fit their line at <screen>
+    When I drop three Stacks beside each other on the page, each with a background colour and a Text block
+    And I look at the page at <screen>
+    Then the coloured columns are 1rem apart and never touch
+    And all three are on one line
+    And the first column starts at the left edge of the page and the last ends at the right edge
+    Because the gap is a gutter: each column gives up one gap from its share, so a full line of shares still fits
+      (the user, 2026-09-30: "add a gap, the widths shrink so the line still fits — 1rem")
+
+    Examples:
+      | screen       |
+      | Laptop 1024  |
+      | Desktop 1280 |
+      | Wide 1920    |
+
+  Scenario Outline: Columns that wrap or stack keep a 1rem gap down as well at <screen>
+    Given four coloured columns side by side on the page
+    When I look at the page at <screen>
+    Then the columns on one line are 1rem apart from the columns on the next
+    Because coloured columns never touch in any direction (the user, 2026-09-30: "1rem down too")
+
+    Examples:
+      | screen     |
+      | Mobile 375 |
+      | Tablet 768 |
+
+  Scenario: Wrapping one column never resizes the others
+    Given three columns side by side on the page
+    When I drag the right edge of the first column until the last one wraps to the next line
+    Then the columns left on the first line keep the width I dragged them to
+    And when I drag the edge back, all three return to one line at the widths they had
+
+  Scenario: Resizing a column with the gap still moves only the edge I hold
+    Given three columns side by side on the page
+    When I drag the boundary between the first and the second to the right
+    Then the edge I hold follows the pointer
+    And the left edge of the first column and the right edge of the third do not move
+    And the gap between the columns stays 1rem
+
+  Scenario: A page saved before the gap keeps its columns touching
+    Given a page saved before columns had a gap, with two columns side by side
+    When I open it
+    Then the columns sit exactly where they were
+    And a column I add beside them now arrives in a band of its own with the gap
+
   Scenario: Cells in a grid have a gap across and down
     When I build a grid of three across and two down with a Card in each cell
     Then the cells are the default column gap apart across
@@ -157,6 +202,35 @@ Feature: Space by default — words never touch an edge
     When I change one and then choose "Back to default"
     Then it reads "Default" again
     And the control has a label a screen reader announces, and works from the keyboard
+
+  Scenario Outline: A spacing control shows the real size in rem for <space>
+    Given a new <block> at its defaults
+    When I select it
+    Then its <space> control reads "Default · <size>"
+    And <size> is the size in real rem, 16px to the rem, never the stored number divided by 10
+    Because a control said "3.2rem" for a 2rem gutter (S1-b, the user 2026-09-30: "real rem")
+
+    Examples:
+      | block                     | space                   | size   |
+      | section on the page       | side inner spacing      | 2rem   |
+      | section on the page       | top inner spacing       | 1rem   |
+      | header on the page        | top inner spacing       | 1rem   |
+      | stack                     | space between blocks    | 1rem   |
+      | row of columns            | space across            | 1rem   |
+      | grid                      | space across            | 1rem   |
+      | box with a background     | inner spacing           | 1.5rem |
+      | plain box                 | inner spacing           | 0rem   |
+
+  Scenario Outline: The top of a <region> is 1rem, not a tall strip
+    Given a <region> on the page at its defaults
+    Then its words are 1rem below its top edge and 1rem above its bottom edge, on the canvas and in the Preview
+    Because 4rem was too far from the top (the user, 2026-09-30: "1rem")
+
+    Examples:
+      | region  |
+      | section |
+      | header  |
+      | footer  |
 
   Scenario: Undo takes an override back
     Given I have set a section's side gutter to 0
