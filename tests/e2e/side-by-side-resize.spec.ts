@@ -264,6 +264,8 @@ test.describe("two blocks sharing a line", () => {
     const errs: string[] = [];
     page.on("pageerror", (e) => errs.push(e.message));
     page.on("console", (m) => { if (m.type() === "error") errs.push(m.text()); });
+    // A console "Failed to load resource" names no URL — this does, so a failure says WHAT was missing.
+    page.on("response", (r) => { if (r.status() >= 400) errs.push(`${r.status()} ${r.url()}`); });
 
     await seedPair(page);
     expect(await select(page, "L")).toBe(true);

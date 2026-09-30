@@ -192,7 +192,10 @@ const check = (where, w, m) => {
     }
     // 150% browser text: the default space grows
     await page.setViewportSize({ width: 1280, height: 900 }); await page.waitForTimeout(400);
-    let f = await (await page.$('iframe')).contentFrame(); const at100 = await f.evaluate(measure, ['preview', { stackSec: ids.stackSec }]);
+    let f = await (await page.$('iframe')).contentFrame();
+    // S-2 (2): the coloured section set to 0 THROUGH THE INSPECTOR above — the page audit must say its words touch its edge
+    { const w7 = (await f.evaluate(`(${require('./page-audit.js').auditDoc.toString()})({})`)).warn.filter((x) => x.startsWith('W7a'));
+      if (!w7.some((x) => /coloured box/.test(x))) bad(`page audit: the section set to 0 through the UI raised no W7a (${w7.join(' · ') || 'nothing'})`); else ok(`page audit on the UI-built 0 section: ${w7.join(' · ').slice(0, 140)}`); } const at100 = await f.evaluate(measure, ['preview', { stackSec: ids.stackSec }]);
     await f.evaluate(() => { document.documentElement.style.fontSize = '150%'; }); await page.waitForTimeout(400);
     const at150 = await f.evaluate(measure, ['preview', { stackSec: ids.stackSec }]);
     if (!(at150.stackSec.pad[0] > at100.stackSec.pad[0] && at150.stackSec.pad[1] > at100.stackSec.pad[1])) bad(`150% text: section space ${at100.stackSec.pad.join('/')} → ${at150.stackSec.pad.join('/')} did not grow`); else ok(`150% text: ${at100.stackSec.pad.join('/')} → ${at150.stackSec.pad.join('/')}`);

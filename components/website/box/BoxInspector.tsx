@@ -837,8 +837,8 @@ export default function BoxInspector({ section = false, sectionPlace, node, them
                   {/* IT COVERS SOMETHING, AND ONLY THE BUILDER KNOWS IT WILL. A block that floats on screen
                       keeps no space, so the page starts underneath it: measured, a 64px bar hid 56px of the
                       block below it the moment the page opened, and a bar held to the bottom sits over the
-                      footer for good. The space is NOT added automatically — spacing is a decision here, never
-                      a default — so this says what will happen and offers the one-click alternative instead.
+                      footer for good. The space is NOT reserved automatically — how tall a floating bar will be
+                      on every screen is not known — so this says what will happen and offers the one-click alternative.
                       Sticky at the top of a page looks identical and keeps its place in the layout. */}
                   {node.pin && (node.hold ?? "sticky") === "fixed" && (node.pin === "top" || node.pin === "bottom") && (
                     <div className="text-[11px] leading-snug rounded-md px-2 py-1.5 space-y-1 bg-amber-50 text-amber-900 ring-1 ring-amber-200 dark:bg-amber-950/40 dark:text-amber-200 dark:ring-amber-900 midnight:bg-amber-950/40 midnight:text-amber-200 midnight:ring-amber-900 purple:bg-amber-950/40 purple:text-amber-200 purple:ring-amber-900">

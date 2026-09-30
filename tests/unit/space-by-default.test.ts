@@ -228,4 +228,21 @@ describe("S-2 (5): a block that paints its own box keeps the section space OUTSI
     expect(html).toContain(`margin-top:${u(s)}`);
     expect(html).toContain(`width:calc(100% - ${u(2 * g)})`);
   });
+
+  // S2-f — the shape the UI BUILDS: a block dropped on the page lands as a column of a page band, never straight on it.
+  const bandRule = (html: string, band: BoxNode) => html.match(new RegExp(`\\.bx-${band.id}\\{[^}]*\\}`))?.[0] ?? "";
+  it.each(SELF_PAINTING)("S2-f: %s dropped on the page (a column of a page band) keeps the gutter from both page edges", (kind) => {
+    const band = makeRowBand([blockForKind(kind)]);
+    const html = renderPageHTML({ ...createRoot(), children: [band] }, DEFAULT_THEME);
+    expect(bandRule(html, band)).toContain(`padding-left:${u(g)}`);
+    expect(bandRule(html, band)).toContain(`padding-right:${u(g)}`);
+  });
+
+  it("S2-f: a band of coloured sections still bleeds; a band inside a stack, a saved block and Outer spacing set across get no inset", () => {
+    const html = (band: BoxNode, deep = false) => bandRule(renderPageHTML({ ...createRoot(), children: [deep ? makeRowBand([createContainer("column", { children: [band] })]) : band] }, DEFAULT_THEME), band);
+    expect(html(makeRowBand([blockForKind("container", { background: "#eee" } as Partial<BoxNode>)]))).not.toContain(`padding-left:${u(g)}`);
+    expect(html(makeRowBand([blockForKind("card")]), true)).not.toContain(`padding-left:${u(g)}`);
+    expect(html(makeRowBand([{ id: "b", type: "button" } as BoxNode]))).not.toContain(`padding-left:${u(g)}`);
+    expect(html(makeRowBand([blockForKind("button", { marginLeft: 0 } as Partial<BoxNode>)]))).not.toContain(`padding-left:${u(g)}`);
+  });
 });

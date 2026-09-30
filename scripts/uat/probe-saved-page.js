@@ -39,6 +39,12 @@ const geo = (page, ids) => page.evaluate((ids) => {
     const g2 = await geo(page, ['secA', 'secB', added]);
     if (!(g2[added]?.pad[0] >= 10 && g2[added]?.pad[1] >= 14)) bad(`a block added to the saved page arrived without the defaults: ${g2[added]?.pad}`); else ok(`a block added to the saved page arrives with the defaults: ${g2[added].pad.join('/')}px`);
     if (Math.abs(g2.secB.l - g2.secA.r) > 1 || g2.secA.pad.some((v) => v !== 0)) bad('adding a block changed the saved sections'); else ok('the saved sections are untouched by the addition');
+    // S-2: a COMPONENT added to the saved page arrives with the gutter and the section space outside its box
+    await H.panel(page, true); const card = await P.tileAfter(page, added, 'Card'); await H.panel(page, false);
+    const cg = await page.evaluate(([id, prev]) => { const pg = document.querySelector('[data-box-id]'); const Z = pg.currentCSSZoom || 1; const pr = pg.getBoundingClientRect(); const r = document.querySelector(`[data-box-id="${id}"]`).getBoundingClientRect(); const p = document.querySelector(`[data-box-id="${prev}"]`).getBoundingClientRect(); return { l: (r.left - pr.left) / Z, r: (pr.right - r.right) / Z, above: (r.top - p.bottom) / Z }; }, [card, added]);
+    if (cg.l < 20 || cg.r < 20 || cg.above < 10) bad(`a Card added to the saved page: ${cg.l.toFixed(1)} / ${cg.r.toFixed(1)}px from the edges, ${cg.above.toFixed(1)}px under the block above`); else ok(`a Card added to the saved page: ${cg.l.toFixed(1)} / ${cg.r.toFixed(1)}px from the edges, ${cg.above.toFixed(1)}px under the block above`);
+    const g3 = await geo(page, ['secA', 'secB']);
+    if (Math.abs(g3.secB.l - g3.secA.r) > 1 || g3.secA.pad.some((v) => v !== 0)) bad('adding a Card changed the saved sections'); else ok('the saved sections are untouched by the Card');
     await page.screenshot({ path: 'scripts/uat/probe-saved-page-added.png' });
   } catch (e) { bad('CRASH ' + e.message.split('\n')[0]); }
   if (errs.length) bad('page errors: ' + [...new Set(errs)].join(' | '));

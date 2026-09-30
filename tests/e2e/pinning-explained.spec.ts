@@ -224,8 +224,8 @@ test.describe("every block can be pinned, and the choice is shown as pictures", 
   test("“Floats on screen” says what it covers, and “Keep its space instead” actually uncovers it", async ({ page }) => {
     /**
      * Measured before the warning existed: a 64px bar held to the top hid 56px of the block under it the
-     * moment the page opened. The space is not added behind the user's back — spacing is a decision here —
-     * so the Inspector says so and offers the mechanism that keeps its place instead.
+     * moment the page opened. The space under a floating bar is not reserved behind the user's back, so the
+     * Inspector says so and offers the mechanism that keeps its place instead.
      */
     const root = bare([blk("bar", 64, { pin: "top", hold: "fixed", background: "#0d3b1e" }), blk("hero", 600, { background: "#8c0f52" })]);
     await openBuilder(page, root, "hero");

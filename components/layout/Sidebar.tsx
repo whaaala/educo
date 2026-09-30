@@ -52,7 +52,23 @@ interface MenuItem {
   children?: MenuItem[];
 }
 
-const menuItems: MenuItem[] = [
+/**
+ * Links whose pages are not built yet — hidden until they are (S2-i, the user 2026-09-30): each was a 404, and the
+ * page prefetched it. Listed in docs/MVP_AUDIT.md; building one means deleting its line here. Guarded by
+ * tests/unit/sidebar-links.test.ts, which fails on any link in the menu with no page.
+ */
+export const UNBUILT = new Set([
+  "/school/info", "/school/branches", "/school/academic-years", "/school/sections", "/school/departments",
+  "/subjects", "/exams", "/syllabus", "/assignments", "/dormitory", "/transport", "/settings/schools", "/settings/users",
+]);
+const built = (items: MenuItem[]): MenuItem[] => items.flatMap((m) => {
+  if (m.href && UNBUILT.has(m.href)) return [];
+  if (!m.children) return [m];
+  const kids = built(m.children);
+  return kids.length ? [{ ...m, children: kids }] : [];
+});
+
+export const menuItems: MenuItem[] = built([
   {
     id: "dashboard",
     label: "Dashboard",
@@ -187,7 +203,7 @@ const menuItems: MenuItem[] = [
     id: "attendance",
     label: "Attendance",
     icon: <Calendar className="w-5 h-5" />,
-    href: "/attendance",
+    href: "/students/attendance", // there is no /attendance page (S2-i)
   },
   {
     id: "settings",
@@ -202,7 +218,7 @@ const menuItems: MenuItem[] = [
       { id: "admin-console", label: "Admin Console", icon: <ExternalLink className="w-4 h-4" />, href: "http://localhost:3001" },
     ],
   },
-];
+]);
 
 // Parent-specific navigation (used when a Parent user is logged in)
 const parentMenuItems: MenuItem[] = [

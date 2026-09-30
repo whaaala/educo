@@ -112,7 +112,7 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
     - `[x]` a page saved before this change opens exactly as it was; a block added to it arrives with the defaults —
       `probe-saved-page.js`: the saved columns still touch, padding still 0; a Stack added through the UI arrives 16/32px
     - `[x]` 150% browser text: the section space grows (18.1/36.2 → 22.1/44.2px at 1280); the exported CSS has no pixel spacing
-- `[>]` **BATCH S-2 · Spacing — components breathe, the audit measures it** (area: spacing · 5 changes, OPEN 2026-09-30)
+- `[x]` **BATCH S-2 · Spacing — components breathe, the audit measures it** — CLOSED 2026-09-30 (HEADED UAT on build -BHdJe1L, 4 themes, 132 checks each, 0 findings; sidebar HEADED on EQ3zdB, 4 themes; gate: vitest 3,896 · eslint 0 errors · test:fast 724) (area: spacing · 5 changes)
   - (5) **blocks placed one under another touch** (asked by the user 2026-09-30, seen in the S-1 screenshots): a
     component or button placed straight on the page gets NONE of the section space (`leafPaddingCSS` skips self-painting
     blocks) and the page itself has gap 0, so a component sits against the one above/below it; coloured sections, a row
@@ -121,7 +121,8 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
     components and buttons included — gets the section space above and below, OUTSIDE its own painted box, so coloured
     sections still meet; **1rem**; a stack inside a stack is spaced by its parent's gap; never a per-block bottom margin.
     **CODED 2026-09-30, waiting for the S-2 UAT pass.** The user decided the same day: it is shown and overridden
-    by **Outer spacing** ("Default · 2rem", Back to default); Inner spacing stays the component's own padding. Built
+    by **Outer spacing** ("Default · 1rem" for a block dropped on the page — the gutter is its band's, S2-f; Back to
+    default); Inner spacing stays the component's own padding. Built
     as a MARGIN (`outerDefaults` / `outerSpaceCSS` / `sectionPlaceIn` in `lib/box-model.ts`, one call in the canvas and
     one in the export), so the selection outline stays on the painted box. It covers the `component` nodes, the Button
     AND the catalogue components built as trees (Card, Quote, Stat, Badge, Rating — they are containers with a
@@ -133,21 +134,52 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
     - `[x]` S2-a · a component's Inner spacing read "Default · 1rem/2rem" on the page though nothing was drawn (its own
       padding is only drawn once set) — FIXED: a self-painting block's inner default is 0 (`spaceDefaults`); guarded
     - `[x]` S2-b · the Inner/Outer spacing side boxes had `dark:border-white/10` with no midnight / purple variant — FIXED
-    - `[ ]` S2-c · a Card built as a tree carried the section padding INSIDE its painted box (2rem gutter inside, touching
-      its neighbours) — FIXED in code (tree presets skip the section branch of `spaceDefaults`); to be SEEN in the UAT
-  - **← YOU ARE HERE: the S-2 HEADED UAT pass** (fresh build, 4 themes) — then close S-2
-  - checklist (written 2026-09-30, BEFORE the pass; each at 375 · 768 · 1024 · 1280 · 1920, canvas AND Preview, 4 themes):
-    - `[ ]` (5) a Card, a Button, a Quote and an Alert dropped one under another straight on the page: 1rem above and below
-      each, OUTSIDE its painted box; the gutter at both sides; two coloured sections still meet edge to edge
-    - `[ ]` (5) the same components inside one Stack: spaced by the stack gap only — never doubled
-    - `[ ]` (5) each set to 0 through Spacing → 0 on canvas and Preview, after a reload; Back to default returns 1rem
-    - `[ ]` (5) a page saved before this change opens exactly as it was (`probe-saved-page.js`, with a component added)
-    - `[ ]` (1) every component in the catalogue (enumerated, not listed by hand): a gap between its parts, and its words
-      at least the inner padding from its own visible edge
-    - `[ ]` (2) the page audit flags words closer than the gutter floor to the page edge or their coloured box's edge on
-      a page built with a 0 gutter, and flags NOTHING on a default page
-    - `[ ]` (3) the page audit flags two sections closer than the section floor, and nothing on a default page
-    - `[ ]` (4) the old "never a default" wording: 0 hits for it in the four places named above
+    - `[x]` S2-c · a Card built as a tree carried the section padding INSIDE its painted box — FIXED; SEEN in the S-2
+      pass: the Card's words 28px in from its own edge at 1280 (its design's padding), the gutter outside it
+    - `[x]` S2-f · **a component dropped on the page touched the page edges** (found by probe-s2 on build rLg4Bh, and by the
+      user the same hour: "still hugging the far end on the left or on the right"): through the UI nothing is ever
+      straight on the page — a drop lands as a column of a page BAND, whose gutter puts its outer columns flush with the
+      edges, so the "page" branch of `outerDefaults` was unreachable and a Card / Quote / Alert sat 0 / 0px from the edges,
+      a Button 0px from the left, at every rung, canvas and Preview. The old unit test built `root.children = [card]`, a
+      shape the UI never makes. FIXED: `pageBandInset` — a band of the page holding a self-painting block (not a coloured
+      section) keeps the 2rem gutter as its own padding, so the columns' gap arithmetic and the resize's slot measure are
+      untouched; it steps aside once that block's Outer spacing across is set. One call in the canvas, one in the export.
+      Guard: `space-by-default.test.ts` "S2-f" builds the UI's shape (page → band → component), 8 red with the inset off.
+      SEEN (build -BHdJe1L, 4 themes): 22.4 / 36.5 / 44.8px from both edges at 375 / 1280 / 1920, canvas = Preview.
+      ponytail: a coloured section sharing a band with a component is inset with it
+    - `[x]` S2-g · HARNESS: probe-s2 read the band's half-gap side margins as Outer spacing and expected "Default · 2rem";
+      a column's sides are the band's gutter, so it now checks top/bottom — the Outer spacing a band column shows is
+      "Default · 1rem", which is what this checklist says. The feature file said 2rem too — corrected
+    - `[x]` S2-h · two comments (BoxInspector 840, pinning-explained.spec 227) gave the reversed rule as the reason a
+      floating bar reserves no space — reworded to the real reason; no behaviour changed
+    - `[x]` S2-i · **the app's sidebar linked to 14 pages that do not exist** (`/attendance` and 13 never built), and the
+      page prefetched them: two 404 console errors on every screen with the sidebar, which failed
+      `side-by-side-resize.spec.ts` "no console error" in the full gate (24 of 24 under 8 workers; it had passed by timing).
+      The guard now names the URL of a failed load. DECIDED by the user 2026-09-30: Attendance → `/students/attendance`,
+      the 13 HIDDEN until built (`UNBUILT` in `Sidebar.tsx`, listed in `docs/MVP_AUDIT.md` and tree 4). Guard
+      `sidebar-links.test.ts` (every menu link has a page; red on `/attendance`). SEEN (`probe-sidebar.js`, build EQ3zdB, 4 themes side by side, HEADED): no School Management group, Academic → Classes only, Management → Finance · Library, Attendance clicked → `/students/attendance`, 0 failed loads on `/`, that page and the builder; the resize guard 24 of 24 under 8 workers (was 0 of 24)
+  - checklist (written 2026-09-30, BEFORE the pass; each at 375 · 768 · 1024 · 1280 · 1920, canvas AND Preview, 4 themes) —
+    ticked from `probe-s2.js` on build -BHdJe1L (Light · Dark · Midnight · Purple Dream side by side, HEADED, built through
+    the UI: 132 checks each, 0 findings; the first run on rLg4Bh found S2-f and S2-g):
+    - `[x]` (5) a Card, a Button, a Quote and an Alert dropped one under another on the page: painted boxes 22.4 · 28.3 ·
+      32.4 · 36.5 · 44.8px apart at 375 · 768 · 1024 · 1280 · 1920 (1rem each side, OUTSIDE the box); the gutter at both
+      sides (after S2-f); two coloured Stacks meet (0.0px); selection outline on the painted box (Card, Alert)
+    - `[x]` (5) the same four inside one Stack: 11.2 · 14.1 · 16.2 · 18.2 · 22.4px — the stack gap only, 0 margin above/below
+    - `[x]` (5) the Card's Outer spacing: "Default · 1rem" → 0 → 0/0/0/0 on the canvas → still 0 after a reload → Back to
+      default 16.2px above/below → Ctrl+Z back to 0; canvas = Preview within 4px at every rung
+    - `[x]` (5) a page saved before this change opens exactly as it was; a Stack AND a Card added to it through the UI arrive
+      with the defaults (the Card 32.4 / 32.4px from the edges, 16.2px under the block above), the saved sections untouched
+    - `[x]` (1) every component in the catalogue × every design (68 tests, enumerated) — HEADED on -BHdJe1L, all green
+    - `[x]` (2) the page audit: NOTHING on the UI-built default page at 5 rungs × 4 themes; on a section zeroed THROUGH
+      THE INSPECTOR (probe-spacing) it reports W7a for the page edge and the coloured box; the seeded 0-gutter / 0-inner
+      pages of `page-audit-whitespace.spec.ts` flagged too (HEADED, 16 tests)
+    - `[x]` (3) W7b: nothing on the default page (5 rungs × 4 themes, UI-built); two sections with 0 space flagged — that
+      page is SEEDED in the spec (HEADED), not built through the UI
+    - `[x]` (4) the old wording: 0 hits in the four places; two more comments found and reworded (S2-h)
+    - regression, HEADED on -BHdJe1L: `probe-spacing.js` (S-1) 124 checks × 4 themes, 0 findings
+  - NOT BUILT, found while writing the story (an unbuilt feature, so queued, not a ledger line): the in-app **Page
+    check** does not report W7a/W7b — only the sweep's `page-audit.js` does — though `box-builder-spacing.feature`
+    "The Page check finds words too close to an edge" describes it. Queued as BATCH S-3 below
     - `[x]` S2-d · **every Stat design: the number sat 1.2px above its label** (the comma of "1,000+" on "Happy") —
       FIXED: the Stat's gap 0.25rem → 0.5rem; found by the new `component-breathing.spec.ts`
     - `[x]` S2-e · NOT A BUG, measured: sections stretched to share a short page's window in my test pages — the test
@@ -166,6 +198,10 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
     words closer than the gutter floor to the page or their coloured box's edge · (3) audit check: sections closer than
     the section floor · (4) the old "never a default" wording in the four places left (layout feature 347,
     `text-is-reachable.spec.ts` 34, design-foundation `02` 485, memory `feedback_radius_and_spacing.md`)
+- **← YOU ARE HERE: BATCH E-0 below** (S-3, queued 2026-09-30, waits behind it)
+- `[ ]` **BATCH S-3 · The editor's Page check warns about space** (area: spacing · 1 change, queued 2026-09-30): the
+  in-app Page check reports words closer than 1rem to the page edge or touching their coloured box (W7a) and two
+  sections closer than 1rem (W7b), as warnings, the way `page-audit.js` measures them — the scenario already exists
 - `[ ]` **BATCH E-0 · The build failures that stayed when run alone** (area: sweep harness/drop · queued) — the re-run of
   e-2/e-3 was STOPPED by the user at 3 of 14 (2026-09-30), on build OvtY9uAA, HEADED UAT:
   - page 68 (sonicdrive, blog index) — built, 0 errors ALONE → it was the machine
@@ -419,7 +455,7 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
         - `[ ]` e-10 · canvas≠Preview on one block 28px taller — 1 page (idx 272)
         - `[ ]` **NEXT: re-run e-2 and e-3 alone first** (idx 23, 68, 145, 334–337, 393, 396–401) on a FRESH build —
           a failure that goes away alone was the machine, one that stays is a bug — STOPPED by the user at 3 of 14, the rest
-          moved to BATCH E-0 (top of this file). **YOU ARE HERE is BATCH S-2** (S-1 closed 2026-09-30)
+          moved to BATCH E-0 (top of this file). **YOU ARE HERE is BATCH E-0** (S-1 and S-2 closed 2026-09-30)
         - NOT A BUG, expected: 379 pages warn "things need the user's words" (the dressed placeholders' empty text)
       - `[ ]` c-22 · **A page that BUILT in the baseline does not build on the fixed build** — the first page logged
         (nodenza.com/partners_ross_morton): baseline 182 blocks, 2 errors; re-run BUILD FAILED at 80 blocks, "the canvas
@@ -567,6 +603,10 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
 - `[ ]` **One engine for the whole of Educo** (RULE APP) — screens migrate to the shared block model and catalogue, one
   area at a time, as components land
 - `[!]` **School-admin MVP audit** — punch-list in `docs/MVP_AUDIT.md` (memory `project_mvp_audit.md`)
+  - `[ ]` **13 menu pages never built, hidden until they are** (S2-i, the user 2026-09-30): School Information, Branches,
+    Academic Years, Sections, Departments, Subjects, Exams, Syllabus, Assignments, Dormitory, Transport, Settings →
+    Schools & Branches, Settings → User Management. Building one = the page + deleting its line from `UNBUILT` in
+    `components/layout/Sidebar.tsx`; list in `docs/MVP_AUDIT.md` → "Menu links with no page"
 - `[!]` **Mobile Drive feature** — memory `project_drive_status.md`
 - `[ ]` **Builder on phone and tablet** — a webview over the real export, inside the Educo app (rule 20); after the web
   builder is finished

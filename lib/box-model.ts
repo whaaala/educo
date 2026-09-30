@@ -4717,6 +4717,21 @@ export function outerSpaceCSS(node: BoxNode, place: SectionPlace | false | undef
   return out;
 }
 
+/**
+ * A BAND OF THE PAGE THAT HOLDS A COMPONENT keeps the page gutter (S2-f). Everything dropped on the page lands as a
+ * column of such a band, whose gutter puts its outer columns flush with the page edges — right for a coloured section,
+ * which bleeds, but a Card or a Button then touched the edge. The inset is the band's, not the column's, so the band's
+ * gap arithmetic (`gutterCSS`) and the canvas resize's slot measurement are untouched. It steps aside once a component
+ * in it has its Outer spacing across set (0 included).
+ * ponytail: a coloured section sharing a band with a component is inset with it.
+ */
+export function pageBandInset(band: BoxNode, onPage: boolean): CSSProperties {
+  if (!onPage || !band.rowBand) return {};
+  const needs = (band.children ?? []).some((c) => c.spaced && (selfPaints(c) || c.preset)
+    && c.margin === undefined && c.marginLeft === undefined && c.marginRight === undefined);
+  return needs ? { paddingLeft: u(SPACE_DEFAULT.gutter), paddingRight: u(SPACE_DEFAULT.gutter) } : {};
+}
+
 /** Where `id` sits as a page section — the inspector's question, answered as the canvas and export answer it. */
 export function sectionPlaceIn(root: BoxNode, id: string): SectionPlace | undefined {
   const p = findParent(root, id);

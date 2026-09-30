@@ -59,6 +59,21 @@
 - **`app/finance/receipts/page.tsx`** — Spinner **compliant** (`PageSpinner`, 874). CRUD on in-memory `MOCK_RECEIPTS` (274) → lost on reload. Create/View/Print/Download/Email/Void all wired to real `@/lib/document-utils`. No tests.
 - **`app/admin/parents/fees/page.tsx`** — `AutoReminderScheduleModal` `onSave` (1557-1559) is a `console.log` no-op → schedule not saved. `handleConfirmBulkReminder` (231) — "send" is `console.log` only but shows a success toast (**misleading**); it does bump reminder counts. Record-payment properly updates state (766-799). Reads `getAllFeeRecords()` **+ `sessionStorage["newFeeRecords"]`** (60-78) — only page that persists new records. `config.test.ts` covers the config module, not this page.
 
+## Menu links with no page (found 2026-09-30, S2-i)
+
+The sidebar linked to 13 pages that were never built, plus `/attendance`, which is not a route. Each link was a 404,
+and the page prefetched the visible ones, so every screen with the sidebar logged console errors. **The user decided
+2026-09-30:** Attendance now opens `/students/attendance`, and the 13 are HIDDEN until built. They are kept in the menu
+source and pruned by `UNBUILT` in `components/layout/Sidebar.tsx`; building a page means deleting its line there.
+Guarded by `tests/unit/sidebar-links.test.ts`, which fails on any menu link with no page.
+
+| Menu | Hidden link | Page to build |
+|---|---|---|
+| School Management (the whole group) | School Information · Branches · Academic Years · Sections · Departments | `/school/info` · `/school/branches` · `/school/academic-years` · `/school/sections` · `/school/departments` |
+| Academic | Subjects · Exams · Syllabus · Assignments | `/subjects` · `/exams` · `/syllabus` · `/assignments` |
+| Management | Dormitory · Transport | `/dormitory` · `/transport` |
+| Settings | Schools & Branches · User Management | `/settings/schools` · `/settings/users` |
+
 ---
 
 ## Prioritized punch-list (most impactful first)

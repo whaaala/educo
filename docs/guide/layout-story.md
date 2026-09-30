@@ -124,6 +124,19 @@ Every one of these is mine to change, down to zero: select the block, open **Spa
 "Default · 2rem" (real rem) until I move it, with **Back to default** to undo my change. A page I saved before these
 defaults existed opens exactly as it was; only what I add from now on arrives with the space.
 
+**Cards, buttons and notices breathe too.** I drop a Card, then a Button, a Quote and an Alert under it. None of them
+touches the next: there is 1rem above and below each, *outside* its coloured box, so the box itself stays exactly as
+the design drew it and the selection outline sits on it. They keep the same 2rem gutter from both edges of the page as
+my words do — a Button never sits against the left edge. Put the same four inside one Stack and the Stack's own gap
+spaces them instead, never both. Two coloured Stacks one under the other still meet edge to edge: a section paints the
+page, it is not a box on it. A Card's space shows under **Spacing → Outer spacing** ("Default · 1rem"); set it to 0 and
+the Card sits against its neighbours — and the page edge — on the canvas and in the Preview, and stays that way after a
+reload until I press **Back to default**.
+
+Behind the scenes, every page the builder is tested on is measured for this: words closer than 1rem to the page edge,
+words touching the edge of their coloured box, or two sections whose words are closer than 1rem, are each reported as
+a warning. (The **Page check** button in the editor does not show these yet.)
+
 ## 7. Text and space: which one follows what
 
 Two fluid units run the page, and they answer different questions.
@@ -210,6 +223,9 @@ From the tier-99 sweep (403 dressed pages, 2026-09-29), so far: small blocks pub
 (section 9), a narrowed grid has the same rows in the editor and on the page, the handles follow a change of
 screen size, a block can be let go over the selected block's toolbar, and the toolbar re-chooses its side when the page
 is refitted.
+
+Space by default (2026-09-30): words, sections, columns, coloured boxes, and every component and button placed on the
+page keep their space (section 6½), measured in the Preview at every screen size in all four themes.
 
 **What a real page asked for that the builder does not offer yet** (recorded, not skipped): a grid of *five* across —
 the picker offers 1, 2, 3, 4, 6 and 12, the counts twelve columns divide into. Today Maya takes six and deletes a cell.

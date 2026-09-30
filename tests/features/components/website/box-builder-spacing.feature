@@ -273,6 +273,12 @@ Feature: Space by default — words never touch an edge
     And each keeps the page gutter at both sides, and a Card that fills the line still ends inside the page
     And the selection outline sits on the coloured box, not around the space
 
+  Scenario: A component dropped on the page on its own keeps the gutter (S2-f)
+    Given a Button dropped on an empty page — the builder puts it in a row of the page
+    Then the Button is the page gutter (2rem) from the page's left edge, on the canvas and in the Preview, at every size
+    And a row of coloured Stacks, with no component in it, still reaches both page edges
+    And a Card in a Stack keeps only the Stack's own spacing, never a second gutter
+
   Scenario: Two coloured sections still meet
     Given two Stacks with a background, one under the other, straight on the page
     Then they meet edge to edge — a section paints no box of its own
@@ -286,8 +292,8 @@ Feature: Space by default — words never touch an edge
     Then each has 1rem above and below, and the columns' gutter between them
 
   Scenario: Outer spacing shows the space and takes it back to 0
-    Given a Card straight on the page, selected
-    Then Spacing → Outer spacing reads "Default · 2rem" with 1rem top and bottom and 2rem at the sides
+    Given a Card dropped on the page, selected
+    Then Spacing → Outer spacing reads "Default · 1rem": 1rem top and bottom (the page's row holds the gutter at the sides)
     And Inner spacing is the Card's own padding, which is drawn
     When I set Outer spacing to 0
     Then the Card touches the block above and below on the canvas and in the Preview, and still does after a reload
