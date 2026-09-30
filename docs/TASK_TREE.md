@@ -198,7 +198,9 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
     words closer than the gutter floor to the page or their coloured box's edge · (3) audit check: sections closer than
     the section floor · (4) the old "never a default" wording in the four places left (layout feature 347,
     `text-is-reachable.spec.ts` 34, design-foundation `02` 485, memory `feedback_radius_and_spacing.md`)
-- **← YOU ARE HERE: BATCH L-1 below** (E-0 closed 2026-09-30; Z-1 follows L-1; S-3 queued)
+- **← YOU ARE HERE: BATCH L-1 below, at its last three steps** — page 337 alone to completion (closes L1-7) · vitest in
+  full + `npm run test:fast` · commit the UNCOMMITTED code (every file listed in the newest Session log). Then close L-1.
+  (E-0 closed 2026-09-30; Z-1 follows L-1; S-3 queued)
 - `[ ]` **BATCH S-3 · The editor's Page check warns about space** (area: spacing · 1 change, queued 2026-09-30): the
   in-app Page check reports words closer than 1rem to the page edge or touching their coloured box (W7a) and two
   sections closer than 1rem (W7b), as warnings, the way `page-audit.js` measures them — the scenario already exists
@@ -273,9 +275,130 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
   - **337** fails alone with and WITHOUT E0-e (bisected on a build with E0-e reverted: it failed at another drop step)
     → not a regression; its drop failures join e-1 / e-3 in L-1. **397** was E0-g
   - E-0 CLOSED 2026-09-30. Next: BATCH L-1
-  - page 393 (elytetemplate, services) — STILL FAILS alone: the drag never reached the canvas, twice → a bug (e-3)
-  - not yet re-run: 23, 334, 335, 336, 337, 396, 397, 398, 399, 400, 401
-- `[ ]` **BATCH L-1 · Tier-99: blocks that would not drop or select** (area: drop / select · 5 changes, queued)
+  - [SUPERSEDED — see "Run on build Sb_l4U" above: 393 BUILT alone, and every page below was re-run] page 393
+    (elytetemplate, services) — STILL FAILS alone: the drag never reached the canvas, twice → a bug (e-3)
+  - [SUPERSEDED, as above] not yet re-run: 23, 334, 335, 336, 337, 396, 397, 398, 399, 400, 401
+- `[>]` **BATCH L-1 · Tier-99: blocks that would not drop or select** (area: drop / select · 5 changes, OPEN 2026-09-30,
+  session after 25f18c91)
+  - **UAT CHECKLIST (written first).** Every run is a HEADED UAT on a FRESH production build, in PARALLEL (`--jobs=6`); a
+    page re-runs ALONE only after it failed in parallel. Each failure that stays is reproduced through the UI with a REAL
+    mouse drag (the `probe-e0g.js` / `probe-icon-cell.js` pattern), fixed at the root, guarded (red without the fix), and
+    its fix seen in all 4 themes (Light · Dark · Midnight · Purple Dream) at 375 · 768 · 1280 · 1920, canvas = Preview
+    - `[x]` L1-r1 · tier 99 (`--plan=dressed99`): 2, 87, 142, 153, 227, 278, 337, 385 — PARALLEL, build Uz_bd6Ge (FRESH),
+      21 min: **7 of 8 BUILT, every one with 0 missed drags** (2 = c-22: 178 blocks · 337: 188). Their errors are all
+      queued classes: HOLE + L8 broken words (L-4), R11 canvas≠Preview (L-2). FAILED: **142** (lexara 404) "could not
+      select 2-29 (got w-1z)", then a click timeout → alone
+    - `[x]` L1-r2 · tier 95 (`--plan=dressed95`), the 19 build failures: 12, 13, 26, 34, 40, 56, 71, 73, 74, 75, 76, 106,
+      107, 109, 117, 118, 124, 133, 134 — PARALLEL, 40 min: **16 of 19 BUILT**. FAILED: **12** (muebles) "cannot drop into
+      f-2g: only 15px of it is visible" · **109** (tarot) "could not select 8-17 (got none)" · **124** (patina) "the drag
+      never reached the canvas, twice (after beside(s-7d,Card)) · released at (845,755) nothing" → all alone
+    - `[x]` L1-r3 · tier 80 (`--plan=dressed`) page 38 (locallistingtemplate faqs) — BUILT, 212 blocks: the column selects
+    - `[x]` L1-r4 · previewcheck `B30_footer_5col` and `P4_stress` — both `ok`
+    - `[x]` L1-r5 · everything that failed in parallel, re-run alone — ALL FOUR FAILED ALONE TOO (bugs, not load): 142
+      and 109 → L1-3 · 124 → L1-3 (+ L1-1) · 12 → L1-4 (Z-1)
+    - `[~]` L1-r6 · the 7 e-1 pages (2, 87, 153, 227, 278, 337, 385) on the fixed build (0D0EXS4f, 3 windows beside 3–4
+      others AND a `next build`): 5 of 7 BUILT (87 · 153 · 227 · 278 · 385); 2 and 337 → L1-7. Page 2 then built 2 of 2
+      on the same build with no build running; 337 in batch A
+    - `[ ]` L1-u · for each fix: the repro through the UI, before (fails) and after (works), 4 themes × 4 widths, and the
+      Preview at every rung
+    - `[~]` L1-g · gate: **typecheck 0 · eslint 0 errors (105 warnings, the accepted category)** · vitest — NOT RUN in
+      full (the touched files ran: pinning.test.ts · palette-click-slot.test.ts · claude-md-rules.test.ts, 259 green) ·
+      test:fast — NOT RUN; then the commit of the code (UNCOMMITTED at the handover)
+    - `[x]` L1-11 · I BROKE THE LINT: the second build folders (`.next-b` … `.next-e`) were linted — 127,808 "errors", all
+      build output. FIXED: `eslint.config.mjs` ignores `**/.next-*/**` (and `.gitignore` has `.next-*/`); then 3 unused
+      variables in my own new probes, removed → eslint 0 errors
+  - LEDGER of L-1:
+    - `[x]` L1-0 · the tree said page 393 "STILL FAILS alone" and listed 11 pages "not yet re-run" after both had been
+      settled (lines above) — FIXED: marked SUPERSEDED (a documentation defect, no code)
+    - `[ ]` L1-1 · HARNESS (suspected): page 124 released a drop at y=755 in a 720px window, on nothing. `dropBeside` reads
+      the target's rect BEFORE `dropTile` scrolls the palette tile into view — if that scroll moves the page, the release
+      point is stale. To MEASURE on the alone re-run before any fix
+    - `[x]` L1-3 ROOT, FOUND AND FIXED: `pinCSS` clause 3b gave a sticky container in a row `height: calc(100dvh - …)` —
+      a sidebar whose CONTENT is taller than the screen kept a screen-tall box and its content ran on below it, out of the
+      row, over the next section and off the page's end. Reproduced through the UI (`probe-l1-sticky.js --tall=1`, 736px
+      spilled at every scroll step; `--tall=0` and plain: 0), and measured on page 124 itself (the aside's computed height
+      720px, sticky). FIXED: `min-height` (the larger of the user's and the screen's) — a short sidebar is still the
+      screen's height and keeps its travel, a tall one holds its content. Guards: `pinning-holds.spec.ts` "a sidebar
+      whose content is taller than the screen…" (red on `height`: "runs 600px past its own foot"; 8 green with the fix),
+      `pinning.test.ts` clause 3b. **HEADED UAT, build J7UBYmMI (FRESH, `.next-c` on 3300), Light · Dark · Midnight ·
+      Purple Dream:** canvas — the sidebar 1455px, 0px spilled, its row holds it at every scroll step; Preview at 375 · 768
+      · 1280 · 1920 — its content stays above the next section, still sticky (screenshot
+      `probe-l1-sticky-out/sticky-tall-Midnight/preview-768.png`). Regression: tier-95 page 13 (right-sticky) still
+      builds. **Pages 142, 109 and 124 now BUILD** (136, 175 and 345 blocks) with L1-3 + L1-8 — all three failed alone all
+      day; their remaining audit errors are the queued classes (L-2, L-4). Regression, tier 99 pages with a sticky header
+      AND a sticky sidebar (13 · 28 · 31 · 46 · 61 · 76, build J7UBYmMI; 79 · 94 · 127, build _nj0GR7K) and tier-95 page 76:
+      10 of 10 BUILT, every error R11 / HOLE / L8
+    - `[ ]` L1-7 · pages 2 and 337 on the e-1 build: "offered the drop and added nothing (into, an empty Stack) · released
+      at (740,5xx) on <svg>" — INTERMITTENT: page 2 built 2 of 3 on the same build; both failures ran beside a `next
+      build`. NOT the "+" icon: 4 of 4 alone and 36 of 36 in six windows landed on it. 337 then BUILT in batch A (no
+      build running) — and FAILED again on _nj0GR7K with no build running: `into(m-15, Text)`, released on the empty
+      Stack's "Choose a block to add inside" button; m-15 is an empty Stack with a background and 24px padding. NOT
+      LOAD. `probe-e0g.js` (that very shape, through the UI) in five windows: 15 of 15 landed. So 337 has something the
+      probes lack. The harness now records the browser's `drop` / `dragend` events of every drag (target, detached,
+      handled) and prints them on a lost drop. **MEASURED, 3 of 4 runs lost it the same way:** at the release point, pointer
+      still — `dragover <div> accepted`, `dragenter <button>` (the empty box's "+"), `dragleave <div>`, `dragleave <button>`,
+      and NO `dragover` after; the browser sent `dragend`, never `drop`. The editor's hint came and went under a still
+      pointer, and the drop had no accepted target. FIXED (`BoxCanvas`): while a block is carried (`data-box-drag-in`) the
+      empty box's hint and the grid's ghost cells take no pointer — where a drop lands is `computeDrop`'s, from canvas
+      coordinates. Guard `tests/e2e/drop-into-empty.spec.ts` (a REAL drag held over the "+"): red on _nj0GR7K ("the
+      pointer is on the empty box's hint (<path>)"), green on 6UEsvQW6. Acceptance: page 337 ×5 + page 2 on 6UEsvQW6 —
+      **all five 337 runs went PAST the step that lost the drop** (≈155 blocks, the failures stopped at 40). Then ALL SIX
+      windows timed out at the same moment ~37 min in (`scrollIntoViewIfNeeded` / click, 10 s) — page 2 after its build had
+      finished, every run ~3× its usual time, no build running, 5 GB RAM free: a machine-wide slowdown, cause not found.
+      Screenshot `dressed99-out/p337-build-fail.png` shows a healthy page. Page 337 re-run ALONE was STOPPED by the user's
+      "stop here" before it finished. **Still to do: 337 alone to completion; then L1-7 closes**
+    - `[x]` L1-8 · HARNESS: `visibleRect` clipped a target to the blocks panel and the Inspector but not to a PINNED block
+      lying over it — so drops aimed under a stuck header or a sticky sidebar landed IN that block's row: a column beside
+      the page header (page 124, which then made the header screen-tall), an Image and a column in the sidebar's row (109,
+      124). FIXED (`h.js`): pinned blocks over the target are clipped away, as a person aims at the part left open.
+      **Extended after batch A (page 109, on the L1-3 build):** a heading lying BEHIND the stuck header was not scrolled
+      out from under it, and `under()` let go without checking anything was visible — so `under(heading, Stack)` dropped
+      INTO the sticky header and the rest of the page was built inside it (a 2,746px header, the recording in
+      `logs/p109-A.json`). FIXED: `visibleRect` scrolls a target clear of a stuck bar; `under()` throws "only w×h px
+      visible" like `dropInto`, whose message now gives the height too (page 142's "only 778px visible" was 778 WIDE)
+    - `[x]` L1-1 · HARNESS, measured: page 124 released at y=755 in a 720px window — the Card it aimed beside hung below
+      the page's end (L1-3), and `visibleRect` never clamped to the window. FIXED: clamped; `dropBeside` reports "only
+      w×h px visible" instead of letting go off screen
+    - `[x]` L1-9 · ENGINE: a pinned HEADER / NAV / FOOTER sharing a row with a column got clause 3b's screen height (page
+      124's header: 720px). FIXED: clause 3b skips a container whose meaning is header, nav or footer. Guard
+      `pinning.test.ts` (3 cases, red without `!bar`, green with it). Reproduced through the UI first (`probe-l1-header.js`
+      on the build without it: a 720px `<header>` around a 37px heading, canvas and Preview). **HEADED UAT, build
+      _nj0GR7K (FRESH, `.next-d` on 3400), 4 themes:** the header 70px on the canvas, 50 · 61 · 78 · 96px in the Preview
+      at 375 · 768 · 1280 · 1920 (screenshot `probe-l1-header-out/PurpleDream/canvas.png`)
+    - `[x]` L1-10 · TEST BUG: `probe-l1-sticky.js`'s Preview check read the sidebar, scrolled, then read the next section,
+      and reported the 200px scroll step as "~180px into the next section" at every width (the screenshot showed no
+      overlap). FIXED: scroll first, then read both
+    - `[x]` L1-3 (the report — root and fix in "L1-3 ROOT" above) · **page 142 (right-sticky sidebar): the sidebar lies ON TOP of the main content** — FAILS ALONE (31 min,
+      "could not select g-29 (got n-1z)"). Screenshots `dressed99-out/p142-crash.png`, `p142-build-fail.png`: the main
+      column's bands run the full width (x 118→1078) and the sticky sidebar's Card, picture and list (x 810→1033) are
+      drawn over them, so a click on the covered part selects the sidebar. To trace: the build steps (the page's child
+      run with DEBUG), then a small repro through the UI (`probe-l1-sticky.js`, sticky vs plain). **Tier-95 page 109**
+      (tarot, right-sticky) FAILS ALONE the same way: "could not select o-17 (got none)", `dressed95-out/p109-build-fail.png`
+      — the sidebar (x 904→1077) over a light section that runs 118→1078
+    - `[x]` L1-4 · tier-95 **page 12** (muebles) FAILS ALONE (4 min): "cannot drop into q-2g: only 15px of it is visible".
+      NOT A BUG of the engine — MEASURED from its recipe (`page-plan-95.json`[12]): a row of 8 hand-sized columns
+      (15·10·10·15·**5**·10·20·5 %) inside the 70% main column, with rows inside those columns (e.g. 7 columns of 15%
+      of a 5% column) — a few px each, which the builder obeys and nobody can drop into without zoom. = E0-f's class →
+      **BATCH Z-1: page 12 joins page 334 as its acceptance test**
+    - `[x]` L1-2 · **e-1 FOUND: a palette CLICK with an Image grid cell selected put the new block INSIDE the Image** — the
+      S-1 repro, driven through the UI (`probe-l1e1.js`, build Uz_bd6Ge): the Image lands in the grid as a 7th cell, then
+      a Stack tile CLICKED with it selected adds nothing, 3 of 3; a Stack DRAGGED under it lands, 3 of 3. It was never a
+      drop. ROOT: `insertBlock` inserts INSIDE a selection whose parent is a grid ("a grid cell"), and an Image cell
+      passed — the Stack became the image's child, which an image never draws. FIXED: `paletteClickSlot` (box-model),
+      only a CONTAINER cell receives inside; a leaf cell gets the block after it, as the next cell. Guard
+      `tests/unit/palette-click-slot.test.ts` — 2 red with `isContainer` removed, 5 green with it. **HEADED UAT, build
+      0D0EXS4f (FRESH, `.next-b` on 3200):** Light · Dark · Midnight · Purple Dream, 3 tries each, 4 windows side by side —
+      12 of 12 clicked Stacks are the grid cell right after the Image (235×198px), none inside it, 0 page errors
+      (screenshot `probe-l1e1-out/Midnight/try-1-clicked-stack.png`); the Preview at 375 · 768 · 1280 · 1920: no block
+      inside a picture, no sideways overflow. The 7 e-1 pages re-run on this build → see L1-r6
+    - `[x]` L1-6 · HARNESS: after a tile CLICK that added nothing, the error said "the canvas offered the drop… released
+      at (…)" — the previous DRAG's values, never cleared. That is why e-1 was read as a drop bug for two batches. FIXED:
+      `clickTile` clears them and the error says "a click on the <tile> tile added nothing" (h.js, pages.js)
+    - `[x]` L1-5 · HARNESS: a page whose image filling crashed after the build left a STALE tree file (page 142's was
+      from 15:36), and a failed build saved no step and no fields beyond width. FIXED (`uat-pages.js`): the tree is
+      written right after the build, the failed step is kept as `failedStep`, and the whole stored page as
+      `page-<n>.site.json` on a failed build
+  - (c-22 = tier-99 idx 2, already in e-1.)
   - e-1 · the canvas offered the drop and added nothing — 7 pages (idx 2, 87, 142, 153, 227, 278, 385). **A REPRO, 4 of 4
     windows (S-1 UAT 2026-09-30, build Ud1omUt2):** a 3×2 grid added after the 3rd column of a row; an Image clicked with
     the grid selected lands INSIDE the grid as a 7th cell; then a Stack clicked with that image selected is offered and
@@ -289,7 +412,8 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
   into, selected or resized by anyone. Zoom in / out / back to fit — buttons beside "Fitted to screen", Ctrl + / Ctrl − /
   Ctrl 0, Ctrl + scroll — with the page scrolling in both directions while zoomed, drops, selection, resize handles and
   the marquee all correct at every zoom, canvas = Preview unchanged. Research first (RULE R: how Figma, Canva, Webflow,
-  Framer zoom), plan artifact, then build; page 334 re-run alone is its acceptance test
+  Framer zoom), plan artifact, then build; tier-99 page 334 and tier-95 page 12 (L1-4), each re-run alone, are its
+  acceptance tests
 - `[ ]` **BATCH L-2 · Tier-99: the editor and the Preview disagree** (area: canvas = Preview · 4 changes, queued)
   - e-4 · canvas≠Preview — 13 pages: headings, links and buttons 0.4–3.6% narrower in the Preview, text wrapping to other
     heights, 4 containers 122–198px shorter at Wide (idx 109, 141 carry most). **A clean repro, built through the UI
@@ -693,6 +817,30 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
 
 One entry per session, newest first. Written the moment the user says "new session" (or the context is about to run
 out) — where the session STARTED FROM, where it GOT TO, and where the next one CONTINUES FROM.
+
+### 2026-09-30 · session 5b8cbbe1 · branch `builder/layout-uat` — HANDOVER (the user: "we'll stop here and continue later")
+
+- **Started from:** `ec1fc5e`, BATCH L-1 not started.
+- **Got to:** L-1 checklist written; its pages re-run in PARALLEL (27 of 31 built); the four that failed alone traced and
+  resolved. PRODUCT fixes, each reproduced through the UI, guarded (mutation-proven) and seen in a HEADED UAT in 4 themes
+  + Preview: **e-1** (a palette click with an Image grid cell selected put the block INSIDE the image — `paletteClickSlot`),
+  **L1-3** (a sticky sidebar taller than the screen spilled over the page — clause 3b `min-height`), **L1-9** (a sticky
+  header in a row became screen-tall — header/nav/footer excluded), **L1-7** (an empty box's "+" came and went under a
+  still pointer and the browser cancelled the drop — editor hints take no pointer during a drag-in; acceptance: 5 of 5
+  past the step). HARNESS fixes L1-0 · 1 · 5 · 6 · 8 · 10 · 11. L1-4 → Z-1 (page 12 joins 334). NEW RULE from the user:
+  **SIX WINDOWS AT ALL TIMES WHILE TESTING** (CLAUDE.md RULE Z + guard + UAT doc + memory); rebuilds go to a second
+  folder (`NEXT_DIST_DIR=.next-b`, port 3200+) so windows never empty. Gate: typecheck 0 · eslint 0 errors.
+- **UNCOMMITTED (the code — the full gate has not run):** `.gitignore` · `app/website/box-demo/page.tsx` ·
+  `components/website/box/BoxCanvas.tsx` · `eslint.config.mjs` · `lib/box-model.ts` · `next.config.ts` ·
+  `scripts/check-fresh-build.js` · `scripts/uat/h.js` · `scripts/uat/pages.js` · `scripts/uat/uat-pages.js` ·
+  `tests/e2e/pinning-holds.spec.ts` · `tests/unit/pinning.test.ts` · new: `tests/unit/palette-click-slot.test.ts` ·
+  `tests/e2e/drop-into-empty.spec.ts` · `scripts/uat/probe-l1e1.js` · `probe-l1-sticky.js` · `probe-l1-header.js` ·
+  `probe-l1-plus.js`. Committed at the handover: this tree, CLAUDE.md, UAT_EVERY_CHANGE.md, claude-md-rules.test.ts.
+- **Continue from:** L-1's last three steps (YOU ARE HERE): 337 alone to completion → vitest in full + test:fast (stop any
+  `next start` first; delete `.next-b` … `.next-e`) → commit the code → close L-1 → then Z-1 (research → plan artifact →
+  approval), L-2 … L-6, D-1; S-3 when the user places it.
+- **Not done, and said so:** the six-window batch's shared 37-minute timeouts (cause not found); the published artifacts
+  (end of Task 1); mobile has no canvas (rule 20).
 
 ### 2026-09-30 · session 25f18c91 · branch `builder/layout-uat` — HANDOVER (recommended: long context, clean boundary, L-1 heavy)
 

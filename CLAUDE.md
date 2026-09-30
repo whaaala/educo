@@ -276,6 +276,12 @@ Run through this checklist BEFORE telling the user it's done:
     as many windows as the machine takes. Only a page or case that FAILED in parallel is re-run alone, to tell load from a
     bug. An older note that says "alone" means exactly that, never "one at a time for everything" — measured, 2026-09-30:
     a session ran E-0's pages one by one (3–4 hours planned) until the user asked why.
+    **SIX WINDOWS AT ALL TIMES WHILE TESTING — ENFORCED, EVERY TIME (the user, 2026-09-30).** Whenever testing is
+    happening, six headed windows are running. A window that finishes is refilled at once with the next case, probe, page
+    or theme; fewer than six is allowed only in the single "alone" re-run above, and it ends the moment that re-run does.
+    Once a failure is proven alone, every diagnostic and probe after it runs side by side. A rebuild never empties the
+    windows: build the fix into a second folder (`NEXT_DIST_DIR=.next-b`) and serve it on 3200 while 3100 keeps serving.
+    Measured, 2026-09-30 (L-1): after four pages had each failed alone, their diagnostic runs went one window at a time.
   - **EVERY COMBINATION, AT EVERY TEST LEVEL, FOR EVERYTHING — now and every future feature.** Unit · component ·
     functional · integration · regression · UAT all enumerate the combinations, not one case. For page layout
     the combinations ARE the research: every page structure in `docs/LAYOUT_BENCHMARK.md` and the crawl, built

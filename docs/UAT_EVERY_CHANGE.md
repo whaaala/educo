@@ -76,6 +76,10 @@ mutation-proven guard. See [FIX_WHAT_YOU_FIND.md](FIX_WHAT_YOU_FIND.md).
   windows as the machine takes (`--jobs=6`, probes side by side with `--pos=`). Only a case that FAILED in parallel is
   re-run alone, to tell load from a bug — "alone" in an older note means that, never "one at a time for everything".
   Never run vitest while these windows are open (rule 15).
+- **Six windows at all times while testing** (CLAUDE.md RULE Z, the user 2026-09-30, enforced every time): a window that
+  finishes is refilled at once; a rebuild goes to a second folder (`NEXT_DIST_DIR=.next-b npx next build`, served with
+  `NEXT_DIST_DIR=.next-b npx next start -p 3200`, checked with `NEXT_DIST_DIR=.next-b node scripts/check-fresh-build.js
+  3200`, windows pointed at it with `BASE=http://localhost:3200`) so the running windows keep their server.
 - **Seed the page, drive the UI.** Writing `educo_box_site_v1` into `localStorage` gets you to the state in
   one step, but the *interaction under test* is still performed through the real controls.
 - **Measure, don't reason.** Read `getBoundingClientRect()` and `getComputedStyle()` rather than arguing

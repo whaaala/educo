@@ -61,6 +61,7 @@ const RULES: [name: string, mustSay: RegExp][] = [
   ["…a headed UAT is the WHOLE matrix, several visible windows in parallel", /A HEADED UAT IS THE WHOLE MATRIX, RUN FAST/],
   // 2026-09-30: a session followed an old "re-run alone first" note and planned E-0's pages one by one, 3–4 hours.
   ["…parallel is the default; only what FAILED in parallel is re-run alone", /PARALLEL IS THE DEFAULT, "ALONE" IS NEVER A PLAN/],
+  ["…six headed windows at all times while testing, refilled as each finishes", /SIX WINDOWS AT ALL TIMES WHILE TESTING/],
   ["…every combination at every test level, for everything, ordered 80/20", /EVERY COMBINATION, AT EVERY TEST LEVEL, FOR EVERYTHING[\s\S]*Ordered 80\/20/],
   ["…in order: UAT the function, then Preview at every size, then all combinations", /UAT → PREVIEW → ALL COMBINATIONS/],
   ["…and every step at every screen size, breakpoint and view", /EVERY STEP, AT EVERY SCREEN SIZE AND EVERY VIEW/],
