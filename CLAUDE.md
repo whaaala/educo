@@ -19,7 +19,7 @@ Run through this checklist BEFORE writing any code:
 - [ ] **No `alert()`, `confirm()`, `prompt()`** — plan to use modal/dialog components
 - [ ] **No hardcoded colors or inline styles** — use Tailwind theme classes and shared components
 - [ ] **Plan for accessibility** — aria labels, keyboard navigation, color contrast, focus management
-- [ ] **Plan the UAT passes, one per change (RULE X)** — list the changes you are about to make, in order. Each one gets its own trip through the real UI in a real browser before the next one starts, in every combination it can appear in. If the app isn't running yet, start it now — you cannot UAT what you cannot open. See [docs/UAT_EVERY_CHANGE.md](docs/UAT_EVERY_CHANGE.md).
+- [ ] **Plan the BATCH and its UAT checklist (RULE X)** — sort the changes into the open batch in the BATCHES section of [docs/TASK_TREE.md](docs/TASK_TREE.md) (one area, at most 6 changes), and write the batch's checklist — every change × every combination it can appear in — BEFORE the pass. If the app isn't running yet, start it now — you cannot UAT what you cannot open. See [docs/UAT_EVERY_CHANGE.md](docs/UAT_EVERY_CHANGE.md).
 
 ## ✅ AFTER Completing Any Implementation
 
@@ -29,7 +29,7 @@ Run through this checklist BEFORE telling the user it's done:
 - [ ] **⛔ RULE Y — YOU BUILT IT THROUGH THE UI** — the state you tested was made by dragging, dropping and
   clicking, never written into `localStorage`. A seeded tree is allowed only to pin a repro you already found
   through the interface. **Could not reproduce what the user reported? Then you did not build it their way.**
-- [ ] **⛔ RULE X — YOU SAW IT IN THE UI, AFTER EACH CHANGE** — every change, however small, driven in a real browser from the user's point of view before moving to the next one. Ten changes = ten UAT passes, in order. Each one checked in EVERY combination it can appear in (themes · 375/768/1280+ · device presets · every entry point · each state ON and OFF), trying hard to break it. State what you drove and what you saw. **The user must never be the one who finds it.** See [docs/UAT_EVERY_CHANGE.md](docs/UAT_EVERY_CHANGE.md).
+- [ ] **⛔ RULE X — YOU SAW IT IN THE UI, ONE PASS PER BATCH** — every change in the batch, however small, driven in a real browser from the user's point of view, each checklist line ticked with what you saw, before the next batch opens. Typecheck + the related unit guard still run after EVERY change. Each one checked in EVERY combination it can appear in (themes · 375/768/1280+ · device presets · every entry point · each state ON and OFF), trying hard to break it. State what you drove and what you saw. **The user must never be the one who finds it.** See [docs/UAT_EVERY_CHANGE.md](docs/UAT_EVERY_CHANGE.md).
 - [ ] **⛔ THE TASK TREE IS UP TO DATE** — [docs/TASK_TREE.md](docs/TASK_TREE.md) shows what this change closed (with its commit or measurement), every new promise made along the way, and **YOU ARE HERE** on the next leaf. Work is not done while the tree still describes the state before it.
 - [ ] **Every button/toggle/input works** — click every interactive element, verify it does its job
 - [ ] **All entry points tested** — menu items, toolbar buttons, keyboard shortcuts, right-click
@@ -154,6 +154,18 @@ Run through this checklist BEFORE telling the user it's done:
   - **THE MOMENT THE USER SAYS "new session"** (or the context is about to run out): stop, and write the handover into
     the tree BEFORE anything else — a line in its SESSION LOG saying where this session STARTED FROM, where it GOT TO, and
     where the next one CONTINUES FROM — then move **YOU ARE HERE** and commit. The user never has to ask for it.
+  - **THE TREE IS THE BIBLE FOR EVERY REQUEST (the user, 2026-09-30: "I might get carried away").** Whenever the user
+    asks for anything, the reply first checks the tree and says, in this order: **where we are** (the open batch and
+    leaf) · **where the request goes** (which batch or ledger line, new or existing — never only in the conversation) ·
+    **what I will do** next. Every batch, task and ledger line is written in the tree with its description, so nothing
+    is lost and the place we are is always known.
+  - **EVERY HANDOVER ENDS WITH THE NEXT SESSION'S PROMPT (the user, 2026-09-30 — a MUST, never waited to be asked).** When
+    a session hands over, its last reply gives a ready-to-paste prompt for the next one: branch and commit, what to read
+    first and in what order, the open batch and its ledger lines with their status, the user's decisions still standing,
+    what to do next in order, what is NOT done, and the traps — every detail that is needed, nothing that is not.
+  - **SAY WHEN IT IS TIME FOR A NEW SESSION (the user, 2026-09-30).** Watch the cost: when the context has grown large
+    (a batch closed, or a heavy piece of work is next), recommend handing over BEFORE starting it, so work continues the
+    same day in a fresh, cheaper session instead of waiting hours for a limit to reset.
   - **IT REMINDS THE USER TOO.** The first reply of every session says, from the tree: where we were, what was promised
     and is still open, and asks — continue there, or leave it and do something else? A branch is left only on the
     user's word, and the tree records that they said so.
@@ -209,11 +221,19 @@ Run through this checklist BEFORE telling the user it's done:
 - **RULE U — Playwright-test EVERYTHING, from the user's point of view.** Every component, every function, every item, the look and feel, and every rule above — driven in a real browser, not sampled. Unit tests alone are never sufficient.
 - **RULE V — Fix what you find.** See rule 8 above and [docs/FIX_WHAT_YOU_FIND.md](docs/FIX_WHAT_YOU_FIND.md).
 - **RULE W — Clean code always.** See rule 10 below.
-- **RULE X — SEE IT YOURSELF FIRST: UAT every change in the UI, one change at a time.** No change is too
-  small to look at. **After EACH change — not after the batch** — open the real app in a real browser, do the
-  thing a user would do, and LOOK at what they would see. Ten changes means ten UAT passes, in order.
-  And when you check one, check **every combination it can appear in**: each theme, each screen size,
-  each entry point, each state ON and OFF, each device preset — try hard to break it. Only then move on.
+- **RULE X — SEE IT YOURSELF FIRST: ONE UAT PASS PER BATCH OF RELATED CHANGES (the user, 2026-09-30 — replaces
+  "one pass per change").** No change is too small to look at; it is looked at in its batch's pass.
+  - **Batches live in the BATCHES section of `docs/TASK_TREE.md`.** One AREA per batch, **at most 6 changes**,
+    **only one batch open at a time**. New work is sorted by me, not the user: into the open batch if it is the
+    same area and there is room, otherwise into a queued batch for its area; the reply says where each item went.
+  - **The checklist is written FIRST** — every change × every combination it can appear in (each theme, each
+    screen size, each entry point, each state ON and OFF, each device preset) — then ONE headed pass on a fresh
+    production build drives every line, trying hard to break it, and ticks each with what was seen.
+  - **After EVERY change, still:** typecheck + the unit guard for what it touched (seconds, not a pass).
+  - **A batch closes only** when every line is ticked, every bug the pass found is fixed and re-checked (RULE V),
+    and the tree records it. A bug that is hard to trace gets its own check straight after its fix.
+  - **Guarded:** `tests/unit/task-tree-batches.test.ts` fails on two open batches, a batch over 6 changes, a batch
+    marked done with an unticked line, or a ledger line that is a number with no description.
   **The user must never be the one who finds it.** Every bug in this file's history was found by them
   first and reproduced by me afterwards; that order is the bug this rule exists to end.
   See [docs/UAT_EVERY_CHANGE.md](docs/UAT_EVERY_CHANGE.md).

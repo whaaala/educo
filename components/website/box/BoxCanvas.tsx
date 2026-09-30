@@ -17,7 +17,7 @@ import { Link2, Plus, ChevronUp, ChevronDown, Copy, Scissors, ClipboardPaste, Tr
 import type { SiteTheme } from "@/lib/site-storage";
 import {
   type BoxNode, type BoxType,
-  containerStyle, childStyle, marginCSS, sizeToCSS, u, baseUnit, floatingReserve, floatStacksOnMobile, createContainer, createElement, createComponent,
+  containerStyle, childStyle, marginCSS, leafPaddingCSS, sectionContent, sizeToCSS, u, baseUnit, floatingReserve, floatStacksOnMobile, createContainer, createElement, createComponent,
   updateBox, deleteBox, insertBox, moveBoxStep, duplicateBox, moveBox, cloneBox, findParent, isAncestor, isContainer, containerLabel, widthPct, stackWithBlock, fitBand, PILL, blockTypography,
   isFloating, floatBox, unfloatBox, groupBoxes, ungroupBoxes, bringToFront, sendToBack, bringForward, sendBackward, packRowLines, allocateLine, type LineFollower,
   shouldTakeMirrorBox, hostSizedFor, type MirrorBox, type MirrorChase, fadedPaint, boxOpacity, backgroundCss, treePaintLayerCss, radiusCSS, isClipped, SHADOW_CSS, videoEmbedSrc, sanitizeCssDeclarations, expandScopedCss, ACCORDION_CSS_PARTS, itemOverrideCss, itemHasOverride, itemNumberVars, richBody, componentTextCss, componentBoxCss, bgShowThroughCss, resizeTopEdge, blockContainmentCss, alertToastCss, treeHasToast, treeHasFixedHold, accordionClasses, bandClasses, advancedCssStyle, alertActionsHTML, hugsContent, itemFloatContextCss, COMPONENT_ITEM_SEL, clampContentScale, MIN_CONTENT_SCALE, isMultiItemComponent, comfortableWidth, remLen, rootFontPx, isDefiniteLen, addItemAfter, duplicateItem, duplicateChildItem, removeItem, removeChildItem, moveItem, moveChildItem, updateItem, updateChildItem, ALERT_SEVERITY_ICON, alertPartInline, alertIconInline, collectAlertItemStyles,
@@ -2963,6 +2963,9 @@ export default function BoxCanvas({
     // block element itself and FILL the box — so the wrapper stays transparent (no duplicate "shape behind" when the
     // block is resized) and the visual grows with the box while its content re-centres. Everything else paints on the wrapper.
     const selfPaint = node.type === "component" || node.type === "button";
+    // The content of a PAGE SECTION keeps the side gutter and the section space (rule 3) — the export decides it
+    // the same way, from the same helper.
+    const section = parent != null && sectionContent(rawNode, parent.id === root.id, !!parent.rowBand && (root.children ?? []).some((c) => c.id === parent.id));
     const wrapStyle: React.CSSProperties = {
       position: floating ? "absolute" : "relative", // floating boxes are positioned inside their (relative) parent → they overlap the flow
       maxWidth: "100%", // Responsive Field Guide: never wider than the container (a fixed px width shrinks on a phone — no horizontal scrollbar). Editor MUST match the export.
@@ -2970,6 +2973,7 @@ export default function BoxCanvas({
       // not this wrapper — so the wrapper stays transparent and the controls act on the pill/card/quote directly.
       ...(selfPaint ? {} : decorStyle(node)), // border, shadow, per-corner radius, rotation
       ...(floating ? {} : marginCSS(node)), // margins are a FLOW concept; a floating box uses left/top instead
+      ...leafPaddingCSS(node, section), // inner spacing on a plain element (c-23) — the export writes the same
       // SEE-THROUGH: only a WHOLE-BOX fade reaches this wrapper. A box that is fading just its own paint
       // puts the alpha into its background/border colours instead (see `fadedPaint`), so nothing inside it
       // is touched. A component paints its own element, and `hidden` is the editor showing you a box that
@@ -3129,7 +3133,7 @@ export default function BoxCanvas({
           //   • `sizedAbove` — you sized an ANCESTOR, so empty descendants must not hold it open;
           //   • anything inside it, at which point the content sets the height, which is the real answer.
           style={{
-            ...containerStyle(node, breakpoint),
+            ...containerStyle(node, breakpoint, section),
             // `relative` so the out-of-flow hint is measured against THIS box and not some ancestor. Only
             // when the box is empty, so it can never become a containing block for a child that floats.
             ...(editable && kids.length === 0 ? { position: "relative" as const } : {}),

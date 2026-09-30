@@ -17,7 +17,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ImagePlus, Loader2, X } from "lucide-react";
-import { importPhoto } from "@/lib/box-model";
+import { importPhoto, SPACE_DEFAULT } from "@/lib/box-model";
 import { PICKER_COLUMNS, type GalleryPhoto } from "@/lib/box-presets";
 import type { PagerNav } from "@/lib/box-model";
 import { PortalMenu } from "./ui";
@@ -59,7 +59,7 @@ export default function GallerySetupMenu({ anchor, onClose, onPick, mode = "gall
   const [busy, setBusy] = useState(0);
   const [across, setAcross] = useState(3);
   const [stagger, setStagger] = useState(false);
-  const [gap, setGap] = useState(0); // spacing is a decision, never a default — it starts at nothing
+  const [gap, setGap] = useState<number>(SPACE_DEFAULT.columns); // rule 3: space by default, down to 0 if you want
   const [nav, setNav] = useState<PagerNav>("dots");
   const [auto, setAuto] = useState(0); // movement nobody asked for is what this most easily gets wrong
   const [headline, setHeadline] = useState("Welcome to our school");
@@ -219,7 +219,7 @@ export default function GallerySetupMenu({ anchor, onClose, onPick, mode = "gall
 
         {/* ── 4 · spacing — shown here so whatever arrives is what was chosen ────────────────────── */}
         <div className="mt-3">
-          <Slider label="Space between" value={gap} min={0} max={48} onChange={setGap} formatValue={(x) => (x ? `${(x / 10).toFixed(1)}rem` : "none")} />
+          <Slider label="Space between" value={gap} min={0} max={48} onChange={setGap} formatValue={(x) => (x ? `${+(x / 16).toFixed(2)}rem` : "none")} />
         </div>
         </>)}
 

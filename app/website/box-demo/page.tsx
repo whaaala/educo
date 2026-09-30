@@ -18,6 +18,7 @@ import {
   floatBox, unfloatBox, bringToFront, bringForward, sendBackward, sendToBack,
   resolveResponsive, updateBoxResponsive, clearOverride, hasOverride,
   gridColumns, retrackGrid, setColumnFraction, pinBlockedBy, fixedBlockedBy, blockedByLabel, pinScopeWords, isFloating,
+  isSectionContentIn,
 } from "@/lib/box-model";
 import { blockForKind } from "@/lib/box-presets";
 import {
@@ -1176,9 +1177,9 @@ export default function BoxDemoPage() {
             </div>
             <div className="flex-1 overflow-y-auto">
               {bulk ? (
-                <BulkInspector count={selectedIds.length} theme={renderTheme} sample={(() => { const f = findBox(root, selectedIds[0]); return f ? resolveResponsive(f, bp) : null; })()} onStepWidth={bulkStepWidth} onStepHeight={bulkStepHeight} onPatch={bulkPatch} onDuplicate={bulkDuplicate} onDelete={bulkDelete} onFloatAll={bulkFloat} onGroup={bulkGroup} />
+                <BulkInspector sampleSection={isSectionContentIn(root, selectedIds[0])} count={selectedIds.length} theme={renderTheme} sample={(() => { const f = findBox(root, selectedIds[0]); return f ? resolveResponsive(f, bp) : null; })()} onStepWidth={bulkStepWidth} onStepHeight={bulkStepHeight} onPatch={bulkPatch} onDuplicate={bulkDuplicate} onDelete={bulkDelete} onFloatAll={bulkFloat} onGroup={bulkGroup} />
               ) : selected ? (
-                <BoxInspector pinBlockedBy={blockedByLabel(pinBlockedBy(root, selected.id, bp))} fixedBlockedBy={blockedByLabel(fixedBlockedBy(root, selected.id, bp))} pinScope={pinScopeWords(root, selected.id, bp)} node={bp === "base" ? selected : resolveResponsive(selected, bp)} theme={renderTheme} onPatch={onPatch} onAddChild={addChildSection} onFloat={floatSelected} onUnfloat={unfloatSelected} onLayer={layerSelected} onAlignInRow={(j) => commit(alignInRow(root, selected.id, j))} rowJustify={alignInRowOf(root, selected.id)} onSectionWidth={pageBandOf(root, selected.id) ? (v) => commit(setSectionWidth(root, selected.id, v)) : undefined} sectionWidth={sectionWidthOf(root, selected.id)} canFloat={selected.id !== root.id} inGrid={gridTrack !== undefined} inMasonry={parentGrid?.rowFlow === "masonry"} gridTrack={gridTrack} onSetFraction={setFraction} onRetrack={retrackSelected} breakpoint={bp} overridden={hasOverride(selected, bp)} onResetOverride={resetOverride} pages={pageList} currentPageId={activePage.id} />
+                <BoxInspector section={isSectionContentIn(root, selected.id)} pinBlockedBy={blockedByLabel(pinBlockedBy(root, selected.id, bp))} fixedBlockedBy={blockedByLabel(fixedBlockedBy(root, selected.id, bp))} pinScope={pinScopeWords(root, selected.id, bp)} node={bp === "base" ? selected : resolveResponsive(selected, bp)} theme={renderTheme} onPatch={onPatch} onAddChild={addChildSection} onFloat={floatSelected} onUnfloat={unfloatSelected} onLayer={layerSelected} onAlignInRow={(j) => commit(alignInRow(root, selected.id, j))} rowJustify={alignInRowOf(root, selected.id)} onSectionWidth={pageBandOf(root, selected.id) ? (v) => commit(setSectionWidth(root, selected.id, v)) : undefined} sectionWidth={sectionWidthOf(root, selected.id)} canFloat={selected.id !== root.id} inGrid={gridTrack !== undefined} inMasonry={parentGrid?.rowFlow === "masonry"} gridTrack={gridTrack} onSetFraction={setFraction} onRetrack={retrackSelected} breakpoint={bp} overridden={hasOverride(selected, bp)} onResetOverride={resetOverride} pages={pageList} currentPageId={activePage.id} />
               ) : (
                 <div className="p-6 text-xs text-gray-400 text-center mt-6">Click a block to edit it — or drag a box on empty canvas to select several at once.</div>
               )}

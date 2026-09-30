@@ -26,7 +26,101 @@ Everything any session has said it will do, as ONE tree — so moving between se
 | `[~]` | Parked or dropped — with who decided, and why |
 | `[!]` | Status not verified — check before relying on it |
 
-Last updated: **2026-09-29**, session df7557b5, branch `builder/layout-uat`.
+Last updated: **2026-09-30**, session 3c675738, branch `builder/layout-uat`.
+
+---
+
+## BATCHES — one UAT pass per batch (RULE X, the user 2026-09-30)
+
+One AREA per batch · **at most 6 changes** · **one batch `[>]` at a time**. New work is sorted here by the agent (same area
+and room → the open batch; otherwise a queued batch for its area) and the reply says where it went. The checklist is
+written BEFORE the pass; one HEADED UAT on a fresh production build ticks every line with what was seen; a batch is `[x]`
+only when every line is ticked and every bug it found is fixed and re-checked. Guarded by
+`tests/unit/task-tree-batches.test.ts`. Every item names what it IS in words, never a bare number.
+
+- `[>]` **BATCH S-1 · Spacing — the engine and the inspector** (area: spacing · 6 changes) — tree 1.1.1 → SPACE BY DEFAULT
+  - changes: (1) section gutter + section space · (2) header/footer bar 1rem · (3) coloured/bordered box 1.5rem, plain box 0
+    · (4) gaps: stack 1rem, columns 1.5rem, grid both · (5) inspector shows "Default · size", Back to default, inner
+    spacing on every element (c-23) · (6) bulk inspector reads the real padding (c-24)
+  - LEDGER of the S-1 pass (HEADED UAT 2026-09-30, build l-Q5HJ74r, 4 themes × 5 rungs, canvas + Preview; 69 checks
+    passed per theme, the same 11 findings in every theme):
+    - `[>]` S1-a · **columns side by side at page level touch** **← YOU ARE HERE** (column gap 0 at 768–1920, canvas and Preview): three
+      columns dropped beside each other sit in the page band, which has no gap — only each column's own side gutter
+      keeps their words apart; coloured columns would touch. DECIDED by the user 2026-09-30: add a gap, widths shrink so
+      the line still fits — **1rem** (changed from 1.5rem the same day: "do one rem… let the user decide"). The default
+      value is set (`SPACE_DEFAULT.columns` 16, also the grid's gap across); the ENGINE work for the page band is NOT started
+    - `[ ]` S1-b · **the Spacing controls say "rem" for a number that is not rem**: "Default · 3.2rem" for a gutter of
+      ~2rem (22px phone, 36px laptop) — the inspector shows stored px ÷ 10 (`toRem`, BoxInspector 38, BulkInspector 20).
+      Predates space by default. DECIDED by the user 2026-09-30: REAL rem. Fixed: `toRem`/`fromRem` are ÷16 / ×16 in the
+      inspector, the bulk inspector and the gallery setup; BoxInspector tests updated (84 passed). Closes on the re-run
+    - `[ ]` S1-c · HARNESS: the probe divided COMPUTED padding by the canvas zoom — read 40.7px for the 16px header bar at
+      Wide canvas (Preview 1920 right). Fixed in `probe-spacing.js`; closes on the re-run
+    - `[ ]` S1-d · HARNESS: the probe shift-clicked for two blocks (there is no shift-click; it selected text). Now drags a
+      box from the empty canvas; c-24 closes on the re-run
+    - `[ ]` S1-e · the top space was too big (4rem) → 1rem, the user's value. Preview measured: 11px at 375 · 18px at 1280 ·
+      22px at 1920 above and below (gutter 22 · 36 · 45px). Canvas = Preview still to be shown on the re-run (S1-c)
+  - checklist (each at Mobile 375 · Tablet 768 · Laptop 1024 · Desktop 1280 · Wide 1920, canvas AND Preview, all four themes):
+    - `[ ]` a Heading dragged onto an empty page: words off the page edge by the gutter, both sides; no sideways scroll
+    - `[ ]` two sections one under the other: section space above, between and below
+    - `[ ]` a header with a logo and four links: 1rem above and below, gutter at both ends, links spaced
+    - `[ ]` a coloured section, a bordered box, a picture-background box: words 1.5rem from their edge; a plain box adds 0
+    - `[ ]` a picture dropped on the page still reaches both edges
+    - `[ ]` a stack of three blocks, a row of three columns (still on one line at 1280), a 3×2 grid: the default gaps
+    - `[ ]` inspector: each control reads "Default · size"; set 0 → 0 on canvas and Preview, after reload, at every size;
+      one side changed, the others keep the default; Back to default; Ctrl+Z; keyboard and screen-reader label
+    - `[ ]` a Heading, Text, Link, Image and Icon each given inner spacing through the inspector (c-23)
+    - `[ ]` two blocks selected: the bulk slider shows what they have (c-24)
+    - `[ ]` a page saved before this change opens exactly as it was; a block added to it arrives with the defaults
+    - `[ ]` 150% browser text: every default space grows; the exported CSS has no pixel spacing
+- `[ ]` **BATCH S-2 · Spacing — components breathe, the audit measures it** (area: spacing · 4 changes, queued)
+  - (1) a gap between a component's parts and padding from its own visible edge, the whole catalogue · (2) audit check:
+    words closer than the gutter floor to the page or their coloured box's edge · (3) audit check: sections closer than
+    the section floor · (4) the old "never a default" wording in the four places left (layout feature 347,
+    `text-is-reachable.spec.ts` 34, design-foundation `02` 485, memory `feedback_radius_and_spacing.md`)
+- `[ ]` **BATCH E-0 · The build failures that stayed when run alone** (area: sweep harness/drop · queued) — the re-run of
+  e-2/e-3 was STOPPED by the user at 3 of 14 (2026-09-30), on build OvtY9uAA, HEADED UAT:
+  - page 68 (sonicdrive, blog index) — built, 0 errors ALONE → it was the machine
+  - page 145 (soul-trane, about) — STILL FAILS alone: a click timed out after 10 s → a bug (e-2 click class)
+  - page 393 (elytetemplate, services) — STILL FAILS alone: the drag never reached the canvas, twice → a bug (e-3)
+  - not yet re-run: 23, 334, 335, 336, 337, 396, 397, 398, 399, 400, 401
+- `[ ]` **BATCH L-1 · Tier-99: blocks that would not drop or select** (area: drop / select · 5 changes, queued)
+  - e-1 · the canvas offered the drop and added nothing — 7 pages (idx 2, 87, 142, 153, 227, 278, 385). **A REPRO, 4 of 4
+    windows (S-1 UAT 2026-09-30, build Ud1omUt2):** a 3×2 grid added after the 3rd column of a row; an Image clicked with
+    the grid selected lands INSIDE the grid as a 7th cell; then a Stack clicked with that image selected is offered and
+    added nothing (released at 1003,620 on the grid). Not yet shown to predate space by default — check on master first
+  - c-22 · a page that built in the first run fails in the re-run (nodenza partners page: drop under a block added nothing)
+  - page 38 of tier 80 · could not select the 2nd of 4 card columns
+  - the 19 tier-95 build failures (could-not-select ×9 · drop-offered-nothing ×7 · barely visible ×1 · click timeout ×2)
+  - previewcheck B30 / P4 · the harness's drop and select steps
+- `[ ]` **BATCH L-2 · Tier-99: the editor and the Preview disagree** (area: canvas = Preview · 4 changes, queued)
+  - e-4 · canvas≠Preview — 13 pages: headings, links and buttons 0.4–3.6% narrower in the Preview, text wrapping to other
+    heights, 4 containers 122–198px shorter at Wide (idx 109, 141 carry most)
+  - e-8 · a component 20–24px taller in the Preview — 2 pages (idx 209 and one more)
+  - e-10 · one block 28px taller in the Preview — 1 page (idx 272)
+  - #144 · the canvas copy of fixed blocks — checked in WebKit and Firefox before it is removed
+- `[ ]` **BATCH L-3 · Tier-99: React error #185 and the tablet line** (area: engine rules · 3 changes, queued)
+  - e-5 · React #185 (maximum update depth) — 9 pages
+  - e-6 · four columns on one line at Tablet — 8 pages, 142 findings (= c-11)
+  - c-11c (decided B) · an icon cell does not count for the tablet rule
+- `[ ]` **BATCH L-4 · The decided layout changes** (area: rows and grids · 6 changes, queued)
+  - c-7 (decided B) / e-9 · a column nobody sized takes what is left of the line — the HOLE at the end of a line, 2 pages
+  - c-8 (decided B) / e-7 / #127b · words broken across lines ("1,000+" in 165px Stat columns) — 4 pages, 58 findings
+  - c-21 (decided B) · edge handles no longer cover the last letter of a block that hugs its words
+  - grid picker (decided B) · any count of columns up to 12, not only 1 · 2 · 3 · 4 · 6 · 12
+- `[ ]` **BATCH L-5 · Resize round trips** (area: resize · 5 changes, queued)
+  - #42 · a Stats row's height does not come back after a top/bottom round trip
+  - #46 · the side-by-side-resize spec failing 14 tests on Tablet and Phone — re-run and fix
+  - #82b · #83 · width round trips drift at 1366
+  - #84 · the left-edge resize uses a fixed 14rem neighbour floor
+- `[ ]` **BATCH L-6 · Africa-first measurements and the innovative pages** (area: harness · 3 changes, queued)
+  - page-weight audit in every page report (≤ 100 KB compressed, ≤ 500 KB first view at 360px, images sized and lazy,
+    ≤ 2 font families) · Slow-3G profile (first band within 5 s) · the innovative plan (19 pages)
+- `[ ]` **BATCH D-1 · A README a newcomer can start from** (area: documentation · 1 change, queued — asked by the user
+  2026-09-30): the root `README.md` is still the create-next-app template. Replace it with how to install and run each
+  app (web 3000, admin 3001, mobile), the project structure, how to test (vitest, test:fast, the UAT scripts, the
+  production build on 3100), where the rules (`CLAUDE.md`), the task tree and the guide live. Short; links out
+- `[ ]` **Then, in order:** the whole tier swept again (spacing changes every page) → the story and the published artifacts
+  → the full gate → pull request to `master` → Tasks 2, 3, 4 → the original queue (1.2)
 
 ---
 
@@ -235,7 +329,8 @@ Last updated: **2026-09-29**, session df7557b5, branch `builder/layout-uat`.
         - `[ ]` e-9 · HOLE at the end of a line — 2 pages (idx 210 at Wide 228px; one at Mobile). = c-7 (decided B)
         - `[ ]` e-10 · canvas≠Preview on one block 28px taller — 1 page (idx 272)
         - `[ ]` **NEXT: re-run e-2 and e-3 alone first** (idx 23, 68, 145, 334–337, 393, 396–401) on a FRESH build —
-          a failure that goes away alone was the machine, one that stays is a bug **← YOU ARE HERE**
+          a failure that goes away alone was the machine, one that stays is a bug — STOPPED by the user at 3 of 14, the rest
+          moved to BATCH E-0 (top of this file). **YOU ARE HERE is BATCH S-1**
         - NOT A BUG, expected: 379 pages warn "things need the user's words" (the dressed placeholders' empty text)
       - `[ ]` c-22 · **A page that BUILT in the baseline does not build on the fixed build** — the first page logged
         (nodenza.com/partners_ross_morton): baseline 182 blocks, 2 errors; re-run BUILD FAILED at 80 blocks, "the canvas
@@ -273,7 +368,20 @@ Last updated: **2026-09-29**, session df7557b5, branch `builder/layout-uat`.
     - `[ ]` c-24 · **The bulk inspector shows 1.5rem of inner spacing for blocks that have none.** MEASURED in the
       file: `BulkInspector.tsx` 62–63 falls back to `padding ?? 24` while blocks are created with 0 / unset. To be
       confirmed through the UI (select two blocks, read the slider, measure the blocks)
-    - `[ ]` Engine, from the spacing tokens (rem + cqw), in BOTH engines by one emitter: a side gutter for every
+    - `[ ]` **Components breathe too** (the user 2026-09-30: "spacing within components by default… the text, the
+      edges breathe… natural and slick"): a gap between a component's parts and inner padding from its own edge, from
+      the same tokens, overridable to 0; measured across the whole catalogue in a browser, guard enumerates it. A
+      component with no visible edge gets the gaps but no outer padding (told to the user; theirs to overrule)
+    - `[x]` **DECIDED by the user 2026-09-30:** (1) a box with NO background and NO border keeps 0 inner padding — its
+      edge cannot be seen, words line up, nested boxes do not narrow; it gets padding the moment it gets an edge ·
+      (2) the page header and footer are BARS: 1rem above and below, the 2rem gutter at the sides (not 4rem) · (3) the
+      phone gutter stays as built (~22px at 360, fluid through --box-u; 16px was offered) — confirmed 2026-09-30 · (4) the
+      SECTION SPACE above and below is **1rem**, not 4rem ("the heading is too far from the top… 2rem is too much")
+    - `[>]` Engine, from the spacing tokens (rem + cqw), in BOTH engines by one emitter — WRITTEN 2026-09-30, not yet
+      tested: new blocks carry `spaced`; unset spacing reads `spaceDefaults` (`lib/box-model.ts`); `sectionContent`
+      decides the gutter/section space the same way in the canvas and the export; `leafPaddingCSS` gives a plain
+      element inner spacing (c-23); the inspector shows "Default · size" and "Back to default"; the bulk inspector reads
+      the real padding (c-24). Typecheck 0: a side gutter for every
       section's content even when its background runs edge to edge (only pictures and backgrounds bleed) · space
       above and below a section · a gap between the blocks of a stack and the columns of a row · inner padding for
       any box that has a background or a border
@@ -291,12 +399,23 @@ Last updated: **2026-09-29**, session df7557b5, branch `builder/layout-uat`.
   - `[ ]` **The innovative plan** — `--plan=dressedinnovative`, 19 pages
   - `[ ]` **Open engine lines carried from earlier sessions**
     - `[ ]` #144 `capturesFixed` / `fixedBlockedBy` still assume a size container captures a fixed block (false in
-      Chromium 145; check Safari 16 before removing the canvas mirror)
+      Chromium 145; check Safari 16 before removing the canvas mirror). The user 2026-09-30: do NOT wait for a Mac —
+      check it in Playwright's **WebKit** (Safari's engine, runs on Windows) now, and add WebKit and Firefox to the
+      browser checks; a real Safari 16 only if WebKit and Chromium disagree
     - `[ ]` #127b the stat number "1,000+" breaks in a 10% column (joins c-8)
     - `[ ]` #82b · #83 (1366 width round trips drift) · #84 (left-edge resize uses a fixed 14rem neighbour floor)
     - `[ ]` previewcheck B30 / P4 (harness: drop / select)
-    - `[?]` #46 and #42 — could not be identified anywhere; ask the user what they were
-    - `[!]` the slide-image check (Sonnet) — named in the 2026-09-28 handover, status unknown
+    - `[ ]` **#42 · a Stats row's height does not come back after a top/bottom round trip** — drag a Stat's top or
+      bottom edge out and back and the row stays taller. Suspected a stale `alignSelf`/`minHeight` stretch; never
+      diagnosed. Re-check through the UI; fix at the root with a guard (joins the round-trip family, #82b · #83)
+    - `[ ]` **#46 · the side-by-side-resize spec failed 14 tests on the Tablet and Phone Playwright projects** — marked
+      "pre-existing" (the phone half was fixed as #48), left as "re-run after the matrix", never re-run. Re-run it
+    - WHY THEY WERE LOST (found 2026-09-30 in the transcript of session c7a3c172, 2026-09-26): both were written only in
+      replies and handovers, then carried forward as bare numbers until nobody knew what they meant. **From now on a
+      ledger line in this tree always carries its one-line description, never a number alone.** Asked by the user:
+      "why you got missed? We need to add it to our tree"
+    - `[~]` the slide-image check (Sonnet) — named in the 2026-09-28 handover, status unknown. PARKED by the user
+      2026-09-30: it belongs to the components, which are rebuilt one by one (1.3); the placeholder stands until then
   - `[ ]` **Story additions** in `docs/guide/layout-story.md` for everything above (RULE L)
   - `[ ]` Artifacts and guide updated in the same change (Builder Hub · Layout System · Parity Audit · Semantic plan ·
     `docs/guide/website-builder.md`)
@@ -370,6 +489,31 @@ Last updated: **2026-09-29**, session df7557b5, branch `builder/layout-uat`.
 
 One entry per session, newest first. Written the moment the user says "new session" (or the context is about to run
 out) — where the session STARTED FROM, where it GOT TO, and where the next one CONTINUES FROM.
+
+### 2026-09-30 · session 3c675738 · branch `builder/layout-uat` — HANDOVER (the user moved to a new session to keep the cost down)
+
+- **Started from:** `5414975`, the tier-99 re-run triaged, nothing running.
+- **Got to:**
+  - e-2/e-3 re-run alone, STOPPED by the user at 3 of 14 (build OvtY9uAA): page 68 was the machine; pages 145 and 393
+    still fail alone → BATCH E-0. #42 and #46 found (transcript c7a3c172) and written out in full.
+  - **Working method changed by the user:** RULE X is ONE UAT PASS PER BATCH (one area, ≤ 6 changes, checklist first,
+    one open at a time) — the BATCHES section at the top of this file, guarded by `task-tree-batches.test.ts`; the tree
+    is the Bible for every request; every handover ends with the next session's prompt; say when to hand over.
+    All in `CLAUDE.md` with guard lines.
+  - **SPACE BY DEFAULT built** (batch S-1): `spaced` mark on new blocks, `spaceDefaults` / `sectionContent` /
+    `leafPaddingCSS` / `padSide` / `gapOf` in `lib/box-model.ts`, one decision for canvas and export; inspector shows
+    "Default · size" + Back to default, inner spacing on every element (c-23), bulk reads the real padding (c-24),
+    controls in REAL rem (S1-b). The user's values: gutter 2rem, section 1rem, bar 1rem, stack 1rem, columns 1rem,
+    inner 1.5rem, plain box 0. Guard `tests/unit/space-by-default.test.ts`.
+  - S-1 HEADED UAT run twice (4 themes × 5 rungs, canvas + Preview, `scripts/uat/probe-spacing.js`): 69 checks passed
+    per theme; findings S1-a … S1-e in the S-1 ledger. The first run found BATCH L-1's first reliable e-1 repro.
+  - Every carried-over item queued as a batch with its description (L-1 … L-6, D-1).
+  - Gate at the handover commit: typecheck 0 · eslint 0 errors · vitest 3,784 · test:fast 640 — all green.
+- **Continue from:** BATCH S-1 → **S1-a, the 1rem gap between columns side by side on the page** (engine: each column's
+  width gives up its share of the gap so the line still fits; resize maths in % must keep working) → rebuild → ONE
+  re-run of `probe-spacing.js` in 4 themes to close S1-a … S1-e and tick the S-1 checklist → close S-1 → S-2.
+- **Not done, and said so:** the S-1 checklist is not ticked (it closes on the re-run); the column gap engine work;
+  the mobile app has no builder canvas (rule 20); the published artifacts and the story are not updated (end of Task 1).
 
 ### 2026-09-29 → 30 · session 6c14c5c8 · branch `builder/layout-uat` — HANDOVER (the user stopped for the night)
 

@@ -10,7 +10,7 @@
 
 import type { CSSProperties } from "react";
 import { PILL, blockTypography, pinArrivalCss, pinArrivalKeyframes, floatHoldCSS,
-  type BoxNode, type Breakpoint, BP_ORDER, containerStyle, childStyle, hostSizedFor, marginCSS, sizeToCSS, radiusCSS, SHADOW_CSS, u, LIST_ITEM_GAP, textLen, baseUnit, fadedPaint, boxOpacity, backgroundCss, paintLayerCss,
+  type BoxNode, type Breakpoint, BP_ORDER, containerStyle, childStyle, hostSizedFor, marginCSS, leafPaddingCSS, sectionContent, sizeToCSS, radiusCSS, SHADOW_CSS, u, LIST_ITEM_GAP, textLen, baseUnit, fadedPaint, boxOpacity, backgroundCss, paintLayerCss,
   resolveResponsive, floatStacksOnMobile, floatingReserve, alertToastCss, accordionClasses, bandClasses, videoEmbedSrc, isContainer, sanitizeCssDeclarations, expandScopedCss, COMPONENT_PARTS, itemFloatContextCss, itemOverrideCss, itemNumberVars, richBody, plainBody, componentTextCss, componentBoxCss, renderAlertHTML, alertDismissScript, masonryMeasureAttr, masonryMeasureScript, pinStackMarker, pinStackGroupMarker, pinStackNeeded, pinStackScript, isPager, pagerNavHTML, pagerScript, pagerStripCss, pagerSlideId, bgShowThroughCss, blockContainmentCss, COMPONENT_ITEM_SEL, remLen, imageSizing, hasIntrinsicSize, itemNeedsClass, itemScope, floatZIndex, typoRole, typoRootVars, typoCascadeCss, bandEdgeCSS, LINK_COLOR_CSS, gridQueryCss, TYPE_UNIT_PROPERTY_CSS,
 } from "@/lib/box-model";
 import { isRegistryComponent, renderComponent, componentScripts } from "@/lib/educo-ui/registry";
@@ -366,7 +366,7 @@ function belowFloor(current: CSSProperties["minHeight"]): boolean {
 }
 
 /** The full style object for a node at a breakpoint — mirrors BoxCanvas's wrapStyle so editor == export. */
-function styleAt(node: BoxNode, rawParent: BoxNode | null, bp: Breakpoint, theme: SiteTheme, hostSized = false): CSSProperties {
+function styleAt(node: BoxNode, rawParent: BoxNode | null, bp: Breakpoint, theme: SiteTheme, hostSized = false, section = false): CSSProperties {
   const r = resolveResponsive(node, bp);
   const parent = rawParent ? resolveResponsive(rawParent, bp) : null;
   const isRoot = rawParent === null;
@@ -383,6 +383,7 @@ function styleAt(node: BoxNode, rawParent: BoxNode | null, bp: Breakpoint, theme
     maxWidth: "100%", // never wider than the container → no horizontal scrollbar on a phone
     ...(selfPaint ? {} : decorCss(r)), // a component/button's border/radius/shadow style the block element, not this wrapper
     ...(floating ? {} : marginCSS(r)),
+    ...leafPaddingCSS(r, section), // inner spacing on a plain element (c-23) — the canvas writes the same
     opacity: !isComp ? boxOpacity(r) : undefined, // paint-only fades live in the colours (fadedPaint), not here
     overflow: stacked ? "visible" : (!selfPaint && (r.clip || radiusCSS(r))) ? "hidden" : undefined,
     ...(floating
@@ -399,7 +400,7 @@ function styleAt(node: BoxNode, rawParent: BoxNode | null, bp: Breakpoint, theme
   };
   if (r.hidden) wrap.display = "none"; // hidden-on-this-device → removed at that breakpoint
   if (isContainer(r)) {
-    const cs: CSSProperties = { ...containerStyle(r, bp), ...wrap };
+    const cs: CSSProperties = { ...containerStyle(r, bp, section), ...wrap };
     // An EMPTY container that paints a background would collapse to 0px in the exported/preview site (the editor's
     // "Drag a block here" placeholder gives it height, but that's editor-only). Give it a visible band so the
     // background actually shows — unless the user gave it an explicit height/min-height.
@@ -470,7 +471,7 @@ function diffStyle(base: CSSProperties, bp: CSSProperties): string {
 }
 
 /** Render a node (and subtree) to HTML, pushing its base + per-breakpoint rules into `sheet`. */
-function renderNode(node: BoxNode, rawParent: BoxNode | null, theme: SiteTheme, pageMap: Map<string, string>, sheet: Sheet, isPageSection = false, hostSized = false): string {
+function renderNode(node: BoxNode, rawParent: BoxNode | null, theme: SiteTheme, pageMap: Map<string, string>, sheet: Sheet, isPageSection = false, hostSized = false, section = false): string {
   const r = resolveResponsive(node, "base");
   if (r.hidden && !node.responsive) return ""; // hidden at base with no per-device un-hide → skip entirely
   const sem = SEM?.byId.get(node.id);
@@ -485,7 +486,7 @@ function renderNode(node: BoxNode, rawParent: BoxNode | null, theme: SiteTheme, 
   // Build UP: the phone layout is the unqualified rule and every wider rung adds only what CHANGES from the
   // rung below it. Diffing against the neighbour rather than the base is what keeps the sheet small — a rung
   // that changes nothing emits nothing at all.
-  const byRung = BP_ORDER.map((bp) => styleAt(node, rawParent, bp, theme, hostSized));
+  const byRung = BP_ORDER.map((bp) => styleAt(node, rawParent, bp, theme, hostSized, section));
   const ov = overridesCss(r);
   sheet.rungs.phone.push(`.${cls}{${[styleString(byRung[0]), ov].filter(Boolean).join(";")}}`);
   // Hover & focus (Interactions 1a) — the SAME emitter the canvas uses, so the builder shows exactly what a
@@ -535,7 +536,7 @@ function renderNode(node: BoxNode, rawParent: BoxNode | null, theme: SiteTheme, 
   if (isContainer(r)) {
     // Children of the PAGE ROOT (the only call with no parent) are the page's sections; nothing deeper is.
     const kidsAreSections = rawParent === null;
-    const kidList = (r.children ?? []).map((c) => renderNode(c, node, theme, pageMap, sheet, kidsAreSections, hostSizedFor(node, hostSized, rawParent)));
+    const kidList = (r.children ?? []).map((c) => renderNode(c, node, theme, pageMap, sheet, kidsAreSections, hostSizedFor(node, hostSized, rawParent), sectionContent(c, kidsAreSections, isPageSection && !!r.rowBand)));
     // A1 — the AUTOMATIC <main>: the page's bands between its header and footer regions, wrapped without a box of its own.
     const mw = rawParent === null ? SEM?.mainWrap : null;
     const kids = mw

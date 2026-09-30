@@ -32,7 +32,12 @@ const RULES: [name: string, mustSay: RegExp][] = [
   ["Distinct, combining variations (RULE T)", /RULE T/],
   ["Playwright everything, user POV (RULE U)", /RULE U/],
   ["UAT every change in the UI (RULE X)", /RULE X/],
-  ["…after EACH change, not after the batch", /after EACH change/i],
+  ["…one UAT pass per BATCH of related changes (the user, 2026-09-30)", /ONE UAT PASS PER BATCH/],
+  ["…the tree is the Bible: every request answered with where we are, where it goes, what I will do", /THE TREE IS THE BIBLE FOR EVERY REQUEST/],
+  ["…every handover ends with the next session's prompt, unasked", /EVERY HANDOVER ENDS WITH THE NEXT SESSION'S PROMPT/],
+  ["…say when it is time for a new session, before the heavy work", /SAY WHEN IT IS TIME FOR A NEW SESSION/],
+  ["…a batch is one area, at most 6 changes, its checklist written first", /at most 6 changes[\s\S]*checklist is written FIRST/],
+  ["…typecheck and the unit guard still after every change", /After EVERY change, still/],
   ["…in every combination it can appear in", /EVERY combination|every combination it can appear in/i],
   ["…so the user is never the one who finds it", /user must never be the one who finds it/i],
 

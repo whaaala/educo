@@ -3,8 +3,10 @@ Feature: Space by default — words never touch an edge
   I want every section, block and coloured box to arrive with sensible space around it
   So that my words never sit against an edge, and I only touch spacing when I want something different
 
-  # DRAFT 2026-09-29 — written while the tier-99 sweep runs; nothing here is built yet.
-  # The VALUES (the named defaults below) and the saved-pages scenario wait on the user's decisions.
+  # BUILT 2026-09-30 (batch S-1, docs/TASK_TREE.md). The user's values: side gutter 2rem (≈22px on a 360px phone, fluid) ·
+  # section space 1rem above and below · header/footer bar 1rem · stack gap 1rem · column and grid gap 1rem · inner
+  # padding 1.5rem in a box with a visible edge, 0 in a plain box · saved pages keep their spacing. The controls show
+  # real rem. Open: the gap between columns side by side on the page (S1-a).
   # Every default comes from the spacing tokens, in rem with a fluid term, from ONE emitter for canvas and export.
 
   Background:

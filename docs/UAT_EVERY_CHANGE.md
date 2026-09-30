@@ -1,7 +1,9 @@
 # RULE X — See it yourself first
 
 > **Every change, however small, is driven in the real UI in a real browser from the user's point of view
-> — after EACH change, before the next one starts.**
+> — in ONE pass per BATCH of related changes (one area, at most 6), its checklist written first, before the
+> next batch opens.** Changed by the user 2026-09-30 from "one pass per change": the same coverage, one build
+> and one browser session instead of one per change, and the pass sees the changes TOGETHER.
 
 Asked for directly, and for a reason that is written all over this project's history:
 
@@ -21,12 +23,14 @@ A passing test suite and a working feature are different claims. This rule close
 
 ## The rule
 
-### 1. One change, one UAT pass — in that order
+### 1. One batch, one UAT pass — checklist first
 
-Ten changes is ten passes. Make change 1 → open the app → do what a user does → look at what they see →
-only then start change 2. Batching them and looking once at the end is the failure this rule forbids: when
-something is wrong you no longer know which of the ten did it, and the combination you never tried is
-exactly the one they will try first.
+The batches are the BATCHES section of [TASK_TREE.md](TASK_TREE.md): one area each, **at most 6 changes**, one
+open at a time. Before the pass, write the checklist — every change × every combination (section 3). After every
+change, typecheck and its unit guard (seconds). Then one headed pass on a fresh production build ticks every line
+with what was seen. The limits are what keep the old failure away: "batching them and looking once at the end"
+meant ten unrelated changes and no list; a small, related batch with a written list still tells you which change
+did it, and the combination you never tried is on the list because it was enumerated, not remembered.
 
 ### 2. It is the REAL app, not a fixture
 

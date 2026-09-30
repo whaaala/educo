@@ -119,12 +119,11 @@ export const GRID_LAYOUTS: { id: string; label: string; spans: number[] }[] = [
 /**
  * One empty cell of a layout preset.
  *
- * Full width of its column and no inset, for the same reason the grid itself has none: spacing is a decision
- * the user makes in one control, not a default they have to discover and undo. A cell that arrived with 24px
- * of padding made every nested layout narrower than the one holding it, compounding at each level.
+ * Full width of its column, and its spacing left to the defaults (rule 3): a gap between the blocks it holds, and
+ * inner padding only once it has an edge you can see — so a plain cell still does not narrow a nested layout.
  */
 const gridCell = (colSpan: number): BoxNode =>
-  createContainer("column", { width: "100%", padding: 0, gap: 0, align: "stretch", colSpan });
+  createContainer("column", { width: "100%", align: "stretch", colSpan });
 
 /**
  * The LARGEST number of equal columns the twelve can express exactly, at or below `cols`.
@@ -197,10 +196,9 @@ export function photoGallery(photos: GalleryPhoto[], opts: { across: number; sta
   });
   return createGrid(GRID_MAX, {
     children: cells,
-    // Spacing is a decision, never a default (the standing rule) — so this is whatever the setup showed
-    // the user, and the setup starts at zero. It is passed through rather than invented here.
-    gap: Math.max(0, Math.round(opts.gap ?? 0)),
-    padding: 0,
+    // Whatever the setup showed the user, which starts at the default gap (rule 3: space by default); left
+    // unset when the setup did not say, so the grid reads the default rather than a zero nobody chose.
+    ...(opts.gap != null ? { gap: Math.max(0, Math.round(opts.gap)) } : {}),
     ...(opts.stagger ? { rowFlow: "masonry" as const } : {}),
   });
 }
@@ -352,10 +350,9 @@ export function blockForKind(kind: string, patch: Partial<BoxNode> = {}): BoxNod
     : kind === "slider" ? photoSlider([])
     : kind === "hero" ? heroSection(null, "Welcome to our school")
     : kind === "rotatingHero" ? rotatingHero([], "Welcome to our school")
-    // A Stack starts flush too — space is added on the side you want it, not removed from a default. The
-    // Card and Outline STYLE presets still carry their own padding, because there it is part of the look
-    // somebody chose rather than something they have to discover and undo.
-    : kind === "container" ? createContainer("column", { width: "100%", padding: 0, gap: 0, align: "stretch" })
+    // A Stack reads the space defaults like every block (rule 3). The Card and Outline STYLE presets still carry
+    // their own padding, because there it is part of the look somebody chose.
+    : kind === "container" ? createContainer("column", { width: "100%", align: "stretch" })
     : createElement(kind as Exclude<BoxType, "container">));
   const node = Object.assign(base, patch);
   // Children that arrived in a PATCH are re-idded. A preset object is built once per render and can be

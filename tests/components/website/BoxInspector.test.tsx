@@ -248,9 +248,9 @@ describe("BoxInspector — functionality audit (controls act)", () => {
   it("Design › Spacing: Inner + Outer sliders fire padding/margin", () => {
     const onPatch = renderFor(createContainer("column", { id: "s" } as Partial<BoxNode>));
     // per-side padding/margin number inputs (rem → px)
-    fireEvent.change(screen.getByLabelText("Inner spacing top"), { target: { value: "2.4" } });
+    fireEvent.change(screen.getByLabelText("Inner spacing top"), { target: { value: "1.5" } }); // real rem (S1-b): 1.5rem = 24
     expect(onPatch).toHaveBeenCalledWith({ paddingTop: 24 });
-    fireEvent.change(screen.getByLabelText("Outer spacing left"), { target: { value: "1.6" } });
+    fireEvent.change(screen.getByLabelText("Outer spacing left"), { target: { value: "1" } }); // real rem: 1rem = 16
     expect(onPatch).toHaveBeenCalledWith({ marginLeft: 16 });
   });
 
@@ -530,8 +530,8 @@ describe("Accordion — full three-tab audit (Design · Content · Per-device)",
 
   it("DESIGN › Spacing — Inner + Outer (per-side)", () => {
     const onPatch = renderFor(acc());
-    fireEvent.change(screen.getByLabelText("Inner spacing top"), { target: { value: "2.4" } });    expect(onPatch).toHaveBeenCalledWith({ paddingTop: 24 });
-    fireEvent.change(screen.getByLabelText("Outer spacing bottom"), { target: { value: "1.6" } }); expect(onPatch).toHaveBeenCalledWith({ marginBottom: 16 });
+    fireEvent.change(screen.getByLabelText("Inner spacing top"), { target: { value: "1.5" } }); expect(onPatch).toHaveBeenCalledWith({ paddingTop: 24 }); // real rem (S1-b): 1.5rem = 24
+    fireEvent.change(screen.getByLabelText("Outer spacing bottom"), { target: { value: "1" } }); expect(onPatch).toHaveBeenCalledWith({ marginBottom: 16 }); // real rem: 1rem = 16
   });
 
   it("DESIGN › Outline & effects — rounded, per-corner, border, border-style, shadow, tilt, see-through", () => {

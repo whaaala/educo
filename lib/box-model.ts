@@ -359,6 +359,7 @@ export interface BoxNode {
   placeY?: "start" | "center" | "end"; // down the parent
   clip?: boolean;           // allow sizing SMALLER than content (min:0) and hide overflow; default off = hug content
   baseFont?: number;        // page root only: the global base unit in px (default 10); rendered as rem so it scales with the browser font size (WCAG)
+  spaced?: boolean;         // made under SPACE BY DEFAULT (2026-09-30): unset spacing reads `spaceDefaults`; saved pages lack it and keep theirs
   rowBand?: boolean;        // structural ROW band: a direct child of the page root that lays its sections out side-by-side (the page is a vertical stack of these)
   // Does this band run edge to edge, or sit its content on the page's measure? "band" (the default) is what
   // every band did before this existed. "contained" keeps the background full-bleed and insets only the
@@ -869,15 +870,12 @@ export function fadedPaint(node: BoxNode): { background?: string; bgOverlay?: st
 // ── Factories ───────────────────────────────────────────────────────────────
 
 /**
- * A container. NO SPACE OF ANY KIND until someone asks for it.
+ * A container. SPACE BY DEFAULT (rule 3, 2026-09-29): it is born `spaced` with its gap and padding UNSET, so it
+ * reads `spaceDefaults` — a gap between its blocks, padding once it has an edge you can see, the gutter and
+ * section space when it is a section — and the inspector shows those as "Default" until someone sets one.
  *
- * `gap: 16` and `padding: 24` used to be born into every container, which meant a grid's rows and columns
- * arrived with white bands between them that nobody had chosen — and, being real stored values, they showed
- * up in the controls as though they had been. Space is a decision: the builder offers it three ways (the gap
- * between blocks, inner spacing per side, outer spacing per side) and all three now start at zero.
- *
- * Saved pages are untouched: these were written INTO every node at creation, so an existing box carries its
- * own 16 and 24 and keeps them. Only newly added blocks start flush.
+ * A stored number is a decision, which is why the defaults are not written in: 0 must stay the user's zero.
+ * Saved pages are untouched: they carry no `spaced` mark and the explicit values they were created with.
  */
 export function createContainer(direction: FlexDir = "column", overrides: Partial<BoxNode> = {}): BoxNode {
   return {
@@ -885,11 +883,10 @@ export function createContainer(direction: FlexDir = "column", overrides: Partia
     type: "container",
     layout: "flex",
     direction,
-    gap: 0,
+    spaced: true,
     align: "stretch",
     justify: "start",
     wrap: direction === "row",
-    padding: 0,
     width: "fill",
     children: [],
     ...overrides,
@@ -907,11 +904,11 @@ export function createContainer(direction: FlexDir = "column", overrides: Partia
  * make, rather than a default they have to find and undo.
  */
 export function createGrid(columns = 3, overrides: Partial<BoxNode> = {}): BoxNode {
-  return createContainer("row", { layout: "grid", columns, wrap: false, width: "100%", padding: 0, ...overrides });
+  return createContainer("row", { layout: "grid", columns, wrap: false, width: "100%", ...overrides });
 }
 
 export function createElement(type: Exclude<BoxType, "container">, overrides: Partial<BoxNode> = {}): BoxNode {
-  const base: BoxNode = { id: newBoxId(), type, width: "auto" };
+  const base: BoxNode = { id: newBoxId(), type, width: "auto", spaced: true };
   switch (type) {
     case "heading": return { ...base, text: "New heading", fontSize: 32, bold: true, ...overrides };
     case "button": return { ...base, text: "Button", href: "#", ...overrides };
@@ -964,7 +961,7 @@ export function defaultAccordionItems(): ComponentItem[] {
  *  registry, so ADDING a future component needs no change here — just a registry entry + its CSS. */
 export function createComponent(component: string, overrides: Partial<BoxNode> = {}): BoxNode {
   // RULE L: a newly added component sizes to its content (see defaultComponentWidth). Full/Custom stay opt-in.
-  const base: BoxNode = { id: newBoxId(), type: "component", component, variant: "", width: "auto" };
+  const base: BoxNode = { id: newBoxId(), type: "component", component, variant: "", width: "auto", spaced: true };
   if (component === "accordion") return { ...base, items: defaultAccordionItems(), accMultiOpen: false, ...overrides };
   if (component === "alert") return { ...base, items: defaultAlertItems(), alertSeverity: "info", alertForm: "inline", alertDismiss: false, ...overrides };
   if (isRegistryComponent(component)) return { ...base, width: defaultComponentWidth(component), componentFields: defaultComponentFields(component), ...overrides };
@@ -3739,7 +3736,7 @@ export function masonryCellPx(containerPx: number, track: number, colSpan: numbe
  * px height can be used: a percentage is a share of a row height that masonry has deliberately stopped having.
  */
 export function masonryCellHeightPx(cell: BoxNode, cellPx: number): number {
-  const padV = (cell.paddingTop ?? cell.padding ?? 0) + (cell.paddingBottom ?? cell.padding ?? 0);
+  const padV = padSide(cell, "Top") + padSide(cell, "Bottom");
   const stated = statedPx(cell.height) ?? cell.minHeight ?? null;
   if (stated != null) return Math.max(0, stated + padV);
   return Math.max(0, cellPx * masonryRatio(cell) + padV);
@@ -3777,9 +3774,9 @@ export function masonryRowSpan(parent: BoxNode, child: BoxNode, bp: Breakpoint =
   if (!isMasonry(parent, bp)) return null;
   const containerPx = masonryContainerPx(bp);
   if (containerPx == null) return null;
-  const padH = (parent.paddingLeft ?? parent.padding ?? 0) + (parent.paddingRight ?? parent.padding ?? 0);
-  const gapX = parent.gapX ?? parent.gap ?? 16;
-  const gapY = parent.gapY ?? parent.gap ?? 16;
+  const padH = padSide(parent, "Left") + padSide(parent, "Right");
+  const gapX = gapOf(parent).x;
+  const gapY = gapOf(parent).y;
   const { track, span } = gridPlacementAt(parent, child, bp);
   const cellPx = masonryCellPx(Math.max(0, containerPx - padH), track, span, gapX);
   return masonrySpanUnits(masonryCellHeightPx(child, cellPx), gapY);
@@ -3788,7 +3785,7 @@ export function masonryRowSpan(parent: BoxNode, child: BoxNode, bp: Breakpoint =
 /** The down-gap, expressed in row units — what a cell adds to its own height to leave air beneath it. */
 export function masonryGapUnits(node: BoxNode, rowPx = MASONRY_ROW_REM * 16): number {
   const r = rowPx > 0 ? rowPx : MASONRY_ROW_REM * 16;
-  return Math.ceil(Math.max(0, node.gapY ?? node.gap ?? 16) / r);
+  return Math.ceil(Math.max(0, gapOf(node).y) / r);
 }
 
 /**
@@ -4621,20 +4618,106 @@ export function t(px: number): string {
  * them — which is the commonest grid there is: cards with air between the columns and less between the rows.
  */
 export function gapCSS(node: BoxNode): CSSProperties {
-  const base = node.gap ?? 16;
-  const x = node.gapX ?? base, y = node.gapY ?? base;
+  const d = spaceDefaults(node);
+  const base = node.gap;
+  const x = node.gapX ?? base ?? d.gapX, y = node.gapY ?? base ?? d.gapY;
   return x === y ? { gap: u(x) } : { columnGap: u(x), rowGap: u(y) };
 }
 
-/** Per-side padding CSS (responsive rem): a side override falls back to the general `padding`, then 0. */
-export function paddingCSS(node: BoxNode): CSSProperties {
-  const p = node.padding ?? 0;
+/**
+ * SPACE BY DEFAULT — words never touch an edge (CLAUDE.md rule 3; the user, 2026-09-29). In stored px, emitted
+ * through `u()` like every other spacing value, so it is rem with a fluid term and the canvas and the export agree.
+ * The values are the user's decision of 2026-09-29; the header/footer bar and "a box you cannot see gets no padding"
+ * are theirs of 2026-09-30.
+ */
+// section: 4rem → 1rem, the user 2026-09-30 ("the heading is too far from the top… 2rem is too much"); columns 1.5rem →
+// 1rem the same day ("do one rem… and let the user decide to update the gap as they want").
+export const SPACE_DEFAULT = { gutter: 32, section: 16, bar: 16, stack: 16, columns: 16, inner: 24 } as const;
+
+/** A box someone can SEE the edge of — a background, a picture, a colour scheme or a border. */
+export function hasVisibleEdge(node: BoxNode): boolean {
+  return !!(node.background || node.bgImage || node.bgOverlay || node.borderWidth);
+}
+
+/** Blocks that are pictures, not words: they may bleed to the page edge, so a section gutter never pushes them in. */
+const BLEEDS = new Set<BoxType>(["image", "video", "embed", "spacer", "divider"]);
+
+/**
+ * The space a block has when nobody has set it. Only blocks made since space-by-default (`spaced`) have any:
+ * a page saved before it keeps exactly the spacing it had (the user, 2026-09-29), including the old 16px gap
+ * an unset container gap always meant. Scaffolding (the page root, a row band) never has any — its space
+ * belongs to the blocks inside it.
+ *
+ * `section` = this block sits directly in a band of the page (a section of the page): it keeps the side gutter
+ * and the space above and below. Deeper blocks never do, so a section inside a section is not inset twice.
+ */
+export function spaceDefaults(node: BoxNode, section = false): { pad: [number, number, number, number]; gapX: number; gapY: number } {
+  if (!node.spaced) return { pad: [0, 0, 0, 0], gapX: 16, gapY: 16 };
+  const scaffold = !!node.rowBand;
+  const across = node.layout === "grid" || (node.direction ?? "column") === "row";
+  const gapX = scaffold ? 0 : across ? SPACE_DEFAULT.columns : SPACE_DEFAULT.stack;
+  const gapY = scaffold ? 0 : node.layout === "grid" ? SPACE_DEFAULT.stack : gapX;
+  if (scaffold) return { pad: [0, 0, 0, 0], gapX, gapY };
+  const inner = hasVisibleEdge(node) ? SPACE_DEFAULT.inner : 0;
+  if (section && !BLEEDS.has(node.type)) {
+    // The page's header and footer are BARS, not bands: 1rem above and below keeps a logo and a menu breathing
+    // without a tall strip (the user, 2026-09-30). The side gutter is the page's, like any section.
+    const bar = node.tag === "header" || node.tag === "footer";
+    const s = Math.max(bar ? SPACE_DEFAULT.bar : SPACE_DEFAULT.section, inner), g = Math.max(SPACE_DEFAULT.gutter, inner);
+    return { pad: [s, g, s, g], gapX, gapY };
+  }
+  return { pad: [inner, inner, inner, inner], gapX, gapY };
+}
+
+/** One side's inner spacing in stored px, default included — for the geometry that has to agree with `paddingCSS`. */
+export function padSide(node: BoxNode, side: "Top" | "Right" | "Bottom" | "Left", section = false): number {
+  const i = { Top: 0, Right: 1, Bottom: 2, Left: 3 }[side];
+  return node[`padding${side}`] ?? node.padding ?? spaceDefaults(node, section).pad[i];
+}
+
+/** The gap across and down in stored px, default included — the same numbers `gapCSS` emits. */
+export function gapOf(node: BoxNode): { x: number; y: number } {
+  const d = spaceDefaults(node);
+  return { x: node.gapX ?? node.gap ?? d.gapX, y: node.gapY ?? node.gap ?? d.gapY };
+}
+
+/** Per-side padding CSS (responsive rem): a side override falls back to the general `padding`, then the default. */
+export function paddingCSS(node: BoxNode, section = false): CSSProperties {
+  const [t, r, b, l] = spaceDefaults(node, section).pad;
+  const p = node.padding;
   return {
-    paddingTop: u(node.paddingTop ?? p),
-    paddingRight: u(node.paddingRight ?? p),
-    paddingBottom: u(node.paddingBottom ?? p),
-    paddingLeft: u(node.paddingLeft ?? p),
+    paddingTop: u(node.paddingTop ?? p ?? t),
+    paddingRight: u(node.paddingRight ?? p ?? r),
+    paddingBottom: u(node.paddingBottom ?? p ?? b),
+    paddingLeft: u(node.paddingLeft ?? p ?? l),
   };
+}
+
+/**
+ * Inner spacing on a block that is NOT a container (a Heading, Text, Link, Image, Icon…), which had none at all
+ * (c-23). Only emitted when there is some, so a page saved before this publishes byte for byte what it did.
+ * A self-painting block (button, component) is left to its own element: its padding is part of its design.
+ */
+export function leafPaddingCSS(node: BoxNode, section = false): CSSProperties {
+  if (isContainer(node) || node.type === "button" || node.type === "component") return {};
+  const s = paddingCSS(node, section);
+  return Object.values(s).every((v) => v === u(0)) ? {} : s;
+}
+
+/**
+ * Is this block the CONTENT of a page section — the thing that keeps the side gutter and the section space?
+ * A block in a band of the page, or a block sitting straight on the page. Never the band itself (scaffolding),
+ * and never anything deeper, so a section inside a section is not inset twice.
+ */
+export function isSectionContentIn(root: BoxNode, id: string): boolean {
+  const p = findParent(root, id);
+  if (!p) return false;
+  const node = p.parent.children![p.index];
+  return sectionContent(node, p.parent.id === root.id, !!p.parent.rowBand && (root.children ?? []).some((c) => c.id === p.parent.id));
+}
+
+export function sectionContent(child: BoxNode, parentIsPage: boolean, parentIsPageBand: boolean): boolean {
+  return parentIsPageBand || (parentIsPage && !child.rowBand);
 }
 
 /** Per-side margin CSS (responsive rem): a side override falls back to the general `margin` (undefined = none). */
@@ -4673,7 +4756,7 @@ export function floatingReserve(node: BoxNode, bp: Breakpoint = "base"): number 
     if (n > need) need = n;
   }
   if (need <= 0) return 0;
-  const padV = (node.paddingTop ?? node.padding ?? 0) + (node.paddingBottom ?? node.padding ?? 0);
+  const padV = padSide(node, "Top") + padSide(node, "Bottom");
   return Math.round(need + padV);
 }
 
@@ -4770,13 +4853,13 @@ function listLinesGap(node: BoxNode): CSSProperties | null {
   return items.length > 1 && items.every(isMenuItem) ? { rowGap: LINK_GAP_DOWN } : null;
 }
 
-export function containerStyle(node: BoxNode, bp: Breakpoint = "base"): CSSProperties {
+export function containerStyle(node: BoxNode, bp: Breakpoint = "base", section = false): CSSProperties {
   const scheme = node.bgImage ? null : bandScheme(node.background);
-  const s = containerStyleOf(node, bp);
+  const s = containerStyleOf(node, bp, section);
   const lines = listLinesGap(node);
   return { ...s, ...(lines ?? {}), ...((scheme?.vars ?? {}) as CSSProperties) };
 }
-function containerStyleOf(node: BoxNode, bp: Breakpoint = "base"): CSSProperties {
+function containerStyleOf(node: BoxNode, bp: Breakpoint = "base", section = false): CSSProperties {
   // Computed in px (measurements are px) but EMITTED in rem, per the field guide: a stored size must never
   // reach the page as a pixel value, or a reader who has raised their base font gets a box that ignores them.
   const minHpx = Math.max(node.minHeight ?? 0, floatingReserve(node, bp)) || undefined;
@@ -4785,7 +4868,7 @@ function containerStyleOf(node: BoxNode, bp: Breakpoint = "base"): CSSProperties
   // the box's, exactly as on any other container — and the scrolling strip is an element INSIDE it
   // (`pagerStripCss`). It has to be two elements: the navigation must sit outside the scroll container or
   // it scrolls away with the pages, and a child of the strip cannot sit outside it.
-  if (isPager(node)) return { position: "relative", ...paddingCSS(node), minHeight: minH };
+  if (isPager(node)) return { position: "relative", ...paddingCSS(node, section), minHeight: minH };
   if (node.layout === "grid") {
     // MASONRY changes exactly three of the declarations below and nothing else — the columns, the spans, the
     // offsets, the order and the reading order are all untouched, which is the whole reason it is a row option
@@ -4800,7 +4883,7 @@ function containerStyleOf(node: BoxNode, bp: Breakpoint = "base"): CSSProperties
       // per track, where an estimate of the fluid unit could compound (see `masonrySpanUnits`). Both longhands
       // are written, never the `gap` shorthand, so the property set matches at every rung and the export's
       // rung-to-rung diff has something to neutralise when a narrower rung stops being masonry.
-      ...(masonry ? { columnGap: u(node.gapX ?? node.gap ?? 16), rowGap: "0px" } : gapCSS(node)),
+      ...(masonry ? { columnGap: u(node.gapX ?? node.gap ?? spaceDefaults(node).gapX), rowGap: "0px" } : gapCSS(node)),
       // A masonry cell HUGS its content. The tracks it spans are a ruler, not a row, so stretching to fill
       // them would stretch a photo to a number that was only ever a measurement of the photo.
       alignItems: masonry ? "start" : ALIGN_CSS[node.align ?? "stretch"],
@@ -4843,7 +4926,7 @@ function containerStyleOf(node: BoxNode, bp: Breakpoint = "base"): CSSProperties
       // `grid-auto-rows` alone cannot express that: it is one value for every row, so a row dragged taller
       // was immediately levelled back down by the `1fr` its neighbours were also claiming. See `gridRowTracks`.
       ...(() => { const t = gridRowTracks(node, bp); return t ? { gridTemplateRows: t } : {}; })(),
-      ...paddingCSS(node),
+      ...paddingCSS(node, section),
       minHeight: minH,
     };
   }
@@ -4880,7 +4963,7 @@ function containerStyleOf(node: BoxNode, bp: Breakpoint = "base"): CSSProperties
      * user is complaining about.
      */
     alignContent: "stretch",
-    ...paddingCSS(node),
+    ...paddingCSS(node, section),
     minHeight: minH,
   };
 }
@@ -5249,7 +5332,7 @@ export function childStyle(child: BoxNode, parent: BoxNode, bp: Breakpoint = "ba
   // On a tablet held upright that line is rearranged, at most three across and balanced (#78, `tabletPlaces`).
   const place = isRow ? tabletPlaces(parent, bp)?.get(child.id) : undefined;
   if (place) {
-    s.flex = `1 1 ${tabletBasis(place, parent.gapX ?? parent.gap ?? 16)}`;
+    s.flex = `1 1 ${tabletBasis(place, gapOf(parent).x)}`;
     if (isContainer(child) && !child.clip && !isEmptyBox(child)) s.minWidth = "min-content"; // never narrower than its longest word (#102)
   }
   const crossCss = sizeToCSS(crossToken);
@@ -5939,7 +6022,7 @@ export function pinArrivalKeyframes(used: Set<PinArrival | string>): string {
 
 /** The vertical padding a block rests at, in base units — both sides, per-side winning over the shorthand. */
 const ownPadBlock = (node: BoxNode): number =>
-  Math.max(node.paddingTop ?? node.padding ?? 0, node.paddingBottom ?? node.padding ?? 0);
+  Math.max(padSide(node, "Top"), padSide(node, "Bottom"));
 
 /**
  * CONDENSE NEEDS SOMETHING TO CONDENSE. A bar whose height is simply its text has no padding and no

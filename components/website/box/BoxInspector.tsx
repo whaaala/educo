@@ -12,7 +12,7 @@ import { Plus, X, Tags, Rows3, Columns3, Upload, ArrowRight, AlignLeft, AlignCen
 import type { SiteTheme } from "@/lib/site-storage";
 import type { BoxNode, FlexAlign, FlexJustify, AccPartStyle, Breakpoint, PagerNav, PinScopeWords } from "@/lib/box-model";
 import { RUNG_LABEL } from "@/lib/educo-ui/layout";
-import { type ItemAction, TOAST_CORNERS, isContainer, containerLabel, isFloating, isCssBg, addItem, removeItem, moveItem, updateItem, addChildItem, updateChildItem, removeChildItem, moveChildItem , isMultiItemComponent, hasIntrinsicSize, sizeToCSS, GRID_MAX, COLUMN_FRACTIONS, columnFractionOf, canSetColumnFraction, gridColumns, bandEdgeCSS, PIN_ARRIVALS, PIN_ARRIVAL_AFTER, pinArrivalHasEffect, linkLineGap } from "@/lib/box-model";
+import { type ItemAction, TOAST_CORNERS, isContainer, containerLabel, isFloating, isCssBg, addItem, removeItem, moveItem, updateItem, addChildItem, updateChildItem, removeChildItem, moveChildItem , isMultiItemComponent, hasIntrinsicSize, sizeToCSS, GRID_MAX, COLUMN_FRACTIONS, columnFractionOf, canSetColumnFraction, gridColumns, bandEdgeCSS, PIN_ARRIVALS, PIN_ARRIVAL_AFTER, pinArrivalHasEffect, linkLineGap, spaceDefaults, gapOf } from "@/lib/box-model";
 import { ACCORDION_DESIGNS, ACCORDION_DESIGN_COUNT, ACCORDION_AXES } from "@/lib/educo-ui/accordions";
 import { ALERT_DESIGNS, ALERT_DESIGN_COUNT, ALERT_AXES } from "@/lib/educo-ui/alerts";
 import { COMPONENT_REGISTRY, isRegistryComponent, defaultComponentFields, renderComponent } from "@/lib/educo-ui/registry";
@@ -35,8 +35,10 @@ import CompactTextarea from "@/components/shared/CompactTextarea";
 
 const label = "text-[0.6875rem] font-semibold text-muted";
 
-const toRem = (px: number) => +(px / 10).toFixed(2);
-const fromRem = (rem: number) => Math.round(rem * 10);
+// A stored spacing number is in the builder's base-10 steps; `u()` turns 10 of them into ≈0.625rem at the normal text
+// size, so a REAL rem is the number ÷ 16 (S1-b, the user 2026-09-30: the controls said "3.2rem" for a ~2rem gutter).
+const toRem = (px: number) => +(px / 16).toFixed(2);
+const fromRem = (rem: number) => Math.round(rem * 16);
 
 // Plain-language option lists (value = the real CSS token, label = what the user reads).
 const JUSTIFY_OPTS: [FlexJustify, string][] = [["start", "Start"], ["center", "Center"], ["end", "End"], ["between", "Spread out"], ["around", "Even gaps"]];
@@ -205,21 +207,37 @@ function WidthControl({ node, onPatch }: { node: BoxNode; onPatch: (p: Partial<B
 }
 
 /** All-sides slider + four per-side overrides (Top/Right/Bottom/Left). Used for inner & outer spacing. */
-function SideSpacing({ title, node, base, sides, onPatch, max = 96 }: {
+/**
+ * Four-sided spacing. `defaults` is the space the block has when nothing is set (rule 3, space by default): the
+ * control SHOWS it — "Default" with the size — so it never reads a size the block does not have (c-24), and
+ * "Back to default" clears every side so the block reads the default again.
+ */
+function SideSpacing({ title, node, base, sides, onPatch, max = 96, defaults = [0, 0, 0, 0] }: {
   title: string; node: BoxNode; base: keyof BoxNode; sides: [keyof BoxNode, keyof BoxNode, keyof BoxNode, keyof BoxNode]; onPatch: (p: Partial<BoxNode>) => void; max?: number;
+  defaults?: [number, number, number, number];
 }) {
-  const g = (node[base] as number | undefined) ?? 0;
+  const own = node[base] as number | undefined;
+  const set = own !== undefined || sides.some((k) => node[k] !== undefined);
+  const g = own ?? Math.max(...defaults);
   const setPx = (k: keyof BoxNode, px: number) => onPatch({ [k]: px } as Partial<BoxNode>);
   const setRem = (k: keyof BoxNode, v: string) => onPatch({ [k]: v === "" ? undefined : fromRem(Number(v)) } as Partial<BoxNode>);
   const [t, r, b, l] = sides;
+  const hasDefault = defaults.some((d) => d > 0);
   return (
     <div className="space-y-1.5">
-      <Slider label={title} value={g} min={0} max={max} onChange={(n) => setPx(base, n)} formatValue={(x) => `${toRem(x)}rem`} />
+      <Slider label={title} value={g} min={0} max={max} onChange={(n) => setPx(base, n)} formatValue={(x) => (set ? `${toRem(x)}rem` : `Default · ${toRem(x)}rem`)} />
+      {hasDefault && (
+        <button type="button" disabled={!set} onClick={() => onPatch({ [base]: undefined, [t]: undefined, [r]: undefined, [b]: undefined, [l]: undefined } as Partial<BoxNode>)}
+          aria-label={`${title} — back to default`}
+          className="text-[0.625rem] text-gray-500 hover:text-brand disabled:hover:text-gray-500 disabled:cursor-default dark:text-gray-400 midnight:text-slate-400 purple:text-purple-300">
+          {set ? "Back to default" : "At the default"}
+        </button>
+      )}
       <div className="grid grid-cols-4 gap-1">
         {([["Top", t], ["Right", r], ["Bottom", b], ["Left", l]] as const).map(([lab, key]) => (
           <label key={lab} className="flex flex-col items-center gap-0.5">
             <span className="text-[0.5625rem] uppercase tracking-wide text-gray-400">{lab}</span>
-            <input type="number" step={0.1} min={0} value={node[key] !== undefined ? toRem(node[key] as number) : ""} placeholder={String(toRem(g))} onChange={(e) => setRem(key, e.target.value)} aria-label={`${title} ${lab.toLowerCase()}`} className="w-full text-xs px-1 py-1 rounded-lg border border-gray-200 dark:border-white/10 bg-transparent text-center outline-none focus:ring-1 focus:ring-indigo-400" />
+            <input type="number" step={0.1} min={0} value={node[key] !== undefined ? toRem(node[key] as number) : ""} placeholder={String(toRem(own ?? defaults[[t, r, b, l].indexOf(key)]))} onChange={(e) => setRem(key, e.target.value)} aria-label={`${title} ${lab.toLowerCase()}`} className="w-full text-xs px-1 py-1 rounded-lg border border-gray-200 dark:border-white/10 bg-transparent text-center outline-none focus:ring-1 focus:ring-indigo-400" />
           </label>
         ))}
       </div>
@@ -469,7 +487,8 @@ function AccPreview({ id, size, axes = [] }: { id: string; size: ThumbSize; axes
   );
 }
 
-export default function BoxInspector({ node, theme, onPatch, onAddChild, onFloat, onUnfloat, onLayer, onAlignInRow, rowJustify, onSectionWidth, sectionWidth, canFloat = true, inGrid = false, inMasonry = false, gridTrack, onSetFraction, onRetrack, breakpoint = "base", overridden = false, onResetOverride, pages, currentPageId, pinBlockedBy = null, fixedBlockedBy = null, pinScope = null }: {
+export default function BoxInspector({ section = false, node, theme, onPatch, onAddChild, onFloat, onUnfloat, onLayer, onAlignInRow, rowJustify, onSectionWidth, sectionWidth, canFloat = true, inGrid = false, inMasonry = false, gridTrack, onSetFraction, onRetrack, breakpoint = "base", overridden = false, onResetOverride, pages, currentPageId, pinBlockedBy = null, fixedBlockedBy = null, pinScope = null }: {
+  section?: boolean; // the block is the content of a page section, so its default inner spacing is the gutter and the section space
   node: BoxNode;
   theme: SiteTheme;
   onPatch: (patch: Partial<BoxNode>) => void;
@@ -1002,7 +1021,7 @@ export default function BoxInspector({ node, theme, onPatch, onAddChild, onFloat
                 </>
               )}
               <CompactSelect label="Line up (across)" ariaLabel="Line up" value={node.align ?? "stretch"} onChange={(v) => onPatch({ align: v as FlexAlign })} options={ALIGN_OPTS.map(([v, l]) => ({ value: v, label: l }))} />
-              <Range title="Space between blocks" value={node.gap} min={0} max={64} fallback={16} onChange={(n) => onPatch({ gap: n, gapX: undefined, gapY: undefined })} unit="rem" />
+              <Range title="Space between blocks" value={node.gap} min={0} max={64} fallback={Math.max(gapOf({ ...node, gap: undefined }).x, gapOf({ ...node, gap: undefined }).y)} onChange={(n) => onPatch({ gap: n, gapX: undefined, gapY: undefined })} unit="rem" />
               {/* Across and down separately — the commonest grid there is wants air between its columns and
                   less between its rows, and one number cannot say that. Unset means "same as above".
                   SLIDERS, like the control above them. They were number boxes, so the only way to find the
@@ -1011,8 +1030,8 @@ export default function BoxInspector({ node, theme, onPatch, onAddChild, onFloat
                   right, and it is the same gesture as every other spacing control in this panel. */}
               {/* A block holding LINKS side by side: the sliders start where the links are (2rem / 0.75rem at the default
                   16px, `linkLineGap`), so the first nudge moves the space from what is on screen instead of jumping it. */}
-              <GapRange label="Space across" value={node.gapX} fallback={holdsLinks ? 32 : node.gap ?? 16} onChange={(n) => onPatch({ gapX: n })} onMatch={() => onPatch({ gapX: undefined })} />
-              <GapRange label="Space down" value={node.gapY} fallback={holdsLinks ? 12 : node.gap ?? 16} onChange={(n) => onPatch({ gapY: n })} onMatch={() => onPatch({ gapY: undefined })} />
+              <GapRange label="Space across" value={node.gapX} fallback={holdsLinks ? 32 : gapOf({ ...node, gapX: undefined }).x} onChange={(n) => onPatch({ gapX: n })} onMatch={() => onPatch({ gapX: undefined })} />
+              <GapRange label="Space down" value={node.gapY} fallback={holdsLinks ? 12 : gapOf({ ...node, gapY: undefined }).y} onChange={(n) => onPatch({ gapY: n })} onMatch={() => onPatch({ gapY: undefined })} />
             </Accordion>
           )}
 
@@ -1136,7 +1155,8 @@ export default function BoxInspector({ node, theme, onPatch, onAddChild, onFloat
           </Accordion>
 
           <Accordion title="Spacing" icon={Ruler}>
-            {(container || node.type === "component") && <SideSpacing title="Inner spacing" node={node} base="padding" sides={["paddingTop", "paddingRight", "paddingBottom", "paddingLeft"]} onPatch={onPatch} />}
+            {/* EVERY block has inner spacing (c-23; rule 3) — a Heading, Link or Image as much as a Stack. */}
+            {node.type !== "button" && <SideSpacing title="Inner spacing" node={node} base="padding" sides={["paddingTop", "paddingRight", "paddingBottom", "paddingLeft"]} onPatch={onPatch} defaults={spaceDefaults(node, section).pad} />}
             <SideSpacing title="Outer spacing" node={node} base="margin" sides={["marginTop", "marginRight", "marginBottom", "marginLeft"]} onPatch={onPatch} />
           </Accordion>
 
