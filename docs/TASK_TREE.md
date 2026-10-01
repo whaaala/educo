@@ -963,6 +963,22 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
 One entry per session, newest first. Written the moment the user says "new session" (or the context is about to run
 out) — where the session STARTED FROM, where it GOT TO, and where the next one CONTINUES FROM.
 
+### 2026-10-01 · session 80d91cf9 · branch `builder/layout-uat` — HANDOVER (recommended: two batches in context, clean boundary, L-2 heavy)
+
+- **Started from:** `ff9471f`, BATCH L-1 at its last three steps, its code uncommitted.
+- **Got to:** **L-1 CLOSED** (`509822a`, `d138a6d`): page 337 built 18 of 18 in six windows; L1-12…15 fixed (the page
+  runner now refuses a stale server and reports a lost one); L1-13 PARKED by the user. **Z1-a, Z1-b** (a held block slid
+  and an item ring sat off its item while the canvas was fitted) fixed `1550371`. **Z-1 CLOSED** (`70f0c21`): canvas zoom
+  as approved; acceptance pages 334 and 12 BUILD; Z1-c…p closed (Z1-j: Delete on a focused toolbar button deleted the
+  selected block — fixed). Gate at `70f0c21`: typecheck 0 · eslint 0 errors · vitest 3,923 · test:fast 748. DECIDED by
+  the user: Tasks 2–4 → batches L-7/8/9 on a fresh `builder/layout-2` after the PR, before the re-sweep and the story;
+  S-3 gains a "column too narrow for its words" warning; Z1-i accepted.
+- **UNCOMMITTED:** nothing but run logs in `scripts/uat/logs/` (never committed).
+- **Continue from:** BATCH L-2 (YOU ARE HERE): write its checklist first, then e-4 (the burger menu's "Contact" wraps on the
+  canvas, not in the Preview — `probe-e0b.js --w=1920`), e-8, e-10, #144.
+- **Not done, and said so:** the six-window 37-minute timeouts of 2026-09-30 remain unexplained; mobile has no canvas
+  (rule 20); the published artifacts and the layout story come after L-9.
+
 ### 2026-09-30 · session 5b8cbbe1 · branch `builder/layout-uat` — HANDOVER (the user: "we'll stop here and continue later")
 
 - **Started from:** `ec1fc5e`, BATCH L-1 not started.
