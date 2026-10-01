@@ -14,7 +14,7 @@ const findings = []; const saw = []; const bad = (m) => { findings.push(m); cons
 
 /** Each block's PAINTED box (itself if it paints, else the first thing inside that does), its margins, the page. */
 const measure = ([engine, ids]) => {
-  const Z = engine === 'canvas' ? (document.querySelector('[data-box-id]').currentCSSZoom || 1) : 1;
+  const Z = engine === 'canvas' ? (document.querySelector('[data-box-id]').closest('[data-canvas-scale]')?.dataset.canvasScale * 1 || 1) : 1;
   const el = (id) => engine === 'canvas' ? document.querySelector(`[data-box-id="${id}"]`) : document.querySelector(`.bx-${id.replace(/[^A-Za-z0-9_-]/g, '-')}`);
   const page = engine === 'canvas' ? document.querySelector('[data-box-id]') : document.querySelector('.eu-root') || document.body;
   const pr = page.getBoundingClientRect();

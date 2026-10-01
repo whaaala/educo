@@ -198,7 +198,7 @@ test.describe("a freely placed block that holds on screen", () => {
       const before = top();
       sc.scrollTop = 450;
       await new Promise((res) => setTimeout(res, 350));
-      const zoom = (el as HTMLElement & { currentCSSZoom?: number }).currentCSSZoom ?? 1;
+      const zoom = Number(el.closest<HTMLElement>("[data-canvas-scale]")?.dataset.canvasScale) || 1;
       return { travelled: Math.round(before - top()), scrolled: Math.round(sc.scrollTop - 100), zoom };
     });
     expect(r.zoom, "the canvas really is fitted below 100%").toBeLessThan(0.9);

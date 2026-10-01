@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import type { CSSProperties } from "react";
 import type { BoxNode } from "@/lib/box-model";
-import { createContainer, createGrid, makeRowBand, createRoot, childStyle, paddingCSS, gapCSS, leafPaddingCSS, spaceDefaults, gapOf, SPACE_DEFAULT, u, padSide, isSectionContentIn, outerDefaults, outerSpaceCSS, isContainer } from "@/lib/box-model";
+import { createContainer, createGrid, makeRowBand, createRoot, childStyle, paddingCSS, gapCSS, leafPaddingCSS, spaceDefaults, gapOf, SPACE_DEFAULT, u, padSide, isSectionContentIn, outerDefaults, outerSpaceCSS, isContainer, bandGutter } from "@/lib/box-model";
 import { blockForKind } from "@/lib/box-presets";
 import { COMPONENT_CATALOGUE } from "@/lib/component-catalogue";
 
@@ -36,7 +36,9 @@ describe("the defaults (the user's values, 2026-09-29)", () => {
     expect(gapCSS(createContainer("row"))).toEqual({ gap: u(SPACE_DEFAULT.columns) });
     expect(gapOf(createGrid(3))).toEqual({ x: SPACE_DEFAULT.columns, y: SPACE_DEFAULT.stack });
     // A band's gap across is the columns' GUTTER (S1-a), never a flex gap — see "columns side by side" below.
-    expect(gapCSS(makeRowBand())).toEqual({ columnGap: u(0), rowGap: u(SPACE_DEFAULT.stack), "--bx-gut": u(SPACE_DEFAULT.columns) }); // the gutter, resolved once on the band (E0-e)
+    const col = () => createContainer("column", { children: [blockForKind("text")] });
+    expect(gapCSS(makeRowBand([col(), col()]))).toEqual({ columnGap: u(0), rowGap: u(SPACE_DEFAULT.stack), "--bx-gut": u(SPACE_DEFAULT.columns) }); // the gutter, resolved once on the band (E0-e)
+    expect(gapCSS(makeRowBand([col()]))).toEqual({ columnGap: u(0), rowGap: u(SPACE_DEFAULT.stack) }); // one column: nothing to keep apart (L2-b)
   });
 
   it("a box gets inner padding only once it has an edge you can see", () => {
@@ -121,7 +123,7 @@ describe("columns side by side (S1-a)", () => {
    */
   // `var(--bx-gut)` is the band's `gapCSS` value — u(G) — evaluated with the same 10px unit
   const px = (css: string, band: number) => Function(`return ${css.replace(/var\(--bx-gut\)/g, `(${G / 10} * 10)`).replace(/var\(--box-u, 0\.625rem\)/g, "10").replace(/calc/g, "").replace(/(\d)px/g, "$1").replace(/(\d+(?:\.\d+)?)%/g, (_, n) => `(${n} * ${band} / 100)`)}`)() as number;
-  it.each([[["33.33%", "33.33%", "33.34%"]], [["70%", "30%"]], [["25%", "25%", "25%", "25%"]], [["100%"]]])("a full line of %j fits its band exactly, with a gap between each", (widths) => {
+  it.each([[["33.33%", "33.33%", "33.34%"]], [["70%", "30%"]], [["25%", "25%", "25%", "25%"]]])("a full line of %j fits its band exactly, with a gap between each", (widths) => {
     const band = makeRowBand(widths.map((w, i) => ({ ...createContainer("column", { children: [blockForKind("text")] }), id: `k${i}`, width: w })));
     const B = 1280 + 16; // the page is 1280, the band reaches half a gap past each side
     const slots = band.children!.map((c) => { const s = childStyle(c, band); return px(String(s.flex).split(" ").slice(2).join(" "), B) + px(String(s.marginLeft), B) + px(String(s.marginRight), B); });
@@ -130,8 +132,27 @@ describe("columns side by side (S1-a)", () => {
   });
 
   it("a margin the user set on a column is kept, on top of its half gap", () => {
-    const band = makeRowBand([{ ...createContainer("column"), id: "a", width: "50%", marginLeftPct: 10 }]);
+    const band = makeRowBand([{ ...createContainer("column"), id: "a", width: "50%", marginLeftPct: 10 }, { ...createContainer("column"), id: "b", width: "50%" }]);
     expect(childStyle(band.children![0], band).marginLeft).toBe(`calc(10% + calc(${GUT} / 2))`);
+  });
+
+  /**
+   * L2-b: a gutter lies BETWEEN columns. A band of ONE column used to reach out by a gutter and take it back — invisible,
+   * but each step rounds to the browser's 1/64px, and a menu hugging its links came out one unit short of them: "Contact"
+   * wrapped on the published page at 7 of 20 widths. Measured in a browser by tests/e2e/canvas-scale-parity.spec.ts.
+   */
+  it("a band of ONE column has no gutter: no reach, no give-back, the column fills the band", () => {
+    const band = makeRowBand([{ ...createContainer("column", { children: [blockForKind("text")] }), id: "only", width: "100%" }]);
+    expect(bandGutter(band)).toBe(0);
+    const reach = childStyle(band, createRoot());
+    expect(String(reach.width)).not.toContain("--bx-gut"); // it fills its parent, it does not reach past it
+    expect([reach.marginLeft, reach.marginRight]).toEqual([undefined, undefined]);
+    const c = childStyle(band.children![0], band);
+    expect(String(c.flex)).not.toContain("--bx-gut");
+    expect(String(c.maxWidth ?? "")).not.toContain("--bx-gut");
+    expect(c.marginLeft).toBeUndefined();
+    // a floating block beside it is not a second column
+    expect(bandGutter({ ...band, children: [...band.children!, { ...blockForKind("text"), position: "absolute" } as BoxNode] })).toBe(0);
   });
 
   it("an old band publishes its columns exactly as before — no gutter", () => {

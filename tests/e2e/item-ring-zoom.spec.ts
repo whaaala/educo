@@ -30,10 +30,10 @@ test("at Wide, fitted below 100%, an Accordion item's ring is the item's own box
   for (let i = 0; i < 3 && !(await bar.count()); i++) { await item.click({ position: { x: 30, y: 12 } }); await page.waitForTimeout(400); }
   await expect(bar).toHaveCount(1);
   const r = await page.evaluate(() => {
-    const el = document.querySelectorAll<HTMLElement & { currentCSSZoom?: number }>("[data-eu-item]")[1];
+    const el = document.querySelectorAll<HTMLElement>("[data-eu-item]")[1];
     const a = document.querySelector("div.ring-indigo-500\\/60")!.getBoundingClientRect(), b = el.getBoundingClientRect();
     const t = document.querySelector('[role="toolbar"][aria-label="Edit this item"]')!.getBoundingClientRect();
-    return { zoom: el.currentCSSZoom ?? 1, d: [a.top - b.top, a.left - b.left, a.width - b.width, a.height - b.height].map(Math.round), barGap: Math.round(t.left - b.right) };
+    return { zoom: Number(el.closest<HTMLElement>("[data-canvas-scale]")?.dataset.canvasScale), d: [a.top - b.top, a.left - b.left, a.width - b.width, a.height - b.height].map(Math.round), barGap: Math.round(t.left - b.right) };
   });
   expect(r.zoom, "the canvas really is fitted below 100%").toBeLessThan(0.9);
   for (const d of r.d) expect(Math.abs(d), `ring vs item (top, left, width, height): ${r.d.join(", ")}px at zoom ${r.zoom.toFixed(2)}`).toBeLessThanOrEqual(3);

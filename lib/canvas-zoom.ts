@@ -12,6 +12,20 @@ export const ZOOM_STEPS = [0.25, 0.33, 0.5, 0.67, 0.75, 1, 1.25, 1.5, 2, 3, 4];
 /** The readout's menu. */
 export const ZOOM_MENU = [0.5, 0.75, 1, 1.5, 2, 4];
 
+/**
+ * HOW BIG THE CANVAS IS DRAWN, for an element inside it: rects are screen px, computed styles are layout px, and this
+ * is the factor between them. The page frame carries it as `data-canvas-scale` and is SCALED with `transform`, not CSS
+ * `zoom` (L-2, e-4): under `zoom` the browser laid the page out in shrunken sub-pixels, so at Wide fitted to 55% a menu
+ * that hugs its links came out 0.0125px short of them and wrapped "Contact" — the Preview, laid out at 1:1, did not.
+ * A transform draws the page at 1:1 layout, the same layout the Preview has. A CSS `zoom` anywhere above still counts.
+ */
+export function zoomOf(el: Element | null | undefined): number {
+  const frame = el?.closest?.("[data-canvas-scale]") as HTMLElement | null | undefined;
+  const scale = Number(frame?.dataset.canvasScale);
+  const css = (el as (Element & { currentCSSZoom?: number }) | null | undefined)?.currentCSSZoom;
+  return (Number.isFinite(scale) && scale > 0 ? scale : 1) * (typeof css === "number" && css > 0 ? css : 1);
+}
+
 export const clampZoom = (z: number) => Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, Math.round(z * 100) / 100));
 
 /** The next step in or out from wherever the zoom is now — a fitted 55% steps to 67% in and 50% out. */

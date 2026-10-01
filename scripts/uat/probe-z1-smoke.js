@@ -5,7 +5,7 @@ const path = require('path');
   const { browser, page, errs } = await H.open({ headed: true, w: 1520, h: 900 });
   const shot = (n) => page.screenshot({ path: path.join(__dirname, `probe-z1-smoke-${n}.png`) });
   const readout = () => page.getByRole('group', { name: 'Canvas zoom' }).locator('button').nth(1).innerText().catch(() => '?');
-  const zoomOfPage = () => page.evaluate(() => document.querySelector('[data-box-id]').currentCSSZoom);
+  const zoomOfPage = () => page.evaluate(() => document.querySelector('[data-box-id]').closest('[data-canvas-scale]')?.dataset.canvasScale * 1);
   try {
     await H.panel(page, true);
     await H.clickTile(page, 'Heading'); await H.clickTile(page, 'Text'); await H.clickTile(page, 'Accordion');

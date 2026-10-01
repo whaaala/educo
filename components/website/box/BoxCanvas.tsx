@@ -38,6 +38,7 @@ import { tokensFromTheme, tokensToCss } from "@/lib/educo-ui/tokens";
 import { isRegistryComponent, renderComponent } from "@/lib/educo-ui/registry";
 import { EditableText, ImageBox } from "@/components/website/sections/SectionKit";
 import ItemCrudLayer, { type SelectedItem } from "@/components/website/box/ItemCrudLayer";
+import { zoomOf } from "@/lib/canvas-zoom";
 
 /** Layered background CSS: base fill (colour/gradient) → image → overlay; content renders above. */
 function backgroundStyle(node: BoxNode): React.CSSProperties {
@@ -106,10 +107,7 @@ export function minContentPx(el: HTMLElement): number {
   return w;
 }
 
-export function zoomOf(el: Element | null | undefined): number {
-  const z = (el as (Element & { currentCSSZoom?: number }) | null | undefined)?.currentCSSZoom;
-  return typeof z === "number" && z > 0 ? z : 1;
-}
+export { zoomOf };
 
 function measureBoxU(el: HTMLElement, baseFont: number): number {
   const doc = el.ownerDocument;
@@ -3801,7 +3799,7 @@ function AlertItemView({ item, sev, treat, dismiss, editable, parentId, onEdit, 
         {(item.body || editable) && (
           <div className="eu-alert__body" style={inlineToStyle(alertPartInline(item.bodyStyle))}>
             {editable
-              ? <EditableText value={item.body} editable onChange={(v) => set({ body: v })} placeholder="Message — click to edit" />
+              ? <EditableText as="p" value={item.body} editable onChange={(v) => set({ body: v })} placeholder="Message — click to edit" />
               : <span dangerouslySetInnerHTML={{ __html: richBody(item.body) }} />}
           </div>
         )}
@@ -4091,8 +4089,10 @@ function ComponentView({ node, editable, onPatchNode, breakpoint = "base", itemS
                 {it.meta ? <span className="eu-accordion__meta">{it.meta}</span> : null}
               </summary>
               <div className="eu-accordion__body">
+                {/* a <p>, as the export writes it (`richBody`): the reading-width cap and the paragraph spacing reach it on the
+                    canvas too — as an editable <span> the answer ran 539px on one line where the page wrapped it at 512 (L-2, e-8) */}
                 {editable
-                  ? <EditableText value={it.body} editable onChange={(v) => setItem(it.id, { body: v })} placeholder="Answer — click to edit" />
+                  ? <EditableText as="p" value={it.body} editable onChange={(v) => setItem(it.id, { body: v })} placeholder="Answer — click to edit" />
                   : <span dangerouslySetInnerHTML={{ __html: richBody(it.body) }} />}
                 {(it.children ?? []).length ? (
                   <div className="eu-accordion eu-accordion--nested">
@@ -4103,7 +4103,7 @@ function ComponentView({ node, editable, onPatchNode, breakpoint = "base", itemS
                         </summary>
                         <div className="eu-accordion__body">
                           {editable
-                            ? <EditableText value={c.body} editable onChange={(v) => setChild(it.id, c.id, { body: v })} placeholder="Answer" />
+                            ? <EditableText as="p" value={c.body} editable onChange={(v) => setChild(it.id, c.id, { body: v })} placeholder="Answer" />
                             : <span dangerouslySetInnerHTML={{ __html: richBody(c.body) }} />}
                         </div>
                       </details>

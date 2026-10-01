@@ -16,7 +16,7 @@ const tag = CASE === 'theme' ? THEME.replace(/\W+/g, '') : CASE;
 const shot = (page, n) => page.screenshot({ path: path.join(__dirname, 'probe-z1-out', `${tag}-${n}.png`) });
 require('fs').mkdirSync(path.join(__dirname, 'probe-z1-out'), { recursive: true });
 
-const zoomOf = (page) => page.evaluate(() => document.querySelector('[data-box-id]').currentCSSZoom);
+const zoomOf = (page) => page.evaluate(() => document.querySelector('[data-box-id]').closest('[data-canvas-scale]')?.dataset.canvasScale * 1);
 const readout = (page) => page.getByRole('group', { name: 'Canvas zoom' }).locator('button').nth(1).innerText();
 const pick = async (page, label) => { await page.getByRole('group', { name: 'Canvas zoom' }).locator('button').nth(1).click(); await page.getByRole('option', { name: label }).first().click(); await page.waitForTimeout(350); };
 const lum = (rgb) => { const [r, g, b] = rgb.match(/[\d.]+/g).slice(0, 3).map(Number).map((v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; }); return 0.2126 * r + 0.7152 * g + 0.0722 * b; };

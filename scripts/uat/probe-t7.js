@@ -8,7 +8,7 @@ const RUNGS = [[375, 'Mobile (375px)'], [768, 'Tablet (768px)'], [1024, 'Laptop 
 
 const measure = (engine) => (function () {
   const q = engine === 'canvas' ? '[data-box-id]' : '[class*="bx-"]';
-  const Z = engine === 'canvas' ? (document.querySelector('[data-box-id]').currentCSSZoom || 1) : 1;
+  const Z = engine === 'canvas' ? (document.querySelector('[data-box-id]').closest('[data-canvas-scale]')?.dataset.canvasScale * 1 || 1) : 1;
   const px = (v) => Math.round((v / Z) * 10) / 10;
   const out = { icons: [], lists: [] };
   for (const svg of Array.from(document.querySelectorAll(`${q} svg`))) {

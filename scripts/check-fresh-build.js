@@ -22,7 +22,12 @@ let buildId;
 const dist = process.env.NEXT_DIST_DIR || ".next";
 try { buildId = readFileSync(join(root, dist, "BUILD_ID"), "utf8").trim(); }
 catch { console.error("NO BUILD: run `npx next build` first"); process.exit(1); }
-const builtAt = statSync(join(root, dist, "BUILD_ID")).mtimeMs;
+// WHEN THE BUILD STARTED, not when it finished (L2-k, 2026-10-01): `BUILD_ID` is written at the END, so a source saved
+// while the build was compiling looked older than the build and a stale build read FRESH — lib/box-model.ts saved at
+// 09:14:03 into a build that began 09:12:21 and wrote BUILD_ID at 09:15:12, and the #144 fix was not in it. The build
+// folder's `package.json` is created at the start of every build (the folder is emptied first).
+const started = (() => { try { const s = statSync(join(root, dist, "package.json")); return s.birthtimeMs || s.mtimeMs; } catch { return Infinity; } })();
+const builtAt = Math.min(started, statSync(join(root, dist, "BUILD_ID")).mtimeMs);
 
 /** The newest source file under the app's code — anything edited after the build makes it stale. */
 function newerThanBuild(dir, out = []) {

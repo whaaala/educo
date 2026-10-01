@@ -109,7 +109,7 @@ test.describe("a narrowed grid has the same rows in the editor as on the page", 
   type Rows = { tracks: number; rows: number; heights: number[]; ghost: string };
   const rowsOf = (doc: Page | Frame, engine: "canvas" | "preview", cells: number) => doc.evaluate(([engine, cells]): Rows => {
     const q = (id: string) => document.querySelector(engine === "canvas" ? `[data-box-id="${id}"]` : `.bx-${id}`) as HTMLElement;
-    const Z = engine === "canvas" ? ((document.querySelector("[data-box-id]") as HTMLElement & { currentCSSZoom?: number }).currentCSSZoom || 1) : 1;
+    const Z = engine === "canvas" ? (Number(document.querySelector("[data-box-id]")!.closest<HTMLElement>("[data-canvas-scale]")?.dataset.canvasScale) || 1) : 1;
     const cs = getComputedStyle(q("g")); const ghost = q("g").querySelector(":scope > [data-gridghost]");
     return { tracks: cs.gridTemplateColumns.split(" ").filter(Boolean).length, rows: cs.gridTemplateRows.split(" ").filter(Boolean).length,
       heights: Array.from({ length: cells }, (_, i) => Math.round(q(`c${i + 1}`).getBoundingClientRect().height / Z)), ghost: ghost ? getComputedStyle(ghost).display : "absent" };

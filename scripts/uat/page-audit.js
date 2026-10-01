@@ -206,7 +206,7 @@ function pixelFindings(html) {
 async function canvasAudit(page) {
   return page.evaluate(() => {
     const out = []; const root = document.querySelector('[data-box-id]'); if (!root) return ['no canvas'];
-    const Z = root.currentCSSZoom || 1;
+    const Z = root.closest('[data-canvas-scale]')?.dataset.canvasScale * 1 || 1;
     const rows = Array.from(document.querySelectorAll('[data-box-id]')).filter((e) => getComputedStyle(e).flexDirection === 'row' && getComputedStyle(e).display.includes('flex'));
     for (const row of rows) {
       const cs = getComputedStyle(row); const r = row.getBoundingClientRect();

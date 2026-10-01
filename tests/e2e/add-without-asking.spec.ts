@@ -125,7 +125,7 @@ test.describe("a height you set beats the courtesy height", () => {
     await tile(page, "Stack").click();
     await page.waitForTimeout(900);
     // In PAGE px: with the blocks panel docked the page is shown shrunk to fit (#55/#57), so screen px are smaller.
-    const h = await page.locator("[data-box-id]").last().evaluate((el) => Math.round(el.getBoundingClientRect().height / ((el as HTMLElement & { currentCSSZoom?: number }).currentCSSZoom || 1)));
+    const h = await page.locator("[data-box-id]").last().evaluate((el) => Math.round(el.getBoundingClientRect().height / (Number(el.closest<HTMLElement>("[data-canvas-scale]")?.dataset.canvasScale) || 1)));
     expect(h, "still a box you can see and drop into").toBeGreaterThan(100);
     expect(h, "but not a screenful nobody asked for").toBeLessThan(300);
   });

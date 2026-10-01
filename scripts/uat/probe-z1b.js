@@ -27,7 +27,7 @@ const DEVICE = arg('device', 'Full width'), slot = +arg('slot', 0);
       const b = items.map((e) => e.getBoundingClientRect()).sort((p, q) => (Math.abs(p.top - a.top) + Math.abs(p.left - a.left)) - (Math.abs(q.top - a.top) + Math.abs(q.left - a.left)))[0];
       const target = items[1].getBoundingClientRect();
       const t = bar ? bar.getBoundingClientRect() : null;
-      return { zoom: items[1].currentCSSZoom, dTop: Math.round(a.top - target.top), dLeft: Math.round(a.left - target.left), dW: Math.round(a.width - target.width), dH: Math.round(a.height - target.height), barGap: t ? Math.round(t.left - target.right) : null, near: !!b };
+      return { zoom: items[1].closest('[data-canvas-scale]')?.dataset.canvasScale * 1, dTop: Math.round(a.top - target.top), dLeft: Math.round(a.left - target.left), dW: Math.round(a.width - target.width), dH: Math.round(a.height - target.height), barGap: t ? Math.round(t.left - target.right) : null, near: !!b };
     });
     await page.screenshot({ path: require('path').join(__dirname, `probe-z1b-${DEVICE.replace(/\W+/g, '')}.png`) });
     if (r.none) { console.log(`NO RING · ${DEVICE} · the item was not selected`); return; }

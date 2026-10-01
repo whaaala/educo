@@ -1015,7 +1015,8 @@ describe("box-model — layout CSS mapping", () => {
   });
 
   it("Responsive Field Guide: a ROW BAND wraps, and its sections keep a min width so they STACK on narrow screens", () => {
-    const band = makeRowBand([createContainer("column", { width: "40%", children: [createElement("text", {} as Partial<BoxNode>)] } as Partial<BoxNode>)]);
+    // two columns: a gutter lies BETWEEN columns, a band of one has none (L2-b)
+    const band = makeRowBand([0, 1].map(() => createContainer("column", { width: "40%", children: [createElement("text", {} as Partial<BoxNode>)] } as Partial<BoxNode>)));
     // the row band itself allows wrapping (so it reflows instead of cramming)
     expect(containerStyle(band).flexWrap).toBe("wrap");
     // a non-clipped section inside it keeps a usable minimum → wraps to a new line rather than shrinking below ~14rem

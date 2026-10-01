@@ -18,7 +18,7 @@ const canvasGeo = (page) => page.evaluate(() => {
   const root = document.querySelector('[data-box-id]'); const rr = root.getBoundingClientRect();
   // A canvas shrunk to fit a real screen (#49) reports SCREEN px; the Preview is laid out at full size. Heights and
   // tops are put back into page px through the canvas's own zoom, or every block would look 17% short at 83%.
-  const Z = root.currentCSSZoom || 1;
+  const Z = root.closest('[data-canvas-scale]')?.dataset.canvasScale * 1 || 1;
   return Object.fromEntries(Array.from(document.querySelectorAll('[data-box-id]')).slice(1).map((e) => { const r = e.getBoundingClientRect();
     // EMPTY blocks are the one agreed exception to canvas == published (user, 2026-09-27): a drop target or an upload
     // placeholder exists only in the editor. A block that IS one, or holds one, is not compared on height.

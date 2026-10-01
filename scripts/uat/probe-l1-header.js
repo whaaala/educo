@@ -23,7 +23,7 @@ const OUT = path.join(__dirname, 'probe-l1-header-out', THEME.replace(/\s/g, '')
     await H.panel(page, false);
     await I.meaning(page, hdr, 'Page header'); console.log('  sticky set: ' + await I.sticky(page, hdr));
     await page.keyboard.press('Escape'); await page.waitForTimeout(400);
-    const m = await page.evaluate(([hd, h1]) => { const e = document.querySelector(`[data-box-id="${hd}"]`); const z = document.querySelector('[data-box-id]').currentCSSZoom || 1;
+    const m = await page.evaluate(([hd, h1]) => { const e = document.querySelector(`[data-box-id="${hd}"]`); const z = document.querySelector('[data-box-id]').closest('[data-canvas-scale]')?.dataset.canvasScale * 1 || 1;
       return { h: Math.round(e.getBoundingClientRect().height / z), content: Math.round(document.querySelector(`[data-box-id="${h1}"]`).getBoundingClientRect().height / z), css: getComputedStyle(e).height, pos: getComputedStyle(e).position, tag: e.tagName.toLowerCase() }; }, [hdr, h1]);
     const tooTall = m.h > m.content + 120; if (tooTall) bad++;
     console.log(`  canvas: the <${m.tag}> (${m.pos}) is ${m.h}px tall around a ${m.content}px heading — ${tooTall ? 'SCREEN-TALL' : 'hugs its content'}`);

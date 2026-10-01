@@ -122,7 +122,7 @@ class Builder {
         const a = document.querySelector(`[data-box-id="${first}"]`), b = document.querySelector(`[data-box-id="${id}"]`); if (!a || !b) return null;
         const host = a.parentElement; const cs = getComputedStyle(host); const hr = host.getBoundingClientRect();
         const left = hr.left + parseFloat(cs.paddingLeft), inner = hr.width - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
-        const Z = document.querySelector('[data-box-id]').currentCSSZoom || 1;
+        const Z = document.querySelector('[data-box-id]').closest('[data-canvas-scale]')?.dataset.canvasScale * 1 || 1;
         return { inner, right: b.getBoundingClientRect().right - left, floor: 3.25 * 16 * Z };
       }, [ids[0], ids[i]]);
       if (!m) break;

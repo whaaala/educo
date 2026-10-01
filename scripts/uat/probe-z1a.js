@@ -28,7 +28,7 @@ const DEVICE = arg('device', 'Full width'), slot = +arg('slot', 0);
       const top = () => el.getBoundingClientRect().top;
       sc.scrollTop = 100; await new Promise((res) => setTimeout(res, 400)); const before = top(), s1 = sc.scrollTop;
       sc.scrollTop = 500; await new Promise((res) => setTimeout(res, 400)); const after = top(), s2 = sc.scrollTop;
-      return { zoom: el.currentCSSZoom ?? (frame && frame.style.zoom), scrolled: Math.round(s2 - s1), travelled: Math.round(before - after), pos: getComputedStyle(el).position };
+      return { zoom: el.closest('[data-canvas-scale]')?.dataset.canvasScale * 1 ?? (frame && frame.style.zoom), scrolled: Math.round(s2 - s1), travelled: Math.round(before - after), pos: getComputedStyle(el).position };
     }, target);
     await page.screenshot({ path: require('path').join(__dirname, `probe-z1a-${DEVICE.replace(/\W+/g, '')}.png`) });
     const ok = r.scrolled > 250 && Math.abs(r.travelled) < 6;

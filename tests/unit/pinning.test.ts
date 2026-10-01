@@ -387,8 +387,8 @@ describe("pinBlockedBy — naming the ancestor that makes sticky inert", () => {
 /**
  * `fixedBlockedBy` — the warning for the other silent failure.
  *
- * A fixed block is captured by any ancestor carrying a transform, a container-type or a backdrop-filter.
- * This builder emits all three without anything in their names suggesting a connection to pinning, so
+ * A fixed block is captured by any ancestor carrying a transform or a backdrop-filter — NOT a container-type (#144:
+ * measured in Chromium, Firefox and WebKit by scripts/uat/probe-144.js). This builder emits both without anything in their names suggesting a connection to pinning, so
  * "my fixed bar stopped working when I tilted the section" is otherwise unexplainable.
  */
 describe("fixedBlockedBy — naming the ancestor that captures a fixed block", () => {
@@ -404,8 +404,8 @@ describe("fixedBlockedBy — naming the ancestor that captures a fixed block", (
     expect(fixedBlockedBy(tree({ rotate: 3 }), "me")?.id).toBe("mid");
   });
 
-  it("finds a COMPONENT ancestor, which carries container-type for its own queries", () => {
-    expect(fixedBlockedBy(tree({ type: "component", component: "card", width: "100%" }), "me")?.id).toBe("mid");
+  it("does NOT blame a COMPONENT ancestor: its container-type leaves a fixed bar on screen in every engine (#144)", () => {
+    expect(fixedBlockedBy(tree({ type: "component", component: "card", width: "100%" }), "me")).toBeNull();
   });
 
   it("finds the GLASS design, which carries a backdrop-filter", () => {

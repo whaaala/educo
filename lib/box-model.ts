@@ -2362,7 +2362,8 @@ export function dropIndexAmong(mids: number[], pointer: number): number {
  *  The page is a vertical stack of these. `gap` is the spacing between sections within the row. */
 export function makeRowBand(children: BoxNode[] = [], gap?: number): BoxNode {
   // No gap given → left UNSET, so the band takes the columns' default gutter (S1-a). A given one — 0 included — is kept.
-  const r = createContainer("row", { rowBand: true, width: "fill", padding: 0, ...(gap !== undefined ? { gap } : {}), wrap: false, align: "stretch", justify: "start" });
+  // `justify` left UNSET — it still means Start — so a line nobody aligned can be told from one set to Start (L2-d)
+  const r = createContainer("row", { rowBand: true, width: "fill", padding: 0, ...(gap !== undefined ? { gap } : {}), wrap: false, align: "stretch", justify: undefined });
   r.children = children;
   return r;
 }
@@ -2477,6 +2478,22 @@ export function fitBand(root: BoxNode, bandId: string, newId?: string): BoxNode 
  *  wrapped in its OWN full-width row → so dragging an item down makes a NEW row. Empty rows are pruned.
  *  Widths are clamped ≤100% (shrink-to-fit). The user's MARGINS are respected (never stripped). Items keep
  *  their id. Recurses into every item so a child-of-a-child behaves exactly the same. Idempotent in shape. */
+/**
+ * A PAGE HEADER OR FOOTER USES ITS WIDTH (L2-d; the user, 2026-10-01: "a whole lot of space on the right… it looks
+ * proper bad", and chose "Header spreads"). Every item in a line hugs its words, so a line left at Start packed the logo,
+ * the menu and "Apply now" into the left half of a wide screen. A header is logo at the left edge, the menu between, the
+ * buttons at the right edge (`docs/web-anatomy/regions-and-education.md`), so a line of two or more in a header or footer
+ * that nobody has aligned is set to Spread out — a stored value the Inspector shows and the user can change. A line set
+ * to Start (every line saved before this) is the user's, and is never touched.
+ */
+function spreadBarLine(row: BoxNode): BoxNode {
+  if (!row.rowBand || row.justify != null) return row;
+  const items = (row.children ?? []).filter((k) => !isFloating(k));
+  // …and on ONE centre line (L2-f): left to stretch, the menu's words sat at its top, 12px above the logo's and the button's
+  // middles at 1920. Set once, with the spread — a value the user can change afterwards like any other.
+  return items.length >= 2 ? { ...row, justify: "between", ...(row.align == null || row.align === "stretch" ? { align: "center" as const } : {}) } : row;
+}
+
 export function normalizeRowBands(node: BoxNode, gap?: number): BoxNode {
   if (!isContainer(node)) return node; // leaf — nothing to organize
   if (node.rowBand) {
@@ -2509,7 +2526,7 @@ export function normalizeRowBands(node: BoxNode, gap?: number): BoxNode {
       rows.push(makeRowBand([normalizeRowBands(forced, gap)], gap));
     }
   }
-  return { ...node, children: rows };
+  return { ...node, children: node.tag === "header" || node.tag === "footer" ? rows.map(spreadBarLine) : rows };
 }
 
 /**
@@ -2949,7 +2966,9 @@ export const typoRole = {
  * still wins. Letter spacing is rem, not px — the units rule (rule 16) — through the same `remLen` everything uses.
  */
 export function blockTypography(node: BoxNode, role: "heading" | "body", weight: number): CSSProperties {
-  return {
+  // ONLY the keys it has a value for (L2-g): spread after a block's own `text-decoration: none`, an `undefined` here
+  // erased it, and every button's words were underlined by the browser's default for an <a> — "Apply now" in the header.
+  return Object.fromEntries(Object.entries({
     fontFamily: node.fontFamily || typoRole.font(role),
     fontWeight: node.fontWeight ?? (node.bold ? 800 : typoRole.weight(role, weight)),
     lineHeight: node.lineHeight ?? (role === "heading" ? "var(--eu-leading-tight, 1.15)" : "var(--eu-leading-normal, 1.5)"),
@@ -2958,7 +2977,7 @@ export function blockTypography(node: BoxNode, role: "heading" | "body", weight:
     fontStyle: node.italic ? "italic" : undefined,
     textDecoration: node.underline ? "underline" : undefined,
     textTransform: node.textTransform && node.textTransform !== "none" ? node.textTransform : undefined,
-  };
+  } satisfies CSSProperties).filter(([, v]) => v !== undefined)) as CSSProperties;
 }
 
 /** The role defaults a PAGE ROOT publishes, from the site theme. Everything below inherits these. */
@@ -5480,7 +5499,12 @@ export function childStyle(child: BoxNode, parent: BoxNode, bp: Breakpoint = "ba
 /** The gap across a row band — its columns' GUTTER (S1-a). 0 for a band saved before space by default. */
 export function bandGutter(band: BoxNode): number {
   // A line of menu items is spaced by its own gap (`linkLineGap`): a gutter on top put the links 2rem + 1rem apart (E0-b).
-  return band.rowBand && !isMenuLine(band) ? gapOf(band).x : 0;
+  // A gutter lies BETWEEN columns: a band of one column has none (L-2, L2-b). Its reach `calc(100% + gut)` and the
+  // column's give-back `calc(100% - gut)` change nothing you can see, but each rounds to the browser's 1/64px, and in a
+  // menu that hugs its links the column came out one unit short of them — "Contact" wrapped on the PUBLISHED page at
+  // 1024 · 1280 · 1366 · 1440 · 1550 · 1650 · 1750 (7 of 20 widths measured), and on the canvas at Wide.
+  const columns = (band.children ?? []).filter((k) => !isFloating(k) && !k.hidden).length;
+  return band.rowBand && columns >= 2 && !isMenuLine(band) ? gapOf(band).x : 0;
 }
 
 /**
@@ -6295,14 +6319,13 @@ export function treePinArrivalCss(node: BoxNode, scopeFor: (id: string) => strin
  * Does an ancestor stop this block from ever being FIXED? The mirror of `pinBlockedBy`, and sharper.
  *
  * `position: fixed` is measured against the viewport — UNLESS an ancestor carries `transform`, `filter`,
- * `backdrop-filter`, `perspective`, `will-change` or `container-type`. Any one of those makes that ancestor
+ * `backdrop-filter`, `perspective` or `will-change` (NOT `container-type`: measured in Chromium, Firefox and WebKit, #144).
+ * Any one of those makes that ancestor
  * the containing block, and the fixed element quietly holds itself against a box halfway down the page
  * instead. No error, no warning; it simply stops staying on screen.
  *
- * This builder emits three of them, and none of the three looks like it has anything to do with pinning:
+ * This builder emits two of them, and neither looks like it has anything to do with pinning:
  *
- *   • `container-type: inline-size` on every COMPONENT that is not hugging — the container queries that let
- *     a Card tighten its own padding in a narrow column.
  *   • `transform: rotate()` on any block given a TILT.
  *   • `backdrop-filter` on the Alert's GLASS design.
  *
@@ -6315,13 +6338,14 @@ export function treePinArrivalCss(node: BoxNode, scopeFor: (id: string) => strin
  *
  * The warning that names the offender and the canvas that decides whether to SHOW a block holding have to
  * agree exactly, or the editor tells you a bar will not stay on screen while drawing it staying on screen.
- * `transform`, `container-type` and `backdrop-filter` all do it, and this builder emits all three: a tilt,
- * every non-hugging component, and the glass Alert.
+ * `transform` and `backdrop-filter` do it, and this builder emits both: a tilt and the glass Alert.
  */
 export function capturesFixed(node: BoxNode): boolean {
+  // NOT `container-type` (#144, measured 2026-10-01 by scripts/uat/probe-144.js): a size container left a fixed bar on
+  // screen in Chromium, Firefox AND WebKit — the 2023 spec dropped its layout containment — while a tilt and the glass
+  // captured it (−607 / −600px after a 1200px scroll) in all three. Counting it warned "will not stay on screen" for a
+  // bar inside any component that does not hug its content, and it did stay.
   if (node.rotate) return true;                                   // transform: rotate()
-  if (node.type === "component" && !hugsContent(node)) return true; // container-type: inline-size
-  if (hostsNarrowingGrid(node)) return true;                      // container-type: inline-size, for the grid it holds
   return !!node.variant?.includes("glass");                        // backdrop-filter
 }
 

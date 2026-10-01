@@ -6,7 +6,7 @@ const { chromium } = require('playwright');
 const BASE = process.env.BASE || 'http://localhost:3100';
 const out = [];
 const check = (ok, line, seen) => out.push(`${ok ? 'OK  ' : 'FAIL'} ${line} — ${seen}`);
-const zoomOf = (page) => page.evaluate(() => document.querySelector('[data-box-id]').currentCSSZoom);
+const zoomOf = (page) => page.evaluate(() => document.querySelector('[data-box-id]').closest('[data-canvas-scale]')?.dataset.canvasScale * 1);
 const pick = async (page, label) => { await page.getByRole('group', { name: 'Canvas zoom' }).locator('button').nth(1).click(); await page.getByRole('option', { name: label }).first().click(); await page.waitForTimeout(350); };
 
 (async () => {
@@ -21,29 +21,38 @@ const pick = async (page, label) => { await page.getByRole('group', { name: 'Can
     const scb = await page.locator('[data-canvas-scroller]').boundingBox();
 
     // The drop marker while a tile is carried over the page, at 50% and at 200% (it is drawn on the page, outside the zoom).
+    // THE DROP LINE while a Text tile is carried to the heading — through `H.dropTile`, the drag every working probe uses
+    // (L2-m: a hand-made drag here lost its dragover events part-way, at the old build too, so the line never appeared and
+    // the stuck drag then swallowed Shift 2). An observer records the glowing line's thickness each time it is drawn.
     const marker = async () => {
-      const tile = page.locator('[draggable="true"]').filter({ hasText: /^\s*Text/ }).first(); await tile.scrollIntoViewIfNeeded();
-      const t = await tile.boundingBox(); const target = await page.locator(`[data-box-id="${heading}"]`).boundingBox();
-      await page.mouse.move(t.x + t.width / 2, t.y + t.height / 2); await page.mouse.down();
-      const x = Math.max(target.x, scb.x + 360) + 40, y = target.y + target.height - 3;
-      for (let i = 1; i <= 12; i++) await page.mouse.move(t.x + (x - t.x) * i / 12, t.y + (y - t.y) * i / 12);
-      await page.waitForTimeout(250);
-      const m = await page.evaluate(() => { const e = Array.from(document.body.children).find((c) => c.getAttribute('aria-hidden') === 'true' && getComputedStyle(c).position === 'fixed' && /outline-dashed|shadow-\[0_0_10px/.test(c.className)); if (!e) return null; const r = e.getBoundingClientRect(); return { h: Math.round(r.height), w: Math.round(r.width) }; });
-      await page.keyboard.press('Escape'); await page.mouse.up(); await page.waitForTimeout(400);
-      return m;
+      await page.evaluate(() => { window.__lines = []; window.__lineObs?.disconnect(); window.__lineObs = new MutationObserver(() => {
+        for (const c of document.body.children) if (c.getAttribute('aria-hidden') === 'true' && /shadow-\[0_0_10px/.test(c.className)) { const r = c.getBoundingClientRect(); window.__lines.push(Math.round(Math.min(r.width, r.height))); } });
+        window.__lineObs.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['style'] }); });
+      const target = await page.locator(`[data-box-id="${heading}"]`).boundingBox();
+      const x = Math.max(target.x, scb.x + 360) + 40, y = Math.min(Math.max(target.y + target.height - 3, scb.y + 12), scb.y + scb.height - 12); // inside the visible canvas
+      await H.dropTile(page, 'Text', Math.round(x), Math.round(y)).catch(() => {});
+      const seen = await page.evaluate(() => { window.__lineObs.disconnect(); return window.__lines; });
+      return seen.length ? { h: Math.min(...seen), samples: seen.length } : null;
     };
-    await page.locator(`[data-box-id="${heading}"]`).evaluate((e) => e.scrollIntoView({ block: 'center', inline: 'center' }));
-    await pick(page, '50%'); const m50 = await marker();
-    await page.locator(`[data-box-id="${heading}"]`).evaluate((e) => e.scrollIntoView({ block: 'center', inline: 'center' }));
-    await pick(page, '200%'); const m200 = await marker();
+    // the heading brought into view AFTER each zoom (L2-m): scrolled first, the zoom round the view's middle moved it away
+    // — at 200% the probe aimed at (−376, −1082), off screen, and at 50% under the toolbar
+    const centre = () => page.locator(`[data-box-id="${heading}"]`).evaluate((e) => e.scrollIntoView({ block: 'center', inline: 'center' }));
+    await pick(page, '50%'); await centre(); await page.waitForTimeout(300); const m50 = await marker();
+    await pick(page, '200%'); await centre(); await page.waitForTimeout(300); const m200 = await marker();
     check(m50 && m200 && Math.abs(m50.h - m200.h) <= 2, '(5) the drop line is the same thickness at 50% and 200%', `${JSON.stringify(m50)} · ${JSON.stringify(m200)}`);
     await H.panel(page, false);
 
     // Shift 2: the selected heading fills the view.
     await pick(page, /^Fit/);
     await H.select(page, heading);
+    // …then out of its WORDS (L2-m): the select click landed on the heading's text and put a caret there, so Shift 2 typed
+    // "@" into it — right, keys typed into text never zoom (Z-1). A person presses Escape, which leaves the words and keeps
+    // the block selected (#87), then Shift 2.
+    if (await page.evaluate(() => document.activeElement?.isContentEditable)) { await page.keyboard.press('Escape'); await page.waitForTimeout(200); }
     await page.mouse.move(scb.x + 600, scb.y + 400);
+    console.log('  before Shift 2: focus ' + await page.evaluate(() => { const a = document.activeElement; window.__k2 = []; addEventListener('keydown', (e) => window.__k2.push(`${e.key} prevented=${e.defaultPrevented} on <${e.target.tagName.toLowerCase()}${e.target.getAttribute('aria-label') ? `[${e.target.getAttribute('aria-label')}]` : ''}>`)); return `${a.tagName.toLowerCase()}${a.getAttribute('aria-label') ? `[${a.getAttribute('aria-label')}]` : ''}${a.getAttribute('role') ? ` role=${a.getAttribute('role')}` : ''}`; }) + ` in block ${await page.evaluate(() => document.activeElement.closest('[data-box-id]')?.getAttribute('data-box-id')?.slice(-4))} · selected ${(await H.selected(page))?.slice(-4)} · heading ${heading.slice(-4)}`);
     await page.keyboard.press('Shift+Digit2'); await page.waitForTimeout(500);
+    console.log('  keys: ' + JSON.stringify(await page.evaluate(() => window.__k2)));
     const hb = await page.locator(`[data-box-id="${heading}"]`).boundingBox();
     const z2 = await zoomOf(page);
     check(z2 > 1 && hb.x >= scb.x - 2 && hb.x + hb.width <= scb.x + scb.width + 2 && hb.width > scb.width * 0.5, '(2) Shift 2 zooms to the selected block, in view', `zoom ${z2.toFixed(2)} · heading ${Math.round(hb.width)}px wide at x ${Math.round(hb.x)} in a ${Math.round(scb.width)}px view`);

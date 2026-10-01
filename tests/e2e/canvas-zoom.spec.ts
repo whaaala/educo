@@ -6,7 +6,7 @@ import { seedSite, sitePage } from "./helpers/seed-site";
  * Behaviours: tests/features/components/website/box-builder-site.feature "Zooming the editor canvas".
  * The headed UAT builds its pages through the UI (scripts/uat/probe-z1.js); this regression guard seeds one plain box.
  */
-const pageZoom = (page: Page) => page.evaluate(() => (document.querySelector("[data-box-id]") as HTMLElement & { currentCSSZoom?: number }).currentCSSZoom ?? 1);
+const pageZoom = (page: Page) => page.evaluate(() => Number(document.querySelector("[data-box-id]")!.closest<HTMLElement>("[data-canvas-scale]")?.dataset.canvasScale) || 1);
 const readout = (page: Page) => page.getByRole("group", { name: "Canvas zoom" }).locator("button").nth(1).innerText();
 const siteJson = (page: Page) => page.evaluate(() => localStorage.getItem("educo_box_site_v1") ?? "");
 

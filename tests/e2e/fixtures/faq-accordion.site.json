@@ -1,0 +1,117 @@
+{
+ "pages": [
+  {
+   "id": "box-mup95xlf-2",
+   "name": "Home",
+   "path": "home",
+   "root": {
+    "id": "box-mup95xlf-1",
+    "type": "container",
+    "layout": "flex",
+    "direction": "column",
+    "spaced": true,
+    "align": "stretch",
+    "justify": "start",
+    "wrap": false,
+    "width": "fill",
+    "children": [
+     {
+      "id": "box-mup95z7j-4",
+      "type": "container",
+      "layout": "flex",
+      "direction": "row",
+      "spaced": true,
+      "align": "stretch",
+      "wrap": false,
+      "width": "fill",
+      "children": [
+       {
+        "id": "box-mup95z7j-3",
+        "type": "container",
+        "layout": "flex",
+        "direction": "column",
+        "spaced": true,
+        "align": "stretch",
+        "justify": "start",
+        "wrap": false,
+        "width": "100%",
+        "children": [
+         {
+          "id": "box-mup960lu-6",
+          "type": "container",
+          "layout": "flex",
+          "direction": "row",
+          "spaced": true,
+          "align": "stretch",
+          "wrap": false,
+          "width": "fill",
+          "children": [
+           {
+            "id": "box-mup960lu-5",
+            "type": "heading",
+            "width": "auto",
+            "spaced": true,
+            "text": "New heading",
+            "fontSize": 32,
+            "bold": true
+           }
+          ],
+          "rowBand": true,
+          "padding": 0
+         },
+         {
+          "id": "box-mup96216-b",
+          "type": "container",
+          "layout": "flex",
+          "direction": "row",
+          "spaced": true,
+          "align": "stretch",
+          "wrap": false,
+          "width": "fill",
+          "children": [
+           {
+            "id": "box-mup96216-7",
+            "type": "component",
+            "component": "accordion",
+            "variant": "",
+            "width": "auto",
+            "spaced": true,
+            "items": [
+             {
+              "id": "box-mup96216-8",
+              "title": "What is your return policy?",
+              "body": "Answer — click to edit. Returns are accepted within 30 days of purchase.",
+              "open": true
+             },
+             {
+              "id": "box-mup96216-9",
+              "title": "How long does shipping take?",
+              "body": "Answer — click to edit. Most orders arrive within 3–5 business days."
+             },
+             {
+              "id": "box-mup96216-a",
+              "title": "Do you ship internationally?",
+              "body": "Answer — click to edit. Yes, we ship to most countries worldwide."
+             }
+            ],
+            "accMultiOpen": false
+           }
+          ],
+          "rowBand": true,
+          "padding": 0
+         }
+        ]
+       }
+      ],
+      "rowBand": true,
+      "padding": 0
+     }
+    ],
+    "padding": 0,
+    "gap": 0,
+    "baseFont": 10
+   }
+  }
+ ],
+ "homeId": "box-mup95xlf-2"
+}

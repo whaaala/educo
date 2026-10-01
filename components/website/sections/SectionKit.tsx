@@ -26,7 +26,7 @@ export function EditableText({
   style?: React.CSSProperties;
   placeholder?: string;
 }) {
-  const ref = useRef<HTMLSpanElement>(null);
+  const ref = useRef<HTMLElement>(null);
 
   // Sync DOM text with `value` ONLY when not focused, so typing never resets the caret.
   useEffect(() => {
@@ -40,16 +40,16 @@ export function EditableText({
     return <Tag className={className} style={style}>{value || placeholder}</Tag>;
   }
   return (
-    <span
+    <Tag
       ref={ref}
       contentEditable
       suppressContentEditableWarning
       title="Click to edit"
       data-placeholder={placeholder}
-      onInput={(e) => onChange?.((e.currentTarget.textContent || ""))}
+      onInput={(e: React.FormEvent<HTMLElement>) => onChange?.((e.currentTarget.textContent || ""))}
       // Enter commits; ESCAPE IS THE WAY OUT (#87) — it leaves the words, keeps what was typed and the block selected.
       // It stops here: the canvas's own Escape steps out a level, and one press doing both skipped a level.
-      onKeyDown={(e) => {
+      onKeyDown={(e: React.KeyboardEvent<HTMLElement>) => {
         if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); (e.currentTarget as HTMLElement).blur(); }
         else if (e.key === "Escape") { e.preventDefault(); e.stopPropagation(); e.nativeEvent.stopImmediatePropagation(); (e.currentTarget as HTMLElement).blur(); }
       }}
@@ -57,11 +57,13 @@ export function EditableText({
       // "don't follow me in the editor" handler, so the browser followed the link: clicking the words of a Button or
       // Link that had a web address took the whole builder away to that address. A caret is placed on mousedown, so
       // cancelling the click takes nothing from editing.
-      onClick={(e) => { e.stopPropagation(); e.preventDefault(); }}
+      onClick={(e: React.MouseEvent<HTMLElement>) => { e.stopPropagation(); e.preventDefault(); }}
       // No padding: `px-1 -mx-1` kept the OUTER width right but left the text 8px less room inside, so near the edge
       // it wrapped a line sooner than the published page did (a stat measured 57px on the canvas, 35px published).
       // The hover/focus ring is a box-shadow and draws outside the box without it. Found by the Preview check.
-      className={`${className} inline-block outline-none rounded cursor-text transition-shadow hover:shadow-[0_0_0_2px_rgba(129,140,248,0.55)] focus:shadow-[0_0_0_2px_rgba(99,102,241,0.95)] empty:before:content-[attr(data-placeholder)] empty:before:opacity-40`}
+      // `max-w-full` (L-2, L2-j): an inline-block is as wide as its longest WORD, so in a 61px column "welcomed" (75px)
+      // made the span overflow instead of breaking — 5 lines drawn, 7 on the page, where the words sit in the block itself.
+      className={`${className} ${Tag === "span" ? "inline-block max-w-full" : "block"} outline-none rounded cursor-text transition-shadow hover:shadow-[0_0_0_2px_rgba(129,140,248,0.55)] focus:shadow-[0_0_0_2px_rgba(99,102,241,0.95)] empty:before:content-[attr(data-placeholder)] empty:before:opacity-40`}
       style={style}
     />
   );

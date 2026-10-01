@@ -101,7 +101,7 @@ async function typeWords(page) {
   return n;
 }
 const canvasGeo = (page) => page.evaluate(() => {
-  const root = document.querySelector('[data-box-id]'); const rr = root.getBoundingClientRect(); const Z = root.currentCSSZoom || 1;
+  const root = document.querySelector('[data-box-id]'); const rr = root.getBoundingClientRect(); const Z = root.closest('[data-canvas-scale]')?.dataset.canvasScale * 1 || 1;
   return Object.fromEntries(Array.from(document.querySelectorAll('[data-box-id]')).slice(1).map((e) => { const r = e.getBoundingClientRect();
     const empty = !!e.querySelector('[data-ph]') || e.hasAttribute('data-ph') || Array.from(e.querySelectorAll('button')).some((b) => /^\s*Upload\s*$/.test(b.textContent || ''));
     // A block measured against the SCREEN (a full-screen hero: `100svh`) is as tall as the window it is drawn in — the

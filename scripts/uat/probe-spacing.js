@@ -13,7 +13,7 @@ const findings = []; const saw = []; const bad = (m) => { findings.push(m); cons
 
 /** Everything the checklist asks, measured in one document (editor canvas or Preview). Distances in CSS px of the page. */
 const measure = ([engine, ids]) => {
-  const Z = engine === 'canvas' ? (document.querySelector('[data-box-id]').currentCSSZoom || 1) : 1;
+  const Z = engine === 'canvas' ? (document.querySelector('[data-box-id]').closest('[data-canvas-scale]')?.dataset.canvasScale * 1 || 1) : 1;
   const el = (id) => engine === 'canvas' ? document.querySelector(`[data-box-id="${id}"]`) : document.querySelector(`.bx-${id.replace(/[^A-Za-z0-9_-]/g, '-')}`);
   const page = engine === 'canvas' ? document.querySelector('[data-box-id]') : document.querySelector('.eu-root') || document.body;
   const pr = page.getBoundingClientRect();
@@ -161,7 +161,7 @@ const check = (where, w, m) => {
     await page.getByRole('button', { name: 'Desktop (1280px)' }).first().click(); await page.waitForTimeout(800);
     const cols3 = { col1: ids.col1, col2: ids.col2, col3: ids.col3 };
     const b0 = await page.evaluate(measure, ['canvas', cols3]);
-    await H.select(page, ids.col1); const Zc = await page.evaluate(() => document.querySelector('[data-box-id]').currentCSSZoom || 1);
+    await H.select(page, ids.col1); const Zc = await page.evaluate(() => document.querySelector('[data-box-id]').closest('[data-canvas-scale]')?.dataset.canvasScale * 1 || 1);
     if (!(await H.dragEdge(page, 'right', 60))) bad('S1-a resize: the first column offered no right-edge handle');
     else {
       const b1 = await page.evaluate(measure, ['canvas', cols3]);

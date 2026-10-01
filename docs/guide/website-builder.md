@@ -198,7 +198,7 @@ Select any block and its settings appear on the right, in three tabs.
 
 ### Design tab
 - **Placement** — *In the layout* vs *Floating*, **Lock position & size**, and (when floating) **Front/back order**. See §7.
-- **Size** — **Width** (Fit = hug the content, Full = fill the row, Custom = a % or px), **Position in row** (Left / Centre / Right), **Content position** (a 3×3 grid — where the content sits inside the block when it's bigger than its content), **Height**, and **Trim to size**.
+- **Size** — **Width** (Fit = hug the content, Full = fill the row, Custom = a % or px), **Position in row** (Left / Centre / Right / Spread), **Content position** (a 3×3 grid — where the content sits inside the block when it's bigger than its content), **Height**, and **Trim to size**.
 - **Spacing** — **Inner spacing** (padding, inside the block) and **Outer spacing** (margin, around it).
 - **Outline & effects** — rounded corners (all or per‑corner), border, shadow, tilt, **See-through** (below).
 - **Background** — a colour (with a full OKLCH picker, eyedropper, and *None* for transparent) or a background image.
@@ -262,7 +262,12 @@ Overrides that apply only on the current device size (see §8).
 - **A block you drop takes the room it lands in.** Drop a Stack into a section or a grid cell that has height to spare and it fills it, rather than sitting as a small sliver with the rest of the space empty underneath. Where there's no room to take — a grid nobody has given a height to — it arrives at a comfortable default size instead. A height **you** set is never overruled by either.
 - **A resized block is one shape.** When you make a button, card, badge or any block bigger, the block *itself* grows to fill the new size — there's never a second empty shape left behind at the old size. Its content re‑positions inside it automatically (a resized button centres its label).
 - **Content position.** When a block is bigger than its content (e.g. you made a badge tall), use the **3×3 Content position** grid to place the content — top‑left, centre, bottom‑right, etc. Works for every block, elements and components alike.
-- **Position in row.** To left/centre/right‑align a hugging block within its row, use **Position in row**.
+- **Position in row.** To left/centre/right‑align a hugging block within its row, use **Position in row**. **Spread** shares the
+  row out: the first block at the left edge, the last at the right edge, the rest evenly between.
+- **A page header or footer spreads by itself.** Give a block the meaning **Page header** (or **Page footer**) and its
+  line of two or more blocks is set to **Spread** and centred on one line — the logo at the left edge, the menu between,
+  the button at the right edge — so a wide screen is never left empty on the right. It is an ordinary setting: pick
+  **Left** in **Position in row** and it stays where you put it. Lines you aligned yourself are never changed.
 - **A block you add is always big enough to see.** An empty block has nothing inside to hold it open, so it takes a small minimum size until you put something in it or size it yourself. This matters most when you add several blocks into a stack you have already given a height to: they no longer share that height until each one is a sliver — the stack grows a little instead, and every block stays large enough to click and to drag by its handles. A size **you** set is always honoured, however small; the minimum only applies where you have not said.
 
 ---

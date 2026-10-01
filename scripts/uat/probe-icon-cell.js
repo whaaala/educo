@@ -11,7 +11,7 @@ const RUNGS = [[375, 'Mobile (375px)'], [768, 'Tablet (768px)'], [1024, 'Laptop 
 const findings = []; const bad = (m) => { findings.push(m); console.log('  FINDING ' + m); }; const ok = (m) => console.log('  saw ' + m);
 const kids = (page, id) => page.evaluate((id) => [...document.querySelector(`[data-box-id="${id}"]`).querySelectorAll(':scope > [data-box-id]')].map((e) => e.getAttribute('data-box-id')), id);
 const geo = ([engine, ids]) => {
-  const Z = engine === 'canvas' ? (document.querySelector('[data-box-id]').currentCSSZoom || 1) : 1;
+  const Z = engine === 'canvas' ? (document.querySelector('[data-box-id]').closest('[data-canvas-scale]')?.dataset.canvasScale * 1 || 1) : 1;
   const el = (id) => engine === 'canvas' ? document.querySelector(`[data-box-id="${id}"]`) : document.querySelector(`.bx-${id.replace(/[^A-Za-z0-9_-]/g, '-')}`);
   const o = {}; for (const [k, id] of Object.entries(ids)) { const e = el(id); if (!e) { o[k] = null; continue; } const r = e.getBoundingClientRect(); o[k] = { l: r.left / Z, r: r.right / Z, t: r.top / Z, b: r.bottom / Z }; }
   return o;

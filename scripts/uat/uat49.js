@@ -28,7 +28,7 @@ const measure = (page, id) => page.evaluate((id) => {
   const fitted = Array.from(document.querySelectorAll('[role="status"]')).map((e) => e.textContent).find((t) => /Fitted/.test(t || '')) || null;
   return {
     l: r.left, r: r.right, t: r.top, b: r.bottom, w: r.width, h: r.height,
-    zoom: el.currentCSSZoom ?? null,
+    zoom: el.closest('[data-canvas-scale]')?.dataset.canvasScale * 1 ?? null,
     frameR: frame ? frame.getBoundingClientRect().right : null,
     asideL: aside ? aside.getBoundingClientRect().left : null,
     sideways: scroller ? scroller.scrollWidth - scroller.clientWidth : null,

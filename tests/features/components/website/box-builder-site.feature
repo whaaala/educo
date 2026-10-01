@@ -208,6 +208,32 @@ Feature: Box Builder — multi-page site, preview & export
     Then the ring is drawn exactly round that item and its toolbar sits beside it
     Because at Wide the ring was 142 pixels too narrow and the toolbar covered the item
 
+  Scenario Outline: The canvas lays the page out exactly as the Preview does, at any zoom (L-2, e-4)
+    Given a header whose menu hugs its four links "About", "Admissions", "News" and "Contact"
+    When the canvas shows <device> at <zoom>
+    Then the four links sit on one line on the canvas, as they do in the Preview
+    Because drawn with CSS zoom the canvas laid the page out in shrunken sub-pixels and wrapped "Contact"
+    Examples:
+      | device  | zoom |
+      | Wide    | Fit  |
+      | Wide    | 50%  |
+      | Wide    | 75%  |
+      | Desktop | 50%  |
+      | Desktop | 75%  |
+
+  Scenario: A line of one column has no gutter, so a hugging menu never comes up short (L2-b)
+    Given a menu that hugs its links inside a column of its own
+    When the published page is opened at any width from 1024 to 1920
+    Then "Contact" stays on the line with the other links
+    Because the gutter reached out and back for a single column, and each step rounded, at 7 of 20 widths
+
+  Scenario: A page header spreads across the page (L2-d)
+    Given I give a block holding a logo, a menu and a button the meaning "Page header"
+    Then its line is set to "Spread out": the logo at the left edge, the button at the right edge
+    And "Position in row" shows "Spread", and I can set it back to "Left"
+    And a line I set to "Left" myself stays where I put it
+    And a page footer spreads the same way
+
   Scenario: A block's handles never draw outside the canvas
     When a selected block is scrolled under the toolbar or beside the Inspector
     Then its handles and toolbar are cut off at the edge of the canvas

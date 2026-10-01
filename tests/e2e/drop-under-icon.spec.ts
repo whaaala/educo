@@ -45,7 +45,7 @@ test("a Text dragged from the palette to just under an icon lands under it, in i
     const cells = document.querySelectorAll('[data-box-id="g"] > [data-box-id]').length;
     const inCell = [...document.querySelectorAll('[data-box-id="c0"] [data-box-id]')].map((e) => e.getAttribute("data-box-id")).filter((id) => !["b0", "ic"].includes(id!));
     const text = inCell.map((id) => document.querySelector(`[data-box-id="${id}"]`)!).find((e) => (e as HTMLElement).innerText.trim());
-    const Z = (document.querySelector('[data-box-id]') as HTMLElement & { currentCSSZoom?: number }).currentCSSZoom || 1;
+    const Z = Number(document.querySelector('[data-box-id]')!.closest<HTMLElement>("[data-canvas-scale]")?.dataset.canvasScale) || 1;
     const ib = document.querySelector('[data-box-id="ic"]')!.getBoundingClientRect(); const tb = text?.getBoundingClientRect();
     const rem = parseFloat(getComputedStyle(document.documentElement).fontSize);
     return { cells, landed: !!text, gap: tb ? (tb.top - ib.bottom) / Z : null, rem };

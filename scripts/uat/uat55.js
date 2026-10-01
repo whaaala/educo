@@ -47,7 +47,7 @@ const panelOpen = (page) => page.evaluate(() => !!document.querySelector('[role=
       ls.forEach((l, i) => { if (l < pr - 1) bug(`block ${i + 1} starts ${Math.round(pr - l)}px under the open panel`); });
       await page.screenshot({ path: `${OUT}/uat55-${tag}-open.png` });
       if (J.kind === 'fit') {
-        const m = await page.evaluate(() => { const f = document.querySelector('[style*="container-type"]'); const aside = document.querySelector('aside[aria-label="Inspector"]'); const st = Array.from(document.querySelectorAll('[role="status"]')).map((e) => e.textContent).find((t) => /Fitted/.test(t || '')); return { z: f.currentCSSZoom, l: f.getBoundingClientRect().left, r: f.getBoundingClientRect().right, insp: aside ? aside.getBoundingClientRect().left : null, st }; });
+        const m = await page.evaluate(() => { const f = document.querySelector('[style*="container-type"]'); const aside = document.querySelector('aside[aria-label="Inspector"]'); const st = Array.from(document.querySelectorAll('[role="status"]')).map((e) => e.textContent).find((t) => /Fitted/.test(t || '')); return { z: f.closest('[data-canvas-scale]')?.dataset.canvasScale * 1, l: f.getBoundingClientRect().left, r: f.getBoundingClientRect().right, insp: aside ? aside.getBoundingClientRect().left : null, st }; });
         log(`  page ${Math.round(m.l)}–${Math.round(m.r)} at zoom ${m.z.toFixed(2)} (${m.st}) · panel ends ${Math.round(pr)} · Inspector starts ${Math.round(m.insp)}`);
         if (m.l < pr - 1) bug('Desktop canvas starts under the open panel');
         if (m.r > m.insp + 1) bug('Desktop canvas runs under the Inspector');

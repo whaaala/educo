@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, type RefObject } from "react";
 import { ArrowUp, ArrowDown, Plus, Copy, Trash2, GripVertical, X } from "lucide-react";
 import { CHROME_Z } from "@/lib/educo-ui/stacking";
+import { zoomOf } from "@/lib/canvas-zoom";
 
 /**
  * ON-CANVAS ITEM CRUD (RULE I) — shared by EVERY component, the ones we have and every future one.
@@ -92,9 +93,8 @@ export default function ItemCrudLayer({
       const hr = host.getBoundingClientRect(), r = el.getBoundingClientRect();
       // SCREEN PIXELS IN, LAYOUT PIXELS OUT (Z1-b): the ring and toolbar are positioned INSIDE the zoomed canvas, so
       // rects measured on screen are divided by its zoom — undivided, at Wide fitted to 55% the ring was drawn 142px
-      // narrower and 26px higher than its item, and the toolbar sat on the item. (`zoomOf` in BoxCanvas, inlined: that
-      // file imports this one.)
-      const z = (host as HTMLElement & { currentCSSZoom?: number }).currentCSSZoom || 1;
+      // narrower and 26px higher than its item, and the toolbar sat on the item.
+      const z = zoomOf(host);
       const s = { top: r.top - hr.top, left: r.left - hr.left, width: r.width, height: r.height }; // screen px
       const box: Box = { top: s.top / z, left: s.left / z, width: s.width / z, height: s.height / z };
       // Prefer sitting just OUTSIDE the item's right edge, vertically centred — that never covers the item's own

@@ -198,8 +198,9 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
     words closer than the gutter floor to the page or their coloured box's edge · (3) audit check: sections closer than
     the section floor · (4) the old "never a default" wording in the four places left (layout feature 347,
     `text-is-reachable.spec.ts` 34, design-foundation `02` 485, memory `feedback_radius_and_spacing.md`)
-- **← YOU ARE HERE: BATCH L-2 (the editor and the Preview disagree)** — Z-1 CLOSED 2026-10-01 (canvas zoom; acceptance pages
-  334 and 12 BUILD). L-1 closed earlier the same day. (E-0 closed 2026-09-30; S-3 queued)
+- **← YOU ARE HERE: BATCH F-1 (the page uses its space)** — L-2 CLOSED 2026-10-01 (canvas = Preview: the zoom drawn
+  with `transform`, a one-column band has no gutter, header/footer lines spread, editable text measured as published, #144).
+  Next: F-1's change (1), MEASURE FIRST — the unused-space audit check — then the fixes by class. (S-3 queued)
 - `[ ]` **BATCH S-3 · The editor's Page check warns about space** (area: Page check warnings · 2 changes, queued
   2026-09-30): (1) the in-app Page check reports words closer than 1rem to the page edge or touching their coloured box
   (W7a) and two sections closer than 1rem (W7b), as warnings, the way `page-audit.js` measures them — the scenario
@@ -545,7 +546,9 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
       in to reach a thin column as a person would (`reach` in h.js, centring it both ways). Their errors are queued
       classes only: HOLE and broken words (L-4), canvas≠Preview at Wide (L-2). Regression: 2 · 87 · 142 · 153 · 227 ·
       278 · 337 · 385 · 109 all BUILT
-- `[ ]` **BATCH L-2 · Tier-99: the editor and the Preview disagree** (area: canvas = Preview · 4 changes, queued)
+- `[x]` **BATCH L-2 · Tier-99: the editor and the Preview disagree** — CLOSED 2026-10-01 (every checklist line seen in a HEADED
+  UAT, every ledger line fixed and re-checked; gate: typecheck 0 · eslint 0 errors (105 accepted warnings) · vitest 3,932 ·
+  test:fast 757) (area: canvas = Preview · 4 changes)
   - e-4 · canvas≠Preview — 13 pages: headings, links and buttons 0.4–3.6% narrower in the Preview, text wrapping to other
     heights, 4 containers 122–198px shorter at Wide (idx 109, 141 carry most). **A clean repro, built through the UI
     (E-0, 2026-09-30):** `probe-e0b.js --w=1920` — the burger header's hugged menu is 419.3px on BOTH sides, yet the
@@ -553,12 +556,126 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
   - e-8 · a component 20–24px taller in the Preview — 2 pages (idx 209 and one more)
   - e-10 · one block 28px taller in the Preview — 1 page (idx 272)
   - #144 · the canvas copy of fixed blocks — checked in WebKit and Firefox before it is removed
+  - **UAT CHECKLIST (written 2026-10-01, BEFORE any code).** One HEADED pass, six windows, fresh production build, the
+    state built THROUGH THE UI; every line in Light · Dark · Midnight · Purple Dream, canvas AND Preview, at Mobile 375 ·
+    Tablet 768 · Laptop 1024 · Desktop 1280 · Wide 1920, and on the canvas at Fit AND 100% zoom (the canvas zoom changes
+    how text is measured):
+    - `[x]` (1) e-4: the burger header (`probe-e0b.js`) — every block's place and size within 1px canvas = Preview at every
+      rung and zoom; "Contact" on one line in both; the menu the same height in both. SEEN: 28 runs (4 themes × 375 · 768 ·
+      1024 · 1280 · 1920 + 1920 at 50/100%), 0 blocks differ, menu one line on both; the zoomed line 230.5875px for 230.5875
+      needed (L2-b, L2-c); screenshots read in Light, Dark, Midnight, Purple Dream
+    - `[x]` (2) e-4: tier-99 pages 109 and 141 (most of the 37 findings) and 334 · 12 · 337 rebuilt — 0 R11 findings. SEEN on
+      the FINAL build (CtkDsK, FRESH): 109 · 272 · 334 · 337 (tier 99) and 12 (tier 95) BUILT through the UI, 0 canvas≠Preview,
+      every error a HOLE (F-1); 141 on xL7cJ1: HOLE only
+    - `[x]` (3) e-8: page 209 (and the other page) — the component the same height canvas = Preview at every rung. SEEN: the
+      FAQ built through the UI, 4 themes × 5 rungs, 0 blocks differ (L2-i); page 209 on the final build: 0 canvas≠Preview
+    - `[x]` (4) e-10: page 272 — the block the same height canvas = Preview at every rung. SEEN: page 272 on build k63Oav (with
+      L2-b/c): 0 canvas≠Preview, HOLE only — e-10 had the same cause as e-4
+    - `[x]` (5) #144: a fixed block (header pinned to the screen) in Chromium, WebKit and Firefox — the canvas shows it
+      once, where the Preview shows it, while scrolling; then the canvas copy removed or kept on that measurement. SEEN:
+      `probe-144.js` in all three engines; `probe-144-ui.js` in Light · Midnight · Dark: no false warning, canvas and Preview
+      both hold. The canvas's own simulation is KEPT (its frame is scaled, which captures a fixed block); the wrong
+      container-type assumption is removed
+    - `[x]` (6) regression: `probe-spacing.js` (S-1) and pages 2 · 87 · 153 · 227 · 278 build with no new R11. SEEN: S-1 125
+      checks × 4 themes, 0 findings; the five pages BUILT, the only R11 page 2's (L2-j), gone on the final build; Z-1's own
+      UAT 21/21 × 4 themes, narrow 12/12, browser200 4/4, extra 6/6 (L2-m)
+  - LEDGER of L-2 (numbered as found):
+    - `[x]` L2-a · HARNESS: `probe-e0b.js` printed "0 blocks differ" at 1280 50%/75% while "Contact" had wrapped — it
+      compares canvas with Preview, and a wrap in BOTH reads as "no difference". It must also report a line that wraps
+    - `[x]` L2-b · **ENGINE: a band of ONE column reached out by a gutter and took it back** (`calc(100% + gut)` /
+      `calc(100% − gut)`), each step rounding to 1/64px, so a menu hugging its links came out one unit short — "Contact"
+      wrapped on the PUBLISHED page at 1024 · 1280 · 1366 · 1440 · 1550 · 1650 · 1750 (7 of 20 widths). CODED: a gutter lies
+      between columns, `bandGutter` is 0 for fewer than two (0 of 20 wrap). Guard `space-by-default.test.ts` "a band of
+      ONE column" (mutant red) + `canvas-scale-parity.spec.ts`
+    - `[x]` L2-c · **CANVAS: CSS `zoom` laid the page out in shrunken sub-pixels** (e-4's cause on the canvas: at 100% 0
+      blocks differ, at Fit 9). CODED: the frame is scaled with `transform` inside a sizer (`page.tsx`), `zoomOf` reads
+      `data-canvas-scale` (`lib/canvas-zoom.ts`); harness + 6 specs read it too. Guard `canvas-scale-parity.spec.ts`
+      (red on the old build: "Contact" wrapped at Wide Fit/50/75 and Desktop 50/75)
+    - `[x]` L2-d · **the header packs everything to the LEFT** (the user, 2026-10-01, from the Preview at 1920: "a whole
+      lot of space on the right… it looks proper bad"). Every line is made "Start". DECIDED by the user the same hour
+      ("Header spreads"): giving a block the meaning Page header / Page footer sets its line(s) to "Spread out" — logo at
+      the left edge, buttons at the right (`docs/web-anatomy/regions-and-education.md:32`); a real, visible, undoable
+      value; a line added to a header later spreads too; saved pages untouched. CODED: `makeRowBand` leaves `justify`
+      unset (still Start), `normalizeRowBands` → `spreadBarLine`; "Position in row" gains "Spread". Guard
+      `header-spreads.test.ts` (mutant red). HEADED (build 9Qm7Sv, six windows, burger header built through the UI): the
+      items span 98–99% of the header line at 768 · 1024 · 1280 · 1920 (Fit and 50%), canvas = Preview, menu on one line
+      in both; at 375 logo left, "☰ Menu" right, "Apply now" on the next line (the phone is too narrow for three)
+    - `[x]` L2-e · HARNESS: my L2-d probe measured logo-to-button ACROSS two rows on a phone (read "69% empty"). FIXED:
+      measured per visual row
+    - `[x]` L2-f · **the menu's words sat ~12px above the logo's and the button's middles** (seen in the 1920 Preview
+      screenshot). CODED: a header line set to Spread is also centred (`align: center`, once, changeable). Guard
+      `header-spreads.test.ts` (mutant red)
+    - `[x]` L2-g · **every button's words were underlined on the published page** ("Apply now"): `blockTypography`
+      returned `textDecoration: undefined`, which erased the button's `none` when spread after it. CODED: it emits only
+      the keys it has a value for. Guard `header-spreads.test.ts` (mutant red)
+    - `[x]` L2-h · HARNESS: my per-row metric grouped by TOP; once L2-f centred the items, one line read as several rows.
+      FIXED: rows are items that overlap vertically, measured on the logo's row
+    - `[x]` L2-i · **e-8's cause: on the canvas a component's body text was an editable `<span>`** (Accordion answer and
+      sub-answer, Alert message); the export writes `<p>`, which the reading-width cap reaches — at 768 the answer ran
+      539px on one line on the canvas and wrapped at 512 in the Preview: the open item 96 vs 120px, the Accordion hugging
+      572 vs 546px (page 209 at every rung ≥ 768; reproduced through the UI by `probe-l2-acc.js`). CODED: `EditableText`
+      renders its editable element as the tag asked for, and the three body sites ask for `p`. Guard
+      `canvas-scale-parity.spec.ts` "an FAQ's open answer" (RED on the old build: 96px drawn, 120px published, 768 and 1280)
+    - `[x]` L2-j · regression page 2 (nodenza, about): canvas≠Preview at 1024 and 1280 in a grid of 4.4%-wide cells where
+      words break mid-word ("welcomed", "teacher" — c-8): 461 vs 534px at 1024. Was 5–8 such findings before today
+      (z1-accept-99, z1-reg-6), 2 now. TRACED (both sides compute the same `overflow-wrap`, width 61.4px and font): on
+      the canvas the words sit in `EditableText`'s `inline-block` span, which is as wide as its longest WORD — "welcomed"
+      overflowed instead of breaking: "Every | family is | welcomed | by our | teachers." 5 lines drawn, 7 published. A
+      first guess (a shared `overflow-wrap` rule for the canvas) was MEASURED to change nothing and reverted. FIXED:
+      `max-w-full` on the editable span, for every editable text. Guard `canvas-scale-parity.spec.ts` "a word longer than
+      its column" (RED: 121px drawn, 170px published; green after)
+    - `[x]` L2-k · **HARNESS: `check-fresh-build.js` called a STALE build FRESH** — it compared sources with `BUILD_ID`,
+      written at the END of a build, so a file saved mid-build looked older: box-model.ts saved 09:14:03 into a build begun
+      09:12:21 (BUILD_ID 09:15:12), and the #144 fix was missing from a build it passed. FIXED: compared with the build's
+      START (its folder's `package.json`, created first). Proven on that same folder: FRESH before, STALE after
+    - `[x]` #144 · **MEASURED in Chromium, Firefox and WebKit** (`probe-144.js`): a `container-type` box leaves a fixed bar
+      on screen (0px after a 1200px scroll) in all three; a tilt and the glass capture it (−607 / −600px) in all three.
+      `capturesFixed` counted container-type, so a block set to "Floats on screen" in a band holding a narrowing grid was
+      warned "This will not stay on screen" AND the canvas let it scroll away (−247 → −527px) while the Preview held it
+      at 0px — canvas ≠ Preview. FIXED: the two container-type lines removed (the canvas's own fixed simulation stays: its
+      frame is scaled). HEADED through the UI (`probe-144-ui.js`, 200% so the canvas really scrolls): no warning, canvas
+      holds (57 → 57px over 615px), Preview holds. Guards `pinning.test.ts`, `grid-own-box.test.ts` updated to the measurement
+    - `[x]` L2-l · eslint: an unused variable in my own `probe-l2-acc.js`. Removed
+    - `[x]` L2-m · HARNESS: `probe-z1-extra.js` failed "the drop line keeps its thickness" and "Shift 2 zooms to the
+      selection" — the SAME on this morning's code with this morning's probe (worktree at `7e1a030`, port 3500), so not
+      today's change. Three probe faults, traced one by one: its hand-made drag lost its dragover events (now `H.dropTile`,
+      with an observer reading the line); it scrolled the heading into view BEFORE each zoom, so it aimed off screen
+      (now after); its select click left a caret in the heading's words, so Shift 2 typed "@" — correct, keys typed into
+      text never zoom (Z-1) — a person presses Escape first (#87), and so does the probe now. Shift 2 checked alone first:
+      55% → 262%. Now 6 of 6: the line 3px at 50% and 200%, Shift 2 → 260%
+  - FINAL HEADED UAT (build xL7cJ1, `.next-c`, FRESH by the corrected check): burger header 4 themes × 5 rungs + 1920 at
+    50/100% and the FAQ 4 themes × 5 rungs — 48 runs, 0 blocks differ, menu one line, header items span 96.7–98.8% of
+    the line; the 1920 menu line 230.5875px for 230.5875px needed (was one unit short); pages 2 · 141 · 209 built
+    through the UI: 0 canvas≠Preview (HOLE and c-8's broken words only); #144 in Midnight; S-1 `probe-spacing.js` 125
+    checks × 4 themes, 0 findings; Z-1 `probe-z1.js` 21/21 × 4 themes, `--case=narrow` 12/12, `--case=browser200` 4/4,
+    `probe-z1-extra.js` 6/6
+  - HEADED (build k63Oav, six windows): pages 109, 141, 272 and 337 (e-4's largest carriers and e-10) — 0 canvas≠Preview;
+    their errors are HOLE only (F-1). Pages 141 and 337 (most of e-4's findings) — 0 canvas≠Preview; their errors are
+    HOLE only (F-1). Burger header 4 themes × 5 rungs + 1920 at 50/100%: 28 runs, 0 blocks differ, menu one line on both
+- `[>]` **BATCH F-1 · The page uses its space** (area: filling the page · OPEN 2026-10-01, right after L-2, before L-3 —
+  the user: "the whole page needs to be used, the whole width… the whole height where it makes sense… the component
+  needs to be used width and height everywhere… there can't be spaces when it's not needed unless it's the space a
+  user wanted"). Understood and confirmed back to the user. Changes:
+  - (1) MEASURE FIRST: a page-audit check for unused space — items packed to one side leaving a large share of the line
+    empty · a component smaller than its cell/column · a column shorter than its row · a band under the footer on a
+    short page; run over every crawled tier at every rung, so every case is found, not only the ones seen
+  - (2) c-7 / e-9 (moved here from L-4, decided B): a column nobody sized takes what is left of the line — the HOLE
+  - SEEN in the L-2 pass (to be measured by (1), fixed here): **an FAQ's Accordion hugs its words** — at 1280 it takes
+    ~545px of the line and leaves the right half empty, every theme (`probe-l2-acc.js`, screenshot w1280PurpleDream);
+    on a phone the burger header's "Apply now" sits alone on a second line
+  - (3)–(6) the fixes, by class, at the root, as the measurement sorts them (filled in when (1) has run)
+  - space someone set on purpose (a size, gap or margin they chose) is respected, never "fixed"
+  - **FOR NOW AND THE FUTURE (the user, 2026-10-01: "so we don't have to do this for everything we're building in the
+    future"):** every fix lands in the shared engine (the resolvers both the canvas and the export call), and its guard
+    ENUMERATES the palette and the component catalogue — like `corner-radius.test.ts` and `units-not-pixels.test.ts` — so
+    a component, template or LLM-built page added later is covered the day it appears; the audit check runs on every
+    swept page
 - `[ ]` **BATCH L-3 · Tier-99: React error #185 and the tablet line** (area: engine rules · 3 changes, queued)
   - e-5 · React #185 (maximum update depth) — 9 pages
   - e-6 · four columns on one line at Tablet — 8 pages, 142 findings (= c-11)
   - c-11c (decided B) · an icon cell does not count for the tablet rule
 - `[ ]` **BATCH L-4 · The decided layout changes** (area: rows and grids · 6 changes, queued)
-  - c-7 (decided B) / e-9 · a column nobody sized takes what is left of the line — the HOLE at the end of a line, 2 pages
+  - c-7 (decided B) / e-9 · MOVED to BATCH F-1 (2026-10-01) — the HOLE at the end of a line is unused space
   - c-8 (decided B) / e-7 / #127b · words broken across lines ("1,000+" in 165px Stat columns) — 4 pages, 58 findings
   - c-21 (decided B) · edge handles no longer cover the last letter of a block that hugs its words
   - grid picker (decided B) · any count of columns up to 12, not only 1 · 2 · 3 · 4 · 6 · 12

@@ -73,7 +73,7 @@ describe("the box holding such a grid is its query container — in both engines
     const band = makeRowBand([g]);
     expect(hostsNarrowingGrid(band)).toBe(true);
     expect(containerStyle(band).containerType).toBe("inline-size");
-    expect(capturesFixed(band)).toBe(true); // it now captures a fixed descendant, like every container-type does
+    expect(capturesFixed(band)).toBe(false); // a size container leaves a fixed bar on screen in Chromium, Firefox and WebKit (#144)
     const hug = createContainer("column", { width: "auto", children: [g] });
     expect(hostsNarrowingGrid(hug)).toBe(false);
     expect(containerStyle(hug).containerType).toBeUndefined();

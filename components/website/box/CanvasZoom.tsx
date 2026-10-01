@@ -3,8 +3,8 @@
  * ZOOMING THE EDITOR CANVAS — BATCH Z-1 (plan approved by the user 2026-10-01; research docs/web-anatomy/editor-zoom.md).
  * Scenarios: tests/features/components/website/box-builder-site.feature "Zooming the editor canvas".
  *
- * The zoom is the editor's only: the page frame is drawn at `fit × nothing` (Fit) or at the zoom the user chose, with the
- * same CSS `zoom` the fit already used, so every drag, drop and resize keeps reading it through `zoomOf`. The device
+ * The zoom is the editor's only: the page frame is drawn at `fit × nothing` (Fit) or at the zoom the user chose, scaled
+ * with `transform` (laid out at 1:1, like the Preview — L-2), so every drag, drop and resize keeps reading it through `zoomOf`. The device
  * buttons still set the width the page is laid out at. Nothing here is saved into the site.
  *
  * Keys and the wheel act on the canvas ONLY while the pointer or focus is inside it — over the panels and the inspector

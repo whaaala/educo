@@ -10,7 +10,7 @@ const OUT = path.join(__dirname, 'probe-t8-out'); fs.mkdirSync(OUT, { recursive:
 const RUNGS = [[375, 'Mobile (375px)'], [768, 'Tablet (768px)'], [1024, 'Laptop (1024px)'], [1280, 'Desktop (1280px)'], [1920, 'Wide (1920px)']];
 
 const measure = ([engine, ids]) => {
-  const Z = engine === 'canvas' ? (document.querySelector('[data-box-id]').currentCSSZoom || 1) : 1;
+  const Z = engine === 'canvas' ? (document.querySelector('[data-box-id]').closest('[data-canvas-scale]')?.dataset.canvasScale * 1 || 1) : 1;
   const find = (id) => engine === 'canvas' ? document.querySelector(`[data-box-id="${id}"]`) : document.querySelector(`.bx-${id.replace(/[^A-Za-z0-9_-]/g, '-')}`);
   const px = (v) => Math.round((v / Z) * 10) / 10;
   return ids.map((id) => { const e = find(id); if (!e) return { id: id.slice(-4), missing: true }; const r = e.getBoundingClientRect(); const cs = getComputedStyle(e);

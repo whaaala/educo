@@ -566,13 +566,27 @@ export default function BoxDemoPage() {
   const fitW = fullWhileDocked ?? DEVICES.find((d) => d.id === device)!.w;
   const fit = fitW && roomW && roomW < fitW ? Math.max(0.25, Math.floor((roomW / fitW) * 100) / 100) : 1;
   /**
-   * THE ZOOM THE USER CHOSE (BATCH Z-1), drawn with the same CSS `zoom` as the fit. A fluid Full width page is given the
+   * THE ZOOM THE USER CHOSE (BATCH Z-1), drawn with the same scale as the fit. A fluid Full width page is given the
    * width it has at Fit while zoomed, so zooming enlarges the page instead of re-laying it out in a wider box.
    */
   const scrollerRef = useRef<HTMLDivElement | null>(null);
   const frameRef = useRef<HTMLDivElement | null>(null);
   const canvasZoom = useCanvasZoom({ ready: !!(site && activePage && root) && !preview, device, fit, scroller: scrollerRef, frame: frameRef, selectedId: selectedIds.length === 1 ? selectedIds[0] : null });
   const frameW = fitW ?? (canvasZoom.user != null && roomW ? Math.round(Math.min(64 * rootPx, roomW)) : null);
+  /**
+   * THE FRAME IS SCALED, NOT ZOOMED (L-2, e-4): `transform` lays the page out at 1:1 — exactly as the Preview does — and
+   * only draws it bigger or smaller. A transform keeps the frame's 1:1 footprint, so a sizer around it takes the SCALED
+   * size, which is what the room centres and scrolls. Its height follows the page (a ResizeObserver reports layout px).
+   */
+  const [frameH, setFrameH] = useState(0);
+  useEffect(() => {
+    const fr = frameRef.current;
+    if (!fr || typeof ResizeObserver === "undefined") return;
+    const ro = new ResizeObserver(([e]) => setFrameH(e.borderBoxSize?.[0]?.blockSize ?? fr.offsetHeight));
+    ro.observe(fr);
+    return () => ro.disconnect();
+  }, [site, activePage, preview]);
+  const scaled = canvasZoom.z !== 1 && frameW != null;
 
   // NOTE: every hook above runs on EVERY render. React counts hooks by call order, so a `useMemo` or
   // `useCallback` placed AFTER this guard is called only sometimes — which crashes the whole builder with
@@ -1163,8 +1177,10 @@ export default function BoxDemoPage() {
                 wider than the room its left edge stays reachable — a centred flex child overflows to BOTH sides and the
                 left part can never be scrolled to (Z-1). */}
             <div ref={canvasRoomRef} className="relative p-2 sm:p-8 flex min-h-full transition-[padding] duration-200 motion-reduce:transition-none" style={{ paddingLeft: `${panelDocked ? PANEL_GUTTER_REM : LAUNCHER_GUTTER_REM}rem` }}>
-              <div ref={frameRef} className={`mx-auto shadow-sm rounded-xl ring-1 ring-black/10 dark:ring-white/10 midnight:ring-white/10 purple:ring-white/10 shrink-0 h-fit transition-[width] duration-300 motion-reduce:transition-none ${frameW == null ? "w-full max-w-5xl" : ""}`} style={{ width: frameW ?? undefined, zoom: canvasZoom.z !== 1 ? canvasZoom.z : undefined, background: renderTheme.background, color: renderTheme.text, fontFamily: renderTheme.bodyFont, containerType: "inline-size" }}>
-                <BoxCanvas root={root} theme={renderTheme} minHeight={PAGE_MIN_H} selectedIds={selectedIds} onSelectIds={selectByUser} onChange={commit} breakpoint={bp} showHidden={showHidden} marqueeRoom={roomEl} />
+              <div data-canvas-sizer className={`mx-auto shrink-0 h-fit ${frameW == null ? "w-full max-w-5xl" : ""}`} style={scaled ? { width: frameW * canvasZoom.z, height: frameH * canvasZoom.z } : { width: frameW ?? undefined }}>
+                <div ref={frameRef} data-canvas-scale={scaled ? canvasZoom.z : 1} className="shadow-sm rounded-xl ring-1 ring-black/10 dark:ring-white/10 midnight:ring-white/10 purple:ring-white/10 h-fit transition-[width] duration-300 motion-reduce:transition-none" style={{ width: frameW ?? "100%", transform: scaled ? `scale(${canvasZoom.z})` : undefined, transformOrigin: "0 0", background: renderTheme.background, color: renderTheme.text, fontFamily: renderTheme.bodyFont, containerType: "inline-size" }}>
+                  <BoxCanvas root={root} theme={renderTheme} minHeight={PAGE_MIN_H} selectedIds={selectedIds} onSelectIds={selectByUser} onChange={commit} breakpoint={bp} showHidden={showHidden} marqueeRoom={roomEl} />
+                </div>
               </div>
             </div>
           </div>
