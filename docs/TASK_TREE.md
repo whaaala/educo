@@ -26,7 +26,7 @@ Everything any session has said it will do, as ONE tree — so moving between se
 | `[~]` | Parked or dropped — with who decided, and why |
 | `[!]` | Status not verified — check before relying on it |
 
-Last updated: **2026-09-30**, session 3c675738, branch `builder/layout-uat`.
+Last updated: **2026-10-01**, session 80d91cf9, branch `builder/layout-uat`.
 
 ---
 
@@ -198,10 +198,8 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
     words closer than the gutter floor to the page or their coloured box's edge · (3) audit check: sections closer than
     the section floor · (4) the old "never a default" wording in the four places left (layout feature 347,
     `text-is-reachable.spec.ts` 34, design-foundation `02` 485, memory `feedback_radius_and_spacing.md`)
-- **← YOU ARE HERE: BATCH L-1 below, CODE COMMITTED and gate green (2026-10-01)** — every checklist line ticked; one
-  ledger line waits on the user: L1-13 (an intermittent drop let go outside the canvas, 1 in 19, instrumented). On the
-  user's word L-1 closes and Z-1 starts (research → plan artifact → approval).
-  (E-0 closed 2026-09-30; Z-1 follows L-1; S-3 queued)
+- **← YOU ARE HERE: BATCH Z-1 (canvas zoom), step 1: research** (Figma, Canva, Webflow, Framer) → plan artifact → the
+  user's approval → build. L-1 CLOSED 2026-10-01 (`509822a`). (E-0 closed 2026-09-30; S-3 queued)
 - `[ ]` **BATCH S-3 · The editor's Page check warns about space** (area: spacing · 1 change, queued 2026-09-30): the
   in-app Page check reports words closer than 1rem to the page edge or touching their coloured box (W7a) and two
   sections closer than 1rem (W7b), as warnings, the way `page-audit.js` measures them — the scenario already exists
@@ -279,8 +277,9 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
   - [SUPERSEDED — see "Run on build Sb_l4U" above: 393 BUILT alone, and every page below was re-run] page 393
     (elytetemplate, services) — STILL FAILS alone: the drag never reached the canvas, twice → a bug (e-3)
   - [SUPERSEDED, as above] not yet re-run: 23, 334, 335, 336, 337, 396, 397, 398, 399, 400, 401
-- `[>]` **BATCH L-1 · Tier-99: blocks that would not drop or select** (area: drop / select · 5 changes, OPEN 2026-09-30,
-  session after 25f18c91)
+- `[x]` **BATCH L-1 · Tier-99: blocks that would not drop or select** — CLOSED 2026-10-01 (commit `509822a`; gate:
+  vitest 3,915 · eslint 0 errors · test:fast 739; page 337 18 of 18 in six windows; L1-13 parked on the user's word)
+  (area: drop / select · 5 changes, OPENED 2026-09-30, session after 25f18c91)
   - **UAT CHECKLIST (written first).** Every run is a HEADED UAT on a FRESH production build, in PARALLEL (`--jobs=6`); a
     page re-runs ALONE only after it failed in parallel. Each failure that stays is reproduced through the UI with a REAL
     mouse drag (the `probe-e0g.js` / `probe-icon-cell.js` pattern), fixed at the root, guarded (red without the fix), and
@@ -315,15 +314,16 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
     - [SUPERSEDED — measured and fixed, see the `[x]` L1-1 line below] L1-1 · HARNESS (suspected): page 124 released a
       drop at y=755 in a 720px window, on nothing. To MEASURE on the alone re-run before any fix
     - `[x]` L1-12 · the tree held L1-1 twice, open here and closed below — FIXED: this line marked superseded
-    - `[ ]` L1-13 · **page 337 ALONE on a FRESH build (zQEc74E7, 2026-10-01) FAILED at a NEW step**, 26 blocks in, 159 s:
+    - `[~]` L1-13 · **page 337 ALONE on a FRESH build (zQEc74E7, 2026-10-01) FAILED at a NEW step**, 26 blocks in, 159 s:
       `under(jq-r, Text)` — the drag was let go at (354,468), OUTSIDE the canvas (every last dragover "OUTSIDE-CANVAS
       NOT-accepted"), while the failure screenshot shows the target heading "Meet the team" at about x 400–580, y 345–380,
       the page ending at y 391. The aim did not match the heading. The harness now prints where `under` aimed
       (`page.__aim`); re-run in SIX windows to measure (alone it failed, so it is not load). Six windows: 6 of 6 went
       past that step and built (1 failure in 13 tries — intermittent). The harness now also records where the aimed block
       lay AT RELEASE. Then 6 more windows and 6 on a COLD server (testing "the first run after `next start`"): 18 of
-      18 built — NOT REPRODUCED (1 in 19), the cold-server idea not confirmed. **WAITING ON THE USER:** keep it open,
-      instrumented, and watched in every sweep from here (recommended), or keep hunting now
+      18 built — NOT REPRODUCED (1 in 19), the cold-server idea not confirmed. **PARKED by the user 2026-10-01 ("go" on
+      the recommendation):** open, instrumented (aim + position at release), watched in every sweep from here; the
+      next occurrence carries its measurement and reopens it as a ledger line of the batch that sees it
     - `[x]` L1-15 · **my new guard `drop-into-empty.spec.ts` was in neither browser suite list**, so nothing would ever
       have run it — caught by `test-scripts.test.ts` in the full vitest run. FIXED: added to `test:invariants:rest`
       (package.json) and `scripts/test-fast.js`; it ran green in test:fast
@@ -430,7 +430,7 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
   - page 38 of tier 80 · could not select the 2nd of 4 card columns
   - the 19 tier-95 build failures (could-not-select ×9 · drop-offered-nothing ×7 · barely visible ×1 · click timeout ×2)
   - previewcheck B30 / P4 · the harness's drop and select steps
-- `[ ]` **BATCH Z-1 · Canvas zoom** (area: editor navigation · 1 change, queued 2026-09-30 after L-1 — the user's "go" on
+- `[>]` **BATCH Z-1 · Canvas zoom** (area: editor navigation · 1 change, OPENED 2026-10-01; queued 2026-09-30 after L-1 — the user's "go" on
   E0-f): the canvas is always "Fitted to screen", so a hand-sized column ~40px wide (tier-99 page 334) cannot be dropped
   into, selected or resized by anyone. Zoom in / out / back to fit — buttons beside "Fitted to screen", Ctrl + / Ctrl − /
   Ctrl 0, Ctrl + scroll — with the page scrolling in both directions while zoomed, drops, selection, resize handles and
