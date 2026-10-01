@@ -18,7 +18,7 @@ import {
   floatBox, unfloatBox, bringToFront, bringForward, sendBackward, sendToBack,
   resolveResponsive, updateBoxResponsive, clearOverride, hasOverride,
   gridColumns, retrackGrid, setColumnFraction, pinBlockedBy, fixedBlockedBy, blockedByLabel, pinScopeWords, isFloating,
-  isSectionContentIn, sectionPlaceIn,
+  isSectionContentIn, sectionPlaceIn, paletteClickSlot,
 } from "@/lib/box-model";
 import { blockForKind } from "@/lib/box-presets";
 import {
@@ -725,16 +725,8 @@ export default function BoxDemoPage() {
      * It also keeps an earlier report fixed rather than trading one for another: "I can no longer add
      * grid/grids within an already added grid" is the reason the insert-into-selection rule exists at all.
      */
-    const here = selected ? findParent(root, selected.id) : null;
-    const intoSelection = !!selected && (selected.layout === "grid" || here?.parent.layout === "grid");
-    const band = !intoSelection && here?.parent.rowBand ? findParent(root, here.parent.id) : null;
-    const at = intoSelection ? null : (band ?? here);
-    const parentId = intoSelection
-      ? selected!.id
-      : at && findBox(root, at.parent.id) ? at.parent.id : root.id;
-    const index = intoSelection
-      ? (findBox(root, selected!.id)?.children?.length ?? 0)
-      : at ? at.index + 1 : (findBox(root, root.id)?.children?.length ?? 0);
+    // The slot itself is `paletteClickSlot` (box-model): only a CONTAINER cell receives inside (L-1 · e-1).
+    const { parentId, index } = paletteClickSlot(root, selected?.id ?? null);
     lastInsertParent.current = parentId;
     commitWith((cur) => {
       const target = findBox(cur, parentId) ?? cur;

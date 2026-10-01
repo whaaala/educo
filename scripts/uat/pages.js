@@ -22,7 +22,7 @@ const newestLeaf = async (page, before) => {
     const cands = outer.flatMap((e) => (isRow(e) && kidsOf(e).length > 1 ? kidsOf(e).filter((k) => fresh.includes(k)) : [e]));
     const pick = (cands.length ? cands : outer).map((e) => { let x = e; while (x.children.length && kidsOf(x).length === 1 && isRow(x) && fresh.includes(kidsOf(x)[0])) x = kidsOf(x)[0]; return x; });
     return pick.length ? pick[pick.length - 1].getAttribute('data-box-id') : null; }, [...before]); }
-  if (!got) { await page.screenshot({ path: require('path').join(__dirname, 'pg-nothing.png') }); throw new Error((page.__dropOffered ? 'PRODUCT: the canvas offered the drop and added nothing' : 'the drop added nothing (the drag never reached the canvas, twice)') + ' (after: ' + (page.__step || '?') + ')' + (page.__dropAt ? ' · released at ' + page.__dropAt : '')); }
+  if (!got) { await page.screenshot({ path: require('path').join(__dirname, 'pg-nothing.png') }); throw new Error((page.__clicked ? `PRODUCT: a click on the ${page.__clicked} tile added nothing` : page.__dropOffered ?'PRODUCT: the canvas offered the drop and added nothing' : 'the drop added nothing (the drag never reached the canvas, twice)') + ' (after: ' + (page.__step || '?') + ')' + (page.__dropAt ? ' · released at ' + page.__dropAt : '') + (page.__aim ? ' · ' + page.__aim : '') + (page.__clicked ? '' : ' · browser: ' + (page.__dropLog || 'no drop event'))); }
   return { id: got };
 };
 /** Answer the Grid picker: N across, M down. */
@@ -35,8 +35,12 @@ async function beside(page, id, tile = 'Stack') { page.__step = 'beside(' + [id,
 async function under(page, id, tile = 'Stack') { page.__step = 'under(' + [id, tile].map((v) => String(v).slice(-4)).join(',') + ')'; if (process.env.DEBUG) console.log('  step', page.__step);
   const before = await ids(page);
   const v = await H.visibleRect(page, id);
+  // Nothing of it on screen to aim under (behind a stuck bar, off the window): say so, never let go on something else (L1-8).
+  if (v.hidden) throw new Error(`cannot drop under ${id.slice(-4)}: only ${Math.round(v.w)}×${Math.round(v.h)}px of it is visible`);
+  // WHERE IT AIMED, kept for the report: a release point that matches no block on the failure screenshot is read against this.
+  page.__aim = `aimed under ${id.slice(-4)} seen at l${Math.round(v.l)} r${Math.round(v.r)} t${Math.round(v.t)} b${Math.round(v.b)}`; page.__aimId = id;
   await H.dropTile(page, tile, Math.round(v.l + v.w / 2), Math.round(v.b - 5));
-  return (await newestLeaf(page, before)).id;
+  const got = (await newestLeaf(page, before)).id; page.__aim = undefined; page.__aimId = undefined; return got;
 }
 async function into(page, id, tile = 'Stack') { page.__step = 'into(' + [id, tile].map((v) => String(v).slice(-4)).join(',') + ')'; if (process.env.DEBUG) console.log('  step', page.__step); const before = await ids(page); await H.dropInto(page, tile, id); return (await newestLeaf(page, before)).id; }
 async function row(page, fromId, tiles) { const out = [fromId]; for (const t of tiles) out.push(await beside(page, out[out.length - 1], t)); return out; }

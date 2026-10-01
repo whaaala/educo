@@ -829,3 +829,30 @@ describe("the shared scroll-container resolver", () => {
     expect(pinHolder(root, "notice"), "the same holder — which is why these two DO cover each other").toBe("page");
   });
 });
+
+/**
+ * CLAUSE 3b, BATCH L-1: a sticky sidebar is AT LEAST the screen (L1-3), and a pinned header/nav/footer is never one (L1-9).
+ * `height` let a sidebar of cards and pictures keep a screen-tall box while its content ran on below it, over the next
+ * section; and a pinned page header that shared its band with a column was made 720px tall.
+ */
+describe("clause 3b — the sticky sidebar's height (L-1)", () => {
+  const row = (kid: BoxNode) => createContainer("row", { children: [kid, createContainer("column", { width: "70%" })] });
+  it("a sidebar is given a MIN-height of the screen, never a height", () => {
+    const aside = createContainer("column", { width: "30%", pin: "top", tag: "aside" });
+    const css = pinCSS(aside, row(aside));
+    expect(css.height).toBeUndefined();
+    expect(String(css.minHeight)).toMatch(/^calc\(100dvh - /);
+  });
+  it("a min-height the user set is kept: the larger of the two", () => {
+    const aside = createContainer("column", { width: "30%", pin: "top", minHeight: 900 });
+    expect(String(pinCSS(aside, row(aside)).minHeight)).toMatch(/^max\(.*rem, calc\(100dvh - /);
+  });
+  for (const tag of ["header", "nav", "footer"] as const) {
+    it(`a pinned ${tag} in a row is NOT stretched to the screen`, () => {
+      const bar = createContainer("column", { width: "50%", pin: "top", tag });
+      const css = pinCSS(bar, row(bar));
+      expect(css.minHeight).toBeUndefined();
+      expect(css.height).toBeUndefined();
+    });
+  }
+});

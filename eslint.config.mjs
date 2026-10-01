@@ -93,6 +93,9 @@ const eslintConfig = defineConfig([
     // anyone writes — and it was contributing well over a third of the repo's reported errors, which is how
     // 4,755 "problems" hid the handful of real ones.
     "**/.next/**",
+    // …and the second build folders a UAT serves beside the first (`NEXT_DIST_DIR=.next-b`, next.config.ts): 127,808
+    // "errors" appeared the day they were introduced, every one in build output (L-1 · L1-11).
+    "**/.next-*/**",
     "**/dist/**",
     "**/out/**",
     "**/build/**",

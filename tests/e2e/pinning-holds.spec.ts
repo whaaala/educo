@@ -416,6 +416,34 @@ test.describe("a sticky sidebar fills the screen and keeps its travel", () => {
     expect(r.movedWithPage, `it travelled ${r.movedWithPage}px with the page — it is not holding at all`).toBeLessThan(40);
   });
 
+  /**
+   * L-1 · L1-3: A SIDEBAR TALLER THAN THE SCREEN HOLDS ALL OF ITS CONTENT. It was `height: 100dvh`, so a sidebar of
+   * cards and pictures kept an 800px box while its content ran on below it — out of the row, over the next section.
+   * Found through the UI (`scripts/uat/probe-l1-sticky.js --tall=1`, 736px spilled); three dressed pages failed on it.
+   */
+  test("a sidebar whose content is taller than the screen holds all of it, and the next section starts below", async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    const root = {
+      id: "root", type: "container", direction: "column", padding: 0, gap: 0, children: [
+        { id: "band", type: "container", direction: "row", rowBand: true, width: "fill", padding: 0, gap: 0, children: [
+          { id: "rail", type: "container", direction: "column", padding: 0, gap: 0, width: "20%", pin: "top", background: "#0d3b1e",
+            children: [tall("c1", 700, "#1e5631"), tall("c2", 700, "#2e7d32")] },
+          tall("main", 600, "#f8fafc", { width: "80%" }),
+        ] },
+        { id: "nextband", type: "container", direction: "row", rowBand: true, width: "fill", padding: 0, gap: 0, children: [tall("next", 300, "#fde8e8")] },
+      ],
+    } as unknown as BoxNode;
+    await page.route("**/__tall_rail", (r) => r.fulfill({ contentType: "text/html", body: exportDoc(root) }));
+    await page.goto("/__tall_rail"); await page.waitForTimeout(400);
+    const m = await page.evaluate(() => {
+      const r = (c: string) => document.querySelector<HTMLElement>(`.bx-${c}`)!.getBoundingClientRect();
+      return { railBottom: Math.round(r("rail").bottom), contentBottom: Math.round(r("c2").bottom), nextTop: Math.round(r("next").top), railH: Math.round(r("rail").height) };
+    });
+    expect(m.contentBottom, `the sidebar's content runs ${m.contentBottom - m.railBottom}px past its own foot`).toBeLessThanOrEqual(m.railBottom + 1);
+    expect(m.nextTop, `the next section starts at ${m.nextTop}, above the sidebar's content (${m.contentBottom})`).toBeGreaterThanOrEqual(m.contentBottom - 1);
+    expect(m.railH, "…and it is still at least the screen's height").toBeGreaterThanOrEqual(798);
+  });
+
   test("a sticky BUTTON in a row is NOT stretched — a button is not a sidebar", async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 800 });
     const root: BoxNode = {

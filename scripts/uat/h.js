@@ -23,6 +23,9 @@ const panel = async (page, open) => {
 const tileLoc = (page, t) => page.locator('[draggable="true"]').filter({ hasText: new RegExp('^\\s*' + t) }).first();
 /** A REAL click on a palette tile — the pointer goes there and clicks. */
 const clickTile = async (page, t) => {
+  // A CLICK IS NOT A DROP: forget the last drag's "offered / released at", or a click that added nothing is reported as
+  // "the canvas offered the drop… released at…" — which is how e-1 was filed as a drop bug for two batches (L1-6).
+  page.__dropOffered = undefined; page.__dropAt = undefined; page.__clicked = t;
   await tileLoc(page, t).scrollIntoViewIfNeeded(); await tileLoc(page, t).click(); await page.waitForTimeout(PACE * 4 + 400);
   // A tile with styles answers a click with "Add <x> as…" — a user picks one; we pick Default.
   const def = page.getByRole('menuitem', { name: /^Default$/ }).or(page.locator('button', { hasText: /^\s*Default\s*$/ })).first();
@@ -35,6 +38,17 @@ const dropTile = async (page, tileText, x, y) => {
   const b = await tile.boundingBox(); if (!b) throw new Error('no tile ' + tileText);
   // Counted BEFORE the drag. A count taken after it compared the page with itself and dropped a second copy.
   const countBefore = await page.evaluate(() => document.querySelectorAll('[data-box-id]').length);
+  page.__clicked = undefined;
+  // WHAT THE BROWSER DID WITH THE DROP (L1-7): every `drop` / `dragend` this drag produced, its target, whether that target
+  // was still in the page (E0-g's detached SVG), and whether the drop was handled — reported when a drop adds nothing.
+  await page.evaluate(() => { window.__dropLog = []; if (!window.__dropLogOn) { window.__dropLogOn = true;
+    const f = (e) => window.__dropLog.push(`${e.type} on <${e.target.tagName ? e.target.tagName.toLowerCase() : '?'}>${e.target.isConnected ? '' : ' DETACHED'}${e.defaultPrevented ? ' handled' : ''}`);
+    for (const t of ['drop', 'dragend']) { addEventListener(t, f, true); addEventListener(t, (e) => { if (t === 'drop') window.__dropLog.push(`drop reached window, handled=${e.defaultPrevented}`); }, false); }
+    // …and the LAST drag-over / enter / leave events, read as they bubble out at the window: their target, whether it is
+    // inside the canvas, and whether the canvas accepted it (a browser drops only where the last dragover was accepted).
+    window.__overLog = [];
+    for (const t of ['dragover', 'dragenter', 'dragleave']) addEventListener(t, (e) => { const c = document.querySelector('[data-box-id]'); const inCanvas = c && c.parentElement && c.parentElement.closest('.eu-tokens')?.contains(e.target);
+      window.__overLog.push(`${t} <${e.target.tagName ? e.target.tagName.toLowerCase() : '?'}>${inCanvas ? '' : ' OUTSIDE-CANVAS'}${e.defaultPrevented ? ' accepted' : ' NOT-accepted'}@${e.clientX},${e.clientY}`); if (window.__overLog.length > 6) window.__overLog.shift(); }, false); } window.__overLog = []; });
   await page.mouse.move(b.x + b.width / 2, b.y + b.height / 2); await page.mouse.down();
   const steps = 16;
   for (let i = 1; i <= steps; i++) { await page.mouse.move(b.x + b.width / 2 + ((x - b.x - b.width / 2) * i) / steps, b.y + b.height / 2 + ((y - b.y - b.height / 2) * i) / steps); await page.waitForTimeout(PACE); }
@@ -45,7 +59,10 @@ const dropTile = async (page, tileText, x, y) => {
   page.__dropOffered = await page.evaluate(() => Array.from(document.body.children).some((e) => e.getAttribute('aria-hidden') === 'true' && getComputedStyle(e).position === 'fixed' && /outline-dashed|shadow-\[0_0_10px/.test(e.className)));
   // WHAT IS UNDER THE POINTER AS IT LETS GO — kept for the report when a drop that was offered adds nothing (c-5).
   page.__dropAt = await page.evaluate(([x, y]) => { const e = document.elementFromPoint(x, y); if (!e) return `(${x},${y}) nothing`; const b = e.closest("[data-box-id]"); const chrome = e.closest("[data-chrome-mirror],[role=toolbar],[data-gridghost]"); return `(${x},${y}) on <${e.tagName.toLowerCase()}>${e.getAttribute("aria-label") ? " \"" + e.getAttribute("aria-label") + "\"" : ""}${chrome ? " — EDITOR CHROME: " + (chrome.getAttribute("aria-label") || chrome.getAttribute("data-chrome-mirror") || "offer") : ""}${b ? " in block " + b.getAttribute("data-box-id").slice(-4) : ""}`; }, [x, y]);
+  // …and where the AIMED block is at that moment: aimed at, then moved by the time of release, is a different bug from aimed wrong (L1-13).
+  if (page.__aimId && page.__aim) page.__aim += await page.evaluate((id) => { const e = document.querySelector(`[data-box-id="${id}"]`); if (!e) return ' · at release: GONE'; const r = e.getBoundingClientRect(); return ` · at release it lay at l${Math.round(r.left)} r${Math.round(r.right)} t${Math.round(r.top)} b${Math.round(r.bottom)}`; }, page.__aimId).catch(() => '');
   await page.mouse.up(); await page.waitForTimeout(PACE * 4 + 600);
+  page.__dropLog = await page.evaluate(() => (window.__dropLog || []).join(' · ') + ' · last over: ' + (window.__overLog || []).join(' | ')).catch(() => '');
   if (!page.__dropOffered && !page.__redrag) {
     await page.waitForTimeout(400);
     if (countBefore === await page.evaluate(() => document.querySelectorAll('[data-box-id]').length)) {
@@ -66,22 +83,45 @@ const visibleRect = (page, id) => page.evaluate(async (id) => {
   // A person scrolls to what they want to drop on — a target below the fold cannot be aimed at.
   const el = document.querySelector(`[data-box-id="${id}"]`);
   const r0 = el.getBoundingClientRect();
-  if (r0.bottom > window.innerHeight - 20 || r0.top < 60) { el.scrollIntoView({ block: r0.height > window.innerHeight * 0.7 ? 'end' : 'center' }); await new Promise((res) => setTimeout(res, 250)); }
+  // …and one BEHIND A STUCK HEADER is scrolled clear of it too, as a person scrolls a heading out from under the bar
+  // before aiming at it. Aimed at where it lay, a drop "under a heading" landed IN the sticky header, and the rest of
+  // tier-95 page 109 was built inside it: a 2,746px header stuck over the page (L1-8).
+  const stuckFoot = Math.max(60, ...Array.from(document.querySelectorAll('[data-box-id]')).filter((p) => {
+    const ps = getComputedStyle(p).position; if ((ps !== 'sticky' && ps !== 'fixed') || p.contains(el) || el.contains(p)) return false;
+    const q = p.getBoundingClientRect(); return q.top < 120 && q.left < r0.right && q.right > r0.left && q.height < window.innerHeight * 0.6;
+  }).map((p) => p.getBoundingClientRect().bottom));
+  if (r0.bottom > window.innerHeight - 20 || r0.top < stuckFoot + 8) { el.scrollIntoView({ block: r0.height > window.innerHeight * 0.7 ? 'end' : 'center' }); await new Promise((res) => setTimeout(res, 250)); }
   const b = el.getBoundingClientRect();
   const panel = Array.from(document.querySelectorAll('*')).find((e) => /^\s*Add a block/.test(e.firstChild?.textContent || '') && e.getBoundingClientRect().width < 500);
   const card = panel ? panel.closest('[class*="fixed"], [class*="absolute"]') || panel : null;
   const cover = card ? card.getBoundingClientRect().right + 10 : 0;
-  const l = Math.max(b.left, b.top < 1000 ? cover : 0);
+  let l = Math.max(b.left, b.top < 1000 ? cover : 0);
   // …and the INSPECTOR on the right: a block running under it cannot be aimed at there — a drop "beside" one was
   // released on the Inspector's "Outline style" button, and nothing was added (E0-d, tier 99 page 393).
   const ins = document.querySelector('aside[aria-label="Inspector"]');
-  const r = Math.min(b.right, ins && ins.getBoundingClientRect().width ? ins.getBoundingClientRect().left - 10 : Infinity);
-  return { l, r, t: b.top, b: b.bottom, h: b.height, w: Math.max(0, r - l), hidden: r - l < 24 };
+  let r = Math.min(b.right, ins && ins.getBoundingClientRect().width ? ins.getBoundingClientRect().left - 10 : Infinity);
+  // …and a PINNED block lying over it — a stuck header across the top, a sticky sidebar down one side. A person sees it
+  // there and aims at the part it leaves open; aiming under it dropped INTO the pinned block's row (L1-8: a column beside
+  // the header on tier-95 page 124, an Image and a column in the sidebar's row on 109 and 124).
+  let t = b.top, bot = b.bottom;
+  for (const p of document.querySelectorAll('[data-box-id]')) {
+    const ps = getComputedStyle(p).position; if (ps !== 'sticky' && ps !== 'fixed') continue;
+    if (p.contains(el) || el.contains(p)) continue;
+    const q = p.getBoundingClientRect(); if (q.right <= l || q.left >= r || q.bottom <= t || q.top >= bot) continue;
+    if (q.left <= l + 2 && q.right >= r - 2) { if (q.top <= t + 2) t = Math.max(t, q.bottom + 4); else bot = Math.min(bot, q.top - 4); } // spans it: cut top or bottom
+    else if (q.left > l) r = Math.min(r, q.left - 10); // over its right side
+    else l = Math.max(l, q.right + 10); // over its left side
+  }
+  // …and the WINDOW: a target that cannot be scrolled into view (a Card hanging below the page's end, L1-1) is not
+  // visible, rather than aimed at below the window's foot — page 124 released at y=755 in a 720px window, on nothing.
+  t = Math.max(t, 0); bot = Math.min(bot, window.innerHeight - 4);
+  return { l, r, t, b: bot, h: Math.max(0, bot - t), w: Math.max(0, r - l), hidden: r - l < 24 || bot - t < 12 };
 }, id);
 /** Drop `tile` beside the block `id`, at its right (or left) edge. */
 const dropBeside = async (page, tile, id, side = 'right') => {
   const r = await visibleRect(page, id);
   if (side === 'left' && r.hidden) throw new Error(`the left edge of ${id.slice(-4)} is under the blocks panel`);
+  if (r.hidden) throw new Error(`cannot drop beside ${id.slice(-4)}: only ${Math.round(r.w)}×${Math.round(r.h)}px of it is visible`);
   await dropTile(page, tile, Math.round(side === 'right' ? r.r - 8 : r.l + 8), Math.round(r.t + r.h / 2));
 };
 const selected = (page) => page.evaluate(() => document.querySelector('.outline-indigo-500')?.getAttribute('data-box-id') ?? null);
@@ -195,7 +235,7 @@ function rowProblems(row) {
 /** Drop a tile INTO an (empty) block, at its centre. */
 // A target a user cannot see cannot be aimed at: FAIL, never drop at a sliver and land beside it (#56 — that is how a
 // "four-stack" row got a fifth block while the panel hid the first stack).
-const dropInto = async (page, tile, id) => { const r = await visibleRect(page, id); if (r.hidden) throw new Error(`cannot drop into ${id.slice(-4)}: only ${Math.round(r.w)}px of it is visible`); await dropTile(page, tile, Math.round(r.l + r.w / 2), Math.round(r.t + r.h / 2)); };
+const dropInto = async (page, tile, id) => { const r = await visibleRect(page, id); if (r.hidden) throw new Error(`cannot drop into ${id.slice(-4)}: only ${Math.round(r.w)}×${Math.round(r.h)}px of it is visible`); await dropTile(page, tile, Math.round(r.l + r.w / 2), Math.round(r.t + r.h / 2)); };
 /**
  * Put a REAL photo into every image block, the way a user does: click its Upload button and pick a file. Test pages
  * are compared as they would be published (the empty placeholder is an editor-only exception — user, 2026-09-27).

@@ -18,9 +18,11 @@ const http = require("node:http");
 const root = join(__dirname, "..");
 const port = Number(process.argv[2] ?? process.env.TEST_PORT ?? 3100);
 let buildId;
-try { buildId = readFileSync(join(root, ".next", "BUILD_ID"), "utf8").trim(); }
+// The build folder the server was started from — `.next`, or a second one beside it (NEXT_DIST_DIR, next.config.ts).
+const dist = process.env.NEXT_DIST_DIR || ".next";
+try { buildId = readFileSync(join(root, dist, "BUILD_ID"), "utf8").trim(); }
 catch { console.error("NO BUILD: run `npx next build` first"); process.exit(1); }
-const builtAt = statSync(join(root, ".next", "BUILD_ID")).mtimeMs;
+const builtAt = statSync(join(root, dist, "BUILD_ID")).mtimeMs;
 
 /** The newest source file under the app's code — anything edited after the build makes it stale. */
 function newerThanBuild(dir, out = []) {

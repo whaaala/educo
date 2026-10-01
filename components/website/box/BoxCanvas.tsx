@@ -3543,7 +3543,13 @@ export default function BoxCanvas({
         "[data-box-id]:hover>[data-gridghost],[data-gridghost]:focus-visible,[data-gridghost][data-armed]{opacity:1 !important}" +
         "@media (prefers-reduced-motion:reduce){[data-gridghost]{transition:none}}" +
         // WHILE SOMETHING IS BEING DRAGGED IN, THE SELECTION'S OWN CHROME LETS THE POINTER THROUGH (see `data-box-drag-in`).
-        "body[data-box-drag-in] [data-chrome-mirror] *{pointer-events:none !important}" }} />
+        "body[data-box-drag-in] [data-chrome-mirror] *{pointer-events:none !important}" +
+        // …AND SO DO THE EDITOR'S HINTS INSIDE A BOX (L-1 · L1-7). An empty box's "+" and a grid's ghost cells take the
+        // pointer, and under a pointer held still at the moment of release they came and went (measured on tier-99 page
+        // 337: `dragenter <button>`, `dragleave <div>`, `dragleave <button>`, and no `dragover` after) — the browser then had
+        // no accepted target and cancelled the drop: the marker showed, nothing was added, 3 runs of 4. Where a drop lands
+        // is worked out from the canvas coordinates (`computeDrop`), so the hints need not be hit at all while one is carried.
+        "body[data-box-drag-in] [data-ph] *,body[data-box-drag-in] [data-gridghost],body[data-box-drag-in] [data-gridghost] *{pointer-events:none !important}" }} />
       {/* Hover & focus (Interactions 1a). One stylesheet for the whole tree, scoped per block by its
           `data-box-id`, because a hover cannot be expressed as an inline style. The rules come from the SAME
           emitter the export uses, so what you hover in the builder is what a visitor gets. */}

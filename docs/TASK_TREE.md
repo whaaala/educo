@@ -198,8 +198,9 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
     words closer than the gutter floor to the page or their coloured box's edge · (3) audit check: sections closer than
     the section floor · (4) the old "never a default" wording in the four places left (layout feature 347,
     `text-is-reachable.spec.ts` 34, design-foundation `02` 485, memory `feedback_radius_and_spacing.md`)
-- **← YOU ARE HERE: BATCH L-1 below, at its last three steps** — page 337 alone to completion (closes L1-7) · vitest in
-  full + `npm run test:fast` · commit the UNCOMMITTED code (every file listed in the newest Session log). Then close L-1.
+- **← YOU ARE HERE: BATCH L-1 below, CODE COMMITTED and gate green (2026-10-01)** — every checklist line ticked; one
+  ledger line waits on the user: L1-13 (an intermittent drop let go outside the canvas, 1 in 19, instrumented). On the
+  user's word L-1 closes and Z-1 starts (research → plan artifact → approval).
   (E-0 closed 2026-09-30; Z-1 follows L-1; S-3 queued)
 - `[ ]` **BATCH S-3 · The editor's Page check warns about space** (area: spacing · 1 change, queued 2026-09-30): the
   in-app Page check reports words closer than 1rem to the page edge or touching their coloured box (W7a) and two
@@ -296,23 +297,43 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
     - `[x]` L1-r4 · previewcheck `B30_footer_5col` and `P4_stress` — both `ok`
     - `[x]` L1-r5 · everything that failed in parallel, re-run alone — ALL FOUR FAILED ALONE TOO (bugs, not load): 142
       and 109 → L1-3 · 124 → L1-3 (+ L1-1) · 12 → L1-4 (Z-1)
-    - `[~]` L1-r6 · the 7 e-1 pages (2, 87, 153, 227, 278, 337, 385) on the fixed build (0D0EXS4f, 3 windows beside 3–4
+    - `[x]` L1-r6 · (closed 2026-10-01: 337 built 18 of 18 in six windows, see L1-7) the 7 e-1 pages (2, 87, 153, 227, 278, 337, 385) on the fixed build (0D0EXS4f, 3 windows beside 3–4
       others AND a `next build`): 5 of 7 BUILT (87 · 153 · 227 · 278 · 385); 2 and 337 → L1-7. Page 2 then built 2 of 2
       on the same build with no build running; 337 in batch A
-    - `[ ]` L1-u · for each fix: the repro through the UI, before (fails) and after (works), 4 themes × 4 widths, and the
-      Preview at every rung
-    - `[~]` L1-g · gate: **typecheck 0 · eslint 0 errors (105 warnings, the accepted category)** · vitest — NOT RUN in
-      full (the touched files ran: pinning.test.ts · palette-click-slot.test.ts · claude-md-rules.test.ts, 259 green) ·
-      test:fast — NOT RUN; then the commit of the code (UNCOMMITTED at the handover)
+    - `[x]` L1-u · for each fix: the repro through the UI, before (fails) and after (works), 4 themes × 4 widths, and the
+      Preview at every rung — e-1 (`probe-l1e1.js`, 0D0EXS4f), L1-3 (`probe-l1-sticky.js`, J7UBYmMI), L1-9
+      (`probe-l1-header.js`, _nj0GR7K), L1-7 (`drop-into-empty.spec.ts` red on _nj0GR7K, green after; page 337 18 of 18
+      on zQEc74E7), each recorded in its ledger line
+    - `[x]` L1-g · gate, 2026-10-01 at the commit: **typecheck 0 · eslint 0 errors (105 warnings, the accepted
+      category) · vitest 3,915 of 3,915 · test:fast 739 passed**. The first full vitest run found L1-15
     - `[x]` L1-11 · I BROKE THE LINT: the second build folders (`.next-b` … `.next-e`) were linted — 127,808 "errors", all
       build output. FIXED: `eslint.config.mjs` ignores `**/.next-*/**` (and `.gitignore` has `.next-*/`); then 3 unused
       variables in my own new probes, removed → eslint 0 errors
   - LEDGER of L-1:
     - `[x]` L1-0 · the tree said page 393 "STILL FAILS alone" and listed 11 pages "not yet re-run" after both had been
       settled (lines above) — FIXED: marked SUPERSEDED (a documentation defect, no code)
-    - `[ ]` L1-1 · HARNESS (suspected): page 124 released a drop at y=755 in a 720px window, on nothing. `dropBeside` reads
-      the target's rect BEFORE `dropTile` scrolls the palette tile into view — if that scroll moves the page, the release
-      point is stale. To MEASURE on the alone re-run before any fix
+    - [SUPERSEDED — measured and fixed, see the `[x]` L1-1 line below] L1-1 · HARNESS (suspected): page 124 released a
+      drop at y=755 in a 720px window, on nothing. To MEASURE on the alone re-run before any fix
+    - `[x]` L1-12 · the tree held L1-1 twice, open here and closed below — FIXED: this line marked superseded
+    - `[ ]` L1-13 · **page 337 ALONE on a FRESH build (zQEc74E7, 2026-10-01) FAILED at a NEW step**, 26 blocks in, 159 s:
+      `under(jq-r, Text)` — the drag was let go at (354,468), OUTSIDE the canvas (every last dragover "OUTSIDE-CANVAS
+      NOT-accepted"), while the failure screenshot shows the target heading "Meet the team" at about x 400–580, y 345–380,
+      the page ending at y 391. The aim did not match the heading. The harness now prints where `under` aimed
+      (`page.__aim`); re-run in SIX windows to measure (alone it failed, so it is not load). Six windows: 6 of 6 went
+      past that step and built (1 failure in 13 tries — intermittent). The harness now also records where the aimed block
+      lay AT RELEASE. Then 6 more windows and 6 on a COLD server (testing "the first run after `next start`"): 18 of
+      18 built — NOT REPRODUCED (1 in 19), the cold-server idea not confirmed. **WAITING ON THE USER:** keep it open,
+      instrumented, and watched in every sweep from here (recommended), or keep hunting now
+    - `[x]` L1-15 · **my new guard `drop-into-empty.spec.ts` was in neither browser suite list**, so nothing would ever
+      have run it — caught by `test-scripts.test.ts` in the full vitest run. FIXED: added to `test:invariants:rest`
+      (package.json) and `scripts/test-fast.js`; it ran green in test:fast
+    - `[x]` L1-14 · **a background-limit notice on the shell that started `next start` was taken for the server dying**,
+      and six good runs of 337 were stopped ~25 min in (2026-10-01). MEASURED: the server (pid 26828, started 03:27) kept
+      serving the fresh build; only its shell wrapper was killed. FIXED: `uat-pages.js` refuses to start unless
+      `check-fresh-build.js` says FRESH, checks again after EVERY page and, if the server is gone or stale, stops starting
+      pages and says no failure since is a product finding (proven: no server on 3999 → "NOT RUN", exit 2; fresh 3100 →
+      runs). Trap written in `docs/TESTING.md`; the server is started with the 2-hour background limit. The 37-minute
+      shared timeouts of the last session remain UNEXPLAINED (the server-limit idea is unproven, withdrawn)
     - `[x]` L1-3 ROOT, FOUND AND FIXED: `pinCSS` clause 3b gave a sticky container in a row `height: calc(100dvh - …)` —
       a sidebar whose CONTENT is taller than the screen kept a screen-tall box and its content ran on below it, out of the
       row, over the next section and off the page's end. Reproduced through the UI (`probe-l1-sticky.js --tall=1`, 736px
@@ -328,7 +349,9 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
       day; their remaining audit errors are the queued classes (L-2, L-4). Regression, tier 99 pages with a sticky header
       AND a sticky sidebar (13 · 28 · 31 · 46 · 61 · 76, build J7UBYmMI; 79 · 94 · 127, build _nj0GR7K) and tier-95 page 76:
       10 of 10 BUILT, every error R11 / HOLE / L8
-    - `[ ]` L1-7 · pages 2 and 337 on the e-1 build: "offered the drop and added nothing (into, an empty Stack) · released
+    - `[x]` L1-7 · **CLOSED 2026-10-01: page 337 BUILT 6 of 6 in SIX headed windows side by side** on build zQEc74E7
+      (FRESH): 188 blocks each, 66 Preview sizes, ~13 min each. Its 2 errors are queued classes: HOLE at Tablet (L-4),
+      R11 canvas≠Preview at Wide — the burger menu wrapping "Contact", 79 vs 63px (= e-4, L-2). Pages 2 and 337 on the e-1 build: "offered the drop and added nothing (into, an empty Stack) · released
       at (740,5xx) on <svg>" — INTERMITTENT: page 2 built 2 of 3 on the same build; both failures ran beside a `next
       build`. NOT the "+" icon: 4 of 4 alone and 36 of 36 in six windows landed on it. 337 then BUILT in batch A (no
       build running) — and FAILED again on _nj0GR7K with no build running: `into(m-15, Text)`, released on the empty
@@ -443,8 +466,21 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
   2026-09-30): the root `README.md` is still the create-next-app template. Replace it with how to install and run each
   app (web 3000, admin 3001, mobile), the project structure, how to test (vitest, test:fast, the UAT scripts, the
   production build on 3100), where the rules (`CLAUDE.md`), the task tree and the guide live. Short; links out
-- `[ ]` **Then, in order:** the whole tier swept again (spacing changes every page) → the story and the published artifacts
-  → the full gate → pull request to `master` → Tasks 2, 3, 4 → the original queue (1.2)
+- `[ ]` **BATCH L-7 · Task 2: the wrapper dissolve** (area: layout wrappers · 1 change, queued 2026-10-01 — the user: "go
+  with your recommendation") — tree 1.1.2: a band holding ONE block inside a column is dissolved; a band with a
+  background, height or edge-to-edge setting is kept; a block directly in a stretched column must still shrink (V4 in
+  `resize-leaves-no-gap.spec.ts`, which reverted the first attempt). On a FRESH branch `builder/layout-2` cut from
+  `master` after L-1 … L-6 and D-1 are merged (rule 9: this branch is already long)
+- `[ ]` **BATCH L-8 · Task 3: outer-edge space in a column** (area: resize · 1 change, queued 2026-10-01) — tree 1.1.3:
+  when the parent is a COLUMN, shrinking a block opens a space at its outer edge that sticks. Branch `builder/layout-2`
+- `[ ]` **BATCH L-9 · Task 4: the parity spec covers every arrangement** (area: canvas = Preview · 1 change, queued
+  2026-10-01) — tree 1.1.4: `parity-every-arrangement.spec.ts` extended to grid cells, components, sticky, floating and
+  fixed (neighbours of a floating/fixed block do not move), at every breakpoint. Branch `builder/layout-2`
+- `[ ]` **ORDER, DECIDED by the user 2026-10-01:** L-1 … L-6 and D-1 on this branch → pull request to `master` → fresh
+  branch `builder/layout-2` → L-7, L-8, L-9 → THEN the whole-tier re-sweep and the layout story (RULE L) ONCE, over all
+  of it, so neither is done twice
+- `[ ]` **Then, in order (after L-9):** the whole tier swept again (spacing changes every page) → the story and the published
+  artifacts → the full gate → pull request to `master` → the original queue (1.2)
 
 ---
 
@@ -744,6 +780,7 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
   - `[ ]` Artifacts and guide updated in the same change (Builder Hub · Layout System · Parity Audit · Semantic plan ·
     `docs/guide/website-builder.md`)
   - `[ ]` Gate → commit → **pull request to `master`** → delete the branch (rule 9)
+- `[ ]` **1.1.2 – 1.1.4 are BATCHES L-7 · L-8 · L-9** (BATCHES, decided 2026-10-01: before the re-sweep and the story)
 - `[ ]` **1.1.2 · TASK 2 — put the wrapper dissolve back.** A band holding ONE block inside a column is dissolved; a
   band with a background, height or edge-to-edge setting is kept. Built once and reverted: a block directly in a
   stretched column could not be shrunk (V4 in `resize-leaves-no-gap.spec.ts`)

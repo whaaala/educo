@@ -70,6 +70,12 @@ acts only when its generation is higher than the last applied.
   with a 500 — "Expected to use Webpack bindings … referencing the Turbopack bindings". None of that reaches
   the test output; you see only pages that never rendered. `test-fast.js` detects it and rebuilds, and its
   readiness check treats a 5xx as a broken build rather than as "ready".
+- **A background shell's time limit is not the server's.** `next start` launched as a Claude Code background task
+  is reported "killed" when that task's limit runs out, but only the shell wrapper stops — the server keeps
+  serving (measured 2026-10-01: six good UAT runs were stopped on that notice). Never act on the notice: run
+  `node scripts/check-fresh-build.js <port>` first. Start the server with the longest background limit (2 h).
+  `scripts/uat/uat-pages.js` refuses to start unless the server is FRESH and re-checks after every page, so a
+  server that really is lost is reported as "SERVER LOST", never as a product failure.
 - **`.next/trace` is locked while the dev server runs**, so a build started beside it fails on the lock. That
   is the lock, not a broken build.
 - **Route segment config is ignored in a `"use client"` page.** `export const dynamic = "force-dynamic"` in

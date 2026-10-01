@@ -38,6 +38,12 @@ const PARAS = [
   'Science, art and sport sit side by side in a timetable built around curiosity: a morning in the lab, an afternoon on the field, and time to read every day.',
 ];
 
+// IS THE SERVER STILL THERE, AND SERVING THIS BUILD? Asked before a run and after every page: a server gone mid-run makes
+// every window time out at once, which reads exactly like a product bug (2026-10-01: a 30-minute background limit on the
+// shell that started `next start` was taken for the server dying). null = fresh; otherwise what check-fresh-build said.
+const serverProblem = () => { try { require('child_process').execFileSync(process.execPath, [path.join(__dirname, '..', 'check-fresh-build.js'), new URL(process.env.BASE || 'http://localhost:3100').port || '80'], { stdio: 'pipe', env: process.env }); return null; } catch (e) { return (String(e.stdout || '') + String(e.stderr || '')).trim() || String(e.message); } };
+{ const bad = serverProblem(); if (bad) { console.error(`NOT RUN — the server is not serving a fresh build: ${bad}`); process.exit(2); } }
+
 if (!process.argv.includes('--one')) {
   const { spawn } = require('child_process'); const queue = [...LIST]; let running = 0; const t0 = Date.now(); const done = [];
   console.log(`HEADED UAT — ${LIST.length} real pages (${DRESSED ? `plan ${PLAN}` : `tier ≤ ${TIER}%`}), ${devices().length} Preview sizes each, ${JOBS} windows at a time`);
@@ -46,7 +52,9 @@ if (!process.argv.includes('--one')) {
     const p = queue.shift(); running++;
     const c = spawn(process.execPath, [__filename, '--one', `--idx=${p.idx}`, `--slot=${slot}`, ...(DRESSED ? [`--plan=${PLAN}`] : [])], { env: process.env, stdio: ['ignore', 'pipe', 'pipe'] });
     let buf = ''; c.stdout.on('data', (d) => { buf += d; }); c.stderr.on('data', (d) => { buf += d; });
-    c.on('exit', () => { running--; done.push(p.idx); const last = buf.trim().split('\n').pop(); console.log(`[${done.length}/${LIST.length}] ${p.site}/${p.page}: ${last}`); next(slot); });
+    c.on('exit', () => { running--; done.push(p.idx); const last = buf.trim().split('\n').pop(); console.log(`[${done.length}/${LIST.length}] ${p.site}/${p.page}: ${last}`);
+      const bad = serverProblem(); if (bad) { console.log(`SERVER LOST after ${p.site}/${p.page} — no more pages started; any failure since the server went is NOT a product finding: ${bad}`); queue.length = 0; }
+      next(slot); });
   };
   const report = () => {
     const all = LIST.map((p) => { try { return JSON.parse(fs.readFileSync(path.join(OUTDIR, `page-${p.idx}.json`), 'utf8')); } catch { return { idx: p.idx, site: p.site, page: p.page, crashed: true, findings: [] }; } });
@@ -111,13 +119,27 @@ const canvasGeo = (page) => page.evaluate(() => {
     await H.panel(page, true);
     if (DRESSED) {
       const d = new Dresser(page, PG, (s) => { R.log = (R.log || []).concat(s); save(); });
-      try { await d.build(); } catch (e) { R.buildError = e.message.split('\n')[0]; await shot(page, 'build-fail'); }
+      // The STEP it failed at is kept with the error (c-6: a report without it could only say which section).
+      try { await d.build(); } catch (e) { R.buildError = e.message.split('\n')[0]; R.failedStep = page.__step || null; await shot(page, 'build-fail'); }
       R.placeholders = [...d.placeholders]; R.sectionsBuilt = d.sections; R.secs = d.sections.length;
     } else {
       const secs = G.parsePage(PG.layout); R.secs = secs.length;
       const b = new Builder(page);
       try { await b.page_(secs); } catch (e) { R.buildError = e.message.split('\n')[0]; await shot(page, 'build-fail'); }
     }
+    // The tree AS BUILT, before anything else can fail: filling the pictures crashed page 142 (a click timeout) and the
+    // tree saved later was never written, so the file left behind was a stale one from an earlier run (L1-5).
+    fs.writeFileSync(path.join(OUTDIR, `page-${idx}.tree.txt`), await H.tree(page));
+    // …and on a failed build the WHOLE stored page, every field (pins, heights, meanings), to READ when tracing it (RULE Y:
+    // never loaded back). The one-line tree above leaves out exactly what L1-3's sidebar needed.
+    if (R.buildError) fs.writeFileSync(path.join(OUTDIR, `page-${idx}.site.json`), await page.evaluate(() => localStorage.getItem('educo_box_site_v1') || ''));
+    // …and the LIVE geometry of every pinned block and each box above it (L1-3: a sticky sidebar seen over the sections
+    // after its row) — rects in page coordinates, and the computed styles that decide where a sticky block may travel.
+    if (R.buildError) R.pinnedGeometry = await page.evaluate(() => Array.from(document.querySelectorAll('[data-box-id]')).filter((e) => getComputedStyle(e).position === 'sticky' || getComputedStyle(e).position === 'fixed').map((e) => {
+      const line = []; for (let a = e; a && a.getAttribute; a = a.parentElement) { const r = a.getBoundingClientRect(); const cs = getComputedStyle(a);
+        line.push({ id: (a.getAttribute('data-box-id') || a.tagName).slice(-6), tag: a.tagName.toLowerCase(), top: Math.round(r.top + scrollY), bottom: Math.round(r.bottom + scrollY), left: Math.round(r.left), right: Math.round(r.right), pos: cs.position, cssTop: cs.top, alignSelf: cs.alignSelf, h: cs.height, overflow: cs.overflow, display: cs.display, contain: cs.contain, ctype: cs.containerType });
+        if (line.length > 8) break; }
+      return line; }));
     await H.panel(page, false);
     R.images = await H.fillImages(page); R.words = await typeWords(page);
     R.missedDrags = page.__missedDrags || 0; R.heroRetries = page.__heroRetries || 0; R.cameBack = page.__cameBack || 0; R.widerToSize = page.__widerToSize || 0; R.gaps = page.__gaps || [];

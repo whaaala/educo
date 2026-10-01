@@ -2141,6 +2141,26 @@ export function selectionChain(root: BoxNode, id: string): string[] {
   return path.filter((n) => n.id !== root.id && !n.rowBand).map((n) => n.id);
 }
 
+/**
+ * WHERE A PALETTE CLICK PUTS THE NEW BLOCK, given what is selected — the rule is written out in the builder page's
+ * `insertBlock`: AFTER the selection, stepping out of a row band so it gets a line of its own; INSIDE only a grid or a
+ * grid cell, the one place a block arriving inside is visible at once.
+ *
+ * ONLY A CONTAINER CAN BE A CELL THAT RECEIVES (L-1 · e-1). "A grid cell" was tested as "its parent is a grid", and an
+ * Image that IS a grid cell passed — so a Stack clicked with that Image selected was inserted as the IMAGE'S CHILD,
+ * which an image never draws: nothing appeared, 3 of 3 through the UI (`scripts/uat/probe-l1e1.js`), and 7 tier-99
+ * pages could not be built. A leaf cell gets the new block AFTER it — the next cell of the grid.
+ */
+export function paletteClickSlot(root: BoxNode, selectedId: string | null): { parentId: string; index: number } {
+  const selected = selectedId ? findBox(root, selectedId) : null;
+  const here = selected ? findParent(root, selected.id) : null;
+  const intoSelection = !!selected && isContainer(selected) && (selected.layout === "grid" || here?.parent.layout === "grid");
+  if (intoSelection) return { parentId: selected.id, index: selected.children?.length ?? 0 };
+  const band = here?.parent.rowBand ? findParent(root, here.parent.id) : null;
+  const at = band ?? here;
+  return at ? { parentId: at.parent.id, index: at.index + 1 } : { parentId: root.id, index: root.children?.length ?? 0 };
+}
+
 /** Insert `node` into `parentId` at `index` (clamped). No-op if the parent is missing. */
 export function insertBox(root: BoxNode, parentId: string, index: number, node: BoxNode): BoxNode {
   if (root.id === parentId) {
@@ -5996,9 +6016,24 @@ export function pinCSS(node: BoxNode, parent?: BoxNode, bp: Breakpoint = "base")
    * heading in a row is not, and stretching one to the height of the screen would be absurd. A grid is left
    * out too — its cells are placed by track, and a cell is not a sidebar. And a height the user set
    * themselves always wins.
+   *
+   * AT LEAST THE SCREEN, NEVER AT MOST (L-1 · L1-3). This was `height`, and a sidebar whose CONTENT is taller than
+   * the screen — a heading, a list, two cards and two pictures — kept a 720px box while its content ran on below it,
+   * out of the row, over the sections after it and off the end of the page. Measured through the UI
+   * (`scripts/uat/probe-l1-sticky.js --tall=1`): content 736px past the rail's foot at every scroll position, on the
+   * canvas AND the export (this one resolver feeds both); three tier-95/99 pages could not be built because a click
+   * on the section below landed on the sidebar. `min-height` keeps both promises of clause 3b — a short sidebar is
+   * the height of the screen, and it keeps its travel beside a taller column — and a tall one grows to hold what
+   * is in it, so nothing can leave its row.
    */
-  if (stretchesChildren && isContainer(src) && !src.height && (parent!.direction ?? "column") === "row" && parent!.layout !== "grid") {
-    css.height = `calc(100dvh - ${offset})`;
+  // A HEADER, NAV OR FOOTER IS NEVER A SIDEBAR (L1-9): a pinned page header that shares its band with a column was made
+  // the height of the screen — measured 720px on tier-95 page 124. Its meaning says what it is; a sidebar is an `aside`
+  // or a plain Stack beside the content.
+  const bar = src.tag === "header" || src.tag === "nav" || src.tag === "footer";
+  if (stretchesChildren && isContainer(src) && !bar && !src.height && (parent!.direction ?? "column") === "row" && parent!.layout !== "grid") {
+    // Applied AFTER the block's own styles, so a min-height the user set is kept by taking the larger of the two.
+    const screen = `calc(100dvh - ${offset})`;
+    css.minHeight = typeof src.minHeight === "number" ? `max(${remLen(src.minHeight)}, ${screen})` : screen;
   }
   return css;
 }
