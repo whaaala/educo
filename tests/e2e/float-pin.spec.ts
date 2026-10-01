@@ -179,6 +179,33 @@ test.describe("a freely placed block that holds on screen", () => {
     expect(r.travelled, `it travelled ${r.travelled}px in the editor; it used to lose the whole ${r.scrolled}px`).toBeLessThan(6);
   });
 
+  test("BUILDER · it HOLDS while the canvas is FITTED below 100% — a device wider than the window (Z1-a)", async ({ page }) => {
+    /**
+     * Found through the UI (`scripts/uat/probe-z1a.js`): the held block slid by scroll × (1 − zoom) — 72px at
+     * Desktop fitted to 82%, 180px at Wide fitted to 55%, over a 400px scroll — because the scroll was written in
+     * SCREEN pixels and used as a length inside the zoomed frame. Every guard above runs at Full width, zoom 1.
+     */
+    await seedSite(page, asSite(bare([host([floated({ pin: "top", hold: "fixed", pinX: 60, pinY: 40 })])])));
+    await page.waitForSelector('[data-box-id="free"]', { state: "attached", timeout: 30000 });
+    await page.locator('button[title="Wide (1920px)"]').first().click();
+    await page.waitForTimeout(800);
+    const r = await page.evaluate(async () => {
+      const el = document.querySelector<HTMLElement>('[data-box-id="free"]')!;
+      const sc = document.querySelector<HTMLElement>("[data-canvas-scroller]")!;
+      const top = () => el.getBoundingClientRect().top;
+      sc.scrollTop = 100;
+      await new Promise((res) => setTimeout(res, 300));
+      const before = top();
+      sc.scrollTop = 450;
+      await new Promise((res) => setTimeout(res, 350));
+      const zoom = (el as HTMLElement & { currentCSSZoom?: number }).currentCSSZoom ?? 1;
+      return { travelled: Math.round(before - top()), scrolled: Math.round(sc.scrollTop - 100), zoom };
+    });
+    expect(r.zoom, "the canvas really is fitted below 100%").toBeLessThan(0.9);
+    expect(r.scrolled, "the canvas really scrolled").toBeGreaterThan(250);
+    expect(Math.abs(r.travelled), `it travelled ${r.travelled}px at zoom ${r.zoom.toFixed(2)}`).toBeLessThan(6);
+  });
+
   test("BUILDER · a bar held FLUSH at the top stays flush — no gap opens above it", async ({ page }) => {
     /**
      * The second half of the same report: it stopped travelling, but a bar placed against the very top of

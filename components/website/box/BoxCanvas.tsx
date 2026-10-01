@@ -866,16 +866,23 @@ export default function BoxCanvas({
     let raf = 0;
     const write = () => {
       raf = 0;
+      /**
+       * SCREEN PIXELS IN, LAYOUT PIXELS OUT (Z1-a). The scroll, the view's height and these rects are measured on
+       * screen, but the variables are used as lengths INSIDE the zoomed frame, where the zoom applies to them again.
+       * Written raw, a held block slid by scroll × (1 − zoom) whenever a device was fitted below 100% — measured
+       * through the UI: 72px at 82% (Desktop), 180px at 55% (Wide), over a 400px scroll.
+       */
+      const z = zoomOf(host);
       const scrolled = scroller ? scroller.scrollTop : window.scrollY;
-      host.style.setProperty("--canvas-scroll", `${Math.round(scrolled)}px`);
-      host.style.setProperty("--canvas-h", `${Math.round(scroller ? scroller.clientHeight : window.innerHeight)}px`);
+      host.style.setProperty("--canvas-scroll", `${Math.round(scrolled / z)}px`);
+      host.style.setProperty("--canvas-h", `${Math.round((scroller ? scroller.clientHeight : window.innerHeight) / z)}px`);
       // How far the PAGE sits below the top of the scrolling area — the canvas's own padding, which the page
       // being edited does not have. Without it a block held at the page's top edge keeps that padding as a
       // gap above it for the whole scroll, which is exactly what a user reported seeing.
       const inset = scroller
         ? host.getBoundingClientRect().top - scroller.getBoundingClientRect().top + scrolled
         : host.getBoundingClientRect().top + scrolled;
-      host.style.setProperty("--canvas-top", `${Math.round(inset)}px`);
+      host.style.setProperty("--canvas-top", `${Math.round(inset / z)}px`);
     };
     // One write per frame at most: a scroll fires far faster than the screen refreshes, and this only moves
     // an inline variable — there is nothing to be gained by doing it twice between paints.
@@ -885,6 +892,8 @@ export default function BoxCanvas({
     src.addEventListener("scroll", onScroll, { passive: true });
     const ro = typeof ResizeObserver === "undefined" ? null : new ResizeObserver(write);
     if (ro && scroller) ro.observe(scroller);
+    // …and the page's own box: choosing a device changes the zoom without resizing the scroller.
+    if (ro) ro.observe(host);
     return () => {
       src.removeEventListener("scroll", onScroll);
       ro?.disconnect();
@@ -911,9 +920,10 @@ export default function BoxCanvas({
     const page = host.querySelector<HTMLElement>("[data-box-id]");
     if (!page) return;
     const pageTop = page.getBoundingClientRect().top;
+    const z = zoomOf(host); // a screen distance, used as a length inside the zoomed frame (Z1-a)
     host.querySelectorAll<HTMLElement>("[data-held]").forEach((el) => {
       const holder = el.offsetParent as HTMLElement | null;
-      const top = holder ? holder.getBoundingClientRect().top - pageTop : 0;
+      const top = holder ? (holder.getBoundingClientRect().top - pageTop) / z : 0;
       el.style.setProperty("--holder-top", `${Math.round(top)}px`);
     });
   });

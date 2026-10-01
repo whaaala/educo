@@ -89,12 +89,18 @@ export default function ItemCrudLayer({
     let next: Placement | null = null;
     if (host && el) {
       const hr = host.getBoundingClientRect(), r = el.getBoundingClientRect();
-      const box: Box = { top: r.top - hr.top, left: r.left - hr.left, width: r.width, height: r.height };
+      // SCREEN PIXELS IN, LAYOUT PIXELS OUT (Z1-b): the ring and toolbar are positioned INSIDE the zoomed canvas, so
+      // rects measured on screen are divided by its zoom — undivided, at Wide fitted to 55% the ring was drawn 142px
+      // narrower and 26px higher than its item, and the toolbar sat on the item. (`zoomOf` in BoxCanvas, inlined: that
+      // file imports this one.)
+      const z = (host as HTMLElement & { currentCSSZoom?: number }).currentCSSZoom || 1;
+      const box: Box = { top: (r.top - hr.top) / z, left: (r.left - hr.left) / z, width: r.width / z, height: r.height / z };
       // Prefer sitting just OUTSIDE the item's right edge, vertically centred — that never covers the item's own
       // text nor the item below it, which is what made the first version unreadable. When the viewport has no
       // room to the right, fall back to above the item, and only below it when the item is at the very top.
       const spaceRight = window.innerWidth - r.right;
-      const side: Placement["side"] = spaceRight >= BAR_W + GAP ? "right" : r.top >= BAR_H + GAP ? "above" : "below";
+      // Screen space against the bar's SCREEN size — it is drawn inside the zoomed canvas, so it is z times its size.
+      const side: Placement["side"] = spaceRight >= (BAR_W + GAP) * z ? "right" : r.top >= (BAR_H + GAP) * z ? "above" : "below";
       const barTop = side === "right" ? box.top + box.height / 2 - BAR_H / 2
         : side === "above" ? box.top - BAR_H - GAP / 2
         : box.top + box.height + GAP / 2;

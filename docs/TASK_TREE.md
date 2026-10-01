@@ -200,9 +200,14 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
     `text-is-reachable.spec.ts` 34, design-foundation `02` 485, memory `feedback_radius_and_spacing.md`)
 - **← YOU ARE HERE: BATCH Z-1 (canvas zoom), step 1: research** (Figma, Canva, Webflow, Framer) → plan artifact → the
   user's approval → build. L-1 CLOSED 2026-10-01 (`509822a`). (E-0 closed 2026-09-30; S-3 queued)
-- `[ ]` **BATCH S-3 · The editor's Page check warns about space** (area: spacing · 1 change, queued 2026-09-30): the
-  in-app Page check reports words closer than 1rem to the page edge or touching their coloured box (W7a) and two
-  sections closer than 1rem (W7b), as warnings, the way `page-audit.js` measures them — the scenario already exists
+- `[ ]` **BATCH S-3 · The editor's Page check warns about space** (area: Page check warnings · 2 changes, queued
+  2026-09-30): (1) the in-app Page check reports words closer than 1rem to the page edge or touching their coloured box
+  (W7a) and two sections closer than 1rem (W7b), as warnings, the way `page-audit.js` measures them — the scenario
+  already exists · (2) **added by the user 2026-10-01:** a warning sign when a column is TOO NARROW FOR ITS WORDS — at
+  any screen size, a column holding text narrower than its longest word — naming the column and the size, with a way to
+  select it. The user asked: "if the columns are too tiny on screen for anyone to drop into… how are people going to be
+  able to see what's in that column" when the site goes live. L-4's c-8 (decided B: the grid gives up columns rather
+  than break words) fixes the published page; this tells the person building while they build
 - `[x]` **BATCH E-0 · The build failures that stayed when run alone** — CLOSED 2026-09-30 (commits `78cc6ee`, `0ae9b5f`; gate: vitest 3,903 · eslint 0 errors · test:fast 737; E0-a…h ticked, E0-f recorded as a gap → Z-1) (area: sweep harness/drop) — the re-run of
   e-2/e-3 was STOPPED by the user at 3 of 14 (2026-09-30), on build OvtY9uAA, HEADED UAT:
   - page 68 (sonicdrive, blog index) — built, 0 errors ALONE → it was the machine
@@ -437,6 +442,33 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
   the marquee all correct at every zoom, canvas = Preview unchanged. Research first (RULE R: how Figma, Canva, Webflow,
   Framer zoom), plan artifact, then build; tier-99 page 334 and tier-95 page 12 (L1-4), each re-run alone, are its
   acceptance tests
+  - LEDGER of Z-1:
+    - `[x]` Z1-a · **a block held on screen slid while the canvas was FITTED below 100%** — MEASURED through the UI
+      (`probe-z1a.js`, six windows, one per device): 72px at Desktop (82%), 180px at Wide (55%) over a 400px scroll;
+      0 at 100%. ROOT: `--canvas-scroll` / `--canvas-h` / `--canvas-top` / `--holder-top` were written in SCREEN px and
+      used as lengths inside the zoomed frame. FIXED (`BoxCanvas.tsx`): divided by `zoomOf(host)`, and the page box is
+      observed so a device switch re-writes them. Guard `float-pin.spec.ts` "HOLDS while the canvas is FITTED" — red
+      without the fix ("travelled 168px at zoom 0.43"), 11 of 11 green with it; probe after: Desktop and Wide 0px
+    - `[x]` Z1-c · NOT A BUG, measured: at Mobile the held block went back into the flow (`relative`, travelled the
+      whole scroll) — the deliberate phone rule `floatStacksOnMobile` (`lib/box-model.ts:633`); the probe now labels it
+    - `[x]` Z1-b · **an item's selection ring and toolbar were drawn off the item while fitted** — MEASURED through the
+      UI (`probe-z1b.js`, an Accordion from the palette, six windows): at Wide (55%) the ring 142px narrower and 26px
+      higher than its item, the toolbar ON the item; at Desktop (83%) 81px / 15px. FIXED (`ItemCrudLayer.tsx`): rects
+      divided by the canvas zoom, the side choice compares screen space with the bar's screen size. Guard
+      `item-ring-zoom.spec.ts` (built through the palette): red "-26, 0, -142, -14px at zoom 0.55", green with the fix;
+      in both suite lists (L1-15's lesson). Probe after: 0/0/0/0 at every device, toolbar 4–8px beside the item
+    - `[ ]` Z1-d · **the editor's own chrome shrinks with the canvas**: at Wide (55%) the item toolbar's buttons are
+      ~15px on screen — under the 24px target of WCAG 2.5.8 — and the block handles shrink the same way (screenshot
+      `probe-z1b-Wide1920px.png`). The four editors researched keep chrome a constant size on screen. A DESIGN choice
+      → in the Z-1 plan for the user's approval, built with the zoom
+    - Z1-a and Z1-b are UNCOMMITTED until the full gate runs (with the Z-1 plan)
+  - `[x]` research — `docs/web-anatomy/editor-zoom.md` (Figma, Canva, Webflow, Framer; + Wix Studio, Penpot; sources)
+  - `[?]` **PLAN published 2026-10-01, WAITING ON THE USER'S APPROVAL:** https://claude.ai/artifact/REMMiWJU5ufUgnBs7cvqZH —
+    controls beside the device buttons, Ctrl +/−/0 and Shift 0/1/2, Ctrl+scroll and pinch around the pointer, Space-drag
+    pan, width and zoom kept separate, constant-size chrome (Z1-d), 25–400%, kept per device in the browser. Four
+    decisions: approve · plain wheel · remember the zoom · switching device. **Revised 2026-10-01 at the user's word:**
+    Ctrl +/− zoom the CANVAS only while the pointer or focus is inside it; everywhere else they stay the browser's own
+    zoom (WCAG 1.4.4 for the builder itself), and the builder is checked usable at 200% browser zoom
 - `[ ]` **BATCH L-2 · Tier-99: the editor and the Preview disagree** (area: canvas = Preview · 4 changes, queued)
   - e-4 · canvas≠Preview — 13 pages: headings, links and buttons 0.4–3.6% narrower in the Preview, text wrapping to other
     heights, 4 containers 122–198px shorter at Wide (idx 109, 141 carry most). **A clean repro, built through the UI
