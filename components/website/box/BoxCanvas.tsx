@@ -1040,6 +1040,14 @@ export default function BoxCanvas({
     const onKey = (e: KeyboardEvent) => {
       const ae = document.activeElement as HTMLElement | null;
       if (ae && (ae.tagName === "INPUT" || ae.tagName === "TEXTAREA" || ae.isContentEditable)) return; // never hijack text editing
+      // …nor a CONTROL outside the page that has the focus (Z1-j). With a block selected, Enter on a focused toolbar
+      // button edited the block's words instead of pressing the button (the zoom menu, Preview, Export never opened by
+      // keyboard), and Delete on a focused button DELETED the selected block. A focused control owns the keys it USES —
+      // Escape and the Ctrl shortcuts mean nothing to a button, so they still reach the page (Escape steps out a level
+      // even after an Inspector button was clicked; taking it too broke selecting on tier-99 page 153).
+      if (["Enter", " ", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "Delete", "Backspace", "Home", "End"].includes(e.key)
+        && ae && ae !== document.body && !canvasRef.current?.contains(ae)
+        && ae.closest("button, a[href], select, [role=button], [role=option], [role=menuitem], [role=menuitemradio], [role=listbox], [role=tab], [role=radio], [role=checkbox], [role=switch], [role=slider]")) return;
       const ids = selectedIds ?? (selectedId != null ? [selectedId] : []);
       const id = ids[0] ?? null; // the primary (for single-target ops: nudge, reorder, layer, float)
       const mod = e.ctrlKey || e.metaKey;

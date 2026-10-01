@@ -739,8 +739,21 @@ Your page is published as proper HTML5, however you built it — you do not need
 - **Widening a block never makes it jump.** Pull it until its neighbour no longer fits, and the neighbour moves to the
   next line while your block stops exactly where you let go. Drag back and everything comes home.
 - **On a smaller screen the page is shrunk to fit.** Choose Desktop 1280 on a laptop and the page is shown smaller
-  (*Fitted to screen · 83%*) so all of it sits beside the panels — it is still laid out, and published, at full size.
+  (the zoom reads *Fit · 83%*) so all of it sits beside the panels — it is still laid out, and published, at full size.
   Everything you drag is still exact.
+- **Zoom in when something is too small to work on.** A thin column, a small icon cell, a divider: press **+** beside
+  the screen sizes, or pick a size from the zoom menu (Fit, 50–400%, or *Zoom to selection*). The page is drawn larger
+  and scrolls both ways; hold **Space** (or the middle mouse button) and drag to move around it. Zoom only changes how
+  big the page is drawn for you — what you drop, select and drag is stored exactly as at 100%, and the published page
+  never changes.
+  - Keyboard, with the pointer on the page: **Ctrl +** / **Ctrl −** step in and out, **Ctrl 0** is 100%, **Shift 1**
+    fits the page, **Shift 2** zooms to the selected block. **Ctrl + scroll** (or a pinch) zooms round the spot under
+    the pointer; scrolling alone still scrolls.
+  - Over the panels and the Inspector, Ctrl + and Ctrl − are your browser's own zoom, so you can still make the whole
+    builder bigger.
+  - The handles and toolbars stay the same size at every zoom, so their buttons are always easy to hit.
+  - The zoom you pick is remembered for each screen size on this computer; a screen size you never zoomed opens fitted.
+    It is never saved into your site.
 - **The Add-a-block panel sits beside the page** on a laptop and up, so nothing is ever hidden under it. It stays open
   while you work; close it with its ✕, **Esc** or **B**. On a phone it floats over the page and the Inspector slides in
   from the side.

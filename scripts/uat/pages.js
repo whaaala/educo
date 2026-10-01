@@ -34,12 +34,13 @@ async function beside(page, id, tile = 'Stack') { page.__step = 'beside(' + [id,
 /** Drop UNDER a block — near its bottom edge — so it stacks beneath it in the same column. */
 async function under(page, id, tile = 'Stack') { page.__step = 'under(' + [id, tile].map((v) => String(v).slice(-4)).join(',') + ')'; if (process.env.DEBUG) console.log('  step', page.__step);
   const before = await ids(page);
-  const v = await H.visibleRect(page, id);
+  const v = await H.reach(page, id); // zoomed in first if it is too thin to aim at (Z-1)
   // Nothing of it on screen to aim under (behind a stuck bar, off the window): say so, never let go on something else (L1-8).
   if (v.hidden) throw new Error(`cannot drop under ${id.slice(-4)}: only ${Math.round(v.w)}×${Math.round(v.h)}px of it is visible`);
   // WHERE IT AIMED, kept for the report: a release point that matches no block on the failure screenshot is read against this.
   page.__aim = `aimed under ${id.slice(-4)} seen at l${Math.round(v.l)} r${Math.round(v.r)} t${Math.round(v.t)} b${Math.round(v.b)}`; page.__aimId = id;
   await H.dropTile(page, tile, Math.round(v.l + v.w / 2), Math.round(v.b - 5));
+  await H.backToFit(page);
   const got = (await newestLeaf(page, before)).id; page.__aim = undefined; page.__aimId = undefined; return got;
 }
 async function into(page, id, tile = 'Stack') { page.__step = 'into(' + [id, tile].map((v) => String(v).slice(-4)).join(',') + ')'; if (process.env.DEBUG) console.log('  step', page.__step); const before = await ids(page); await H.dropInto(page, tile, id); return (await newestLeaf(page, before)).id; }

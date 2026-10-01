@@ -210,7 +210,7 @@ async function canvasAudit(page) {
     const rows = Array.from(document.querySelectorAll('[data-box-id]')).filter((e) => getComputedStyle(e).flexDirection === 'row' && getComputedStyle(e).display.includes('flex'));
     for (const row of rows) {
       const cs = getComputedStyle(row); const r = row.getBoundingClientRect();
-      // A rect is measured in SCREEN px (the canvas is zoomed to fit, "Fitted to screen · 82%") while a computed padding is
+      // A rect is measured in SCREEN px (the canvas is zoomed — to fit, "Fit · 82%", or as the user chose) while a computed padding is
       // LAYOUT px — so the padding is scaled by the zoom before the two are put in one sum. Unscaled, a 96px contained-band
       // inset at 82% read as a line running 17px "into its padding" (and 158px at 55%), on the canvas only, on every page.
       const padR = parseFloat(cs.paddingRight) * Z;

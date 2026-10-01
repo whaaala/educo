@@ -37,6 +37,7 @@ import PageLoader from "@/components/shared/PageLoader";
 import CompactSelect from "@/components/shared/CompactSelect";
 import DeleteConfirmationModal from "@/components/shared/DeleteConfirmationModal";
 import PageCheck, { pageCheckCount } from "@/components/website/box/PageCheck";
+import { useCanvasZoom, ZoomControls } from "@/components/website/box/CanvasZoom";
 
 const KEY = "educo_box_site_v1"; // multi-page site
 const LEGACY_KEY = "educo_box_demo_v9"; // old single-tree document (migrated on load)
@@ -551,6 +552,28 @@ export default function BoxDemoPage() {
    * free-typed preview width would have been quietly rewriting which breakpoint their next edit landed on.
    */
 
+  /**
+   * FULL WIDTH KEEPS ITS WIDTH WHILE THE PANEL IS DOCKED (#57). Full width is fluid, so the room the docked panel
+   * takes used to RE-LAY OUT the page: a four-across row became three plus one the moment the panel opened — the page
+   * being designed changed shape because a panel opened. Now it keeps the width it had with the panel shut (capped at
+   * the same 64rem as `max-w-5xl`) and is shrunk to fit, exactly like a device size.
+   */
+  const rootPx = typeof window === "undefined" ? 16 : parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+  const fullWhileDocked = device === "full" && panelDocked && roomW
+    ? Math.round(Math.min(64 * rootPx, roomW + (PANEL_GUTTER_REM - LAUNCHER_GUTTER_REM) * rootPx))
+    : null;
+  /** How much the frame is shrunk to fit: 1 when it fits, never above 1, two decimals so it does not jitter. */
+  const fitW = fullWhileDocked ?? DEVICES.find((d) => d.id === device)!.w;
+  const fit = fitW && roomW && roomW < fitW ? Math.max(0.25, Math.floor((roomW / fitW) * 100) / 100) : 1;
+  /**
+   * THE ZOOM THE USER CHOSE (BATCH Z-1), drawn with the same CSS `zoom` as the fit. A fluid Full width page is given the
+   * width it has at Fit while zoomed, so zooming enlarges the page instead of re-laying it out in a wider box.
+   */
+  const scrollerRef = useRef<HTMLDivElement | null>(null);
+  const frameRef = useRef<HTMLDivElement | null>(null);
+  const canvasZoom = useCanvasZoom({ ready: !!(site && activePage && root) && !preview, device, fit, scroller: scrollerRef, frame: frameRef, selectedId: selectedIds.length === 1 ? selectedIds[0] : null });
+  const frameW = fitW ?? (canvasZoom.user != null && roomW ? Math.round(Math.min(64 * rootPx, roomW)) : null);
+
   // NOTE: every hook above runs on EVERY render. React counts hooks by call order, so a `useMemo` or
   // `useCallback` placed AFTER this guard is called only sometimes — which crashes the whole builder with
   // "Rendered more hooks than during the previous render". That is precisely what happened when the preview
@@ -742,19 +765,6 @@ export default function BoxDemoPage() {
   // e.g. behind a floating sibling on the overlay layer). The reveal id is consumed by the effect below.
   const revealBox = (id: string) => { pendingReveal.current = id; autoSelectedId.current = id; setSelectedIds([id]); };
 
-  /**
-   * FULL WIDTH KEEPS ITS WIDTH WHILE THE PANEL IS DOCKED (#57). Full width is fluid, so the room the docked panel
-   * takes used to RE-LAY OUT the page: a four-across row became three plus one the moment the panel opened — the page
-   * being designed changed shape because a panel opened. Now it keeps the width it had with the panel shut (capped at
-   * the same 64rem as `max-w-5xl`) and is shrunk to fit, exactly like a device size.
-   */
-  const rootPx = typeof window === "undefined" ? 16 : parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
-  const fullWhileDocked = device === "full" && panelDocked && roomW
-    ? Math.round(Math.min(64 * rootPx, roomW + (PANEL_GUTTER_REM - LAUNCHER_GUTTER_REM) * rootPx))
-    : null;
-  const frameW = fullWhileDocked ?? DEVICES.find((d) => d.id === device)!.w;
-  /** How much the frame is shrunk to fit: 1 when it fits, never above 1, two decimals so it does not jitter. */
-  const fit = frameW && roomW && roomW < frameW ? Math.max(0.25, Math.floor((roomW / frameW) * 100) / 100) : 1;
   const pageList = site.pages.map((p) => ({ id: p.id, name: p.name }));
 
   /**
@@ -1120,16 +1130,17 @@ export default function BoxDemoPage() {
         {/* This group wraps too. Left as one unbreakable row it was still 417px wide on a 375px screen, so
             the editor's own theme switcher — the last control in it — hung off the edge while everything
             else had been rescued. `ml-auto` still pushes it right whenever there IS room. */}
-        <div className="ml-auto flex flex-wrap items-center justify-end gap-2 gap-y-1.5">
+        <div className="ml-auto flex flex-wrap items-center justify-end gap-1.5 gap-y-1.5">
           <Segmented ariaLabel="Preview screen size" value={device} onChange={setDevice} options={DEVICES.map((d) => ({ value: d.id, Icon: d.Icon, title: `${d.label}${d.w ? ` (${d.w}px)` : ""}` }))} />
+          <ZoomControls z={canvasZoom.z} user={canvasZoom.user} fit={fit} canSelect={selectedIds.length === 1} onZoom={(v) => canvasZoom.setZoom(v)} onSelection={canvasZoom.toSelection} />
           {/* A block hidden on this device is GONE from the canvas, as it is from the published page (#132). This brings
               the hidden ones back faintly, so one can be selected and un-hidden. */}
           <button type="button" aria-pressed={showHidden} aria-label="Show hidden blocks" title={showHidden ? "Hidden blocks are shown faintly — click to draw the page as it publishes" : "Show blocks hidden on this device, faintly, so you can select them"} onClick={() => setShowHidden((v) => !v)}
             className={`inline-flex items-center gap-1 rounded-lg border px-2 py-1 text-[0.6875rem] ${showHidden ? "border-indigo-400 bg-indigo-50 text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-300 midnight:bg-indigo-950/40 midnight:text-indigo-300 purple:bg-indigo-950/40 purple:text-indigo-300" : "border-gray-200 text-gray-500 dark:border-gray-700 dark:text-gray-400 midnight:border-gray-700 midnight:text-gray-400 purple:border-gray-700 purple:text-gray-400"}`}>
-            <Eye className="w-3.5 h-3.5" aria-hidden="true" /><span className="hidden lg:inline">Hidden</span>
+            <Eye className="w-3.5 h-3.5" aria-hidden="true" /><span className="hidden min-[1700px]:inline">Hidden</span>
           </button>
           <label className="flex items-center gap-1 text-[0.6875rem] text-gray-400" title="Base size in px — everything scales off this so text stays readable when zoomed (WCAG)">
-            <span className="hidden lg:inline">Base size</span>
+            <span className="hidden min-[1700px]:inline">Base size</span>
             <input type="number" min={6} max={24} value={root.baseFont ?? 10} onChange={(e) => commit(updateBox(root, root.id, { baseFont: Number(e.target.value) || 10 }))} aria-label="Base size (px)" className="w-12 text-xs px-1.5 py-1 rounded-lg border border-line bg-transparent" />
           </label>
           {/* WEBSITE theme (saved with the site → canvas + content + export). Distinct from the editor-appearance switcher. */}
@@ -1143,18 +1154,16 @@ export default function BoxDemoPage() {
       <div className="relative flex-1 flex min-h-0">
         {/* The Blocks panel floats over this column, so the canvas keeps its full width. */}
         <div className="relative flex-1 min-w-0 flex">
-          <div data-canvas-scroller className="flex-1 min-w-0 overflow-auto">
+          <div ref={scrollerRef} data-canvas-scroller className="flex-1 min-w-0 overflow-auto [touch-action:pan-x_pan-y]">
             {/* The Blocks launcher floats in the left gutter, so the gutter RESERVES its exact footprint. Without
                 this the centred page slid under the button and the first word of the first block could not be
                 clicked. Reserved whether the panel is open or shut, so opening it never reflows the page under
                 the cursor. */}
-            <div ref={canvasRoomRef} className="relative p-2 sm:p-8 flex justify-center min-h-full transition-[padding] duration-200 motion-reduce:transition-none" style={{ paddingLeft: `${panelDocked ? PANEL_GUTTER_REM : LAUNCHER_GUTTER_REM}rem` }}>
-              {fit < 1 && (
-                <span role="status" className="absolute top-1 right-3 text-[0.6875rem] font-medium text-gray-500 dark:text-gray-400 midnight:text-slate-400 purple:text-purple-200" title={`The ${frameW}px page is shown at ${Math.round(fit * 100)}% so all of it fits beside the panels. It is laid out and published at its full width.`}>
-                  Fitted to screen · {Math.round(fit * 100)}%
-                </span>
-              )}
-              <div className={`shadow-sm rounded-xl ring-1 ring-black/10 dark:ring-white/10 midnight:ring-white/10 purple:ring-white/10 shrink-0 h-fit transition-[width] duration-300 ${device === "full" && !fullWhileDocked ? "w-full max-w-5xl" : ""}`} style={{ width: frameW ?? undefined, zoom: fit < 1 ? fit : undefined, background: renderTheme.background, color: renderTheme.text, fontFamily: renderTheme.bodyFont, containerType: "inline-size" }}>
+            {/* `mx-auto` on the frame, not `justify-center` on the room: centred while it fits, and when a zoomed page is
+                wider than the room its left edge stays reachable — a centred flex child overflows to BOTH sides and the
+                left part can never be scrolled to (Z-1). */}
+            <div ref={canvasRoomRef} className="relative p-2 sm:p-8 flex min-h-full transition-[padding] duration-200 motion-reduce:transition-none" style={{ paddingLeft: `${panelDocked ? PANEL_GUTTER_REM : LAUNCHER_GUTTER_REM}rem` }}>
+              <div ref={frameRef} className={`mx-auto shadow-sm rounded-xl ring-1 ring-black/10 dark:ring-white/10 midnight:ring-white/10 purple:ring-white/10 shrink-0 h-fit transition-[width] duration-300 motion-reduce:transition-none ${frameW == null ? "w-full max-w-5xl" : ""}`} style={{ width: frameW ?? undefined, zoom: canvasZoom.z !== 1 ? canvasZoom.z : undefined, background: renderTheme.background, color: renderTheme.text, fontFamily: renderTheme.bodyFont, containerType: "inline-size" }}>
                 <BoxCanvas root={root} theme={renderTheme} minHeight={PAGE_MIN_H} selectedIds={selectedIds} onSelectIds={selectByUser} onChange={commit} breakpoint={bp} showHidden={showHidden} marqueeRoom={roomEl} />
               </div>
             </div>

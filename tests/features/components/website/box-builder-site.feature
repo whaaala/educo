@@ -126,7 +126,7 @@ Feature: Box Builder — multi-page site, preview & export
     Given my screen is 1536 by 864 and the Inspector is open
     When I choose the Desktop 1280 canvas
     Then the whole page is visible beside the panels, with no sideways scroll
-    And it says "Fitted to screen" with the percentage it is shown at
+    And the zoom reads "Fit" with the percentage it is shown at
     And the page is still laid out at 1280 — the same rung, the same layout that publishes
     Because it used to run on under the Inspector: the right of the page could not be
       seen, and its handles were painted on top of the Inspector
@@ -136,6 +136,77 @@ Feature: Box Builder — multi-page site, preview & export
     When I drag an edge, a grid cell, a floating block or a floating item
     Then what is stored is the size on the page, not the smaller size on my screen
     And the same drag at 100% and at the fitted size ends at the same place on the page
+
+  # ── Zooming the editor canvas (BATCH Z-1, approved 2026-10-01) ─────────────
+  # tests/unit/canvas-zoom.test.ts · tests/e2e/canvas-zoom.spec.ts · scripts/uat/probe-z1.js (headed)
+  # Research: docs/web-anatomy/editor-zoom.md (Figma, Canva, Webflow, Framer)
+
+  Scenario: Zooming in to reach a column too thin to work in
+    Given a column a few dozen pixels wide on the fitted canvas
+    When I press + beside the device buttons until it reads 200%
+    Then the page is drawn twice as large and scrolls both ways
+    And I can drop a block into the column, select it and drag its edge
+    And what is stored is the size on the page, the same as at 100%
+
+  Scenario: The zoom controls
+    Then beside the device buttons there is a minus button, a readout and a plus button
+    And the readout says "Fit · 55%" while fitted and the percentage otherwise
+    When I open the readout
+    Then I can choose Fit, 50, 75, 100, 150, 200 or 400%, or Zoom to selection
+    And minus stops at 25% and plus at 400%
+    And every control has a name a screen reader says, and works from the keyboard
+
+  Scenario Outline: Zoom shortcuts work on the canvas and leave the browser's zoom alone elsewhere
+    Given the pointer is <where>
+    When I press <keys>
+    Then <result>
+    Examples:
+      | where                 | keys      | result                                   |
+      | on the canvas         | Ctrl +    | the canvas zooms in one step             |
+      | on the canvas         | Ctrl −    | the canvas zooms out one step            |
+      | on the canvas         | Ctrl 0    | the canvas is at 100%                    |
+      | on the canvas         | Shift 1   | the canvas is fitted to the screen       |
+      | on the canvas         | Shift 2   | the selected block fills the view        |
+      | over the Inspector    | Ctrl +    | the browser zooms the whole builder      |
+      | typing in a text block| Shift 1   | a "!" is typed and nothing zooms         |
+
+  Scenario: Ctrl + scroll zooms around the pointer
+    When I hold Ctrl and scroll over a heading on the canvas
+    Then the canvas zooms and the heading stays under the pointer
+    And scrolling without Ctrl still scrolls the page
+
+  Scenario: Moving around a zoomed page
+    Given the canvas is at 400%
+    Then I can scroll to all four edges of the page
+    And holding Space or the middle button and dragging moves the view
+    And a space typed into a text block is still a space
+
+  Scenario: The editor's own controls stay the same size at every zoom
+    When the canvas is at 25%, 100% or 400%
+    Then the handles, the block toolbar, an item's toolbar and the drop marker are the same size on screen
+    And their buttons are never smaller than 24 pixels
+    Because at 55% an item's toolbar buttons were 15 pixels (Z1-d)
+
+  Scenario: The zoom is mine, not the page's
+    Given I zoomed the Desktop canvas to 150%
+    When I reload the builder
+    Then the Desktop canvas is still at 150%
+    When I switch to Mobile
+    Then it is fitted again
+    And neither the saved site nor the published page contains any zoom
+    And the Preview is exactly as it was
+
+  Scenario: A block held on screen holds at any zoom (Z1-a)
+    Given a block set to float on screen
+    When the canvas is fitted below 100% and I scroll it
+    Then the block does not move on the screen
+    Because it slid 180 pixels at Wide, fitted to 55%, over a 400 pixel scroll
+
+  Scenario: An item's ring stays on the item at any zoom (Z1-b)
+    Given an Accordion on the canvas fitted below 100%
+    When I click one of its items
+    Then the ring is drawn exactly round that item and its toolbar sits beside it
+    Because at Wide the ring was 142 pixels too narrow and the toolbar covered the item
 
   Scenario: A block's handles never draw outside the canvas
     When a selected block is scrolled under the toolbar or beside the Inspector

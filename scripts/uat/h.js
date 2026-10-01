@@ -119,10 +119,11 @@ const visibleRect = (page, id) => page.evaluate(async (id) => {
 }, id);
 /** Drop `tile` beside the block `id`, at its right (or left) edge. */
 const dropBeside = async (page, tile, id, side = 'right') => {
-  const r = await visibleRect(page, id);
+  const r = side === 'right' ? await reach(page, id) : await visibleRect(page, id);
   if (side === 'left' && r.hidden) throw new Error(`the left edge of ${id.slice(-4)} is under the blocks panel`);
   if (r.hidden) throw new Error(`cannot drop beside ${id.slice(-4)}: only ${Math.round(r.w)}×${Math.round(r.h)}px of it is visible`);
   await dropTile(page, tile, Math.round(side === 'right' ? r.r - 8 : r.l + 8), Math.round(r.t + r.h / 2));
+  await backToFit(page);
 };
 const selected = (page) => page.evaluate(() => document.querySelector('.outline-indigo-500')?.getAttribute('data-box-id') ?? null);
 async function select(page, id) {
@@ -235,7 +236,34 @@ function rowProblems(row) {
 /** Drop a tile INTO an (empty) block, at its centre. */
 // A target a user cannot see cannot be aimed at: FAIL, never drop at a sliver and land beside it (#56 — that is how a
 // "four-stack" row got a fifth block while the panel hid the first stack).
-const dropInto = async (page, tile, id) => { const r = await visibleRect(page, id); if (r.hidden) throw new Error(`cannot drop into ${id.slice(-4)}: only ${Math.round(r.w)}×${Math.round(r.h)}px of it is visible`); await dropTile(page, tile, Math.round(r.l + r.w / 2), Math.round(r.t + r.h / 2)); };
+/**
+ * ZOOM IN TO REACH IT (BATCH Z-1). A column a few pixels wide on the fitted canvas cannot be aimed at — tier-99 page 334
+ * and tier-95 page 12 stopped on "only 3px visible". A person presses + until it is big enough; so does this, up to 400%.
+ * `backToFit` returns to Fit afterwards, so every later step measures the page at the scale it always has.
+ */
+async function reach(page, id) {
+  let r = await visibleRect(page, id);
+  for (let i = 0; r.hidden && i < 10; i++) {
+    const plus = page.getByRole('button', { name: 'Zoom canvas in' });
+    if (!(await plus.isEnabled().catch(() => false))) break;
+    await plus.click(); page.__zoomedIn = true; page.__zoomIns = (page.__zoomIns || 0) + 1;
+    await page.waitForTimeout(300);
+    // …and brings it to the middle of the view, BOTH ways, as a person scrolls to what they zoomed in on: `visibleRect`
+    // only scrolls up and down, and at 400% a thin column lay off to the side, under the Blocks panel — "only 0×244px".
+    await page.evaluate((id) => document.querySelector(`[data-box-id="${id}"]`)?.scrollIntoView({ block: 'center', inline: 'center' }), id);
+    await page.waitForTimeout(200);
+    r = await visibleRect(page, id);
+  }
+  return r;
+}
+async function backToFit(page) {
+  if (!page.__zoomedIn) return;
+  page.__zoomedIn = false;
+  await page.getByRole('group', { name: 'Canvas zoom' }).locator('button').nth(1).click();
+  await page.getByRole('option', { name: /^Fit/ }).click();
+  await page.waitForTimeout(300);
+}
+const dropInto = async (page, tile, id) => { const r = await reach(page, id); if (r.hidden) throw new Error(`cannot drop into ${id.slice(-4)}: only ${Math.round(r.w)}×${Math.round(r.h)}px of it is visible`); await dropTile(page, tile, Math.round(r.l + r.w / 2), Math.round(r.t + r.h / 2)); await backToFit(page); };
 /**
  * Put a REAL photo into every image block, the way a user does: click its Upload button and pick a file. Test pages
  * are compared as they would be published (the empty placeholder is an editor-only exception — user, 2026-09-27).
@@ -288,4 +316,4 @@ const PREVIEW_HEIGHT_TOL = 4;
 const shot = (page, name) => page.screenshot({ path: path.join(OUT, name) });
 const same = (a, b, tol = 1) => a.kids.length === b.kids.length && a.kids.every((k, i) => k.id === b.kids[i].id && k.t === b.kids[i].t && Math.abs(k.l - b.kids[i].l) <= tol && Math.abs(k.w - b.kids[i].w) <= tol);
 const fmt = (row) => row.kids.map((k) => `${k.id.slice(-4)}@${k.l},${k.t}:${k.w}`).join(' ');
-module.exports = { PREVIEW_SHARE_TOL, PREVIEW_HEIGHT_TOL, fillStacks, fillImages, visibleRect, dropInto, open, panel, clickTile, dropTile, dropBeside, leaves, select, selected, handleOf, dragEdge, rowOf, storedRow, tree, rowProblems, shot, same, fmt, OUT };
+module.exports = { reach, backToFit, PREVIEW_SHARE_TOL, PREVIEW_HEIGHT_TOL, fillStacks, fillImages, visibleRect, dropInto, open, panel, clickTile, dropTile, dropBeside, leaves, select, selected, handleOf, dragEdge, rowOf, storedRow, tree, rowProblems, shot, same, fmt, OUT };

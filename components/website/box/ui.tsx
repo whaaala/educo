@@ -12,8 +12,11 @@ import { ChevronDown, type LucideIcon } from "lucide-react";
 import { CHROME_Z } from "@/lib/educo-ui/stacking";
 
 /** A quiet ghost button (icon and/or text) with an optional active state + tooltip. `primary` = the one CTA. */
-export function ToolBtn({ onClick, title, ariaLabel, active, disabled, primary, children }: {
-  onClick?: () => void; title?: string; ariaLabel?: string; active?: boolean; disabled?: boolean; primary?: boolean; children: ReactNode;
+export function ToolBtn({ onClick, title, ariaLabel, active, disabled, primary, compact, children }: {
+  onClick?: () => void; title?: string; ariaLabel?: string; active?: boolean; disabled?: boolean; primary?: boolean;
+  /** An ICON-ONLY button: text padding made it 34px wide where 26px (still over the 24px target) will do — it kept the
+   *  builder's bar to one row at 1536px once the zoom controls joined it (Z1-m). */
+  compact?: boolean; children: ReactNode;
 }) {
   /**
    * `whitespace-nowrap shrink-0` — a toolbar button never breaks its own label.
@@ -23,12 +26,12 @@ export function ToolBtn({ onClick, title, ariaLabel, active, disabled, primary, 
    * shortage by shrinking its children, and text is what gives first — so the label becomes unreadable long
    * before anything runs out of room. A control that cannot be read cannot be used.
    */
-  const base = "inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium whitespace-nowrap shrink-0 transition-colors disabled:opacity-40 disabled:cursor-not-allowed";
+  const base = `inline-flex items-center gap-1.5 rounded-lg ${compact ? "px-1.5" : "px-2.5"} py-1.5 text-xs font-medium whitespace-nowrap shrink-0 transition-colors disabled:opacity-40 disabled:cursor-not-allowed`;
   const look = primary
     ? "bg-brand text-brand-fg shadow-sm hover:brightness-105"
     : active
-      ? "bg-gray-100 dark:bg-white/10 text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50"
-      : "text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100 dark:hover:bg-white/10";
+      ? "bg-gray-100 dark:bg-white/10 midnight:bg-white/10 purple:bg-white/10 text-gray-900 dark:text-white midnight:text-cyan-50 purple:text-pink-50"
+      : "text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100 dark:hover:bg-white/10 midnight:hover:bg-white/10 purple:hover:bg-white/10";
   return <button onClick={onClick} title={title} aria-label={ariaLabel} aria-pressed={active} disabled={disabled} className={`${base} ${look}`}>{children}</button>;
 }
 

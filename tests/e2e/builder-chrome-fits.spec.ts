@@ -26,7 +26,7 @@ import { test, expect } from "@playwright/test";
 /** Every control in the header, by its accessible name. Add to this when the toolbar gains one. */
 const CONTROLS = [
   "Add a band", "Undo", "Redo", "Preview", "Export", "Reset",
-  "Preview screen size", "Base size (px)", "Website theme", "Change theme",
+  "Preview screen size", "Canvas zoom", "Zoom canvas in", "Zoom canvas out", "Base size (px)", "Website theme", "Change theme",
   "Add page", "Page settings",
 ];
 

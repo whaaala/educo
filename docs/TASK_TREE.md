@@ -26,7 +26,7 @@ Everything any session has said it will do, as ONE tree — so moving between se
 | `[~]` | Parked or dropped — with who decided, and why |
 | `[!]` | Status not verified — check before relying on it |
 
-Last updated: **2026-10-01**, session 80d91cf9, branch `builder/layout-uat`.
+Last updated: **2026-10-01** (Z-1 closed), session 80d91cf9, branch `builder/layout-uat`.
 
 ---
 
@@ -198,8 +198,8 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
     words closer than the gutter floor to the page or their coloured box's edge · (3) audit check: sections closer than
     the section floor · (4) the old "never a default" wording in the four places left (layout feature 347,
     `text-is-reachable.spec.ts` 34, design-foundation `02` 485, memory `feedback_radius_and_spacing.md`)
-- **← YOU ARE HERE: BATCH Z-1 (canvas zoom), step 1: research** (Figma, Canva, Webflow, Framer) → plan artifact → the
-  user's approval → build. L-1 CLOSED 2026-10-01 (`509822a`). (E-0 closed 2026-09-30; S-3 queued)
+- **← YOU ARE HERE: BATCH L-2 (the editor and the Preview disagree)** — Z-1 CLOSED 2026-10-01 (canvas zoom; acceptance pages
+  334 and 12 BUILD). L-1 closed earlier the same day. (E-0 closed 2026-09-30; S-3 queued)
 - `[ ]` **BATCH S-3 · The editor's Page check warns about space** (area: Page check warnings · 2 changes, queued
   2026-09-30): (1) the in-app Page check reports words closer than 1rem to the page edge or touching their coloured box
   (W7a) and two sections closer than 1rem (W7b), as warnings, the way `page-audit.js` measures them — the scenario
@@ -435,7 +435,7 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
   - page 38 of tier 80 · could not select the 2nd of 4 card columns
   - the 19 tier-95 build failures (could-not-select ×9 · drop-offered-nothing ×7 · barely visible ×1 · click timeout ×2)
   - previewcheck B30 / P4 · the harness's drop and select steps
-- `[>]` **BATCH Z-1 · Canvas zoom** (area: editor navigation · 1 change, OPENED 2026-10-01; queued 2026-09-30 after L-1 — the user's "go" on
+- `[x]` **BATCH Z-1 · Canvas zoom** — CLOSED 2026-10-01 (gate: typecheck 0 · eslint 0 errors · vitest 3,923 · test:fast 748; HEADED UAT 4 themes 21/21, narrow 12/12, 200% browser 4/4; acceptance: tier-99 page 334 BUILT 443 blocks, tier-95 page 12 BUILT 242) (area: editor navigation · 6 changes, OPENED 2026-10-01; queued 2026-09-30 after L-1 — the user's "go" on
   E0-f): the canvas is always "Fitted to screen", so a hand-sized column ~40px wide (tier-99 page 334) cannot be dropped
   into, selected or resized by anyone. Zoom in / out / back to fit — buttons beside "Fitted to screen", Ctrl + / Ctrl − /
   Ctrl 0, Ctrl + scroll — with the page scrolling in both directions while zoomed, drops, selection, resize handles and
@@ -457,18 +457,94 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
       divided by the canvas zoom, the side choice compares screen space with the bar's screen size. Guard
       `item-ring-zoom.spec.ts` (built through the palette): red "-26, 0, -142, -14px at zoom 0.55", green with the fix;
       in both suite lists (L1-15's lesson). Probe after: 0/0/0/0 at every device, toolbar 4–8px beside the item
-    - `[ ]` Z1-d · **the editor's own chrome shrinks with the canvas**: at Wide (55%) the item toolbar's buttons are
+    - `[x]` Z1-d · (FIXED: the item toolbar is drawn at the inverse zoom and placed in screen px — SEEN 36px bar, 28px buttons, 36px handle at 25 · 50 · 100 · 200 · 400% in all four themes; the drop line 3px at 50% and 200%) **the editor's own chrome shrinks with the canvas**: at Wide (55%) the item toolbar's buttons are
       ~15px on screen — under the 24px target of WCAG 2.5.8 — and the block handles shrink the same way (screenshot
       `probe-z1b-Wide1920px.png`). The four editors researched keep chrome a constant size on screen. A DESIGN choice
       → in the Z-1 plan for the user's approval, built with the zoom
-    - Z1-a and Z1-b are UNCOMMITTED until the full gate runs (with the Z-1 plan)
+    - Z1-a and Z1-b COMMITTED `1550371` (gate: vitest 3,915 · test:fast 741)
+    - `[x]` Z1-e · MY BUILD: the zoom's listeners never attached — the builder renders a loader first, and they were
+      registered once, on that render, with no canvas. Found by the first-look probe (Ctrl+scroll did nothing). FIXED:
+      attached when the canvas is there (`ready`), and again after the Preview (which replaces the editor) closes.
+      Guarded by every key/wheel test in `canvas-zoom.spec.ts`
+    - `[x]` Z1-f · two buttons named "Zoom in" once a block was selected — mine and the Inspector's hover EFFECT of that
+      name; to a screen reader, two different actions with one name. FIXED: "Zoom canvas in" / "Zoom canvas out"
+    - `[x]` Z1-g · MY BUILD: Space did not pan after a device was chosen — the device button kept focus and Space pressed
+      it again. FIXED: only a button INSIDE the page keeps Space; otherwise Space pans and the button is not pressed (key
+      down and up). Guard `canvas-zoom.spec.ts` "Space + drag pans" (red 400 → 550 expected, green)
+    - `[x]` Z1-h · MY BUILD: "pointer on the canvas" came from enter/leave events, so over a selected block's handles
+      (drawn in a layer outside the canvas) Ctrl + went to the BROWSER, and over the Blocks panel (floating on the canvas)
+      it zoomed the CANVAS. FIXED: the pointer's position inside the canvas's rectangle, minus any dialog/menu over it.
+      Guard "the shortcuts act on the canvas only while the pointer is on it" — red on the old build at the Blocks panel
+    - `[x]` Z1-j · **with a block selected, the canvas took the keys of ANY focused control outside it** (predates Z-1;
+      found by the UAT: Enter on the zoom readout opened nothing): Enter on a toolbar button edited the block's words
+      instead of pressing it, Delete on a focused button DELETED the selected block, arrows moved it — WCAG 2.1.1 and lost
+      work for a keyboard user. FIXED (`BoxCanvas.tsx` key handler): a focused control outside the page owns its keys.
+      Guard `canvas-zoom.spec.ts` "a focused toolbar control keeps its own keys" — red on the old build (no menu), green
+    - `[x]` Z1-k · MY Z1-j FIX WAS TOO BROAD: it also kept ESCAPE from the page when a control outside it had focus, so
+      Escape no longer stepped out a level after an Inspector button was clicked — tier-99 page 153 (built in L-1) then
+      failed "could not select b-57". NARROWED: a focused control keeps only the keys it uses (Enter, Space, arrows,
+      Delete, Backspace, Home, End). SEEN on build .next-b: page 153 BUILT (230 blocks), with 87 · 227 · 278 · 2 in six windows; canvas-zoom.spec 7/7 (the Z1-j guard still red-proof on Enter and Delete)
+    - `[x]` Z1-m · **the toolbar became TWO ROWS (93px) on a 1536px screen — the user's own** — found by the gate
+      (`builder-chrome-fits.spec.ts`): the zoom group (187px) pushed the bar ~108px past one row. FIXED: the "Hidden" and
+      "Base size" words show from 1700px (they were already hidden below 1024; the controls keep their names and
+      tooltips), and the guard now lists the zoom controls among those that must be on screen. Not enough alone — re-measured 19px short (left 866px, right group 681 of 662). Then: an icon-only ToolBtn is `compact` (26px, over the 24px target) and the right group's gap 8 → 6px. SEEN: one row, 56px at 1536 (group 655 of 662), builder-chrome-fits + canvas-zoom 8/8, screenshot toolbar-1536-midnight
+    - `[x]` Z1-n · TEST BUG: `canvas-zoom.spec.ts` "edge dragged at 200%" failed in the full run (30% → 30%): the handle
+      was grabbed where it was drawn BEFORE the zoom — the handles are re-measured a frame later, and under load the test
+      read them first. FIXED: it waits until the handle sits on the block's edge — passed in the next full run (747)
+    - `[x]` Z1-p · the shared `ToolBtn`'s active and hover backgrounds had `dark:` with no `midnight:`/`purple:` (rule 5) — added; SEEN: the hovered + in Midnight
+    - `[x]` Z1-o · eslint 2 errors — an unused variable in each of `probe-z1.js` and `probe-z1-extra.js`. Removed
+    - `[x]` Z1-l · PROCESS: vitest (the tree guard, a few seconds) was run while pages 334 and 153 were still building
+      in headed windows — the standing rule, broken a second time today. 334 built; 153's failure is re-run (Z1-k)
+    - `[x]` Z1-i · a recorded limit — ACCEPTED by the user 2026-10-01 ("go ahead" on the recommendation: it only affects near-empty pages) (`ponytail:` in CanvasZoom.tsx): zooming round a point holds only as far as
+      the page can scroll — a page shorter than the window grows downward from its top (33px off on a one-box page; ≤1px
+      on a page that scrolls, measured). Design tools add empty room round the page; added only if users miss it
   - `[x]` research — `docs/web-anatomy/editor-zoom.md` (Figma, Canva, Webflow, Framer; + Wix Studio, Penpot; sources)
-  - `[?]` **PLAN published 2026-10-01, WAITING ON THE USER'S APPROVAL:** https://claude.ai/artifact/REMMiWJU5ufUgnBs7cvqZH —
+  - `[x]` **PLAN APPROVED by the user 2026-10-01** ("I approve the proposal as you've written it"; decision 2: "I will
+    do what you recommend" — the plain wheel scrolls; 3 and 4 CONFIRMED by the user the same hour, "also do what you
+    recommend": zoom remembered per device size in this browser, switching device goes back to Fit).
+    Plan: https://claude.ai/artifact/REMMiWJU5ufUgnBs7cvqZH —
     controls beside the device buttons, Ctrl +/−/0 and Shift 0/1/2, Ctrl+scroll and pinch around the pointer, Space-drag
     pan, width and zoom kept separate, constant-size chrome (Z1-d), 25–400%, kept per device in the browser. Four
     decisions: approve · plain wheel · remember the zoom · switching device. **Revised 2026-10-01 at the user's word:**
     Ctrl +/− zoom the CANVAS only while the pointer or focus is inside it; everywhere else they stay the browser's own
     zoom (WCAG 1.4.4 for the builder itself), and the builder is checked usable at 200% browser zoom
+  - THE SIX CHANGES: (1) controls − / readout-menu (Fit, 50, 75, 100, 150, 200, 400%, Zoom to selection) / + beside the
+    device buttons, replacing the "Fitted to screen" badge · (2) keyboard inside the canvas: Ctrl +/− step 25…400%,
+    Ctrl 0 and Shift 0 → 100%, Shift 1 → Fit, Shift 2 → the selection · (3) Ctrl+scroll and pinch zoom around the
+    pointer; the plain wheel scrolls · (4) the zoomed page scrolls both ways; Space+drag and middle-drag pan · (5) the
+    editor's chrome keeps its screen size at every zoom (Z1-d) · (6) the zoom kept per device in this browser; a device
+    switch goes back to Fit
+  - **UAT CHECKLIST (written 2026-10-01, BEFORE the build).** One HEADED pass, six windows, fresh production build;
+    each line in Light · Dark · Midnight · Purple Dream, and at the devices it names:
+    SEEN 2026-10-01 — HEADED UAT, six windows, build YfVTIQqT (`.next-c`, FRESH): `probe-z1.js` in Light · Dark · Midnight ·
+    Purple Dream, 21 of 21 each (the first two runs' failures were all the probe's own — pan tolerance, the Blocks panel
+    shut before a drop, a click left of a 2,292px item at 400% — except Z1-j, a real bug, fixed); `--case=narrow` 12/12;
+    `--case=browser200` 4/4; `probe-z1-extra.js`; `canvas-zoom.spec.ts` 7/7 (HEADLESS GATE):
+    - `[x]` (1) readout "Fit · 55%" → menu by keyboard (Enter opens it once Z1-j was fixed; Escape closes) → 150% chosen;
+      + stops at 400% and − at 25% (disabled); names "Zoom canvas in/out", "Canvas zoom, …"; readout contrast 16.1 · 15.2 ·
+      17.5 · 15.4 : 1; at 375 · 768 · 1280 the controls sit inside the window, no sideways scroll (screenshot narrow-375)
+    - `[x]` (2) on the canvas Ctrl+ / Ctrl− / Ctrl 0 / Shift 1 → 200 · 150 · 100% · Fit; over the Inspector and over the
+      Blocks panel the canvas did not change; over a selected block's handle it zooms (Z1-h); Shift 1 typed in a text block
+      typed "!" and nothing zoomed; Shift 2 → 262% on the selected heading
+    - `[x]` (3) Ctrl+scroll: the point under the pointer moved 0 and 1px (≤2 on a page that can scroll — Z1-i for a short
+      one); the plain wheel scrolls; a two-finger pinch on a 1024×768 touch tablet 100% → 300%
+    - `[x]` (4) at 400% all four page edges reachable (68 · 32 · 53 · 391px clear); Space+drag 101/82 for 100/80; middle-drag
+      48 for 50; a space typed in a text block is a space (" zz")
+    - `[x]` (5) item toolbar 36px, its buttons 28px, the resize handle 36px at 25 · 50 · 100 · 200 · 400% (were 15px
+      buttons at 55%, Z1-d); the drop line 3px thick at 50% and at 200%. The block's floating toolbar is drawn in the same
+      page-level layer as the handles (BoxCanvas portal), outside the zoom
+    - `[x]` (6) Wide kept 150% after a reload, Mobile opened at Fit; the saved site holds no zoom (3,832–3,853 chars); the
+      Preview has 0 elements with a CSS zoom
+    - `[x]` (7) a block dropped into a stack landed at 50 · 100 · 200 · 400%, 4 of 4 in every theme; an edge dragged 120px
+      at 200% stored the same width as 60px at 100% (within 0.5%), Ctrl+Z undid it in one step; a held block held at 200%
+      (0px over 400px); the item ring on its item (Z1-b, item-ring-zoom.spec)
+    - `[x]` (8) the Preview opened while zoomed: nothing in it zoomed; after closing it Ctrl 0 still worked (Z1-e)
+    - `[x]` (9) 200% BROWSER zoom (760×450 CSS at 2×): the zoom controls inside the window, no sideways scroll, the Blocks
+      panel opens 320×292 (screenshot browser200)
+    - `[x]` ACCEPTANCE: tier-99 page 334 BUILT (443 blocks) and tier-95 page 12 BUILT (242 blocks), the harness zooming
+      in to reach a thin column as a person would (`reach` in h.js, centring it both ways). Their errors are queued
+      classes only: HOLE and broken words (L-4), canvas≠Preview at Wide (L-2). Regression: 2 · 87 · 142 · 153 · 227 ·
+      278 · 337 · 385 · 109 all BUILT
 - `[ ]` **BATCH L-2 · Tier-99: the editor and the Preview disagree** (area: canvas = Preview · 4 changes, queued)
   - e-4 · canvas≠Preview — 13 pages: headings, links and buttons 0.4–3.6% narrower in the Preview, text wrapping to other
     heights, 4 containers 122–198px shorter at Wide (idx 109, 141 carry most). **A clean repro, built through the UI
