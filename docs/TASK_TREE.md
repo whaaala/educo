@@ -701,6 +701,14 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
 - `[ ]` **BATCH L-9 · Task 4: the parity spec covers every arrangement** (area: canvas = Preview · 1 change, queued
   2026-10-01) — tree 1.1.4: `parity-every-arrangement.spec.ts` extended to grid cells, components, sticky, floating and
   fixed (neighbours of a floating/fixed block do not move), at every breakpoint. Branch `builder/layout-2`
+- `[ ]` **BATCH M-1 · The L-2 fixes in the phone and tablet app** (area: `apps/mobile/` · MUST BE DONE, NOT STARTED — the
+  user, 2026-10-01: "Yes, I want something built in mobile for this, but… just have this noted that it must be done", so
+  we do not get carried away). What it holds, to be planned when it opens (phone AND tablet, `isTablet`, Jest + both
+  emulators): a school's site shown inside the Educo app as a WEBVIEW over the real export (rule 20), so the L-2 fixes
+  arrive as they are — the header spread and centred, words and FAQ answers wrapping as published, "Floats on screen"
+  holding — checked on emulator-5556 (phone) and 5554 (tablet) at their real widths; plus whatever native chrome the plan
+  approves. Same item as section 4's "Builder on phone and tablet". WHEN: the user places it; the layout order below
+  stands until then
 - `[ ]` **ORDER, DECIDED by the user 2026-10-01:** L-1 … L-6 and D-1 on this branch → pull request to `master` → fresh
   branch `builder/layout-2` → L-7, L-8, L-9 → THEN the whole-tier re-sweep and the layout story (RULE L) ONCE, over all
   of it, so neither is done twice
@@ -1070,7 +1078,7 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
     `components/layout/Sidebar.tsx`; list in `docs/MVP_AUDIT.md` → "Menu links with no page"
 - `[!]` **Mobile Drive feature** — memory `project_drive_status.md`
 - `[ ]` **Builder on phone and tablet** — a webview over the real export, inside the Educo app (rule 20); after the web
-  builder is finished
+  builder is finished. Its first piece is queued as BATCH M-1 (the user, 2026-10-01: must be done, not now)
 - `[?]` **What exactly is "the original work"?** Confirm with the user which of these it means before returning to it
 
 ---
@@ -1079,6 +1087,20 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
 
 One entry per session, newest first. Written the moment the user says "new session" (or the context is about to run
 out) — where the session STARTED FROM, where it GOT TO, and where the next one CONTINUES FROM.
+
+### 2026-10-01 · session 4f2e9df1 · branch `builder/layout-uat` — HANDOVER (recommended: context long — all of L-2, 13 ledger lines, ~70 headed runs; clean boundary — committed, F-1 heavy next)
+
+- **Started from:** `7e1a030`, BATCH L-2 not started.
+- **Got to:** **L-2 CLOSED** (`2bcc73f`, tree `12ffcc3`): the canvas zoom is drawn with `transform` (laid out 1:1 like the
+  Preview); a one-column band has no gutter; header/footer lines spread and centre (the user's decision); buttons no
+  longer underlined; editable body text is a `<p>` and never wider than its block; #144 measured in Chromium, Firefox and
+  WebKit, false warning gone; `check-fresh-build` compares with the build's START. Gate: typecheck 0 · eslint 0 errors ·
+  vitest 3,932 · test:fast 757. DECIDED by the user: BATCH F-1 (the page uses its space) opened right after L-2, every fix
+  in the shared engine with an enumerating guard; BATCH M-1 (the L-2 fixes in `apps/mobile/`) noted as a must, not now.
+- **UNCOMMITTED:** nothing but run logs in `scripts/uat/logs/` (never committed).
+- **Continue from:** BATCH F-1 (YOU ARE HERE): write its checklist, then change (1) MEASURE FIRST.
+- **Not done, and said so:** M-1 not started (the user's word); S-3 still waits to be placed; the six-window 37-minute
+  timeouts of 2026-09-30 remain unexplained.
 
 ### 2026-10-01 · session 80d91cf9 · branch `builder/layout-uat` — HANDOVER (recommended: two batches in context, clean boundary, L-2 heavy)
 
