@@ -198,7 +198,7 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
     words closer than the gutter floor to the page or their coloured box's edge · (3) audit check: sections closer than
     the section floor · (4) the old "never a default" wording in the four places left (layout feature 347,
     `text-is-reachable.spec.ts` 34, design-foundation `02` 485, memory `feedback_radius_and_spacing.md`)
-- **← YOU ARE HERE: BATCH F-1 (the page uses its space)** — L-2 CLOSED 2026-10-01 (canvas = Preview: the zoom drawn
+- **← YOU ARE HERE: BATCH F-1 (the page uses its space)** — L-2 CLOSED 2026-10-01, `2bcc73f` (canvas = Preview: the zoom drawn
   with `transform`, a one-column band has no gutter, header/footer lines spread, editable text measured as published, #144).
   Next: F-1's change (1), MEASURE FIRST — the unused-space audit check — then the fixes by class. (S-3 queued)
 - `[ ]` **BATCH S-3 · The editor's Page check warns about space** (area: Page check warnings · 2 changes, queued
@@ -546,7 +546,7 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
       in to reach a thin column as a person would (`reach` in h.js, centring it both ways). Their errors are queued
       classes only: HOLE and broken words (L-4), canvas≠Preview at Wide (L-2). Regression: 2 · 87 · 142 · 153 · 227 ·
       278 · 337 · 385 · 109 all BUILT
-- `[x]` **BATCH L-2 · Tier-99: the editor and the Preview disagree** — CLOSED 2026-10-01 (every checklist line seen in a HEADED
+- `[x]` **BATCH L-2 · Tier-99: the editor and the Preview disagree** — CLOSED 2026-10-01 (commit `2bcc73f`; every checklist line seen in a HEADED
   UAT, every ledger line fixed and re-checked; gate: typecheck 0 · eslint 0 errors (105 accepted warnings) · vitest 3,932 ·
   test:fast 757) (area: canvas = Preview · 4 changes)
   - e-4 · canvas≠Preview — 13 pages: headings, links and buttons 0.4–3.6% narrower in the Preview, text wrapping to other
