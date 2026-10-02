@@ -198,8 +198,11 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
     words closer than the gutter floor to the page or their coloured box's edge · (3) audit check: sections closer than
     the section floor · (4) the old "never a default" wording in the four places left (layout feature 347,
     `text-is-reachable.spec.ts` 34, design-foundation `02` 485, memory `feedback_radius_and_spacing.md`)
-- **← YOU ARE HERE (2026-10-02): RESEARCH for the layout's definition of done (1.1.5) — the Awwwards "Animation" sites,
-  every one in full detail (script written, not run — see 1.1.5 → "Section transitions · animation · sticky · fixed").
+- **← YOU ARE HERE (2026-10-02, end of session 1427d547): the RESEARCH is done and committed — the Motion & Effects
+  Library (`docs/web-anatomy/motion/LIBRARY.md`, 11 files, 198 entries), the bug ledger verified in code, the motion
+  tokens APPROVED. NEXT: the user signs the "ENOUGH" CHECKLIST (1.1.5) and adds their own layout list → FREEZE 1.1.5 →
+  BATCH F-1 (F1-k, gate, commit; its code is still UNCOMMITTED in the working tree) → fix Batches A · B · C (1.1.5 →
+  "THE FIX ORDER"). Background research runs keep refining the numbers (`C:\Users\eyite\educo-research\chain.log`).**
   BATCH F-1 is PAUSED by the user's choice, code UNCOMMITTED in the working tree (fixes A·B·C + F1-b…j coded and
   headed-checked; F1-k OPEN; gate not run).** Earlier note: BATCH F-1 (the page uses its space) — L-2 CLOSED 2026-10-01, `2bcc73f` (canvas = Preview: the zoom drawn
   with `transform`, a one-column band has no gutter, header/footer lines spread, editable text measured as published, #144).
@@ -1264,6 +1267,305 @@ not a feature) · **LATER** (component / motion / typography — moved to 1.3 wh
       full-screen overlay for 1.5s. Then run it (≈15–20 min, six windows), then a subagent distils it into
       `scroll-and-position/02-awwwards-animation.md` by technique (sticky · scroll animation · section transition ·
       page transition), each HAVE / PARTIAL / GAP, and the gaps go here as SP-15…
+    - `[>]` **Awwwards "Transitions" CATEGORY — EVERY site, in full detail** (the user's link, 2026-10-02 session
+      1427d547: https://www.awwwards.com/websites/transitions/). NOT the same source as the Transitions COLLECTION
+      already stored in `awwwards-motion-survey.md` (`/awwwards/collections/transitions/`, 366 items, fingerprinted
+      from code only, never driven live). Same method as the Animation category: every listing page until one adds
+      nothing → every site measured live by `aw-measure.js` (scroll changes + page transition) → distilled into
+      `scroll-and-position/03-awwwards-transitions.md`, overlap with the collection marked, gaps here as SP-…
+    - `[ ]` **Made in Webflow "page transitions" — EVERY project, in full detail** (the user's link, 2026-10-02 session
+      1427d547: https://webflow.com/made-in-webflow/page-transitions). Every item of the listing (all pages / all "load
+      more") → each project's live site measured by the same `aw-measure.js` page-transition probe (click an internal
+      link, sample the overlay / view transition for 1.5s) → distilled with the Awwwards results, gaps here as SP-…
+    - `[>]` **STICKY and FIXED — EXHAUSTIVE research, every situation, every component** (the user, 2026-10-02 session
+      1427d547: "do a lot of excessive research on sticky position… for any situation… and also fixed position on any
+      component, anything on a website"). SUPERSEDES "sticky / fixed is enough once its completeness list is closed".
+      A catalogue of EVERY use of each on real pages and in every component (headers, sub-navs, tables, sidebars, TOCs,
+      CTAs, bottom bars, chat / cookie / back-to-top, stacked cards, pinned scenes, modals, toasts, drawers…), every
+      mechanic and trap (containing block, overflow, transform ancestors, z-index / stacking, iOS / Android bars,
+      keyboard, safe areas, zoom, print), each HAVE / PARTIAL / GAP → `scroll-and-position/04-sticky-fixed-exhaustive.md`,
+      gaps here as SP-…
+    - `[ ]` **Hover effects — the user's two links, EVERY item** (2026-10-02 session 1427d547):
+      https://webflow.com/made-in-webflow/hover%20effect · https://www.awwwards.com/inspiration/hover-effect ·
+      https://www.awwwards.com/awwwards/collections/hovers-cursors-and-cute-interactions/ — every
+      listing page, each item opened and its live hover measured (what changes, on what, touch / keyboard equivalent),
+      combined with `motion/04-hover-focus.md`
+    - `[x]` **Sticky / fixed exhaustive (mine)** — `scroll-and-position/04-sticky-fixed-exhaustive.md` (SF-1…SF-21),
+      2026-10-02. Crawl counts: fixed header on 16.3% of pages, sticky 5.2%, sticky sidebar 4.0%. Proposed MUST: SF-1 Tab
+      lands under a fixed BOTTOM bar (only `scroll-padding-top` is set; WCAG F110) · SF-2 a fixed bottom bar hides the
+      page end · SF-3 print: fixed blocks repeat on every printed sheet · SF-4 bars that let go on SHORT screens (WCAG
+      C34) · SF-5 the page audit measures how much screen held bars take · SF-8 `capturesFixed` misses hover / entrance
+      transforms, glass Accordion items and Advanced CSS (a fixed block inside them scrolls away). DECIDE: SF-7 stacking
+      cards · SF-10 RTL pins · SF-13 glass cost · SF-14 short page footer (lean MUST) · SF-15 two-row header, row 2
+      sticks · SF-16 bottom bars while typing. CHECK: SF-6 · SF-9 · SF-11 Opera Mini · SF-12 iOS 26. LATER: SF-17…SF-21.
+      **NOT READ (open):** Baymard (paywall), CSSWG #865 thread, Mozilla 1732817, the real sites it names (to be measured)
+    - `[ ]` **BUG LEDGER — the research TOOLS (RULE V)**
+      - `[ ]` R-1 · `aw-measure.js` page weight wrong on a re-run (29 KB, "-0") — the persistent profile served from
+        CACHE; fix: cache disabled per window (CDP `Network.setCacheDisabled`)
+      - `[ ]` R-2 · `cp-tag.js` read CodePen's "verify you are human" page as "no more pens" (hover stopped at 96,
+        reduced-motion at 0) and then crashed on the challenge's navigation; fix: detect the check, PAUSE and ask the
+        user to tick it once in the visible window (no automated bypass), retry, 2 windows + random pauses on CodePen
+      - `[ ]` R-3 · `src-list.js` gave up on one Webflow page timeout; fix: 4 retries per page
+      - `[ ]` R-4 · `aw-list.js` crashed at Animation page 185 (connection dropped) and LOST 184 pages — it saved only at
+        the end; fix: `src-list.js` saves after every page and resumes
+      - `[ ]` R-5 · an Awwwards INSPIRATION item has no "Visit site" of its own — recorded as "null" (a false miss); fix:
+        follow its `/sites/` page to the live site, keep the item's video (the recording of the effect)
+      - `[ ]` R-6 · One Page Love's list picked up menu pages ("free-templates", "sections"); fix: filtered (149 items)
+      - `[ ]` R-7 · a RESUMED listing stopped at once (pages it already held "added nothing"); fix: the end is a page
+        with NO items, not no NEW items
+      - `[ ]` R-8 · running every source at once (~24 windows) ran the machine out of memory (2 GB free of 15.6):
+        gallery pages and screenshots timed out and each failure was RECORDED AS DONE (a false negative); fix: a failed
+        item is retried (3 tries) and re-run on restart, and ONE measuring process at a time (6 windows) + CodePen (2+2)
+      - `[ ]` R-9 · frames per second read 2–6 on a 330 KB page: with six windows open Chrome slows the frames of covered
+        windows (and my DOM snapshots blocked the first try) — a FALSE number; fix: fps is no longer recorded, long
+        tasks are kept, smoothness gets its own one-window pass
+    - `[x]` **LEDGER VERIFIED IN CODE 2026-10-02** (`educo-research/reading/ledger-verify.md`; SP-4 and N1 re-checked
+      by me): **22 REAL · 3 NOT A BUG · 3 CAN'T TELL without a browser.** NOT A BUG (latent — nothing published sets
+      it): MR-17 · CE-7 · HV-21. CAN'T TELL (headed check written in the file): NEW-B3 · NEW-B2 · NEW-C1. Same root:
+      SA-1 = SP-4 · EX-10 fixed with EX-2/EX-3 · MR-9 ⊂ EX-2/EX-6 · MR-16 ⊂ MR-4 · NEW-B2 ⊂ MR-3. **REAL, worst for
+      users first:** SP-4/SA-1 rounded or clipped section writes `overflow: hidden` (`box-export.ts:393`,
+      `BoxCanvas.tsx:3029`) — pins and reveals inside it die; fix `overflow: clip` · MR-4 the auto pager has no Pause ·
+      MR-5 an auto-dismiss alert cannot be paused by touch · EX-3 dismissing an alert drops focus to `<body>` · MR-2
+      Solid / Glass bar stays see-through under reduced motion / no scroll timelines · MR-6 hover not gated by
+      `(hover: hover)` · SH-7 focus rings vanish in forced colours · SF-8 `capturesFixed` misses hover / entrance /
+      arrival transforms · ST-1 sloped edge shows the page colour (the guide says otherwise) · NEW-A1 swipe past the
+      pager's end fires BACK · MR-16 focus on pager dots does not stop it · CE-19 mobile spinner · MR-3 condense / glass
+      cost every frame · AM-1 `animate-in` undefined (114 files, 211 uses) · minor: EX-6 · EX-5 · EX-10 · MR-9 ·
+      video 315px · HV-17. **NEW, found while verifying:** `[ ]` N1/N2 the alert timer's `go()` never clears the old
+      timer (`box-model.ts:2034`) — mouse-leave + focus-out leave TWO timers, the alert vanishes while being read ·
+      `[ ]` **N9 · VERIFIED by me:** `--eu-color-surface-2` is used 20 times in `lib/` (accordion / navbar hovers,
+      the "Soft surface" background…) but defined ONLY in the editor's `app/globals.css` — never in the exported token
+      sheet, so those hovers do nothing on a PUBLISHED page while the canvas shows them (canvas ≠ export) ·
+      `[ ]` **N10 · VERIFIED by me:** `box-model.ts:984` exports `letter-spacing` in px (rule 16) ·
+      `[ ]` N3 a stagger gives children 11+ no delay — they arrive first · `[ ]` N4 the web PageLoader / InPageSpinner
+      not reduced-motion gated, not announced, hard-coded hex · `[ ]` N5 pager arrows are links, not buttons · `[ ]` N6
+      every video iframe is titled "Video" · CAN'T TELL: N7 alert × contrast · N8 a link in a reveal block focusable
+      while nearly transparent
+    - `[ ]` **BUG LEDGER — more defects in what SHIPS reported by the redo (to verify in code first)**
+      - `[ ]` SH-7 · focus rings drawn only with `box-shadow` after `outline: none` (`components.ts:49,320,345,349`) —
+        they vanish in forced-colours (Windows high contrast); no `forced-colors` rule anywhere
+      - `[ ]` the video block's default height is `315px` (`box-export.ts:157`) — a stored pixel (rule 16)
+      - `[ ]` NEW-A1 · the pager strip has no `overscroll-behavior-x: contain` — swiping past its end can fire the
+        phone's BACK gesture
+      - `[ ]` EX-10 · a leaving element can still be clicked and focused (make it `inert` when the exit starts)
+      - `[ ]` MR-16 · the pager's auto-advance restarts on its own when focus leaves, focus on its dots / arrows does not
+        stop it, a reduced-motion change while open is ignored
+      - `[ ]` MR-17 · the global reduced-motion rule does not set `animation-iteration-count: 1` — a loop would flash
+      - `[ ]` **AM-1 · VERIFIED 2026-10-02 (by me, not only reported):** the `animate-in` / `slide-in-from-*` /
+        `fade-in` classes are used in 114 files (211 times) but NOTHING defines them — no plugin in `globals.css` or
+        `package.json`, zero `.animate-in` rules in the built CSS — so every Modal, PageLoader and toast entrance in
+        the Educo app silently does nothing. (Plus, reported by the same research, to verify: the native app has no
+        reduced-motion handling, Reanimated installed but unused, 1 of 192 Pressables gives press feedback, toasts
+        not announced, the web Modal never moves focus, drag handles that cannot drag, no offline state — AM-2…AM-27
+        in `motion/09-app-motion.md`)
+      - `[ ]` CE-7 · an invalid input is shown by colour only (WCAG 1.4.1)
+      - `[ ]` CE-19 · the app's spinner loops with no reduced-motion check and no accessible label
+      - `[ ]` HV-17 · `.eu-btn:active { translateY(1px) }` — a stored pixel (rule 16)
+      - `[ ]` HV-21 · a focusable child sits at `opacity: 0` (revealed on hover) — keyboard focus lands on something
+        invisible (WCAG 2.4.7). (HV-15 = SH-7 and HV-18 = MR-6: same bugs, found twice)
+      - `[ ]` NEW-B3 · the pager's off-screen pages stay in the Tab order (no `inert` anywhere in the pager) — keyboard
+        users tab into slides they cannot see (WCAG 2.4.3 / 2.4.7)
+      - `[ ]` NEW-B2 · a style applied while a bar is stuck must change paint only, or the bar flickers between stuck
+        and unstuck — check every `pinArrival`
+      - `[ ]` NEW-C1 · scroll effects are switched on by `@supports (animation-timeline…)` alone (`interactions.ts:242`,
+        `box-model.ts:6362`) — a half-built engine passes and plays them with the wrong timing; add `and
+        (animation-range: 0% 100%)`
+    - `[ ]` **Redo results so far** — `06-motion-rules.md` +9 gaps MR-16…24 (Material 3 read via its content endpoint) ·
+      `07-shadows.md` SH-1…12 (79 demos) · `05-entrance-exit.md` 62 sources, 213 demos, EX-9…19 · reading cluster A
+      (MDN, ~95 sources, 129 demos, NEW-A1…A8) · cluster C (Bramus + scroll-driven-animations.style: 141 posts, every
+      demo page, 235 demos, NEW-C1/C2) · cluster E (Codrops: 123 articles + the 1,139-entry demo index + the
+      StickySections repo, 249 demos, NEW-E1…E11 — read through the r.jina.ai reader proxy over Codrops' WordPress API
+      because tympanus.net answers 403; TOLD the user) · `03-page-transitions.md` (~230 pages, 348 demos, PT-12…20) —
+      outputs copied to `educo-research/reading/` · cluster B (Chrome + web.dev via their sitemaps: 47 sources,
+      177 demos, NEW-B1…B8; the full scroll-triggered action list — `play-once` closes SA-2's CSS route). The chain
+      dropped to 4 windows 2026-10-02 04:11 (0.7 GB free with 6) · `04-hover-focus.md` (~55 sources + the code of 82
+      Codrops hover / button / link / cursor / tooltip repos — 0 of 77 handle reduced motion; 320 demos; HV-15…28).
+      · cluster F (Polypane · Josh Comeau · Shadeed · Kevin Powell · Apple HIG · Material component docs · divider
+      generators · freefrontend: ~75 sources, 287 demos, NEW-F1…F9; F7 the "puzzle" divider explains ST-1 and its fix).
+      **RESEARCH RULE added 2026-10-02:** no identity spoofing (cluster F tried a Googlebot user agent on a site that
+      refused it — not a route we use); a source that refuses stays NOT READ with the reason, or is read in the real
+      browser the way a person reads it. **And never turn the sandbox off** (an app-motion sub-agent ran `curl` with
+      the sandbox disabled on its own — TOLD the user). · `09-app-motion.md` (Material 3 · 17 Apple HIG pages · Fluent
+      · Carbon · Atlassian · Polaris · React Navigation 7 · expo-router · all 96 Reanimated 4 pages · gesture-handler ·
+      Moti · FLIP · Next view transitions; 62 demos; AM-1…27). Waiting: cluster D, component effects
+    - `[>]` **THE MOTION & EFFECTS LIBRARY — one library for EVERYTHING (the user, 2026-10-02: "make sure everything we
+      collect is something we can use for everything… the website builder and any application we develop… so we
+      don't have to redo it")** — `docs/web-anatomy/motion/LIBRARY.md` (index, 11 families, ONE entry shape: what a
+      visitor sees · code · MEASURED timing → token · phone · reduced motion · accessibility · cost · how common ·
+      examples · surfaces incl. React Native · HAVE/PARTIAL/GAP verified); memory `reference_motion_library.md`. Raw
+      store OUTSIDE git, permanent: `C:\Users\eyite\educo-research\` (runs/ · shots/ · reading/ · chain.log) — the
+      session scratchpad is cleaned, so nothing stays there. Added on the user's "is anything missing?" (my answer):
+      - `[x]` the measurer captures, per item: load intro (0.7s + load shots, preloader cover) · TIMING (every
+        duration / easing / property / delay in use + script eases) · keyboard focus look (4 Tab stops) · hover with a
+        3-frame strip and its own timing · cursor followers · the MENU (open strip, Escape closes?, focus returns?,
+        scroll lock) · page transition (+ focus and title after) · a REDUCED-MOTION pass (what still moves) · a PHONE
+        pass (360×740, touch, Android UA, CPU 4×: held bars, scroll changes, long tasks, sideways overflow, the phone
+        menu). Trialled on 6 sites 2026-10-02
+      - `[>]` 35 more Awwwards collections (intro animations · CSS animations · animation · animation libraries ·
+        loading · parallax · horizontal scrolling · storytelling · filters & effects · drag · playful · menu · best of
+        navigation · galleries & slideshows · forms · search · search filters · video / audio players · UI elements ·
+        3D UI · cookie · layout · grid layout · hero · footers ×2 · about · contact · product · project · 404 · one-page
+        · mobile UI · responsive · dark mode · then WebGL · three.js) — listing (`collections.log`), measured by the chain
+      - `[>]` COMPONENT effects (uiverse galaxy — every element, by script · Animate.css · Animista · Motion examples ·
+        Codrops · freefrontend · Material 3 / Apple components) → `motion/08-component-effects.md`, CE-…
+      - `[>]` APPLICATION motion (Material 3 · Apple HIG · Fluent 2 · Carbon · Polaris · React Native Animated /
+        Reanimated / gesture-handler / Moti / React Navigation · web-app FLIP / View Transitions) → `motion/09-app-motion
+        .md`, AM-…
+      - `[ ]` SMOOTHNESS in its own one-window pass (foreground, 60 Hz, CPU 4×) on the shortlisted techniques — frames
+        per second cannot be measured with six windows open (R-9)
+      - `[ ]` CodePen pens through the full measurer too (their preview URL as a page) — `cp-tag.js` reads code + one
+        scroll + one hover only
+      - `[x]` MERGED 2026-10-02: the reading agents' demos → `own-scroll-demos` (435 sites) · `own-motion-demos` (533) ·
+        `own-app-demos` (60) · `own-component-demos` (1,547) — into the chain; **R-10** about 4,714 of them were CodePen
+        pens, which the site measurer would have measured as CodePen's page, not the pen → split into
+        `pens-own.list.json`, read by `cp-tag.js list:` (queued after the tag run, `after-cp.sh`)
+      - `[ ]` uiverse — 3,824 elements RENDERED LOCALLY from the cloned open-source repo (`educo-research/src/galaxy`),
+        each hovered / clicked / focused with shots: every element opened and run, ~1s each, no network
+        (`uiverse-elements.list.json` keeps the page URLs) — `scripts/research/uiverse-run.js`: each of the 3,802
+        elements loaded alone (no network) and driven at rest · hover · press · keyboard focus · click · reduced
+        motion, ::before / ::after included, a shot per state, accessible names counted → `educo-research/runs/
+        uiverse.json` — RUNNING 2026-10-02. **R-11** (fixed): a closed browser made it record every remaining element
+        as failed in a second; now it stops, and errored elements re-run on restart
+      - `[x]` `motion/08-component-effects.md` (uiverse 3,802 parsed: transitions median 300 ms, 64% `transition: all`,
+        1.3% style `:focus-visible`, 0.26% honour reduced motion, 69% of inputs unlabelled · Animate.css 98 · Animista
+        662 · motion.dev 462 · Codrops 775 · freefrontend 209 collections · Material web source (menus / dialogs open
+        500 ms, close 150 ms; focus ring 3 px + 2 px offset) · Apple HIG 20 pages; CE-1…20)
+      - `[x]` the measurer skips a live site already measured under another source (`sameAs`)
+      - `[x]` **PLAN CHANGED by the user 2026-10-02 ("do we need 25,000 items?") — NO.** What matters is the number of
+        distinct techniques, not of sites. The USER'S OWN LINKS run in full (aw-insp · wf-hover · wf-page-transitions ·
+        opl-drop-shadow · aw-coll-transitions · aw-coll-hovers; CodePen sticky-header 120/120 + fixed-position 24/24 —
+        done); EVERYTHING ELSE runs in random order until SATURATED: 150 items in a row that add nothing new (library ·
+        CSS feature · kind of scroll change · hover change · page-transition kind · menu behaviour · held kind · phone
+        behaviour; for pens, the techniques in their full code) → a `.saturated.json` beside each run says where it
+        stopped and what was known. `aw-measure.js` / `cp-tag.js --saturate=150`. ~1 day of machine time instead of 3–4
+      - `[x]` uiverse — ALL 3,802 elements run locally, 2026-10-02 (`educo-research/runs/uiverse.json`)
+      - `[>]` **THE USER'S GO (2026-10-02): (1) write the library while the runs finish, (2) verify the bug ledger in
+        code** — nothing that needs the browser meanwhile (memory ~1 GB free). `scripts/research/aggregate.js` condenses
+        every finished run into `docs/web-anatomy/research-runs/AGGREGATE.md` (regenerated, never edited; first pass:
+        732 sites, uiverse 3,802, 17 CodePen tags — sticky 47% · fade on scroll 55% · median transition 350 ms · Escape
+        closes the menu 76% · visible focus on 74% of Tab stops · 70% still move under reduced motion). Three agents
+        write `motion/library/1…11-*.md` (entry shape, measured shares, builder status verified); one agent verifies
+        every ledger line → `educo-research/reading/ledger-verify.md` (REAL / NOT A BUG / CAN'T TELL)
+      - `[ ]` **R-16 · the PHONE pass never ran at 360px** — Playwright's own viewport overrode my CDP device override,
+        so every "phone" figure was the desktop page (held elements median 1,425px wide; 138 of 179 phone menu buttons
+        at the desktop x). Found by a library agent, CONFIRMED by me in the raw data. Fix: Playwright viewport first,
+        mobile / touch / Android / CPU 4× over it, and the pass CHECKS `screen.width === 360` or records a failure; the
+        page may still lay out wider — recorded as `pageWidth` / `forcedWider` (a real phone finding). Re-measured by
+        `--patch=phone` on every source done before the fix (`educo-research/phone-patch.sh`; aw-insp re-run after,
+        its patch started on the old code). Proven: koox.co.uk 360px, 12 held, the phone menu opens
+      - `[ ]` **R-17 · "Escape closes the menu" counted menus that never OPENED** (76% → re-measure: two rules gave 47%
+        and 69% on the old records, so they are not trusted). Fix: the probe records `didOpen`; Escape and focus return
+        are judged only on a menu that opened; the desktop menu is re-measured in the same patch; the summary counts
+        only fixed-probe menus
+      - `[ ]` **R-18 · see-through full-screen layers counted as preloaders / overlays** (intro 69% → opaque 36%, gone
+        by load 3%; overlay page transitions 27% + 9% → 10% + 3%). Fix: `opaque` per cover (background alpha > 0.5, a
+        picture, or media)
+      - `[ ]` **R-19 · summary lines counted more than their names** — "fixed bar with nav" 55% (any fixed element with
+        a link) → FIXED TOP bar 32% · glass bar 7% → glass TOP bar 2% · marquee 24% (a word) → marquee @keyframes 9% ·
+        animation-timeline 6% (a word) → a REAL scroll timeline in a rule 1%. `aggregate.js` definitions tightened
+      - `[ ]` R-20 · my R-18 relabelling made a stray "spa" kind (19%), and its `//` comment mid-line cut the statement
+        (the R-13 mistake again) — both fixed; AGGREGATE regenerated
+      - `[x]` **Library files written** (`motion/library/`): 1-held (16) · 2-scroll (20) · 3-section-transition (14) ·
+        4-page-screen-transition (14) · 5-entrance-exit (17) · 7-gesture (11) · 8-feedback-state (18) ·
+        6-hover-focus-press (24) · 9-text (11) · 10-surface (16) · 11-rules (17 + THE TOKEN PROPOSAL: instant 70 · fast
+        150 (today 120) · base 300 (today 200) · slow 400 (today 320) · slower 500 · page 300 · reveal 800 · loop 1500 ms;
+        stagger 60 ms capped at 500; standard (.2,0,0,1) · enter (.23,1,.32,1) · exit (.4,0,1,1) · emphasized = Material's
+        real `linear()` curve, today's overshoot renamed `overshoot`; springs as two `linear()` shapes + a bouncy one for
+        playful sites only — FOR THE USER TO APPROVE). More corrections: the median transition is 300 ms per element
+        (350 was per site) · the 74% "visible focus" counted any box-shadow as a ring · `.eu-tab` / `.eu-navbar` CSS
+        ships in every page but nothing renders it · the web app's shared Button has no `active:` and `focus-visible:`
+        appears in 0 files. Research claims the writers found WRONG: "39% of award sites use ScrollTrigger" (live: 9%)
+        · Lenis 28% (live: 16%) · NEW-E2 "bottom bars do not stack" (they do, `box-model.ts:5744`, `:5840`) · "arrival
+        distance 12 units" (it is `PIN_ARRIVAL_AFTER = 120`, `box-model.ts:6142`) · cluster F's `box-export.ts:359`
+        `100svh` (a comment; the value is at `box-model.ts:5622`). Their phone / menu / intro numbers wait for the
+        re-measure and the regenerated AGGREGATE — then each file's numbers are refreshed
+      - `[ ]` R-15 · One Page Love: the link finder took a "Launch website" link (One Page Love's list of OTHER sites)
+        or a sponsor for 53 items — they measured the wrong site. Fixed (the gallery's own "Visit website" first,
+        "Launch" never); the run set aside (`runs/old-format/opl-drop-shadow.wrong-link.json`) and re-run. Checked the
+        other sources: every item resolves to its own site
+      - `[ ]` R-12 · `cp-tag.js` never retried an errored pen (2 in sticky-header) — fixed: errored pens re-run · R-13 ·
+        my R-12 edit put a `//` comment mid-line and commented out `const have` — CodePen crashed at once; fixed and
+        proven by a run (sticky-header re-read to 120/120)
+      - `[x]` 37 Awwwards collections listed: 6,984 items
+    - `[>]` **THE RUNS (2026-10-02, session 1427d547)** — every item opened by `aw-measure.js` (DOM: sticky / fixed
+      elements; what changes on scroll and HOW, with a no-scroll control; hover on up to 8 elements + the `:hover` rules
+      and whether they are gated by `(hover: hover)`; every box-shadow; the page transition; the CSS rules and script
+      calls that do it, verbatim; four screenshots), one chain, smallest first → `docs/web-anatomy/research-runs/`:
+      `[x]` aw-insp (hover-effect, interactive-shadow-parallax = koox.co.uk, petro's 8) 10/10 · `[x]` wf-hover 13/13 ·
+      `[ ]` wf-page-transitions · `[ ]` opl-drop-shadow 149 · `[ ]` aw-coll-transitions 366 · `[ ]` aw-coll-hovers 466 ·
+      `[ ]` aw-cat-transitions 3,875 · `[ ]` aw-cat-animation (re-listing, every page) · `[x]` getcssscan 95 shadows
+      (DOM values) · `[>]` CodePen 28 tags, every pen opened (`cp-tag.js`) · `[ ]` own-research demo lists
+      (`own-scroll-demos`, `own-motion-demos` — ELEVEN reading agents: scroll half A–F (MDN · Chrome/web.dev ·
+      scroll-driven-animations.style/Bramus · CSS-Tricks/Smashing/Roselli · Codrops via RSS/GitHub/archive · blogs +
+      Material/Apple) writing `scratchpad/A..F.md` + `.urls.json`; motion half writing `scratchpad/demos/pt|hv|ex|mr|sh
+      .json` + 03–07 sections. When they land: MERGE + dedupe the URLs into the two lists, VERIFY every HAVE / PARTIAL /
+      GAP claim by my own grep (the mimo agent's were wrong 3 times), renumber NEW-* → SF-22+ · ST-12+ · SA-15+ ·
+      PT-12+ · HV-15+ · EX-9+ · MR-16+ · SH-1+, append "Added 2026-10-02 (redo)" sections) → the same chain ·
+      `[x]` mimo glossary — 13 pages read in full (`scroll-and-position/README.md`); its three "gaps" were FALSE (a bad
+      grep: `scroll-padding-top`, `--eu-pin-above` and the staggered entrance all exist) — corrected · then the distillation,
+      item by item, by parallel agents reading slices of the results
+    - `[ ]` **AUDIT — every link the user gave: was EVERY item opened, run and read? (the user, 2026-10-02: "you just
+      can't intrude them and that's going to be a false positive")** — a link closes only when every item on every page
+      was opened live and HOW it is done written per item (RULE R "every item is opened, run and read"):
+      - `[ ]` CodePen sticky-header / fixed-position — 47 pens' code read (some cut), pages 2+ missed, NONE run → re-done
+        by `cp-tag.js` list + read
+      - `[ ]` Awwwards Transitions COLLECTION (366, `awwwards-motion-survey.md`) — code fingerprinted only, NEVER driven
+        → re-run live with `aw-measure.js` (FALSE POSITIVE until then)
+      - `[ ]` Awwwards "Sticky elements" / petro.design — petro measured live; its 8 linked elements → `aw-measure --extra`
+      - `[ ]` mimo `position: sticky` — page read; its glossary links (animation, transition, viewport, z-index, grid,
+        flexbox, padding, margins, header) not yet
+      - `[ ]` Awwwards Animation + Transitions CATEGORIES — listing collecting; 6 sites trial-run
+      - `[ ]` Webflow page-transitions · Webflow hover effect · Awwwards hover-effect · Awwwards hovers-cursors collection
+        · getcssscan box-shadow · One Page Love drop-shadow — recorded, not started
+      - `[ ]` the older sources from earlier sessions (the layout crawl, `LAYOUT_BENCHMARK.md`, the Advanced CSS course,
+        the motion survey) — audited the same way; any that were listed but not opened item by item get an open line here
+    - `[>]` **CodePen — "look through everything there, see exactly how people do it"** (the user, 2026-10-02 session
+      1427d547), and "go INSIDE each and every pen" (the sticky-header / fixed-position pens were summarised, never run
+      one by one). `scripts/research/cp-tag.js`: `list` walks every page of a tag (`?cursor=`), `read` opens EVERY pen
+      LIVE in its full view, scrolls it, two screenshots, records its sticky / fixed elements and what changed, and saves
+      its FULL html / css / js → `docs/web-anatomy/codepen/raw/<tag>.json`. Tags: sticky-header · fixed-position ·
+      position-sticky · sticky · sticky-nav · sticky-sidebar · fixed-header · scroll-animation · scroll-driven-animations
+      · animation-timeline · parallax · scrollytelling · horizontal-scroll · view-transitions · view-transition ·
+      page-transition · section-divider · shape-divider · clip-path · hover-effect · hover · cursor · starting-style ·
+      popover · dialog · marquee · stacking-cards · reduced-motion. Then a distillation pen by pen: HOW each is done
+      → `docs/web-anatomy/codepen/` by technique, HAVE / PARTIAL / GAP
+    - `[ ]` **Box shadows** (the user's links, 2026-10-02 session 1427d547: https://getcssscan.com/css-box-shadow-examples
+      · https://onepagelove.com/tag/drop-shadow — every page of the tag, each site's shadows measured live)
+      — every example stored with its value; checked against the shadow tokens and Web Design Rule #5 (design
+      foundation `02`). LATER (style, not layout) unless it shows a layout need
+    - `[x]` **Section transitions + scroll animation (mine)** — `motion/01-section-transitions.md` (ST-1…ST-11),
+      `motion/02-scroll-animation.md` (SA-1…SA-14), 2026-10-02. Proposed MUST: ST-5 overlap a card across a band edge
+      (outer spacing cannot go below 0) · SA-4 reading-progress bar · CHECK→MUST: ST-1 a sloped / curved band edge shows
+      the PAGE colour, not the next band (the guide says otherwise) · ST-3 the cut slices words / focus rings · SA-1
+      reveal-on-scroll never plays inside a rounded / clipped box (`overflow: hidden`, same root as SP-4). DECIDE: ST-2
+      ST-4 ST-7 ST-8 ST-10 · SA-2 SA-5 SA-8 SA-12. CHECK: SA-3 SA-13. LATER: ST-6 ST-9 ST-11 · SA-6 SA-7 SA-9 SA-10 SA-11
+      SA-14. **NOT READ (open):** Codrops (403 to the fetcher), Apple HIG motion + Material 3 motion (need JS) → to read
+      in real Chrome; Roselli / Paint API / curtain-footer / marquee sources read from summaries only
+    - `[x]` **Entrance / exit + motion rules (mine)** — `motion/05-entrance-exit.md` (EX-1…EX-8), `motion/06-motion-rules.md`
+      (MR-1…MR-15), 2026-10-02. Proposed DECIDE: EX-1 nothing can animate OUT · EX-4 accordion opens instantly · MR-1
+      reduced motion swaps movement for a fade · MR-7 a visitor "Reduce motion" switch · MR-8 reduced-motion preview on
+      the canvas · MR-11 `content-visibility` · MR-13 below-fold entrances play unseen. LATER: EX-7 · MR-10. CHECK: EX-8 ·
+      MR-12 · MR-14 · MR-15. **NOT READ (open):** m3.material.io (JS), Polaris tokens (redirect), SCR40, PEAT
+    - `[ ]` **BUG LEDGER — defects in what SHIPS, found by the motion research (RULE V: each fixed with a guard, or NOT A BUG
+      with the measurement; to be verified in code + a headed check first — reported by a research agent, not yet seen)**
+      - `[ ]` EX-2 · the alert's dismiss runs a hard-coded `.18s` + `setTimeout(180)`, not the motion tokens
+      - `[ ]` EX-3 · dismissing an alert removes the focused close button — keyboard focus falls to `<body>`
+      - `[ ]` EX-5 · the horizontal accordion animates `flex-grow` (a layout property); the panel widens empty first
+      - `[ ]` EX-6 · a stagger of 90 ms × 10 children starts the last one after 810 ms — cap at ~500 ms
+      - `[ ]` MR-2 · a pinned bar set to "solid" / "glass" never fills under reduced motion or in Firefox — words scroll
+        under a see-through header
+      - `[ ]` MR-3 · the `condense` and `glass` arrivals animate layout and blur on every scroll frame (jank on low-cost
+        Android, RULE AF)
+      - `[ ]` MR-4 · the pager's auto-advance has no visible Pause (WCAG 2.2.2)
+      - `[ ]` MR-5 · auto-dismissing alerts have no visible way to stop the timer (WCAG 2.2.1 / 2.2.2)
+      - `[ ]` MR-6 · hover effects are not gated by `(hover: hover)` — a tapped card stays lifted on a phone
+      - `[ ]` MR-9 · motion tokens incomplete, three timings bypass them, `emphasized` still the overshoot curve
+      - `[ ]` SA-1 · reveal-on-scroll inside a rounded / clipped box (`overflow: hidden`) — with SP-4
+      - `[ ]` ST-1 · a sloped / curved band edge shows the page colour, not the next band (the guide says the next band)
+    - `[>]` **MY OWN research (RULE RS), running in parallel 2026-10-02** — `docs/web-anatomy/motion/` 01 section
+      transitions (ST-…) · 02 scroll animation (SA-…) · 03 page transitions (PT-…) · 04 hover / focus (HV-…) · 05
+      entrance / exit (EX-…) · 06 motion rules (MR-…); each EXTENDS `motion-effects.md` + `awwwards-motion-survey.md`,
+      never redoes them; gaps come here when they land
     - `[ ]` **COMPLETENESS — what the links still hold that has NOT been read (audit, 2026-10-02, the user asked "have
       we missed anything?")** — none of these may be skipped:
       - `[ ]` CodePen sticky-header + fixed-position: confirm EVERY page of each tag was collected (compare with the
@@ -1293,9 +1595,37 @@ not a feature) · **LATER** (component / motion / typography — moved to 1.3 wh
         performance on low-cost Android (compositor-only properties, no heavy scroll listeners — RULE AF)
       - the user sends links for these; the session ALSO researches each on its own (MDN, web.dev / Chrome developers,
         CSS-Tricks, Codrops, CodePen tags, Awwwards categories, design-system motion guides) and stores it the same way
-      - `[ ]` **"ENOUGH" CHECKLIST (RULE RS)** — when both researches are combined: what the layout needs from sticky ·
-        fixed · section transitions · scroll animation · page transitions · hover · entrance / exit · motion rules, each
-        line covered / not covered — **signed off by the user** before 1.1.5 is frozen
+      - `[>]` **"ENOUGH" CHECKLIST (RULE RS)** — written 2026-10-02 (session 1427d547); **waiting for the user's
+        sign-off** before 1.1.5 is frozen. "Covered" = the user's links run item by item AND my own research read in
+        full AND written into the library with measured numbers and the builder's status verified in code.
+        | Need | Covered? | Where | What is still open |
+        |---|---|---|---|
+        | Sticky — every use and trap | ✅ | `library/1-held.md` · `scroll-and-position/01`, `04` | phone figures (R-16 re-measure) |
+        | Fixed — every use and trap | ✅ | `library/1-held.md` · `scroll-and-position/04` | phone figures (R-16) |
+        | Section transitions (dividers, overlaps, stacking, wipes, snap) | ✅ | `library/3-section-transition.md` · `motion/01` | — |
+        | Scroll animation (reveal, parallax, scroll-driven, scrollytelling, horizontal, marquee) | ✅ | `library/2-scroll.md` · `motion/02` | — |
+        | Page / screen transitions (View Transitions, overlays, app screens) | ✅ | `library/4-…` · `motion/03`, `09` | — |
+        | Hover / focus / press + touch and keyboard versions | ✅ | `library/6-…` · `motion/04` · uiverse 3,802 run | — |
+        | Entrance / exit (@starting-style, dialog, popover, menus, toasts) | ✅ | `library/5-…` · `motion/05` | desktop menu figures (R-17 re-measure) |
+        | Motion rules — tokens, reduced motion, performance, WCAG | ✅ | `library/11-rules.md` · `motion/06` | smoothness (fps) in its own one-window pass — LATER, not needed to freeze |
+        | Shadows / surfaces | ✅ | `library/10-surface.md` · `motion/07` · getcssscan 95 | — |
+        | Component effects (for the component rebuild) | ✅ | `library/6`, `8` · `motion/08` | — |
+        | App motion — web app + React Native | ✅ | `library/4`, `7`, `8` · `motion/09` | — |
+        | Text effects | ✅ | `library/9-text.md` | — |
+        | The user's own layout list | ⬜ | — | **the user adds it, then FREEZES 1.1.5** |
+        Background runs still refining percentages (collections · categories · demos · pens, each until saturated) do
+        NOT block the sign-off: they change shares, not the list of techniques.
+      - `[x]` **MOTION TOKENS — APPROVED by the user 2026-10-02** (`library/11-rules.md`): instant 70 · fast 150 · base
+        300 · slow 400 · slower 500 · page 300 · reveal 800 · loop 1500 ms; stagger 60 ms capped at 500; easings standard
+        (.2,0,0,1) · enter (.23,1,.32,1) · exit (.4,0,1,1) · emphasized = Material's `linear()` curve (today's overshoot
+        → `overshoot`); springs as two `linear()` shapes + a bouncy one for playful sites only. To be BUILT in the fix
+        batches (today: fast 120 · base 200 · slow 320)
+      - `[ ]` **THE FIX ORDER — agreed with the user 2026-10-02:** (1) commit the research · (2) NEW SESSION · (3) finish
+        F-1 (F1-k, gate, commit) · (4) Batch A — published-page motion safety: SP-4/SA-1 `overflow: clip` · MR-2 Solid /
+        Glass bar · MR-6 `(hover: hover)` · SH-7 forced-colours rings · N9 `--eu-color-surface-2` · N10 letter-spacing px
+        (+ the approved tokens) · (5) Batch B — pager + alerts: MR-4 Pause · MR-16 focus stops it · NEW-A1 overscroll ·
+        N1 double timer · EX-3 focus after dismiss · MR-5 touch pause · (6) Batch C — the Educo app, its OWN branch: AM-1
+        `animate-in` · N4 loaders · CE-19 mobile spinner · then the rest of the verified ledger by area
     - `[ ]` **SP CHECK — for the HEADED UAT** (15 lines in `01-codepen-sticky-fixed.md`): anchors / Tab / Page Down land
       below a fixed bar and a sticky header at every rung · `pinArrival` in Chromium, Firefox, WebKit, without
       `animation-timeline`, under reduced motion, `condense` never jumps · a pin + an entrance effect keep both · a
@@ -1368,6 +1698,25 @@ not a feature) · **LATER** (component / motion / typography — moved to 1.3 wh
 
 One entry per session, newest first. Written the moment the user says "new session" (or the context is about to run
 out) — where the session STARTED FROM, where it GOT TO, and where the next one CONTINUES FROM.
+
+### 2026-10-02 · session 1427d547 · branch `builder/layout-uat` — HANDOVER (recommended and agreed: the context is very long — a full day of research, ~40 agents; clean boundary — research written, verified and committed, fixing next)
+- **Started from:** 7af7f72 — the Awwwards Animation research about to run; F-1 paused, code uncommitted.
+- **Got to:** the user found the earlier research was a false positive (listings walked, items never opened) → a new
+  rule (RULE R: every item is opened, run and read) and a full REDO: every link the user gave measured item by item by
+  `scripts/research/aw-measure.js` (DOM, timing, hover strips, menus, page transitions, reduced motion, phone) and
+  `cp-tag.js` (every pen opened, run, its full code read); uiverse's 3,802 elements run locally; my own research by ~40
+  reading agents (MDN, Chrome, Bramus, CSS-Tricks, Smashing, Codrops, design systems, React Native); everything kept
+  ONCE for the builder, every component AND the Educo app in `docs/web-anatomy/motion/LIBRARY.md` + `library/1…11`
+  (198 entries), raw data in `C:\Users\eyite\educo-research\` (outside git). The user stopped the 25,000-item plan:
+  their own links in full, everything else until SATURATED. Bug ledger verified in code (22 real + new N1…N10). Motion
+  tokens APPROVED. 20 bugs in my own research tools found and fixed (R-1…R-20) — the worst: the phone pass never ran at
+  360px (R-16), menus that never opened counted as closing on Escape (R-17), see-through layers counted as preloaders
+  (R-18); the library marks those numbers PENDING until the re-measure lands.
+- **Continue from:** the "ENOUGH" CHECKLIST sign-off (1.1.5) → the user's layout list → FREEZE → F-1 → Batches A · B ·
+  C. While working: regenerate `research-runs/AGGREGATE.md` (`node scripts/research/aggregate.js
+  C:/Users/eyite/educo-research docs/web-anatomy/research-runs/AGGREGATE.md`) when the phone / menu re-measure ends,
+  and refresh the library's PENDING numbers; move `docs/web-anatomy/codepen/raw/` (38 MB, git-ignored) into
+  `educo-research/` once the CodePen run ends.
 
 ### 2026-10-02 · session ca50a336 · branch `builder/layout-uat` — HANDOVER (the user asked; recommended too: context compacted once and holding the whole course + 4 research sources; clean boundary — course finished, the Awwwards run not started)
 - **Started from:** BATCH F-1 (YOU ARE HERE), from 6793d4b.

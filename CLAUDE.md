@@ -366,6 +366,11 @@ Run through this checklist BEFORE telling the user it's done:
     list in `docs/TASK_TREE.md` names what it holds and what has been read; anything not read stays an open line.
     Measured, 2026-10-02: a listing was cut at 8 pages, a glossary's own "animation" and "transition" links were
     skipped, and pens were cut at 6,000 characters — found only when the user asked "have we missed anything?".
+  - **EVERY ITEM IS OPENED, RUN AND READ — A LIST IS NOT RESEARCH (the user, 2026-10-02: "go inside each and every one
+    of them… this is for everything that we're doing").** For every source (CodePen, Awwwards, Webflow, One Page Love,
+    any gallery or listing): each pen / site / project on every page is OPENED, run live the way a visitor meets it
+    (scrolled, hovered, a link clicked), its code read IN FULL, and HOW it is done written down item by item. Collecting
+    the links is step one of two; a source is never marked read on its listing or its thumbnails.
   - **MDN IS THE SOURCE FOR THE ELEMENTS AND THE DOM (the user, 2026-09-28 — a rule every session follows).** Every HTML
     element (https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements) is stored in
     `docs/web-anatomy/html-semantics.md` with its role and what a block may do with it; the DOM `Element` interface
