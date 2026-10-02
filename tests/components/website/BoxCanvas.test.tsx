@@ -1160,7 +1160,7 @@ describe("BoxCanvas (box-model editor)", () => {
       ],
     } as Partial<BoxNode>);
     const { container } = render(<BoxCanvas root={t} theme={DEFAULT_THEME} editable={false} onChange={() => {}} />);
-    const line = container.querySelector<HTMLElement>('[data-box-id="dv"] div')!;
+    const line = container.querySelector<HTMLElement>('[data-box-id="dv"] hr')!;
     expect(line.style.borderTopStyle).toBe("dashed");
     const overlay = container.querySelector<HTMLElement>('[data-box-id="hd"]')!;
     expect(overlay.style.position).toBe("absolute"); // a heading can be floated as an overlay

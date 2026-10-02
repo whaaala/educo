@@ -1069,3 +1069,9 @@ Feature: Placing blocks beside one another in the Box Builder
     And after I drag a shared edge down, the last coloured row in the other column grows to meet it — no hole at its foot
     And a column holding a single block — a Card — still fills its height, so a row of Cards stays equal
     And a section whose height I set myself still shares its space among its blocks as before
+
+  Scenario: A Divider is a real thematic break, the same on the canvas and the published page (R-23, 2026-10-02)
+    Given I drag a Divider from the blocks panel between two paragraphs
+    Then the canvas and the Preview both draw it as an <hr> with one line and no browser margin or inset border
+    And a screen reader announces a separator there, as MDN's <hr> is
+    And its line style, thickness and colour still apply in every theme

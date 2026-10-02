@@ -16,6 +16,17 @@ const pageDoc = (root: BoxNode, title = "Page") => {
 import { DEFAULT_THEME } from "@/lib/site-storage";
 
 describe("box-export — static HTML", () => {
+  /** R-23 (2026-10-02): the Divider publishes the element MDN says it is — `<hr>`, a thematic break with the separator
+   *  role (docs/web-anatomy/html-semantics.md) — never a `<div>` hidden from assistive technology. */
+  it("a Divider publishes <hr>, its UA margin and inset border reset so it draws one line", () => {
+    const html = pageDoc(createContainer("column", { id: "root", children: [createElement("divider", { id: "d" })] } as Partial<BoxNode>));
+    const hr = html.match(/<hr [^>]*>/)?.[0] ?? "";
+    expect(hr).toContain("border-top-style:solid");
+    expect(hr).toMatch(/margin:0/);
+    expect(hr).toMatch(/border:0[;"]/);
+    expect(html).not.toMatch(/<div aria-hidden="true" style="width:100%;border-top-width/);
+  });
+
   it("styleString serialises a style object (kebab props, px on bare numbers, unitless kept)", () => {
     expect(styleString({ backgroundColor: "#fff", minHeight: 40, opacity: 0.5, zIndex: 3 }))
       .toBe("background-color:#fff;min-height:40px;opacity:0.5;z-index:3");
