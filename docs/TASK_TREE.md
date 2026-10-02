@@ -1277,6 +1277,22 @@ not a feature) · **LATER** (component / motion / typography — moved to 1.3 wh
         live site measured
       - `[ ]` Awwwards Animation: **ALL listing pages**, not only the first 8 (`aw-list.js` stops at page 8 — raise the
         cap until a page adds nothing), then EVERY site visited in detail (the item above)
+    - `[ ]` **RESEARCH STILL TO DO on this topic (planned 2026-10-02 with the user)** — sticky / fixed is enough once
+      the completeness list above is closed; the rest, each studied the same way (every link, every example):
+      - `[ ]` **section transitions** — how one band hands over to the next: shape dividers (waves, angles, curves),
+        overlaps, colour fades, sticky "stacking" sections, clip-path / mask wipes, scroll-snapped full-screen sections
+      - `[ ]` **scroll animation** — reveal on scroll, parallax, CSS scroll-driven animations (`animation-timeline:
+        scroll() / view()`), pinned "scrollytelling", horizontal-scroll sections, progress bars, marquees
+      - `[ ]` **page transitions** — the View Transitions API (same-document and cross-document), Barba / Swup-style
+        overlays, shared-element morphs
+      - `[ ]` **hover / focus effects and micro-interactions** — the full family (lift, tilt, reveal, sweep, magnetic,
+        image zoom, underline), with touch and keyboard equivalents
+      - `[ ]` **entrance / exit animation in CSS today** — `@starting-style`, `transition-behavior: allow-discrete`,
+        animating `display` / `<dialog>` / popover
+      - `[ ]` **motion rules** — WCAG 2.3.3 + `prefers-reduced-motion`, motion tokens (durations, easings), and
+        performance on low-cost Android (compositor-only properties, no heavy scroll listeners — RULE AF)
+      - the user sends links for these; the session ALSO researches each on its own (MDN, web.dev / Chrome developers,
+        CSS-Tricks, Codrops, CodePen tags, Awwwards categories, design-system motion guides) and stores it the same way
     - `[ ]` **SP CHECK — for the HEADED UAT** (15 lines in `01-codepen-sticky-fixed.md`): anchors / Tab / Page Down land
       below a fixed bar and a sticky header at every rung · `pinArrival` in Chromium, Firefox, WebKit, without
       `animation-timeline`, under reduced motion, `condense` never jumps · a pin + an entrance effect keep both · a

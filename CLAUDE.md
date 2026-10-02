@@ -360,6 +360,12 @@ Run through this checklist BEFORE telling the user it's done:
   - **Captured once, extended forever.** A link the user shares is studied properly, expanded online, and STORED
     there; stored research is never redone, only extended. A crawl stores raw HTML so a later question is answered
     from the archive, not a re-crawl.
+  - **NOTHING IN A LINK IS LEFT OUT (the user, 2026-10-02).** A link the user gives is read COMPLETELY: every page of a
+    listing (never "the first N"), every example on it, every link inside it and the links inside those that stay on the
+    topic — each live site visited and measured, not just its thumbnail. Before a link is marked done, a completeness
+    list in `docs/TASK_TREE.md` names what it holds and what has been read; anything not read stays an open line.
+    Measured, 2026-10-02: a listing was cut at 8 pages, a glossary's own "animation" and "transition" links were
+    skipped, and pens were cut at 6,000 characters — found only when the user asked "have we missed anything?".
   - **MDN IS THE SOURCE FOR THE ELEMENTS AND THE DOM (the user, 2026-09-28 — a rule every session follows).** Every HTML
     element (https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements) is stored in
     `docs/web-anatomy/html-semantics.md` with its role and what a block may do with it; the DOM `Element` interface
