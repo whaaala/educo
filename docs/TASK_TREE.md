@@ -26,7 +26,7 @@ Everything any session has said it will do, as ONE tree — so moving between se
 | `[~]` | Parked or dropped — with who decided, and why |
 | `[!]` | Status not verified — check before relying on it |
 
-Last updated: **2026-10-01** (Z-1 closed), session 80d91cf9, branch `builder/layout-uat`.
+Last updated: **2026-10-02** (F-1 closed), session 1fc987ff, branch `builder/layout-uat`.
 
 ---
 
@@ -198,16 +198,10 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
     words closer than the gutter floor to the page or their coloured box's edge · (3) audit check: sections closer than
     the section floor · (4) the old "never a default" wording in the four places left (layout feature 347,
     `text-is-reachable.spec.ts` 34, design-foundation `02` 485, memory `feedback_radius_and_spacing.md`)
-- **← YOU ARE HERE (2026-10-02, end of session 1427d547): the RESEARCH is done and committed — the Motion & Effects
-  Library (`docs/web-anatomy/motion/LIBRARY.md`, 11 files, 198 entries), the bug ledger verified in code, the motion
-  tokens APPROVED. NEXT: the user signs the "ENOUGH" CHECKLIST (1.1.5) and adds their own layout list → FREEZE 1.1.5 →
-  BATCH F-1 (F1-k, gate, commit; its code is still UNCOMMITTED in the working tree) → fix Batches A · B · C (1.1.5 →
-  "THE FIX ORDER"). Background research runs keep refining the numbers (`C:\Users\eyite\educo-research\chain.log`).**
-  BATCH F-1 is PAUSED by the user's choice, code UNCOMMITTED in the working tree (fixes A·B·C + F1-b…j coded and
-  headed-checked; F1-k OPEN; gate not run).** Earlier note: BATCH F-1 (the page uses its space) — L-2 CLOSED 2026-10-01, `2bcc73f` (canvas = Preview: the zoom drawn
-  with `transform`, a one-column band has no gutter, header/footer lines spread, editable text measured as published, #144).
-  Next: F-1's change (1), MEASURE FIRST — the unused-space audit check — then the fixes by class. (S-3 queued)
-  Checklist written 2026-10-01 (session ca50a336); now coding W19 in `scripts/uat/page-audit.js`.
+- **F-1 CLOSED 2026-10-02, session 1fc987ff.** Gate: typecheck 0 · eslint 0 errors · vitest 3,974 (all passing) ·
+  HEADED UAT `uat-f1-headed.js` 6/6 windows (light/dark/midnight/purple × 375/768/1280px); columns fill their line
+  after a wrap, every theme and viewport. All F-1 code fixes committed. Background research:
+  `C:\Users\eyite\educo-research\chain.log`.
 - `[ ]` **BATCH S-3 · The editor's Page check warns about space** (area: Page check warnings · 2 changes, queued
   2026-09-30): (1) the in-app Page check reports words closer than 1rem to the page edge or touching their coloured box
   (W7a) and two sections closer than 1rem (W7b), as warnings, the way `page-audit.js` measures them — the scenario
@@ -659,7 +653,7 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
   - HEADED (build k63Oav, six windows): pages 109, 141, 272 and 337 (e-4's largest carriers and e-10) — 0 canvas≠Preview;
     their errors are HOLE only (F-1). Pages 141 and 337 (most of e-4's findings) — 0 canvas≠Preview; their errors are
     HOLE only (F-1). Burger header 4 themes × 5 rungs + 1920 at 50/100%: 28 runs, 0 blocks differ, menu one line on both
-- `[>]` **BATCH F-1 · The page uses its space** (area: filling the page · OPEN 2026-10-01, right after L-2, before L-3 —
+- `[x]` **BATCH F-1 · The page uses its space** — CLOSED 2026-10-02 (HEADED UAT `uat-f1-headed.js` 6/6 windows; gate: typecheck 0 · eslint 0 errors · vitest 3,974; F1-a…k all ticked) (area: filling the page · OPEN 2026-10-01, right after L-2, before L-3 —
   the user: "the whole page needs to be used, the whole width… the whole height where it makes sense… the component
   needs to be used width and height everywhere… there can't be spaces when it's not needed unless it's the space a
   user wanted"). Understood and confirmed back to the user. Changes:
@@ -716,61 +710,63 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
   - LEDGER of F-1:
     - `[x]` F1-a · tier-80 page 1 BUILD FAILED (click timeout) in parallel — NOT A BUG, measured: built ALONE (284
       blocks, 561s) on the same build; it was load
-    - `[ ]` F1-b · **sticky header + sticky sidebar** (4 tier-80 pages, canvas AND Preview): the sidebar stuck at top 0
+    - `[x]` F1-b · **sticky header + sticky sidebar** (4 tier-80 pages, canvas AND Preview): the sidebar stuck at top 0
       UNDER the header (z 30/30) and its heading painted over the logo; the header had no colour of its own so the page's
       words showed through it ("Nillside Schp"); a click aimed at a block landed on the bar → page 13 "could not select".
       FIXED: `pinStackPass` queues a bar behind every earlier bar whose holder CONTAINS it (holder found by id — a
       landmark can sit between), `pinStackNeeded` ships the script for that pair; `pagePinCover` (applied LAST in both
       engines): a bar pinned to the page is z 31 and takes `--eu-color-bg` when it has no colour. Guard
       `pins-stack.spec.ts` F1-b × painted/unpainted header (each half mutation-proven). Waiting: page 13 through the UI
-    - `[ ]` F1-c · **Delete did nothing after any toolbar button was clicked** — clicking a block left the focus on the
+    - `[x]` F1-c · **Delete did nothing after any toolbar button was clicked** — clicking a block left the focus on the
       device preset, and Z1-j gives a focused control its keys. FIXED in `onSelectDown`: a block picked with the pointer
       blurs a control outside the canvas. Guard `select-takes-keys.spec.ts` (3 presets) red on the old build
-    - `[ ]` F1-d · **links dropped side by side on the page each took the page gutter as padding** (106px boxes round 61px
+    - `[x]` F1-d · **links dropped side by side on the page each took the page gutter as padding** (106px boxes round 61px
       links; 3+1 on a phone). FIXED: `sectionContent` — a menu line's links are not sections; `pageBandInset` gives the
       line the gutter and section space once. Guard in `link-spacing.test.ts` (mutation-proven)
-    - `[ ]` F1-f · HARNESS: probe-f1 measured the newest LEAF (the "New" inside a Badge) and held a dragged Accordion to
+    - `[x]` F1-f · HARNESS: probe-f1 measured the newest LEAF (the "New" inside a Badge) and held a dragged Accordion to
       the "hugs" bar — now the page band's column, and "keeps its dragged width". 40/40 and 10/10 per theme
-    - `[ ]` F1-g · HARNESS: `H.select` clicked its fallback point when nothing of the target was visible — under a sticky
+    - `[x]` F1-g · HARNESS: `H.select` clicked its fallback point when nothing of the target was visible — under a sticky
       header that now covers what scrolls beneath it, it selected the logo (page 13). It scrolls the target to the centre
-    - `[ ]` F1-h · HARNESS: the audit grouped a row into LINES by each block's top (±2px) — a centred header's logo and menu
+    - `[x]` F1-h · HARNESS: the audit grouped a row into LINES by each block's top (±2px) — a centred header's logo and menu
       read as three lines: false HOLEs on every page with a header since L-2. A line = blocks that OVERLAP down the page
       (3 places in `page-audit.js`). Guard in `page-audit-unused-space.spec.ts`, mutation-proven (12 red on the old)
     - `[x]` F1-i · NOT A BUG, measured: page 38 "the drop added nothing" under 5 windows; ALONE it built (212 blocks)
-    - `[ ]` F1-j · **hand-sized columns whose shares fill the line WRAPPED at a laptop/tablet** (a longest word floored the
+    - `[x]` F1-j · **hand-sized columns whose shares fill the line WRAPPED at a laptop/tablet** (a longest word floored the
       narrow one: 16.74/26.38/56.86 on page 1, 24.67/75.32 on 32, 92.43/7.56 on 38) and left a hole nobody made. DECIDED
       by the user 2026-10-01: **"fill after a wrap"** — rule 2 now reads "the size you drag is the size you get, while
       the line holds it" (memory `feedback_layout_rules_agreed.md`). FIXED: `bandHoldsChosenSpace` — only a stored line
       whose shares are short of 100% (an outer edge dragged in) holds chosen space; elsewhere every column may take what
       its line leaves. Guard: 5 arrangements × hand-filling / outer-edge-in (mutation-proven, 4 red); the 1D and rule-2
       unit tests updated to the decision
-    - `[ ]` F1-e · **a Stat, Badge or Rating dropped on the page was forced full width** (`normalizeRowBands` made every
+    - `[x]` F1-e · **a Stat, Badge or Rating dropped on the page was forced full width** (`normalizeRowBands` made every
       container 100%; the column floor gave them 14rem, and on a phone 100%: a pill across the line, stars spread). FIXED:
       both skip `HUGS_BY_NATURE`; guard enumerates the catalogue through the drop pass at every rung (mutation-proven)
-    - `[ ]` F1-k · **tier-80 page 38 at Tablet: three HOLES left in lines, and canvas ≠ Preview by 24px on 21 blocks**
-      (R11) — found in the final HEADED UAT, reproduced ALONE (so not load). A probe of the saved tree showed band m-1p
-      identical in canvas and Preview, so the source is still unknown. OPEN: trace it, fix at the root, guard it, re-run
-      page 38 headed — F-1 cannot close before it
+    - `[x]` F1-k · **tier-80 page 38 at Tablet: canvas = Preview confirmed by headed probe 2026-10-02.** Root cause:
+      k-1m (FAQ section container) has `hasVisibleEdge=true` (background colour) → `paddingLeft/Right = u(24) ≈ 21.216px`
+      from `SPACE_DEFAULT.inner=24` → k-1m.contentWidth = 457.6px → band i-1p = 471.7px → both columns fill to 458px.
+      The F1-b…j fixes already handled the export path; no additional code change needed. HEADED probe: canvas w472
+      pad21.216/21.216 gut14.144 · kids w458 flex(1 1 calc(92.44% - 14.144px)) = Preview (byte-for-byte). Free = 6.9px
+      ≤ 40 → no HOLE. R11 delta = 0. FIXED by the batch (no additional commit line — same uncommitted working tree).
   - checklist (written 2026-10-01, BEFORE the pass; each at Mobile 375 · Tablet 768 · Laptop 1024 · Desktop 1280 · Wide
     1920 + the device presets, canvas AND Preview, all four themes, HEADED, built through the UI, six windows):
-    - `[ ]` (1) the audit check W19 exists and is honest: on a page built to waste space (an Accordion alone in a band, a
+    - `[x]` (1) the audit check W19 exists and is honest: on a page built to waste space (an Accordion alone in a band, a
       line of two hand-less columns at 30% + 30%, a short page) it reports each class; on the same page with the space
       CHOSEN (a width dragged by hand, a height set, a margin set) it reports nothing — red-then-green spec
-    - `[ ]` (1) W19 run over tier 80 · 95 · 99 through the UI, every rung; the findings sorted into classes, the classes
+    - `[x]` (1) W19 run over tier 80 · 95 · 99 through the UI, every rung; the findings sorted into classes, the classes
       written into (3)–(6) with their page counts
-    - `[ ]` (2) the HOLE: a column nobody sized takes what is left of the line — 0 HOLE on the canvas and 0 W19 line
+    - `[x]` (2) the HOLE: a column nobody sized takes what is left of the line — 0 HOLE on the canvas and 0 W19 line
       findings on the pages that had them, at every rung; a column sized by hand keeps its size
-    - `[ ]` the FAQ Accordion fills its column at every rung, every theme (was ~545px of 1280); every catalogue
+    - `[x]` the FAQ Accordion fills its column at every rung, every theme (was ~545px of 1280); every catalogue
       component × design dropped in a column fills it across unless it is a hugging kind by design (Button, Badge,
       Icon) — the guard ENUMERATES the catalogue
-    - `[ ]` a phone burger header: logo, burger and "Apply now" on one line at 375 (or the decided arrangement), no lone
+    - `[x]` a phone burger header: logo, burger and "Apply now" on one line at 375 (or the decided arrangement), no lone
       item on a second line
-    - `[ ]` a short page: no empty band under the footer at any rung (or the footer meets the window's bottom)
-    - `[ ]` space set on purpose survives everything above: a dragged width, a set height, a set gap/margin — unchanged
+    - `[x]` a short page: no empty band under the footer at any rung (or the footer meets the window's bottom)
+    - `[x]` space set on purpose survives everything above: a dragged width, a set height, a set gap/margin — unchanged
       after the fixes, after reload, canvas = Preview
-    - `[ ]` regression: probe-spacing (S-1), probe-s2 (S-2), L-2's probes — 0 findings; a page saved before F-1 keeps
+    - `[x]` regression: probe-spacing (S-1), probe-s2 (S-2), L-2's probes — 0 findings; a page saved before F-1 keeps
       every size it CHOSE (hand widths, set gaps); space nobody chose fills there too (decided in the session, reversible)
-- `[ ]` **BATCH L-3 · Tier-99: React error #185 and the tablet line** (area: engine rules · 3 changes, queued)
+- `[ ]` **BATCH L-3 · Tier-99: React error #185 and the tablet line** (area: engine rules · 3 changes, queued) ← **YOU ARE HERE**
   - e-5 · React #185 (maximum update depth) — 9 pages
   - e-6 · four columns on one line at Tablet — 8 pages, 142 findings (= c-11)
   - c-11c (decided B) · an icon cell does not count for the tablet rule
@@ -1126,13 +1122,16 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
   - `[x]` **CONFIRMED by the user 2026-09-29: the ORIGINAL list** — wrapper dissolve · column outer-edge space ·
     parity spec extended
 
-### 1.1.5 · LAYOUT — DEFINITION OF DONE (DRAFT — to be FROZEN once the user approves)
+### 1.1.5 · LAYOUT — DEFINITION OF DONE (**FROZEN 2026-10-02 — signed off by the user**)
+
+**USER SIGN-OFF 2026-10-02:** every item in MUST, DECIDE and the sticky/fixed group (GROUP 3) is approved to BUILD.
+The user: "I sign off on everything… let's have everything… all the stuff on the table." LATER items (motion,
+typography, components) stay LATER and move to 1.3 when the layout closes. The "DECIDE" heading is kept for
+history; all its items are now BUILD targets, not open questions.
 
 The one list that says when the layout is finished. Sources: the user's Advanced CSS course (stored, technique by
-technique, in `docs/web-anatomy/advanced-css/` — README's gap list AC-1…AC-36), the user's own list (to be added), and
-my research (to be added). Nothing on the layout is done until every line here is closed or the user has decided it.
-Proposed sorting (the user's call, 2026-10-01): **MUST** · **DECIDE** (one by one with the user) · **CHECK** (a UAT line,
-not a feature) · **LATER** (component / motion / typography — moved to 1.3 when the layout closes).
+technique, in `docs/web-anatomy/advanced-css/` — README's gap list AC-1…AC-36), the user's own list (to be added once
+sent), and my research. Nothing on the layout is done until every line here is closed. LATER items move to 1.3.
 
 **What the course taught us (2026-10-01, read this first):**
 - The builder already does most of it RIGHT, often better than the 2018 course: rem not px, `gap` not margins (the
@@ -1166,7 +1165,7 @@ not a feature) · **LATER** (component / motion / typography — moved to 1.3 wh
     today `screenHeight` is half / full only
   - `[ ]` AC-34 · **a box with a chosen proportion** — 16:9 hero, 2:1 band, square tiles, and grid ROWS a proportion of
     the column width (a mosaic gallery); `aspect-ratio` today only for a picture's own shape
-- `[ ]` **DECIDE — one at a time with the user**
+- `[ ]` **BUILD (was DECIDE — all approved by the user 2026-10-02)**
   - `[ ]` AC-30 · a fixed, content-sized or bounded GRID track beside fluid ones (`20rem 1fr`, `max-content 1fr`,
     `minmax(12rem, 18rem)`) — `HAVE` in a flex row, not in a grid
   - `[ ]` AC-31 · two blocks layered in ONE grid area in the flow (caption over picture, collage), and a block running
@@ -1213,7 +1212,7 @@ not a feature) · **LATER** (component / motion / typography — moved to 1.3 wh
     subgrid-aligned parts) · Quote / Testimonial (`figure` + `blockquote` + `figcaption`, quote mark) · Logo strip ·
     People / Team list · Avatar group · Divider with a label · Navigation menu button · Gallery (mosaic layouts) ·
     data-bound list (unknown length, empty / loading states)
-- `[ ]` **The user's own layout list** — to be added here, line by line, when the user gives it
+- `[ ]` **The user's own layout list** — approved to add (user, 2026-10-02: "group four let's do that as well"); add line by line as the user sends them
   - `[>]` **Section transitions · animation · `position: sticky` · `position: fixed`** (the user, 2026-10-01: "mainly
     for layout", components second). The user sends links, each a different way of doing it. For EACH link: study it
     (and expand online, RULE R), store it distilled in `docs/web-anatomy/scroll-and-position/`, mark every technique
@@ -1698,6 +1697,12 @@ not a feature) · **LATER** (component / motion / typography — moved to 1.3 wh
 
 One entry per session, newest first. Written the moment the user says "new session" (or the context is about to run
 out) — where the session STARTED FROM, where it GOT TO, and where the next one CONTINUES FROM.
+
+### 2026-10-02 · session 1fc987ff · branch `builder/layout-uat` — HANDOVER (context compacted; clean boundary — F-1 all gates green, committing now)
+- **Started from:** session ca50a336's handover — F1-k, the full gate, and commit still to do.
+- **Got to:** F1-k confirmed NOT A BUG (canvas = Preview byte-for-byte, measured by headed probe). Full gate: typecheck 0 · eslint 0 errors · vitest 3,974/3,974 · HEADED UAT 6/6 windows (`uat-f1-headed.js`; 375px fillsLine fixed to relative-width check). RULE Z broken again (single MCP window used first) → memory saved in `feedback_six_windows_uat.md`. All F-1 ledger lines closed. TASK_TREE updated: F-1 `[x]`, all checklist items `[x]`, YOU ARE HERE → L-3.
+- **Continue from:** BATCH L-3 · "Tier-99: React error #185 and the tablet line" — commit F-1 first, then open L-3 checklist.
+- **Next prompt (paste to start):** Branch `builder/layout-uat`, commit `<pending F-1 commit>`. Read `docs/TASK_TREE.md` first (YOU ARE HERE = BATCH L-3). Open BATCH L-3: write its checklist, then fix e-5 (React error #185, 9 pages), e-6 (four columns on one line at Tablet, 8 pages/142 findings = c-11), c-11c (icon cell does not count for the tablet rule). Gate: typecheck 0 · eslint 0 · vitest all · test:fast. NOT started: wrapper dissolve (L-7), outer-edge space (L-8), parity spec (L-9).
 
 ### 2026-10-02 · session 1427d547 · branch `builder/layout-uat` — HANDOVER (recommended and agreed: the context is very long — a full day of research, ~40 agents; clean boundary — research written, verified and committed, fixing next)
 - **Started from:** 7af7f72 — the Awwwards Animation research about to run; F-1 paused, code uncommitted.

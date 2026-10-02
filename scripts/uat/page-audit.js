@@ -59,7 +59,7 @@ function auditDoc(opts) {
   for (const row of rows) {
     const kids = Array.from(row.children).filter((k) => k.className.includes('bx-') && visible(k) && !['absolute', 'fixed', 'sticky'].includes(getComputedStyle(k).position)); // a sticky aside is pinned, not wrapped
     if (kids.length < 2) continue; const lines = {};
-    kids.forEach((k) => { const t = Math.round(k.getBoundingClientRect().top); const key = Object.keys(lines).find((x) => Math.abs(x - t) <= 2) ?? t; (lines[key] = lines[key] || []).push(k); });
+    kids.forEach((k) => { const r = k.getBoundingClientRect(); const key = Object.keys(lines).find((x) => r.top < Math.max(...lines[x].map((q) => q.getBoundingClientRect().bottom)) - 2 && r.bottom > +x + 2) ?? Math.round(r.top); (lines[key] = lines[key] || []).push(k); }); // a line = blocks that OVERLAP down the page (F1-h: a centred header's logo and menu have different tops)
     for (const ks of Object.values(lines)) {
       const containers = ks.filter((k) => k.querySelector('[class*="bx-"]'));
       if (MW < 600 && containers.length > 1 && Math.min(...containers.map((k) => k.getBoundingClientRect().width)) < 150) err.push(`L5 phone: ${containers.length} columns squeezed side by side in ${idOf(row).slice(-4)} (${containers.map((k) => Math.round(k.getBoundingClientRect().width)).join('/')}px)`);
@@ -164,6 +164,51 @@ function auditDoc(opts) {
     if (tight.length) warn.push(`W7b ${tight.length} sections whose words are closer than 1rem — ${tight.slice(0, 3).join(' ')}`);
   }
 
+  // ── UNUSED SPACE (BATCH F-1, the user 2026-10-01: "there can't be spaces when it's not needed unless it's the space a user
+  // wanted") — `warn` until F-1's fixes land. `opts.chosen` holds the blocks whose size, height, margin or arrangement the
+  // person SET (the runner reads them from the stored site): their space is theirs, never reported. Floors in rem.
+  const chosen = new Set(opts.chosen || []);
+  const isChosen = (e) => chosen.has(idOf(e));
+  const bxKids = (e) => Array.from(e.children).filter((k) => k.className.includes && String(k.className).includes('bx-') && visible(k) && !['absolute', 'fixed', 'sticky'].includes(getComputedStyle(k).position));
+  const contentBox = (e) => { const cs = getComputedStyle(e); const r = e.getBoundingClientRect(); return { l: r.left + px(cs.paddingLeft) + px(cs.borderLeftWidth), r: r.right - px(cs.paddingRight) - px(cs.borderRightWidth), w: r.width - px(cs.paddingLeft) - px(cs.paddingRight) - px(cs.borderLeftWidth) - px(cs.borderRightWidth) }; };
+  const outerW = (k) => { const cs = getComputedStyle(k); return k.getBoundingClientRect().width + Math.max(0, px(cs.marginLeft)) + Math.max(0, px(cs.marginRight)); };
+  const kindOf = (e) => { const c = e.querySelector('[class^="eu-"]:not(.eu-band):not(.eu-main):not(.eu-main-start)'); const leaf = e.querySelector('h1,h2,h3,h4,h5,h6,p,img,a,button,svg,figure'); return c ? String(c.className).split(' ')[0] : leaf ? leaf.tagName.toLowerCase() : 'box'; };
+  // W19a — a LINE packed to one side: what its blocks use leaves a large share of the line empty (the HOLE, c-7; a lone
+  // "Apply now" on a phone's second line). A line whose row arranges itself (justify set) or holds a block sized by hand is the person's.
+  const packed = []; const narrow = []; const short = [];
+  for (const row of rows) {
+    const cs = getComputedStyle(row); if (isChosen(row) || cs.position === 'sticky') continue;
+    const kids = bxKids(row); if (!kids.length) continue; const cb = contentBox(row); const gap = px(cs.columnGap);
+    const lines = {}; kids.forEach((k) => { const r = k.getBoundingClientRect(); const key = Object.keys(lines).find((x) => r.top < Math.max(...lines[x].map((q) => q.getBoundingClientRect().bottom)) - 2 && r.bottom > +x + 2) ?? Math.round(r.top); (lines[key] = lines[key] || []).push(k); }); // a line = blocks that OVERLAP down the page (F1-h: a centred header's logo and menu have different tops)
+    const wrapped = Object.keys(lines).length > 1;
+    for (const ks of Object.values(lines)) {
+      if (ks.some(isChosen)) continue;
+      const used = ks.reduce((s, k) => s + outerW(k), 0) + gap * (ks.length - 1); const free = cb.w - used;
+      // Only space a visitor SEES: a line that wrapped (a block waits below — the HOLE, a lone "Apply now"), or a line holding
+      // a painted block or a component with the room beside it bare. Words that end early, or buttons/links grouped at the
+      // start of a line (a design convention), are not unused space.
+      const shows = wrapped || ks.some((k) => edged(k) || /^eu-/.test(kindOf(k)) && !/eu-btn|eu-badge|eu-icon/.test(kindOf(k)));
+      if (shows && free > Math.max(4 * rem, cb.w * 0.15)) packed.push(`${idOf(row).slice(-4)} ${Math.round(free)}px of ${Math.round(cb.w)} empty${wrapped ? ' (wrapped)' : ''} [${ks.map(kindOf).join(',')}]`);
+      // W19c — a COLUMN SHORTER THAN ITS ROW: shows only when the column paints (a colour or an edge)
+      if (ks.length > 1) { const hMax = Math.max(...ks.map((k) => k.getBoundingClientRect().height));
+        for (const k of ks) { const h = k.getBoundingClientRect().height; if (edged(k) && !isChosen(k) && hMax - h > Math.max(rem, hMax * 0.1)) short.push(`${idOf(k).slice(-4)} ${Math.round(h)} of ${Math.round(hMax)}px [${kindOf(k)}]`); } }
+    }
+  }
+  // W19b — a BLOCK NARROWER THAN THE COLUMN IT STANDS IN (one under another, nothing beside it): the FAQ's Accordion took
+  // ~545px of a 1280 line. Words, a picture or a button that hug by nature are reported with their kind, to be sorted.
+  for (const col of blocks) {
+    const cs = getComputedStyle(col); if (cs.display.includes('flex') && cs.flexDirection === 'row') continue; if (cs.display.includes('grid') && cs.gridTemplateColumns.split(' ').length > 1) continue;
+    const cb = contentBox(col); if (cb.w < 6 * rem) continue;
+    for (const k of bxKids(col)) { if (isChosen(k)) continue; const w = outerW(k);
+      if (cb.w - w > Math.max(4 * rem, cb.w * 0.2)) narrow.push(`${idOf(k).slice(-4)} ${Math.round(w)}px of ${Math.round(cb.w)} [${kindOf(k)}]`); }
+  }
+  if (packed.length) warn.push(`W19a ${packed.length} lines packed to one side — ${packed.join(' ')}`);
+  if (narrow.length) warn.push(`W19b ${narrow.length} blocks narrower than their column — ${narrow.join(' ')}`);
+  if (short.length) warn.push(`W19c ${short.length} painted columns shorter than their row — ${short.join(' ')}`);
+  // W19d — an EMPTY BAND UNDER THE FOOTER: a page shorter than the window leaves the window's colour under its last block
+  { const all = blocks.filter((b) => !pinned(b)); const bottom = all.length ? Math.max(...all.map((b) => b.getBoundingClientRect().bottom)) : 0; const H0 = window.innerHeight;
+    if (document.documentElement.scrollHeight <= H0 + 1 && H0 - bottom > 2 * rem) warn.push(`W19d ${Math.round(H0 - bottom)}px of the window empty under the last block (page ${Math.round(bottom)} of ${H0}px)`); }
+
 
   // ── SEMANTICS (viewport-independent: the caller runs these once) ──
   if (opts.semantics) {
@@ -218,7 +263,7 @@ async function canvasAudit(page) {
       // second LINE under the main column and the main column's free space as a HOLE the aside's exact width — at every
       // preset, on every page with a sticky sidebar (tier 80 and 95). It has not wrapped; it is pinned by design.
       const kids = Array.from(row.children).filter((k) => k.hasAttribute('data-box-id') && !['absolute', 'fixed', 'sticky'].includes(getComputedStyle(k).position) && k.getBoundingClientRect().width > 0);
-      const lines = {}; kids.forEach((k) => { const t = Math.round(k.getBoundingClientRect().top); const key = Object.keys(lines).find((x) => Math.abs(x - t) <= 2) ?? t; (lines[key] = lines[key] || []).push(k); });
+      const lines = {}; kids.forEach((k) => { const r = k.getBoundingClientRect(); const key = Object.keys(lines).find((x) => r.top < Math.max(...lines[x].map((q) => q.getBoundingClientRect().bottom)) - 2 && r.bottom > +x + 2) ?? Math.round(r.top); (lines[key] = lines[key] || []).push(k); }); // a line = blocks that OVERLAP down the page (F1-h: a centred header's logo and menu have different tops)
       for (const ks of Object.values(lines)) { const right = Math.max(...ks.map((k) => k.getBoundingClientRect().right)); const edge = r.right - padR; if (right > edge + 2) out.push(`a line of ${row.getAttribute('data-box-id').slice(-4)} runs ${Math.round(right - edge)}px past its row's content edge${right <= r.right ? ' (into its padding)' : ''}`); }
       const tops = Object.keys(lines).map(Number).sort((a, b) => a - b);
       for (let i = 0; i + 1 < tops.length; i++) { const ks = lines[tops[i]]; const free = (r.right - padR) - Math.max(...ks.map((k) => k.getBoundingClientRect().right)); const next = lines[tops[i + 1]][0]; const nextW = next.getBoundingClientRect().width; const gap = (parseFloat(cs.columnGap) || 0) * Z;
@@ -235,4 +280,12 @@ async function canvasAudit(page) {
   });
 }
 
-module.exports = { auditDoc, pixelFindings, canvasAudit };
+/** F-1: the blocks whose space the PERSON chose — a width dragged by hand, a height, a margin, an arrangement — at any rung,
+ *  as the export writes their ids in its `bx-` classes. W19 never reports them (`auditDoc({ chosen })`). */
+function chosenIds(site) {
+  const out = []; const set = (n) => n.widthByHand || (n.height && !['auto', 'fill'].includes(n.height)) || n.minHeight || ['margin', 'marginTop', 'marginRight', 'marginBottom', 'marginLeft', 'marginLeftPct'].some((k) => n[k] != null) || (n.justify != null && (n.direction === 'row' || n.justify !== 'start')); // a line's justify is unset until someone aligns it (L2-d)
+  const walk = (n) => { if (!n || typeof n !== 'object') return; if (n.id && n.type && (set(n) || Object.values(n.responsive || {}).some((o) => o && set(o)))) out.push(String(n.id).replace(/[^A-Za-z0-9_-]/g, '-')); for (const v of Object.values(n)) if (v && typeof v === 'object') walk(v); };
+  walk(site); return out;
+}
+
+module.exports = { auditDoc, pixelFindings, canvasAudit, chosenIds };

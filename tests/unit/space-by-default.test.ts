@@ -155,10 +155,11 @@ describe("columns side by side (S1-a)", () => {
     expect(bandGutter({ ...band, children: [...band.children!, { ...blockForKind("text"), position: "absolute" } as BoxNode] })).toBe(0);
   });
 
-  it("an old band publishes its columns exactly as before — no gutter", () => {
+  it("an old band publishes its columns as before — no gutter; nobody sized them, so they may take what a line leaves (F-1)", () => {
     const saved = { id: "b", type: "container", direction: "row", rowBand: true, gap: 0, children: three() } as BoxNode;
     const s = childStyle(saved.children![0], saved);
-    expect(s.flex).toBe("0 1 33.33%");
+    // the same share; the grow spends only space a wrap or a floor leaves, so a full line draws exactly as before
+    expect(s.flex).toBe("1 1 33.33%");
     expect(s.marginLeft).toBeUndefined();
     expect(childStyle(saved, createRoot()).marginLeft).toBeUndefined();
   });

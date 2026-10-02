@@ -10,7 +10,7 @@
 
 import type { CSSProperties } from "react";
 import { PILL, blockTypography, pinArrivalCss, pinArrivalKeyframes, floatHoldCSS,
-  type BoxNode, type Breakpoint, BP_ORDER, containerStyle, childStyle, hostSizedFor, marginCSS, leafPaddingCSS, outerSpaceCSS, pageBandInset, sectionContent, sizeToCSS, radiusCSS, SHADOW_CSS, u, LIST_ITEM_GAP, textLen, baseUnit, fadedPaint, boxOpacity, backgroundCss, paintLayerCss,
+  type BoxNode, type Breakpoint, BP_ORDER, containerStyle, childStyle, hostSizedFor, marginCSS, leafPaddingCSS, outerSpaceCSS, pageBandInset, pagePinCover, sectionContent, sizeToCSS, radiusCSS, SHADOW_CSS, u, LIST_ITEM_GAP, textLen, baseUnit, fadedPaint, boxOpacity, backgroundCss, paintLayerCss,
   resolveResponsive, floatStacksOnMobile, floatingReserve, alertToastCss, accordionClasses, bandClasses, videoEmbedSrc, isContainer, sanitizeCssDeclarations, expandScopedCss, COMPONENT_PARTS, itemFloatContextCss, itemOverrideCss, itemNumberVars, richBody, plainBody, componentTextCss, componentBoxCss, renderAlertHTML, alertDismissScript, masonryMeasureAttr, masonryMeasureScript, pinStackMarker, pinStackGroupMarker, pinStackNeeded, pinStackScript, isPager, pagerNavHTML, pagerScript, pagerStripCss, pagerSlideId, bgShowThroughCss, blockContainmentCss, COMPONENT_ITEM_SEL, remLen, imageSizing, hasIntrinsicSize, itemNeedsClass, itemScope, floatZIndex, typoRole, typoRootVars, typoCascadeCss, bandEdgeCSS, LINK_COLOR_CSS, gridQueryCss, TYPE_UNIT_PROPERTY_CSS,
 } from "@/lib/box-model";
 import { isRegistryComponent, renderComponent, componentScripts } from "@/lib/educo-ui/registry";
@@ -407,7 +407,7 @@ function styleAt(node: BoxNode, rawParent: BoxNode | null, bp: Breakpoint, theme
   if (!floating && !stacked) Object.assign(wrap, outerSpaceCSS(r, section && (rawParent?.rowBand ? "band" : "page")));
   if (r.hidden) wrap.display = "none"; // hidden-on-this-device → removed at that breakpoint
   if (isContainer(r)) {
-    const cs: CSSProperties = { ...containerStyle(r, bp, section), ...pageBandInset(r, onPage), ...wrap };
+    const cs: CSSProperties = { ...containerStyle(r, bp, section), ...pageBandInset(r, onPage), ...wrap, ...pagePinCover(r, onPage) };
     // An EMPTY container that paints a background would collapse to 0px in the exported/preview site (the editor's
     // "Drag a block here" placeholder gives it height, but that's editor-only). Give it a visible band so the
     // background actually shows — unless the user gave it an explicit height/min-height.
@@ -543,7 +543,7 @@ function renderNode(node: BoxNode, rawParent: BoxNode | null, theme: SiteTheme, 
   if (isContainer(r)) {
     // Children of the PAGE ROOT (the only call with no parent) are the page's sections; nothing deeper is.
     const kidsAreSections = rawParent === null;
-    const kidList = (r.children ?? []).map((c) => renderNode(c, node, theme, pageMap, sheet, kidsAreSections, hostSizedFor(node, hostSized, rawParent), sectionContent(c, kidsAreSections, isPageSection && !!r.rowBand)));
+    const kidList = (r.children ?? []).map((c) => renderNode(c, node, theme, pageMap, sheet, kidsAreSections, hostSizedFor(node, hostSized, rawParent), sectionContent(c, kidsAreSections, isPageSection && !!r.rowBand, r)));
     // A1 — the AUTOMATIC <main>: the page's bands between its header and footer regions, wrapped without a box of its own.
     const mw = rawParent === null ? SEM?.mainWrap : null;
     const kids = mw

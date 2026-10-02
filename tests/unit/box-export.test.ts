@@ -534,8 +534,8 @@ describe("rows of four or more in the published page (#78)", () => {
     const tablet = block(BREAKPOINTS_EM.tabletPortrait), laptop = block(BREAKPOINTS_EM.tabletLandscape);
     expect(ruleIn(tablet, "c0")).toMatch(/flex:1 1 33\.333%/);
     expect(ruleIn(tablet, "c4")).toMatch(/flex:1 1 50%/);
-    expect(ruleIn(laptop, "c0")).toMatch(/flex:0 1 20%/);
-    expect(ruleIn(laptop, "c4")).toMatch(/flex:0 1 20%/);
+    expect(ruleIn(laptop, "c0")).toMatch(/flex:1 1 20%/);
+    expect(ruleIn(laptop, "c4")).toMatch(/flex:1 1 20%/);
     // one line on a laptop: the 3rem floor, not the 14rem that wrapped five into 4 + 1 at 1024px
     expect(d).not.toMatch(/\.bx-c0\{[^}]*min-width:min\(100%, 14rem\)/);
   });

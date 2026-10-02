@@ -21,7 +21,7 @@ describe("box-model — Educo UI component instances", () => {
     expect(acc.type).toBe("component");
     expect(acc.component).toBe("accordion");
     expect(acc.variant).toBe("");
-    expect(acc.width).toBe("auto");                 // RULE L: sizes to its content; Full/Custom are opt-in
+    expect(acc.width).toBe("100%");                 // F-1: fills its line; Hug/Custom are opt-in
     expect((acc.items ?? []).length).toBeGreaterThanOrEqual(3);
     expect(isEmptyBox(acc)).toBe(false);            // never treated as an empty (shrinkable) box
   });
@@ -372,7 +372,7 @@ describe("box-model — mutations are immutable and correct", () => {
   it("adding SEVERAL blocks to the page (append + normalize) stacks each in its OWN row — never grouped", () => {
     // Mirrors the builder's add path: append bare items to the root, then normalize. Every block must land in
     // its OWN row band (no shared parent, no width-clamping) — the guarantee behind race-safe adds — keeping the
-    // content-sized width RULE L gives it.
+    // full width F-1 gives it (a card fills its line; it is never clamped).
     let root = createContainer("column", { id: "root", children: [] } as Partial<BoxNode>);
     for (const id of ["a", "b", "c", "d"]) {
       root = insertBox(root, "root", root.children?.length ?? 0, createComponent("card", { id } as Partial<BoxNode>));
@@ -383,7 +383,7 @@ describe("box-model — mutations are immutable and correct", () => {
       expect(row.rowBand).toBe(true);
       expect(row.children!.length).toBe(1);                                 // one block per row — never grouped
       expect(row.children![0].type).toBe("component");
-      expect(row.children![0].width).toBe("auto");                          // RULE L: content-sized, never clamped
+      expect(row.children![0].width).toBe("100%");                          // F-1: fills its line, never clamped
       expect(row.children![0].children).toBeUndefined();                    // the component is a single node
     }
   });
@@ -886,7 +886,9 @@ describe("box-model — mutations are immutable and correct", () => {
       const row = makeRowBand([col("a", "100%"), col("b", "30%")], 0);
       const [, b] = row.children!;
       expect(childStyle(b, row).flex).toBe("1 1 30%");                               // never resized: fills
-      expect(childStyle({ ...b, widthByHand: true }, row).flex).toBe("0 1 30%");       // sized by hand: keeps it
+      // sized by hand IN the row (the shape the UI makes): its own stored line is 30% — space the person left — so it keeps it
+      const handRow = makeRowBand([col("a", "100%"), { ...col("b", "30%"), widthByHand: true }], 0);
+      expect(childStyle(handRow.children![1], handRow).flex).toBe("0 1 30%");
     });
     it("a gap on the line counts toward it, as the browser counts it", () => {
       const gapped = createContainer("column", { id: "b", width: "50%", marginLeftPct: 10 } as Partial<BoxNode>);

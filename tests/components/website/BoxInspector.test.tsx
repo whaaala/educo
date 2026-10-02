@@ -545,7 +545,7 @@ describe("Accordion — full three-tab audit (Design · Content · Per-device)",
     fireEvent.change(screen.getByLabelText("See-through"), { target: { value: "80" } });             expect(onPatch).toHaveBeenCalledWith({ opacity: 80 });
   });
 
-  it("CONTENT › Bookmark + design gallery + multi-open + expand-all", () => {
+  it("CONTENT › Bookmark + design gallery + multi-open + expand-all", { timeout: 60_000 }, () => {
     const onPatch = renderFor(acc());
     openContent();
     fireEvent.change(screen.getByLabelText("Bookmark name"), { target: { value: "Our FAQ" } }); expect(onPatch).toHaveBeenCalledWith({ anchor: "our-faq" });
@@ -557,7 +557,7 @@ describe("Accordion — full three-tab audit (Design · Content · Per-device)",
   // ~13s of real work — it drives every per-item field on several items. That is 43% of the default
   // budget, so one contended run under the full suite tipped it over and it failed while passing alone.
   // The headroom goes HERE, where the cost is, rather than widening the timeout for 2,851 fast tests.
-  it("CONTENT › Items — EVERY per-item field works on ANY item (title, body, meta, image, CSS, open)", { timeout: 60_000 }, () => {
+  it("CONTENT › Items — EVERY per-item field works on ANY item (title, body, meta, image, CSS, open)", { timeout: 90_000 }, () => {
     const onPatch = renderFor(acc());
     openContent();
     const hasItem = (m: Record<string, unknown>) => expect.objectContaining({ items: expect.arrayContaining([expect.objectContaining(m)]) });

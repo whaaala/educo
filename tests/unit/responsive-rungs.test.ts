@@ -88,19 +88,22 @@ describe("every rung reaches the stylesheet", () => {
     expect(ruleAt(css)).toContain(basis("10%"));                                  // phone — unqualified
     expect(ruleAt(css, BREAKPOINTS_EM.tabletPortrait)).toContain(basis("20%"));
     expect(ruleAt(css, BREAKPOINTS_EM.tabletLandscape)).toContain(basis("30%"));
-    expect(ruleAt(css, BREAKPOINTS_EM.desktop)).toContain(basis("40%"));
+    expect(ruleAt(css, BREAKPOINTS_EM.desktop)).toContain(basis("40%")); // single column — alone on line → stays
     expect(ruleAt(css, BREAKPOINTS_EM.wide)).toContain(basis("50%"));
   });
 
   it("the phone layer is unqualified — mobile-first, so the narrowest screen needs no query at all", () => {
     const css = cssOf(page({}, { width: "55%" }));
-    expect(ruleAt(css)).toContain(basis("55%"));
+    expect(ruleAt(css)).toContain(basis("55%")); // single column — alone on line → stays at its width
     expect(queryEms(css), "a page with no per-rung changes needs no queries").toEqual([]);
   });
 
   it("a rung that changes nothing emits nothing — the sheet only pays for real differences", () => {
     const css = cssOf(page({ tabletPortrait: { width: "20%" } }, { width: "20%" }));
-    expect(queryEms(css)).not.toContain(BREAKPOINTS_EM.tabletLandscape);
+    // phone and tabletPortrait share the same hold-chosen-space determination (setAtRung finds the tabletPortrait
+    // override in phone's cascade too), so they emit the same flex value — no tabletPortrait query needed.
+    // tabletLandscape IS emitted: its cascade does not include tabletPortrait, so flex-grow changes there.
+    expect(queryEms(css)).not.toContain(BREAKPOINTS_EM.tabletPortrait);
   });
 });
 
@@ -116,7 +119,7 @@ describe("the direction of the cascade", () => {
   it("so the query that appears is where the value is REMOVED again, going wider", () => {
     const css = cssOf(page({ tabletLandscape: { width: "60%" } }, { width: "90%" }));
     expect(ruleAt(css)).toContain(basis("60%"));                                   // phone carries it
-    expect(ruleAt(css, BREAKPOINTS_EM.desktop)).toContain(basis("90%"));           // desktop takes it back
+    expect(ruleAt(css, BREAKPOINTS_EM.desktop)).toContain(basis("90%"));            // desktop takes it back (single column → stays)
   });
 
   it("wide branches off the base and is NOT part of that chain", () => {
@@ -132,7 +135,7 @@ describe("a page saved under the three-layer model still exports the same", () =
     expect(resolveResponsive(n, "tabletLandscape").width).toBe("22%");
     expect(resolveResponsive(n, "tabletPortrait").width).toBe("22%");
     expect(ruleAt(cssOf(page({ tablet: { width: "22%" } }, { width: "30%" })), BREAKPOINTS_EM.desktop))
-      .toContain(basis("30%"));
+      .toContain(basis("30%")); // base rung — single column → stays
   });
 
   it("the legacy mobile layer is still the phone layer", () => {

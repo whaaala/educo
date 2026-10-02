@@ -11,7 +11,7 @@
  */
 
 import type { CSSProperties } from "react";
-import { isRegistryComponent, defaultComponentFields, defaultComponentWidth, componentIsColumn } from "@/lib/educo-ui/registry";
+import { isRegistryComponent, defaultComponentFields, defaultComponentWidth, componentIsColumn, HUGS_BY_NATURE } from "@/lib/educo-ui/registry";
 import { iconSvg } from "@/lib/educo-ui/icon-svg";
 import { BREAKPOINTS_EM } from "@/lib/educo-ui/base";
 import { RUNG_MEASURE, RUNG_PX, type RungName } from "@/lib/educo-ui/layout";
@@ -960,8 +960,8 @@ export function defaultAccordionItems(): ComponentItem[] {
  *  Accordion keeps its bespoke item model; every other component draws its default content fields from the
  *  registry, so ADDING a future component needs no change here — just a registry entry + its CSS. */
 export function createComponent(component: string, overrides: Partial<BoxNode> = {}): BoxNode {
-  // RULE L: a newly added component sizes to its content (see defaultComponentWidth). Full/Custom stay opt-in.
-  const base: BoxNode = { id: newBoxId(), type: "component", component, variant: "", width: "auto", spaced: true };
+  // F-1: a newly added component fills its line unless it hugs by nature (`defaultComponentWidth`). Hug/Custom stay opt-in.
+  const base: BoxNode = { id: newBoxId(), type: "component", component, variant: "", width: defaultComponentWidth(component), spaced: true };
   if (component === "accordion") return { ...base, items: defaultAccordionItems(), accMultiOpen: false, ...overrides };
   if (component === "alert") return { ...base, items: defaultAlertItems(), alertSeverity: "info", alertForm: "inline", alertDismiss: false, ...overrides };
   if (isRegistryComponent(component)) return { ...base, width: defaultComponentWidth(component), componentFields: defaultComponentFields(component), ...overrides };
@@ -2522,7 +2522,9 @@ export function normalizeRowBands(node: BoxNode, gap?: number): BoxNode {
       // Bare item → wrap in its own new row. A CONTAINER (section) fills the row; an ELEMENT/COMPONENT keeps
       // its own width so it HUGS its content (a short heading / button is exactly as wide as its content, not a
       // full-width "container" box). Width is still user-editable via Fit / Full / Custom.
-      const forced = isContainer(c) ? { ...c, width: "100%" } : c;
+      // …except a component that HUGS BY NATURE (F1-e): a Stat, Badge or Rating is built as a container, and forcing it to
+      // 100% drew a Badge as a pill across the whole line and spread a Rating's stars over it (`HUGS_BY_NATURE`).
+      const forced = isContainer(c) && !(c.preset && HUGS_BY_NATURE.has(c.preset)) ? { ...c, width: "100%" } : c;
       rows.push(makeRowBand([normalizeRowBands(forced, gap)], gap));
     }
   }
@@ -4178,6 +4180,22 @@ export function lastOnItsLine(parent: BoxNode, child: BoxNode): boolean {
   if (at < 0) return false;
   return !lines.some((l, i) => i > at && l === lines[at]);
 }
+/**
+ * DOES THIS BAND HOLD SPACE SOMEBODY CHOSE? (F-1, c-7 B.) Only a stored line whose shares leave room can: dragging the
+ * OUTER edge of a line inward is the one gesture that opens a space (rule 1), and it leaves that line's shares short of the
+ * whole. A band nobody sized holds none, and neither does one whose every line adds up to 100% — measured on three tier-80
+ * pages, hand-sized 16.74 / 26.38 / 56.86 and 24.67 / 75.32 lines WRAPPED at a laptop or a tablet because a longest word
+ * floored one column, and the line it left behind was a hole nobody made. Where nothing was chosen, a column may take
+ * what its line has left: the grow spends only what a wrap, a floor or a deleted column left.
+ */
+export function bandHoldsChosenSpace(band: BoxNode, bp: Breakpoint = "base"): boolean {
+  const kids = (band.children ?? []).filter((k) => !isFloating(k) && !k.hidden).map((k) => resolveResponsive(k, bp));
+  if (!kids.some((k) => k.widthByHand || (bp !== "base" && setAtRung(k, "width", bp)))) return false;
+  const lines = packRowLines(kids); const used = new Map<number, number>();
+  kids.forEach((k, i) => used.set(lines[i], (used.get(lines[i]) ?? 0) + widthPct(k.width) + (k.marginLeftPct ?? 0)));
+  return [...used.values()].some((v) => v < 99.5);
+}
+
 export function aloneOnItsLine(parent: BoxNode, child: BoxNode): boolean {
   const kids = (parent.children ?? []).filter((k) => !isFloating(k) && !k.hidden);
   if (kids.length < 2) return false;                    // the only child already fills the row by other means
@@ -4186,6 +4204,24 @@ export function aloneOnItsLine(parent: BoxNode, child: BoxNode): boolean {
   if (at < 0) return false;
   return lines[at] > 0 && lines.filter((l) => l === lines[at]).length === 1;
 }
+
+/**
+ * BAND IS COMPACT — every stored line adds up to 100% (≥ 99.5%).
+ *
+ * When all lines are full, flex-grow=1 is safe: it spends only the sub-pixel remainder, never real space. A
+ * partial line (after a deletion, or when only some columns are present) must NOT grow — that is what turns a
+ * narrowing gesture into something the user cannot undo (the freed space is immediately taken back by grow).
+ * Single-column bands are excluded: a lone column fills its band by other means (width="100%" or basis).
+ */
+export function bandIsCompact(band: BoxNode, bp: Breakpoint = "base"): boolean {
+  const kids = (band.children ?? []).filter((k) => !isFloating(k) && !k.hidden).map((k) => resolveResponsive(k, bp));
+  if (kids.length < 2) return false;
+  const lines = packRowLines(kids);
+  const used = new Map<number, number>();
+  kids.forEach((k, i) => used.set(lines[i], (used.get(lines[i]) ?? 0) + widthPct(k.width) + (k.marginLeftPct ?? 0)));
+  return [...used.values()].every((v) => v >= 99.5);
+}
+
 
 /**
  * THE REST A FOLLOWER BRINGS TO A DRAG — its remembered rest only when THIS block's drag made it (#77).
@@ -4774,9 +4810,25 @@ export function outerSpaceCSS(node: BoxNode, place: SectionPlace | false | undef
  */
 export function pageBandInset(band: BoxNode, onPage: boolean): CSSProperties {
   if (!onPage || !band.rowBand) return {};
+  // A menu line on the page is ONE section: the gutter at its ends and the section space above and below (F1-d).
+  if (isMenuLine(band)) return { paddingLeft: u(SPACE_DEFAULT.gutter), paddingRight: u(SPACE_DEFAULT.gutter), paddingTop: u(SPACE_DEFAULT.section), paddingBottom: u(SPACE_DEFAULT.section) };
   const needs = (band.children ?? []).some((c) => c.spaced && (selfPaints(c) || c.preset)
     && c.margin === undefined && c.marginLeft === undefined && c.marginRight === undefined);
   return needs ? { paddingLeft: u(SPACE_DEFAULT.gutter), paddingRight: u(SPACE_DEFAULT.gutter) } : {};
+}
+
+/**
+ * A BAR PINNED TO THE PAGE COVERS WHAT SCROLLS UNDER IT (F1-b, tier-80 page 13, seen on the canvas and in the Preview): a
+ * header with no colour of its own let the page's words show through its logo ("Hillside School" over a heading), and at
+ * the same z as a sticky sidebar in a section, the sidebar's card painted over it once its row ended. So it takes the
+ * page's own colour when it has none, and one step above the sticky tier — the page's bar is outermost. Applied LAST in
+ * both engines, after the band's own style, which carries the pin's z.
+ */
+export function pagePinCover(band: BoxNode, onPage: boolean): CSSProperties {
+  const pinned = onPage && band.rowBand ? bandCarriesPin(band) : null;
+  if (!pinned) return {};
+  const painted = band.background || band.bgImage || pinned.background || pinned.bgImage;
+  return painted ? { zIndex: PAGE_Z.sticky + 1 } : { zIndex: PAGE_Z.sticky + 1, backgroundColor: "var(--eu-color-bg)" };
 }
 
 /** Where `id` sits as a page section — the inspector's question, answered as the canvas and export answer it. */
@@ -4832,10 +4884,13 @@ export function isSectionContentIn(root: BoxNode, id: string): boolean {
   const p = findParent(root, id);
   if (!p) return false;
   const node = p.parent.children![p.index];
-  return sectionContent(node, p.parent.id === root.id, !!p.parent.rowBand && (root.children ?? []).some((c) => c.id === p.parent.id));
+  return sectionContent(node, p.parent.id === root.id, !!p.parent.rowBand && (root.children ?? []).some((c) => c.id === p.parent.id), p.parent);
 }
 
-export function sectionContent(child: BoxNode, parentIsPage: boolean, parentIsPageBand: boolean): boolean {
+export function sectionContent(child: BoxNode, parentIsPage: boolean, parentIsPageBand: boolean, band?: BoxNode): boolean {
+  // A link of a MENU LINE is an item of that line, not a section of its own (F1-d): each one took the 2rem gutter as its own
+  // padding, so four links on the page could not share a phone's line. The line carries the section space once (`pageBandInset`).
+  if (parentIsPageBand && band && isMenuLine(band)) return false;
   return parentIsPageBand || (parentIsPage && !child.rowBand);
 }
 
@@ -4949,6 +5004,9 @@ function solidHex(bg: string | undefined): string | null {
  * rem so it grows with the reader's text. Rows of COLUMNS are never touched — their widths are shares of the line.
  */
 export const LINK_GAP_ACROSS = "2rem";
+/** …on a PHONE, 1rem (F-1, the user 2026-10-01): at 2rem a pager of four links needed 340px of a 315px line and its last link
+ *  sat alone on a second line; 1rem is still far above the space between touch targets. A gap somebody set is kept. */
+export const LINK_GAP_ACROSS_PHONE = "1rem";
 export const LINK_GAP_DOWN = "0.75rem";
 /**
  * A LINK'S COLOUR, in both engines: the band's own link colour when the band has a colour scheme (`bandScheme`), else the
@@ -4963,13 +5021,13 @@ function isMenuLine(line: BoxNode): boolean {
   const kids = (line.children ?? []).filter((k) => !isFloating(k) && !k.hidden);
   return kids.length >= 2 && kids.every(isMenuItem);
 }
-export function linkLineGap(line: BoxNode, parent: BoxNode): CSSProperties | null {
+export function linkLineGap(line: BoxNode, parent: BoxNode, bp: Breakpoint = "base"): CSSProperties | null {
   if (!isMenuLine(line)) return null;
   const chosen = (v?: number) => (v != null && v > 0 ? v : undefined); // a 0 "Space between blocks" is the untouched default
   const across = parent.gapX ?? chosen(parent.gap), down = parent.gapY ?? chosen(parent.gap);
   // LONGHANDS ONLY (E0-b): they override a `gap` shorthand in either engine, and a `gap: undefined` beside them made React
   // drop both on the canvas — its links sat 18px apart while the published page had 2rem.
-  return { columnGap: across != null ? u(across) : LINK_GAP_ACROSS, rowGap: down != null ? u(down) : LINK_GAP_DOWN };
+  return { columnGap: across != null ? u(across) : bp === "phone" ? LINK_GAP_ACROSS_PHONE : LINK_GAP_ACROSS, rowGap: down != null ? u(down) : LINK_GAP_DOWN };
 }
 /** …and a LIST of menu items one per line is spaced down the same way (a footer column of links). */
 function listLinesGap(node: BoxNode): CSSProperties | null {
@@ -5332,9 +5390,16 @@ export function childStyle(child: BoxNode, parent: BoxNode, bp: Breakpoint = "ba
   // A section of a ROW BAND fills its line ONLY when it is alone on it (`aloneOnItsLine`). Granting the grow
   // unconditionally looks equivalent and is not: grow spends leftover space, and narrowing a block is how a
   // line gets leftover space — so every block became un-shrinkable the moment it stopped sharing a full line.
+  // …UNLESS NOBODY HAS SIZED ANY COLUMN OF THE BAND (F-1, c-7 B: "a column nobody has sized by hand takes what is left of
+  // its line"). Such a band holds no space anybody chose, so the grow only spends what a wrap, a floor or a deleted column
+  // left — two unsized 50% columns whose 14rem floors wrap at 768 each kept half a line. The first frame of a drag writes
+  // `widthByHand` (BoxCanvas), so a space opened at an outer edge leaves its line short of 100% and stays (`bandHoldsChosenSpace`). A width set AT this rung is a choice too.
   s.flex = fillsMain || ((!mainToken || mainToken === "auto") && parentDefinite && !siblingClaimsIt)
     ? "1 1 auto"
-    : flexForWidth(mainToken, !!parent.rowBand && isRow && !child.widthByHand && aloneOnItsLine(parent, child));
+    : flexForWidth(mainToken, !!parent.rowBand && isRow && (
+        (!child.widthByHand && (bandIsCompact(parent, bp) || aloneOnItsLine(parent, child) || (parent.wrap && !bandHoldsChosenSpace(parent, bp)))) ||
+        (child.widthByHand && !bandHoldsChosenSpace(parent, bp))
+      ));
   /**
    * ONE PIXEL OF SLACK ON EVERY LINE THAT HOLDS A HAND-SIZED COLUMN (decided with the user 2026-09-28, option D of #131).
    *
@@ -5456,7 +5521,9 @@ export function childStyle(child: BoxNode, parent: BoxNode, bp: Breakpoint = "ba
    * content spill out of the column at 150% text — both measured on a dressed page. It can still be DRAGGED down to 3rem
    * (the canvas clamps there); on screen the floor is its content's, and a line too full for it wraps instead.
    */
-  if (parent.rowBand && isRow && !child.clip && !isEmptyBox(child) && isContainer(child)) {
+  // A component that HUGS BY NATURE is not a section even though it is built as a container (F1-e): the floor made a
+  // Badge a 14rem pill round "New", and on a phone a pill across the whole line with a Rating's stars spread over it.
+  if (parent.rowBand && isRow && !child.clip && !isEmptyBox(child) && isContainer(child) && !(child.preset && HUGS_BY_NATURE.has(child.preset))) {
     const floor = columnFloorRem(parent, child, bp);
     s.minWidth = bp === "phone" ? "100%" : floor === HAND_FLOOR_REM ? "min-content" : `min(100%, ${floor}rem)`;
   }
@@ -5491,7 +5558,7 @@ export function childStyle(child: BoxNode, parent: BoxNode, bp: Breakpoint = "ba
   // …and pinning after even that — see the matching line in the grid branch above.
   Object.assign(s, pinCSS(child, parent, bp));
   // A line of menu items is spaced by the block it sits in (`linkLineGap`) — the only one of the two you can select.
-  const lg = linkLineGap(child, parent); if (lg) Object.assign(s, lg);
+  const lg = linkLineGap(child, parent, bp); if (lg) Object.assign(s, lg);
   gutterCSS(s, child, parent);
   return s;
 }
@@ -5775,13 +5842,26 @@ export function pinStackPass(root: ParentNode): void {
       if (members) members.push(el);
       else groups.set(key, [el]);
     }
+    /**
+     * …AND BEHIND EVERY BAR THAT IS STILL STUCK WHILE IT TRAVELS (F1-b, measured on four tier-80 pages): a bar held to the
+     * WINDOW (fixed) covers every sticky one, and a sticky bar whose HOLDER contains this one — a header held by the page
+     * above a sidebar in the page — is stuck for this one's whole journey. Grouping alone put the sidebar at top 0 under a
+     * 87px sticky header (z 30 / 30, so its heading painted over the logo and "Apply now"). Two bars in SIBLING sections
+     * still never meet (2e): neither holder contains the other.
+     */
+    const keyOf = (el: Element) => el.getAttribute("data-eu-pin-in") || "window";
+    // The holder BY ITS ID (canvas `data-box-id`, export `bx-` class): a landmark (`<header>`, `<main>`) can sit between a bar and it.
+    const holderOf = (b: Element) => { const k = keyOf(b); return (root.querySelector(`[data-box-id="${k}"], .bx-${CSS.escape(k)}`)) ?? b.parentElement; };
+    const nearer = (b: Element, el: Element) => !!((edge === "top" ? b.compareDocumentPosition(el) : el.compareDocumentPosition(b)) & Node.DOCUMENT_POSITION_FOLLOWING);
+    const outer = (el: Element) => held.filter((b) => keyOf(b) !== keyOf(el) && !b.contains(el) && nearer(b, el) && (keyOf(b) === "window" ? keyOf(el) !== "window" : keyOf(b) === "page" || !!holderOf(b)?.contains(el)))
+      .reduce((n, b) => n + b.getBoundingClientRect().height, 0);
     let windowStack = 0; // the FIXED bars' total, which is the only one 2d's padding may use
     for (const [key, members] of groups) {
       // Down the page for a top edge; up it for a bottom one — in both cases, nearest the edge is first.
       const order = edge === "top" ? members : members.slice().reverse();
       let above = 0;
       for (const el of order) {
-        el.style.setProperty("--eu-pin-above", above + "px");
+        el.style.setProperty("--eu-pin-above", above + outer(el) + "px");
         above += el.getBoundingClientRect().height;
       }
       if (key === "window") windowStack = above;
@@ -5877,17 +5957,21 @@ export function pinStackNeeded(root: BoxNode): boolean {
   for (const bp of PIN_RUNGS) {
     // PER EDGE **AND** PER GROUP (2e): two bars only need a pass if they can actually cover each other. Counting
     // by edge alone would ship a script for two sticky bars in different sections, which hand over untouched.
-    const count = new Map<string, number>();
-    const walk = (n: BoxNode, parent?: BoxNode): void => {
+    // …AND across groups when one bar's holder CONTAINS the other bar, or one is held to the window (F1-b): a sticky
+    // header held by the page covers a sticky sidebar in a section for the sidebar's whole travel (`pinStackPass`).
+    const bars: { edge: string; group: string; anc: Set<string> }[] = [];
+    const walk = (n: BoxNode, parent: BoxNode | undefined, anc: Set<string>): void => {
       const edge = pinStackAttr(n, parent, bp);
-      if (edge) {
-        const key = `${edge}|${pinStackGroup(n, parent, bp)}`;
-        count.set(key, (count.get(key) ?? 0) + 1);
-      }
-      for (const k of n.children ?? []) walk(k, n);
+      if (edge) bars.push({ edge, group: pinStackGroup(n, parent, bp) ?? "window", anc });
+      const inner = new Set(anc).add(n.id);
+      for (const k of n.children ?? []) walk(k, n, inner);
     };
-    walk(root);
-    for (const n of count.values()) if (n > 1) return true;
+    walk(root, undefined, new Set());
+    const covers = (a: (typeof bars)[number], b: (typeof bars)[number]) => a.group === b.group || (a.group === "window" && b.group !== "window") || a.group === "page" || b.anc.has(a.group);
+    for (let i = 0; i < bars.length; i++) for (let j = i + 1; j < bars.length; j++) {
+      const a = bars[i], b = bars[j];
+      if (a.edge === b.edge && (covers(a, b) || covers(b, a))) return true;
+    }
   }
   return pinPaddingNeeded(root);
 }

@@ -15,9 +15,11 @@ describe("1D — one pixel of slack on a line that holds a hand-sized column", (
   it("the LAST column of the line carries a −0.0625rem right margin; every share stays exactly what was dragged", () => {
     const a = col("30%", true), b = col("70%", true);
     const r = row([a, b]);
-    expect(childStyle(a, r).flex).toBe("0 1 30%");
+    // the basis is exactly what was dragged; the grow (F-1, the user 2026-10-01: "fill after a wrap") spends nothing on a
+    // line the shares fill, and fills only what a wrap leaves
+    expect(childStyle(a, r).flex).toBe("1 1 30%");
     expect(childStyle(a, r).marginRight).toBeUndefined();
-    expect(childStyle(b, r).flex).toBe("0 1 70%");
+    expect(childStyle(b, r).flex).toBe("1 1 70%");
     expect(childStyle(b, r).marginRight).toBe("-0.0625rem");
   });
   it("a line with no hand-sized column gets no slack — its floors are 14rem, not a word", () => {

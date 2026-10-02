@@ -27,7 +27,7 @@ for (const f of siteFiles) {
   for (const r of ok) all.push({ src: f.replace(/\.json$/, ''), r });
 }
 const N = all.length; const S = { n: N };
-const ex = {}; const addEx = (k, it) => { (ex[k] = ex[k] || []).length < 5 && ex[k].push(`${it.r.title || ''} — ${it.r.site} (${it.src})`); };
+const ex = {}; const addEx = (k, it) => { if ((ex[k] = ex[k] || []).length < 5) ex[k].push(`${it.r.title || ''} — ${it.r.site} (${it.src})`); };
 const count = (key, test) => { let n = 0; for (const it of all) if (test(it.r)) { n++; addEx(key, it); } S[key] = `${n} (${pct(n, N)})`; };
 for (const lib of ['gsap', 'scrollTrigger', 'lenis', 'locomotive', 'barba', 'swup', 'three', 'canvas', 'framer', 'webflow', 'lottie', 'split', 'swiper', 'motion', 'aos', 'next', 'nuxt', 'astro']) count('lib:' + lib, r => r.libs && r.libs[lib]);
 for (const k of ['animTimeline', 'viewTimeline', 'scrollTimeline', 'viewTransition', 'crossDocVT', 'scrollSnap', 'sticky', 'fixed', 'clipPath', 'mask', 'keyframes', 'startingStyle', 'reducedMotion', 'hoverMedia', 'focusVisible', 'hasSel', 'backdrop', 'mixBlend', 'marquee', 'linearEase', 'scrollState', 'anchorPos', 'containerQ']) count('css:' + k, r => r.cssF && r.cssF[k] > 0);
@@ -56,7 +56,6 @@ S['hover:elements hovered'] = hovN; S['hover:what changes (share of hovered elem
 count('hover:rules gated by (hover: hover)', r => r.hover && r.hover.hoverMediaGated > 0);
 const pt = {}; for (const it of all) if (it.r.pageTransition) { let k = it.r.pageTransition.kind; if (/overlay/.test(k) && !(it.r.pageTransition.frames || []).some(f => (f.cover || []).some(c => opaque(c) && c.cov > 80 && c.z !== 'auto' && +c.z > 0))) k = k === 'spa + overlay' ? 'spa swap' : 'full load'; /* R-20: a see-through "overlay" was no overlay */ inc(pt, k); addEx('pt:' + k, it); } S['page transition kinds'] = top(pt).map(([k, v]) => `${k} ${pct(v, N)}`);
 const found = all.filter(it => it.r.menu && it.r.menu.found); S['menu:button found (desktop)'] = `${found.length} (${pct(found.length, N)})`;
-  const opened = (m) => m.didOpen != null ? m.didOpen : (m.opened && m.opened.expanded === 'true') || (m.frames || []).some(f => (f.cover || []).filter(c => opaque(c) && c.cov > 40).length > 0);
   // R-17: only menus measured by the fixed probe (didOpen recorded) — the old records cannot say whether a menu opened
   const probed = found.filter(it => it.r.menu.didOpen != null); S['menu:measured by the fixed probe'] = `${probed.length} of ${found.length}`;
   const menus = probed.filter(it => it.r.menu.didOpen); S['menu:actually OPENED when clicked'] = `${menus.length} of ${probed.length}`;
@@ -70,7 +69,8 @@ count('focus:skip link first', r => (r.focus || []).some(f => f && f.skipLink));
 const rmN = all.filter(it => it.r.reducedMotion); S['reduced motion:measured'] = rmN.length;
 S['reduced motion:still moves on scroll when asked not to'] = pct(rmN.filter(it => (it.r.reducedMotion.scroll || []).some(s => s && s.changed)).length, rmN.length);
 S['reduced motion:CSS mentions prefers-reduced-motion'] = pct(all.filter(it => it.r.cssF && it.r.cssF.reducedMotion > 0).length, N);
-const ph = all.filter(it => it.r.phone && !it.r.phone.err && it.r.phone.innerWidth === 360); // R-16: only true phone passes S['phone:measured'] = ph.length;
+// R-16: only true phone passes (innerWidth === 360, no err)
+const ph = all.filter(it => it.r.phone && !it.r.phone.err && it.r.phone.innerWidth === 360); S['phone:measured'] = ph.length;
 S['phone:sideways overflow at 360px'] = pct(ph.filter(it => it.r.phone.overflowX || it.r.phone.forcedWider).length, ph.length);
 S['phone:menu actually opens'] = pct(ph.filter(it => it.r.phone.menu && it.r.phone.menu.didOpen).length, ph.filter(it => it.r.phone.menu && it.r.phone.menu.found).length);
 S['phone:held elements (median)'] = median(ph.map(it => (it.r.phone.held || []).length));
@@ -86,7 +86,7 @@ for (const it of all) { const t = it.r.timing || {};
   for (const [v, c] of t.scriptEases || []) inc(sEase, String(v).replace(/^ease\s*:\s*/, ''), c); }
 S['timing:transition durations (count of elements)'] = top(dur, 12); S['timing:transition duration median ms'] = median(durMs);
 S['timing:easings'] = top(ease, 12); S['timing:properties transitioned'] = top(prop, 12); S['timing:animation durations'] = top(anim, 10); S['timing:script (GSAP) eases'] = top(sEase, 12);
-const sh = {}; for (const it of all) for (const [v, c] of it.r.shadows || []) inc(sh, v, 1); S['shadows:most used (sites)'] = top(sh, 15);
+const sh = {}; for (const it of all) for (const [v] of it.r.shadows || []) inc(sh, v, 1); S['shadows:most used (sites)'] = top(sh, 15);
 out.sites = S; out.examples = ex;
 // ---- uiverse ----
 const ui = read(path.join(runs, 'uiverse.json')) || [];

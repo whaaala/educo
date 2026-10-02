@@ -47,6 +47,7 @@ const INVARIANT_SPECS = [
   "tests/e2e/component-breathing.spec.ts",
   "tests/e2e/page-audit-whitespace.spec.ts",
   "tests/e2e/page-audit-spill.spec.ts",
+  "tests/e2e/page-audit-unused-space.spec.ts",
   "tests/e2e/drop-under-icon.spec.ts",
   "tests/e2e/drop-into-empty.spec.ts",
   "tests/e2e/item-ring-zoom.spec.ts",
@@ -68,6 +69,7 @@ const INVARIANT_SPECS = [
   "tests/e2e/builder-chrome-fits.spec.ts",
   "tests/e2e/grid-cells-never-overlap.spec.ts",
   "tests/e2e/keyboard-survives-selection.spec.ts",
+  "tests/e2e/select-takes-keys.spec.ts",
   "tests/e2e/text-is-reachable.spec.ts",
   "tests/e2e/pinned-bar-anchors.spec.ts",
   "tests/e2e/resize-leaves-no-gap.spec.ts",
@@ -266,8 +268,8 @@ const devContaminated = () => existsSync(".next/server/chunks/ssr/[turbopack]_ru
   }
 
   const target = specs.length
-    ? ["playwright", "test", ...specs, "--project=desktop-chrome", "--workers=4"]
-    : ["playwright", "test", "--project=desktop-chrome", "--workers=4", ...INVARIANT_SPECS];
+    ? ["playwright", "test", ...specs, "--project=desktop-chrome", "--workers=3"]
+    : ["playwright", "test", "--project=desktop-chrome", "--workers=3", ...INVARIANT_SPECS];
 
   console.log("\n=== running the browser suites ===");
   const code = run(npx, target, { BASE_URL });

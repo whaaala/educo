@@ -4,6 +4,7 @@ import BoxCanvas from "@/components/website/box/BoxCanvas";
 import { DEFAULT_THEME } from "@/lib/site-storage";
 import { createContainer, createComponent, componentBoxCss, resizeTopEdge, hugsContent, blockContainmentCss, clampFloatGeom, floatBox, findBox, widthPct, isFloating, isClipped, clampContentScale, MIN_CONTENT_SCALE, comfortableWidth, COMFORTABLE_LINES, PLACEMENT_INSET_PCT, type BoxNode } from "@/lib/box-model";
 import { renderSitePage } from "@/lib/box-export";
+import { HUGS_BY_NATURE } from "@/lib/educo-ui/registry";
 import { siteFromRoot } from "@/lib/box-site";
 
 /** One page through the SHIPPING export path — the app no longer emits the single-document shape. */
@@ -265,17 +266,16 @@ describe("A newly placed block keeps a gap from the parent's top-left (RULE M)",
   }
 });
 
-describe("A newly added component sizes to its content (RULE L)", () => {
-  // The full-width default is what made a component read as "a wrapper taking the whole width of the parent".
-  // Content sizing is now the default for EVERY component; Full / Custom are opt-in from the inspector.
-  // Existing saved documents are deliberately NOT migrated — they keep the widths they were built with.
+describe("A newly added component fills its line unless it hugs by nature (BATCH F-1)", () => {
+  // REVERSED by the user, 2026-10-01 (F-1: "the component needs to be used width and height everywhere… unless it's the space
+  // a user wanted"): the old default — every component hugs — left an Accordion on ~545px of a 1280 line. A number, a pill
+  // and a row of stars still hug (`HUGS_BY_NATURE`); Hug / Custom stay opt-in. Saved documents keep the widths they were built with.
   for (const component of COMPONENTS) {
-    it(`${component}: is content-sized when added, and therefore hugs`, () => {
+    const hugs = HUGS_BY_NATURE.has(component);
+    it(`${component}: ${hugs ? "hugs its content by nature" : "fills its line"} when added`, () => {
       const node = createComponent(component, { id: "tgt" });
-      expect(node.width).toBe("auto");
-      expect(hugsContent(node)).toBe(true);
-      // …so it does not force a fill onto its own element
-      expect(componentBoxCss(node)).not.toContain("width:100%");
+      expect(node.width).toBe(hugs ? "auto" : "100%");
+      expect(hugsContent(node)).toBe(hugs);
     });
   }
 

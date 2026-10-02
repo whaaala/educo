@@ -17,7 +17,7 @@ import { Link2, Plus, ChevronUp, ChevronDown, Copy, Scissors, ClipboardPaste, Tr
 import type { SiteTheme } from "@/lib/site-storage";
 import {
   type BoxNode, type BoxType,
-  containerStyle, childStyle, marginCSS, leafPaddingCSS, outerSpaceCSS, pageBandInset, sectionContent, sizeToCSS, u, baseUnit, floatingReserve, floatStacksOnMobile, createContainer, createElement, createComponent,
+  containerStyle, childStyle, marginCSS, leafPaddingCSS, outerSpaceCSS, pageBandInset, pagePinCover, sectionContent, sizeToCSS, u, baseUnit, floatingReserve, floatStacksOnMobile, createContainer, createElement, createComponent,
   updateBox, deleteBox, insertBox, moveBoxStep, duplicateBox, moveBox, cloneBox, findParent, isAncestor, isContainer, containerLabel, widthPct, stackWithBlock, fitBand, PILL, blockTypography,
   isFloating, floatBox, unfloatBox, groupBoxes, ungroupBoxes, bringToFront, sendToBack, bringForward, sendBackward, packRowLines, allocateLine, type LineFollower,
   shouldTakeMirrorBox, hostSizedFor, type MirrorBox, type MirrorChase, fadedPaint, boxOpacity, backgroundCss, treePaintLayerCss, radiusCSS, isClipped, SHADOW_CSS, videoEmbedSrc, sanitizeCssDeclarations, expandScopedCss, ACCORDION_CSS_PARTS, itemOverrideCss, itemHasOverride, itemNumberVars, richBody, componentTextCss, componentBoxCss, bgShowThroughCss, resizeTopEdge, blockContainmentCss, alertToastCss, treeHasToast, treeHasFixedHold, accordionClasses, bandClasses, advancedCssStyle, alertActionsHTML, hugsContent, itemFloatContextCss, COMPONENT_ITEM_SEL, clampContentScale, MIN_CONTENT_SCALE, isMultiItemComponent, comfortableWidth, remLen, rootFontPx, isDefiniteLen, addItemAfter, duplicateItem, duplicateChildItem, removeItem, removeChildItem, moveItem, moveChildItem, updateItem, updateChildItem, ALERT_SEVERITY_ICON, alertPartInline, alertIconInline, collectAlertItemStyles,
@@ -3012,7 +3012,7 @@ export default function BoxCanvas({
     const selfPaint = node.type === "component" || node.type === "button";
     // The content of a PAGE SECTION keeps the side gutter and the section space (rule 3) — the export decides it
     // the same way, from the same helper.
-    const section = parent != null && sectionContent(rawNode, parent.id === root.id, !!parent.rowBand && (root.children ?? []).some((c) => c.id === parent.id));
+    const section = parent != null && sectionContent(rawNode, parent.id === root.id, !!parent.rowBand && (root.children ?? []).some((c) => c.id === parent.id), parent);
     const wrapStyle: React.CSSProperties = {
       position: floating ? "absolute" : "relative", // floating boxes are positioned inside their (relative) parent → they overlap the flow
       maxWidth: "100%", // Responsive Field Guide: never wider than the container (a fixed px width shrinks on a phone — no horizontal scrollbar). Editor MUST match the export.
@@ -3121,6 +3121,11 @@ export default function BoxCanvas({
     const onSelectDown = (e: React.MouseEvent) => {
       if (!editable) return;
       e.stopPropagation();
+      // A block picked with the pointer takes the keyboard too (F1-c): a block is not focusable, so a click on it left the
+      // focus on the last control used — a device preset — and Z1-j rightly gives that control its own keys, so Delete,
+      // the arrows and Enter did nothing to the block just selected.
+      const ae = document.activeElement;
+      if (ae instanceof HTMLElement && ae !== document.body && !canvasRef.current?.contains(ae)) ae.blur();
       // CLICK SELECTS THE BOX, CLICK AGAIN GOES INSIDE (see `selectionChain`). The handler that runs is the
       // DEEPEST block's — the click stops propagating there — so this walks back UP and takes the outermost
       // block first, stepping one level deeper each time the user clicks inside what is already selected.
@@ -3188,6 +3193,7 @@ export default function BoxCanvas({
             // when the box is empty, so it can never become a containing block for a child that floats.
             ...(editable && kids.length === 0 ? { position: "relative" as const } : {}),
             ...canvasStyle,
+            ...pagePinCover(node, parent?.id === root.id), // F1-b — after the band's own style, as the export does
             // NOT the page root and NOT a row band. Both are invisible scaffolding rather than boxes anyone
             // added: the root carries the PAGE's own minimum height (roughly a viewport) and an 8rem courtesy
             // band would overrule it, collapsing an empty page to a strip.

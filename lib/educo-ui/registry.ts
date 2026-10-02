@@ -39,13 +39,16 @@ export type ComponentDef = {
 };
 
 /**
- * RULE L — a component added to the page SIZES TO ITS CONTENT (its own padding gives it the breathing room);
- * full-width and fixed widths are opt-in via the inspector's Full / Custom. This is the default for every
- * component we have and every future one, so there is no longer a per-component "hug" flag: they all hug.
- * (Existing saved documents are untouched — they keep whatever width they were built with.)
+ * The components that HUG their content by nature — a number, a pill, a row of stars: a full-width box around them
+ * reads as an unwanted container. Every other component, and every future one, starts FULL WIDTH (BATCH F-1, the
+ * user 2026-10-01: "the component needs to be used width and height everywhere… unless it's the space a user wanted"),
+ * which reverses the old "every component hugs" default: an Accordion took ~545px of a 1280 line. Hug / Custom stay in
+ * the inspector. Saved documents keep the width they were built with. `component-fills-its-line.test.ts` enumerates the
+ * catalogue against this list, so a new component is classified the day it appears.
  */
-export function defaultComponentWidth(_name: string): string {
-  return "auto";
+export const HUGS_BY_NATURE: ReadonlySet<string> = new Set(["stat", "badge", "rating"]);
+export function defaultComponentWidth(name: string): string {
+  return HUGS_BY_NATURE.has(name) ? "auto" : "100%";
 }
 
 /** Escape HTML so user content can't break the markup (this string is injected into the canvas AND the export). */

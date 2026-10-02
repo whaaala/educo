@@ -50,7 +50,7 @@ if (!process.argv.includes('--one')) {
   const next = (slot) => {
     if (!queue.length) { if (!running) report(); return; }
     const p = queue.shift(); running++;
-    const c = spawn(process.execPath, [__filename, '--one', `--idx=${p.idx}`, `--slot=${slot}`, ...(DRESSED ? [`--plan=${PLAN}`] : [])], { env: process.env, stdio: ['ignore', 'pipe', 'pipe'] });
+    const c = spawn(process.execPath, [__filename, '--one', `--idx=${p.idx}`, `--slot=${slot}`, ...(DRESSED ? [`--plan=${PLAN}`] : []), ...process.argv.filter((a) => a.startsWith("--sizes="))], { env: process.env, stdio: ['ignore', 'pipe', 'pipe'] });
     let buf = ''; c.stdout.on('data', (d) => { buf += d; }); c.stderr.on('data', (d) => { buf += d; });
     c.on('exit', () => { running--; done.push(p.idx); const last = buf.trim().split('\n').pop(); console.log(`[${done.length}/${LIST.length}] ${p.site}/${p.page}: ${last}`);
       const bad = serverProblem(); if (bad) { console.log(`SERVER LOST after ${p.site}/${p.page} — no more pages started; any failure since the server went is NOT a product finding: ${bad}`); queue.length = 0; }
@@ -80,7 +80,7 @@ if (!process.argv.includes('--one')) {
 
 // ── ONE PAGE ──
 const H = require('./h.js'); const G = require('./layout-grammar.js'); const { Builder } = require('./build-page.js'); const { Dresser } = require('./dress.js');
-const { auditDoc, pixelFindings, canvasAudit } = require('./page-audit.js');
+const { auditDoc, pixelFindings, canvasAudit, chosenIds } = require('./page-audit.js');
 const idx = +arg('idx', 0), slot = +arg('slot', 0); const PG = COVER[idx];
 const R = { idx, site: PG.site, page: PG.page, type: PG.type, tier: PG.tier, layout: PG.layout, recipe: DRESSED ? { type: PG.type, header: PG.header, hamburger: PG.hamburger, sidebar: PG.sidebar, hero: PG.hero, theme: PG.theme, source: PG.source } : undefined, findings: [], shots: [] };
 const find = (kind, where, msg) => R.findings.push({ kind, where, msg });
@@ -132,7 +132,7 @@ const canvasGeo = (page) => page.evaluate(() => {
     fs.writeFileSync(path.join(OUTDIR, `page-${idx}.tree.txt`), await H.tree(page));
     // …and on a failed build the WHOLE stored page, every field (pins, heights, meanings), to READ when tracing it (RULE Y:
     // never loaded back). The one-line tree above leaves out exactly what L1-3's sidebar needed.
-    if (R.buildError) fs.writeFileSync(path.join(OUTDIR, `page-${idx}.site.json`), await page.evaluate(() => localStorage.getItem('educo_box_site_v1') || ''));
+    fs.writeFileSync(path.join(OUTDIR, `page-${idx}.site.json`), await page.evaluate(() => localStorage.getItem('educo_box_site_v1') || ''));
     // …and the LIVE geometry of every pinned block and each box above it (L1-3: a sticky sidebar seen over the sections
     // after its row) — rects in page coordinates, and the computed styles that decide where a sticky block may travel.
     if (R.buildError) R.pinnedGeometry = await page.evaluate(() => Array.from(document.querySelectorAll('[data-box-id]')).filter((e) => getComputedStyle(e).position === 'sticky' || getComputedStyle(e).position === 'fixed').map((e) => {
@@ -173,16 +173,20 @@ const canvasGeo = (page) => page.evaluate(() => {
       if (inner !== w) { await page.setViewportSize({ width: w + (w - inner), height: h }); await page.waitForTimeout(350); f = await (await page.$('iframe')).contentFrame(); }
       return f;
     };
+    // F-1: the blocks whose space the PERSON chose (a width dragged by hand, a height, a margin, an arrangement), at any rung —
+    // W19 never reports them. Read from the stored site, ids as the export writes them in its `bx-` classes.
+    const chosen = chosenIds(JSON.parse(await page.evaluate(() => localStorage.getItem('educo_box_site_v1') || '{}')));
     const html = await (await page.$('iframe')).getAttribute('srcdoc') || '';
     fs.writeFileSync(path.join(OUTDIR, `page-${idx}.export.html`), html); // kept, so a finding is traced from the page's own CSS (E0-e)
     const px = pixelFindings(html); if (px.length) find('err', 'export CSS', `U16 ${px.length} pixel lengths — ${px.slice(0, 6).map(([k, n]) => `${k}×${n}`).join(', ')}`);
-    let first = true; const sizes = devices(); R.sizes = sizes.length;
+    // --sizes=rungs: the five rungs and both sides of every breakpoint only (where a line wraps) — a measuring pass (F-1 (1))
+    let first = true; const sizes = arg('sizes', '') === 'rungs' ? devices().filter((d) => /breakpoint/.test(d.name)) : devices(); R.sizes = sizes.length;
     // AT THE RUNGS THE PREVIEW WINDOW IS AS TALL AS THE EDITOR's. A block measured against the SCREEN — a sticky sidebar is 100dvh, and
     // the row beside it stretches to match — is 720 in a 720 window and 900 in a 900 one: by design, and reported as canvas≠Preview on
     // every block of the row (tier 99, idx 141). Same window, same answer; a real difference still shows.
     for (const d of [...RUNGS.map((r) => ({ name: r.preset, w: r.w, h: EDITOR_H, rung: r })), ...sizes]) {
       const f = await frameAt(d.w, Math.min(d.h, 1400));
-      const a = await f.evaluate(auditDoc, { semantics: first, rowBands: true }); first = false;
+      const a = await f.evaluate(auditDoc, { semantics: first, rowBands: true, chosen }); first = false;
       a.err.forEach((m) => find('err', `Preview ${d.name}`, m)); a.warn.forEach((m) => find('warn', `Preview ${d.name}`, m));
       if (d.rung) {
         // canvas == Preview at this rung, within the accepted 0.6% (#41) and 4px of text rounding
@@ -196,7 +200,7 @@ const canvasGeo = (page) => page.evaluate(() => {
         // WCAG 1.4.4 — the reader's text at 150%
         const f2 = await frameAt(d.w, 900);
         await f2.evaluate(() => { document.documentElement.style.fontSize = '150%'; }); await page.waitForTimeout(300);
-        const big = await f2.evaluate(auditDoc, { semantics: false, rowBands: true });
+        const big = await f2.evaluate(auditDoc, { semantics: false, rowBands: true, chosen });
         big.err.filter((m) => /^L[1-7]/.test(m)).forEach((m) => find('err', `Preview ${d.name} at 150% text`, m));
         const grew = Object.keys(big.geo).filter((id) => a.geo[id] && big.geo[id].h > a.geo[id].h + 1).length;
         if (Object.keys(a.geo).length && !grew) find('err', `Preview ${d.name} at 150% text`, 'W144 nothing grew with the reader\'s text size');

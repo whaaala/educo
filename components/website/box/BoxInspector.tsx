@@ -12,7 +12,7 @@ import { Plus, X, Tags, Rows3, Columns3, Upload, ArrowRight, AlignLeft, AlignCen
 import type { SiteTheme } from "@/lib/site-storage";
 import type { BoxNode, FlexAlign, FlexJustify, AccPartStyle, Breakpoint, PagerNav, PinScopeWords } from "@/lib/box-model";
 import { RUNG_LABEL } from "@/lib/educo-ui/layout";
-import { type ItemAction, TOAST_CORNERS, isContainer, containerLabel, isFloating, isCssBg, addItem, removeItem, moveItem, updateItem, addChildItem, updateChildItem, removeChildItem, moveChildItem , isMultiItemComponent, hasIntrinsicSize, sizeToCSS, GRID_MAX, COLUMN_FRACTIONS, columnFractionOf, canSetColumnFraction, gridColumns, bandEdgeCSS, PIN_ARRIVALS, PIN_ARRIVAL_AFTER, pinArrivalHasEffect, linkLineGap, spaceDefaults, outerDefaults, type SectionPlace, gapOf } from "@/lib/box-model";
+import { type ItemAction, TOAST_CORNERS, isContainer, containerLabel, isFloating, isCssBg, addItem, removeItem, moveItem, updateItem, addChildItem, updateChildItem, removeChildItem, moveChildItem , isMultiItemComponent, hasIntrinsicSize, sizeToCSS, GRID_MAX, COLUMN_FRACTIONS, columnFractionOf, canSetColumnFraction, gridColumns, bandEdgeCSS, PIN_ARRIVALS, PIN_ARRIVAL_AFTER, pinArrivalHasEffect, linkLineGap, LINK_GAP_ACROSS, LINK_GAP_ACROSS_PHONE, spaceDefaults, outerDefaults, type SectionPlace, gapOf } from "@/lib/box-model";
 import { ACCORDION_DESIGNS, ACCORDION_DESIGN_COUNT, ACCORDION_AXES } from "@/lib/educo-ui/accordions";
 import { ALERT_DESIGNS, ALERT_DESIGN_COUNT, ALERT_AXES } from "@/lib/educo-ui/alerts";
 import { COMPONENT_REGISTRY, isRegistryComponent, defaultComponentFields, renderComponent } from "@/lib/educo-ui/registry";
@@ -1031,7 +1031,7 @@ export default function BoxInspector({ section = false, sectionPlace, node, them
                   right, and it is the same gesture as every other spacing control in this panel. */}
               {/* A block holding LINKS side by side: the sliders start where the links are (2rem / 0.75rem at the default
                   16px, `linkLineGap`), so the first nudge moves the space from what is on screen instead of jumping it. */}
-              <GapRange label="Space across" value={node.gapX} fallback={holdsLinks ? 32 : gapOf({ ...node, gapX: undefined }).x} onChange={(n) => onPatch({ gapX: n })} onMatch={() => onPatch({ gapX: undefined })} />
+              <GapRange label="Space across" value={node.gapX} fallback={holdsLinks ? parseFloat(breakpoint === "phone" ? LINK_GAP_ACROSS_PHONE : LINK_GAP_ACROSS) * 16 : gapOf({ ...node, gapX: undefined }).x} onChange={(n) => onPatch({ gapX: n })} onMatch={() => onPatch({ gapX: undefined })} />
               <GapRange label="Space down" value={node.gapY} fallback={holdsLinks ? 12 : gapOf({ ...node, gapY: undefined }).y} onChange={(n) => onPatch({ gapY: n })} onMatch={() => onPatch({ gapY: undefined })} />
             </Accordion>
           )}

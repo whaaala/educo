@@ -17,6 +17,15 @@ describe("the space between links", () => {
     const s = childStyle(line, list);
     expect(get(s, "columnGap")).toBe("2rem"); expect(get(s, "rowGap")).toBe("0.75rem");
   });
+  it("on a phone, 1rem across so a line of links fits rather than leaving one alone (F-1, the user 2026-10-01); every other rung 2rem", () => {
+    const { line, list } = menu();
+    expect(get(childStyle(line, list, "phone"), "columnGap")).toBe("1rem");
+    for (const bp of ["tabletPortrait", "tabletLandscape", "base", "wide"] as const) expect(get(childStyle(line, list, bp), "columnGap")).toBe("2rem");
+  });
+  it("on a phone, a space the person chose is kept", () => {
+    const { line, list } = menu({ gapX: 40 });
+    expect(get(childStyle(line, list, "phone"), "columnGap")).toBe(u(40));
+  });
   it("\"Space across\" and \"Space down\" on the menu set them — separately", () => {
     const { line, list } = menu({ gapX: 40, gapY: 8 });
     const s = childStyle(line, list);
@@ -50,14 +59,30 @@ describe("the space between links", () => {
 });
 
 describe("…and the published page carries it", () => {
-  it("the exported menu line has 2rem across and 0.75rem down, and the chosen value once set", async () => {
+  it("links dropped side by side STRAIGHT ON THE PAGE are one section: the line keeps the gutter, the links none (F1-d)", async () => {
+    const { siteFromRoot } = await import("@/lib/box-site");
+    const { renderSitePage } = await import("@/lib/box-export");
+    const { DEFAULT_THEME } = await import("@/lib/site-storage");
+    const { pageBandInset, isSectionContentIn, SPACE_DEFAULT } = await import("@/lib/box-model");
+    const line = makeRowBand(links(4)); line.id = "line";
+    const root = createContainer("column", { id: "page", children: [line] } as Partial<BoxNode>);
+    const html = renderSitePage(siteFromRoot(root, "P"), DEFAULT_THEME, "P", { inlineShared: true });
+    const rule = (id: string) => [...html.matchAll(new RegExp(`\\.bx-${id}\\{([^}]*)\\}`, "g"))].map((m) => m[1]).join(";");
+    for (let i = 0; i < 4; i++) expect(rule(`l${i}`), `link ${i} carries the page gutter as its own padding`).not.toMatch(/padding-left:calc/);
+    expect(rule("line")).toContain(`padding-left:${u(SPACE_DEFAULT.gutter)}`);
+    expect(pageBandInset(line, true)).toMatchObject({ paddingTop: u(SPACE_DEFAULT.section), paddingBottom: u(SPACE_DEFAULT.section) });
+    expect(isSectionContentIn(root, "l0"), "the inspector must agree: a menu link is not a page section").toBe(false);
+  });
+  it("the exported menu line has 1rem across on a phone, 2rem from a tablet up, 0.75rem down, and the chosen value once set", async () => {
     const { siteFromRoot } = await import("@/lib/box-site");
     const { renderSitePage } = await import("@/lib/box-export");
     const { DEFAULT_THEME } = await import("@/lib/site-storage");
     const doc = (list: BoxNode) => { const site = siteFromRoot(createContainer("column", { id: "page", children: [list] } as Partial<BoxNode>), "P"); return renderSitePage(site, DEFAULT_THEME, site.homeId, { inlineShared: true }); };
     const lineRule = (html: string) => (html.match(/\.bx-line\{([^}]*)\}/) ?? ["", ""])[1];
     const plain = lineRule(doc(menu().list));
-    expect(plain).toMatch(/column-gap:2rem/); expect(plain).toMatch(/row-gap:0\.75rem/);
+    // mobile-first: the phone's 1rem is the base rule (F-1), 2rem arrives at the tablet rung and up
+    expect(plain).toMatch(/column-gap:1rem/); expect(plain).toMatch(/row-gap:0\.75rem/);
+    expect(doc(menu().list)).toMatch(/@media \(min-width:37\.5em\)\{\.bx-line\{column-gap:2rem/);
     expect(lineRule(doc(menu({ gapX: 40 }).list))).toContain(`column-gap:${u(40)}`);
   });
 });

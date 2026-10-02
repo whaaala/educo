@@ -166,7 +166,10 @@ const check = (where, w, m) => {
     else {
       const b1 = await page.evaluate(measure, ['canvas', cols3]);
       const grew = b1.col1.w - b0.col1.w, want = 60 / Zc, gap0 = b0.col2.l - (b0.col1.l + b0.col1.w), gap1 = b1.col2.l - (b1.col1.l + b1.col1.w);
-      const still = Math.abs(b1.col1.l - b0.col1.l) < 1 && Math.abs(b1.col3.r - b0.col3.r) < 1 && Math.abs(b1.col1.t - b1.col3.t) < 2;
+      // The far edge may use the line's ONE PIXEL OF SLACK (decision 1D, 0.0625rem): once a column is sized by hand its line
+      // carries it, and since F-1 ("fill after a wrap", the user 2026-10-01) the columns may grow into it — 1.0px measured.
+      const slack = 16 * 0.0625 * Zc + 0.5;
+      const still = Math.abs(b1.col1.l - b0.col1.l) < 1 && Math.abs(b1.col3.r - b0.col3.r) <= slack && Math.abs(b1.col1.t - b1.col3.t) < 2;
       if (Math.abs(grew - want) > 2 || !still || Math.abs(gap1 - gap0) > 1) bad(`S1-a resize: dragged ${want.toFixed(1)}, the column grew ${grew.toFixed(1)} · left ${b0.col1.l.toFixed(1)}→${b1.col1.l.toFixed(1)} · far right ${b0.col3.r.toFixed(1)}→${b1.col3.r.toFixed(1)} · gap ${gap0.toFixed(1)}→${gap1.toFixed(1)}`);
       else ok(`S1-a resize: dragged ${want.toFixed(1)}, grew ${grew.toFixed(1)}, outer edges still, gap ${gap1.toFixed(1)}px, one line`);
       await page.screenshot({ path: path.join(OUT, 'resize-columns.png') });

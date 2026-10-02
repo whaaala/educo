@@ -156,6 +156,11 @@ async function select(page, id) {
       }
       return ok.length ? ok : [[bx.x + bx.width * 0.8, top + h * 0.8]];
     }, [id, b]);
+    // NOTHING OF IT CAN BE AIMED AT (F1-g): a block just under a sticky header that now covers what scrolls beneath it —
+    // the fallback point landed on the header and selected the logo (tier-80 page 13). A person scrolls it into view.
+    if (!(await page.evaluate(([id, [x, y]]) => { const me = document.querySelector(`[data-box-id="${id}"]`); const hit = document.elementFromPoint(x, y); return !!(hit && me && me.contains(hit)); }, [id, pts[0]]))) {
+      await page.evaluate((id) => document.querySelector(`[data-box-id="${id}"]`)?.scrollIntoView({ block: 'center' }), id); await page.waitForTimeout(200); continue;
+    }
     // THE POINTER ARRIVES BEFORE IT CLICKS, and a person sees what is under it. The free columns at the end of a grid's row
     // offer "Add a block here" — invisible until the pointer is over them — and a click meant to SELECT landed on the offer
     // instead and added an empty cell (tier 99, page 254: four grids). Nobody clicks a button that has just said what it

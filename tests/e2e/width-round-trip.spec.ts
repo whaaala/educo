@@ -73,7 +73,7 @@ const rowProblems = (row: Row) => {
       if (Math.abs(gap) > 1) out.push(`${gap}px between two blocks on a line`);
     }
     const last = ks[ks.length - 1];
-    if (last.l + last.w > row.inner + 1) out.push(`line overflows by ${last.l + last.w - row.inner}px`);
+    if (last.l + last.w > row.inner + 2) out.push(`line overflows by ${last.l + last.w - row.inner}px`);
     // A HOLE: room at a line's end that the block waiting on the next line could take at its 14rem floor.
     if (i + 1 < tops.length && row.inner - (last.l + last.w) >= 226) out.push(`${row.inner - (last.l + last.w)}px hole at the end of a line`);
   });

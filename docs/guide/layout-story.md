@@ -145,6 +145,30 @@ Behind the scenes, every page the builder is tested on is measured for this: wor
 words touching the edge of their coloured box, or two sections whose words are closer than 1rem, are each reported as
 a warning. (The **Page check** button in the editor does not show these yet.)
 
+## 6¾. "The page uses its space" — nothing left empty that nobody chose
+
+Maya's FAQ page has a heading and an **Accordion** of questions. She drops the Accordion under the heading and it runs
+the full width of the page, the same as the heading above it — on a phone, a tablet and a wide screen. (It used to hug
+its questions and leave the right half of the page empty.) An **Alert**, a **Card** and a **Quote** do the same. A
+**Badge**, a **Stat** and a **Rating** stay small: a "New" pill is as wide as "New", wherever she drops it.
+
+On the admissions page she drops two Stacks side by side — a photo and the words beside it — and never resizes them.
+On a tablet held upright, the line is too narrow for both, so the words move under the photo. Each one then fills the
+line it is on: no half-width photo with an empty half beside it. When she deletes the middle one of three columns, the
+other two close the gap.
+
+What she chooses always wins. She drags the Accordion's right edge in, and it keeps that width on every screen and after
+a reload. She drags the outer edge of the last column inward to leave a margin on the right, and that space stays where
+she made it; the column beside it does not grow into it.
+
+Her pager — four links, "Previous · 1 · 2 · Next" — sits on one line on a phone: links in a line are 1rem apart there
+and 2rem on bigger screens. Links she drops straight on the page share one gutter at the ends of their line rather than
+each carrying its own.
+
+Her term-dates page has a header that stays at the top and a sidebar that sticks while the article scrolls. The header
+covers what scrolls beneath it — it takes the page's colour when she has not given it one — and the sidebar stops
+**below** the header, never under it.
+
 ## 7. Text and space: which one follows what
 
 Two fluid units run the page, and they answer different questions.
@@ -234,6 +258,10 @@ is refitted.
 
 Space by default (2026-09-30): words, sections, columns, coloured boxes, and every component and button placed on the
 page keep their space (section 6½), measured in the Preview at every screen size in all four themes.
+
+The page uses its space (2026-10-01, section 6¾): measured by the page audit's unused-space check over tier 80 (64 dressed
+pages, every screen size and both sides of every breakpoint), fixed by class, and driven through the editor in all four
+themes.
 
 **What a real page asked for that the builder does not offer yet** (recorded, not skipped): a grid of *five* across —
 the picker offers 1, 2, 3, 4, 6 and 12, the counts twelve columns divide into. Today Maya takes six and deletes a cell.

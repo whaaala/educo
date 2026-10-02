@@ -257,7 +257,46 @@ const stickyPerSection = (): BoxNode => ({
   ],
 } as unknown as BoxNode);
 
+/**
+ * A sticky HEADER on the page and a sticky SIDEBAR in a section beside a long article (F1-b, four tier-80 pages): the
+ * two holders differ, but the page holds the header for the sidebar's whole travel. Grouping alone stuck the sidebar at
+ * top 0 under an 87px header, and its heading painted over the logo and "Apply now".
+ */
+const headerAndSidebar = (headerBg = "#0d3b1e"): BoxNode => ({
+  id: "root", type: "container", direction: "column", padding: 0, gap: 0, children: [
+    sticky("hd", 72, headerBg),
+    { id: "sec", type: "container", direction: "row", width: "100%", padding: 0, gap: 0, align: "start", children: [
+      tall("article", 2400, "#eef2ff"),
+      sticky("aside", 200, "#8c0f52", { width: "30%" }),
+    ] } as unknown as BoxNode,
+  ],
+} as unknown as BoxNode);
+
 test.describe("sticky bars stack against the bars they can actually meet", () => {
+  for (const headerBg of ["#0d3b1e", ""]) test(`a sticky sidebar in a section sits UNDER a sticky header held by the page (F1-b)${headerBg ? "" : " — a header with no colour of its own"}`, async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    const html = await show(page, headerAndSidebar(headerBg), `/__sticky5${headerBg ? "a" : "b"}`);
+    expect(html.includes("__euPinStack"), "a header held by the page and a sidebar in it can meet — the script must ship").toBe(true);
+    for (const y of [600, 1400]) {
+      await page.evaluate((y) => window.scrollTo(0, y), y);
+      await page.waitForTimeout(300);
+      const hd = (await rect(page, "hd"))!;
+      const side = (await rect(page, "aside"))!;
+      expect(hd.top, "the header holds at the top").toBeLessThanOrEqual(1);
+      expect(side.top, `scrolled ${y}: the sidebar starts at ${side.top}, but the header ends at ${hd.bottom}`).toBeGreaterThanOrEqual(hd.bottom - 1);
+    }
+    // where the sidebar's row ENDS it slides up under the header: the header stays on top, and it paints a colour so the
+    // page's words never show through it ("Hillside School" over a heading, page 13)
+    await page.evaluate(() => window.scrollTo(0, 2350));
+    await page.waitForTimeout(300);
+    const onTop = await page.evaluate(() => { const hd = document.querySelector(".bx-hd")!; const band = hd.closest("[data-eu-pin]") ?? hd; const r = hd.getBoundingClientRect(); let n = 0, covered = 0;
+      for (let x = r.left + 5; x < r.right; x += 30) { n++; const e = document.elementFromPoint(x, r.top + r.height / 2); if (e && !band.contains(e)) covered++; }
+      const paint = [hd, band].map((e) => getComputedStyle(e).backgroundColor).find((c) => !/rgba\(0, 0, 0, 0\)|transparent/.test(c)) ?? "none";
+      return { n, covered, bg: paint }; });
+    expect(onTop.covered, `the sidebar painted over ${onTop.covered} of ${onTop.n} points of the header`).toBe(0);
+    expect(onTop.bg, "a header pinned to the page must cover what scrolls under it").not.toBe("none");
+  });
+
   test("two sticky bars in ONE Stack sit under one another once both are held", async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 800 });
     await show(page, stickySiblings(), "/__sticky1");
