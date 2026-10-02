@@ -476,6 +476,11 @@ Run through this checklist BEFORE telling the user it's done:
   The area ends its research with an **"enough" checklist** in `docs/TASK_TREE.md`: what the work needs, each line
   marked covered / not covered, **signed off by the user**. Only then does the build begin. The checklist is the finish
   line, so research cannot grow forever (RULE RK: scope).
+  - **THE SESSION REMINDS THE USER (the user, 2026-10-02: "I might forget").** Whenever a new session starts, or the
+    work is about to move into a new area, section or kind of work, the session checks the tree for that area's signed
+    "enough" checklist. If there is none, its reply SAYS so before anything else — "this is a new area; it needs a full
+    research first (yours and mine) before we implement anything" — and asks the user for their sources. It never starts
+    implementing a new area on the strength of the user not mentioning research.
 - **RULE RK — THE TWO RISKS ARE MITIGATED BY RULE, NEVER LEFT TO CHANCE (MANDATORY — the user, 2026-09-28: "make sure
   where the risk sits is addressed… minimise the risk to the minimum").** Named in `docs/RISKS.md` and re-read at the start
   of every area of work. The two risks: **scope** (rules for layout, components, semantics, documentation, budgets,
