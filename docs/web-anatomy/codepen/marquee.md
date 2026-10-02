@@ -1,17 +1,17 @@
 # CodePen · marquee — how each pen does it
 
-248 pens, each opened, run and read (`cp-tag.js`); written by `cp-how.js` from the pen's own code and what it did when scrolled and hovered. The full code is in `raw/marquee.json`.
+256 pens, each opened, run and read (`cp-tag.js`); written by `cp-how.js` from the pen's own code and what it did when scrolled and hovered. The full code is in `raw/marquee.json`.
 
 ## Techniques, most used first
 
 | Technique | Pens |
 |---|---|
-| @keyframes | 172 |
-| :hover | 71 |
-| transition | 49 |
-| prefers-reduced-motion | 41 |
-| position: fixed | 26 |
-| mask | 19 |
+| @keyframes | 179 |
+| :hover | 73 |
+| transition | 50 |
+| prefers-reduced-motion | 46 |
+| position: fixed | 27 |
+| mask | 20 |
 | requestAnimationFrame | 15 |
 | GSAP | 14 |
 | custom properties driven by JS | 12 |
@@ -19,9 +19,9 @@
 | 3D (perspective / preserve-3d) | 7 |
 | ScrollTrigger | 7 |
 | pointer / mouse tracking | 6 |
+| :focus-visible | 6 |
 | clip-path | 5 |
 | backdrop-filter | 5 |
-| :focus-visible | 5 |
 | IntersectionObserver | 3 |
 | position: sticky | 3 |
 | Web Animations API (.animate) | 3 |
@@ -3469,3 +3469,125 @@ style.setProperty('--rtl', `-${rtl}px`)
 ### [Examples of the Marquee element - DEPRECATED](https://codepen.io/dnikub/pen/vYjJPWq)
 
 made with: nothing recognised — read the code
+
+### [Pure CSS logo Carousel](https://codepen.io/rohanrit/pen/ExLWxeV)
+
+on scroll: div.marquee: transform ×2 | on hover of img.: div.marquee: transform ×2 | made with: @keyframes · :hover
+
+```css
+.marquee-full-width { position: relative }
+.marquee-box { position: relative }
+.marquee { animation: marqueescroll 100s linear 0s infinite; animation-play-state: running; animation-delay: 0s; animation-direction: normal }
+.marquee figure { vertical-align: top }
+.marquee-box:hover div { animation-play-state: running }
+.marquee-box:active div { animation-play-state: running }
+0% { transform: translateX(0%) }
+100% { transform: translateX(-100%) }
+@keyframes marqueescroll animates transform
+```
+
+### [Simple JS Marquee](https://codepen.io/RunicFreak/pen/YzLGYwg)
+
+made with: nothing recognised — read the code
+
+```css
+.marquee h1 { text-transform: uppercase }
+```
+
+### [CSS Marquee Text](https://codepen.io/marcogattone/pen/wvmLGvy)
+
+on scroll: div.: transform ×2 | on hover of a.: div.: transform ×2 | made with: @keyframes
+
+```css
+.marquee { position: relative }
+.marquee .scroll div { animation: animate-marquee 80s linear infinite; animation-delay: -40s }
+.marquee .scroll div:nth-child(2) { animation: animate-marquee-2 80s linear infinite; animation-delay: -80s }
+0% { -moz-transform: translateX(100%); -webkit-transform: translateX(100%); transform: translateX(100%) }
+100% { -moz-transform: translateX(-100%); -webkit-transform: translateX(-100%); transform: translateX(-100%) }
+0% { -moz-transform: translateX(0%); -webkit-transform: translateX(0%); transform: translateX(0%) }
+100% { -moz-transform: translateX(-200%); -webkit-transform: translateX(-200%); transform: translateX(-200%) }
+@keyframes animate-marquee animates -moz-transform, -webkit-transform, transform
+@keyframes animate-marquee-2 animates -moz-transform, -webkit-transform, transform
+```
+
+### [CSS Marquee](https://codepen.io/bdlowery/pen/vYRbWzX)
+
+on scroll: div.marquee__group: transform+top ×6 | on hover of img.: div.marquee__group: transform+top ×5, div.marquee__group: transform | made with: @keyframes · prefers-reduced-motion
+
+```css
+.marquee { transform: skewY(-3deg) }
+.marquee__group { animation: scroll var(--duration) linear infinite }
+.marquee__group { animation-play-state: paused }
+.marquee--reverse .marquee__group { animation-direction: reverse; animation-delay: calc(var(--duration) / -2) }
+0% { transform: translateX(0) }
+100% { transform: translateX(calc(-100% - var(--gap))) }
+@keyframes scroll animates transform
+```
+
+### [CSS Marquee](https://codepen.io/blankriser/pen/yLKxyNb)
+
+on scroll: div.marquee__group: transform+top ×4 | on hover of img.: div.marquee__group: transform+top ×6 | made with: @keyframes · prefers-reduced-motion
+
+```css
+.marquee { transform: skewY(-3deg) }
+.marquee__group { animation: scroll var(--duration) linear infinite }
+.marquee__group { animation-play-state: paused }
+.marquee--reverse .marquee__group { animation-direction: reverse; animation-delay: calc(var(--duration)) }
+0% { transform: translateX(0) }
+100% { transform: translateX(calc(-100% - var(--gap))) }
+@keyframes scroll animates transform
+```
+
+### [CSS Marquee Examples](https://codepen.io/hexagoncircle/pen/eYMrGwW)
+
+made with: @keyframes · :hover · prefers-reduced-motion
+
+```css
+.marquee { position: relative }
+from { transform: translateX(0) }
+to { transform: translateX(calc(-100% - var(--gap))) }
+from { transform: translateX(0) }
+to { transform: translateX(calc(-100% - var(--gap))) }
+.marquee__content { -webkit-animation-play-state: paused !important; animation-play-state: paused !important }
+.enable-animation .marquee__content { -webkit-animation: scroll 10s linear infinite; animation: scroll 10s linear infinite }
+.marquee--reverse .marquee__content { animation-direction: reverse }
+.marquee--hover-pause:hover .marquee__content { -webkit-animation-play-state: paused; animation-play-state: paused }
+.marquee--pos-absolute .marquee__content:last-child { position: absolute; top: 0 }
+.enable-animation .marquee--pos-absolute .marquee__content:last-child { -webkit-animation-name: scroll-abs; animation-name: scroll-abs }
+from { transform: translateX(calc(100% + var(--gap))) }
+```
+
+### [CSS Marquee Logo Wall](https://codepen.io/hexagoncircle/pen/wvmjomb)
+
+held: fixed button.toggle | on scroll: div.marquee__group: transform ×4 | on hover of button.toggle: div.marquee__group: transform ×4 | made with: position: fixed · @keyframes · transition · :focus-visible · prefers-reduced-motion · mask
+
+```css
+.marquee { -webkit-mask-image: linear-gradient( var(--mask-direction, to right), hsl(0 0% 0% / 0), hsl(0 0% 0% / 1) 20%, hsl(0 0% 0% / 1) 80%, hsl(0 0% 0% / 0) ); mask-image: linear-gradient( var(--mask-direction, to right), hsl(0  }
+.marquee__group { -webkit-animation: scroll-x var(--duration) linear infinite; animation: scroll-x var(--duration) linear infinite }
+.marquee__group { -webkit-animation-play-state: paused; animation-play-state: paused }
+.marquee--vertical { --mask-direction: to bottom }
+.marquee--vertical .marquee__group { -webkit-animation-name: scroll-y; animation-name: scroll-y }
+.marquee--reverse .marquee__group { animation-direction: reverse; -webkit-animation-delay: -3s; animation-delay: -3s }
+from { transform: translateX(var(--scroll-start)) }
+to { transform: translateX(var(--scroll-end)) }
+from { transform: translateX(var(--scroll-start)) }
+to { transform: translateX(var(--scroll-end)) }
+from { transform: translateY(var(--scroll-start)) }
+to { transform: translateY(var(--scroll-end)) }
+```
+
+### [CSS Marquee](https://codepen.io/hexagoncircle/pen/jOzZPJw)
+
+on scroll: div.marquee__group: transform+top ×6 | on hover of img.: div.marquee__group: transform ×3, div.marquee__group: transform+top ×3 | made with: @keyframes · prefers-reduced-motion
+
+```css
+.marquee { transform: skewY(-3deg) }
+.marquee__group { -webkit-animation: scroll var(--duration) linear infinite; animation: scroll var(--duration) linear infinite }
+.marquee__group { -webkit-animation-play-state: paused; animation-play-state: paused }
+.marquee--reverse .marquee__group { animation-direction: reverse; -webkit-animation-delay: calc(var(--duration) / -2); animation-delay: calc(var(--duration) / -2) }
+0% { transform: translateX(0) }
+100% { transform: translateX(calc(-100% - var(--gap))) }
+0% { transform: translateX(0) }
+100% { transform: translateX(calc(-100% - var(--gap))) }
+@keyframes scroll animates transform
+```

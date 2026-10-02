@@ -766,13 +766,15 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
       after the fixes, after reload, canvas = Preview
     - `[x]` regression: probe-spacing (S-1), probe-s2 (S-2), L-2's probes — 0 findings; a page saved before F-1 keeps
       every size it CHOSE (hand widths, set gaps); space nobody chose fills there too (decided in the session, reversible)
-- `[ ]` **BATCH L-3 · Tier-99: React error #185 and the tablet line** (area: engine rules · 4 changes, opened 2026-10-02; PAUSED the same day by the user's order — BATCH R-1 runs first in the new session, then back here: c-11a / c-11b / c-11c and L3-b · L3-c (page 141 re-run) · L3-f · L3-g · L3-h are open)
+- `[>]` **BATCH L-3 · Tier-99: React error #185 and the tablet line** ← YOU ARE HERE (area: engine rules · 5 changes, opened 2026-10-02; PAUSED the same day by the user's order, RESUMED 2026-10-02 ~20:00 when R-1 closed — next leaf L3-h: c-11a / c-11b / c-11c and L3-b · L3-c (page 141 re-run) · L3-f · L3-g · L3-h are open)
   - e-5 · React #185 (maximum update depth) — 9 pages
   - e-6 · four columns on one line at Tablet — 8 pages, 142 findings (= c-11)
   - c-11c (decided B) · an icon cell does not count for the tablet rule
   - changes: (1) e-5/c-12 · #185 found through the UI and fixed at its root · (2) c-11a · `packRowLines` treats a line
     that rounds to 100.4% as one line, as its own comment says · (3) c-11b · find out what stores rows over 100% and stop
-    it · (4) c-11c · decided B in `tabletPlaces` AND the audit's L6 check, in the same change
+    it · (4) c-11c · decided B in `tabletPlaces` AND the audit's L6 check, in the same change · (5) R-23 · the Divider
+    publishes `<hr>` (canvas + export), from R-1 — its headed check is in this batch's pass: canvas == Preview, one line,
+    no UA margin / inset border, line style / thickness / colour in all 4 themes, a separator in the accessibility tree
   - `[?]` c-12b · the user decides: typing currently re-renders and saves the whole site on every key. Measure the time
     per key at 150 and 520 blocks FIRST. Batching the keys would change what one Undo takes back while typing. Not built
     until the user answers
@@ -840,23 +842,66 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
       that the engine does not act on)
     - `[ ]` regression: F-1's guards, probe-spacing, probe-s2 and L-2's probes show 0 findings; a page saved before L-3
       keeps its widths
-- `[>]` **BATCH R-1 · Research at full width** ← YOU ARE HERE (area: research runs · 4 changes, OPEN 2026-10-02 — the user: "once the
+- `[x]` **BATCH R-1 · Research at full width** — CLOSED 2026-10-02 ~20:00 by the user's "enough" (area: research runs · 4 changes, OPEN 2026-10-02 — the user: "once the
   testing is done… multiple browsers so we can do it faster… we start this in a NEW session"; the rule is in CLAUDE.md
   under RULE RS, "research runs as wide as the machine allows")
   - PAUSED 2026-10-02 ~18:45 for the L-3 stress run (the new rule: no research beside a batch's testing): the CodePen
     resume (`codepen-resume.sh`, it resumes) and the Awwwards chain (`educo-research/chain.sh`) — it had finished
     `aw-coll-about-page` (300) and was on `aw-coll-animation-libraries-examples-inspiration --saturate=150`. Restart the
     chain WITHOUT `--saturate` (the user: "grab everything"); `aw-measure.js` resumes from what it measured
-  - (1) measure the machine with the UAT stopped (CPU, free memory), stop the 3100 / 3200 servers
+  - `[x]` (1) MEASURED 2026-10-02 18:55, nothing running (no UAT, 3100/3200 free, no research): 16 logical cores at
+    5% load, 3.6 GB free of 15.6 GB — MEMORY is the limit, not CPU. With the six CodePen collectors: 0.3 → 0.7–1.5 GB
+    free, load 40–90%
+  - `[>]` RUNNING (session f86b7fdf): `educo-research/r1-codepen.sh` — 3 tag collectors (A parallax sticky hover-effect
+    dialog …, B clip-path hover sticky-header …, C cursor marquee + the step-4 names + the small tags) and 3 list
+    collectors over `pens-own-s1..3.list.json` (1,382 / 1,381 / 1,381 = the 4,144 unread), profiles `cp-prof/1..6`
+    (copies of prof-c). Shard outputs `raw/pens-own-sN.json` are MERGED into `pens-own.json` when they finish.
+    `educo-research/r1-aw.sh <lane> <jobs>` — the Awwwards lists without `--saturate`, two lanes on alternate lists
+    (`profile`, `profile-aw2`), lane 1 started at 2 jobs
+  - STEPPED DOWN 19:08: collector C raised CodePen's human check 13 times in 6 minutes (walking listing pages of pens
+    already read) → stopped; its tags (cursor marquee horizontal-scroll view-transitions page-transition
+    scroll-driven-animations + the step-4 names) run when A or B finishes. Awwwards lane 2 NOT started: with five
+    CodePen + one Awwwards lane at 2 jobs the machine reads 100% CPU, 0.8 GB free, and the list collectors fell from
+    ~8 to ~1.5 pens a minute — the machine is the limit
+  - `[x]` **THE USER'S DECISION, 2026-10-02 ~19:35: "we have enough" — the big runs STOPPED.** Estimate given: ~3–4 days
+    at full width (Awwwards ~9,500 sites left at ~100/h; CodePen tags open-ended). The "enough" checklist already marks
+    every need covered and says the runs "change shares, not the list of techniques"; six tags had saturated. What this
+    session read before stopping: **1,212 new pens** (pens-own +1,016 → 1,586 / 4,714 · parallax 962 · clip-path 603 ·
+    marquee 256 …) and **~391 Awwwards sites** checked (aw-coll-transitions 366/366 · animation-libraries 25/25 ·
+    aw-coll-animation 8/243). Every run resumes if an area turns out thin. Kept to finish: the user's own aw-coll-hovers
+    (4 left), the step-4 names (saturated at 150), the `sticky` re-walk that proves R-21
+  - **Ledger (this session):**
+    - `[x]` R-21 · `cp-tag.js` treated a listing page with no new pens as the END even when it failed to load after a
+      human check — `sticky` ended at page 3 with 12 pens (585 read before). Fix: a page with no pen links is retried
+      twice; END logs the link count. PROVEN: the `sticky` re-walk went past page 3 to page 98 and read pen 586 (new);
+      `dividers` ended on a real end ("page 3 pens 11 links on the page 0" after the two retries). Re-walk then stopped
+      (the user's "enough"). aw-coll-hovers 466/466 — every one of the user's own links is complete
+    - `[x]` R-23 · the builder's Divider published `<div aria-hidden>` on the canvas AND the page, where the stored research
+      (`html-semantics.md:132`) and MDN say `<hr>` (separator) — found while judging the divider pens. FIXED: `<hr>` in
+      `box-export.ts:158` and `BoxCanvas.tsx` (UA margin / inset border reset), guard `box-export.test.ts` "a Divider
+      publishes <hr>" RED on the old code, green on the new; BoxCanvas test selector updated; scenario in
+      `box-builder-layout.feature`. HEADED check → BATCH L-3's pass (change 5)
+    - `[x]` R-22 · MY OWN: `r1-aw.sh` gave the user's aw-coll-hovers (462/466) to lane 2, which was never started — a
+      list on a lane that does not run is never read. Fix: run directly; `r1-aw.sh` retired with the runs
   - (2) CodePen at 6 windows: three `cp-tag.js` collectors, each with its own COPY of the cleared profile (`prof-c`) and
     its own share of the tags; `list:pens-own` (4,144 not read) split into its own collectors, running AT THE SAME TIME
     instead of after; step back down if CodePen starts asking "are you human"
   - (3) every other link at full width: `aw-measure.js --jobs=` raised as far as the machine allows (Awwwards items are
     separate sites), and the queued runs (wf-page-transitions, opl-drop-shadow, aw-coll-transitions, aw-coll-hovers,
     aw-cat-transitions, aw-cat-animation, the own demo lists) run side by side, not one after another
-  - (4) the three 0-pen CodePen tags under the names CodePen uses (divider · dividers · wave · svg-divider ·
+  - `[x]` (4) DONE 2026-10-02 (stopped at the user's "enough" — 137 pens: divider 75 · dividers 11 to its end · wave 51; svg-divider / stacked-cards / card-stack / stacking not reached, resumable); tag pages regenerated by `cp-how.js` (29 tags); judgement in `motion/library/3-section-transition.md` "Added 2026-10-02 (R-1)": band edges HAVE · wave / SVG edge GAP · overlap GAP · moving wave GAP · rule between blocks PARTIAL→fixed by R-23 · stacked cards GAP. Was: the three 0-pen CodePen tags under the names CodePen uses (divider · dividers · wave · svg-divider ·
     stacked-cards · card-stack · stacking); then the tag pages regenerated (`cp-how.js`) and the HAVE / PARTIAL / GAP
     judgement against the builder
+- `[ ]` **BATCH S-2 · Section transitions** (area: band edges and held sections · 5 changes, queued 2026-10-02 by the
+  user: "yes" — runs AFTER the layout batches L-3…L-7 and the agreed motion Batches A and B; research done in R-1,
+  `motion/library/3-section-transition.md` "Added 2026-10-02 (R-1)")
+  - ST-5 · a block can overlap a band edge (a card hanging across two bands): outer spacing may go below 0
+  - ST-1 · a sloped / curved band edge shows the NEXT band's colour, as the guide says, not the page colour
+  - ST-4 · wave and SVG-shape band edges beside the four `BandEdge` shapes (mask / clip-path, rem-sized, per rung)
+  - NEW · a moving (keyframed) wave edge — still under `prefers-reduced-motion`, approved motion tokens
+  - ST-7 · stacked cards — **DECIDED by the user 2026-10-02: BOTH behaviours, side by side** ("can we not do a and b
+    together"): each held section chooses **Queue** (today's, one under another — stays the DEFAULT so no saved page
+    changes) or **Stack** (each card slides over the last); switchable any time, canvas == export
 - `[ ]` **BATCH L-4 · The decided layout changes** (area: rows and grids · 6 changes, queued)
   - c-7 (decided B) / e-9 · MOVED to BATCH F-1 (2026-10-01) — the HOLE at the end of a line is unused space
   - c-8 (decided B) / e-7 / #127b · words broken across lines ("1,000+" in 165px Stat columns) — 4 pages, 58 findings

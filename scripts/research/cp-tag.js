@@ -101,11 +101,16 @@ async function readPen(p, url, tag) {
       const done = (fs.existsSync(f) ? JSON.parse(fs.readFileSync(f, 'utf8')) : []).filter(r => !r.err); const have = new Set(done.map(d => d.url)); // errored pens re-run (R-12)
       const found = new Set(); const sat = saturation(); sat.seed(done); let stopTag = false;
       for (let pg = 1; pg < 5000; pg++) {
-        await go(list, `https://codepen.io/tag/${tag}` + (pg > 1 ? `?cursor=${cursor(pg)}` : ''));
-        await list.waitForSelector('a[href*="/pen/"]', { timeout: 12000 }).catch(() => {}); await rest_(1000);
-        const got = await safe(() => list.evaluate(() => [...new Set([...document.querySelectorAll('a[href*="/pen/"]')].map(a => a.href.split('?')[0]))].filter(h => /codepen\.io\/(editor\/)?[^/]+\/pen\/[^/]+$/.test(h) && !/\/team\/codepen\//.test(h))), []);
+        // A page with NO pen links may be a load that failed after a human check, not the end: retried twice first
+        // (R-21 — `sticky` ended at page 3 with 12 of its 585 pens)
+        let got = [];
+        for (let t = 0; t < 3 && !got.length; t++) {
+          await go(list, `https://codepen.io/tag/${tag}` + (pg > 1 ? `?cursor=${cursor(pg)}` : ''));
+          await list.waitForSelector('a[href*="/pen/"]', { timeout: 12000 }).catch(() => {}); await rest_(1000);
+          got = await safe(() => list.evaluate(() => [...new Set([...document.querySelectorAll('a[href*="/pen/"]')].map(a => a.href.split('?')[0]))].filter(h => /codepen\.io\/(editor\/)?[^/]+\/pen\/[^/]+$/.test(h) && !/\/team\/codepen\//.test(h))), []);
+        }
         const fresh = got.filter(u => !found.has(u)); fresh.forEach(u => found.add(u));
-        if (!fresh.length) { console.log('END', tag, 'page', pg, 'pens', found.size); break; }
+        if (!fresh.length) { console.log('END', tag, 'page', pg, 'pens', found.size, 'links on the page', got.length); break; }
         // EVERY pen on this page, opened before the next page.
         for (const u of fresh) {
           if (have.has(u)) continue;

@@ -1,28 +1,28 @@
 # CodePen · hover-effect — how each pen does it
 
-438 pens, each opened, run and read (`cp-tag.js`); written by `cp-how.js` from the pen's own code and what it did when scrolled and hovered. The full code is in `raw/hover-effect.json`.
+580 pens, each opened, run and read (`cp-tag.js`); written by `cp-how.js` from the pen's own code and what it did when scrolled and hovered. The full code is in `raw/hover-effect.json`.
 
 ## Techniques, most used first
 
 | Technique | Pens |
 |---|---|
-| :hover | 413 |
-| transition | 399 |
-| @keyframes | 82 |
-| 3D (perspective / preserve-3d) | 55 |
-| position: fixed | 40 |
+| :hover | 547 |
+| transition | 519 |
+| @keyframes | 110 |
+| 3D (perspective / preserve-3d) | 64 |
+| position: fixed | 46 |
 | pointer / mouse tracking | 30 |
-| backdrop-filter | 25 |
-| clip-path | 24 |
+| backdrop-filter | 27 |
+| clip-path | 26 |
+| mix-blend-mode | 22 |
 | requestAnimationFrame | 18 |
-| mix-blend-mode | 16 |
-| custom properties driven by JS | 13 |
+| custom properties driven by JS | 14 |
 | mask | 12 |
-| GSAP | 11 |
+| GSAP | 12 |
+| canvas 2D | 7 |
+| (hover: hover) gate | 7 |
 | :focus-visible | 6 |
 | prefers-reduced-motion | 6 |
-| canvas 2D | 6 |
-| (hover: hover) gate | 5 |
 | three.js / WebGL | 4 |
 | position: sticky | 3 |
 | ScrollTrigger | 2 |
@@ -30,6 +30,7 @@
 | Web Animations API (.animate) | 2 |
 | IntersectionObserver | 1 |
 | scroll listener | 1 |
+| scroll() timeline | 1 |
 
 ## Every pen
 
@@ -6465,4 +6466,2034 @@ made with: transition · :hover
 .image figcaption { position: absolute; top: 340px; bottom: -340px; opacity: 0; transition: 1s }
 .image:hover figcaption { opacity: 1; bottom: 0; top: 0 }
 .show_pic img { margin-bottom: 25px }
+```
+
+### [css Image Hover Effect](https://codepen.io/lletycia/pen/wNNBpm)
+
+made with: @keyframes · :hover
+
+```css
+figure { position: relative }
+figure:hover::before { transform: rotate(46deg); position: absolute; top: -30px; animation: 400ms animate; animation-fill-mode: forwards; animation-timing-function: cubic-bezier(.43,.47,.81,.81) }
+@keyframes animate animates transform-origin
+```
+
+### [Menu Animation (pure css)](https://codepen.io/chryss/pen/wNEqqL)
+
+made with: transition · :hover
+
+```css
+.menu { position: absolute; top: 1em }
+.menu span { margin-bottom: 6px; transition: all 0.5s; -webkit-transition: all 0.5s }
+.menu:active span:nth-child(1), .menu:focus span:nth-child(1), .menu:hover span: { transform: rotate(45deg) translateY(8px) translateX(7px); -webkit-transform: rotate(45deg) translateY(8px) translateX(7px) }
+.menu:active span:nth-child(2), .menu:focus span:nth-child(2), .menu:hover span: { opacity: 0 }
+.menu:active span:nth-child(3), .menu:focus span:nth-child(3), .menu:hover span: { transform: rotate(-45deg) translateY(-7px) translateX(6px); -webkit-transform: rotate(-45deg) translateY(-7px) translateX(6px) }
+```
+
+### [Menu Highlight on Hover](https://codepen.io/macbubb/pen/mvXMXW)
+
+on hover of li.menu_item: li.menu_item: color ×4, a.: color ×3, ul.menu: color, a.: transform+color+top | made with: transition · :hover
+
+```css
+.menu-hover-effects { transition: color 0.5s ease-in-out }
+.menu-hover-effects a, .menu-hover-effects a:link, .menu-hover-effects a:visited { transition: color, transform 0.5s ease-in-out }
+.menu-hover-effects a:hover { transform: scale(1.025, 1.025) }
+.image_caption, .lyrics_caption { padding-top: 2rem }
+h1 { padding-top: 2rem; text-transform: uppercase }
+.lyrics { padding-top: 3rem }
+.lyrics { padding-top: 0 }
+```
+
+### [Tabs - CSS + JS](https://codepen.io/rafaelavlucas/pen/MLKGba)
+
+held: fixed div.about | on hover of a.bg_links: a.bg_links: opacity+top ×2, span.icon: opacity+top ×2, a.bg_links: opacity ×2, span.icon: opacity | made with: position: fixed · @keyframes · transition · :hover · backdrop-filter
+
+```css
+.about { position: fixed; bottom: 10px; transition: all 0.2s ease }
+.about .bg_links { backdrop-filter: blur(5px); position: absolute }
+.about .logo { background-position: 10px 7px; opacity: 0.9; transition: all 1s 0.2s ease; bottom: 0 }
+.about .social { opacity: 0; bottom: 0 }
+.about .social .icon { background-position: center; transition: all 0.2s ease, background-color 0.4s ease; opacity: 0 }
+.about .social.portfolio { transition: all 0.8s ease }
+.about .social.dribbble { transition: all 0.3s ease }
+.about .social.linkedin { transition: all 0.8s ease }
+.about:hover { transition: all 0.6s cubic-bezier(0.64, 0.01, 0.07, 1.65) }
+.about:hover .logo { opacity: 1; transition: all 0.6s ease }
+.about:hover .social { opacity: 1 }
+.about:hover .social .icon { opacity: 0.9 }
+```
+
+### [CSS Pop Color Change Hover Effect](https://codepen.io/cpettydesigns/pen/XOrOeX)
+
+on scroll: div.container: transform+top | made with: transition · :hover
+
+```css
+html .container, body .container { transform: scale(0.98); transition: all 500ms ease }
+html .container:hover, html .container:active, body .container:hover, body .cont { transform: scale(1) }
+```
+
+### [Cool Button Effect](https://codepen.io/jerembardon/pen/ZVdxJR)
+
+on scroll: span.round: transform+top | made with: @keyframes · :hover
+
+```css
+.primary-button { position: relative; text-transform: uppercase }
+.primary-button .round { position: absolute; top: 5px; animation: scale-down 0.2s forwards }
+.primary-button.animate .round { animation: scale-up 0.5s forwards }
+to { transform: scale(600) }
+from { transform: scale(600) }
+@keyframes scale-up animates transform
+@keyframes scale-down animates transform, ransform
+```
+
+```js
+addEventListener("mouseenter", function(event) {
+addEventListener("mouseleave", function() {
+```
+
+### [Primary Color Orbit Hover Effect](https://codepen.io/franknoirot/pen/qLGvYE)
+
+made with: @keyframes · transition · :hover · 3D (perspective / preserve-3d)
+
+```css
+.card { box-shadow: 0 .5rem 5px rgba(0,0,0,.2) }
+.orbiter { position: relative; animation: orbit-bg 2.2s .6s infinite; transition: background-color .3s ease-in-out }
+.orbiter::before { position: absolute; top: calc(50% - var(--size)/2); transform: 0; animation: orbit 2s infinite ease-in-out; opacity: 0; transition: opacity .3s ease-in-out }
+.orbiter::after { position: absolute; top: calc(50% - var(--size)/2); animation: orbit45 1.5s .4s infinite ease-in-out; opacity: 0; transition: opacity .3s ease-in-out }
+0% { background-position: 0% 10% }
+50% { background-position: 100% 90% }
+0% { transform: 0 }
+50% { transform: translateZ(-100px) }
+51% { transform: translateZ(100px) }
+100% { transform: 0 }
+0% { transform: translateY(200%) }
+50% { transform: translateY(-200%) translateZ(-100px) }
+```
+
+### [Hover animation - what's Spidy gotto say?](https://codepen.io/TajShireen/pen/vvwYrx)
+
+on scroll: div.element__tooltip: opacity+top | made with: transition · :hover
+
+```css
+.spidy-wrapper { padding-top: 3rem }
+.spidy__frame { position: relative; box-shadow: 4px 8px 16px 0 rgba(0, 0, 0, 0.1); box-shadow: 10px 5px 20px #5d0c0f }
+.spidy__frame > img { bottom: -5rem; position: absolute }
+.center { position: relative }
+.center__element { margin-top: -2rem; position: relative; transition: all 0.5s cubic-bezier(0.52, 0.11, 0.07, 0.62) }
+.spidy__frame:hover .center__element { margin-top: 7rem }
+.center__element img { filter: drop-shadow(0px 40px 10px #0e072c) }
+.element__tooltip { position: absolute; top: -6rem; opacity: 0; transition: all 0.5s; box-shadow: 0px 5px 10px #100932 }
+.element__tooltip:before { position: absolute; top: 100%; transform: rotate(20deg) }
+.element__tooltip:after { position: absolute; top: 100%; transform: rotate(-25deg) }
+.spidy__frame:hover .element__tooltip { opacity: 1; transition: all 2s }
+```
+
+### [Pressed down-effect on click](https://codepen.io/astridboberg/pen/mavbMW)
+
+made with: transition · :hover
+
+```css
+body { padding-top: 10% }
+div { box-shadow: 0 20px 30px 0 rgba(0, 0, 0, 0.25); transition: top 0.2s, box-shadow 0.2s }
+div:hover { margin-top: -5px }
+div:active { margin-top: 5px; box-shadow: none }
+```
+
+### [Wavy hover](https://codepen.io/Saul-BT/pen/PXyXvO)
+
+made with: @keyframes · transition · :hover
+
+```css
+a.waves { position: relative; margin-top: 1em; transition: .2s }
+a.waves:hover::before { box-shadow: 0 10px 15px -6px var(--glowShadow) }
+a.waves:hover::after { box-shadow: 0 -10px 15px -6px var(--glowShadow) }
+a.waves:hover::before, a.waves:hover::after { position: absolute; bottom: -5px }
+a.waves:hover::before, a.waves:hover::after { background-position: 0 0; -webkit-animation: move .5s infinite linear; animation: move .5s infinite linear }
+a.waves:hover::after { bottom: -25px; background-position: 15px -20px; -webkit-animation: move2 .5s infinite linear; animation: move2 .5s infinite linear }
+@keyframes move animates background-position-x
+@keyframes move2 animates background-position-x
+```
+
+### [Difference Blend Button Hover](https://codepen.io/franknoirot/pen/NeLQeL)
+
+made with: @keyframes · :hover · mix-blend-mode
+
+```css
+.btn-tricolor { position: relative }
+.btn-tri { mix-blend-mode: difference; position: absolute; top: 0 }
+.btn-tricolor:hover .red { animation: pop .25s ease-in-out }
+.btn-tricolor:hover .blue { animation: pop .25s .05s ease-in-out }
+.btn-tricolor:hover .green { animation: pop .25s .1s ease-in-out }
+.blue { animation-delay: .1s }
+.green { animation-delay: .2s }
+.exited { transform: translate(0) }
+0% { transform: translate(0) }
+30% { transform: translate(0.3em, -0.6em) }
+100% { transform: translate(0) }
+@keyframes pop animates transform
+```
+
+### [CSS Gradient Background Hover Effect On Mouse Movement](https://codepen.io/50701/pen/ebLyNb)
+
+made with: transition · :hover
+
+```css
+.grButton { text-transform: uppercase; background-position: left center; transition: 0.4s }
+.grButton:hover { background-position: right center }
+```
+
+### [Button - Hover & CSS Gradients](https://codepen.io/Barrydreamt/pen/oJoQNo)
+
+on hover of a.btnOne: a.btnOne: color | made with: :hover
+
+```css
+.btnOne { text-transform: uppercase }
+.btnTwo { text-transform: uppercase }
+.btnThree { text-transform: uppercase }
+```
+
+### [Shadow Buttons](https://codepen.io/MdAshraf/pen/YdqPZq)
+
+on hover of button.button: button.button: shadow | made with: :hover
+
+```css
+.button:hover { box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24),0 17px 50px 0 rgba(0,0,0,0.19) }
+.button1:hover { box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24),0 17px 50px 0 rgba(0,0,0,0.19) }
+.button2:hover { box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24),0 17px 50px 0 rgba(0,0,0,0.19) }
+```
+
+### [Ukrainian flag](https://codepen.io/JuliaSS/pen/wRvNMG)
+
+made with: @keyframes · :hover
+
+```css
+#flag { position: relative; box-shadow: 0 0 7px 3px rgba(0,0,0,.4) }
+#flag:before, #flag:after { opacity: 0 }
+#flag:before { background-position: 0% 20% }
+#flag:after { position: absolute; bottom: 0; background-position: 0% 100% }
+#flag:hover:before { animation: cloud 20s forwards }
+#flag:hover:after { animation: field 20s forwards }
+3% { opacity: 0.7 }
+100% { opacity: 0.7; background-position: 40% 20% }
+3% { opacity: 0.7 }
+10% { opacity: 0.7; background-position: 5% 100% }
+30% { opacity: 0.7; background-position: -5% 100% }
+60% { opacity: 0.7; background-position: 5% 100% }
+```
+
+### [CSS3 Animated content collection](https://codepen.io/shamim539/pen/zMeKEB)
+
+on hover of img.: a.: color ×2, img.: opacity+filter, i.fas: background, h3.: transform+opacity, p.: transform+opacity, img.: transform+opacity+top | made with: transition · :hover
+
+```css
+.style-noodels-two.hover p, .style-noodels-two.hover h3, .style-noodels-two:hove { opacity: 1; transform: translateY(0) }
+.style-noodels-three .square div:after, .style-noodels-three .square div:before, { position: absolute; transition: all 0.4s ease-in-out }
+.style-noodels-four div:after, .style-noodels-four div:before { position: absolute; top: 0; transition: all 0.35s ease-in-out }
+.style-noodels-nine p:after, .style-noodels-nine p:before { position: absolute; bottom: 50%; transition: all 0.45s ease-in-out }
+.style-noodels-nine.hover p, .style-noodels-nine:hover p { opacity: 1 }
+.style-noodels-ten a span:after, .style-noodels-ten a span:before, .style-noodel { position: absolute; opacity: 0; transition: all 0.4s ease-in-out }
+.style-noodels-Sixteen figcaption div:after, .style-noodels-Sixteen figcaption d { position: absolute; transition: all 0.4s ease-in-out }
+.style-noodels-Sixteen.hover img, .style-noodels-Sixteen:hover img { opacity: 0.2; filter: blur(5px); transform: scale(1.1) }
+.style-noodels-Sixteen.hover figcaption p, .style-noodels-Sixteen.hover figcapti { opacity: 1; transform: translateY(0) }
+.style-noodels-one { position: relative; box-shadow: 0 0 5px rgba(0, 0, 0, 0.15) }
+.style-noodels-one * { transition: all 0.3s ease }
+.style-noodels-one div { position: absolute; top: 50%; transform: translate(-50%, -50%); opacity: 0 }
+```
+
+### [Multi line hover effect](https://codepen.io/lynnewritescode/pen/zMmyJW)
+
+made with: transition · :hover
+
+```css
+a { padding-bottom: 2px; transition: all 0.35s linear; background-position: left 100% }
+```
+
+### [Testimonial with hover effect](https://codepen.io/jrvasol/pen/Jeaqpo)
+
+on scroll: p.: color+top ×2 | made with: transition · :hover
+
+```css
+.card-container { margin-top: 50px }
+.card { box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.1); -webkit-transition: all 200ms ease-in; -webkit-transform: scale(1); -ms-transition: all 200ms ease-in; -ms-transform: scale(1); -moz-transition: all 200ms ease-in; -moz-tr }
+.card:hover { transform: scale(1.1); box-shadow: 0px 3px 15px #00000050; -webkit-transition: all 200ms ease-in; -webkit-transform: scale(1.1); -ms-transition: all 200ms ease-in; -ms-transform: scale(1.1); -moz-transition: all 200ms ea }
+.card:hover .card__heading__img { bottom: 5px; transition: all 0.3s }
+.card:hover .card__body:before, .card:hover .card__body:after { opacity: 0.3 }
+.card__heading { position: relative }
+.card__heading__img { position: absolute; bottom: -5px }
+.card__body { position: relative; margin-top: 50px }
+.card__body:before, .card__body:after { position: absolute }
+.card__body:before { top: 0 }
+.card__body:after { bottom: 0 }
+.card__body p { position: relative }
+```
+
+### [Button-Hover-Effect](https://codepen.io/vnkat/pen/dQeJby)
+
+made with: transition · :hover
+
+```css
+.mainDiv { position: absolute; top: 50%; transform: translate(-50%, -50%) }
+.button1 { position: relative }
+.button1:before, .button1:after { position: absolute; transition: all 0.25s }
+.button1:before { top:-5px }
+.button1:after { bottom: -5px }
+```
+
+### [Social Hovers](https://codepen.io/ilyasbilgihan/pen/yQKXYz)
+
+on hover of li.fb: a.: color, i.fab: color+top | made with: @keyframes · transition · :hover
+
+```css
+ul#buttons { position: absolute; top: 50%; transform: translate(-50%,-50%) }
+ul#buttons:before { position: absolute; margin-top: -60px }
+ul#buttons li { position: relative; transition: .5s; box-shadow: 0px 8px 16px -6px, 0px 0px 16px -6px }
+ul#buttons li a { transition: .5s; animation: icon-out .5s forwards; animation-timing-function: cubic-bezier(0.5, -0.6, 1, 1) }
+ul#buttons li:before { position: absolute; transform: rotate(-45deg) translate(-110%, -23px); animation: back-out .5s forwards; animation-timing-function: cubic-bezier(0.5, -0.6, 1, 1) }
+ul#buttons li:hover a { animation: icon-in .5s forwards; animation-timing-function: cubic-bezier(0, 0, 0.4, 1.6) }
+ul#buttons li:hover:before { animation: back-in .5s forwards; animation-timing-function: cubic-bezier(0, 0, 0.4, 1.6) }
+0% { transform: rotate(-45deg) translate(-110%, -23px) }
+80% { transform: rotate(-45deg) translate(5%, -23px) }
+100% { transform: rotate(-45deg) translate(0%, -23px) }
+0% { transform: rotate(-45deg) translate(0%, -23px) }
+20% { transform: rotate(-45deg) translate(5%, -23px) }
+```
+
+### [Fill Text Effect On Hover - Css3 Hover Effect - Pure Html Css](https://codepen.io/sebconejo/pen/qQPJeO)
+
+on scroll: div.contact-block: background, span.link-mask: transform, span.: transform | made with: transition · :hover
+
+```css
+.contact-block { position: relative; -webkit-transition: background-color 0.85s ease-out; -moz-transition: background-color 0.85s ease-out; -ms-transition: background-color 0.85s ease-out; -o-transition: background-color 0.85s ease-out;  }
+.contact-block > span { position: relative }
+.contact-block > span[data-text=Contact] { position: absolute; top: var(--top, calc(50% - var(--height) / 2)) }
+.contact-block:hover .link-mask, .contact-block:hover .link-mask > span { -webkit-transform: translateY(0%); -ms-transform: translateY(0%); transform: translateY(0%); transition: all 0.8s cubic-bezier(0.26, 0.48, 0.08, 0.9); -webkit-transition: all 0.8s cubic-bezier(0.26, 0.48, 0.08, 0.9); -mo }
+.contact-block .link-mask { position: absolute; top: 0; -webkit-transform: translateX(-120%); -ms-transform: translateX(-120%); transform: translateX(-120%); transition: all 0.6s cubic-bezier(0.26, 0.48, 0.08, 0.9); -webkit-transition: all 0.6s cub }
+.contact-block .link-mask > span { position: absolute; top: 0; -webkit-transform: translateX(120%); -ms-transform: translateX(120%); transform: translateX(120%); transition: all 0.6s cubic-bezier(0.26, 0.48, 0.08, 0.9); -webkit-transition: all 0.6s cubic- }
+```
+
+### [CSS Info Cards - Hover](https://codepen.io/rafaelavlucas/pen/rQWJYG)
+
+held: fixed div.about | on scroll: p.text: opacity+top | on hover of a.bg_links: a.bg_links: opacity+top ×2, span.icon: opacity+top ×2, a.bg_links: opacity ×2, span.icon: opacity, p.text: opacity+top | made with: position: fixed · transition · :hover · backdrop-filter
+
+```css
+.about { position: fixed; bottom: 10px; transition: all 0.2s ease }
+.about .bg_links { backdrop-filter: blur(5px); position: absolute }
+.about .logo { background-position: 10px 7px; opacity: 0.9; transition: all 1s 0.2s ease; bottom: 0 }
+.about .social { opacity: 0; bottom: 0 }
+.about .social .icon { background-position: center; transition: all 0.2s ease, background-color 0.4s ease; opacity: 0 }
+.about .social.portfolio { transition: all 0.8s ease }
+.about .social.dribbble { transition: all 0.3s ease }
+.about .social.linkedin { transition: all 0.8s ease }
+.about:hover { transition: all 0.6s cubic-bezier(0.64, 0.01, 0.07, 1.65) }
+.about:hover .logo { opacity: 1; transition: all 0.6s ease }
+.about:hover .social { opacity: 1 }
+.about:hover .social .icon { opacity: 0.9 }
+```
+
+### [3D hover effect on image with only CSS !](https://codepen.io/sebconejo/pen/dQORYx)
+
+on scroll: div.content: transform+top | on hover of a.cell: div.content: transform+top | made with: transition · :hover · 3D (perspective / preserve-3d)
+
+```css
+.wrapper { position: relative; perspective: 800px }
+.wrapper .content { box-shadow: 0 6px 56px 26px rgba(0, 0, 0, 0.1); background-position: center; transform: rotateX(0) rotateY(0); transition: 250ms linear transform }
+.wrapper .cell { position: absolute }
+.wrapper .cell-1 { top: 0 }
+.wrapper .cell-1:hover ~ .content { transform: rotateX(5deg) rotateY(-5deg) }
+.wrapper .cell-2 { top: 0 }
+.wrapper .cell-2:hover ~ .content { transform: rotateX(5deg) rotateY(5deg) }
+.wrapper .cell-3 { top: 50% }
+.wrapper .cell-3:hover ~ .content { transform: rotateX(-5deg) rotateY(-5deg) }
+.wrapper .cell-4 { top: 50% }
+.wrapper .cell-4:hover ~ .content { transform: rotateX(-5deg) rotateY(5deg) }
+```
+
+### [Button CSS example](https://codepen.io/JestVA/pen/BGKBNp)
+
+on hover of button.btn: button.btn: shadow+top | made with: :hover
+
+```css
+.btn { position: relative; text-transform: uppercase; box-shadow: 0 6px #efa424 }
+.btn:hover { box-shadow: 0 4px #efa424; top: 2px }
+.btn:active { box-shadow: none; top: 6px }
+```
+
+### [Remove a hover effect for touch devices with only CSS](https://codepen.io/Ferie/pen/aQOxKr)
+
+made with: :hover · (hover: hover) gate
+
+### [Hover underline animation](https://codepen.io/niktariy/pen/yQLzXO)
+
+made with: transition · :hover
+
+```css
+.hover-underline-animation { position: relative }
+.hover-underline-animation::after { position: absolute; transform: scaleX(0); bottom: 0; transition: transform 0.25s ease-out }
+.hover-underline-animation:hover::after { transform: scaleX(1) }
+```
+
+### [Strike-through Text](https://codepen.io/EmmaJD/pen/gQYZGe)
+
+on scroll: span.: color | made with: transition · :hover
+
+```css
+body { text-transform: uppercase }
+span { position: relative; transition: 0.6s }
+span:hover { transition: 0.6s }
+span:before, span:after { position: absolute; top: 50%; margin-top: -0.5px }
+span:after { transition: width 0.8s cubic-bezier(0.22, 0.61, 0.36, 1) }
+span:hover:before { transition: width 0.5s cubic-bezier(0.22, 0.61, 0.36, 1) }
+span:hover:after { transition: 0s }
+```
+
+### [Link Hover Effect](https://codepen.io/blecaf/pen/aRPYNq)
+
+on scroll: a.: color+shadow | made with: transition · :hover
+
+```css
+a { position: absolute; top: 50%; transform: translate(-50%, -50%); box-shadow: inset 0px -4px 0 currentColor; transition: color 1s }
+a:after,a:before { position: absolute; top: 0; bottom: 0; transition: width 1s, height 1s }
+a:after { top: auto; box-shadow: inset 0px -4px 0 currentColor; transition: width 0.5s }
+```
+
+### [Hover line animation using plain JavaScript](https://codepen.io/gnevin/pen/qJoadQ)
+
+on hover of a.: div.nav-track__active: opacity | made with: transition
+
+```css
+body:before { position: absolute; top: 0; filter: blur(2px); opacity: 0.5 }
+nav { position: relative }
+a { transition: all 0.3s ease-in-out }
+.nav-track { position: relative }
+.nav-track__active { bottom: 0; opacity: 0; position: absolute; transition: all 0.3s ease-in-out }
+```
+
+### [Ghost 👻](https://codepen.io/SBDesign/pen/YJwgpX)
+
+on scroll: div.rightEye: transform+background+top, div.leftEye: transform+background, div.mouth: transform+background | made with: @keyframes · transition · :hover
+
+```css
+.ghostbody { animation-name:floating; animation-iteration-count: infinite; animation-duration: 1.6s }
+.leftHand { transform: rotate(310deg) }
+.rightHand { transform: rotate(40deg) }
+.legs { transition:all 0.3s }
+li { transform: rotate(180deg) }
+.mouth { transition: all 0.2s }
+.ghostbody:hover .mouth { transform: rotate(180deg) }
+.leftEye { transition: all 0.3s }
+.rightEye { transition: all 0.2s }
+.ghostbody:hover .rightEye { transform: rotate(330deg) }
+.ghostbody:hover .leftEye { transform: rotate(40deg) }
+@keyframes floating animates margin
+```
+
+### [Border Hover Effects](https://codepen.io/shpendbajgora/pen/oaXgvq)
+
+made with: transition · :hover
+
+```css
+.title { margin-bottom: 10px }
+.item-wrapper { position: relative }
+.item-wrapper .line { position: absolute }
+.item-wrapper .line span { position: inherit; transition: all .4s ease-out }
+.item-wrapper .line-top { top: 0 }
+.item-wrapper .line-right { top: 0 }
+.item-wrapper .line-bottom { bottom: 0 }
+.item-wrapper .line-left { bottom: 0 }
+.item-wrapper .line-top span { top: inherit }
+.item-wrapper .line-right span { top: inherit }
+.item-wrapper .line-bottom span { bottom: inherit }
+.item-wrapper .line-left span { bottom: inherit }
+```
+
+### [Button hover effect](https://codepen.io/comehope/pen/yRyOZr)
+
+on hover of li.: li.: color | made with: transition · :hover
+
+```css
+ul li { text-transform: uppercase; position: relative; transition: 0.3s }
+ul li::before { position: absolute; transition: 0.4s ease-out }
+ul li::after { position: absolute; bottom: 0; transition: 0.3s 0.3s ease-out }
+```
+
+### [Perspective button hover effect](https://codepen.io/comehope/pen/qJEdKb)
+
+on hover of li.: li.: transform+top | made with: transition · :hover · 3D (perspective / preserve-3d)
+
+```css
+ul li { box-shadow: 0 0 1em rgba(0,0,0,0.2); text-transform: capitalize; transition: 0.3s }
+ul li:nth-child(odd) { transform: perspective(500px) rotateY(45deg) }
+ul li:nth-child(even) { transform: perspective(500px) rotateY(-45deg) }
+ul li:nth-child(odd):hover { transform: perspective(200px) rotateY(45deg) }
+ul li:nth-child(even):hover { transform: perspective(200px) rotateY(-45deg) }
+```
+
+### [CSS layered hover animation.](https://codepen.io/martincravero/pen/VEZqeJ)
+
+on scroll: div.layer: transform+top ×4 | made with: transition · :hover
+
+```css
+.box { position:relative; margin-top: 150px; transform: rotate(-30deg) skew(25deg) scale(0.8) }
+.layer { position: absolute; top:0; transition: 0.5s }
+.box:hover .layer:nth-child(4) { transform: translate(160px, -160px); opacity: 1 }
+.box:hover .layer:nth-child(3) { transform: translate(120px, -120px); opacity: 1 }
+.box:hover .layer:nth-child(2) { transform: translate(80px, -80px); opacity: 1 }
+.box:hover .layer:nth-child(1) { transform: translate(40px, -40px); opacity: 1 }
+```
+
+### [Social icon hover effect css3](https://codepen.io/dkprajapati/pen/YOmpwr)
+
+on hover of li.: a.: transform+top | made with: transition · :hover
+
+```css
+ul { position: absolute; top:50%; transform: translate(-50%,-50%) }
+ul li { position: relative }
+ul li:after { position: absolute; bottom: 0; filter: blur(4px); opacity: 0 }
+ul li:hover:after { opacity: 1 }
+ul li a { position: relative; position: relative; transition: 0.5s }
+ul li a span:before { position: absolute; transition: 0.5s; transform-origin: top }
+ul li:hover a { transform: translateY(-10px) }
+ul li:hover a span:before { transform: rotateX(90deg) translateY(-50%) }
+ul li a span:after { position:absolute; transition: 0.5s; transform-origin: bottom; transform: rotateX(90deg) translateY(50%) }
+ul li:hover a span:after { transform: rotateX(0deg) translateY(0px) }
+```
+
+### [Card multi-layer hover trick with pure CSS](https://codepen.io/craveromartin/pen/gdVbYw)
+
+on hover of img.: img.: transform+opacity+top ×3, img.: transform+top | made with: transition · :hover
+
+```css
+.container { position: relative; margin-top: 150px; transform: rotate(-30deg) skew(25deg) scale(.8); transition: 0.5s }
+.container img { position: absolute; transition: 0.5s }
+.container:hover img:nth-child(4) { transform: translate(160px, -160px); opacity: 1 }
+.container:hover img:nth-child(3) { transform: translate(120px, -120px); opacity: .8 }
+.container:hover img:nth-child(2) { transform: translate(80px, -80px); opacity: .6 }
+.container:hover img:nth-child(1) { transform: translate(40px, -40px); opacity: .4 }
+```
+
+### [Button hover effects](https://codepen.io/crocoder/pen/LJMZvd)
+
+made with: transition · :hover
+
+```css
+h1 { position: relative }
+h1::before { position: absolute; transform: translateX(-50%); bottom: -12px }
+.pen-container > div > span { margin-bottom: 2em }
+.btn { position: relative }
+.btn__text { text-transform: uppercase }
+.btn--1 .btn__text { position: relative }
+.btn--1::before, .btn--1::after { position: absolute; top: 0 }
+.btn--1::after { transition: width 0.3s }
+.btn--1:hover::before { transition: width 0.3s }
+.btn--2 .btn__text { position: absolute; top: 0; transition: top 0.3s }
+.btn--2::after { position: absolute; top: 100%; transition: top 0.3s; text-transform: uppercase }
+.btn--2:hover::after { top: 0 }
+```
+
+### [Button hover effect](https://codepen.io/comehope/pen/PdaNXw)
+
+on scroll: span.: transform | on hover of li.: span.: transform ×2 | made with: transition · :hover
+
+```css
+li { position: relative; margin-top: 0.8em }
+li::before, li::after { position: absolute }
+li::before { top: 10%; filter: brightness(0.8) }
+li::after { top: 20%; filter: brightness(0.6) }
+li span { position: relative; top: -10%; text-transform: capitalize; transform: translateX(calc(-0.15em * 3 - 0.08em * 2)); transition: 0.3s }
+li:hover span { transform: translateX(0.15em) }
+```
+
+### [Material button transition](https://codepen.io/Laosing/pen/rZwPWx)
+
+on scroll: a.btn-expand: background+shadow, span.btn-text: opacity, div.bg: background | made with: transition · :hover
+
+```css
+.btn-expand { position: relative; box-shadow: 0 3px 14px -1px rgba(0, 0, 0, 0.25); transition: width 0.3s cubic-bezier(0.51, 0.92, 0.24, 1.15), border-radius 0.3s ease, background 0.3s ease, box-shadow 0.3s ease }
+.btn-expand:hover { box-shadow: 0 8px 20px -2px rgba(0, 0, 0, 0.4) }
+.btn-expand:hover span { opacity: 1 }
+.btn-expand i { position: absolute; top: 0; transition: opacity 0.3s ease, left 0.3s cubic-bezier(0.51, 0.92, 0.24, 1.15) }
+.btn-expand span { position: absolute; top: 0; opacity: 0; transition: opacity 0.3s ease }
+.bg { position: absolute; transition: background 0.3s ease }
+```
+
+### [Button hover effect](https://codepen.io/comehope/pen/yxbEzJ)
+
+on hover of li.: li.: color | made with: transition · :hover
+
+```css
+li { text-transform: capitalize; position: relative; transition: 0.5s }
+li::before, li::after { position: absolute; transition: 0.5s cubic-bezier(0.5, -0.5, 0.25, 1.5); top: calc(50% - 0.6em / 2) }
+li:hover::before { top: 0 }
+li:hover::after { filter: brightness(0.8) }
+```
+
+### [Origami cranes](https://codepen.io/comehope/pen/xagoYb)
+
+made with: @keyframes · :hover
+
+```css
+.cranes { position: relative }
+.cranes span { border-bottom: calc(var(--bottom) * 1em) solid; position: absolute; transform: rotate(calc(var(--rotation) * 1deg)); top: calc(var(--y) * 1em); filter: opacity(0.6) }
+.cranes:hover span { animation: appear 1s ease-in }
+from { border-bottom: 3em solid; position: absolute; transform: rotate(0deg); top: calc((50em - 3em) / 2) }
+.head { --bottom: 2 }
+.neck { --bottom: 12 }
+.side { --bottom: 20 }
+.wing { --bottom: 8 }
+.tail { --bottom: 3.9 }
+.belly { --bottom: 11.5 }
+@keyframes appear animates border-left, border-right, border-bottom, position, transform, left, top
+```
+
+### [Apple photos icon](https://codepen.io/comehope/pen/zJKwbO)
+
+on scroll: span.: transform+top ×8 | made with: @keyframes · :hover · mix-blend-mode
+
+```css
+.icon { position: relative }
+.icon span { position: absolute; transform: rotate(calc((var(--n) - 1) * 45deg)); mix-blend-mode: multiply }
+.icon:hover span { animation: rotating 2s ease-in-out forwards }
+from { transform: rotate(0deg) }
+to { transform: rotate(calc((var(--n) - 1) * 45deg)) }
+@keyframes rotating animates transform
+```
+
+### [Hover Effect: tinted images + link.](https://codepen.io/MaxwellR/pen/zJxKOx)
+
+made with: transition · :hover
+
+```css
+.tint { position: relative; box-shadow: rgba(0,0,0,.2) 3px 5px 5px; margin-top: 15px; margin-bottom: 15px }
+.tint:before { position: absolute; top: 0; bottom: 0; transition: all .3s linear }
+```
+
+### [Button hover effect](https://codepen.io/comehope/pen/mGbpqv)
+
+on hover of li.: li.: transform+color+top | made with: transition · :hover
+
+```css
+nav li { text-transform: uppercase; position: relative; transition: 0.3s }
+nav li::before, nav li::after { position: absolute; top: 0; transition: 0.3s }
+nav li::before { box-shadow: 0.2rem 0.2rem 0.5rem rgba(0, 0, 0, 0.2) }
+nav li::after { transform: translate(1.5rem, 1.5rem) }
+nav li:hover { transform: translate(1.5rem, 1.5rem) }
+nav li:hover::after { transform: translate(-1.5rem, -1.5rem) }
+```
+
+### [Card with Hover effect](https://codepen.io/Alessandro_Lab/pen/yqmdjB)
+
+on scroll: h1.: color, br.: color, p.: opacity, a.: color | on hover of div.card: h1.: color ×2, br.: color ×2, p.: opacity ×2, a.: color ×2 | made with: transition · :hover
+
+```css
+* { transition: 0.5s }
+.align-middle { position: relative; top: 50%; transform: translateY(-50%) }
+.column { margin-top: 3rem }
+.column:hover .card .txt h1, .column:hover .card .txt p { opacity: 1 }
+.card { box-shadow: 0 0 33px rgba(0, 0, 0, 0.5) }
+.card .txt h1 { text-transform: uppercase }
+.card .txt p { margin-top: 33px; opacity: 0 }
+.card a { position: relative; bottom: -0.5rem; text-transform: uppercase }
+.card a:after { border-top: 1px solid white; transition: 0.5s }
+.card .ico-card { position: absolute; top: 0; bottom: 0 }
+.card i { position: relative; top: 60%; opacity: 0.2 }
+```
+
+### [Ghostly Text Hover Effect](https://codepen.io/tomncurry/pen/VBOXbd)
+
+made with: @keyframes · transition · :hover
+
+```css
+.ripple > * { margin-top: 20%; transition: ease all .5s }
+.ripple:hover > * { animation: rippleEffect 5s infinite }
+40% { opacity: .35 }
+50% { transform: translate3d(.5em, 0, 0) scale(1.1) }
+75% { transform: translate3d(0, 0, 0) scale(1); opacity: 1 }
+@keyframes rippleEffect animates opacity, transform, text-shadow
+```
+
+### [Mouse hover effect on button using CSS](https://codepen.io/Ketan0011/pen/djrJqO)
+
+on scroll: a.effect1: color, span.bg: transform+color+top | made with: transition · :hover
+
+```css
+.effect1 { position: relative; -webkit-transition: all 0.3s; -o-transition: all 0.3s; transition: all 0.3s; -webkit-transform: scale(3); -ms-transform: scale(3); transform: scale(3) }
+.effect1 .bg { position: absolute; top: 50%; margin-top: -1px; -webkit-transition: all 0.3s; -o-transition: all 0.3s; transition: all 0.3s }
+.effect1:hover .bg { -webkit-transform: translate(0, -50%); -ms-transform: translate(0, -50%); transform: translate(0, -50%) }
+.effect1 .bg:before, .effect1 .bg:after { position: absolute; -webkit-transition: all 0.3s; -o-transition: all 0.3s; transition: all 0.3s }
+.effect1 .bg:before { bottom: 3px; -webkit-transform: rotate(45deg); -ms-transform: rotate(45deg); transform: rotate(45deg) }
+.effect1 .bg:after { top: 3px; -webkit-transform: rotate(-45deg); -ms-transform: rotate(-45deg); transform: rotate(-45deg) }
+.effect1:hover .bg:before { bottom: 6px }
+.effect1:hover .bg:after { top: 6px }
+```
+
+### [Gradient 3D Button with Hover Effects](https://codepen.io/musthakeem781/pen/rrrKJg)
+
+made with: transition · :hover
+
+```css
+button { position:relative; margin-bottom:20px }
+h1 { margin-top:30px }
+button span { position: absolute; top: 0; transition: 0.4s ease-in }
+.btn1 { box-shadow:0 0 0 1px #9a00cd inset, 0 0 0 2px rgba(255,255,255,0.15) inset, 0 8px 2px 0 #9823d5, 0 8px 8px 1px rgba(0,0,0,0.5) }
+.btn1:active { box-shadow:0 0 0 1px #9a00cd inset, 0 0 0 1px rgba(255,255,255,0.15) inset, 0 1px 3px 1px rgba(0,0,0,0.3); transform: translate(0px,10px) }
+.textIn1 { top:100% }
+button:hover .textOut1 { top: -100% }
+button:hover .textIn1 { top: 0 }
+.btn2 { box-shadow:0 0 0 1px #a20068 inset, 0 0 0 2px rgba(255,255,255,0.15) inset, 0 8px 2px 0 #a20068, 0 8px 8px 1px rgba(0,0,0,0.5) }
+.btn2:active { box-shadow:0 0 0 1px #9a00cd inset, 0 0 0 1px rgba(255,255,255,0.15) inset, 0 1px 3px 1px rgba(0,0,0,0.3); transform: translate(0px,10px) }
+.btn3 { box-shadow:0 0 0 1px #4EFB11 inset, 0 0 0 2px rgba(255,255,255,0.15) inset, 0 8px 2px 0 #4EFB11, 0 8px 8px 1px rgba(0,0,0,0.5) }
+.btn3:active { box-shadow:0 0 0 1px #9a00cd inset, 0 0 0 1px rgba(255,255,255,0.15) inset, 0 1px 3px 1px rgba(0,0,0,0.3); transform: translate(0px,10px) }
+```
+
+### [emoji with hover effect](https://codepen.io/Grabiarz/pen/vajrQj)
+
+made with: transition · :hover
+
+```css
+.face { box-shadow: 0 0 10px black; position: relative; transition: all 1.5s ease-in-out }
+.face::before { position: absolute; transition: color 2s ease-in-out }
+.face::after { position: absolute; transition: color 2s ease-in-out }
+.eyebrow, .eye, .mouth { box-shadow: 0px 0px 4px black }
+.eyebrow { position: absolute; top: 40px }
+.eyebrow-left { transition: all 1s ease-in-out }
+.face:hover .eyebrow-left { top: 60px; transform: rotate(30deg) }
+.eyebrow-right { transition: all 1s ease-in-out }
+.face:hover .eyebrow-right { top: 60px; transform: rotate(-30deg) }
+.eye { position: absolute; top: 50px }
+.eye-left { transition: all 1s ease-in-out }
+.face:hover .eye-left { top: 65px }
+```
+
+### [Flame Effect (Canvas)](https://codepen.io/St1myL/pen/LBdQpy)
+
+on scroll: img.: transform+opacity+top | on hover of img.: img.: transform+top | made with: @keyframes · transition · :hover · canvas 2D
+
+```css
+h2 { text-transform: uppercase }
+.main { position: relative }
+.main:hover .effect img { opacity: 1 }
+.effect img { position: absolute; top: -0.0625rem; transition: opacity 300ms; animation-name: rotation; animation-duration: 30000ms; animation-timing-function: linear; animation-iteration-count: infinite; opacity: 0 }
+.effect canvas { position: absolute; top: 0 }
+from { -webkit-transform: rotate(0deg) scale(0.9); transform: rotate(0deg) scale(0.9) }
+to { -webkit-transform: rotate(360deg) scale(0.9); transform: rotate(360deg) scale(0.9) }
+@keyframes rotation animates -webkit-transform, transform
+```
+
+### [img hover](https://codepen.io/riko-7/pen/MBEQLq)
+
+on scroll: div.layer1: shadow, div.layer2: filter | made with: transition · :hover
+
+```css
+section .layer2 { position: absolute; top: 0; background-position: center; transition: 1.5s }
+section .layer1 { position: absolute; top: 50%; transform: translate(-50%,-50%); background-position: center; transition: 2.5s }
+.layer1:hover ~ .layer2 { filter: blur(10px) }
+.layer1:hover { box-shadow: 0 25px 60px rgba(0,0,0,.8) }
+```
+
+### [Two clickable squares moving on a square path](https://codepen.io/mariusz777/pen/KBdqow)
+
+on scroll: div.: transform+top | made with: @keyframes · :hover
+
+```css
+.box { margin-top: 150px }
+#square2 { position: relative; margin-top: -350px; animation: sq1 6s linear infinite }
+#square2:hover { animation-play-state: paused }
+#square3 { position: relative; margin-top: -100px; animation: sq2 6s linear infinite; animation-direction: reverse }
+#square3:hover { animation-play-state: paused }
+0% { top:0px }
+25% { top:0px }
+50% { top:300px }
+75% { top:300px }
+100% { top:0px }
+0% { transform: translate(0px,0px) }
+25% { transform: translate(300px,0px) }
+```
+
+### [Two clickable squares moving on axis](https://codepen.io/mariusz777/pen/djYRYz)
+
+on scroll: div.square: transform, div.square2: transform+top | made with: @keyframes · :hover
+
+```css
+.box { margin-top: 300px }
+.line { margin-top:100px }
+.line2 { margin-top: -100px }
+.square { margin-top: -130px; animation: sq1 2s linear infinite; animation-direction: alternate }
+.square:hover { animation-play-state: paused }
+.square2 { margin-top: 50px; animation: sq2 2s linear infinite; animation-direction: alternate }
+.square2:hover { animation-play-state: paused }
+from { transform: translate(0px, 0px) }
+to { transform: translate(230px, 0px) }
+from { transform: translate(0px, 0px) }
+to { transform: translate(0px, -230px) }
+@keyframes sq1 animates transform
+```
+
+### [Two clickable squares rotating on circle path](https://codepen.io/mariusz777/pen/JBYNEj)
+
+on scroll: div.square: transform+top, div.square2: transform+top | made with: @keyframes · :hover
+
+```css
+.box { margin-top: 200px }
+.square { margin-top: -130px; animation: sq1 3s linear infinite }
+.square:hover { animation-play-state: paused }
+.square2 { margin-top: -60px; animation: sq2 3s linear infinite; animation-direction: reverse }
+.square2:hover { animation-play-state: paused }
+from { transform: rotate(0deg) translateX(-100px) rotate(0deg) }
+to { transform: rotate(360deg) translateX(-100px)rotate(-360deg) }
+from { transform: rotate(0deg) translateX(100px) rotate(0deg) }
+to { transform: rotate(360deg) translateX(100px)rotate(-360deg) }
+@keyframes sq1 animates transform
+@keyframes sq2 animates transform
+```
+
+### [Hey, Take it easy!](https://codepen.io/comehope/pen/oMgmwB)
+
+on scroll: span.ruler: transform+top, span.calendar: transform+top, span.pencil: transform+top, p.: transform+top | made with: transition · :hover
+
+```css
+.desk { box-shadow: 0 0 0 6em; position: relative }
+.desk * { position: absolute; transition: 1s }
+.desk *::before, .desk *::after { position: absolute }
+.paper { top: 14em }
+.paper::before { bottom: 1.6em; filter: saturate(150%) brightness(0.9) }
+.paper::after { bottom: -1em }
+.ruler { top: 8em; transform: rotate(25deg) }
+.ruler::before { top: 1em }
+.ruler::after { top: 3em }
+.calendar { top: 14em; transform: rotate(15deg) }
+.calendar::before { top: -2em; box-shadow: 0 0, 0 0 0 1em darkslategray, 15em 0, 15em 0 0 1em darkslategray }
+.calendar::after { top: 10em; box-shadow: 0 0, 5em 0, 10em 0, 15em 0, 0 5em, 5em 5em, 10em 5em, 15em 5em, 0 10em, 5em 10em, 10em 10em, 15em 10em }
+```
+
+### [Bubble coloring button](https://codepen.io/comehope/pen/eKqZjy)
+
+on hover of li.: span.: transform+color+top ×4, li.: color | made with: transition · :hover
+
+```css
+nav ul li { text-transform: uppercase; position: relative; transition: 0.5s }
+nav ul li span { position: absolute; transform: translateY(150%); transition: 0.5s }
+nav ul li:hover span { transform: translateY(0) scale(2) }
+```
+
+### [Color cards](https://codepen.io/comehope/pen/LraOXQ)
+
+on scroll: span.: transform+top ×7, span.: transform | on hover of div.cards: span.: transform+top ×4 | made with: @keyframes
+
+```css
+.cards { position: relative }
+.cards span { position: absolute; top: calc(50% - 3em / 2); animation: rotating 3s linear infinite; animation-delay: calc((var(--n) - 8) * 0.15s) }
+0%, 35% { transform: rotate(0deg) }
+90%, 100% { transform: rotate(360deg) }
+.cards span::before { position: absolute }
+.cards span::after { position: absolute; top: 0.1em; box-shadow: 0.7em 0 0 -0.1em silver }
+@keyframes rotating animates transform
+```
+
+### [Border Effect CSS Button](https://codepen.io/johndownie/pen/XYyLwB)
+
+on scroll: a.button: background, span.button-inner: color | made with: transition · :hover
+
+```css
+.button { text-transform: uppercase }
+.button:hover .button-inner::before { transition: width 0.2s ease-out, height 0.2s ease-out 0.2s }
+.button:hover .button-inner::after { transition: height 0.2s ease-out, width 0.2s ease-out 0.2s }
+.button .button-inner { transition: color 0.2s; box-shadow: inset 0 0 0 2px #333; position: relative }
+.button .button-inner::before, .button .button-inner::after { position: absolute }
+.button .button-inner::before { top: 0 }
+.button .button-inner::after { bottom: 0; top: 0 }
+```
+
+### [Hover Effect Ideas](https://codepen.io/nguyenvan/pen/jKQBBK)
+
+on hover of img.: img.: opacity | made with: transition · :hover
+
+```css
+.c-layla .c-image { position: relative }
+.c-layla .c-image:hover:before { opacity: 1; transform: scale(1); transition: opacity 0.35s, transform 0.35s }
+.c-layla .c-image:hover:after { opacity: 1; transform: scale(1); transition: opacity 0.35s, transform 0.35s }
+.c-layla .c-image:hover img { opacity: 0.4 }
+.c-layla .c-image:before { position: absolute; opacity: 0; top: 50px; bottom: 50px; border-top: 1px solid #fff; border-bottom: 1px solid #fff; transform: scale(0, 1) }
+.c-layla .c-image:after { position: absolute; opacity: 0; top: 30px; bottom: 30px; transform: scale(1, 0) }
+.c-layla .c-image img { opacity: 0.7 }
+.c-bubba { margin-top: 20px }
+.c-bubba .c-image1 { position: relative }
+.c-bubba .c-image1:hover:before { opacity: 1; transform: scale(1) }
+.c-bubba .c-image1:hover:after { opacity: 1; transform: scale(1) }
+.c-bubba .c-image1:hover img { opacity: 0.4 }
+```
+
+### [Link "underline from the center" effect](https://codepen.io/JakubHonisek/pen/mKGRdJ)
+
+made with: transition · :hover
+
+```css
+.link { position: relative }
+.link::before { position: absolute; bottom: 0; transform: scaleX(0); transition: all 300ms ease }
+.link:hover::before { transform: scaleX(1) }
+```
+
+### [bubble button](https://codepen.io/jonaszpotoniec/pen/zajLOg)
+
+made with: transition · :hover
+
+```css
+button { position: relative; top: 10vh }
+.nice-btn { transition: 0.3s }
+.nice-btn:before, .nice-btn:after { position: absolute; transition: all 1s }
+.nice-btn:before { top: 100%; box-shadow: 1.3em 0.5em 0 0 var(--water-color), 2.5em 0.1em 0 0 var(--water-color), 3.5em 0.2em 0 0 var(--water-color), 4.7em 0.5em 0 0 var(--water-color), 5.5em 0.1em 0 0 var(--water-color), 6.5em 0.5em 0 0 v }
+.nice-btn:after { top: 130% }
+.nice-btn:hover:before { top: -10% }
+.nice-btn:hover:after { top: 0 }
+.nice-btn:active { box-shadow: 0 0 1em 1em var(--hue-color) }
+```
+
+### [Parrot](https://codepen.io/comehope/pen/vrRmWy)
+
+on scroll: span.outer: transform, span.middle: transform, span.inner: transform | made with: transition · :hover
+
+```css
+.parrot { position: relative }
+.parrot > * { position: absolute; transform: rotate(45deg); transition: 0.5s }
+.parrot .inner::before { position: absolute; top: -0.5em }
+.parrot:hover .outer { transform: rotate(225deg) }
+.parrot:hover .middle { transform: rotate(calc(225deg - 360deg)) }
+.parrot:hover .inner { transform: rotate(135deg) }
+```
+
+### [Floating forms with fancy hover buttons](https://codepen.io/moudstar/pen/OEjZoB)
+
+on hover of a.btn: a.btn: background | made with: transition · :hover
+
+```css
+.block { box-shadow: rgba(0, 0, 0, 0.05) 0 0 20px, rgba(0, 0, 0, 0.4) 0 50px 100px -20px }
+.col-xs-12 { position: relative }
+.col-md-6 { position: relative }
+.form-control { margin-bottom: 1rem !important }
+.btn { transition: background-color 0.5s ease-in-out, text-shadow 0.5s ease-in-out }
+.btn:after { top: 0 }
+.btn:before { position: absolute; top: 50%; transition: all 0.25s ease }
+.btn .btn__text { position: relative; transition: transform 0.5s ease }
+.btn .btn__text:before, .btn .btn__text:after { position: absolute }
+.btn .btn__text:before { top: 0; transition: width .15s .45s cubic-bezier(.4, 0, .2, 1) }
+.btn .btn__text:after { bottom: 0; transition: width .15s .15s cubic-bezier(.4, 0, .2, 1) }
+.btn .btn__text span:before, .btn .btn__text span:after { position: absolute; transition: all 0.2s cubic-bezier(0.2, 0.3, 0.25, 0.9) }
+```
+
+### [Icons and hover effect](https://codepen.io/moondust_kj/pen/WyEGNg)
+
+on scroll: ul.: background+top | made with: position: fixed · scroll() timeline · transition · :hover
+
+```css
+.nav li { position: relative }
+.nav li a::before { transition: all ease-out 0.2s }
+.nav li a:hover::before { position: relative; top: 30px }
+.scrollNav ul { position: fixed; top: 0 }
+```
+
+### [Ice lolly](https://codepen.io/comehope/pen/vrxzMw)
+
+made with: @keyframes · :hover
+
+```css
+.flavors { position: relative }
+.flavors::before { position: absolute; transform: rotate(-25deg); animation: moving 100s linear infinite; animation-play-state: paused }
+.ice-lolly:hover .flavors::before { animation-play-state: running }
+to { background-position: 0 1000vh }
+.flavors::after { position: absolute; bottom: 2em }
+.stick { position: relative }
+.stick::after { position: absolute }
+@keyframes moving animates background-position
+```
+
+### [Submit Button Hover Effect](https://codepen.io/AmanSilawat/pen/aKBKEO)
+
+on scroll: input.: color | made with: transition · :hover
+
+```css
+.center { position: absolute; top: 50%; transform: translate(-50%, -50%) }
+input[type="submit"] { transition: all .8s }
+.submit { position: relative }
+.submit:after { position: absolute; top: 0; transition: all .8s }
+.submit:before { position: absolute; top: 0; transition: all .8s }
+```
+
+### [Background transition button effect](https://codepen.io/comehope/pen/XYKdwg)
+
+on hover of li.: span.: color ×4 | made with: transition · :hover
+
+```css
+li { transition: 500ms }
+li span { text-transform: uppercase; position: relative; transition: 500ms }
+li span::before { position: absolute; transition: 500ms }
+li:hover span::before { transform: rotate(-25deg) }
+```
+
+### [Blueoasis Dive Site](https://codepen.io/Budiasa/pen/JZdEqE)
+
+on scroll: a.link: background+color+top | made with: transition · :hover
+
+```css
+.title h2 { margin-bottom: 10px; text-transform: uppercase; text-transform: uppercase }
+.box1 { position: absolute; top: 2px; bottom: 2px }
+.link { position: absolute; top: 0; bottom: 0; transition: 0.2s linear }
+.caption { position: absolute; top: 50%; transform: translate(-50%, -50%); -ms-transform: translate(-50%, -50%) }
+```
+
+### [Stroke animation button effect](https://codepen.io/comehope/pen/mKdzZM)
+
+on hover of li.: li.: color+shadow | made with: @keyframes · transition · :hover
+
+```css
+nav ul li { text-transform: uppercase; position: relative; transition: var(--t4x) }
+nav ul li:hover { animation: pulse ease-out 1s var(--t4x) }
+nav ul li::before, nav ul li::after { position: absolute }
+nav ul li::before { top: -1px; transition: height linear var(--t1x) var(--t2x), width linear var(--t1x) var(--t3x), visibility 0s var(--t4x) }
+nav ul li::after { bottom: -1px; transition: height linear var(--t1x), width linear var(--t1x) var(--t1x), visibility 0s var(--t2x) }
+nav ul li:hover::before { transition: visibility 0s, width linear var(--t1x), height linear var(--t1x) var(--t1x) }
+nav ul li:hover::after { transition: visibility 0s var(--t2x), width linear var(--t1x) var(--t2x), height linear var(--t1x) var(--t3x) }
+from { box-shadow: 0 0 hsla(210, 100%, 56%, 0.5) }
+to { box-shadow: 0 0 0 1em hsla(210, 100%, 56%, 0) }
+@keyframes pulse animates box-shadow
+```
+
+### [Hexagonal button effects](https://codepen.io/comehope/pen/xjoOeM)
+
+made with: transition · :hover
+
+```css
+ul li { position: relative }
+ul li::before, ul li::after { position: absolute; top: 0; filter: opacity(0); transition: 0.3s }
+ul li:hover::before, ul li:hover::after { filter: opacity(1); transform: rotate(calc(60deg * var(--direction))) }
+```
+
+### [anchor:hover css fancy animations](https://codepen.io/jlozovei/pen/xjBmZV)
+
+made with: transition · :hover
+
+```css
+.container { box-shadow: 0 0 75px -25px #222 }
+.container .links-wrapper a { margin-bottom: 2rem }
+.animated { position: relative }
+.animated:before { position: absolute }
+.animated.scaleCenter:before { bottom: -6px; transform: scale(0); transition: all ease-in-out 200ms }
+.animated.scaleCenter:hover:before { transform: scale(1) }
+.animated.growBottom:before { bottom: -6px; transition: all ease-in-out 200ms }
+.animated.fromLeft:before { bottom: -6px; transition: all ease-in-out 200ms }
+.animated.fromRight:before { bottom: -6px; transition: all ease-in-out 200ms }
+.animated.inAndOut:before { bottom: -6px; transition: all ease-in-out 200ms }
+```
+
+### [Set off paper button effects](https://codepen.io/comehope/pen/KRbXGe)
+
+on hover of li.: li.: transform+shadow+top | made with: transition · :hover · 3D (perspective / preserve-3d)
+
+```css
+nav { box-shadow: 0 5px 30px rgba(0, 0, 0, 0.2) }
+nav ul li { transition: 0.5s ease-out }
+nav ul li:hover { box-shadow: 0 4px 4px rgba(0, 0, 0, 0.1), 0 6px 6px rgba(0, 0, 0, 0.1), 0 8px 8px rgba(0, 0, 0, 0.1), 0 12px 12px rgba(0, 0, 0, 0.1); transform: scale(1.05) translateY(-0.25em) perspective(300px) rotateX(20deg) }
+```
+
+### [Button Hover Effects](https://codepen.io/umesh1984/pen/ELOjWB)
+
+on hover of a.primary-btn: span.line: transform ×3, span.text: color, span.line: transform+top | made with: transition · :hover
+
+```css
+.common-transition { -webkit-transition: all 0.3s ease-in-out; -moz-transition: all 0.3s ease-in-out; -ms-transition: all 0.3s ease-in-out; -o-transition: all 0.3s ease-in-out; transition: all 0.3s ease-in-out }
+.primary-btn { position: relative; margin-top: 25px; text-transform: uppercase; -webkit-transition: transform .4s cubic-bezier(.2, 0, 0, 1) .4s; -moz-transition: transform .4s cubic-bezier(.2, 0, 0, 1) .4s; -o-transition: transform .4s }
+.primary-btn .text { position: relative; transform: translate3d(0, 0, 0); -webkit-transition: all .4s cubic-bezier(.2, 0, 0, 1) .4s; -moz-transition: all .4s cubic-bezier(.2, 0, 0, 1) .4s; -o-transition: all .4s cubic-bezier(.2, 0, 0, 1) .4s }
+.primary-btn::after { position: absolute; bottom: -2px; transition: transform .8s cubic-bezier(1, 0, .37, 1) .2s, right .2s cubic-bezier(.04, .48, 0, 1) .6s, left .4s cubic-bezier(.04, .48, 0, 1) .6s }
+.primary-btn.white .text { -webkit-transition: all .4s cubic-bezier(.2, 0, 0, 1) .4s; -moz-transition: all .4s cubic-bezier(.2, 0, 0, 1) .4s; -o-transition: all .4s cubic-bezier(.2, 0, 0, 1) .4s; transition: all .4s cubic-bezier(.2, 0, 0, 1) .4s }
+.primary-btn .line { position: absolute }
+.primary-btn .line.left, .primary-btn .line.right { bottom: -2px; top: -2px; transform: scale3d(1, 0, 1) }
+.primary-btn .line.bottom, .primary-btn .line.top { transform: scale3d(0, 1, 1) }
+.primary-btn .line.right { -webkit-transition: transform .1s cubic-bezier(1, 0, .65, 1.01) .23s; -moz-transition: transform .1s cubic-bezier(1, 0, .65, 1.01) .23s; -o-transition: transform .1s cubic-bezier(1, 0, .65, 1.01) .23s; transition: transf }
+.primary-btn .line.top { top: -2px; -webkit-transition: transform 80ms linear .43s; -moz-transition: transform 80ms linear .43s; -o-transition: transform 80ms linear .43s; transition: transform 80ms linear .43s }
+.primary-btn .line.left { -webkit-transition: transform 80ms linear .51s; -moz-transition: transform 80ms linear .51s; -o-transition: transform 80ms linear .51s; transition: transform 80ms linear .51s; transform-origin: bottom }
+.primary-btn .line.bottom { bottom: -2px; -webkit-transition: transform .3s cubic-bezier(1, 0, .65, 1.01) 0s; -moz-transition: transform .3s cubic-bezier(1, 0, .65, 1.01) 0s; -o-transition: transform .3s cubic-bezier(1, 0, .65, 1.01) 0s; transition }
+```
+
+### [Reverse text color menu effects](https://codepen.io/comehope/pen/qYMoPo)
+
+made with: transition · :hover · mix-blend-mode
+
+```css
+nav ul li { position: relative }
+nav ul li span { mix-blend-mode: difference }
+nav ul li::before { position: absolute; top: 0; transition: 0.5s ease-out }
+nav ul li:hover::before { transform: scale(7) }
+```
+
+### [A text sliding effect UI](https://codepen.io/comehope/pen/QrxxaW)
+
+made with: transition · :hover
+
+```css
+h1 { position: relative }
+h1::after { position: absolute; top: -0.35em; transform: rotate(15deg); filter: opacity(0.3) }
+p { box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.2); position: relative }
+p span { position: absolute; top: 0; transition: 0.5s ease-out }
+p .answer { text-transform: uppercase }
+```
+
+### [Split text menu effects](https://codepen.io/comehope/pen/XqYroe)
+
+made with: transition · :hover · clip-path
+
+```css
+.menu li { text-transform: uppercase; border-top: 1px solid transparent; position: relative; transition: 0.3s }
+.menu li:hover { border-top: 1px solid yellow }
+.menu li::before, .menu li::after { position: absolute; top: -0.5em; transition: 0.3s ease-out }
+.menu li::before { clip-path: polygon(0 0, 100% 0, 100% 50%, 0 50%) }
+.menu li::after { clip-path: polygon(0 50%, 100% 50%, 100% 100%, 0 100%) }
+.menu li:hover::before, .menu li:hover::after { transition: left 0.3s ease-out }
+```
+
+### [Stroke morphing 404 effects](https://codepen.io/comehope/pen/ZoxjXm)
+
+on scroll: span.: background+top ×6, span.: background ×4 | made with: transition · :hover
+
+```css
+.error > * { position: relative }
+.error span { position: absolute; filter: opacity(0.8); transition: 0.3s }
+.four span:nth-child(2) { top: 50% }
+.zero span:nth-child(2) { top: 10% }
+.zero span:nth-child(4) { bottom: 10% }
+.error:hover .four span:nth-child(1) { top: 20% }
+.error:hover .four span:nth-child(2) { top: 0 }
+.error:hover .zero span:nth-child(2) { top: 0 }
+.error:hover .zero span:nth-child(4) { bottom: 0 }
+```
+
+### [Broken text effects](https://codepen.io/comehope/pen/LmjNgL)
+
+made with: transition · :hover · clip-path
+
+```css
+.text { position: relative }
+.text::before, .text::after { position: absolute; top: 0; transition: 0.2s }
+.text::before { clip-path: polygon(0 0, 60% 0, 30% 100%, 0 100%) }
+.text::after { clip-path: polygon(60% 0, 100% 0, 100% 100%, 30% 100%) }
+.text:hover::before { transform: rotate(-5deg); top: -0.05em }
+.text:hover::after { transform: rotate(5deg); top: 0.05em }
+```
+
+### [Simple banner column hover effect](https://codepen.io/meinar/pen/xjdyoY)
+
+on scroll: div.col: color, div.restaurant__title: color | made with: transition · :hover
+
+```css
+.banner { position: relative }
+.banner .restaurant { transition: all 0.5s ease; position: static }
+.banner .restaurant:before { position: absolute; top: 0; bottom: 0; transition: all 0.5s ease }
+```
+
+### [Aimed button effects](https://codepen.io/comehope/pen/ELWMLr)
+
+on scroll: div.box: filter, span.top: filter, span.bottom: filter, span.left: filter, span.right: filter | made with: @keyframes · transition · :hover
+
+```css
+.box { position: relative; filter: blur(2px); transition: 0.5s }
+.box:hover { filter: blur(0.2px) }
+.box::after { position: absolute; filter: opacity(0) }
+.box span:not(:first-child) { position: absolute; filter: opacity(0) }
+.box span.top { top: -3em }
+.box span.bottom { bottom: -3em }
+.box span.left, .box span.right { top: 50% }
+.box:hover::after, .box:hover span:not(:first-child) { animation: aim 1s linear infinite alternate }
+from { filter: opacity(0.2) }
+to { filter: opacity(0.8) }
+@keyframes aim animates filter
+```
+
+### [Expanding Gradient Underline Effects](https://codepen.io/christopherware/pen/qYaXpY)
+
+on hover of a.middle: a.middle: color | made with: transition · :hover
+
+```css
+a, a:visited, a:hover, a:active { position: relative; transition: 0.8s all ease }
+a:link, a:visited { position: relative }
+a:after { position: absolute; top: 100%; opacity: 0.3; transform: scaleX(0) }
+a:hover:after { opacity: 1; transform: scaleX(1) }
+```
+
+### [Metallic glossy 3d button effects](https://codepen.io/comehope/pen/MGeRRO)
+
+on scroll: div.box: transform+shadow | made with: transition · :hover · 3D (perspective / preserve-3d)
+
+```css
+.box { transform: perspective(500px) rotateY(-15deg); box-shadow: 2px 0 0 5px rgba(0, 0, 0, 0.2); transition: 0.5s; position: relative }
+.box:hover { transform: perspective(500px) rotateY(15deg); box-shadow: -2px 0 0 5px rgba(0, 0, 0, 0.2) }
+.box::before { position: absolute; transition: 0.5s }
+```
+
+### [Button text staggered sliding effects](https://codepen.io/comehope/pen/GdpPLE)
+
+on scroll: span.: transform+top ×6 | made with: transition · :hover
+
+```css
+.box span { transition: 0.5s }
+.box span:nth-child(odd) { transform: translateY(-100%) }
+.box span:nth-child(even) { transform: translateY(100%) }
+.box span::before { position: absolute }
+.box span:nth-child(odd)::before { transform: translateY(100%) }
+.box span:nth-child(even)::before { transform: translateY(-100%) }
+.box:hover span { transform: translateY(0) }
+```
+
+### [Text Hover Effect](https://codepen.io/waveciou/pen/NMGWNG)
+
+on scroll: h1.: transform+color+top | made with: transition
+
+```css
+body { position: relative; transition: all 0.6s ease }
+.hoverBox { position: absolute; top: 50%; transform: translateY(-50%) }
+h1 { position: relative; transition: all 1s ease }
+h1::before { position: absolute; top: 0 }
+body.is-active h1 { transform: translateY(-150%) }
+```
+
+```js
+addEventListener("mouseenter", function() {
+addEventListener("mouseleave", function() {
+```
+
+### [Responsive Flex Images](https://codepen.io/janmez/pen/xjKwEx)
+
+on hover of img.image__main: img.image__main: transform+opacity+top, div.image__captioncontain: opacity+background, span.image__caption: transform+opacity+top | made with: transition · :hover
+
+```css
+.container { position: relative }
+.container .image__cell { position: relative; box-shadow: 2px 2px 5px 0px rgba(158, 136, 159, 0.5) }
+.container .image__cell .image__main { opacity: 1; transform: scale(1); transition: opacity 0.5s, transform 0.35s ease-in }
+.container .image__cell .image__captioncontain { opacity: 0; position: absolute; transition: width 0.4s ease-in, opacity 0.25s ease-out }
+.container .image__cell .image__captioncontain .image__caption { opacity: 0; position: absolute; top: 50%; transform: translateY(-50%) translateX(-50%); transition: opacity 0.4s ease-in }
+.container .image__cell:hover .image__main { opacity: 0.75; transform: scale(1.2) }
+.container .image__cell:hover .image__captioncontain { border-top: 2px solid #FFF; opacity: 1 }
+.container .image__cell:hover .image__captioncontain .image__caption { opacity: 1 }
+```
+
+### [Button with animated gradient](https://codepen.io/alexlyul/pen/bvOXrM)
+
+made with: nothing recognised — read the code
+
+```css
+.center { position: absolute; top: 50%; transform: translate(-50%, -50%) }
+#btn { transform: translate(-50%, -50%) scale(1) }
+#btn:active { transform: translate(-50%, -50%) scale(1.3) }
+```
+
+### [Button hover effect css3](https://codepen.io/dkprajapati/pen/bvvJXv)
+
+made with: transition · :hover
+
+```css
+a { text-transform: uppercase; position: absolute; top: 50%; transform: translate(-50%,-50%) }
+a:before { position: absolute; transform: translateY(-100%) rotateX(90deg); transform-origin: bottom; transition: 0.5s }
+a:after { position: absolute; transform: translateY(0%) rotateX(0deg); transform-origin: top; transition: 0.5s }
+a:hover:before { transform: translateY(0%) rotateX(0deg) }
+a:hover:after { transform: translateY(100%) rotateX(90deg) }
+```
+
+### [How to make animated button using css](https://codepen.io/nikhilmangal/pen/geRvbP)
+
+on hover of button.animated-button: button.animated-button: transform+shadow+top, i.fas: transform+top | made with: transition · :hover
+
+```css
+.animated-button { transition:all .3s linear; -webkit-transition:all .3s linear; -moz-transition:all .3s linear }
+.animated-button:hover { transform:scale(1.2); box-shadow:0px 0px 20px rgba(0,0,0,.2) }
+.animated-button i { transition:all .3s linear; -webkit-transition:all .3s linear; -moz-transition:all .3s linear }
+.animated-button:hover i { transform:rotate(360deg) }
+```
+
+### [Lexi Hover Effect](https://codepen.io/prabiz/pen/ZxEVWx)
+
+on hover of img.: img.: transform+opacity, div.content-wrap: transform+opacity+top | made with: transition · :hover
+
+```css
+.hover-content figure { position: relative }
+.hover-content .effect img { position: relative }
+.hover-content .effect:hover img { opacity: 0.6; -webkit-transform: translate3d(0, 0 ,0); -ms-transform: translate3d(0, 0 ,0); -o-transform: translate3d(0, 0 ,0); transform: translate3d(0, 0 ,0) }
+.hover-content .effect figcaption { position: absolute; top: 0; text-transform: uppercase }
+.hover-content .effect figcaption:before { bottom: -100px; box-shadow: 0 0 0 900px rgba(255,255,255,0.2); position: absolute; opacity: 0; -webkit-transform: scale3d(0.5,0.5,1); transform: scale3d(0.5,0.5,1) }
+.hover-content .effect:hover figcaption:before { opacity: 1; -webkit-transform: scale3d(1,1,1); -ms-transform: scale3d(1,1,1); -o-transform: scale3d(1,1,1); transform: scale3d(1,1,1); -webkit-transition: opacity 0.35s, transform 0.35s; -o-transition: opacity 0.35s, tra }
+.hover-content .effect figcaption h2 { opacity: 1; -webkit-transform: translate3d(5px, 5px, 0); -ms-transform: translate3d(5px, 5px, 0); -o-transform: translate3d(5px, 5px, 0); transform: translate3d(5px, 5px, 0); -webkit-transition: transform 0.35s; -o-trans }
+.hover-content .effect figcaption .content-wrap { bottom: 65px; opacity: 0; position: absolute; -webkit-transform: translate3d(20px, 20px, 0); -ms-transform: translate3d(20px, 20px, 0); -o-transform: translate3d(20px, 20px, 0); transform: translate3d(20px, 20px, 0); -we }
+.hover-content .effect:hover figcaption .content-wrap { opacity: 1; -webkit-transform: translate3d(0,0,0); -ms-transform: translate3d(0,0,0); -o-transform: translate3d(0,0,0); transform: translate3d(0,0,0) }
+.hover-content .effect figcaption a { opacity: 0 }
+.hover-content .effect figcaption > a { position: absolute; top: 0 }
+```
+
+### [Wanted](https://codepen.io/alphabetacoder/pen/MQZLpL)
+
+made with: :hover
+
+```css
+figure { position: relative }
+figcaption { position: absolute; top: 10px }
+p { padding-top: 70% }
+p:hover { padding-top: 100% }
+```
+
+### [Card image effect on hover](https://codepen.io/bettyst/pen/aqPdge)
+
+on scroll: img.card-img-top: transform+filter+top | on hover of div.card-deck: img.card-img-top: transform+filter+top ×2 | made with: transition · :hover
+
+```css
+.card-deck .card .actions { position: absolute; top: 19% }
+.card-deck .card .card-img-top { -webkit-transition: 0.3s linear; transition: 0.3s linear }
+.card-deck .card:hover .card-img-top, .card-deck .card:focus .card-img-top { -webkit-transform: scale(1.1); transform: scale(1.1); -webkit-filter: grayscale(50%) }
+.card-deck .card .card-body { position: relative }
+```
+
+### [Css Hover tabs Highlight](https://codepen.io/akky7777/pen/eVbYKR)
+
+on scroll: a.link-1: opacity, a.link-2: opacity, a.link-3: opacity, a.link-5: opacity | on hover of li.: a.link-1: opacity, a.link-4: opacity | made with: transition · :hover
+
+```css
+.container-inner ul li a { text-transform: uppercase; transition: all ease 0.3s }
+.container-inner ul li a:hover { opacity: 1 }
+.container-inner ul:hover li a { opacity: 0.2 }
+.container-inner ul li a:hover { opacity: 1 }
+```
+
+### [Stamp vignette hover effect](https://codepen.io/2kool2/pen/mXpwbL)
+
+held: fixed footer.myStuff | on hover of button.: div.stamp_img-bg7: filter | made with: position: fixed · transition · :hover · custom properties driven by JS
+
+```css
+body { padding-bottom: 2rem }
+[class^="stamp_link"] { transition: color .3s ease-out }
+[class^="img_container"] { position: relative }
+[class^="stamp_img-bg"] { background-position: center }
+[data-vignetteOpacity]::after { position: absolute; top: 0; bottom: 0; opacity: var(--vignetteOpacity, .5); box-shadow: inset 0 0 1rem 0 hsla(0,0%,0%, calc(var(--vignetteOpacity, .5) / 2)); transition: opacity .3s ease-out }
+a:hover [data-vignetteOpacity]::after, a:focus [data-vignetteOpacity]::after { will-change: opacity; opacity: 0 }
+[data-imgBrightness] { transition: filter .3s ease-out }
+a:hover [data-imgBrightness], a:focus [data-imgBrightness] { will-change: filter; filter: brightness(var(--imgBrightness, 100%)) }
+```
+
+```js
+style.setProperty("--image", e.target.value)
+```
+
+### [Link hover effect](https://codepen.io/ellissei/pen/xYgdWo)
+
+made with: transition · :hover
+
+```css
+a { position: relative }
+a:after { position: absolute; transition: width 0.4s 0.3s }
+```
+
+### [Image hover effect with icon](https://codepen.io/saifah/pen/wpVzez)
+
+on hover of img.img-responsive: img.img-responsive: opacity+filter, i.fa: transform+top, a.: color | made with: transition · :hover
+
+```css
+.image_item { position: relative }
+.image_item { box-shadow: 0 0 5px rgba(0, 0, 0, 0.15) }
+.image_item i { position: absolute; top: 50%; box-shadow: 0 0 5px rgba(0, 0, 0, 0.15); -webkit-transform: translate(-50%, -50%) scale(0); transform: translate(-50%, -50%) scale(0); transition: all 300ms 0ms cubic-bezier(0.6, -0.28, 0.73 }
+.image_item a { top: 0; bottom: 0; position: absolute }
+.image_item:hover img { opacity: 0.3; -webkit-filter: grayscale(100%); filter: grayscale(100%) }
+.image_item:hover i { -webkit-transform: translate(-50%, -50%) scale(1); transform: translate(-50%, -50%) scale(1); transition: all 300ms 100ms cubic-bezier(0.175, 0.885, 0.32, 1.275) }
+```
+
+### [Background Image hover effect with icon](https://codepen.io/saifah/pen/baXwBw)
+
+on scroll: div.hover: opacity, i.fa: transform+top | made with: transition · :hover
+
+```css
+.image_item { position: relative }
+.bg_cover { background-position: center }
+.image_item { position: relative; box-shadow: 0 0 5px rgba(0, 0, 0, 0.15) }
+.image_item * { -webkit-transition: all 0.35s ease-in-out; transition: all 0.35s ease-in-out }
+.image_item .hover { position: absolute; top: 0; bottom: 0; opacity: 0 }
+.image_item .hover i { position: absolute; top: 50%; box-shadow: 0 0 5px rgba(0, 0, 0, 0.15); -webkit-transform: translate(-50%, -50%) scale(0); transform: translate(-50%, -50%) scale(0); transition: all 300ms 0ms cubic-bezier(0.6, -0.28, 0.73 }
+.image_item:hover .hover { opacity: 1 }
+.image_item:hover .hover i { -webkit-transform: translate(-50%, -50%) scale(1); transform: translate(-50%, -50%) scale(1); transition: all 300ms 100ms cubic-bezier(0.175, 0.885, 0.32, 1.275) }
+```
+
+### [Smiley animation](https://codepen.io/web-tiki/pen/zpmeKy)
+
+made with: @keyframes · :hover
+
+```css
+svg { transform:rotateZ(0deg) }
+svg:hover { animation:rotate 1.2s cubic-bezier(0.65, 0.000, 0.75, 1.000) }
+svg:hover .smile { animation: smile 1s cubic-bezier(0.2, 0.000, 0.8, 1.000) }
+svg:hover .eyes { animation: eyes 1s cubic-bezier(.7, 0.000, 0.4, 1.000) }
+to { transform:rotateZ(720deg) }
+@keyframes rotate animates transform
+@keyframes smile animates stroke-dasharray
+@keyframes eyes animates stroke-dasharray
+```
+
+### [Call To Action Button Animation](https://codepen.io/webdoktoru/pen/YYOQaO)
+
+on scroll: div.ring: transform+opacity+color+top ×5, i.fa: color+top ×5, div.: color | made with: transition · :hover · 3D (perspective / preserve-3d)
+
+```css
+.digerleri { top: 800px }
+.digerleri #ucbuton { position: absolute; top: 50%; -webkit-transform: translate(-50%, -50%); -moz-transform: translate(-50%, -50%); -o-transform: translate(-50%, -50%); transform: translate(-50%, -50%); -webkit-transition: all 0.6s cubic-bez }
+.digerleri #ucbuton .ring { position: absolute; top: 40%; -webkit-transition: all 1s cubic-bezier(0.55, 0, 0.1, 1); -moz-transition: all 1s cubic-bezier(0.55, 0, 0.1, 1); -o-transition: all 1s cubic-bezier(0.55, 0, 0.1, 1); transition: all 1s cubic }
+.digerleri #ucbuton:hover .one { transform: perspective(500px) translate3d(-90px, -50px, 150px); opacity: 1 }
+.digerleri #ucbuton:hover .two { transform: perspective(800px) translate3d(-130px, 50px, 180px); opacity: 0.6 }
+.digerleri #ucbuton:hover .three { transform: perspective(800px) translate3d(130px, 50px, 30px); opacity: 0.2 }
+.digerleri #ucbuton:hover .four { transform: perspective(800px) translate3d(110px, -80px, 80px); opacity: 0.9 }
+.digerleri #ucbuton:hover .five { transform: perspective(800px) translate3d(-20px, -120px, 70px); opacity: 0.9 }
+.digerleri #ucbuton::after { position: absolute; top: -35px; transform: perspective(800px) scale(0) rotate(0deg); -webkit-transition: all 2s cubic-bezier(0.55, 0, 0.1, 1); -moz-transition: all 2s cubic-bezier(0.55, 0, 0.1, 1); -o-transition: all 2s  }
+.digerleri #ucbuton:before { position: absolute; top: -40px; transform: perspective(800px) scale(0.4) rotate(0deg); -webkit-transition: all 2s cubic-bezier(0.55, 0, 0.1, 1); -moz-transition: all 2s cubic-bezier(0.55, 0, 0.1, 1); -o-transition: all 2 }
+.digerleri #ucbuton:hover::after { transform: perspective(800px) scale(1) rotate(600deg) }
+.digerleri #ucbuton:hover::before { transform: perspective(800px) scale(1) rotate(-100deg) }
+```
+
+### [Night sky through cat eyes/glasses (moving background hover effect)](https://codepen.io/SBDesign/pen/wpXEJe)
+
+made with: nothing recognised — read the code
+
+```css
+body { position: 40% 60% }
+.cat-glass { border-top: solid 15em; border-bottom: solid 5em }
+body { position: 25% 35% }
+```
+
+### [CSS hover effects without animation](https://codepen.io/katako/pen/MrOmqP)
+
+on hover of button.: button.: background | made with: :hover
+
+```css
+#second button { filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#00b7ea', endColorstr='#009ec3',GradientType=0 ) }
+#second button:hover { filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#00b7ea', endColorstr='#00618e',GradientType=0 ) }
+#third button { border-bottom: solid 6px coral; border-top:none }
+#fourth button { box-shadow: 0 1px 2px rgba(0,0,0,0.15) }
+#fourth button:hover { box-shadow: 0 5px 15px rgba(0,0,0,0.3) }
+#fifth button:hover { padding-top:22px; padding-bottom:18px }
+#sixth button { box-shadow: 0 1px 2px rgba(0,0,0,0.15) }
+#sixth button:hover { box-shadow: 0 5px 15px rgba(0,0,0,0.3) }
+```
+
+### [Horizontal Picture Thumbnails](https://codepen.io/_NoobPanda_/pen/wprwPp)
+
+on hover of a.: div.info-container: transform+shadow+top | made with: transition · :hover
+
+```css
+.info-container { position:relative; box-shadow: 0px 0px 50px 10px rgba(0,0,0,0.38); transition: all 200ms ease-out }
+.info-container:hover { box-shadow: 0px 0px 100px #000000; transition: all 300ms ease-in; transform: scale(1.08) }
+.info-container:active { transform: translateZ(2px); box-shadow: 0px 0px 100px rgba(0,0,0,0.38) }
+.info-thumb-header { position: absolute; bottom:15% }
+.info-thumb-section { bottom:10%; position: absolute }
+```
+
+### [Link hover effect with box-shadow](https://codepen.io/donroyco/pen/mpegLV)
+
+on hover of a.: a.: shadow | made with: transition · :hover
+
+```css
+a { box-shadow: inset 0 -1px 0 rgba(211, 47, 47, 0.6); transition: box-shadow 0.3s ease-in-out }
+a:hover { box-shadow: inset 0 -23px 0 rgba(211, 47, 47, 0.6) }
+```
+
+### [Awesome circle hover effect](https://codepen.io/poojavpatel/pen/LOXoKJ)
+
+on scroll: div.photo: transform+top, div.content: transform+opacity | made with: transition · :hover
+
+```css
+.box { transition: all 0.35s ease-in-out }
+.photo { background-position: 20% 20% }
+.content p { border-top: 1px solid rgba(12, 11, 11, 0.5) }
+.photo { transform: translatex(0%) scale(1); transition: all 0.35s ease-in-out }
+.content { transform: translate(-100%, -100%); opacity: 0; transition: all 0.35s ease-in-out }
+.box:hover .photo { transform: translatex(50%) scale(0.5); transition: all 0.35s ease-in-out }
+.box:hover .content { transform: translate(0%, -100%); opacity: 1; transition: all 0.35s ease-in-out }
+```
+
+### [Awesome hover effect - video section for MFC](https://codepen.io/cssmfcpro/pen/RjqwZr)
+
+on hover of img.: div.kin: transform+top ×2, img.: transform+opacity+shadow+top ×2, div.: opacity+top ×2, a.: background+color+top ×2 | made with: transition · :hover · 3D (perspective / preserve-3d)
+
+```css
+section { box-shadow:4px 4px 4px #000 }
+.scr::-webkit-scrollbar-track { -webkit-box-shadow:inset 0 0 6px rgba(0,0,0,0.3) }
+.scr::-webkit-scrollbar-thumb { -webkit-box-shadow:inset 0 0 6px rgba(0,0,0,0.7) }
+abbr { border-bottom:1px dotted #ccc }
+.xcr::-webkit-scrollbar-track { -webkit-box-shadow:inset 0 0 6px rgba(0,0,0,0.3) }
+.xcr::-webkit-scrollbar-thumb { -webkit-box-shadow:inset 0 0 6px rgba(0,0,0,0.7) }
+#videos:hover h1.headerz:before, #videos:hover h1.headerz:after, #tippers:hover  { transition: all 0.5s }
+.phto { perspective: 1000px }
+.phto .kin { transition: all 0.5s }
+.phto:hover .kin { transform: rotateX(80deg); transform-origin: bottom }
+.phto .kin:after { position: absolute; bottom:0; background-position:center; transform: rotateX(90deg); transform-origin: bottom }
+.phto .kin div { text-transform: uppercase; position: absolute; bottom: 100%; transform: rotateX(-89.99deg); transform-origin: bottom }
+```
+
+### [Letter Spacing Hover Effect](https://codepen.io/arturoalviar/pen/gXBgMw)
+
+made with: transition · :hover
+
+```css
+h1 { text-transform: uppercase }
+.heading-main { margin-bottom: 1rem }
+.has-spacing-animation { position: relative; transition: all 0.6s ease }
+ul li { position: relative }
+```
+
+### [Drawing svg animation on hover with css](https://codepen.io/jvicens/pen/aVqBwm)
+
+made with: @keyframes · :hover
+
+```css
+.read-more p { margin-top: 50% }
+.read-more a { position: absolute; top: 50px }
+.read-more .encircle { position: absolute; top: 5px }
+.read-more:hover .cls-1 { animation: dash 5s linear alternate infinite }
+@keyframes dash animates stroke-dashoffset
+```
+
+### [D3 Donut Chart](https://codepen.io/JFlo/pen/QOMvOp)
+
+made with: @keyframes · transition · :hover
+
+```css
+.pie { position: absolute; top: 50%; transform: translate(-50%, -50%); filter: drop-shadow(0 2px 0px #333) }
+.data-text { transition: transform 0.2s ease-in-out }
+.data-text__value { transform: translateY(-0.5rem); opacity: 0 }
+.data-text__name { transform: translateY(0.5rem); opacity: 0 }
+.data-text--show { transform: translateY(0); -webkit-animation: fadeGraphTextIn 0.5s forwards; animation: fadeGraphTextIn 0.5s forwards }
+from { opacity: 0 }
+to { opacity: 1 }
+from { opacity: 0 }
+to { opacity: 1 }
+@keyframes fadeGraphTextIn animates opacity
+```
+
+### [Social media hover effect](https://codepen.io/dkprajapati/pen/EbKMVd)
+
+made with: transition · :hover
+
+```css
+ul { position: absolute; top: 50%; transform: translate(-50%, -50%) }
+ul li a { text-transform: capitalize; position: relative }
+ul li a:after { position: absolute; top: 0; transform: scaleX(0); transition:transform 0.5s ease-in-out }
+ul li a:hover:after { transform: scaleX(1) }
+```
+
+### [menu icon effect#1 : menu to close](https://codepen.io/mayurpunjabi/pen/zPxjyJ)
+
+made with: transition · :hover
+
+```css
+.container { position: relative; transform: translateX(-50%) }
+.container span { position: absolute; transition: .5s }
+.container span:nth-child(1) { top: 20px }
+.container span:nth-child(2) { top: 80px }
+.container span:nth-child(3) { top: 80px }
+.container span:nth-child(4) { top: 140px }
+.container:hover span:nth-child(1) { top: -20px; opacity: 0 }
+.container:hover span:nth-child(2) { transform: rotateZ(45deg) }
+.container:hover span:nth-child(3) { transform: rotateZ(-45deg) }
+.container:hover span:nth-child(4) { top: 200px; opacity: 0 }
+```
+
+### [Triangle UI concept test](https://codepen.io/web-tiki/pen/RLMaea)
+
+made with: transition · :hover
+
+```css
+#wrap { position: relative; padding-bottom: 66.25% }
+.top, .bottom { position: absolute; top: 0 }
+.top::after, .bottom::after { position: absolute; top: 0; transition: opacity 0.2s; opacity: 0 }
+.top:hover::after, .bottom:hover::after { opacity: 1 }
+.bottom { top: 50% }
+.left, .right { position: absolute; top: 50%; transform: rotate(33.5deg) skew(-23deg) }
+.left::before, .left::after, .right::before, .right::after { position: absolute; top: 0; transform: skew(23deg) rotate(-33.5deg) }
+.left::after, .right::after { opacity: 0; transition: opacity 0.2s }
+.left:hover::after, .right:hover::after { opacity: 1 }
+.right { transform: rotate(-33.5deg) skew(23deg) }
+.right::before, .right::after { transform: skew(-23deg) rotate(33.5deg) }
+```
+
+### [Gradiant Hover Effect for Team Member Section)](https://codepen.io/iRoni/pen/OxOvzG)
+
+on scroll: a.: transform+top ×3, div.member-overlay: transform+opacity+top, p.icon-links: transform+top | on hover of img.: a.: transform+top ×6, div.member-overlay: transform+opacity+top ×2, p.icon-links: transform+top ×2 | made with: transition · :hover · (hover: hover) gate
+
+```css
+.team-member { position: relative }
+.team-member img { position: relative; -webkit-transition: all 0.4s ease-in; transition: all 0.4s ease-in }
+.team-member .member-info h4 { text-transform: uppercase; opacity: 0.8 }
+.member-hover { position: relative }
+.member-overlay { position: absolute; top: 0; opacity: 0; filter: alpha(opacity=0); -webkit-transform: translate(460px, -100px) rotate(180deg); -ms-transform: translate(460px, -100px) rotate(180deg); transform: translate(460px, -100px) ro }
+.member-hover:hover .member-overlay { opacity: 1; filter: alpha(opacity=100); -webkit-transform: translate(0px, 0px); -ms-transform: translate(0px, 0px); transform: translate(0px, 0px) }
+p.icon-links { position: absolute; bottom: 0; margin-bottom: 0; -webkit-transition: -webkit-transform 0.35s ease-out; transition: transform 0.35s ease-out; -webkit-transform: translateY(52px); transform: translateY(52px) }
+p.icon-links a { opacity: 0.7 }
+p.icon-links a { -webkit-transition: -webkit-transform 0.35s; transition: transform 0.35s; -webkit-transform: translateY(52px); transform: translateY(52px) }
+.member-hover:hover p.icon-links { -webkit-transform: translateY(0px); transform: translateY(0px) }
+.member-hover:hover .icon-links a:nth-child(3) { -webkit-transform: translateY(0px); transform: translateY(0px) }
+.member-hover:hover .icon-links a:nth-child(2) { -webkit-transform: translateY(0px); transform: translateY(0px) }
+```
+
+### [Nav hover effect](https://codepen.io/juan-frontdev/pen/wrrBxP)
+
+on hover of li.: a.active: background+color | made with: transition · :hover
+
+```css
+nav ul li a { position: relative; text-transform: uppercase; transition: 0.5s }
+nav ul li a::before { position: absolute; bottom: 10px; opacity: 0; transition: 0.5s }
+nav ul li a:hover:before { bottom: -8px; opacity: 1 }
+nav ul li a:after { position: absolute; top: 10px; opacity: 0; transition: 0.5s }
+nav ul li a:hover:after { top: -8px; opacity: 1 }
+```
+
+### [TOTAL - Link Hover Effect](https://codepen.io/catjuice/pen/MEEWQo)
+
+made with: @keyframes · transition · :hover · mix-blend-mode
+
+```css
+li { margin-bottom: 1rem }
+li a { position: relative; border-bottom: 2px solid #222 }
+li a:before { position: absolute; top: calc($test-size * 1.1); mix-blend-mode: multiply; transition: transform 350ms cubic-bezier(0.44, 0, 0, 1) }
+li a:after { position: absolute; top: calc($test-size * 1.1); mix-blend-mode: multiply; transition: transform 350ms cubic-bezier(0.44, 0, 0, 1) }
+li a:hover { border-bottom: 0px }
+li a:hover:before { animation: orbitClock linear 1s infinite }
+li a:hover:after { animation: orbitCounter linear 1s infinite }
+from { transform: rotate(0deg) translateX(3px) rotate(0deg) }
+to { transform: rotate(360deg) translateX(3px) rotate(-360deg) }
+from { transform: rotate(360deg) translateX(3px) rotate(-360deg) }
+to { transform: rotate(0deg) translateX(3px) rotate(0deg) }
+@keyframes orbitClock animates transform
+```
+
+### [ZoomOut effect on Hover](https://codepen.io/Zorlimar/pen/zEwXmq)
+
+on scroll: img.: transform+top | made with: transition · :hover · mix-blend-mode
+
+```css
+.wrapper { position: absolute; top: 0; transform: translate(-50%, 0%) }
+.image__effect { padding-top: 40%; position: relative }
+.image__effect:nth-child(2n+1) { transform: translateX(12.5%) }
+.image__effect:nth-child(2n) { transform: translateX(77.5%) }
+.image__effect img { position: absolute; top: 50%; transform: translate(-50%, -50%) }
+.image__effect:before, .image__effect:after { position: absolute; top: 0.5rem }
+.image__effect.effect1 img { mix-blend-mode: screen; transform: translate(-50%, -50%) scale(2); transition: 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) }
+.image__effect.effect1:after { mix-blend-mode: difference; opacity: 0.2 }
+.image__effect.effect1:hover img { transform: translate(-50%, -50%) scale(1.3) }
+.image__effect.effect2 img { mix-blend-mode: screen; transform: translate(-50%, -50%) scale(2); transition: 0.3s ease-in-out }
+.image__effect.effect2:after { mix-blend-mode: difference; opacity: 0.2 }
+.image__effect.effect2:hover img { transform: translate(-50%, -50%) scale(1.3) }
+```
+
+### [Memento Mori](https://codepen.io/hellomkreyes/pen/yzMXYE)
+
+made with: transition · :hover
+
+```css
+body { position: relative }
+.frame-container { position: relative; background-position: center top }
+.frame-container:before { padding-top: 101% }
+.glass { position: absolute; top: 50%; transform: translateX(-50%) translateY(-50%) }
+.reflect { position: absolute; top: 35%; transform: translateX(-50%) translateY(-50%) rotate(35deg); box-shadow: 2px 10px 15px #666 }
+.picture { position: absolute; top: 50%; transform: translateX(-50%) translateY(-50%) }
+.picture:before { background-position: 80% 25%; opacity: 0; transition: all 900ms ease-in-out }
+.frame-container:hover .picture:before { opacity: 1 }
+```
+
+### [text link underline effect](https://codepen.io/kuuurttyy/pen/RLpamW)
+
+made with: transition · :hover
+
+```css
+a { background-position: 0 100%; transition: all 500ms cubic-bezier(0.62, 0.055, 0.52, 1.65) }
+p { margin-bottom: 1em }
+```
+
+### [HOVER EFFECT](https://codepen.io/devMike/pen/YrpXRG)
+
+on hover of img.: hr.: transform+opacity+top ×2, img.: transform+top, div.overlay: opacity | made with: transition · :hover
+
+```css
+.effect { position: relative }
+.effect img { -webkit-transition: all 0.4s linear; transition: all 0.4s linear; position: relative }
+.effect:hover img { -ms-transform: scale(1.3); -webkit-transform: scale(1.3); transform: scale(1.3) }
+.effect .overlay { position: absolute; top: 0; opacity: 0; -webkit-transition: all 0.4s ease-in-out; transition: all 0.4s ease-in-out }
+.effect .overlay:hover { opacity: 1 }
+.effect hr { opacity: 0; position: absolute; top: 50%; -webkit-transition: opacity 0.35s, -webkit-transform 0.35s; transition: opacity 0.35s, transform 0.35s; -webkit-transform: translate3d(-50%, -50%, 0); transform: translate3d(-50% }
+.effect hr:nth-child(3) { -webkit-transform: translate3d(-50%, -50%, 0) rotate3d(0, 0, 1, 90deg) scale3d(0, 0, 1); transform: translate3d(-50%, -50%, 0) rotate3d(0, 0, 1, 90deg) scale3d(0, 0, 1) }
+.effect hr:nth-child(4) { -webkit-transform: translate3d(-50%, -50%, 0) rotate3d(0, 0, 1, 180deg) scale3d(0, 0, 1); transform: translate3d(-50%, -50%, 0) rotate3d(0, 0, 1, 180deg) scale3d(0, 0, 1) }
+.package-1, .package-2 { position: absolute; -webkit-transition: opacity 0.35s, -webkit-transform 0.35s; transition: opacity 0.35s, transform 0.35s; -webkit-transform: translate3d(-50%, -50%, 0); transform: translate3d(-50%, -50%, 0) }
+.package-1 { top: 40% }
+.package-2 { top: 60% }
+.effect p { text-transform: none }
+```
+
+### [Spring Text Hover Effect](https://codepen.io/nathantaylor/pen/veOGMo)
+
+on hover of a.: span.: transform+top ×11 | made with: transition · :hover
+
+```css
+a { transform: translate3d(0, 0, 0); filter: blur(0) }
+a span { position: relative; transition: transform cubic-bezier(0.77, 0, 0.175, 1) 250ms }
+a span:after { position: absolute; top: 100%; transform: scaley(0.1); transition: transform cubic-bezier(0.77, 0, 0.175, 1) 250ms }
+a:hover span { transform: translateY(-1em) }
+a:hover span:after { transform: scaleY(1) }
+a:active span { transform: translateY(0); transition: transform cubic-bezier(0.77, 0, 0.175, 1) 125ms }
+a:active span:after { transform: scaleY(0.5); transition: transform cubic-bezier(0.77, 0, 0.175, 1) 125ms }
+```
+
+### [Our Team](https://codepen.io/rahuldhiman/pen/ZXYgzN)
+
+on hover of img.: div.our_team: transform+shadow+top | made with: transition · :hover
+
+```css
+.wrapper_team .our_team { box-shadow:none; margin-bottom:10px; transform: translateY(0px); transition: all 0.5s ease 0s }
+.wrapper_team .our_team .pro_detail .pro_desc { text-transform: uppercase }
+.wrapper_team .our_team:hover { transform: translateY(-15px); box-shadow:0 10px 7px rgba(0, 0, 0, 0.5) }
+.wrapper_our .wrap_item i { margin-bottom:6px }
+```
+
+### [Pure Css and Responsive Image Hover](https://codepen.io/Aashima/pen/RLwvvW)
+
+on hover of img.: div.overlay: transform+opacity+top | made with: transition · :hover
+
+```css
+body { margin-top:50px !important }
+.box { position: relative }
+.box .overlay { position: absolute; top: 0; opacity: 0; transform:scale(0.5, 0.5); transition:all 450ms ease-out 0s }
+.box:hover .overlay { opacity: 1; transform:rotateY(180deg) scale(1,1) }
+.box .box-content { transform:rotateY(-180deg); padding-top: 30% }
+.box .box-content h3 { margin-bottom: 10px }
+.box .box-content ul li a { transition: all 0.35s ease 0s }
+.box { margin-bottom: 30px }
+```
+
+### [Intense Hover Effect](https://codepen.io/kellyannmcnamara/pen/YrzYRR)
+
+on hover of button.motumb-btn: span.: color+top ×3, button.motumb-btn: transform+color+shadow+top | made with: transition · :hover
+
+```css
+body { padding-top: 75px }
+.motumb-btn { box-shadow: inset 0 0 0 3px #6495ED; text-transform: uppercase; position: relative; transition: 0.2s ease all; top: 50%; transform: translate(-50%, -50%) }
+.motumb-btn span:before, .motumb-btn span:after { position: absolute; transition: 0.35s ease all }
+.motumb-btn span:first-child:before { top: 0 }
+.motumb-btn span:first-child:after { bottom: 0 }
+.motumb-btn span:last-child:before { top: 0% }
+.motumb-btn span:last-child:after { top: 100% }
+.motumb-btn:before, .motumb-btn:after { position: absolute; top: 50%; transform: translateY(-50%); transition: all 0.25s ease-in-out 0.2s }
+.motumb-btn:after { transition: 0.25s ease-in-out 0.2s }
+.motumb-btn:hover, .motumb-btn:active, .motumb-btn:focus { box-shadow: inset 0 0 0 0 #36213E }
+.motumb-btn:hover:before, .motumb-btn:active:before, .motumb-btn:focus:before { box-shadow: inset 0 0 0 4px #36213E }
+.motumb-btn:hover:after, .motumb-btn:active:after, .motumb-btn:focus:after { box-shadow: inset 0 0 0 3px white }
+```
+
+### [Cool Button Hover Effects](https://codepen.io/mehra_as/pen/vJoypy)
+
+on hover of button.btn-fade: button.btn-fade: background | made with: @keyframes · transition · :hover · 3D (perspective / preserve-3d)
+
+```css
+.btn-shake, .btn-overlay, .btn-bounce, .btn-fade { margin-bottom: 30px; box-shadow: 0px 5px 24px rgba(34, 34, 34, 0.3); text-transform: uppercase }
+.button-group { margin-top: 100px }
+.button-group h1 { margin-bottom: 70px; text-transform: uppercase }
+.rotate { padding-top: 15px }
+.btn-fade:hover { transition: 300ms ease-in }
+.btn-bounce:hover { animation: bounce 1s cubic-bezier(0.075, 0.82, 0.165, 1) }
+.btn-overlay { position: relative }
+.btn-overlay:after { position: absolute; transform: translateY(-45%) skew(25deg) scale(0); transition: 200ms ease-in-out }
+.btn-overlay:hover:after { transform: translateY(-45%) skew(25deg) scale(1) }
+.btn-overlay span { position: relative }
+.btn-shake:hover { animation: shake 100ms linear; animation-iteration-count: 5 }
+from { transform: scale(1.1) }
+```
+
+### [Pure css and fully responsive Hover effect](https://codepen.io/Aashima/pen/GvVjeo)
+
+on hover of img.: li.: transform+top ×2 | made with: transition · :hover
+
+```css
+.box { margin-top: 50px; position: relative }
+.box:after { position: absolute; top: 0; opacity: 0; transition: all 0.5s ease 0s }
+.box:hover:after { opacity: 1 }
+.box .box-content { position: absolute; bottom: -100%; transition: all 0.5s ease 0s }
+.box:hover .box-content { bottom: 0 }
+.box h3 { text-transform: uppercase }
+.box .social-links { position: absolute; top: 0 }
+.box .social-links li { position: relative; transform: translateY(-100px); transition: all 0.5s ease 0s }
+.box .social-links li:before { position: absolute; top: 0 }
+.box:hover .social-links li { transform: translateY(0) }
+.box .social-links li a { margin-top: 50px; opacity: 1; transition: all 0.3s ease 0s }
+.box:hover .social-links li a { opacity: 1 }
+```
+
+### [Pure Css Hover Effect](https://codepen.io/Aashima/pen/WEmraL)
+
+on hover of img.: a.fa: background ×2, img.: transform+top | made with: transition · :hover
+
+```css
+.box { margin-top: 50px !important }
+.box .image { margin-bottom: 20px; position: relative }
+.box .image:before, .box .image:after { box-shadow: 100px 0 0 rgba(255, 255, 255, 0.01) inset, 0 100px 0 rgba(255, 255, 255, 0.01) inset, -100px 0 0 rgba(255, 255, 255, 0.01) inset, 0 -100px 0 rgba(255, 255, 255, 0.01) inset; position: absolute; top: 0; transi }
+.box .image:after { transform: rotate(45deg) }
+.box:hover .image:after, .box:hover .image:before { box-shadow: 5px 0 0 rgba(255, 0, 0, 0.5) inset, 0 5px 0 rgba(252, 150, 0, 0.5) inset, -5px 0 0 rgba(0, 255, 0, 0.5) inset, 0 -5px 0 rgba(0, 150, 255, 0.5) inset }
+.box .image img { transform: scale(1); transition: all 300ms linear 0s }
+.box:hover .image img { transform: scale(1.1) }
+.box .social li a { transition: all 300ms linear 0s }
+.box { margin-bottom: 30px }
+```
+
+### [Pure Css service box](https://codepen.io/Aashima/pen/jLdQJx)
+
+made with: transition · :hover
+
+```css
+body { margin-top: 50px !important }
+.servicebox .service-icon { margin-bottom: 20px }
+.servicebox .service-icon i.fa { transition:all 0.3s ease 0s }
+.servicebox:hover .service-icon i.fa { transform:rotateY(180deg) }
+.servicebox .title { border-bottom: 1px solid #DC6D99; padding-bottom: 20px; position: relative; text-transform: uppercase }
+.servicebox .title:before, .servicebox .title:after { bottom: -5px; position: absolute; transition: all 0.4s ease 0s }
+.servicebox .description { transition: all 300ms ease 0s }
+.servicebox { margin-bottom: 30px }
+```
+
+### [Button hover effect](https://codepen.io/abadu/pen/YxJgoe)
+
+on scroll: span.: transform+opacity+top ×6 | made with: transition · :hover
+
+```css
+.centered { position: absolute; top: 50%; transform: translate(-50%, -50%) }
+.h-button span { text-transform: uppercase; transition: 0.25s cubic-bezier(0.5, -1, 0.5, 2); opacity: 0; transform: translate(0, -20px) }
+.h-button:before { position: absolute; transition: 0.25s cubic-bezier(0.5, -1, 0.5, 2); text-transform: uppercase; opacity: 1; transform: translate(0, 0px) }
+.h-button:hover:before, .h-button:focus:before { opacity: 0; transform: translate(0, 20px) }
+.h-button:hover span, .h-button:focus span { opacity: 1; transform: translate(0, 0) }
+```
+
+### [Social icons with css](https://codepen.io/RomanStudio/pen/qXKZOZ)
+
+on scroll: li.icon: background, i.fa: opacity+top, i.fa: transform+opacity+top | on hover of li.icon: li.icon: background ×2, i.fa: opacity+top ×2, i.fa: transform+opacity+top ×2 | made with: @keyframes · transition · :hover
+
+```css
+.marco { position: relative; top: 50%; transform: translateY(-50%) }
+.icon { position: relative }
+.icon .fa { opacity: 1 }
+.icon ul { position: absolute; top: 0 }
+.icon ul li { position: relative; transition: all 0.5s ease }
+.icon ul li .fa { position: absolute; transform: translateX(-50%); opacity: 0 }
+.icon, .icon:hover:first-child, .icon:hover:nth-child(2), .icon:hover:nth-child( { transition: background 1s ease }
+.icon:hover:first-child, .icon:hover:nth-child(2), .icon:hover:nth-child(3), .ic { border-bottom: 3px solid rgba(0,0,0,0.5) }
+.icon:hover .fa { -webkit-animation: hidde_icons 0.65s linear forwards; animation: hidde_icons 0.65s linear forwards }
+.icon:hover ul li .fa { -webkit-animation: icons .65s linear forwards; animation: icons .65s linear forwards; -webkit-animation-delay: 0.5s; animation-delay: 0.5s }
+0% { opacity: 0 }
+50% { opacity: 1 }
+```
+
+### [Rotating Gradient Hover Effect](https://codepen.io/andyranged/pen/gxvdXv)
+
+on scroll: img.: filter+top, div.overlay: transform+opacity+top | on hover of img.: div.overlay: transform+top | made with: @keyframes · transition · :hover · mix-blend-mode
+
+```css
+figure { position: relative }
+img { filter: saturate(1) brightness(1); transition: filter .5s }
+0% { transform: rotate(0deg) }
+100% { transform: rotate(359deg) }
+0% { transform: rotate(0deg) }
+100% { transform: rotate(359deg) }
+.overlay { position: absolute; top: -50%; opacity: 0; mix-blend-mode: screen; -webkit-animation: spin 4s infinite linear; animation: spin 4s infinite linear; transition: opacity .5s }
+figure:hover img { filter: saturate(0.5) brightness(1.3); transition: filter .2s }
+figure:hover .overlay { opacity: 1; transition: opacity .2s }
+@keyframes spin animates transform
+```
+
+### [Highlighter Hover State](https://codepen.io/viastudio/pen/gxoJOq)
+
+made with: transition · :hover
+
+```css
+#main a { position: relative; transition: all 0.15s ease-out }
+#main a:before { position: absolute; bottom: 3px; transform: scaleX(0); transition: all 0.3s ease-in-out 0s }
+#main a:hover { transition: all 0.15s ease-out }
+#main a:hover:before { transform: scaleX(1) }
+```
+
+### [Tabs with icons](https://codepen.io/konovalchik/pen/NvddEg)
+
+on hover of li.active: img.: color ×2, a.: color, div.icons: background+color, div.icons: color | made with: transition · :hover
+
+```css
+#uslugi .nav li { position: relative }
+#uslugi .nav li h3 { margin-top: 130px; margin-bottom: 5px; transition: all 0.1s ease-in-out }
+#uslugi .nav>li>a:hover h3 { margin-top: 144px; margin-bottom: 5px }
+#uslugi .nav .active h3 { margin-top: 144px; margin-bottom: 5px; opacity: 0 }
+#uslugi .nav .icon_active { opacity: 0 }
+#uslugi .nav .active .icon_pass { opacity: 0; transition: all 0.2s ease-in-out }
+#uslugi .nav .active .icon_active { opacity: 1; transition: all 0.2s ease-in-out }
+#uslugi .icons { position: absolute; transition: all 0.1s ease-in-out }
+#uslugi .icon_active { top: 30px }
+```
+
+### [Untitled](https://codepen.io/ramkirat/pen/wqzBxb)
+
+made with: transition · :hover
+
+```css
+.team { position: relative }
+.text { position: absolute; top: 50%; transform: translateY(-50%) }
+.overlay { position: absolute; bottom: 0; transform: translateY(100%); transform: translateY(-100%); transition: all 0.5s ease }
+.team:hover .overlay { transform: translateY(0) }
+```
+
+### [Icon Hover](https://codepen.io/thelaazyguy/pen/OjXoYK)
+
+held: fixed div.wrapper | on hover of li.: a.: color, i.fa: color | made with: position: fixed · transition · :hover
+
+```css
+.wrapper { position: fixed; top: 50%; transform: translate(-50%, -50%) }
+li { position: relative }
+a { position: relative; transition: all .35s }
+.effect_1 li:after { position: absolute; top: 3px; bottom: 3px; transform: scale(0); transition: all .35s }
+.effect_1 li:hover:after { transform: scale(1) }
+.effect_2 li { position: relative }
+.effect_2 li:before, .effect_2 li:after { position: absolute; top: 3px; bottom: 3px; transition: all .35s }
+```
+
+### [Split Image on Hover](https://codepen.io/masterpox/pen/PKzoMd)
+
+made with: GSAP
+
+```css
+.placeholder { position:relative; margin-top:20px }
+.gridTile { position:absolute; top:0px }
+```
+
+```js
+addEventListener("mouseleave", function(e){
+```
+
+### [Move Over Effect](https://codepen.io/masterpox/pen/bRyNwb)
+
+made with: transition
+
+```css
+.masterpoxImage { position: relative; top: 0; -webkit-transition: all .2s ease-in-out; -moz-transition: all .2s ease-in-out; -ms-transition: all .2s ease-in-out; -o-transition: all .2s ease-in-out; transition: all .2s ease-in-out }
+.move { -webkit-transition: all .2s ease-in-out; -moz-transition: all .2s ease-in-out; -ms-transition: all .2s ease-in-out; -o-transition: all .2s ease-in-out; transition: all .2s ease-in-out }
+```
+
+### [Magazine Tiles w/hover effect](https://codepen.io/webdevlin/pen/QgPwWj)
+
+made with: transition · :hover · 3D (perspective / preserve-3d)
+
+```css
+#Container { -webkit-perspective: 500px; perspective: 1000px; perspective-origin: top }
+#Container { margin-bottom: 150px; -webkit-perspective: 0; perspective: 0px }
+#Container { margin-bottom: 150px; -webkit-perspective: 0; perspective: 0px }
+#Container { margin-bottom: 150px; -webkit-perspective: 0; perspective: 0px }
+#Tiles { -webkit-transform: rotateZ(0deg); transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg) }
+.title:before { position: relative; -webkit-transition: all 0.3s; transition: all 0.3s; top: 82% }
+.title:hover:before { text-transform: uppercase; border-bottom: 5px solid white; -webkit-transform: translate3d(0, 0, 20px); transform: translate3d(0, 0, 20px); box-shadow: 30px 30px 10px rgba(0, 0, 0, 0.5) }
+[data-project-id] { background-position: center }
+[data-project-id]:before { text-transform: uppercase }
+.disclaimer { margin-top: 50px }
+```
+
+### [Transition Hover Effect](https://codepen.io/masterpox/pen/LLMKzB)
+
+on hover of img.: div.auther-pic: transform+top | made with: transition · :hover
+
+```css
+.sf-featured-approve { position:absolute; top:120px; -webkit-transition: all 0.8s ease-out; -moz-transition: all 0.8s ease-out; -o-transition: all 0.8s ease-out; -ms-transition: all 0.8s ease-out; transition: all 0.8s ease-out }
+.auther-bx { margin-top: 5px; background: url(inc/images/autherbg.jpg) no-repeat center top }
+.auther-bx .auther-pic { transition: 2s ease; -moz-transition: 2s ease; -webkit-transition: 2s ease; -o-transition: 2s ease }
+.auther-bx .auther-pic:hover { transform : rotateY(360deg) scale3d(1.1, 1.1, 1.1); -moz-transform : rotateY(360deg); -webkit-transform : rotateY(360deg) scale3d( 1.1, 1.1, 1.1); -o-transform : rotateY(360deg) }
+.auther-bx .auther-pic img { -webkit-box-shadow: 3px 3px 10px 1px rgba(66,66,66,0.49); -moz-box-shadow: 3px 3px 10px 1px rgba(66,66,66,0.49); box-shadow: 3px 3px 10px 1px rgba(66,66,66,0.49) }
+.auther-bx h6, .auther-bx p { text-transform: uppercase }
+```
+
+### [Pricing table](https://codepen.io/Nidheesh/pen/LLeaYe)
+
+on scroll: div.listing-item: transform+top, figcaption.: background+top | on hover of img.: div.listing-item: transform+top ×2, figcaption.: background+top ×2 | made with: transition · :hover
+
+```css
+#title { text-transform: uppercase; margin-top: 100px }
+.listing-item { margin-bottom:20px; -webkit-transition: all 0.3s ease; -moz-transition: all 0.3s ease; transition: all 0.3s ease; -webkit-box-shadow: 0px 1px 4px rgba(0, 0, 0, 0.10); -moz-box-shadow: 0px 1px 4px rgba(0, 0, 0, 0.10); box }
+.listing-item:hover, .listing-item.active { -webkit-transform: scale(1.03); -moz-transform: scale(1.03); transform: scale(1.03); -webkit-transition: all 0.3s; -moz-transition: all 0.3s; transition: all 0.3s }
+.listing-item .listing { position:relative }
+.listing-item .listing:before { position:absolute; top:-15px; border-bottom:20px solid #fff }
+figure.image { position: relative }
+figure.image figcaption { position: absolute; top: 0; bottom: 4px }
+figcaption .caption { position:relative; top:50%; -moz-transform:translateY(-50%); -webkit-transform:translateY(-50%); transform:translateY(-50%) }
+figcaption h1 { text-transform: uppercase }
+.listing h4:not(:last-child) { border-bottom: 1px solid #ccc }
+```
+
+### [Diagonal button hover](https://codepen.io/ladycarni/pen/Ogzmwr)
+
+on hover of a.button: a.button: color | made with: transition · :hover
+
+```css
+html *, *:before, *:after { transition: 0.5s ease-in-out }
+.button { position: relative; text-transform: uppercase }
+.button:before, .button:after { position: absolute; top: 0; bottom: 0 }
+.v1:before { transform: translateX(-125%) skew(35deg) }
+.v1:after { transform: translateX(265%) skew(35deg) }
+.v1:hover:before { transform: translateX(0) skew(35deg) }
+.v1:hover:after { transform: translateX(140%) skew(35deg) }
+.v2:before { transform: translateX(125px) skew(35deg) }
+.v2:after { transform: translateX(125px) skew(35deg) }
+.v2:hover:before { transform: translateX(125px) skew(35deg) }
+.v2:hover:after { transform: translateX(12%) skew(35deg) }
+```
+
+### [Simple hover and click effect](https://codepen.io/VamOSGS/pen/JJOerm)
+
+made with: @keyframes · transition
+
+```css
+body .screen { position: relative; bottom: 0; transition: 0.5s cubic-bezier(0.94, 0.21, 0.63, 1.09) 0.5s }
+body .screen .clickedText { bottom: 50%; text-transform: uppercase }
+body .screen.clicked { animation: widthAnim 0.5s cubic-bezier(0.17, 0.67, 0.86, -0.23) }
+body .btn { text-transform: uppercase; position: relative }
+body .btn::before { position: absolute; transition: 0.3s ease-in-out }
+body .btn .click { position: absolute; top: -50px; transition: 0.2s linear }
+body .btn .hov { position: relative; bottom: 0; transition: 0.2s linear }
+body .btn.hoverd .click { top: 0 }
+body .btn.hoverd .hov { bottom: -50px }
+body .btn.hoverdOut .left { transition: 0.2s linear 0s }
+body .btn.hoverdOut .top { transition: 0.2s linear 0.2s }
+body .btn.hoverdOut .right { transition: 0.2s linear 0.4s }
+```
+
+### [Tribute to Vincent Van Gogh](https://codepen.io/Jiacomina/pen/jwBygP)
+
+on scroll: img.picture1: opacity+top | on hover of a.: img.portrait: opacity, img.picture1: opacity | made with: transition · :hover
+
+```css
+.sub-title { margin-bottom: -10px; padding-top: 70px }
+.title { margin-bottom: 50px }
+.hover-effect { position: relative }
+.image-row:last-child .hover-effect .text { top: 10% }
+.hover-effect .text { position: absolute; top: 20%; bottom: 10% }
+.hover-effect:hover img { opacity: 0; transition: all 0.1s ease-in-out 0.1s }
+.wiki-link { padding-top: 30px; padding-bottom: 50px }
+.wiki-hover-effect { position: relative }
+.wiki-hover-effect:hover img { opacity: 0.5; transition: all 0.1s ease-in-out 0s }
+```
+
+### [Hover Effect - Catch him if you can](https://codepen.io/jlnljn/pen/MmMLwN)
+
+made with: position: fixed · transition · :hover
+
+```css
+body { position: fixed }
+body > div { position: absolute; top: 20%; bottom: 20% }
+p { position: absolute; bottom: 60%; text-transform: uppercase }
+p > span { text-transform: none; padding-top: 15px }
+p > span > a { position: relative; border-bottom: 2px solid #E4F1FE; text-transform: uppercase; padding-bottom: 2px; transition: 0.75s }
+p > span > a:hover { padding-bottom: 4px; transition: 0.25s }
+a.link { position: absolute; top: 60%; transition: 0.5s; box-shadow: 0 0 10px rgba(0, 0, 0, 0.25) }
+a.link > span { text-transform: uppercase }
+```
+
+### [Arrow Hover Animation Effect](https://codepen.io/vanss472/pen/GmzKQq)
+
+on hover of li.unc-swiper-button-prev: button.swiper-button-prev: background | made with: transition · :hover
+
+```css
+ul.swiper-button-wrapper { position: relative }
+ul.swiper-button-wrapper li.unc-swiper-button-prev button.swiper-button-prev::af { position: absolute; top: 47%; transition: width 0.3s 0.2s }
+ul.swiper-button-wrapper li.unc-swiper-button-next button.swiper-button-next::af { position: absolute; top: 47%; transition: width 0.3s 0.2s }
 ```

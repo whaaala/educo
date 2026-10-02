@@ -1,18 +1,18 @@
 # CodePen · cursor — how each pen does it
 
-377 pens, each opened, run and read (`cp-tag.js`); written by `cp-how.js` from the pen's own code and what it did when scrolled and hovered. The full code is in `raw/cursor.json`.
+379 pens, each opened, run and read (`cp-tag.js`); written by `cp-how.js` from the pen's own code and what it did when scrolled and hovered. The full code is in `raw/cursor.json`.
 
 ## Techniques, most used first
 
 | Technique | Pens |
 |---|---|
 | pointer / mouse tracking | 298 |
-| transition | 189 |
+| transition | 190 |
 | position: fixed | 177 |
 | requestAnimationFrame | 126 |
 | :hover | 116 |
 | @keyframes | 71 |
-| mix-blend-mode | 68 |
+| mix-blend-mode | 69 |
 | canvas 2D | 54 |
 | GSAP | 51 |
 | backdrop-filter | 36 |
@@ -5844,4 +5844,21 @@ img { vertical-align: bottom }
 
 ```js
 addEventListener('mousemove', function (e) {
+```
+
+### [cursor pointer](https://codepen.io/emelyanova/pen/zYmxXqa)
+
+made with: transition · mix-blend-mode
+
+```css
+.bg { position: absolute; top: 0 }
+pointer { position: absolute; transform: translate(-50%, -50%); transition: 0.075s; mix-blend-mode: difference }
+```
+
+### [flash game](https://codepen.io/ed-d/pen/MWqNLQb)
+
+made with: nothing recognised — read the code
+
+```css
+#cursor { position : absolute }
 ```

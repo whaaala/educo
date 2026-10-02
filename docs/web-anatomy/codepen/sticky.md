@@ -1,19 +1,19 @@
 # CodePen · sticky — how each pen does it
 
-585 pens, each opened, run and read (`cp-tag.js`); written by `cp-how.js` from the pen's own code and what it did when scrolled and hovered. The full code is in `raw/sticky.json`.
+586 pens, each opened, run and read (`cp-tag.js`); written by `cp-how.js` from the pen's own code and what it did when scrolled and hovered. The full code is in `raw/sticky.json`.
 
 ## Techniques, most used first
 
 | Technique | Pens |
 |---|---|
 | position: sticky | 353 |
-| transition | 192 |
-| :hover | 162 |
-| position: fixed | 162 |
+| transition | 193 |
+| :hover | 163 |
+| position: fixed | 163 |
 | scroll listener | 97 |
 | @keyframes | 46 |
 | backdrop-filter | 32 |
-| scroll() timeline | 29 |
+| scroll() timeline | 30 |
 | GSAP | 25 |
 | pointer / mouse tracking | 21 |
 | requestAnimationFrame | 20 |
@@ -7582,4 +7582,19 @@ made with: position: fixed
 #wrapper.fix-bottom-VP #sc,#wrapper.fix-top-VP #sc { position:fixed }
 #wrapper.fix-bottom-VP #sc { bottom:15px }
 #wrapper.fix-top-VP #sc { top:15px }
+```
+
+### [Animated sticky header on scroll with css3 and javascript](https://codepen.io/codeconvey/pen/mGWgrq)
+
+held: fixed div.header | made with: position: fixed · scroll() timeline · transition · :hover
+
+```css
+.header { position: fixed; top: 0; -webkit-transition: height 0.3s; -moz-transition: height 0.3s; transition: height 0.3s }
+.header h1 { text-transform: uppercase; -webkit-transition: all 0.3s; -moz-transition: all 0.3s; transition: all 0.3s }
+nav a { position: relative; text-transform: uppercase; -webkit-transition: all 0.3s; -moz-transition: all 0.3s; transition: all 0.3s }
+.header.shrink nav a { -webkit-transition: all 0.3s; -moz-transition: all 0.3s; transition: all 0.3s }
+.header.shrink h1 { -webkit-transition: all 0.3s; -moz-transition: all 0.3s; transition: all 0.3s }
+.content { padding-top:200px }
+.container > header h2 { text-transform: uppercase }
+.codeconvey-top { text-transform: uppercase }
 ```

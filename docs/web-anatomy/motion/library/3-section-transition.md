@@ -402,3 +402,20 @@ Codrops StickySections repo (15 stacking demos) and the 123 Codrops scroll artic
    which RULE AF rules out on low-cost phones. Only the scale / opacity / translate looks are recommended (T6).
 3. **01 T2's claim** that the guide describes the cut wrongly is consistent with the code (`lib/box-model.ts:6608-6610`:
    the band keeps its height; nothing pulls the next band under the cut); still to be confirmed in a headed browser.
+
+## Added 2026-10-02 (R-1) — CodePen `divider` · `dividers` · `wave`, 137 pens opened, run and read
+
+The 0-pen tags (`section-divider`, `shape-divider`, `stacking-cards`) retried under the names CodePen uses. Read until
+the user's "enough": `dividers` to its end (11), `divider` 75 (page 7), `wave` 51 (page 6); `svg-divider`,
+`stacked-cards`, `card-stack`, `stacking` not reached (the run resumes). Pages: `codepen/divider.md`, `dividers.md`,
+`wave.md`. How they are made, in pens of 137: `::before` / `::after` shape 64 · SVG `<path>` 21 · keyframed moving wave 20
+· `<hr>` 13 · canvas 16 · border triangle 9 · `clip-path: polygon` 7 · `mask` 6.
+
+| Need | Builder | Evidence (checked 2026-10-02) |
+|---|---|---|
+| Straight / angled / curved band edge | **HAVE** | `BandEdge` four shapes `lib/box-model.ts:133`, fields `:383-384` |
+| Wave / SVG-path edge (the most-used shape after pseudo-elements) | **GAP** | only the four `BandEdge` values; 0 `mask-image` in `box-model.ts` / `box-export.ts` (ST-4) |
+| Edge that overlaps the next band | **GAP** | the band keeps its height, outer spacing `min={0}` `BoxInspector.tsx:228`, `:240` (ST-1 · ST-5) |
+| Moving (keyframed) wave | **GAP** | edges are static; needs the reduced-motion fallback (MR rules) |
+| A rule between blocks (`<hr>`) | **HAVE** (R-23) | the Divider block now publishes `<hr>` — it was `<div aria-hidden>` until 2026-10-02 (`box-export.ts:158`) |
+| Stacked cards (sticky, each over the last) | **GAP** | sibling sticky items QUEUE below each other by design, `pinStackAttr` `lib/box-model.ts:5740` (ST-7) |

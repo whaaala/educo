@@ -1,42 +1,43 @@
 # CodePen · clip-path — how each pen does it
 
-508 pens, each opened, run and read (`cp-tag.js`); written by `cp-how.js` from the pen's own code and what it did when scrolled and hovered. The full code is in `raw/clip-path.json`.
+633 pens, each opened, run and read (`cp-tag.js`); written by `cp-how.js` from the pen's own code and what it did when scrolled and hovered. The full code is in `raw/clip-path.json`.
 
 ## Techniques, most used first
 
 | Technique | Pens |
 |---|---|
-| clip-path | 490 |
-| transition | 209 |
-| :hover | 190 |
-| @keyframes | 125 |
-| position: fixed | 64 |
-| custom properties driven by JS | 40 |
-| pointer / mouse tracking | 29 |
-| mix-blend-mode | 25 |
-| GSAP | 25 |
+| clip-path | 611 |
+| transition | 268 |
+| :hover | 244 |
+| @keyframes | 151 |
+| position: fixed | 81 |
+| custom properties driven by JS | 47 |
+| pointer / mouse tracking | 35 |
+| mix-blend-mode | 32 |
+| GSAP | 29 |
+| 3D (perspective / preserve-3d) | 26 |
 | backdrop-filter | 22 |
-| 3D (perspective / preserve-3d) | 20 |
-| mask | 17 |
-| requestAnimationFrame | 14 |
+| mask | 21 |
+| requestAnimationFrame | 18 |
+| scroll listener | 14 |
 | :focus-visible | 11 |
-| scroll listener | 11 |
 | prefers-reduced-motion | 9 |
 | :has() | 9 |
-| scroll-snap | 7 |
+| scroll-snap | 8 |
 | position: sticky | 5 |
 | ScrollTrigger | 4 |
 | scroll-driven animation (animation-timeline) | 4 |
 | view() timeline | 4 |
+| scroll() timeline | 4 |
+| IntersectionObserver | 4 |
 | Lenis / smooth scroll | 3 |
-| scroll() timeline | 3 |
 | animation-range | 3 |
 | (hover: hover) gate | 3 |
-| Web Animations API (.animate) | 2 |
+| Web Animations API (.animate) | 3 |
+| canvas 2D | 2 |
 | container queries | 1 |
 | @starting-style | 1 |
-| IntersectionObserver | 1 |
-| canvas 2D | 1 |
+| anime.js | 1 |
 
 ## Every pen
 
@@ -7346,4 +7347,1847 @@ to { -ms-transform: rotate(360deg); -moz-transform: rotate(360deg); -webkit-tran
 .container .imageContainer img { transform: translateX(600px); transition: all 500ms cubic-bezier(0.5, 0, 0.2, 1) }
 .container .imageContainer.loaded img { transform: translateX(0%) }
 @keyframes rotating animates -ms-transform, -moz-transform, -webkit-transform, -o-transform, transform
+```
+
+### [Clip-Path Lens Hover Effect](https://codepen.io/MyXoToD/pen/VwjmmaK)
+
+made with: transition · :hover · clip-path · mask · custom properties driven by JS · pointer / mouse tracking
+
+```css
+.card { position: relative; box-shadow: 0 10px 10px rgba(0, 0, 0, 0.5) }
+.card h1 { position: absolute }
+.card img { --mask: radial-gradient( circle at var(--mouse-x, 50%) var(--mouse-y, 50%), black var(--maskSize1, 0), transparent 0, transparent var(--maskSize2, 0), black var(--maskSize2, 0), black var(--maskSize3, 0), transparent 0); }
+.card:hover img { -webkit-clip-path: circle(50% at var(--mouse-x) var(--mouse-y)); clip-path: circle(50% at var(--mouse-x) var(--mouse-y)) }
+```
+
+```js
+addEventListener('mousemove', e => {
+style.setProperty('--mouse-x', Math.floor(100 / card.offsetWidth * x) + '%')
+style.setProperty('--mouse-y', Math.floor(100 / card.offsetHeight * y) + '%')
+style.setProperty('--maskSize1', '20%')
+style.setProperty('--maskSize2', '28%')
+style.setProperty('--maskSize3', 'calc(28% + 0.1rem)')
+```
+
+### [WHITE/BLACK clip-path animation](https://codepen.io/MyXoToD/pen/eYzBJQQ)
+
+made with: transition · :hover · clip-path
+
+```css
+.title { position: relative }
+.title .one, .title .two { position: absolute; top: 50%; transform: translate(-50%, -50%); transition: all 500ms ease }
+.title .one:hover, .title .two:hover { clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%) }
+.title .one { clip-path: polygon(0% 0%, 100% 0%, 100% 0%, 0% 100%) }
+.title .two { clip-path: polygon(0% 100%, 100% 0%, 100% 100%, 0% 100%) }
+```
+
+### [Play/Pause Button with Animation (CSS)](https://codepen.io/MyXoToD/pen/qBNqbbg)
+
+made with: transition · :hover · clip-path
+
+```css
+.play-button { position: relative; box-shadow: 0 0 10px rgba(0, 0, 0, 0.5); transition: all 0.3s ease }
+.play-button:before, .play-button:after { position: absolute; top: 50%; transform: translate3d(-50%, -50%, 0); transition: -webkit-clip-path 0.3s ease; transition: clip-path 0.3s ease; transition: clip-path 0.3s ease, -webkit-clip-path 0.3s ease }
+.play-button:before { -webkit-clip-path: polygon(0% 0%, 100% 50%, 0% 50%, 0% 0%); clip-path: polygon(0% 0%, 100% 50%, 0% 50%, 0% 0%) }
+.play-button:after { -webkit-clip-path: polygon(0% 50%, 100% 50%, 0% 100%, 0% 50%); clip-path: polygon(0% 50%, 100% 50%, 0% 100%, 0% 50%) }
+.play-button.pause:before { -webkit-clip-path: polygon(0% 0%, 33% 0%, 33% 100%, 0% 100%); clip-path: polygon(0% 0%, 33% 0%, 33% 100%, 0% 100%) }
+.play-button.pause:after { -webkit-clip-path: polygon(66% 0%, 100% 0%, 100% 100%, 66% 100%); clip-path: polygon(66% 0%, 100% 0%, 100% 100%, 66% 100%) }
+```
+
+### [lp concept](https://codepen.io/kitjenson/pen/pobNzeY)
+
+made with: transition · :hover · clip-path · custom properties driven by JS
+
+```css
+:root { --bg-top:65vh }
+body { position:relative; top:0 }
+body:before { position:absolute; top:0; clip-path:polygon(0 50vh, var(--bg-left) var(--bg-top), 100vw 50vh, 100% 100%, 0% 100%); transition:1.5s }
+h2 { position:absolute; top:15px }
+.btn { position:absolute; top:15px }
+.text_block { border-bottom:1px dotted var(--color-three) }
+#footer { position:relative }
+#footer:before { position:absolute; top:-25px; clip-path:polygon(50% 0%, 55% 100%, 45% 100%) }
+```
+
+```js
+style.setProperty('--bg-left', (Math.random()*60)+20+"vw")
+style.setProperty('--bg-top', (Math.random()*30)+40+"vh")
+```
+
+### [cool fullpage menu animated w/ GSAP](https://codepen.io/tomhermans/pen/rNLezxg)
+
+held: fixed div.overlay | made with: position: fixed · clip-path · GSAP
+
+```css
+.menu .menu-container { margin-top: 1.5em; opacity: 0 }
+.title { margin-top: 0; text-transform: uppercase }
+.overlay { clip-path: circle(0%); position: fixed }
+.overlay .exit { position: absolute }
+```
+
+```js
+gsap.timeline({
+```
+
+### [Pure CSS 🔺 openings 2020](https://codepen.io/thebabydino/pen/WNxbLob)
+
+made with: @keyframes · clip-path
+
+```css
+.🔺::before, .🔺::after { box-shadow: inset 0 0 0 calc((1 - var(--j))*20em) #fff; -webkit-clip-path: polygon(50% 0%, 93.30127% 75%, 6.69873% 75%); clip-path: polygon(50% 0%, 93.30127% 75%, 6.69873% 75%) }
+.🔺 > .🔺 { animation: s 1.5s cubic-bezier(0, 0, 0.19, 1) infinite alternate, r 3s linear infinite }
+to { scale: 0.5 }
+to { rotate: 120deg }
+@keyframes s animates scale
+@keyframes r animates rotate
+```
+
+### [Checkbox card](https://codepen.io/aaw3k/pen/zYBxEWX)
+
+held: fixed div.socials | made with: position: fixed · transition · clip-path · mix-blend-mode
+
+```css
+.card { --transition: 0.15s }
+.card__input { position: absolute }
+.card__input:checked ~ .card__body .card__body-cover-checkbox { --check-scale: 1; --check-opacity: 1 }
+.card__input:disabled ~ .card__body { opacity: 0.5 }
+.card__input:disabled ~ .card__body:active { --scale: 1 }
+.card__body { position: relative; box-shadow: var(--shadow, 0 4px 4px 0 rgba(0, 0, 0, 0.02)); transition: transform var(--transition), box-shadow var(--transition); transform: scale(var(--scale, 1)) translateZ(0) }
+.card__body:active { --scale: 0.96 }
+.card__body-cover { position: relative }
+.card__body-cover:after { position: absolute; top: 0; mix-blend-mode: var(--blend-mode); opacity: var(--opacity-bg, 1); transition: opacity var(--transition) linear }
+.card__body-cover-image { filter: var(--filter-bg, grayscale(1)); -webkit-clip-path: polygon(0% 0%, 100% 0%, var(--x-y1, 100% 90%), var(--x-y2, 67% 83%), var(--x-y3, 33% 90%), var(--x-y4, 0% 85%)); clip-path: polygon(0% 0%, 100% 0%, var(--x-y1, 1 }
+.card__body-cover-checkbox { position: absolute; top: 10px; opacity: var(--check-opacity, 0); transition: transform var(--transition), opacity calc(var(--transition) * 1.2) linear; transform: scale(var(--check-scale, 0)) }
+.card__body-cover-checkbox--svg { vertical-align: top; transition: stroke-dashoffset 0.4s ease var(--transition) }
+```
+
+### [DIV svg clip-path test](https://codepen.io/driezis/pen/qBNBeJL)
+
+on scroll: img.: transform+top | made with: transition · :hover · clip-path
+
+```css
+.mask-svg { position: absolute }
+.container { position: relative }
+.banga-link { position: relative }
+.banga-link img { -webkit-clip-path: url(#banga-link--mask); clip-path: url(#banga-link--mask); transform: scale(1.07); will-change: transform; transition: transform 0.2s ease-out }
+.banga-link.horizontal img { transform: scaleX(1.07) }
+.banga-link:hover img { transform: scale(1) }
+.banga-link-cont { position: relative }
+.banga-link-cont .img-container { -webkit-clip-path: url(#banga-link--mask); clip-path: url(#banga-link--mask); transform: scaleX(1.07); will-change: transform; transition: transform 0.2s ease-out }
+.banga-link-cont .img-container img { transform: scaleX(0.934579); will-change: transform; transition: transform 0.2s ease-out }
+.banga-link-cont:hover .img-container { transform: scaleX(1) }
+.banga-link-cont:hover .img-container img { transform: scaleX(1) }
+```
+
+### [Effect hover path](https://codepen.io/crianbluff/pen/zYBOrRy)
+
+on scroll: div.clip: clip-path ×3, div.content: transform+opacity+top | made with: transition · :hover · clip-path
+
+```css
+.container { position: relative }
+.container .clip { position: absolute; top: 0; transition: -webkit-clip-path 0.5s ease; transition: clip-path 0.5s ease; transition: clip-path 0.5s ease, -webkit-clip-path 0.5s ease }
+.container .clip.clip-1 { -webkit-clip-path: polygon(0 0, 55% 0, 20% 100%, 0 100%); clip-path: polygon(0 0, 55% 0, 20% 100%, 0 100%) }
+.container .clip.clip-2 { -webkit-clip-path: polygon(55% 0, 100% 0, 45% 100%, 20% 100%); clip-path: polygon(55% 0, 100% 0, 45% 100%, 20% 100%) }
+.container .clip.clip-3 { -webkit-clip-path: polygon(100% 0, 100% 0, 100% 100%, 45% 100%); clip-path: polygon(100% 0, 100% 0, 100% 100%, 45% 100%) }
+.container:hover .clip, .container:focus .clip, .container:active .clip { -webkit-clip-path: polygon(100% 0, 100% 0, 100% 100%, 100% 100%); clip-path: polygon(100% 0, 100% 0, 100% 100%, 100% 100%) }
+.container .clip:hover, .container .clip:focus, .container .clip:active { -webkit-clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%); clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%) }
+.container .clip .content { opacity: 0; position: absolute; top: 100%; transition: opacity 0.5s ease, transform 0.5s ease }
+.container .clip:hover .content, .container .clip:focus .content, .container .cl { opacity: 1; transform: translateY(-100%) }
+```
+
+### [Effect scroll with video background](https://codepen.io/crianbluff/pen/mdEbeMa)
+
+held: fixed section.banner | made with: position: fixed · clip-path · scroll listener
+
+```css
+.banner { -webkit-clip-path: circle(800px at center center); clip-path: circle(800px at center center); position: fixed; top: 0 }
+.banner video { position: absolute; top: 0 }
+.container { margin-top: 200vh; position: relative }
+.container h2 { margin-bottom: 20px }
+```
+
+```js
+addEventListener('scroll', function() {
+```
+
+### [clip-path](https://codepen.io/Ahmed-Abdelsalam/pen/mdPgzxg)
+
+made with: transition · :hover · clip-path
+
+```css
+.container { position: relative }
+.container .clip { position: absolute; bottom: 0; transition: all 1.5s ease }
+.container .clip .info { position: absolute; bottom: -100%; opacity: 0; transition: 1s ease-in-out }
+.container .clip:hover .info { bottom: 0; opacity: 1 }
+.container .clip1 { clip-path: polygon(0 0, 50% 0, 0 100%, 0% 100%) }
+.container .clip2 { clip-path: polygon(50% 0%, 100% 0, 50% 100%, 0 100%) }
+.container .clip3 { clip-path: polygon(100% 0, 100% 0, 100% 100%, 50% 100%) }
+.container:hover .clip { clip-path: polygon(100% 0, 100% 0, 100% 100%, 100% 100%) }
+.container .clip:hover { clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%) }
+```
+
+### [Jalousie text animation](https://codepen.io/sandstedt/pen/GRZeywP)
+
+made with: @keyframes · clip-path
+
+```css
+.jt { position: relative; text-transform: uppercase }
+.jt__row:nth-child(1) { -webkit-clip-path: polygon(0% 75%, 100% 75%, 100% 100%, 0% 100%); clip-path: polygon(0% 75%, 100% 75%, 100% 100%, 0% 100%) }
+.jt__row:nth-child(2) { -webkit-clip-path: polygon(0% 50%, 100% 50%, 100% 75.5%, 0% 75.5%); clip-path: polygon(0% 50%, 100% 50%, 100% 75.5%, 0% 75.5%) }
+.jt__row:nth-child(3) { -webkit-clip-path: polygon(0% 25%, 100% 25%, 100% 50.5%, 0% 50.5%); clip-path: polygon(0% 25%, 100% 25%, 100% 50.5%, 0% 50.5%) }
+.jt__row:nth-child(4) { -webkit-clip-path: polygon(0% 0%, 100% -10%, 100% 35.5%, 0% 25.5%); clip-path: polygon(0% 0%, 100% -10%, 100% 35.5%, 0% 25.5%) }
+.jt__row:nth-child(5) { -webkit-clip-path: polygon(0% -25%, 100% -45%, 100% -9.5%, 0% 0.5%); clip-path: polygon(0% -25%, 100% -45%, 100% -9.5%, 0% 0.5%) }
+.jt__row:nth-child(6) { -webkit-clip-path: polygon(0% -50%, 100% -85%, 100% -44.4%, 0% -24.5%); clip-path: polygon(0% -50%, 100% -85%, 100% -44.4%, 0% -24.5%) }
+.jt__row.jt__row--sibling { position: absolute; top: 0 }
+.jt__text { -webkit-animation: moveIn 2s cubic-bezier(.36,0,.06,1) alternate infinite; animation: moveIn 2s cubic-bezier(.36,0,.06,1) alternate infinite }
+.jt__row:nth-child(1) .jt__text { transform: translateY(-0.1em) }
+.jt__row:nth-child(2) .jt__text { transform: translateY(-0.3em) scaleY(1.1) }
+.jt__row:nth-child(3) .jt__text { transform: translateY(-0.5em) scaleY(1.2) rotate(-1deg) }
+```
+
+### [Image Collage](https://codepen.io/MCDougRose/pen/yLOGGbJ)
+
+made with: transition · :hover · clip-path
+
+```css
+.drybn-collage-item { position: relative; transition: 0.5s }
+.drybn-collage-item h2 { position: absolute; top: 35%; transform: translate(-50%) }
+.drybn-collage-item:nth-child(1) { background-position: center; clip-path: polygon(0 0, 82% 0, 100% 95%, 0 100%) }
+.drybn-collage-item:nth-child(2) { background-position: center; clip-path: polygon(0 0, 100% 0, 100% 100%, 15% 90%) }
+.drybn-collage-item:nth-child(3) { background-position: center; clip-path: polygon(0 0, 100% 5%, 100% 95%, 0 90%); margin-top: -2rem }
+.drybn-collage-item:nth-child(4) { clip-path: polygon(50% 0, 100% 10%, 100% 100%, 0 90%, 0 5%); margin-top: -1rem }
+.drybn-collage-item:nth-child(5) { background-position: center; clip-path: polygon(0 0, 100% 5%, 100% 95%, 0 90%); margin-top: -1rem }
+.drybn-collage-item:nth-child(6) { background-position: center; clip-path: polygon(0 0, 100% 10%, 100% 90%, 66% 100%, 0 90%); margin-top: -2.7rem }
+.drybn-collage-item:nth-child(7) { background-position: center; clip-path: polygon(0 0, 100% 10%, 77% 100%, 0 100%); margin-top: -1.8rem }
+.drybn-collage-item:nth-child(8) { background-position: center; clip-path: polygon(31% 10%, 100% 0, 100% 100%, 0 100%); margin-top: -1.8rem }
+.drybn-collage-item { filter: sepia(1) blur(1px); transition: 0.3s }
+.drybn-collage-item:hover { filter: sepia(0) }
+```
+
+### [blog_card](https://codepen.io/gzkdev/pen/QWNZYaV)
+
+made with: transition · :hover · clip-path
+
+```css
+.card { box-shadow: 0 0 1.5rem rgba(0, 0, 0, 0.15); transition: 400ms ease }
+.card:hover { transform: scale(1.005) }
+.card__background { clip-path: circle(24rem at 50% -9rem) }
+.card__link { transition: 400ms ease }
+.card__link:hover { transform: scale(0.95) }
+```
+
+### [clip-path arrow](https://codepen.io/tearat/pen/GRZXjmq)
+
+made with: transition · :hover · clip-path
+
+```css
+.arrow { transition: 0.2s ease; clip-path: polygon(0% 0%, 60% 0%, 100% 0%, 100% 50%, 100% 100%, 60% 100%, 0% 100%) }
+.arrow-container:hover .arrow { clip-path: polygon(0% 20%, 60% 20%, 60% 0%, 100% 50%, 60% 100%, 60% 80%, 0% 80%) }
+.tentacle { transition: 0.2s ease; clip-path: polygon(18% 100%, 8% 68%, 21% 24%, 60% 9%, 90% 21%, 91% 57%, 76% 82%, 48% 77%, 41% 42%, 55% 63%, 70% 65%, 82% 53%, 79% 31%, 62% 21%, 32% 31%, 23% 70%, 42% 100%) }
+.tentacle-container:hover .tentacle { clip-path: polygon(18% 100%, 4% 75%, 10% 32%, 40% 8%, 78% 10%, 94% 35%, 90% 70%, 70% 88%, 44% 77%, 71% 73%, 81% 64%, 83% 38%, 73% 22%, 45% 19%, 21% 34%, 20% 74%, 42% 100%) }
+```
+
+### [Pure CSS: 5 icosahedra x 20 faces = 100 divs (hover shapes for animation, Chrome 85+ only)](https://codepen.io/thebabydino/pen/abNYLdq)
+
+on scroll: div.s3gon: opacity+top ×17, div.s3gon: opacity ×3, article.scene: background, section.s20hedron: transform | made with: @keyframes · :hover · clip-path · mask · 3D (perspective / preserve-3d)
+
+```css
+.scene { perspective: 19em }
+.s20hedron { position: relative; animation: rot 8s linear infinite; animation-play-state: var(--state) }
+to { transform: rotateY(1turn) }
+to { opacity: 0.2 }
+.s3gon { position: absolute; transform: rotatey(calc(var(--j)*72deg)) rotate(calc(var(--rev)*.5turn)) rotatex(calc(var(--end)*52.62263deg - var(--not-end)*10.81232deg)) translatez(11.33642vmin); filter: blur(2px); animation: alph }
+.s3gon::before, .s3gon::after { position: absolute; -webkit-clip-path: var(--poly); clip-path: var(--poly); --mask: linear-Gradient(calc(var(--rev)*180deg), red var(--perc0), transparent 0 var(--perc1), red 0) 0 0/100% 12.99038vmin no-repeat; -webkit-m }
+@keyframes perc0 animates --perc0
+@keyframes perc1 animates --perc1
+@keyframes rot animates transform
+@keyframes alpha animates opacity
+```
+
+### [laser printer](https://codepen.io/itscodysolomon/pen/RwaQWZZ)
+
+held: fixed p | on scroll: button.: background | made with: position: fixed · @keyframes · transition · :hover · clip-path
+
+```css
+#start button { text-transform: uppercase; transition: all 0.5s }
+#start button:hover { transition: all 0.5s }
+#msg { position: relative }
+#msg p { animation: build 3.5s linear 1 }
+#msg:before { position: absolute; bottom: 100%; margin-top: -100%; animation: laser 0.25s linear infinite, laser-up 3.5s linear 1 both; box-shadow: 0px 0px 40px 8px #0ed200 }
+#refresh { position: fixed; top: 3em; transition: color 0.25s }
+#refresh:hover { transition: color 0.25s }
+0% { transform: skew(-2deg) }
+50% { transform: skew(2deg) }
+100% { transform: skew(-2deg) }
+0% { bottom: 0% }
+90% { opacity: 100% }
+```
+
+### [Image Reveal animation on scroll without dependancies - CSS & JS](https://codepen.io/cameronknight/pen/WNwZORV)
+
+held: fixed div.credit | on scroll: div.image-wrap: transform+clip-path+top ×2, img.: transform+top ×2, h2.fadeup: transform+opacity+top | on hover of img.: div.image-wrap: clip-path ×2, img.: transform+top ×2 | made with: position: fixed · transition · clip-path · IntersectionObserver
+
+```css
+.container { position: relative }
+.credit { position: fixed; top: 20px }
+.credit a { text-transform: lowercase }
+h2 { text-transform: uppercase; position: absolute; top: 25% }
+body:not(.no-js) .image-wrap { transition: 1s ease-out; position: relative; clip-path: polygon(0 100%, 100% 100%, 100% 100%, 0 100%) }
+body:not(.no-js) .image-wrap img { transform: scale(1.3); transition: 2s ease-out }
+body:not(.no-js) .animating .image-wrap { clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%); transform: skewY(0) }
+body:not(.no-js) .animating img { transform: scale(1); transition: 4s ease-out }
+body:not(.no-js) .fadeup { opacity: 0; transition: 0.4s ease-out; transform: translateY(40px) }
+body:not(.no-js) .fading-up { opacity: 1; transition: 1s ease-out; transform: translateY(0px) }
+```
+
+```js
+new IntersectionObserver(revealCallback, options)
+new IntersectionObserver(fadeupCallback, options)
+```
+
+### [clip-path-header](https://codepen.io/gzkdev/pen/QWNMmYG)
+
+made with: clip-path
+
+```css
+.wrapper { clip-path: polygon(0 0, 100% 0, 100% 85%, 50% 100%, 50% 100%, 0 85%) }
+```
+
+### [Clip Path Text Animation](https://codepen.io/Khairul021/pen/bGpWreL)
+
+held: fixed div.bottom-container, fixed div.top-container | on scroll: div.top-container: clip-path | made with: position: fixed · @keyframes · clip-path
+
+```css
+.bottom-container, .top-container { position: fixed; top: 35vh }
+.top-container { clip-path: circle(13% at 85% 50%); animation: circleMove 100s ease-in-out infinite }
+0%, 100% { clip-path: circle(13% at 85% 50%) }
+50% { clip-path: circle(13% at 15% 50%) }
+@keyframes circleMove animates clip-path
+```
+
+### [CSS Shapes Layout Experiment](https://codepen.io/KristopherVanSant/pen/xxVqLLO)
+
+made with: clip-path
+
+```css
+* { position: relative }
+#svg1 { -webkit-clip-path: polygon(0% 0%, 100% 50%, 40% 100%); clip-path: polygon(0% 0%, 100% 50%, 40% 100%) }
+#s1 h1 { position: absolute; -webkit-transform: rotate(-23deg); -ms-transform: rotate(-23deg); transform: rotate(-23deg); top: -1vw }
+#s1d { margin-top: -2vw }
+.p1-spanl:before { position: absolute; -webkit-transform: rotate(-60deg); -ms-transform: rotate(-60deg); transform: rotate(-60deg); top: 25vw }
+.p1-spanl:after { position: absolute; bottom: 4.8vw }
+.p1-spanr:before { position: absolute; top: 1.5vw }
+#s2d { border-top: 0.3vw solid; padding-top: 5vw }
+#s2d2 { border-bottom: 0.3vw solid; padding-bottom: 5vw; margin-bottom: 5vw }
+#s4 { position: relative }
+#s4 svg { -webkit-clip-path: polygon( 55.86% 0px, 75.68% 1px, 62.38% 26.41%, 78.2% 26.85%, 30.82% 95.41%, 45.9% 43.04%, 33.44% 42.89% ); clip-path: polygon( 55.86% 0px, 75.68% 1px, 62.38% 26.41%, 78.2% 26.85%, 30.82% 95.41%, 45.9% }
+#s4 h1 { position: absolute; top: 30vw }
+```
+
+### [shooting star css animation](https://codepen.io/huxhu/pen/wvGgXKw)
+
+on scroll: div.star: transform+opacity+clip-path+top ×4 | made with: @keyframes · clip-path
+
+```css
+.star { clip-path: circle(141.1% at 100% 100%); animation: star infinite 1s ease-out }
+.star:nth-child(2n) { animation-delay: -0.5s }
+.star__line { box-shadow: -1px 2px #FFF256; transform: rotate(45deg) scaleX(1.3) }
+from { transform: translate(-400%, -400%); clip-path: circle(0% at 100% 100%) }
+30% { opacity: 1 }
+60% { opacity: 0.8; clip-path: circle(45% at 100% 100%) }
+to { opacity: 0 }
+@keyframes star animates transform, clip-path, opacity
+```
+
+### [Counter with Scroll Timeline and Snap Points](https://codepen.io/argyleink/pen/XWdNYaY)
+
+held: fixed h1, fixed h1, fixed h1, fixed h1, fixed h1 | on scroll: span.slash: transform+top ×10 | made with: position: fixed · scroll() timeline · scroll-snap · clip-path · Web Animations API (.animate)
+
+```css
+main { -ms-scroll-snap-type: y mandatory; scroll-snap-type: y mandatory }
+section { scroll-snap-align: start; position: relative }
+.stuck { position: absolute; top: 0; bottom: 0; -webkit-clip-path: polygon(0% 0%,100% 0%,100% 100%,0% 100%); clip-path: polygon(0% 0%,100% 0%,100% 100%,0% 100%) }
+.stuck > h1 { position: fixed; top: 0; bottom: 0; will-change: transform }
+```
+
+```js
+.animate({
+```
+
+### [#001 - Bulbasaur](https://codepen.io/atstormcup/pen/jOqqXxL)
+
+made with: clip-path
+
+```css
+body { position: relative }
+.container { position: absolute; top: 0; bottom: 0 }
+.head { position: absolute; top: 25px; filter: drop-shadow(0 0 20px #fff) }
+.head::before { position: absolute; border-top: 2px solid #000; bottom: 164px; clip-path: polygon(0 0, 100% 0, 100% 20%, 0 100%) }
+.head::after { position: absolute; border-top: 2px solid #000; bottom: 164px; clip-path: polygon(0 0, 100% 0, 100% 100%, 0 20%) }
+.brow { position: absolute; top: 87px }
+.brow::before { position: absolute; top: 0px; border-top: 2px solid #000; transform: rotate(66deg) }
+.brow::after { position: absolute; top: 0px; border-top: 2px solid #000; transform: rotate(-64deg) }
+.spot { position: absolute }
+.spot::after { position: absolute }
+.spot.large { top: 21px; clip-path: polygon(0 32%, 37% 14%, 82% 0, 92% 17%, 100% 39%, 75% 69%, 46% 99%, 16% 97%) }
+.spot.large::after { clip-path: polygon(3% 34%, 37% 17%, 81% 4%, 89% 17%, 97% 38%, 75% 65%, 45% 96%, 18% 94%) }
+```
+
+### [Supa Dupa Fly Hover](https://codepen.io/hexagoncircle/pen/LYNNYyQ)
+
+on scroll: div.letter: transform+clip-path+background+top ×11, span.border: transform+opacity+top ×4, div.letter: transform+clip-path+background | made with: @keyframes · transition · :hover · clip-path · mix-blend-mode
+
+```css
+.its-my-window { position: relative }
+.border { position: absolute; opacity: 0; transition: opacity var(--duration) var(--ease) }
+.border::before { position: absolute; top: 0; transition: transform var(--duration) var(--ease) }
+.border-0::before, .border-1::before { transform: scaleX(0) }
+.border-2::before, .border-3::before { transform: scaleY(0) }
+.its-my-window:hover .border-0::before, .its-my-window:hover .border-1::before { transform: scaleX(1) }
+.its-my-window:hover .border-2::before, .its-my-window:hover .border-3::before { transform: scaleY(1) }
+.border-0 { bottom: calc(100% + var(--gap) * 2); clip-path: polygon(4% 0, 99% 19%, 100% 64%, 0 95%) }
+.border-1 { top: calc(100% + var(--gap) * 2); clip-path: polygon(2% 39%, 98% 15%, 99% 49%, 0 95%) }
+.border-2 { clip-path: polygon(10% 1%, 97% 0, 67% 98%, 22% 100%) }
+.border-3 { clip-path: polygon(28% 0, 39% 0, 100% 100%, 29% 100%) }
+.letter { position: relative }
+```
+
+### [polygon](https://codepen.io/dozens/pen/mdPVORq)
+
+made with: nothing recognised — read the code
+
+```css
+.poly { position: relative }
+.poly__content { position: absolute; top: 0.5em; bottom: 0.5em }
+h1 { text-transform: capitalize }
+```
+
+### [CodePen Challenge: Take on me](https://codepen.io/b9016/pen/abNOKEw)
+
+made with: clip-path · pointer / mouse tracking
+
+```css
+#mask { background-position: center; filter: grayscale(100%); clip-path: circle(120px at 780px 160px) }
+```
+
+```js
+addEventListener("mousemove", handler)
+```
+
+### [Animated Birthday Cake](https://codepen.io/aPenHasNoName/pen/VwawdMg)
+
+on scroll: div.greeting: transform+top, div.candle-container: opacity, div.flame-wrap: transform+top | made with: clip-path · GSAP
+
+```css
+.svg { position: absolute }
+.wrapper { position: relative }
+.greeting { transform: scale(0) }
+.plate { position: relative; margin-top: 0; box-shadow: 0px 3px 5px 0px #aaa }
+.cake-wrap { position: absolute; bottom: 50% }
+.cake-base { position: relative }
+.cake-base .base-front { position: absolute }
+.cake-base .base-front:after { position: absolute; top: 100%; transform: translatey(-50%) }
+.cake-base .base-top { position: absolute; top: 0; transform: translatey(-50%) }
+.cake-base .base-top:before { position: absolute; clip-path: polygon(0 0, 0% 50%, 100% 50%, 100% 0) }
+.cake-base .base-top:after { position: absolute; clip-path: polygon(0 50%, 60% 50%, 60% 101%, 0 101%) }
+.cake-topping { position: absolute; bottom: 0% }
+```
+
+```js
+gsap.timeline({
+gsap.to('.star', {
+```
+
+### [Product card UI with clip-path](https://codepen.io/Allan11/pen/poyoJar)
+
+on scroll: div.circle: clip-path, h1.card__title: transform+top, div.product-info__top: transform+opacity+top, div.product-info__bottom: transform+opacity+top | made with: transition · :hover · clip-path
+
+```css
+.card { position: relative; text-transform: uppercase }
+.card:hover .circle { clip-path: circle(220px at 90% 130px) }
+.card:hover .card__title { transform: translateY(150px) }
+.card:hover .product-info__top { transform: translateY(0); opacity: 1 }
+.card:hover .product-info__bottom { transform: translateY(0); opacity: 1 }
+.card__top { position: relative }
+.circle { position: absolute; clip-path: circle(0px at 90% 130px); transition: all 0.5s ease-in-out }
+.card__top-img { position: absolute; transform: rotate(-30deg) scaleX(-1) }
+.card__title { position: absolute; transform: translateY(350px); transition: transform 0.5s ease-in-out }
+.product-info__top { opacity: 0; transition: transform 0.5s ease-in-out, opacity 0.5s ease-in-out; transform: translateY(50%) }
+.product-info__brand { text-transform: uppercase }
+.product-info__sizes-size { transition: background 0.3s ease-in-out }
+```
+
+### [Clip Path Property](https://codepen.io/Kryan74/pen/eYJojmz)
+
+made with: transition · :hover · clip-path
+
+```css
+.inner { clip-path: circle(10% at 90% 20%); transition: clip-path .5s ease }
+.inner:hover { clip-path: circle(75%) }
+span { transition: color .5s; margin-top: 4% }
+```
+
+### [flex & grid layout , arrows switching orientation](https://codepen.io/gc-nomade/pen/zYreJBQ)
+
+made with: clip-path
+
+```css
+li { position: relative }
+li:after { position: absolute; top: 50%; border-top: dotted }
+li:before { position: absolute; top: 50%; margin-top: -3px }
+li div.drop-shadow-buffer { filter: drop-shadow(1px 0px 1px white) drop-shadow(1px 0px 2px gray); position: relative; transform:translate(0,-25%) }
+div.drop-shadow-buffer:after { position: absolute; clip-path: polygon(50% 15%, 100% 0, 100% 85%, 50% 100%, 0 85%, 0% 0%) }
+li { position: relative }
+li:after { position: absolute; bottom: -30px; top: auto }
+li:before { position: absolute; bottom: -0px; top: auto }
+li:nth-child(2n + 1):after { position: absolute; bottom: -auto; top: -30px }
+li:nth-child(2n + 1):before { position: absolute; bottom: -auto; top: 0 }
+li:last-of-type { transform: translate(4em, 0) }
+li:nth-child(even) div { transform: translate(-10%, 0) }
+```
+
+### [Pure CSS scanner animation](https://codepen.io/devjingles/pen/eYJQNJR)
+
+made with: @keyframes · clip-path
+
+```css
+.main-div { position: relative }
+.main-div1 { -webkit-box-shadow: 0 0 17px 3px #0f0,0 0 4px 2px #0f0; box-shadow: 0 0 17px 3px #0f0,0 0 4px 2px #0f0 }
+.main-div1::before { position: absolute; top: 0; -webkit-box-shadow: 0 0 17px 3px #0f0,0 0 4px 2px #0f0; box-shadow: 0 0 17px 3px #0f0,0 0 4px 2px #0f0; -webkit-animation-name: green-shadow; animation-name: green-shadow; -webkit-animation-ti }
+h1 { position: relative }
+h1::after { position: absolute; top: 0; animation: none; -webkit-animation: none; -webkit-animation-name: scanner-clip; animation-name: scanner-clip; -webkit-animation-timing-function: linear; animation-timing-function: linear; -web }
+0% { top: 0 }
+100% { top: 100% }
+0% { top: 0 }
+100% { top: 100% }
+0% { -webkit-clip-path: inset(0 0 100% 0); clip-path: inset(0 0 100% 0) }
+100% { -webkit-clip-path: inset(0 0 0 0); clip-path: inset(0 0 0 0) }
+0% { -webkit-clip-path: inset(0 0 100% 0); clip-path: inset(0 0 100% 0) }
+```
+
+### [CSS Clip-path Image Hover Effects](https://codepen.io/Okba-Design/pen/oNbaMvN)
+
+on scroll: div.Front: clip-path | made with: transition · :hover · clip-path · 3D (perspective / preserve-3d)
+
+```css
+*, html,body { perspective:800px }
+.Card { position:relative; box-shadow:0px 0px 10px rgba(0,0,0,.3) }
+.Card .Front { position:absolute; top:0px; transition:.5s }
+.Card .Front.One { clip-path: polygon(0 0, 100% 0, 100% 0, 0% 100%) }
+.Card .Front.One:hover { clip-path: polygon(0 0, 100% 0, 100% 100%, 0% 100%) }
+.Card .Front.Two:hover ~ .Front.One { clip-path: polygon(0 0, 100% 0, 100% 0, 0 0) }
+```
+
+### [cards: clip-path with inset property](https://codepen.io/gyeka/pen/xxZJpJa)
+
+made with: transition · :hover · clip-path
+
+```css
+.card { position: relative }
+.card__inner-text { position: absolute; top: 0; clip-path: inset(0% 90% 0% 0%); transition: 0.5s ease-in-out }
+.card__inner-text:hover { clip-path: inset(0% 0% 0% 0%); opacity: 1 }
+span { position: absolute; top: 3rem }
+```
+
+### [Half moon](https://codepen.io/zette/pen/LYGrQrZ)
+
+made with: clip-path
+
+### [Video mask with clip-path follow mouse](https://codepen.io/supah/pen/ZEQRBRg)
+
+on scroll: video.cover__embed: clip-path | made with: mix-blend-mode · requestAnimationFrame
+
+```css
+.cover__wrap { position: relative }
+.cover__wrap:before { position: absolute; top: 0; mix-blend-mode: overlay }
+.cover__embed { position: absolute }
+```
+
+```js
+requestAnimationFrame(mouseFollow)
+```
+
+### [Clip-path Image Hover Effects With HTML & CSS](https://codepen.io/fadzrinmadu/pen/LYGmazd)
+
+made with: transition · :hover · clip-path
+
+```css
+.container { position: relative }
+.container .box { position: relative }
+.container .box .image-box { position: absolute; top: 0; clip-path: circle(400px at center 100px); transition: 0.5s }
+.container .box:hover .image-box { clip-path: circle(80px at center 100px) }
+.container .box .image-box img { position: absolute; top: 0 }
+.container .box .content-box { position: absolute; bottom: 0 }
+.container .box .content-box h2, .container .box .content-box p, .container .box { opacity: 0; transition: 0.5s; transform: translateY(20px) }
+.container .box:hover .content-box h2 { opacity: 1; transform: translateY(0) }
+.container .box:hover .content-box p { opacity: 1; transform: translateY(0) }
+.container .box:hover .content-box a { opacity: 1; transform: translateY(0) }
+```
+
+### [clip-path animation (card)](https://codepen.io/gyeka/pen/BajxMKJ)
+
+on scroll: div.container-inner--image: clip-path+top | made with: transition · :hover · clip-path
+
+```css
+.card-container, .container { box-shadow: 0 2.5px 3px -19px rgba(0, 0, 0, 0.013), 0 26.9px 9.4px -19px rgba(0, 0, 0, 0.051), 0 29px 48px -19px rgba(0, 0, 0, 0.24) }
+.container-inner--text { position: absolute; top: 50%; transform: translate(-50%, -70%) }
+.container-inner--text > h2 { text-transform: uppercase; margin-bottom: 1rem }
+.container-inner--image { clip-path: circle(20% at 94% 14%); transition: all 0.4s ease-in-out }
+.container:hover .container-inner--image { clip-path: circle(80%) }
+.card-container { position: relative }
+.card-container:hover > .card-container--inner { clip-path: circle(100%); opacity: 1 }
+.card-container:hover > span { opacity: 0 }
+.card-container--inner { position: absolute; top: 0; clip-path: circle(12% at 86% 22%); transition: all 0.4s ease-in-out; opacity: 0.8 }
+.card-container--inner--text > h2 { text-transform: uppercase }
+span { position: absolute; top: 12.8%; transition: opacity 0.4s ease-in-out }
+```
+
+### [Hamburger NavBar with transition effects](https://codepen.io/tusharkashyap63/pen/LYGmQrW)
+
+made with: position: fixed · transition · clip-path
+
+```css
+nav { position: relative }
+.hamburger { position: absolute; top: 50%; transform: translateY(-50%) }
+.nav-items { position: fixed; -webkit-clip-path: circle(1px at 85% -10%); clip-path: circle(1px at 85% -10%); transition: all 0.8s ease-out }
+.nav-items.show { -webkit-clip-path: circle(1000px at 85% -20%); clip-path: circle(1000px at 85% -20%) }
+.nav-item { opacity: 0 }
+.nav-item:nth-child(1) { transition: all 0.5s ease 0.2s }
+.nav-item:nth-child(2) { transition: all 0.5s ease 0.4s }
+.nav-item:nth-child(3) { transition: all 0.5s ease 0.6s }
+.nav-item.fade { opacity: 1 }
+p { margin-top: 42.5vh; transform: translateY(-50%) }
+```
+
+### [CSS Star – clip-path](https://codepen.io/borntofrappe/pen/VweXyBj)
+
+made with: clip-path
+
+```css
+div { clip-path: polygon( 50% 0, 65% 35%, 100% 35%, 70% 60%, 85% 100%, 50% 80%, 15% 100%, 30% 60%, 0% 35%, 35% 35% ) }
+```
+
+### [clip-path mouse follow target](https://codepen.io/huxhu/pen/YzwaGRN)
+
+held: fixed div.shot, fixed div.man | made with: position: fixed · @keyframes · transition · clip-path · custom properties driven by JS · pointer / mouse tracking
+
+```css
+.wrap { transition: filter 3s 0.75s }
+.wrap.active { filter: grayscale(100%) }
+h1 { position: absolute; bottom: 0.75em }
+.man { position: fixed; top: 0; bottom: 0; clip-path: circle(90px at var(--x) var(--y)) }
+.init .man { opacity: 0.2 }
+.wrap:not(.init) .man img { animation: run 3s infinite alternate }
+.wrap:not(.init) .man img.active { animation-play-state: paused }
+.shot { position: fixed; top: -90px; opacity: 0.25; transition: opacity 0.5s }
+.shot:before, .shot:after { position: absolute; top: 50%; margin-top: -1px }
+.shot:after { transform: rotate(90deg) }
+.init .shot { opacity: 0 }
+.active .shot { animation: none }
+```
+
+```js
+style.setProperty('--x',(x)+'px')
+style.setProperty('--y',(y)+'px')
+addEventListener('mousemove', showClipContent)
+```
+
+### [Mouse hover reveal image in text - Strategy Meets Creativity](https://codepen.io/wescouch/pen/QWymNae)
+
+made with: clip-path · mask · GSAP · pointer / mouse tracking
+
+```css
+:root { --clip-position: 50% 50%; --mask-position: 50% 50% }
+body { padding-top: 2rem; padding-bottom: 2rem }
+h1 { position: relative; text-transform: uppercase }
+h1 .fills { position: absolute; top: 50%; transform: translate(-50%, -50%) }
+h1 .masks { clip-path: circle(400px at var(--clip-position)); -webkit-mask-image: radial-gradient(circle, white 0%, rgba(255, 255, 255, 0) 66%); -webkit-mask-size: 500px 500px; -webkit-mask-repeat: no-repeat; -webkit-mask-position:  }
+h1 .masks .mask { background-position: center }
+h1 .masks { clip-path: circle(800px at var(--clip-position)); -webkit-mask-size: 800px 800px }
+```
+
+```js
+addEventListener('mousemove', e => {
+gsap.to(mask, {
+```
+
+### [Clipped Image Reveal on Hover](https://codepen.io/kathykato/pen/pogaOKG)
+
+on hover of a.link: a.link: color, span.link-text: opacity+clip-path, span.image-container: opacity, img.link-image: transform+top | made with: transition · :hover · clip-path · custom properties driven by JS · pointer / mouse tracking
+
+```css
+.container { position: relative }
+.link { position: relative; text-transform: uppercase; transition: color 275ms ease }
+.link:hover ~ .hover-container .link-text { opacity: 1 }
+.link:hover ~ .hover-container .image-container { opacity: 1 }
+.link-text { position: absolute; top: 0; bottom: 0; text-transform: uppercase; -webkit-clip-path: circle(75px at var(--x) var(--y)); clip-path: circle(75px at var(--x) var(--y)); opacity: 0; transition: opacity 250ms ease }
+.image-container { position: absolute; top: 0; opacity: 0; transition: opacity 250ms ease }
+.image-inner { position: absolute; top: -75px }
+.link-image { -o-object-position: center; object-position: center; filter: brightness(0.9) }
+```
+
+```js
+style.setProperty('--x',(x)+'px')
+style.setProperty('--y',(y)+'px')
+addEventListener('mousemove', showImgContent)
+```
+
+### [Rounded Corners using Clip-Path shape() Curve By & Curve To](https://codepen.io/timhjellum/pen/wvMqJgV)
+
+made with: clip-path
+
+```css
+:nth-child(1 of div) { clip-path: shape(from var(--r) 0, hline to calc(100% - var(--r)), curve by var(--r) var(--r) with var(--r) 0, vline to calc(100% - (var(--r))), curve by calc(-1*var(--r)) var(--r) with 0 var(--r), hline to var(--r), curv }
+:nth-child(2 of div) { clip-path: shape(from var(--r) 0, hline to calc(100% - var(--r)), curve to 100% var(--r) with 100% 0, vline to calc(100% - var(--r)), curve to calc(100% - var(--r)) 100% with 100% 100%, hline to var(--r), curve to 0 calc }
+h1 { padding-top: clamp(2em, 7vh, 30px); padding-bottom: clamp(2em, 7vh, 30px) }
+footer { position: absolute; bottom: 0 }
+```
+
+### [Burger menu with circle transition](https://codepen.io/joshuk/pen/PoZWQbe)
+
+made with: transition · :hover · clip-path
+
+```css
+.burger { position: absolute; top: 3rem }
+.burger span:not(:last-child) { margin-bottom: 0.25rem }
+.menu { position: absolute; top: 0; clip-path: circle(0 at calc(100% - 4.25rem) 3.6rem); transition: clip-path 0.4s }
+.menu.expanded { clip-path: circle(137.5% at calc(100% - 4.25rem) 3.6rem) }
+.menu .close { position: absolute; top: 3rem }
+.menu .close span:nth-child(1) { transform: rotate(45deg) translate(5px, 5px) }
+.menu .close span:nth-child(2) { transform: rotate(-45deg) translate(-2px, 2px) }
+nav { position: relative }
+nav a { text-transform: uppercase }
+main { position: absolute; top: 3rem }
+h1 { text-transform: uppercase }
+```
+
+### [Clip-Path Hovers](https://codepen.io/rebeccaeilering/pen/jOWqRyj)
+
+made with: transition · :hover · clip-path
+
+```css
+div { position: relative; filter: drop-shadow(-1px 6px 6px rgba(0, 0, 0, 0.5)); transition: filter .5s ease-in-out; margin-bottom: 100px }
+div { margin-bottom: 0 }
+div:first-child:hover img { filter: hue-rotate(150deg); clip-path: polygon(100% 0%, 75% 50%, 100% 100%, 25% 100%, 0% 50%, 25% 0%) }
+div:nth-child(2):hover img { filter: hue-rotate(100deg); clip-path: polygon(100% 0%, 75% 50%, 100% 100%, 25% 100%, 0% 50%, 25% 0%) }
+img { transform: rotate(3deg); clip-path: polygon(100% 0, 100% 50%, 100% 100%, 0% 100%, 0 50%, 0% 0%); transition: clip-path .5s ease-in-out }
+div:nth-child(2) img { transform: scaleX(-1) rotate(3deg) }
+div:hover { filter: drop-shadow(-1px 6px 4px rgba(0, 0, 0, 0.5)) }
+```
+
+### [Clip-Path Button Hover Effects](https://codepen.io/thegovernor/pen/KKVdmEr)
+
+on hover of button.btn: button.btn: clip-path+background | made with: transition · :hover · clip-path
+
+```css
+.btn-1 { clip-path: polygon(0 0, 29% 0, 72% 0, 100% 0, 100% 100%, 60% 100%, 0 100%); transition: clip-path 500ms ease-in }
+.btn-1:hover, .btn-1:focus { clip-path: polygon(0% 20%, 60% 20%, 60% 0%, 100% 50%, 60% 100%, 60% 80%, 0% 80%) }
+.btn-2 { clip-path: polygon(30% 0%, 70% 0%, 100% 0, 100% 100%, 70% 100%, 30% 100%, 0 100%, 0 0); transition: all 500ms ease-in; position: relative }
+.btn-2:hover, .btn-2:focus { clip-path: polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%) }
+.btn-2::before { position: absolute; top: 10px; bottom: 10px; clip-path: polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%); transform: scale(0, 0); transition: transform 500ms ease-in }
+.btn-2:hover::before, .btn-2:focus::before { transform: scale(1, 1) }
+```
+
+### [A squish animation demo](https://codepen.io/xxf1996/pen/BajNzRb)
+
+held: fixed div.dg | on hover of li.cr: div.slider: background, div.slider-fg: background | made with: @keyframes · :hover · clip-path · custom properties driven by JS
+
+```css
+from { clip-path: var(--test-from) }
+50% { clip-path: var(--test-to) }
+to { clip-path: var(--test-from) }
+#btn { position: absolute; top: 50%; transform: translate(-50%, -50%); animation: test var(--test-duration) cubic-bezier(0.4, 0.02, 0.72, 2.77) infinite }
+#btn::after { position: absolute; top: 50%; transform: translate(-50%, -50%) }
+.pause { animation-play-state: paused !important }
+.play { animation-play-state: running !important }
+@keyframes test animates clip-path
+```
+
+```js
+style.setProperty('--test-from', `polygon(${info.from})`)
+style.setProperty('--test-to', `polygon(${info.to})`)
+style.setProperty('--test-duration', config.duration + 's')
+```
+
+### [Rotating Hexagon](https://codepen.io/sanskarbansal/pen/MWKYGVG)
+
+on scroll: div.spiner: transform+top, div.spiner__border: background+top | made with: @keyframes · transition · clip-path
+
+```css
+body { transition: background-color 4s }
+.spiner { position: relative; animation-name: rotating; animation-duration: 4s; animation-iteration-count: infinite; animation-fill-mode: both; clip-path: polygon(25% 0, 75% 0, 100% 50%, 75% 100%, 25% 100%, 0 50%) }
+.spiner__border { position: absolute; top: 20px; transition: background-color 4s; clip-path: polygon(25% 0, 75% 0, 100% 50%, 75% 100%, 25% 100%, 0 50%) }
+from { transform: rotate(0deg) }
+to { transform: rotate(2160deg) }
+@keyframes rotating animates transform, background-image
+```
+
+### [How to shape text no matter how long it is](https://codepen.io/mrmatteastwood/pen/VweYYWw)
+
+made with: clip-path
+
+```css
+div.services-gradient-left { clip-path: polygon(0 0, 0 100%, 100% 100%) }
+div.services-gradient-right { clip-path: polygon(100% 0, 100% 100%, 0 100%) }
+```
+
+### [side menu clip path animation](https://codepen.io/Zorlimar/pen/NWxWmzX)
+
+made with: transition · :hover · clip-path
+
+```css
+body { transition: background-color 325ms cubic-bezier(0.83, 0, 0.17, 1) }
+.menu { position: absolute; top: 0; bottom: 0; -webkit-clip-path: ellipse(10px 10px at 125% 30%); clip-path: ellipse(10px 10px at 125% 30%); will-change: clip-path; transition: transform 450ms cubic-bezier(0.83, 0, 0.17, 1), -we }
+.menu.is-open { transform: translatex(-100%); -webkit-clip-path: ellipse(122% 122% at 100% 30%); clip-path: ellipse(122% 122% at 100% 30%); transition: transform 450ms cubic-bezier(0.83, 0, 0.17, 1), -webkit-clip-path 600ms 50ms cubic-b }
+.menu .nav-body > li { text-transform: uppercase }
+.menu .nav-body > li i { position: relative; top: -0.275rem }
+.menu .nav-body > li:not(:last-child) { border-bottom: 1px solid rgba(255, 255, 255, 0.125) }
+#toggle { position: absolute; top: 4rem; transform: translateY(-50%) translatex(-4px); transition: transform 450ms cubic-bezier(0.83, 0, 0.17, 1), border-color 400ms }
+#toggle.menu-open { transform: translatex(-18.75rem) translateY(-50%) rotatez(-0.25turn); transition: transform 350ms 100ms cubic-bezier(0.83, 0, 0.17, 1) }
+#toggle.menu-open .bar { transform: rotatez(0.125turn) }
+#toggle.menu-open .bar:first-child { transform: translateY(7px) rotatez(0.125turn) }
+#toggle.menu-open .bar:last-child { transform: translateY(-7px) rotatez(-0.125turn) }
+#toggle .bar { transition: transform 350ms 100ms cubic-bezier(0.83, 0, 0.17, 1); -webkit-animation-play-state: paused !important; animation-play-state: paused !important }
+```
+
+### [CSS Night Train Ride Animation](https://codepen.io/TurkAysenur/pen/oNbNmxY)
+
+on scroll: div.stars: transform ×2, div.night: transform ×2, div.moon: transform | made with: @keyframes · clip-path
+
+```css
+.container { position: relative }
+.container-wrapper { position: absolute; -webkit-clip-path: polygon(37% 0, 65% 0, 100% 100%, 0% 100%); clip-path: polygon(37% 0, 65% 0, 100% 100%, 0% 100%) }
+.star-container { position: absolute }
+.stars { position: relative; will-change: transform; -webkit-animation: infinity-loop 5s infinite linear 0.1s both; animation: infinity-loop 5s infinite linear 0.1s both }
+.moon { position: absolute; top: 100px; box-shadow: -11px -11px 0 0 var(--body-color) inset; -webkit-animation: moon 20s infinite linear 0.1s both; animation: moon 20s infinite linear 0.1s both }
+.star { position: absolute }
+.star:nth-child(1) { top: 60px }
+.star:nth-child(2) { top: 40px }
+.star:nth-child(2):before { top: 4px; position: absolute; border-bottom: 1px solid var(--body-color) }
+.star:nth-child(3) { top: 70px }
+.star:nth-child(3):before { top: 5px; position: absolute; border-bottom: 2px solid var(--body-color) }
+.star:nth-child(4) { top: 120px }
+```
+
+### [a jar of nature](https://codepen.io/andrewrock/pen/ExPxbLL)
+
+made with: clip-path
+
+```css
+article { -webkit-clip-path: url(#svgPath); clip-path: url(#svgPath); position: relative }
+article::after { position: absolute; filter: grayscale(1) }
+.lake { bottom: 0; position: absolute }
+.lake::before { position: absolute; top: 0 }
+.boulder { position: absolute; bottom: 35px }
+.boulder::before { bottom: 3px; box-shadow: 6px 6px 6px 0px rgba(255, 250, 250, 0.4); position: absolute }
+.flat-land { bottom: 60px; position: absolute }
+.mountains-wrapper { top: 75px }
+.mountains-wrapper, .main-mountain-wrapper { position: absolute }
+.main-mountain-wrapper { top: 60px }
+.mountain-group, .main-mountain-group { position: absolute; top: 0; -webkit-clip-path: polygon(50% 0%, 0% 100%, 100% 100%); clip-path: polygon(50% 0%, 0% 100%, 100% 100%) }
+.mountain-group::before, .main-mountain-group::before { box-shadow: inset 0px 2px 7px 2px rgba(79, 59, 88, 0.35); position: absolute; top: -5px }
+```
+
+### [Jamstack Conf 2020 Masked Video](https://codepen.io/adrianparr/pen/ZEbdaLM)
+
+made with: clip-path
+
+```css
+.hero-video { -webkit-clip-path: url(#rounded-rectangle); clip-path: url(#rounded-rectangle); position: absolute; top: 0 }
+```
+
+### [Polygon truncation (drag slider)](https://codepen.io/thebabydino/pen/abvrYNg)
+
+made with: transition · clip-path · mask
+
+```css
+.s2d { -webkit-clip-path: polygon(calc(var(--j)*50% + var(--k)*93.30127%) calc(var(--j)*0% + var(--k)*75%), calc(var(--k)*50% + var(--j)*93.30127%) calc(var(--k)*0% + var(--j)*75%), calc(var(--j)*93.30127% + var(--k)*6.69873%)  }
+.s2d:nth-child(2) { -webkit-clip-path: polygon(calc(var(--j)*14.64466% + var(--k)*85.35534%) calc(var(--j)*14.64466% + var(--k)*14.64466%), calc(var(--k)*14.64466% + var(--j)*85.35534%) calc(var(--k)*14.64466% + var(--j)*14.64466%), calc(va }
+.s2d:nth-child(3) { -webkit-clip-path: polygon(calc(var(--j)*50% + var(--k)*97.55283%) calc(var(--j)*0% + var(--k)*34.54915%), calc(var(--k)*50% + var(--j)*97.55283%) calc(var(--k)*0% + var(--j)*34.54915%), calc(var(--j)*97.55283% + var(--k }
+.s2d:nth-child(4) { -webkit-clip-path: polygon(calc(var(--j)*25% + var(--k)*75%) calc(var(--j)*6.69873% + var(--k)*6.69873%), calc(var(--k)*25% + var(--j)*75%) calc(var(--k)*6.69873% + var(--j)*6.69873%), calc(var(--j)*75% + var(--k)*100%)  }
+.s2d:nth-child(5) { -webkit-clip-path: polygon(calc(var(--j)*50% + var(--k)*89.09157%) calc(var(--j)*0% + var(--k)*18.82551%), calc(var(--k)*50% + var(--j)*89.09157%) calc(var(--k)*0% + var(--j)*18.82551%), calc(var(--j)*89.09157% + var(--k }
+.s2d:nth-child(6) { -webkit-clip-path: polygon(calc(var(--j)*30.86583% + var(--k)*69.13417%) calc(var(--j)*3.80602% + var(--k)*3.80602%), calc(var(--k)*30.86583% + var(--j)*69.13417%) calc(var(--k)*3.80602% + var(--j)*3.80602%), calc(var(-- }
+form { margin-bottom: 1em; filter: grayScale(var(--not-focus)); transition: filter .3s }
+input[type='range']::-webkit-slider-thumb { margin-top: -0.375em }
+input[type='range']::-moz-range-thumb { margin-top: 0em }
+output { transform: translate(calc(var(--not-i)*(var(--pos) - .5*12.5em))) }
+output::after { transform: scale(calc(var(--i) + var(--not-i)*var(--focus))); --mask: linear-gradient(#ff0000, #ff0000) padding-box, conic-gradient(from calc(45deg + var(--not-i)*90deg) at var(--xy), red 25%, transparent 0%) var(--xy)/5 }
+```
+
+### [eevee](https://codepen.io/raczo/pen/XWmwbrz)
+
+made with: @keyframes · clip-path
+
+```css
+.scene { position: relative }
+.grid { position: relative }
+.cell { position: relative }
+.cell > div { position: absolute; top: 0 }
+.t1 { clip-path: polygon( 0% 0%, 100% 0%, 100% 100% ) }
+.t2 { clip-path: polygon( 0% 0%, 100% 100%, 0% 100% ) }
+.t3 { clip-path: polygon( 0% 0%, 100% 0%, 0% 100% ) }
+.t4 { clip-path: polygon( 100% 0%, 100% 100%, 0% 100% ) }
+.hex { clip-path: polygon( 50% 0%, 85% 15%, 100% 50%, 85% 85%, 50% 100%, 15% 85%, 0% 50%, 15% 15% ) }
+.sep::before { position: absolute; top: 0 }
+.eevee { position: absolute; top: 50%; transform: rotateZ(360deg) translate(-50%, -50%) }
+.two .scene { box-shadow: 0px 0px 10px 0px rgba(156, 116, 80, 0.84) }
+```
+
+### [Light-Dark theme](https://codepen.io/pirate_barbosa/pen/VwvNvKP)
+
+made with: transition · clip-path
+
+```css
+.wrapper { position: relative }
+.container { transition: all 1.5s ease }
+.clip-cover { position: absolute; top: 0; transition: background 1.5s ease; -webkit-clip-path: circle(10% at bottom left); clip-path: circle(10% at bottom left) }
+.clip-cover.overlay { transition: all 1s ease-in-out; -webkit-clip-path: circle(100% at center); clip-path: circle(100% at center) }
+```
+
+### [Round Avatars with Clip-path](https://codepen.io/cteague/pen/xxwmRJE)
+
+made with: clip-path
+
+```css
+.large-avatar { clip-path: circle(76px) }
+.large-avatar img { clip-path: circle(72px) }
+.small-avatar { clip-path: circle(38px) }
+.small-avatar img { clip-path: circle(36px) }
+.tiny-avatar { clip-path: circle(20px) }
+.tiny-avatar img { clip-path: circle(19px) }
+```
+
+### [Circle Nav Reveal](https://codepen.io/garybyrne1/pen/PoPyLMG)
+
+held: fixed nav.nav | on hover of button.nav-toggle: button.nav-toggle: filter | made with: position: fixed · transition · :hover · clip-path
+
+```css
+header .nav-toggle { transition: filter 0.5s ease }
+header .nav-toggle:hover, header .nav-toggle:focus { filter: brightness(1.5) }
+nav { position: absolute; top: 0; position: fixed; -webkit-clip-path: circle(0px at 98% 5px); clip-path: circle(0px at 98% 5px); transition: all 0.4s; will-change: clip-path }
+nav.open { transition: all 0.4s; -webkit-clip-path: circle(100% at 60% 20%); clip-path: circle(100% at 60% 20%) }
+nav li { position: relative }
+nav li, nav li::before { transition: all 0.5s ease-in-out }
+nav li.active::before, nav li:hover::before { position: absolute; top: 0 }
+nav li a:focus { outline-offset: 3px }
+nav .interior { border-bottom: 1px solid #fff }
+.visually-hidden { position: absolute !important }
+```
+
+### [Tales From The Loop intro animation (pure CSS)](https://codepen.io/pieter-biesemans/pen/bGVmLwz)
+
+on scroll: div.letter: clip-path ×15, div.letter: transform+clip-path+top ×11, div.letter: transform+top ×6 | on hover of a.: div.letter: clip-path ×15, div.letter: transform+clip-path+top ×11, div.letter: transform+top ×6 | made with: @keyframes · :hover · clip-path
+
+```css
+div { position: absolute }
+body { top: 0 }
+body .message { position: absolute; top: 1vw }
+body .message a { border-bottom: 1px solid #444 }
+body .wrapper { top: 50%; transform: translate(-50%, -50%); animation: fadein 4s 0s ease forwards }
+body .wrapper .letter { position: relative }
+body .wrapper .letter:nth-child(1) { animation: ltr1 16s 2s ease-out forwards }
+body .wrapper .letter:nth-child(2) { animation: ltr2 16s 2s ease-out forwards }
+body .wrapper .letter:nth-child(3) { animation: ltr3 16s 2s ease-out forwards }
+body .wrapper .letter:nth-child(4) { animation: ltr4 16s 2s ease-out forwards }
+body .wrapper .letter:nth-child(5) { animation: ltr5 16s 2s ease-out forwards }
+body .wrapper .letter:nth-child(6) { animation: ltr6 16s 2s ease-out forwards }
+```
+
+### [vs](https://codepen.io/raczo/pen/NWGLpEo)
+
+made with: clip-path
+
+```css
+.abs { position: absolute; top: 0 }
+.vs { position: relative }
+.vs-1 .one { clip-path: polygon( 51% 0%, 47% 27%, 53% 25%, 43% 86%, 47% 85%, 45% 100%, 0% 100%, 0% 0% ) }
+.vs-1 .two { clip-path: polygon( 57% 0%, 53% 18%, 57% 17%, 45% 83%, 49% 82%, 45% 100%, 100% 100%, 100% 0% ) }
+.vs-1 .cloud { transform: scale(1.2) }
+.vs-1 .blob { position: absolute }
+.vs-1 .blob:nth-child(1) { top: 0%; transform: scale(1.4); border-top: calc(var(--cloud-border) - 1px) solid black; box-shadow: inset 0px -5px 0px 0px rgb(222, 222, 222) }
+.vs-1 .blob:nth-child(2) { top: 0%; transform: scale(1.2); border-top: var(--cloud-border) solid black }
+.vs-1 .blob:nth-child(3) { bottom: 0%; transform: scale(1.2); border-bottom: var(--cloud-border) solid black; box-shadow: inset 0px -5px 0px 0px rgb(222, 222, 222) }
+.vs-1 .blob:nth-child(4) { bottom: 0%; transform: scale(1.5); border-bottom: var(--cloud-border) solid black; box-shadow: inset -8px -8px 0px 0px rgb(222, 222, 222) }
+.vs-1 .text { position: absolute; top: 50%; transform: translate(-50%, -50%) }
+.vs-1 .content { position: relative }
+```
+
+### [CYB — Progress ring loader](https://codepen.io/lucasvallenet/pen/PoPBwOy)
+
+held: fixed h1.t-t1, fixed span.o-progress, fixed span.o-progress, fixed span.o-progress, fixed span.o-bottom | made with: position: fixed · clip-path · custom properties driven by JS · scroll listener
+
+```css
+.t-t1 { position: fixed; top: 0; text-transform: uppercase }
+.o-bottom { position: fixed; bottom: 1em }
+.o-bottom > *:not(:first-child) { margin-top: 0.5em }
+.o-progress { --clip-path: 50% 50%; position: fixed; top: calc(50% - 40vmin/2) }
+.o-progress--1 { clip-path: polygon(var(--clip-path)) }
+.o-progress--2 { clip-path: polygon(var(--clip-path)); transform: rotate(-45deg) }
+.o-progress--3 { opacity: calc(.5 + .5 * var(--perc)); transform: rotate(calc(-45deg + 360deg * var(--perc))) }
+.o-progress__img { position: absolute; top: calc(50% - 150%/2); clip-path: polygon(var(--clip-path)); transform: scale(calc(.5 + .5 * var(--perc))) }
+.o-progress__img:after, .o-progress__img:before { position: absolute; top: 0; transform: rotate(calc(45deg - 360deg * var(--perc))) }
+.o-progress__img:before { background-position: 50% 50% }
+.o-progress__img:after { transform: scale(calc(.5 - .25 * var(--perc))) }
+```
+
+```js
+addEventListener('scroll', () => {
+```
+
+### [Split text with clip-path | 300 followers 'celebration'](https://codepen.io/havardob/pen/PoPaWaE)
+
+made with: clip-path
+
+```css
+.text-box { position: relative }
+h1:nth-child(2) { position: absolute; -webkit-clip-path: inset(-1% -1% 50% -1%); clip-path: inset(-1% -1% 50% -1%) }
+p { margin-top: 1em }
+p span { transform: rotate(90deg); margin-top: 0.25em }
+.container { position: absolute; top: 0; bottom: 0 }
+```
+
+### [Clip Path Button Animation](https://codepen.io/crawpdx/pen/oNjyzoE)
+
+made with: transition · :hover · clip-path
+
+```css
+.btn { position: relative }
+.btn::before { -webkit-clip-path: circle(0% at 50% 50%); clip-path: circle(0% at 50% 50%); transition: all 0.5s ease-in-out; position: absolute; top: 0; bottom: 0; opacity: 1 }
+.btn:hover::before { -webkit-clip-path: circle(100%); clip-path: circle(100%); opacity: 1 }
+.btn .btn-text { position: relative; text-transform: uppercase }
+```
+
+### [Valorant Logo](https://codepen.io/Phong6698/pen/pojVjjq)
+
+made with: @keyframes · clip-path
+
+```css
+.logo { animation: 400ms ease-in-out 500ms 1 slideInFromTop backwards }
+.logo .first { position: absolute; clip-path: polygon(0 10%, 70% 90%, 35% 90%, 0 50%) }
+.logo .second { position: absolute; clip-path: polygon(100% 10%, 100% 50%, 88% 65%, 55% 65%) }
+h1 { animation: 400ms ease-in-out 800ms 1 slideInFromBottom backwards }
+0% { transform: translateY(300%); opacity: 0 }
+100% { transform: translateY(0); opacity: 1 }
+0% { transform: translateY(-100%); opacity: 0 }
+100% { transform: translateY(0); opacity: 1 }
+@keyframes slideInFromBottom animates transform, opacity
+@keyframes slideInFromTop animates transform, opacity
+```
+
+### [css-doodle with clip-path borders](https://codepen.io/ildarmgt/pen/zYvPamK)
+
+made with: clip-path
+
+```css
+--draw: ( :doodle { position: absolute; top: 0 }
+:after { position: absolute; top: 0; clip-path: polygon( @var(--p1x) @var(--p1y), @var(--p2x) @var(--p2y), @var(--p3x) @var(--p3y) ); transform: scale(0.985) }
+.art:after { position: absolute; top: 0 }
+```
+
+### [Blackstar](https://codepen.io/suemcmahon/pen/LYpOEWY)
+
+held: fixed div.star | made with: position: fixed · clip-path
+
+```css
+.star { position: fixed; top: 50%; transform: translate(-50%, -50%) }
+.star__big { -webkit-clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%); clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35 }
+.star-group--one { -webkit-clip-path: polygon(50% 0%, 50% 51%, 50% 100%, 0% 50%); clip-path: polygon(50% 0%, 50% 51%, 50% 100%, 0% 50%); transform: rotate(-25deg) }
+.star-group--two { -webkit-clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%); clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35 }
+.star-group--three { -webkit-clip-path: polygon(46% 35%, 61% 35%, 98% 35%, 68% 57%, 54% 66%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%); clip-path: polygon(46% 35%, 61% 35%, 98% 35%, 68% 57%, 54% 66%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39%  }
+.star-group--four { -webkit-clip-path: polygon(46% 35%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 42% 64%, 32% 57%, 2% 35%, 39% 35%); clip-path: polygon(46% 35%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 42% 64%, 32% 57%, 2% 35%, 39%  }
+.star-group--five { -webkit-clip-path: polygon(46% 35%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 42% 64%, 32% 57%, 2% 35%, 39% 35%); clip-path: polygon(46% 35%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 42% 64%, 32% 57%, 2% 35%, 39%  }
+.star-group--six { -webkit-clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 41% 63%, 32% 57%, 35% 48%, 39% 35%); clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 41% 63%, 32% 57%, 35% 48%, 39%  }
+```
+
+### [Image clip-path with background-lazyload](https://codepen.io/timmaurice/pen/GRpMOXp)
+
+made with: @keyframes · transition · clip-path
+
+```css
+.lazyload { background-position: center; clip-path: polygon(0% 5%, 95% 0%, 100% 100%, 5% 95%); padding-top: 50% }
+.spinner { position: relative }
+.spinner:before, .spinner:after { opacity: 1; position: absolute; transition: opacity 0.3s ease-in-out }
+.spinner:before { top: 0; bottom: 0 }
+.spinner:after { top: calc(50% - 5em); border-top: 1.1em solid rgba(255, 255, 255, 0.2); border-bottom: 1.1em solid rgba(255, 255, 255, 0.2); animation: load 1.1s infinite linear }
+.spinner.fadeOutSpinner:before, .spinner.fadeOutSpinner:after { opacity: 0 }
+0% { -webkit-transform: rotate(0deg); transform: rotate(0deg) }
+100% { -webkit-transform: rotate(360deg); transform: rotate(360deg) }
+@keyframes load animates -webkit-transform, transform
+```
+
+### [Animated Flipping Double Page Panel Effect](https://codepen.io/GeoffreyCrofte/pen/gOaGGzZ)
+
+on hover of img.: div.page1: transform+top | made with: transition · :hover · clip-path · 3D (perspective / preserve-3d)
+
+```css
+.panel { transition: all 1s; perspective: 600px }
+.panel:hover .page1, .panel.open .page1 { transform: rotateY(0deg) }
+[class^="page"] { box-shadow: 0 2px 4px -2px rgba(0, 0, 0, .1), 0 4px 8px -4px rgba(0, 0, 0, .12), 0 8px 16px -8px rgba(0, 0, 0, .15), 0 16px 24px -16px rgba(0, 0, 0, .17), 0 24px 48px -24px rgba(0, 0, 0, .25) }
+.page1 { position: relative; transition: all 1s; transform: rotateY(180deg) }
+.front, .back { position: absolute }
+.front { transform: rotateY(180deg) }
+.front::before { position: absolute; top: 0; bottom: 0; -webkit-clip-path: polygon(0 0, 100% 0, 100% 75%, 75% 100%, 0 100%); clip-path: polygon(0 0, 100% 0, 100% 75%, 75% 100%, 0 100%) }
+p + p { padding-top: 4px }
+.button { text-transform: uppercase }
+```
+
+### [Clip-Path Shapes](https://codepen.io/EdwardGray/pen/GRpMvPO)
+
+made with: transition · :hover · clip-path
+
+```css
+.octagon { clip-path: polygon( 20% 0, 80% 0, 100% 20%, 100% 80%, 80% 100%, 20% 100%, 0 80%, 0 20% ); transition: clip-path 0.2s }
+.octagon:hover { clip-path: polygon( 10% 0, 90% 0, 100% 10%, 100% 90%, 90% 100%, 10% 100%, 0 90%, 0 10% ) }
+.bevelled { clip-path: polygon( 10% 0, 90% 0, 100% 10%, 0 50%, 100% 90%, 90% 100%, 10% 100%, 0 90%, 100% 50%, 0 10% ); transition: clip-path 0.2s }
+.bevelled:hover { clip-path: polygon( 20% 0, 80% 0, 100% 20%, 0 50%, 100% 80%, 80% 100%, 20% 100%, 0 80%, 100% 50%, 0 20% ) }
+.hexagon { clip-path: polygon( 0 50%, 25% 0, 75% 0, 100% 50%, 75% 100%, 25% 100% ); transform: scaleX(calc(1/.866)) }
+.hexagon2 { clip-path: polygon( 50% 0 , 0 25% , 0 75% , 50% 100% , 100% 75% , 100% 25% ); transform: scaleY(calc(1/.866)) }
+.outside { clip-path: polygon( 0 0, 150px 0, 150px 40%, 100% 50%, 150px 60%, 150px 100%, 0 100% ) }
+```
+
+### [Clip-Path Shapes](https://codepen.io/EdwardGray/pen/mdeBMaB)
+
+made with: nothing recognised — read the code
+
+### [CSS3 + JS Roulette Spinner](https://codepen.io/mr137/pen/eYpEjVK)
+
+made with: @keyframes · :hover · clip-path · requestAnimationFrame
+
+```css
+#roulette-spinBtn { position : absolute; margin-top : 25%; box-shadow : 0px 0px 1vmax black, inset 0px 0px 0.75vmax black; animation: rouletteBreath 10s infinite }
+0% { box-shadow : 0px 0px 1vmax black, inset 0px 0px 0.75vmax black }
+50% { box-shadow : 0px 0px 2vmax white, inset 0px 0px 0.75vmax black }
+100% { box-shadow : 0px 0px 1vmax black, inset 0px 0px 0.75vmax black }
+.roulette-highlightPiece { opacity: 0.75 }
+.roulette-spinning { box-shadow : 0px 0px 1vmax black, inset 0px 0px 0.75vmax black !important; animation: none !important }
+#roulette-spinBtn:hover { box-shadow : 0px 0px 1vmax white, inset 0px 0px 0.75vmax black; animation: none !important }
+#roulette-spinBtn:active { transform: scale(0.98); box-shadow : 0px 0px 1vmax black, inset 0px 0px 0.75vmax black; animation: none !important }
+#roulette-spinHolster { position : absolute }
+#roulette-spinner { border-top : 1vmax solid transparent; border-bottom : 1vmax solid transparent }
+#roulette-container { position : relative; padding-bottom : 100%; box-shadow : 0px 0px 0.25vmax black }
+.roulette-section { position : absolute }
+```
+
+```js
+requestAnimationFrame(spin.bind(this))
+```
+
+### [Fetch the Bolt Cutters with `clip-path`](https://codepen.io/meowwwls/pen/LYpjEQx)
+
+made with: clip-path · mix-blend-mode
+
+```css
+.title { text-transform: uppercase; position: relative }
+.title__feature { border-top: var(--fetch-border) }
+.subtitle { position: relative }
+.panels { position: relative; box-shadow: 1.5rem 1.5rem 0 var(--lemon-light) }
+.panel__img { filter: grayscale(1) contrast(2); mix-blend-mode: darken; -webkit-clip-path: var(--clip); clip-path: var(--clip) }
+.panel--feature { -webkit-clip-path: var(--clip); clip-path: var(--clip); transform: scale(1.35) }
+.panel--smol { position: relative; transform: scale(0.75) }
+.panel--smol::before, .panel--smol::after { --offset: 4%; position: absolute; -webkit-clip-path: var(--clip); clip-path: var(--clip) }
+.panel--smol::before { top: var(--offset) }
+.panel--smol::after { top: calc(var(--offset) * -0.75); mix-blend-mode: multiply }
+.wavy-line { margin-top: -1.5rem; position: relative }
+.title__feature { border-top: none }
+```
+
+### [Funnel Chart (based on clip-path)](https://codepen.io/ln-dim/pen/zYvwmLL)
+
+made with: :hover · clip-path
+
+```css
+div.first { clip-path: polygon(0% 0%, 100% 60%, 100% 100%, 0% 80%) }
+div.second { margin-top: -17%; clip-path: polygon(0% 0%, 100% 20%, 100% 40%, 0% 60%) }
+div.third { margin-top: -53%; clip-path: polygon(0% 20%, 100% 0%, 100% 10%, 0% 80%) }
+div.first2 { clip-path: polygon(0% 60%, 100% 80%, 100% 90%, 0% 100%) }
+div.second2 { margin-top: -8%; clip-path: polygon(0% 10%, 100% 0%, 100% 20%, 0% 30%) }
+div.third2 { margin-top: -71%; clip-path: polygon(0% 10%, 100% 0%, 100% 5%, 0% 20%) }
+```
+
+### [CSS Clip-Path Hover Effect](https://codepen.io/hexagoncircle/pen/PoPpKKg)
+
+on hover of img.: div.image-wrapper: transform+clip-path, img.: transform, h2.title: transform | made with: transition · :hover · clip-path · mix-blend-mode
+
+```css
+.promo { position: relative }
+.title { position: absolute; bottom: 0; transform: translate(-10%, -50%); transition: transform var(--duration) var(--ease-out) }
+.title::after { opacity: 0; transform: translateX(-25%); transition: transform var(--duration) var(--ease-out), opacity var(--duration) var(--ease-out) }
+.image-wrapper { -webkit-clip-path: polygon(100% 0, 100% 50%, 100% 100%, 0% 100%, 0 50%, 0% 0%); clip-path: polygon(100% 0, 100% 50%, 100% 100%, 0% 100%, 0 50%, 0% 0%); transition: transform var(--duration) var(--ease-out), -webkit-clip- }
+.image-wrapper img { position: relative; transform: translateX(-10%); transition: transform var(--duration) var(--ease-out) }
+.image-wrapper::after { position: absolute; top: 0; mix-blend-mode: multiply; opacity: 0; transform: translateZ(0); transition: opacity var(--duration) var(--ease-out) }
+.promo:hover img { transform: translateX(0) }
+.promo:hover .image-wrapper { -webkit-clip-path: polygon(75% 0%, 100% 50%, 75% 100%, 0% 100%, 25% 50%, 0% 0%); clip-path: polygon(75% 0%, 100% 50%, 75% 100%, 0% 100%, 25% 50%, 0% 0%); transform: translateX(25%) }
+.promo:hover .title { transform: translate(5%, -50%) }
+.promo:hover .title::after { opacity: 1; transform: translateX(0) }
+.promo:hover .image-wrapper::after { opacity: 1 }
+```
+
+### [Image Hover with Clip-path property](https://codepen.io/designersnest/pen/PoPpoJR)
+
+made with: transition · :hover · clip-path
+
+```css
+.container { position: relative }
+img { transition: all 1s linear }
+.back { position: absolute; filter: blur(7px) }
+.hover-img:hover { clip-path: polygon(58% 100%, 58% 79%, 15% 76%, 57% 93%, 56% 86%, 58% 77%, 54% 74%, 53% 72%, 48% 65%, 47% 56%, 47% 54%, 45% 40%, 41% 19%, 46% 25%, 41% 20%, 41% 23%, 33% 23%, 29% 25%, 27% 28%, 26% 30%, 25% 33%, 23% 44%, 23 }
+```
+
+### [Season switch on image hover](https://codepen.io/camilleguy/pen/vYNgPZJ)
+
+made with: transition · :hover · clip-path
+
+```css
+.component { position: relative }
+.component:hover .slide.winter:hover { -webkit-clip-path: polygon(0% 100%, 0% 0%, 100% 0%, 100% 100%); clip-path: polygon(0% 100%, 0% 0%, 100% 0%, 100% 100%) }
+.component:hover .slide.winter:not(:hover) { -webkit-clip-path: polygon(100% 100%, 100% 0%, 100% 0%, 100% 100%); clip-path: polygon(100% 100%, 100% 0%, 100% 0%, 100% 100%) }
+.component:hover .slide.summer:hover { -webkit-clip-path: polygon(100% 0%, 100% 100%, 0% 100%, 0% 0%); clip-path: polygon(100% 0%, 100% 100%, 0% 100%, 0% 0%) }
+.component:hover .slide.summer:not(:hover) { -webkit-clip-path: polygon(0% 0%, 0% 100%, 0% 100%, 0% 0%); clip-path: polygon(0% 0%, 0% 100%, 0% 100%, 0% 0%) }
+.component:hover .slide:hover .title { transform: scale(1.4) }
+.slide { position: absolute; top: 0; background-position: center; transition: -webkit-clip-path 600ms ease-in-out; transition: clip-path 600ms ease-in-out; transition: clip-path 600ms ease-in-out, -webkit-clip-path 600ms ease-in- }
+.winter { -webkit-clip-path: polygon(80% 100%, 20% 0%, 100% 0%, 100% 100%); clip-path: polygon(80% 100%, 20% 0%, 100% 0%, 100% 100%) }
+.summer { -webkit-clip-path: polygon(20% 0%, 80% 100%, 0% 100%, 0% 0%); clip-path: polygon(20% 0%, 80% 100%, 0% 100%, 0% 0%) }
+.title { position: absolute; transition: transform 600ms ease-in-out }
+.summer .title { bottom: 0; transform-origin: left bottom }
+.winter .title { top: 0; transform-origin: right top }
+```
+
+### [Clip Path | Clip Text](https://codepen.io/nikhilrajs-1472363470/pen/oNjBZyJ)
+
+made with: clip-path
+
+```css
+h1 { position: relative; top: 115px; -webkit-clip-path: polygon(var(--clip-path-polygon)); clip-path: polygon(var(--clip-path-polygon)) }
+.wrapper { background-position: -100px -50px; box-shadow: 0 1px 2px rgba(0,0,0,0.07); -webkit-filter: saturate(1.5); filter: saturate(1.5) }
+```
+
+### [Clip path hover animation 💗](https://codepen.io/sheelah/pen/RwWKoOV)
+
+on hover of li.: img.gallery-image: transform+top | made with: @keyframes · transition · :hover · clip-path · mix-blend-mode
+
+```css
+.gallery-image { transition: transform 0.3s ease-in-out }
+li { position: relative }
+li:before { position: absolute }
+li:after { position: absolute; opacity: 0 }
+li:hover .gallery-image { transform: scale(1.1) }
+li:hover:after { bottom: 0; mix-blend-mode: overlay; filter: invert(15%); clip-path: path('M213.1,6.7c-32.4-14.4-73.7,0-88.1,30.6C110.6,4.9,67.5-9.5,36.9,6.7C2.8,22.9-13.4,62.4,13.5,110.9 C33.3,145.1,67.5,170.3,125,217c59.3-46.7,93.5-71. }
+li:hover:after { animation: heart-wide-screen 0.3s cubic-bezier(.01,.75,.83,.67) 0.1s forwards }
+li:hover:before { opacity: 1; bottom: 0; mix-blend-mode: overlay; filter: invert(35%); clip-path: path('M15,45 A30,30,0,0,1,75,45 A30,30,0,0,1,135,45 Q135,90,75,130 Q15,90,15,45 Z'); animation: small-heart 0.6s ease-out forwards }
+0% { opacity: 0; transform: scale(-0.2) translate(22%, 60%) }
+30% { opacity: 0.2; transform: scale(0.3) translate(22%, 50%) }
+70% { opacity: 0.7; transform: scale(0.6) translate(22%, 35%) }
+100% { opacity: 1; transform: scale(1) translate(22%, 22%) }
+```
+
+### [Figura ¿Quién quiere ser Millonario?](https://codepen.io/dlunire/pen/QWjKxyx)
+
+made with: transition · :hover · clip-path
+
+```css
+:root { --margin-top: 10px }
+.millonario__item { position: relative; transition: 300ms ease }
+.millonario__item:not(:first-of-type) { margin-top: 10px }
+.millonario__item::before { position: absolute; top: 0; bottom: 0 }
+.opciones__item { transition: 300ms ease; position: relative }
+.opciones__item:not(:first-of-type) { margin-top: 10px }
+.opciones__item::before { position: absolute }
+.button { position: relative; padding-top: calc(var(--separacion)); padding-bottom: calc(var(--separacion)); transition: 300ms ease; clip-path: var(--formas); background-position: center center }
+.button:active { transform: scale(0.98) }
+.button::before { transition: 300ms ease; position: absolute; top: var(--separacion); bottom: var(--separacion); clip-path: var(--formas) }
+.fondoA::before { transition: 300ms ease }
+```
+
+### [Responsive CSS Grid - Books](https://codepen.io/andybarefoot/pen/oNjxYYG)
+
+made with: :hover · clip-path
+
+```css
+li { position: relative; padding-bottom: 100%; margin-top: -50% }
+li::before, li::after { position: absolute; background-position: left, right }
+li::before { clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%); -webkit-clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%) }
+li::after { clip-path: polygon(100% 50%, 50% 100%, 0 50%, 20% 50%, 50% 80%,80% 50%); -webkit-clip-path: polygon(100% 50%, 50% 100%, 0 50%, 20% 50%, 50% 80%,80% 50%) }
+img { position: absolute; top: 50%; transform: translateX(-50%) translateY(-60%); box-shadow: 5px -5px 10px rgba(0, 0, 0, 0.3); transition-property: transform }
+img:hover { transform: translateX(-40%) translateY(-70%) rotatez(25deg) }
+```
+
+### [Hover with Clip-Path Effect](https://codepen.io/davidjsealey/pen/dyYPQLR)
+
+made with: transition · :hover · clip-path
+
+```css
+.inner { clip-path: circle(10% at 90% 13%); transition: all 0.5s ease-in-out }
+.inner:hover { clip-path: circle(75%) }
+.inner span { transition: color 0.5s; position: relative }
+```
+
+### [When you can't decide...](https://codepen.io/pehaa/pen/QWjwyxy)
+
+made with: transition · clip-path · custom properties driven by JS
+
+```css
+.beer-slider { position: relative }
+.beer-slider svg { vertical-align: bottom }
+.beer-reveal { position: absolute; top: 0; bottom: 0; -webkit-clip-path: polygon(0 0, var(--width) 0, var(--width) 100%, 0 100%); clip-path: polygon(0 0, var(--width) 0, var(--width) 100%, 0 100%); opacity: 0; transition: opacity 0.35s }
+.beer-range { position: absolute; bottom: 0; opacity: 0 }
+.beer-ready, .beer-ready image, .beer-ready .beer-reveal, .beer-ready .beer-hand { opacity: 1 }
+.beer-handle { position: absolute; opacity: 0; transition: opacity 1s; transform: translateX(-50%); bottom: 0; -webkit-clip-path: url(#svgPath); clip-path: url(#svgPath) }
+.beer-handle:before, .beer-handle:after { position: absolute; top: 50%; border-top: solid 2px }
+.beer-handle:before { transform: rotate(-45deg) }
+.beer-handle:after { transform: rotate(135deg) }
+.b { position: absolute; top: 2rem }
+.b * { opacity: 0; transform: translate3d(0, 2rem, 0); transition: 1s }
+.more .b1 * { opacity: 1; transform: translate3d(0, 0, 0) }
+```
+
+```js
+style.setProperty("--width", `${this.range.value}%`)
+```
+
+### [Svg Clip-Path Mask](https://codepen.io/alvarosaburido/pen/YzyzGvM)
+
+made with: clip-path
+
+```css
+.header { box-shadow: 0 2px 3px 0 rgba(0, 0, 0, 0.3) }
+```
+
+### [1 element bevel cards (pure CSS) - real (semi)transparency inside borders and all that](https://codepen.io/thebabydino/pen/ZEGNNQz)
+
+made with: clip-path
+
+```css
+.bevel-card { -webkit-clip-path: var(--poly); clip-path: var(--poly) }
+.bevel-card--border { position: relative }
+.bevel-card--border::before { position: absolute; inset: 0; -webkit-clip-path: var(--poly); clip-path: var(--poly) }
+body { filter: drop-shadow(1px 1px 3px rgba(0, 0, 0, 0.85)) }
+```
+
+### [Samuel L. Clippath](https://codepen.io/netsi1964/pen/JjdwWVZ)
+
+on scroll: section.live: clip-path | on hover of img.: section.live: clip-path | made with: transition · clip-path · requestAnimationFrame
+
+```css
+section { position: absolute; top: 0 }
+img { opacity: 0.5 }
+.live { clip-path: polygon( var(--x0) var(--y0), var(--x1) var(--y1), var(--x2) var(--y2), var(--x3) var(--y3) ); transition: all .4s }
+.live img { opacity: 1 }
+```
+
+```js
+requestAnimationFrame(step)
+```
+
+### [Clip path effect](https://codepen.io/avenart/pen/yLNRXGO)
+
+on scroll: div.screen: transform+top | made with: transition · clip-path
+
+```css
+.screens, .screen-item, .screen { position: absolute; top: 0 }
+.screen-item { opacity: 0.9 }
+.screen { background-position: 50% 50% }
+.screen-full { opacity: 0.6; transform: scale(1.1); will-change: transform; transition: transform 1s ease-out }
+.screen-clip { clip-path: polygon(50% 0%, 20% 100%, 80% 100%) }
+.screen-focus { transform: scale(1) }
+```
+
+### [Masked Circle Button](https://codepen.io/herrvau/pen/NWqLLxr)
+
+on hover of img.pseudo-video: button.circle: shadow | made with: transition · :hover · clip-path
+
+```css
+.player { position: relative }
+.circle { position: absolute; top: calc(50% - 40px); box-shadow: 0 0 0 4px darkgreen; transition: box-shadow .2s }
+.circle:hover { box-shadow: 0 0 0 2px darkgreen }
+.circle:focus { box-shadow: 0 0 0 0 darkgreen }
+.clip { clip-path: polygon(-4px -4px, -4px 80px, 28px 80px, 28px 26px, 48px 36px, 28px 46px, 28px 80px, 80px 80px, 80px -4px) }
+```
+
+### [Clipping images](https://codepen.io/jjsebastianfuertes/pen/ZEGMWgb)
+
+made with: clip-path
+
+```css
+.clip-img-one { -webkit-clip-path: circle(50% at 50%); clip-path: circle(50% at 50%) }
+.clip-img-two { clip-path: polygon( 10% 25%, 35% 25%, 35% 0%, 65% 0%, 65% 25%, 90% 25%, 90% 50%, 65% 50%, 65% 100%, 35% 100%, 35% 50%, 10% 50% ) }
+.clip-img-three { clip-path: polygon( 20% 0%, 0% 20%, 30% 50%, 0% 80%, 20% 100%, 50% 70%, 80% 100%, 100% 80%, 70% 50%, 100% 20%, 80% 0%, 50% 30% ) }
+.clip-img-four { clip-path: polygon( 50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35% ) }
+```
+
+### [Radial Clip Reveal](https://codepen.io/dpkmcateer/pen/LYVrGJZ)
+
+made with: clip-path · anime.js
+
+```css
+.page { position: absolute }
+.usage { position: absolute; top: calc(50vh - 50px) }
+```
+
+### [CSS Clip Path Card](https://codepen.io/nikhilrajs-1472363470/pen/LYVmVmr)
+
+made with: transition · :hover · clip-path
+
+```css
+.card { position: relative; box-shadow: 0 0.8px 0.8px rgba(0, 0, 0, 0.02), 0 2px 2px rgba(0, 0, 0, 0.028), 0 3.8px 3.8px rgba(0, 0, 0, 0.035), 0 6.7px 6.7px rgba(0, 0, 0, 0.042), 0 12.5px 12.5px rgba(0, 0, 0, 0.05), 0 30px 30px  }
+.card .info { position: absolute; top: -2px; opacity: 1; transition: opacity 300ms ease-in-out }
+.card .info:hover { opacity: 0 }
+.card .answer { position: absolute; top: 0; bottom: 0; -webkit-clip-path: circle(12% at 100% 0%); clip-path: circle(12% at 100% 0%); transition: all 300ms ease-in-out }
+.card .info:hover + .answer { -webkit-clip-path: circle(150% at 100% 0%); clip-path: circle(150% at 100% 0%) }
+```
+
+### [CSS3](https://codepen.io/Chingling152/pen/YzXEOYR)
+
+made with: clip-path
+
+```css
+div { -webkit-clip-path: polygon(0% 0%,50% 1%,100% 0%,90% 90%, 50% 100%, 10% 90%) }
+div:before { position:absolute; -webkit-clip-path: polygon(48% 10%, 50% 92%,82% 82%,90% 10%) }
+div:after { position:absolute; -webkit-clip-path: polygon(20% 20%,80% 20%,80% 30%,50% 45%,80% 45%,75% 75%,50% 80%,27% 75%,25% 60%, 37% 60%,37% 67%,50% 70%,65% 67%,67% 55%, 24% 55%,22% 42%,50% 32%,22% 30%) }
+```
+
+### [clip-path-duotone-img](https://codepen.io/alvarobelmonte/pen/qBdVrNx)
+
+on scroll: figure.: clip-path+top | made with: :hover · clip-path · mix-blend-mode
+
+```css
+figure { clip-path: polygon(88% 0, 70% 29%, 100% 100%, 18% 100%, 0 66%, 9% 11%) }
+figure:hover { clip-path: polygon(0 0, 100% 0, 100% 100%, 0% 100%) }
+:root { --opacity: 1 }
+.img-wrapper { position: relative }
+.img-wrapper img { filter: grayscale(100%) contrast(1) blur(var(--blur)); mix-blend-mode: var(--bg-blend); opacity: var(--opacity); position: relative }
+.img-wrapper::before { bottom: 0; mix-blend-mode: var(--fg-blend); position: absolute; top: 0 }
+```
+
+### [Hero Image Shape Overlays](https://codepen.io/brianhaferkamp/pen/xxGPgNr)
+
+made with: clip-path
+
+```css
+.images { position: relative }
+.image { position: absolute; top: 0 }
+.image-1 { background-position: center left }
+.image-2 { background-position: center right; -webkit-clip-path: polygon(75% 0%, 100% 50%, 75% 100%, 0% 100%, 25% 50%, 0% 0%); clip-path: polygon(75% 0%, 100% 50%, 75% 100%, 0% 100%, 25% 50%, 0% 0%) }
+.image-3 { -webkit-clip-path: polygon(100% 0%, 75% 50%, 100% 100%, 25% 100%, 0% 50%, 25% 0%); clip-path: polygon(100% 0%, 75% 50%, 100% 100%, 25% 100%, 0% 50%, 25% 0%); transform: translateX(70%) }
+```
+
+### [Rainbow spotlight](https://codepen.io/TajShireen/pen/xxGPEEp)
+
+made with: @keyframes · clip-path
+
+```css
+h1 { text-transform: uppercase; position: relative }
+h1:before { position: absolute; clip-path: ellipse(120px 120px at -2.54% -9.25%); animation: swing 5s infinite; animation-direction: alternate }
+0% { -webkit-clip-path: ellipse(120px 120px at -2.54% -9.25%) clip-path: ellipse(120px 120px at -2.54% -9.25%) }
+50% { -webkit-clip-path: ellipse(120px 120px at 49.66% 64.36%); clip-path: ellipse(120px 120px at 49.66% 64.36%) }
+100% { -webkit-clip-path: ellipse(120px 120px at 102.62% -1.61%; clip-path: ellipse(120px 120px at 102.62% -1.61%) }
+@keyframes swing animates -webkit-clip-path, clip-path
+```
+
+### [Clip-path image reveal using gsap](https://codepen.io/cameronknight/pen/abOVoXb)
+
+on scroll: div.reveal: clip-path, img.: transform+top | on hover of a.: img.: transform+top | made with: :hover · GSAP · IntersectionObserver
+
+```css
+.notification { position: absolute; top: 10% }
+.container { position: relative }
+.reveal { position: relative }
+```
+
+```js
+gsap.timeline({ ease: easeInOut })
+new IntersectionObserver(revealCallback, options)
+```
+
+### [Responsive Feature Section Using Clip-Path](https://codepen.io/brianhaferkamp/pen/jOPGZee)
+
+made with: transition · :hover · clip-path
+
+```css
+.image img { -webkit-clip-path: polygon(0 0, 70% 0, 100% 100%, 0% 100%); clip-path: polygon(0 0, 70% 0, 100% 100%, 0% 100%) }
+.text h1 { margin-top: 0 }
+.button button { text-transform: uppercase; transition: background-color 200ms ease }
+```
+
+### [Clip-Pathed Image plus Shape-Outside](https://codepen.io/brianhaferkamp/pen/mdJMBxB)
+
+made with: clip-path
+
+```css
+img { transform: translateX(-30%); -webkit-clip-path: polygon(30% 0, 70% 0, 100% 100%, 30% 100%); clip-path: polygon(30% 0, 70% 0, 100% 100%, 30% 100%) }
+p:first-child { margin-top: 0 }
+```
+
+### [Watch it, it's dripping ! Dripp... Nevermind !](https://codepen.io/gitsushi/pen/WNvOZPB)
+
+made with: clip-path
+
+```css
+body .container .up { padding-bottom: 156.52px }
+body .container .down { padding-top: 156.52px; margin-top: -156.52px; background-position: 55% 25%; clip-path: path("M-5,74 a10,10 0,0,0 25,0 v-51 a8,8 0,0,1 16,0 v90 a4,4 0,0,0 9,0 v-74 a10,10 0,0,1 32,0 v85 a10,10 0,0,0 24,0 v-61 a10,10 0,0,1 }
+```
+
+### [testing clip-path between sections](https://codepen.io/gitsushi/pen/jOPwmxo)
+
+made with: clip-path
+
+```css
+body .container { position: relative }
+body .container .middlecont { position: absolute }
+body .container .opaorange { padding-bottom: 14vmin }
+body .container .opablue { margin-top: -14vmin; padding-top: 14vmin; clip-path: polygon(0% 14vmin, 100% 0%, 100% 100%, 0% 100%) }
+```
+
+### [2EZ dropdown w/ clip-path & flex](https://codepen.io/artyschein/pen/qBdjmBb)
+
+made with: transition · :hover · clip-path
+
+```css
+.dropdown-wrapper { position: relative }
+.dropdown-inner { position: absolute; top: 0; -webkit-clip-path: polygon(0 0, 100% 0, 100% 40px, 0 40px); clip-path: polygon(0 0, 100% 0, 100% 40px, 0 40px); transition: 0.15s ease }
+.dropdown-wrapper:hover .dropdown-inner { -webkit-clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%); clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%) }
+.dropdown-inner:after { position: absolute; top: 12px; transform: rotate(45deg); transition: 0.15s ease }
+.dropdown-wrapper:hover .dropdown-inner:after { transform: translateY(5px) rotate(-135deg) }
+.dropdown-item { transition: 0.3s ease }
+```
+
+### [Parallax Effect](https://codepen.io/tarun0706/pen/QWbvexr)
+
+on scroll: h2.layer: transform+top ×2 | made with: clip-path · pointer / mouse tracking
+
+```css
+section { position: relative }
+section .textbox { position: absolute; top: 0; box-shadow: -20px 20px 60px #305655, 20px -20px 60px #407473; clip-path: polygon(50% 0, 100% 0, 45% 100%, 0 100%) }
+section h2, section .textbox h2 { position: absolute; top: calc(50% - 100px) }
+```
+
+```js
+addEventListener('mousemove', parallax)
+```
+
+### [Text effect using Background clip and clip path](https://codepen.io/TajShireen/pen/jOPyQrw)
+
+made with: clip-path
+
+```css
+.bg-img { -webkit-transform: rotate(-4deg); -ms-transform: rotate(-4deg); transform: rotate(-4deg) }
+h1 { background-position: 200% 59%; position: relative }
+h1::before { position: absolute; top: 0; bottom: 0; -webkit-clip-path: polygon(48.25% -28px, 52.37% 120.47%, 3.05% 130.06%, -13px -24.7%, 35.46% -30.24%); clip-path: polygon(48.25% -28px, 52.37% 120.47%, 3.05% 130.06%, -13px -24.7%,  }
+```
+
+### [The Clips of CSS 👇](https://codepen.io/jh3y/pen/gOpLBEa)
+
+held: fixed label.global, fixed div.backdrop | on scroll: label.instruction: transform+top | made with: position: fixed · @keyframes · transition · clip-path
+
+```css
+:root { --transition: 0.15 }
+[type='reset'] { position: absolute; top: 1rem }
+.clip { position: absolute; top: 50%; transform: translate(-50%, -50%) }
+input:checked + label + label + label { --scale: 1 }
+[type='checkbox']:nth-of-type(1):not(:checked) ~ .local, [type='checkbox']:nth-o { --transition: 0 }
+.shape { -webkit-clip-path: var(--clip); clip-path: var(--clip); position: absolute; top: 50%; transform: translate(-50%, -50%); transition: clip-path calc(var(--transition) * 1s) var(--ease), -webkit-clip-path calc(var(--transit }
+form { position: relative }
+.local { --scale: 0; position: absolute; top: 50%; transform: translate(-50%, -50%) scale(var(--scale)); transition: transform calc(var(--transition) * 1s) var(--ease) }
+.global { position: fixed; top: 1rem }
+.shape__container { filter: drop-shadow(2px 2px 4px var(--shadow-one)) drop-shadow(-2px -2px 4px var(--shadow-two)); position: absolute; top: 50%; transform: translate(-50%, -50%); transition: filter calc(var(--transition) * 1s) var(--ease) }
+.backdrop { position: fixed; transition: background calc(var(--transition) * 1s) var(--ease) }
+.instruction { position: absolute; top: 50%; filter: grayscale(1); -webkit-animation: float 2.5s infinite linear; animation: float 2.5s infinite linear }
+```
+
+### [#4 Flip Card (Pure CSS, Clip Path, Trasition )](https://codepen.io/allisonching/pen/gOpwWdM)
+
+on hover of div.container-cards: div.container-cards-surface: transform ×2 | made with: transition · :hover · clip-path · 3D (perspective / preserve-3d)
+
+```css
+.container-cards { position: relative }
+.container-cards-surface { position: relative }
+.container-cards-front-image { clip-path: ellipse(200px 150px at 50% 20%) }
+.container-cards-front-image img { object-position: 50% 60% }
+.container-cards-front-label { position: absolute; top: 10px; -webkit-box-shadow: 10px 10px 13px -6px rgba(0, 0, 0, 0.32); -moz-box-shadow: 10px 10px 13px -6px rgba(0, 0, 0, 0.32); box-shadow: 10px 10px 13px -6px rgba(0, 0, 0, 0.32) }
+.container-cards-front-button button { -webkit-transition: -webkit-filter 1s ease-in; transition: filter 1s ease-in }
+.container-cards-surface { position: absolute; transition: transform 1s }
+.container-cards-back { transform: rotateY(180deg); background-position: 50% 50%; position: relative }
+.container-cards-back h2 { transform: rotate(-45deg) }
+.container-cards:hover .container-cards-front { transform: rotateY(180deg) }
+.container-cards:hover .container-cards-back { transform: rotateY(0) }
+```
+
+### [youtube video bubble](https://codepen.io/Mazou/pen/LYVZqoV)
+
+held: fixed div.ytPlayerControlsContainerHost, fixed button.ytmA11yStylesHiddenButton | made with: position: fixed · :hover · clip-path
+
+```css
+.layout_wrapper { position: fixed }
+.layout_wrapper .profile { position: absolute; top: -30px; transform: translateY(-50%) }
+.layout_wrapper .pen { position: absolute; top: -30px; transform: translateY(-50%) }
+.layout_wrapper .made { position: absolute; bottom: -30px; transform: translateY(50%) }
+.pen_wrapper { position: relative }
+.pen_wrapper div:not(.credit) { position: relative }
+.pen_wrapper div:not(.credit) .box { clip-path: url("#maskRect1") }
+.pen_wrapper div:not(.credit) .box #vp { filter: blur(3px); position: absolute; top: 0 }
+.pen_wrapper div:not(.credit) .box #vp.hide { opacity: 0 }
+.pen_wrapper div:not(.credit) #player { transform: scale(1.6) }
+.pen_wrapper div:not(.credit) button { position: absolute; text-transform: uppercase; top: 400px }
+.pen_wrapper div:not(.credit) button:before { position: absolute; top: -5px }
+```
+
+### [Todo Checkbox](https://codepen.io/kathykato/pen/xxGObEp)
+
+made with: transition · clip-path
+
+```css
+input[type=checkbox] { position: relative; transition: background 175ms cubic-bezier(0.1, 0.1, 0.25, 1) }
+input[type=checkbox]::before { position: absolute; top: 2px; transform: rotate(45deg); opacity: 0 }
+input[type=checkbox]:checked::before { opacity: 1 }
+input[type=checkbox]:checked ~ label::before { -webkit-clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%); clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%) }
+label { position: relative }
+label::before { position: absolute; -webkit-clip-path: polygon(0 0, 0 0, 0% 100%, 0 100%); clip-path: polygon(0 0, 0 0, 0% 100%, 0 100%); transition: -webkit-clip-path 200ms cubic-bezier(0.25, 0.46, 0.45, 0.94); transition: clip-path 20 }
+```
+
+### [CSS Doodle Fun](https://codepen.io/bobandra/pen/jOPWdvX)
+
+made with: @keyframes · clip-path
+
+### [REAL](https://codepen.io/pieter-biesemans/pen/QWbyVKG)
+
+made with: :hover · clip-path
+
+```css
+div { position: relative }
+div:before, div:after { position: absolute }
+body { top: 0 }
+body .message { position: absolute; top: 1vw }
+body .message a { border-bottom: 1px solid #444 }
+body .wrapper .block1 .logo { position: absolute; top: 1em; transform: translatex(-50%); text-transform: uppercase }
+body .wrapper .block1 .logo .text { top: 50%; transform: translate(-50%, -50%) }
+body .wrapper .block1 .logo .text .a { position: relative }
+body .wrapper .block1 .logo .text .a:before { position: absolute; top: 0.25em; clip-path: polygon(50% 0, 0% 100%, 20% 100%, 50% 35%, 72% 80%, 25% 80%, 20% 100%, 100% 100%) }
+body .wrapper .block1 .logo .text .l { position: relative }
+body .wrapper .block1 .logo .text .l:after { position: absolute; top: 1.25em }
+body .wrapper .block1 .buttons { position: absolute; bottom: 1.5em }
+```
+
+### [Curtains.js with clip path](https://codepen.io/SamuelEiche/pen/WNvrKde)
+
+made with: clip-path · canvas 2D · requestAnimationFrame
+
+```css
+.canvas-bg { position: absolute }
+body { position: relative }
+.curtains-clip { clip-path: url(#clip); position: absolute; top: 0 }
+.curtains-clip-plane { position: relative }
+```
+
+```js
+requestAnimationFrame(render)
+```
+
+### [Clip Path Hover Animation - Keyboard accessible](https://codepen.io/vladracoare/pen/RwPrayL)
+
+made with: transition · :hover · clip-path
+
+```css
+.card { position: relative; clip-path: circle(5% at 95% 11%); transition: all ease-in-out 0.3s }
+.card__infoicon { position: absolute; top: 10px; transition: ease-out 0.3s }
+.card__reference { border-bottom: 1px solid transparent; transition: ease-in 0.3s }
+.card:hover, .card:focus { clip-path: circle(75%); box-shadow: 0px 3px 9px rgba(0, 0, 0, 0.12), 0px 3px 18px rgba(0, 0, 0, 0.08) }
+.card:hover .card__infoicon, .card:focus .card__infoicon { opacity: 0 }
+.card:focus { box-shadow: 0px 3px 9px rgba(0, 0, 0, 0.12), 0px 3px 18px rgba(0, 0, 0, 0.08), 0px 0px 0px 4px rgba(0, 0, 0, 0.2) }
+```
+
+### [SCSS: Circular Images with Shape-Outside and Clip-Path](https://codepen.io/cnocon/pen/rNVajBY)
+
+on scroll: img.story__img: transform+filter+top, figcaption.story__caption: transform+opacity+top | made with: transition · :hover · clip-path
+
+```css
+h3 { text-transform: uppercase; margin-bottom: 1.5rem }
+.story { box-shadow: 0 3rem 6rem rgba(0, 0, 0, 0.1); transform: skewX(-12deg) }
+.story__shape { position: relative; -webkit-clip-path: circle(50% at 50% 50%); clip-path: circle(50% at 50% 50%); transform: translateX(-3rem) skewX(12deg) }
+.story__img { transform: scale(1.3); transition: all 0.2s ease }
+.story__text { transform: skewX(12deg) }
+.story__caption { text-transform: uppercase; opacity: 0; position: absolute; top: 50%; transform: translate(-50%, 20%); transition: all 0.2s ease }
+.story:hover .story__caption { opacity: 1; transform: translate(-50%, -50%) }
+.story:hover .story__img { transform: scale(1); filter: blur(3px) brightness(80%) }
+```
+
+### [SCSS: Perspective and 2-Sided Rotating Cards](https://codepen.io/cnocon/pen/ZEGYWgJ)
+
+on hover of div.card: div.card__side: transform+top ×2 | made with: transition · :hover · clip-path · 3D (perspective / preserve-3d)
+
+```css
+.card { -moz-perspective: 150rem; perspective: 150rem; position: relative }
+.card__side { position: absolute; top: 0; box-shadow: 0 1.5rem 4rem rgba(0, 0, 0, 0.15); transition: all 0.8s ease }
+.card__side--back { transform: rotateY(180deg) }
+.card__picture { -webkit-clip-path: polygon(0 0, 100% 0, 100% 85%, 0 100%); clip-path: polygon(0 0, 100% 0, 100% 85%, 0 100%) }
+.card__heading { position: absolute; top: 12rem; text-transform: uppercase }
+.card__details ul li:not(:last-child) { border-bottom: 1px solid #eee }
+.card:hover .card__side--front { transform: rotateY(-180deg) }
+.card:hover .card__side--back { transform: rotateY(0) }
+.card .card__cta { position: absolute; top: 50%; transform: translate(-50%, -50%) }
+.card__price-box { margin-bottom: 8rem }
+.card__price-only { text-transform: uppercase }
+.btn:link, .btn:visited { position: relative; text-transform: uppercase; transition: all 0.2s }
+```
+
+### [Animated SVG Signature](https://codepen.io/shreyanschandak/pen/xxGxzOX)
+
+made with: @keyframes · clip-path
+
+### [CSS Clip-Path Card](https://codepen.io/ViktorPika/pen/abObGMp)
+
+made with: transition · :hover · clip-path
+
+```css
+.inner { transition:all .5s ease-in-out; clip-path:circle(10% at 90% 20%) }
+.inner:hover { clip-path:circle(75%) }
+.inner span { transition:opacity .5s; position:relative; opacity:1 }
+.inner:hover span { opacity:0 }
+```
+
+### [1970s Image Loading](https://codepen.io/dpkmcateer/pen/MWwgmKJ)
+
+made with: transition · clip-path
+
+```css
+div { clip-path: polygon(0% 0%, 0% 0%, 0% 0%, 0% 0%, 0% 0%, 0% 0%); -webkit-transition: clip-path 2s ease-out; -moz-transition: clip-path 2s ease-out; -o-transition: clip-path 2s ease-out; transition: clip-path 2s ease-out }
+```
+
+### [Scott Sterling animation: The Man, The Myth, The Legend](https://codepen.io/alvaromontoro/pen/qBEzwMK)
+
+made with: @keyframes · transition · :hover · clip-path · 3D (perspective / preserve-3d)
+
+```css
+.avatar { perspective: 1000px; position: relative }
+.avatar-info { margin-top: -20px; opacity: 0; transition: width 0.25s, padding 0.5s, max-height 0.25s, opacity 0.5s }
+.avatar:hover .avatar-info { opacity: 1; transition: width 1s, padding 1s, max-height 1s, opacity 0s }
+.avatar-info h1, .avatar-info h2 { opacity: 0; transition: 1s }
+.avatar h2.line-1 { transform: translate(100%, 0) }
+.avatar-info h2.line-2 { transform: translate(-100%, 0) }
+.avatar-info h2.line-3 { transform: scale(0) }
+.avatar:hover h1, .avatar:hover h2 { opacity: 1; transform: translate(0, 0) }
+.avatar:hover h1 { transition: opacity 0.75s }
+.avatar:hover h2.line-3 { transform: scale(1) }
+0% { top: -100px; transform: rotate(0) }
+40% { top: 0; transform: rotate(360deg) }
+```
+
+### [Morphing circles animation - Click to show mechanics 👍🤓](https://codepen.io/jh3y/pen/GRgbLNw)
+
+held: fixed input, fixed label, fixed h1 | on scroll: div.container: transform, div.circle: transform+top | made with: position: fixed · @keyframes · clip-path
+
+```css
+h1 { position: fixed; bottom: 1rem; opacity: 0.5 }
+body:before { box-shadow: 4px 4px 0 0 #111; position: absolute; top: 50%; transform: translate(-50%, -50%) }
+[type='checkbox'] { position: fixed; opacity: 0 }
+label { position: fixed }
+.container { position: relative; -webkit-animation: flip calc(var(--speed) * 4s) steps(1) infinite, bg calc(var(--speed) * 4s) steps(1) infinite; animation: flip calc(var(--speed) * 4s) steps(1) infinite, bg calc(var(--speed) * 4s) s }
+.container:before { position: absolute; top: 50%; transform: translate(-50%, -50%) }
+.circle { -webkit-animation: rotate calc(var(--speed) * 1s) ease-in-out infinite alternate; animation: rotate calc(var(--speed) * 1s) ease-in-out infinite alternate; position: absolute; top: 40% }
+.circle:after { -webkit-clip-path: inset(0% 45% 90% 45% round 50% 50%); -webkit-animation: clip calc(var(--speed) * 1s) ease-in-out infinite alternate, bg calc(var(--speed) * 4s) steps(1) infinite; animation: clip calc(var(--speed) * 1s }
+25% { transform: rotateY(0deg) rotateX(180deg) }
+50% { transform: rotateY(180deg) rotateX(180deg) }
+75% { transform: rotateY(180deg) rotateX(0deg) }
+25% { transform: rotateY(0deg) rotateX(180deg) }
+```
+
+### [CSS3 Clip-path Transform Effects on Scroll 3](https://codepen.io/Rameez_Bukhari/pen/vYEqjMw)
+
+held: fixed div.img-bg | on scroll: div.img-bg: clip-path | made with: position: fixed · clip-path · scroll listener
+
+```css
+.img-bg { position: fixed; top: 0; background-position: center top; clip-path: circle(0px at center) }
+.content { position: relative; margin-top: 200vh }
+.content h2 { margin-bottom: 20px }
+.title { position: relative; top: 250px }
+```
+
+```js
+addEventListener('scroll', function() {
+```
+
+### [Text Alignment](https://codepen.io/wikyware-net/pen/vYEqpaP)
+
+made with: clip-path
+
+```css
+.ag-alignment_item { vertical-align: top }
+.ag-alignment_item:before { -webkit-clip-path: polygon(0 0, 50px 0, 0 100%); clip-path: polygon(0 0, 50px 0, 0 100%) }
+```
+
+### [Tooltip (clip-path)](https://codepen.io/nadianeyl/pen/gObNGgr)
+
+made with: transition · :hover · clip-path
+
+```css
+.content { position: relative; box-shadow: 0 1px 5px 0 rgba(68, 74, 83, 0.2); -webkit-clip-path: circle(16% at 0% 100%); clip-path: circle(16% at 0% 100%); transition: all 0.5s ease }
+.content h1 { margin-bottom: 5px }
+.content span { position: absolute; bottom: 2%; transition: color 0.4s }
+.content:hover { -webkit-clip-path: circle(80%); clip-path: circle(80%) }
+```
+
+### [clip path pour hotel](https://codepen.io/Fabrice-Chap/pen/RwNzNZd)
+
+made with: clip-path
+
+```css
+.shape-oblique-up { margin-bottom: 10px; box-shadow: 0px 5px 5px rgba(0, 0, 0, 0.25); -webkit-clip-path: polygon(0 30%, 100% 0%, 100% 100%, 0% 100%); clip-path: polygon(0 30%, 100% 0%, 100% 100%, 0% 100%) }
+.background-grey { margin-top:100px; box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25) }
+.box-shadow-up { box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25) }
+.up { padding-top:50px }
+.down { padding-top:16px }
+.shape-oblique-down { margin-bottom: 10px; -webkit-clip-path: polygon(0 0, 100% 30%, 100% 100%, 0% 100%); clip-path: polygon(0 0, 100% 30%, 100% 100%, 0% 100%) }
+```
+
+### [Animating Clip-Path Sections w/ Intersection Observer](https://codepen.io/hexagoncircle/pen/povXoOo)
+
+held: fixed div.feature-inner, fixed div.feature-inner, fixed div.feature-inner, fixed div.feature-inner, fixed div.feature-inner, fixed div.feature-inner | on scroll: div.feature-copy: transform+opacity+top ×2, div.feature-image-container: transform+opacity ×2 | made with: position: fixed · transition · clip-path · IntersectionObserver
+
+```css
+.featured-content { position: relative }
+.feature { position: relative }
+.feature { -webkit-clip-path: polygon(100% 0, 100% 100%, 0 100%, 0 0); clip-path: polygon(100% 0, 100% 100%, 0 100%, 0 0) }
+.feature:nth-child(odd) .feature-image-container { transform: translateX(-2rem) }
+.feature:nth-child(odd).show-feature .feature-image-container { transform: translateX(0%) }
+.feature:nth-child(even) .feature-image-container { transform: translateX(2rem) }
+.feature:nth-child(even).show-feature .feature-image-container { transform: translateX(0%) }
+.feature-inner { position: fixed; top: 0 }
+.feature-image-container { position: relative; margin-top: 2rem; opacity: 0; transition: opacity 0.5s var(--base-timing-function), transform 0.5s var(--base-timing-function) }
+.show-feature .feature-image-container { opacity: 1 }
+.feature-image-container { margin-top: 0 }
+.feature-image-container img { position: relative; vertical-align: bottom }
+```
+
+```js
+new IntersectionObserver(sections => {
+```
+
+### [Tiles](https://codepen.io/FelixLuciano/pen/xxbNdRo)
+
+on scroll: div.tile: clip-path ×54 | on hover of a.figcaption-hyperlink: div.tile: clip-path ×54 | made with: @keyframes · clip-path
+
+```css
+.tile { clip-path: polygon(32% 0, 68% 0%, 100% 32%, 100% 68%, 68% 100%, 32% 100%, 0% 68%, 0% 32%); animation: to-square 1s linear infinite alternate }
+.tile:nth-child(odd) { clip-path: polygon(30% 30%, 70% 30%, 70% 30%, 70% 70%, 70% 70%, 30% 70%, 30% 70%, 30% 30%); animation-name: to-octogon }
+50% { clip-path: polygon(15% 15%, 85% 15%, 85% 15%, 85% 85%, 85% 85%, 15% 85%, 15% 85%, 15% 15%) }
+to { clip-path: polygon(30% 30%, 70% 30%, 70% 30%, 70% 70%, 70% 70%, 30% 70%, 30% 70%, 30% 30%) }
+50% { clip-path: polygon(15% 15%, 85% 15%, 85% 15%, 85% 85%, 85% 85%, 15% 85%, 15% 85%, 15% 15%) }
+to { clip-path: polygon(32% 0, 68% 0%, 100% 32%, 100% 68%, 68% 100%, 32% 100%, 0% 68%, 0% 32%) }
+figcaption { position: absolute }
+@keyframes to-square animates clip-path
+@keyframes to-octogon animates clip-path
+```
+
+### [Pure CSS loader #27 - polygonal flame set](https://codepen.io/thebabydino/pen/bGNJNxR)
+
+made with: @keyframes · clip-path
+
+```css
+.loader { position: relative }
+.s2d { position: absolute; top: 50%; transform: rotate(calc(-.25turn/var(--n))) }
+.s2d:before { position: absolute; -webkit-clip-path: polygon(50% 0%, 93.30127% 75%, 6.69873% 75%); clip-path: polygon(50% 0%, 93.30127% 75%, 6.69873% 75%); animation: rot 1.5s steps(var(--n)) calc(var(--k)*-1.5s) infinite }
+:nth-child(2) > .s2d:before { -webkit-clip-path: polygon(14.64466% 14.64466%, 85.35534% 14.64466%, 85.35534% 85.35534%, 14.64466% 85.35534%); clip-path: polygon(14.64466% 14.64466%, 85.35534% 14.64466%, 85.35534% 85.35534%, 14.64466% 85.35534%) }
+:nth-child(3) > .s2d:before { -webkit-clip-path: polygon(50% 0%, 97.55283% 34.54915%, 79.38926% 90.45085%, 20.61074% 90.45085%, 2.44717% 34.54915%); clip-path: polygon(50% 0%, 97.55283% 34.54915%, 79.38926% 90.45085%, 20.61074% 90.45085%, 2.44717% 34 }
+:nth-child(4) > .s2d:before { -webkit-clip-path: polygon(25% 6.69873%, 75% 6.69873%, 100% 50%, 75% 93.30127%, 25% 93.30127%, 0% 50%); clip-path: polygon(25% 6.69873%, 75% 6.69873%, 100% 50%, 75% 93.30127%, 25% 93.30127%, 0% 50%) }
+0% { transform: rotate(0deg) translate(var(--dx)) rotate(0deg) }
+to { transform: rotate(1turn) translate(var(--dx)) rotate(-2turn) }
+@keyframes rot animates transform
 ```
