@@ -766,7 +766,7 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
       after the fixes, after reload, canvas = Preview
     - `[x]` regression: probe-spacing (S-1), probe-s2 (S-2), L-2's probes — 0 findings; a page saved before F-1 keeps
       every size it CHOSE (hand widths, set gaps); space nobody chose fills there too (decided in the session, reversible)
-- `[>]` **BATCH L-3 · Tier-99: React error #185 and the tablet line** (area: engine rules · 4 changes, OPEN 2026-10-02) ← **YOU ARE HERE**
+- `[ ]` **BATCH L-3 · Tier-99: React error #185 and the tablet line** (area: engine rules · 4 changes, opened 2026-10-02; PAUSED the same day by the user's order — BATCH R-1 runs first in the new session, then back here: c-11a / c-11b / c-11c and L3-b · L3-c (page 141 re-run) · L3-f · L3-g · L3-h are open)
   - e-5 · React #185 (maximum update depth) — 9 pages
   - e-6 · four columns on one line at Tablet — 8 pages, 142 findings (= c-11)
   - c-11c (decided B) · an icon cell does not count for the tablet rule
@@ -776,7 +776,54 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
   - `[?]` c-12b · the user decides: typing currently re-renders and saves the whole site on every key. Measure the time
     per key at 150 and 520 blocks FIRST. Batching the keys would change what one Undo takes back while typing. Not built
     until the user answers
-  - LEDGER of L-3: (empty)
+    - **DECIDED by the user 2026-10-02: "go with your recommendation"** — measure first; if typing lags, a burst of
+      typing is ONE Undo step (it ends at a pause, as in Word / Google Docs) and the site is saved once typing stops,
+      not on every key. Text is never lost: a pending save is written on blur, page hide and before unload
+  - LEDGER of L-3:
+    - `[x]` L3-a · **#185 NOT REPRODUCED — measured.** 12 headed page runs on 2026-10-02, the 6 pages that once had it:
+      6 plain (`l3-185-repro.out`) and 6 STRESSED (`l3-185-stress2.out`: 12 text blocks × 3 rounds × 3 × 150 characters
+      at 0 delay, Tablet ↔ Desktop switched between each, the machine at ~91% CPU) — 0 page errors in all 12, on an
+      unmangled production build. ~76 dressed pages since 2026-09-30 also 0. So something between 09-30 and now (L-1 / L-2
+      / F-1) removed it, or it needs a load not reached. The sweep's page-error check stays its guard: it REOPENS the
+      moment one is seen, now with its stack and step (L3-d). c-12b (typing lag) is separate and still to be measured
+    - `[ ]` L3-h · **after the stress typing, canvas Mobile shows a HOLE of 250px at the end of a line of a "…-6" block on 4
+      of 6 pages (141, 329, 332, 333)** — the same id slot and width on four different pages, so one shape: most likely
+      the header line once 450 characters are typed into its words. Plus R11 canvas ≠ Preview after the typing on 333
+      (Mobile 18 blocks, Laptop 3, Desktop / Wide 16). The run had the old audit loaded — next: one stressed page with
+      the new HOLE details (each column's drawn width, flex, min-width), then the tree read at that block
+    - `[x]` L3-i · MY OWN: the F-1 close-out wrote the marker as `← **YOU ARE HERE**`, which the rules guard does not count
+      (it needs the arrow followed by the plain words, no bold), and it was committed in `9c85ed6` / `3e044bb` without running that guard. FIXED: the
+      marker; the guard now passes. The full gate runs before every commit from here (rule 15)
+    - (was) L3-a · **#185 did not come back** — the 6 pages that had it (dressed99 141, 329, 332, 333, 34, 43), re-run in 6
+      headed windows on an unmangled production build (`.next-b`, 3200): 0 page errors. Last seen in the 2026-09-30 sweep;
+      ~76 dressed pages since, 0. Being stress-tested (`uat-pages.js --stress`: 3 × 150 characters typed with no delay
+      into 12 text blocks, 3 rounds, Tablet ↔ Desktop switched between each) before anything is closed
+    - `[>]` L3-b · **page 332 (noma careers) at canvas Tablet: a 241px HOLE, and canvas ≠ Preview at Tablet and Laptop on
+      29 blocks** (a row of card · words · card at 33.33% each: 224px on the canvas, the line filled in the Preview).
+      Reloading the tree saved BEFORE the words were typed gives canvas = Preview at 768 and 1024 — so it is in the tree
+      after the words, or in the live canvas. The harness now saves that tree too (`page-N.final.site.json`).
+      MEASURED 2026-10-02: the FINAL tree reloaded is also canvas = Preview at 768 and 1024, opened at Tablet or after
+      Mobile (`probe-l3-row.js --tree=final.site --before=375`) — every column 458px at 768. In both runs the LIVE canvas
+      drew the column at its 224px floor (R11 29.2% of 768) with 241px free. So it is live state, not the tree. The HOLE
+      message now carries each column's drawn width, `flex` and `min-width`; the next run says which input was stale
+    - `[x]` L3-e · HARNESS: `uat-pages.js --stress` did nothing — the parent hands its pages only `--sizes=`, so the first
+      stress run (`l3-185-stress.out`) ran no stress phase (`stressed` empty on all 6). FIXED: `--stress` is forwarded;
+      re-run as `l3-185-stress2.out`
+    - `[ ]` L3-f · page 141 after the stress typing: canvas ≠ Preview at all 5 rungs on 12 blocks whose SIZES match
+      (100%×3708 vs 100%×3708…). INFERRED: typing into the rotating hero's hidden slides scrolls the pager on the canvas,
+      while the Preview opens on slide 1 — so the comparison reads positions inside a scrolled pager. To be MEASURED
+      (the blocks' left positions, the pager's scrollLeft on both sides) before calling it harness or product
+    - `[ ]` L3-g · page 141 at canvas Mobile: HOLE 250px at the end of a line of gx-6 — a second LIVE-canvas hole, like
+      L3-b. The run had the old audit loaded, so no column details; the next run of it carries them
+    - `[>]` L3-c · page 141: 71 × W7a "headings closer than 1rem to the page edge" at -295px / -670px — "Welcome to our
+      school 2 / 3", the rotating hero's slides that are off screen. HARNESS: W7a measured a run's rect, not what a reader
+      sees of it; a waiting slide that starts inside the window (-153px) is cut by the pager's own box. FIXED in
+      `page-audit.js`: the run is clipped by every box that cuts its overflow, and skipped when nothing is left. Guard
+      `page-audit-whitespace.spec.ts` "a pager's slides…" at 375/768/1280/1920 — red on the old audit (3 runs flagged),
+      red with the skip disabled, 55/55 audit specs green. Waiting: page 141 re-run through the UI on the fixed audit
+    - `[x]` L3-d · HARNESS (c-12c): a page error kept only its first line, with no step — `h.js` now keeps the stack and
+      `page.__step`, `uat-pages.js` writes them as `pageErrors` and names its phases (pictures, words, canvas audit per
+      preset, Preview)
   - checklist (written 2026-10-02, BEFORE the pass; HEADED, six windows, built through the UI, canvas AND Preview,
     all four themes, Mobile 375 · Tablet 768 · Laptop 1024 · Desktop 1280 · Wide 1920 + the device presets):
     - `[ ]` (1) c-12a: #185 reproduced through the UI (a long page, 3 × 150 characters typed, repeated), with the full
@@ -793,6 +840,23 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
       that the engine does not act on)
     - `[ ]` regression: F-1's guards, probe-spacing, probe-s2 and L-2's probes show 0 findings; a page saved before L-3
       keeps its widths
+- `[>]` **BATCH R-1 · Research at full width** ← YOU ARE HERE (area: research runs · 4 changes, OPEN 2026-10-02 — the user: "once the
+  testing is done… multiple browsers so we can do it faster… we start this in a NEW session"; the rule is in CLAUDE.md
+  under RULE RS, "research runs as wide as the machine allows")
+  - PAUSED 2026-10-02 ~18:45 for the L-3 stress run (the new rule: no research beside a batch's testing): the CodePen
+    resume (`codepen-resume.sh`, it resumes) and the Awwwards chain (`educo-research/chain.sh`) — it had finished
+    `aw-coll-about-page` (300) and was on `aw-coll-animation-libraries-examples-inspiration --saturate=150`. Restart the
+    chain WITHOUT `--saturate` (the user: "grab everything"); `aw-measure.js` resumes from what it measured
+  - (1) measure the machine with the UAT stopped (CPU, free memory), stop the 3100 / 3200 servers
+  - (2) CodePen at 6 windows: three `cp-tag.js` collectors, each with its own COPY of the cleared profile (`prof-c`) and
+    its own share of the tags; `list:pens-own` (4,144 not read) split into its own collectors, running AT THE SAME TIME
+    instead of after; step back down if CodePen starts asking "are you human"
+  - (3) every other link at full width: `aw-measure.js --jobs=` raised as far as the machine allows (Awwwards items are
+    separate sites), and the queued runs (wf-page-transitions, opl-drop-shadow, aw-coll-transitions, aw-coll-hovers,
+    aw-cat-transitions, aw-cat-animation, the own demo lists) run side by side, not one after another
+  - (4) the three 0-pen CodePen tags under the names CodePen uses (divider · dividers · wave · svg-divider ·
+    stacked-cards · card-stack · stacking); then the tag pages regenerated (`cp-how.js`) and the HAVE / PARTIAL / GAP
+    judgement against the builder
 - `[ ]` **BATCH L-4 · The decided layout changes** (area: rows and grids · 6 changes, queued)
   - c-7 (decided B) / e-9 · MOVED to BATCH F-1 (2026-10-01) — the HOLE at the end of a line is unused space
   - c-8 (decided B) / e-7 / #127b · words broken across lines ("1,000+" in 165px Stat columns) — 4 pages, 58 findings
@@ -1551,6 +1615,26 @@ sent), and my research. Nothing on the layout is done until every line here is c
       page-transition · section-divider · shape-divider · clip-path · hover-effect · hover · cursor · starting-style ·
       popover · dialog · marquee · stacking-cards · reduced-motion. Then a distillation pen by pen: HOW each is done
       → `docs/web-anatomy/codepen/` by technique, HAVE / PARTIAL / GAP
+      - STATUS 2026-10-02 (session 1fc987ff, the user asked "is CodePen done?" — NO): the tag run ENDED at 16:52 having
+        read ~4,800 pens, but with `--saturate=150`: parallax (stopped p149), clip-path (p85), hover (p59), hover-effect
+        (p73), cursor (p63), marquee (p42) were CUT SHORT; pens-own stopped at 570 of 4,714; section-divider,
+        shape-divider and stacking-cards listed 0 pens; sticky-nav was never run. NOTHING distilled yet (the folder
+        holds only `raw/`)
+      - `[>]` RESUMED, NO saturation — the user: "don't start from the beginning… grab everything". 
+        `educo-research/codepen-resume.sh` (a detached Git Bash process): every tag again, already-read pens skipped,
+        then `list:pens-own` for the 4,144 not read. Logs: `educo-research/runs/codepen-resume.out` ·
+        `pens-own-resume.out` · `chain.log` marks each end. Started 2026-10-02 ~17:58
+      - `[ ]` section-divider / shape-divider / stacking-cards list 0 pens twice — try the tag names CodePen uses
+        (divider · dividers · wave · svg-divider · stacked-cards · card-stack · stacking) once the resume ends
+      - `[x]` HOW IT IS DONE, written AS EACH PEN IS READ (the user, 2026-10-02: "the code is right there… get everything
+        together instead of getting them and then going back again"): `scripts/research/cp-how.js` reads a pen's own code
+        and what it did when scrolled / hovered → `how` { summary, techniques (38 kinds: sticky, view() timelines, GSAP,
+        IntersectionObserver, :has(), @starting-style…), the CSS rules that do it verbatim, the script calls }. `cp-tag.js`
+        calls it on every pen it reads; the ~5,300 already read were given theirs from their saved code (no re-opening),
+        and each tag has its page `docs/web-anatomy/codepen/<tag>.md` (techniques by count, then every pen with its how).
+        Regenerate the pages after the run: `node scripts/research/cp-how.js docs/web-anatomy/codepen/raw`
+      - `[ ]` HAVE / PARTIAL / GAP against the builder, technique by technique, into the motion library — once the
+        reading ends (a judgement against our code, not a second read of CodePen)
     - `[ ]` **Box shadows** (the user's links, 2026-10-02 session 1427d547: https://getcssscan.com/css-box-shadow-examples
       · https://onepagelove.com/tag/drop-shadow — every page of the tag, each site's shadows measured live)
       — every example stored with its value; checked against the shadow tokens and Web Design Rule #5 (design
@@ -1721,11 +1805,41 @@ sent), and my research. Nothing on the layout is done until every line here is c
 One entry per session, newest first. Written the moment the user says "new session" (or the context is about to run
 out) — where the session STARTED FROM, where it GOT TO, and where the next one CONTINUES FROM.
 
-### 2026-10-02 · session 1fc987ff · branch `builder/layout-uat` — HANDOVER (context compacted; clean boundary — F-1 all gates green, committing now)
-- **Started from:** session ca50a336's handover — F1-k, the full gate, and commit still to do.
-- **Got to:** F1-k confirmed NOT A BUG (canvas = Preview byte-for-byte, measured by headed probe). Full gate: typecheck 0 · eslint 0 errors · vitest 3,974/3,974 · HEADED UAT 6/6 windows (`uat-f1-headed.js`; 375px fillsLine fixed to relative-width check). RULE Z broken again (single MCP window used first) → memory saved in `feedback_six_windows_uat.md`. All F-1 ledger lines closed. TASK_TREE updated: F-1 `[x]`, all checklist items `[x]`, YOU ARE HERE → L-3.
-- **Continue from:** BATCH L-3 · "Tier-99: React error #185 and the tablet line" — F-1 committed in `e6a30d4`; write the L-3 checklist first.
-- **Next prompt (paste to start):** Branch `builder/layout-uat`, commit `e6a30d4` (F-1). Read `docs/TASK_TREE.md` first (YOU ARE HERE = BATCH L-3). Open BATCH L-3: write its checklist, then fix e-5 (React error #185, 9 pages), e-6 (four columns on one line at Tablet, 8 pages/142 findings = c-11), c-11c (icon cell does not count for the tablet rule). Gate: typecheck 0 · eslint 0 · vitest all · test:fast. NOT started: wrapper dissolve (L-7), outer-edge space (L-8), parity spec (L-9).
+### 2026-10-02 · session 1fc987ff · branch `builder/layout-uat` — HANDOVER (the user: "we start this in a new session"; context compacted once; clean boundary — L-3's testing finished, the gate green, everything committed)
+- **Started from:** session ca50a336's handover — F1-k, the full gate and the F-1 commit still to do.
+- **Got to:** F-1 CLOSED and committed (`e6a30d4`). BATCH L-3 opened with its checklist; the user decided c-12b ("go with
+  your recommendation": measure first; a burst of typing = one Undo, saved when typing stops). L-3 ledger: L3-a #185 NOT
+  REPRODUCED in 12 headed runs, 6 of them stressed (closed with the measurement, the sweep's page-error check is its
+  guard) · L3-c the audit read a pager's hidden slides as words at the page edge — FIXED, guard red-first and
+  mutation-proven · L3-d / L3-e harness: page errors keep stack + step, `--stress` forwarded, the final tree saved,
+  phases named, the HOLE message carries each column's drawn width / flex / min-width · L3-i my own unbolded-marker
+  slip — fixed. OPEN: L3-b (page 332 Tablet hole, live canvas only), L3-f / L3-g (page 141 after typing), L3-h (a 250px
+  Mobile hole on 4 pages after the stress typing), c-11a/b/c not started. CodePen: the user asked "is it done?" — no:
+  the tag run had stopped with `--saturate=150` (six tags cut short, article pens 570 of 4,714, four tags with 0 pens).
+  Resumed without saturation, and the user's ask built in: `scripts/research/cp-how.js` writes HOW each pen is done
+  while its code is in hand; ~5,300 pens given theirs from saved code; 26 tag pages in `docs/web-anatomy/codepen/`.
+  NEW RULE (CLAUDE.md, RULE RS): research runs as wide as the machine allows, split by site, measured first, never
+  beside a batch's testing, one job finished before the next. Research PAUSED for the stress run; servers 3100 / 3200
+  stopped. Gate: typecheck 0 · eslint 0 errors (105 warnings) · vitest 213 files · test:fast 789.
+- **Continue from:** BATCH R-1 (YOU ARE HERE) — research at full width; then back to L-3 (paused, its open lines listed
+  on its batch line).
+- **Next prompt (paste to start):** "Branch `builder/layout-uat`. Read CLAUDE.md, then `docs/TASK_TREE.md` — YOU ARE HERE
+  is BATCH R-1 · Research at full width. Do R-1 in order: (1) measure the machine (CPU, free memory; no UAT, no
+  `next start` running); (2) CodePen at 6 windows — three `cp-tag.js` collectors, each with its own COPY of the profile
+  `prof-c` (path in `educo-research/codepen-resume.sh`) and its own share of the tags in that script, plus
+  `list:docs/web-anatomy/research-runs/pens-own.list.json` (4,144 not read) split into its own collectors at the same
+  time; NO `--saturate`; pens already read are skipped and every new pen gets its `how` from `cp-how.js`; step down if
+  CodePen asks 'are you human' (the user ticks it once in that window); (3) the Awwwards chain
+  `educo-research/chain.sh` restarted WITHOUT `--saturate` (it was on `aw-coll-animation-libraries-examples-inspiration`),
+  and the other queued lists side by side, as wide as the machine allows; (4) the three 0-pen tags under CodePen's own
+  names (divider, dividers, wave, svg-divider, stacked-cards, card-stack, stacking), then
+  `node scripts/research/cp-how.js docs/web-anatomy/codepen/raw` to refresh the tag pages, then HAVE / PARTIAL / GAP
+  against the builder. Report progress as numbers (pens read per tag, sites measured). When R-1 closes, back to BATCH
+  L-3 (paused): L3-h first (one stressed page with the new HOLE details), then L3-b, L3-f, L3-g, the page-141 re-run for
+  L3-c, then c-11a (`packRowLines([70.04, 9.99, 10.14, 10.02])` guard red first), c-11b, c-11c (decided B). Standing
+  decisions: c-12b measure first, then a burst of typing = one Undo; c-11c B. Traps: a 'killed' notice on a background
+  shell is not the process dying; research never runs beside a UAT; vitest and Playwright never together; the YOU ARE
+  HERE marker is plain text after the arrow."
 
 ### 2026-10-02 · session 1427d547 · branch `builder/layout-uat` — HANDOVER (recommended and agreed: the context is very long — a full day of research, ~40 agents; clean boundary — research written, verified and committed, fixing next)
 - **Started from:** 7af7f72 — the Awwwards Animation research about to run; F-1 paused, code uncommitted.

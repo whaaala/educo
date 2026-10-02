@@ -50,7 +50,7 @@ if (!process.argv.includes('--one')) {
   const next = (slot) => {
     if (!queue.length) { if (!running) report(); return; }
     const p = queue.shift(); running++;
-    const c = spawn(process.execPath, [__filename, '--one', `--idx=${p.idx}`, `--slot=${slot}`, ...(DRESSED ? [`--plan=${PLAN}`] : []), ...process.argv.filter((a) => a.startsWith("--sizes="))], { env: process.env, stdio: ['ignore', 'pipe', 'pipe'] });
+    const c = spawn(process.execPath, [__filename, '--one', `--idx=${p.idx}`, `--slot=${slot}`, ...(DRESSED ? [`--plan=${PLAN}`] : []), ...process.argv.filter((a) => a.startsWith("--sizes=") || a === "--stress")], { env: process.env, stdio: ['ignore', 'pipe', 'pipe'] });
     let buf = ''; c.stdout.on('data', (d) => { buf += d; }); c.stderr.on('data', (d) => { buf += d; });
     c.on('exit', () => { running--; done.push(p.idx); const last = buf.trim().split('\n').pop(); console.log(`[${done.length}/${LIST.length}] ${p.site}/${p.page}: ${last}`);
       const bad = serverProblem(); if (bad) { console.log(`SERVER LOST after ${p.site}/${p.page} — no more pages started; any failure since the server went is NOT a product finding: ${bad}`); queue.length = 0; }
@@ -141,7 +141,21 @@ const canvasGeo = (page) => page.evaluate(() => {
         if (line.length > 8) break; }
       return line; }));
     await H.panel(page, false);
-    R.images = await H.fillImages(page); R.words = await typeWords(page);
+    page.__step = 'fill pictures'; R.images = await H.fillImages(page); page.__step = 'type words'; R.words = await typeWords(page);
+    // c-12a: --stress types FAST into the page's words while the screen size changes under it — the race React #185 was inferred from
+    if (process.argv.includes('--stress')) {
+      page.__step = 'stress typing'; const LONG = 'The quick brown fox jumps over the lazy dog while the school choir sings. '.repeat(3).slice(0, 150);
+      const texts = page.locator('[data-box-id] [contenteditable]'); const nT = Math.min(await texts.count(), 12);
+      for (let round = 0; round < 3; round++) for (let t = 0; t < nT; t++) {
+        const loc = texts.nth(t); await loc.scrollIntoViewIfNeeded().catch(() => {}); await loc.click().catch(() => {});
+        for (let r = 0; r < 3; r++) await page.keyboard.type(LONG, { delay: 0 });
+        await page.keyboard.press('Escape');
+        await page.getByRole('button', { name: t % 2 ? /^Tablet/ : /^Desktop/ }).first().click().catch(() => {});
+      }
+      R.stressed = nT;
+    }
+    // the tree AFTER the words (the one the audit measures) — the one above is from before them
+    fs.writeFileSync(path.join(OUTDIR, `page-${idx}.final.site.json`), await page.evaluate(() => localStorage.getItem('educo_box_site_v1') || ''));
     R.missedDrags = page.__missedDrags || 0; R.heroRetries = page.__heroRetries || 0; R.cameBack = page.__cameBack || 0; R.widerToSize = page.__widerToSize || 0; R.gaps = page.__gaps || [];
     R.blocks = await page.evaluate(() => document.querySelectorAll('[data-box-id]').length); R.buildSecs = Math.round((Date.now() - t0) / 1000);
     // The tree the UI produced — kept to READ when diagnosing (never loaded back to test anything: RULE Y).
@@ -153,6 +167,7 @@ const canvasGeo = (page) => page.evaluate(() => {
     // ── 1 · the canvas at every preset ──
     const canvas = {};
     for (const p of PRESETS) {
+      page.__step = `canvas audit ${p}`;
       await page.getByRole('button', { name: p }).first().click(); await page.waitForTimeout(700);
       for (const m of await canvasAudit(page)) find('err', `canvas ${p}`, m);
       canvas[p] = await canvasGeo(page);
@@ -163,6 +178,7 @@ const canvasGeo = (page) => page.evaluate(() => {
     const pcText = (await pc.textContent().catch(() => '')) || ''; const pcN = +(pcText.match(/\d+/)?.[0] ?? 0);
     if (pcN) find('warn', 'page check', `${pcN} things need the user's words (expected: empty text/pictures)`);
     // ── 3–5 · the real Preview ──
+    page.__step = 'Preview';
     await page.getByRole('button', { name: 'Preview', exact: true }).first().click();
     await page.waitForSelector('iframe', { timeout: 20000 }); await page.waitForTimeout(1500);
     await page.keyboard.press('h'); await page.waitForTimeout(400); // the bar floats over the page — step it aside
@@ -208,7 +224,7 @@ const canvasGeo = (page) => page.evaluate(() => {
       }
     }
   } catch (e) { R.crash = e.message.split('\n')[0]; await shot(page, 'crash').catch(() => {}); }
-  if (errs.length) find('err', 'console', `page errors: ${[...new Set(errs)].slice(0, 3).join(' / ')}`);
+  if (errs.length) { find('err', 'console', `page errors: ${[...new Set(errs)].slice(0, 3).join(' / ')}`); R.pageErrors = page.__errDetails; }
   R.secsTotal = Math.round((Date.now() - t0) / 1000); save(); await browser.close();
   const e = R.findings.filter((f) => f.kind === 'err');
   console.log(`${R.buildError ? 'BUILD FAILED ' + R.buildError + ' · ' : ''}${R.crash ? 'CRASH ' + R.crash + ' · ' : ''}${e.length} errors, ${R.findings.length - e.length} warnings · ${R.blocks} blocks, ${R.sizes} Preview sizes, ${R.secsTotal}s`);

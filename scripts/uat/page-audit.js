@@ -141,6 +141,10 @@ function auditDoc(opts) {
     for (let t = tw.nextNode(); t; t = tw.nextNode()) { const e = t.parentElement; if (!t.textContent.trim() || !e || !e.checkVisibility() || e.closest('.eu-skip') || pinned(e)) continue; const rg = document.createRange(); rg.selectNodeContents(t); const r = rg.getBoundingClientRect(); if (r.width > 0) runs.push({ e, r }); } }
   let nearPage = 0, nearBox = 0; const npEx = [], nbEx = [];
   for (const { e, r } of runs) {
+    // what a reader can SEE of the run: clipped by every box that cuts its overflow — a pager's waiting slide is cut to nothing (L3-c)
+    let cl = Math.max(r.left, 0), cr = Math.min(r.right, W);
+    for (let a = e.parentElement; a && a !== document.body && cl < cr; a = a.parentElement) if (getComputedStyle(a).overflowX !== 'visible') { const b = a.getBoundingClientRect(); cl = Math.max(cl, b.left); cr = Math.min(cr, b.right); }
+    if (cr - cl < 1) continue;
     let box = e; while (box && box !== document.body && !edged(box)) box = box.parentElement;
     const d = Math.min(r.left, W - r.right);
     if (d < rem - 0.5) { nearPage++; if (npEx.length < 3) npEx.push(ex(e, ` ${Math.round(d)}px`)); }
@@ -271,7 +275,8 @@ async function canvasAudit(page) {
         // width it is DRAWN at, not 14rem: with the 14rem assumption a 300px column waiting under 230px of free space read as a
         // hole, and it could never have fitted. Only a 14rem-floored block may be assumed to shrink to 14rem.
         const needs = getComputedStyle(next).minWidth === 'min-content' ? nextW : Math.min(nextW, 224 * Z);
-        if (free >= needs + gap + 2 && free > 40) out.push(`HOLE ${Math.round(free / Z)}px at the end of a line of ${row.getAttribute('data-box-id').slice(-4)} while a block waits below`); }
+        // L3-b: what each column was DRAWN at — a hole the reloaded tree does not have is only traceable from the live styles
+        if (free >= needs + gap + 2 && free > 40) out.push(`HOLE ${Math.round(free / Z)}px at the end of a line of ${row.getAttribute('data-box-id').slice(-4)} while a block waits below [${kids.map((k) => { const s = getComputedStyle(k); return `${k.getAttribute('data-box-id').slice(-4)} w${Math.round(k.getBoundingClientRect().width / Z)} flex(${s.flex}) min(${s.minWidth})`; }).join('; ')}]`); }
     }
     const sc = document.scrollingElement; if (sc.scrollWidth - sc.clientWidth > 1) out.push(`the editor scrolls sideways by ${sc.scrollWidth - sc.clientWidth}px`);
     const collapsed = Array.from(document.querySelectorAll('[data-box-id]')).filter((e) => { const r = e.getBoundingClientRect(); return e.textContent.trim() && (r.width < 2 || r.height < 2) && getComputedStyle(e).display !== 'none'; }).length;

@@ -8,7 +8,9 @@ const PACE = process.argv.includes('--watch') ? 60 : process.argv.includes('--he
 async function open({ headed = process.argv.includes('--headed'), w = 1600, h = 1000, pos = null } = {}) {
   const browser = await chromium.launch({ headless: !headed, slowMo: headed ? 30 : 0, args: pos ? [`--window-position=${pos[0]},${pos[1]}`] : [] });
   const page = await browser.newPage({ viewport: { width: w, height: h } });
-  const errs = []; page.on('pageerror', (e) => errs.push(e.message.split('\n')[0]));
+  // c-12c: the first line names the error; the stack and the step it happened on are what make it traceable
+  const errs = []; page.__errDetails = [];
+  page.on('pageerror', (e) => { errs.push(e.message.split('\n')[0]); page.__errDetails.push({ msg: e.message, stack: e.stack || '', step: page.__step || null }); });
   await page.addInitScript(() => { try { if (!sessionStorage.getItem('kept')) { localStorage.clear(); sessionStorage.setItem('kept', '1'); } } catch {} });
   await page.goto((process.env.BASE || 'http://localhost:3100') + '/website/box-demo', { waitUntil: 'load' });
   await page.waitForFunction(() => { const b = Array.from(document.querySelectorAll('button')).find((x) => x.getAttribute('aria-label') === 'Open blocks panel'); return !!b && Object.keys(b).some((k) => k.startsWith('__reactProps')); }, null, { timeout: 60000 });

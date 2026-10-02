@@ -4,7 +4,7 @@
 // sticky / fixed elements read from the DOM, two scroll steps and a hover compared (what moved, and how), two
 // screenshots, and its FULL html / css / js saved → <outDir>/<tag>.json. Resumable (pens already read are skipped).
 const { chromium } = require(require.resolve('playwright', { paths: [process.cwd()] }));
-const fs = require('fs'); const path = require('path');
+const fs = require('fs'); const path = require('path'); const { how } = require('./cp-how.js');
 const [,, outDir, profile, shots, ...tags] = process.argv;
 const cursor = (n) => Buffer.from(`d=1&o=0&p=${n}`).toString('base64');
 fs.mkdirSync(outDir, { recursive: true }); fs.mkdirSync(shots, { recursive: true });
@@ -67,6 +67,8 @@ async function readPen(p, url, tag) {
     const target = await fr.evaluate(() => { const el = document.querySelector('a, button, [class*=card], [class*=btn], img, li'); if (!el) return null; const r = el.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2, what: el.tagName.toLowerCase() + '.' + (el.className || '').toString().split(' ')[0] }; }).catch(() => null);
     if (target) { const h0 = await fr.evaluate(LOOK); await p.mouse.move(box.x + target.x, box.y + target.y); await p.waitForTimeout(700); rec.onHover = { on: target.what, ...diff(h0, await fr.evaluate(LOOK)) }; }
   } catch (e) { rec.err = e.message.slice(0, 100); }
+  // HOW it is done, written while the code is in hand — never a second pass (the user, 2026-10-02)
+  if (!rec.err) rec.how = how(rec);
   return rec;
 }
 

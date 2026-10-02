@@ -158,6 +158,9 @@ const RULES: [name: string, mustSay: RegExp][] = [
   ["…every item is opened, run and read — a list is not research", /EVERY ITEM IS OPENED, RUN AND READ/],
   ["RULE RS — research together (the user's + the session's own), an 'enough' checklist signed off, then build", /RULE RS — RESEARCH TOGETHER, THEN BUILD[\s\S]*"enough" checklist[\s\S]*signed off by the user/],
   ["…a new session / new area with no signed 'enough' checklist: the session reminds the user research comes first", /THE SESSION REMINDS THE USER[\s\S]*needs a full\s+research first/],
+  ["…research runs as wide as the machine allows, split by site, measured first", /RESEARCH RUNS AS WIDE AS THE MACHINE ALLOWS[\s\S]*split by SITE[\s\S]*\*\*Measured first:\*\*/],
+  ["…one job at a time, finished — never beside an open batch's testing", /\*\*One job at a time, finished:\*\*[\s\S]*not started beside an open batch's testing/],
+  ["…a run resumes where it stopped and reads HOW each item is done in the same pass", /resumes from where it stopped[\s\S]*HOW each item is done in\s+the same pass/],
   /** The user, 2026-09-28: MDN's element reference and the DOM Element interface are stored and followed everywhere. */
   ["MDN is the source for the elements and the DOM", /MDN IS THE SOURCE FOR THE ELEMENTS AND THE DOM/],
   ["…every element stored in html-semantics.md, the DOM Element interface in dom-element-api.md", /docs\/web-anatomy\/html-semantics\.md[\s\S]*docs\/web-anatomy\/dom-element-api\.md/],

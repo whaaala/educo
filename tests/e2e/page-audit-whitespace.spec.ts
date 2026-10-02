@@ -41,6 +41,11 @@ for (const width of [375, 768, 1280, 1920]) {
       expect(found.join("\n")).toMatch(/^W7a \d+ runs of words touching the edge of their coloured box/m);
     });
 
+    test("a pager's slides waiting off screen are not words near the page edge (L3-c)", async ({ page }) => {
+      const slide = (n: number) => section({}, [text({ text: `Welcome to our school ${n}` })]);
+      expect(await auditOf(page, [section({ pager: true }, [slide(1), slide(2), slide(3)])], width)).toEqual([]);
+    });
+
     test("two sections with their space set to 0: words closer than 1rem (W7b)", async ({ page }) => {
       const tight = { paddingTop: 0, paddingBottom: 0 };
       // Two blocks straight on the page, each a section of it.

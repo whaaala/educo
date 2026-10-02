@@ -486,6 +486,17 @@ Run through this checklist BEFORE telling the user it's done:
     "enough" checklist. If there is none, its reply SAYS so before anything else — "this is a new area; it needs a full
     research first (yours and mine) before we implement anything" — and asks the user for their sources. It never starts
     implementing a new area on the strength of the user not mentioning research.
+  - **RESEARCH RUNS AS WIDE AS THE MACHINE ALLOWS, AND ONE JOB IS FINISHED BEFORE THE NEXT (the user, 2026-10-02: "use
+    as many browsers as you can… so we can move on to other stuff"; "we don't have to keep randomly doing different
+    things").** Every crawl, collector and measurer (CodePen, Awwwards, every gallery and link) runs in parallel browser
+    windows, never one: split by SITE — different sites in parallel freely; one site (CodePen) in several collectors, each
+    with its own copy of the cleared profile and its own share of the items — and widened until the machine is the limit,
+    not the plan. **Measured first:** CPU and free memory are read before widening; nothing is widened while a UAT pass
+    is running (its windows come first, RULE Z), and a site that starts asking "are you human" is stepped back down.
+    **One job at a time, finished:** a research run is not started beside an open batch's testing, and the session does
+    not hop between half-done jobs — it finishes one (testing → commit), frees the machine, then runs the next at full
+    width. Every run resumes from where it stopped (items already read are skipped), and reads HOW each item is done in
+    the same pass, while its code is in hand — never a second trip back to the site.
 - **RULE RK — THE TWO RISKS ARE MITIGATED BY RULE, NEVER LEFT TO CHANCE (MANDATORY — the user, 2026-09-28: "make sure
   where the risk sits is addressed… minimise the risk to the minimum").** Named in `docs/RISKS.md` and re-read at the start
   of every area of work. The two risks: **scope** (rules for layout, components, semantics, documentation, budgets,
