@@ -766,10 +766,33 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
       after the fixes, after reload, canvas = Preview
     - `[x]` regression: probe-spacing (S-1), probe-s2 (S-2), L-2's probes — 0 findings; a page saved before F-1 keeps
       every size it CHOSE (hand widths, set gaps); space nobody chose fills there too (decided in the session, reversible)
-- `[ ]` **BATCH L-3 · Tier-99: React error #185 and the tablet line** (area: engine rules · 3 changes, queued) ← **YOU ARE HERE**
+- `[>]` **BATCH L-3 · Tier-99: React error #185 and the tablet line** (area: engine rules · 4 changes, OPEN 2026-10-02) ← **YOU ARE HERE**
   - e-5 · React #185 (maximum update depth) — 9 pages
   - e-6 · four columns on one line at Tablet — 8 pages, 142 findings (= c-11)
   - c-11c (decided B) · an icon cell does not count for the tablet rule
+  - changes: (1) e-5/c-12 · #185 found through the UI and fixed at its root · (2) c-11a · `packRowLines` treats a line
+    that rounds to 100.4% as one line, as its own comment says · (3) c-11b · find out what stores rows over 100% and stop
+    it · (4) c-11c · decided B in `tabletPlaces` AND the audit's L6 check, in the same change
+  - `[?]` c-12b · the user decides: typing currently re-renders and saves the whole site on every key. Measure the time
+    per key at 150 and 520 blocks FIRST. Batching the keys would change what one Undo takes back while typing. Not built
+    until the user answers
+  - LEDGER of L-3: (empty)
+  - checklist (written 2026-10-02, BEFORE the pass; HEADED, six windows, built through the UI, canvas AND Preview,
+    all four themes, Mobile 375 · Tablet 768 · Laptop 1024 · Desktop 1280 · Wide 1920 + the device presets):
+    - `[ ]` (1) c-12a: #185 reproduced through the UI (a long page, 3 × 150 characters typed, repeated), with the full
+      stack and the step it happened on kept. The guard spec is RED first (a `pageerror` matching #185 fails it)
+    - `[ ]` (1) c-12c: the harness keeps a page error's whole stack and the step it happened on (`h.js`, `uat-pages.js`)
+    - `[ ]` (1) after the fix: 0 #185 on all 9 e-5 pages (+ idx 34, 43, tier-95 page 0, tier-80 page 26), run in
+      parallel; typing still works, Undo still works and the text survives a reload
+    - `[ ]` (2) guard `packRowLines([70.04, 9.99, 10.14, 10.02])` is red before the fix and green after;
+      at 768, each column's computed `flex` and `margin-right` read the same on the canvas and in the Preview
+    - `[ ]` (3) the rows that store more than 100% are counted in fresh trees; what writes them is found through the UI
+      (a drag or the dresser) and fixed, with a guard
+    - `[ ]` (4) a line of three icon cells + one cell of words at Tablet stays on one line; two cells of words + two
+      icon cells are rearranged. The engine and the audit agree on every one of the 8 e-6 pages (0 L6 findings left
+      that the engine does not act on)
+    - `[ ]` regression: F-1's guards, probe-spacing, probe-s2 and L-2's probes show 0 findings; a page saved before L-3
+      keeps its widths
 - `[ ]` **BATCH L-4 · The decided layout changes** (area: rows and grids · 6 changes, queued)
   - c-7 (decided B) / e-9 · MOVED to BATCH F-1 (2026-10-01) — the HOLE at the end of a line is unused space
   - c-8 (decided B) / e-7 / #127b · words broken across lines ("1,000+" in 165px Stat columns) — 4 pages, 58 findings
