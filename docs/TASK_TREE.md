@@ -198,9 +198,13 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
     words closer than the gutter floor to the page or their coloured box's edge · (3) audit check: sections closer than
     the section floor · (4) the old "never a default" wording in the four places left (layout feature 347,
     `text-is-reachable.spec.ts` 34, design-foundation `02` 485, memory `feedback_radius_and_spacing.md`)
-- **← YOU ARE HERE: BATCH F-1 (the page uses its space)** — L-2 CLOSED 2026-10-01, `2bcc73f` (canvas = Preview: the zoom drawn
+- **← YOU ARE HERE (2026-10-02): RESEARCH for the layout's definition of done (1.1.5) — the Awwwards "Animation" sites,
+  every one in full detail (script written, not run — see 1.1.5 → "Section transitions · animation · sticky · fixed").
+  BATCH F-1 is PAUSED by the user's choice, code UNCOMMITTED in the working tree (fixes A·B·C + F1-b…j coded and
+  headed-checked; F1-k OPEN; gate not run).** Earlier note: BATCH F-1 (the page uses its space) — L-2 CLOSED 2026-10-01, `2bcc73f` (canvas = Preview: the zoom drawn
   with `transform`, a one-column band has no gutter, header/footer lines spread, editable text measured as published, #144).
   Next: F-1's change (1), MEASURE FIRST — the unused-space audit check — then the fixes by class. (S-3 queued)
+  Checklist written 2026-10-01 (session ca50a336); now coding W19 in `scripts/uat/page-audit.js`.
 - `[ ]` **BATCH S-3 · The editor's Page check warns about space** (area: Page check warnings · 2 changes, queued
   2026-09-30): (1) the in-app Page check reports words closer than 1rem to the page edge or touching their coloured box
   (W7a) and two sections closer than 1rem (W7b), as warnings, the way `page-audit.js` measures them — the scenario
@@ -670,6 +674,99 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
     ENUMERATES the palette and the component catalogue — like `corner-radius.test.ts` and `units-not-pixels.test.ts` — so
     a component, template or LLM-built page added later is covered the day it appears; the audit check runs on every
     swept page
+  - (1) BUILT 2026-10-01: `page-audit.js` W19 (warn) — W19a a line packed to one side (only space a visitor SEES: a line
+    that wrapped, or a painted block / component with bare room beside it), W19b a block narrower than its column, W19c a
+    painted column shorter than its row, W19d the window empty under the last block; `chosenIds(site)` skips every block
+    whose width (widthByHand), height, margin or line arrangement (justify, unset until aligned — L2-d) the person set.
+    Guard `tests/e2e/page-audit-unused-space.spec.ts` (56, in test:fast), mutation-proven both ways (skip off → 24 red;
+    report off → 24 red). `uat-pages.js --sizes=rungs` (5 rungs + both sides of each breakpoint) for the measuring pass;
+    `w19-summary.js` sorts findings into classes; `w19-calibrate.js` tuned it on 71 saved exports.
+    Measured cost: ~520s a page through the UI → every tier is ~14h in six windows. ORDER (RULE Z 80/20): tier 80 + 95
+    first to find the classes, tier 99 as the sweep that proves the fixes.
+  - CLASSES found so far (tier 80, first 6 pages; saved exports): (A) a component that hugs its words in its line — the
+    FAQ Accordion (`createComponent` stores `width: "auto"` → `flex: 0 0 auto; align-self: flex-start`; the old "every
+    component hugs" rule in `lib/educo-ui/registry.ts` `defaultComponentWidth` is what F-1 reverses — which kinds keep
+    hugging by design, Button/Badge/Icon/Rating, to be listed from the measurement) · (B) two unsized columns that WRAP
+    because their 14rem floors do not fit (768: 2 × (224+14) > 461) each stay at their share alone on a line, grow 0 —
+    `aloneOnItsLine` packs at the DESKTOP widths, so a wrap caused at a narrower rung is never seen; c-7 B; must keep
+    rule 1 (space opened at an outer edge stays where the shares hold) · (C) header links wrapping on a phone
+  - FIX for (B), designed 2026-10-01 (to code when the run ends — no source edit during a run): in `childStyle`
+    (`lib/box-model.ts` ~5337) an unsized column grows when alone on its line (as today) OR when NOBODY sized any column of
+    its band — the same "any hand-sized column" test line 5353 uses. A band nobody sized holds no chosen space, so grow
+    only spends what a wrap, a floor or a deleted column left; a band with a hand-sized column keeps today's rule, so
+    rule 1 is untouched; the canvas writes `widthByHand` on the first frame of a drag (BoxCanvas 2522/2538), so a drag
+    behaves as today. REJECTED: a container query per band (every band a size container — the unregistered `--box-u`
+    re-measures every band's spacing, E0-e; and rule 1 still broken below its threshold). Checklist adds: a drag started
+    in a band drawn wider than stored opens no gap beside another column (rule 3), canvas = Preview
+  - MEASURED (tier 80, 64 pages, build FD2OyO, every rung + both sides of each breakpoint): 13 classes, all three of
+    (A) a component hugging its words (Accordion, 5 pages) · (B) columns left at their share after a wrap (img 30 pages,
+    p 23, img+img 16 — Tablet, Laptop, 600/900 breakpoints) · (C) links wrapping on a phone (29 pages). W19b/c/d: none.
+  - FIXES (each guard red without its fix, green with it):
+    - (A) `defaultComponentWidth`: a new component fills its line unless `HUGS_BY_NATURE` (Stat, Badge, Rating) — the
+      old "every component hugs" rule REVERSED (the user's F-1 words); `component-fills-its-line.test.ts` enumerates the
+      catalogue; the two tests that pinned the old rule updated
+    - (B) c-7 B: in `childStyle` an unsized column grows when NOBODY sized any column of its band (a width set at the
+      rung counts — the #78 tablet test caught my first version); saved pages included, since only unchosen space
+      moves (the user may reverse this); 5 arrangements × sized/unsized in the guard
+    - (C) the user chose: links on a PHONE 1rem apart (`LINK_GAP_ACROSS_PHONE`), 2rem from 600 up; a chosen gap kept;
+      the Inspector's fallback reads the same constants (it said 2rem on a phone)
+  - LEDGER of F-1:
+    - `[x]` F1-a · tier-80 page 1 BUILD FAILED (click timeout) in parallel — NOT A BUG, measured: built ALONE (284
+      blocks, 561s) on the same build; it was load
+    - `[ ]` F1-b · **sticky header + sticky sidebar** (4 tier-80 pages, canvas AND Preview): the sidebar stuck at top 0
+      UNDER the header (z 30/30) and its heading painted over the logo; the header had no colour of its own so the page's
+      words showed through it ("Nillside Schp"); a click aimed at a block landed on the bar → page 13 "could not select".
+      FIXED: `pinStackPass` queues a bar behind every earlier bar whose holder CONTAINS it (holder found by id — a
+      landmark can sit between), `pinStackNeeded` ships the script for that pair; `pagePinCover` (applied LAST in both
+      engines): a bar pinned to the page is z 31 and takes `--eu-color-bg` when it has no colour. Guard
+      `pins-stack.spec.ts` F1-b × painted/unpainted header (each half mutation-proven). Waiting: page 13 through the UI
+    - `[ ]` F1-c · **Delete did nothing after any toolbar button was clicked** — clicking a block left the focus on the
+      device preset, and Z1-j gives a focused control its keys. FIXED in `onSelectDown`: a block picked with the pointer
+      blurs a control outside the canvas. Guard `select-takes-keys.spec.ts` (3 presets) red on the old build
+    - `[ ]` F1-d · **links dropped side by side on the page each took the page gutter as padding** (106px boxes round 61px
+      links; 3+1 on a phone). FIXED: `sectionContent` — a menu line's links are not sections; `pageBandInset` gives the
+      line the gutter and section space once. Guard in `link-spacing.test.ts` (mutation-proven)
+    - `[ ]` F1-f · HARNESS: probe-f1 measured the newest LEAF (the "New" inside a Badge) and held a dragged Accordion to
+      the "hugs" bar — now the page band's column, and "keeps its dragged width". 40/40 and 10/10 per theme
+    - `[ ]` F1-g · HARNESS: `H.select` clicked its fallback point when nothing of the target was visible — under a sticky
+      header that now covers what scrolls beneath it, it selected the logo (page 13). It scrolls the target to the centre
+    - `[ ]` F1-h · HARNESS: the audit grouped a row into LINES by each block's top (±2px) — a centred header's logo and menu
+      read as three lines: false HOLEs on every page with a header since L-2. A line = blocks that OVERLAP down the page
+      (3 places in `page-audit.js`). Guard in `page-audit-unused-space.spec.ts`, mutation-proven (12 red on the old)
+    - `[x]` F1-i · NOT A BUG, measured: page 38 "the drop added nothing" under 5 windows; ALONE it built (212 blocks)
+    - `[ ]` F1-j · **hand-sized columns whose shares fill the line WRAPPED at a laptop/tablet** (a longest word floored the
+      narrow one: 16.74/26.38/56.86 on page 1, 24.67/75.32 on 32, 92.43/7.56 on 38) and left a hole nobody made. DECIDED
+      by the user 2026-10-01: **"fill after a wrap"** — rule 2 now reads "the size you drag is the size you get, while
+      the line holds it" (memory `feedback_layout_rules_agreed.md`). FIXED: `bandHoldsChosenSpace` — only a stored line
+      whose shares are short of 100% (an outer edge dragged in) holds chosen space; elsewhere every column may take what
+      its line leaves. Guard: 5 arrangements × hand-filling / outer-edge-in (mutation-proven, 4 red); the 1D and rule-2
+      unit tests updated to the decision
+    - `[ ]` F1-e · **a Stat, Badge or Rating dropped on the page was forced full width** (`normalizeRowBands` made every
+      container 100%; the column floor gave them 14rem, and on a phone 100%: a pill across the line, stars spread). FIXED:
+      both skip `HUGS_BY_NATURE`; guard enumerates the catalogue through the drop pass at every rung (mutation-proven)
+    - `[ ]` F1-k · **tier-80 page 38 at Tablet: three HOLES left in lines, and canvas ≠ Preview by 24px on 21 blocks**
+      (R11) — found in the final HEADED UAT, reproduced ALONE (so not load). A probe of the saved tree showed band m-1p
+      identical in canvas and Preview, so the source is still unknown. OPEN: trace it, fix at the root, guard it, re-run
+      page 38 headed — F-1 cannot close before it
+  - checklist (written 2026-10-01, BEFORE the pass; each at Mobile 375 · Tablet 768 · Laptop 1024 · Desktop 1280 · Wide
+    1920 + the device presets, canvas AND Preview, all four themes, HEADED, built through the UI, six windows):
+    - `[ ]` (1) the audit check W19 exists and is honest: on a page built to waste space (an Accordion alone in a band, a
+      line of two hand-less columns at 30% + 30%, a short page) it reports each class; on the same page with the space
+      CHOSEN (a width dragged by hand, a height set, a margin set) it reports nothing — red-then-green spec
+    - `[ ]` (1) W19 run over tier 80 · 95 · 99 through the UI, every rung; the findings sorted into classes, the classes
+      written into (3)–(6) with their page counts
+    - `[ ]` (2) the HOLE: a column nobody sized takes what is left of the line — 0 HOLE on the canvas and 0 W19 line
+      findings on the pages that had them, at every rung; a column sized by hand keeps its size
+    - `[ ]` the FAQ Accordion fills its column at every rung, every theme (was ~545px of 1280); every catalogue
+      component × design dropped in a column fills it across unless it is a hugging kind by design (Button, Badge,
+      Icon) — the guard ENUMERATES the catalogue
+    - `[ ]` a phone burger header: logo, burger and "Apply now" on one line at 375 (or the decided arrangement), no lone
+      item on a second line
+    - `[ ]` a short page: no empty band under the footer at any rung (or the footer meets the window's bottom)
+    - `[ ]` space set on purpose survives everything above: a dragged width, a set height, a set gap/margin — unchanged
+      after the fixes, after reload, canvas = Preview
+    - `[ ]` regression: probe-spacing (S-1), probe-s2 (S-2), L-2's probes — 0 findings; a page saved before F-1 keeps
+      every size it CHOSE (hand widths, set gaps); space nobody chose fills there too (decided in the session, reversible)
 - `[ ]` **BATCH L-3 · Tier-99: React error #185 and the tablet line** (area: engine rules · 3 changes, queued)
   - e-5 · React #185 (maximum update depth) — 9 pages
   - e-6 · four columns on one line at Tablet — 8 pages, 142 findings (= c-11)
@@ -1026,6 +1123,158 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
   - `[x]` **CONFIRMED by the user 2026-09-29: the ORIGINAL list** — wrapper dissolve · column outer-edge space ·
     parity spec extended
 
+### 1.1.5 · LAYOUT — DEFINITION OF DONE (DRAFT — to be FROZEN once the user approves)
+
+The one list that says when the layout is finished. Sources: the user's Advanced CSS course (stored, technique by
+technique, in `docs/web-anatomy/advanced-css/` — README's gap list AC-1…AC-36), the user's own list (to be added), and
+my research (to be added). Nothing on the layout is done until every line here is closed or the user has decided it.
+Proposed sorting (the user's call, 2026-10-01): **MUST** · **DECIDE** (one by one with the user) · **CHECK** (a UAT line,
+not a feature) · **LATER** (component / motion / typography — moved to 1.3 when the layout closes).
+
+**What the course taught us (2026-10-01, read this first):**
+- The builder already does most of it RIGHT, often better than the 2018 course: rem not px, `gap` not margins (the
+  course's "Flexbox has no gap" is out of date), `minmax(0, 1fr)` so a long word never widens a column, media never
+  overflow, heights are floors not caps, placement stored per block (so nothing is renumbered when a rung changes the
+  layout), the reader's text size is never overridden (the course's "root font-size 50% at a breakpoint" is rejected —
+  WCAG 1.4.4).
+- The real gaps are few and specific: the six under MUST. They are what modern real pages use most and the builder
+  cannot build: auto-fit grids, half-bleed, subgrid, push / grow space, height-aware sizing, chosen proportions.
+- Most of the course's effects are NOT layout (hover, flip cards, gradients, filters, component designs) — they wait
+  for the component and motion work (LATER), so the layout list stays finite.
+- Accessibility traps the course itself fell into, which the builder must guard: an `h3` eyebrow before its `h2`, a
+  nameless icon-only button, `<sub>` for m², information shown only on hover, visual order that contradicts reading
+  order (`order`, explicit grid placement, `dense`).
+
+- `[ ]` **MUST — common on real pages, missing today**
+  - `[ ]` AC-33 · **"as many as fit, each at least X rem" grids** — a card / feature / gallery grid adapts to its OWN
+    width wherever it sits, no breakpoint (`repeat(auto-fit, minmax(min(100%, X rem), 1fr))`); today only the Accordion
+    uses it, grid blocks step a fixed count at the window rungs. Decide whether it is the DEFAULT for card grids; saved
+    pages keep their count; how spans behave in it
+  - `[ ]` AC-35 · **half-bleed** — a picture runs off the window edge while the text beside it starts on the page's
+    content column (Nexter's story / header); today a band is contained or full width, and a two-cell row splits the
+    WINDOW, so the text drifts from the content edge
+  - `[ ]` AC-36 · **subgrid** — titles, texts and buttons line up ACROSS a row of cards whatever the text lengths; and a
+    nested grid's columns snap to the page's content columns. Ships in every current engine; never written today
+  - `[ ]` AC-26 · **push / grow space in a stack** — `space-between` in a column (a sidebar's legal line at the bottom,
+    card buttons at the bottom), and space that GROWS between particular blocks of a fixed-height band (a hero: logo
+    top, message middle, press strip bottom); the spacer block is a fixed height today
+  - `[ ]` AC-3 · **height-aware sizing** — any share of the screen height (80%, 95%), with `svh` / `dvh` for phone
+    browser bars; *Full screen* UNDER a pinned header (`calc(100svh - bar)`); spacing that shrinks on SHORT screens;
+    today `screenHeight` is half / full only
+  - `[ ]` AC-34 · **a box with a chosen proportion** — 16:9 hero, 2:1 band, square tiles, and grid ROWS a proportion of
+    the column width (a mosaic gallery); `aspect-ratio` today only for a picture's own shape
+- `[ ]` **DECIDE — one at a time with the user**
+  - `[ ]` AC-30 · a fixed, content-sized or bounded GRID track beside fluid ones (`20rem 1fr`, `max-content 1fr`,
+    `minmax(12rem, 18rem)`) — `HAVE` in a flex row, not in a grid
+  - `[ ]` AC-31 · two blocks layered in ONE grid area in the flow (caption over picture, collage), and a block running
+    out of its cell over the neighbour — with a simple phone fallback (with AC-21)
+  - `[ ]` AC-21 · overlapping floating pictures that reflow into a row on narrow screens (the photo composition)
+  - `[ ]` AC-32 · dense packing (`grid-auto-flow: dense`) for galleries / bento grids of mixed spans — only where order
+    carries no meaning
+  - `[ ]` AC-10 · **negative spacing and a nudge** — pull a section up over the one before, tuck a line closer, overlap
+    avatars, an optical translate; today only by dragging a top edge
+  - `[ ]` AC-27 · stretch ONE block to the full height of a line / cell whose others are centred
+  - `[ ]` AC-25 · `space-evenly`, `baseline` alignment, and `align-content` for wrapped lines in a fixed-height band
+  - `[ ]` AC-9 · ONE site-wide content width, set in one place (with AC-35)
+  - `[ ]` AC-2 · a page frame (a border round the whole page, off on narrow screens)
+  - `[ ]` AC-5 · content placed at 40% from the top rather than the exact middle
+  - `[ ]` AC-1 · a hero edge cut on a screen-height measure, not a % of the band
+  - `[ ]` AC-8 · text wrapping round a picture (float) and round its shape (`shape-outside`)
+  - `[ ]` AC-17 · a background video for a section (with RULE AF weight limits)
+  - `[ ]` AC-19 · one text flowing through several columns; one `ul` in two columns; blocks read DOWN each column then
+    across (an A–Z directory)
+  - `[ ]` AC-22 · responsive images — several sizes per photo (`srcset` + `sizes` computed from the layout), art
+    direction (`<picture>`) (RULE AF / page weight)
+  - `[ ]` AC-23 · browser baseline — the newer features the export uses checked against the real audience's phones,
+    each with a fallback reset inside `@supports`; the generated CSS minified
+  - `[ ]` AC-29 · see the grid while editing — an overlay of a selected grid's tracks and gaps on the canvas
+  - `[ ]` AC-4 · one heading in two styled lines (main + sub) — or an `hgroup` with an eyebrow
+  - `[ ]` style by grid row / column (zebra rows, a bold first column) — the builder knows each block's row and column
+- `[ ]` **CHECK — lines for the next HEADED UAT, not features**
+  - `[ ]` the inspector offers DIRECTION, ORDER and PLACEMENT at one rung as plainly as *hide* (a sidebar → top bar; icon
+    above its label on a phone; text before pictures on a phone)
+  - `[ ]` a deliberately EMPTY grid cell can be made through the UI and later blocks do not flow back into it
+  - `[ ]` a full-width grid cell STAYS full width when the column count changes 3 → 4
+  - `[ ]` one alignment for ALL blocks of a selected grid (what *Line up* writes on a grid)
+  - `[ ]` a stack whose width is its content's widest line ("Fit" on a container), placed in the centre
+  - `[ ]` the semantic audit flags an `h3` placed before its `h2` (an eyebrow) and offers the fix
+  - `[ ]` a footer / menu list of links publishes as `nav > ul > li > a`
+  - `[ ]` *Full screen* — what it writes today (`vh` or `svh`, minus a pinned header or not)
+  - `[ ]` every picture path emits `aspect-ratio` or `object-fit` — a catalogue-enumerating guard so no photo can stretch
+- `[ ]` **LATER — not layout; moved to 1.3 (components / motion / typography) when the layout closes**
+  - `[ ]` motion: AC-6 easing / delay / repeat · AC-7 halo hover · AC-12 group hover · AC-18 sweeping fill · AC-24 hover
+    keyed to input (`(hover: hover)`), reveal on touch and focus
+  - `[ ]` style / typography: AC-11 gradient text · AC-14 blend modes · AC-15 `box-decoration-break` · AC-16 image
+    filters · AC-20 hyphenation · AC-28 custom coloured list markers
+  - `[ ]` components: AC-13 flip card · Button variations (inline / link button, sliding two-label) · Card (listing card,
+    subgrid-aligned parts) · Quote / Testimonial (`figure` + `blockquote` + `figcaption`, quote mark) · Logo strip ·
+    People / Team list · Avatar group · Divider with a label · Navigation menu button · Gallery (mosaic layouts) ·
+    data-bound list (unknown length, empty / loading states)
+- `[ ]` **The user's own layout list** — to be added here, line by line, when the user gives it
+  - `[>]` **Section transitions · animation · `position: sticky` · `position: fixed`** (the user, 2026-10-01: "mainly
+    for layout", components second). The user sends links, each a different way of doing it. For EACH link: study it
+    (and expand online, RULE R), store it distilled in `docs/web-anatomy/scroll-and-position/`, mark every technique
+    HAVE / PARTIAL / GAP against the builder (pins, floats, `pinArrival`, entrances, the motion tokens and
+    reduced-motion fallbacks already exist), and put every GAP into this list (MUST / DECIDE / CHECK / LATER) with its
+    description. More links still coming from the user.
+    - `[x]` Studied 2026-10-02: CodePen tags sticky-header + fixed-position (47 pens, 22 techniques —
+      `scroll-and-position/01-codepen-sticky-fixed.md`), mimo `position: sticky`, Awwwards "Sticky elements" (petro.design
+      measured) — `scroll-and-position/README.md`. Two findings VERIFIED in the code (not just reported)
+    - `[ ]` SP-1 · **MUST · a sticky page header covers anchor targets and the focused control** — `scroll-padding-top`
+      is set only for a FIXED bar (`pinPaddingNeeded`, deliberately); a sticky header that has stuck hides `#section`
+      jumps and Tab focus below the hero (WCAG 2.4.11). Needs a padding that follows the stuck bars (`--eu-pin-above`)
+    - `[ ]` SP-4 · **MUST · rounding or clipping a section silently kills every pin inside it** — the export writes
+      `overflow: hidden` for `clip` or any radius (`box-export.ts` ~393); `overflow: clip` clips without breaking sticky.
+      The editor must also say why a pin does not stick (`pinBlockedBy`)
+    - `[ ]` SP-2 · DECIDE (leaning MUST for phones) · **hide on scroll down, show on scroll up** ("smart header") — gives
+      back ~10% of a 360×640 screen; must reappear on focus and at the page end, snap under reduced motion, a few inlined
+      lines, never a library
+    - `[ ]` SP-3 · DECIDE · `pinArrival` timed to the moment the bar STICKS — it runs from scroll 0, so a nav that sticks
+      lower down (under a hero) has finished its arrival before it sticks
+    - `[ ]` SP-5 · DECIDE · a scrollable box (max-height + overflow auto) with sticky group headings inside
+    - `[ ]` SP-7 · DECIDE · a stay-behind layer — content scrolls OVER a held hero (`pagePinCover` always paints the
+      pinned band on top)
+    - `[ ]` SP-8 · DECIDE · a tall sticky sidebar that scrolls inside itself (`max-height: 100dvh; overflow-y: auto;
+      overscroll-behavior: contain`) instead of being cut off
+    - `[ ]` SP-11 · DECIDE · a fallback for a fixed background picture (`bgAttach: "fixed"`) — iOS ignores it, low-end
+      Android janks (RULE AF)
+    - `[ ]` SP-14 · DECIDE · held bars aware of the phone's safe area and keyboard (`env(safe-area-inset-*)`,
+      `interactive-widget`) — a bottom bar must not cover a focused field
+    - `[ ]` SP-9 · LATER · flow space for a FIXED top bar so the first heading is not hidden (sticky reserves it already)
+    - `[ ]` SP-10 · LATER (motion) · clip-revealed fixed scenes — a full-screen picture per section wiping into the next
+    - `[ ]` SP-6 · LATER (component) · Table: a sticky header row and first column
+    - `[ ]` SP-12 · LATER (component) · Navigation: off-canvas panel (inert, aria-expanded, Escape, focus return, scroll
+      lock), active link following the scroll
+    - `[ ]` SP-13 · LATER (component) · a real `<dialog>` popup, centred with `inset: 0; margin: auto`
+    - `[>]` **Awwwards "Animation" category — EVERY site, in full detail** (the user, 2026-10-02: "go inside each
+      website on that page… check exactly what the sticky element is, what the animation is, and what the transition
+      is… get everything in full details, don't just get the first one"). https://www.awwwards.com/websites/animation/
+      — the listing is COLLECTED: 248 sites from 8 pages, `scroll-and-position/raw/awwwards-animation-sites.json`
+      (+ the 8 Awwwards elements petro.design links to, inside the script). The measuring script is WRITTEN, NOT RUN:
+      `scripts/research/aw-measure.js <list> <out.json> <chrome-profile-dir>` — real Chrome (`channel: 'chrome'`,
+      persistent profile; plain Playwright Chromium is blocked by Cloudflare on CodePen / Awwwards), 6 pages in
+      parallel, resumable (skips what `out.json` has). Per site it records: the Awwwards title, tags, live URL; the
+      libraries (GSAP, ScrollTrigger, Lenis, Locomotive, Barba, Swup, Three/WebGL, Framer, Webflow, Lottie, SplitText,
+      Swiper, Next/Nuxt/Astro); CSS features (animation-timeline / view() / scroll(), view-transition, scroll-snap,
+      sticky, fixed, clip-path, keyframes, prefers-reduced-motion, blend, backdrop-filter, marquee); every sticky /
+      fixed element (what it is, where, how tall, its parent's height = a pinned scroll section); GSAP pin-spacers; how
+      many elements change transform / opacity / clip-path over five scroll steps; page weight and requests.
+      **STILL TO ADD before running:** (a) WHICH elements animate and HOW (translate / scale / rotate / fade / clip) —
+      today only a count; (b) the PAGE TRANSITION — click an internal link, hook `document.startViewTransition`, sample a
+      full-screen overlay for 1.5s. Then run it (≈15–20 min, six windows), then a subagent distils it into
+      `scroll-and-position/02-awwwards-animation.md` by technique (sticky · scroll animation · section transition ·
+      page transition), each HAVE / PARTIAL / GAP, and the gaps go here as SP-15…
+    - `[ ]` **SP CHECK — for the HEADED UAT** (15 lines in `01-codepen-sticky-fixed.md`): anchors / Tab / Page Down land
+      below a fixed bar and a sticky header at every rung · `pinArrival` in Chromium, Firefox, WebKit, without
+      `animation-timeline`, under reduced motion, `condense` never jumps · a pin + an entrance effect keep both · a
+      transformed / glass ancestor capturing a fixed block (`capturesFixed`) · bars stacking at 360px when one wraps or
+      is unpinned on the phone · a sticky sidebar under the header with room to travel · canvas = export for held blocks
+      with zoom · held bars at 200% zoom / 150% text on 360×640 · `bgAttach: fixed` on iOS / low-end Android · a bottom
+      bar + keyboard · `pinStackScript` re-measuring when late images change a bar's height
+- `[ ]` **My research of what is left** — to be added here (RULE R: the crawl tiers 95/99, `docs/LAYOUT_BENCHMARK.md`,
+  the innovative structures) before the list is frozen
+- `[ ]` **FROZEN** — the user approves the list; from then on nothing is added to the layout without the user's word
+
 ### 1.2 · The original queue (after the four tasks)
 
 - `[ ]` **"Place here"** + **"Return to original position"** — approved plan
@@ -1087,6 +1336,23 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
 
 One entry per session, newest first. Written the moment the user says "new session" (or the context is about to run
 out) — where the session STARTED FROM, where it GOT TO, and where the next one CONTINUES FROM.
+
+### 2026-10-02 · session ca50a336 · branch `builder/layout-uat` — HANDOVER (the user asked; recommended too: context compacted once and holding the whole course + 4 research sources; clean boundary — course finished, the Awwwards run not started)
+- **Started from:** BATCH F-1 (YOU ARE HERE), from 6793d4b.
+- **Got to:** (1) F-1: change (1) MEASURE — the W19 unused-space audit check; fixes A (components hug / fill), B
+  (wrapped columns fill — the user's "fill after a wrap"), C (1rem menu gap on a phone); ledger F1-a…F1-j fixed or NOT A
+  BUG, all headed-checked; F1-k OPEN (page 38 at Tablet: 3 holes + canvas ≠ Preview by 24px). NOTHING COMMITTED for
+  F-1 — the code is in the working tree; the full gate has not run. (2) The user PAUSED F-1 to define the layout's end:
+  the user's Advanced CSS course (Natours · how CSS works · Sass · responsive · Trillo/Flexbox · Grid · Nexter) stored
+  lecture by lecture in `docs/web-anatomy/advanced-css/` (01–08 + README, 36 gaps AC-1…AC-36); **1.1.5 · LAYOUT —
+  DEFINITION OF DONE** drafted in this tree (MUST 6 · DECIDE 20 · CHECK 9 · LATER). (3) Research the user asked for —
+  section transitions · animation · sticky · fixed: CodePen sticky-header + fixed-position (47 pens, 22 techniques),
+  mimo, petro.design → `docs/web-anatomy/scroll-and-position/`; gaps SP-1…SP-14 in 1.1.5 (SP-1 and SP-4 verified in the
+  code). The Awwwards Animation listing collected (248 sites); its measuring script written, not run.
+- **Continue from:** the Awwwards Animation research (1.1.5): add (a) which elements animate and how and (b) the page
+  transition to `scripts/research/aw-measure.js`, run it in real Chrome, distil, put SP-15… into 1.1.5. Then: more
+  links the user sends → the user's own layout list → my research of what is left → the user FREEZES 1.1.5 → back to
+  F-1 (F1-k, gate, commit) and the queued batches.
 
 ### 2026-10-01 · session 4f2e9df1 · branch `builder/layout-uat` — HANDOVER (recommended: context long — all of L-2, 13 ledger lines, ~70 headed runs; clean boundary — committed, F-1 heavy next)
 
