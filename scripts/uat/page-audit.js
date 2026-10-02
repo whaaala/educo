@@ -274,7 +274,9 @@ async function canvasAudit(page) {
         // A block floored at its longest word (`min-width: min-content` — sized by hand, or on a line of four or more) needs the
         // width it is DRAWN at, not 14rem: with the 14rem assumption a 300px column waiting under 230px of free space read as a
         // hole, and it could never have fitted. Only a 14rem-floored block may be assumed to shrink to 14rem.
-        const needs = getComputedStyle(next).minWidth === 'min-content' ? nextW : Math.min(nextW, 224 * Z);
+        // R-24: so does a block that cannot shrink at all (`flex-shrink: 0`, a block that hugs its words) — a 330px button
+        // under 250px of free space read as a HOLE on four stressed pages, and it could never have fitted either.
+        const ns = getComputedStyle(next); const needs = ns.minWidth === 'min-content' || parseFloat(ns.flexShrink) === 0 ? nextW : Math.min(nextW, 224 * Z);
         // L3-b: what each column was DRAWN at — a hole the reloaded tree does not have is only traceable from the live styles
         if (free >= needs + gap + 2 && free > 40) out.push(`HOLE ${Math.round(free / Z)}px at the end of a line of ${row.getAttribute('data-box-id').slice(-4)} while a block waits below [${kids.map((k) => { const s = getComputedStyle(k); return `${k.getAttribute('data-box-id').slice(-4)} w${Math.round(k.getBoundingClientRect().width / Z)} flex(${s.flex}) min(${s.minWidth})`; }).join('; ')}]`); }
     }

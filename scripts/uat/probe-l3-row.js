@@ -1,5 +1,5 @@
 // L-3: a row's columns on the canvas vs the Preview, on a page the UI built (RULE Y: the repro was found through the UI;
-// the saved tree only pins it). node scripts/uat/probe-l3-row.js --dir=dressed99-out --page=332 --band=m-3g [--w=768,1024]
+// the saved tree only pins it). node scripts/uat/probe-l3-row.js --dir=dressed99-out --page=332 --band=m-3g [--w=768,1024] [--tree=final.site] [--audit]
 const fs = require('fs'); const path = require('path'); const H = require('./h.js');
 const arg = (k, d) => { const a = process.argv.find((x) => x.startsWith(`--${k}=`)); return a ? a.split('=')[1] : d; };
 const DIR = arg('dir', 'dressed99-out'), PG = arg('page', '332'), BAND = arg('band', 'm-3g'), WS = arg('w', '768,1024').split(',').map(Number);
@@ -20,6 +20,8 @@ const dump = ([band, attr]) => {
   for (const w of WS) {
     await page.getByRole('button', { name: new RegExp('^' + PRESET[w]) }).first().click(); await page.waitForTimeout(900);
     console.log(`canvas  ${w}`, JSON.stringify(await page.evaluate(dump, [BAND, true])));
+    // --audit: the real canvas audit at this size, its HOLE lines only (R-24 — proves the audit, not a copy of it)
+    if (process.argv.includes('--audit')) console.log(`audit   ${w}`, JSON.stringify((await require('./page-audit.js').canvasAudit(page)).filter((x) => /HOLE/.test(typeof x === 'string' ? x : JSON.stringify(x)))));
   }
   await page.getByRole('button', { name: 'Preview', exact: true }).first().click(); await page.waitForSelector('iframe'); await page.waitForTimeout(1500); await page.keyboard.press('h');
   for (const w of WS) {

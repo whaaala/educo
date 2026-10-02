@@ -788,7 +788,17 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
       unmangled production build. ~76 dressed pages since 2026-09-30 also 0. So something between 09-30 and now (L-1 / L-2
       / F-1) removed it, or it needs a load not reached. The sweep's page-error check stays its guard: it REOPENS the
       moment one is seen, now with its stack and step (L3-d). c-12b (typing lag) is separate and still to be measured
-    - `[ ]` L3-h · **after the stress typing, canvas Mobile shows a HOLE of 250px at the end of a line of a "…-6" block on 4
+    - `[x]` L3-h · **CLOSED 2026-10-02 — NOT A LAYOUT BUG; the AUDIT was wrong (R-24).** HEADED UAT `l3h-stress.out` (six
+      pages at once, fresh build, --stress, 43 min): 0 page errors again; the 250px HOLE on 141 / 329 / 332 / 333 is the
+      HEADER row — site name (heading), a small 86px button, a button — at canvas Mobile. The stress typed 450 characters
+      into both words, so each is 330px (the whole line) and `flex: 0 0 auto` (it hugs its words and never shrinks): the
+      330px button cannot fit in 250px, so the line is right. The audit assumed the waiting block could shrink to 14rem.
+      FIX `page-audit.js`: a block with `flex-shrink: 0` needs its drawn width (as a min-content block already did).
+      PROVEN with `probe-l3-row.js --audit` (new) on the saved sites: RED on 4 / 4 before, GREEN on 4 / 4 after, the same
+      pages before the typing clean at 375 and 768; and the other way (`logs/r24-both.js`): the same button made
+      shrinkable → the HOLE is reported again. The Tablet HOLE on 332 (`i-3g`, 241px, 3 cards) does NOT come back from
+      the reloaded tree (its columns reload as `flex: 1 1` and fill the line) → it is L3-b's question, moved there.
+      Was: **after the stress typing, canvas Mobile shows a HOLE of 250px at the end of a line of a "…-6" block on 4
       of 6 pages (141, 329, 332, 333)** — the same id slot and width on four different pages, so one shape: most likely
       the header line once 450 characters are typed into its words. Plus R11 canvas ≠ Preview after the typing on 333
       (Mobile 18 blocks, Laptop 3, Desktop / Wide 16). The run had the old audit loaded — next: one stressed page with
