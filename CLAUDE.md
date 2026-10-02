@@ -469,6 +469,13 @@ Run through this checklist BEFORE telling the user it's done:
     needed, the same semantic and design rules applied; the builder's own interface translates the same way.
   - **Templates from the region** beside the awwwards catalogue; **distribution through the people who already serve
     these institutions** is planned as product work.
+- **RULE RS — RESEARCH TOGETHER, THEN BUILD (MANDATORY — the user, 2026-10-02, for EVERY area of work, not only the
+  layout).** Every area starts with TWO researches: the user's (links, courses, examples) and the session's OWN, done in
+  parallel. Both are combined in one place (`docs/web-anatomy/` or the area's research folder), every link read
+  completely (RULE R: nothing in a link is left out), and compared — what each found, what overlaps, what is missing.
+  The area ends its research with an **"enough" checklist** in `docs/TASK_TREE.md`: what the work needs, each line
+  marked covered / not covered, **signed off by the user**. Only then does the build begin. The checklist is the finish
+  line, so research cannot grow forever (RULE RK: scope).
 - **RULE RK — THE TWO RISKS ARE MITIGATED BY RULE, NEVER LEFT TO CHANCE (MANDATORY — the user, 2026-09-28: "make sure
   where the risk sits is addressed… minimise the risk to the minimum").** Named in `docs/RISKS.md` and re-read at the start
   of every area of work. The two risks: **scope** (rules for layout, components, semantics, documentation, budgets,

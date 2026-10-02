@@ -1293,6 +1293,9 @@ not a feature) · **LATER** (component / motion / typography — moved to 1.3 wh
         performance on low-cost Android (compositor-only properties, no heavy scroll listeners — RULE AF)
       - the user sends links for these; the session ALSO researches each on its own (MDN, web.dev / Chrome developers,
         CSS-Tricks, Codrops, CodePen tags, Awwwards categories, design-system motion guides) and stores it the same way
+      - `[ ]` **"ENOUGH" CHECKLIST (RULE RS)** — when both researches are combined: what the layout needs from sticky ·
+        fixed · section transitions · scroll animation · page transitions · hover · entrance / exit · motion rules, each
+        line covered / not covered — **signed off by the user** before 1.1.5 is frozen
     - `[ ]` **SP CHECK — for the HEADED UAT** (15 lines in `01-codepen-sticky-fixed.md`): anchors / Tab / Page Down land
       below a fixed bar and a sticky header at every rung · `pinArrival` in Chromium, Firefox, WebKit, without
       `animation-timeline`, under reduced motion, `condense` never jumps · a pin + an entrance effect keep both · a
