@@ -1264,6 +1264,19 @@ not a feature) · **LATER** (component / motion / typography — moved to 1.3 wh
       full-screen overlay for 1.5s. Then run it (≈15–20 min, six windows), then a subagent distils it into
       `scroll-and-position/02-awwwards-animation.md` by technique (sticky · scroll animation · section transition ·
       page transition), each HAVE / PARTIAL / GAP, and the gaps go here as SP-15…
+    - `[ ]` **COMPLETENESS — what the links still hold that has NOT been read (audit, 2026-10-02, the user asked "have
+      we missed anything?")** — none of these may be skipped:
+      - `[ ]` CodePen sticky-header + fixed-position: confirm EVERY page of each tag was collected (compare with the
+        tag's own count; the collector stopped after 3 / 5 pages), and re-read the pens whose code was cut at 6,000
+        characters (`…truncated` in the raw JSON) in full
+      - `[ ]` mimo: the glossary pages it links to — **animation**, **transition**, viewport, z-index, grid-layout,
+        flexbox, padding, margins, header-tag — at least animation and transition in full (they are this topic)
+      - `[ ]` the 8 Awwwards elements petro.design links to (Rosehip scroll · Studio Illicit horizontal scrolling ·
+        Quechua 2025 lookbook · G.S scroll-based animations · Emma is Social work page · Melvin Winkeler homepage on
+        scroll · Theatre of Memory infinite-scroll archive · Type One Ventures homepage animation) — each element's
+        live site measured
+      - `[ ]` Awwwards Animation: **ALL listing pages**, not only the first 8 (`aw-list.js` stops at page 8 — raise the
+        cap until a page adds nothing), then EVERY site visited in detail (the item above)
     - `[ ]` **SP CHECK — for the HEADED UAT** (15 lines in `01-codepen-sticky-fixed.md`): anchors / Tab / Page Down land
       below a fixed bar and a sticky header at every rung · `pinArrival` in Chromium, Firefox, WebKit, without
       `animation-timeline`, under reduced motion, `condense` never jumps · a pin + an entrance effect keep both · a
