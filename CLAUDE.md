@@ -503,6 +503,14 @@ Run through this checklist BEFORE telling the user it's done:
        Proving each family alone is not enough: the families an area holds are STACKED on one block (e.g. a gradient + a
        photo + an overlay at 40% + grain + a glass card with a shadow + a wave edge) in random combinations and proven the
        same way. A clash between families (an edge cutting its own shadow, a photo hiding a gradient) is a GAP or a bug.
+       **…AND AT EVERY LEVEL, NESTED, CASCADING BOTH WAYS (the user, 2026-10-03: "texture on a text… that text in a
+       button… the button in a card… overlay on the card… the card in a section… cascade all the way to the top and all
+       the way to the bottom").** Every family applies at EVERY level — the letters of a text, an element, a button, a
+       component's part, a component / card, a section — on its own and NESTED (section → card → button → text and the
+       other nestings real pages use). The map says HOW each family is made at each level. Proven with random nested
+       trees: a value set on a parent flows DOWN to its children unless they set their own; what a child does shows UP
+       through every parent (no parent silently clips, covers or isolates it). A level where a family cannot be applied,
+       or a parent that swallows a child's effect, is a GAP or a bug.
     4. **SATURATE, MEASURED:** sources are read to find axes or values the map lacks, not for volume; research stops when
        a measured run of new sources adds none (RULE R's `--saturate`). The test of enough, in the user's words: "we
        understand what that thing is… the gist of virtually any variation… and we can do it".
