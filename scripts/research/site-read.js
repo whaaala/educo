@@ -9,6 +9,12 @@ const fs = require('fs'); const path = require('path'); const { chromium } = req
 const [START, OUT, PROFILE, INCLUDE] = process.argv.slice(2);
 const opt = (k, d) => { const a = process.argv.find((x) => x.startsWith(`--${k}=`)); return a ? a.split('=')[1] : d; };
 const SHOTS = opt('shots', ''); const MAX = +opt('max', '0') || Infinity;
+// --depth=N: links more than N clicks from the start page are not followed (a listing + its items is depth 1-2). Without it
+// Magnific's "related vectors" led away from the topic for ever — 747 pages and counting (R2-19).
+const DEPTH = +opt('depth', '0') || Infinity;
+// --listing=<regex>: the listing's OWN pages (page 2, 3…) stay at depth 0, so a depth limit never cuts the listing short
+const LISTING = opt('listing', '') ? new RegExp(opt('listing', '')) : null;
+const childDepth = (parent, l) => (LISTING && LISTING.test(l) ? 0 : parent + 1);
 if (!START || !OUT || !PROFILE || !INCLUDE) { console.log('usage: site-read.js <start-url> <out.json> <profile> <include-regex> [--shots=dir] [--max=n]'); process.exit(1); }
 const origin = new URL(START).origin; const inc = new RegExp(INCLUDE);
 const norm = (u) => { try { const x = new URL(u, origin); x.hash = ''; return x.origin === origin ? x.href.replace(/\/$/, '') : null; } catch { return null; } };
@@ -30,8 +36,8 @@ async function robots() {
     fs.mkdirSync(path.dirname(OUT), { recursive: true }); const tmp = OUT + '.tmp';
     for (let k = 0; k < 6; k++) { try { fs.writeFileSync(tmp, JSON.stringify(data, null, 1)); fs.renameSync(tmp, OUT); return; } catch (e) { if (k === 5) { console.log(`SAVE FAILED ${e.code} — will retry at the next page`); return; } const until = Date.now() + 250 * (k + 1); while (Date.now() < until) { /* brief wait, the lock clears */ } } }
   };
-  const queue = [norm(START)]; const seen = new Set(queue);
-  for (const p of Object.values(data.pages)) for (const l of p.links || []) if (!seen.has(l) && inc.test(l)) { seen.add(l); queue.push(l); }
+  const queue = [norm(START)]; const seen = new Set(queue); const depthOf = new Map([[norm(START), 0]]);
+  for (const [u, p] of Object.entries(data.pages)) { if (!depthOf.has(u)) depthOf.set(u, p.depth ?? 0); } for (const [u, p] of Object.entries(data.pages)) for (const l of p.links || []) if (!seen.has(l) && inc.test(l) && childDepth(p.depth ?? 0, l) <= DEPTH) { depthOf.set(l, childDepth(p.depth ?? 0, l)); seen.add(l); queue.push(l); }
   const ctx = await chromium.launchPersistentContext(PROFILE, { headless: false, viewport: { width: 1440, height: 900 }, deviceScaleFactor: 1, args: ['--force-device-scale-factor=1'] });
   const page = ctx.pages()[0] || await ctx.newPage();
   let read = Object.keys(data.pages).length;
@@ -55,8 +61,8 @@ async function robots() {
         return { title: document.title, text: document.body.innerText, links: [...document.querySelectorAll('a[href]')].map((a) => a.href), draws: out, svgs: document.querySelectorAll('svg path').length };
       });
       const links = [...new Set(r.links.map(norm).filter(Boolean))];
-      data.pages[url] = { title: r.title, text: r.text, links, draws: r.draws, svgPaths: r.svgs, at: new Date().toISOString() };
-      for (const l of links) if (!seen.has(l) && inc.test(l)) { seen.add(l); queue.push(l); }
+      data.pages[url] = { title: r.title, text: r.text, links, draws: r.draws, svgPaths: r.svgs, depth: depthOf.get(url) ?? 0, at: new Date().toISOString() };
+      for (const l of links) if (!seen.has(l) && inc.test(l) && childDepth(depthOf.get(url) ?? 0, l) <= DEPTH) { seen.add(l); depthOf.set(l, childDepth(depthOf.get(url) ?? 0, l)); queue.push(l); }
       if (SHOTS) { fs.mkdirSync(SHOTS, { recursive: true }); await page.evaluate(() => scrollTo(0, 0)); await page.screenshot({ path: path.join(SHOTS, `${read}.png`) }).catch(() => {}); }
       read++;
       console.log(`${read} ${url} · ${r.title.slice(0, 60)} · ${Object.entries(r.draws).map(([k, v]) => `${k} ${v.length}`).join(' ')} · queue ${queue.length}`);

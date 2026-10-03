@@ -5,7 +5,8 @@
 // screenshots, and its FULL html / css / js saved → <outDir>/<tag>.json. Resumable (pens already read are skipped).
 const { chromium } = require(require.resolve('playwright', { paths: [process.cwd()] }));
 const fs = require('fs'); const path = require('path'); const { how } = require('./cp-how.js');
-const [,, outDir, profile, shots, ...tags] = process.argv;
+const [,, outDir, profile, shots, ...rest] = process.argv;
+const tags = rest.filter((t) => !t.startsWith('--')); // R2-20: `--saturate=150` was also read as a TAG (an empty listing, "END … pens 0")
 const cursor = (n) => Buffer.from(`d=1&o=0&p=${n}`).toString('base64');
 fs.mkdirSync(outDir, { recursive: true }); fs.mkdirSync(shots, { recursive: true });
 const JOBS = 2; // CodePen is one origin: six windows at once is what raises its human check (R-2)

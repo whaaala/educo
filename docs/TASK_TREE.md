@@ -1173,6 +1173,11 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
         consecutive shots match
       - `[x]` R2-18 · ablations compared tiles at DIFFERENT sheet positions — sub-pixel anti-aliasing read as a change, so 8
         of the 9 V-10 clashes were missed (one measured 0.00% alone) → rendered in ONE stage: 9 / 9 found
+      - `[x]` R2-19 · `site-read.js` followed Magnific's "related vectors" for ever (747 pages, off the topic) → `--depth` and
+        `--listing` (a listing's own pages stay at depth 0, its items depth 1); the drifted read kept aside in educo-research
+      - `[x]` R2-20 · `cp-tag.js` read the `--saturate=150` flag as a TAG too (an empty listing each run — harmless, confusing)
+        → flags filtered out; and collector A's restart died on a profile still locked by the window stopped earlier, with
+        no notice — re-run, reading `shadow` from pen 166 (a restart is checked for its first pens, not assumed)
       - `[x]` R2-14 · `site-read.js` died on one write Windows had locked (`UNKNOWN: open`) after 661 pages of webgradients →
         temp file + rename, retried; a failed save no longer ends the crawl
       - `[x]` R2-3 · MY OWN: wave 1 recorded bash PIDs that cannot stop Windows processes (collector D "killed" was still
