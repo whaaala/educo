@@ -1048,7 +1048,7 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
   control the export ignores · presets only with no "make your own". Step 2: the user sees the list and orders it; then
   batches of ≤ 6 by area, each HEADED-tested through the UI. Known so far: V-1 · V-5 · Advanced CSS on components only ·
   legacy `gradient:` only from the bulk inspector · motion tokens internal only
-- `[>]` **BATCH R-2 · Everything an element can be styled and do — the full property set** ← YOU ARE HERE (QUEUED 2026-10-03, the user:
+- `[>]` **BATCH R-2 · Everything an element can be styled and do — the full property set** ← YOU ARE HERE (next leaf: step 4 — the GAP CHECK once the crawl ends; steps 1–3d proven and committed through 3fdb8c6; session 6eaa0c27 handed over 2026-10-03) (QUEUED 2026-10-03, the user:
   "typography, types, utilities, background colour… transition… all of the exhaustive stuff an HTML element on a page
   might need"). Motion / events / elements are covered and signed (R-1, `html-semantics.md`, `dom-element-api.md`); the
   CSS PROPERTY side has no signed "enough" checklist: the CSS coverage map (memory `project_css_coverage`, MDN's 68
@@ -2210,6 +2210,33 @@ sent), and my research. Nothing on the layout is done until every line here is c
 
 One entry per session, newest first. Written the moment the user says "new session" (or the context is about to run
 out) — where the session STARTED FROM, where it GOT TO, and where the next one CONTINUES FROM.
+
+### 2026-10-03 · session 6eaa0c27 · branch `builder/layout-uat` — HANDOVER (recommended and accepted: the context is genuinely long — L-3 closed + most of R-2's research and proofs — and the work is at a clean point, everything committed, the crawl running on its own; the next job, the gap check, is heavy)
+- **Started from:** session 07c6c075's handover — BATCH L-3 → L3-p.
+- **Got to:** **BATCH L-3 CLOSED** (`6d67d52`, `4de9d92`): L3-p / L3-b / L3-o were ONE bug — every resize start measured the
+  block above with its children's grow off and "restored" `flex-grow` from a `var(--bx-gut)` shorthand (reads ""), breaking
+  every dragged row's columns until a reload (guard `drag-keeps-flex.spec.ts`); c-11b the drag's room from the DRAWN line
+  (guard `row-never-stores-over-100.spec.ts`); c-11a comment only (the user's choice); L3-t / L3-u / L3-w harness (headed
+  windows at device scale 1; pagers reset instantly; the HOLE audit counts gutter margins). Gate: typecheck 0 · eslint 0
+  errors · vitest 3,985 · test:fast 803; regression headed clean. **Rules added (all in CLAUDE.md, guarded):** RULE K (kill
+  what is not in use; a "killed" notice is not proof) · RULE R "until saturated" for big listings + the user's test of
+  enough · **RULE MAP** (map the axes → an example per value → prove combinations per family, ACROSS families, at EVERY
+  LEVEL nested both ways, and every STATE / EFFECT / TRANSITION the same way, WCAG first → saturate, measured → taste /
+  real world / people → then the USER can do it in the builder). **R-2 (RULE MAP), committed through `3fdb8c6`:** the axis
+  map `docs/web-anatomy/area-v/AXIS-MAP.md` (7 families); `scripts/uat/r2-axes.js` (every axis as code) + `r2-combos.js`
+  (specimens + 60 random combinations per family: valid · painted · visibly distinct) + `r2-stack.js` (40 cross-family
+  blocks, 213 ablations: V-10 confirmed 9/9, the wrapper fix proven) + `r2-nest.js` (40 nested trees, cascade down 0
+  failures, 0 clashes up) + `r2-states.js` (30 trees, real mouse + keyboard, 133 checks, 0 failed); sheets in
+  `docs/web-anatomy/area-v/specimens/` (index.html opens them all). AREA V ledger **V-7 … V-13** (builder bugs and rules
+  found: radial shape lost in the editor, stop alpha lost, gradient under a photo dropped, a shaped band's shadow clipped,
+  shadow tokens unused, no contrast hint on a block's colours, own state must beat a driven one / no inline base where a
+  state changes it). R-2 ledger R2-1 … R2-22 all closed (crawler and proof faults, each fixed and mutation-proven).
+- **Continue from:** BATCH R-2 (YOU ARE HERE) → **step 4, the GAP CHECK**: when the crawl ends, compare everything it collected
+  with the map; anything new is added AS CODE to `r2-axes.js` and every proof re-run; then step 5 (the AXIS-MAP "Not yet"
+  values), step 6 (the real-world pass: 360px phone, Slow 3G), step 7 (the "enough" checklist to the user). STILL RUNNING
+  at handover (13:30, detached, educo-research): CodePen `shadow` (cp-prof/1, pen 299, `--saturate=150`), Awwwards texture
+  live sites (profile-aw2, 74 / 805, `--saturate=50`), the tool-site chain `r2-sites2.sh` (Dribbble search → Mobbin first page
+  → Grabient resume). Stop each by its profile path when done (RULE K).
 
 ### 2026-10-03 · session 07c6c075 · branch `builder/layout-uat` — HANDOVER (the user asked; recommended: the context is genuinely long — the Divider pass with three fixes and four six-window runs, c-11c, L3-f, two page runs, the AREA V investigation, two new rules, 20 links; clean boundary — the gate green and everything committed, a heavy live-canvas hunt next)
 - **Started from:** session f86b7fdf's handover — BATCH L-3 → L3-f.
