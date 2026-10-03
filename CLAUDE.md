@@ -499,14 +499,24 @@ Run through this checklist BEFORE telling the user it's done:
     3. **PROVE THE COMBINATIONS:** random combinations across the axes generated, built and checked in a real browser
        (it draws; it is visibly different, RULE T). A combination that cannot be built is a GAP — research goes back for
        exactly that.
+       **…AND ACROSS FAMILIES, ON ONE BLOCK (the user, 2026-10-03: "any possible combination, anything we could do").**
+       Proving each family alone is not enough: the families an area holds are STACKED on one block (e.g. a gradient + a
+       photo + an overlay at 40% + grain + a glass card with a shadow + a wave edge) in random combinations and proven the
+       same way. A clash between families (an edge cutting its own shadow, a photo hiding a gradient) is a GAP or a bug.
     4. **SATURATE, MEASURED:** sources are read to find axes or values the map lacks, not for volume; research stops when
        a measured run of new sources adds none (RULE R's `--saturate`). The test of enough, in the user's words: "we
        understand what that thing is… the gist of virtually any variation… and we can do it".
     5. **WHERE AXES CANNOT ANSWER, ADD:** a small hand-picked set of best-in-class real examples for TASTE (what looks
        good — Awwwards, the design deck); a REAL-WORLD pass for what a map cannot predict (low-cost phones, 3G, browser
        quirks, screen readers — RULE AF); REAL USERS for what only people answer (the pilot schools — RULE RK).
+    6. **…THEN THE USER CAN DO IT (the user, 2026-10-03: "a user can also do it as well based on what they need").** The
+       research proves WE can make any combination; the build that follows is not done until a PERSON can — every axis
+       and value of the map reachable in the builder (RULE UI: ready-made looks as live previews AND "make your own" for
+       every axis), the same combination generator re-run THROUGH THE UI (RULE Y) and in the Preview, canvas == export.
+       Whatever later research adds to the map becomes build work the same way — never a finding left in a document.
     The area's "enough" checklist IS this map: every axis, its values with their examples, the combination proof that
-    passed, the saturation numbers, and the taste / real-world / people evidence — signed by the user before the build.
+    passed (each family AND across families), the saturation numbers, and the taste / real-world / people evidence —
+    signed by the user before the build.
   - **THE SESSION REMINDS THE USER (the user, 2026-10-02: "I might forget").** Whenever a new session starts, or the
     work is about to move into a new area, section or kind of work, the session checks the tree for that area's signed
     "enough" checklist. If there is none, its reply SAYS so before anything else — "this is a new area; it needs a full
