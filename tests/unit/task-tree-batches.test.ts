@@ -18,9 +18,13 @@ export function batchProblems(tree: string): BatchProblem[] {
   const end = tree.indexOf("\n## ", start + 1);
   const lines = tree.slice(start, end < 0 ? undefined : end).split("\n");
   const batches: { head: string; body: string[] }[] = [];
+  // Any OTHER top-level item (an AREA, a research line) ends the batch above it — its children are not the batch's
+  // (2026-10-03: AREA V's open lines were read as L-3's the moment L-3 closed).
+  let inBatch = false;
   for (const l of lines) {
-    if (/^- `\[.\]` \*\*BATCH /.test(l)) batches.push({ head: l, body: [] });
-    else if (batches.length && /^\s+\S/.test(l)) batches[batches.length - 1].body.push(l);
+    if (/^- `\[.\]` \*\*BATCH /.test(l)) { batches.push({ head: l, body: [] }); inBatch = true; }
+    else if (/^- /.test(l)) inBatch = false;
+    else if (inBatch && /^\s+\S/.test(l)) batches[batches.length - 1].body.push(l);
   }
   if (!batches.length) out.push("no batch in the BATCHES section");
   const open = batches.filter((b) => b.head.startsWith("- `[>]`"));
@@ -52,6 +56,7 @@ describe("the task tree's batches keep RULE X's limits", () => {
   it("two open batches fail", () => expect(batchProblems(ok.replace("- `[ ]` **BATCH B", "- `[>]` **BATCH B"))).toContain("2 batches open at once"));
   it("a batch of 7 fails", () => expect(batchProblems(ok.replace("2 changes", "7 changes"))).toContain("A · x: 7 changes (at most 6)"));
   it("a batch closed with an unticked line fails", () => expect(batchProblems(ok.replace("- `[>]` **BATCH A", "- `[x]` **BATCH A"))).toContain("A · x: closed with an unticked line"));
+  it("an AREA's open lines under a closed batch are not the batch's", () => expect(batchProblems(ok.replace("- `[>]` **BATCH A · x** (area: a · 2 changes)\n  - `[ ]` one", "- `[x]` **BATCH A · x** (area: a · 2 changes)\n  - `[x]` one\n- `[>]` **AREA V · z**\n  - `[ ]` open area work"))).toEqual([]));
   it("a bare ledger number fails", () => expect(batchProblems(ok + "- `[?]` #46 and #42\n")).toContain("bare ledger number: #46 and #42"));
   it("a numbered line WITH its description passes", () => expect(batchProblems(ok + "- `[ ]` **#42 · a Stats row's height does not come back**\n")).toEqual([]));
 });

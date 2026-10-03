@@ -766,7 +766,7 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
       after the fixes, after reload, canvas = Preview
     - `[x]` regression: probe-spacing (S-1), probe-s2 (S-2), L-2's probes — 0 findings; a page saved before F-1 keeps
       every size it CHOSE (hand widths, set gaps); space nobody chose fills there too (decided in the session, reversible)
-- `[>]` **BATCH L-3 · Tier-99: React error #185 and the tablet line** ← YOU ARE HERE (area: engine rules · 5 changes, opened 2026-10-02; PAUSED the same day by the user's order, RESUMED 2026-10-02 ~20:00 when R-1 closed; L3-h · L3-g · #185 (change 1) · c-12b CLOSED 2026-10-03; session 07c6c075 CLOSED L3-f (harness) · L3-c · change 4 c-11c · change 5 R-23 (HEADED 6/6) · L3-j/k/l/m/q/r/s — next leaf L3-p (the live-canvas cell that a reload fixes; with L3-b and L3-o, one bug most likely), then L3-t, c-11b, c-11a, the checklist's regression line, and the batch close. Was — next leaf L3-h: c-11a / c-11b / c-11c and L3-b · L3-c (page 141 re-run) · L3-f · L3-g · L3-h are open)
+- `[x]` **BATCH L-3 · Tier-99: React error #185 and the tablet line** — CLOSED 2026-10-03 (session 6eaa0c27: L3-p/b/o one bug — a drag's height measure broke the columns' flex shorthand; c-11b drawn-line cap; c-11a comment, the user's decision; L3-t/u/w harness; commit 6d67d52; every checklist line ticked) (area: engine rules · 5 changes, opened 2026-10-02; PAUSED the same day by the user's order, RESUMED 2026-10-02 ~20:00 when R-1 closed; L3-h · L3-g · #185 (change 1) · c-12b CLOSED 2026-10-03; session 07c6c075 CLOSED L3-f (harness) · L3-c · change 4 c-11c · change 5 R-23 (HEADED 6/6) · L3-j/k/l/m/q/r/s — next leaf L3-p (the live-canvas cell that a reload fixes; with L3-b and L3-o, one bug most likely), then L3-t, c-11b, c-11a, the checklist's regression line, and the batch close. Was — next leaf L3-h: c-11a / c-11b / c-11c and L3-b · L3-c (page 141 re-run) · L3-f · L3-g · L3-h are open)
   - e-5 · React #185 (maximum update depth) — 9 pages
   - e-6 · four columns on one line at Tablet — 8 pages, 142 findings (= c-11)
   - c-11c (decided B) · an icon cell does not count for the tablet rule
@@ -886,6 +886,13 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
       home. FIXED: `scrollTo({ left: 0, behavior: 'instant' })` in `uat-pages.js`; proven by page 141 in the next run
     - `[x]` L3-v · MY OWN, the same hazard as L3-p one edit away: the grid drag's preview `put`/`restore` remembered
       each property with `getPropertyValue` — FIXED with L3-p (the whole `style` attribute); grid specs run in the gate
+    - `[x]` L3-x · GUARD BUG (found closing L-3): `task-tree-batches.test.ts` read the indented lines of ANY top-level
+      item after a batch (AREA V) as that batch's, so closing L-3 failed on AREA V's open work. FIXED: another top-level
+      item ends the batch; new case "an AREA's open lines under a closed batch are not the batch's"; MUTATION-PROVEN (the
+      fix removed → the real tree and the new case red; restored → 8/8)
+    - `[x]` L3-y · MY OWN: a stray `git stash push`/`pop` in that mutation check popped an OLD stash (`feature/teacher`)
+      onto `app/website/box-demo/page.tsx` as a conflict. Undone: the file restored from HEAD (it held no uncommitted work);
+      the stash entry is still in the list, untouched (5 entries). No stash commands in checks from here
     - `[x]` L3-w · AUDIT (found 2026-10-03 on the fixed build): the canvas HOLE check ignored the GUTTER — since S1-a it is
       half a gutter of margin on each column, while the check added the band's `column-gap` (0px). Page 359 at 1024: a
       224px column "could come up" into 234px, needing 240. FIXED in `page-audit.js` (the waiting column's margins + the
@@ -909,7 +916,7 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
       GREEN 4/4 (99.99) on the fix; a drag too short to make room still leaves the 4th below (122.21, by design). Scenario
       in `box-builder-layout.feature`. The UI-built version of the spec could not fail on either build (its icon cells
       kept a 113px floor, the 4th never came back) — a guard that cannot fail, replaced (ledger 5, RULE V)
-    - `[>]` L3-f MEASURED 2026-10-03: the reloaded final tree has NOTHING scrolled on either side (no scrollLeft / scrollTop
+    - `[x]` (closed with L3-f above — the pager reset in the harness; its instant form L3-u) L3-f MEASURED 2026-10-03: the reloaded final tree has NOTHING scrolled on either side (no scrollLeft / scrollTop
       > 0) and the flagged blocks are the rotating hero's slides at the same places — so either the LIVE canvas was
       scrolled after the typing, or it is the audit. R11 compares LEFT too and never printed it: the harness now prints
       `left c vs p` and logs every box scrolled sideways on the live canvas (`uat-pages.js`); re-run `logs/l3f-diag.out`.
@@ -919,7 +926,7 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
       (the blocks' left positions, the pager's scrollLeft on both sides) before calling it harness or product
     - `[x]` L3-g · CLOSED 2026-10-02 with L3-h / R-24: ids are new on every run; `gx-6` is the same HEADER row (the same "-6" slot, the same 250px) — the re-run with the new audit showed only that row at 141 Mobile, and R-24 explained it. Was: page 141 at canvas Mobile: HOLE 250px at the end of a line of gx-6 — a second LIVE-canvas hole, like
       L3-b. The run had the old audit loaded, so no column details; the next run of it carries them
-    - `[>]` L3-c · page 141: 71 × W7a "headings closer than 1rem to the page edge" at -295px / -670px — "Welcome to our
+    - `[x]` (closed by "L3-c re-run" above: page 141 has no W7a left) L3-c · page 141: 71 × W7a "headings closer than 1rem to the page edge" at -295px / -670px — "Welcome to our
       school 2 / 3", the rotating hero's slides that are off screen. HARNESS: W7a measured a run's rect, not what a reader
       sees of it; a waiting slide that starts inside the window (-153px) is cut by the pager's own box. FIXED in
       `page-audit.js`: the run is clipped by every box that cuts its overflow, and skipped when nothing is left. Guard
@@ -941,7 +948,7 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
       a BROWSER breaks it" — 50.3 + 50.1 is two lines) and the gutter arithmetic (each slot = its stored share of the widened
       band, so 100.19% overflows → 3 + 1, which `packRowLines` already says). The top comment ("a hair over 100 is still one
       line") is the stale part. Being measured on pages 223 / 359 / 382 rebuilt through the UI (`logs/c11-measure.out`)
-    - `[>]` c-11b · `probe-c11b.js` (new): a row of words + 3 icon cells built through the UI, dragged by the harness's own
+    - `[x]` (superseded: c-11b CLOSED 2026-10-03 — the writer was the narrow-the-third drag, see the c-11b line above) c-11b · `probe-c11b.js` (new): a row of words + 3 icon cells built through the UI, dragged by the harness's own
       `sizeColumns` to 6 share sets → all store ≤ 100% (99.91–99.98). A plain drag is not the writer; next: the rebuilt trees
     - `[x]` c-11c · BUILT (decided B) + HEADED in `uat-l3-headed.js` 6/6 (the 8 e-6 pages: checklist line (4), with the batch close): `holdsWords` in `tabletPlaces` + the audit's L6 check (a cell of icons only does not
       count; ≥ 2 cells with words or a card). Guard in `box-model.test.ts` RED before, GREEN after (221/221).
@@ -985,7 +992,7 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
     - `[x]` (1) after the fix: 0 #185 on all 9 e-5 pages (+ idx 34, 43, tier-95 page 0, tier-80 page 26), run in
       parallel; typing still works, Undo still works and the text survives a reload — SEEN: `l3f-stress.out`,
       `c12b-stress-*.out` (6/6, CPU ×3), and 2026-10-03 `l3p-pages` / `l3p-fixed` / `c11b-fixed` (18 stressed page runs, 0 page errors)
-    - `[ ]` (2) guard `packRowLines([70.04, 9.99, 10.14, 10.02])` is red before the fix and green after;
+    - `[x]` (2) SUPERSEDED by the user's c-11a decision 2026-10-03 ("fix the comment only" — no packing change, so no packing guard); the second half — each column's flex the same on canvas and Preview at 768 — SEEN: `drag-keeps-flex.spec.ts` + `l3p-fixed` / `c11b-fixed` (0 R11 width findings). Was: guard `packRowLines([70.04, 9.99, 10.14, 10.02])` is red before the fix and green after;
       at 768, each column's computed `flex` and `margin-right` read the same on the canvas and in the Preview
     - `[x]` (3) the rows that store more than 100% are counted in fresh trees; what writes them is found through the UI
       (a drag or the dresser) and fixed, with a guard — SEEN 2026-10-03: the dresser's narrow-the-third drag (DEBUG=1),
@@ -993,7 +1000,7 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
     - `[x]` (4) a line of three icon cells + one cell of words at Tablet stays on one line; two cells of words + two
       icon cells are rearranged. The engine and the audit agree on every one of the 8 e-6 pages (0 L6 findings left
       that the engine does not act on) — SEEN: `uat-l3-headed.js` 6/6 (c-11c)
-    - `[ ]` regression: F-1's guards, probe-spacing, probe-s2 and L-2's probes show 0 findings; a page saved before L-3
+    - `[x]` regression — HEADED 2026-10-03, six windows, fresh `.next-c` (lNMRuyfu): probe-spacing Light 125/125 · Dark 125/125, probe-s2 Midnight 132/132 · Purple Dream 132/132, probe-l2-acc 0 blocks differ at 768, probe-saved-page CLEAN; F-1's guards in the green gate (test:fast 803); screenshots read (`probe-s2-out/Midnight/preview-1024.png`, `probe-l2-acc-out/w768-canvas.png`). Was: F-1's guards, probe-spacing, probe-s2 and L-2's probes show 0 findings; a page saved before L-3
       keeps its widths
 - `[>]` **AREA V · THE PAGE COMES ALIVE — blending, effects, motion, colour, for EVERY block** (the user, 2026-10-03, after
   L-3 is nearly done: "how a layout blending into each other… transition… animation… scrolling… moving between sections…
@@ -1026,7 +1033,7 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
   control the export ignores · presets only with no "make your own". Step 2: the user sees the list and orders it; then
   batches of ≤ 6 by area, each HEADED-tested through the UI. Known so far: V-1 · V-5 · Advanced CSS on components only ·
   legacy `gradient:` only from the bulk inspector · motion tokens internal only
-- `[ ]` **BATCH R-2 · Everything an element can be styled and do — the full property set** (QUEUED 2026-10-03, the user:
+- `[>]` **BATCH R-2 · Everything an element can be styled and do — the full property set** ← YOU ARE HERE (QUEUED 2026-10-03, the user:
   "typography, types, utilities, background colour… transition… all of the exhaustive stuff an HTML element on a page
   might need"). Motion / events / elements are covered and signed (R-1, `html-semantics.md`, `dom-element-api.md`); the
   CSS PROPERTY side has no signed "enough" checklist: the CSS coverage map (memory `project_css_coverage`, MDN's 68
