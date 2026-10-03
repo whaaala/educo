@@ -1051,6 +1051,9 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
         site visited and measured with `aw-measure.js` (it resumes): what the texture is (grain / noise, paper, fabric,
         pattern, an image), how it is made (SVG `feTurbulence`, a tiled image, CSS gradients, canvas), where it sits
         (whole page, a band, behind text), whether it moves, and its weight on a 360px phone on 3G (RULE AF)
+      - `[ ]` https://codepen.io/tag/texture (2026-10-03) — every page, every pen run and its code read in full: how each
+        texture is BUILT (SVG `feTurbulence` grain, CSS gradient patterns, a tiled image, canvas noise), how it is layered
+        over colour or a photo (opacity, blend mode), its weight — the code side of the Awwwards texture sites
     - My own sources for the same scope (RULE RS), run beside the user's: MDN (background, gradients, mix-blend-mode,
       filter / backdrop-filter, box-shadow / drop-shadow / text-shadow, color functions, color-mix, relative colours,
       `@property` for animating gradients, clip-path / mask) · web.dev / Chrome developers · getwaves.io · shapedivider.app
@@ -2065,7 +2068,7 @@ sent), and my research. Nothing on the layout is done until every line here is c
 One entry per session, newest first. Written the moment the user says "new session" (or the context is about to run
 out) — where the session STARTED FROM, where it GOT TO, and where the next one CONTINUES FROM.
 
-### 2026-10-03 · session 07c6c075 · branch `builder/layout-uat` — HANDOVER (the user asked; recommended: the context is genuinely long — the Divider pass with three fixes and four six-window runs, c-11c, L3-f, two page runs, the AREA V investigation, two new rules, 19 links; clean boundary — the gate green and everything committed, a heavy live-canvas hunt next)
+### 2026-10-03 · session 07c6c075 · branch `builder/layout-uat` — HANDOVER (the user asked; recommended: the context is genuinely long — the Divider pass with three fixes and four six-window runs, c-11c, L3-f, two page runs, the AREA V investigation, two new rules, 20 links; clean boundary — the gate green and everything committed, a heavy live-canvas hunt next)
 - **Started from:** session f86b7fdf's handover — BATCH L-3 → L3-f.
 - **Got to:** research chain STOPPED on the user's "stop it" (L3-j; 0.5 → 3.9 GB free). **c-11c BUILT** (decided B,
   `holdsWords` in `tabletPlaces` + audit L6). **R-23 / change 5 HEADED 6/6 CLEAN** — on the way: L3-l the thickness
@@ -2077,7 +2080,7 @@ out) — where the session STARTED FROM, where it GOT TO, and where the next one
   likely: a wrapped cell at its 224px floor that a reload fixes) · L3-t (333 heights) · c-11b (359 stores 100.15%) ·
   c-11a (the USER decides). **AREA V** investigated (research + code) and reported; **RULE UI** written into CLAUDE.md
   (everything built is in the builder, easy to pick and to make your own — including what was built before: BATCH U-1);
-  **R-2** has the user's 19 links. Gate: typecheck 0 · eslint 0 errors (105 warnings) · vitest 3,985 · test:fast 793.
+  **R-2** has the user's 20 links. Gate: typecheck 0 · eslint 0 errors (105 warnings) · vitest 3,985 · test:fast 793.
 - **Continue from:** BATCH L-3 (YOU ARE HERE) → L3-p.
 - **Next prompt (paste to start):** "Branch `builder/layout-uat`. Read CLAUDE.md (note the new RULE UI), then
   `docs/TASK_TREE.md` — YOU ARE HERE is BATCH L-3; read its ledger (L3-a … L3-t, c-11a/b/c) and AREA V, U-1, R-2 at the
@@ -2089,7 +2092,7 @@ out) — where the session STARTED FROM, where it GOT TO, and where the next one
   three pages re-run. (2) **L3-t** — page 333: canvas ≠ Preview in HEIGHT (35–110px) after the stress. (3) **c-11b** — page
   359 stores 42.71 + 41.62 + 8.51 + 7.31 = 100.15%: find the drag that writes it (DEBUG=1 prints stored widths per drag).
   (4) **c-11a** — ASK THE USER (recommended: fix the stale comment only). (5) the checklist's regression line, then close
-  L-3. THEN R-2's research with the user's 19 links + my own (RULE RS), never beside a test run. Standing: c-11c is B ·
+  L-3. THEN R-2's research with the user's 20 links + my own (RULE RS), never beside a test run. Standing: c-11c is B ·
   ST-7 = both Queue and Stack · motion tokens approved · RULE UI · AREA V order: L-3 → R-2 research → colour & backgrounds →
   section shapes & blending → shadows / overlays / effects → motion → U-1 in the user's order. Traps: a 'killed' notice is
   not the process dying (check the port) · vitest and Playwright never together, and the unit tests READ the tree — don't
