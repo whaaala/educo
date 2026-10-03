@@ -290,4 +290,65 @@ function stacks(n, seed = 1) {
     return { id: `stack#${seed}.${i}`, labels, pick, ...STACK.compose(pick), without: used.map(([part, [axis, offValue]]) => ({ part, ...STACK.compose({ ...pick, [axis]: offValue }) })) };
   });
 }
-module.exports = { FAMILIES, specimens, combos, page, SHAPES, STACK, stacks };
+// ── RULE MAP step 3c — EVERY LEVEL, NESTED: section → card → button → text (card / button may be absent). Each level gets its
+// own random mix, made the way THAT level needs (texture in the LETTERS is a noise background clipped to the text; a shape
+// on a button is a clip-path). `data-level` marks each level so the cascade can be checked: a colour / font set above flows
+// DOWN unless a level sets its own. Each level's ingredients are ablatable, as in the stack proof.
+const NEST = {
+  axes: {
+    'section.bg': { colour: 'colour', gradient: 'gradient', photo: 'photo' }, 'section.overlay': { off: null, tint: 'tint', scrim: 'scrim', 'dark pattern': 'pattern' },
+    'section.texture': { off: null, grain: 'grain', dots: 'dots' }, 'section.edge': { off: null, wave: 'wave', slope: 'slope' },
+    'section.color': { white: '#ffffff', ink: '#0f172a' }, 'section.font': { sans: 'system-ui, sans-serif', serif: 'Georgia, serif' },
+    'card.present': { yes: true, no: false }, 'card.bg': { solid: 'solid', gradient: 'gradient', glass: 'glass' }, 'card.overlay': { off: null, tint: 'tint' },
+    'card.texture': { off: null, grain: 'grain', stripes: 'stripes' }, 'card.shadow': { off: null, soft: 'soft', hard: 'hard' }, 'card.clip': { off: false, on: true },
+    'card.color': { inherit: null, own: '#7c2d12' },
+    'button.present': { yes: true, no: false }, 'button.bg': { solid: 'solid', gradient: 'gradient', textured: 'textured' }, 'button.shadow': { off: null, glow: 'glow', soft: 'soft' },
+    'button.shape': { pill: 'pill', 'cut corner': 'cut' }, 'button.color': { inherit: null, own: '#ffffff' },
+    'text.fill': { inherit: 'inherit', solid: 'solid', gradient: 'gradient', texture: 'texture' }, 'text.shadow': { off: null, soft: 'soft', outline: 'outline' }, 'text.blend': { normal: 'normal', overlay: 'overlay' },
+  },
+  // ingredients an ablation can take out → [axis, the value that removes it]
+  parts: { 'section.overlay': null, 'section.texture': null, 'section.edge': null, 'card.overlay': null, 'card.texture': null, 'card.shadow': null, 'button.shadow': null, 'text.shadow': null },
+  compose: (p) => {
+    const sh = 'oklch(10% .05 260 / .5)';
+    const tex = (t, dark) => t === 'grain' ? `${noise({ freq: .9, oct: 3 })} 0 0 / 6rem` : t === 'dots' ? 'radial-gradient(oklch(100% 0 0 / .4) 25%, transparent 26%) 0 0 / .9rem .9rem' : t === 'stripes' ? `repeating-linear-gradient(-45deg, oklch(${dark ? '0%' : '100%'} 0 0 / .22) 0 .2rem, transparent .2rem .55rem)` : null;
+    // SECTION
+    const sBase = p['section.bg'] === 'colour' ? BRAND : p['section.bg'] === 'gradient' ? `linear-gradient(135deg in oklch, ${BRAND}, ${ACCENT})` : `${PHOTO} center / cover`;
+    const sOv = p['section.overlay'] === 'tint' ? 'linear-gradient(oklch(15% .05 260 / .35), oklch(15% .05 260 / .35))' : p['section.overlay'] === 'scrim' ? 'linear-gradient(to bottom, transparent, oklch(10% .04 260 / .65))' : p['section.overlay'] === 'pattern' ? 'repeating-linear-gradient(45deg, oklch(0% 0 0 / .25) 0 .25rem, transparent .25rem .75rem)' : null;
+    const sLayers = [tex(p['section.texture']), sOv, sBase].filter(Boolean); const sBlend = [p['section.texture'] ? 'overlay' : null, sOv ? 'normal' : null, 'normal'].filter(Boolean);
+    const sEdge = p['section.edge'] ? `clip-path: ${edgePolygon(p['section.edge'], 12, 'bottom')};` : '';
+    // TEXT — made the way LETTERS need it
+    const tFill = p['text.fill'] === 'solid' ? 'color: oklch(85% .15 90);' : p['text.fill'] === 'gradient' ? 'background: linear-gradient(90deg in oklch, oklch(85% .15 90), oklch(72% .2 330)); -webkit-background-clip: text; background-clip: text; color: transparent;' : p['text.fill'] === 'texture' ? `background: ${noise({ freq: .6, oct: 2 })} 0 0 / 4rem, linear-gradient(${ACCENT}, ${BRAND}); background-blend-mode: overlay, normal; -webkit-background-clip: text; background-clip: text; color: transparent;` : '';
+    const tSh = p['text.shadow'] === 'soft' ? `text-shadow: 0 .2rem .4rem ${sh};` : p['text.shadow'] === 'outline' ? 'text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;' : '';
+    const text = `<span data-level="text" style="font-weight:800;font-size:1.35rem;${tFill}${tSh}mix-blend-mode:${p['text.blend']}">Aa Button</span>`;
+    // BUTTON
+    const bBg = p['button.bg'] === 'solid' ? 'oklch(45% .18 290)' : p['button.bg'] === 'gradient' ? 'linear-gradient(90deg in oklch, oklch(55% .2 300), oklch(65% .18 20))' : `${tex('stripes', true)}, oklch(60% .16 160)`;
+    const bSh = p['button.shadow'] === 'glow' ? 'box-shadow: 0 0 1.25rem oklch(80% .2 300 / .95);' : p['button.shadow'] === 'soft' ? `box-shadow: 0 .35rem .8rem ${sh};` : '';
+    const bShape = p['button.shape'] === 'cut' ? 'clip-path: polygon(0 0, calc(100% - .75rem) 0, 100% .75rem, 100% 100%, .75rem 100%, 0 calc(100% - .75rem));' : 'border-radius: 999px;';
+    // a CUT button cannot carry its own shadow (the clip-path removes it) — its shadow goes on a wrapper as a drop-shadow, the V-10 rule
+    const btn = (inner) => { const box = `<span data-level="button" style="display:inline-block;padding:.5rem 1rem;background:${bBg};${bShape}${p['button.color'] ? `color:${p['button.color']};` : ''}${p['button.shape'] === 'cut' ? '' : bSh}">${inner}</span>`; return p['button.shape'] === 'cut' && bSh ? `<span style="display:inline-block;filter:drop-shadow(${p['button.shadow'] === 'glow' ? '0 0 .6rem oklch(80% .2 300 / .95)' : `0 .35rem .4rem ${sh}`})">${box}</span>` : box; };
+    // CARD
+    const cBg = p['card.bg'] === 'solid' ? 'oklch(97% .01 260)' : p['card.bg'] === 'gradient' ? 'linear-gradient(160deg in oklch, oklch(95% .04 90), oklch(88% .06 30))' : 'oklch(100% 0 0 / .16)';
+    const cLayers = [tex(p['card.texture'], p['card.bg'] !== 'glass'), p['card.overlay'] ? 'linear-gradient(oklch(60% .15 260 / .25), oklch(60% .15 260 / .25))' : null, cBg].filter(Boolean);
+    const cSh = p['card.shadow'] === 'soft' ? `box-shadow: 0 .6rem 1.4rem ${sh};` : p['card.shadow'] === 'hard' ? 'box-shadow: .4rem .4rem 0 oklch(10% 0 0 / .8);' : '';
+    const card = (inner) => `<div data-level="card" style="position:relative;padding:1rem;border-radius:.75rem;display:grid;place-items:center;background:${cLayers.join(', ')};${p['card.bg'] === 'glass' ? 'backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);' : ''}${cSh}${p['card.clip'] ? 'overflow:hidden;' : ''}${p['card.color'] ? `color:${p['card.color']};` : ''}">${inner}</div>`;
+    let inner = text; if (p['button.present']) inner = btn(inner); if (p['card.present']) inner = card(inner);
+    const section = `<div data-level="section" style="position:absolute;inset:0 0 25% 0;display:grid;place-items:center;background:${sLayers.join(', ')};background-blend-mode:${sBlend.join(', ')};color:${p['section.color']};font-family:${p['section.font']};${sEdge}">${inner}</div>`;
+    return { css: 'background: #fff; padding: 0;', html: `${section}<div style="position:absolute;left:0;right:0;bottom:0;height:25%;background:${ACCENT}"></div>` };
+  },
+};
+/** `n` random nested trees, each with an ablation of every ingredient it uses (a part is "used" when it is on AND its level exists). */
+function nests(n, seed = 1) {
+  const r = seeded(seed * 130363 + 11);
+  return Array.from({ length: n }, (_, i) => {
+    const labels = {}; const pick = {};
+    for (const [axis, vs] of Object.entries(NEST.axes)) { const ks = Object.keys(vs); const k = ks[Math.floor(r() * ks.length)]; labels[axis] = k; pick[axis] = vs[k]; }
+    const exists = (lvl) => lvl === 'section' || lvl === 'text' || pick[`${lvl}.present`];
+    const used = Object.entries(NEST.parts).filter(([axis, off]) => pick[axis] !== off && exists(axis.split('.')[0]));
+    // what the text's colour should come from when it inherits: the nearest level that sets its own
+    const from = [['button', pick['button.present'] && pick['button.color']], ['card', pick['card.present'] && pick['card.color']], ['section', pick['section.color']]].find(([, c]) => c);
+    // by-nature no-ops the builder should warn about: a tint the SAME colour as what shows through a see-through card
+    const noop = { 'card.overlay': pick['card.bg'] === 'glass' && pick['section.bg'] === 'colour' ? 'a blue tint on a glass card over a blue section shows nothing (same colour as what shows through)' : null };
+    return { id: `nest#${seed}.${i}`, labels, pick, expect: pick['text.fill'] === 'inherit' ? { color: from[1], from: from[0], font: pick['section.font'] } : { font: pick['section.font'] }, ...NEST.compose(pick), without: used.map(([axis, off]) => ({ part: axis, noop: noop[axis] || null, ...NEST.compose({ ...pick, [axis]: off }) })) };
+  });
+}
+module.exports = { FAMILIES, specimens, combos, page, SHAPES, STACK, stacks, NEST, nests };

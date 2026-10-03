@@ -165,6 +165,18 @@ Every other ingredient stayed visible on top of all the others. Measurement trap
 before a data-URI texture decoded (R2-17 — retaken until stable), and tiles compared at different sheet positions
 (R2-18 — ablations rendered in ONE stage).
 
+**EVERY LEVEL, NESTED, CASCADING BOTH WAYS (RULE MAP 3c — `scripts/uat/r2-nest.js`, `specimens/nest.html`, `nest-proof.json`).**
+40 random trees in all four nestings (section → card → button → text ×9 · section → card → text ×11 · section → button →
+text ×11 · section → text ×9), each level with its own mix, made the way THAT level needs (texture and gradient INSIDE the
+letters via `background-clip: text`, a cut-corner button by `clip-path` with its shadow moved to a wrapper — the V-10 rule).
+**161 ablations · 0 invalid · cascade DOWN 0 failures** (inherited text took the nearest level's colour and the section's
+font every time) **· 0 clashes UP** (every ingredient at every level stays visible through its parents) · 2 named no-ops: a
+tint the same colour as what shows through a glass card is invisible — the builder should warn when an overlay matches
+what it covers.
+
+**States, effects and transitions at every level (RULE MAP, 2026-10-03)** — hover, focus, press, selected, transitions,
+animations, cascading down (a card's hover driving its button and words) and up, WCAG first: NEXT, to be proven the same way.
+
 **Not yet in the proof** (in the tables above, still to add as code before "enough"): colour — 4/8-digit hex,
 `currentColor`/`transparent`, the picker controls (a UI, proven in AREA V's build); gradients — `to <corner>` keywords,
 `image-set()`, `background-clip` other than text; overlays — hover / scroll states; shadows — hover state, dark-theme scale;

@@ -1143,7 +1143,9 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
       `r2-sites.sh` (6 windows, 6.1 GB free at start)
     - **THE ORDER TO "ENOUGH" (RULE MAP, agreed with the user 2026-10-03):** `[x]` 1 the axis map (`area-v/AXIS-MAP.md`) ·
       `[x]` 2 a specimen per value · `[x]` 3a combinations per family proven · `[x]` 3b ACROSS families on one block — 40 stacks, 213 ablations, 0 invalid, 10 clashes all explained (V-10 9/9,
-      fixed by a wrapper drop-shadow, proven; a white pattern × multiply is a no-op) — `r2-stack.js`, `specimens/stack.html` · `[ ]` 4 the crawl's GAP CHECK — every
+      fixed by a wrapper drop-shadow, proven; a white pattern × multiply is a no-op) — `r2-stack.js`, `specimens/stack.html` · `[x]` 3c EVERY LEVEL, NESTED (section → card → button → text): 40 trees, 161 ablations, 0 invalid, cascade-down 0
+      failures, 0 clashes, 2 named no-ops — `r2-nest.js`, `specimens/nest.html` · `[ ]` 3d STATES / EFFECTS / TRANSITIONS at
+      every level, both ways, WCAG first (the user, 2026-10-03, now in RULE MAP) · `[ ]` 4 the crawl's GAP CHECK — every
       technique / value it collected compared with the map; anything new is added AS CODE to `r2-axes.js` and the whole
       proof re-run (sheets, combinations, stacks) — nothing the crawl finds is left in a document · `[ ]` 5 the values
       still outside the proof (AXIS-MAP "Not yet") · `[ ]` 6 the real-world pass (360px phone, Slow 3G) · `[ ]` 7 the
