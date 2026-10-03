@@ -490,6 +490,23 @@ Run through this checklist BEFORE telling the user it's done:
   The area ends its research with an **"enough" checklist** in `docs/TASK_TREE.md`: what the work needs, each line
   marked covered / not covered, **signed off by the user**. Only then does the build begin. The checklist is the finish
   line, so research cannot grow forever (RULE RK: scope).
+  - **RULE MAP — MAP THE AXES, PROVE THE COMBINATIONS, STOP ON EVIDENCE (MANDATORY — the user, 2026-10-03: "it must be
+    a rule… for every session, for everything we do going forward, and it must not be missed").** This IS the method of
+    every research, in every area, in every session — never "read everything", never "a few examples feel enough".
+    1. **MAP:** break the area into its independent AXES and every VALUE each can take, each with HOW it is made (the
+       code), starting from what is already stored (RULE R: never redone) and the primary source (MDN, the spec).
+    2. **EXAMPLE PER VALUE:** one small WORKING example of every value, stored as code — provable, not "I believe so".
+    3. **PROVE THE COMBINATIONS:** random combinations across the axes generated, built and checked in a real browser
+       (it draws; it is visibly different, RULE T). A combination that cannot be built is a GAP — research goes back for
+       exactly that.
+    4. **SATURATE, MEASURED:** sources are read to find axes or values the map lacks, not for volume; research stops when
+       a measured run of new sources adds none (RULE R's `--saturate`). The test of enough, in the user's words: "we
+       understand what that thing is… the gist of virtually any variation… and we can do it".
+    5. **WHERE AXES CANNOT ANSWER, ADD:** a small hand-picked set of best-in-class real examples for TASTE (what looks
+       good — Awwwards, the design deck); a REAL-WORLD pass for what a map cannot predict (low-cost phones, 3G, browser
+       quirks, screen readers — RULE AF); REAL USERS for what only people answer (the pilot schools — RULE RK).
+    The area's "enough" checklist IS this map: every axis, its values with their examples, the combination proof that
+    passed, the saturation numbers, and the taste / real-world / people evidence — signed by the user before the build.
   - **THE SESSION REMINDS THE USER (the user, 2026-10-02: "I might forget").** Whenever a new session starts, or the
     work is about to move into a new area, section or kind of work, the session checks the tree for that area's signed
     "enough" checklist. If there is none, its reply SAYS so before anything else — "this is a new area; it needs a full
