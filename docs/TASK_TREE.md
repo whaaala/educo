@@ -1166,6 +1166,30 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
       displacement ~3 ms raster per frame; gradients, overlays, shadows, shaped edges free; every page 5–11 KB, first paint ≤ 620 ms;
       CONTROL 16 fps / 36 long frames · `[ ]` 7 the
       "enough" checklist to the user — then AREA V builds it so a USER can do every combination (RULE MAP 6)
+    - **THE "ENOUGH" CHECKLIST (RULE MAP, step 7) — `[?]` WAITING FOR THE USER TO SIGN** (written 2026-10-03, session 35640e85).
+      Each line covered / not covered, with its evidence; the build of AREA V starts only after the user signs.
+      - `[x]` 1 MAP — 7 families broken into axes and values, each with how it is made: colour 6 axes · 33 values · gradients 9 · 31
+        · backgrounds 8 · 25 · overlays 5 · 20 · shadows 9 · 29 · glass / filters / blend 10 · 49 · textures 11 · 37 · section
+        shapes 11 · 51 — `AXIS-MAP.md`, `scripts/uat/r2-axes.js`
+      - `[x]` 2 AN EXAMPLE PER VALUE — 275 specimens, all painted, 0 invalid — `specimens/<family>.html`
+      - `[x]` 3a COMBINATIONS PER FAMILY — 60 random each, all valid; honest distinct counts with every repeat explained (named
+        no-op or dependent axis) — `proof.json`
+      - `[x]` 3b ACROSS FAMILIES — 40 stacked blocks, 241 ablations, 0 invalid, 9 clashes = all V-10 (a builder bug for AREA V)
+      - `[x]` 3c EVERY LEVEL, NESTED, BOTH WAYS — 40 trees, 164 ablations, cascade down 0 failures, 0 clashes up
+      - `[x]` 3d STATES / EFFECTS / TRANSITIONS, WCAG FIRST — 197 checks, 0 failed (hover, press, pointer-following, scroll-linked,
+        modal backdrop, focus ring ≥ 3px, reduced motion)
+      - `[x]` 4 SATURATION, MEASURED — every CodePen tag saturated (150 in a row) or read to the end; Grabient 927 (last new at 533);
+        Awwwards texture 220 on SURFACE (50 in a row, 37 known); gap scan 6,736 items + census of 4,131 pens → 0 gaps
+      - `[x]` 5a TASTE — 33 hand-picked best-in-class examples across the 7 families, 85 screenshots opened (`area-v/taste-set.md`);
+        two spot-checked by me (Kiawah scrim, HAUS grain — matched to the stored CSS); 8 learnings for the builder
+      - `[x]` 5b REAL WORLD — 17 effects on a 360px DPR-2 phone, CPU ×6, Slow 3G (`realworld.json`): blur is the one real cost
+        (default ≤ 12px, warn above, few elements); fixed full-page grain costs ~40% of frames; moving grain / displacement opt-in;
+        the rest free; pages 5–11 KB, first paint ≤ 620 ms
+      - `[ ]` 5c PEOPLE — the pilot schools (RULE RK): not possible before something is built; comes with AREA V's first batch
+      - `[ ]` 6 THE USER CAN DO IT — the BUILD itself (RULE MAP 6, RULE UI): AREA V's batches, first colour & backgrounds incl.
+        V-7 … V-13, each axis as live previews + "make your own", re-proven through the UI and in Preview
+      - Open by the user's decision: Mobbin (skipped), Dribbble search + 22 tag shots (enough). Builder bugs found, fixed in AREA V:
+        V-1 … V-13 (V-10 confirmed again on the new edge methods)
     - LEDGER of R-2:
       - `[x]` R2-1 · `aw-measure.js` followed Made in Webflow's "Clone" button (`dashboard/sites/new…unauthSignup`, a
         sign-up page) — 12 of 12 overlay items recorded `noLiveSite`, unmeasured. FIXED: the item's own `*.webflow.io`
