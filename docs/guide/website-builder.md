@@ -427,6 +427,8 @@ Dragging the **bottom** edge sets that **whole row's height**, so the row grows 
 
 **A drag is one gesture.** The canvas shows the result as you drag, letting go commits exactly what you were being shown, and one **Ctrl+Z** puts the whole drag back — not one frame of it.
 
+**Typing is one step too.** Type a sentence and one **Ctrl+Z** takes the whole sentence back, not one letter. Your words are saved when you pause, and straight away when you click out of the block, press Escape or Enter, switch tabs or close the page — so nothing you typed is lost, and typing stays quick on a slow phone even on a long page.
+
 ### How small a box can go
 
 **An empty box shrinks to almost nothing.** The *"Empty — drag a block in"* message is a hint for you, not content on the page, so it never sets a floor — drag the bottom edge all the way up and the box follows.
