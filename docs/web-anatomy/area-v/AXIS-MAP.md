@@ -174,8 +174,16 @@ font every time) **· 0 clashes UP** (every ingredient at every level stays visi
 tint the same colour as what shows through a glass card is invisible — the builder should warn when an overlay matches
 what it covers.
 
-**States, effects and transitions at every level (RULE MAP, 2026-10-03)** — hover, focus, press, selected, transitions,
-animations, cascading down (a card's hover driving its button and words) and up, WCAG first: NEXT, to be proven the same way.
+**STATES, EFFECTS AND TRANSITIONS AT EVERY LEVEL (RULE MAP 3d — `scripts/uat/r2-states.js`, `specimens/states.html`).**
+30 random trees (card hover: lift · glow · tint, and whether it DRIVES its button and words; button hover: darken · gradient
+swap · grow, press, focus ring; words hover: underline · colour; timing: fast · slow · spring), driven with a REAL mouse and
+keyboard: **133 checks, 0 failed** — the button's own hover shows inside a hovered card (UP), hovering only the card reaches
+the button where it drives it (DOWN), press shows, **Tab always reaches the button with a ≥ 3px focus ring (WCAG 2.4.7)**,
+and **with reduce-motion every transition is instant (WCAG 2.3.3)**. Two rules the BUILDER must keep, both found by the proof:
+1. **A level's OWN state beats a state driven from above** — a parent-driven rule carries no specificity (`:where(…)`);
+   without it the card's drive swallowed the button's own hover (mutation-proven: 4 failures come back).
+2. **Base looks are never inline wherever a state may change them** — an inline background beat every `:hover` rule, so a
+   card's tint and a button's gradient swap could never show.
 
 **Not yet in the proof** (in the tables above, still to add as code before "enough"): colour — 4/8-digit hex,
 `currentColor`/`transparent`, the picker controls (a UI, proven in AREA V's build); gradients — `to <corner>` keywords,

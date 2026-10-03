@@ -1035,6 +1035,10 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
     - `[ ]` V-10 · a band's SHADOW is clipped away by its own edge shape (the edge's `clip-path`)
     - `[ ]` V-11 · the shadow scale is emitted as LITERAL values (`box-model.ts:1131`, `box-export.ts:86`) while the
       `--eu-shadow-*` tokens are emitted unused (`tokens.ts:163`) — a theme can never restyle shadows (Core Rule 17)
+    - `[ ]` V-13 · (found by the R-2 states proof) VERIFY the builder keeps two rules: (a) a block's OWN hover / focus / press beats a
+      state driven from its parent (parent-driven rules at zero specificity, `:where`), and (b) no base look is INLINE where a
+      state may change it (an inline background beats every `:hover` rule) — the canvas draws with inline styles, so the
+      existing interactions (`lib/interactions.ts`) are checked first; any that lose are bugs, fixed with a guard red first
     - `[ ]` V-12 · the contrast hint shows only on component colour tokens (`BoxInspector.tsx:1786-1792`), never on a
       block's own text / background colour — RULE 4 / 17 ("contrast is ASSERTED") on the commonest case
 - `[ ]` **BATCH U-1 · Surface what is ALREADY built (RULE UI, the user 2026-10-03: "this rule must also follow existing
@@ -1144,8 +1148,9 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
     - **THE ORDER TO "ENOUGH" (RULE MAP, agreed with the user 2026-10-03):** `[x]` 1 the axis map (`area-v/AXIS-MAP.md`) ·
       `[x]` 2 a specimen per value · `[x]` 3a combinations per family proven · `[x]` 3b ACROSS families on one block — 40 stacks, 213 ablations, 0 invalid, 10 clashes all explained (V-10 9/9,
       fixed by a wrapper drop-shadow, proven; a white pattern × multiply is a no-op) — `r2-stack.js`, `specimens/stack.html` · `[x]` 3c EVERY LEVEL, NESTED (section → card → button → text): 40 trees, 161 ablations, 0 invalid, cascade-down 0
-      failures, 0 clashes, 2 named no-ops — `r2-nest.js`, `specimens/nest.html` · `[ ]` 3d STATES / EFFECTS / TRANSITIONS at
-      every level, both ways, WCAG first (the user, 2026-10-03, now in RULE MAP) · `[ ]` 4 the crawl's GAP CHECK — every
+      failures, 0 clashes, 2 named no-ops — `r2-nest.js`, `specimens/nest.html` · `[x]` 3d STATES / EFFECTS / TRANSITIONS at
+      every level, both ways, WCAG first: 30 trees, 133 checks, 0 failed (real mouse + keyboard; focus ring; reduce motion) —
+      `r2-states.js`; two builder rules found (own state beats a driven one; no inline base where a state changes it) · `[ ]` 4 the crawl's GAP CHECK — every
       technique / value it collected compared with the map; anything new is added AS CODE to `r2-axes.js` and the whole
       proof re-run (sheets, combinations, stacks) — nothing the crawl finds is left in a document · `[ ]` 5 the values
       still outside the proof (AXIS-MAP "Not yet") · `[ ]` 6 the real-world pass (360px phone, Slow 3G) · `[ ]` 7 the
@@ -1180,6 +1185,10 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
       - `[x]` R2-20 · `cp-tag.js` read the `--saturate=150` flag as a TAG too (an empty listing each run — harmless, confusing)
         → flags filtered out; and collector A's restart died on a profile still locked by the window stopped earlier, with
         no notice — re-run, reading `shadow` from pen 166 (a restart is checked for its first pens, not assumed)
+      - `[x]` R2-21 · the states proof read the button's "rest" with the mouse still on it (which hovers the card too) → every
+        DOWN check failed falsely → rest is read with the mouse away
+      - `[x]` R2-22 · the states demo wrote base looks INLINE, so the card's tint and the button's gradient-swap hovers could never
+        show → base looks in the stylesheet (and the lesson is V-13 for the builder)
       - `[x]` R2-14 · `site-read.js` died on one write Windows had locked (`UNKNOWN: open`) after 661 pages of webgradients →
         temp file + rename, retried; a failed save no longer ends the crawl
       - `[x]` R2-3 · MY OWN: wave 1 recorded bash PIDs that cannot stop Windows processes (collector D "killed" was still

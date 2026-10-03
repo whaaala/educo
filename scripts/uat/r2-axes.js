@@ -351,4 +351,51 @@ function nests(n, seed = 1) {
     return { id: `nest#${seed}.${i}`, labels, pick, expect: pick['text.fill'] === 'inherit' ? { color: from[1], from: from[0], font: pick['section.font'] } : { font: pick['section.font'] }, ...NEST.compose(pick), without: used.map(([axis, off]) => ({ part: axis, noop: noop[axis] || null, ...NEST.compose({ ...pick, [axis]: off }) })) };
   });
 }
-module.exports = { FAMILIES, specimens, combos, page, SHAPES, STACK, stacks, NEST, nests };
+// ── RULE MAP step 3d — STATES, EFFECTS, TRANSITIONS at every level, both ways, WCAG first. A tree (section → card → button →
+// words) carries a scoped <style>: the card's hover (and whether it DRIVES its button and words — the cascade down), the
+// button's hover / press / focus ring, the words' hover, one transition timing for all, and a reduced-motion block. The
+// button is a real link so the keyboard reaches it.
+const STATES = {
+  axes: {
+    'card.hover': { off: null, lift: 'lift', glow: 'glow', tint: 'tint' }, 'card.drives': { no: false, yes: true },
+    'button.hover': { off: null, darken: 'darken', 'gradient swap': 'swap', grow: 'grow' }, 'button.press': { off: false, shrink: true },
+    'button.focus': { ring: 'ring', 'ring + offset': 'offset' }, 'text.hover': { off: null, underline: 'underline', colour: 'colour' },
+    timing: { 'fast 150ms': '150ms ease-out', 'slow 320ms': '320ms ease-in-out', spring: '280ms cubic-bezier(.34,1.56,.64,1)' },
+  },
+  compose: (p, id) => {
+    const T = `[data-tree="${id}"]`;
+    const css = [
+      `${T} [data-level="card"] { padding: 1.25rem 1.5rem; border-radius: .75rem; background: oklch(97% .01 260); } ${T} [data-level="button"] { display: inline-block; padding: .5rem 1rem; border-radius: 999px; background: oklch(45% .18 290); color: #fff; text-decoration: none; } ${T} [data-level="text"] { font-weight: 800; font-size: 1.2rem; }`,
+      `${T} [data-level] { transition: transform ${p.timing}, box-shadow ${p.timing}, background ${p.timing}, filter ${p.timing}, color ${p.timing}, outline-offset ${p.timing}; }`,
+      p['card.hover'] === 'lift' ? `${T} [data-level="card"]:hover { transform: translateY(-.375rem); box-shadow: 0 1rem 1.75rem oklch(10% .05 260 / .45); }` : '',
+      p['card.hover'] === 'glow' ? `${T} [data-level="card"]:hover { box-shadow: 0 0 1.5rem oklch(80% .18 300 / .9); }` : '',
+      p['card.hover'] === 'tint' ? `${T} [data-level="card"]:hover { background: oklch(88% .08 200); }` : '',
+      // a state DRIVEN from above carries no specificity (:where) — a level's OWN state always beats it (the cascade clash the proof found)
+      p['card.drives'] ? `${T} :where([data-level="card"]:hover) [data-level="button"] { filter: brightness(1.25) saturate(1.2); } ${T} :where([data-level="card"]:hover) [data-level="text"] { letter-spacing: .06em; }` : '',
+      p['button.hover'] === 'darken' ? `${T} [data-level="button"]:hover { filter: brightness(.7); }` : '',
+      p['button.hover'] === 'swap' ? `${T} [data-level="button"]:hover { background: linear-gradient(90deg in oklch, oklch(65% .18 20), oklch(55% .2 300)); }` : '',
+      p['button.hover'] === 'grow' ? `${T} [data-level="button"]:hover { transform: scale(1.12); }` : '',
+      p['button.press'] ? `${T} [data-level="button"]:active { transform: scale(.92); }` : '',
+      // WCAG 2.4.7: focus ALWAYS visible — 3px, high contrast, never removed
+      `${T} [data-level="button"]:focus-visible { outline: 3px solid oklch(20% .1 260); outline-offset: ${p['button.focus'] === 'offset' ? '4px' : '0px'}; box-shadow: 0 0 0 6px oklch(98% 0 0); }`,
+      p['text.hover'] === 'underline' ? `${T} [data-level="text"]:hover { text-decoration: underline 3px; }` : '',
+      p['text.hover'] === 'colour' ? `${T} [data-level="text"]:hover { color: oklch(85% .17 90); }` : '',
+      // WCAG 2.3.3: a reader who asks for less motion gets none
+      `@media (prefers-reduced-motion: reduce) { ${T} [data-level] { transition-duration: 0s !important; animation: none !important; } }`,
+    ].filter(Boolean).join('\n');
+    const html = `<style>${css}</style><div data-tree="${id}" style="position:absolute;inset:0;display:grid;place-items:center;background:${BRAND}">`
+      + '<div data-level="card">' /* base looks in the stylesheet, never inline (R2-22) */
+      + '<a href="#" data-level="button">'
+      + '<span data-level="text">Apply now</span></a></div></div>';
+    return { css: 'padding: 0;', html };
+  },
+};
+function stateTrees(n, seed = 1) {
+  const r = seeded(seed * 15485863 + 3);
+  return Array.from({ length: n }, (_, i) => {
+    const labels = {}; const pick = {};
+    for (const [axis, vs] of Object.entries(STATES.axes)) { const ks = Object.keys(vs); const k = ks[Math.floor(r() * ks.length)]; labels[axis] = k; pick[axis] = vs[k]; }
+    return { id: `state${i}`, labels, pick, ...STATES.compose(pick, `state${i}`) };
+  });
+}
+module.exports = { STATES, stateTrees, FAMILIES, specimens, combos, page, SHAPES, STACK, stacks, NEST, nests };
