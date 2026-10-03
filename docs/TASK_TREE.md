@@ -2081,7 +2081,7 @@ out) — where the session STARTED FROM, where it GOT TO, and where the next one
   c-11a (the USER decides). **AREA V** investigated (research + code) and reported; **RULE UI** written into CLAUDE.md
   (everything built is in the builder, easy to pick and to make your own — including what was built before: BATCH U-1);
   **R-2** has the user's 20 links. Gate: typecheck 0 · eslint 0 errors (105 warnings) · vitest 3,985 · test:fast 793.
-- **Continue from:** BATCH L-3 (YOU ARE HERE) → L3-p.
+- **Continue from:** BATCH L-3 (YOU ARE HERE) → L3-p. **The user agreed the plan 2026-10-03 ("go with that"):** finish L-3 → R-2 research (20 links + mine, the user signs "enough") → AREA V batches (colour & backgrounds → section shapes & blending → shadows / overlays / effects → motion), each with its builder controls (RULE UI) → U-1 in the user's order.
 - **Next prompt (paste to start):** "Branch `builder/layout-uat`. Read CLAUDE.md (note the new RULE UI), then
   `docs/TASK_TREE.md` — YOU ARE HERE is BATCH L-3; read its ledger (L3-a … L3-t, c-11a/b/c) and AREA V, U-1, R-2 at the
   top. Do, in order: (1) **L3-p** — page 223 (and 332's L3-b, 359's L3-o, most likely the same bug): on the LIVE canvas a
