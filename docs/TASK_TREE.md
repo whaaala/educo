@@ -1041,6 +1041,9 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
       existing interactions (`lib/interactions.ts`) are checked first; any that lose are bugs, fixed with a guard red first
     - `[ ]` V-12 · the contrast hint shows only on component colour tokens (`BoxInspector.tsx:1786-1792`), never on a
       block's own text / background colour — RULE 4 / 17 ("contrast is ASSERTED") on the commonest case
+  - `[ ]` **From R-2 (signed 2026-10-03):** RULE MAP 6 — the USER can make every combination at every level in the builder (live
+    previews + "make your own" for every axis, re-proven THROUGH THE UI and in Preview), first batch colour & backgrounds incl.
+    V-7 … V-13 · 5c PEOPLE — the pilot schools try it once the first batch ships (RULE RK). WAITS for Task 1 (the user, 2026-10-03)
 - `[ ]` **BATCH U-1 · Surface what is ALREADY built (RULE UI, the user 2026-10-03: "this rule must also follow existing
   stuff that we've done… something a user has to create")** (QUEUED; area: builder controls). Step 1: an AUDIT —
   every field the engine reads (`BoxNode` in `lib/box-model.ts`, presets, components, interactions) set against the
@@ -1048,14 +1051,14 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
   control the export ignores · presets only with no "make your own". Step 2: the user sees the list and orders it; then
   batches of ≤ 6 by area, each HEADED-tested through the UI. Known so far: V-1 · V-5 · Advanced CSS on components only ·
   legacy `gradient:` only from the bulk inspector · motion tokens internal only
-- `[>]` **BATCH R-2 · Everything an element can be styled and do — the full property set** ← YOU ARE HERE (next leaf: step 7 — the "enough" checklist to the user to SIGN; steps 1–6 done, session 35640e85) (QUEUED 2026-10-03, the user:
+- `[x]` **BATCH R-2 · Everything an element can be styled and do — the full property set** — CLOSED 2026-10-03 by the user signing the "enough" checklist (session 35640e85; commits `43fb21c` · `e885c84` · `4e307dc`) (QUEUED 2026-10-03, the user:
   "typography, types, utilities, background colour… transition… all of the exhaustive stuff an HTML element on a page
   might need"). Motion / events / elements are covered and signed (R-1, `html-semantics.md`, `dom-element-api.md`); the
   CSS PROPERTY side has no signed "enough" checklist: the CSS coverage map (memory `project_css_coverage`, MDN's 68
   modules) is from 2026-09-02, lists several Missing, and was never re-checked against today's builder. RULE RS: the
   user's sources + my own, every property family checked against what the builder emits, then an "enough" checklist
   signed by the user. Starts AFTER L-3 closes (one job at a time)
-  - `[?]` **WAITING FOR THE USER'S LINKS** — the user, 2026-10-03: "I'm going to give you my own list of websites to look
+  - `[x]` **THE USER'S LINKS — all read or decided (2026-10-03)** — the user, 2026-10-03: "I'm going to give you my own list of websites to look
     at… this afternoon". Their list + my own sources (MDN backgrounds / gradients / blend modes / filters / shadows,
     colour-picker patterns) run side by side (RULE RS), every link read completely (RULE R), in parallel windows —
     never beside an L-3 test run. Scope: gradients · overlays · shadows (incl. gradient / glow) · box effects · colour
@@ -1070,7 +1073,7 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
         their own), every preset, the CSS it emits
       - `[x]` https://cssgradient.io/ — **2026-10-03: 23 pages (generator + every on-topic guide), queue empty** — (2026-10-03) — the generator (types, stops, angle, positions, colour input) AND
         every page it links to on the topic (its gradient guides / swatches / tools), each read completely
-      - `[>]` https://webflow.com/made-in-webflow/overlay — **27 listed; re-measuring with the SURFACE recorded (R2-26)** — (2026-10-03) — EVERY project in the listing (all pages / all
+      - `[x]` https://webflow.com/made-in-webflow/overlay — **27 measured live with the SURFACE recorded (R2-26)** — (2026-10-03) — EVERY project in the listing (all pages / all
         "load more"), each opened and run live (hover, scroll, click), its overlay technique read and written down item
         by item: what sits on top (colour / gradient / image / blur / blend), when it appears, how it animates
       - `[x]` https://www.convertflow.com/campaigns/popup-overlay-examples — **2026-10-03: 18 pages, queue empty; the modal pattern proven in r2-states (click · dim + blur backdrop · focus in · Escape · focus back)** — (2026-10-03) — every popup / overlay example on
@@ -1117,10 +1120,10 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
       - `[x]` https://codepen.io/tag/frosted-glass — **2026-10-03: read to the end — 36 pens** — (2026-10-03) — every page, every pen run and read in full: how the glass is
         made (`backdrop-filter: blur()` + saturation, a translucent fill, a light border / highlight, noise), its fallback
         where `backdrop-filter` is missing, its contrast over a busy photo, and its cost on a low-cost Android (RULE AF)
-      - `[>]` https://webflow.com/made-in-webflow/glassmorphism — **47 listed; re-measuring with the SURFACE recorded (R2-26)** — (2026-10-03) — EVERY project in the listing, each opened and
+      - `[x]` https://webflow.com/made-in-webflow/glassmorphism — **47 measured live with the SURFACE recorded (R2-26)** — (2026-10-03) — EVERY project in the listing, each opened and
         run live: where the glass sits (header, cards, modal, hero panel), what is behind it, blur strength, border /
         highlight, how it moves on scroll or hover — the real-site side of the frosted-glass pens
-      - `[>]` https://www.awwwards.com/websites/texture/ — **805 listed; re-measuring with the SURFACE recorded (R2-26), --saturate=50** — (2026-10-03) — EVERY site in the category (all pages), each live
+      - `[x]` https://www.awwwards.com/websites/texture/ — **SATURATED on SURFACE after 220 sites (50 in a row, 37 known; 581 not needed)** — (2026-10-03) — EVERY site in the category (all pages), each live
         site visited and measured with `aw-measure.js` (it resumes): what the texture is (grain / noise, paper, fabric,
         pattern, an image), how it is made (SVG `feTurbulence`, a tiled image, CSS gradients, canvas), where it sits
         (whole page, a band, behind text), whether it moves, and its weight on a 360px phone on 3G (RULE AF)
@@ -1164,9 +1167,9 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
       software drawing, off-screen headed window (`specimens/realworld.json`, AXIS-MAP step 6): blur is the one real cost (glass on
       every card 4px 108 · 12px 93 · 24px 76 fps; one glass header 126), a FIXED full-page grain 87 fps, moving grain / SVG
       displacement ~3 ms raster per frame; gradients, overlays, shadows, shaped edges free; every page 5–11 KB, first paint ≤ 620 ms;
-      CONTROL 16 fps / 36 long frames · `[ ]` 7 the
+      CONTROL 16 fps / 36 long frames · `[x]` 7 (SIGNED by the user 2026-10-03) the
       "enough" checklist to the user — then AREA V builds it so a USER can do every combination (RULE MAP 6)
-    - **THE "ENOUGH" CHECKLIST (RULE MAP, step 7) — `[?]` WAITING FOR THE USER TO SIGN** (written 2026-10-03, session 35640e85).
+    - **THE "ENOUGH" CHECKLIST (RULE MAP, step 7) — `[x]` SIGNED BY THE USER 2026-10-03 ("checklist is fine by me. You can go ahead")** (written 2026-10-03, session 35640e85).
       Each line covered / not covered, with its evidence; the build of AREA V starts only after the user signs.
       - `[x]` 1 MAP — 7 families broken into axes and values, each with how it is made: colour 6 axes · 33 values · gradients 9 · 31
         · backgrounds 8 · 25 · overlays 5 · 20 · shadows 9 · 29 · glass / filters / blend 10 · 49 · textures 11 · 37 · section
@@ -1185,8 +1188,8 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
       - `[x]` 5b REAL WORLD — 17 effects on a 360px DPR-2 phone, CPU ×6, Slow 3G (`realworld.json`): blur is the one real cost
         (default ≤ 12px, warn above, few elements); fixed full-page grain costs ~40% of frames; moving grain / displacement opt-in;
         the rest free; pages 5–11 KB, first paint ≤ 620 ms
-      - `[ ]` 5c PEOPLE — the pilot schools (RULE RK): not possible before something is built; comes with AREA V's first batch
-      - `[ ]` 6 THE USER CAN DO IT — the BUILD itself (RULE MAP 6, RULE UI): AREA V's batches, first colour & backgrounds incl.
+      - `[x]` 5c PEOPLE — MOVED to AREA V (build work) — the pilot schools (RULE RK): not possible before something is built; comes with AREA V's first batch
+      - `[x]` 6 THE USER CAN DO IT — MOVED to AREA V (build work) — the BUILD itself (RULE MAP 6, RULE UI): AREA V's batches, first colour & backgrounds incl.
         V-7 … V-13, each axis as live previews + "make your own", re-proven through the UI and in Preview
       - Open by the user's decision: Mobbin (skipped), Dribbble search + 22 tag shots (enough). Builder bugs found, fixed in AREA V:
         V-1 … V-13 (V-10 confirmed again on the new edge methods)
@@ -1375,7 +1378,7 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
   - ST-7 · stacked cards — **DECIDED by the user 2026-10-02: BOTH behaviours, side by side** ("can we not do a and b
     together"): each held section chooses **Queue** (today's, one under another — stays the DEFAULT so no saved page
     changes) or **Stack** (each card slides over the last); switchable any time, canvas == export
-- `[ ]` **BATCH L-4 · The decided layout changes** (area: rows and grids · 6 changes, queued)
+- `[>]` **BATCH L-4 · The decided layout changes** ← YOU ARE HERE (next leaf: write its UAT checklist FIRST, then c-8 / c-21 / the grid picker; the user decided 2026-10-03: "finish Task 1 first" — L-4 → L-5 → L-6 (+ S-3, D-1) → the frozen layout list 1.1.5 → PR → Tasks 2–4 → re-sweep + story; AREA V waits) (area: rows and grids · 6 changes)
   - c-7 (decided B) / e-9 · MOVED to BATCH F-1 (2026-10-01) — the HOLE at the end of a line is unused space
   - c-8 (decided B) / e-7 / #127b · words broken across lines ("1,000+" in 165px Stat columns) — 4 pages, 58 findings
   - c-21 (decided B) · edge handles no longer cover the last letter of a block that hugs its words
@@ -1850,6 +1853,13 @@ sent), and my research. Nothing on the layout is done until every line here is c
     - `[ ]` SP-9 · LATER · flow space for a FIXED top bar so the first heading is not hidden (sticky reserves it already)
     - `[ ]` SP-10 · LATER (motion) · clip-revealed fixed scenes — a full-screen picture per section wiping into the next
     - `[ ]` SP-6 · LATER (component) · Table: a sticky header row and first column
+    - `[ ]` SP-12 · **MUST (the user, 2026-10-03: "the user needs to be able to select different variations… not just a few… displayed
+      properly")** · sticky and floating are a GALLERY OF VARIATIONS a user picks from and makes their own (RULE S live previews,
+      RULE UI, RULE T) — not only today's three holds × anchors. **LAYOUT (here):** WHERE and WHEN a block holds — sticks · hides going
+      down / returns going up (SP-2) · a sticky sidebar (SP-8) · sections that pile up (ST-7 Stack) · a bubble in a corner · a bar that
+      appears after a point. **NOT LAYOUT (the user, 2026-10-03: blending, transitions, animation, overlay, shadow are not layout):**
+      HOW it looks while holding — glass / shadow / colour change on scroll, a shrink animation, a progress bar — goes to AREA V. Which
+      variations, and how many, are settled with the user when GROUP 3 opens ("we can talk about it"), mapped the RULE MAP way
     - `[ ]` SP-12 · LATER (component) · Navigation: off-canvas panel (inert, aria-expanded, Escape, focus return, scroll
       lock), active link following the scroll
     - `[ ]` SP-13 · LATER (component) · a real `<dialog>` popup, centred with `inset: 0; margin: auto`
@@ -2323,7 +2333,42 @@ sent), and my research. Nothing on the layout is done until every line here is c
 One entry per session, newest first. Written the moment the user says "new session" (or the context is about to run
 out) — where the session STARTED FROM, where it GOT TO, and where the next one CONTINUES FROM.
 
-### 2026-10-03 · session 6eaa0c27 · branch `builder/layout-uat` — HANDOVER (recommended and accepted: the context is genuinely long — L-3 closed + most of R-2's research and proofs — and the work is at a clean point, everything committed, the crawl running on its own; the next job, the gap check, is heavy)
+### 2026-10-03 · session 35640e85 · branch `builder/layout-uat` — HANDOVER (the user asked "should we start a new session"; recommended: the context is genuinely long — R-2 steps 4 → 7 with every proof re-run, two subagents, the phone pass — and the boundary is clean: everything committed, R-2 signed and closed, a heavy build next)
+- **Started from:** session 6eaa0c27's handover — BATCH R-2 → step 4, the gap check; crawls still running.
+- **Got to:** **R-2 CLOSED — the user SIGNED the "enough" checklist.** Step 4: `r2-gap.js` (71 techniques, 6,736 items) +
+  `r2-census.js` (every property / function / SVG element in 4,131 pens) → ~50 values added AS CODE to `r2-axes.js`, 0 gaps;
+  every proof re-run headed, identical twice (8 families painted, 0 invalid, honest distinct counts — the earlier ones were
+  inflated, R2-27 — every repeat explained; stack 241 ablations, 9 clashes = V-10; nest 164 / 0; states 197 / 0). Crawls closed
+  at measured saturation (CodePen tags, Grabient 927, Awwwards texture 220 on SURFACE). Step 5: the "Not yet" values; the TASTE
+  set (33 picks, 85 screenshots, `area-v/taste-set.md`); 75 Dribbble picker designs (`picker-shots.json`). Step 6: the
+  real-world pass (`realworld.json`): blur is the one real cost (default ≤ 12px), fixed full-page grain ~40% of frames, the rest
+  free. Ledger R2-23 … R2-38 (crawler and proof faults — fixed and mutation-proven; R2-23, R2-38 not bugs, measured). User
+  decisions: Mobbin skipped · Dribbble enough · the phone cost pass runs OFF-SCREEN headed (headless rejected by measurement;
+  every other test stays headed) · **finish Task 1 FIRST** · blending / transitions / animation / overlay / shadow are NOT layout
+  (AREA V, after) · sticky + floating need a gallery of variations (SP-12, layout part only). Commits `43fb21c` `e885c84` `4e307dc`
+  + this handover.
+- **Continue from:** **BATCH L-4 (YOU ARE HERE)** — write its UAT checklist first, then its changes (c-8 words broken across lines,
+  c-21 edge handles over the last letter, the grid picker: any count up to 12). Then L-5 → L-6 (+ S-3, D-1) → the frozen layout
+  list 1.1.5 (6 MUST · 19 BUILD · 9 CHECK · GROUP 3 SP-1 … SP-12) → pull request → `builder/layout-2`: Tasks 2–4 (L-7 · L-8 ·
+  L-9) → one re-sweep + the layout story → Task 1 closed → AREA V (its first batch: colour & backgrounds, V-7 … V-13).
+- **Next prompt (paste to start):** "Branch `builder/layout-uat` (last commit: this handover). Read CLAUDE.md, then
+  `docs/TASK_TREE.md`: this SESSION LOG entry, then YOU ARE HERE — **BATCH L-4 · The decided layout changes**. The user decided
+  2026-10-03: **finish Task 1 first**; blending, transitions, animation, overlays and shadows are NOT layout (AREA V, after).
+  Task 1 still holds: L-4 (c-8 words broken across lines in narrow Stat columns · c-21 edge handles cover the last letter of a
+  block that hugs its words · grid picker any count up to 12), L-5 (#42 Stats height round trip · #46 side-by-side spec on
+  Tablet / Phone · #82b #83 width drift at 1366 · #84 fixed 14rem neighbour floor), L-6 (page-weight audit · Slow-3G profile ·
+  the 19 innovative pages), S-3, D-1, then section 1.1.5 (FROZEN, signed 2026-10-02): 6 MUST + 19 BUILD + 9 CHECK + GROUP 3
+  sticky/fixed SP-1 … SP-12 (SP-12: a GALLERY of sticky / floating variations a user picks and makes their own — settle which
+  with the user when GROUP 3 opens). Then PR → `builder/layout-2` → Tasks 2–4 → re-sweep + story. DO, IN ORDER: (1) check
+  nothing is running (ports 3100 / 3200 / 3400, node / chrome by profile — RULE K); (2) L-4: write the batch's UAT checklist
+  FIRST (every change × theme × 375 / 768 / 1280+ × device presets × states), rebuild (`next build` + `next start` on 3100,
+  `check-fresh-build.js` FRESH), reproduce each line THROUGH THE UI (RULE Y), fix, typecheck + the unit guard after every
+  change, then ONE headed UAT pass in SIX windows (a `uat-l4-headed.js` script, never Playwright MCP alone), then the gate
+  (typecheck · eslint · vitest · test:fast) and commit. TRAPS: a 'killed' notice is not proof — check the port · Git Bash
+  rewrites `\\.` → `MSYS_NO_PATHCONV=1` · heredocs / `node -e` eat backslashes → the Edit tool · vitest and Playwright never
+  together · `next build` into a second folder rewrites tsconfig.json → `git checkout` it · headed windows at scale 1, EXCEPT the
+  real-world cost pass (scale 2 = the phone's real pixels, off-screen) · a size mismatch between screenshots is a measurement
+  fault (R2-27) · read the screenshots, not only the numbers." · branch `builder/layout-uat` — HANDOVER (recommended and accepted: the context is genuinely long — L-3 closed + most of R-2's research and proofs — and the work is at a clean point, everything committed, the crawl running on its own; the next job, the gap check, is heavy)
 - **Started from:** session 07c6c075's handover — BATCH L-3 → L3-p.
 - **Got to:** **BATCH L-3 CLOSED** (`6d67d52`, `4de9d92`): L3-p / L3-b / L3-o were ONE bug — every resize start measured the
   block above with its children's grow off and "restored" `flex-grow` from a `var(--bx-gut)` shorthand (reads ""), breaking
