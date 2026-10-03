@@ -2521,6 +2521,40 @@ sent), and my research. Nothing on the layout is done until every line here is c
 One entry per session, newest first. Written the moment the user says "new session" (or the context is about to run
 out) — where the session STARTED FROM, where it GOT TO, and where the next one CONTINUES FROM.
 
+### 2026-10-03 · session a51af34e · branch `builder/layout-uat` — HANDOVER (the user asked "new session or continue?"; recommended: the context is genuinely long — all of L-4 with four headed passes, two sweep re-runs, the gate and a dozen design decisions — and the boundary is clean: L-4 committed and closed, a heavy research job next)
+- **Started from:** session 35640e85's handover — BATCH L-4 (c-8 · c-21 · grid picker).
+- **Got to:** **BATCH L-4 CLOSED** (`7aa75e5`): c-8 grids and rows give up columns EVENLY rather than break a word
+  (`longestWordRem`, `gridNarrowsAt` steps, `rowNarrowsAt` / `rowQueryCss`); picker 1–12 across (`gridForAcross`); c-21
+  handles 2px outside (`mirrorFlushSides`); L4-f hug snap-back (`maxContentPx`, `HUG_SNAP_PX`); L4-o grids of 4+ keep their
+  count; L4-s my regression fixed. HEADED pass 4 clean in six windows; the eight tier-99 L8 pages 0 errors; gate typecheck 0 ·
+  eslint 0 errors · vitest 4,022 · test:fast 805. **The user's decisions:** the PAGE GRID next, before L-5 / L-6 (AC-37b) —
+  "page grid" in code, "layout guides" in the builder, content decides the SPAN never the grid, every breakpoint / device /
+  responsive rule followed; AC-37 placement at half-steps + bleed out of a section; AC-37c choose by PURPOSE (the builder picks
+  flex or grid); L4-l + L4-n → L-5; L4-r → E-1 (new batch: the empty-box "+" is not a button); a LOGO in every test header (L-6)
+  and a real Logo with the Navigation component plan (COMPONENT_GAPS).
+- **Continue from:** **AC-37b (YOU ARE HERE)** — a NEW AREA, so RULE RS: ask the user for THEIR sources first, research both
+  (RULE MAP), the "enough" checklist signed, then a plan artifact with mockups, approval, build.
+- **Next prompt (paste to start):** "Branch `builder/layout-uat` (last commit: this handover). Read CLAUDE.md, then
+  `docs/TASK_TREE.md`: this SESSION LOG entry, then YOU ARE HERE — **AC-37b · the page grid** (section 1.1.5, with AC-37 /
+  AC-37a / AC-37b / AC-37c beside it). The user decided 2026-10-03: the page grid comes RIGHT AFTER L-4 (closed, `7aa75e5`),
+  BEFORE L-5, L-6 and the frozen list's placement items. What it is: ONE hidden grid per page (12 columns, halves, rows;
+  proposed 4 on a phone · 8 tablet portrait · 12 from tablet landscape) — "page grid" in code, "layout guides" in the
+  builder (shown while placing, a toggle keeps them on); the user's Grid block is MAPPED onto it (3 across = span 4 of 12; a
+  count twelve does not divide keeps its own equal columns inside its span); CONTENT DECIDES THE SPAN, NEVER THE GRID
+  (`longestWordRem` is the input); placement at half-steps and bleed out of a section (AC-37, canvas interaction AC-37a);
+  choose by PURPOSE — Menu / Cards / Logos — and the builder picks flex or grid (AC-37c). Every breakpoint, device preset and
+  responsive rule followed. DO, IN ORDER: (1) RULE K — nothing running on 3100 / 3200 / 3400; (2) say it is a NEW AREA and ASK
+  the user for their sources (RULE RS) before researching; (3) research both — Nexter (`docs/web-anatomy/advanced-css/08-nexter.md`,
+  `07-grid.md`), Webflow / Framer / Wix Studio page grids, Figma layout grids, subgrid (AC-36) — by RULE MAP (axes → an
+  example per value → combinations proven in a browser → saturation); (4) the "enough" checklist in the tree, signed by the
+  user; (5) a plan artifact with mockups → approval → build. NOT DONE: the published artifacts (Builder Hub, Layout System,
+  Parity Audit) — before the PR. QUEUED after the page grid: L-5 (#42, #46, #82b/#83, #84, L4-l, L4-n) · L-6 (+ the logo in
+  test headers) · E-1 · S-3 · D-1 · the rest of 1.1.5 → PR → `builder/layout-2` → Tasks 2–4 → re-sweep + story. TRAPS: a
+  'killed' notice is not proof — check the port (it happened again this session) · a `//` comment inserted mid-line by a
+  script eats the rest of the line — use `/* */` · vitest and Playwright never together · read the screenshots, not only the
+  numbers (the picker's cut frame and the orphan Stat were only seen in pictures) · a palette TILE click adds AFTER the
+  selection, never into a chosen box."
+
 ### 2026-10-03 · session 35640e85 · branch `builder/layout-uat` — HANDOVER (the user asked "should we start a new session"; recommended: the context is genuinely long — R-2 steps 4 → 7 with every proof re-run, two subagents, the phone pass — and the boundary is clean: everything committed, R-2 signed and closed, a heavy build next)
 - **Started from:** session 6eaa0c27's handover — BATCH R-2 → step 4, the gap check; crawls still running.
 - **Got to:** **R-2 CLOSED — the user SIGNED the "enough" checklist.** Step 4: `r2-gap.js` (71 techniques, 6,736 items) +
