@@ -511,6 +511,14 @@ Run through this checklist BEFORE telling the user it's done:
        trees: a value set on a parent flows DOWN to its children unless they set their own; what a child does shows UP
        through every parent (no parent silently clips, covers or isolates it). A level where a family cannot be applied,
        or a parent that swallows a child's effect, is a GAP or a bug.
+       **…AND EVERY STATE, EFFECT AND TRANSITION THE SAME WAY (the user, 2026-10-03: "hover effect, any effect, any
+       transition… a single element all the way to a component all the way to a section, and down… where it's applicable…
+       and a user must be able to do this").** Hover, focus, press / click, selected, transitions and animations are
+       families too: each applies at every level, on its own and nested, cascading DOWN (a card's hover can drive its
+       button and its words) and composing UP (a button's own hover still works inside a card with its own), wherever it
+       is APPLICABLE — WCAG first: focus always visible, `prefers-reduced-motion` honoured, nothing that needs a hover on a
+       touch screen. It applies to what is ALREADY built and to everything built from now on, and the user can set every
+       one of them in the builder (step 6, RULE UI).
     4. **SATURATE, MEASURED:** sources are read to find axes or values the map lacks, not for volume; research stops when
        a measured run of new sources adds none (RULE R's `--saturate`). The test of enough, in the user's words: "we
        understand what that thing is… the gist of virtually any variation… and we can do it".
