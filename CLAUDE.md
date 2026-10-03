@@ -366,6 +366,15 @@ Run through this checklist BEFORE telling the user it's done:
     list in `docs/TASK_TREE.md` names what it holds and what has been read; anything not read stays an open line.
     Measured, 2026-10-02: a listing was cut at 8 pages, a glossary's own "animation" and "transition" links were
     skipped, and pens were cut at 6,000 characters — found only when the user asked "have we missed anything?".
+  - **…UNTIL SATURATED FOR THE BIG LISTINGS (the user, 2026-10-03: research what we NEED, not everything).** Small
+    sources (a tool site, a showcase of tens, one pen, MDN) are still read COMPLETELY. A big listing (a CodePen tag, a
+    gallery category of hundreds) is read in a SHUFFLED order until it is SATURATED — a measured run of items in a row
+    (`--saturate=N`, 150 for CodePen as in R-1) adds no new technique — and that stopping point is written in the tree
+    with its numbers, never guessed. The area's "enough" checklist (RULE RS) is the finish line; every item opened is
+    still opened INSIDE (run, code read, live site followed), never judged on its thumbnail. **The test of "enough" (the
+    user, 2026-10-03): "until we understand what that thing is… the gist of virtually any variations that we want and we
+    can do it — then we stop."** The checklist names each variation family and HOW it is made; when every family is
+    understood well enough to build, research stops, for every area, now and later.
   - **EVERY ITEM IS OPENED, RUN AND READ — A LIST IS NOT RESEARCH (the user, 2026-10-02: "go inside each and every one
     of them… this is for everything that we're doing").** For every source (CodePen, Awwwards, Webflow, One Page Love,
     any gallery or listing): each pen / site / project on every page is OPENED, run live the way a visitor meets it

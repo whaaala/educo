@@ -1114,6 +1114,36 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
         ellipses / masks / canvas), whether it is a section edge, a divider, a background shape or a moving line, how it
         responds to width, and its weight — feeds AREA V's "section shapes & blending" batch beside the divider and wave
         tags (R-1). In parallel collectors, never beside a UAT
+    - **THE METHOD, INSIDE EVERY LINK (the user, 2026-10-03, during wave 1: "click inside each link… we want to study
+      everything that each of this item has in each of this link").** A listing is only the way in:
+      - CodePen tags → every pen on every page OPENED and RUN (scrolled, hovered, screenshotted), its FULL html / css / js
+        saved and read, how it is made written per pen (`cp-tag.js` + `cp-how.js`)
+      - galleries (Webflow showcases, Awwwards) → every item listed (`src-list.js`), then EACH item opened, its "Visit"
+        followed to the LIVE site, and that site met as a visitor does — loaded, scrolled, hovered, clicked, desktop and
+        phone — the overlay / shadow / glass / texture read from its own code (`aw-measure.js`)
+      - tool / collection sites (webgradients, uiGradients, Grabient, cssgradient.io, ConvertFlow, Dribbble, Magnific,
+        Mobbin) → every ITEM opened (each gradient, example, shot, shape) AND every on-topic link inside the site followed
+        and read; each site gets a completeness list here (what it holds · what is read) and is never marked read on its
+        front page or thumbnails
+    - **DECIDED by the user 2026-10-03: research "until saturated"** — and the test of enough, in their words: "until we
+      understand what that thing is… the gist of virtually any variations that we want and we can do it — then we stop".
+      Written into RULE R (CLAUDE.md, guarded). Small sources complete; CodePen tags `--saturate=150`, Awwwards texture
+      `--saturate=50`; the stopping points recorded here with their numbers. Running from 10:39: `r2-saturate.sh` +
+      `r2-sites.sh` (6 windows, 6.1 GB free at start)
+    - LEDGER of R-2:
+      - `[x]` R2-1 · `aw-measure.js` followed Made in Webflow's "Clone" button (`dashboard/sites/new…unauthSignup`, a
+        sign-up page) — 12 of 12 overlay items recorded `noLiveSite`, unmeasured. FIXED: the item's own `*.webflow.io`
+        site (a link or its description); the Awwwards-only `/sites/` fallback kept to Awwwards. SEEN: items 1–10 now
+        measured on their live sites (476 KB, 3,858 KB…); the 12 bad records removed so they are re-measured
+      - `[x]` R2-2 · `site-read.js` (new) read 1 page of uiGradients / Grabient / cssgradient.io / webgradients: Git Bash
+        rewrote `\.` in the include pattern into `/.`, so no inner link matched. FIXED: `MSYS_NO_PATHCONV=1` in the
+        runner. SEEN: webgradients now opens every gradient's own page (`/gradient/033-…`, 41 read in the first minutes)
+      - `[x]` R2-3 · MY OWN: wave 1 recorded bash PIDs that cannot stop Windows processes (collector D "killed" was still
+        running). Every crawler is now stopped by its unique profile path, verified (RULE K)
+    - WAVE 1 running 2026-10-03 10:26 (`educo-research/r2-wave1.sh`): CodePen shadow · overlay + frosted-glass +
+      glassmorphism + backdrop-filter · colorpicker + texture + curves + noise + grain; lists wf-overlay (27) / wf-shadow /
+      wf-glassmorphism / aw-texture; the single pen READ. Collector D (divider, gradient-text, gradient-border,
+      mesh-gradient, blend-mode, mix-blend-mode) PAUSED at 0.8 GB free (RULE RS: stepped down) — restarts when memory allows
     - My own sources for the same scope (RULE RS), run beside the user's: MDN (background, gradients, mix-blend-mode,
       filter / backdrop-filter, box-shadow / drop-shadow / text-shadow, color functions, color-mix, relative colours,
       `@property` for animating gradients, clip-path / mask) · web.dev / Chrome developers · getwaves.io · shapedivider.app

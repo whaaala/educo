@@ -154,11 +154,15 @@ if (SAT) for (let i = queue.length - 1; i > 0; i--) { const j = Math.floor(Math.
             const off = (a) => !a.href.includes(host) && /^https?:/.test(a.href) && !/twitter|facebook|linkedin|pinterest|instagram/.test(a.href);
             const label = (a) => ((a.innerText || '') + ' ' + (a.getAttribute('aria-label') || '')).trim();
             const links = [...document.querySelectorAll('.review-header a[href], a[href]')].filter(off);
-            const visit = links.find(a => /^\s*visit (site|website|resource)\b/i.test(label(a))) || links.find(a => /^\s*(preview|view (site|website|live)|live site)\b/i.test(label(a)));
+            // …and on Made in Webflow, the item's own `*.webflow.io` site, wherever it is linked — a CLONEABLE page has no
+            // "Preview" label (R-2, 2026-10-03: 12 of 12 overlay items went unmeasured), and its description names the site.
+            const wfLive = /webflow\.com$/.test(host) ? (links.find(a => /^https:\/\/[^/]+\.webflow\.io\b/.test(a.href)) || (() => { const m = /https:\/\/[a-z0-9-]+\.webflow\.io[^\s"')]*/i.exec((document.querySelector('meta[name=description]') || {}).content + ' ' + document.body.innerText); return m ? { href: m[0] } : null; })()) : null;
+            const visit = links.find(a => /^\s*visit (site|website|resource)\b/i.test(label(a))) || links.find(a => /^\s*(preview|view (site|website|live)|live site)\b/i.test(label(a))) || wfLive;
             const tags = [...new Set([...document.querySelectorAll('a[href*="/websites/"], a[href*="/inspiration/"], a[href*="tag"]')].map(a => (a.innerText || '').trim()).filter(t => t && t.length < 30))].slice(0, 40);
             // An inspiration item is a RECORDING of the effect: keep the video, and the site's own Awwwards page (R-5).
             const vids = [...document.querySelectorAll('video source, video')].map(v => v.src || v.currentSrc).filter(u => u && /^https?:/.test(u)).slice(0, 2);
-            const sitePage = (document.querySelector('main a[href*="/sites/"], a[href*="/sites/"]') || {}).href || null;
+            // Awwwards only: on Made in Webflow `a[href*="/sites/"]` is the "Clone" button (dashboard/sites/new — a sign-up page)
+            const sitePage = /awwwards\.com$/.test(host) ? (document.querySelector('main a[href*="/sites/"], a[href*="/sites/"]') || {}).href || null : null;
             return { title: document.title.replace(/ - Awwwards.*/, ''), site: visit ? visit.href : null, sitePage, vids, tags, desc: (document.querySelector('meta[name=description]') || {}).content || '' };
           }));
           if (!rec.site && rec.sitePage) {

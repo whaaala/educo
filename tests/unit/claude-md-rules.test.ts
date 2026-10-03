@@ -159,6 +159,7 @@ const RULES: [name: string, mustSay: RegExp][] = [
   ["…read the research before building any builder feature", /Before building any builder feature, read what the research says/],
   ["…captured once, extended forever", /Captured once, extended forever/],
   ["…nothing in a link is left out: every page, every example, every link inside", /NOTHING IN A LINK IS LEFT OUT/],
+  ["…until saturated for the big listings, the stopping point measured (the user, 2026-10-03)", /UNTIL SATURATED FOR THE BIG LISTINGS[\s\S]*Small[\s\S]*sources[\s\S]*COMPLETELY[\s\S]*--saturate=N/],
   ["…every item is opened, run and read — a list is not research", /EVERY ITEM IS OPENED, RUN AND READ/],
   ["RULE RS — research together (the user's + the session's own), an 'enough' checklist signed off, then build", /RULE RS — RESEARCH TOGETHER, THEN BUILD[\s\S]*"enough" checklist[\s\S]*signed off by the user/],
   ["…a new session / new area with no signed 'enough' checklist: the session reminds the user research comes first", /THE SESSION REMINDS THE USER[\s\S]*needs a full\s+research first/],
