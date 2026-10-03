@@ -1,0 +1,705 @@
+{
+ "at": "2026-10-03T15:08:06.942Z",
+ "profile": "360×640 DPR 2 · CPU ×6 · Slow 3G 400 ms / 400 kbit/s",
+ "browser": "145.0.7632.6",
+ "runs": 3,
+ "results": [
+  {
+   "effect": "baseline",
+   "fcp": 556,
+   "loadMs": 566,
+   "fps": 144.4,
+   "longFrames": 0,
+   "kb": 5.5,
+   "rasterMs": 0.14,
+   "paintMs": 0,
+   "runs": [
+    {
+     "fcp": 556,
+     "loadMs": 566,
+     "fps": 144.43076308352008,
+     "long": 0,
+     "bytes": 5846,
+     "rasterMsPerFrame": 0.13731336405529954,
+     "paintMsPerFrame": 0
+    },
+    {
+     "fcp": 612,
+     "loadMs": 620,
+     "fps": 144.10276890308836,
+     "long": 0,
+     "bytes": 5638,
+     "rasterMsPerFrame": 0.14433256351039261,
+     "paintMsPerFrame": 0
+    },
+    {
+     "fcp": 544,
+     "loadMs": 553,
+     "fps": 144.5317703476755,
+     "long": 0,
+     "bytes": 5638,
+     "rasterMsPerFrame": 0.1527488479262673,
+     "paintMsPerFrame": 0
+    }
+   ],
+   "fcpVsBase": 0,
+   "fpsVsBase": 0
+  },
+  {
+   "effect": "gradient linear",
+   "fcp": 572,
+   "loadMs": 571,
+   "fps": 144.6,
+   "longFrames": 0,
+   "kb": 5.8,
+   "rasterMs": 0.51,
+   "paintMs": 0,
+   "runs": [
+    {
+     "fcp": 600,
+     "loadMs": 601,
+     "fps": 144.63291898212253,
+     "long": 0,
+     "bytes": 5963,
+     "rasterMsPerFrame": 0.720315668202765,
+     "paintMsPerFrame": 0
+    },
+    {
+     "fcp": 552,
+     "loadMs": 553,
+     "fps": 144.2660091934167,
+     "long": 0,
+     "bytes": 5963,
+     "rasterMsPerFrame": 0.5108683602771362,
+     "paintMsPerFrame": 0
+    },
+    {
+     "fcp": 572,
+     "loadMs": 571,
+     "fps": 144.64255957455376,
+     "long": 0,
+     "bytes": 5963,
+     "rasterMsPerFrame": 0.48258986175115204,
+     "paintMsPerFrame": 0
+    }
+   ],
+   "fcpVsBase": 16,
+   "fpsVsBase": 0.2
+  },
+  {
+   "effect": "gradient mesh (4 layers)",
+   "fcp": 572,
+   "loadMs": 571,
+   "fps": 144.4,
+   "longFrames": 0,
+   "kb": 6.7,
+   "rasterMs": 1.73,
+   "paintMs": 0,
+   "runs": [
+    {
+     "fcp": 584,
+     "loadMs": 586,
+     "fps": 144.36350331315094,
+     "long": 0,
+     "bytes": 6830,
+     "rasterMsPerFrame": 1.3577880184331796,
+     "paintMsPerFrame": 0
+    },
+    {
+     "fcp": 556,
+     "loadMs": 562,
+     "fps": 143.14247669546418,
+     "long": 0,
+     "bytes": 6830,
+     "rasterMsPerFrame": 1.7338581395348835,
+     "paintMsPerFrame": 0
+    },
+    {
+     "fcp": 572,
+     "loadMs": 571,
+     "fps": 144.37791084497673,
+     "long": 0,
+     "bytes": 6830,
+     "rasterMsPerFrame": 1.9732834101382488,
+     "paintMsPerFrame": 0
+    }
+   ],
+   "fcpVsBase": 16,
+   "fpsVsBase": 0
+  },
+  {
+   "effect": "aurora (blur 2.5rem blobs)",
+   "fcp": 572,
+   "loadMs": 602,
+   "fps": 144.3,
+   "longFrames": 0,
+   "kb": 7.5,
+   "rasterMs": 0.93,
+   "paintMs": 0,
+   "runs": [
+    {
+     "fcp": 572,
+     "loadMs": 602,
+     "fps": 144.32371175599053,
+     "long": 0,
+     "bytes": 7690,
+     "rasterMsPerFrame": 1.0036143187066975,
+     "paintMsPerFrame": 0
+    },
+    {
+     "fcp": 584,
+     "loadMs": 608,
+     "fps": 144.43076308466607,
+     "long": 0,
+     "bytes": 7690,
+     "rasterMsPerFrame": 0.8753341013824885,
+     "paintMsPerFrame": 0
+    },
+    {
+     "fcp": 568,
+     "loadMs": 599,
+     "fps": 144.14114513981357,
+     "long": 0,
+     "bytes": 7690,
+     "rasterMsPerFrame": 0.9340877598152425,
+     "paintMsPerFrame": 0
+    }
+   ],
+   "fcpVsBase": 16,
+   "fpsVsBase": -0.1
+  },
+  {
+   "effect": "photo + overlay scrim",
+   "fcp": 568,
+   "loadMs": 629,
+   "fps": 144.4,
+   "longFrames": 0,
+   "kb": 10,
+   "rasterMs": 0.68,
+   "paintMs": 0,
+   "runs": [
+    {
+     "fcp": 568,
+     "loadMs": 629,
+     "fps": 144.56547083478452,
+     "long": 0,
+     "bytes": 10283,
+     "rasterMsPerFrame": 0.7765760368663595,
+     "paintMsPerFrame": 0
+    },
+    {
+     "fcp": 552,
+     "loadMs": 611,
+     "fps": 144.44518405456017,
+     "long": 0,
+     "bytes": 10283,
+     "rasterMsPerFrame": 0.6774055299539171,
+     "paintMsPerFrame": 0
+    },
+    {
+     "fcp": 588,
+     "loadMs": 641,
+     "fps": 144.02607770204693,
+     "long": 0,
+     "bytes": 10283,
+     "rasterMsPerFrame": 0.5733579676674365,
+     "paintMsPerFrame": 0
+    }
+   ],
+   "fcpVsBase": 12,
+   "fpsVsBase": 0
+  },
+  {
+   "effect": "glass blur 4px",
+   "fcp": 548,
+   "loadMs": 640,
+   "fps": 108,
+   "longFrames": 0,
+   "kb": 10.3,
+   "rasterMs": 0.35,
+   "paintMs": 0,
+   "runs": [
+    {
+     "fcp": 548,
+     "loadMs": 640,
+     "fps": 102.31878280512923,
+     "long": 0,
+     "bytes": 10546,
+     "rasterMsPerFrame": 0.47337337662337664,
+     "paintMsPerFrame": 0
+    },
+    {
+     "fcp": 540,
+     "loadMs": 630,
+     "fps": 107.98560191974404,
+     "long": 0,
+     "bytes": 10546,
+     "rasterMsPerFrame": 0.313391975308642,
+     "paintMsPerFrame": 0
+    },
+    {
+     "fcp": 568,
+     "loadMs": 657,
+     "fps": 110.2561540263911,
+     "long": 0,
+     "bytes": 10546,
+     "rasterMsPerFrame": 0.3473987915407855,
+     "paintMsPerFrame": 0
+    }
+   ],
+   "fcpVsBase": -8,
+   "fpsVsBase": -36.4
+  },
+  {
+   "effect": "glass blur 12px",
+   "fcp": 568,
+   "loadMs": 654,
+   "fps": 92.7,
+   "longFrames": 0,
+   "kb": 10.3,
+   "rasterMs": 0.43,
+   "paintMs": 0,
+   "runs": [
+    {
+     "fcp": 568,
+     "loadMs": 654,
+     "fps": 89.50853492021825,
+     "long": 0,
+     "bytes": 10571,
+     "rasterMsPerFrame": 0.4155687732342007,
+     "paintMsPerFrame": 0
+    },
+    {
+     "fcp": 568,
+     "loadMs": 658,
+     "fps": 92.94297284663881,
+     "long": 0,
+     "bytes": 10571,
+     "rasterMsPerFrame": 0.43436071428571427,
+     "paintMsPerFrame": 0
+    },
+    {
+     "fcp": 564,
+     "loadMs": 654,
+     "fps": 92.72183449430642,
+     "long": 0,
+     "bytes": 10571,
+     "rasterMsPerFrame": 0.4301935483870968,
+     "paintMsPerFrame": 0
+    }
+   ],
+   "fcpVsBase": 12,
+   "fpsVsBase": -51.7
+  },
+  {
+   "effect": "glass blur 24px",
+   "fcp": 572,
+   "loadMs": 658,
+   "fps": 75.7,
+   "longFrames": 0,
+   "kb": 10.3,
+   "rasterMs": 0.42,
+   "paintMs": 0,
+   "runs": [
+    {
+     "fcp": 572,
+     "loadMs": 663,
+     "fps": 77.31873237222062,
+     "long": 0,
+     "bytes": 10571,
+     "rasterMsPerFrame": 0.5295622317596567,
+     "paintMsPerFrame": 0
+    },
+    {
+     "fcp": 564,
+     "loadMs": 654,
+     "fps": 74.94859720103469,
+     "long": 1,
+     "bytes": 10571,
+     "rasterMsPerFrame": 0.4079070796460177,
+     "paintMsPerFrame": 0
+    },
+    {
+     "fcp": 576,
+     "loadMs": 658,
+     "fps": 75.71499421391965,
+     "long": 0,
+     "bytes": 10571,
+     "rasterMsPerFrame": 0.4211965065502183,
+     "paintMsPerFrame": 0
+    }
+   ],
+   "fcpVsBase": 16,
+   "fpsVsBase": -68.7
+  },
+  {
+   "effect": "glass blur 24px, sticky header",
+   "fcp": 572,
+   "loadMs": 633,
+   "fps": 125.6,
+   "longFrames": 0,
+   "kb": 9.9,
+   "rasterMs": 0.37,
+   "paintMs": 0,
+   "runs": [
+    {
+     "fcp": 572,
+     "loadMs": 627,
+     "fps": 123.78955774985766,
+     "long": 0,
+     "bytes": 10127,
+     "rasterMsPerFrame": 0.3738279569892473,
+     "paintMsPerFrame": 0
+    },
+    {
+     "fcp": 584,
+     "loadMs": 633,
+     "fps": 125.55784986544562,
+     "long": 0,
+     "bytes": 10127,
+     "rasterMsPerFrame": 0.3799946949602122,
+     "paintMsPerFrame": 0
+    },
+    {
+     "fcp": 572,
+     "loadMs": 633,
+     "fps": 136.21074366511723,
+     "long": 0,
+     "bytes": 10127,
+     "rasterMsPerFrame": 0.3000635696821516,
+     "paintMsPerFrame": 0
+    }
+   ],
+   "fcpVsBase": 16,
+   "fpsVsBase": -18.8
+  },
+  {
+   "effect": "grain (feTurbulence tile, overlay)",
+   "fcp": 584,
+   "loadMs": 603,
+   "fps": 144.4,
+   "longFrames": 0,
+   "kb": 8.6,
+   "rasterMs": 0.47,
+   "paintMs": 0,
+   "runs": [
+    {
+     "fcp": 556,
+     "loadMs": 581,
+     "fps": 144.3683055065425,
+     "long": 0,
+     "bytes": 8760,
+     "rasterMsPerFrame": 0.3797188940092166,
+     "paintMsPerFrame": 0
+    },
+    {
+     "fcp": 584,
+     "loadMs": 605,
+     "fps": 144.52214452329196,
+     "long": 0,
+     "bytes": 8760,
+     "rasterMsPerFrame": 0.4776221198156682,
+     "paintMsPerFrame": 0
+    },
+    {
+     "fcp": 592,
+     "loadMs": 603,
+     "fps": 144.44518405112163,
+     "long": 0,
+     "bytes": 8760,
+     "rasterMsPerFrame": 0.4743041474654378,
+     "paintMsPerFrame": 0
+    }
+   ],
+   "fcpVsBase": 28,
+   "fpsVsBase": 0
+  },
+  {
+   "effect": "grain, moving (steps)",
+   "fcp": 620,
+   "loadMs": 615,
+   "fps": 143.9,
+   "longFrames": 0,
+   "kb": 8.8,
+   "rasterMs": 3.13,
+   "paintMs": 0.34,
+   "runs": [
+    {
+     "fcp": 620,
+     "loadMs": 615,
+     "fps": 142.97140572340027,
+     "long": 0,
+     "bytes": 8963,
+     "rasterMsPerFrame": 2.978037296037296,
+     "paintMsPerFrame": 0.33583216783216785
+    },
+    {
+     "fcp": 680,
+     "loadMs": 691,
+     "fps": 143.93762703057456,
+     "long": 0,
+     "bytes": 8963,
+     "rasterMsPerFrame": 3.128041666666667,
+     "paintMsPerFrame": 0.28232870370370367
+    },
+    {
+     "fcp": 556,
+     "loadMs": 580,
+     "fps": 144.44037674195636,
+     "long": 0,
+     "bytes": 8963,
+     "rasterMsPerFrame": 3.2059147465437787,
+     "paintMsPerFrame": 0.35784331797235025
+    }
+   ],
+   "fcpVsBase": 64,
+   "fpsVsBase": -0.5
+  },
+  {
+   "effect": "grain, fixed full-page layer",
+   "fcp": 596,
+   "loadMs": 585,
+   "fps": 87.4,
+   "longFrames": 0,
+   "kb": 6.1,
+   "rasterMs": 0.18,
+   "paintMs": 0,
+   "runs": [
+    {
+     "fcp": 596,
+     "loadMs": 585,
+     "fps": 86.1495476324022,
+     "long": 0,
+     "bytes": 6251,
+     "rasterMsPerFrame": 0.18211969111969112,
+     "paintMsPerFrame": 0
+    },
+    {
+     "fcp": 608,
+     "loadMs": 601,
+     "fps": 87.3754152837762,
+     "long": 0,
+     "bytes": 6251,
+     "rasterMsPerFrame": 0.21570722433460077,
+     "paintMsPerFrame": 0
+    },
+    {
+     "fcp": 592,
+     "loadMs": 580,
+     "fps": 114.74373898293811,
+     "long": 0,
+     "bytes": 6251,
+     "rasterMsPerFrame": 0.17663478260869564,
+     "paintMsPerFrame": 0
+    }
+   ],
+   "fcpVsBase": 40,
+   "fpsVsBase": -57
+  },
+  {
+   "effect": "shadows: 3 layers on every card",
+   "fcp": 552,
+   "loadMs": 548,
+   "fps": 144.3,
+   "longFrames": 0,
+   "kb": 6.6,
+   "rasterMs": 0.67,
+   "paintMs": 0,
+   "runs": [
+    {
+     "fcp": 552,
+     "loadMs": 548,
+     "fps": 144.5654708382288,
+     "long": 0,
+     "bytes": 6723,
+     "rasterMsPerFrame": 0.6723271889400922,
+     "paintMsPerFrame": 0
+    },
+    {
+     "fcp": 552,
+     "loadMs": 548,
+     "fps": 144.29004632402297,
+     "long": 0,
+     "bytes": 6723,
+     "rasterMsPerFrame": 0.6563441108545035,
+     "paintMsPerFrame": 0
+    },
+    {
+     "fcp": 576,
+     "loadMs": 583,
+     "fps": 144.0740001319508,
+     "long": 0,
+     "bytes": 6723,
+     "rasterMsPerFrame": 0.6682217090069283,
+     "paintMsPerFrame": 0
+    }
+   ],
+   "fcpVsBase": -4,
+   "fpsVsBase": -0.1
+  },
+  {
+   "effect": "shadow: glow 2.5rem on every card",
+   "fcp": 568,
+   "loadMs": 562,
+   "fps": 144.5,
+   "longFrames": 0,
+   "kb": 5.9,
+   "rasterMs": 0.55,
+   "paintMs": 0,
+   "runs": [
+    {
+     "fcp": 568,
+     "loadMs": 562,
+     "fps": 144.49808556454462,
+     "long": 0,
+     "bytes": 6023,
+     "rasterMsPerFrame": 0.4915,
+     "paintMsPerFrame": 0
+    },
+    {
+     "fcp": 540,
+     "loadMs": 540,
+     "fps": 144.3779108438316,
+     "long": 0,
+     "bytes": 6023,
+     "rasterMsPerFrame": 0.6118225806451613,
+     "paintMsPerFrame": 0
+    },
+    {
+     "fcp": 572,
+     "loadMs": 569,
+     "fps": 144.64255956880714,
+     "long": 0,
+     "bytes": 6023,
+     "rasterMsPerFrame": 0.5456774193548387,
+     "paintMsPerFrame": 0
+    }
+   ],
+   "fcpVsBase": 12,
+   "fpsVsBase": 0.1
+  },
+  {
+   "effect": "svg filter: displace on the photo",
+   "fcp": 560,
+   "loadMs": 635,
+   "fps": 144.3,
+   "longFrames": 0,
+   "kb": 10,
+   "rasterMs": 2.64,
+   "paintMs": 0,
+   "runs": [
+    {
+     "fcp": 552,
+     "loadMs": 594,
+     "fps": 144.45479962492075,
+     "long": 0,
+     "bytes": 10288,
+     "rasterMsPerFrame": 2.2923778801843318,
+     "paintMsPerFrame": 0
+    },
+    {
+     "fcp": 560,
+     "loadMs": 635,
+     "fps": 144.24678526561308,
+     "long": 0,
+     "bytes": 10288,
+     "rasterMsPerFrame": 2.9488337182448037,
+     "paintMsPerFrame": 0
+    },
+    {
+     "fcp": 568,
+     "loadMs": 645,
+     "fps": 144.26120273082142,
+     "long": 0,
+     "bytes": 10288,
+     "rasterMsPerFrame": 2.642531177829099,
+     "paintMsPerFrame": 0
+    }
+   ],
+   "fcpVsBase": 4,
+   "fpsVsBase": -0.1
+  },
+  {
+   "effect": "CONTROL: 60px blur on every band + moving grain",
+   "fcp": 512,
+   "loadMs": 655,
+   "fps": 15.8,
+   "longFrames": 36,
+   "kb": 11.1,
+   "rasterMs": 10.85,
+   "paintMs": 1.12,
+   "runs": [
+    {
+     "fcp": 544,
+     "loadMs": 657,
+     "fps": 15.909844215605808,
+     "long": 33,
+     "bytes": 11367,
+     "rasterMsPerFrame": 11.212541666666667,
+     "paintMsPerFrame": 1.2959166666666666
+    },
+    {
+     "fcp": 512,
+     "loadMs": 655,
+     "fps": 15.751649001247728,
+     "long": 36,
+     "bytes": 11367,
+     "rasterMsPerFrame": 10.847020833333334,
+     "paintMsPerFrame": 1.0987708333333333
+    },
+    {
+     "fcp": 496,
+     "loadMs": 643,
+     "fps": 15.802469135802468,
+     "long": 39,
+     "bytes": 11367,
+     "rasterMsPerFrame": 10.839479166666665,
+     "paintMsPerFrame": 1.1159791666666667
+    }
+   ],
+   "fcpVsBase": -44,
+   "fpsVsBase": -128.6
+  },
+  {
+   "effect": "clip-path wave edge on every band",
+   "fcp": 564,
+   "loadMs": 566,
+   "fps": 144.4,
+   "longFrames": 0,
+   "kb": 6,
+   "rasterMs": 0.14,
+   "paintMs": 0,
+   "runs": [
+    {
+     "fcp": 564,
+     "loadMs": 562,
+     "fps": 144.42595673647693,
+     "long": 0,
+     "bytes": 6137,
+     "rasterMsPerFrame": 0.12653917050691244,
+     "paintMsPerFrame": 0
+    },
+    {
+     "fcp": 564,
+     "loadMs": 566,
+     "fps": 144.55584052341422,
+     "long": 0,
+     "bytes": 6137,
+     "rasterMsPerFrame": 0.14423963133640552,
+     "paintMsPerFrame": 0
+    },
+    {
+     "fcp": 576,
+     "loadMs": 597,
+     "fps": 144.32852238144025,
+     "long": 0,
+     "bytes": 6137,
+     "rasterMsPerFrame": 0.1470623556581986,
+     "paintMsPerFrame": 0
+    }
+   ],
+   "fcpVsBase": 8,
+   "fpsVsBase": 0
+  }
+ ]
+}

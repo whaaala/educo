@@ -1048,7 +1048,7 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
   control the export ignores · presets only with no "make your own". Step 2: the user sees the list and orders it; then
   batches of ≤ 6 by area, each HEADED-tested through the UI. Known so far: V-1 · V-5 · Advanced CSS on components only ·
   legacy `gradient:` only from the bulk inspector · motion tokens internal only
-- `[>]` **BATCH R-2 · Everything an element can be styled and do — the full property set** ← YOU ARE HERE (next leaf: step 4 — the GAP CHECK once the crawl ends; steps 1–3d proven and committed through 3fdb8c6; session 6eaa0c27 handed over 2026-10-03) (QUEUED 2026-10-03, the user:
+- `[>]` **BATCH R-2 · Everything an element can be styled and do — the full property set** ← YOU ARE HERE (next leaf: step 7 — the "enough" checklist to the user to SIGN; steps 1–6 done, session 35640e85) (QUEUED 2026-10-03, the user:
   "typography, types, utilities, background colour… transition… all of the exhaustive stuff an HTML element on a page
   might need"). Motion / events / elements are covered and signed (R-1, `html-semantics.md`, `dom-element-api.md`); the
   CSS PROPERTY side has no signed "enough" checklist: the CSS coverage map (memory `project_css_coverage`, MDN's 68
@@ -1078,7 +1078,7 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
         enters and leaves, the backdrop (dim, blur, colour), how it is closed (button, Escape, outside click), focus and
         accessibility, and how it behaves on a phone. NOTE: a popup is a COMPONENT (a modal / dialog) — it feeds the
         component rebuild and needs the user's approval before it is built (rule 13)
-      - `[?]` https://mobbin.com/explore/web/ui-elements/full-screen-overlay — **NEEDS AN ACCOUNT: the first page shows ~40 screens, then "Log in or join for free to continue browsing" — the user decides (never a workaround)** — (2026-10-03) — every full-screen overlay
+      - `[x]` https://mobbin.com/explore/web/ui-elements/full-screen-overlay — **SKIPPED by the user 2026-10-03 · NEEDS AN ACCOUNT: the first page shows ~40 screens, then "Log in or join for free to continue browsing" — the user decides (never a workaround)** — (2026-10-03) — every full-screen overlay
         screen in the collection (all of it, scrolled to the end): what it covers, what it holds (menu, search, video,
         form), how it opens / closes, its backdrop. CHECK FIRST: Mobbin usually needs a signed-in account to show more
         than a preview — if it does, the user is asked for access (never a workaround) and the line stays open
@@ -1095,7 +1095,7 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
       - `[x]` https://codepen.io/tag/overlay — **2026-10-03: SATURATED at page 84 — 501 pens** — (2026-10-03) — NOT collected before (checked: nothing named overlay in
         `docs/web-anatomy/codepen/`). Same method as the shadow tag: every page, every pen run and read in full, how each
         overlay is made (colour / gradient / image / blur / blend, on hover, on scroll, full screen)
-      - `[>]` https://dribbble.com/tags/colorpicker — **2026-10-03: the listing + 98 shots read and every screenshot OPENED (picker
+      - `[x]` https://dribbble.com/tags/colorpicker — **ENOUGH, the user 2026-10-03 · 2026-10-03: the listing + 98 shots read and every screenshot OPENED (picker
         controls per shot + patterns: `area-v/picker-shots.json`); 18 "shots" were captcha pages saved before R2-24 (R2-36) —
         removed and re-crawled, 17 recovered; 1 + 21 queued shots NOT read: Dribbble shows Human Verification again (stepped
         down) — retried later, never worked around** — (2026-10-03) — EVERY shot in the tag (scrolled to the end), each opened
@@ -1103,7 +1103,7 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
         sliders, hex / RGB / HSL / OKLCH entry, transparency, eyedropper, saved and brand swatches, gradient stops,
         contrast hints — written down per shot, then the patterns that repeat. Designs, not code: it decides what the
         builder's picker should LOOK and FEEL like (RULE UI), compared with today's `EducoColorField`
-      - `[?]` https://dribbble.com/search/color-picker — **BLOCKED: Dribbble answers "Human Verification" from page 13 — stepped down (RULE RS, R2-24); 21 search pages read, no shot reached; the tag above covers the same designs** — (2026-10-03) — every result to the end, the same per-shot notes;
+      - `[x]` https://dribbble.com/search/color-picker — **ENOUGH, the user 2026-10-03 · BLOCKED: Dribbble answers "Human Verification" from page 13 — stepped down (RULE RS, R2-24); 21 search pages read, no shot reached; the tag above covers the same designs** — (2026-10-03) — every result to the end, the same per-shot notes;
         shots already read from the tag above are recognised and not read twice (only new ones added)
       - `[x]` https://codepen.io/tag/colorpicker — **2026-10-03: read to the end — 182 pens** — (2026-10-03) — every page, every pen run and its code read in full: how a
         working picker is BUILT (canvas / gradients for the spectrum, pointer + keyboard on the thumb, colour maths
@@ -1153,10 +1153,18 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
       fixed by a wrapper drop-shadow, proven; a white pattern × multiply is a no-op) — `r2-stack.js`, `specimens/stack.html` · `[x]` 3c EVERY LEVEL, NESTED (section → card → button → text): 40 trees, 161 ablations, 0 invalid, cascade-down 0
       failures, 0 clashes, 2 named no-ops — `r2-nest.js`, `specimens/nest.html` · `[x]` 3d STATES / EFFECTS / TRANSITIONS at
       every level, both ways, WCAG first: 30 trees, 133 checks, 0 failed (real mouse + keyboard; focus ring; reduce motion) —
-      `r2-states.js`; two builder rules found (own state beats a driven one; no inline base where a state changes it) · `[ ]` 4 the crawl's GAP CHECK — every
-      technique / value it collected compared with the map; anything new is added AS CODE to `r2-axes.js` and the whole
-      proof re-run (sheets, combinations, stacks) — nothing the crawl finds is left in a document · `[ ]` 5 the values
-      still outside the proof (AXIS-MAP "Not yet") · `[ ]` 6 the real-world pass (360px phone, Slow 3G) · `[ ]` 7 the
+      `r2-states.js`; two builder rules found (own state beats a driven one; no inline base where a state changes it) · `[x]` 4 the crawl's GAP CHECK (`43fb21c`) —
+      r2-gap.js 71 techniques over 6,736 items + r2-census.js (every property / function / SVG element in 4,131 pens): ~50
+      values added AS CODE, 0 gaps left (cross-fade: 0 uses); every proof re-run headed and identical twice: 8 families painted,
+      0 invalid, honest distinct counts with every repeat explained · stack 241 ablations, 9 clashes = V-10 · nest 164, 0
+      clashes · states 197 checks, 0 failed · `[x]` 5 the AXIS-MAP "Not yet" values — added with step 4 (4/8-digit hex,
+      currentColor, transparent, to-corner, image-set, background-clip, hover / scroll overlays, dark shadow scale, glass
+      fallback, moving grain, path() / shape(), scroll-linked edge); the picker CONTROLS are a UI → AREA V's build, designs read
+      (75 pickers, `picker-shots.json`) · `[x]` 6 the real-world pass — 17 effects × 3 runs on a 360 × 640 DPR-2 phone, CPU ×6, Slow 3G,
+      software drawing, off-screen headed window (`specimens/realworld.json`, AXIS-MAP step 6): blur is the one real cost (glass on
+      every card 4px 108 · 12px 93 · 24px 76 fps; one glass header 126), a FIXED full-page grain 87 fps, moving grain / SVG
+      displacement ~3 ms raster per frame; gradients, overlays, shadows, shaped edges free; every page 5–11 KB, first paint ≤ 620 ms;
+      CONTROL 16 fps / 36 long frames · `[ ]` 7 the
       "enough" checklist to the user — then AREA V builds it so a USER can do every combination (RULE MAP 6)
     - LEDGER of R-2:
       - `[x]` R2-1 · `aw-measure.js` followed Made in Webflow's "Clone" button (`dashboard/sites/new…unauthSignup`, a
@@ -1205,7 +1213,7 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
       - `[x]` R2-25 · Dribbble tag stopped at 84 of ~800 queued with no DONE line and no note (the restarts at 10:29/10:39) —
         an unfinished crawl that looked finished; and it had no depth limit, so related shots drifted off the tag. FIXED:
         resumed with `--depth=1 --listing=tags/colorpicker` (depth written onto the 84 read pages) → DONE, 100 pages, 0 left
-      - `[>]` R2-26 · `aw-measure.js` recorded MOTION only (sticky / fixed / timeline / clip / snap) — 78 Awwwards TEXTURE sites
+      - `[x]` R2-26 · `aw-measure.js` recorded MOTION only (sticky / fixed / timeline / clip / snap) — 78 Awwwards TEXTURE sites
         and all 81 Webflow overlay / shadow / glassmorphism sites held nothing about texture, overlay, glass or shadow. FIXED:
         `how.css.surface` (gradient / filter url / backdrop / blend / image-background / layered shadow rules),
         `surfaceDom` (SVG filter primitives in the page, canvases, the big backgrounds with size / repeat / blend / opacity),
@@ -1253,6 +1261,26 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
         opening every screenshot. FIXED: removed (82 real pages left), re-crawled with the challenge stop → 17 recovered, then
         Dribbble challenged again and the crawl stepped down by itself (R2-24 seen working in the wild: nothing saved). Open
         remainder recorded on the link's line
+      - `[x]` R2-37 · MY OWN, the real-world pass: every effect read **144 fps** (the monitor's refresh rate), FCP within noise —
+        a guard that could not fail. The CPU throttle slows only the main thread; blur / shadow / grain are RASTER work, done free
+        by a desktop GPU — exactly the cost a low-cost phone pays. FIXED: `--disable-gpu --disable-gpu-compositing` (software
+        drawing) + the drawing WORK traced (raster + paint ms per scrolled frame, vs the baseline) + a deliberately heavy CONTROL.
+        Proven: baseline 0.14 ms raster / 144 fps · glass 24px 0.48 ms / 96 fps · CONTROL 8.22 ms / 22.8 fps, a long frame
+      - `[x]` R2-38 · NOT A BUG (measured) — the user asked, 2026-10-03: "where is the window and the content in it this large?".
+        The real-world pass launches Chrome at `--force-device-scale-factor=2`; I first took it for the "headed windows at scale 1"
+        trap and set 1 — then MEASURED: the page still reports devicePixelRatio 2, but the window draws half the phone's pixels and
+        the cost collapses (CONTROL 13.68 → 0.75 ms raster per frame, 10.9 → 84 fps; glass 24px 48 → 111 fps). The large window
+        IS a 720 × 1280 phone at its real density — what a low-cost Android draws. Reverted to 2, with the reason in the code. The
+        scale-1 rule stands for the proof windows (r2-combos etc.), where pixels are compared, not costs
+      - **DECIDED by the user 2026-10-03 (the big window covered their screen):** the real-world COST pass runs in a headed window
+        placed OFF-SCREEN (`--window-position=-2600,0`, occlusion throttling and backgrounding switched off). HEADLESS was tried and
+        REJECTED by measurement: capped at 60 fps and composited without a screen, it showed glass 24px at 60 fps where the real
+        window shows 33–48 — it hides the main finding. Off-screen checked against the visible window (baseline 144 fps / 0.14 ms
+        both; CONTROL 9.0 ms / 22.5 fps vs 8.22 ms / 22.8 fps). **Nothing else changes:** every other test, proof and UAT stays
+        HEADED and visible (RULE Z), six windows; the user asked to be sure of that
+    - **DECIDED by the user 2026-10-03:** Mobbin — SKIP (needs an account; the ~40 screens seen are kept, overlays are covered by
+      Webflow 27 · CodePen 501 · ConvertFlow 18). Dribbble — ENOUGH as it is (75 picker designs read; the blocked search and the
+      tag's last 22 shots are not chased)
     - WAVE 1 running 2026-10-03 10:26 (`educo-research/r2-wave1.sh`): CodePen shadow · overlay + frosted-glass +
       glassmorphism + backdrop-filter · colorpicker + texture + curves + noise + grain; lists wf-overlay (27) / wf-shadow /
       wf-glassmorphism / aw-texture; the single pen READ. Collector D (divider, gradient-text, gradient-border,

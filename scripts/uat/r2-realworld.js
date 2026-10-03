@@ -31,6 +31,9 @@ const EFFECTS = {
   'shadows: 3 layers on every card': { band: `background: #eef2f7; color: #0f172a;`, card: 'background:#fff; box-shadow: 0 .125rem .25rem oklch(0% 0 0 / .08), 0 .5rem 1rem oklch(0% 0 0 / .1), 0 1.5rem 3rem oklch(0% 0 0 / .14);' },
   'shadow: glow 2.5rem on every card': { band: `background: oklch(20% .05 270);`, card: 'background: oklch(30% .05 270); box-shadow: 0 0 2.5rem oklch(70% .2 300 / .8);' },
   'svg filter: displace on the photo': { band: `background: ${PHOTO} center / cover; filter: url(#d);`, extra: '<svg width="0" height="0" style="position:absolute"><filter id="d"><feTurbulence type="fractalNoise" baseFrequency=".03" numOctaves="2" result="t"/><feDisplacementMap in="SourceGraphic" in2="t" scale="22"/></filter></svg>' },
+  // R2-37: the CONTROL — deliberately heavy (a 60px backdrop blur over every whole band, plus a moving full-page grain). If the
+  // measure cannot tell THIS from the baseline, it cannot tell anything (the fps-only pass read 144 for every effect)
+  'CONTROL: 60px blur on every band + moving grain': { band: `background: ${PHOTO} center / cover; position: relative;`, inBand: '<div style="position:absolute;inset:0;backdrop-filter:blur(60px);-webkit-backdrop-filter:blur(60px)"></div>', extra: `<div style="position:fixed;inset:0;pointer-events:none;z-index:9;background:${NOISE} 0 0 / 8rem;opacity:.3;mix-blend-mode:overlay;animation:g .3s steps(4) infinite"></div>` },
   'clip-path wave edge on every band': { band: `background: ${BRAND}; clip-path: polygon(0 0, 100% 0, 100% 92%, 75% 100%, 50% 92%, 25% 100%, 0 92%);` },
 };
 const page = (e) => {
@@ -45,7 +48,11 @@ const page = (e) => {
   for (const e of want) pages['/' + encodeURIComponent(e)] = page(e);
   const srv = http.createServer((q, r) => { const b = pages[q.url.split('?')[0]]; r.writeHead(b ? 200 : 404, { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' }); r.end(b || ''); }).listen(0);
   const port = srv.address().port;
-  const browser = await chromium.launch({ headless: false, args: ['--force-device-scale-factor=2'] });
+  // OFF-SCREEN, still headed (the user, 2026-10-03: the honest DPR-2 window covered their screen). Headless was tried and REJECTED:
+  // capped at 60 fps and composited without a screen, it showed glass 24px as 60 fps where the real window shows 48. Windows
+  // throttles a window it thinks is hidden, so occlusion detection and backgrounding are switched off — checked against the
+  // visible run before the numbers are used
+  const browser = await chromium.launch({ headless: false, args: ['--window-position=-2600,0', '--disable-features=CalculateNativeWinOcclusion', '--disable-backgrounding-occluded-windows', '--disable-renderer-backgrounding', '--force-device-scale-factor=2', '--disable-gpu', '--disable-gpu-compositing'] }); // R2-37: software drawing (a desktop GPU hides a phone's cost) · R2-38: scale 2 is NEEDED — at 1 the window draws half the phone's pixels (control 0.75 vs 13.68 ms/frame); the big window IS a 720×1280 phone
   const results = [];
   for (const e of want) {
     const runs = [];
@@ -57,15 +64,20 @@ const page = (e) => {
       let bytes = 0; cdp.on('Network.loadingFinished', (m) => { bytes += m.encodedDataLength; });
       const t0 = Date.now(); await pg.goto(`http://127.0.0.1:${port}/${encodeURIComponent(e)}?r=${k}`, { waitUntil: 'load', timeout: 120000 }); const loadMs = Date.now() - t0;
       const fcp = await pg.evaluate(() => new Promise((res) => { const f = performance.getEntriesByName('first-contentful-paint')[0]; if (f) return res(f.startTime); new PerformanceObserver((l) => res(l.getEntries()[0].startTime)).observe({ type: 'paint', buffered: true }); setTimeout(() => res(null), 8000); }));
-      // 3 s of scrolling, the way a thumb scrolls: frame times read from requestAnimationFrame
+      // 3 s of scrolling, the way a thumb scrolls: frame times read from requestAnimationFrame — AND the drawing WORK traced
+      // (R2-37: fps alone read 144 everywhere — the monitor's rate; blur / shadow / grain are raster work, not main-thread work)
+      await browser.startTracing(pg, { categories: ['devtools.timeline', 'disabled-by-default-devtools.timeline', 'cc'] });
       const scroll = await pg.evaluate(() => new Promise((res) => { const times = []; let last = performance.now(); const start = last; const step = (now) => { times.push(now - last); last = now; scrollBy(0, 9); if (now - start < 3000) requestAnimationFrame(step); else res(times); }; requestAnimationFrame(step); }));
       const fps = scroll.length / (scroll.reduce((a, b) => a + b, 0) / 1000); const long = scroll.filter((t) => t > 50).length;
-      runs.push({ fcp, loadMs, fps, long, bytes });
+      const trace = JSON.parse((await browser.stopTracing()).toString()); const ev = trace.traceEvents || trace;
+      const sum = (re) => ev.filter((x) => x.ph === 'X' && re.test(x.name)).reduce((a, x) => a + (x.dur || 0), 0) / 1000;
+      const raster = sum(/^(RasterTask|RasterizerTaskImpl::RunOnWorkerThread)$/), paint = sum(/^Paint$/);
+      runs.push({ fcp, loadMs, fps, long, bytes, rasterMsPerFrame: raster / scroll.length, paintMsPerFrame: paint / scroll.length });
       await ctx.close();
     }
     const med = (k) => { const v = runs.map((r) => r[k]).filter((x) => x != null).sort((a, b) => a - b); return v[Math.floor(v.length / 2)]; };
-    const r = { effect: e, fcp: Math.round(med('fcp')), loadMs: med('loadMs'), fps: +med('fps').toFixed(1), longFrames: med('long'), kb: +(med('bytes') / 1024).toFixed(1), runs };
-    results.push(r); console.log(`${e.padEnd(36)} FCP ${String(r.fcp).padStart(5)} ms · scroll ${String(r.fps).padStart(5)} fps · ${String(r.longFrames).padStart(3)} frames > 50 ms · ${r.kb} KB`);
+    const r = { effect: e, fcp: Math.round(med('fcp')), loadMs: med('loadMs'), fps: +med('fps').toFixed(1), longFrames: med('long'), kb: +(med('bytes') / 1024).toFixed(1), rasterMs: +med('rasterMsPerFrame').toFixed(2), paintMs: +med('paintMsPerFrame').toFixed(2), runs };
+    results.push(r); console.log(`${e.padEnd(36)} FCP ${String(r.fcp).padStart(5)} ms · scroll ${String(r.fps).padStart(5)} fps · ${String(r.longFrames).padStart(3)} frames > 50 ms · raster ${r.rasterMs} ms + paint ${r.paintMs} ms per frame · ${r.kb} KB`);
   }
   const base = results.find((r) => r.effect === 'baseline');
   if (base) for (const r of results) { r.fcpVsBase = r.fcp - base.fcp; r.fpsVsBase = +(r.fps - base.fps).toFixed(1); }

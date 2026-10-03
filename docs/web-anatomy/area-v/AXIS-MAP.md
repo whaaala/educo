@@ -255,6 +255,40 @@ below except the colour PICKER controls (a UI, proven in AREA V's build) and the
 glass — the `@supports` fallback and `prefers-reduced-transparency`; textures — moving grain; shapes — `clip-path: path()` /
 `shape()`, scroll-linked motion. And the real-world pass (cost of blur / grain / shadows on a 360px phone, Slow 3G).
 
+## Step 6 — the real-world pass (2026-10-03): what each effect COSTS on a low-cost phone (RULE AF)
+
+**How** (`scripts/uat/r2-realworld.js`, `specimens/realworld.json`): a realistic page — six full-height bands of words, cards and
+a photo — with the effect on every band, on a 360 × 640 phone at DPR 2 (drawn at its real 720 × 1280 pixels), CPU slowed 6×,
+Slow 3G (400 ms, 400 kbit/s), software drawing (a desktop GPU hides the cost: R2-37), 3 runs, median, in a headed window placed off-screen (the user's decision — checked against the visible window; headless was REJECTED: it showed glass 24px at a capped 60 fps). Saved run: 2026-10-03T15:08, 145.0.7632.6. Measured: first paint,
+3 s of scrolling (frames per second, frames over 50 ms) and the drawing work traced per frame. A deliberately heavy CONTROL
+proves the measure can tell (the first, fps-only pass read 144 for everything).
+
+| Effect | Scroll fps | Long frames | Raster ms / frame | Verdict for the builder |
+|---|---|---|---|---|
+| baseline | 144 | 0 | 0.14 | — |
+| gradient linear | 145 | 0 | 0.51 | free |
+| gradient mesh (4 layers) | 144 | 0 | 1.73 | cheap; the costliest gradient |
+| aurora (blur 2.5rem blobs) | 144 | 0 | 0.93 | cheap when it does not move |
+| photo + overlay scrim | 144 | 0 | 0.68 | free |
+| glass blur 4px | 108 | 0 | 0.35 | a quarter of the frames gone on every card |
+| glass blur 12px | 93 | 0 | 0.43 | **a third of the frames gone** |
+| glass blur 24px | 76 | 0 | 0.42 | **too heavy on every card** (33–76 fps across runs) — cap the blur, glass on few elements |
+| glass blur 24px, sticky header | 126 | 0 | 0.37 | one glass bar is affordable |
+| grain (feTurbulence tile, overlay) | 144 | 0 | 0.47 | free |
+| grain, moving (steps) | 144 | 0 | 3.13 | redraws every frame — off by default, off under reduced motion |
+| grain, fixed full-page layer | 87 | 0 | 0.18 | **costs ~40% of the frames** — put grain on bands, not a fixed overlay |
+| shadows: 3 layers on every card | 144 | 0 | 0.67 | free |
+| shadow: glow 2.5rem on every card | 145 | 0 | 0.55 | free |
+| svg filter: displace on the photo | 144 | 0 | 2.64 | heavy draw — use sparingly |
+| **CONTROL** 60px blur on every band + moving grain | 16 | 36 | 10.85 | unusable — the measure works |
+| clip-path wave edge on every band | 144 | 0 | 0.14 | free |
+
+Every page stayed tiny (5–11 KB) and painted first within 620 ms on Slow 3G — inside RULE AF's budgets. **What the builder
+must do (RULE AF):** blur is the one effect that costs real frames — offer glass at ≤ 12px by default, warn above it, and never
+on many elements at once; grain belongs on the band, not on a fixed full-page layer; moving textures and displacement filters
+are opt-in and switched off under `prefers-reduced-motion`. Gradients, overlays, shadows and shaped edges are free. The scale
+of the window matters (R2-38): at scale 1 the same CONTROL measured 18× cheaper — a phone draws every device pixel.
+
 ## What is left for "enough"
 
 - **Step 2 — an example per value** (`specimens/<family>.html`): every value above as a small, labelled, working piece of
