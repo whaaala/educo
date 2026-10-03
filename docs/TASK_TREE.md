@@ -1058,7 +1058,7 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
       filter / backdrop-filter, box-shadow / drop-shadow / text-shadow, color functions, color-mix, relative colours,
       `@property` for animating gradients, clip-path / mask) · web.dev / Chrome developers · getwaves.io · shapedivider.app
       · haikei.app · css.glass · coolors.co / Adobe Color (palettes) · grain / noise and mesh gradients · gradient text and
-      borders. GAPS the user was told about 2026-10-03 (glass and textures since sent): no link of theirs yet for section shapes / blending on real sites,
+      borders. GAPS the user was told about 2026-10-03 (glass and textures since sent). The user, 2026-10-03: "we have enough… or you're good on that?" → the rest is MY research, no more links needed: shape-divider tools, blend modes, palettes, gradient text / borders / animated gradients, mesh — from MDN and the tools listed above. Was: no link of theirs yet for section shapes / blending on real sites,
       glass / blur, textures, blend modes, palettes
 - `[x]` **BATCH R-1 · Research at full width** — CLOSED 2026-10-02 ~20:00 by the user's "enough" (area: research runs · 4 changes, OPEN 2026-10-02 — the user: "once the
   testing is done… multiple browsers so we can do it faster… we start this in a NEW session"; the rule is in CLAUDE.md
