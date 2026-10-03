@@ -1141,6 +1141,13 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
       Written into RULE R (CLAUDE.md, guarded). Small sources complete; CodePen tags `--saturate=150`, Awwwards texture
       `--saturate=50`; the stopping points recorded here with their numbers. Running from 10:39: `r2-saturate.sh` +
       `r2-sites.sh` (6 windows, 6.1 GB free at start)
+    - **THE ORDER TO "ENOUGH" (RULE MAP, agreed with the user 2026-10-03):** `[x]` 1 the axis map (`area-v/AXIS-MAP.md`) ·
+      `[x]` 2 a specimen per value · `[x]` 3a combinations per family proven · `[x]` 3b ACROSS families on one block — 40 stacks, 213 ablations, 0 invalid, 10 clashes all explained (V-10 9/9,
+      fixed by a wrapper drop-shadow, proven; a white pattern × multiply is a no-op) — `r2-stack.js`, `specimens/stack.html` · `[ ]` 4 the crawl's GAP CHECK — every
+      technique / value it collected compared with the map; anything new is added AS CODE to `r2-axes.js` and the whole
+      proof re-run (sheets, combinations, stacks) — nothing the crawl finds is left in a document · `[ ]` 5 the values
+      still outside the proof (AXIS-MAP "Not yet") · `[ ]` 6 the real-world pass (360px phone, Slow 3G) · `[ ]` 7 the
+      "enough" checklist to the user — then AREA V builds it so a USER can do every combination (RULE MAP 6)
     - LEDGER of R-2:
       - `[x]` R2-1 · `aw-measure.js` followed Made in Webflow's "Clone" button (`dashboard/sites/new…unauthSignup`, a
         sign-up page) — 12 of 12 overlay items recorded `noLiveSite`, unmeasured. FIXED: the item's own `*.webflow.io`
@@ -1159,6 +1166,13 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
         period (hard edges kept hard) · R2-13 "distinct" by hash → ≥ 0.6% of pixels moved > 8/255; and whole-number keys
         reordered by JavaScript made the colour base 25% → labels with units, an explicit visible base per family.
         Every check MUTATION-PROVEN (blank bands → 0/28 painted; invisible layers → same look)
+      - `[x]` R2-15 · the per-family proof checked only each stage's OWN style, never the elements inside it (glass card,
+        shape bands, gradient words) → every element, a `-webkit-` fallback beside its standard form accepted
+      - `[x]` R2-16 · the stack's band filled 70% of the WIDTH (in a row flexbox `flex: 0 0 70%` is a width) → fills it
+      - `[x]` R2-17 · shots taken before a data-URI texture / photo decoded differed from finished ones → retaken until two
+        consecutive shots match
+      - `[x]` R2-18 · ablations compared tiles at DIFFERENT sheet positions — sub-pixel anti-aliasing read as a change, so 8
+        of the 9 V-10 clashes were missed (one measured 0.00% alone) → rendered in ONE stage: 9 / 9 found
       - `[x]` R2-14 · `site-read.js` died on one write Windows had locked (`UNKNOWN: open`) after 661 pages of webgradients →
         temp file + rename, retried; a failed save no longer ends the crawl
       - `[x]` R2-3 · MY OWN: wave 1 recorded bash PIDs that cannot stop Windows processes (collector D "killed" was still

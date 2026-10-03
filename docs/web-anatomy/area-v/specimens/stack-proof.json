@@ -1,0 +1,193 @@
+{
+ "at": "2026-10-03T11:16:12.895Z",
+ "n": 40,
+ "seed": 1,
+ "ablations": 213,
+ "invalid": [],
+ "clashes": {
+  "bandShadow": [
+   {
+    "id": "stack#1.1",
+    "labels": {
+     "base": "conic",
+     "photo": "on",
+     "overlay": "tint 40%",
+     "overlayBlend": "soft-light",
+     "texture": "dots",
+     "edge": "wave",
+     "edgeMethod": "clip-path",
+     "bandShadow": "on the band",
+     "card": "solid",
+     "cardBlur": "16px",
+     "cardShadow": "off",
+     "heading": "solid"
+    },
+    "d": 0
+   },
+   {
+    "id": "stack#1.7",
+    "labels": {
+     "base": "radial",
+     "photo": "on",
+     "overlay": "off",
+     "overlayBlend": "screen",
+     "texture": "off",
+     "edge": "slope",
+     "edgeMethod": "mask",
+     "bandShadow": "on the band",
+     "card": "solid",
+     "cardBlur": "6px",
+     "cardShadow": "hard",
+     "heading": "gradient"
+    },
+    "d": 0
+   },
+   {
+    "id": "stack#1.9",
+    "labels": {
+     "base": "colour",
+     "photo": "on",
+     "overlay": "scrim 60%",
+     "overlayBlend": "normal",
+     "texture": "stripes",
+     "edge": "wave",
+     "edgeMethod": "clip-path",
+     "bandShadow": "on the band",
+     "card": "glass",
+     "cardBlur": "16px",
+     "cardShadow": "hard",
+     "heading": "solid"
+    },
+    "d": 0
+   },
+   {
+    "id": "stack#1.15",
+    "labels": {
+     "base": "conic",
+     "photo": "off",
+     "overlay": "scrim 60%",
+     "overlayBlend": "screen",
+     "texture": "stripes",
+     "edge": "wave",
+     "edgeMethod": "mask",
+     "bandShadow": "on the band",
+     "card": "off",
+     "cardBlur": "6px",
+     "cardShadow": "off",
+     "heading": "gradient"
+    },
+    "d": 0
+   },
+   {
+    "id": "stack#1.17",
+    "labels": {
+     "base": "radial",
+     "photo": "on",
+     "overlay": "pattern 30%",
+     "overlayBlend": "screen",
+     "texture": "grain",
+     "edge": "zigzag",
+     "edgeMethod": "mask",
+     "bandShadow": "on the band",
+     "card": "solid",
+     "cardBlur": "16px",
+     "cardShadow": "off",
+     "heading": "gradient"
+    },
+    "d": 0
+   },
+   {
+    "id": "stack#1.19",
+    "labels": {
+     "base": "radial",
+     "photo": "on",
+     "overlay": "off",
+     "overlayBlend": "screen",
+     "texture": "stripes",
+     "edge": "zigzag",
+     "edgeMethod": "mask",
+     "bandShadow": "on the band",
+     "card": "solid",
+     "cardBlur": "16px",
+     "cardShadow": "glow",
+     "heading": "solid"
+    },
+    "d": 0
+   },
+   {
+    "id": "stack#1.20",
+    "labels": {
+     "base": "colour",
+     "photo": "off",
+     "overlay": "tint 40%",
+     "overlayBlend": "multiply",
+     "texture": "off",
+     "edge": "curve",
+     "edgeMethod": "clip-path",
+     "bandShadow": "on the band",
+     "card": "solid",
+     "cardBlur": "6px",
+     "cardShadow": "soft",
+     "heading": "solid"
+    },
+    "d": 0.000125
+   },
+   {
+    "id": "stack#1.30",
+    "labels": {
+     "base": "colour",
+     "photo": "on",
+     "overlay": "scrim 60%",
+     "overlayBlend": "normal",
+     "texture": "off",
+     "edge": "zigzag",
+     "edgeMethod": "clip-path",
+     "bandShadow": "on the band",
+     "card": "solid",
+     "cardBlur": "16px",
+     "cardShadow": "soft",
+     "heading": "gradient"
+    },
+    "d": 0.000041666666666666665
+   },
+   {
+    "id": "stack#1.34",
+    "labels": {
+     "base": "radial",
+     "photo": "on",
+     "overlay": "off",
+     "overlayBlend": "multiply",
+     "texture": "grain",
+     "edge": "curve",
+     "edgeMethod": "mask",
+     "bandShadow": "on the band",
+     "card": "off",
+     "cardBlur": "6px",
+     "cardShadow": "off",
+     "heading": "gradient"
+    },
+    "d": 0
+   }
+  ],
+  "overlay": [
+   {
+    "id": "stack#1.26",
+    "labels": {
+     "base": "linear",
+     "photo": "on",
+     "overlay": "pattern 30%",
+     "overlayBlend": "multiply",
+     "texture": "stripes",
+     "edge": "curve",
+     "edgeMethod": "clip-path",
+     "bandShadow": "on the wrapper",
+     "card": "off",
+     "cardBlur": "16px",
+     "cardShadow": "glow",
+     "heading": "solid"
+    },
+    "d": 0
+   }
+  ]
+ }
+}

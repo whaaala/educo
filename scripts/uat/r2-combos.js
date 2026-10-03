@@ -13,17 +13,14 @@ const OUT = path.join(__dirname, '..', '..', 'docs', 'web-anatomy', 'area-v', 's
 
 async function check(pg, html) {
   await pg.setContent(html, { waitUntil: 'load' }); await pg.waitForTimeout(400);
-  // every declaration of every stage's inline style, valid in THIS browser?
-  const invalid = await pg.evaluate(() => [...document.querySelectorAll('[data-demo]')].flatMap((e) => {
-    const bad = []; for (const decl of (e.getAttribute('style') || '').split(/;(?![^(]*\))/)) { const i = decl.indexOf(':'); if (i < 0) continue; const k = decl.slice(0, i).trim(), v = decl.slice(i + 1).trim(); if (k && v && !CSS.supports(k, v)) bad.push(`${e.dataset.id} → ${k}: ${v.slice(0, 80)}`); }
-    return bad;
-  }));
+  // every declaration of every stage AND every element inside it, valid in THIS browser (R2-15)
+  const invalid = await invalidIn(pg, '[data-demo], [data-demo] [style]');
   const blank = crypto.createHash('md5').update(await pg.evaluate(() => { const s = document.createElement('div'); s.className = 'stage'; s.id = 'blank'; document.body.prepend(s); return ''; }) + await (await pg.$('#blank')).screenshot()).digest('hex');
   await pg.evaluate(() => document.getElementById('blank').remove());
   const shots = [];
   for (const el of await pg.$$('[data-demo]')) {
     await el.scrollIntoViewIfNeeded(); const id = await el.getAttribute('data-id');
-    const png = await el.screenshot({ animations: 'disabled' });
+    const png = await stableShot(el); // R2-17: not before its textures / photo have decoded
     // R2-5: "it differs from an empty stage" passed a sheet of blank white bands. PAINTED now = the picture holds at least
     // two colours (sampled), so a demo that drew nothing over its fill reads as not painted.
     const colours = await decoder.evaluate(async (b64) => { const im = new Image(); im.src = 'data:image/png;base64,' + b64; await im.decode(); const c = document.createElement('canvas'); c.width = im.width; c.height = im.height; const x = c.getContext('2d'); x.drawImage(im, 0, 0); const d = x.getImageData(8, 8, Math.max(1, c.width - 16), Math.max(1, c.height - 16)).data; /* the INSIDE only: the stage's outline and rounded corners gave a blank stage a second colour */ const s = new Set(); for (let i = 0; i < d.length; i += 4) s.add(`${d[i] >> 2},${d[i + 1] >> 2},${d[i + 2] >> 2}`); /* EVERY pixel: one in 97 missed thin letters and 1px lines (R2-8) */ return s.size; }, png.toString('base64'));
@@ -55,7 +52,7 @@ async function lookAlike(shots) {
   return groups;
 }
 
-(async () => {
+if (require.main === module) (async () => {
   const browser = await chromium.launch({ headless: false, args: ['--force-device-scale-factor=1'] });
   const pg = await browser.newPage({ viewport: { width: 1280, height: 900 }, deviceScaleFactor: 1 });
   decoder = await browser.newPage();
@@ -93,3 +90,11 @@ async function lookAlike(shots) {
   fs.writeFileSync(path.join(OUT, 'proof.json'), JSON.stringify({ at: new Date().toISOString(), seed: SEED, n: N, browser: browser.version(), report }, null, 1));
   await browser.close();
 })();
+
+/** R2-17: a data-URI texture / photo decodes ASYNCHRONOUSLY — a shot taken before it finished differs from a finished one.
+ *  Retake until two consecutive shots match. */
+async function stableShot(el, opts = { animations: 'disabled' }) { let prev = await el.screenshot(opts); for (let k = 0; k < 8; k++) { await new Promise((r) => setTimeout(r, 120)); const next = await el.screenshot(opts); if (next.equals(prev)) return next; prev = next; } return prev; }
+/** R2-15: EVERY element's inline declarations (the per-family check read only the stage's own), a `-webkit-` fallback
+ *  accepted where its standard form is in the same style and supported. */
+const invalidIn = (pg, sel) => pg.evaluate((sel) => [...document.querySelectorAll(sel)].flatMap((e) => { const st = e.getAttribute('style') || ''; return st.split(/;(?![^(]*\))/).map((d) => { const i = d.indexOf(':'); if (i < 0) return null; const k = d.slice(0, i).trim(), v = d.slice(i + 1).trim(); if (!k || !v || CSS.supports(k, v)) return null; if (k.startsWith('-webkit-') && CSS.supports(k.slice(8), v) && st.includes(k.slice(8) + ':')) return null; return `${(e.closest('[data-demo]') || e).dataset.id} → ${k}: ${v.slice(0, 70)}`; }).filter(Boolean); }), sel);
+module.exports = { diffRatio, lookAlike, VISIBLE, setDecoder: (d) => { decoder = d; }, stableShot, invalidIn };

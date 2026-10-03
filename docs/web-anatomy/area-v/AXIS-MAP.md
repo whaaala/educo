@@ -153,6 +153,18 @@
   position, a scrim's direction, noise settings vs drawn patterns; and three ways to draw one edge (clip-path · mask · SVG)
   that must stay identical.
 
+**ACROSS FAMILIES, ON ONE BLOCK (RULE MAP 3b — `scripts/uat/r2-stack.js`, `specimens/stack.html`, `stack-proof.json`).**
+40 random hero blocks, each stacking a base (colour / linear / radial / conic) + photo + overlay (tint · scrim · pattern, with a
+blend) + texture (grain · dots · stripes) + a shaped edge (clip-path or mask) + a band shadow + a glass or solid card with
+its own shadow + a solid or gradient heading; every ingredient it uses ABLATED (rendered without it, in the same place):
+**213 ablations · 0 invalid declarations · 10 clashes, all explained:**
+- **9 / 9 — a box-shadow ON a shaped band vanishes** (the edge clips it): AREA V bug **V-10**, confirmed in every case. The
+  same shadow as a `drop-shadow` on a WRAPPER never vanished — the fix is proven.
+- **1 — a white pattern overlay with `multiply` draws nothing**: the by-nature no-op of textures, now seen across families.
+Every other ingredient stayed visible on top of all the others. Measurement traps found and fixed on the way: shots taken
+before a data-URI texture decoded (R2-17 — retaken until stable), and tiles compared at different sheet positions
+(R2-18 — ablations rendered in ONE stage).
+
 **Not yet in the proof** (in the tables above, still to add as code before "enough"): colour — 4/8-digit hex,
 `currentColor`/`transparent`, the picker controls (a UI, proven in AREA V's build); gradients — `to <corner>` keywords,
 `image-set()`, `background-clip` other than text; overlays — hover / scroll states; shadows — hover state, dark-theme scale;

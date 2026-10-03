@@ -233,4 +233,61 @@ figure { margin: 0; } figcaption { font-size: .75rem; color: #475569; margin-top
 .words { font-weight: 800; font-size: 1.75rem; position: relative; } .big { font-size: 3rem; } .light { color: #fff; }
 </style></head><body>${demos.map((d, i) => `<figure><div class="stage" data-demo="${i}" data-id="${d.id}" style="${d.css.replace(/"/g, '&quot;')}">${d.html || ''}</div><figcaption>${d.id}${d.labels ? ' · ' + Object.entries(d.labels).map(([a, v]) => `${a}: ${v}`).join(' · ') : ''}</figcaption></figure>`).join('\n')}</body></html>`;
 }
-module.exports = { FAMILIES, specimens, combos, page, SHAPES };
+// ── RULE MAP step 3, ACROSS FAMILIES: every family STACKED on one block (a hero band + a glass card + the next band) ──
+// Each ingredient can be left OUT (`omit`), so a clash is found by ablation: if removing an ingredient changes nothing you
+// can see, the others hid or broke it. Values come from the families' own axes, so the stack proves the same vocabulary.
+const STACK = {
+  axes: {
+    base: { colour: 'colour', linear: 'linear', radial: 'radial', conic: 'conic' },
+    photo: { off: false, on: true },
+    overlay: { off: null, 'tint 40%': 'tint', 'scrim 60%': 'scrim', 'pattern 30%': 'pattern' },
+    overlayBlend: { normal: 'normal', multiply: 'multiply', 'soft-light': 'soft-light', screen: 'screen' },
+    texture: { off: null, grain: 'grain', dots: 'dots', stripes: 'stripes' },
+    edge: { off: null, wave: 'wave', slope: 'slope', curve: 'curve', zigzag: 'zigzag', torn: 'torn' },
+    edgeMethod: { 'clip-path': 'clip', mask: 'mask' },
+    bandShadow: { off: false, 'on the wrapper': 'wrapper', 'on the band': 'band' },
+    card: { off: false, glass: 'glass', solid: 'solid' },
+    cardBlur: { '6px': 6, '16px': 16 },
+    cardShadow: { off: null, soft: 'soft', glow: 'glow', hard: 'hard' },
+    heading: { solid: 'solid', gradient: 'gradient' },
+  },
+  // the ingredients an ablation can take out, and the axis value that removes each
+  parts: { photo: ['photo', false], overlay: ['overlay', null], texture: ['texture', null], edge: ['edge', null], bandShadow: ['bandShadow', false], card: ['card', false], cardShadow: ['cardShadow', null], gradientHeading: ['heading', 'solid'], cardBlur: ['cardBlur', 0] },
+  compose: (p) => {
+    const base = p.base === 'colour' ? BRAND : p.base === 'linear' ? `linear-gradient(135deg in oklch, ${BRAND}, ${ACCENT})` : p.base === 'radial' ? `radial-gradient(ellipse at 30% 30% in oklch, ${ACCENT}, ${BRAND})` : `conic-gradient(from 45deg at 60% 40% in oklch, ${BRAND}, ${ACCENT}, ${BRAND})`;
+    const ov = p.overlay === 'tint' ? 'linear-gradient(oklch(20% .05 260 / .4), oklch(20% .05 260 / .4))' : p.overlay === 'scrim' ? 'linear-gradient(to bottom, transparent, oklch(15% .04 260 / .6))' : p.overlay === 'pattern' ? 'repeating-linear-gradient(45deg, oklch(100% 0 0 / .3) 0 .25rem, transparent .25rem .75rem)' : null;
+    const tx = p.texture === 'grain' ? `${noise({ freq: .9, oct: 3 })} 0 0 / 8rem` : p.texture === 'dots' ? 'radial-gradient(oklch(100% 0 0 / .35) 25%, transparent 26%) 0 0 / 1rem 1rem' : p.texture === 'stripes' ? 'repeating-linear-gradient(-45deg, oklch(0% 0 0 / .18) 0 .2rem, transparent .2rem .6rem)' : null;
+    const layers = [tx, ov, p.photo ? `${PHOTO} center / cover` : null, base].filter(Boolean);
+    const blends = [tx ? 'overlay' : null, ov ? p.overlayBlend : null, p.photo ? 'normal' : null, 'normal'].filter(Boolean);
+    let edge = '';
+    if (p.edge) {
+      const poly = edgePolygon(p.edge, 14, 'bottom');
+      const f = SHAPES[p.edge]; let d = 'M0,0 '; for (let k = 0; k <= 60; k++) { const x = k / 60; d += `L${(x * 100).toFixed(2)},${((1 - f(x)) * 100).toFixed(2)} `; } d += 'L100,0 Z';
+      const m = `url('data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none"><path d="${d}" fill="#000"/></svg>`)}') bottom / 100% 14% no-repeat, linear-gradient(#000,#000) top / 100% 86% no-repeat`;
+      edge = p.edgeMethod === 'clip' ? `clip-path: ${poly};` : `-webkit-mask: ${m}; mask: ${m};`;
+    }
+    const sh = 'oklch(10% .05 260 / .55)';
+    // the band's shadow: on a WRAPPER (a drop-shadow follows the shaped edge) or on the band itself (a box-shadow the edge cuts — V-10)
+    const bandSh = p.bandShadow === 'band' ? `box-shadow: 0 .75rem 1.25rem ${sh};` : '';
+    const wrapSh = p.bandShadow === 'wrapper' ? `filter: drop-shadow(0 .75rem .75rem ${sh});` : '';
+    const cardSh = p.cardShadow === 'soft' ? 'box-shadow: 0 .5rem 1.5rem oklch(10% .05 260 / .35);' : p.cardShadow === 'glow' ? 'box-shadow: 0 0 1.5rem oklch(80% .18 300 / .9);' : p.cardShadow === 'hard' ? 'box-shadow: .375rem .375rem 0 oklch(10% 0 0 / .8);' : '';
+    const fill = p.card === 'glass' ? 'oklch(100% 0 0 / .14)' : 'oklch(98% .01 260)';
+    const blur = p.card === 'glass' && p.cardBlur ? `backdrop-filter: blur(${p.cardBlur}px) saturate(1.4); -webkit-backdrop-filter: blur(${p.cardBlur}px) saturate(1.4);` : '';
+    const hd = p.heading === 'gradient' ? `background: linear-gradient(90deg in oklch, oklch(85% .15 90), oklch(75% .2 330)); -webkit-background-clip: text; background-clip: text; color: transparent;` : `color: ${p.card === 'solid' ? '#0f172a' : '#fff'};`;
+    const card = p.card ? `<div style="position:absolute;left:14%;right:14%;top:14%;height:46%;border-radius:.75rem;background:${fill};border:1px solid oklch(100% 0 0 / .35);${blur}${cardSh}display:grid;place-items:center"><span style="font-weight:800;font-size:1.5rem;${hd}">Heading</span></div>` : `<span style="position:absolute;left:0;right:0;top:30%;text-align:center;font-weight:800;font-size:1.5rem;${hd}">Heading</span>`;
+    const band = `<div style="position:relative;flex:1 1 100%;width:100%;background:${layers.join(', ')};background-blend-mode:${blends.join(', ')};${edge}${bandSh}">${card}</div>`;
+    return { css: 'background: #fff; padding: 0;', html: `<div style="position:absolute;inset:0;display:flex;flex-direction:column"><div style="position:relative;flex:0 0 70%;width:100%;z-index:1;display:flex;${wrapSh}">${band}</div><div style="flex:1 0 30%;width:100%;background:${ACCENT}"></div></div>` };
+  },
+};
+/** `n` random stacked blocks, each with the ablations of every ingredient it uses (the cross-family proof). */
+function stacks(n, seed = 1) {
+  const r = seeded(seed * 104729 + 7);
+  return Array.from({ length: n }, (_, i) => {
+    const labels = {}; const pick = {};
+    for (const [axis, vs] of Object.entries(STACK.axes)) { const ks = Object.keys(vs); const k = ks[Math.floor(r() * ks.length)]; labels[axis] = k; pick[axis] = vs[k]; }
+    // an ingredient is "used" when it is on — and a card's shadow / blur only when there IS a card (blur: a glass one)
+    const used = Object.entries(STACK.parts).filter(([part, [axis, offValue]]) => pick[axis] !== offValue && !(part === 'cardBlur' && pick.card !== 'glass') && !(part === 'cardShadow' && !pick.card));
+    return { id: `stack#${seed}.${i}`, labels, pick, ...STACK.compose(pick), without: used.map(([part, [axis, offValue]]) => ({ part, ...STACK.compose({ ...pick, [axis]: offValue }) })) };
+  });
+}
+module.exports = { FAMILIES, specimens, combos, page, SHAPES, STACK, stacks };
