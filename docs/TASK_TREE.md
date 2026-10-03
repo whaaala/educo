@@ -766,7 +766,7 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
       after the fixes, after reload, canvas = Preview
     - `[x]` regression: probe-spacing (S-1), probe-s2 (S-2), L-2's probes — 0 findings; a page saved before F-1 keeps
       every size it CHOSE (hand widths, set gaps); space nobody chose fills there too (decided in the session, reversible)
-- `[>]` **BATCH L-3 · Tier-99: React error #185 and the tablet line** ← YOU ARE HERE (area: engine rules · 5 changes, opened 2026-10-02; PAUSED the same day by the user's order, RESUMED 2026-10-02 ~20:00 when R-1 closed — next leaf L3-h: c-11a / c-11b / c-11c and L3-b · L3-c (page 141 re-run) · L3-f · L3-g · L3-h are open)
+- `[>]` **BATCH L-3 · Tier-99: React error #185 and the tablet line** ← YOU ARE HERE (area: engine rules · 5 changes, opened 2026-10-02; PAUSED the same day by the user's order, RESUMED 2026-10-02 ~20:00 when R-1 closed; L3-h · L3-g · L3-b · #185 (change 1) · c-12b CLOSED 2026-10-03 — next leaf L3-f, then the page-141 re-run (L3-c), c-11a / c-11b / c-11c, then the batch's HEADED pass (incl. change 5, R-23 the Divider). Was — next leaf L3-h: c-11a / c-11b / c-11c and L3-b · L3-c (page 141 re-run) · L3-f · L3-g · L3-h are open)
   - e-5 · React #185 (maximum update depth) — 9 pages
   - e-6 · four columns on one line at Tablet — 8 pages, 142 findings (= c-11)
   - c-11c (decided B) · an icon cell does not count for the tablet rule
@@ -856,7 +856,7 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
       (100%×3708 vs 100%×3708…). INFERRED: typing into the rotating hero's hidden slides scrolls the pager on the canvas,
       while the Preview opens on slide 1 — so the comparison reads positions inside a scrolled pager. To be MEASURED
       (the blocks' left positions, the pager's scrollLeft on both sides) before calling it harness or product
-    - `[ ]` L3-g · page 141 at canvas Mobile: HOLE 250px at the end of a line of gx-6 — a second LIVE-canvas hole, like
+    - `[x]` L3-g · CLOSED 2026-10-02 with L3-h / R-24: ids are new on every run; `gx-6` is the same HEADER row (the same "-6" slot, the same 250px) — the re-run with the new audit showed only that row at 141 Mobile, and R-24 explained it. Was: page 141 at canvas Mobile: HOLE 250px at the end of a line of gx-6 — a second LIVE-canvas hole, like
       L3-b. The run had the old audit loaded, so no column details; the next run of it carries them
     - `[>]` L3-c · page 141: 71 × W7a "headings closer than 1rem to the page edge" at -295px / -670px — "Welcome to our
       school 2 / 3", the rotating hero's slides that are off screen. HARNESS: W7a measured a run's rect, not what a reader
@@ -1890,6 +1890,47 @@ sent), and my research. Nothing on the layout is done until every line here is c
 
 One entry per session, newest first. Written the moment the user says "new session" (or the context is about to run
 out) — where the session STARTED FROM, where it GOT TO, and where the next one CONTINUES FROM.
+
+### 2026-10-03 · session f86b7fdf · branch `builder/layout-uat` — HANDOVER (recommended and agreed: the context is genuinely long — R-1, L3-h, the whole #185 hunt and c-12b; clean boundary — everything committed, the gate green, c-11 engine work next)
+- **Started from:** session 1fc987ff's handover — BATCH R-1 (research at full width), then L-3 (paused).
+- **Got to:** **R-1 CLOSED** by the user's "enough" (`fe320f5`): machine measured (memory is the limit), CodePen at 6
+  collectors and one Awwwards lane, then stopped — 1,212 new pens, ~391 sites, every one of the user's own links
+  complete; step 4 (divider / dividers / wave, 137 pens), tag pages regenerated, HAVE / PARTIAL / GAP in
+  `motion/library/3-section-transition.md`. Ledger R-21 (cp-tag ended a tag on a failed page — fixed, proven) · R-22
+  (my lane mistake) · **R-23 the Divider published `<div aria-hidden>` — now `<hr>`** (`6f94ce7`, headed check is L-3
+  change 5). **BATCH S-2 · Section transitions** queued (ST-5 overlap · ST-1 next-band colour · ST-4 wave/SVG edge ·
+  moving wave · ST-7 stacked cards — the user: BOTH Queue and Stack, Queue the default). **L3-h / L3-g CLOSED** (`65704db`):
+  the stressed 250px HOLE was the AUDIT (R-24, `flex-shrink: 0` blocks cannot shrink) — red 4/4 → green 4/4, proven both
+  ways. **#185 FOUND AND FIXED at its root** (`cf614c8`): reproduced through the UI only with the CPU slowed 3× (it is a
+  race); part 1 the canvas frame's ResizeObserver re-made on every key; part 2 every key committed the whole site
+  (65–95 ms a key, 185–353 ms slowed, #185) → **c-12b BUILT as the user decided**: a burst of typing is one save and one
+  Undo, words kept on blur / page hide / close / unmount → 8–9.5 ms a key, 22–28 ms slowed, the full stress 6/6 clean in
+  six slowed windows. **L3-b CLOSED with it** (its live hole was #185's half-finished update). Guide + published guide
+  artifact updated (`3e9cb46`). Gate: typecheck 0 · eslint 0 errors (105 warnings) · vitest 3,980 · test:fast 793.
+  My own slips, all fixed: a 1-hour limit killed a slowed run with no output; a shell edit failed silently and opened 12
+  windows; a dev-server diagnosis never started (the dev server recompiles when the probe writes logs inside the repo).
+- **Continue from:** BATCH L-3 (YOU ARE HERE) → L3-f.
+- **Next prompt (paste to start):** "Branch `builder/layout-uat`. Read CLAUDE.md, then `docs/TASK_TREE.md` — YOU ARE HERE
+  is BATCH L-3 (5 changes); closed in it: L3-h, L3-g, L3-b, change 1 #185 and c-12b. Do, in order: (1) **L3-f** — page 141
+  after the stress typing showed canvas ≠ Preview at all 5 rungs on 12 blocks whose SIZES match; inferred: typing into the
+  rotating hero's hidden slides scrolls the pager on the canvas while the Preview opens on slide 1. MEASURE first (each
+  block's left position and the pager's scrollLeft on both sides, through `scripts/uat/probe-l3-row.js` on
+  `dressed99-out/page-141.final.site.json`) before calling it harness or product; NOTE the c-12b fix changed typing, so
+  re-run the page first. (2) **The page-141 re-run for L3-c** through the UI on a fresh build (`uat-pages.js
+  --plan=dressed99 --pages=141,329,332,333,34,43 --jobs=6 --stress`, ~43 min; six windows). (3) **c-11a** — the
+  `packRowLines([70.04, 9.99, 10.14, 10.02])` guard RED first (a line that rounds to 100.4% must be one line, as its own
+  comment says), then the fix; **c-11b** — find what stores rows over 100% and stop it; **c-11c (decided B)** — an icon
+  cell does not count for the tablet rule, in `tabletPlaces` AND the audit's L6 check. (4) The batch's HEADED pass
+  against its checklist (six windows, all themes, every rung, canvas AND Preview), including change 5: R-23 the Divider
+  as `<hr>` — canvas == Preview, one line, no UA margin or inset border, style / thickness / colour in all 4 themes, a
+  separator in the accessibility tree. Standing decisions: c-11c is B; S-2 queued after the layout and motion batches
+  (ST-7 = both Queue and Stack). Traps: a 'killed' notice on a background shell is not the process dying (check the
+  port); research never runs beside a UAT; vitest and Playwright never together; `test:fast` needs port 3100 free; build
+  into `.next-b` (`NEXT_DIST_DIR`) and check it with `NEXT_DIST_DIR=.next-b node scripts/check-fresh-build.js 3200`; a
+  slowed CPU (`--cpu=3` in the probes) finds races the normal speed hides; use the Edit tool, never `node -e` / shell
+  replacements, for anything with backslashes or CRLF files; a new spec must be added to `package.json` AND
+  `scripts/test-fast.js` (`test-scripts.test.ts` guards it); give background runs the 2-hour limit and print results as
+  they happen; the YOU ARE HERE marker is plain text after the arrow."
 
 ### 2026-10-02 · session 1fc987ff · branch `builder/layout-uat` — HANDOVER (the user: "we start this in a new session"; context compacted once; clean boundary — L-3's testing finished, the gate green, everything committed)
 - **Started from:** session ca50a336's handover — F1-k, the full gate and the F-1 commit still to do.
