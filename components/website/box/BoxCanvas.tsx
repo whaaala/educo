@@ -1645,13 +1645,20 @@ export default function BoxCanvas({
      *
      * So the grow is turned OFF for the measurement and put straight back. Synchronous, inside one frame
      * and once per drag rather than per move, so nothing is ever painted in this state.
+     *
+     * PUT BACK THE WHOLE `style` ATTRIBUTE, never one longhand (L3-p, 2026-10-03). A column's `flex` is a shorthand holding
+     * `var(--bx-gut)` (`gutterCSS`), and a shorthand with a `var()` is not split into longhands until it is used: reading
+     * `flex-grow` gave "", so the "restore" REMOVED it — which broke the shorthand apart and left the column at grow 0
+     * (`flex-shrink: ; flex-basis: ;` in its style). React never rewrites a `flex` prop that did not change, so every row
+     * dragged stayed un-grown on the canvas — at its 14rem floor, a HOLE beside it — until a reload, while the Preview
+     * filled the line. Measured on 4 dressed pages built through the UI (223, 333, 359, 382).
      */
     const undo: (() => void)[] = [];
     for (const child of Array.from(el.children)) {
       const ce = child as HTMLElement;
       if (getComputedStyle(ce).position === "absolute") continue;
-      const was = ce.style.getPropertyValue("flex-grow"), pri = ce.style.getPropertyPriority("flex-grow");
-      undo.push(() => { if (was) ce.style.setProperty("flex-grow", was, pri); else ce.style.removeProperty("flex-grow"); });
+      const was = ce.getAttribute("style");
+      undo.push(() => { if (was === null) ce.removeAttribute("style"); else ce.setAttribute("style", was); });
       ce.style.setProperty("flex-grow", "0", "important");
     }
     const top = el.getBoundingClientRect().top;
@@ -1789,17 +1796,15 @@ export default function BoxCanvas({
     // an inline value it did not write. Without that, a property the final tree does not emit (a span of 1
     // emits no `grid-column` at all) would be left painted on the element for ever, because React compares
     // its own previous output and would see nothing to remove.
-    const touched = new Map<HTMLElement, Map<string, string>>();
+    // The whole `style` ATTRIBUTE is remembered, not each property: a property that is part of a shorthand holding a `var()`
+    // reads as "" and removing it breaks the shorthand apart (L3-p — see `naturalHeightOf`).
+    const touched = new Map<HTMLElement, string | null>();
     const put = (el: HTMLElement, prop: string, value: string) => {
-      let seen = touched.get(el);
-      if (!seen) { seen = new Map(); touched.set(el, seen); }
-      if (!seen.has(prop)) seen.set(prop, el.style.getPropertyValue(prop));
+      if (!touched.has(el)) touched.set(el, el.getAttribute("style"));
       el.style.setProperty(prop, value);
     };
     const restore = () => {
-      for (const [el, seen] of touched) for (const [prop, was] of seen) {
-        if (was) el.style.setProperty(prop, was); else el.style.removeProperty(prop);
-      }
+      for (const [el, was] of touched) { if (was === null) el.removeAttribute("style"); else el.setAttribute("style", was); }
       touched.clear();
     };
     const paintPreview = (tree: BoxNode) => {
@@ -2175,6 +2180,14 @@ export default function BoxCanvas({
      * what a stored original below the floor was drawn at, so it is what `origWidth` is measured against (#65, #82).
      */
     const drawnFloorPx = new Map<string, number>();
+    /**
+     * What the STORED shares before this block on its line already hold, % (c-11b, 2026-10-03). The drag measures its room
+     * from where this block is DRAWN, while the blocks before it keep their stored shares — and the two differ by a hair
+     * (rounding, the one-pixel slack of #131): page 359 handed 15.82% to the last two of a line whose first two stored
+     * 84.33, so the line stored 100.15% and wrapped its last icon at Tablet; 382 stored 100.01. Null where a block before it
+     * has no stored share (it is then what it draws).
+     */
+    let storedBeforePct: number | null = null;
     if (parentRow && info) {
       const rowAt = resolveResponsive(info.parent, breakpoint);
       // On a tablet a line of four or more is REARRANGED (#78): each column is drawn at its share of its tablet line,
@@ -2201,6 +2214,14 @@ export default function BoxCanvas({
       kids.forEach((c) => drawnFloorPx.set(c.id, Math.min(maxW, columnFloorRem(rowAt, { ...c, widthByHand: false }, breakpoint) * rootFontPx() * Z + 2 * HG)));
       const lines = packRowLines(kids, (c) => (floorPxOf(c) / maxW) * 100);
       const at = kids.findIndex((c) => c.id === id);
+      // The line as DRAWN — the blocks before it whose box sits on its line on screen — not `lines`: a line stored a hair over
+      // 100% is drawn as ONE line (the one-pixel slack of #131) while the packing calls its last block wrapped, and then
+      // nothing came before it and the cap was 100 (measured: 42.71 + 41.62 + 15.68 drawn on one line, 100.15 written).
+      if (at >= 0) {
+        const ownTop = el.getBoundingClientRect().top;
+        const before = kids.slice(0, at).filter((c) => { const e2 = document.querySelector<HTMLElement>(`[data-box-id="${CSS.escape(c.id)}"]`); return !!e2 && Math.abs(e2.getBoundingClientRect().top - ownTop) <= 2; });
+        if (before.every((c) => c.width?.trim().endsWith("%"))) storedBeforePct = before.reduce((s, c) => s + widthPct(c.width) + (c.marginLeftPct ?? 0), kids[at].marginLeftPct ?? 0);
+      }
       /** A sibling's width as the LAYOUT states it — its stored share where it has one, else what is drawn. */
       const storedPx = (c: BoxNode, r2: DOMRect) => Math.max(floorPxOf(c), c.width?.trim().endsWith("%") ? (widthPct(c.width) / 100) * maxW : r2.width + 2 * HG);
       const measure = (c: BoxNode | undefined) => {
@@ -2460,7 +2481,8 @@ export default function BoxCanvas({
         // smaller stored width changes nothing on screen — it only makes the stored widths disagree with the page, and
         // every later drag flipped the last block between its line and the next. Self-sizing blocks have no such floor.
         const want = Math.min(room, Math.max(minWpx, selfSizing ? 0 : Math.max(Math.min(maxW, HAND_FLOOR_REM * rootPx + 2 * HG), ownMinPx), W0 + dx));
-        const R = P(room);
+        // …never more than the stored line has left (c-11b): a line handed back by the drag adds up to 100%, not 100.15%.
+        const R = Math.min(P(room), storedBeforePct === null ? Infinity : Math.max(0, 100 - storedBeforePct));
         const fs: LineFollower[] = after.map((f, k) => ({
           id: f.id, rest: P(f.w), gap: P(f.ml), at: f.at, cur: P(f.cur), pending: f.sameLine || f.wrapBy === id,
           late: !f.sameLine && k !== 0 && f.wrapBy !== id, // below since another drag put it there (#62)

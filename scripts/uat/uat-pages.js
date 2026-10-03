@@ -107,7 +107,9 @@ const canvasGeo = (page) => page.evaluate(() => {
     // A block measured against the SCREEN (a full-screen hero: `100svh`) is as tall as the window it is drawn in — the
     // editor's 720 and the Preview's 900 differ by design, not by a bug, so its height (and its children's) is not compared.
     const vh = !!e.closest('[style*="svh"], [style*="vh"]') || !!e.querySelector('[style*="svh"], [style*="vh"]'); // …or the band around one, which is as tall as it
-    return [e.getAttribute('data-box-id').replace(/[^A-Za-z0-9_-]/g, '-'), { l: ((r.left - rr.left) / rr.width) * 100, w: (r.width / rr.width) * 100, h: r.height / Z, empty, vh }]; }));
+    return [e.getAttribute('data-box-id').replace(/[^A-Za-z0-9_-]/g, '-'), { l: ((r.left - rr.left) / rr.width) * 100, w: (r.width / rr.width) * 100, h: r.height / Z, empty, vh,
+      // L3-p: what the LIVE canvas drew a block with, so a width that differs from the Preview names its input
+      cs: (() => { const c = getComputedStyle(e); const st = (e.getAttribute('style') || '').match(/(flex|min-width|width)[^;]*/g); return `flex ${c.flex} min ${c.minWidth}${st ? ' inline ' + st.join(';') : ''}`; })() }]; }));
 });
 
 (async () => {
@@ -173,7 +175,7 @@ const canvasGeo = (page) => page.evaluate(() => {
       // L3-f (MEASURED 2026-10-03): typing into a pager's hidden slide leaves the canvas ON that slide — its slides at left
       // -200% where the Preview, which opens on slide 1, has 0%. Which slide shows is VIEW state, not layout, so every pager
       // goes back to its first slide before the canvas is measured, as the Preview opens (the product keeps the user's slide).
-      const scrolledX = await page.evaluate(() => [...document.querySelectorAll('*')].filter((e) => e.scrollLeft > 0 && e.closest('[data-box-id]')).map((e) => { const s = Math.round(e.scrollLeft); e.scrollLeft = 0; return `${(e.closest('[data-box-id]').dataset.boxId || '').slice(-4)} was at ${s}px`; }));
+      const scrolledX = await page.evaluate(() => [...document.querySelectorAll('*')].filter((e) => e.scrollLeft > 0 && e.closest('[data-box-id]')).map((e) => { const s = Math.round(e.scrollLeft); e.scrollTo({ left: 0, behavior: 'instant' }); /* a pager is `scroll-behavior: smooth`: `scrollLeft = 0` ANIMATES, and 300ms later it was measured 83% home (-16.9%, 2026-10-03) */ return `${(e.closest('[data-box-id]').dataset.boxId || '').slice(-4)} was at ${s}px`; }));
       if (scrolledX.length) { (R.log = R.log || []).push(`  canvas ${p}: pager back to slide 1 — ${scrolledX.slice(0, 6).join(', ')}`); await page.waitForTimeout(300); }
       canvas[p] = await canvasGeo(page);
       await page.evaluate(() => window.scrollTo(0, 0)); await shot(page, `canvas-${p.replace(/\W+/g, '')}`);
@@ -213,7 +215,7 @@ const canvasGeo = (page) => page.evaluate(() => {
         // canvas == Preview at this rung, within the accepted 0.6% (#41) and 4px of text rounding
         const cg = canvas[d.rung.preset]; const drift = [];
         for (const [id, g] of Object.entries(a.geo)) { const c = cg[id]; if (!c) continue;
-          if (Math.abs(c.l - g.l) > H.PREVIEW_SHARE_TOL || Math.abs(c.w - g.w) > H.PREVIEW_SHARE_TOL || (!c.empty && !c.vh && !g.vh && Math.abs(c.h - g.h) > Math.max(H.PREVIEW_HEIGHT_TOL, c.h * H.PREVIEW_SHARE_TOL / 100))) drift.push( /* a 3,000px column may differ by the accepted 0.6% (#41), as widths may */`${id.slice(-4)} ${c.w.toFixed(1)}%×${Math.round(c.h)} vs ${g.w.toFixed(1)}%×${Math.round(g.h)}${Math.abs(c.l - g.l) > H.PREVIEW_SHARE_TOL ? ` left ${c.l.toFixed(1)} vs ${g.l.toFixed(1)}` : ''}`); }
+          if (Math.abs(c.l - g.l) > H.PREVIEW_SHARE_TOL || Math.abs(c.w - g.w) > H.PREVIEW_SHARE_TOL || (!c.empty && !c.vh && !g.vh && Math.abs(c.h - g.h) > Math.max(H.PREVIEW_HEIGHT_TOL, c.h * H.PREVIEW_SHARE_TOL / 100))) drift.push( /* a 3,000px column may differ by the accepted 0.6% (#41), as widths may */`${id.slice(-4)} ${c.w.toFixed(1)}%×${Math.round(c.h)} vs ${g.w.toFixed(1)}%×${Math.round(g.h)}${Math.abs(c.l - g.l) > H.PREVIEW_SHARE_TOL ? ` left ${c.l.toFixed(1)} vs ${g.l.toFixed(1)}` : ''}${Math.abs(c.w - g.w) > H.PREVIEW_SHARE_TOL ? ` [canvas ${c.cs}]` : ''}`); }
         if (drift.length) find('err', `Preview ${d.name}`, `R11 canvas≠Preview on ${drift.length} blocks (${drift.slice(0, 12).join('; ')})`);
         // a full-page picture of what a visitor sees
         await page.setViewportSize({ width: d.w + 20, height: Math.min(6000, Math.max(900, a.height)) }); await page.waitForTimeout(400);

@@ -278,7 +278,12 @@ async function canvasAudit(page) {
         // hole, and it could never have fitted. Only a 14rem-floored block may be assumed to shrink to 14rem.
         // R-24: so does a block that cannot shrink at all (`flex-shrink: 0`, a block that hugs its words) — a 330px button
         // under 250px of free space read as a HOLE on four stressed pages, and it could never have fitted either.
-        const ns = getComputedStyle(next); const needs = ns.minWidth === 'min-content' || parseFloat(ns.flexShrink) === 0 ? nextW : Math.min(nextW, 224 * Z);
+        // L3-p (2026-10-03): …and its GUTTER. Since S1-a a band's gap is half a gutter of MARGIN each side of every column, not
+        // a flex `gap` (which reads 0px), so a 224px column needs 224 + 16px to come up, and the last column's own right margin
+        // is not free space: a 224px column under 234px of "free" space read as a HOLE on page 359 at 1024, and it could never fit.
+        const ns = getComputedStyle(next); const lastCs = getComputedStyle(ks.reduce((a, k) => (k.getBoundingClientRect().right > a.getBoundingClientRect().right ? k : a)));
+        const marginsIn = ((parseFloat(ns.marginLeft) || 0) + (parseFloat(ns.marginRight) || 0) + (parseFloat(lastCs.marginRight) || 0)) * Z;
+        const needs = (ns.minWidth === 'min-content' || parseFloat(ns.flexShrink) === 0 ? nextW : Math.min(nextW, 224 * Z)) + marginsIn;
         // L3-b: what each column was DRAWN at — a hole the reloaded tree does not have is only traceable from the live styles
         if (free >= needs + gap + 2 && free > 40) out.push(`HOLE ${Math.round(free / Z)}px at the end of a line of ${row.getAttribute('data-box-id').slice(-4)} while a block waits below [${kids.map((k) => { const s = getComputedStyle(k); return `${k.getAttribute('data-box-id').slice(-4)} w${Math.round(k.getBoundingClientRect().width / Z)} flex(${s.flex}) min(${s.minWidth})`; }).join('; ')}]`); }
     }

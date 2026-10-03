@@ -21,7 +21,7 @@ const dump = ([band, attr]) => {
     await page.getByRole('button', { name: new RegExp('^' + PRESET[w]) }).first().click(); await page.waitForTimeout(900);
     console.log(`canvas  ${w}`, JSON.stringify(await page.evaluate(dump, [BAND, true])));
     // --audit: the real canvas audit at this size, its HOLE lines only (R-24 — proves the audit, not a copy of it)
-    if (process.argv.includes('--audit')) console.log(`audit   ${w}`, JSON.stringify((await require('./page-audit.js').canvasAudit(page)).filter((x) => /HOLE/.test(typeof x === 'string' ? x : JSON.stringify(x)))));
+    if (process.argv.includes('--audit')) console.log(`audit   ${w}`, JSON.stringify((await require(process.env.AUDIT || './page-audit.js').canvasAudit(page)).filter((x) => /HOLE/.test(typeof x === 'string' ? x : JSON.stringify(x)))));
   }
   await page.getByRole('button', { name: 'Preview', exact: true }).first().click(); await page.waitForSelector('iframe'); await page.waitForTimeout(1500); await page.keyboard.press('h');
   for (const w of WS) {

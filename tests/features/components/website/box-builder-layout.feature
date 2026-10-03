@@ -1096,6 +1096,28 @@ Feature: Placing blocks beside one another in the Box Builder
     And typing makes no new size observer on the canvas frame
     And a row of three cards still fills its line at Tablet afterwards
 
+  Scenario Outline: After a resize, the canvas draws every column exactly as a reload does (L3-p, 2026-10-03)
+    Given a row of three columns built through the blocks panel, with a Stack under it
+    When I drag the <block> by its <edge> edge <distance>
+    Then no column is left holding a broken flex value
+    And every block on the canvas is drawn exactly as it is after reloading the page
+    And a column alone on its line still fills it, as it does in the Preview
+
+    Examples:
+      | block                 | edge   | distance |
+      | first column          | right  | +120px   |
+      | first column          | right  | -120px   |
+      | first column          | bottom | +60px    |
+      | block under the row   | top    | -40px    |
+      | block under the row   | top    | +40px    |
+      | block under the row   | bottom | +60px    |
+
+  Scenario: Bringing a wrapped column back never stores the line over 100% (c-11b, 2026-10-03)
+    Given a row of four columns in a main column, the first two widened until the fourth dropped below
+    When I narrow the third column so the fourth comes back beside it
+    Then the four columns store at most 100% between them
+    And on a tablet the last column does not drop to a line of its own
+
   Scenario: A burst of typing is one step — one save, one Undo — and no word is lost (c-12b, decided 2026-10-02)
     Given I am typing into a heading on the canvas
     When I type a sentence without pausing

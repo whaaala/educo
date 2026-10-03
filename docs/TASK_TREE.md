@@ -854,19 +854,61 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
       re-run as `l3-185-stress2.out`
     - `[x]` L3-c re-run · HEADED (`logs/l3f-stress.out`, 6 windows, --stress, .next-c FRESH, 19 min): 0 page errors on all
       6 pages (#185 stays fixed); page 141 has no W7a left → L3-c CLOSED
-    - `[ ]` L3-b REOPENED 2026-10-03: the same run shows page 332's 241px HOLE at canvas Tablet with 0 page errors — the
+    - `[x]` L3-b CLOSED AGAIN 2026-10-03 with L3-p (332: no Tablet HOLE, no R11 in `l3p-fixed` / `c11b-fixed`). REOPENED 2026-10-03: the same run shows page 332's 241px HOLE at canvas Tablet with 0 page errors — the
       close rested on `probe-l3b.js`, not on the page run. Diagnostic re-run `logs/l3f-diag.out`
     - `[x]` L3-f · CLOSED 2026-10-03 — HARNESS, measured (`logs/l3f-diag.out`, R11 now prints left): on the LIVE canvas the
       rotating hero's slides sat at left -200% vs 0% in the Preview — the typing into slide 3 left the canvas ON slide 3
       (right for an editor), the Preview opens on slide 1 (right for a visitor). Which slide shows is view state, not
       layout: `uat-pages.js` now puts every canvas pager back to slide 1 before measuring (and logs it). Re-run to confirm
       with the next page run
-    - `[ ]` L3-p · page 223 (live canvas): the wrapped 4th cell drawn at its 224px floor (29.2% at 768) vs filling its
+    - `[x]` L3-p · CLOSED 2026-10-03 on the headed re-runs (`l3p-fixed.out`, `c11b-fixed.out`: 223 0 errors). **ROOT FOUND AND FIXED 2026-10-03 (with L3-b and L3-o — one bug).** Reproduced THROUGH THE UI with NO
+      stress: `probe-l3p-build.js` (new) builds a dressed page with the Dresser, then diffs every block's computed flex
+      live vs reloaded — 21 / 34 / 28 / 26 blocks differ on 223 / 333 / 359 / 382 (`logs/l3p-build.out`), every column of
+      a dragged row at grow 0 live, 1 reloaded; the R11 detail (`uat-pages.js` now prints the canvas's flex / min-width /
+      inline style) showed `flex-shrink: ; flex-basis: ;` in their style. CAUSE: `naturalHeightOf` (every resize start,
+      on the block ABOVE the edge) turns its children's grow off and "restores" `flex-grow` read with
+      `getPropertyValue` — but a column's `flex` is a shorthand holding `var(--bx-gut)` (`gutterCSS`), which is not
+      split into longhands, so it read "" and REMOVED it, breaking the shorthand; React never rewrites an unchanged
+      prop, so it stayed until a reload. (`probe-l3p.js`, a row on its own, and `probe-l3b.js` from a reloaded tree
+      never reached it: no block under the row / no live drags.) FIX: put back the whole `style` attribute (and the grid
+      drag's `put`/`restore` the same — ledger 3). GUARD `tests/e2e/drag-keeps-flex.spec.ts` (6 cases): RED 3/3 "block
+      under the row" on the old build (all three columns broken), GREEN 6/6 on the fix (.next-b, 3200, FRESH); scenario
+      outline in `box-builder-layout.feature`; in package.json + test-fast.js. HEADED re-run of the six pages:
+      `logs/l3p-fixed.out`. Was: page 223 (live canvas): the wrapped 4th cell drawn at its 224px floor (29.2% at 768) vs filling its
       line in the Preview (54.1%) at Tablet → Wide. The final tree RELOADED gives canvas == Preview (416px both at 768) —
       live state, like L3-b and probably L3-o (359). Not a cache (the canvas recomputes `childStyle` each render) and not
       a stray inline style (the row drag writes none). `probe-c11b.js --live` did not reproduce it on a fresh full-width
       row — its first "DIFFERENT" was my measurement (screen px, the canvas zoom changed on reload: every ratio 1.75)
-    - `[ ]` L3-t · page 333 after the stress: canvas ≠ Preview in HEIGHT (≈35–110px) at Mobile · Laptop · Desktop · Wide
+    - `[x]` L3-t · CLOSED 2026-10-03 — HARNESS, measured: the headed windows ran at Windows' display scaling, so a 390px window measured 390.40 and the Preview's page 375.2 against the canvas's exact 375; 0.2px wrapped a 1,408-character quote two lines fewer (57px; source found by `probe-l3t.js`, traced by `logs/l3t-chain.js` / `l3t-anc.js` to `html` itself). FIX `h.js`: `--force-device-scale-factor=1` + `deviceScaleFactor: 1`. PROVEN: 333 at 375, 22 blocks differ → 0; `html` 390.40 → 390.00. Was: page 333 after the stress: canvas ≠ Preview in HEIGHT (≈35–110px) at Mobile · Laptop · Desktop · Wide
+      (2026-10-03: 333 had 34 blocks drawn un-grown live by L3-p — re-measured on the fixed build before anything else)
+    - `[x]` L3-u · HARNESS (proven: 141 0 errors, its reset logged, `c11b-fixed.out`) (found 2026-10-03, `l3p-pages.out`): page 141 at Mobile — the pager's slides at -16.9% vs 0%
+      AFTER L3-f's reset. A pager is `scroll-behavior: smooth`, so `scrollLeft = 0` ANIMATES and 300 ms later it was 83%
+      home. FIXED: `scrollTo({ left: 0, behavior: 'instant' })` in `uat-pages.js`; proven by page 141 in the next run
+    - `[x]` L3-v · MY OWN, the same hazard as L3-p one edit away: the grid drag's preview `put`/`restore` remembered
+      each property with `getPropertyValue` — FIXED with L3-p (the whole `style` attribute); grid specs run in the gate
+    - `[x]` L3-w · AUDIT (found 2026-10-03 on the fixed build): the canvas HOLE check ignored the GUTTER — since S1-a it is
+      half a gutter of margin on each column, while the check added the band's `column-gap` (0px). Page 359 at 1024: a
+      224px column "could come up" into 234px, needing 240. FIXED in `page-audit.js` (the waiting column's margins + the
+      last column's right margin). PROVEN both ways (`logs/l3p-audit-both.js`, 359's saved site): old audit HOLE → new
+      none; the same row made into a REAL hole (middle 100px, waiting column 400px basis) → reported by both (305px)
+    - FIXED-BUILD HEADED RE-RUN (`logs/l3p-fixed.out`, 6 windows, stressed, .next-b FRESH): 223 4 → 0 errors · 141 1 → 0
+      (L3-u) · 332 R11 + Tablet HOLE → gone · 359 R11 (40 blocks) → gone · 333 4 R11 → 1 (Mobile heights, L3-t) · 382 1 →
+      1. The HOLEs left: 359 Laptop (L3-w, false) · 332 Wide (a row stored 145%, the recorded GAP "30 · 10 · 25 wraps
+      at Desktop" — no HOLE on the new audit) · 359 Tablet and 382 Wide = c-11b (rows stored 100.15 / 100.01: the last
+      icon cell drops to a line of its own)
+    - `[x]` c-11b · **FOUND, FIXED, GUARDED 2026-10-03 — HEADED `logs/c11b-fixed.out`: 0 rows stored 100–101% on 6 pages, 359 and 382 0 errors.** DEBUG=1 live builds
+      (`logs/c11b-debug.out`, 4 windows): every over-100 row is the dresser's gesture — widen the first two until the 4th
+      wraps, then NARROW the third so the 4th comes back (359: 100.15 · 382: 100.01). The drag gives the dragged column and
+      its followers `room = maxW − startLeftPx`, from where it is DRAWN, while the columns before it keep their STORED
+      shares; and the line before it already stored 100.01 (42.71 + 41.62 + 15.68), DRAWN as one line (#131's one-pixel
+      slack) while `packRowLines` called its third column wrapped — so a cap from the stored packing found nothing before it
+      (my first fix: measured, did nothing, 100.15 again). FIX (`BoxCanvas` flow drag): the room is capped at 100 − the
+      stored shares of the blocks before it on its DRAWN line. PINNED (RULE Y, after the UI repro):
+      `probe-c11b-pin.js` + `tests/e2e/row-never-stores-over-100.spec.ts` on 359's own saved site (fixture
+      `c11b-page359.site.json`, the row put back as before the third drag): RED 100.15 / 100.15 / 100.16 on the old build,
+      GREEN 4/4 (99.99) on the fix; a drag too short to make room still leaves the 4th below (122.21, by design). Scenario
+      in `box-builder-layout.feature`. The UI-built version of the spec could not fail on either build (its icon cells
+      kept a 113px floor, the 4th never came back) — a guard that cannot fail, replaced (ledger 5, RULE V)
     - `[>]` L3-f MEASURED 2026-10-03: the reloaded final tree has NOTHING scrolled on either side (no scrollLeft / scrollTop
       > 0) and the flagged blocks are the rotating hero's slides at the same places — so either the LIVE canvas was
       scrolled after the typing, or it is the audit. R11 compares LEFT too and never printed it: the harness now prints
@@ -889,7 +931,10 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
       session was NOT permitted to stop it → the user's call: stop it (it resumes) before the six-window runs
     - `[x]` L3-k · MY OWN: ran one vitest file (4 s) while `c11-measure` (Playwright) ran — rule 15. Its timings are checked
       for contention before anything is trusted from it; no vitest again until a browser run ends
-    - `[?]` c-11a · **THE USER DECIDES:** the handed-over step said "a line that rounds to 100.4% must be one line, as its own
+    - `[x]` c-11a · CLOSED 2026-10-03 — comment corrected (`box-model.ts`, packRowLines header), no behaviour change, box-model 221/221. **DECIDED by the user 2026-10-03: "Fix the comment only"** (asked with this session's measurement: #131's
+      one-pixel slack draws a line stored at 100.01 as ONE line while `packRowLines` calls it two; 100.4 the browser wraps,
+      as `packRowLines` says; c-11b stops drags writing such rows). To do: the stale sentence at `box-model.ts` 4379
+      ("a hair over 100 is still one line — … round to 100.4 …") corrected; no behaviour change. Was — **THE USER DECIDES:** the handed-over step said "a line that rounds to 100.4% must be one line, as its own
       comment says"; the measurement says a browser WRAPS it (#69), so making the model call it one line would make the
       model disagree with every page it draws. Recommended: fix the stale COMMENT only (no behaviour change) and stop rows
       being stored over 100% (c-11b). MEASURED FIRST, 2026-10-03: the premise contradicts #69 (`box-model.test.ts` "a line breaks exactly where
@@ -926,25 +971,28 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
       desktop never got the widths. FIX `build-page.js sizeColumns`: widen to Desktop only; a still-wrapped row is dragged
       anyway (as a person would), a gap only if it wraps after. So c-11b/c-11a's "0 over 100%" on 223 proved nothing yet —
       re-run `logs/l3n-223.out` on the fresh `.next-b` build
-    - `[ ]` L3-o · page 359 (`c11-measure`): HOLE 96px at canvas Tablet (row 0-59, a 54.44% column 243px) and R11 canvas ≠
+    - `[x]` L3-o · CLOSED 2026-10-03: its R11 was L3-p, its Tablet HOLE c-11b, its Laptop HOLE the audit (L3-w) — 359 0 errors in `c11b-fixed.out`. Was: page 359 (`c11-measure`): HOLE 96px at canvas Tablet (row 0-59, a 54.44% column 243px) and R11 canvas ≠
       Preview at Tablet / Laptop on 40 blocks (heights 5478 vs 5251). Re-run with 223; then measured like L3-b
     - `[x]` L3-d · HARNESS (c-12c): a page error kept only its first line, with no step — `h.js` now keeps the stack and
       `page.__step`, `uat-pages.js` writes them as `pageErrors` and names its phases (pictures, words, canvas audit per
       preset, Preview)
   - checklist (written 2026-10-02, BEFORE the pass; HEADED, six windows, built through the UI, canvas AND Preview,
     all four themes, Mobile 375 · Tablet 768 · Laptop 1024 · Desktop 1280 · Wide 1920 + the device presets):
-    - `[ ]` (1) c-12a: #185 reproduced through the UI (a long page, 3 × 150 characters typed, repeated), with the full
-      stack and the step it happened on kept. The guard spec is RED first (a `pageerror` matching #185 fails it)
-    - `[ ]` (1) c-12c: the harness keeps a page error's whole stack and the step it happened on (`h.js`, `uat-pages.js`)
-    - `[ ]` (1) after the fix: 0 #185 on all 9 e-5 pages (+ idx 34, 43, tier-95 page 0, tier-80 page 26), run in
-      parallel; typing still works, Undo still works and the text survives a reload
+    - `[x]` (1) c-12a: #185 reproduced through the UI (a long page, 3 × 150 characters typed, repeated), with the full
+      stack and the step it happened on kept. The guard spec is RED first (a `pageerror` matching #185 fails it) — SEEN:
+      `probe-l3b.js` 4/4 stressed variants hit #185; `frame-observer-stays.spec.ts` + `typing-is-one-step.spec.ts` red→green
+    - `[x]` (1) c-12c: the harness keeps a page error's whole stack and the step it happened on (`h.js`, `uat-pages.js`) — L3-d
+    - `[x]` (1) after the fix: 0 #185 on all 9 e-5 pages (+ idx 34, 43, tier-95 page 0, tier-80 page 26), run in
+      parallel; typing still works, Undo still works and the text survives a reload — SEEN: `l3f-stress.out`,
+      `c12b-stress-*.out` (6/6, CPU ×3), and 2026-10-03 `l3p-pages` / `l3p-fixed` / `c11b-fixed` (18 stressed page runs, 0 page errors)
     - `[ ]` (2) guard `packRowLines([70.04, 9.99, 10.14, 10.02])` is red before the fix and green after;
       at 768, each column's computed `flex` and `margin-right` read the same on the canvas and in the Preview
-    - `[ ]` (3) the rows that store more than 100% are counted in fresh trees; what writes them is found through the UI
-      (a drag or the dresser) and fixed, with a guard
-    - `[ ]` (4) a line of three icon cells + one cell of words at Tablet stays on one line; two cells of words + two
+    - `[x]` (3) the rows that store more than 100% are counted in fresh trees; what writes them is found through the UI
+      (a drag or the dresser) and fixed, with a guard — SEEN 2026-10-03: the dresser's narrow-the-third drag (DEBUG=1),
+      fixed (drawn-line cap), `row-never-stores-over-100.spec.ts` red→green; `c11b-fixed.out`: 0 rows stored 100–101% on 6 pages
+    - `[x]` (4) a line of three icon cells + one cell of words at Tablet stays on one line; two cells of words + two
       icon cells are rearranged. The engine and the audit agree on every one of the 8 e-6 pages (0 L6 findings left
-      that the engine does not act on)
+      that the engine does not act on) — SEEN: `uat-l3-headed.js` 6/6 (c-11c)
     - `[ ]` regression: F-1's guards, probe-spacing, probe-s2 and L-2's probes show 0 findings; a page saved before L-3
       keeps its widths
 - `[>]` **AREA V · THE PAGE COMES ALIVE — blending, effects, motion, colour, for EVERY block** (the user, 2026-10-03, after
@@ -1054,6 +1102,11 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
       - `[ ]` https://codepen.io/tag/texture (2026-10-03) — every page, every pen run and its code read in full: how each
         texture is BUILT (SVG `feTurbulence` grain, CSS gradient patterns, a tiled image, canvas noise), how it is layered
         over colour or a photo (opacity, blend mode), its weight — the code side of the Awwwards texture sites
+      - `[ ]` https://codepen.io/tag/curves (2026-10-03, link 21, sent during L3-p) — every listing page to the end, every
+        pen opened, run live and its code read in FULL: how each curve is BUILT (SVG path / `clip-path` / `border-radius`
+        ellipses / masks / canvas), whether it is a section edge, a divider, a background shape or a moving line, how it
+        responds to width, and its weight — feeds AREA V's "section shapes & blending" batch beside the divider and wave
+        tags (R-1). In parallel collectors, never beside a UAT
     - My own sources for the same scope (RULE RS), run beside the user's: MDN (background, gradients, mix-blend-mode,
       filter / backdrop-filter, box-shadow / drop-shadow / text-shadow, color functions, color-mix, relative colours,
       `@property` for animating gradients, clip-path / mask) · web.dev / Chrome developers · getwaves.io · shapedivider.app

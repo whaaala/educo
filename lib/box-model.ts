@@ -4376,8 +4376,10 @@ export function allocateLine(own: number, room: number, followers: LineFollower[
  * disagree. The stored widths are the layout's own answer and are the same every time.
  *
  * ONE packing, shared by the renderer (`aloneOnItsLine`, which decides who grows) and the resize (which decides
- * who shares a boundary), so the two can never disagree about where a line ends. A hair over 100 is still one
- * line — percentages that round to 100.4 are meant to be a full line.
+ * who shares a boundary), so the two can never disagree about where a line ends. A line breaks exactly where a
+ * BROWSER breaks it: over 100% (beyond float noise) is two lines — 100.4 wraps on the page, so it wraps here (#69).
+ * (A line a hair over — 100.01 — can still be DRAWN as one line inside #131's one-pixel slack; the drag never writes
+ * one, c-11b, and the user decided 2026-10-03 to leave this packing as it is, c-11a.)
  */
 /**
  * THE NARROWEST A COLUMN IN A ROW IS DRAWN (decided with the user 2026-09-27, #75). A column nobody has sized keeps the

@@ -15,13 +15,26 @@ const cols = (page) => page.evaluate((b) => {
   return [...row.children].filter((k) => k.dataset && k.dataset.boxId && k.getBoundingClientRect().width > 0)
     .map((k) => `${k.dataset.boxId.slice(-3)} w${Math.round(k.getBoundingClientRect().width)} top${Math.round(k.getBoundingClientRect().top - row.getBoundingClientRect().top)} ${getComputedStyle(k).flex}`).join(' | ');
 }, BAND);
-async function stress(page, rounds) {
+// L3-p: does the LIVE DOM of each text block hold what is STORED? (text, non-breaking spaces, extra elements inside)
+const textDiff = (page) => page.evaluate(() => {
+  const site = JSON.parse(localStorage.getItem('educo_box_site_v1') || '{}'); const stored = {};
+  const walk = (n) => { if (!n || typeof n !== 'object') return; if (n.id && typeof n.text === 'string') stored[n.id] = n.text; for (const v of Object.values(n)) { if (Array.isArray(v)) v.forEach(walk); else if (v && typeof v === 'object') walk(v); } };
+  walk(site); const out = [];
+  for (const el of document.querySelectorAll('[data-box-id] [contenteditable]')) {
+    const id = el.closest('[data-box-id]').dataset.boxId; const s = stored[id]; const d = el.textContent || '';
+    const nb = (d.match(/ /g) || []).length, kids = el.querySelectorAll('*').length;
+    if (s !== d || nb || kids) out.push(`${id.slice(-4)} stored ${s == null ? 'NONE' : s.length} dom ${d.length} nbsp ${nb} els ${kids} ${el.innerHTML.slice(0, 80).replace(/\s+/g, ' ')}`);
+  }
+  return out.length ? out.join('\n    ') : 'every text block == stored';
+});
+// `type: false` — only the clicks and the size switches; `swap: false` — only the typing (L3-p: which half leaves it)
+async function stress(page, rounds, { type = true, swap = true } = {}) {
   const texts = page.locator('[data-box-id] [contenteditable]'); const nT = Math.min(await texts.count(), 12); page.__typedInto = nT;
   for (let round = 0; round < rounds; round++) for (let t = 0; t < nT; t++) {
     const loc = texts.nth(t); await loc.scrollIntoViewIfNeeded().catch(() => {}); await loc.click().catch(() => {});
-    for (let r = 0; r < 3; r++) await page.keyboard.type(LONG, { delay: 0 });
+    if (type) for (let r = 0; r < 3; r++) await page.keyboard.type(LONG, { delay: 0 });
     await page.keyboard.press('Escape');
-    await page.getByRole('button', { name: t % 2 ? /^Tablet/ : /^Desktop/ }).first().click().catch(() => {});
+    if (swap) await page.getByRole('button', { name: t % 2 ? /^Tablet/ : /^Desktop/ }).first().click().catch(() => {});
   }
 }
 const VARIANTS = {
@@ -31,6 +44,10 @@ const VARIANTS = {
   D_stress_reload: async (p) => { await stress(p, 3); await p.waitForTimeout(1500); await p.reload(); await p.waitForTimeout(3000); await size(p, 'Mobile'); await size(p, 'Tablet'); },
   E_one_round: async (p) => { await stress(p, 1); await size(p, 'Mobile'); await size(p, 'Tablet'); },
   F_stress_laptop_tablet: async (p) => { await stress(p, 3); await size(p, 'Laptop'); await size(p, 'Tablet'); },
+  // L3-p: which half of the stress — the size switches, the typing, or only clicking into the words
+  G_swap_only: async (p) => { await stress(p, 1, { type: false }); await size(p, 'Mobile'); await size(p, 'Tablet'); },
+  H_type_only: async (p) => { await stress(p, 1, { swap: false }); await size(p, 'Mobile'); await size(p, 'Tablet'); },
+  I_click_only: async (p) => { await stress(p, 1, { type: false, swap: false }); await size(p, 'Mobile'); await size(p, 'Tablet'); },
 };
 (async () => {
   const only = arg('only', ''); const picked = Object.entries(VARIANTS).filter(([n]) => !only || only.split(',').includes(n[0]));
@@ -62,6 +79,7 @@ const VARIANTS = {
       await page.evaluate((s) => localStorage.setItem('educo_box_site_v1', s), site); await page.reload(); await page.waitForTimeout(3000);
       await size(page, 'Tablet'); const before = await cols(page);
       await run(page); const after = await cols(page);
+      if (process.argv.includes('--texts')) console.log(`${name} TEXTS (live DOM vs stored):\n    ${await textDiff(page)}`);
       console.log(`${name} @${process.env.BASE || 'http://localhost:3100'} · typed into ${page.__typedInto ?? 0} blocks\n  before  ${before}\n  after   ${after}${errs.length ? `\n  page errors: ${errs.length} · step ${page.__errDetails[0].step}\n  stack: ${page.__errDetails[0].stack.split('\n').slice(0, 25).join('\n    ')}` : ''}`);
     } catch (e) { console.log(`${name} FAILED ${e.message.slice(0, 200)}`); }
     await browser.close();

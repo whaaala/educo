@@ -6,8 +6,11 @@ const OUT = __dirname;
 const PACE = process.argv.includes('--watch') ? 60 : process.argv.includes('--headed') ? 25 : 10;
 
 async function open({ headed = process.argv.includes('--headed'), w = 1600, h = 1000, pos = null } = {}) {
-  const browser = await chromium.launch({ headless: !headed, slowMo: headed ? 30 : 0, args: pos ? [`--window-position=${pos[0]},${pos[1]}`] : [] });
-  const page = await browser.newPage({ viewport: { width: w, height: h } });
+  // ONE DEVICE PIXEL PER CSS PIXEL (L3-t, 2026-10-03): a HEADED window takes Windows' display scaling, and at a fractional
+  // ratio a 390px window measured 390.40 — the Preview's page 375.2 wide against the canvas's exact 375, which wrapped a
+  // 1,408-character quote two lines fewer (57px, "canvas ≠ Preview" on page 333). A real phone has no such fraction.
+  const browser = await chromium.launch({ headless: !headed, slowMo: headed ? 30 : 0, args: ['--force-device-scale-factor=1', ...(pos ? [`--window-position=${pos[0]},${pos[1]}`] : [])] });
+  const page = await browser.newPage({ viewport: { width: w, height: h }, deviceScaleFactor: 1 });
   // c-12c: the first line names the error; the stack and the step it happened on are what make it traceable
   const errs = []; page.__errDetails = [];
   page.on('pageerror', (e) => { errs.push(e.message.split('\n')[0]); page.__errDetails.push({ msg: e.message, stack: e.stack || '', step: page.__step || null }); });
