@@ -1075,3 +1075,18 @@ Feature: Placing blocks beside one another in the Box Builder
     Then the canvas and the Preview both draw it as an <hr> with one line and no browser margin or inset border
     And a screen reader announces a separator there, as MDN's <hr> is
     And its line style, thickness and colour still apply in every theme
+
+  Scenario: Typing fast on a slow phone never crashes the builder (React #185, L-3, 2026-10-02)
+    Given a long page built through the blocks panel
+    And the browser slowed three times, like a low-cost phone
+    When I type 450 characters into each of 12 text blocks without pausing, switching Tablet and Desktop between them
+    Then the builder never stops with "Maximum update depth exceeded"
+    And typing makes no new size observer on the canvas frame
+    And a row of three cards still fills its line at Tablet afterwards
+
+  Scenario: A burst of typing is one step — one save, one Undo — and no word is lost (c-12b, decided 2026-10-02)
+    Given I am typing into a heading on the canvas
+    When I type a sentence without pausing
+    Then the site is saved once the typing pauses, not once per key
+    And one Ctrl+Z takes back the whole sentence
+    And words typed just before I leave the block, hide the tab or close the page are kept

@@ -775,7 +775,7 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
     it · (4) c-11c · decided B in `tabletPlaces` AND the audit's L6 check, in the same change · (5) R-23 · the Divider
     publishes `<hr>` (canvas + export), from R-1 — its headed check is in this batch's pass: canvas == Preview, one line,
     no UA margin / inset border, line style / thickness / colour in all 4 themes, a separator in the accessibility tree
-  - `[?]` c-12b · the user decides: typing currently re-renders and saves the whole site on every key. Measure the time
+  - `[x]` c-12b · BUILT 2026-10-03 as decided (see #185 PART 2 in the ledger: 65–95 → 8–9.5 ms a key). Was — the user decides: typing currently re-renders and saves the whole site on every key. Measure the time
     per key at 150 and 520 blocks FIRST. Batching the keys would change what one Undo takes back while typing. Not built
     until the user answers
     - **DECIDED by the user 2026-10-02: "go with your recommendation"** — measure first; if typing lags, a burst of
@@ -810,7 +810,38 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
       headed windows on an unmangled production build (`.next-b`, 3200): 0 page errors. Last seen in the 2026-09-30 sweep;
       ~76 dressed pages since, 0. Being stress-tested (`uat-pages.js --stress`: 3 × 150 characters typed with no delay
       into 12 text blocks, 3 rounds, Tablet ↔ Desktop switched between each) before anything is closed
-    - `[>]` L3-b · **page 332 (noma careers) at canvas Tablet: a 241px HOLE, and canvas ≠ Preview at Tablet and Laptop on
+    - `[x]` **#185 PART 2 + c-12b BUILT AND PROVEN, 2026-10-03.** The observer fix alone did NOT end it: on the fixed build #185
+      came from the typing path (`onInput → onText → commit`). A stand-in devtools hook showed the last 60 commits before
+      it were each a FULL builder re-render (page, canvas, 112 block views, Inspector…) — every key committed the whole
+      site and wrote all of it to storage. MEASURED (c-12b's "measure first", `scripts/uat/probe-c12b.js`, six headed
+      windows, pages built through the UI): 65 / 84 / 95 ms a key at 135 / 294 / 355 blocks; 185 / 279 / 353 ms with the
+      CPU slowed 3×, and #185 in all three slowed windows after 150 characters. BUILT as decided: `EditableText` keeps the
+      words while typing and sends them once typing pauses (400 ms) or the words could be lost (blur / Escape / Enter,
+      page hidden or closed with `flushSync`, unmount). AFTER: **8.1 / 9.0 / 9.5 ms a key; 25.6 / 22.0 / 28.3 ms slowed 3×;
+      0 errors.** Guards: `tests/e2e/typing-is-one-step.spec.ts` (≤ 2 saves for 40 keys — RED 41 · one Undo takes the burst —
+      RED one letter · a reload mid-burst keeps the words), `EditableText.test.tsx` (pause / blur, fake timers),
+      `inline-editing.test.tsx` updated (the edit arrives on blur); scenario in `box-builder-layout.feature`. HEADED UAT
+      (`logs/c12b-stress-*.out`): the full stress — 450 characters into each of 12 blocks, Tablet ↔ Desktop between them,
+      then Mobile / Tablet / Laptop / a reload — in six windows with the CPU slowed 3×, which crashed EVERY window before:
+      **6 / 6 clean, 0 page errors**, and page 332's card row identical to the untouched control (three 380px columns,
+      grow on) → **L3-b CLOSED: its live HOLE was #185's half-finished update, not a grow rule**
+    - `[x]` **#185 PART 1 — the frame observer, 2026-10-02 ~23:00.** CPU slowed 3× (`probe-l3b.js --cpu=3`) reproduces it in every
+      stressed window on the unmangled build: **13 of 13 thrown from ONE place**, the canvas frame's ResizeObserver
+      (`app/website/box-demo/page.tsx`). Instrumented: the same 6,216px reported 30 times running, zoom 0.83 and room 740px
+      unchanged — not growth, not a bounce. Its effect depended on `site`, which changes on EVERY key, so every key made a
+      new observer and each one reported (and set state) once; fast typing on a slow CPU stacked them past React's 50.
+      FIX: re-made only when the frame appears (`frameReady`, `preview`), and a report that changes < 0.5px sets nothing.
+      GUARD `tests/e2e/frame-observer-stays.spec.ts` RED on the old code (observers grew with typing), GREEN on the fix;
+      scenario in `box-builder-layout.feature`. HEADED proof: the same six throttled windows on the fixed build
+      (`logs/l3-185-fixed-*.out`) — RUNNING
+    - `[x]` **#185 REPRODUCED THROUGH THE UI, 2026-10-02 ~21:30** (`scripts/uat/probe-l3b.js`, `logs/l3b-probe.out`): page
+      332's tree from BEFORE the words, then the stress typing through the UI, six headed windows: **4 / 4 full-stress
+      variants hit React #185** (stress → Tablet · → Mobile → Tablet · → reload → Mobile → Tablet · → Laptop → Tablet);
+      the control and ONE round of typing did not. After it, the card row is drawn for the wrong screen (gap term 14.144
+      → 18.24 / 11.2 / 16.192px, cards 210–253px instead of 380) — so L3-b's live hole is most likely #185's half-finished
+      update, not a grow rule. Next: the same run on an UNMANGLED build (`next build --no-mangling` → `.next-b`, 3200) for
+      the stack, then the root fix (change 1, e-5/c-12a), then L3-b re-measured
+    - `[x]` L3-b · CLOSED 2026-10-03 with #185 (above): after the fix the live row equals the reloaded one in 6 / 6 stressed windows. Was: **page 332 (noma careers) at canvas Tablet: a 241px HOLE, and canvas ≠ Preview at Tablet and Laptop on
       29 blocks** (a row of card · words · card at 33.33% each: 224px on the canvas, the line filled in the Preview).
       Reloading the tree saved BEFORE the words were typed gives canvas = Preview at 768 and 1024 — so it is in the tree
       after the words, or in the live canvas. The harness now saves that tree too (`page-N.final.site.json`).

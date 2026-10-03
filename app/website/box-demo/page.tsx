@@ -578,14 +578,22 @@ export default function BoxDemoPage() {
    * only draws it bigger or smaller. A transform keeps the frame's 1:1 footprint, so a sizer around it takes the SCALED
    * size, which is what the room centres and scrolls. Its height follows the page (a ResizeObserver reports layout px).
    */
+  // L-3 change 1 (React #185): this effect once depended on `site`, which changes on EVERY key — so every key made a new
+  // observer, a new observer always reports once, and fast typing on a slow phone stacked those reports past React's 50
+  // nested updates (13 of 13 crashes, the same 6,216px reported 30 times). It is re-made only when the frame itself
+  // appears, and a report that changes nothing sets nothing. Guard: tests/e2e/frame-observer-stays.spec.ts
   const [frameH, setFrameH] = useState(0);
+  const frameReady = !!(site && activePage && root); // the same test as the loader guard below: the frame exists iff true
   useEffect(() => {
     const fr = frameRef.current;
     if (!fr || typeof ResizeObserver === "undefined") return;
-    const ro = new ResizeObserver(([e]) => setFrameH(e.borderBoxSize?.[0]?.blockSize ?? fr.offsetHeight));
+    const ro = new ResizeObserver(([e]) => {
+      const h = e.borderBoxSize?.[0]?.blockSize ?? fr.offsetHeight;
+      setFrameH((prev) => (Math.abs(prev - h) < 0.5 ? prev : h));
+    });
     ro.observe(fr);
     return () => ro.disconnect();
-  }, [site, activePage, preview]);
+  }, [frameReady, preview]);
   const scaled = canvasZoom.z !== 1 && frameW != null;
 
   // NOTE: every hook above runs on EVERY render. React counts hooks by call order, so a `useMemo` or

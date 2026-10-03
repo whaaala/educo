@@ -7,6 +7,11 @@
  */
 
 import React, { useEffect, useRef } from "react";
+import { flushSync } from "react-dom";
+
+/** How long typing must pause before the words reach the site (c-12b): long enough to cover a burst, short enough that
+ *  the Inspector, the outline and the save follow along while the person reads what they wrote. */
+const TYPING_PAUSE_MS = 400;
 import { ArrowRight } from "lucide-react";
 import type { SiteTheme, SectionCta } from "@/lib/site-storage";
 
@@ -28,10 +33,34 @@ export function EditableText({
 }) {
   const ref = useRef<HTMLElement>(null);
 
+  /**
+   * A BURST OF TYPING IS ONE STEP (c-12b, decided by the user 2026-10-02). While the person types, the words live in
+   * this element; the site hears about them once typing PAUSES — one save, one Undo — or the moment the words could be
+   * lost: leaving them (blur, Escape, Enter, a click elsewhere), the page being hidden or closed, the block going away.
+   * Measured first: every key re-rendered the whole builder and wrote the whole site — 65–95 ms a key, 185–353 ms on a
+   * slowed CPU, where React #185 stopped the builder. Guard: tests/e2e/typing-is-one-step.spec.ts
+   */
+  const onChangeRef = useRef(onChange); onChangeRef.current = onChange; // the LATEST callback: it builds on the latest tree
+  const pending = useRef<{ text: string; timer: ReturnType<typeof setTimeout> } | null>(null);
+  const flush = (now = false) => {
+    const p = pending.current; if (!p) return;
+    clearTimeout(p.timer); pending.current = null;
+    // `now`: the page is hiding or closing, so the save must happen before this handler returns — a scheduled render
+    // would never run. (Not from a cleanup: React refuses flushSync there, and an unmount's render is already coming.)
+    if (now) flushSync(() => onChangeRef.current?.(p.text)); else onChangeRef.current?.(p.text);
+  };
+  const flushRef = useRef(flush); flushRef.current = flush;
+  useEffect(() => {
+    const onHide = () => { if (document.visibilityState === "hidden") flushRef.current(true); };
+    const onLeave = () => flushRef.current(true);
+    document.addEventListener("visibilitychange", onHide); window.addEventListener("pagehide", onLeave); window.addEventListener("beforeunload", onLeave);
+    return () => { flushRef.current(); document.removeEventListener("visibilitychange", onHide); window.removeEventListener("pagehide", onLeave); window.removeEventListener("beforeunload", onLeave); };
+  }, []);
+
   // Sync DOM text with `value` ONLY when not focused, so typing never resets the caret.
   useEffect(() => {
     const el = ref.current;
-    if (el && document.activeElement !== el && el.textContent !== (value ?? "")) {
+    if (el && document.activeElement !== el && !pending.current && el.textContent !== (value ?? "")) {
       el.textContent = value ?? "";
     }
   });
@@ -46,7 +75,12 @@ export function EditableText({
       suppressContentEditableWarning
       title="Click to edit"
       data-placeholder={placeholder}
-      onInput={(e: React.FormEvent<HTMLElement>) => onChange?.((e.currentTarget.textContent || ""))}
+      onInput={(e: React.FormEvent<HTMLElement>) => {
+        const text = e.currentTarget.textContent || "";
+        if (pending.current) clearTimeout(pending.current.timer);
+        pending.current = { text, timer: setTimeout(() => flushRef.current(), TYPING_PAUSE_MS) };
+      }}
+      onBlur={() => flush()}
       // Enter commits; ESCAPE IS THE WAY OUT (#87) — it leaves the words, keeps what was typed and the block selected.
       // It stops here: the canvas's own Escape steps out a level, and one press doing both skipped a level.
       onKeyDown={(e: React.KeyboardEvent<HTMLElement>) => {

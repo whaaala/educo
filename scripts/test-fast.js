@@ -71,6 +71,8 @@ const INVARIANT_SPECS = [
   "tests/e2e/keyboard-survives-selection.spec.ts",
   "tests/e2e/select-takes-keys.spec.ts",
   "tests/e2e/text-is-reachable.spec.ts",
+  "tests/e2e/typing-is-one-step.spec.ts",
+  "tests/e2e/frame-observer-stays.spec.ts",
   "tests/e2e/pinned-bar-anchors.spec.ts",
   "tests/e2e/resize-leaves-no-gap.spec.ts",
   "tests/e2e/empty-band-shows.spec.ts",
