@@ -1378,17 +1378,149 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
   - ST-7 · stacked cards — **DECIDED by the user 2026-10-02: BOTH behaviours, side by side** ("can we not do a and b
     together"): each held section chooses **Queue** (today's, one under another — stays the DEFAULT so no saved page
     changes) or **Stack** (each card slides over the last); switchable any time, canvas == export
-- `[>]` **BATCH L-4 · The decided layout changes** ← YOU ARE HERE (next leaf: write its UAT checklist FIRST, then c-8 / c-21 / the grid picker; the user decided 2026-10-03: "finish Task 1 first" — L-4 → L-5 → L-6 (+ S-3, D-1) → the frozen layout list 1.1.5 → PR → Tasks 2–4 → re-sweep + story; AREA V waits) (area: rows and grids · 6 changes)
+- `[x]` **BATCH L-4 · The decided layout changes** — CLOSED 2026-10-03 (session a51af34e; HEADED pass 4 six windows CLEAN, the eight tier-99
+  pages 0 errors / L8 = 0, gate typecheck 0 · eslint 0 errors · vitest 4,022 · test:fast 805; L4-l + L4-n → L-5, L4-r → E-1 by the user).
+  Was — next leaf: write its UAT checklist FIRST, then c-8 / c-21 / the grid picker; the user decided 2026-10-03: "finish Task 1 first" — L-4 → L-5 → L-6 (+ S-3, D-1) → the frozen layout list 1.1.5 → PR → Tasks 2–4 → re-sweep + story; AREA V waits) (area: rows and grids · 3 changes)
   - c-7 (decided B) / e-9 · MOVED to BATCH F-1 (2026-10-01) — the HOLE at the end of a line is unused space
   - c-8 (decided B) / e-7 / #127b · words broken across lines ("1,000+" in 165px Stat columns) — 4 pages, 58 findings
   - c-21 (decided B) · edge handles no longer cover the last letter of a block that hugs its words
   - grid picker (decided B) · any count of columns up to 12, not only 1 · 2 · 3 · 4 · 6 · 12
-- `[ ]` **BATCH L-5 · Resize round trips** (area: resize · 5 changes, queued)
+  - checklist (written 2026-10-03, session a51af34e, BEFORE the pass; HEADED, six windows, `scripts/uat/uat-l4-headed.js`,
+    built through the UI, fresh production build on 3100, canvas AND Preview, Light · Dark · Midnight · Purple Dream,
+    Mobile 375 · Tablet 768 · Laptop 1024 · Desktop 1280 · Wide 1920 + the device presets):
+    - `[x]` (1) c-21: a selected Heading that hugs its words, in the middle of the page — every one of the 8 handles lies
+      OUTSIDE the block (no handle rect intersects the block rect) and its last letter is visible in the screenshot — SEEN pass 4 (A, Light): 0 handles over the block at 375 · 768 · 1024 · 1280 · 1920 · Full width; `A-1280.png` read
+    - `[x]` (1) c-21: the same block flush against the canvas on the left, the right, the top (first band) — the handle on
+      that side is drawn just inside, visible and NOT cut off; drag it and the block resizes (edge-anchored, rule 19) — SEEN: flush sides kept inside and visible at every rung (no handle cut off); unit `mirrorFlushSides` guards the rule
+    - `[x]` (1) c-21: every edge and corner still resizes (drag each of the 8 out and back); a click on a handle with no
+      move still places the caret in the words underneath (caretFallthrough); at 375 and at the canvas's Full width — SEEN: all 8 dragged out and back exact (top corners inward = L4-l, handed to L-5 by the user); caret through a handle by `caretFallthrough` unchanged (canvas specs in test:fast)
+    - `[x]` (2) picker: the "Choose a layout" menu shows 12 squares across, each ≥ 24px wide, labelled 1 … 12, nothing
+      cut off, in all four themes; arrows + Enter pick a size (keyboard), the live region reads "5 across × 2 down" — SEEN pass 4 (B, Dark): 72 squares, narrowest 24px, labels 1 … 12, frame not cut (L4-i); arrows + Enter → "5 across × 2 down" → 5 + 5
+    - `[x]` (2) picker: each of 5 · 7 · 8 · 9 · 10 · 11 across, picked from BOTH entry points (the Blocks panel tile and
+      the canvas's Add-a-layout), gives exactly that many EQUAL cells on one line at Desktop, canvas == Preview — SEEN pass 4 (C, Midnight + Purple Dream): 5 · 7 · 8 · 9 · 10 · 11 equal on one line at Desktop by drag-in and "Add a block inside" (the tile is B's), canvas == Preview
+    - `[x]` (2) picker: on a 5-across grid, a cell's right edge dragged wider takes one fifth and the neighbour gives it;
+      dragged back, the grid returns to five equal cells (round trip); the Inspector's column controls still work on it — SEEN: one fifth wider = 275 (2 tracks); back = L4-n, handed to L-5 by the user; Inspector 5 → 6 re-cuts
+    - `[x]` (2) picker: the 5-across grid narrows by its own box (two across, then one) at Tablet / Mobile, canvas ==
+      Preview, no sideways scroll; the gallery setup still offers 2 · 3 · 4 · 6 across — SEEN: by L4-o a grid of 4+ keeps its count and steps down by words; the D windows show canvas == Preview at every rung, 0 sideways; gallery list unchanged (TWELFTHS_COLUMNS, unit)
+    - `[x]` (3) c-8: reproduced THROUGH THE UI first — Stats ("1,000+") in a row of columns AND in a grid of 4 / 5 / 6,
+      inside a 70% main column beside a sidebar — the number broken across two lines in the Preview (RED) — SEEN (probe-l4-c8, 6 windows, build Igj0xUNs): grid of 6 at Wide 1920 broke "1,000+" (RED); rows 3 / 4, grids 3 / 4 / 5 held
+    - `[x]` (3) c-8 after the fix: at every rung the number is on ONE line (the grid gave up columns first); a column that
+      cannot hold the word even alone still breaks it (last resort) and nothing spills sideways — SEEN pass 4 (D, Light + Dark): 0 broken at every rung, canvas and Preview, lines even (6 → 3 + 3, 12 → 4 × 3, row of 4 → 2 + 2)
+    - `[x]` (3) c-8: the 4 sweep pages (idx 2, 23, 393, 398) re-run headed — 0 L8 findings — SEEN: all EIGHT tier-99 pages with L8 (2 · 13 · 23 · 31 · 335 · 393 · 396 · 398), headed, build EbyFazDZ: L8 = 0, 0 errors
+    - `[x]` regression: the grid / row / resize browser specs (test:fast) green; the gate (typecheck · eslint · vitest ·
+      test:fast) green at the commit — SEEN: typecheck 0 · eslint 0 errors (105 warnings, none new) · vitest 4,022 · test:fast 805
+  - ledger (RULE V):
+    - `[x]` L4-a · MY OWN TEST: the new picker guard read a one-track cell's missing `grid-column` as a broken span (NaN)
+      — a cell of one track writes none, which is the default. Fixed in the guard; NOT an engine bug (probe: 5 across →
+      `repeat(5, minmax(0, 1fr))`, every cell colSpan 1, no grid-column). The guard is mutation-proven (8 red with
+      `gridForAcross` forced to twelfths)
+    - `[x]` L4-b · MY OWN PROBE: `probe-l4-c8.js` measured `.eu-stat__value`, but a palette Stat is a TREE of ordinary blocks
+      (a 44px heading "1,000+" and a text), so the first six-window run measured NOTHING and printed "one line
+      everywhere". Fixed: it measures the words themselves and says "MEASURED NOTHING (probe fault)" when it finds none
+    - `[x]` c-8 SEEN CLOSED (pass 4 D windows: 0 broken at every rung, canvas and Preview; the eight tier-99 pages L8 = 0) — ROOT (measured, probe-l4-c8 HEADED, build Igj0xUNs): row3 · row4 · grid3 · grid4 · grid5 hold at every width;
+      **grid6 in a 70% main column at Wide 1920 breaks "1,000+"** — cells 163px, the word ~200px at its 61.6px ceiling
+      (the type unit is capped at 0.875rem). The grid's narrowing knew only `CELL_MIN_REM` (12rem, gaps not counted) and
+      nothing about the words. FIX: `longestWordRem` (the longest word at its font's ceiling, `GLYPH_EM` 0.6 — errs wide)
+      and `gridNarrowsAt` steps down by the narrowest word-holding cell + the gaps, one count at a time; a grid whose words
+      fit the floor keeps exactly today's two rules. Guard `grid-words-never-break.test.ts`, mutation-proven (3 red with
+      the old floor-only path, 3 red with `GLYPH_EM` 0). Re-run headed on build Nm6MZlDF: all six shapes one line at every
+      width. Closes on the batch's HEADED pass
+    - `[x]` L4-c · SEEN CLOSED (pass 4: 6 → 3 + 3, 12 → 4 + 4 + 4, no Stat alone) — MY OWN FIRST CUT of c-8: stepping 6 → 5 left the sixth Stat ALONE on a second line (seen in the Preview
+      screenshot at Wide). FIX: each step takes the BALANCED count (6 → 3 + 3; twelve at five → 4 × 3). Guard: the orphan
+      test in `grid-words-never-break.test.ts`, mutation-proven (3 red with the balance removed). Closes on the HEADED pass
+    - HEADED pass 1 (`uat-l4-headed.js`, build Jype81CY, `logs/uat-l4-run1.out`): D4 CLEAN (grids of 6 and 5 Stats, every
+      width, canvas and Preview, 0 broken, 0 sideways). Found:
+    - `[x]` L4-d · B: a keyboard-picked 5 × 2 drew 2+2+2+2+2 — NOT A BUG, measured: the canvas was at Full width (Fit 64%,
+      a ~790px page) and an EMPTY 5-across grid narrows by the 12rem floor below 60rem (960px), as designed. The probe
+      now sets Desktop first
+    - `[x]` L4-e · SEEN CLOSED (passes 2 and 4: no handle over the block at any rung or Full width) — c-21: the right / bottom handles lay 1–17px² over the block at Tablet … Wide — flush against its edge, a
+      scaled canvas rounded them a fraction over it. FIX: 2px clear (edges `-3`, corners `-3.5`; `HANDLE_ROOM_PX` 14)
+    - `[x]` L4-f · CLOSED: `hug-round-trip.spec.ts` red on the build without it (51 vs 26px), green after; pass 4 every edge
+      exact — a Heading that hugs its words, its right edge dragged 40px in and back, came home at the same width but
+      a STORED width a fraction under its words — 25px taller, the words never unwrapped (only on a SCALED canvas: a
+      1240 window at Desktop, 61%). DECIDED by the user 2026-10-03: fix in L-4. FIX: `maxContentPx` at drag start; a
+      left / right drag ending within `HUG_SNAP_PX` (2px) of the one-line width, no neighbour on the line, writes no
+      width — the block fits its words again. Guard `tests/e2e/hug-round-trip.spec.ts` RED on the build without it
+      (51 vs 26px), green expected on the next build
+    - `[x]` L4-g · MY OWN PROBE: C's `under(grid, Stack)` timed out in both windows — each grid now goes in its own Stack
+    - `[x]` L4-h · SEEN CLOSED (passes 3 and 4: the row of 4 is 2 + 2 at 1024, canvas and Preview; L4-s fixed its phone step) —
+      a ROW of four Stats in a 70% column wrapped 3 + 1 at Laptop 1024 (canvas and Preview) — one alone on
+      its line. DECIDED by the user 2026-10-03: "rows balance too". FIX: `rowNarrowsAt` / `rowQueryCss` — below the width
+      its longest word needs on every column, each stored line regroups by `balancedLines` (4 → 2 + 2, 5 → 3 + 2), by
+      the host's container query, through the grid emitter (canvas == export); not for icon-only lines or menus. Guard
+      in `grid-words-never-break.test.ts`, mutation-proven (3 red greedy, 1 red with rows not emitted)
+    - `[x]` L4-i · SEEN CLOSED (passes 2 and 4: frame and squares inside the menu's visible box) — the picker's frame ran under the menu's own scrollbar at 360px (the squares were whole, the frame's right
+      edge was hidden). FIX: `GRID_MENU_WIDTH` 384
+    - `[x]` L4-l · → BATCH L-5 by the user's decision 2026-10-03 ("move to L-5 with #42"): a TOP corner dragged inward and
+      back leaves the heading 14px taller (height floor from the wrapped height); measured `probe-l4-corner.js`, 6 windows:
+      top corners inward +14, bottom corners and outward drags exact, the width half of L4-f holds in all six
+    - `[x]` L4-m · NOT A BUG, measured (`probe-l4-m.js`, band AND section, headed): the Preview grid has 5 tracks, 1,171px,
+      as the canvas. The "one per line" was L4-p. Was — CANVAS ≠ PREVIEW: grids in a band made with "Add a band" draw 5 across on the canvas at Desktop, and ONE
+      PER LINE in the Preview at 1280 (5, 7, 8, 9, 10, 11 across — `uat-l4-run6c.out`)
+    - `[x]` L4-n · → BATCH L-5 by the user's decision 2026-10-03 ("move to L-5"). Was — a 5-across cell dragged a fifth wider and back: 132/132 → 275/132 → 132/275 — the neighbour keeps the
+      space; not reversible
+    - `[x]` L4-o · SEEN CLOSED (pass 4: 5 · 7 · 8 · 9 · 10 · 11 equal on one line at Desktop) — DECIDED by the user 2026-10-03 ("like rows — keep its count"): a grid of four or more across is floored
+      at `HAND_FLOOR_REM` and gives columns up only when its words need it (balanced); fewer than four keep 12rem. Guards
+      in `grid-words-never-break` / `grid-picker-any-count`, mutation-proven (2 red with the 12rem floor back). Was — 7 … 11
+      across picked at Desktop draw 2 across: an EMPTY grid narrows by the fixed 12rem cell floor
+      (7 × 12rem = 1,344px > the page), so a count the picker offers is never shown. The user's decision (asked)
+    - SWEEP PAGES (dressed99, idx 2 · 13 · 23 · 31 · 335 · 393 · 396 · 398 — every tier-99 page with L8), HEADED, 6 jobs,
+      build 7xxlqqT7: **L8 = 0 on all eight** (tier 99 had 1–6 per size). 2 errors, both L4-s
+    - `[x]` L4-s · CLOSED on the eight pages re-run HEADED on build EbyFazDZ: **0 errors, L8 = 0 on all eight**. MY OWN
+      REGRESSION from L4-h: at Mobile 375 with 150% text a row band 173px held a column 179px (pages 393,
+      396). The row rule's stacking step (one a line — it is NOT kept off the phone) set `min-width: min-content !important`
+      over the phone's own `100%`, so a column grew to its longest word. FIX: the stacking step sets the basis only.
+      Guard in `grid-words-never-break.test.ts`, mutation-proven (1 red). D4 / D5 re-run CLEAN on build EbyFazDZ; the eight
+      pages re-run on it to close
+    - `[x]` L4-t · test:fast: four `chrome-follows-resize` tests measured a handle's CENTRE to the edge (< 4px); c-21 puts it
+      2px clear by the user's decision, a steady 7px from its centre. The spec measures the handle's NEAR side now (a handle
+      that stops following still grows the gap) — test:fast 805 green
+    - `[x]` L4-u · test:fast: `side-by-side-resize` aimed the handle's CENTRE at the target edge and landed 7px short (49.21%).
+      It aims the edge now — green. Not the L4-f snap (measured: 7px of ~880 = the 0.79% missing)
+    - `[x]` W19a on the same pages — NOT an L-4 defect, measured: only at 320 / 323px (iPhone SE, Fold 6 folded), the header's
+      PLACEHOLDER menu of four Links wraps 3 + 1 (a three-link line 2 + 1); menu lines are excluded from L4-h's balancing, the
+      warnings were there before L4-s's fix, and W19a was added 2026-10-02 (after the 09-29 baseline). A menu that needs a
+      burger on a 320px phone is the Navigation component's (COMPONENT_GAPS: "no overlay yet") — into its plan
+    - `[x]` L4-r · → BATCH E-1 by the user's decision 2026-10-03: the floating toolbar, flipped below a selected block,
+      covers the first words of the block underneath (editor chrome, pre-existing)
+    - `[x]` L4-q · MY OWN PROBE: C compared the Preview (after the 5-across round trip, spans 1/2/1/1/1 → 4 + 1, L4-n) with
+      the canvas measured BEFORE it. It re-measures after the round trip; C2 re-run CLEAN
+    - HEADED pass 4 (build 7xxlqqT7, `uat-l4-run7.out` + `run8c`): ALL SIX WINDOWS CLEAN — A handles outside at every rung +
+      Full width, every edge round trip exact (top corners inward = L4-l, handed to L-5); B 12 squares ≥ 24px, labels 1 … 12,
+      frame not cut, keyboard 5 × 2; C 5 · 7 · 8 · 9 · 10 · 11 across by drag-in and "Add a block inside", equal, canvas ==
+      Preview, Inspector re-cut (round trip = L4-n, handed to L-5); D grids 6 · 5 · 6×2 · 4 and a row of 4: 0 broken words at
+      every rung, canvas and Preview, lines even, 0 sideways. Screenshots read (A-1280, C2-canvas, D5-preview-1280)
+    - `[x]` L4-p · MY OWN PROBE: `linesOf` grouped cells into lines by vertical OVERLAP, and an empty cell is 0px tall in the
+      Preview, so every empty cell read as a line of its own (L4-m). It groups by TOP edge now
+    - `[x]` L4-k · MY OWN PROBE: C's hosts — a tile click adds AFTER the selection (never into a chosen host), and the
+      add-inside "+" was the first EMPTY box on the page, not the host's. C now drives the drag-in and the host's own "+";
+      the tile entry point is B's
+    - `[x]` L4-j · MY OWN PROBE: the "cut off" check compared the picker with the wrong box and said CLEAN with it cut —
+      it now measures against the nearest scrolling box's client width, frame AND squares; proven RED on the 360 build
+- `[ ]` **BATCH E-1 · The empty-box hint is not a button** (area: editor chrome · 2 changes, queued — asked by the user
+  2026-10-03: "do we actually need that in the center… that doesn't make the user click on it by mistake"): every empty box
+  draws a large centred "+  Empty — drag a block in, or click to add" that is one big click target. PROPOSED (the user to
+  confirm when it opens): a faint dashed outline and a quiet, NOT clickable "Drop a block here"; the "+" only on the
+  SELECTED empty box, small; "Add a block inside" stays in the toolbar and the Inspector, with a keyboard shortcut — as
+  Webflow / Wix Studio do. Every theme, every rung, keyboard and screen reader (the hint is `aria-hidden`, the button named)
+  - L4-r · (found in L-4's headed pass, `uat-l4/A-1280.png`; moved here by the user 2026-10-03) a selected block's floating
+    toolbar, flipped BELOW it, sits over the first words of the block underneath ("…ck to edit")
+- `[ ]` **BATCH L-5 · Resize round trips** (area: resize · 6 changes, queued — after the page grid AC-37b, the user 2026-10-03)
   - #42 · a Stats row's height does not come back after a top/bottom round trip
+  - L4-n · (handed over from L-4 by the user 2026-10-03) in a grid of ONE-TRACK cells (5 across, 12 across…) widening a
+    cell wraps the LAST cell; dragging back gives the freed track to the NEIGHBOUR (132/132 → 275/132 → 132/275):
+    `startResizeGridCell` re-measures the row without the wrapped cell, so `pairBudget` grows. Pre-existing
+  - L4-l · (handed over from L-4 by the user 2026-10-03, same root as #42) a Heading's TOP corner dragged inward and back
+    stays 14px taller: its words wrap mid-gesture and the height floor is taken from the WRAPPED height (`minHeight` 65.7
+    against the words' 42.6, `probe-l4-corner.js`); bottom corners and outward drags come back exact
   - #46 · the side-by-side-resize spec failing 14 tests on Tablet and Phone — re-run and fix
   - #82b · #83 · width round trips drift at 1366
   - #84 · the left-edge resize uses a fixed 14rem neighbour floor
-- `[ ]` **BATCH L-6 · Africa-first measurements and the innovative pages** (area: harness · 3 changes, queued)
+- `[ ]` **BATCH L-6 · Africa-first measurements and the innovative pages** (area: harness · 4 changes, queued)
+  - LOGO in every test header (the user, 2026-10-03: "wherever you say new heading in the test, that should always be a
+    logo"): the dresser's header puts a LOGO placeholder where it typed a Heading — a small Image (the school's mark) beside
+    the school's name, named in the page report as a placeholder (RULE C) — so every swept header is logo + navigation,
+    as real sites are; the probes that build a header do the same. The real Logo block is a COMPONENT (below)
   - page-weight audit in every page report (≤ 100 KB compressed, ≤ 500 KB first view at 360px, images sized and lazy,
     ≤ 2 font families) · Slow-3G profile (first band within 5 s) · the innovative plan (19 pages)
 - `[ ]` **BATCH D-1 · A README a newcomer can start from** (area: documentation · 1 change, queued — asked by the user
@@ -1506,7 +1638,8 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
           is left of its line · C the editor warns when a line adds up to more than 100%. Recommended: B
           - `[ ]` **DECIDED by the user 2026-09-29: B** — a column nobody has sized by hand takes what is left of its
             line; under its floor it drops to the next line as today. Not started
-      - `[ ]` c-8 · **Words broken across lines in the Preview** — 23 pages, 905 instances, column width median 77px.
+      - `[x]` c-8 · CLOSED in BATCH L-4 2026-10-03 (the grid gives up columns, evenly, by its words; the eight tier-99 pages L8 = 0) —
+        **Words broken across lines in the Preview** — 23 pages, 905 instances, column width median 77px.
         Text placed in a column narrower than its longest word ("1,000+", "everything", "description"). Measured:
         a Card in a grid cell 2 columns of 12 wide, inside a 70% main column (119px). Two halves:
         - `[x]` HARNESS: the dresser picked a column's content by its SHARE (< 12% → an Icon); it picks by the WIDTH the
@@ -1783,6 +1916,61 @@ sent), and my research. Nothing on the layout is done until every line here is c
     carries no meaning
   - `[ ]` AC-10 · **negative spacing and a nudge** — pull a section up over the one before, tuck a line closer, overlap
     avatars, an optical translate; today only by dragging a top edge
+  - `[ ]` AC-37 · **ADDED TO THE FROZEN LIST BY THE USER 2026-10-03** ("I go with your recommendation": joins AC-10 /
+    ST-5 / AC-35 as one build; HALF-steps first, quarters later without changing anything saved) — place ANYTHING
+    (a picture, a column, a whole section) at ANY point of a grid: start in the MIDDLE of column 1 and end in the middle
+    of column 9, start halfway down row 1 and end in row 8 — and let it run OUT of its section, above the first row and
+    below the last, over the sections before and after it. Every breakpoint keeps its own placement. Proposed how
+    (session a51af34e): half- or quarter-steps as hidden finer tracks under the 12 the user sees (the stored
+    colStart / colSpan / rowStart / rowSpan already exist per rung); spilling out = AC-10's below-zero outer spacing +
+    ST-5's overlap across a band edge, in rem / %, from the one emitter; a layer order for what sits on top; on a phone it
+    falls back into the flow unless placed at that rung; the page audit and Page check warn when it covers words;
+    shown as drag on the canvas with the half-lines drawn, a Position panel (start / end, column / row, spill above /
+    below) and a gallery of ready-made placements (RULE S / UI). Joins AC-10, ST-5, AC-35 — one build
+    - `[>]` AC-37b ← YOU ARE HERE (next leaf: RESEARCH (RULE RS — the user's sources + mine: Nexter `08-nexter.md`, Webflow /
+      Framer / Wix Studio page grids, Figma layout grids, subgrid AC-36) → the "enough" checklist signed → a plan artifact
+      with mockups (page grid · layout guides · purpose-based Line up / Grid AC-37c · placement + bleed AC-37 / AC-37a) →
+      the user's approval → build) · **THE PAGE GRID — DECIDED by the user 2026-10-03: done RIGHT AFTER L-4 closes, BEFORE L-5, L-6 and the
+      frozen list's placement items** (they are built on it). NAMES (decided): "page grid" in code and docs; the lines a
+      user sees while placing are "layout guides" (shown while placing / dragging, a toggle keeps them on); the block
+      stays "Grid" and is MAPPED onto the page grid by the builder (3 across = each cell spans 4 of 12; a count twelve
+      does not divide keeps its own equal columns inside its span). MUST FOLLOW (the user, 2026-10-03): every breakpoint
+      (the five-rung ladder, rule 18), every device preset, responsive throughout (rule 16: fluid, rem / %, container
+      queries) — proposed: the page grid's column count per rung (phone 4 · tablet portrait 8 · tablet landscape and up
+      12, halves throughout), every span mapped per rung, nothing narrower than its words, measured in the Preview at
+      every rung and preset (RULE Z / Q). CONTENT DECIDES THE SPAN, NEVER THE GRID (the user, 2026-10-03: "let's not let
+      the content determine what the grid will be, let the content determine how many [columns] it would use, and then use
+      that to do the breakpoints"): a cell whose words need more room SPANS more page-grid columns (per rung), the page grid
+      never changes shape; c-8's `longestWordRem` is the input. L-4's narrowing (the grid steps its count down) stays for
+      grids built the current way and pages already saved. Was proposed by the user ("instead of
+      trying to fit the component in a grid… the grid is the column"): ONE grid per page/section — 12 (or more) columns
+      and rows across the whole page — and every component SPANS as many columns as it needs ("if it doesn't fit in one
+      column it can fit another"), like Nexter (`08-nexter.md`: the body as one grid, `minmax(6rem, 1fr)` gutters + eight
+      `minmax(min-content, 14rem)` columns, named lines for centred / full-bleed / HALF-bleed). Session a51af34e's view:
+      the stronger model — alignment across sections for free, placement and bleed (AC-35 / AC-37) become start/end
+      LINES, "never narrower than its words" is the column's own `min-content`, nested components use the page's lines
+      through `subgrid` (AC-36). Costs: a phone needs a span per rung (stored already), a span chosen by content needs
+      the model's word estimate (c-8's `longestWordRem`), saved pages keep their rows / stacks (a mode, never a
+      migration). NEXT: research (Nexter + Webflow / Framer / Wix Studio page grids, RULE RS) → plan artifact with mockups
+      → the user's approval → built WITH AC-37 (one build). Not part of L-4
+    - `[ ]` AC-37c · **CHOOSE BY PURPOSE, THE BUILDER PICKS FLEX OR GRID — proposed by the user 2026-10-03** ("a user can
+      select a section as a grid or as a flexbox… a menu would use a flexbox… it won't be called grid or flexbox in
+      front of the user"). Already there: Stack = flex column, Side by side = flex row, Grid = CSS grid, and the
+      Inspector's "Arrange as". Session a51af34e's view, given to the user: not one choice per SECTION — every level
+      nests (section on the page grid → a flex line for a menu, a grid of cards, each card a flex column); people pick
+      by PURPOSE (Menu → a real `nav > ul > li` flex line that wraps / becomes a burger · Cards → a grid of flex
+      columns · Logos → a wrapping flex line · Photo beside words → two page-grid columns) and the raw choice stays
+      in the Inspector under friendly names (Line up / Grid). Part of the page-grid plan and its mockups (AC-37b); the
+      menu itself is the Navigation component, waiting on its own approved plan (RULE C)
+    - `[ ]` AC-37a · the canvas interaction, PROPOSED to the user 2026-10-03 (not yet a plan to approve): the 12 × 12 lines
+      (halves dotted) and a ruler appear only while a block in a grid is selected or dragged · drag the body to move, the
+      edge handles to resize, both snapping to half-lines, with a live "column 1½ → 9½ · row 1½ → 8½" label · drag past
+      the band edge and the lines carry on into the neighbour, which dims; the label says "spills 1½ rows into the section
+      above" · a red outline when it would cover words · Bring forward / Send back (Ctrl+] / Ctrl+[) · arrows nudge half a
+      column, Shift+arrows a whole one · a Position gallery of ready-made placements, one click then drag to adjust ·
+      the rung being edited is named ("Tablet only"); on a phone it falls into the flow unless kept. BEFORE BUILDING:
+      research how Webflow, Wix Studio, Framer and Figma do it (RULE RS), then a plan artifact with mockups → approval
+      (rule 13)
   - `[ ]` AC-27 · stretch ONE block to the full height of a line / cell whose others are centred
   - `[ ]` AC-25 · `space-evenly`, `baseline` alignment, and `align-content` for wrapped lines in a fixed-height band
   - `[ ]` AC-9 · ONE site-wide content width, set in one place (with AC-35)

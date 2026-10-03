@@ -13,12 +13,11 @@
  */
 
 import type { BoxNode } from "@/lib/box-model";
-import { GRID_MAX } from "@/lib/box-model";
 import { GRID_LAYOUTS, PICKER_COLUMNS, gridLayoutPatch, tableGrid } from "@/lib/box-presets";
 import { PortalMenu, TablePicker, SplitGallery } from "./ui";
 
 /** Wide enough for six columns of squares plus the two-across split gallery. */
-export const GRID_MENU_WIDTH = 268;
+export const GRID_MENU_WIDTH = 384; // twelve picker squares of 1.5rem (24px, the WCAG 2.5.8 target), their gaps AND the menu's own scrollbar (L4-i: at 360 it cut the twelfth column off)
 
 export type MenuAnchor = { top: number; left: number; bottom: number; right: number };
 
@@ -34,7 +33,7 @@ export default function GridLayoutMenu({ anchor, onClose, onPick }: {
         <p className="px-0.5 pb-2 text-[0.8125rem] font-semibold text-ink">Choose a layout</p>
         <TablePicker
           columns={PICKER_COLUMNS}
-          onPick={(cols, rows) => pick({ children: tableGrid(cols, rows).children, columns: GRID_MAX })}
+          onPick={(cols, rows) => { const g = tableGrid(cols, rows); pick({ children: g.children, columns: g.columns }); }}
           label="Sweep to choose columns across and rows down"
         />
         <div className="my-2.5 flex items-center gap-2">

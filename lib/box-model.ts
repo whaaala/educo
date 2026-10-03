@@ -657,7 +657,27 @@ export function isEmptyBox(node: BoxNode): boolean {
 const NO_HEIGHT_OF_ITS_OWN = new Set<BoxType>(["divider"]);
 
 /** A measured rectangle, as the editor's selection chrome mirrors it. */
-export type MirrorBox = { left: number; top: number; width: number; height: number; clipPath?: string };
+export type MirrorBox = { left: number; top: number; width: number; height: number; clipPath?: string; flush?: string };
+
+/** The room a handle drawn OUTSIDE a block needs: the corner dot (0.75rem) and its 2px clearance, at a 16px root. */
+export const HANDLE_ROOM_PX = 14;
+
+/**
+ * c-21 — WHICH SIDES OF A SELECTED BLOCK HAVE NO ROOM for a handle drawn outside it, before the canvas edge clips
+ * it away: "n s e w" order, space-separated (`[data-flush~=e]`), "" when every side has room.
+ */
+export function mirrorFlushSides(
+  block: { top: number; right: number; bottom: number; left: number },
+  canvas: { top: number; right: number; bottom: number; left: number },
+): string {
+  const tight = (room: number) => room < HANDLE_ROOM_PX;
+  return [
+    tight(block.top - canvas.top) && "n",
+    tight(canvas.bottom - block.bottom) && "s",
+    tight(canvas.right - block.right) && "e",
+    tight(block.left - canvas.left) && "w",
+  ].filter(Boolean).join(" ");
+}
 
 /**
  * SHOULD THE SELECTION CHROME TAKE THIS NEW MEASUREMENT, or has the layout stopped settling?
@@ -733,7 +753,7 @@ export function shouldTakeMirrorBox(
   const near = (a: number, b: number) => Math.abs(a - b) < 0.5;
   const same = (a: MirrorBox | null, b: MirrorBox | null) =>
     a && b
-      ? near(a.left, b.left) && near(a.top, b.top) && near(a.width, b.width) && near(a.height, b.height) && a.clipPath === b.clipPath
+      ? near(a.left, b.left) && near(a.top, b.top) && near(a.width, b.width) && near(a.height, b.height) && a.clipPath === b.clipPath && a.flush === b.flush
       : a === b;
 
   const settled = same(state.seen, next);   // the layout gave the same answer twice running
@@ -3339,7 +3359,31 @@ export function gridLeftoverAt(node: BoxNode, bp: Breakpoint = "base"): number {
  *   • The HOST (the band or cell holding the grid) becomes the query container (`hostsNarrowingGrid` →
  *     `container-type: inline-size`) — never a hugging box, whose width would then have nothing to come from.
  */
-export function gridNarrowsAt(node: BoxNode): { two: number | null; one: number } | null {
+/** A glyph's width as a share of its font size — generous (bold figures run ~0.55), so a word is never under-counted. */
+const GLYPH_EM = 0.6;
+/**
+ * c-8 — THE LONGEST WORD IN A CELL, in rem, at the LARGEST size its font can reach (the type unit is capped at
+ * `hiRem`, so the ceiling is known from the model: `px / 10 × hiRem`). 0 for a cell with no words.
+ * ponytail: an estimate from character counts, not a measurement — `GLYPH_EM` errs wide, so a grid gives up a column
+ * slightly early rather than break a word; the page audit (L8) measures what the reader actually gets.
+ */
+export function longestWordRem(cell: BoxNode): number {
+  const { hiRem } = baseUnitParts();
+  let best = 0;
+  const walk = (n: BoxNode, px: number) => {
+    const size = n.fontSize ?? px;
+    for (const s of [n.text, ...(n.listItems ?? [])]) {
+      if (!s) continue;
+      const longest = Math.max(0, ...s.replace(/<[^>]*>/g, " ").replace(/&[a-z#0-9]+;/gi, " ").split(/\s+/).map((w) => w.length));
+      best = Math.max(best, longest * GLYPH_EM * (size / 10) * hiRem);
+    }
+    for (const c of n.children ?? []) walk(c, size);
+  };
+  walk(cell, 16);
+  return +best.toFixed(4);
+}
+
+export function gridNarrowsAt(node: BoxNode): { two: number | null; one: number; more?: { track: number; below: number }[] } | null {
   if (node.layout !== "grid" || isPager(node) || node.rowFlow === "masonry") return null;
   if (BP_ORDER.some((bp) => bp !== "base" && setAtRung(node, "columns", bp))) return null;
   /**
@@ -3350,14 +3394,50 @@ export function gridNarrowsAt(node: BoxNode): { two: number | null; one: number 
    */
   const cols = gridColumns(node);
   let used = 0, across = 0;
-  for (const c of (node.children ?? []).filter((k) => !isFloating(k))) { const s = Math.min(cols, Math.max(1, Math.round(c.colSpan ?? 1))); if (used + s > cols) break; used += s; across++; }
+  const line: { span: number; word: number }[] = [];
+  for (const c of (node.children ?? []).filter((k) => !isFloating(k))) { const s = Math.min(cols, Math.max(1, Math.round(c.colSpan ?? 1))); if (used + s > cols) break; used += s; across++; line.push({ span: s, word: longestWordRem(c) }); }
   if (across < 2) return null;
-  return { two: across > 2 ? across * CELL_MIN_REM : null, one: 2 * CELL_MIN_REM };
+  /**
+   * c-8 (decided by the user 2026-09-29, B): THE GRID GIVES UP COLUMNS RATHER THAN BREAK A WORD. The cell floor above
+   * knows nothing about what a cell holds: six Stats across a 1,300px column at Wide had 163px cells and a "1,000+" that
+   * needed ~200, so the "+" fell to a line of its own (L-4, probe-l4-c8, built through the UI). Where the words need
+   * more than the floor — the narrowest cell that holds them, by its share of the line, plus the gaps between cells —
+   * the grid steps down ONE COLUMN AT A TIME, each step as soon as the longest word no longer fits; breaking the word is
+   * left for one column that cannot hold it alone. A grid whose words fit the floor keeps exactly today's two rules.
+   */
+  const gap = ((node.gapX ?? node.gap ?? spaceDefaults(node).gapX) / 10) * baseUnitParts().hiRem;
+  const word = Math.max(...line.map((l) => l.word));
+  /**
+   * L4-o (decided by the user 2026-10-03: "like rows — keep its count"): A GRID OF FOUR OR MORE ACROSS IS A DESIGN. With
+   * every cell floored at 12rem, seven across needed 84rem and a desktop page never showed it — the picker offered counts
+   * nobody could see. The rule rows already follow (#78): four or more across keep their count, each cell floored only
+   * at `HAND_FLOOR_REM`, and give columns up when their WORDS need it. Fewer than four keep today's 12rem floor.
+   */
+  const floor = across >= MANY_COLUMNS ? HAND_FLOOR_REM : CELL_MIN_REM;
+  const needs = (k: number) => Math.max(k * floor, k * word + (k - 1) * gap); // k equal tracks, each holding the word
+  const atStart = Math.max(across * floor, ...line.map((l) => (l.word * cols) / l.span + (across - 1) * gap));
+  if (floor === CELL_MIN_REM && atStart <= across * CELL_MIN_REM) return { two: across > 2 ? across * CELL_MIN_REM : null, one: 2 * CELL_MIN_REM };
+  /**
+   * …AND THE LINES IT GIVES UP COME OUT EVEN. Stepping 6 → 5 left the sixth Stat alone on a second line (L4-c, seen in
+   * the Preview at Wide). When k fit, the grid takes the BALANCED count for its cells — as many lines as k needs, shared
+   * evenly — so six go 3 + 3 and twelve at five go 4 × 3. A step that balances to the count already in force is skipped.
+   */
+  const r = (n: number) => +n.toFixed(4);
+  const cells = (node.children ?? []).filter((k) => !isFloating(k)).length;
+  const balanced = (k: number) => Math.ceil(cells / Math.ceil(cells / k));
+  const steps: { track: number; below: number }[] = [];
+  for (let k = across - 1; k >= 1; k--) {
+    const track = balanced(k);
+    if (steps.length && steps[steps.length - 1].track === track) continue;
+    steps.push({ track, below: r(k === across - 1 ? atStart : needs(k + 1)) });
+  }
+  const more = steps.filter((s) => s.track >= 3);
+  return { two: steps.find((s) => s.track === 2)?.below ?? null, one: steps.find((s) => s.track === 1)!.below, ...(more.length ? { more } : {}) };
 }
 /** Does this box hold a grid that narrows by the box's width? Then it is that grid's query container. */
 export function hostsNarrowingGrid(node: BoxNode): boolean {
   if (!isContainer(node) || hugsContent(node) || node.layout === "grid") return false;
-  return (node.children ?? []).some((c) => c.layout === "grid" && !!gridNarrowsAt(c));
+  return (node.children ?? []).some((c) => (c.layout === "grid" && !!gridNarrowsAt(c)) || !!rowNarrowsAt(c));
 }
 /**
  * The container-query rules for one grid: `scope` selects the grid, `cellScope(id)` a cell, and `aboveThePhone` wraps
@@ -3371,6 +3451,7 @@ export function hostsNarrowingGrid(node: BoxNode): boolean {
  * share of the height to it (116px drawn, 174px published). The export passes nothing and carries none of it.
  */
 export function gridQueryCss(scope: string, node: BoxNode, cellScope: (id: string) => string, aboveThePhone: (css: string) => string, editorOnly: (scope: string) => string = () => ""): string {
+  if (node.rowBand) return rowQueryCss(node, cellScope, aboveThePhone);
   const n = gridNarrowsAt(node); if (!n) return "";
   const kids = (node.children ?? []).filter((c) => !isFloating(c));
   const at = (track: number) => {
@@ -3386,14 +3467,68 @@ export function gridQueryCss(scope: string, node: BoxNode, cellScope: (id: strin
   };
   // Strictly BELOW the threshold, in the unit the floor is written in.
   const below = (rem: number, css: string) => `@container (max-width:${rem - 0.01}rem){${css}}`;
-  return (n.two != null ? aboveThePhone(below(n.two, at(2))) : "") + below(n.one, at(1));
+  // Widest first: every narrower query also matches, and the later rule wins.
+  return (n.more ?? []).map((m) => aboveThePhone(below(m.below, at(m.track)))).join("")
+    + (n.two != null ? aboveThePhone(below(n.two, at(2))) : "") + below(n.one, at(1));
 }
 /** Every grid's query rules on a page — the canvas's per-tree stylesheet; the export walks its own render. */
 export function treeGridQueryCss(root: BoxNode, scopeFor: (id: string) => string, aboveThePhone: (css: string) => string, editorOnly?: (scope: string) => string): string {
   let out = "";
-  const walk = (n: BoxNode) => { if (n.layout === "grid") out += gridQueryCss(scopeFor(n.id), n, scopeFor, aboveThePhone, editorOnly); for (const c of n.children ?? []) walk(c); };
+  const walk = (n: BoxNode) => { if (n.layout === "grid" || n.rowBand) out += gridQueryCss(scopeFor(n.id), n, scopeFor, aboveThePhone, editorOnly); for (const c of n.children ?? []) walk(c); };
   walk(root);
   return out;
+}
+
+/**
+ * L4-h (decided by the user 2026-10-03: "rows balance too") — A ROW THAT HAS TO WRAP SHARES ITS COLUMNS EVENLY.
+ *
+ * A row of four Stats in a 70% column at Laptop wrapped 3 + 1 — `flex-wrap` fills each line greedily, so whatever is
+ * left over sits alone (L-4's headed pass, canvas and Preview). Grids already step down balanced (c-8, L4-c); a row of
+ * words now does the same, by its HOST's width: below the width its longest word needs on every column (each column's
+ * stored share, plus the gutters), each stored line is regrouped into `balancedLines` — the tablet's own rule (#78) —
+ * one count at a time (4 → 2 + 2, 5 → 3 + 2 → 2 + 2 + 1… as even as they can be). A line that is not words (a table of
+ * ticks, c-11c) or a menu line is left alone; on the phone every column stacks as before.
+ */
+export function rowNarrowsAt(band: BoxNode): { ids: string[]; steps: { lines: number[]; below: number }[] }[] | null {
+  if (!band.rowBand || (band.direction ?? "column") !== "row" || isMenuLine(band)) return null;
+  const kids = rowColumnsAt(band, "base"); const lines = packRowLines(kids);
+  const gap = (bandGutter(band) / 10) * baseUnitParts().hiRem;
+  const out: { ids: string[]; steps: { lines: number[]; below: number }[] }[] = [];
+  for (let line = 0; line <= (lines.at(-1) ?? -1); line++) {
+    const cols = kids.filter((_, i) => lines[i] === line); const n = cols.length;
+    if (n < 2 || cols.filter(holdsWords).length < 2) continue;
+    const words = cols.map(longestWordRem); const word = Math.max(...words); if (!word) continue;
+    const share = (k: BoxNode) => (widthPct(k.width) || 100 / n) / 100;
+    const needs = (k: number) => k * word + (k - 1) * gap;
+    const atStart = Math.max(...cols.map((k, i) => words[i] / share(k))) + (n - 1) * gap;
+    const steps: { lines: number[]; below: number }[] = [];
+    for (let k = n - 1; k >= 1; k--) {
+      const ls = balancedLines(n, k);
+      if (steps.length && steps[steps.length - 1].lines.join() === ls.join()) continue;
+      steps.push({ lines: ls, below: +(k === n - 1 ? atStart : needs(k + 1)).toFixed(4) });
+    }
+    out.push({ ids: cols.map((k) => k.id), steps });
+  }
+  return out.length ? out : null;
+}
+/** The container-query rules for one row band (see `rowNarrowsAt`), widest first; the phone keeps its own stacking. */
+export function rowQueryCss(band: BoxNode, cellScope: (id: string) => string, aboveThePhone: (css: string) => string): string {
+  const lines = rowNarrowsAt(band); if (!lines) return "";
+  const gut = gapOf(band).x;
+  let css = "";
+  for (const { ids, steps } of lines) for (const st of steps) {
+    let i = 0; let rules = "";
+    for (const across of st.lines) {
+      // Side by side, a column is never narrower than its longest word. Stacked (one a line) it keeps its OWN minimum: the
+      // phone's is `100%`, and `min-content` here overrode it — at 150% text a column grew to its word and spilled 6px out
+      // of its band on a 375 phone (L4-s, pages 393 and 396).
+      for (const id of ids.slice(i, i + across)) rules += `${cellScope(id)}{flex:1 1 ${tabletBasis({ share: 1 / across, across, marginsPct: 0 }, gut)} !important${st.lines.length < ids.length ? ";min-width:min-content !important" : ""}}`;
+      i += across;
+    }
+    const q = `@container (max-width:${st.below - 0.01}rem){${rules}}`;
+    css += st.lines.length === ids.length ? q : aboveThePhone(q);
+  }
+  return css;
 }
 
 /**

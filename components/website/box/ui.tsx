@@ -74,13 +74,17 @@ export function Segmented<T extends string>({ value, onChange, options, ariaLabe
  * because "four across, three down" is a shape a person can see, while "each block spans three of twelve" is
  * one they have to work out.
  *
- * Only the column counts that divide the twelve are offered — five across cannot be twelfths (12/5 is 2.4),
- * and a row of five where two are quietly wider is worse than not offering five at all. `columns` is passed
- * in rather than assumed here so the ladder stays in one place.
+ * Every count from 1 to 12 is offered (decided by the user 2026-09-29, B). A count twelve divides is still a
+ * twelve-column grid; five across cannot be twelfths (12/5 is 2.4), so it becomes a grid of five equal columns
+ * instead — never a row of five where two are quietly wider (`gridForAcross`). `columns` is passed in rather than
+ * assumed here so the ladder stays in one place.
  *
  * Keyboard-reachable as a real grid: arrows move the size, Enter picks it, so it is never a mouse-only
  * control (WCAG 2.1.1). The live region says the current shape out loud for a screen reader.
  */
+/** One picker square's width: twelve of them fit `GRID_MENU_WIDTH` (with its scrollbar), and 1.5rem is 24px, the WCAG 2.5.8 target. */
+const PICKER_CELL = "1.5rem";
+
 export function TablePicker({ columns, maxRows = 6, onPick, label = "Choose a layout" }: {
   columns: number[]; maxRows?: number; onPick: (cols: number, rows: number) => void; label?: string;
 }) {
@@ -117,7 +121,7 @@ export function TablePicker({ columns, maxRows = 6, onPick, label = "Choose a la
         tabIndex={0}
         onKeyDown={onKey}
         className="inline-grid gap-1 rounded-xl bg-surface-2 p-1.5 outline-none ring-1 ring-line focus-visible:ring-2 focus-visible:ring-brand"
-        style={{ gridTemplateColumns: `repeat(${columns.length}, 2.1rem)`, gridTemplateRows: `repeat(${maxRows}, 1.15rem)` }}
+        style={{ gridTemplateColumns: `repeat(${columns.length}, ${PICKER_CELL})`, gridTemplateRows: `repeat(${maxRows}, 1.15rem)` }}
       >
         {Array.from({ length: columns.length * maxRows }, (_, i) => {
           const ci = i % columns.length, r = Math.floor(i / columns.length) + 1;
@@ -136,9 +140,8 @@ export function TablePicker({ columns, maxRows = 6, onPick, label = "Choose a la
           );
         })}
       </div>
-      {/* What each column actually MEANS. Without this a sweep to the fifth square gives six columns and the
-          jump from 4 to 6 to 12 looks like a bug rather than the only counts twelve divides into. */}
-      <div aria-hidden className="mt-1 inline-grid gap-1 px-1.5" style={{ gridTemplateColumns: `repeat(${columns.length}, 2.1rem)` }}>
+      {/* What each column actually MEANS — the count under each square, so a sweep is read, never counted. */}
+      <div aria-hidden className="mt-1 inline-grid gap-1 px-1.5" style={{ gridTemplateColumns: `repeat(${columns.length}, ${PICKER_CELL})` }}>
         {columns.map((c, i) => (
           <span key={c} className={`text-center text-[0.625rem] tabular-nums transition-colors ${i === hover.ci ? "font-bold text-brand" : "text-muted"}`}>{c}</span>
         ))}

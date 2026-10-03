@@ -398,7 +398,7 @@ Most page layouts are a row split into parts: a wide article beside a narrow sid
 
 ### Pick the shape, don't do the sums
 
-Click **Grid** and you get a little grid. Sweep across it — *4 across, 3 down* — and click. You get twelve empty cells arranged exactly like that, the same way you'd insert a table in a word processor. Underneath the picker are the uneven shapes a sweep can't express: **Sidebar left · 4 · 8**, **Sidebar right · 8 · 4**, **Feature + two · 6 · 3 · 3**, **Wide + narrow · 7 · 5**.
+Click **Grid** and you get a little grid. Sweep across it — *4 across, 3 down* — and click (any count from **1 to 12** across: a count twelve divides is twelfths underneath, any other — five, seven… — is that many equal columns; the arrow keys and Enter work too). You get twelve empty cells arranged exactly like that, the same way you'd insert a table in a word processor. Underneath the picker are the uneven shapes a sweep can't express: **Sidebar left · 4 · 8**, **Sidebar right · 8 · 4**, **Feature + two · 6 · 3 · 3**, **Wide + narrow · 7 · 5**.
 
 **Dragging Grid asks the same question.** Drop the tile where you want the layout and the picker opens right there. Dragging says *where* the layout goes; it doesn't say what the layout *is*, so nothing is added to the page until you've chosen a shape — and pressing Escape (or clicking away) leaves the page exactly as it was.
 
@@ -483,6 +483,8 @@ A twelve‑column row **stacks to one column on a phone** and to two on a tablet
 **If you placed the cells yourself, the placement is released when the row narrows.** *Start at column* and *Start at row* are written in the wide row's twelve columns, and there is nowhere to put "column 9" in a row that now has one. So at those sizes the cells simply **flow** — one after another, in the order you added them, wrapping onto new rows — and each keeps its share of the width as above. You will see three hand‑placed cells go two‑up on a tablet and fully stacked on a phone, the same as any other row.
 
 > It used to try to keep them where you put them, which sounds better and is not: two cells rescaled into the same column are both drawn, one on top of the other, and the one underneath looks like it was deleted.
+
+**A grid never breaks a word.** When the words in its cells — a big "1,000+" in a Stat, a long word in a quote — need more room than a column has, the grid gives up columns first, **one count at a time and evenly** (six go 3 + 3, never 5 + 1); a row of columns does the same. A grid of **four or more** across that holds icons, logos or pictures keeps its count on a desktop, like a row of four. Only a single column too narrow for a word still breaks it.
 
 **A grid inside something narrow narrows by its own box, too.** Put a three‑across grid inside a sidebar, a column, or another grid's cell, and it goes to two across once its *own* box is narrower than three readable cells (about 36rem), and to one column below about 24rem — on a desktop as much as on a tablet, because what matters is the room the grid actually has, not the size of the screen. A grid the full width of the page never notices this rule (the page has room); a grid you gave a column count for a device keeps your number.
 

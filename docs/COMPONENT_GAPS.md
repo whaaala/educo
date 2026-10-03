@@ -25,6 +25,7 @@ List · Image · Photo gallery · Slider · Video · Icon · Embed · Accordion 
 | **Breadcrumbs** | B1, pp. 267–268 | A Text line "Home / About / Staff" | |
 | **Pagination** | B2, pp. 268–269 | A row of Links 1 · 2 · 3 · Next | Needs `aria-current="page"` and a `nav` named "Pagination" |
 | **Modal window** | B19, pp. 299–302 | — (not placeable as layout) | |
+| **Logo** (the site's own mark — asked by the user 2026-10-03) | C1, pp. 310–317 (part of the header / navigation) | A Heading typed with the school's name, or an Image | Not one block: no image + name pair, no size per screen (smaller on a phone, a mark-only version), no backdrop / padding / background behind it, no link home with `aria-label`, no alt text prompt. To be planned WITH the Navigation component (approval first, RULE C) and tested at every rung, theme and device preset |
 | **Customer logos / featured-in logos** | B13–B14, pp. 287–290 | Row of 6 Images | Needs grey-scale, equal-height logo strip |
 | **Tags** | A5, pp. 266–267 | Badge | Badge is close; no tag-list/filter |
 | **Inline links inside a paragraph** | A1 Text | A Link block on its own line | The Link block (built 2026-09-27) is a whole block; a link on a few words INSIDE a sentence is not possible yet |

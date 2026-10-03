@@ -176,14 +176,9 @@ class Builder {
         const box = lineAfter ? await this.addLine(container, 'Stack', lineAfter) : container;
         const before = await P.ids(this.page);
         await H.dropInto(this.page, 'Grid', box);
-        // THE PICKER OFFERS 1 · 2 · 3 · 4 · 6 · 12 ACROSS — twelve columns divide into those. Five is asked for by real pages
-        // and is not among them: the harness found no such square, clicked nothing, and the picker sat open while the
-        // build failed on "the drop added nothing" (tier 99, pages 219 and 249). A person takes the next size up and
-        // deletes the cell they do not need — and that the picker has no five is reported as a gap.
+        // The picker offers every count from 1 to 12 (L-4, decided by the user 2026-09-29): five across is picked as five.
         this.page.__step = `grid(${n} across)`;
-        const offered = [1, 2, 3, 4, 6, 12].find((k) => k >= n) ?? 12;
-        if (offered !== n) (this.page.__gaps = this.page.__gaps || []).push(`a grid of ${n} across is not in the picker (1 · 2 · 3 · 4 · 6 · 12) — built as ${offered} with ${offered - n} cell${offered - n > 1 ? 's' : ''} deleted`);
-        const cell = this.page.locator(`[role="gridcell"][aria-label="${offered} across, 1 down"]`);
+        const cell = this.page.locator(`[role="gridcell"][aria-label="${n} across, 1 down"]`);
         await cell.click(); await this.page.waitForTimeout(700);
         const g = (await P.newestLeaf(this.page, before)).id; this.steps++;
         let cells = await kidsOf(this.page, g);

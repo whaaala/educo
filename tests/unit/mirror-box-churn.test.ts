@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { shouldTakeMirrorBox, mirrorMeasuresNow, type MirrorBox, type MirrorChase } from "@/lib/box-model";
+import { shouldTakeMirrorBox, mirrorMeasuresNow, mirrorFlushSides, HANDLE_ROOM_PX, type MirrorBox, type MirrorChase } from "@/lib/box-model";
 
 /**
  * THE SELECTION CHROME'S MEASURE LOOP IS BOUNDED — WITHOUT LOSING THE BLOCK.
@@ -190,5 +190,31 @@ describe("the chrome is clipped to the canvas it belongs to (#49)", () => {
     const a = box({ clipPath: "inset(-4px 0px 0px 0px)" });
     const s1 = shouldTakeMirrorBox(null, a, fresh(), MAX).state;
     expect(shouldTakeMirrorBox(a, box({ clipPath: "inset(-4px 0px 0px 0px)" }), s1, MAX).take).toBe(false);
+  });
+});
+
+/**
+ * c-21 — THE HANDLES ARE DRAWN OUTSIDE THE BLOCK, EXCEPT WHERE THE CANVAS EDGE LEAVES NO ROOM. The mirror is clipped
+ * to the canvas, so an outside handle on a block flush with it would be cut off: that side is reported "flush" and its
+ * handle stays inside. A side with room must NOT be flush, or the handle goes back over the block's last letter.
+ */
+describe("mirrorFlushSides (c-21)", () => {
+  const canvas = { top: 100, right: 1100, bottom: 900, left: 100 };
+  it("a block with room on every side is flush nowhere", () => {
+    expect(mirrorFlushSides({ top: 200, right: 900, bottom: 400, left: 300 }, canvas)).toBe("");
+  });
+  it("a block flush with the canvas on every side keeps every handle inside", () => {
+    expect(mirrorFlushSides(canvas, canvas)).toBe("n s e w");
+  });
+  it("names only the tight sides, at the handle's own size", () => {
+    const right = canvas.right - (HANDLE_ROOM_PX - 1);
+    expect(mirrorFlushSides({ top: 200, right, bottom: 400, left: 300 }, canvas)).toBe("e");
+    expect(mirrorFlushSides({ top: 200, right: canvas.right - HANDLE_ROOM_PX, bottom: 400, left: 300 }, canvas)).toBe("");
+    expect(mirrorFlushSides({ top: 105, right: 900, bottom: 400, left: 104 }, canvas)).toBe("n w");
+  });
+  it("a different flush is a different box — the chrome re-draws", () => {
+    const st: MirrorChase = { churn: 0, seen: null };
+    const a: MirrorBox = { left: 0, top: 0, width: 10, height: 10, flush: "" };
+    expect(shouldTakeMirrorBox(a, { ...a, flush: "e" }, st, 8).take).toBe(true);
   });
 });

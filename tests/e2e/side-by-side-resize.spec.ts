@@ -143,7 +143,8 @@ test.describe("two blocks sharing a line", () => {
     // Rule 7 — back to EXACTLY where it started, and the pair is exactly what it was.
     // L's right edge back to the middle of the row: the row is L's drawn width ÷ its share.
     const h = (await page.locator('[aria-label="Resize right edge"]').first().boundingBox())!;
-    await dragHandle(page, "Resize right edge", (l.box.x + l.box.width * (50 / l.pct)) - (h.x + h.width / 2));
+    // aim the EDGE, not the handle's centre: the handle sits outside the block (c-21), so its centre is a few px past it (L4-u)
+    void h; await dragHandle(page, "Resize right edge", (l.box.x + l.box.width * (50 / l.pct)) - (l.box.x + l.box.width));
     const l2 = await widthOf(page, "L"), r2 = await widthOf(page, "R");
     expect(Math.abs(l2.pct - 50), `L back at 50 (got ${l2.pct})`).toBeLessThanOrEqual(0.3);
     expect(Math.abs(r2.pct - 50), `R back at 50 (got ${r2.pct})`).toBeLessThanOrEqual(0.3);

@@ -61,9 +61,11 @@ async function select(page: Page, id: string) {
 async function gapToEdge(page: Page, label: string, id: string, edge: "right" | "bottom") {
   const h = (await page.locator(`[aria-label="${label}"]`).boundingBox())!;
   const b = (await page.locator(`[data-box-id="${id}"]`).boundingBox())!;
-  return edge === "right"
-    ? Math.abs(h.x + h.width / 2 - (b.x + b.width))
-    : Math.abs(h.y + h.height / 2 - (b.y + b.height));
+  // c-21 (decided 2026-09-29): the handle is drawn OUTSIDE the block, 2px clear, so it is its NEAR side that sits on the edge
+  // (or, flush against the canvas, its far side just inside) — measured from its centre it is a steady 7px out by design (L4-t)
+  const e = edge === "right" ? b.x + b.width : b.y + b.height;
+  const [lo, hi] = edge === "right" ? [h.x, h.x + h.width] : [h.y, h.y + h.height];
+  return Math.min(Math.abs(lo - e), Math.abs(hi - e));
 }
 
 /**

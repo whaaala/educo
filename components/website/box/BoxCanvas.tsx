@@ -20,7 +20,7 @@ import {
   containerStyle, childStyle, marginCSS, leafPaddingCSS, outerSpaceCSS, pageBandInset, pagePinCover, sectionContent, sizeToCSS, u, baseUnit, floatingReserve, floatStacksOnMobile, createContainer, createElement, createComponent,
   updateBox, deleteBox, insertBox, moveBoxStep, duplicateBox, moveBox, cloneBox, findParent, isAncestor, isContainer, containerLabel, widthPct, stackWithBlock, fitBand, PILL, blockTypography,
   isFloating, floatBox, unfloatBox, groupBoxes, ungroupBoxes, bringToFront, sendToBack, bringForward, sendBackward, packRowLines, allocateLine, type LineFollower,
-  shouldTakeMirrorBox, hostSizedFor, type MirrorBox, type MirrorChase, fadedPaint, boxOpacity, backgroundCss, treePaintLayerCss, radiusCSS, isClipped, SHADOW_CSS, videoEmbedSrc, sanitizeCssDeclarations, expandScopedCss, ACCORDION_CSS_PARTS, itemOverrideCss, itemHasOverride, itemNumberVars, richBody, componentTextCss, componentBoxCss, bgShowThroughCss, resizeTopEdge, blockContainmentCss, alertToastCss, treeHasToast, treeHasFixedHold, accordionClasses, bandClasses, advancedCssStyle, alertActionsHTML, hugsContent, itemFloatContextCss, COMPONENT_ITEM_SEL, clampContentScale, MIN_CONTENT_SCALE, isMultiItemComponent, comfortableWidth, remLen, rootFontPx, isDefiniteLen, addItemAfter, duplicateItem, duplicateChildItem, removeItem, removeChildItem, moveItem, moveChildItem, updateItem, updateChildItem, ALERT_SEVERITY_ICON, alertPartInline, alertIconInline, collectAlertItemStyles,
+  shouldTakeMirrorBox, mirrorFlushSides, hostSizedFor, type MirrorBox, type MirrorChase, fadedPaint, boxOpacity, backgroundCss, treePaintLayerCss, radiusCSS, isClipped, SHADOW_CSS, videoEmbedSrc, sanitizeCssDeclarations, expandScopedCss, ACCORDION_CSS_PARTS, itemOverrideCss, itemHasOverride, itemNumberVars, richBody, componentTextCss, componentBoxCss, bgShowThroughCss, resizeTopEdge, blockContainmentCss, alertToastCss, treeHasToast, treeHasFixedHold, accordionClasses, bandClasses, advancedCssStyle, alertActionsHTML, hugsContent, itemFloatContextCss, COMPONENT_ITEM_SEL, clampContentScale, MIN_CONTENT_SCALE, isMultiItemComponent, comfortableWidth, remLen, rootFontPx, isDefiniteLen, addItemAfter, duplicateItem, duplicateChildItem, removeItem, removeChildItem, moveItem, moveChildItem, updateItem, updateChildItem, ALERT_SEVERITY_ICON, alertPartInline, alertIconInline, collectAlertItemStyles,
   type Breakpoint, resolveResponsive, updateBoxResponsive, treePinArrivalCss, floatHoldCSS, canvasFixedStyle, capturesFixed, imageSizing, importPhoto, treeItemEffectsCss, itemNeedsClass, floatZIndex, gridPlacementAt, masonryMeasureAttr, masonryMeasurePass, mirrorMeasuresNow, baseUnitParts, pinStackMarker, pinStackGroupMarker, pinStackPass, isPager, pagerStripCss, pagerNavHTML, selectionChain, textLen, typoRole, typoRootVars, typoCascadeCss, bandEdgeCSS, LINK_COLOR_CSS, treeGridQueryCss, TYPE_UNIT_PROPERTY_CSS,
 } from "@/lib/box-model";
 import { ICON_SET } from "./icons";
@@ -93,14 +93,17 @@ function typoStyle(node: BoxNode, role: "heading" | "body", defaultWeight: numbe
  * touched and nothing is painted. In SCREEN px (like every rect). Where nothing lays out (a test DOM) the copy measures 0
  * and the 14rem floor governs alone.
  */
-export function minContentPx(el: HTMLElement): number {
+export function minContentPx(el: HTMLElement): number { return contentPx(el, "min-content"); }
+/** The width its words take on ONE line (or as wide as they can be) — what a block that hugs its words is drawn at. */
+export function maxContentPx(el: HTMLElement): number { return contentPx(el, "max-content"); }
+function contentPx(el: HTMLElement, size: "min-content" | "max-content"): number {
   // A COPY, laid out invisibly beside the real block at min-content and removed at once — the real block is never
   // touched. Its ids are stripped so nothing looking blocks up by id can find the copy in the meantime.
   const parent = el.parentElement; if (!parent) return 0;
   const copy = el.cloneNode(true) as HTMLElement;
   copy.removeAttribute("data-box-id"); copy.querySelectorAll("[data-box-id]").forEach((n) => n.removeAttribute("data-box-id"));
   copy.removeAttribute("id");
-  Object.assign(copy.style, { position: "absolute", visibility: "hidden", pointerEvents: "none", left: "0", top: "0", width: "min-content", minWidth: "0", maxWidth: "none", flex: "none", height: "auto" });
+  Object.assign(copy.style, { position: "absolute", visibility: "hidden", pointerEvents: "none", left: "0", top: "0", width: size, minWidth: "0", maxWidth: "none", flex: "none", height: "auto" });
   parent.appendChild(copy);
   const w = copy.getBoundingClientRect().width;
   copy.remove();
@@ -108,6 +111,9 @@ export function minContentPx(el: HTMLElement): number {
 }
 
 export { zoomOf };
+
+/** How close a dragged edge must land to a block's own one-line width to give the block back to its words (L4-f). */
+const HUG_SNAP_PX = 2;
 
 function measureBoxU(el: HTMLElement, baseFont: number): number {
   const doc = el.ownerDocument;
@@ -225,15 +231,21 @@ export function measureGroupGeom(root: BoxNode, ids: string[]): { left: number; 
 }
 
 type Edge = "n" | "s" | "e" | "w" | "ne" | "nw" | "se" | "sw";
+/**
+ * c-21 (decided by the user 2026-09-29, B): every handle is drawn OUTSIDE the block, 2px clear of it (flush against the edge,
+ * a scaled canvas rounded it a fraction over the words — L4-e), so none lies over its first or last
+ * letter. A side the canvas edge leaves no room on (`data-flush`, from `mirrorFlushSides`) keeps its handle just inside,
+ * because the mirror is clipped to the canvas and an outside handle there would be cut off and unreachable.
+ */
 const HANDLES: { edge: Edge; pos: string; cursor: string; label: string; title: string }[] = [
-  { edge: "n", pos: "left-1/2 -top-1 -translate-x-1/2 h-2.5 w-9 rounded-full", cursor: "cursor-ns-resize", label: "top edge", title: "Drag the top edge (bottom stays put)" },
-  { edge: "s", pos: "left-1/2 -bottom-1 -translate-x-1/2 h-2.5 w-9 rounded-full", cursor: "cursor-ns-resize", label: "bottom edge", title: "Drag the bottom edge (top stays put)" },
-  { edge: "e", pos: "top-1/2 -right-1 -translate-y-1/2 w-2.5 h-9 rounded-full", cursor: "cursor-ew-resize", label: "right edge", title: "Drag the right edge (left stays put)" },
-  { edge: "w", pos: "top-1/2 -left-1 -translate-y-1/2 w-2.5 h-9 rounded-full", cursor: "cursor-ew-resize", label: "left edge", title: "Drag the left edge (right stays put)" },
-  { edge: "ne", pos: "-top-1 -right-1 w-3 h-3 rounded-full", cursor: "cursor-nesw-resize", label: "top-right corner", title: "Drag the top-right corner" },
-  { edge: "nw", pos: "-top-1 -left-1 w-3 h-3 rounded-full", cursor: "cursor-nwse-resize", label: "top-left corner", title: "Drag the top-left corner" },
-  { edge: "se", pos: "-bottom-1 -right-1 w-3 h-3 rounded-full", cursor: "cursor-nwse-resize", label: "bottom-right corner", title: "Drag the bottom-right corner" },
-  { edge: "sw", pos: "-bottom-1 -left-1 w-3 h-3 rounded-full", cursor: "cursor-nesw-resize", label: "bottom-left corner", title: "Drag the bottom-left corner" },
+  { edge: "n", pos: "left-1/2 -top-3 -translate-x-1/2 h-2.5 w-9 rounded-full group-data-[flush~=n]/mirror:top-0", cursor: "cursor-ns-resize", label: "top edge", title: "Drag the top edge (bottom stays put)" },
+  { edge: "s", pos: "left-1/2 -bottom-3 -translate-x-1/2 h-2.5 w-9 rounded-full group-data-[flush~=s]/mirror:bottom-0", cursor: "cursor-ns-resize", label: "bottom edge", title: "Drag the bottom edge (top stays put)" },
+  { edge: "e", pos: "top-1/2 -right-3 -translate-y-1/2 w-2.5 h-9 rounded-full group-data-[flush~=e]/mirror:right-0", cursor: "cursor-ew-resize", label: "right edge", title: "Drag the right edge (left stays put)" },
+  { edge: "w", pos: "top-1/2 -left-3 -translate-y-1/2 w-2.5 h-9 rounded-full group-data-[flush~=w]/mirror:left-0", cursor: "cursor-ew-resize", label: "left edge", title: "Drag the left edge (right stays put)" },
+  { edge: "ne", pos: "-top-3.5 -right-3.5 w-3 h-3 rounded-full group-data-[flush~=n]/mirror:top-0 group-data-[flush~=e]/mirror:right-0", cursor: "cursor-nesw-resize", label: "top-right corner", title: "Drag the top-right corner" },
+  { edge: "nw", pos: "-top-3.5 -left-3.5 w-3 h-3 rounded-full group-data-[flush~=n]/mirror:top-0 group-data-[flush~=w]/mirror:left-0", cursor: "cursor-nwse-resize", label: "top-left corner", title: "Drag the top-left corner" },
+  { edge: "se", pos: "-bottom-3.5 -right-3.5 w-3 h-3 rounded-full group-data-[flush~=s]/mirror:bottom-0 group-data-[flush~=e]/mirror:right-0", cursor: "cursor-nwse-resize", label: "bottom-right corner", title: "Drag the bottom-right corner" },
+  { edge: "sw", pos: "-bottom-3.5 -left-3.5 w-3 h-3 rounded-full group-data-[flush~=s]/mirror:bottom-0 group-data-[flush~=w]/mirror:left-0", cursor: "cursor-nesw-resize", label: "bottom-left corner", title: "Drag the bottom-left corner" },
 ];
 
 /** The caret after the last character, so the user carries on typing rather than overwrites. */
@@ -287,9 +299,10 @@ function ownEditable(id: string): HTMLElement | undefined {
  * landed on "Resize left edge" instead. A user aiming at the first word gets a resize drag and their typing
  * goes nowhere.
  *
- * Moving the handles fully outside would only hand the same problem to the NEIGHBOUR in a zero-gap row, so the
- * fix is behavioural rather than geometric: if the pointer never moved, this was not a resize, and the click
- * belongs to whatever sits underneath. Resize geometry is untouched (Rule 19).
+ * The handles are drawn OUTSIDE the block now (c-21), but that only hands the same problem to the NEIGHBOUR in a
+ * zero-gap row, and a side flush with the canvas keeps its handle inside — so this stays: if the pointer never
+ * moved, this was not a resize, and the click belongs to whatever sits underneath. Resize geometry is untouched
+ * (Rule 19).
  */
 function caretFallthrough(e: React.MouseEvent) {
   const startX = e.clientX, startY = e.clientY;
@@ -396,7 +409,7 @@ const mirrorMemory = new Map<string, { box: MirrorBox | null; chase: MirrorChase
 
 function ChromeMirror({ blockId, children }: { blockId: string; children: ReactNode }) {
   const remembered = mirrorMemory.get(blockId);
-  const [box, setBox] = useState<{ left: number; top: number; width: number; height: number } | null>(remembered?.box ?? null);
+  const [box, setBox] = useState<MirrorBox | null>(remembered?.box ?? null);
   const [, remeasure] = useReducer((n: number) => n + 1, 0);
   const blockIdRef = useRef(blockId);
   useEffect(() => { blockIdRef.current = blockId; }, [blockId]);
@@ -529,7 +542,10 @@ function ChromeMirror({ blockId, children }: { blockId: string; children: ReactN
       const s = el?.closest("[data-canvas-scroller]")?.getBoundingClientRect();
       const px = (v: number) => `${Math.round(v)}px`; // whole pixels: sub-pixel noise must not read as a change and feed the churn guard
       const clipPath = r && s ? `inset(${px(s.top - r.top)} ${px(r.right - s.right)} ${px(r.bottom - s.bottom)} ${px(s.left - r.left)})` : undefined;
-      const next = r ? { left: r.left, top: r.top, width: r.width, height: r.height, clipPath } : null;
+      // c-21: the edge handles are drawn OUTSIDE the block; a side with no room before the canvas edge (the clip
+      // above would cut the handle off) keeps its handle just inside instead. See `HANDLES`.
+      const flush = r && s ? mirrorFlushSides(r, s) : undefined;
+      const next = r ? { left: r.left, top: r.top, width: r.width, height: r.height, clipPath, flush } : null;
       // The decision itself lives in `shouldTakeMirrorBox` (box-model), pure and unit-tested — the browser
       // condition that triggers the runaway has resisted every attempt to reproduce, so testing the rule is
       // the only honest guard for it.
@@ -559,6 +575,7 @@ function ChromeMirror({ blockId, children }: { blockId: string; children: ReactN
   });
 
   if (!box) return null;
+  const { flush, ...rect } = box;
   return createPortal(
     <div
       // NAMED so a drag can move it WITHIN THE FRAME, without a render. A drag paints itself straight onto
@@ -566,7 +583,9 @@ function ChromeMirror({ blockId, children }: { blockId: string; children: ReactN
       // which only re-measures on a render — would otherwise sit frozen at the size the box had when the
       // drag began: the handles would come away from the box the moment it started to change.
       data-chrome-mirror={blockId}
-      style={{ position: "fixed", ...box, pointerEvents: "none", zIndex: CHROME_Z.handle }}
+      data-flush={flush || undefined}
+      className="group/mirror"
+      style={{ position: "fixed", ...rect, pointerEvents: "none", zIndex: CHROME_Z.handle }}
     >{children}</div>,
     document.body,
   );
@@ -2125,6 +2144,16 @@ export default function BoxCanvas({
       el.style.height = prevElH; el.style.minHeight = prevElMinH;
       measureCss.remove();
     }
+    /**
+     * L4-f — A BLOCK DRAGGED BACK TO ITS WORDS' OWN WIDTH HUGS THEM AGAIN. A heading that hugs "New heading", dragged 40px
+     * narrower (the words wrap) and back, came home at the same pixel but as a STORED width a fraction under its words:
+     * they never unwrapped and the block stayed 25px taller (L-4's headed pass). Its one-line width is measured once
+     * here; a left or right drag that ends within `HUG_SNAP_PX` of it, with no neighbour sharing the line, writes no
+     * width at all — the block fits its words, as it did before anyone touched it. Never for a container (auto there
+     * means "fill") nor a self-sizing block (its width scales its contents).
+     */
+    const hugPx = !selfSizing && !isContainer(node) ? maxContentPx(el) : 0;
+    const backToWords = (px: number, sharedWith: string | null) => hugPx > 0 && !sharedWith && Math.abs(px - hugPx) <= HUG_SNAP_PX;
     // Sizes are written in rem (field guide ②) — read the root font once per drag, never per mouse-move.
     const rootPx = rootFontPx() * Z; // in screen px, so remLen(screenPx, rootPx) writes true rem and 14rem floors compare with rects
     const minWpx = selfSizing ? Math.max(8, naturalW * MIN_CONTENT_SCALE) : Math.max(8, 0.03 * maxW);
@@ -2541,7 +2570,9 @@ export default function BoxCanvas({
           return { width: `${value.toFixed(2)}%`, origWidth: origin };
         };
         const ownStored0 = bn.width?.trim().endsWith("%") ? widthPct(bn.width) : null;
-        if (!same(r.own, own0) || (ownStored0 !== null && ownStored0 > r.own + 0.001) || (r.owed || 0) !== (bn.endOwed || 0)) tree = writeBox(tree, id, { ...widthFor(bn, r.own), widthByHand: true, restWidth: undefined, restAt: undefined, restBy: undefined, endOwed: r.owed || undefined, ...(selfSizing ? { contentScale: scE < 1 ? scE : undefined } : {}) });
+        // L4-f: back at its words' own width with nothing beside it on the line — it fits its words again (no width stored).
+        if (!after.some((f) => f.sameLine) && backToWords((r.own / 100) * maxW, null)) tree = writeBox(tree, id, { width: undefined, origWidth: undefined, widthByHand: undefined, restWidth: undefined, restAt: undefined, restBy: undefined, endOwed: undefined });
+        else if (!same(r.own, own0) || (ownStored0 !== null && ownStored0 > r.own + 0.001) || (r.owed || 0) !== (bn.endOwed || 0)) tree = writeBox(tree, id, { ...widthFor(bn, r.own), widthByHand: true, restWidth: undefined, restAt: undefined, restBy: undefined, endOwed: r.owed || undefined, ...(selfSizing ? { contentScale: scE < 1 ? scE : undefined } : {}) });
         after.forEach((f) => {
           const w = r.widths.get(f.id);
           // A block that stays where it was — already below, and still below — is not touched.
@@ -2599,7 +2630,8 @@ export default function BoxCanvas({
         const right = wraps ? maxW : Math.min(startRightPx + give, wanted);
         const scE = selfSizing ? fitScale(right - startLeftPx, naturalW) : 1;
         const own = pct(right - startLeftPx);
-        tree = writeBox(tree, id, { width: own, widthByHand: true, restWidth: undefined, restAt: undefined, restBy: undefined, endOwed: undefined, ...(selfSizing ? { contentScale: scE < 1 ? scE : undefined } : {}) });
+        const hug = backToWords(right - startLeftPx, nextSibId);
+        tree = writeBox(tree, id, { width: hug ? undefined : own, widthByHand: hug ? undefined : true, restWidth: undefined, restAt: undefined, restBy: undefined, endOwed: undefined, ...(selfSizing ? { contentScale: scE < 1 ? scE : undefined } : {}) });
         if (wraps) {
           /**
            * IT WRAPS BY ITSELF — nothing is moved.
@@ -2666,8 +2698,9 @@ export default function BoxCanvas({
         const gapPct = prevSibId ? 0 : Math.max(0, share(left - flowX));
         const widthPct = Math.max(3, Math.min(100, Math.round((outerPct - gapPct) * 100) / 100)); // two decimals, like every stored share
         const ownW = prevSibId ? pct(startRightPx - left) : `${widthPct}%`;
+        const hug = gapPct === 0 && backToWords(startRightPx - left, prevSibId);
         tree = writeBox(tree, id, {
-          width: ownW, widthByHand: true, restWidth: undefined, restAt: undefined, restBy: undefined, endOwed: undefined,
+          width: hug ? undefined : ownW, widthByHand: hug ? undefined : true, restWidth: undefined, restAt: undefined, restBy: undefined, endOwed: undefined,
           // One field owns this gap. The old length is cleared so the two can never disagree about it.
           ...(prevSibId ? {} : { marginLeftPct: gapPct > 0 ? gapPct : undefined, marginLeft: undefined }),
           ...(selfSizing ? { contentScale: scW < 1 ? scW : undefined } : {}),

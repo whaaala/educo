@@ -139,8 +139,21 @@ export const fitColumns = (cols: number): number => {
   return 1;
 };
 
-/** The column counts a table picker can offer exactly: the divisors of twelve. */
-export const PICKER_COLUMNS = Array.from({ length: GRID_MAX }, (_, i) => i + 1).filter((c) => GRID_MAX % c === 0);
+/** The divisors of twelve: the counts a twelve-column grid holds as equal cells. */
+export const TWELFTHS_COLUMNS = Array.from({ length: GRID_MAX }, (_, i) => i + 1).filter((c) => GRID_MAX % c === 0);
+
+/** The column counts the layout picker offers: every one from 1 to 12 (decided by the user 2026-09-29, B). */
+export const PICKER_COLUMNS = Array.from({ length: GRID_MAX }, (_, i) => i + 1);
+
+/**
+ * HOW A GRID OF `across` EQUAL COLUMNS IS STORED. A count twelve divides stays a twelve-column grid — each cell spans
+ * 12/across, so every finer twelfth is still there to widen one cell later. Any other count (5, 7, 8, 9, 10, 11) is a
+ * grid of `across` columns with each cell spanning one: equal, as picked, never twelfths quietly made uneven.
+ */
+export function gridForAcross(across: number): { columns: number; span: number } {
+  const n = Math.min(GRID_MAX, Math.max(1, Math.round(across)));
+  return GRID_MAX % n === 0 ? { columns: GRID_MAX, span: GRID_MAX / n } : { columns: n, span: 1 };
+}
 
 /**
  * Build a layout the way a person inserts a TABLE: pick how many across and how many down.
@@ -154,10 +167,10 @@ export const PICKER_COLUMNS = Array.from({ length: GRID_MAX }, (_, i) => i + 1).
  * cell later made wider simply pushes the ones after it down, which is what a person expects from a table.
  */
 export function tableGrid(cols: number, rows: number): BoxNode {
-  const c = fitColumns(cols);
+  const { columns, span } = gridForAcross(cols);
+  const c = columns / span;
   const r = Math.max(1, Math.round(rows));
-  const span = GRID_MAX / c;
-  return createGrid(GRID_MAX, { children: Array.from({ length: c * r }, () => gridCell(span)) });
+  return createGrid(columns, { children: Array.from({ length: c * r }, () => gridCell(span)) });
 }
 
 /** One photograph, as chosen and already downscaled by `importPhoto`. */

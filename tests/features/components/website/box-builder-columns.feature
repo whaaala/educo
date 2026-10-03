@@ -21,10 +21,27 @@ Feature: The twelve-column grid in the Box Builder
     And choosing 4 across by 3 down gives me twelve empty cells
     And each cell spans three of the twelve columns underneath
 
-  Scenario: Only the counts that divide twelve are offered
-    When I sweep past five columns in the picker
-    Then it snaps back to four
-    Because five cannot be twelfths, and a row where two cells are quietly wider is worse
+  Scenario Outline: Any count from one to twelve can be picked, and every cell is equal (L-4, decided 2026-09-29)
+    # tests/unit/grid-picker-any-count.test.ts · scripts/uat/uat-l4-headed.js (B, C)
+    When I sweep to <n> across in the picker, by pointer or with the arrow keys and Enter
+    Then I get <n> equal cells on one line on a desktop, on the canvas and in the Preview
+    And a count twelve divides is still twelfths, so a cell can later be widened by one twelfth
+    And a count twelve does not divide is a grid of exactly <n> columns — never twelfths with two cells quietly wider
+    And the picker shows all twelve squares, each at least 24px wide, nothing cut off
+
+    Examples:
+      | n  |
+      | 5  |
+      | 7  |
+      | 8  |
+      | 9  |
+      | 10 |
+      | 11 |
+
+  Scenario: A grid of four or more across keeps its count, like a row (L4-o, decided 2026-10-03)
+    Given a grid of seven icons across on a desktop page
+    Then all seven stay on one line
+    And it gives columns up only when the words in its cells need the room
 
   Scenario: The uneven shapes a sweep cannot express
     When I open the Grid picker

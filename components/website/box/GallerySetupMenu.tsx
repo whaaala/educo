@@ -18,7 +18,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ImagePlus, Loader2, X } from "lucide-react";
 import { importPhoto, SPACE_DEFAULT } from "@/lib/box-model";
-import { PICKER_COLUMNS, type GalleryPhoto } from "@/lib/box-presets";
+import { TWELFTHS_COLUMNS, type GalleryPhoto } from "@/lib/box-presets";
 import type { PagerNav } from "@/lib/box-model";
 import { PortalMenu } from "./ui";
 import Slider from "@/components/shared/Slider";
@@ -27,7 +27,7 @@ import type { MenuAnchor } from "./GridLayoutMenu";
 export const GALLERY_MENU_WIDTH = 300;
 
 /** The across-counts worth offering: the divisors of twelve, minus the ones nobody builds a gallery from. */
-const ACROSS = PICKER_COLUMNS.filter((c) => c >= 2 && c <= 6);
+const ACROSS = TWELFTHS_COLUMNS.filter((c) => c >= 2 && c <= 6);
 
 /** A file name, turned into the start of an alt text. Never a sentence — a hint the user can improve. */
 const altFromName = (name: string) =>

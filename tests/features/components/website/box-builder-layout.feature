@@ -1124,3 +1124,31 @@ Feature: Placing blocks beside one another in the Box Builder
     Then the site is saved once the typing pauses, not once per key
     And one Ctrl+Z takes back the whole sentence
     And words typed just before I leave the block, hide the tab or close the page are kept
+
+  # ── BATCH L-4 (2026-10-03) — scripts/uat/uat-l4-headed.js, six headed windows ─────────────────────────────
+
+  Scenario: The resize handles never cover the block's own words (c-21, decided 2026-09-29: B)
+    # tests/unit/mirror-box-churn.test.ts (mirrorFlushSides)
+    Given a heading that hugs its words is selected
+    Then all eight handles are drawn just outside it, so its first and last letters stay visible
+    And on a side flush against the edge of the canvas that handle stays just inside, visible and draggable
+
+  Scenario: A grid gives up columns rather than break a word (c-8, decided 2026-09-29: B)
+    # tests/unit/grid-words-never-break.test.ts · scripts/uat/probe-l4-c8.js
+    Given six Stats "1,000+" in a grid inside a 70% main column
+    When the page is viewed at every screen size
+    Then every "1,000+" is on one line
+    And the grid steps down by its narrowest cell that holds words, as evenly as it can: six go 3 + 3, never 5 + 1
+    And breaking a word is left for one column that cannot hold it alone
+
+  Scenario: A row of words that has to wrap shares its columns evenly (L4-h, decided 2026-10-03)
+    Given a row of four Stats in a 70% main column
+    When the page is viewed at Laptop 1024
+    Then they sit 2 + 2, never 3 with one alone
+
+  Scenario: A block dragged back to its words' width fits them again (L4-f, decided 2026-10-03)
+    # tests/e2e/hug-round-trip.spec.ts
+    Given a heading that hugs its words on a page drawn smaller than life
+    When I drag its right edge in until the words wrap, and back out again
+    Then the words are on one line again and the heading is its old height
+

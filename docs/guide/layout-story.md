@@ -75,6 +75,14 @@ across, but the box does not — so the inner grid goes two across, and inside a
 to one. Nothing squeezes to a sliver, and no word is ever broken letter by letter. (Before this rule, exactly that
 happened: three quotes 85px wide, "ev / er / yt / hi / ng".)
 
+**Any number across, and the numbers never break.** For the school's facts Maya sweeps *6 across* and drops a **Stat**
+into each cell — "1,000+ pupils", "45 teachers"… On a wide screen there is room for all six, but beside the sidebar the
+main column is narrower, and "1,000+" in big figures needs about 200px. So the grid gives up columns before it would ever
+break the number — and it gives them up **evenly**: six become **3 + 3**, then **2 + 2 + 2**, never five with one left
+alone underneath. A row of four Stats does the same (2 + 2). The picker offers any count from 1 to 12 — *five across* is
+five equal cells — and a grid of four or more that holds icons or logos keeps its count on a desktop, the way a row of
+four does: only words make it give columns up.
+
 **A small thing beside a tall one.** In "Meet the team" Maya puts a star icon in the first cell and a long quote in each
 of the others. The star's cell is as tall as the quotes — the row stays lined up — but the star itself stays star-sized
 at the top. She drags a **Text** from the blocks panel and lets go just under the star: it lands right there, one gap
