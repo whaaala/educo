@@ -1,12 +1,7 @@
 {
- "at": "2026-10-03T12:14:16.631Z",
+ "at": "2026-10-03T14:32:59.764Z",
  "n": 30,
  "seed": 1,
- "checks": 133,
- "fails": [
-  "state4 UP: the button's \"darken\" hover did not show inside its hovered card",
-  "state6 UP: the button's \"darken\" hover did not show inside its hovered card",
-  "state11 UP: the button's \"darken\" hover did not show inside its hovered card",
-  "state28 UP: the button's \"darken\" hover did not show inside its hovered card"
- ]
+ "checks": 197,
+ "fails": []
 }

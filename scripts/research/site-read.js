@@ -16,6 +16,7 @@ const DEPTH = +opt('depth', '0') || Infinity;
 const LISTING = opt('listing', '') ? new RegExp(opt('listing', '')) : null;
 const childDepth = (parent, l) => (LISTING && LISTING.test(l) ? 0 : parent + 1);
 if (!START || !OUT || !PROFILE || !INCLUDE) { console.log('usage: site-read.js <start-url> <out.json> <profile> <include-regex> [--shots=dir] [--max=n]'); process.exit(1); }
+const CHALLENGE = /human verification|are you (a )?human|just a moment|verify you are human|attention required|captcha/i;
 const origin = new URL(START).origin; const inc = new RegExp(INCLUDE);
 const norm = (u) => { try { const x = new URL(u, origin); x.hash = ''; return x.origin === origin ? x.href.replace(/\/$/, '') : null; } catch { return null; } };
 
@@ -37,7 +38,7 @@ async function robots() {
     for (let k = 0; k < 6; k++) { try { fs.writeFileSync(tmp, JSON.stringify(data, null, 1)); fs.renameSync(tmp, OUT); return; } catch (e) { if (k === 5) { console.log(`SAVE FAILED ${e.code} — will retry at the next page`); return; } const until = Date.now() + 250 * (k + 1); while (Date.now() < until) { /* brief wait, the lock clears */ } } }
   };
   const queue = [norm(START)]; const seen = new Set(queue); const depthOf = new Map([[norm(START), 0]]);
-  for (const [u, p] of Object.entries(data.pages)) { if (!depthOf.has(u)) depthOf.set(u, p.depth ?? 0); } for (const [u, p] of Object.entries(data.pages)) for (const l of p.links || []) if (!seen.has(l) && inc.test(l) && childDepth(p.depth ?? 0, l) <= DEPTH) { depthOf.set(l, childDepth(p.depth ?? 0, l)); seen.add(l); queue.push(l); }
+  for (const [u, p] of Object.entries(data.pages)) { if (!depthOf.has(u)) depthOf.set(u, p.depth ?? 0); } for (const p of Object.values(data.pages)) for (const l of p.links || []) if (!seen.has(l) && inc.test(l) && childDepth(p.depth ?? 0, l) <= DEPTH) { depthOf.set(l, childDepth(p.depth ?? 0, l)); seen.add(l); queue.push(l); }
   const ctx = await chromium.launchPersistentContext(PROFILE, { headless: false, viewport: { width: 1440, height: 900 }, deviceScaleFactor: 1, args: ['--force-device-scale-factor=1'] });
   const page = ctx.pages()[0] || await ctx.newPage();
   let read = Object.keys(data.pages).length;
@@ -60,6 +61,8 @@ async function robots() {
         const out = {}; for (const [k, m] of Object.entries(draws)) out[k] = [...m.entries()].sort((a, b) => b[1] - a[1]).slice(0, 400).map(([v, n]) => ({ v, n }));
         return { title: document.title, text: document.body.innerText, links: [...document.querySelectorAll('a[href]')].map((a) => a.href), draws: out, svgs: document.querySelectorAll('svg path').length };
       });
+      // R2-24: a "are you human" page is the site asking us to step DOWN (RULE RS) — never recorded as a page, the crawl stops
+      if (CHALLENGE.test(r.title)) { console.log(`CHALLENGE "${r.title}" at ${url} — stepping down, crawl stopped`); break; }
       const links = [...new Set(r.links.map(norm).filter(Boolean))];
       data.pages[url] = { title: r.title, text: r.text, links, draws: r.draws, svgPaths: r.svgs, depth: depthOf.get(url) ?? 0, at: new Date().toISOString() };
       for (const l of links) if (!seen.has(l) && inc.test(l) && childDepth(depthOf.get(url) ?? 0, l) <= DEPTH) { seen.add(l); depthOf.set(l, childDepth(depthOf.get(url) ?? 0, l)); queue.push(l); }

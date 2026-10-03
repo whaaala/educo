@@ -1,0 +1,3580 @@
+[
+ {
+  "aw": "https://webflow.com/made-in-webflow/website/040-100dwfix",
+  "measuredAt": "2026-10-03T13:09:40.171Z",
+  "title": "#40 Card Hover - Webflow",
+  "site": "https://040-100dwfix.webflow.io/",
+  "sitePage": null,
+  "vids": [],
+  "tags": [],
+  "desc": "Card Hover\n\n040 - 100 days of @webflow interactions",
+  "intro": {
+   "at700": {
+    "shot": "webflow-com-made-in-webflow-website-040-100dwfix-00-intro-0.7s.jpg",
+    "cover": []
+   },
+   "atLoad": {
+    "shot": "webflow-com-made-in-webflow-website-040-100dwfix-01-intro-load.jpg",
+    "cover": []
+   }
+  },
+  "loadMs": 909,
+  "surfaceDom": {
+   "fe": {},
+   "canvas": 0,
+   "big": []
+  },
+  "how": {
+   "css": {
+    "surface": [
+     ".w-webflow-badge{position:fixed !important;display:inline-block !important;visibility:visible !important;z-index:2147483647 !important;top:auto !important;right:12px !important;bottom:12px !important;left:auto !important;color:#AAADB0 !important;background-color:#fff !important;border-radius:3px !important;padding:6px 8px 6px 6px !important;font-size:12px !important;opacity:1 !important;line-heigh",
+     ".w-slider-nav.w-shadow>div{box-shadow:0 0 3px rgba(51,51,51,0.4)}.w-slider-nav-invert{color:#fff}.w-slider-nav-invert>div{background-color:rgba(34,34,34,0.4)}",
+     ".w-lightbox-left{display:none;bottom:0;left:0;background-image:url(\"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9Ii0yMCAwIDI0IDQwIiB3aWR0aD0iMjQiIGhlaWdodD0iNDAiPjxnIHRyYW5zZm9ybT0icm90YXRlKDQ1KSI+PHBhdGggZD0ibTAgMGg1djIzaDIzdjVoLTI4eiIgb3BhY2l0eT0iLjQiLz48cGF0aCBkPSJtMSAxaDN2MjNoMjN2M2gtMjZ6IiBmaWxsPSIjZmZmIi8+PC9nPjwvc3ZnPg==\")}",
+     ".w-lightbox-right{display:none;right:0;bottom:0;background-image:url(\"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9Ii00IDAgMjQgNDAiIHdpZHRoPSIyNCIgaGVpZ2h0PSI0MCI+PGcgdHJhbnNmb3JtPSJyb3RhdGUoNDUpIj48cGF0aCBkPSJtMC0waDI4djI4aC01di0yM2gtMjN6IiBvcGFjaXR5PSIuNCIvPjxwYXRoIGQ9Im0xIDFoMjZ2MjZoLTN2LTIzaC0yM3oiIGZpbGw9IiNmZmYiLz48L2c+PC9zdmc+\")}",
+     ".w-lightbox-close{right:0;height:2.6em;background-image:url(\"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9Ii00IDAgMTggMTciIHdpZHRoPSIxOCIgaGVpZ2h0PSIxNyI+PGcgdHJhbnNmb3JtPSJyb3RhdGUoNDUpIj48cGF0aCBkPSJtMCAwaDd2LTdoNXY3aDd2NWgtN3Y3aC01di03aC03eiIgb3BhY2l0eT0iLjQiLz48cGF0aCBkPSJtMSAxaDd2LTdoM3Y3aDd2M2gtN3Y3aC0zdi03aC03eiIgZmlsbD0iI2ZmZiIvPjwvZz48L3N2Zz4=\""
+    ],
+    "sticky": [],
+    "fixed": [
+     ".w-webflow-badge{position:fixed !important;display:inline-block !important;visibility:visible !important;z-index:2147483647 !important;top:auto !important;right:12px !important;bottom:12px !important;left:auto !important;color:#AAADB0 !important;background-color:#fff !important;border-radius:3px !important;padding:6px 8px 6px 6px !important;font-size:12px !important;opacity:1 !important;line-heigh",
+     ".w-lightbox-backdrop{color:#000;cursor:auto;font-family:serif;font-size:medium;font-style:normal;font-variant:normal;font-weight:normal;letter-spacing:normal;line-height:normal;list-style:disc;text-align:start;text-indent:0;text-shadow:none;text-transform:none;visibility:visible;white-space:normal;word-break:normal;word-spacing:normal;word-wrap:normal;position:fixed;top:0;right:0;bottom:0;left:0;c"
+    ],
+    "timeline": [],
+    "viewTransition": [],
+    "clip": [],
+    "snap": [],
+    "starting": [],
+    "reduced": []
+   },
+   "keyframes": [
+    "@keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}"
+   ],
+   "js": []
+  },
+  "timing": {
+   "transitionDuration": [
+    [
+     "0.6s, 0.6s, 0.6s",
+     1
+    ]
+   ],
+   "transitionEase": [
+    [
+     "cubic-bezier(0.23, 1, 0.32, 1), cubic-bezier(0.23, 1, 0.32, 1), cubic-bezier(0.23, 1, 0.32, 1)",
+     1
+    ]
+   ],
+   "transitionProperty": [
+    [
+     "box-shadow, transform, -webkit-transform",
+     1
+    ]
+   ],
+   "transitionDelay": [
+    [
+     "0s, 0s, 0s",
+     1
+    ]
+   ],
+   "scriptEases": [],
+   "scriptDurations": []
+  },
+  "libs": {
+   "gsap": false,
+   "scrollTrigger": false,
+   "lenis": false,
+   "locomotive": false,
+   "barba": false,
+   "swup": false,
+   "taxi": false,
+   "highway": false,
+   "three": false,
+   "canvas": false,
+   "framer": false,
+   "webflow": true,
+   "lottie": false,
+   "split": false,
+   "swiper": false,
+   "motion": false,
+   "animejs": false,
+   "aos": false,
+   "next": false,
+   "nuxt": false,
+   "astro": false
+  },
+  "cssF": {
+   "animTimeline": 0,
+   "viewTimeline": 0,
+   "scrollTimeline": 0,
+   "viewTransition": 0,
+   "crossDocVT": 0,
+   "scrollSnap": 0,
+   "sticky": 0,
+   "fixed": 2,
+   "clipPath": 0,
+   "mask": 0,
+   "keyframes": 1,
+   "startingStyle": 0,
+   "allowDiscrete": 0,
+   "reducedMotion": 0,
+   "hoverMedia": 0,
+   "focusVisible": 0,
+   "hasSel": 0,
+   "mixBlend": 0,
+   "backdrop": 0,
+   "marquee": 0,
+   "linearEase": 0,
+   "scrollState": 0,
+   "anchorPos": 0,
+   "containerQ": 0,
+   "noiseSvg": 0,
+   "gradient": 0,
+   "filterUrl": 0,
+   "blendMode": 0
+  },
+  "jsReduced": false,
+  "stickyEls": 0,
+  "fixedEls": 0,
+  "tallPins": 0,
+  "held": [],
+  "pinSpacers": [],
+  "sections": 0,
+  "splitText": 0,
+  "docH": 900,
+  "vh": 900,
+  "cursorNone": false,
+  "lang": "",
+  "h1": "",
+  "focus": [
+   {
+    "tag": "a",
+    "txt": "FRACTAL",
+    "outline": "auto 0.8px rgb(16, 16, 16)",
+    "offset": "0.8px",
+    "shadow": "rgb(0, 0, 0) 7px 7px 0px 0px",
+    "visible": true,
+    "onScreen": true,
+    "skipLink": false
+   },
+   null,
+   {
+    "tag": "a",
+    "txt": "FRACTAL",
+    "outline": "auto 0.8px rgb(16, 16, 16)",
+    "offset": "0.8px",
+    "shadow": "rgb(0, 0, 0) 7px 7px 0px 0px",
+    "visible": true,
+    "onScreen": true,
+    "skipLink": false
+   },
+   null
+  ],
+  "idle": {
+   "changed": 0,
+   "kinds": {},
+   "samples": [],
+   "scrolled": 0
+  },
+  "scroll": [
+   {
+    "changed": 0,
+    "kinds": {},
+    "samples": [],
+    "scrolled": 0
+   },
+   {
+    "changed": 0,
+    "kinds": {},
+    "samples": [],
+    "scrolled": 0
+   },
+   {
+    "changed": 0,
+    "kinds": {},
+    "samples": [],
+    "scrolled": 0
+   },
+   {
+    "changed": 0,
+    "kinds": {},
+    "samples": [],
+    "scrolled": 0
+   },
+   {
+    "changed": 0,
+    "kinds": {},
+    "samples": [],
+    "scrolled": 0
+   }
+  ],
+  "scrollPerf": {
+   "longTaskMs": 0
+  },
+  "scrollChanged": 0,
+  "scrolledTo": 0,
+  "kb": 103,
+  "reqs": 6,
+  "hover": {
+   "results": [
+    {
+     "on": "a.work-card",
+     "txt": "FRACTAL",
+     "changed": [
+      "self:transform",
+      "self:shadow",
+      "child:transform"
+     ],
+     "timing": "box-shadow, transform, -webkit-transform 0.6s, 0.6s, 0.6s cubic-bezier(0.23, 1, 0.32, 1), cubic-bezier(0.23, 1, 0.32, 1), cubic-bezier(0.23, 1, 0.32, 1) 0s, 0s, 0s",
+     "cursor": "pointer",
+     "frames": [
+      "webflow-com-made-in-webflow-website-040-100dwfix-h0-080.jpg",
+      "webflow-com-made-in-webflow-website-040-100dwfix-h0-250.jpg",
+      "webflow-com-made-in-webflow-website-040-100dwfix-h0-650.jpg"
+     ]
+    },
+    {
+     "on": "div.work-card---ratio",
+     "txt": "FRACTAL",
+     "changed": [
+      "child:transform",
+      "parent:transform",
+      "parent:shadow"
+     ],
+     "timing": "all 0s ease 0s",
+     "cursor": "pointer",
+     "frames": [
+      "webflow-com-made-in-webflow-website-040-100dwfix-h1-080.jpg",
+      "webflow-com-made-in-webflow-website-040-100dwfix-h1-250.jpg",
+      "webflow-com-made-in-webflow-website-040-100dwfix-h1-650.jpg"
+     ]
+    },
+    {
+     "on": "div.work-card---inner",
+     "txt": "FRACTAL",
+     "changed": [
+      "child:transform"
+     ],
+     "timing": "all 0s ease 0s",
+     "cursor": "pointer",
+     "frames": [
+      "webflow-com-made-in-webflow-website-040-100dwfix-h2-080.jpg",
+      "webflow-com-made-in-webflow-website-040-100dwfix-h2-250.jpg",
+      "webflow-com-made-in-webflow-website-040-100dwfix-h2-650.jpg"
+     ]
+    },
+    {
+     "on": "div.work-card---image",
+     "txt": "",
+     "changed": [
+      "self:transform"
+     ],
+     "timing": "all 0s ease 0s",
+     "cursor": "pointer",
+     "frames": []
+    },
+    {
+     "on": "div.work-card---title",
+     "txt": "FRACTAL",
+     "changed": [
+      "self:transform"
+     ],
+     "timing": "all 0s ease 0s",
+     "cursor": "pointer",
+     "frames": []
+    }
+   ],
+   "hoverRules": {
+    "n": 0,
+    "sample": []
+   },
+   "hoverMediaGated": 0
+  },
+  "cursor": {
+   "followers": []
+  },
+  "shadows": [
+   [
+    "rgb(0, 0, 0) 0.0022587px 0.0022587px 0px 0px",
+    1
+   ]
+  ],
+  "menu": {
+   "found": false
+  },
+  "pageTransition": {
+   "kind": "no-internal-link"
+  },
+  "reducedMotion": {
+   "idle": {
+    "changed": 0,
+    "kinds": {}
+   },
+   "scroll": [
+    {
+     "changed": 0,
+     "kinds": {}
+    },
+    {
+     "changed": 0,
+     "kinds": {}
+    }
+   ],
+   "shot": "webflow-com-made-in-webflow-website-040-100dwfix-7-reduced.jpg",
+   "normalScrollChanged": 0,
+   "elementsSeen": 10
+  },
+  "phone": {
+   "innerWidth": 360,
+   "pageWidth": 360,
+   "forcedWider": false,
+   "touch": true,
+   "shotTop": "webflow-com-made-in-webflow-website-040-100dwfix-8-phone-top.jpg",
+   "held": [],
+   "hoverMedia": false,
+   "overflowX": false,
+   "scroll": [
+    {
+     "changed": 0,
+     "kinds": {},
+     "samples": []
+    },
+    {
+     "changed": 0,
+     "kinds": {},
+     "samples": []
+    },
+    {
+     "changed": 0,
+     "kinds": {},
+     "samples": []
+    }
+   ],
+   "longTaskMs": 0,
+   "heldAfterScroll": [],
+   "shotScrolled": "webflow-com-made-in-webflow-website-040-100dwfix-9-phone-scrolled.jpg",
+   "menu": {
+    "found": false
+   }
+  }
+ },
+ {
+  "aw": "https://webflow.com/made-in-webflow/website/50-buttons-36-x",
+  "measuredAt": "2026-10-03T13:10:24.791Z",
+  "title": "Sleek Prism Button (#36) - Webflow",
+  "site": "https://50-buttons-36.webflow.io/",
+  "sitePage": null,
+  "vids": [],
+  "tags": [],
+  "desc": "Perfect for add a touch of modernity.\n\nBest for:\n🌐 Tech-focused websites\n💻 Modern SaaS platforms\n🎨 Innovative design portfolios\n🚀 Futuristic branding projects\n ✅ Edit easily",
+  "intro": {
+   "at700": {
+    "shot": "webflow-com-made-in-webflow-website-50-buttons-36-x-00-intro-0.7s.jpg",
+    "cover": []
+   },
+   "atLoad": {
+    "shot": "webflow-com-made-in-webflow-website-50-buttons-36-x-01-intro-load.jpg",
+    "cover": []
+   }
+  },
+  "loadMs": 1855,
+  "surfaceDom": {
+   "fe": {},
+   "canvas": 0,
+   "big": []
+  },
+  "how": {
+   "css": {
+    "surface": [
+     ".w-webflow-badge{white-space:nowrap;cursor:pointer;box-shadow:0 0 0 1px rgba(0,0,0,.1),0 1px 3px rgba(0,0,0,.1);visibility:visible!important;z-index:2147483647!important;color:#aaadb0!important;opacity:1!important;background-color:#fff!important;border-radius:3px!important;width:auto!important;height:auto!important;margin:0!important;padding:6px!important;font-size:12px!important;line-height:14px!",
+     ".w-slider-nav.w-shadow>div{box-shadow:0 0 3px rgba(51,51,51,.4)}.w-slider-nav-invert{color:#fff}.w-slider-nav-invert>div{background-color:rgba(34,34,34,.4)}",
+     ".w-lightbox-left{background-image:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9Ii0yMCAwIDI0IDQwIiB3aWR0aD0iMjQiIGhlaWdodD0iNDAiPjxnIHRyYW5zZm9ybT0icm90YXRlKDQ1KSI+PHBhdGggZD0ibTAgMGg1djIzaDIzdjVoLTI4eiIgb3BhY2l0eT0iLjQiLz48cGF0aCBkPSJtMSAxaDN2MjNoMjN2M2gtMjZ6IiBmaWxsPSIjZmZmIi8+PC9nPjwvc3ZnPg==);display:none;bottom:0;left:0}",
+     ".w-lightbox-right{background-image:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9Ii00IDAgMjQgNDAiIHdpZHRoPSIyNCIgaGVpZ2h0PSI0MCI+PGcgdHJhbnNmb3JtPSJyb3RhdGUoNDUpIj48cGF0aCBkPSJtMC0waDI4djI4aC01di0yM2gtMjN6IiBvcGFjaXR5PSIuNCIvPjxwYXRoIGQ9Im0xIDFoMjZ2MjZoLTN2LTIzaC0yM3oiIGZpbGw9IiNmZmYiLz48L2c+PC9zdmc+);display:none;bottom:0;right:0}",
+     ".w-lightbox-close{background-image:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9Ii00IDAgMTggMTciIHdpZHRoPSIxOCIgaGVpZ2h0PSIxNyI+PGcgdHJhbnNmb3JtPSJyb3RhdGUoNDUpIj48cGF0aCBkPSJtMCAwaDd2LTdoNXY3aDd2NWgtN3Y3aC01di03aC03eiIgb3BhY2l0eT0iLjQiLz48cGF0aCBkPSJtMSAxaDd2LTdoM3Y3aDd2M2gtN3Y3aC0zdi03aC03eiIgZmlsbD0iI2ZmZiIvPjwvZz48L3N2Zz4=);background-size:18px;",
+     ".body{color:#fff;background-color:#08071a;background-image:url(https://cdn.prod.website-files.com/66a9fc6bd23ebad57eed78a8/66a9fc6bd23ebad57eed78d3_Ellipse%20right.svg),url(https://cdn.prod.website-files.com/66a9fc6bd23ebad57eed78a8/66a9fc6bd23ebad57eed78ce_Ellipse%20left.svg);background-position:100% 100%,-50% -50%;background-repeat:no-repeat,no-repeat;background-size:auto,auto;min-height:100vh;f",
+     ".arrow-button-2{background-color:#0a081c;background-image:url(https://cdn.prod.website-files.com/66a9fc6bd23ebad57eed78a8/66a9fc6bd23ebad57eed78d1_arrow.svg);background-position:50%;background-repeat:no-repeat;background-size:auto 12px;border:1px solid #6911f5;border-radius:999px;width:60px;height:60px;transition:all .5s;box-shadow:1px 1px 3px #89ffe1}",
+     ".play-wrapper{z-index:3;color:#f8f1e2;cursor:pointer;background-color:#fff;border-radius:999em;flex:none;justify-content:center;align-items:center;width:5em;height:5em;transition:all .3s cubic-bezier(.165,.84,.44,1);display:flex;box-shadow:0 10px 4em rgba(0,0,0,.45)}",
+     ".prism-2-button-copy-me{grid-column-gap:10px;background-image:radial-gradient(circle at 0%,#f6987c,#a761ff 29%,#376fff 68%,#1bd98f);border-radius:999px;flex:0 auto;justify-content:center;align-items:center;padding:2px;text-decoration:none;transition:transform .4s,box-shadow .4s cubic-bezier(.322,.059,.269,1.141);display:flex;box-shadow:0 0 rgba(73,41,122,.31),0 0 rgba(73,41,122,.27),0 0 rgba(73,41",
+     ".prism-2-button-copy-me:hover{transform:scale(1.05);box-shadow:0 6px 13px rgba(73,41,122,.31),0 24px 24px rgba(73,41,122,.27),0 55px 33px rgba(73,41,122,.16),0 98px 39px rgba(73,41,122,.05),0 153px 43px rgba(73,41,122,.01)}",
+     ".button-mid-wrapper{z-index:2;grid-column-gap:10px;background-image:radial-gradient(circle at 50% 0,rgba(102,102,102,.8),rgba(0,0,0,.8));border-radius:9999px;flex:0 auto;justify-content:flex-start;align-items:center;padding:7px;text-decoration:none;display:flex;position:relative}",
+     ".button-in-wrapper{grid-column-gap:10px;border:1px undefined undefined;background-image:radial-gradient(circle at 0 0,#2f2f2f,#000);border-radius:9999px;flex:0 auto;justify-content:center;align-items:center;padding:10px 20px;text-decoration:none;display:flex;box-shadow:0 .693872px 1.47448px rgba(255,255,255,.09),inset 0 1.63579px 4px 2px rgba(255,255,255,.17),inset .204473px .204473px .204473px rg"
+    ],
+    "sticky": [],
+    "fixed": [
+     ".w-webflow-badge{white-space:nowrap;cursor:pointer;box-shadow:0 0 0 1px rgba(0,0,0,.1),0 1px 3px rgba(0,0,0,.1);visibility:visible!important;z-index:2147483647!important;color:#aaadb0!important;opacity:1!important;background-color:#fff!important;border-radius:3px!important;width:auto!important;height:auto!important;margin:0!important;padding:6px!important;font-size:12px!important;line-height:14px!",
+     ".w-lightbox-backdrop{cursor:auto;letter-spacing:normal;text-indent:0;text-shadow:none;text-transform:none;visibility:visible;white-space:normal;word-break:normal;word-spacing:normal;word-wrap:normal;color:#fff;text-align:center;z-index:2000;opacity:0;-webkit-user-select:none;-moz-user-select:none;-webkit-tap-highlight-color:transparent;background:rgba(0,0,0,.9);outline:0;font-family:Helvetica Neue",
+     ".popup-wrapper{z-index:999;justify-content:center;align-items:center;width:100%;height:100%;display:none;position:fixed;top:0%;bottom:0%;left:0%;right:0%}"
+    ],
+    "timeline": [],
+    "viewTransition": [],
+    "clip": [],
+    "snap": [],
+    "starting": [],
+    "reduced": []
+   },
+   "keyframes": [
+    "@keyframes spin{0%{transform:rotate(0)}to{transform:rotate(360deg)}}"
+   ],
+   "js": []
+  },
+  "timing": {
+   "transitionDuration": [
+    [
+     "0.5s",
+     1
+    ],
+    [
+     "0.3s",
+     1
+    ],
+    [
+     "0.2s, 0.2s",
+     1
+    ],
+    [
+     "0.15s, 0.15s",
+     1
+    ],
+    [
+     "0.4s, 0.4s",
+     1
+    ]
+   ],
+   "transitionEase": [
+    [
+     "cubic-bezier(0.39, 0.575, 0.565, 1), cubic-bezier(0.39, 0.575, 0.565, 1)",
+     2
+    ],
+    [
+     "ease",
+     1
+    ],
+    [
+     "cubic-bezier(0.165, 0.84, 0.44, 1)",
+     1
+    ],
+    [
+     "ease, cubic-bezier(0.322, 0.059, 0.269, 1.141)",
+     1
+    ]
+   ],
+   "transitionProperty": [
+    [
+     "transform, box-shadow",
+     3
+    ]
+   ],
+   "transitionDelay": [
+    [
+     "0s, 0s",
+     3
+    ]
+   ],
+   "scriptEases": [],
+   "scriptDurations": []
+  },
+  "libs": {
+   "gsap": false,
+   "scrollTrigger": false,
+   "lenis": false,
+   "locomotive": false,
+   "barba": false,
+   "swup": false,
+   "taxi": false,
+   "highway": false,
+   "three": true,
+   "canvas": false,
+   "framer": false,
+   "webflow": true,
+   "lottie": false,
+   "split": false,
+   "swiper": false,
+   "motion": false,
+   "animejs": false,
+   "aos": false,
+   "next": false,
+   "nuxt": false,
+   "astro": false
+  },
+  "cssF": {
+   "animTimeline": 0,
+   "viewTimeline": 0,
+   "scrollTimeline": 0,
+   "viewTransition": 0,
+   "crossDocVT": 0,
+   "scrollSnap": 0,
+   "sticky": 0,
+   "fixed": 3,
+   "clipPath": 0,
+   "mask": 0,
+   "keyframes": 1,
+   "startingStyle": 0,
+   "allowDiscrete": 0,
+   "reducedMotion": 0,
+   "hoverMedia": 0,
+   "focusVisible": 0,
+   "hasSel": 0,
+   "mixBlend": 0,
+   "backdrop": 0,
+   "marquee": 0,
+   "linearEase": 0,
+   "scrollState": 0,
+   "anchorPos": 0,
+   "containerQ": 0,
+   "noiseSvg": 0,
+   "gradient": 3,
+   "filterUrl": 0,
+   "blendMode": 0
+  },
+  "jsReduced": false,
+  "stickyEls": 0,
+  "fixedEls": 0,
+  "tallPins": 0,
+  "held": [],
+  "pinSpacers": [],
+  "sections": 0,
+  "splitText": 0,
+  "docH": 920,
+  "vh": 900,
+  "cursorNone": false,
+  "lang": "en",
+  "h1": "",
+  "focus": [
+   {
+    "tag": "a",
+    "txt": "Figma file",
+    "outline": "auto 0.8px rgb(16, 16, 16)",
+    "offset": "0.8px",
+    "shadow": "none",
+    "visible": true,
+    "onScreen": true,
+    "skipLink": false
+   },
+   {
+    "tag": "a",
+    "txt": "All 50 Buttons",
+    "outline": "auto 0.8px rgb(16, 16, 16)",
+    "offset": "0.8px",
+    "shadow": "none",
+    "visible": true,
+    "onScreen": true,
+    "skipLink": false
+   },
+   {
+    "tag": "a",
+    "txt": "Clone Project",
+    "outline": "auto 0.8px rgb(16, 16, 16)",
+    "offset": "0.8px",
+    "shadow": "none",
+    "visible": true,
+    "onScreen": true,
+    "skipLink": false
+   },
+   {
+    "tag": "a",
+    "txt": "🎨 Customize background animat",
+    "outline": "auto 0.8px rgb(16, 16, 16)",
+    "offset": "0.8px",
+    "shadow": "none",
+    "visible": true,
+    "onScreen": true,
+    "skipLink": false
+   }
+  ],
+  "idle": {
+   "changed": 4,
+   "kinds": {
+    "translate": 4
+   },
+   "samples": [
+    {
+     "k": "translate",
+     "tag": "g",
+     "cls": "[object SVGAnimatedString]",
+     "txt": "",
+     "img": false,
+     "w": 209,
+     "h": 104,
+     "moveRatio": null,
+     "scale": [
+      1.02,
+      1.02
+     ],
+     "op": [
+      1,
+      1
+     ],
+     "timing": ""
+    },
+    {
+     "k": "translate",
+     "tag": "g",
+     "cls": "[object SVGAnimatedString]",
+     "txt": "",
+     "img": false,
+     "w": 209,
+     "h": 104,
+     "moveRatio": null,
+     "scale": [
+      1.02,
+      1.02
+     ],
+     "op": [
+      1,
+      1
+     ],
+     "timing": ""
+    },
+    {
+     "k": "translate",
+     "tag": "g",
+     "cls": "[object SVGAnimatedString]",
+     "txt": "",
+     "img": false,
+     "w": 209,
+     "h": 104,
+     "moveRatio": null,
+     "scale": [
+      1.02,
+      1.02
+     ],
+     "op": [
+      1,
+      1
+     ],
+     "timing": ""
+    },
+    {
+     "k": "translate",
+     "tag": "g",
+     "cls": "[object SVGAnimatedString]",
+     "txt": "",
+     "img": false,
+     "w": 209,
+     "h": 104,
+     "moveRatio": null,
+     "scale": [
+      1.02,
+      1.02
+     ],
+     "op": [
+      1,
+      1
+     ],
+     "timing": ""
+    }
+   ],
+   "scrolled": 0
+  },
+  "scroll": [
+   {
+    "changed": 4,
+    "kinds": {
+     "translate": 4
+    },
+    "samples": [
+     {
+      "k": "translate",
+      "tag": "g",
+      "cls": "[object SVGAnimatedString]",
+      "txt": "",
+      "img": false,
+      "w": 209,
+      "h": 104,
+      "moveRatio": -0.05,
+      "scale": [
+       1.02,
+       1.02
+      ],
+      "op": [
+       1,
+       1
+      ],
+      "timing": ""
+     },
+     {
+      "k": "translate",
+      "tag": "g",
+      "cls": "[object SVGAnimatedString]",
+      "txt": "",
+      "img": false,
+      "w": 209,
+      "h": 104,
+      "moveRatio": -0.05,
+      "scale": [
+       1.02,
+       1.02
+      ],
+      "op": [
+       1,
+       1
+      ],
+      "timing": ""
+     },
+     {
+      "k": "translate",
+      "tag": "g",
+      "cls": "[object SVGAnimatedString]",
+      "txt": "",
+      "img": false,
+      "w": 209,
+      "h": 104,
+      "moveRatio": -0.05,
+      "scale": [
+       1.02,
+       1.02
+      ],
+      "op": [
+       1,
+       1
+      ],
+      "timing": ""
+     },
+     {
+      "k": "translate",
+      "tag": "g",
+      "cls": "[object SVGAnimatedString]",
+      "txt": "",
+      "img": false,
+      "w": 209,
+      "h": 104,
+      "moveRatio": -0.05,
+      "scale": [
+       1.02,
+       1.02
+      ],
+      "op": [
+       1,
+       1
+      ],
+      "timing": ""
+     }
+    ],
+    "scrolled": 20
+   },
+   {
+    "changed": 4,
+    "kinds": {
+     "translate": 4
+    },
+    "samples": [
+     {
+      "k": "translate",
+      "tag": "g",
+      "cls": "[object SVGAnimatedString]",
+      "txt": "",
+      "img": false,
+      "w": 209,
+      "h": 104,
+      "moveRatio": null,
+      "scale": [
+       1.02,
+       1.02
+      ],
+      "op": [
+       1,
+       1
+      ],
+      "timing": ""
+     },
+     {
+      "k": "translate",
+      "tag": "g",
+      "cls": "[object SVGAnimatedString]",
+      "txt": "",
+      "img": false,
+      "w": 209,
+      "h": 104,
+      "moveRatio": null,
+      "scale": [
+       1.02,
+       1.02
+      ],
+      "op": [
+       1,
+       1
+      ],
+      "timing": ""
+     },
+     {
+      "k": "translate",
+      "tag": "g",
+      "cls": "[object SVGAnimatedString]",
+      "txt": "",
+      "img": false,
+      "w": 209,
+      "h": 104,
+      "moveRatio": null,
+      "scale": [
+       1.02,
+       1.02
+      ],
+      "op": [
+       1,
+       1
+      ],
+      "timing": ""
+     },
+     {
+      "k": "translate",
+      "tag": "g",
+      "cls": "[object SVGAnimatedString]",
+      "txt": "",
+      "img": false,
+      "w": 209,
+      "h": 104,
+      "moveRatio": null,
+      "scale": [
+       1.02,
+       1.02
+      ],
+      "op": [
+       1,
+       1
+      ],
+      "timing": ""
+     }
+    ],
+    "scrolled": 0
+   },
+   {
+    "changed": 4,
+    "kinds": {
+     "translate": 4
+    },
+    "samples": [
+     {
+      "k": "translate",
+      "tag": "g",
+      "cls": "[object SVGAnimatedString]",
+      "txt": "",
+      "img": false,
+      "w": 209,
+      "h": 104,
+      "moveRatio": null,
+      "scale": [
+       1.02,
+       1.02
+      ],
+      "op": [
+       1,
+       1
+      ],
+      "timing": ""
+     },
+     {
+      "k": "translate",
+      "tag": "g",
+      "cls": "[object SVGAnimatedString]",
+      "txt": "",
+      "img": false,
+      "w": 209,
+      "h": 104,
+      "moveRatio": null,
+      "scale": [
+       1.02,
+       1.02
+      ],
+      "op": [
+       1,
+       1
+      ],
+      "timing": ""
+     },
+     {
+      "k": "translate",
+      "tag": "g",
+      "cls": "[object SVGAnimatedString]",
+      "txt": "",
+      "img": false,
+      "w": 209,
+      "h": 104,
+      "moveRatio": null,
+      "scale": [
+       1.02,
+       1.02
+      ],
+      "op": [
+       1,
+       1
+      ],
+      "timing": ""
+     },
+     {
+      "k": "translate",
+      "tag": "g",
+      "cls": "[object SVGAnimatedString]",
+      "txt": "",
+      "img": false,
+      "w": 209,
+      "h": 104,
+      "moveRatio": null,
+      "scale": [
+       1.02,
+       1.02
+      ],
+      "op": [
+       1,
+       1
+      ],
+      "timing": ""
+     }
+    ],
+    "scrolled": 0
+   },
+   {
+    "changed": 4,
+    "kinds": {
+     "translate": 4
+    },
+    "samples": [
+     {
+      "k": "translate",
+      "tag": "g",
+      "cls": "[object SVGAnimatedString]",
+      "txt": "",
+      "img": false,
+      "w": 209,
+      "h": 104,
+      "moveRatio": null,
+      "scale": [
+       1.02,
+       1.02
+      ],
+      "op": [
+       1,
+       1
+      ],
+      "timing": ""
+     },
+     {
+      "k": "translate",
+      "tag": "g",
+      "cls": "[object SVGAnimatedString]",
+      "txt": "",
+      "img": false,
+      "w": 209,
+      "h": 104,
+      "moveRatio": null,
+      "scale": [
+       1.02,
+       1.02
+      ],
+      "op": [
+       1,
+       1
+      ],
+      "timing": ""
+     },
+     {
+      "k": "translate",
+      "tag": "g",
+      "cls": "[object SVGAnimatedString]",
+      "txt": "",
+      "img": false,
+      "w": 209,
+      "h": 104,
+      "moveRatio": null,
+      "scale": [
+       1.02,
+       1.02
+      ],
+      "op": [
+       1,
+       1
+      ],
+      "timing": ""
+     },
+     {
+      "k": "translate",
+      "tag": "g",
+      "cls": "[object SVGAnimatedString]",
+      "txt": "",
+      "img": false,
+      "w": 209,
+      "h": 104,
+      "moveRatio": null,
+      "scale": [
+       1.02,
+       1.02
+      ],
+      "op": [
+       1,
+       1
+      ],
+      "timing": ""
+     }
+    ],
+    "scrolled": 0
+   },
+   {
+    "changed": 4,
+    "kinds": {
+     "translate": 4
+    },
+    "samples": [
+     {
+      "k": "translate",
+      "tag": "g",
+      "cls": "[object SVGAnimatedString]",
+      "txt": "",
+      "img": false,
+      "w": 209,
+      "h": 104,
+      "moveRatio": null,
+      "scale": [
+       1.02,
+       1.02
+      ],
+      "op": [
+       1,
+       1
+      ],
+      "timing": ""
+     },
+     {
+      "k": "translate",
+      "tag": "g",
+      "cls": "[object SVGAnimatedString]",
+      "txt": "",
+      "img": false,
+      "w": 209,
+      "h": 104,
+      "moveRatio": null,
+      "scale": [
+       1.02,
+       1.02
+      ],
+      "op": [
+       1,
+       1
+      ],
+      "timing": ""
+     },
+     {
+      "k": "translate",
+      "tag": "g",
+      "cls": "[object SVGAnimatedString]",
+      "txt": "",
+      "img": false,
+      "w": 209,
+      "h": 104,
+      "moveRatio": null,
+      "scale": [
+       1.02,
+       1.02
+      ],
+      "op": [
+       1,
+       1
+      ],
+      "timing": ""
+     },
+     {
+      "k": "translate",
+      "tag": "g",
+      "cls": "[object SVGAnimatedString]",
+      "txt": "",
+      "img": false,
+      "w": 209,
+      "h": 104,
+      "moveRatio": null,
+      "scale": [
+       1.02,
+       1.02
+      ],
+      "op": [
+       1,
+       1
+      ],
+      "timing": ""
+     }
+    ],
+    "scrolled": 0
+   }
+  ],
+  "scrollPerf": {
+   "longTaskMs": 0
+  },
+  "scrollChanged": 20,
+  "scrolledTo": 0,
+  "kb": 3326,
+  "reqs": 64,
+  "hover": {
+   "results": [
+    {
+     "on": "a.subscribe-description",
+     "txt": "Figma file",
+     "changed": [],
+     "timing": "all 0s ease 0s",
+     "cursor": "pointer",
+     "frames": []
+    },
+    {
+     "on": "a.subscribe-button",
+     "txt": "Clone Project",
+     "changed": [
+      "child:shadow"
+     ],
+     "timing": "all 0s ease 0s",
+     "cursor": "pointer",
+     "frames": [
+      "webflow-com-made-in-webflow-website-50-buttons-36-x-h1-080.jpg",
+      "webflow-com-made-in-webflow-website-50-buttons-36-x-h1-250.jpg",
+      "webflow-com-made-in-webflow-website-50-buttons-36-x-h1-650.jpg"
+     ]
+    },
+    {
+     "on": "a.",
+     "txt": "🎨 Customize background animat",
+     "changed": [],
+     "timing": "all 0s ease 0s",
+     "cursor": "pointer",
+     "frames": []
+    },
+    {
+     "on": "a.link",
+     "txt": "Powerd by Elyakim Goldfus",
+     "changed": [],
+     "timing": "all 0s ease 0s",
+     "cursor": "pointer",
+     "frames": []
+    },
+    {
+     "on": "a.prism-button-copy-me",
+     "txt": "SEE ALL 50 BUTTTONS",
+     "changed": [
+      "self:transform",
+      "self:shadow",
+      "child:transform"
+     ],
+     "timing": "transform, box-shadow 0.2s, 0.2s cubic-bezier(0.39, 0.575, 0.565, 1), cubic-bezier(0.39, 0.575, 0.565, 1) 0s, 0s",
+     "cursor": "pointer",
+     "frames": [
+      "webflow-com-made-in-webflow-website-50-buttons-36-x-h4-080.jpg",
+      "webflow-com-made-in-webflow-website-50-buttons-36-x-h4-250.jpg",
+      "webflow-com-made-in-webflow-website-50-buttons-36-x-h4-650.jpg"
+     ]
+    },
+    {
+     "on": "a.prism-button-white-copy-me",
+     "txt": "SEE ALL 50 BUTTTONS",
+     "changed": [
+      "self:transform",
+      "self:shadow",
+      "child:transform"
+     ],
+     "timing": "transform, box-shadow 0.15s, 0.15s cubic-bezier(0.39, 0.575, 0.565, 1), cubic-bezier(0.39, 0.575, 0.565, 1) 0s, 0s",
+     "cursor": "pointer",
+     "frames": [
+      "webflow-com-made-in-webflow-website-50-buttons-36-x-h5-080.jpg",
+      "webflow-com-made-in-webflow-website-50-buttons-36-x-h5-250.jpg",
+      "webflow-com-made-in-webflow-website-50-buttons-36-x-h5-650.jpg"
+     ]
+    }
+   ],
+   "hoverRules": {
+    "n": 0,
+    "sample": []
+   },
+   "hoverMediaGated": 0
+  },
+  "cursor": {
+   "followers": []
+  },
+  "shadows": [
+   [
+    "rgba(255, 255, 255, 0.09) 0px 0.693872px 1.47448px 0px, rgba(255, 255, 255, 0.17) 0px 1.63579px 4px 2px inset, rgba(255, 255, 255, 0.4) 0.204473px 0.204473px 0.204473px 0px inset, rgba(255, 255, 255, 0.25) -0.204473px -0.204473px 0.946452px 0px inset",
+    3
+   ],
+   [
+    "rgba(73, 41, 122, 0.31) 0px 6px 13px 0px, rgba(73, 41, 122, 0.27) 0px 24px 24px 0px, rgba(73, 41, 122, 0.16) 0px 55px 33px 0px, rgba(73, 41, 122, 0.05) 0px 98px 39px 0px, rgba(73, 41, 122, 0.01) 0px 153px 43px 0px",
+    2
+   ],
+   [
+    "rgb(137, 255, 225) 1px 1px 3px 0px",
+    1
+   ],
+   [
+    "rgba(0, 0, 0, 0.45) 0px 10px 56px 0px",
+    1
+   ],
+   [
+    "rgba(73, 41, 122, 0.31) 0px 0px 0px 0px, rgba(73, 41, 122, 0.27) 0px 0px 0px 0px, rgba(73, 41, 122, 0.16) 0px 0px 0px 0px, rgba(73, 41, 122, 0.05) 0px 0px 0px 0px, rgba(73, 41, 122, 0.01) 0px 0px 0px 0px",
+    1
+   ]
+  ],
+  "menu": {
+   "found": false
+  },
+  "pageTransition": {
+   "kind": "no-internal-link"
+  },
+  "reducedMotion": {
+   "idle": {
+    "changed": 4,
+    "kinds": {
+     "translate": 4
+    }
+   },
+   "scroll": [
+    {
+     "changed": 4,
+     "kinds": {
+      "translate": 4
+     }
+    },
+    {
+     "changed": 4,
+     "kinds": {
+      "translate": 4
+     }
+    }
+   ],
+   "shot": "webflow-com-made-in-webflow-website-50-buttons-36-x-7-reduced.jpg",
+   "normalScrollChanged": 8,
+   "elementsSeen": 149
+  },
+  "phone": {
+   "innerWidth": 360,
+   "pageWidth": 360,
+   "forcedWider": false,
+   "touch": true,
+   "shotTop": "webflow-com-made-in-webflow-website-50-buttons-36-x-8-phone-top.jpg",
+   "held": [],
+   "hoverMedia": false,
+   "overflowX": false,
+   "scroll": [
+    {
+     "changed": 4,
+     "kinds": {
+      "translate": 4
+     },
+     "samples": [
+      {
+       "k": "translate",
+       "tag": "g",
+       "cls": "[object SVGAnimatedString]",
+       "txt": "",
+       "img": false,
+       "w": 209,
+       "h": 104,
+       "moveRatio": 0,
+       "scale": [
+        1.02,
+        1.02
+       ],
+       "op": [
+        1,
+        1
+       ],
+       "timing": ""
+      },
+      {
+       "k": "translate",
+       "tag": "g",
+       "cls": "[object SVGAnimatedString]",
+       "txt": "",
+       "img": false,
+       "w": 209,
+       "h": 104,
+       "moveRatio": 0,
+       "scale": [
+        1.02,
+        1.02
+       ],
+       "op": [
+        1,
+        1
+       ],
+       "timing": ""
+      },
+      {
+       "k": "translate",
+       "tag": "g",
+       "cls": "[object SVGAnimatedString]",
+       "txt": "",
+       "img": false,
+       "w": 209,
+       "h": 104,
+       "moveRatio": 0,
+       "scale": [
+        1.02,
+        1.02
+       ],
+       "op": [
+        1,
+        1
+       ],
+       "timing": ""
+      },
+      {
+       "k": "translate",
+       "tag": "g",
+       "cls": "[object SVGAnimatedString]",
+       "txt": "",
+       "img": false,
+       "w": 209,
+       "h": 104,
+       "moveRatio": 0,
+       "scale": [
+        1.02,
+        1.02
+       ],
+       "op": [
+        1,
+        1
+       ],
+       "timing": ""
+      }
+     ]
+    },
+    {
+     "changed": 4,
+     "kinds": {
+      "translate": 4
+     },
+     "samples": [
+      {
+       "k": "translate",
+       "tag": "g",
+       "cls": "[object SVGAnimatedString]",
+       "txt": "",
+       "img": false,
+       "w": 209,
+       "h": 104,
+       "moveRatio": null,
+       "scale": [
+        1.02,
+        1.02
+       ],
+       "op": [
+        1,
+        1
+       ],
+       "timing": ""
+      },
+      {
+       "k": "translate",
+       "tag": "g",
+       "cls": "[object SVGAnimatedString]",
+       "txt": "",
+       "img": false,
+       "w": 209,
+       "h": 104,
+       "moveRatio": null,
+       "scale": [
+        1.02,
+        1.02
+       ],
+       "op": [
+        1,
+        1
+       ],
+       "timing": ""
+      },
+      {
+       "k": "translate",
+       "tag": "g",
+       "cls": "[object SVGAnimatedString]",
+       "txt": "",
+       "img": false,
+       "w": 209,
+       "h": 104,
+       "moveRatio": null,
+       "scale": [
+        1.02,
+        1.02
+       ],
+       "op": [
+        1,
+        1
+       ],
+       "timing": ""
+      },
+      {
+       "k": "translate",
+       "tag": "g",
+       "cls": "[object SVGAnimatedString]",
+       "txt": "",
+       "img": false,
+       "w": 209,
+       "h": 104,
+       "moveRatio": null,
+       "scale": [
+        1.02,
+        1.02
+       ],
+       "op": [
+        1,
+        1
+       ],
+       "timing": ""
+      }
+     ]
+    },
+    {
+     "changed": 4,
+     "kinds": {
+      "translate": 4
+     },
+     "samples": [
+      {
+       "k": "translate",
+       "tag": "g",
+       "cls": "[object SVGAnimatedString]",
+       "txt": "",
+       "img": false,
+       "w": 209,
+       "h": 104,
+       "moveRatio": null,
+       "scale": [
+        1.02,
+        1.02
+       ],
+       "op": [
+        1,
+        1
+       ],
+       "timing": ""
+      },
+      {
+       "k": "translate",
+       "tag": "g",
+       "cls": "[object SVGAnimatedString]",
+       "txt": "",
+       "img": false,
+       "w": 209,
+       "h": 104,
+       "moveRatio": null,
+       "scale": [
+        1.02,
+        1.02
+       ],
+       "op": [
+        1,
+        1
+       ],
+       "timing": ""
+      },
+      {
+       "k": "translate",
+       "tag": "g",
+       "cls": "[object SVGAnimatedString]",
+       "txt": "",
+       "img": false,
+       "w": 209,
+       "h": 104,
+       "moveRatio": null,
+       "scale": [
+        1.02,
+        1.02
+       ],
+       "op": [
+        1,
+        1
+       ],
+       "timing": ""
+      },
+      {
+       "k": "translate",
+       "tag": "g",
+       "cls": "[object SVGAnimatedString]",
+       "txt": "",
+       "img": false,
+       "w": 209,
+       "h": 104,
+       "moveRatio": null,
+       "scale": [
+        1.02,
+        1.02
+       ],
+       "op": [
+        1,
+        1
+       ],
+       "timing": ""
+      }
+     ]
+    }
+   ],
+   "longTaskMs": 0,
+   "heldAfterScroll": [],
+   "shotScrolled": "webflow-com-made-in-webflow-website-50-buttons-36-x-9-phone-scrolled.jpg",
+   "menu": {
+    "found": false
+   }
+  }
+ },
+ {
+  "aw": "https://webflow.com/made-in-webflow/website/link-growing-from-bottom-underline-on-hover",
+  "measuredAt": "2026-10-03T13:11:11.507Z",
+  "title": "Smooth Hover Underline Effects (with Box-Shadow) - Webflow",
+  "site": "https://link-underline-on-hover.webflow.io/",
+  "sitePage": null,
+  "vids": [],
+  "tags": [],
+  "desc": "Today, we’ll build a set of hover underline animations in Webflow — powered by box-shadow and smooth CSS transitions.\n\nYou’ll learn how to:\n\n✅ Create a growing underline from the bottom\n✅ Animate from the top, left, and right\n✅ Build a full-height underline effect\n✅ Even animate multiple borders at once with a simple trick\n\nNo custom code needed — just smart use of styles and transitions.\n\n👉 Watch on YouTube: https://youtu.be/bTXWsrMSPaY",
+  "intro": {
+   "at700": {
+    "shot": "webflow-com-made-in-webflow-website-link-growing-from-bottom-underline-on-hover-00-intro-0.7s.jpg",
+    "cover": []
+   },
+   "atLoad": {
+    "shot": "webflow-com-made-in-webflow-website-link-growing-from-bottom-underline-on-hover-01-intro-load.jpg",
+    "cover": []
+   }
+  },
+  "loadMs": 1011,
+  "surfaceDom": {
+   "fe": {},
+   "canvas": 0,
+   "big": []
+  },
+  "how": {
+   "css": {
+    "surface": [
+     ".w-webflow-badge{white-space:nowrap;cursor:pointer;box-shadow:0 0 0 1px #0000001a,0 1px 3px #0000001a;visibility:visible!important;opacity:1!important;z-index:2147483647!important;color:#aaadb0!important;overflow:unset!important;background-color:#fff!important;border-radius:3px!important;width:auto!important;height:auto!important;margin:0!important;padding:6px!important;font-size:12px!important;li",
+     ".w-lightbox-left{background-image:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9Ii0yMCAwIDI0IDQwIiB3aWR0aD0iMjQiIGhlaWdodD0iNDAiPjxnIHRyYW5zZm9ybT0icm90YXRlKDQ1KSI+PHBhdGggZD0ibTAgMGg1djIzaDIzdjVoLTI4eiIgb3BhY2l0eT0iLjQiLz48cGF0aCBkPSJtMSAxaDN2MjNoMjN2M2gtMjZ6IiBmaWxsPSIjZmZmIi8+PC9nPjwvc3ZnPg==);display:none;bottom:0;left:0}",
+     ".w-lightbox-right{background-image:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9Ii00IDAgMjQgNDAiIHdpZHRoPSIyNCIgaGVpZ2h0PSI0MCI+PGcgdHJhbnNmb3JtPSJyb3RhdGUoNDUpIj48cGF0aCBkPSJtMC0waDI4djI4aC01di0yM2gtMjN6IiBvcGFjaXR5PSIuNCIvPjxwYXRoIGQ9Im0xIDFoMjZ2MjZoLTN2LTIzaC0yM3oiIGZpbGw9IiNmZmYiLz48L2c+PC9zdmc+);display:none;bottom:0;right:0}",
+     ".w-lightbox-close{background-image:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9Ii00IDAgMTggMTciIHdpZHRoPSIxOCIgaGVpZ2h0PSIxNyI+PGcgdHJhbnNmb3JtPSJyb3RhdGUoNDUpIj48cGF0aCBkPSJtMCAwaDd2LTdoNXY3aDd2NWgtN3Y3aC01di03aC03eiIgb3BhY2l0eT0iLjQiLz48cGF0aCBkPSJtMSAxaDd2LTdoM3Y3aDd2M2gtN3Y3aC0zdi03aC03eiIgZmlsbD0iI2ZmZiIvPjwvZz48L3N2Zz4=);background-size:18px;",
+     ".w-embed-youtubevideo{background-image:url(https://d3e54v103j8qbb.cloudfront.net/static/youtube-placeholder.2b05e7d68d.svg);background-position:50%;background-size:cover;width:100%;padding-bottom:0;padding-left:0;padding-right:0;position:relative}",
+     ".section_underline-link.cc-top-full-height:hover{color:#fff;box-shadow:inset 0 10.5vw #146ef5}.section_underline-link.cc-multiple-underlines{box-shadow:inset 0 0 0 0 var(--webflow-blue),inset 0 0 0 0 var(--webflow-blue);padding-left:1.5vw;padding-right:1.5vw;transition-duration:.6s,.6s}",
+     ".section_underline-link.cc-multiple-underlines:hover{box-shadow:inset 0vw -1vw 0 0 var(--webflow-blue),inset 0vw 1vw 0 0 var(--webflow-blue);color:var(--webflow-blue)}",
+     ".section_underline-link.cc-multiple-underlines.cc-1:hover{box-shadow:inset 1vw 0vw 0 0 var(--webflow-blue),inset -1vw 0vw 0 0 var(--webflow-blue)}.section_underline-link.cc-multiple-underlines.cc-2{box-shadow:inset 0 0 0 0 var(--webflow-blue)}.section_underline-link.cc-multiple-underlines.cc-2:hover{box-shadow:inset 1vw -1vw 0 0 var(--webflow-blue)}.section_underline-link.cc-multiple-underlines.cc"
+    ],
+    "sticky": [],
+    "fixed": [
+     ".w-webflow-badge{white-space:nowrap;cursor:pointer;box-shadow:0 0 0 1px #0000001a,0 1px 3px #0000001a;visibility:visible!important;opacity:1!important;z-index:2147483647!important;color:#aaadb0!important;overflow:unset!important;background-color:#fff!important;border-radius:3px!important;width:auto!important;height:auto!important;margin:0!important;padding:6px!important;font-size:12px!important;li",
+     ".w-lightbox-backdrop{cursor:auto;letter-spacing:normal;text-indent:0;text-shadow:none;text-transform:none;visibility:visible;white-space:normal;word-break:normal;word-spacing:normal;word-wrap:normal;color:#fff;text-align:center;z-index:2000;opacity:0;-webkit-user-select:none;-moz-user-select:none;-webkit-tap-highlight-color:transparent;background:#000000e6;outline:0;font-family:Helvetica Neue,Helv"
+    ],
+    "timeline": [],
+    "viewTransition": [],
+    "clip": [],
+    "snap": [],
+    "starting": [],
+    "reduced": []
+   },
+   "keyframes": [
+    "@keyframes spin{0%{transform:rotate(0)}to{transform:rotate(360deg)}}"
+   ],
+   "js": []
+  },
+  "timing": {
+   "transitionDuration": [
+    [
+     "0.6s, 0.6s",
+     10
+    ]
+   ],
+   "transitionEase": [
+    [
+     "cubic-bezier(0.215, 0.61, 0.355, 1), cubic-bezier(0.215, 0.61, 0.355, 1)",
+     10
+    ]
+   ],
+   "transitionProperty": [
+    [
+     "box-shadow, color",
+     10
+    ]
+   ],
+   "scriptEases": [],
+   "scriptDurations": []
+  },
+  "libs": {
+   "gsap": false,
+   "scrollTrigger": false,
+   "lenis": false,
+   "locomotive": false,
+   "barba": false,
+   "swup": false,
+   "taxi": false,
+   "highway": false,
+   "three": false,
+   "canvas": false,
+   "framer": false,
+   "webflow": true,
+   "lottie": false,
+   "split": false,
+   "swiper": false,
+   "motion": false,
+   "animejs": false,
+   "aos": false,
+   "next": false,
+   "nuxt": false,
+   "astro": false
+  },
+  "cssF": {
+   "animTimeline": 0,
+   "viewTimeline": 0,
+   "scrollTimeline": 0,
+   "viewTransition": 0,
+   "crossDocVT": 0,
+   "scrollSnap": 0,
+   "sticky": 0,
+   "fixed": 2,
+   "clipPath": 0,
+   "mask": 0,
+   "keyframes": 1,
+   "startingStyle": 0,
+   "allowDiscrete": 0,
+   "reducedMotion": 0,
+   "hoverMedia": 0,
+   "focusVisible": 0,
+   "hasSel": 0,
+   "mixBlend": 0,
+   "backdrop": 0,
+   "marquee": 0,
+   "linearEase": 0,
+   "scrollState": 0,
+   "anchorPos": 0,
+   "containerQ": 0,
+   "noiseSvg": 0,
+   "gradient": 0,
+   "filterUrl": 0,
+   "blendMode": 0
+  },
+  "jsReduced": false,
+  "stickyEls": 0,
+  "fixedEls": 1,
+  "tallPins": 0,
+  "held": [
+   {
+    "pos": "fixed",
+    "tag": "a",
+    "role": "",
+    "cls": "w-webflow-badge",
+    "txt": "",
+    "top": "859.8px",
+    "bottom": "12px",
+    "left": "1252.8px",
+    "z": "2147483647",
+    "w": 160,
+    "h": 28,
+    "y": 860,
+    "bg": "rgb(255, 255, 255)",
+    "blur": "",
+    "blend": "",
+    "hasNav": false,
+    "hasImg": true
+   }
+  ],
+  "pinSpacers": [],
+  "sections": 26,
+  "splitText": 0,
+  "docH": 5490,
+  "vh": 900,
+  "cursorNone": false,
+  "lang": "",
+  "h1": "",
+  "focus": [
+   {
+    "tag": "a",
+    "txt": "🍙 onigiri",
+    "outline": "auto 0.8px rgb(16, 16, 16)",
+    "offset": "0.8px",
+    "shadow": "rgb(20, 110, 245) 0px 0px 0px 0px inset",
+    "visible": true,
+    "onScreen": true,
+    "skipLink": false
+   },
+   {
+    "tag": "iframe",
+    "txt": "",
+    "outline": "none 2.4px rgb(17, 17, 17)",
+    "offset": "0px",
+    "shadow": "none",
+    "visible": false,
+    "onScreen": true,
+    "skipLink": false
+   },
+   {
+    "tag": "iframe",
+    "txt": "",
+    "outline": "none 2.4px rgb(17, 17, 17)",
+    "offset": "0px",
+    "shadow": "none",
+    "visible": false,
+    "onScreen": true,
+    "skipLink": false
+   },
+   {
+    "tag": "iframe",
+    "txt": "",
+    "outline": "none 2.4px rgb(17, 17, 17)",
+    "offset": "0px",
+    "shadow": "none",
+    "visible": false,
+    "onScreen": true,
+    "skipLink": false
+   }
+  ],
+  "idle": {
+   "changed": 0,
+   "kinds": {},
+   "samples": [],
+   "scrolled": 0
+  },
+  "scroll": [
+   {
+    "changed": 0,
+    "kinds": {},
+    "samples": [],
+    "scrolled": 900
+   },
+   {
+    "changed": 0,
+    "kinds": {},
+    "samples": [],
+    "scrolled": 900
+   },
+   {
+    "changed": 0,
+    "kinds": {},
+    "samples": [],
+    "scrolled": 900
+   },
+   {
+    "changed": 0,
+    "kinds": {},
+    "samples": [],
+    "scrolled": 900
+   },
+   {
+    "changed": 0,
+    "kinds": {},
+    "samples": [],
+    "scrolled": 900
+   }
+  ],
+  "scrollPerf": {
+   "longTaskMs": 0
+  },
+  "scrollChanged": 0,
+  "scrolledTo": 1500,
+  "kb": 2801,
+  "reqs": 40,
+  "hover": {
+   "results": [
+    {
+     "on": "a.section_underline-link",
+     "txt": "🍙 onigiri",
+     "changed": [
+      "self:color",
+      "self:shadow",
+      "self:border"
+     ],
+     "timing": "box-shadow, color 0.6s, 0.6s cubic-bezier(0.215, 0.61, 0.355, 1), cubic-bezier(0.215, 0.61, 0.355, 1) 0s",
+     "cursor": "pointer",
+     "frames": [
+      "webflow-com-made-in-webflow-website-link-growing-from-bottom-underline-on-hover-h0-080.jpg",
+      "webflow-com-made-in-webflow-website-link-growing-from-bottom-underline-on-hover-h0-250.jpg",
+      "webflow-com-made-in-webflow-website-link-growing-from-bottom-underline-on-hover-h0-650.jpg"
+     ]
+    },
+    {
+     "on": "a.w-webflow-badge",
+     "txt": "",
+     "changed": [],
+     "timing": "all 0s ease 0s",
+     "cursor": "pointer",
+     "frames": []
+    }
+   ],
+   "hoverRules": {
+    "n": 0,
+    "sample": []
+   },
+   "hoverMediaGated": 0
+  },
+  "cursor": {
+   "followers": []
+  },
+  "shadows": [
+   [
+    "rgb(20, 110, 245) 0px 0px 0px 0px inset",
+    7
+   ],
+   [
+    "rgb(20, 110, 245) 0px 0px 0px 0px inset, rgb(20, 110, 245) 0px 0px 0px 0px inset",
+    3
+   ],
+   [
+    "rgba(255, 255, 255, 0.05) 20px 20px 60px 0px",
+    1
+   ],
+   [
+    "rgba(0, 0, 0, 0.1) 0px 0px 0px 1px, rgba(0, 0, 0, 0.1) 0px 1px 3px 0px",
+    1
+   ]
+  ],
+  "menu": {
+   "found": false
+  },
+  "pageTransition": {
+   "kind": "no-internal-link"
+  },
+  "reducedMotion": {
+   "idle": {
+    "changed": 0,
+    "kinds": {}
+   },
+   "scroll": [
+    {
+     "changed": 0,
+     "kinds": {}
+    },
+    {
+     "changed": 0,
+     "kinds": {}
+    }
+   ],
+   "shot": "webflow-com-made-in-webflow-website-link-growing-from-bottom-underline-on-hover-7-reduced.jpg",
+   "normalScrollChanged": 0,
+   "elementsSeen": 35
+  },
+  "phone": {
+   "innerWidth": 360,
+   "pageWidth": 566,
+   "forcedWider": true,
+   "touch": true,
+   "shotTop": "webflow-com-made-in-webflow-website-link-growing-from-bottom-underline-on-hover-8-phone-top.jpg",
+   "held": [
+    {
+     "pos": "fixed",
+     "tag": "a",
+     "cls": "w-webflow-badge",
+     "txt": "",
+     "top": "684.6px",
+     "bottom": "12px",
+     "w": 160,
+     "h": 28,
+     "y": 685
+    }
+   ],
+   "hoverMedia": false,
+   "overflowX": true,
+   "scroll": [
+    {
+     "changed": 0,
+     "kinds": {},
+     "samples": []
+    },
+    {
+     "changed": 0,
+     "kinds": {},
+     "samples": []
+    },
+    {
+     "changed": 0,
+     "kinds": {},
+     "samples": []
+    }
+   ],
+   "longTaskMs": 0,
+   "heldAfterScroll": [
+    {
+     "pos": "fixed",
+     "tag": "a",
+     "cls": "w-webflow-badge",
+     "txt": "",
+     "top": "684.6px",
+     "bottom": "12px",
+     "w": 160,
+     "h": 28,
+     "y": 685
+    }
+   ],
+   "shotScrolled": "webflow-com-made-in-webflow-website-link-growing-from-bottom-underline-on-hover-9-phone-scrolled.jpg",
+   "menu": {
+    "found": false
+   }
+  }
+ },
+ {
+  "aw": "https://webflow.com/made-in-webflow/website/box-shadow",
+  "measuredAt": "2026-10-03T13:11:50.512Z",
+  "title": "Box Shadows in Webflow - Webflow",
+  "site": "https://box-shadow.webflow.io/",
+  "sitePage": null,
+  "vids": [],
+  "tags": [],
+  "desc": "Convert values from Figma, and paste into your site for precise drop shadows every time.\n\nSupports pasting CSS directly from tools like Figma. A huge time saver for me and entirely removes the guess work 👌\n\nGenerate global combo classes from multiple layered shadows.\n\nLayers in shadows give design depth and dimension. \n\nAnother use case: Generate your shadows on https://shadows.brumm.af, then 1-click import by pasting the CSS.\n",
+  "intro": {
+   "at700": {
+    "shot": "webflow-com-made-in-webflow-website-box-shadow-00-intro-0.7s.jpg",
+    "cover": []
+   },
+   "atLoad": {
+    "shot": "webflow-com-made-in-webflow-website-box-shadow-01-intro-load.jpg",
+    "cover": []
+   }
+  },
+  "loadMs": 975,
+  "surfaceDom": {
+   "fe": {
+    "feFlood": 2,
+    "feBlend": 4,
+    "feColorMatrix": 4,
+    "feOffset": 2,
+    "feComposite": 2
+   },
+   "canvas": 0,
+   "big": []
+  },
+  "how": {
+   "css": {
+    "surface": [
+     ".w-webflow-badge{position:fixed!important;display:inline-block!important;visibility:visible!important;z-index:2147483647!important;top:auto!important;right:12px!important;bottom:12px!important;left:auto!important;color:#aaadb0!important;background-color:#fff!important;border-radius:3px!important;padding:6px 8px 6px 6px!important;font-size:12px!important;opacity:1!important;line-height:14px!importa",
+     ".w-slider-nav.w-shadow>div{box-shadow:0 0 3px rgba(51,51,51,.4)}.w-slider-nav-invert{color:#fff}.w-slider-nav-invert>div{background-color:rgba(34,34,34,.4)}",
+     ".w-lightbox-left{display:none;bottom:0;left:0;background-image:url(\"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9Ii0yMCAwIDI0IDQwIiB3aWR0aD0iMjQiIGhlaWdodD0iNDAiPjxnIHRyYW5zZm9ybT0icm90YXRlKDQ1KSI+PHBhdGggZD0ibTAgMGg1djIzaDIzdjVoLTI4eiIgb3BhY2l0eT0iLjQiLz48cGF0aCBkPSJtMSAxaDN2MjNoMjN2M2gtMjZ6IiBmaWxsPSIjZmZmIi8+PC9nPjwvc3ZnPg==\")}",
+     ".w-lightbox-right{display:none;right:0;bottom:0;background-image:url(\"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9Ii00IDAgMjQgNDAiIHdpZHRoPSIyNCIgaGVpZ2h0PSI0MCI+PGcgdHJhbnNmb3JtPSJyb3RhdGUoNDUpIj48cGF0aCBkPSJtMC0waDI4djI4aC01di0yM2gtMjN6IiBvcGFjaXR5PSIuNCIvPjxwYXRoIGQ9Im0xIDFoMjZ2MjZoLTN2LTIzaC0yM3oiIGZpbGw9IiNmZmYiLz48L2c+PC9zdmc+\")}",
+     ".w-lightbox-close{right:0;height:2.6em;background-image:url(\"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9Ii00IDAgMTggMTciIHdpZHRoPSIxOCIgaGVpZ2h0PSIxNyI+PGcgdHJhbnNmb3JtPSJyb3RhdGUoNDUpIj48cGF0aCBkPSJtMCAwaDd2LTdoNXY3aDd2NWgtN3Y3aC01di03aC03eiIgb3BhY2l0eT0iLjQiLz48cGF0aCBkPSJtMSAxaDd2LTdoM3Y3aDd2M2gtN3Y3aC0zdi03aC03eiIgZmlsbD0iI2ZmZiIvPjwvZz48L3N2Zz4=\"",
+     ".uui-styleguide_subheading{position:-webkit-sticky;position:sticky;top:3rem;z-index:99;padding:.75rem 1rem;border-bottom:1px solid #fff;background-color:hsla(0,0%,100%,.9);-webkit-backdrop-filter:saturate(150%) blur(8px);backdrop-filter:saturate(150%) blur(8px)}",
+     ".form-radio-icon.w--redirected-checked{border-width:1px;border-color:#7f56d9;background-color:#f9f5ff;background-image:url(\"https://assets.website-files.com/63f0c946a2038acaec5ea30b/63f0c947a2038a3d6f5ea336_check-circle.svg\");background-position:50% 50%;background-size:auto;background-repeat:no-repeat}",
+     ".button{display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;padding:.825rem 1.125rem;-webkit-box-pack:center;-webkit-justify-content:center;-ms-flex-pack:center;justify-content:center;-webkit-box-align:center;-webkit-align-items:center;-ms-flex-align:center;align-items:center;grid-column-gap:0.5rem;border:1px #000;border-radius:.5rem;background-color:#fff;box-shadow:0 1px 2px",
+     ".button:focus{border-style:none;background-color:#eaecf0;box-shadow:0 1px 2px 0 rgba(200,219,255,.05),0 0 0 4px hsla(0,0%,100%,.16)}",
+     ".form-input{height:auto;min-height:2.75rem;margin-bottom:0;padding:.5rem .875rem;border:1px solid #d0d5dd;border-radius:.5rem;background-color:#fff;box-shadow:0 1px 2px 0 rgba(16,24,40,.05);-webkit-transition:.3s;transition:.3s;color:#101828;font-size:1rem;line-height:1.5}",
+     ".form-input:focus{border-color:#d6bbfb;box-shadow:0 1px 2px 0 rgba(16,24,40,.05),0 0 0 4px #f4ebff;color:#101828}",
+     ".form-checkbox-icon.w--redirected-checked{border-width:1px;border-color:#7f56d9;border-radius:.25rem;background-color:#f9f5ff;background-image:url(\"https://assets.website-files.com/63f0c946a2038acaec5ea30b/63f0c947a2038a15315ea339_check.svg\");background-position:50% 50%;background-size:.875rem .875rem;background-repeat:no-repeat;background-attachment:scroll;box-shadow:none}"
+    ],
+    "sticky": [
+     ".uui-styleguide_subheading{position:-webkit-sticky;position:sticky;top:3rem;z-index:99;padding:.75rem 1rem;border-bottom:1px solid #fff;background-color:hsla(0,0%,100%,.9);-webkit-backdrop-filter:saturate(150%) blur(8px);backdrop-filter:saturate(150%) blur(8px)}",
+     ".button.form-button{position:-webkit-sticky;position:sticky;left:2rem;min-width:10.63rem;margin-top:1rem;background-color:rgba(255,255,255,.9);color:#0d0d0d;font-size:.88rem;font-weight:700;letter-spacing:.01em;text-transform:uppercase}",
+     ".uui-styleguide_heading{position:-webkit-sticky;position:sticky;top:0;z-index:100;padding:.75rem 1rem;background-color:#101828;color:#fff;font-weight:600}",
+     ".nav{position:-webkit-sticky;position:sticky;top:0;z-index:99;display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;height:4rem;-webkit-box-align:center;-webkit-align-items:center;-ms-flex-align:center;align-items:center;border-bottom:1px solid rgba(82,82,82,.3);background-color:rgba(16,16,16,.7);-webkit-backdrop-filter:saturate(180%) blur(8px);backdrop-filter:saturate(180%) bl",
+     ".text-block{position:-webkit-sticky;position:sticky;left:2rem;width:290px;font-family:Tickerbit,sans-serif;font-size:1.2rem}",
+     ".button-white-wide{position:-webkit-sticky;position:sticky;left:2rem;margin-top:1rem;padding:12px 32px;border:2px solid #fff;border-radius:8px;background-color:#fff;-webkit-transition:.4s;transition:.4s;color:#000;font-size:14px;font-weight:700;letter-spacing:.8px;text-transform:uppercase}"
+    ],
+    "fixed": [
+     ".w-webflow-badge{position:fixed!important;display:inline-block!important;visibility:visible!important;z-index:2147483647!important;top:auto!important;right:12px!important;bottom:12px!important;left:auto!important;color:#aaadb0!important;background-color:#fff!important;border-radius:3px!important;padding:6px 8px 6px 6px!important;font-size:12px!important;opacity:1!important;line-height:14px!importa",
+     ".w-lightbox-backdrop{cursor:auto;font-style:normal;font-variant:normal;letter-spacing:normal;list-style:disc;text-indent:0;text-shadow:none;text-transform:none;visibility:visible;white-space:normal;word-break:normal;word-spacing:normal;word-wrap:normal;position:fixed;top:0;right:0;bottom:0;left:0;color:#fff;font-family:\"Helvetica Neue\",Helvetica,Ubuntu,\"Segoe UI\",Verdana,sans-serif;font-size:17px;",
+     ".global-styles{position:fixed;left:0;top:0;right:auto;bottom:auto;display:block}",
+     ".footer{position:fixed;left:0;top:auto;right:0;bottom:0;z-index:99;display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;height:3rem;margin-top:1rem;-webkit-box-align:center;-webkit-align-items:center;-ms-flex-align:center;align-items:center;border-top:1px solid rgba(82,82,82,.3);background-color:rgba(16,16,16,.7);-webkit-backdrop-filter:saturate(180%) blur(8px);backdrop-filter"
+    ],
+    "timeline": [],
+    "viewTransition": [],
+    "clip": [],
+    "snap": [],
+    "starting": [],
+    "reduced": []
+   },
+   "keyframes": [
+    "@keyframes spin{0%{transform:rotate(0)}100%{transform:rotate(360deg)}}"
+   ],
+   "js": []
+  },
+  "timing": {
+   "transitionDuration": [
+    [
+     "0.3s",
+     5
+    ],
+    [
+     "0.4s",
+     4
+    ],
+    [
+     "0.96s, 0.96s",
+     2
+    ],
+    [
+     "0.15s",
+     2
+    ],
+    [
+     "0.2s",
+     1
+    ]
+   ],
+   "transitionEase": [
+    [
+     "ease",
+     9
+    ],
+    [
+     "cubic-bezier(0.165, 0.84, 0.44, 1)",
+     3
+    ],
+    [
+     "cubic-bezier(0.3, 1.17, 0.55, 0.99), cubic-bezier(0.3, 1.17, 0.55, 0.99)",
+     2
+    ]
+   ],
+   "transitionProperty": [
+    [
+     "opacity",
+     4
+    ],
+    [
+     "transform, -webkit-transform",
+     2
+    ],
+    [
+     "background-color",
+     2
+    ]
+   ],
+   "transitionDelay": [
+    [
+     "0s, 0s",
+     2
+    ]
+   ],
+   "scriptEases": [],
+   "scriptDurations": []
+  },
+  "libs": {
+   "gsap": false,
+   "scrollTrigger": false,
+   "lenis": false,
+   "locomotive": false,
+   "barba": false,
+   "swup": false,
+   "taxi": false,
+   "highway": false,
+   "three": true,
+   "canvas": false,
+   "framer": false,
+   "webflow": true,
+   "lottie": false,
+   "split": false,
+   "swiper": false,
+   "motion": false,
+   "animejs": false,
+   "aos": false,
+   "next": false,
+   "nuxt": false,
+   "astro": false
+  },
+  "cssF": {
+   "animTimeline": 0,
+   "viewTimeline": 0,
+   "scrollTimeline": 0,
+   "viewTransition": 0,
+   "crossDocVT": 0,
+   "scrollSnap": 0,
+   "sticky": 6,
+   "fixed": 4,
+   "clipPath": 0,
+   "mask": 1,
+   "keyframes": 1,
+   "startingStyle": 0,
+   "allowDiscrete": 0,
+   "reducedMotion": 0,
+   "hoverMedia": 0,
+   "focusVisible": 1,
+   "hasSel": 0,
+   "mixBlend": 2,
+   "backdrop": 10,
+   "marquee": 10,
+   "linearEase": 0,
+   "scrollState": 0,
+   "anchorPos": 0,
+   "containerQ": 0,
+   "noiseSvg": 0,
+   "gradient": 16,
+   "filterUrl": 0,
+   "blendMode": 0
+  },
+  "jsReduced": false,
+  "stickyEls": 6,
+  "fixedEls": 1,
+  "tallPins": 0,
+  "held": [
+   {
+    "pos": "sticky",
+    "parentH": "1vh-units",
+    "tag": "div",
+    "role": "",
+    "cls": "nav",
+    "txt": "Shadows",
+    "top": "0px",
+    "bottom": "auto",
+    "left": "auto",
+    "z": "99",
+    "w": 1425,
+    "h": 64,
+    "y": 0,
+    "bg": "rgba(16, 16, 16, 0.7)",
+    "blur": "saturate(1.8) blur(8px)",
+    "blend": "",
+    "hasNav": false,
+    "hasImg": true
+   },
+   {
+    "pos": "sticky",
+    "parentH": "0.4vh-units",
+    "tag": "div",
+    "role": "",
+    "cls": "text-block",
+    "txt": "Convert Shadow Values",
+    "top": "auto",
+    "bottom": "auto",
+    "left": "32px",
+    "z": "auto",
+    "w": 290,
+    "h": 29,
+    "y": 235,
+    "bg": "rgba(0, 0, 0, 0)",
+    "blur": "",
+    "blend": "",
+    "hasNav": false,
+    "hasImg": false
+   },
+   {
+    "pos": "sticky",
+    "parentH": "0.1vh-units",
+    "tag": "a",
+    "role": "",
+    "cls": "button form-button w-inline-block",
+    "txt": "CONVERT VALUES",
+    "top": "auto",
+    "bottom": "auto",
+    "left": "32px",
+    "z": "auto",
+    "w": 354,
+    "h": 48,
+    "y": 526,
+    "bg": "rgba(255, 255, 255, 0.9)",
+    "blur": "",
+    "blend": "",
+    "hasNav": false,
+    "hasImg": false
+   },
+   {
+    "pos": "sticky",
+    "parentH": "0.2vh-units",
+    "tag": "div",
+    "role": "",
+    "cls": "text-block",
+    "txt": "Convert CSS (box-shadow)",
+    "top": "auto",
+    "bottom": "auto",
+    "left": "32px",
+    "z": "auto",
+    "w": 290,
+    "h": 29,
+    "y": 695,
+    "bg": "rgba(0, 0, 0, 0)",
+    "blur": "",
+    "blend": "",
+    "hasNav": false,
+    "hasImg": false
+   },
+   {
+    "pos": "sticky",
+    "parentH": "0.2vh-units",
+    "tag": "a",
+    "role": "",
+    "cls": "button form-button w-node-_3783400a-89f9-ed99-8cb7-1ba8a5a12",
+    "txt": "CONVERT CSS",
+    "top": "auto",
+    "bottom": "auto",
+    "left": "32px",
+    "z": "auto",
+    "w": 172,
+    "h": 48,
+    "y": 852,
+    "bg": "rgba(255, 255, 255, 0.9)",
+    "blur": "",
+    "blend": "",
+    "hasNav": false,
+    "hasImg": false
+   },
+   {
+    "pos": "sticky",
+    "parentH": "0.2vh-units",
+    "tag": "input",
+    "role": "",
+    "cls": "button-white-wide submit w-button",
+    "txt": "",
+    "top": "auto",
+    "bottom": "auto",
+    "left": "32px",
+    "z": "auto",
+    "w": 0,
+    "h": 0,
+    "y": 0,
+    "bg": "rgb(255, 255, 255)",
+    "blur": "",
+    "blend": "",
+    "hasNav": false,
+    "hasImg": false
+   },
+   {
+    "pos": "fixed",
+    "tag": "div",
+    "role": "",
+    "cls": "footer",
+    "txt": "MADE BY @DHRUV",
+    "top": "836px",
+    "bottom": "0px",
+    "left": "0px",
+    "z": "99",
+    "w": 1425,
+    "h": 48,
+    "y": 852,
+    "bg": "rgba(16, 16, 16, 0.7)",
+    "blur": "saturate(1.8) blur(8px)",
+    "blend": "",
+    "hasNav": true,
+    "hasImg": false
+   }
+  ],
+  "pinSpacers": [],
+  "sections": 0,
+  "splitText": 0,
+  "docH": 995,
+  "vh": 900,
+  "cursorNone": false,
+  "lang": "en",
+  "h1": "",
+  "focus": [
+   {
+    "tag": "input",
+    "txt": "",
+    "outline": "none 0px rgb(255, 255, 255)",
+    "offset": "0px",
+    "shadow": "rgb(102, 112, 133) 0px 2px 4px 0px",
+    "visible": true,
+    "onScreen": true,
+    "skipLink": false
+   },
+   {
+    "tag": "input",
+    "txt": "",
+    "outline": "none 0px rgb(255, 255, 255)",
+    "offset": "0px",
+    "shadow": "rgb(102, 112, 133) 0px 2px 4px 0px",
+    "visible": true,
+    "onScreen": true,
+    "skipLink": false
+   },
+   {
+    "tag": "input",
+    "txt": "",
+    "outline": "none 0px rgb(255, 255, 255)",
+    "offset": "0px",
+    "shadow": "rgb(102, 112, 133) 0px 2px 4px 0px",
+    "visible": true,
+    "onScreen": true,
+    "skipLink": false
+   },
+   {
+    "tag": "input",
+    "txt": "",
+    "outline": "none 0px rgb(255, 255, 255)",
+    "offset": "0px",
+    "shadow": "rgb(102, 112, 133) 0px 2px 4px 0px",
+    "visible": true,
+    "onScreen": true,
+    "skipLink": false
+   }
+  ],
+  "idle": {
+   "changed": 0,
+   "kinds": {},
+   "samples": [],
+   "scrolled": 0
+  },
+  "scroll": [
+   {
+    "changed": 0,
+    "kinds": {},
+    "samples": [],
+    "scrolled": 95
+   },
+   {
+    "changed": 0,
+    "kinds": {},
+    "samples": [],
+    "scrolled": 0
+   },
+   {
+    "changed": 0,
+    "kinds": {},
+    "samples": [],
+    "scrolled": 0
+   },
+   {
+    "changed": 0,
+    "kinds": {},
+    "samples": [],
+    "scrolled": 0
+   },
+   {
+    "changed": 0,
+    "kinds": {},
+    "samples": [],
+    "scrolled": 0
+   }
+  ],
+  "scrollPerf": {
+   "longTaskMs": 0
+  },
+  "scrollChanged": 0,
+  "scrolledTo": 0,
+  "kb": 204,
+  "reqs": 18,
+  "hover": {
+   "results": [
+    {
+     "on": "button.",
+     "txt": "",
+     "changed": [],
+     "timing": "all 0s ease 0s",
+     "cursor": "pointer",
+     "frames": []
+    },
+    {
+     "on": "a.button",
+     "txt": "CONVERT VALUES",
+     "changed": [
+      "self:background"
+     ],
+     "timing": "all 0.3s ease 0s",
+     "cursor": "pointer",
+     "frames": [
+      "webflow-com-made-in-webflow-website-box-shadow-h1-080.jpg",
+      "webflow-com-made-in-webflow-website-box-shadow-h1-250.jpg",
+      "webflow-com-made-in-webflow-website-box-shadow-h1-650.jpg"
+     ]
+    },
+    {
+     "on": "a.link",
+     "txt": "@DHRUV",
+     "changed": [
+      "self:color",
+      "self:border"
+     ],
+     "timing": "opacity 0.2s ease 0s",
+     "cursor": "pointer",
+     "frames": [
+      "webflow-com-made-in-webflow-website-box-shadow-h2-080.jpg",
+      "webflow-com-made-in-webflow-website-box-shadow-h2-250.jpg",
+      "webflow-com-made-in-webflow-website-box-shadow-h2-650.jpg"
+     ]
+    }
+   ],
+   "hoverRules": {
+    "n": 1,
+    "sample": [
+     "main:focus-visible { outline: -webkit-focus-ring-color auto 0px; }"
+    ]
+   },
+   "hoverMediaGated": 0
+  },
+  "cursor": {
+   "followers": []
+  },
+  "shadows": [
+   [
+    "rgba(16, 24, 40, 0.05) 0px 1px 2px 0px",
+    2
+   ],
+   [
+    "rgb(136, 136, 136) 0px 0px 1px 0px",
+    2
+   ],
+   [
+    "rgba(0, 0, 0, 0.05) 0px 0px 5px 0px, rgba(0, 0, 0, 0.1) 0px 5px 20px 0px",
+    1
+   ]
+  ],
+  "menu": {
+   "found": false
+  },
+  "pageTransition": {
+   "kind": "no-internal-link"
+  },
+  "reducedMotion": {
+   "idle": {
+    "changed": 0,
+    "kinds": {}
+   },
+   "scroll": [
+    {
+     "changed": 0,
+     "kinds": {}
+    },
+    {
+     "changed": 0,
+     "kinds": {}
+    }
+   ],
+   "shot": "webflow-com-made-in-webflow-website-box-shadow-7-reduced.jpg",
+   "normalScrollChanged": 0,
+   "elementsSeen": 203
+  },
+  "phone": {
+   "innerWidth": 360,
+   "pageWidth": 360,
+   "forcedWider": false,
+   "touch": true,
+   "shotTop": "webflow-com-made-in-webflow-website-box-shadow-8-phone-top.jpg",
+   "held": [
+    {
+     "pos": "sticky",
+     "tag": "div",
+     "cls": "nav",
+     "txt": "Shadows",
+     "top": "0px",
+     "bottom": "auto",
+     "w": 345,
+     "h": 60,
+     "y": 0
+    },
+    {
+     "pos": "sticky",
+     "tag": "div",
+     "cls": "text-block",
+     "txt": "Convert Shadow Values",
+     "top": "auto",
+     "bottom": "auto",
+     "w": 290,
+     "h": 27,
+     "y": 305
+    },
+    {
+     "pos": "sticky",
+     "tag": "a",
+     "cls": "button form-button w-inline-block",
+     "txt": "CONVERT VALUES",
+     "top": "auto",
+     "bottom": "auto",
+     "w": 320,
+     "h": 42,
+     "y": 558
+    },
+    {
+     "pos": "sticky",
+     "tag": "div",
+     "cls": "text-block",
+     "txt": "Convert CSS (box-shadow)",
+     "top": "auto",
+     "bottom": "auto",
+     "w": 290,
+     "h": 27,
+     "y": 717
+    },
+    {
+     "pos": "sticky",
+     "tag": "a",
+     "cls": "button form-button w-node-_3783400a-89f9",
+     "txt": "CONVERT CSS",
+     "top": "auto",
+     "bottom": "auto",
+     "w": 290,
+     "h": 42,
+     "y": 910
+    },
+    {
+     "pos": "fixed",
+     "tag": "div",
+     "cls": "footer",
+     "txt": "MADE BY @DHRUV",
+     "top": "679.987px",
+     "bottom": "0px",
+     "w": 345,
+     "h": 45,
+     "y": 695
+    }
+   ],
+   "hoverMedia": false,
+   "overflowX": false,
+   "scroll": [
+    {
+     "changed": 0,
+     "kinds": {},
+     "samples": []
+    },
+    {
+     "changed": 0,
+     "kinds": {},
+     "samples": []
+    },
+    {
+     "changed": 0,
+     "kinds": {},
+     "samples": []
+    }
+   ],
+   "longTaskMs": 0,
+   "heldAfterScroll": [
+    {
+     "pos": "sticky",
+     "tag": "div",
+     "cls": "nav",
+     "txt": "Shadows",
+     "top": "0px",
+     "bottom": "auto",
+     "w": 345,
+     "h": 60,
+     "y": 0
+    },
+    {
+     "pos": "sticky",
+     "tag": "div",
+     "cls": "text-block",
+     "txt": "Convert Shadow Values",
+     "top": "auto",
+     "bottom": "auto",
+     "w": 290,
+     "h": 27,
+     "y": 305
+    },
+    {
+     "pos": "sticky",
+     "tag": "a",
+     "cls": "button form-button w-inline-block",
+     "txt": "CONVERT VALUES",
+     "top": "auto",
+     "bottom": "auto",
+     "w": 320,
+     "h": 42,
+     "y": 558
+    },
+    {
+     "pos": "sticky",
+     "tag": "div",
+     "cls": "text-block",
+     "txt": "Convert CSS (box-shadow)",
+     "top": "auto",
+     "bottom": "auto",
+     "w": 290,
+     "h": 27,
+     "y": 717
+    },
+    {
+     "pos": "sticky",
+     "tag": "a",
+     "cls": "button form-button w-node-_3783400a-89f9",
+     "txt": "CONVERT CSS",
+     "top": "auto",
+     "bottom": "auto",
+     "w": 290,
+     "h": 42,
+     "y": 910
+    },
+    {
+     "pos": "fixed",
+     "tag": "div",
+     "cls": "footer",
+     "txt": "MADE BY @DHRUV",
+     "top": "679.987px",
+     "bottom": "0px",
+     "w": 345,
+     "h": 45,
+     "y": 695
+    }
+   ],
+   "shotScrolled": "webflow-com-made-in-webflow-website-box-shadow-9-phone-scrolled.jpg",
+   "menu": {
+    "found": false
+   }
+  }
+ },
+ {
+  "aw": "https://webflow.com/made-in-webflow/website/subscription-pricing",
+  "measuredAt": "2026-10-03T13:12:29.531Z",
+  "title": "Subscription Pricing - Webflow",
+  "site": "https://subscription-pricing.webflow.io/",
+  "sitePage": null,
+  "vids": [],
+  "tags": [],
+  "desc": "Happy Thursday! I took some time to revise one of Flowbase's open-source projects and added Memberstack to it. I removed/renamed a few classes, updated the page copy, change font sizes to make the prices feel smaller, and added Memberstack links to 2 of the buttons. You'll need to hook the contact us button up to your chat app, contact form, or email. \n\nNote: you could use this template with Memberstack's pre-built UI (the one you see in the template now) or you could link directly to your own custom signup form. Totally up to you.\n\nIf you have any questions, feel free to drop a comment below. Thanks!",
+  "intro": {
+   "at700": {
+    "shot": "webflow-com-made-in-webflow-website-subscription-pricing-00-intro-0.7s.jpg",
+    "cover": []
+   },
+   "atLoad": {
+    "shot": "webflow-com-made-in-webflow-website-subscription-pricing-01-intro-load.jpg",
+    "cover": []
+   }
+  },
+  "loadMs": 902,
+  "surfaceDom": {
+   "fe": {},
+   "canvas": 0,
+   "big": [
+    {
+     "tag": "div",
+     "bg": "url(\"https://assets.website-files.com/6206a3c6ebf0a228be86d21f/64470384b86f5168d819c733_noise.png\")",
+     "size": "200px auto",
+     "repeat": "repeat",
+     "blend": "normal",
+     "mix": "normal",
+     "opacity": "1"
+    }
+   ]
+  },
+  "how": {
+   "css": {
+    "surface": [
+     ".w-webflow-badge {\n  white-space: nowrap;\n  cursor: pointer;\n  box-shadow: 0 0 0 1px rgba(0, 0, 0, .1), 0 1px 3px rgba(0, 0, 0, .1);\n  visibility: visible !important;\n  z-index: 2147483647 !important;\n  color: #aaadb0 !important;\n  opacity: 1 !important;\n  width: auto !important;\n  height: auto !important;\n  background-color: #fff !important;\n  border-radius: 3px !important;\n  margin: 0 !important",
+     ".w-slider-nav.w-shadow > div {\n  box-shadow: 0 0 3px rgba(51, 51, 51, .4);\n}",
+     ".w-lightbox-left {\n  background-image: url(\"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9Ii0yMCAwIDI0IDQwIiB3aWR0aD0iMjQiIGhlaWdodD0iNDAiPjxnIHRyYW5zZm9ybT0icm90YXRlKDQ1KSI+PHBhdGggZD0ibTAgMGg1djIzaDIzdjVoLTI4eiIgb3BhY2l0eT0iLjQiLz48cGF0aCBkPSJtMSAxaDN2MjNoMjN2M2gtMjZ6IiBmaWxsPSIjZmZmIi8+PC9nPjwvc3ZnPg==\");\n  display: none;\n  bottom: 0;\n  left: 0;\n}",
+     ".w-lightbox-right {\n  background-image: url(\"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9Ii00IDAgMjQgNDAiIHdpZHRoPSIyNCIgaGVpZ2h0PSI0MCI+PGcgdHJhbnNmb3JtPSJyb3RhdGUoNDUpIj48cGF0aCBkPSJtMC0waDI4djI4aC01di0yM2gtMjN6IiBvcGFjaXR5PSIuNCIvPjxwYXRoIGQ9Im0xIDFoMjZ2MjZoLTN2LTIzaC0yM3oiIGZpbGw9IiNmZmYiLz48L2c+PC9zdmc+\");\n  display: none;\n  bottom: 0;\n  right: 0;",
+     ".w-lightbox-close {\n  height: 2.6em;\n  background-image: url(\"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9Ii00IDAgMTggMTciIHdpZHRoPSIxOCIgaGVpZ2h0PSIxNyI+PGcgdHJhbnNmb3JtPSJyb3RhdGUoNDUpIj48cGF0aCBkPSJtMCAwaDd2LTdoNXY3aDd2NWgtN3Y3aC01di03aC03eiIgb3BhY2l0eT0iLjQiLz48cGF0aCBkPSJtMSAxaDd2LTdoM3Y3aDd2M2gtN3Y3aC0zdi03aC03eiIgZmlsbD0iI2ZmZiIvPjwvZz48L3N2Zz4=",
+     ".button-menu {\n  min-height: 50px;\n  min-width: 150px;\n  color: #fff;\n  letter-spacing: 1px;\n  text-transform: uppercase;\n  background-color: #8c54ff;\n  background-image: linear-gradient(159deg, #8c54ff, #7b41f1);\n  border-radius: 50px;\n  justify-content: center;\n  align-items: center;\n  padding-left: 20px;\n  padding-right: 20px;\n  font-size: 13px;\n  text-decoration: none;\n  transition: all .4s ea",
+     ".button-menu:hover {\n  box-shadow: inset 1px 1px 3px rgba(32, 27, 61, .22), inset -1px -1px 3px rgba(238, 230, 255, 0), 1px 1px 2px #5b3acc;\n}",
+     ".banner-bar {\n  min-height: 55px;\n  color: #fff;\n  background-color: #8c54ff;\n  background-image: url(\"https://assets.website-files.com/6206a3c6ebf0a228be86d21f/6206a3c6ebf0a2366b86d237_scribble-5.svg\");\n  background-position: 100% 100%;\n  background-repeat: no-repeat;\n  background-size: auto;\n  justify-content: center;\n  align-items: center;\n  padding: 8px 3%;\n  display: flex;\n}",
+     ".price-block.shadow-blue {\n  box-shadow: 25px 25px 24px rgba(71, 56, 180, .25);\n}",
+     ".price-block.shadow-pink {\n  box-shadow: 25px 25px 24px rgba(226, 134, 192, .5);\n}",
+     ".price-block.shadow-dark {\n  box-shadow: 25px 25px 24px rgba(23, 18, 63, .2);\n}",
+     ".ms-iframe-footer-embed-2 {\n  width: 100%;\n  height: 350px;\n  background-color: #d1e7fb;\n  background-image: url(\"https://assets.website-files.com/6206a3c6ebf0a228be86d21f/64470384b86f5168d819c733_noise.png\");\n  background-position: 0 0;\n  background-size: 200px;\n  justify-content: flex-end;\n  align-items: flex-end;\n  margin-bottom: 0;\n  display: block;\n  overflow: hidden;\n}"
+    ],
+    "sticky": [],
+    "fixed": [
+     ".w-webflow-badge {\n  white-space: nowrap;\n  cursor: pointer;\n  box-shadow: 0 0 0 1px rgba(0, 0, 0, .1), 0 1px 3px rgba(0, 0, 0, .1);\n  visibility: visible !important;\n  z-index: 2147483647 !important;\n  color: #aaadb0 !important;\n  opacity: 1 !important;\n  width: auto !important;\n  height: auto !important;\n  background-color: #fff !important;\n  border-radius: 3px !important;\n  margin: 0 !important",
+     ".w-lightbox-backdrop {\n  cursor: auto;\n  letter-spacing: normal;\n  text-indent: 0;\n  text-shadow: none;\n  text-transform: none;\n  visibility: visible;\n  white-space: normal;\n  word-break: normal;\n  word-spacing: normal;\n  word-wrap: normal;\n  color: #fff;\n  text-align: center;\n  z-index: 2000;\n  opacity: 0;\n  -webkit-user-select: none;\n  -moz-user-select: none;\n  -ms-user-select: none;\n  -webkit-t",
+     ".ms-iframe {\n  z-index: 2147483647;\n  height: 70px;\n  justify-content: flex-end;\n  align-items: flex-end;\n  display: flex;\n  position: fixed;\n  top: auto;\n  bottom: 0%;\n  left: 0%;\n  right: auto;\n}",
+     ".hidden-embed {\n  z-index: -1;\n  height: 0;\n  max-height: 0;\n  opacity: 0;\n  position: fixed;\n}",
+     "#msOverlay.svelte-11nuert { position: fixed; display: flex; justify-content: center; align-items: center; width: 100%; height: 100%; inset: 0px; background-color: rgba(0, 0, 0, 0.5); z-index: 99999; overflow: hidden auto; font-family: \"Plus Jakarta Sans\", sans-serif; padding: 5vh 5vw; }",
+     ".ms-inspector-badge.svelte-1vc18j3 { position: fixed !important; bottom: 16px !important; left: 50% !important; transform: translateX(-50%) !important; z-index: 2147483647 !important; display: flex !important; align-items: center !important; gap: 8px !important; height: 38px !important; padding: 0px 8px !important; margin: 0px !important; background-color: var(--msti-surface, #fff) !important; col"
+    ],
+    "timeline": [
+     ":where(.ms-inspector-badge, .ms-inspector-sidebar) :not(svg):not(svg *), :where(.ms-inspector-badge, .ms-inspector-sidebar) :not(svg):not(svg *)::before, :where(.ms-inspector-badge, .ms-inspector-sidebar) :not(svg):not(svg *)::after { color-scheme: revert; forced-color-adjust: revert; math-depth: revert; position: revert; position-anchor: revert; text-size-adjust: revert; appearance: revert; color"
+    ],
+    "viewTransition": [
+     ":where(.ms-inspector-badge, .ms-inspector-sidebar) :not(svg):not(svg *), :where(.ms-inspector-badge, .ms-inspector-sidebar) :not(svg):not(svg *)::before, :where(.ms-inspector-badge, .ms-inspector-sidebar) :not(svg):not(svg *)::after { color-scheme: revert; forced-color-adjust: revert; math-depth: revert; position: revert; position-anchor: revert; text-size-adjust: revert; appearance: revert; color"
+    ],
+    "clip": [
+     ":where(.ms-inspector-badge, .ms-inspector-sidebar) :not(svg):not(svg *), :where(.ms-inspector-badge, .ms-inspector-sidebar) :not(svg):not(svg *)::before, :where(.ms-inspector-badge, .ms-inspector-sidebar) :not(svg):not(svg *)::after { color-scheme: revert; forced-color-adjust: revert; math-depth: revert; position: revert; position-anchor: revert; text-size-adjust: revert; appearance: revert; color"
+    ],
+    "snap": [
+     ":where(.ms-inspector-badge, .ms-inspector-sidebar) :not(svg):not(svg *), :where(.ms-inspector-badge, .ms-inspector-sidebar) :not(svg):not(svg *)::before, :where(.ms-inspector-badge, .ms-inspector-sidebar) :not(svg):not(svg *)::after { color-scheme: revert; forced-color-adjust: revert; math-depth: revert; position: revert; position-anchor: revert; text-size-adjust: revert; appearance: revert; color"
+    ],
+    "starting": [],
+    "reduced": [
+     "@media (prefers-reduced-motion: reduce) {\n  .ms-inspector-badge.svelte-1vc18j3 { animation: auto ease 0s 1 normal none running none !important; }\n}"
+    ]
+   },
+   "keyframes": [
+    "@keyframes spin {\n  0% {\n    transform: rotate(0);\n  }\n\n  100% {\n    transform: rotate(360deg);\n  }\n}",
+    "@keyframes svelte-1vc18j3-ms-badge-in { \n  0% { opacity: 0; transform: translateX(-50%) translateY(12px) scale(0.96); }\n  100% { opacity: 1; transform: translateX(-50%) translateY(0px) scale(1); }\n}"
+   ],
+   "js": []
+  },
+  "timing": {
+   "transitionDuration": [
+    [
+     "0.2s, 0.2s",
+     1
+    ]
+   ],
+   "transitionEase": [
+    [
+     "ease, ease",
+     1
+    ]
+   ],
+   "transitionProperty": [
+    [
+     "border-color, box-shadow",
+     1
+    ]
+   ],
+   "transitionDelay": [
+    [
+     "0s, 0s",
+     1
+    ]
+   ],
+   "animationName": [
+    [
+     "svelte-1vc18j3-ms-badge-in",
+     1
+    ]
+   ],
+   "animationDuration": [
+    [
+     "0.46s",
+     1
+    ]
+   ],
+   "animationEase": [
+    [
+     "cubic-bezier(0.16, 1, 0.3, 1)",
+     1
+    ]
+   ],
+   "scriptEases": [],
+   "scriptDurations": []
+  },
+  "libs": {
+   "gsap": false,
+   "scrollTrigger": false,
+   "lenis": false,
+   "locomotive": false,
+   "barba": false,
+   "swup": false,
+   "taxi": false,
+   "highway": false,
+   "three": false,
+   "canvas": false,
+   "framer": false,
+   "webflow": true,
+   "lottie": false,
+   "split": false,
+   "swiper": false,
+   "motion": false,
+   "animejs": false,
+   "aos": false,
+   "next": false,
+   "nuxt": false,
+   "astro": false
+  },
+  "cssF": {
+   "animTimeline": 0,
+   "viewTimeline": 1,
+   "scrollTimeline": 1,
+   "viewTransition": 4,
+   "crossDocVT": 0,
+   "scrollSnap": 1,
+   "sticky": 0,
+   "fixed": 6,
+   "clipPath": 1,
+   "mask": 1,
+   "keyframes": 2,
+   "startingStyle": 0,
+   "allowDiscrete": 0,
+   "reducedMotion": 1,
+   "hoverMedia": 0,
+   "focusVisible": 1,
+   "hasSel": 0,
+   "mixBlend": 1,
+   "backdrop": 1,
+   "marquee": 0,
+   "linearEase": 0,
+   "scrollState": 0,
+   "anchorPos": 2,
+   "containerQ": 0,
+   "noiseSvg": 0,
+   "gradient": 1,
+   "filterUrl": 0,
+   "blendMode": 1
+  },
+  "jsReduced": false,
+  "stickyEls": 0,
+  "fixedEls": 3,
+  "tallPins": 0,
+  "held": [
+   {
+    "pos": "fixed",
+    "tag": "div",
+    "role": "",
+    "cls": "ms-iframe",
+    "txt": "",
+    "top": "830px",
+    "bottom": "0px",
+    "left": "0px",
+    "z": "2147483647",
+    "w": 180,
+    "h": 70,
+    "y": 830,
+    "bg": "rgba(0, 0, 0, 0)",
+    "blur": "",
+    "blend": "",
+    "hasNav": false,
+    "hasImg": false
+   },
+   {
+    "pos": "fixed",
+    "tag": "a",
+    "role": "",
+    "cls": "w-webflow-badge",
+    "txt": "",
+    "top": "860.95px",
+    "bottom": "12px",
+    "left": "1292px",
+    "z": "2147483647",
+    "w": 136,
+    "h": 27,
+    "y": 861,
+    "bg": "rgb(255, 255, 255)",
+    "blur": "",
+    "blend": "",
+    "hasNav": false,
+    "hasImg": true
+   },
+   {
+    "pos": "fixed",
+    "tag": "button",
+    "role": "",
+    "cls": "ms-inspector-badge svelte-1vc18j3",
+    "txt": "Test Mode 2",
+    "top": "844.4px",
+    "bottom": "16px",
+    "left": "720px",
+    "z": "2147483647",
+    "w": 152,
+    "h": 40,
+    "y": 844,
+    "bg": "rgb(36, 36, 36)",
+    "blur": "",
+    "blend": "",
+    "hasNav": false,
+    "hasImg": false
+   }
+  ],
+  "pinSpacers": [],
+  "sections": 1,
+  "splitText": 0,
+  "docH": 1321,
+  "vh": 900,
+  "cursorNone": false,
+  "lang": "",
+  "h1": "Simple, transparent pricing",
+  "focus": [
+   {
+    "tag": "a",
+    "txt": "CHOOSE PLAN",
+    "outline": "auto 0.8px rgb(16, 16, 16)",
+    "offset": "0.8px",
+    "shadow": "none",
+    "visible": true,
+    "onScreen": true,
+    "skipLink": false
+   },
+   {
+    "tag": "a",
+    "txt": "CHOOSE PLAN",
+    "outline": "auto 0.8px rgb(16, 16, 16)",
+    "offset": "0.8px",
+    "shadow": "none",
+    "visible": true,
+    "onScreen": true,
+    "skipLink": false
+   },
+   {
+    "tag": "a",
+    "txt": "CONTACT US",
+    "outline": "auto 0.8px rgb(16, 16, 16)",
+    "offset": "0.8px",
+    "shadow": "none",
+    "visible": true,
+    "onScreen": true,
+    "skipLink": false
+   },
+   {
+    "tag": "iframe",
+    "txt": "",
+    "outline": "none 2.4px rgb(51, 51, 51)",
+    "offset": "0px",
+    "shadow": "none",
+    "visible": false,
+    "onScreen": true,
+    "skipLink": false
+   }
+  ],
+  "idle": {
+   "changed": 0,
+   "kinds": {},
+   "samples": [],
+   "scrolled": 0
+  },
+  "scroll": [
+   {
+    "changed": 0,
+    "kinds": {},
+    "samples": [],
+    "scrolled": 421
+   },
+   {
+    "changed": 0,
+    "kinds": {},
+    "samples": [],
+    "scrolled": 0
+   },
+   {
+    "changed": 0,
+    "kinds": {},
+    "samples": [],
+    "scrolled": 0
+   },
+   {
+    "changed": 0,
+    "kinds": {},
+    "samples": [],
+    "scrolled": 0
+   },
+   {
+    "changed": 0,
+    "kinds": {},
+    "samples": [],
+    "scrolled": 0
+   }
+  ],
+  "scrollPerf": {
+   "longTaskMs": 0
+  },
+  "scrollChanged": 0,
+  "scrolledTo": 0,
+  "kb": 1764,
+  "reqs": 53,
+  "hover": {
+   "results": [
+    {
+     "on": "a.price-button",
+     "txt": "CHOOSE PLAN",
+     "changed": [
+      "self:background"
+     ],
+     "timing": "all 0s ease 0s",
+     "cursor": "pointer",
+     "frames": [
+      "webflow-com-made-in-webflow-website-subscription-pricing-h0-080.jpg",
+      "webflow-com-made-in-webflow-website-subscription-pricing-h0-250.jpg",
+      "webflow-com-made-in-webflow-website-subscription-pricing-h0-650.jpg"
+     ]
+    },
+    {
+     "on": "a.w-webflow-badge",
+     "txt": "",
+     "changed": [],
+     "timing": "none 0s ease 0s",
+     "cursor": "pointer",
+     "frames": []
+    },
+    {
+     "on": "button.ms-inspector-badge",
+     "txt": "Test Mode\n2",
+     "changed": [
+      "self:shadow"
+     ],
+     "timing": "border-color, box-shadow 0.2s, 0.2s ease, ease 0s, 0s",
+     "cursor": "pointer",
+     "frames": [
+      "webflow-com-made-in-webflow-website-subscription-pricing-h2-080.jpg",
+      "webflow-com-made-in-webflow-website-subscription-pricing-h2-250.jpg",
+      "webflow-com-made-in-webflow-website-subscription-pricing-h2-650.jpg"
+     ]
+    }
+   ],
+   "hoverRules": {
+    "n": 10,
+    "sample": [
+     ".ms-modal__close button:hover { color: var(--ms-color-text, #0a0a0a); }",
+     ".ms-modal__back button:hover, .ms-modal__profile-back button:hover { color: var(--ms-color-text, #0a0a0a); }",
+     ".ms-modal__profile-back--mobile button:hover { color: var(--ms-color-text, #0a0a0a); }",
+     ".ms-form__button:hover { background-color: var(--ms-color-primary-hover, #0745ff); }",
+     ".ms-form__button--text:hover { background-color: transparent; }",
+     ".ms-modal__profile-option:hover { color: var(--ms-color-primary, #2962ff); }",
+     ".ms-inspector-badge.svelte-1vc18j3:hover { box-shadow: rgba(10, 10, 10, 0.24) 0px 10px 32px !important; }",
+     ".ms-inspector-badge.svelte-1vc18j3:focus-visible { outline: 2px solid var(--msti-ring, #2962ff) !important; outline-offset: 2px !important; }",
+     "::-webkit-scrollbar-thumb:hover { background: transparent; }",
+     "::-webkit-scrollbar-thumb:hover { background: transparent; }"
+    ]
+   },
+   "hoverMediaGated": 0
+  },
+  "cursor": {
+   "followers": []
+  },
+  "shadows": [
+   [
+    "rgba(226, 134, 192, 0.5) 25px 25px 24px 0px",
+    1
+   ],
+   [
+    "rgba(23, 18, 63, 0.2) 25px 25px 24px 0px",
+    1
+   ],
+   [
+    "rgba(0, 0, 0, 0.1) 0px 0px 0px 1px, rgba(0, 0, 0, 0.1) 0px 1px 3px 0px",
+    1
+   ],
+   [
+    "rgba(0, 0, 0, 0.5) 0px 8px 28px 0px",
+    1
+   ]
+  ],
+  "menu": {
+   "found": true,
+   "didOpen": true,
+   "button": {
+    "tag": "button",
+    "cls": "ms-inspector-badge svelte-1vc18j3",
+    "label": "Test Mode\n2",
+    "expanded": "false",
+    "x": 719.9999923706055,
+    "y": 864.2000255584717
+   },
+   "frames": [
+    {
+     "ms": 150,
+     "shot": "webflow-com-made-in-webflow-website-subscription-pricing-menu-150.jpg",
+     "cover": []
+    },
+    {
+     "ms": 400,
+     "shot": "webflow-com-made-in-webflow-website-subscription-pricing-menu-400.jpg",
+     "cover": []
+    },
+    {
+     "ms": 900,
+     "shot": "webflow-com-made-in-webflow-website-subscription-pricing-menu-900.jpg",
+     "cover": []
+    }
+   ],
+   "opened": {
+    "expanded": "true",
+    "focusIn": null,
+    "scrollLocked": false
+   },
+   "panel": {
+    "tag": "aside",
+    "cls": "ms-inspector-sidebar svelte-12eeevc",
+    "transition": "all 0s ease",
+    "transform": "none",
+    "clip": "none",
+    "links": 4
+   },
+   "escapeCloses": true,
+   "focusReturned": true,
+   "coverBefore": 0
+  },
+  "pageTransition": {
+   "kind": "no-internal-link"
+  },
+  "reducedMotion": {
+   "idle": {
+    "changed": 0,
+    "kinds": {}
+   },
+   "scroll": [
+    {
+     "changed": 0,
+     "kinds": {}
+    },
+    {
+     "changed": 0,
+     "kinds": {}
+    }
+   ],
+   "shot": "webflow-com-made-in-webflow-website-subscription-pricing-7-reduced.jpg",
+   "normalScrollChanged": 0,
+   "elementsSeen": 110
+  },
+  "phone": {
+   "innerWidth": 360,
+   "pageWidth": 360,
+   "forcedWider": false,
+   "touch": true,
+   "shotTop": "webflow-com-made-in-webflow-website-subscription-pricing-8-phone-top.jpg",
+   "held": [
+    {
+     "pos": "fixed",
+     "tag": "div",
+     "cls": "ms-iframe",
+     "txt": "",
+     "top": "670px",
+     "bottom": "0px",
+     "w": 180,
+     "h": 70,
+     "y": 670
+    },
+    {
+     "pos": "fixed",
+     "tag": "a",
+     "cls": "w-webflow-badge",
+     "txt": "",
+     "top": "700.95px",
+     "bottom": "12px",
+     "w": 136,
+     "h": 27,
+     "y": 701
+    },
+    {
+     "pos": "fixed",
+     "tag": "button",
+     "cls": "ms-inspector-badge svelte-1vc18j3",
+     "txt": "Test Mode 2",
+     "top": "684.4px",
+     "bottom": "16px",
+     "w": 154,
+     "h": 40,
+     "y": 684
+    }
+   ],
+   "hoverMedia": false,
+   "overflowX": false,
+   "scroll": [
+    {
+     "changed": 0,
+     "kinds": {},
+     "samples": []
+    },
+    {
+     "changed": 0,
+     "kinds": {},
+     "samples": []
+    },
+    {
+     "changed": 0,
+     "kinds": {},
+     "samples": []
+    }
+   ],
+   "longTaskMs": 0,
+   "heldAfterScroll": [
+    {
+     "pos": "fixed",
+     "tag": "div",
+     "cls": "ms-iframe",
+     "txt": "",
+     "top": "670px",
+     "bottom": "0px",
+     "w": 180,
+     "h": 70,
+     "y": 670
+    },
+    {
+     "pos": "fixed",
+     "tag": "a",
+     "cls": "w-webflow-badge",
+     "txt": "",
+     "top": "700.95px",
+     "bottom": "12px",
+     "w": 136,
+     "h": 27,
+     "y": 701
+    },
+    {
+     "pos": "fixed",
+     "tag": "button",
+     "cls": "ms-inspector-badge svelte-1vc18j3",
+     "txt": "Test Mode 2",
+     "top": "684.4px",
+     "bottom": "16px",
+     "w": 154,
+     "h": 40,
+     "y": 684
+    }
+   ],
+   "shotScrolled": "webflow-com-made-in-webflow-website-subscription-pricing-9-phone-scrolled.jpg",
+   "menu": {
+    "found": true,
+    "didOpen": true,
+    "button": {
+     "tag": "button",
+     "cls": "ms-inspector-badge svelte-1vc18j3",
+     "label": "Test Mode\n2",
+     "expanded": "false",
+     "x": 180,
+     "y": 704.2000255584717
+    },
+    "frames": [
+     {
+      "ms": 150,
+      "shot": "webflow-com-made-in-webflow-website-subscription-pricing-phone-menu-150.jpg",
+      "cover": [
+       {
+        "tag": "aside",
+        "cls": "ms-inspector-sidebar svelte-12eeevc",
+        "cov": 84,
+        "opaque": true,
+        "z": "2147483647",
+        "bg": "rgb(26, 26, 26)",
+        "o": "1",
+        "t": "none",
+        "c": "none",
+        "txt": "Overview Inspector 2 Member App This pag"
+       }
+      ]
+     },
+     {
+      "ms": 400,
+      "shot": "webflow-com-made-in-webflow-website-subscription-pricing-phone-menu-400.jpg",
+      "cover": [
+       {
+        "tag": "aside",
+        "cls": "ms-inspector-sidebar svelte-12eeevc",
+        "cov": 84,
+        "opaque": true,
+        "z": "2147483647",
+        "bg": "rgb(26, 26, 26)",
+        "o": "1",
+        "t": "none",
+        "c": "none",
+        "txt": "Overview Inspector 2 Member App This pag"
+       }
+      ]
+     },
+     {
+      "ms": 900,
+      "shot": "webflow-com-made-in-webflow-website-subscription-pricing-phone-menu-900.jpg",
+      "cover": [
+       {
+        "tag": "aside",
+        "cls": "ms-inspector-sidebar svelte-12eeevc",
+        "cov": 84,
+        "opaque": true,
+        "z": "2147483647",
+        "bg": "rgb(26, 26, 26)",
+        "o": "1",
+        "t": "none",
+        "c": "none",
+        "txt": "Overview Inspector 2 Member App This pag"
+       }
+      ]
+     }
+    ],
+    "opened": {
+     "expanded": "true",
+     "focusIn": null,
+     "scrollLocked": false
+    },
+    "panel": {
+     "tag": "aside",
+     "cls": "ms-inspector-sidebar svelte-12eeevc",
+     "transition": "all 0s ease",
+     "transform": "none",
+     "clip": "none",
+     "links": 4
+    },
+    "escapeCloses": true,
+    "focusReturned": true,
+    "coverBefore": 0
+   }
+  }
+ },
+ {
+  "aw": "https://webflow.com/made-in-webflow/website/webnomads-chart-cloneable-afd376164bfc7",
+  "measuredAt": "2026-10-03T13:13:12.180Z",
+  "title": "Glow Shadow Following Cursor Cloneable - Webflow",
+  "site": "https://webnomads-chart-cloneable-afd376164bfc7.webflow.io/",
+  "sitePage": null,
+  "vids": [],
+  "tags": [],
+  "desc": "Easily add a shadow which moves towards the cursor position. Create that glow effect to any element by simply assigning the class to your element!",
+  "intro": {
+   "at700": {
+    "shot": "webflow-com-made-in-webflow-website-webnomads-chart-cloneable-afd376164bfc7-00-intro-0.7s.jpg",
+    "cover": []
+   },
+   "atLoad": {
+    "shot": "webflow-com-made-in-webflow-website-webnomads-chart-cloneable-afd376164bfc7-01-intro-load.jpg",
+    "cover": []
+   }
+  },
+  "loadMs": 1124,
+  "surfaceDom": {
+   "fe": {},
+   "canvas": 0,
+   "big": []
+  },
+  "how": {
+   "css": {
+    "surface": [
+     ".w-webflow-badge {\n  white-space: nowrap;\n  cursor: pointer;\n  box-shadow: 0 0 0 1px rgba(0, 0, 0, .1), 0 1px 3px rgba(0, 0, 0, .1);\n  visibility: visible !important;\n  z-index: 2147483647 !important;\n  color: #aaadb0 !important;\n  opacity: 1 !important;\n  background-color: #fff !important;\n  border-radius: 3px !important;\n  width: auto !important;\n  height: auto !important;\n  margin: 0 !important",
+     ".w-slider-nav.w-shadow > div {\n  box-shadow: 0 0 3px rgba(51, 51, 51, .4);\n}",
+     ".w-lightbox-left {\n  background-image: url(\"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9Ii0yMCAwIDI0IDQwIiB3aWR0aD0iMjQiIGhlaWdodD0iNDAiPjxnIHRyYW5zZm9ybT0icm90YXRlKDQ1KSI+PHBhdGggZD0ibTAgMGg1djIzaDIzdjVoLTI4eiIgb3BhY2l0eT0iLjQiLz48cGF0aCBkPSJtMSAxaDN2MjNoMjN2M2gtMjZ6IiBmaWxsPSIjZmZmIi8+PC9nPjwvc3ZnPg==\");\n  display: none;\n  bottom: 0;\n  left: 0;\n}",
+     ".w-lightbox-right {\n  background-image: url(\"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9Ii00IDAgMjQgNDAiIHdpZHRoPSIyNCIgaGVpZ2h0PSI0MCI+PGcgdHJhbnNmb3JtPSJyb3RhdGUoNDUpIj48cGF0aCBkPSJtMC0waDI4djI4aC01di0yM2gtMjN6IiBvcGFjaXR5PSIuNCIvPjxwYXRoIGQ9Im0xIDFoMjZ2MjZoLTN2LTIzaC0yM3oiIGZpbGw9IiNmZmYiLz48L2c+PC9zdmc+\");\n  display: none;\n  bottom: 0;\n  right: 0;",
+     ".w-lightbox-close {\n  background-image: url(\"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9Ii00IDAgMTggMTciIHdpZHRoPSIxOCIgaGVpZ2h0PSIxNyI+PGcgdHJhbnNmb3JtPSJyb3RhdGUoNDUpIj48cGF0aCBkPSJtMCAwaDd2LTdoNXY3aDd2NWgtN3Y3aC01di03aC03eiIgb3BhY2l0eT0iLjQiLz48cGF0aCBkPSJtMSAxaDd2LTdoM3Y3aDd2M2gtN3Y3aC0zdi03aC03eiIgZmlsbD0iI2ZmZiIvPjwvZz48L3N2Zz4=\");\n  background-",
+     "body {\n  color: #333;\n  background-color: #010020;\n  background-image: linear-gradient(156deg, rgba(0, 0, 0, 0) 56%, rgba(255, 12, 105, .17)), linear-gradient(337deg, #000 55%, rgba(0, 47, 255, .26));\n  font-family: Poppins, sans-serif;\n  font-size: 14px;\n  line-height: 20px;\n}",
+     ".guide-wrapper {\n  z-index: 99999;\n  -webkit-backdrop-filter: blur(10px);\n  backdrop-filter: blur(10px);\n  background-color: rgba(0, 0, 0, .4);\n  justify-content: center;\n  width: 100%;\n  height: 100vh;\n  padding: 40px;\n  display: none;\n  position: absolute;\n  overflow: auto;\n}",
+     ".resource-component {\n  -webkit-backdrop-filter: blur(10px);\n  backdrop-filter: blur(10px);\n  background-color: rgba(255, 255, 255, .1);\n  border-radius: 10px;\n  padding: 40px 80px;\n  position: relative;\n  box-shadow: 0 4px 50px rgba(0, 0, 0, .25);\n}"
+    ],
+    "sticky": [],
+    "fixed": [
+     ".w-webflow-badge {\n  white-space: nowrap;\n  cursor: pointer;\n  box-shadow: 0 0 0 1px rgba(0, 0, 0, .1), 0 1px 3px rgba(0, 0, 0, .1);\n  visibility: visible !important;\n  z-index: 2147483647 !important;\n  color: #aaadb0 !important;\n  opacity: 1 !important;\n  background-color: #fff !important;\n  border-radius: 3px !important;\n  width: auto !important;\n  height: auto !important;\n  margin: 0 !important",
+     ".w-lightbox-backdrop {\n  cursor: auto;\n  letter-spacing: normal;\n  text-indent: 0;\n  text-shadow: none;\n  text-transform: none;\n  visibility: visible;\n  white-space: normal;\n  word-break: normal;\n  word-spacing: normal;\n  word-wrap: normal;\n  color: #fff;\n  text-align: center;\n  z-index: 2000;\n  opacity: 0;\n  -webkit-user-select: none;\n  -moz-user-select: none;\n  -webkit-tap-highlight-color: trans"
+    ],
+    "timeline": [],
+    "viewTransition": [],
+    "clip": [],
+    "snap": [],
+    "starting": [],
+    "reduced": []
+   },
+   "keyframes": [
+    "@keyframes spin {\n  0% {\n    transform: rotate(0);\n  }\n\n  100% {\n    transform: rotate(360deg);\n  }\n}"
+   ],
+   "js": []
+  },
+  "timing": {
+   "scriptEases": [],
+   "scriptDurations": []
+  },
+  "libs": {
+   "gsap": false,
+   "scrollTrigger": false,
+   "lenis": false,
+   "locomotive": false,
+   "barba": false,
+   "swup": false,
+   "taxi": false,
+   "highway": false,
+   "three": false,
+   "canvas": false,
+   "framer": false,
+   "webflow": true,
+   "lottie": false,
+   "split": false,
+   "swiper": false,
+   "motion": false,
+   "animejs": false,
+   "aos": false,
+   "next": false,
+   "nuxt": false,
+   "astro": false
+  },
+  "cssF": {
+   "animTimeline": 0,
+   "viewTimeline": 0,
+   "scrollTimeline": 0,
+   "viewTransition": 0,
+   "crossDocVT": 0,
+   "scrollSnap": 0,
+   "sticky": 0,
+   "fixed": 2,
+   "clipPath": 0,
+   "mask": 0,
+   "keyframes": 1,
+   "startingStyle": 0,
+   "allowDiscrete": 0,
+   "reducedMotion": 0,
+   "hoverMedia": 0,
+   "focusVisible": 0,
+   "hasSel": 0,
+   "mixBlend": 0,
+   "backdrop": 4,
+   "marquee": 0,
+   "linearEase": 0,
+   "scrollState": 0,
+   "anchorPos": 0,
+   "containerQ": 0,
+   "noiseSvg": 0,
+   "gradient": 2,
+   "filterUrl": 0,
+   "blendMode": 0
+  },
+  "jsReduced": false,
+  "stickyEls": 0,
+  "fixedEls": 0,
+  "tallPins": 0,
+  "held": [],
+  "pinSpacers": [],
+  "sections": 1,
+  "splitText": 0,
+  "docH": 900,
+  "vh": 900,
+  "cursorNone": false,
+  "lang": "en",
+  "h1": "GLOW BUTTON SHADOW",
+  "focus": [
+   {
+    "tag": "a",
+    "txt": "",
+    "outline": "auto 0.8px rgb(16, 16, 16)",
+    "offset": "0.8px",
+    "shadow": "none",
+    "visible": true,
+    "onScreen": true,
+    "skipLink": false
+   },
+   {
+    "tag": "a",
+    "txt": "Tutorial",
+    "outline": "auto 0.8px rgb(16, 16, 16)",
+    "offset": "0.8px",
+    "shadow": "rgb(143, 75, 6) 4px 4px 10px 0px",
+    "visible": true,
+    "onScreen": true,
+    "skipLink": false
+   },
+   null,
+   {
+    "tag": "a",
+    "txt": "",
+    "outline": "auto 0.8px rgb(16, 16, 16)",
+    "offset": "0.8px",
+    "shadow": "none",
+    "visible": true,
+    "onScreen": true,
+    "skipLink": false
+   }
+  ],
+  "idle": {
+   "changed": 0,
+   "kinds": {},
+   "samples": [],
+   "scrolled": 0
+  },
+  "scroll": [
+   {
+    "changed": 0,
+    "kinds": {},
+    "samples": [],
+    "scrolled": 0
+   },
+   {
+    "changed": 0,
+    "kinds": {},
+    "samples": [],
+    "scrolled": 0
+   },
+   {
+    "changed": 0,
+    "kinds": {},
+    "samples": [],
+    "scrolled": 0
+   },
+   {
+    "changed": 0,
+    "kinds": {},
+    "samples": [],
+    "scrolled": 0
+   },
+   {
+    "changed": 0,
+    "kinds": {},
+    "samples": [],
+    "scrolled": 0
+   }
+  ],
+  "scrollPerf": {
+   "longTaskMs": 0
+  },
+  "scrollChanged": 0,
+  "scrolledTo": 0,
+  "kb": 564,
+  "reqs": 9,
+  "hover": {
+   "results": [
+    {
+     "on": "a.w-inline-block",
+     "txt": "",
+     "changed": [],
+     "timing": "all 0s ease 0s",
+     "cursor": "pointer",
+     "frames": []
+    },
+    {
+     "on": "div.card",
+     "txt": "GLOW BUTTON SHADOW\n\nFollowing ",
+     "changed": [
+      "child:shadow"
+     ],
+     "timing": "all 0s ease 0s",
+     "cursor": "auto",
+     "frames": [
+      "webflow-com-made-in-webflow-website-webnomads-chart-cloneable-afd376164bfc7-h1-080.jpg",
+      "webflow-com-made-in-webflow-website-webnomads-chart-cloneable-afd376164bfc7-h1-250.jpg",
+      "webflow-com-made-in-webflow-website-webnomads-chart-cloneable-afd376164bfc7-h1-650.jpg"
+     ]
+    },
+    {
+     "on": "a.button",
+     "txt": "Tutorial",
+     "changed": [
+      "self:shadow",
+      "parent:shadow"
+     ],
+     "timing": "all 0s ease 0s",
+     "cursor": "pointer",
+     "frames": [
+      "webflow-com-made-in-webflow-website-webnomads-chart-cloneable-afd376164bfc7-h2-080.jpg",
+      "webflow-com-made-in-webflow-website-webnomads-chart-cloneable-afd376164bfc7-h2-250.jpg",
+      "webflow-com-made-in-webflow-website-webnomads-chart-cloneable-afd376164bfc7-h2-650.jpg"
+     ]
+    }
+   ],
+   "hoverRules": {
+    "n": 0,
+    "sample": []
+   },
+   "hoverMediaGated": 0
+  },
+  "cursor": {
+   "followers": []
+  },
+  "shadows": [
+   [
+    "rgba(0, 0, 0, 0.25) 0px 4px 50px 0px",
+    1
+   ],
+   [
+    "rgb(157, 34, 81) -1.92px 4px 20px 0px",
+    1
+   ],
+   [
+    "rgb(143, 75, 6) -3.09678px 4px 20px 0px",
+    1
+   ]
+  ],
+  "menu": {
+   "found": false
+  },
+  "pageTransition": {
+   "kind": "no-internal-link"
+  },
+  "reducedMotion": {
+   "idle": {
+    "changed": 0,
+    "kinds": {}
+   },
+   "scroll": [
+    {
+     "changed": 0,
+     "kinds": {}
+    },
+    {
+     "changed": 0,
+     "kinds": {}
+    }
+   ],
+   "shot": "webflow-com-made-in-webflow-website-webnomads-chart-cloneable-afd376164bfc7-7-reduced.jpg",
+   "normalScrollChanged": 0,
+   "elementsSeen": 30
+  },
+  "phone": {
+   "innerWidth": 360,
+   "pageWidth": 360,
+   "forcedWider": false,
+   "touch": true,
+   "shotTop": "webflow-com-made-in-webflow-website-webnomads-chart-cloneable-afd376164bfc7-8-phone-top.jpg",
+   "held": [],
+   "hoverMedia": false,
+   "overflowX": false,
+   "scroll": [
+    {
+     "changed": 0,
+     "kinds": {},
+     "samples": []
+    },
+    {
+     "changed": 0,
+     "kinds": {},
+     "samples": []
+    },
+    {
+     "changed": 0,
+     "kinds": {},
+     "samples": []
+    }
+   ],
+   "longTaskMs": 0,
+   "heldAfterScroll": [],
+   "shotScrolled": "webflow-com-made-in-webflow-website-webnomads-chart-cloneable-afd376164bfc7-9-phone-scrolled.jpg",
+   "menu": {
+    "found": false
+   }
+  }
+ },
+ {
+  "aw": "https://webflow.com/made-in-webflow/website/link-underline-on-hover",
+  "measuredAt": "2026-10-03T13:13:50.713Z",
+  "title": "Smooth Hover Underline Effects (with Box-Shadow) - Webflow",
+  "site": "https://link-underline-on-hover.webflow.io/",
+  "sitePage": null,
+  "vids": [],
+  "tags": [],
+  "desc": "Today, we’ll build a set of hover underline animations in Webflow — powered by box-shadow and smooth CSS transitions.\n\nYou’ll learn how to:\n\n✅ Create a growing underline from the bottom\n✅ Animate from the top, left, and right\n✅ Build a full-height underline effect\n✅ Even animate multiple borders at once with a simple trick\n\nNo custom code needed — just smart use of styles and transitions.\n\n👉 Watch on YouTube: https://youtu.be/bTXWsrMSPaY",
+  "sameAs": "wf-shadow.json",
+  "kb": -1
+ }
+]

@@ -1,8 +1,8 @@
 {
- "at": "2026-10-03T11:16:12.895Z",
+ "at": "2026-10-03T14:31:30.396Z",
  "n": 40,
  "seed": 1,
- "ablations": 213,
+ "ablations": 241,
  "invalid": [],
  "clashes": {
   "bandShadow": [
@@ -14,10 +14,10 @@
      "overlay": "tint 40%",
      "overlayBlend": "soft-light",
      "texture": "dots",
-     "edge": "wave",
-     "edgeMethod": "clip-path",
+     "edge": "slope",
+     "edgeMethod": "mask",
      "bandShadow": "on the band",
-     "card": "solid",
+     "card": "liquid glass",
      "cardBlur": "16px",
      "cardShadow": "off",
      "heading": "solid"
@@ -29,13 +29,13 @@
     "labels": {
      "base": "radial",
      "photo": "on",
-     "overlay": "off",
+     "overlay": "tint 40%",
      "overlayBlend": "screen",
-     "texture": "off",
-     "edge": "slope",
-     "edgeMethod": "mask",
+     "texture": "grain",
+     "edge": "zigzag",
+     "edgeMethod": "shape()",
      "bandShadow": "on the band",
-     "card": "solid",
+     "card": "liquid glass",
      "cardBlur": "6px",
      "cardShadow": "hard",
      "heading": "gradient"
@@ -47,10 +47,10 @@
     "labels": {
      "base": "colour",
      "photo": "on",
-     "overlay": "scrim 60%",
+     "overlay": "pattern 30%",
      "overlayBlend": "normal",
-     "texture": "stripes",
-     "edge": "wave",
+     "texture": "halftone",
+     "edge": "slope",
      "edgeMethod": "clip-path",
      "bandShadow": "on the band",
      "card": "glass",
@@ -65,11 +65,11 @@
     "labels": {
      "base": "conic",
      "photo": "off",
-     "overlay": "scrim 60%",
+     "overlay": "pattern 30%",
      "overlayBlend": "screen",
-     "texture": "stripes",
-     "edge": "wave",
-     "edgeMethod": "mask",
+     "texture": "halftone",
+     "edge": "slope",
+     "edgeMethod": "shape()",
      "bandShadow": "on the band",
      "card": "off",
      "cardBlur": "6px",
@@ -83,13 +83,13 @@
     "labels": {
      "base": "radial",
      "photo": "on",
-     "overlay": "pattern 30%",
+     "overlay": "spotlight",
      "overlayBlend": "screen",
      "texture": "grain",
-     "edge": "zigzag",
-     "edgeMethod": "mask",
+     "edge": "scallop",
+     "edgeMethod": "shape()",
      "bandShadow": "on the band",
-     "card": "solid",
+     "card": "liquid glass",
      "cardBlur": "16px",
      "cardShadow": "off",
      "heading": "gradient"
@@ -103,11 +103,11 @@
      "photo": "on",
      "overlay": "off",
      "overlayBlend": "screen",
-     "texture": "stripes",
-     "edge": "zigzag",
+     "texture": "halftone",
+     "edge": "scallop",
      "edgeMethod": "mask",
      "bandShadow": "on the band",
-     "card": "solid",
+     "card": "liquid glass",
      "cardBlur": "16px",
      "cardShadow": "glow",
      "heading": "solid"
@@ -119,36 +119,36 @@
     "labels": {
      "base": "colour",
      "photo": "off",
-     "overlay": "tint 40%",
+     "overlay": "scrim 60%",
      "overlayBlend": "multiply",
      "texture": "off",
-     "edge": "curve",
-     "edgeMethod": "clip-path",
+     "edge": "torn",
+     "edgeMethod": "mask",
      "bandShadow": "on the band",
-     "card": "solid",
+     "card": "liquid glass",
      "cardBlur": "6px",
      "cardShadow": "soft",
      "heading": "solid"
     },
-    "d": 0.000125
+    "d": 0
    },
    {
     "id": "stack#1.30",
     "labels": {
      "base": "colour",
      "photo": "on",
-     "overlay": "scrim 60%",
+     "overlay": "pattern 30%",
      "overlayBlend": "normal",
      "texture": "off",
-     "edge": "zigzag",
+     "edge": "scallop",
      "edgeMethod": "clip-path",
      "bandShadow": "on the band",
-     "card": "solid",
+     "card": "liquid glass",
      "cardBlur": "16px",
      "cardShadow": "soft",
      "heading": "gradient"
     },
-    "d": 0.000041666666666666665
+    "d": 0
    },
    {
     "id": "stack#1.34",
@@ -158,33 +158,13 @@
      "overlay": "off",
      "overlayBlend": "multiply",
      "texture": "grain",
-     "edge": "curve",
-     "edgeMethod": "mask",
+     "edge": "torn",
+     "edgeMethod": "shape()",
      "bandShadow": "on the band",
      "card": "off",
      "cardBlur": "6px",
      "cardShadow": "off",
      "heading": "gradient"
-    },
-    "d": 0
-   }
-  ],
-  "overlay": [
-   {
-    "id": "stack#1.26",
-    "labels": {
-     "base": "linear",
-     "photo": "on",
-     "overlay": "pattern 30%",
-     "overlayBlend": "multiply",
-     "texture": "stripes",
-     "edge": "curve",
-     "edgeMethod": "clip-path",
-     "bandShadow": "on the wrapper",
-     "card": "off",
-     "cardBlur": "16px",
-     "cardShadow": "glow",
-     "heading": "solid"
     },
     "d": 0
    }

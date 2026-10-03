@@ -116,7 +116,21 @@ const FPS_END = () => { window.__frOn = 0; return { longTaskMs: Math.round((wind
 // Without it (the user's own links) every item is run.
 const SAT = +((process.argv.find(a => a.startsWith('--saturate=')) || '').slice(11) || 0);
 const known = new Set(); let streak = 0;
+// R2-34: --signature=surface saturates on what R-2 asks (texture / overlay / glass / shadow), not on motion — on a texture
+// category a new MENU pattern kept resetting the streak, so "saturated" would never have meant saturated on texture
+const SURFACE_SIG = process.argv.includes('--signature=surface');
+const surfaceSignature = (r) => {
+  const s = []; const d = r.surfaceDom || {};
+  for (const k of Object.keys(d.fe || {})) s.push('fe:' + k);
+  if (d.canvas) s.push('canvas');
+  for (const b of d.big || []) s.push('big:' + (/gradient/.test(b.bg) ? (/url/.test(b.bg) ? 'gradient+image' : 'gradient') : /svg/.test(b.bg) ? 'svg' : /\.(png|gif)/i.test(b.bg) ? 'tile-image' : 'photo') + ':' + (/no-repeat/.test(b.repeat) ? 'single' : 'tiled') + (b.blend && !/^normal(, normal)*$/.test(b.blend) ? ':blend' : '') + (b.mix !== 'normal' ? ':mix' : '') + (+b.opacity < 1 ? ':translucent' : ''));
+  for (const k of ['gradient', 'noiseSvg', 'filterUrl', 'blendMode', 'mixBlend', 'backdrop', 'clipPath', 'mask']) if ((r.cssF || {})[k]) s.push('css:' + k);
+  const rules = ((r.how && r.how.css && r.how.css.surface) || []).join('\n');
+  for (const [k, re] of Object.entries({ conic: /conic-gradient/, radial: /radial-gradient/, repeating: /repeating-/, layeredShadow: /box-shadow:[^;]*\),[^;]*\)/, insetShadow: /inset/, textShadow: /text-shadow/ })) if (re.test(rules)) s.push('rule:' + k);
+  return s;
+};
 const signature = (r) => {
+  if (SURFACE_SIG) return surfaceSignature(r);
   const s = [];
   for (const [k, v] of Object.entries(r.libs || {})) if (v) s.push('lib:' + k);
   for (const [k, v] of Object.entries(r.cssF || {})) if (v) s.push('css:' + k);
@@ -193,11 +207,12 @@ if (SAT) for (let i = queue.length - 1; i > 0; i--) { const j = Math.floor(Math.
             let css = '';
             for (const sh of document.styleSheets) { try { css += [...sh.cssRules].map(r => r.cssText).join('\n'); } catch { if (sh.href) { try { css += await (await fetch(sh.href)).text(); } catch {} } } if (css.length > 3e6) break; }
             const has = (re) => (css.match(re) || []).length;
-            const cssF = { animTimeline: has(/animation-timeline/g), viewTimeline: has(/view-timeline|view\(\)/g), scrollTimeline: has(/scroll-timeline|scroll\(\)/g), viewTransition: has(/view-transition/g), crossDocVT: has(/@view-transition/g), scrollSnap: has(/scroll-snap-type/g), sticky: has(/position:\s*sticky/g), fixed: has(/position:\s*fixed/g), clipPath: has(/clip-path/g), mask: has(/mask-image|mask:/g), keyframes: has(/@keyframes/g), startingStyle: has(/@starting-style/g), allowDiscrete: has(/allow-discrete/g), reducedMotion: has(/prefers-reduced-motion/g), hoverMedia: has(/\(hover:\s*hover\)/g), focusVisible: has(/:focus-visible/g), hasSel: has(/:has\(/g), mixBlend: has(/mix-blend-mode/g), backdrop: has(/backdrop-filter/g), marquee: has(/marquee|ticker/gi), linearEase: has(/linear\(/g), scrollState: has(/scroll-state/g), anchorPos: has(/anchor-name|position-anchor/g), containerQ: has(/@container/g) };
+            const cssF = { animTimeline: has(/animation-timeline/g), viewTimeline: has(/view-timeline|view\(\)/g), scrollTimeline: has(/scroll-timeline|scroll\(\)/g), viewTransition: has(/view-transition/g), crossDocVT: has(/@view-transition/g), scrollSnap: has(/scroll-snap-type/g), sticky: has(/position:\s*sticky/g), fixed: has(/position:\s*fixed/g), clipPath: has(/clip-path/g), mask: has(/mask-image|mask:/g), keyframes: has(/@keyframes/g), startingStyle: has(/@starting-style/g), allowDiscrete: has(/allow-discrete/g), reducedMotion: has(/prefers-reduced-motion/g), hoverMedia: has(/\(hover:\s*hover\)/g), focusVisible: has(/:focus-visible/g), hasSel: has(/:has\(/g), mixBlend: has(/mix-blend-mode/g), backdrop: has(/backdrop-filter/g), marquee: has(/marquee|ticker/gi), linearEase: has(/linear\(/g), scrollState: has(/scroll-state/g), anchorPos: has(/anchor-name|position-anchor/g), containerQ: has(/@container/g), noiseSvg: has(/feTurbulence/g), gradient: has(/gradient\(/g), filterUrl: has(/filter:\s*url\(/g), blendMode: has(/background-blend-mode/g) };
             const jsReduced = /prefers-reduced-motion/.test(inline);
             // HOW it is done: the CSS rules and script calls that make the motion, verbatim (capped per kind).
             const rules = (re, n) => [...new Set((css.match(new RegExp('[^{}]*\\{[^{}]*(' + re + ')[^{}]*\\}', 'g')) || []).map(s => s.trim().slice(0, 400)))].slice(0, n);
-            const how = { css: { sticky: rules('position:\\s*sticky', 6), fixed: rules('position:\\s*fixed', 6), timeline: rules('animation-timeline|view-timeline|scroll-timeline|animation-range', 8), viewTransition: rules('view-transition', 8), clip: rules('clip-path|mask-image', 6), snap: rules('scroll-snap', 4), starting: rules('@starting-style|allow-discrete', 4), reduced: (css.match(/@media[^{]*prefers-reduced-motion[^{]*\{(?:[^{}]*\{[^{}]*\})*[^{}]*\}/g) || []).map(s => s.slice(0, 500)).slice(0, 3) },
+            // R2-26: the SURFACE too (texture / overlay / glass / shadow sites) — the measurer recorded only motion, so 78 texture sites held nothing about texture
+            const how = { css: { surface: rules('gradient\\(|filter:\\s*url|backdrop-filter|blend-mode|background-image:\\s*url|box-shadow:[^;]*,', 12), sticky: rules('position:\\s*sticky', 6), fixed: rules('position:\\s*fixed', 6), timeline: rules('animation-timeline|view-timeline|scroll-timeline|animation-range', 8), viewTransition: rules('view-transition', 8), clip: rules('clip-path|mask-image', 6), snap: rules('scroll-snap', 4), starting: rules('@starting-style|allow-discrete', 4), reduced: (css.match(/@media[^{]*prefers-reduced-motion[^{]*\{(?:[^{}]*\{[^{}]*\})*[^{}]*\}/g) || []).map(s => s.slice(0, 500)).slice(0, 3) },
               keyframes: (css.match(/@keyframes\s+[\w-]+\s*\{(?:[^{}]*\{[^{}]*\})*[^{}]*\}/g) || []).map(s => s.slice(0, 300)).slice(0, 12) };
             let code = inline; for (const s of scripts.filter(s => new URL(s, location.href).origin === location.origin).slice(0, 8)) { try { code += '\n' + (await (await fetch(s)).text()).slice(0, 2e6); } catch {} }
             how.js = [...new Set((code.match(/.{0,160}(ScrollTrigger\.create|scrollTrigger\s*:|pin\s*:\s*(true|['"`])|scrub\s*:|startViewTransition|barba\.init|new Swup|new Lenis|IntersectionObserver|data-scroll-speed|requestAnimationFrame).{0,240}/g) || []).map(s => s.trim()))].slice(0, 16);
@@ -216,7 +231,8 @@ if (SAT) for (let i = queue.length - 1; i > 0; i--) { const j = Math.floor(Math.
             const pinSpacers = [...document.querySelectorAll('.pin-spacer')].slice(0, 6).map(s => ({ h: Math.round(s.offsetHeight / innerHeight * 10) / 10, child: (s.firstElementChild?.className || '').toString().slice(0, 50), txt: (s.innerText || '').trim().replace(/\s+/g, ' ').slice(0, 60) }));
             const sections = [...document.querySelectorAll('section, [class*="section"]')].length;
             const splitText = [...document.querySelectorAll('h1, h2')].filter(h => h.querySelectorAll('span, div').length > 6).length;
-            return { how, timing, libs, cssF, jsReduced, stickyEls, fixedEls, tallPins, held, pinSpacers, sections, splitText, docH: html.scrollHeight, vh: innerHeight, cursorNone: getComputedStyle(document.body).cursor === 'none', lang: html.lang, h1: (document.querySelector('h1')?.innerText || '').trim().slice(0, 80) };
+            const surfaceDom = (() => { const fe = {}; for (const e of document.querySelectorAll('filter *')) fe[e.tagName] = (fe[e.tagName] || 0) + 1; const big = [...document.querySelectorAll('body *')].filter((e) => { const cs = getComputedStyle(e); return /url\(|gradient\(/.test(cs.backgroundImage) && e.offsetWidth * e.offsetHeight > innerWidth * innerHeight * 0.3; }).slice(0, 6).map((e) => { const cs = getComputedStyle(e); return { tag: e.tagName.toLowerCase(), bg: cs.backgroundImage.slice(0, 200), size: cs.backgroundSize, repeat: cs.backgroundRepeat, blend: cs.backgroundBlendMode, mix: cs.mixBlendMode, opacity: cs.opacity }; }); return { fe, canvas: document.querySelectorAll('canvas').length, big }; })();
+            return { surfaceDom, how, timing, libs, cssF, jsReduced, stickyEls, fixedEls, tallPins, held, pinSpacers, sections, splitText, docH: html.scrollHeight, vh: innerHeight, cursorNone: getComputedStyle(document.body).cursor === 'none', lang: html.lang, h1: (document.querySelector('h1')?.innerText || '').trim().slice(0, 80) };
           }).catch(e => ({ err: e.message.slice(0, 80) }));
           // KEYBOARD: what focus looks like on the first four Tab stops.
           info.focus = [];
@@ -261,6 +277,9 @@ if (SAT) for (let i = queue.length - 1; i > 0; i--) { const j = Math.floor(Math.
         }
       } catch (e) { rec.err = e.message.slice(0, 100); }
       clearTimeout(guard);
+      // R2-33: a closed BROWSER is not a failed site — it ran through 765 queued sites in seconds, each "failed", and printed DONE.
+      // Stop at once, loudly; a rerun resumes (failed records are retried)
+      if (/has been closed|Browser closed|Target closed/i.test(rec.err || '')) { save(); console.log(`BROWSER CLOSED after ${done.length} measured — stopped (R2-33); rerun the same command to resume`); process.exit(2); }
       await p.emulateMedia({ reducedMotion: 'no-preference' }).catch(() => {});
       if (failed(rec) && (tries[aw] = (tries[aw] || 0) + 1) < 3) { queue.push(aw); console.log('retry later', aw, (rec.err || '').slice(0, 50)); continue; }
       if (rec.site && rec.kb > 0) measuredSites.set(rec.site.replace(/\/$/, ''), path.basename(outFile));

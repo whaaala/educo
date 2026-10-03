@@ -1061,70 +1061,73 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
     never beside an L-3 test run. Scope: gradients · overlays · shadows (incl. gradient / glow) · box effects · colour
     picker and the user's own colours · section shapes and blending
     - THE USER'S LINKS (completeness list, RULE R — each read completely before it is marked done):
-      - `[ ]` https://webgradients.com/ (2026-10-03) — every gradient on it, each opened and its CSS read (stops, angles,
+      - `[x]` https://webgradients.com/ — **2026-10-03: 661 pages read (every gradient page), 0 errors** — (2026-10-03) — every gradient on it, each opened and its CSS read (stops, angles,
         type), how each is made, which the builder can already draw (GradientEditor: linear / radial / conic, stops,
         angle) and which it cannot; plus the site's own UI for picking and copying a gradient (a reference for RULE UI)
-      - `[ ]` https://uigradients.com/ (2026-10-03) — every gradient in its collection (all of them, not a first page),
+      - `[x]` https://uigradients.com/ — **2026-10-03: all 377 gradients (one page holds the whole collection)** — (2026-10-03) — every gradient in its collection (all of them, not a first page),
         each one's colours and direction, how its picker / browse / copy UI works, compared with webgradients
-      - `[ ]` https://grabient.com/ (2026-10-03) — its gradient generator: every control it offers (how a user makes
+      - `[x]` https://grabient.com/ — **2026-10-03: SATURATED — 927 pages, 13 gradient techniques, last new at page 533, then 393 in a row with none (a generator: its palettes never end)** — (2026-10-03) — its gradient generator: every control it offers (how a user makes
         their own), every preset, the CSS it emits
-      - `[ ]` https://cssgradient.io/ (2026-10-03) — the generator (types, stops, angle, positions, colour input) AND
+      - `[x]` https://cssgradient.io/ — **2026-10-03: 23 pages (generator + every on-topic guide), queue empty** — (2026-10-03) — the generator (types, stops, angle, positions, colour input) AND
         every page it links to on the topic (its gradient guides / swatches / tools), each read completely
-      - `[ ]` https://webflow.com/made-in-webflow/overlay (2026-10-03) — EVERY project in the listing (all pages / all
+      - `[>]` https://webflow.com/made-in-webflow/overlay — **27 listed; re-measuring with the SURFACE recorded (R2-26)** — (2026-10-03) — EVERY project in the listing (all pages / all
         "load more"), each opened and run live (hover, scroll, click), its overlay technique read and written down item
         by item: what sits on top (colour / gradient / image / blur / blend), when it appears, how it animates
-      - `[ ]` https://www.convertflow.com/campaigns/popup-overlay-examples (2026-10-03) — every popup / overlay example on
+      - `[x]` https://www.convertflow.com/campaigns/popup-overlay-examples — **2026-10-03: 18 pages, queue empty; the modal pattern proven in r2-states (click · dim + blur backdrop · focus in · Escape · focus back)** — (2026-10-03) — every popup / overlay example on
         the page and every example page it links to: its trigger (on load, on scroll, exit intent, a click), how it
         enters and leaves, the backdrop (dim, blur, colour), how it is closed (button, Escape, outside click), focus and
         accessibility, and how it behaves on a phone. NOTE: a popup is a COMPONENT (a modal / dialog) — it feeds the
         component rebuild and needs the user's approval before it is built (rule 13)
-      - `[ ]` https://mobbin.com/explore/web/ui-elements/full-screen-overlay (2026-10-03) — every full-screen overlay
+      - `[?]` https://mobbin.com/explore/web/ui-elements/full-screen-overlay — **NEEDS AN ACCOUNT: the first page shows ~40 screens, then "Log in or join for free to continue browsing" — the user decides (never a workaround)** — (2026-10-03) — every full-screen overlay
         screen in the collection (all of it, scrolled to the end): what it covers, what it holds (menu, search, video,
         form), how it opens / closes, its backdrop. CHECK FIRST: Mobbin usually needs a signed-in account to show more
         than a preview — if it does, the user is asked for access (never a workaround) and the line stays open
-      - `[ ]` https://webflow.com/made-in-webflow/shadow (2026-10-03) — EVERY project in the listing (all pages / all
+      - `[x]` https://webflow.com/made-in-webflow/shadow — **2026-10-03: all 7 measured live, surface recorded (R2-26 re-measure)** — (2026-10-03) — EVERY project in the listing (all pages / all
         "load more"), each opened and run live, its shadows read from the code item by item: box / drop / text / inset,
         layered, coloured or gradient (glow), soft vs hard, how a shadow changes on hover or scroll — compared with the
         builder's elevation scale and `library/10-surface.md` (HAVE / PARTIAL / GAP)
-      - `[ ]` https://codepen.io/Syed-Faraz-Ahmad/pen/PoXbeqq (2026-10-03) — run live, its HTML / CSS / JS read in FULL
+      - `[x]` https://codepen.io/Syed-Faraz-Ahmad/pen/PoXbeqq — **2026-10-03: run and read in full (pens-r2-single)** — (2026-10-03) — run live, its HTML / CSS / JS read in FULL
         (never cut), how the effect is made written down step by step, what a builder control for it would need
-      - `[ ]` https://codepen.io/tag/shadow (2026-10-03) — NOT collected before (checked: no shadow tag in
+      - `[x]` https://codepen.io/tag/shadow — **2026-10-03: SATURATED at page 63 — 326 pens with full code, 150 in a row added nothing** — (2026-10-03) — NOT collected before (checked: no shadow tag in
         `docs/web-anatomy/codepen/`; only getcssscan's 95 box-shadows in `research-runs/`). EVERY listing page to the end
         with `cp-tag.js` (it resumes, R-21 fixed), every pen opened and its code read in full, how-it-is-done per pen via
         `cp-how.js`, saturation measured; in parallel collectors, never beside a UAT
-      - `[ ]` https://codepen.io/tag/overlay (2026-10-03) — NOT collected before (checked: nothing named overlay in
+      - `[x]` https://codepen.io/tag/overlay — **2026-10-03: SATURATED at page 84 — 501 pens** — (2026-10-03) — NOT collected before (checked: nothing named overlay in
         `docs/web-anatomy/codepen/`). Same method as the shadow tag: every page, every pen run and read in full, how each
         overlay is made (colour / gradient / image / blur / blend, on hover, on scroll, full screen)
-      - `[ ]` https://dribbble.com/tags/colorpicker (2026-10-03) — EVERY shot in the tag (scrolled to the end), each opened
+      - `[>]` https://dribbble.com/tags/colorpicker — **2026-10-03: the listing + 98 shots read and every screenshot OPENED (picker
+        controls per shot + patterns: `area-v/picker-shots.json`); 18 "shots" were captcha pages saved before R2-24 (R2-36) —
+        removed and re-crawled, 17 recovered; 1 + 21 queued shots NOT read: Dribbble shows Human Verification again (stepped
+        down) — retried later, never worked around** — (2026-10-03) — EVERY shot in the tag (scrolled to the end), each opened
         (its full images, and video where it has one): the colour picker's layout and controls — spectrum / wheel /
         sliders, hex / RGB / HSL / OKLCH entry, transparency, eyedropper, saved and brand swatches, gradient stops,
         contrast hints — written down per shot, then the patterns that repeat. Designs, not code: it decides what the
         builder's picker should LOOK and FEEL like (RULE UI), compared with today's `EducoColorField`
-      - `[ ]` https://dribbble.com/search/color-picker (2026-10-03) — every result to the end, the same per-shot notes;
+      - `[?]` https://dribbble.com/search/color-picker — **BLOCKED: Dribbble answers "Human Verification" from page 13 — stepped down (RULE RS, R2-24); 21 search pages read, no shot reached; the tag above covers the same designs** — (2026-10-03) — every result to the end, the same per-shot notes;
         shots already read from the tag above are recognised and not read twice (only new ones added)
-      - `[ ]` https://codepen.io/tag/colorpicker (2026-10-03) — every page, every pen run and its code read in full: how a
+      - `[x]` https://codepen.io/tag/colorpicker — **2026-10-03: read to the end — 182 pens** — (2026-10-03) — every page, every pen run and its code read in full: how a
         working picker is BUILT (canvas / gradients for the spectrum, pointer + keyboard on the thumb, colour maths
         HSV ↔ RGB ↔ OKLCH, alpha, the native EyeDropper API, accessibility of sliders) — the code side of Dribbble's designs
-      - `[ ]` https://www.magnific.com/free-photos-vectors/website-divider-shapes (2026-10-03) — every divider shape in the
+      - `[x]` https://www.magnific.com/free-photos-vectors/website-divider-shapes — **2026-10-03: 548 pages (listing + items, depth-limited, R2-19); shape families tallied — scallop · drip · mountain · brush added to the map** — (2026-10-03) — every divider shape in the
         listing (all pages): the shape family (wave, curve, tilt, zigzag, layered, torn, blob), single vs stacked layers,
         how it would be drawn (SVG path / clip-path / mask), which the builder's 4 `BandEdge` shapes already cover. Check
         the licence before anything is reused: the shapes are STUDIED, our own are drawn (RULE R, never copied)
-      - `[ ]` https://codepen.io/tag/divider (2026-10-03) — PARTLY collected in R-1 (step 4: 75 pens, stopped at the
+      - `[x]` https://codepen.io/tag/divider — **2026-10-03: read to the end — 86 pens (+ dividers 11)** — (2026-10-03) — PARTLY collected in R-1 (step 4: 75 pens, stopped at the
         user's "enough"; `cp-tag.js` RESUMES): finish every page, read every new pen in full, then `cp-how.js`
-      - `[ ]` https://codepen.io/tag/frosted-glass (2026-10-03) — every page, every pen run and read in full: how the glass is
+      - `[x]` https://codepen.io/tag/frosted-glass — **2026-10-03: read to the end — 36 pens** — (2026-10-03) — every page, every pen run and read in full: how the glass is
         made (`backdrop-filter: blur()` + saturation, a translucent fill, a light border / highlight, noise), its fallback
         where `backdrop-filter` is missing, its contrast over a busy photo, and its cost on a low-cost Android (RULE AF)
-      - `[ ]` https://webflow.com/made-in-webflow/glassmorphism (2026-10-03) — EVERY project in the listing, each opened and
+      - `[>]` https://webflow.com/made-in-webflow/glassmorphism — **47 listed; re-measuring with the SURFACE recorded (R2-26)** — (2026-10-03) — EVERY project in the listing, each opened and
         run live: where the glass sits (header, cards, modal, hero panel), what is behind it, blur strength, border /
         highlight, how it moves on scroll or hover — the real-site side of the frosted-glass pens
-      - `[ ]` https://www.awwwards.com/websites/texture/ (2026-10-03) — EVERY site in the category (all pages), each live
+      - `[>]` https://www.awwwards.com/websites/texture/ — **805 listed; re-measuring with the SURFACE recorded (R2-26), --saturate=50** — (2026-10-03) — EVERY site in the category (all pages), each live
         site visited and measured with `aw-measure.js` (it resumes): what the texture is (grain / noise, paper, fabric,
         pattern, an image), how it is made (SVG `feTurbulence`, a tiled image, CSS gradients, canvas), where it sits
         (whole page, a band, behind text), whether it moves, and its weight on a 360px phone on 3G (RULE AF)
-      - `[ ]` https://codepen.io/tag/texture (2026-10-03) — every page, every pen run and its code read in full: how each
+      - `[x]` https://codepen.io/tag/texture — **2026-10-03: SATURATED at page 54 — 319 pens** — (2026-10-03) — every page, every pen run and its code read in full: how each
         texture is BUILT (SVG `feTurbulence` grain, CSS gradient patterns, a tiled image, canvas noise), how it is layered
         over colour or a photo (opacity, blend mode), its weight — the code side of the Awwwards texture sites
-      - `[ ]` https://codepen.io/tag/curves (2026-10-03, link 21, sent during L3-p) — every listing page to the end, every
+      - `[x]` https://codepen.io/tag/curves — **2026-10-03: read to the end — 77 pens** — (2026-10-03, link 21, sent during L3-p) — every listing page to the end, every
         pen opened, run live and its code read in FULL: how each curve is BUILT (SVG path / `clip-path` / `border-radius`
         ellipses / masks / canvas), whether it is a section edge, a divider, a background shape or a moving line, how it
         responds to width, and its weight — feeds AREA V's "section shapes & blending" batch beside the divider and wave
@@ -1193,6 +1196,63 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
         temp file + rename, retried; a failed save no longer ends the crawl
       - `[x]` R2-3 · MY OWN: wave 1 recorded bash PIDs that cannot stop Windows processes (collector D "killed" was still
         running). Every crawler is now stopped by its unique profile path, verified (RULE K)
+      - `[x]` R2-23 · NOT A BUG (measured): webgradients and Grabient logs end in `UNKNOWN: open` crashes — both from 11:22 /
+        12:12, BEFORE the R2-14 fix; the current `save()` retries and goes on (Magnific then saved 548 pages, 0 crashes), and
+        both sites were resumed to completion (webgradients 661, Grabient 927)
+      - `[x]` R2-24 · `site-read.js` kept crawling Dribbble search through "Human Verification" pages and SAVED them as data
+        (21 of 42). FIXED: a challenge title stops the crawl (RULE RS: step down) and is never recorded; the 21 pages removed.
+        Mutation-proven on a local challenge page: with the check 0 pages saved + "stepping down"; without it 2 recorded
+      - `[x]` R2-25 · Dribbble tag stopped at 84 of ~800 queued with no DONE line and no note (the restarts at 10:29/10:39) —
+        an unfinished crawl that looked finished; and it had no depth limit, so related shots drifted off the tag. FIXED:
+        resumed with `--depth=1 --listing=tags/colorpicker` (depth written onto the 84 read pages) → DONE, 100 pages, 0 left
+      - `[>]` R2-26 · `aw-measure.js` recorded MOTION only (sticky / fixed / timeline / clip / snap) — 78 Awwwards TEXTURE sites
+        and all 81 Webflow overlay / shadow / glassmorphism sites held nothing about texture, overlay, glass or shadow. FIXED:
+        `how.css.surface` (gradient / filter url / backdrop / blend / image-background / layered shadow rules),
+        `surfaceDom` (SVG filter primitives in the page, canvases, the big backgrounds with size / repeat / blend / opacity),
+        cssF `noiseSvg · gradient · filterUrl · blendMode` (which also feed saturation). Old records kept aside in
+        educo-research/runs/*.motion-only.json; all four re-measured
+      - `[x]` R2-27 · MY OWN, the proof: `diffRatio` called two pictures of DIFFERENT SIZES 100% different — 1fr columns beside
+        a scrollbar (296 / 297px), rows at fractional y (160 / 161px) and a stage's own border (177px) — so same-look values
+        read as distinct and every earlier "distinct" count could be inflated. FIXED: fixed 18rem columns, fixed caption height,
+        `box-sizing: border-box` on the stage, and a size mismatch now THROWS (it stopped all six windows once — the proof it
+        was real) instead of counting as "different". Every proof re-run
+      - `[x]` R2-28 · MY OWN, the proof: sheets loaded on `about:blank`, an INSECURE context — Chrome 145 hides `paint()` and
+        `CSS.paintWorklet` there (measured: about:blank supports=false, localhost supports=true), so a value every https
+        page has read as invalid. FIXED: sheets served at http://localhost through Playwright's router (no server). Also a
+        builder fact: `paint()` and the EyeDropper work only on a page served over HTTPS
+      - `[x]` R2-29 · MY OWN, found by reading the look-alike groups (every repeat must be explained): (a) the overlay's blur strip on
+        the WORDS had `inset: auto …` and no height — it drew nothing; (b) the dark-theme drop shadow put `filter` on the now-opaque
+        stage, so the shadow fell outside the picture. FIXED (a height; the filter on a wrapper of the shape); groups re-read — every
+        remaining repeat is a named no-op or a dependent axis
+      - `[x]` R2-30 · MY OWN, the states proof: the scroller's moving SCROLLBAR THUMB passed the SCROLL check on its own (a guard that
+        could not fail) and failed the reduced-motion check (20 false failures). FIXED: `scrollbar-width: none` in the measured stage.
+        Mutation-proven: 197 checks 0 failed; scroll link removed → 20 SCROLL failures; pointer script + backdrop rule removed → 15
+        POINTER + 1 MODAL failures
+      - `[x]` R2-31 · MY OWN: sheet captions were not HTML-escaped — "svg <pattern>" was parsed as a tag (SEEN in the texture sheet
+        as "texture.source.svg"). FIXED: `esc()`; the caption now holds `svg &lt;pattern&gt;`
+      - `[x]` R2-32 · `npx eslint .` — 1 error: `site-read.js` resume loop destructured an unused `u`. FIXED (`Object.values`):
+        0 errors (the 105 warnings are the documented exhaustive-deps category)
+      - `[x]` R2-33 · `aw-measure.js`: when its BROWSER closed (free memory had fallen to 752 MB) it ran through the 765 queued
+        texture sites in seconds, each recorded as failed, and printed `DONE 805` — a dead crawl that looked finished. FIXED: a
+        closed browser stops the run at once with "BROWSER CLOSED … rerun to resume" (exit 2). Mutation-proven by killing its
+        browser on purpose: stopped after 41 measured, no DONE; relaunched, it resumes
+      - `[x]` R2-34 · `aw-measure.js` saturated on MOTION signatures (menus, page transitions, scroll libraries, hover) — on the
+        texture category a new menu pattern kept resetting the streak (69 measured, streak 1: `menu:esc…`, `lib:lenis`,
+        `pt:view-transition`), so "saturated" could never mean saturated on texture. FIXED: `--signature=surface` (SVG filter
+        primitives · canvas · the kind of each big background: photo / tile / svg / gradient, tiled or single, blend, mix,
+        translucent · the surface CSS features · conic / radial / repeating / layered / inset / text shadows in the rules).
+        SEEN: after the restart no motion signature appears in `novel` (the first 12 sites: nothing new); the known set is written
+        to `aw-texture.saturated.json` at saturation; the R-1 motion question is untouched (the flag is opt-in)
+      - `[x]` R2-35 · MY OWN: the colour-picker tally (`r2-picker-tally.js`) read each Dribbble shot's WHOLE page text — the shot's
+        palette as hex codes, "Download color palette", an agency ad — so "hex 71 · palette 71 · mobile 81" counted Dribbble's page
+        frame. FIXED: only the title + the author's description (cut at "Get in touch" / "Hire a" / "More by") → hex 0, palette 5,
+        mobile 12; 72 of 99 descriptions name no control at all — so the designs are read from the 100 screenshots
+        (`area-v/picker-shots.json`, every image opened)
+      - `[x]` R2-36 · the Dribbble TAG data held 18 "Human Verification" pages saved as shots by its first run (before R2-24) —
+        my scrub after R2-24 cleaned the SEARCH file only, and I reported the tag "complete, 100 pages". Found by the subagent
+        opening every screenshot. FIXED: removed (82 real pages left), re-crawled with the challenge stop → 17 recovered, then
+        Dribbble challenged again and the crawl stepped down by itself (R2-24 seen working in the wild: nothing saved). Open
+        remainder recorded on the link's line
     - WAVE 1 running 2026-10-03 10:26 (`educo-research/r2-wave1.sh`): CodePen shadow · overlay + frosted-glass +
       glassmorphism + backdrop-filter · colorpicker + texture + curves + noise + grain; lists wf-overlay (27) / wf-shadow /
       wf-glassmorphism / aw-texture; the single pen READ. Collector D (divider, gradient-text, gradient-border,

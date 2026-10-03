@@ -1,43 +1,95 @@
 {
- "at": "2026-10-03T11:24:25.296Z",
+ "at": "2026-10-03T14:30:12.231Z",
  "seed": 1,
  "n": 60,
  "browser": "145.0.7632.6",
  "report": [
   {
    "fam": "colour",
-   "axes": 4,
-   "values": 24,
-   "combinationSpace": 1000,
-   "specimens": 24,
+   "axes": 6,
+   "values": 33,
+   "combinationSpace": 9750,
+   "specimens": 33,
    "specimenInvalid": [],
-   "specimenPainted": "24/24",
+   "specimenPainted": "33/33",
    "notPainted": [],
    "animatedStill": [],
    "comboAnimatedStill": [],
    "comboNotPainted": [],
-   "expectedNoops": [],
+   "expectedNoops": [
+    "colour#1.2: transparent paints nothing — by definition",
+    "colour#1.4: transparent paints nothing — by definition",
+    "colour#1.13: transparent paints nothing — by definition",
+    "colour#1.16: transparent paints nothing — by definition",
+    "colour#1.34: transparent paints nothing — by definition",
+    "colour#1.40: transparent paints nothing — by definition",
+    "colour#1.52: transparent paints nothing — by definition",
+    "colour#1.58: transparent paints nothing — by definition",
+    "colour#1.59: transparent paints nothing — by definition"
+   ],
    "sameByAxis": {
     "notation": [
-     "hex = rgb",
-     "hsl = hwb",
-     "oklch = oklab",
-     "lab = lch"
+     "hex = hex 8 = rgb = hsl = hwb = oklch = lab = lch = currentColor",
+     "hex 4 = p3"
     ]
    },
    "combos": 60,
    "comboInvalid": [],
    "comboPainted": "60/60",
-   "comboDistinct": "55/60"
+   "comboDistinct": "54/60",
+   "alike": [
+    {
+     "ids": [
+      "colour#1.2",
+      "colour#1.13",
+      "colour#1.16",
+      "colour#1.34",
+      "colour#1.40",
+      "colour#1.59"
+     ],
+     "differOn": [
+      "notation: hwb / hex / lch / hsl / named",
+      "mix: with accent 50% / with black 40% / with white 40% / none",
+      "relative: hue +120 / darker / none / muted",
+      "scheme: light-dark() in a dark scheme / one value"
+     ],
+     "shared": {
+      "notation": "hwb",
+      "alpha": "0% (transparent)",
+      "mix": "with accent 50%",
+      "relative": "hue +120",
+      "scheme": "light-dark() in a dark scheme",
+      "controls": "none"
+     }
+    },
+    {
+     "ids": [
+      "colour#1.4",
+      "colour#1.58"
+     ],
+     "differOn": [
+      "notation: named / hsl",
+      "mix: with accent, longer hue / with white 40%"
+     ],
+     "shared": {
+      "notation": "named",
+      "alpha": "0% (transparent)",
+      "mix": "with accent, longer hue",
+      "relative": "lighter",
+      "scheme": "light-dark() in a dark scheme",
+      "controls": "native picker"
+     }
+    }
+   ]
   },
   {
    "fam": "gradient",
    "axes": 9,
-   "values": 28,
-   "combinationSpace": 19440,
-   "specimens": 28,
+   "values": 31,
+   "combinationSpace": 43200,
+   "specimens": 31,
    "specimenInvalid": [],
-   "specimenPainted": "28/28",
+   "specimenPainted": "31/31",
    "notPainted": [],
    "animatedStill": [],
    "comboAnimatedStill": [],
@@ -47,51 +99,102 @@
    "combos": 60,
    "comboInvalid": [],
    "comboPainted": "60/60",
-   "comboDistinct": "60/60"
+   "comboDistinct": "48/60",
+   "alike": [
+    {
+     "ids": [
+      "gradient#1.4",
+      "gradient#1.26",
+      "gradient#1.38"
+     ],
+     "differOn": [
+      "repeating: off / on",
+      "direction: to bottom right / to top",
+      "shape: circle closest-side / ellipse farthest-corner",
+      "position: centre / bottom right",
+      "space: oklch / oklch longer / srgb",
+      "paints: border (mask) / border",
+      "motion: turning / static"
+     ],
+     "shared": {
+      "type": "aurora (blurred blobs)",
+      "repeating": "off",
+      "direction": "to bottom right",
+      "shape": "circle closest-side",
+      "position": "centre",
+      "stops": "with alpha",
+      "space": "oklch",
+      "paints": "border (mask)",
+      "motion": "turning"
+     }
+    },
+    {
+     "ids": [
+      "gradient#1.6",
+      "gradient#1.7",
+      "gradient#1.9",
+      "gradient#1.11",
+      "gradient#1.23",
+      "gradient#1.25",
+      "gradient#1.30",
+      "gradient#1.42",
+      "gradient#1.44",
+      "gradient#1.45"
+     ],
+     "differOn": [
+      "repeating: on / off",
+      "direction: 200deg / 135deg / 90deg / to bottom right / to top",
+      "shape: circle 120px / ellipse farthest-corner / circle closest-side",
+      "position: centre / top left / bottom right",
+      "stops: two / hint / hard edge",
+      "space: srgb / oklch / oklch longer",
+      "paints: text / background / border / border (mask)",
+      "motion: turning / static"
+     ],
+     "shared": {
+      "type": "aurora (blurred blobs)",
+      "repeating": "on",
+      "direction": "200deg",
+      "shape": "circle 120px",
+      "position": "centre",
+      "stops": "two",
+      "space": "srgb",
+      "paints": "text",
+      "motion": "turning"
+     }
+    },
+    {
+     "ids": [
+      "gradient#1.36",
+      "gradient#1.47"
+     ],
+     "differOn": [
+      "repeating: on / off",
+      "direction: 135deg / to top",
+      "shape: circle closest-side / ellipse farthest-corner",
+      "position: bottom right / top left",
+      "space: oklch longer / srgb",
+      "paints: border (mask) / border"
+     ],
+     "shared": {
+      "type": "aurora (blurred blobs)",
+      "repeating": "on",
+      "direction": "135deg",
+      "shape": "circle closest-side",
+      "position": "bottom right",
+      "stops": "three",
+      "space": "oklch longer",
+      "paints": "border (mask)",
+      "motion": "static"
+     }
+    }
+   ]
   },
   {
    "fam": "background",
-   "axes": 6,
-   "values": 20,
-   "combinationSpace": 1080,
-   "specimens": 20,
-   "specimenInvalid": [],
-   "specimenPainted": "20/20",
-   "notPainted": [],
-   "animatedStill": [],
-   "comboAnimatedStill": [],
-   "comboNotPainted": [],
-   "expectedNoops": [],
-   "sameByAxis": {},
-   "combos": 60,
-   "comboInvalid": [],
-   "comboPainted": "60/60",
-   "comboDistinct": "60/60"
-  },
-  {
-   "fam": "overlay",
-   "axes": 5,
-   "values": 19,
-   "combinationSpace": 576,
-   "specimens": 19,
-   "specimenInvalid": [],
-   "specimenPainted": "19/19",
-   "notPainted": [],
-   "animatedStill": [],
-   "comboAnimatedStill": [],
-   "comboNotPainted": [],
-   "expectedNoops": [],
-   "sameByAxis": {},
-   "combos": 60,
-   "comboInvalid": [],
-   "comboPainted": "60/60",
-   "comboDistinct": "54/60"
-  },
-  {
-   "fam": "shadow",
    "axes": 8,
    "values": 25,
-   "combinationSpace": 7776,
+   "combinationSpace": 6480,
    "specimens": 25,
    "specimenInvalid": [],
    "specimenPainted": "25/25",
@@ -99,84 +202,395 @@
    "animatedStill": [],
    "comboAnimatedStill": [],
    "comboNotPainted": [],
-   "expectedNoops": [],
-   "sameByAxis": {},
+   "expectedNoops": [
+    "background#1.0: a fixed picture is placed against the WINDOW (here the whole sheet) — what a box shows of it depends on where the box sits",
+    "background#1.12: a fixed picture is placed against the WINDOW (here the whole sheet) — what a box shows of it depends on where the box sits",
+    "background#1.14: a fixed picture is placed against the WINDOW (here the whole sheet) — what a box shows of it depends on where the box sits",
+    "background#1.17: a fixed picture is placed against the WINDOW (here the whole sheet) — what a box shows of it depends on where the box sits",
+    "background#1.19: a fixed picture is placed against the WINDOW (here the whole sheet) — what a box shows of it depends on where the box sits",
+    "background#1.25: a fixed picture is placed against the WINDOW (here the whole sheet) — what a box shows of it depends on where the box sits",
+    "background#1.27: a fixed picture is placed against the WINDOW (here the whole sheet) — what a box shows of it depends on where the box sits",
+    "background#1.36: a fixed picture is placed against the WINDOW (here the whole sheet) — what a box shows of it depends on where the box sits",
+    "background#1.38: a fixed picture is placed against the WINDOW (here the whole sheet) — what a box shows of it depends on where the box sits",
+    "background#1.40: a fixed picture is placed against the WINDOW (here the whole sheet) — what a box shows of it depends on where the box sits",
+    "background#1.42: a fixed picture is placed against the WINDOW (here the whole sheet) — what a box shows of it depends on where the box sits",
+    "background#1.46: a fixed picture is placed against the WINDOW (here the whole sheet) — what a box shows of it depends on where the box sits",
+    "background#1.48: a fixed picture is placed against the WINDOW (here the whole sheet) — what a box shows of it depends on where the box sits",
+    "background#1.56: a fixed picture is placed against the WINDOW (here the whole sheet) — what a box shows of it depends on where the box sits"
+   ],
+   "sameByAxis": {
+    "attachment": [
+     "scroll = local"
+    ]
+   },
    "combos": 60,
    "comboInvalid": [],
-   "comboPainted": "60/60",
-   "comboDistinct": "60/60"
+   "comboPainted": "58/60",
+   "comboDistinct": "57/60",
+   "alike": [
+    {
+     "ids": [
+      "background#1.7",
+      "background#1.21"
+     ],
+     "differOn": [
+      "clip: content-box / padding-box"
+     ],
+     "shared": {
+      "size": "contain",
+      "position": "top left",
+      "repeat": "no-repeat",
+      "attachment": "scroll",
+      "origin": "content-box",
+      "base": "colour",
+      "clip": "content-box",
+      "source": "image-set()"
+     }
+    },
+    {
+     "ids": [
+      "background#1.12",
+      "background#1.36"
+     ],
+     "differOn": [
+      "repeat: repeat-x / no-repeat",
+      "origin: padding-box / border-box"
+     ],
+     "shared": {
+      "size": "cover",
+      "position": "top left",
+      "repeat": "repeat-x",
+      "attachment": "fixed",
+      "origin": "padding-box",
+      "base": "colour",
+      "clip": "border-box",
+      "source": "image-set()"
+     }
+    },
+    {
+     "ids": [
+      "background#1.25",
+      "background#1.27"
+     ],
+     "differOn": [
+      "position: bottom right / centre",
+      "origin: content-box / border-box",
+      "clip: border-box / content-box"
+     ],
+     "shared": {
+      "size": "50%",
+      "position": "bottom right",
+      "repeat": "no-repeat",
+      "attachment": "fixed",
+      "origin": "content-box",
+      "base": "gradient",
+      "clip": "border-box",
+      "source": "image-set()"
+     }
+    }
+   ]
   },
   {
-   "fam": "glass",
-   "axes": 7,
-   "values": 24,
-   "combinationSpace": 3240,
-   "specimens": 24,
+   "fam": "overlay",
+   "axes": 5,
+   "values": 20,
+   "combinationSpace": 720,
+   "specimens": 20,
    "specimenInvalid": [],
-   "specimenPainted": "24/24",
-   "notPainted": [],
-   "animatedStill": [],
-   "comboAnimatedStill": [],
-   "comboNotPainted": [],
-   "expectedNoops": [],
-   "sameByAxis": {},
-   "combos": 60,
-   "comboInvalid": [],
-   "comboPainted": "60/60",
-   "comboDistinct": "60/60"
-  },
-  {
-   "fam": "texture",
-   "axes": 9,
-   "values": 28,
-   "combinationSpace": 16200,
-   "specimens": 28,
-   "specimenInvalid": [],
-   "specimenPainted": "27/28",
+   "specimenPainted": "20/20",
    "notPainted": [],
    "animatedStill": [],
    "comboAnimatedStill": [],
    "comboNotPainted": [],
    "expectedNoops": [
-    "texture#1.32: light ink × multiply draws nothing",
-    "texture#1.51: dark ink × screen draws nothing",
-    "texture#1.55: light ink × multiply draws nothing",
-    "texture#1.59: dark ink × screen draws nothing"
+    "overlay#1.5: a white pattern × multiply draws nothing",
+    "overlay#1.26: a dark 20% tint × screen barely lightens",
+    "overlay#1.29: a dark 20% tint × screen barely lightens",
+    "overlay#1.49: a white pattern × multiply draws nothing",
+    "overlay#1.58: a white pattern × multiply draws nothing"
    ],
    "sameByAxis": {},
    "combos": 60,
    "comboInvalid": [],
-   "comboPainted": "59/60",
-   "comboDistinct": "57/60"
+   "comboPainted": "60/60",
+   "comboDistinct": "50/60",
+   "alike": [
+    {
+     "ids": [
+      "overlay#1.2",
+      "overlay#1.14",
+      "overlay#1.35",
+      "overlay#1.50"
+     ],
+     "differOn": [
+      "direction: to bottom / vignette / to right",
+      "blend: normal / color / multiply"
+     ],
+     "shared": {
+      "layer": "blur",
+      "opacity": "70",
+      "direction": "to bottom",
+      "blend": "normal",
+      "scope": "words"
+     }
+    },
+    {
+     "ids": [
+      "overlay#1.5",
+      "overlay#1.58"
+     ],
+     "differOn": [
+      "opacity: 70 / 20",
+      "direction: vignette / to top"
+     ],
+     "shared": {
+      "layer": "pattern",
+      "opacity": "70",
+      "direction": "vignette",
+      "blend": "multiply",
+      "scope": "words"
+     }
+    },
+    {
+     "ids": [
+      "overlay#1.11",
+      "overlay#1.47"
+     ],
+     "differOn": [
+      "direction: vignette / to bottom"
+     ],
+     "shared": {
+      "layer": "blur",
+      "opacity": "20",
+      "direction": "vignette",
+      "blend": "screen",
+      "scope": "band"
+     }
+    },
+    {
+     "ids": [
+      "overlay#1.15",
+      "overlay#1.23"
+     ],
+     "differOn": [
+      "direction: vignette / to top"
+     ],
+     "shared": {
+      "layer": "colour",
+      "opacity": "20",
+      "direction": "vignette",
+      "blend": "soft-light",
+      "scope": "words"
+     }
+    },
+    {
+     "ids": [
+      "overlay#1.17",
+      "overlay#1.44"
+     ],
+     "differOn": [
+      "direction: to right / to top"
+     ],
+     "shared": {
+      "layer": "blur",
+      "opacity": "20",
+      "direction": "to right",
+      "blend": "soft-light",
+      "scope": "words"
+     }
+    },
+    {
+     "ids": [
+      "overlay#1.19",
+      "overlay#1.45"
+     ],
+     "differOn": [
+      "blend: overlay / soft-light"
+     ],
+     "shared": {
+      "layer": "scrim",
+      "opacity": "20",
+      "direction": "vignette",
+      "blend": "overlay",
+      "scope": "band"
+     }
+    },
+    {
+     "ids": [
+      "overlay#1.26",
+      "overlay#1.29"
+     ],
+     "differOn": [
+      "layer: scrim / spotlight",
+      "direction: to right / to top"
+     ],
+     "shared": {
+      "layer": "scrim",
+      "opacity": "20",
+      "direction": "to right",
+      "blend": "screen",
+      "scope": "words"
+     }
+    },
+    {
+     "ids": [
+      "overlay#1.32",
+      "overlay#1.38"
+     ],
+     "differOn": [],
+     "shared": {
+      "layer": "scrim",
+      "opacity": "20",
+      "direction": "to right",
+      "blend": "color",
+      "scope": "words"
+     }
+    }
+   ]
   },
   {
-   "fam": "shape",
+   "fam": "shadow",
    "axes": 9,
-   "values": 28,
-   "combinationSpace": 7776,
-   "specimens": 28,
+   "values": 29,
+   "combinationSpace": 25920,
+   "specimens": 29,
    "specimenInvalid": [],
-   "specimenPainted": "28/28",
+   "specimenPainted": "29/29",
+   "notPainted": [],
+   "animatedStill": [],
+   "comboAnimatedStill": [],
+   "comboNotPainted": [],
+   "expectedNoops": [],
+   "sameByAxis": {},
+   "combos": 60,
+   "comboInvalid": [],
+   "comboPainted": "60/60",
+   "comboDistinct": "51/60",
+   "alike": [
+    {
+     "ids": [
+      "shadow#1.4",
+      "shadow#1.15",
+      "shadow#1.22",
+      "shadow#1.40",
+      "shadow#1.42",
+      "shadow#1.57",
+      "shadow#1.58"
+     ],
+     "differOn": [
+      "x: -0.5rem / 0.25rem / 1rem",
+      "y: -0.25rem / 0.125rem",
+      "blur: hard / soft / wide",
+      "spread: ring / 0",
+      "colour: glow / tinted",
+      "inset: out / in",
+      "layers: 2 layers / 3 layers"
+     ],
+     "shared": {
+      "kind": "reflection (box-reflect)",
+      "x": "-0.5rem",
+      "y": "-0.25rem",
+      "blur": "hard",
+      "spread": "ring",
+      "colour": "glow",
+      "inset": "out",
+      "layers": "2 layers",
+      "theme": "light"
+     }
+    },
+    {
+     "ids": [
+      "shadow#1.16",
+      "shadow#1.24",
+      "shadow#1.53"
+     ],
+     "differOn": [
+      "y: -0.25rem / 0.125rem",
+      "blur: wide / hard",
+      "spread: 0 / ring",
+      "colour: tinted / glow",
+      "inset: out / in",
+      "layers: 3 layers / 2 layers"
+     ],
+     "shared": {
+      "kind": "reflection (box-reflect)",
+      "x": "0.25rem",
+      "y": "-0.25rem",
+      "blur": "wide",
+      "spread": "0",
+      "colour": "tinted",
+      "inset": "out",
+      "layers": "3 layers",
+      "theme": "dark"
+     }
+    },
+    {
+     "ids": [
+      "shadow#1.20",
+      "shadow#1.51"
+     ],
+     "differOn": [
+      "spread: 0 / ring"
+     ],
+     "shared": {
+      "kind": "outline letters (text-stroke)",
+      "x": "0.25rem",
+      "y": "-0.25rem",
+      "blur": "soft",
+      "spread": "0",
+      "colour": "glow",
+      "inset": "in",
+      "layers": "1 layer",
+      "theme": "light"
+     }
+    }
+   ]
+  },
+  {
+   "fam": "glass",
+   "axes": 10,
+   "values": 49,
+   "combinationSpace": 414720,
+   "specimens": 49,
+   "specimenInvalid": [],
+   "specimenPainted": "49/49",
+   "notPainted": [],
+   "animatedStill": [],
+   "comboAnimatedStill": [],
+   "comboNotPainted": [],
+   "expectedNoops": [],
+   "sameByAxis": {
+    "fallback": [
+     "none = @supports + reduced transparency"
+    ]
+   },
+   "combos": 60,
+   "comboInvalid": [],
+   "comboPainted": "60/60",
+   "comboDistinct": "60/60",
+   "alike": [],
+   "reducedTransparency": {
+    "before": "blur(4px) saturate(1)",
+    "after": "none",
+    "ok": true
+   }
+  },
+  {
+   "fam": "texture",
+   "axes": 11,
+   "values": 37,
+   "combinationSpace": 129600,
+   "specimens": 37,
+   "specimenInvalid": [],
+   "specimenPainted": "37/37",
    "notPainted": [],
    "animatedStill": [],
    "comboAnimatedStill": [],
    "comboNotPainted": [],
    "expectedNoops": [
-    "shape#1.3: a 2rem overlap covers a 18% edge — the shape (and its motion) is hidden",
-    "shape#1.6: a 2rem overlap covers a 8% edge — the shape (and its motion) is hidden",
-    "shape#1.14: a 2rem overlap covers a 8% edge — the shape (and its motion) is hidden",
-    "shape#1.17: a 2rem overlap covers a 8% edge — the shape (and its motion) is hidden",
-    "shape#1.19: a 2rem overlap covers a 8% edge — the shape (and its motion) is hidden",
-    "shape#1.21: a 2rem overlap covers a 18% edge — the shape (and its motion) is hidden",
-    "shape#1.22: a 2rem overlap covers a 8% edge — the shape (and its motion) is hidden",
-    "shape#1.24: a 2rem overlap covers a 8% edge — the shape (and its motion) is hidden",
-    "shape#1.27: a 2rem overlap covers a 8% edge — the shape (and its motion) is hidden",
-    "shape#1.28: a 2rem overlap covers a 8% edge — the shape (and its motion) is hidden",
-    "shape#1.36: a 2rem overlap covers a 8% edge — the shape (and its motion) is hidden",
-    "shape#1.39: a 2rem overlap covers a 8% edge — the shape (and its motion) is hidden",
-    "shape#1.44: a 2rem overlap covers a 8% edge — the shape (and its motion) is hidden",
-    "shape#1.51: a 2rem overlap covers a 8% edge — the shape (and its motion) is hidden",
-    "shape#1.59: a 2rem overlap covers a 18% edge — the shape (and its motion) is hidden"
+    "texture#1.2: light ink × multiply draws nothing",
+    "texture#1.29: light ink × multiply draws nothing",
+    "texture#1.33: light ink × multiply draws nothing"
    ],
    "sameByAxis": {
     "motion": [
@@ -185,8 +599,190 @@
    },
    "combos": 60,
    "comboInvalid": [],
+   "comboPainted": "57/60",
+   "comboDistinct": "55/60",
+   "alike": [
+    {
+     "ids": [
+      "texture#1.2",
+      "texture#1.29",
+      "texture#1.33"
+     ],
+     "differOn": [
+      "source: stripes / dots",
+      "noiseType: turbulence / fractalNoise",
+      "grain: medium / fine",
+      "strength: 45% / 20%",
+      "tile: 1.5rem / 6rem",
+      "motion: static / drifting"
+     ],
+     "shared": {
+      "source": "stripes",
+      "scaling": "pixelated",
+      "noiseType": "turbulence",
+      "grain": "medium",
+      "detail": "three octaves",
+      "strength": "45%",
+      "blend": "multiply",
+      "tile": "1.5rem",
+      "over": "colour",
+      "ink": "light",
+      "motion": "static"
+     }
+    },
+    {
+     "ids": [
+      "texture#1.8",
+      "texture#1.37"
+     ],
+     "differOn": [
+      "scaling: pixelated / smooth",
+      "grain: coarse / fine",
+      "detail: one octave / three octaves",
+      "blend: normal / overlay",
+      "motion: drifting / static"
+     ],
+     "shared": {
+      "source": "paint() worklet",
+      "scaling": "pixelated",
+      "noiseType": "fractalNoise",
+      "grain": "coarse",
+      "detail": "one octave",
+      "strength": "8%",
+      "blend": "normal",
+      "tile": "0.5rem",
+      "over": "colour",
+      "ink": "dark",
+      "motion": "drifting"
+     }
+    },
+    {
+     "ids": [
+      "texture#1.12",
+      "texture#1.54"
+     ],
+     "differOn": [
+      "scaling: smooth / pixelated",
+      "detail: three octaves / one octave",
+      "blend: normal / multiply"
+     ],
+     "shared": {
+      "source": "halftone",
+      "scaling": "smooth",
+      "noiseType": "turbulence",
+      "grain": "fine",
+      "detail": "three octaves",
+      "strength": "20%",
+      "blend": "normal",
+      "tile": "0.5rem",
+      "over": "colour",
+      "ink": "dark",
+      "motion": "static"
+     }
+    },
+    {
+     "ids": [
+      "texture#1.53",
+      "texture#1.58"
+     ],
+     "differOn": [
+      "scaling: pixelated / smooth",
+      "noiseType: fractalNoise / turbulence",
+      "detail: two octaves / three octaves"
+     ],
+     "shared": {
+      "source": "paint() worklet",
+      "scaling": "pixelated",
+      "noiseType": "fractalNoise",
+      "grain": "coarse",
+      "detail": "two octaves",
+      "strength": "20%",
+      "blend": "normal",
+      "tile": "6rem",
+      "over": "colour",
+      "ink": "light",
+      "motion": "drifting"
+     }
+    }
+   ]
+  },
+  {
+   "fam": "shape",
+   "axes": 11,
+   "values": 51,
+   "combinationSpace": 1213056,
+   "specimens": 51,
+   "specimenInvalid": [],
+   "specimenPainted": "51/51",
+   "notPainted": [],
+   "animatedStill": [],
+   "comboAnimatedStill": [],
+   "comboNotPainted": [],
+   "expectedNoops": [
+    "shape#1.2: scoop corners on the next band vanish into a background of the same colour",
+    "shape#1.4: a 2rem overlap covers a 18% edge — the shape (and its motion) is hidden",
+    "shape#1.6: round corners on the next band vanish into a background of the same colour",
+    "shape#1.7: a 2rem overlap covers a 18% edge — the shape (and its motion) is hidden",
+    "shape#1.13: a 2rem overlap covers a 35% edge — the shape (and its motion) is hidden",
+    "shape#1.17: scoop corners on the next band vanish into a background of the same colour",
+    "shape#1.18: a 2rem overlap covers a 8% edge — the shape (and its motion) is hidden",
+    "shape#1.20: a 2rem overlap covers a 18% edge — the shape (and its motion) is hidden",
+    "shape#1.26: a 2rem overlap covers a 18% edge — the shape (and its motion) is hidden",
+    "shape#1.32: a 2rem overlap covers a 35% edge — the shape (and its motion) is hidden",
+    "shape#1.33: notch corners on the next band vanish into a background of the same colour",
+    "shape#1.36: a 2rem overlap covers a 8% edge — the shape (and its motion) is hidden",
+    "shape#1.40: a 2rem overlap covers a 18% edge — the shape (and its motion) is hidden",
+    "shape#1.41: scoop corners on the next band vanish into a background of the same colour",
+    "shape#1.42: a 2rem overlap covers a 18% edge — the shape (and its motion) is hidden",
+    "shape#1.43: a 2rem overlap covers a 35% edge — the shape (and its motion) is hidden",
+    "shape#1.44: scoop corners on the next band vanish into a background of the same colour",
+    "shape#1.45: squircle corners on the next band vanish into a background of the same colour",
+    "shape#1.46: round corners on the next band vanish into a background of the same colour",
+    "shape#1.47: a 2rem overlap covers a 18% edge — the shape (and its motion) is hidden",
+    "shape#1.48: squircle corners on the next band vanish into a background of the same colour",
+    "shape#1.51: a 2rem overlap covers a 35% edge — the shape (and its motion) is hidden",
+    "shape#1.52: bevel corners on the next band vanish into a background of the same colour",
+    "shape#1.53: a 2rem overlap covers a 18% edge — the shape (and its motion) is hidden",
+    "shape#1.56: notch corners on the next band vanish into a background of the same colour",
+    "shape#1.59: a 2rem overlap covers a 18% edge — the shape (and its motion) is hidden"
+   ],
+   "sameByAxis": {
+    "method": [
+     "clip-path = mask = shape() = svg clipPath"
+    ],
+    "motion": [
+     "static = drifting"
+    ]
+   },
+   "combos": 60,
+   "comboInvalid": [],
    "comboPainted": "60/60",
-   "comboDistinct": "45/60"
+   "comboDistinct": "59/60",
+   "alike": [
+    {
+     "ids": [
+      "shape#1.40",
+      "shape#1.59"
+     ],
+     "differOn": [
+      "shape: torn / wave",
+      "method: ellipse() / svg divider"
+     ],
+     "shared": {
+      "shape": "torn",
+      "method": "ellipse()",
+      "edge": "bottom",
+      "depth": "18%",
+      "invert": "yes",
+      "layers": "3",
+      "fill": "gradient",
+      "overlap": "2rem",
+      "motion": "drifting",
+      "corners": "round",
+      "words": "wrap the shape (shape-outside)"
+     }
+    }
+   ]
   }
  ]
 }

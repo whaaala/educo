@@ -1,0 +1,1284 @@
+{
+  "read": 117,
+  "unread": [
+    "https://dribbble.com/shots/7116386-Daily-UI-Challenge-60-Color-Picker",
+    "+21 queued shots not reached: Dribbble showed Human Verification again"
+  ],
+  "shots": [
+    {
+      "file": "0.png",
+      "url": "https://dribbble.com/tags/colorpicker",
+      "title": "Colorpicker designs, themes, templates and downloadable graphic elements on Dribbble",
+      "isPicker": false,
+      "controls": [],
+      "note": "Tag listing grid: thumbnails show swatch grids, tonal ramps, a spectrum square + hue strip, toolbars and a palette landing page."
+    },
+    {
+      "file": "1.png",
+      "url": "https://dribbble.com/shots/17400431-Border-control-for-the-no-code-visual-builder",
+      "title": "Border control for the no-code visual builder by Sergey Morozov on Dribbble",
+      "isPicker": false,
+      "controls": [],
+      "note": "Border control panel (width, style, a colour bar); no picker controls visible."
+    },
+    {
+      "file": "2.png",
+      "url": "https://dribbble.com/shots/27177745-Color-picker-detail-Dropshot",
+      "title": "Color picker detail - Dropshot by Antonin Kus on Dribbble",
+      "isPicker": true,
+      "controls": [
+        "swatches (preset)",
+        "dark UI",
+        "tabs: swatches / precise"
+      ],
+      "note": "Dark popover with a tab switch between a big preset swatch grid (grey row + tint/shade rows) and a precise mode."
+    },
+    {
+      "file": "3.png",
+      "url": "https://dribbble.com/shots/21360901-Color-Picker",
+      "title": "Color Picker 🌈 by Dmitry Sergushkin on Dribbble",
+      "isPicker": true,
+      "controls": [
+        "swatches (preset)",
+        "saved / custom swatches",
+        "tonal ramps per theme hue"
+      ],
+      "note": "Light popover: theme colours as 5 horizontal tint-to-shade ramps, then \"My color\" dots with + Add."
+    },
+    {
+      "file": "4.png",
+      "url": "https://dribbble.com/shots/21360869-Color-Picker-Low-code-platform",
+      "title": "Color Picker | Low code platform by Dmitry Sergushkin on Dribbble",
+      "isPicker": true,
+      "controls": [
+        "swatches (preset)",
+        "saved / custom swatches",
+        "tonal ramps per theme hue"
+      ],
+      "note": "Same theme-ramp picker opened beside a rich-text \"Edit header\" dialog in a low-code builder."
+    },
+    {
+      "file": "5.png",
+      "url": "https://dribbble.com/shots/14373410-NEWTONE-io-Smart-Color-Scheme-Generator",
+      "title": "NEWTONE.io - Smart Color Scheme Generator by Halo Branding for HALO LAB on Dribbble",
+      "isPicker": false,
+      "controls": [],
+      "note": "Brand illustration for a colour-scheme generator; no picker UI visible."
+    },
+    {
+      "file": "6.png",
+      "url": "https://dribbble.com/shots/14519968-Toolbars",
+      "title": "Toolbars by Patrick Marx on Dribbble",
+      "isPicker": false,
+      "controls": [],
+      "note": "Drawing toolbars with tooltips; only a row of colour dots peeks at the bottom."
+    },
+    {
+      "file": "7.png",
+      "url": "https://dribbble.com/shots/17417589-Colorpicker-for-a-background-control",
+      "title": "Colorpicker for a background control by Sergey Morozov on Dribbble",
+      "isPicker": true,
+      "controls": [
+        "spectrum square",
+        "hue strip",
+        "alpha strip",
+        "hex field",
+        "dark UI",
+        "opacity % field",
+        "solid / linear gradient switch",
+        "gradient angle field"
+      ],
+      "note": "Dark builder control: square + horizontal hue and checkered alpha strips, hex + % fields, Solid/Linear tabs with rotate angle."
+    },
+    {
+      "file": "8.png",
+      "url": "https://dribbble.com/shots/12996492-Kolor",
+      "title": "Kolor by Ashutosh Nirwan on Dribbble",
+      "isPicker": false,
+      "controls": [],
+      "note": "Palette app landing page (\"create palettes with the colour wheel or image\"); no controls visible."
+    },
+    {
+      "file": "9.png",
+      "url": "https://dribbble.com/shots/23556408-No-Code-Website-Builder",
+      "title": "No Code Website Builder by Asiq M. for Netro Systems on Dribbble",
+      "isPicker": false,
+      "controls": [],
+      "note": "No-code website builder overview; no picker visible."
+    },
+    {
+      "file": "10.png",
+      "url": "https://dribbble.com/shots/12639939-Adobe-Illustrator-3D",
+      "title": "Adobe Illustrator 3D by Hesam Sanei ✦ on Dribbble",
+      "isPicker": false,
+      "controls": [],
+      "note": "3D Illustrator illustration with a swatch strip and a pipette prop; not a working picker."
+    },
+    {
+      "file": "11.png",
+      "url": "https://dribbble.com/shots/18972655-Color-Picker-Concept-App",
+      "title": "Color Picker – Concept App by Victor Berbel on Dribbble",
+      "isPicker": true,
+      "controls": [
+        "swatches (preset)",
+        "colour name",
+        "mobile layout",
+        "shades row"
+      ],
+      "note": "Phone: pick from tall colour columns, colour name shown in the header (\"Cool grey\"), then a row of shades."
+    },
+    {
+      "file": "12.png",
+      "url": "https://dribbble.com/shots/19156843-Smart-Light-Concept-App",
+      "title": "Smart Light – Concept App by Victor Berbel on Dribbble",
+      "isPicker": true,
+      "controls": [
+        "recent colours",
+        "colour wheel",
+        "dark UI",
+        "mobile layout",
+        "intensity readout"
+      ],
+      "note": "Dark smart-light app: lamp intensity, a sheet of \"latest picked colors\" dots and a colour wheel below."
+    },
+    {
+      "file": "13.png",
+      "url": "https://dribbble.com/shots/11977287-Kinetic-Art-Sand-Table-Controller-App",
+      "title": "Kinetic Art Sand Table Controller App by Erdem on Dribbble",
+      "isPicker": true,
+      "controls": [
+        "spectrum square",
+        "hue strip",
+        "mobile layout",
+        "brightness slider",
+        "light mode cards"
+      ],
+      "note": "Light-controller app: brightness slider and mode cards; a square + vertical hue strip peek at the bottom."
+    },
+    {
+      "file": "14.png",
+      "url": "https://dribbble.com/shots/14732187-smart-home",
+      "title": "smart home by Eleveian on Dribbble",
+      "isPicker": true,
+      "controls": [
+        "colour wheel",
+        "brightness label"
+      ],
+      "note": "Soft neumorphic smart-home card with a full rainbow colour wheel for light colour."
+    },
+    {
+      "file": "15.png",
+      "url": "https://dribbble.com/shots/12721401-Daily-UI-060-Color-picker",
+      "title": "Daily UI #060 - Color picker by Vlad Grama on Dribbble",
+      "isPicker": true,
+      "controls": [
+        "mode switch (hex/rgb/hsl)",
+        "per-channel sliders",
+        "alpha strip",
+        "gradient preview panel",
+        "CMYK / LAB / grayscale modes"
+      ],
+      "note": "Wide card: RGB/HSL/CMYK/LAB/Grayscale pills, R G B A sliders with values, big colour preview at right."
+    },
+    {
+      "file": "16.png",
+      "url": "https://dribbble.com/shots/19156855-Smart-Light-Concept-App",
+      "title": "Smart Light – Concept App by Victor Berbel on Dribbble",
+      "isPicker": true,
+      "controls": [
+        "recent colours",
+        "colour wheel",
+        "eyedropper",
+        "dark UI",
+        "large preview panel"
+      ],
+      "note": "Dark panel with latest picked colour circles over a wheel, and a full-height preview with a pipette icon."
+    },
+    {
+      "file": "17.png",
+      "url": "https://dribbble.com/shots/5522503-UI-Styleguide",
+      "title": "UI Styleguide by Aaron Iker on Dribbble",
+      "isPicker": false,
+      "controls": [
+        "spectrum square",
+        "hue strip"
+      ],
+      "note": "UI style guide sheet (colour dots with hex, buttons, dropdowns); a tiny picker shows at the bottom edge."
+    },
+    {
+      "file": "18.png",
+      "url": "https://dribbble.com/shots/18972618-Color-Picker-Concept",
+      "title": "Color Picker – Concept by Victor Berbel on Dribbble",
+      "isPicker": true,
+      "controls": [
+        "swatches (preset)",
+        "mobile layout",
+        "pager dots"
+      ],
+      "note": "Phone: \"tap the colours above to select\" on full-height colour columns, paged."
+    },
+    {
+      "file": "19.png",
+      "url": "https://dribbble.com/shots/6045735-magentaIntense-on-darkBlue",
+      "title": "magentaIntense on darkBlue by michael henning for Allthings on Dribbble",
+      "isPicker": false,
+      "controls": [],
+      "note": "Abstract artwork (drop, CMYK numbers); not a picker UI."
+    },
+    {
+      "file": "20.png",
+      "url": "https://dribbble.com/shots/25006451-ColrPikr-A-color-picker-application",
+      "title": "ColrPikr: A color picker application by Aakash Raj Dahal on Dribbble",
+      "isPicker": true,
+      "controls": [
+        "palette library cards",
+        "search"
+      ],
+      "note": "Palette browser app: grid of stacked 4-colour palette cards with search."
+    },
+    {
+      "file": "21.png",
+      "url": "https://dribbble.com/shots/14796159-Color-UI-macOS-app",
+      "title": "Color UI — macOS app by Martin Lexow on Dribbble",
+      "isPicker": true,
+      "controls": [
+        "dark UI",
+        "large preview area",
+        "theme/style select"
+      ],
+      "note": "macOS dark window: big preview canvas and a style dropdown; sliders below are hidden by the banner."
+    },
+    {
+      "file": "22.png",
+      "url": "https://dribbble.com/shots/6034850-First-Shot-Colorpicker-concept",
+      "title": "First Shot - Colorpicker concept by Mustafa Balci on Dribbble",
+      "isPicker": true,
+      "controls": [
+        "swatches (preset)"
+      ],
+      "note": "Product colour-variant selector: three dots in a pill beside a sneaker."
+    },
+    {
+      "file": "23.png",
+      "url": "https://dribbble.com/shots/5522904-Daily-UI-060-Color-Picker",
+      "title": "Daily UI - #060 Color Picker by Payam Daliri on Dribbble",
+      "isPicker": true,
+      "controls": [
+        "spectrum square",
+        "hue strip",
+        "dark UI",
+        "mobile layout",
+        "brightness slider"
+      ],
+      "note": "Dark smart-home phone: brightness and a 360-degree hue slider, plus a modal square picker."
+    },
+    {
+      "file": "24.png",
+      "url": "https://dribbble.com/shots/5097347-Minimal-Colorpicker-CSS-JS",
+      "title": "Minimal Colorpicker CSS/JS by Aaron Iker on Dribbble",
+      "isPicker": true,
+      "controls": [
+        "spectrum square",
+        "hue strip",
+        "hex field"
+      ],
+      "note": "Minimal tall square with a thin vertical hue strip on its left edge and the hex printed underneath."
+    },
+    {
+      "file": "25.png",
+      "url": "https://dribbble.com/shots/9172563-Colorizer",
+      "title": "Colorizer by Olga Toporkova on Dribbble",
+      "isPicker": true,
+      "controls": [
+        "mobile layout",
+        "AR camera recolour",
+        "spray button"
+      ],
+      "note": "AR phone app that recolours a real chair through the camera with a \"Spray\" button."
+    },
+    {
+      "file": "26.png",
+      "url": "https://dribbble.com/shots/19936162-Color-Picker-App-UI",
+      "title": "Color Picker App UI by Rohit Krishna on Dribbble",
+      "isPicker": true,
+      "controls": [
+        "swatches (preset)",
+        "mobile layout",
+        "dark UI",
+        "custom option"
+      ],
+      "note": "Watch-face colour row (dots) with a \"Custom\" entry, shown on a phone photo."
+    },
+    {
+      "file": "33.png",
+      "url": "https://dribbble.com/shots/5137037-Exploration-009-Colorpicker",
+      "title": "Exploration 009 - Colorpicker by Oliviu Stoian on Dribbble",
+      "isPicker": true,
+      "controls": [
+        "spectrum square",
+        "hue strip",
+        "alpha strip",
+        "swatches (preset)",
+        "eyedropper",
+        "dark UI",
+        "swatches toggle",
+        "preview chip"
+      ],
+      "note": "Dark: square flanked by vertical alpha (left) and hue (right) strips, a Swatches toggle, pipette, preview, swatch row."
+    },
+    {
+      "file": "34.png",
+      "url": "https://dribbble.com/shots/4814768-minimal-color-picker",
+      "title": "minimal color picker by Christos on Dribbble",
+      "isPicker": true,
+      "controls": [
+        "colour wheel",
+        "dark UI",
+        "ring arc slider"
+      ],
+      "note": "Glowing colour orb with a circular arc slider around it on a dark textured ground."
+    },
+    {
+      "file": "35.png",
+      "url": "https://dribbble.com/shots/10683857-Daily-UI-Day-060-Color-Picker",
+      "title": "Daily UI Day 060: Color Picker by Karla Silvas on Dribbble",
+      "isPicker": true,
+      "controls": [
+        "pick from image",
+        "palette / harmony generator",
+        "copy button",
+        "hex label",
+        "colour count stepper"
+      ],
+      "note": "Photo with pins labelled by hex; choose how many colours; resulting palette strip with copy icons."
+    },
+    {
+      "file": "36.png",
+      "url": "https://dribbble.com/shots/9530394-DAILY-UI-060-Color-Picker",
+      "title": "DAILY UI #060 | Color Picker by Angélique Ouellet on Dribbble",
+      "isPicker": true,
+      "controls": [
+        "palette / harmony generator",
+        "mode switch (hex/rgb/hsl)",
+        "hex field",
+        "saved / custom swatches",
+        "random generate",
+        "add swatch",
+        "palette name"
+      ],
+      "note": "Palette creator: named palette, hex per column with edit pencils, Hex dropdown, Generate random shades, Add new shade."
+    },
+    {
+      "file": "37.png",
+      "url": "https://dribbble.com/shots/5558382--Color-Picker",
+      "title": "🍭 Color Picker by Anna on Dribbble",
+      "isPicker": true,
+      "controls": [
+        "swatches (preset)"
+      ],
+      "note": "Pill with four colour dots; the selected one grows."
+    },
+    {
+      "file": "38.png",
+      "url": "https://dribbble.com/shots/8617622-Liramail-Color-Picker-for-Email-Editor",
+      "title": "Liramail Color Picker for Email Editor by Lira Mail on Dribbble",
+      "isPicker": true,
+      "controls": [
+        "spectrum square",
+        "hue strip"
+      ],
+      "note": "Email-editor illustration with a square + vertical hue strip popover."
+    },
+    {
+      "file": "39.png",
+      "url": "https://dribbble.com/shots/16938928-Daily-UI-060",
+      "title": "Daily UI 060 by Kevin Hall on Dribbble",
+      "isPicker": true,
+      "controls": [
+        "eyedropper",
+        "hex field",
+        "mobile layout",
+        "pick from camera",
+        "saved / custom swatches"
+      ],
+      "note": "Phone camera view with a pipette button, hex readout and \"Add to palette\"."
+    },
+    {
+      "file": "40.png",
+      "url": "https://dribbble.com/shots/6547019-Editor-Icon-Pack",
+      "title": "Editor Icon Pack by Petr Bilek on Dribbble",
+      "isPicker": false,
+      "controls": [],
+      "note": "Editor icon pack (paint bucket, text, table icons)."
+    },
+    {
+      "file": "41.png",
+      "url": "https://dribbble.com/shots/9053627-Daily-UI-060-Color-picker",
+      "title": "Daily UI 060 - Color picker by Hassan El Faijah on Dribbble",
+      "isPicker": true,
+      "controls": [
+        "hex field",
+        "copy button",
+        "hue strip",
+        "per-channel sliders",
+        "mobile layout",
+        "saved / custom swatches"
+      ],
+      "note": "Phones: \"Make your palette\" list of hex rows with copy, \"Tap to copy\" big hex, hue/saturation/lightness sliders."
+    },
+    {
+      "file": "42.png",
+      "url": "https://dribbble.com/shots/8393671-Daily-UI-7-Setting",
+      "title": "Daily UI #7 - Setting by Christina Cook on Dribbble",
+      "isPicker": false,
+      "controls": [],
+      "note": "Budget app settings screen; no picker visible."
+    },
+    {
+      "file": "43.png",
+      "url": "https://dribbble.com/shots/5100260-Color-Gradient",
+      "title": "Color Gradient by Imran Rahman on Dribbble",
+      "isPicker": true,
+      "controls": [
+        "gradient presets",
+        "mobile layout",
+        "dark UI",
+        "hex label",
+        "browse / recent / popular tabs"
+      ],
+      "note": "Phone app of gradient and palette presets (\"Color Gradient of the Day\"), dark and light versions."
+    },
+    {
+      "file": "44.png",
+      "url": "https://dribbble.com/shots/3631152-You-asked-for-it-we-made-it-happen",
+      "title": "You asked for it, we made it happen. by Jurre Houtkamp for Framer on Dribbble",
+      "isPicker": true,
+      "controls": [
+        "spectrum square",
+        "hue strip",
+        "alpha strip",
+        "eyedropper",
+        "mode switch (hex/rgb/hsl)",
+        "rgb fields",
+        "saved / custom swatches",
+        "solid / gradient switch"
+      ],
+      "note": "Framer popover: Solid/Gradient tabs, pipette, square + vertical hue and alpha strips, RGB dropdown + fields, empty swatch slots."
+    },
+    {
+      "file": "45.png",
+      "url": "https://dribbble.com/shots/4701648-Color-Picker-Daily-UI-challenge-060",
+      "title": "Color Picker - Daily UI challenge 060 by Anuj Bhavsar on Dribbble",
+      "isPicker": true,
+      "controls": [
+        "swatches (preset)",
+        "hex label",
+        "shade grid"
+      ],
+      "note": "Palette columns in a dark frame, plus a card with 4 hex-labelled colours and a shade grid of the chosen one."
+    },
+    {
+      "file": "46.png",
+      "url": "https://dribbble.com/shots/5677444-Pure-Javascript-Colorpicker-Plugin",
+      "title": "Pure Javascript Colorpicker Plugin by Elementar Labs on Dribbble",
+      "isPicker": true,
+      "controls": [
+        "spectrum square",
+        "hue strip",
+        "alpha strip",
+        "hex field",
+        "rgb fields"
+      ],
+      "note": "JS plugin shown at several sizes: square, vertical hue + alpha strips, HEX + R G B A fields."
+    },
+    {
+      "file": "47.png",
+      "url": "https://dribbble.com/shots/4887497-Smart-House-Settings",
+      "title": "Smart House Settings by Clément Jacquelin on Dribbble",
+      "isPicker": false,
+      "controls": [],
+      "note": "Smart-home device cards; only a \"Light color\" dot is visible."
+    },
+    {
+      "file": "48.png",
+      "url": "https://dribbble.com/shots/21174104-Real-time-Colors-UI-Color-Picker-Variations",
+      "title": "Real-time Colors: UI Color Picker (Variations) by Juxtopposed on Dribbble",
+      "isPicker": true,
+      "controls": [
+        "live site preview",
+        "palette toolbar",
+        "dark UI"
+      ],
+      "note": "Palette applied live to a mock website, with a colour toolbar along the bottom; variations stacked behind."
+    },
+    {
+      "file": "49.png",
+      "url": "https://dribbble.com/shots/8170807-Color-Picker",
+      "title": "Color Picker by Annie Wang on Dribbble",
+      "isPicker": true,
+      "controls": [
+        "pick from image",
+        "confirm / cancel"
+      ],
+      "note": "Full-bleed photo with + sample points and X / check buttons."
+    },
+    {
+      "file": "57.png",
+      "url": "https://dribbble.com/shots/4131789-Daily-UI-060-Color-Picker",
+      "title": "Daily UI #060 – Color Picker by Alexander M on Dribbble",
+      "isPicker": true,
+      "controls": [
+        "pick from image",
+        "copy button",
+        "hex label",
+        "palette / harmony generator"
+      ],
+      "note": "Photo beside an extracted palette column of hex tiles; one tile shows a \"copied\" state."
+    },
+    {
+      "file": "58.png",
+      "url": "https://dribbble.com/shots/13789789-DailyUI060-Color-Picker",
+      "title": "DailyUI060 - Color Picker by Kiran Francis Sebastian on Dribbble",
+      "isPicker": true,
+      "controls": [
+        "spectrum square",
+        "hue strip",
+        "alpha strip",
+        "preview chip"
+      ],
+      "note": "Card titled \"Solid Color\": big square with vertical hue and checkered alpha strips."
+    },
+    {
+      "file": "59.png",
+      "url": "https://dribbble.com/shots/3990735-Bicolor",
+      "title": "Bicolor by Lucian Marin on Dribbble",
+      "isPicker": false,
+      "controls": [],
+      "note": "Reading app with a two-colour theme; no picker controls visible."
+    },
+    {
+      "file": "60.png",
+      "url": "https://dribbble.com/shots/5918050-Color-Picker",
+      "title": "Color Picker by Cici Yang on Dribbble",
+      "isPicker": true,
+      "controls": [
+        "swatches (preset)",
+        "tool tabs"
+      ],
+      "note": "\"Pick a color:\" grid of 9 hues x 3 shades above tool tabs (Pencil)."
+    },
+    {
+      "file": "61.png",
+      "url": "https://dribbble.com/shots/5571422-Daily-UI-060",
+      "title": "Daily UI #060 by Rodrigo Ramos on Dribbble",
+      "isPicker": true,
+      "controls": [
+        "colour wheel",
+        "lightness slider"
+      ],
+      "note": "Donut hue/saturation wheel with a ring handle, slider peeking below."
+    },
+    {
+      "file": "62.png",
+      "url": "https://dribbble.com/shots/3374982-God-of-Colors-Freebie",
+      "title": "God of Colors - Freebie by Gercek Armagan on Dribbble",
+      "isPicker": false,
+      "controls": [],
+      "note": "Colour resource sheet (flat UI colours, combinations, gradients); not a picker."
+    },
+    {
+      "file": "63.png",
+      "url": "https://dribbble.com/shots/7083691-Wardrobe-App",
+      "title": "Wardrobe App by Gerald Canario on Dribbble",
+      "isPicker": false,
+      "controls": [],
+      "note": "Wardrobe app illustration; no picker visible."
+    },
+    {
+      "file": "64.png",
+      "url": "https://dribbble.com/shots/14465923-Paste-by-WeTransfer-Multi-edit-in-mobile-first-slide-app",
+      "title": "Paste by WeTransfer - Multi-edit in mobile first slide app by Michel van Heest on Dribbble",
+      "isPicker": false,
+      "controls": [],
+      "note": "Slide app multi-select grid; only a dot row peeks at the bottom."
+    },
+    {
+      "file": "65.png",
+      "url": "https://dribbble.com/shots/4563964-Color-Picker",
+      "title": "Color Picker by Cristian Llanez on Dribbble",
+      "isPicker": true,
+      "controls": [
+        "colour name",
+        "hex field",
+        "hue strip",
+        "R/G/B channel labels"
+      ],
+      "note": "Pantone-style card: colour name \"Daily Blue\", hex, hue strip, R G B labels below."
+    },
+    {
+      "file": "66.png",
+      "url": "https://dribbble.com/shots/14709917-ColorSlurp-Collection-Editor",
+      "title": "ColorSlurp Collection Editor by Jordan Ellis on Dribbble",
+      "isPicker": true,
+      "controls": [
+        "saved / custom swatches",
+        "eyedropper",
+        "tool tabs",
+        "collections"
+      ],
+      "note": "ColorSlurp: tabs for pipette / sliders / contrast / collections; named palette strips with move + edit."
+    },
+    {
+      "file": "67.png",
+      "url": "https://dribbble.com/shots/4892400-Colour-Picker",
+      "title": "Colour Picker by Mystery Wheel Design on Dribbble",
+      "isPicker": false,
+      "controls": [],
+      "note": "Petal-wheel logo/illustration; no picker controls."
+    },
+    {
+      "file": "68.png",
+      "url": "https://dribbble.com/shots/14709914-ColorSlurp-Contrast-Checker",
+      "title": "ColorSlurp Contrast Checker by Jordan Ellis on Dribbble",
+      "isPicker": true,
+      "controls": [
+        "contrast / WCAG hint",
+        "eyedropper",
+        "hex field",
+        "mode switch (hex/rgb/hsl)",
+        "copy button",
+        "per-channel sliders",
+        "fg / bg swap"
+      ],
+      "note": "Contrast checker: 5.85 AA \"Text 14pt+\", two colour wells each with a pipette, swap, hex, HSB dropdown, copy, sliders."
+    },
+    {
+      "file": "69.png",
+      "url": "https://dribbble.com/shots/4243419-Color-Picker",
+      "title": "Color Picker by Zsófia Czémán on Dribbble",
+      "isPicker": true,
+      "controls": [
+        "spectrum square",
+        "hue strip",
+        "hex field"
+      ],
+      "note": "Titled popover (\"Confusion chart color\"): square, vertical hue strip, hex field with preview."
+    },
+    {
+      "file": "70.png",
+      "url": "https://dribbble.com/shots/13407234-Color-Picker",
+      "title": "Color Picker by Lena Emara on Dribbble",
+      "isPicker": true,
+      "controls": [
+        "pick from image",
+        "palette / harmony generator"
+      ],
+      "note": "Photo with pin markers and the extracted swatches lined up below."
+    },
+    {
+      "file": "71.png",
+      "url": "https://dribbble.com/shots/14926425-Daily-Ui-Challenge-060-Color-picker",
+      "title": "Daily Ui Challenge #060 : Color picker. by Kaholiisii on Dribbble",
+      "isPicker": true,
+      "controls": [
+        "swatches (preset)",
+        "mobile layout",
+        "stacked shade cards"
+      ],
+      "note": "Phone with a stack of shade cards and a circular gesture arc."
+    },
+    {
+      "file": "72.png",
+      "url": "https://dribbble.com/shots/6467696-Colorpicker",
+      "title": "Colorpicker by Anastasia Kameneva on Dribbble",
+      "isPicker": true,
+      "controls": [
+        "pick from image",
+        "mode switch (hex/rgb/hsl)",
+        "saved / custom swatches",
+        "palette / harmony generator",
+        "dark UI",
+        "image upload"
+      ],
+      "note": "Image sampler: toolbar Palette (Colorful), Color mode RGB, Selection Auto, My favorites, + points, camera upload."
+    },
+    {
+      "file": "73.png",
+      "url": "https://dribbble.com/shots/21164161-Real-time-Colors-UI-Color-Picker",
+      "title": "Real-time Colors: UI Color Picker by Juxtopposed on Dribbble",
+      "isPicker": true,
+      "controls": [
+        "live site preview",
+        "dark UI"
+      ],
+      "note": "Palette shown live on a dark mock website (\"Visualize your colors on a real website\")."
+    },
+    {
+      "file": "79.png",
+      "url": "https://dribbble.com/shots/2871590-Colorpicker",
+      "title": "Colorpicker by Kadir on Dribbble",
+      "isPicker": true,
+      "controls": [
+        "spectrum square",
+        "hue strip"
+      ],
+      "note": "Tall square with a thin vertical hue strip on its left edge."
+    },
+    {
+      "file": "80.png",
+      "url": "https://dribbble.com/shots/6381993-Color-Picker-060",
+      "title": "Color Picker 060 by Bill Weiler on Dribbble",
+      "isPicker": true,
+      "controls": [
+        "pick from image",
+        "eyedropper",
+        "saved / custom swatches"
+      ],
+      "note": "Photo with a crosshair sampler and a save-to-folder button."
+    },
+    {
+      "file": "81.png",
+      "url": "https://dribbble.com/shots/6850006-Colorpicker-UI-Design",
+      "title": "Colorpicker-UI Design by ram on Dribbble",
+      "isPicker": true,
+      "controls": [
+        "spectrum square",
+        "hue strip",
+        "alpha strip",
+        "hex field",
+        "mode switch (hex/rgb/hsl)",
+        "rgb fields",
+        "swatches (preset)",
+        "old / new compare",
+        "confirm / cancel",
+        "tabs: global / design / fresh"
+      ],
+      "note": "Four picker types: side or bottom tabs (Picker/Global/Design/Fresh), HEX/RGBA dropdown, earlier vs new colour, OK/cancel."
+    },
+    {
+      "file": "82.png",
+      "url": "https://dribbble.com/shots/11183925-DailyUI-60-HIOM",
+      "title": "DailyUI#60 HIOMÉ by Maëva Zeline on Dribbble",
+      "isPicker": false,
+      "controls": [],
+      "note": "Fashion e-commerce page; no picker visible."
+    },
+    {
+      "file": "83.png",
+      "url": "https://dribbble.com/shots/2854798-Colorpicker",
+      "title": "Colorpicker by Sam Potts on Dribbble",
+      "isPicker": true,
+      "controls": [
+        "spectrum square",
+        "hue strip",
+        "hex field",
+        "named token label"
+      ],
+      "note": "Token chip \"Button #44cd89\" opens a square + vertical hue strip with a hex field."
+    },
+    {
+      "file": "84.png",
+      "url": "https://dribbble.com/shots/3143833-Hsl-Color-Picker",
+      "title": "Hsl Color Picker by Ashung Hung on Dribbble",
+      "isPicker": true,
+      "controls": [
+        "per-channel sliders",
+        "hex field",
+        "hsl/hsb fields",
+        "preview chip"
+      ],
+      "note": "Sketch plugin: preview square, H / S / L sliders with live gradient tracks, hex + numeric fields."
+    },
+    {
+      "file": "85.png",
+      "url": "https://dribbble.com/shots/11679455-Daily-UI-Challenge-076-100-Color-Picker-Freebie",
+      "title": "Daily UI Challenge 076/100 - Color Picker - Freebie by Ankur Tripathi on Dribbble",
+      "isPicker": true,
+      "controls": [
+        "spectrum square",
+        "hue strip",
+        "alpha strip",
+        "mode switch (hex/rgb/hsl)",
+        "colour name"
+      ],
+      "note": "Card with Hex dropdown, square, horizontal hue and alpha strips, colour name (\"Glowing Blue\"); alt version with left hue strip."
+    },
+    {
+      "file": "86.png",
+      "url": "https://dribbble.com/shots/15699392-Color-Picker-App-Design",
+      "title": "Color Picker App Design by Oksana Yazieva on Dribbble",
+      "isPicker": true,
+      "controls": [
+        "pick from image",
+        "hex field",
+        "rgb fields",
+        "per-channel sliders",
+        "hue strip",
+        "mobile layout",
+        "pantone match"
+      ],
+      "note": "Phones: sample points on a photo, then Edit with Hex / RGB / Pantone, Hue and Luminance sliders."
+    },
+    {
+      "file": "87.png",
+      "url": "https://dribbble.com/shots/5024719-Dailyui-60-Colorpicker",
+      "title": "Dailyui 60 Colorpicker by Drágus Ádám on Dribbble",
+      "isPicker": true,
+      "controls": [
+        "eyedropper",
+        "hex field",
+        "palette / harmony generator",
+        "pick from image",
+        "magnifier loupe"
+      ],
+      "note": "Photo sampler with a pipette, loupe and hex, plus suggested palette dots with a refresh button."
+    },
+    {
+      "file": "88.png",
+      "url": "https://dribbble.com/shots/3821877-Vahva-Color-Picker",
+      "title": "Vahva Color Picker by Veli-Johan Veromann on Dribbble",
+      "isPicker": true,
+      "controls": [
+        "spectrum square",
+        "slider",
+        "banded colour field"
+      ],
+      "note": "Unusual banded full-spectrum field with a ring handle and a slider below."
+    },
+    {
+      "file": "89.png",
+      "url": "https://dribbble.com/shots/10769162-Inline-editing",
+      "title": "Inline editing by Maxim Mart on Dribbble",
+      "isPicker": true,
+      "controls": [
+        "swatches (preset)",
+        "opacity % field",
+        "inline floating toolbar"
+      ],
+      "note": "Floating text toolbar above a heading: colour dots, 100% opacity, close."
+    },
+    {
+      "file": "90.png",
+      "url": "https://dribbble.com/shots/15005088-6K-Followers-on-Twitter",
+      "title": "6K Followers on Twitter by Laura Ungrad on Dribbble",
+      "isPicker": false,
+      "controls": [],
+      "note": "Social milestone illustration; not a picker."
+    },
+    {
+      "file": "91.png",
+      "url": "https://dribbble.com/shots/6987568-Joker-UI-Kit-001",
+      "title": "Joker UI Kit 001 by Berkay Sargın on Dribbble",
+      "isPicker": true,
+      "controls": [
+        "spectrum square",
+        "hue strip",
+        "alpha strip",
+        "rgb fields",
+        "preview chip"
+      ],
+      "note": "UI-kit card: \"Pick a Color\" rgba text + chip, hue strip on top, square, alpha slider below."
+    },
+    {
+      "file": "92.png",
+      "url": "https://dribbble.com/shots/2487998-Color-Picker-Day-60-dailyui",
+      "title": "Color Picker - Day 60 #dailyui by Sergiu Radu on Dribbble",
+      "isPicker": true,
+      "controls": [
+        "spectrum square",
+        "rgb fields",
+        "swatches (preset)"
+      ],
+      "note": "Card with square showing RGBA readout inside, and a row of colour dots."
+    },
+    {
+      "file": "93.png",
+      "url": "https://dribbble.com/shots/7056434-Daily-UI-060-Color-Picker",
+      "title": "Daily UI #060 / Color Picker by Seiko Igi on Dribbble",
+      "isPicker": true,
+      "controls": [
+        "pick from image",
+        "magnifier loupe",
+        "mode switch (hex/rgb/hsl)",
+        "palette / harmony generator",
+        "hex label",
+        "spectrum square",
+        "eyedropper",
+        "hue strip",
+        "alpha strip",
+        "rgb fields"
+      ],
+      "note": "\"Color Palette Generator\": loupe on a photo, HEX/RGB/CMYK tabs, palette of the image, square + pipette + hue/alpha + RGBA fields."
+    },
+    {
+      "file": "94.png",
+      "url": "https://dribbble.com/shots/3997993-Multicolor",
+      "title": "Multicolor by Lucian Marin on Dribbble",
+      "isPicker": true,
+      "controls": [
+        "saved / custom swatches",
+        "hex label",
+        "add swatch",
+        "view toggles"
+      ],
+      "note": "macOS palette app: full-height colour columns with hex labels, + and layout toggles."
+    },
+    {
+      "file": "95.png",
+      "url": "https://dribbble.com/shots/2444526-Eye-Dropper",
+      "title": "Eye Dropper by Pyaasabandar on Dribbble",
+      "isPicker": false,
+      "controls": [],
+      "note": "Eyedropper icon illustration."
+    },
+    {
+      "file": "96.png",
+      "url": "https://dribbble.com/shots/9171271-Colour-Picker-DailyUI-060",
+      "title": "Colour Picker_DailyUI 060 by Shirley Lu on Dribbble",
+      "isPicker": true,
+      "controls": [
+        "pick from camera",
+        "mobile layout",
+        "magnifier loupe",
+        "hex label"
+      ],
+      "note": "Tilted phones sampling a photo with a loupe ring; hex chips at the bottom."
+    },
+    {
+      "file": "97.png",
+      "url": "https://dribbble.com/shots/2013584-Material-Colorpicker",
+      "title": "Material Colorpicker by Sebastian Stapelfeldt on Dribbble",
+      "isPicker": true,
+      "controls": [
+        "colour wheel",
+        "mobile layout",
+        "preview chip",
+        "press to confirm"
+      ],
+      "note": "Material phone: hue ring with handle, centre preview \"press to confirm\"."
+    },
+    {
+      "file": "98.png",
+      "url": "https://dribbble.com/shots/1916901-Colorpicker-for-Codrops-Playground",
+      "title": "Colorpicker for Codrops Playground by Manoela Ilic on Dribbble",
+      "isPicker": true,
+      "controls": [
+        "spectrum square",
+        "hue strip",
+        "swatches (preset)",
+        "confirm / cancel"
+      ],
+      "note": "Big square + vertical hue strip, swatch chips and Cancel / Select buttons."
+    },
+    {
+      "file": "99.png",
+      "url": "https://dribbble.com/shots/1933011-Color-Picker-with-Framer-js",
+      "title": "Color Picker with Framer.js by Min-Sang Choi on Dribbble",
+      "isPicker": true,
+      "controls": [
+        "mobile layout",
+        "rgb fields",
+        "large preview"
+      ],
+      "note": "Phone: full-width colour preview with rgba() readout and a slider handle below."
+    },
+    {
+      "file": "site-dribbble-tag-retry/82.png",
+      "url": "https://dribbble.com/shots/15725979-Lightpack-app",
+      "title": "Lightpack app by iwaslife on Dribbble",
+      "isPicker": false,
+      "controls": [],
+      "note": "Dark smart-light phone (Turn off, Media, Moodlight); no colour controls visible."
+    },
+    {
+      "file": "site-dribbble-tag-retry/83.png",
+      "url": "https://dribbble.com/shots/14796145-Color-UI-macOS-app",
+      "title": "Color UI — macOS app by Martin Lexow on Dribbble",
+      "isPicker": true,
+      "controls": [
+        "per-channel sliders",
+        "hex field",
+        "copy button",
+        "preview chip",
+        "theme/style select",
+        "contrast toggle"
+      ],
+      "note": "macOS Color UI: preview of three swatch circles, Hue slider with value field, Hex slider + field with copy, style dropdown (\"Arcade\")."
+    },
+    {
+      "file": "site-dribbble-tag-retry/84.png",
+      "url": "https://dribbble.com/shots/10873662-UX-concept-Online-Card-Designer",
+      "title": "UX concept Online Card Designer by Bernhard Ruoff on Dribbble",
+      "isPicker": false,
+      "controls": [],
+      "note": "Online card designer with a text toolbar popover; only a tiny colour dot visible."
+    },
+    {
+      "file": "site-dribbble-tag-retry/85.png",
+      "url": "https://dribbble.com/shots/4773634-UI-product",
+      "title": "UI product by George Mironidis on Dribbble",
+      "isPicker": false,
+      "controls": [],
+      "note": "Headphone product page; no picker visible."
+    },
+    {
+      "file": "site-dribbble-tag-retry/86.png",
+      "url": "https://dribbble.com/shots/6344533-StyleGuide-NewVersion",
+      "title": "StyleGuide - NewVersion by JasonFe on Dribbble",
+      "isPicker": false,
+      "controls": [],
+      "note": "UI style guide: colour cards with tint steps and RGB / hex labels; documentation, not a picker."
+    },
+    {
+      "file": "site-dribbble-tag-retry/87.png",
+      "url": "https://dribbble.com/shots/5409341-Daily-UI-60-Color-Picker",
+      "title": "Daily UI #60 Color Picker by Namika Hamasaki on Dribbble",
+      "isPicker": true,
+      "controls": [
+        "spectrum square",
+        "hue strip",
+        "eyedropper",
+        "dark UI",
+        "tonal ramps per theme hue"
+      ],
+      "note": "Dark card: pipette button, big square, a vertical strip of tint steps of the chosen hue, horizontal hue strip at the bottom."
+    },
+    {
+      "file": "site-dribbble-tag-retry/88.png",
+      "url": "https://dribbble.com/shots/12774079-dailyui60",
+      "title": "dailyui60 by Özal Namazlı on Dribbble",
+      "isPicker": true,
+      "controls": [
+        "spectrum square",
+        "pick from image",
+        "dark UI"
+      ],
+      "note": "Dark: a gradient square with a handle beside a photo of a chameleon whose colours it samples."
+    },
+    {
+      "file": "site-dribbble-tag-retry/89.png",
+      "url": "https://dribbble.com/shots/6999345-Joker-UI-Kit-001-2",
+      "title": "Joker UI Kit 001 #2 by Berkay Sargın on Dribbble",
+      "isPicker": true,
+      "controls": [
+        "spectrum square",
+        "hue strip",
+        "alpha strip",
+        "rgb fields",
+        "preview chip"
+      ],
+      "note": "UI-kit card: \"Pick a Color\" rgba(254,24,0,1.0) + chip, hue strip on top, square, alpha slider below (variant of Joker kit)."
+    },
+    {
+      "file": "site-dribbble-tag-retry/90.png",
+      "url": "https://dribbble.com/shots/5150520-Daily-UI-060",
+      "title": "Daily UI #060 by Evi Brigovacz on Dribbble",
+      "isPicker": true,
+      "controls": [
+        "spectrum square",
+        "hue strip",
+        "hex field",
+        "preview chip",
+        "swatches (preset)"
+      ],
+      "note": "Rounded card: full-spectrum band with a round handle, big preview chip, large hex field, swatch row below."
+    },
+    {
+      "file": "site-dribbble-tag-retry/91.png",
+      "url": "https://dribbble.com/shots/6294619-UI-Challenge-060-Color-Picker",
+      "title": "UI Challenge 060 Color Picker by Ronald García on Dribbble",
+      "isPicker": true,
+      "controls": [
+        "pick from image",
+        "mobile layout",
+        "hex label",
+        "palette / harmony generator"
+      ],
+      "note": "Phone: + sample points on a photo, extracted colour blocks below with a hex label; Back / Edit."
+    },
+    {
+      "file": "site-dribbble-tag-retry/92.png",
+      "url": "https://dribbble.com/shots/9525346-DailyUI-060-Color-Picker",
+      "title": "DailyUI 060 - Color Picker by Joyin Lee on Dribbble",
+      "isPicker": true,
+      "controls": [
+        "pick from image",
+        "eyedropper",
+        "hex field",
+        "colour wheel",
+        "alpha strip",
+        "preview chip"
+      ],
+      "note": "Painting with a pipette cursor, Hex #AE7F50 + chip, donut hue wheel and a vertical alpha/lightness strip; swatches below."
+    },
+    {
+      "file": "site-dribbble-tag-retry/93.png",
+      "url": "https://dribbble.com/shots/5935627-Customized-Color-for-Tesla",
+      "title": "Customized Color for Tesla by Alina Rapp on Dribbble",
+      "isPicker": true,
+      "controls": [
+        "swatches (preset)",
+        "mobile layout",
+        "spectrum square",
+        "confirm / cancel",
+        "product preview"
+      ],
+      "note": "Tesla phones: \"Select your color\" dots beside the car, a picker panel with a gradient field and Cancel."
+    },
+    {
+      "file": "site-dribbble-tag-retry/94.png",
+      "url": "https://dribbble.com/shots/3838716-Color-Picker-Daily-UI-060",
+      "title": "Color Picker- Daily UI:: #060 by Arun Malavan on Dribbble",
+      "isPicker": true,
+      "controls": [
+        "hue strip",
+        "dark UI"
+      ],
+      "note": "Rainbow hue bar with a multicolour swatch button on a dark strip, labelled \"Color picker\"."
+    },
+    {
+      "file": "site-dribbble-tag-retry/95.png",
+      "url": "https://dribbble.com/shots/6325396-Color-Picker",
+      "title": "Color Picker by Xindeling on Dribbble",
+      "isPicker": true,
+      "controls": [
+        "pick from image",
+        "mobile layout",
+        "copy button",
+        "hex label",
+        "palette / harmony generator"
+      ],
+      "note": "Phones over a painting: extracted palette column on the right, one tile showing \"#D0B8B7 copied\"."
+    },
+    {
+      "file": "site-dribbble-tag-retry/96.png",
+      "url": "https://dribbble.com/shots/3262481-Daily-UI-060-Color-Picker",
+      "title": "Daily UI 060 | Color Picker by Yuji Fujimatsu on Dribbble",
+      "isPicker": true,
+      "controls": [
+        "magnifier loupe",
+        "pick from image"
+      ],
+      "note": "Large pixel-grid loupe with a crosshair sampling a landscape photo."
+    },
+    {
+      "file": "site-dribbble-tag-retry/97.png",
+      "url": "https://dribbble.com/shots/14242564-Color-Picker-DailyUI-060",
+      "title": "Color Picker: DailyUI_060 by Angela Illiano on Dribbble",
+      "isPicker": true,
+      "controls": [
+        "pick from image",
+        "hex field",
+        "rgb fields",
+        "palette / harmony generator",
+        "colour name"
+      ],
+      "note": "Modal \"Color Picker\": photo with sample circles, then rows of HEX + RGB values named Color 1/2/3 with edit pencils."
+    },
+    {
+      "file": "site-dribbble-tag-retry/98.png",
+      "url": "https://dribbble.com/shots/3233851-Color-picker",
+      "title": "Color picker by srinivas.design on Dribbble",
+      "isPicker": true,
+      "controls": [
+        "swatches (preset)",
+        "mode switch (hex/rgb/hsl)",
+        "colour name",
+        "palette select",
+        "live site preview"
+      ],
+      "note": "Material palette grid of named colour tiles, Palette and Hex dropdowns, live Material Design app preview at right."
+    }
+  ],
+  "counts": {
+    "spectrum square": 24,
+    "hue strip": 24,
+    "swatches (preset)": 19,
+    "hex field": 18,
+    "mobile layout": 18,
+    "dark UI": 16,
+    "pick from image": 15,
+    "alpha strip": 12,
+    "eyedropper": 11,
+    "saved / custom swatches": 10,
+    "palette / harmony generator": 10,
+    "rgb fields": 10,
+    "mode switch (hex/rgb/hsl)": 9,
+    "preview chip": 9,
+    "hex label": 9,
+    "colour wheel": 7,
+    "per-channel sliders": 6,
+    "copy button": 6,
+    "colour name": 5,
+    "confirm / cancel": 4,
+    "magnifier loupe": 4,
+    "tonal ramps per theme hue": 3,
+    "live site preview": 3,
+    "opacity % field": 2,
+    "recent colours": 2,
+    "brightness slider": 2,
+    "theme/style select": 2,
+    "add swatch": 2,
+    "pick from camera": 2,
+    "tool tabs": 2,
+    "tabs: swatches / precise": 1,
+    "solid / linear gradient switch": 1,
+    "gradient angle field": 1,
+    "shades row": 1,
+    "intensity readout": 1,
+    "light mode cards": 1,
+    "brightness label": 1,
+    "gradient preview panel": 1,
+    "CMYK / LAB / grayscale modes": 1,
+    "large preview panel": 1,
+    "pager dots": 1,
+    "palette library cards": 1,
+    "search": 1,
+    "large preview area": 1,
+    "AR camera recolour": 1,
+    "spray button": 1,
+    "custom option": 1,
+    "swatches toggle": 1,
+    "ring arc slider": 1,
+    "colour count stepper": 1,
+    "random generate": 1,
+    "palette name": 1,
+    "gradient presets": 1,
+    "browse / recent / popular tabs": 1,
+    "solid / gradient switch": 1,
+    "shade grid": 1,
+    "palette toolbar": 1,
+    "lightness slider": 1,
+    "R/G/B channel labels": 1,
+    "collections": 1,
+    "contrast / WCAG hint": 1,
+    "fg / bg swap": 1,
+    "stacked shade cards": 1,
+    "image upload": 1,
+    "old / new compare": 1,
+    "tabs: global / design / fresh": 1,
+    "named token label": 1,
+    "hsl/hsb fields": 1,
+    "pantone match": 1,
+    "slider": 1,
+    "banded colour field": 1,
+    "inline floating toolbar": 1,
+    "view toggles": 1,
+    "press to confirm": 1,
+    "large preview": 1,
+    "contrast toggle": 1,
+    "product preview": 1,
+    "palette select": 1
+  },
+  "patterns": [
+    "The workhorse layout is a 2D saturation/brightness square with a hue strip (vertical beside it, or horizontal under it), then a hex field; a checkerboard alpha strip is added in about half of those.",
+    "Preset swatches are the second family: grids (hues across, shades down), tint-to-shade ramps per theme colour, or a short row of dots; several pair them with a 'My colours / + Add' row of saved swatches.",
+    "Picking from a photo (pins, crosshair or loupe on an image) that extracts a palette with hex labels and copy buttons is now the third most common family, especially in the Daily UI #060 shots and on phones; a 'copied' state on the tile recurs (57, retry 95).",
+    "Mode switching (HEX / RGB / HSL, sometimes CMYK / LAB / HSB) is usually a small dropdown next to the value fields, not a full tab bar.",
+    "Builder-grade pickers (Framer 44, Sergey Morozov 7, ram 81) add Solid / Gradient (Linear) tabs, an eyedropper, opacity %, old-vs-new compare and OK / cancel; these are the closest models for our builder.",
+    "Colour wheels and hue rings appear mainly in smart-light and phone apps where a thumb drags a large target; desktop editors prefer the square.",
+    "Worth copying: theme-colour ramps with a 'My color + Add' row (3, 4); a contrast checker inside the picker with ratio, AA badge and fg/bg swap (68); live preview of the palette on a real page (48, 73); a named token chip ('Button #44cd89') that opens the picker (83).",
+    "Rare in this set: no OKLCH / LAB value inputs (LAB appears only as a mode pill in 15), no visible gradient-stops editor, and a WCAG hint in only one shot. These gaps are where we can do better.",
+    "Coverage: 117 images opened (100 in the first folder + 17 re-crawled). The 18 captcha pages were dropped; of the 99 real pages, 75 are pickers and 24 are not (listing page, illustrations, unrelated UI)."
+  ]
+}

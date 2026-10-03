@@ -33,6 +33,12 @@ const settle = (pg) => pg.waitForTimeout(450); // the slowest transition is 320m
     if (t.pick['card.drives']) { checks++; await pg.mouse.move(5, 5); await settle(pg); /* R2-21: REST means the mouse is away — on the button it already hovers the card */ const bRest = await btn.evaluate((e) => getComputedStyle(e).filter); await pg.mouse.move(cb.x + 6, cb.y + 6); await settle(pg); const bCard = await btn.evaluate((e) => getComputedStyle(e).filter); if (bRest === bCard) fails.push(`${t.id} DOWN: hovering the card did not reach its button (filter ${bCard})`); }
     // the card's own hover
     if (t.pick['card.hover']) { checks++; if (await diffRatio(rest, cardOnly) < VISIBLE / 3) fails.push(`${t.id} card "${t.labels['card.hover']}" hover showed nothing`); }
+    // POINTER — a spotlight / shadow that follows: the picture changes as the pointer moves ACROSS the card (step 4)
+    if (t.pick['card.pointer']) { checks++; await pg.mouse.move(cb.x + cb.width - 6, cb.y + cb.height - 6, { steps: 4 }); await settle(pg); const across = await shot(); if (await diffRatio(cardOnly, across) < VISIBLE / 3) fails.push(`${t.id} POINTER: the "${t.labels['card.pointer']}" did not follow the pointer`); }
+    // SCROLL — a scroll-linked overlay / edge changes as a real wheel scrolls the section (step 5); the pointer rests away from the card
+    const sb = await stage.boundingBox(); const corner = [sb.x + 4, sb.y + 4];
+    const scrolled = async () => { await pg.evaluate((id) => { document.querySelector(`[data-tree="${id}"]`).scrollTop = 0; }, t.id); await pg.mouse.move(...corner); await settle(pg); const a = await shot(); await pg.mouse.wheel(0, 260); await settle(pg); return diffRatio(a, await shot()); };
+    if (t.pick['section.scroll']) { checks++; if (await scrolled() < VISIBLE / 3) fails.push(`${t.id} SCROLL: the "${t.labels['section.scroll']}" did not follow the scroll`); }
     // PRESS
     if (t.pick['button.press']) { checks++; await pg.mouse.move(bb.x + bb.width / 2, bb.y + bb.height / 2); await settle(pg); const before = await btn.evaluate((e) => getComputedStyle(e).transform); await pg.mouse.down(); await settle(pg); const during = await btn.evaluate((e) => getComputedStyle(e).transform); await pg.mouse.up(); if (before === during) fails.push(`${t.id} PRESS: pressing changed nothing (${during})`); }
     // FOCUS — by keyboard, as a keyboard user reaches it
@@ -43,7 +49,22 @@ const settle = (pg) => pg.waitForTimeout(450); // the slowest transition is 320m
     checks++; await pg.emulateMedia({ reducedMotion: 'reduce' });
     const durs = await pg.$$eval(`[data-tree="${t.id}"] [data-level]`, (els) => els.map((e) => Math.max(...getComputedStyle(e).transitionDuration.split(',').map(parseFloat))));
     if (durs.some((d) => d > 0.01)) fails.push(`${t.id} REDUCED MOTION: transitions still ${durs.join(', ')}s`);
+    // …and nothing moves with the scroll for a reader who asked for less motion (WCAG 2.3.3)
+    if (t.pick['section.scroll']) { checks++; if (await scrolled() >= VISIBLE / 3) fails.push(`${t.id} REDUCED MOTION: the scroll-linked "${t.labels['section.scroll']}" still runs`); }
   }
+  // AN OVERLAY ON A MODAL (::backdrop — 9 pens; ConvertFlow's popups): opened by a real click, the page behind dimmed AND
+  // blurred, focus moved inside, Escape closes it and focus RETURNS to the button that opened it (WCAG 2.1.2 / 2.4.3)
+  await pg.emulateMedia({ reducedMotion: 'no-preference' });
+  await pg.setContent(`<!doctype html><html lang="en"><style>body { margin: 0; height: 100vh; display: grid; place-items: center; background: linear-gradient(135deg, oklch(62% .19 260), oklch(72% .17 40)); font: 16px system-ui; } button { font: inherit; padding: .5rem 1rem; } dialog { border: 0; border-radius: .75rem; padding: 1.5rem; } dialog::backdrop { background: oklch(15% .05 260 / .55); backdrop-filter: blur(6px); }</style><h1 style="color:#fff">Open day</h1><button id="book">Book a visit</button><dialog id="d" aria-labelledby="dt"><h2 id="dt">Book a visit</h2><button id="shut">Close</button></dialog><script>book.onclick = () => d.showModal(); shut.onclick = () => d.close();</script></html>`, { waitUntil: 'load' });
+  const page0 = (await pg.screenshot()).toString('base64'); const ob = await (await pg.$('#book')).boundingBox();
+  await pg.mouse.click(ob.x + ob.width / 2, ob.y + ob.height / 2); await settle(pg);
+  const modal = await pg.evaluate(() => ({ open: d.open, inside: d.contains(document.activeElement), backdrop: getComputedStyle(d, '::backdrop').backdropFilter }));
+  checks += 3; if (!modal.open) fails.push('MODAL: a click did not open it');
+  if (!modal.inside) fails.push('MODAL: focus did not move inside');
+  if (modal.backdrop !== 'blur(6px)' || await diffRatio(page0, (await pg.screenshot()).toString('base64')) < VISIBLE) fails.push(`MODAL: the backdrop did not dim + blur the page (${modal.backdrop})`);
+  await pg.keyboard.press('Escape'); await settle(pg);
+  checks++; const after = await pg.evaluate(() => ({ open: d.open, back: document.activeElement && document.activeElement.id }));
+  if (after.open || after.back !== 'book') fails.push(`MODAL: Escape left it ${after.open ? 'open' : 'closed'}, focus on ${after.back || 'nothing'} (must return to the button)`);
   console.log(`states at every level: ${N} trees · ${checks} checks · ${fails.length} failed`);
   for (const x of fails.slice(0, 30)) console.log('  ' + x);
   fs.writeFileSync(path.join(OUT, 'states-proof.json'), JSON.stringify({ at: new Date().toISOString(), n: N, seed: SEED, checks, fails }, null, 1));

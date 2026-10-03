@@ -11,8 +11,12 @@ const arg = (k, d) => { const a = process.argv.find((x) => x.startsWith(`--${k}=
 const N = +arg('n', 60), SEED = +arg('seed', 1); const FAMS = arg('families', Object.keys(FAMILIES).join(',')).split(',');
 const OUT = path.join(__dirname, '..', '..', 'docs', 'web-anatomy', 'area-v', 'specimens'); fs.mkdirSync(OUT, { recursive: true });
 
+// R2-28: setContent runs on about:blank, an INSECURE context — Chrome hides paint() and CSS.paintWorklet there (and the
+// EyeDropper), so a value every real https page has read as invalid. Sheets are served at http://localhost (a secure origin),
+// answered by Playwright itself — no server.
+async function load(pg, html) { await pg.route('http://localhost/r2', (r) => r.fulfill({ contentType: 'text/html; charset=utf-8', body: html })); await pg.goto('http://localhost/r2', { waitUntil: 'load' }); await pg.unroute('http://localhost/r2'); }
 async function check(pg, html) {
-  await pg.setContent(html, { waitUntil: 'load' }); await pg.waitForTimeout(400);
+  await load(pg, html); await pg.waitForTimeout(400);
   // every declaration of every stage AND every element inside it, valid in THIS browser (R2-15)
   const invalid = await invalidIn(pg, '[data-demo], [data-demo] [style]');
   const blank = crypto.createHash('md5').update(await pg.evaluate(() => { const s = document.createElement('div'); s.className = 'stage'; s.id = 'blank'; document.body.prepend(s); return ''; }) + await (await pg.$('#blank')).screenshot()).digest('hex');
@@ -25,7 +29,7 @@ async function check(pg, html) {
     // two colours (sampled), so a demo that drew nothing over its fill reads as not painted.
     const colours = await decoder.evaluate(async (b64) => { const im = new Image(); im.src = 'data:image/png;base64,' + b64; await im.decode(); const c = document.createElement('canvas'); c.width = im.width; c.height = im.height; const x = c.getContext('2d'); x.drawImage(im, 0, 0); const d = x.getImageData(8, 8, Math.max(1, c.width - 16), Math.max(1, c.height - 16)).data; /* the INSIDE only: the stage's outline and rounded corners gave a blank stage a second colour */ const s = new Set(); for (let i = 0; i < d.length; i += 4) s.add(`${d[i] >> 2},${d[i + 1] >> 2},${d[i + 2] >> 2}`); /* EVERY pixel: one in 97 missed thin letters and 1px lines (R2-8) */ return s.size; }, png.toString('base64'));
     // MOTION: an animated demo must show two different frames 600 ms apart (a frozen screenshot cannot tell)
-    const animated = await el.evaluate((e) => /animation/.test((e.getAttribute('style') || '') + e.innerHTML));
+    const animated = await el.evaluate((e) => /animation|data-anim="true"/.test((e.getAttribute('style') || '') + e.innerHTML)); // data-anim: a shader that redraws
     let moved = null;
     // three frames: an `alternate` animation is at the SAME point at t and t + period/2 mirrored, so two frames can match
     if (animated) { const f = []; for (const wait of [0, 250, 600]) { await pg.waitForTimeout(wait); f.push(await el.screenshot()); } moved = !f[0].equals(f[1]) || !f[1].equals(f[2]) || !f[0].equals(f[2]); }
@@ -40,7 +44,7 @@ const VISIBLE = 0.006; // 0.6% (~230 px of a stage): 1.5% hid a 2px vs 8px shado
 async function diffRatio(a, b) {
   return decoder.evaluate(async ([a, b]) => {
     const px = async (s) => { const im = new Image(); im.src = 'data:image/png;base64,' + s; await im.decode(); const c = document.createElement('canvas'); c.width = im.width; c.height = im.height; const x = c.getContext('2d'); x.drawImage(im, 0, 0); return x.getImageData(0, 0, c.width, c.height).data; };
-    const [p, q] = [await px(a), await px(b)]; if (p.length !== q.length) return 1;
+    const [p, q] = [await px(a), await px(b)]; if (p.length !== q.length) throw new Error(`R2-27: compared pictures of different sizes (${p.length / 4} vs ${q.length / 4} px) — a measurement fault, never "different"`);
     let d = 0; for (let i = 0; i < p.length; i += 4) if (Math.abs(p[i] - q[i]) > 8 || Math.abs(p[i + 1] - q[i + 1]) > 8 || Math.abs(p[i + 2] - q[i + 2]) > 8) d++;
     return d / (p.length / 4);
   }, [a, b]);
@@ -74,11 +78,21 @@ if (require.main === module) (async () => {
     const cs = combos(fam, N, SEED); const proof = page(`AREA V combinations · ${fam}`, cs);
     fs.writeFileSync(path.join(OUT, `${fam}.combos.html`), proof);
     const b = await check(pg, proof);
-    const cIsPainted = (s) => s.h !== b.blankHash && (fam === 'colour' || s.colours >= 2); const cPainted = b.shots.filter(cIsPainted).length; const noopOf = (id) => (cs.find((c) => c.id === id) || {}).noop; const cNoops = cs.filter((c) => c.noop).map((c) => `${c.id}: ${c.noop}`); const cNotPainted = b.shots.filter((s) => !cIsPainted(s) && !noopOf(s.id)).map((s) => s.id); const cStill = b.shots.filter((s) => s.moved === false && !(cs.find((c) => c.id === s.id) || {}).noop).map((s) => s.id); const distinct = (await lookAlike(b.shots)).length; /* VISIBLY distinct (R2-13), not distinct hashes */
+    const cIsPainted = (s) => s.h !== b.blankHash && (fam === 'colour' || s.colours >= 2); const cPainted = b.shots.filter(cIsPainted).length; const noopOf = (id) => (cs.find((c) => c.id === id) || {}).noop; const cNoops = cs.filter((c) => c.noop).map((c) => `${c.id}: ${c.noop}`); const cNotPainted = b.shots.filter((s) => !cIsPainted(s) && !noopOf(s.id)).map((s) => s.id); const cStill = b.shots.filter((s) => s.moved === false && !(cs.find((c) => c.id === s.id) || {}).noop).map((s) => s.id); const cGroups = await lookAlike(b.shots); const distinct = cGroups.length; /* VISIBLY distinct (R2-13), not distinct hashes */
+    // repeats are EXPLAINED, not hidden: each look-alike group with the axes on which its members differ
+    const alike = cGroups.filter((g) => g.length > 1).map((g) => { const ls = g.map((s) => (cs.find((c) => c.id === s.id) || {}).labels || {}); return { ids: g.map((s) => s.id), differOn: Object.keys(ls[0]).filter((a) => new Set(ls.map((l) => l[a])).size > 1).map((a) => `${a}: ${[...new Set(ls.map((l) => l[a]))].join(' / ')}`), shared: ls[0] }; });
     const values = Object.values(FAMILIES[fam].axes).reduce((n, vs) => n + Object.keys(vs).length, 0);
     const space = Object.values(FAMILIES[fam].axes).reduce((n, vs) => n * Object.keys(vs).length, 1);
-    const line = { fam, axes: Object.keys(FAMILIES[fam].axes).length, values, combinationSpace: space, specimens: sp.length, specimenInvalid: a.invalid, specimenPainted: `${painted}/${sp.length}`, notPainted, animatedStill: still, comboAnimatedStill: cStill, comboNotPainted: cNotPainted, expectedNoops: cNoops, sameByAxis, combos: N, comboInvalid: b.invalid, comboPainted: `${cPainted}/${N}`, comboDistinct: `${distinct}/${N}` };
+    const line = { fam, axes: Object.keys(FAMILIES[fam].axes).length, values, combinationSpace: space, specimens: sp.length, specimenInvalid: a.invalid, specimenPainted: `${painted}/${sp.length}`, notPainted, animatedStill: still, comboAnimatedStill: cStill, comboNotPainted: cNotPainted, expectedNoops: cNoops, sameByAxis, combos: N, comboInvalid: b.invalid, comboPainted: `${cPainted}/${N}`, comboDistinct: `${distinct}/${N}`, alike };
     report.push(line);
+    if (fam === 'glass') { // step 5: the fallback, PROVEN by emulating a reader who asks for less transparency (Chrome has backdrop-filter)
+      await load(pg, sheet); const read = () => pg.$eval('.r2fb', (e) => getComputedStyle(e).backdropFilter);
+      const cdp = await pg.context().newCDPSession(pg); const before = await read();
+      await cdp.send('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-reduced-transparency', value: 'reduce' }] }); const after = await read();
+      await cdp.send('Emulation.setEmulatedMedia', { features: [] });
+      line.reducedTransparency = { before, after, ok: before !== 'none' && after === 'none' };
+      console.log(`   reduced transparency: the glass backdrop ${before} → ${after} ${line.reducedTransparency.ok ? 'OK' : 'FAILED'}`);
+    }
     console.log(`${fam}: ${line.axes} axes · ${values} values · ${space.toLocaleString()} combinations possible · specimens painted ${line.specimenPainted}, invalid ${a.invalid.length} · combos painted ${line.comboPainted}, distinct ${line.comboDistinct}, invalid ${b.invalid.length}`);
     for (const x of [...a.invalid, ...b.invalid].slice(0, 6)) console.log(`   INVALID ${x}`);
     if (notPainted.length || cNotPainted.length) console.log(`   NOT PAINTED ${[...notPainted, ...cNotPainted.map((id) => id + ' {' + Object.entries(cs.find((c) => c.id === id).labels).map(([a, v]) => a + ': ' + v).join(', ') + '}')].join(' | ')}`);
@@ -87,7 +101,10 @@ if (require.main === module) (async () => {
     console.log(`   motion: ${a.shots.filter((s) => s.moved).length + b.shots.filter((s) => s.moved).length} animated demos moved`);
     for (const [ax, d] of Object.entries(sameByAxis)) console.log(`   ${(FAMILIES[fam].sameByDesign || []).includes(ax) ? 'same look BY DESIGN' : 'SAME LOOK (a finding)'} on axis ${ax}: ${d.join(' | ')}`);
   }
-  fs.writeFileSync(path.join(OUT, 'proof.json'), JSON.stringify({ at: new Date().toISOString(), seed: SEED, n: N, browser: browser.version(), report }, null, 1));
+  // six windows each prove a slice of the families: MERGE into proof.json (a slice must never wipe the others' lines)
+  const pf = path.join(OUT, 'proof.json'); const prev = fs.existsSync(pf) ? JSON.parse(fs.readFileSync(pf, 'utf8')).report || [] : [];
+  const merged = [...prev.filter((l) => !FAMS.includes(l.fam)), ...report].sort((a, b) => Object.keys(FAMILIES).indexOf(a.fam) - Object.keys(FAMILIES).indexOf(b.fam));
+  fs.writeFileSync(pf, JSON.stringify({ at: new Date().toISOString(), seed: SEED, n: N, browser: browser.version(), report: merged }, null, 1));
   await browser.close();
 })();
 
@@ -97,4 +114,4 @@ async function stableShot(el, opts = { animations: 'disabled' }) { let prev = aw
 /** R2-15: EVERY element's inline declarations (the per-family check read only the stage's own), a `-webkit-` fallback
  *  accepted where its standard form is in the same style and supported. */
 const invalidIn = (pg, sel) => pg.evaluate((sel) => [...document.querySelectorAll(sel)].flatMap((e) => { const st = e.getAttribute('style') || ''; return st.split(/;(?![^(]*\))/).map((d) => { const i = d.indexOf(':'); if (i < 0) return null; const k = d.slice(0, i).trim(), v = d.slice(i + 1).trim(); if (!k || !v || CSS.supports(k, v)) return null; if (k.startsWith('-webkit-') && CSS.supports(k.slice(8), v) && st.includes(k.slice(8) + ':')) return null; return `${(e.closest('[data-demo]') || e).dataset.id} → ${k}: ${v.slice(0, 70)}`; }).filter(Boolean); }), sel);
-module.exports = { diffRatio, lookAlike, VISIBLE, setDecoder: (d) => { decoder = d; }, stableShot, invalidIn };
+module.exports = { diffRatio, lookAlike, VISIBLE, setDecoder: (d) => { decoder = d; }, stableShot, invalidIn, load };
