@@ -1026,6 +1026,17 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
     - `[ ]` V-4 · "Tint over background" uses a 6-digit-hex-only field — no alpha, so the tint is opaque; its `mode="both"` is ignored
     - `[ ]` V-5 · the per-device banner says "size & layout only change here", but `patchAt` stores EVERY non-content key per device (backgrounds too)
     - `[ ]` V-6 · `REVEAL_DUR` falls back to .55s (`interactions.ts:212`) against the 320ms "slow" token
+    - FOUND 2026-10-03 by the R-2 inventory (read in the code — each is REPRODUCED through the UI first, then fixed with
+      a guard red first, in AREA V's first batch, colour & backgrounds; RULE V):
+    - `[ ]` V-7 · the GradientEditor writes `radial-gradient(circle at 50% 50% …)` / `conic … at 50% 50%` whatever it was
+      given (`GradientEditor.tsx:80-81`) — editing a radial preset silently drops its shape and position
+    - `[ ]` V-8 · a gradient STOP edited in the GradientEditor goes through the hex-only colour field — its alpha is lost
+    - `[ ]` V-9 · a gradient BASE fill is dropped whenever a photo / `bgImage` is set (`box-model.ts:1028`)
+    - `[ ]` V-10 · a band's SHADOW is clipped away by its own edge shape (the edge's `clip-path`)
+    - `[ ]` V-11 · the shadow scale is emitted as LITERAL values (`box-model.ts:1131`, `box-export.ts:86`) while the
+      `--eu-shadow-*` tokens are emitted unused (`tokens.ts:163`) — a theme can never restyle shadows (Core Rule 17)
+    - `[ ]` V-12 · the contrast hint shows only on component colour tokens (`BoxInspector.tsx:1786-1792`), never on a
+      block's own text / background colour — RULE 4 / 17 ("contrast is ASSERTED") on the commonest case
 - `[ ]` **BATCH U-1 · Surface what is ALREADY built (RULE UI, the user 2026-10-03: "this rule must also follow existing
   stuff that we've done… something a user has to create")** (QUEUED; area: builder controls). Step 1: an AUDIT —
   every field the engine reads (`BoxNode` in `lib/box-model.ts`, presets, components, interactions) set against the
@@ -1138,6 +1149,18 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
       - `[x]` R2-2 · `site-read.js` (new) read 1 page of uiGradients / Grabient / cssgradient.io / webgradients: Git Bash
         rewrote `\.` in the include pattern into `/.`, so no inner link matched. FIXED: `MSYS_NO_PATHCONV=1` in the
         runner. SEEN: webgradients now opens every gradient's own page (`/gradient/033-…`, 41 read in the first minutes)
+      - `[x]` R2-4…R2-13 · MY OWN, the RULE MAP proof (`scripts/uat/r2-axes.js` + `r2-combos.js`), each found by READING the
+        sheets and fixed: R2-4 shape bands drew nothing (no width in a centring stage) · R2-5 "painted" = differs from an
+        empty stage passed blank sheets → ≥ 2 colours inside the stage · R2-6 `url("…")` inside a `style="…"` attribute
+        ended the attribute (every mask, the glass grain) → single quotes · R2-7 shadow on the stage fell outside the
+        picture → on a card · R2-8 one-in-97 pixel sampling missed thin letters / 1px lines → every pixel · R2-9 gradient
+        text on a positioned child → on the words · R2-10 wave layers inside the band were invisible → behind it, peeking
+        out · R2-11 the mask edge was mirrored vs clip-path / SVG → 1 − f · R2-12 "repeating" did not repeat → stops in a 20%
+        period (hard edges kept hard) · R2-13 "distinct" by hash → ≥ 0.6% of pixels moved > 8/255; and whole-number keys
+        reordered by JavaScript made the colour base 25% → labels with units, an explicit visible base per family.
+        Every check MUTATION-PROVEN (blank bands → 0/28 painted; invisible layers → same look)
+      - `[x]` R2-14 · `site-read.js` died on one write Windows had locked (`UNKNOWN: open`) after 661 pages of webgradients →
+        temp file + rename, retried; a failed save no longer ends the crawl
       - `[x]` R2-3 · MY OWN: wave 1 recorded bash PIDs that cannot stop Windows processes (collector D "killed" was still
         running). Every crawler is now stopped by its unique profile path, verified (RULE K)
     - WAVE 1 running 2026-10-03 10:26 (`educo-research/r2-wave1.sh`): CodePen shadow · overlay + frosted-glass +

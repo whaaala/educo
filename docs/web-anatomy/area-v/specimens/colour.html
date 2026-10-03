@@ -1,0 +1,31 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>AREA V specimens · colour</title><style>
+@property --a { syntax: '<angle>'; inherits: false; initial-value: 0deg; }
+@keyframes r2spin { to { --a: 360deg; } } @keyframes r2drift { to { transform: translateX(-4%); } } @keyframes r2pan { to { background-position: 100% 100%; } }
+body { font: 16px/1.4 system-ui, sans-serif; margin: 0; padding: 1rem; background: #f8fafc; color: #0f172a; display: grid; grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr)); gap: 1rem; }
+figure { margin: 0; } figcaption { font-size: .75rem; color: #475569; margin-top: .25rem; word-break: break-word; }
+.stage { position: relative; height: 10rem; overflow: hidden; display: grid; place-items: center; border-radius: .25rem; outline: 1px solid #e2e8f0; }
+.words { font-weight: 800; font-size: 1.75rem; position: relative; } .big { font-size: 3rem; } .light { color: #fff; }
+</style></head><body><figure><div class="stage" data-demo="0" data-id="colour.notation.hex" style="background: #3b82f6;"></div><figcaption>colour.notation.hex</figcaption></figure>
+<figure><div class="stage" data-demo="1" data-id="colour.notation.rgb" style="background: rgb(59 130 246);"></div><figcaption>colour.notation.rgb</figcaption></figure>
+<figure><div class="stage" data-demo="2" data-id="colour.notation.hsl" style="background: hsl(217 91% 60%);"></div><figcaption>colour.notation.hsl</figcaption></figure>
+<figure><div class="stage" data-demo="3" data-id="colour.notation.hwb" style="background: hwb(217 23% 4%);"></div><figcaption>colour.notation.hwb</figcaption></figure>
+<figure><div class="stage" data-demo="4" data-id="colour.notation.oklch" style="background: oklch(62% .19 260);"></div><figcaption>colour.notation.oklch</figcaption></figure>
+<figure><div class="stage" data-demo="5" data-id="colour.notation.oklab" style="background: oklab(62% -.04 -.18);"></div><figcaption>colour.notation.oklab</figcaption></figure>
+<figure><div class="stage" data-demo="6" data-id="colour.notation.lab" style="background: lab(54% 9 -66);"></div><figcaption>colour.notation.lab</figcaption></figure>
+<figure><div class="stage" data-demo="7" data-id="colour.notation.lch" style="background: lch(54% 67 278);"></div><figcaption>colour.notation.lch</figcaption></figure>
+<figure><div class="stage" data-demo="8" data-id="colour.notation.p3" style="background: color(display-p3 .27 .5 .95);"></div><figcaption>colour.notation.p3</figcaption></figure>
+<figure><div class="stage" data-demo="9" data-id="colour.notation.named" style="background: royalblue;"></div><figcaption>colour.notation.named</figcaption></figure>
+<figure><div class="stage" data-demo="10" data-id="colour.alpha.100%" style="background: #3b82f6;"></div><figcaption>colour.alpha.100%</figcaption></figure>
+<figure><div class="stage" data-demo="11" data-id="colour.alpha.75%" style="background: oklch(from #3b82f6 l c h / 0.75);"></div><figcaption>colour.alpha.75%</figcaption></figure>
+<figure><div class="stage" data-demo="12" data-id="colour.alpha.50%" style="background: oklch(from #3b82f6 l c h / 0.5);"></div><figcaption>colour.alpha.50%</figcaption></figure>
+<figure><div class="stage" data-demo="13" data-id="colour.alpha.25%" style="background: oklch(from #3b82f6 l c h / 0.25);"></div><figcaption>colour.alpha.25%</figcaption></figure>
+<figure><div class="stage" data-demo="14" data-id="colour.mix.none" style="background: #3b82f6;"></div><figcaption>colour.mix.none</figcaption></figure>
+<figure><div class="stage" data-demo="15" data-id="colour.mix.with white 40%" style="background: color-mix(in oklch, #3b82f6, white 40%);"></div><figcaption>colour.mix.with white 40%</figcaption></figure>
+<figure><div class="stage" data-demo="16" data-id="colour.mix.with black 40%" style="background: color-mix(in oklch, #3b82f6, black 40%);"></div><figcaption>colour.mix.with black 40%</figcaption></figure>
+<figure><div class="stage" data-demo="17" data-id="colour.mix.with accent 50%" style="background: color-mix(in oklch, #3b82f6, oklch(72% .17 40) 50%);"></div><figcaption>colour.mix.with accent 50%</figcaption></figure>
+<figure><div class="stage" data-demo="18" data-id="colour.mix.with accent, longer hue" style="background: color-mix(in oklch longer hue, #3b82f6, oklch(72% .17 40) 50%);"></div><figcaption>colour.mix.with accent, longer hue</figcaption></figure>
+<figure><div class="stage" data-demo="19" data-id="colour.relative.none" style="background: #3b82f6;"></div><figcaption>colour.relative.none</figcaption></figure>
+<figure><div class="stage" data-demo="20" data-id="colour.relative.lighter" style="background: oklch(from #3b82f6 calc(l + .15) c h);"></div><figcaption>colour.relative.lighter</figcaption></figure>
+<figure><div class="stage" data-demo="21" data-id="colour.relative.darker" style="background: oklch(from #3b82f6 calc(l - .2) c h);"></div><figcaption>colour.relative.darker</figcaption></figure>
+<figure><div class="stage" data-demo="22" data-id="colour.relative.muted" style="background: oklch(from #3b82f6 l calc(c * .3) h);"></div><figcaption>colour.relative.muted</figcaption></figure>
+<figure><div class="stage" data-demo="23" data-id="colour.relative.hue +120" style="background: oklch(from #3b82f6 l c calc(h + 120));"></div><figcaption>colour.relative.hue +120</figcaption></figure></body></html>

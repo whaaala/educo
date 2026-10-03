@@ -24,7 +24,12 @@ async function robots() {
 (async () => {
   const allowed = await robots();
   const data = fs.existsSync(OUT) ? JSON.parse(fs.readFileSync(OUT, 'utf8')) : { start: START, include: INCLUDE, pages: {} };
-  const save = () => { fs.mkdirSync(path.dirname(OUT), { recursive: true }); fs.writeFileSync(OUT, JSON.stringify(data, null, 1)); };
+  // R2-14: a write Windows briefly LOCKS (antivirus / indexer: "UNKNOWN: open") killed the whole crawl at page 186. Write a
+  // temporary file and rename it, retrying; a save that still fails is reported and the crawl goes on (the next save retries).
+  const save = () => {
+    fs.mkdirSync(path.dirname(OUT), { recursive: true }); const tmp = OUT + '.tmp';
+    for (let k = 0; k < 6; k++) { try { fs.writeFileSync(tmp, JSON.stringify(data, null, 1)); fs.renameSync(tmp, OUT); return; } catch (e) { if (k === 5) { console.log(`SAVE FAILED ${e.code} — will retry at the next page`); return; } const until = Date.now() + 250 * (k + 1); while (Date.now() < until) { /* brief wait, the lock clears */ } } }
+  };
   const queue = [norm(START)]; const seen = new Set(queue);
   for (const p of Object.values(data.pages)) for (const l of p.links || []) if (!seen.has(l) && inc.test(l)) { seen.add(l); queue.push(l); }
   const ctx = await chromium.launchPersistentContext(PROFILE, { headless: false, viewport: { width: 1440, height: 900 }, deviceScaleFactor: 1, args: ['--force-device-scale-factor=1'] });
