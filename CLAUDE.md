@@ -616,6 +616,15 @@ Run through this checklist BEFORE telling the user it's done:
 - **`npm run test:fast` builds, serves and runs every browser suite** (`scripts/test-fast.js`). It replaces running `test:layout` + `test:invariants:rest` against the dev server: **344 tests in ~1.4 min instead of ~12.8 min**, because `next start` serves routes that are already built while `next dev` compiles each one on first request. Add `-- --no-build` to reuse the existing `.next`.
 - **The production build is part of the gate**, not an afterthought — `test:fast` builds first, and `npm run build:check` runs it alone. A build break is invisible to `next dev`: it shipped broken for an unknown stretch because nothing ever ran `next build`.
 - **Stop the dev server before building** — `next dev` holds `.next/trace`, and the lock reads as a build failure.
+- **RULE K — KILL WHAT IS NOT IN USE, ALWAYS; THE MACHINE IS LEFT CLEAN (MANDATORY — the user, 2026-10-03: "always kill
+  anything that is not being used… keep the states clean every time we're no longer using it… make that a must rule for
+  everything").** Every server (`next start` on 3100 / 3200 / 3400…), browser window, crawler, background shell and
+  watcher a session starts is STOPPED the moment its job is done — never left for a later cleanup. Before every new job
+  (a test pass, a crawl, a build) the session checks what is running (`Get-NetTCPConnection` on the test ports, node /
+  chrome processes and their command lines) and stops what it started and no longer needs; free memory is measured
+  before and after. A background shell reporting "killed" is NOT proof the process stopped — check the port (measured
+  2026-10-03: a "killed" 3200 server was still serving, holding memory, an hour later). What the session did not start —
+  the user's own `next dev`, the editor's helpers, the MCP servers — is never stopped without asking the user.
 - **If a browser suite only fails under load, suspect a RACE, not the server.** These suites were forced serial for months on the belief that the dev server could not serve parallel reloads. It could; the seeding helper was racing the app's first save. Forcing serial hid it — see `tests/e2e/helpers/seed-site.ts`.
 
 ### 16. Responsive Field Guide — the four ingredients (MANDATORY, everywhere)
