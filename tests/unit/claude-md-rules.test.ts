@@ -140,6 +140,9 @@ const RULES: [name: string, mustSay: RegExp][] = [
   /** The user, 2026-09-28: documentation is written for and published with Docusaurus, every time. */
   ["Documentation is written for, and published with, Docusaurus (RULE DOC)", /RULE DOC — DOCUMENTATION IS WRITTEN FOR, AND PUBLISHED WITH, DOCUSAURUS/],
   ["…stored research in docs/DOCUSAURUS.md, the Markdown in docs/guide is the single source", /docs\/DOCUSAURUS\.md[\s\S]*single source/],
+  /** The user, 2026-10-03: everything built is surfaced in the builder, easy to select and to make your own. */
+  ["Everything built is in the builder for the user to play with (RULE UI)", /RULE UI — EVERYTHING BUILT IS IN THE BUILDER FOR THE USER TO PLAY WITH/],
+  ["…ready-made choices AND the user's own, nothing hidden, audited backwards", /Easy to make your own[\s\S]*Nothing hidden[\s\S]*EVERYTHING ALREADY BUILT[\s\S]*BATCH U-1/],
   /** The user, 2026-09-28: the Ponytail discipline (github.com/dietrichgebert/ponytail) is a must on every change. */
   ["Ponytail — the least code that solves it correctly (RULE M)", /RULE M — PONYTAIL: THE LEAST CODE THAT SOLVES IT CORRECTLY/],
   ["…its ladder, in order, from YAGNI to the minimum that works", /does this need to exist[\s\S]*already in this codebase[\s\S]*standard library[\s\S]*native platform feature[\s\S]*installed dependency[\s\S]*one line[\s\S]*the minimum that works/i],

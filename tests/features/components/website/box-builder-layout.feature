@@ -1028,6 +1028,18 @@ Feature: Placing blocks beside one another in the Box Builder
     When the page is shown on a tablet
     Then they stay three across, as before
 
+  # ── Decided with the user 2026-09-29 (c-11c, B): a cell of one icon is not a column for this rule ──
+  Scenario Outline: A table of ticks is not rearranged on a tablet
+    Given a row of four columns: <cells>
+    When the page is shown on a tablet
+    Then the line is <result>
+    And the page check agrees with the canvas and the Preview
+    Examples:
+      | cells                                   | result                         |
+      | words · icon · icon · icon              | left as it is                  |
+      | words · words · icon · icon             | rearranged to 2+2              |
+      | words · words · words · words           | rearranged to 2+2              |
+
   Scenario: Widening a block never makes it jump
     Given two blocks side by side
     When I widen the first until the second no longer fits beside it

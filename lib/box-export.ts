@@ -9,7 +9,7 @@
  */
 
 import type { CSSProperties } from "react";
-import { PILL, blockTypography, pinArrivalCss, pinArrivalKeyframes, floatHoldCSS,
+import { PILL, dividerThickness, blockTypography,pinArrivalCss, pinArrivalKeyframes, floatHoldCSS,
   type BoxNode, type Breakpoint, BP_ORDER, containerStyle, childStyle, hostSizedFor, marginCSS, leafPaddingCSS, outerSpaceCSS, pageBandInset, pagePinCover, sectionContent, sizeToCSS, radiusCSS, SHADOW_CSS, u, LIST_ITEM_GAP, textLen, baseUnit, fadedPaint, boxOpacity, backgroundCss, paintLayerCss,
   resolveResponsive, floatStacksOnMobile, floatingReserve, alertToastCss, accordionClasses, bandClasses, videoEmbedSrc, isContainer, sanitizeCssDeclarations, expandScopedCss, COMPONENT_PARTS, itemFloatContextCss, itemOverrideCss, itemNumberVars, richBody, plainBody, componentTextCss, componentBoxCss, renderAlertHTML, alertDismissScript, masonryMeasureAttr, masonryMeasureScript, pinStackMarker, pinStackGroupMarker, pinStackNeeded, pinStackScript, isPager, pagerNavHTML, pagerScript, pagerStripCss, pagerSlideId, bgShowThroughCss, blockContainmentCss, COMPONENT_ITEM_SEL, remLen, imageSizing, hasIntrinsicSize, itemNeedsClass, itemScope, floatZIndex, typoRole, typoRootVars, typoCascadeCss, bandEdgeCSS, LINK_COLOR_CSS, gridQueryCss, TYPE_UNIT_PROPERTY_CSS,
 } from "@/lib/box-model";
@@ -155,7 +155,7 @@ function elementHTML(node: BoxNode, theme: SiteTheme, pageMap: Map<string, strin
       return `<img src="${esc(node.src)}" alt="${esc(node.alt ?? "")}"${dims} loading="${node.eager ? "eager" : "lazy"}" decoding="async" style="${styleString({ width: "100%", height, aspectRatio, objectFit: "cover", display: "block" })}" />`;
     }
     case "video": { const embed = videoEmbedSrc(node.src); const h = sizeToCSS(node.height) ?? "315px"; if (embed) return `<iframe src="${esc(embed)}" title="Video" allowfullscreen style="${styleString({ width: "100%", height: h, border: "0" })}"></iframe>`; return node.src ? `<video src="${esc(node.src)}" controls style="${styleString({ width: "100%", height: h })}"></video>` : ""; }
-    case "divider": return `<hr style="${styleString({ border: "0", margin: "0", height: "0", width: "100%", borderTopWidth: node.borderWidth || "0.125rem", borderTopStyle: node.borderStyle ?? "solid", borderTopColor: node.color ? colorToCSS(node.color) : node.borderColor ? colorToCSS(node.borderColor) : typoRole.color("muted") })}">`;
+    case "divider": return `<hr style="${styleString({ border: "0", margin: "0", height: "0", width: "100%", borderTopWidth: dividerThickness(node),borderTopStyle: node.borderStyle ?? "solid", borderTopColor: node.color ? colorToCSS(node.color) : node.borderColor ? colorToCSS(node.borderColor) : typoRole.color("muted") })}">`;
     case "list": { const li = styleString({ marginBottom: u(LIST_ITEM_GAP) }); const items = (node.listItems ?? []).map((it) => `<li style="${li}">${esc(it)}</li>`).join(""); const st = styleString({ color: node.color || typoRole.color("text"), fontSize: node.fontSize != null ? textLen(node.fontSize) : typoRole.size(1), textAlign: align, width: "100%", paddingLeft: u(22), ...typoCss(node, "body", 400) }); return node.listStyle === "number" ? `<ol style="${st}">${items}</ol>` : `<ul style="${st}">${items}</ul>`; }
     case "embed": return node.html ?? "";
     case "spacer": return `<div aria-hidden="true" style="${styleString({ width: "100%", height: sizeToCSS(node.height) ?? "3rem" })}"></div>`;

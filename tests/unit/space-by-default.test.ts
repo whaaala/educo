@@ -311,3 +311,16 @@ describe("S-2 (5): a block that paints its own box keeps the section space OUTSI
     expect(html(makeRowBand([blockForKind("button", { marginLeft: 0 } as Partial<BoxNode>)]))).not.toContain(`padding-left:${u(g)}`);
   });
 });
+
+describe("a Divider's thickness is its LINE, not a box edge (L3-r)", () => {
+  it("setting the thickness gives the Divider no inner padding — the line stays level with the words beside it", () => {
+    // measured: Thickness 8 through the Inspector gave the Divider's box 27.36px each side, the line 28px in from the heading
+    for (const t of [1, 2, 8, 20]) {
+      const d = { ...blockForKind("divider", { id: "d" } as Partial<BoxNode>), spaced: true, borderWidth: t };
+      // no space at the SIDES (the line is level with the words) · half a stack gap above and below, so a hand can drop under it (L3-s)
+      expect(spaceDefaults(d).pad, `thickness ${t}`).toEqual([8, 0, 8, 0]);
+    }
+    // …while a box with a real border keeps its inner padding
+    expect(spaceDefaults({ ...createContainer("column"), spaced: true, borderWidth: 2 }).pad).not.toEqual([0, 0, 0, 0]);
+  });
+});

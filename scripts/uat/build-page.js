@@ -95,17 +95,23 @@ class Builder {
     // need 672px: in a 668px main column the third had already dropped to the next line, the dresser sized the first two
     // regardless, and the row stored 50 + 25 + 33.34 — a HOLE at every wide screen (tier 99, 29 pages). A person laying out
     // a desktop row on a small editor chooses a wider screen size first, and goes back afterwards.
+    // ONLY DESKTOP — `base` IS desktop (rule 18). Wide BRANCHES OFF: a drag there is stored for Wide alone, so sizing a row at
+    // Wide left Desktop at the widths it was dropped with — measured, page 223 stored 70.93 · 10.01 · 5.69 · 13.36 at 1920
+    // and 24.99 · 24.99 · 25 · 25.02 at 1280, where its words cell (157px longest word) wrapped the line 3 + 1 (L3-n).
     let widened = false;
-    for (const preset of ['Desktop (1280px)', 'Wide (1920px)']) { if (await this.onOneLine(ids)) break; await page.getByRole('button', { name: preset }).first().click(); await page.waitForTimeout(800); widened = true; }
+    for (const preset of ['Desktop (1280px)']) { if (await this.onOneLine(ids)) break; await page.getByRole('button', { name: preset }).first().click(); await page.waitForTimeout(800); widened = true; }
     if (widened) page.__widerToSize = (page.__widerToSize || 0) + 1;
     // …AND WHERE NO SCREEN SIZE HOLDS IT ON ONE LINE, IT IS LEFT AS THE BUILDER LAID IT OUT, AND SAID SO (RULE E: a gap is
     // recorded, never skipped in silence). Six columns need 6 × 14rem = 1344px of row; a main column beside a sidebar has
     // that on no screen size the editor offers.
     const gap = (why) => { (page.__gaps = page.__gaps || []).push(`a row of ${ids.length} asked for ${shares.join(' · ')} — ${why}`); };
     const fullWidth = async () => { if (widened) { await page.getByRole('button', { name: 'Full width' }).first().click(); await page.waitForTimeout(800); } await H.panel(page, true); };
-    if (!(await this.onOneLine(ids))) { gap('it is on one line at no screen size the editor has, so it was left as dropped'); await fullWidth(); return; }
+    // STILL WRAPPED? A person drags anyway: a line wrapped by one cell's longest word (#102) comes back onto one line once
+    // that cell is widened and its narrow neighbours give way (L3-n). Only a row still wrapped AFTER sizing is a gap.
+    const wrappedBefore = !(await this.onOneLine(ids));
     try { await this.dragToShares(ids, shares, sum); }
-    catch (e) { if (!widened) throw e; gap(`at the wider screen size its edges could not be reached (${e.message.split('\n')[0]})`); }
+    catch (e) { if (!widened && !wrappedBefore) throw e; gap(`its edges could not be reached (${e.message.split('\n')[0]})`); }
+    if (wrappedBefore && !(await this.onOneLine(ids))) gap('it wraps at Desktop even sized as asked, so it was left wrapped');
     await fullWidth();
   }
 

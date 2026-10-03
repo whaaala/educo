@@ -4448,6 +4448,15 @@ export function columnFloorRem(parent: BoxNode, child: BoxNode, bp: Breakpoint =
   return onManyColumnLine(parent, child.id, bp) ? HAND_FLOOR_REM : floorRemOf(child);
 }
 
+/**
+ * Does this cell hold words or a card — anything but icons (c-11c, decided by the user 2026-09-29: B)? A table of ticks —
+ * one cell of words beside three cells of one icon each — is not four columns to rearrange on a tablet; a line of four is
+ * rearranged only when at least two of its cells hold more than an icon. The audit's L6 check takes the same rule.
+ */
+function holdsWords(cell: BoxNode): boolean {
+  return isContainer(cell) ? (cell.children ?? []).some(holdsWords) : cell.type !== "icon";
+}
+
 /** One column's place on a tablet: its share of its line (0–1), how many share that line, and their gap-margins (%). */
 export type TabletPlace = { share: number; across: number; marginsPct: number };
 
@@ -4463,7 +4472,7 @@ export function tabletPlaces(parent: BoxNode, bp: Breakpoint): Map<string, Table
   for (let line = 0, from = 0; from < kids.length; line++) {
     const onLine = kids.filter((_, i) => lines[i] === line);
     from += onLine.length;
-    if (onLine.length < MANY_COLUMNS) continue;
+    if (onLine.length < MANY_COLUMNS || onLine.filter(holdsWords).length < 2) continue;
     /**
      * A column the user sized AT the tablet is theirs, and keeps its place in the grouping: the lines are counted over
      * EVERY column, and the free ones on a line share what the sized ones leave of it. Grouping only the free ones
@@ -4556,6 +4565,13 @@ export function rootFontPx(): number {
   if (typeof document === "undefined") return 16;
   return parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
 }
+
+/**
+ * A Divider's line thickness — ONE answer for the canvas and the export (R-23, L3-l): rem, except a 1px hairline.
+ * Plain rem, NOT the fluid `u()`: measured in the headed pass, `u(12)` drew 8px on a phone and 16.8px on a wide screen —
+ * a line is the thickness the user chose; it grows with their text size, not with the screen.
+ */
+export const dividerThickness = (node: BoxNode): string => (!node.borderWidth ? "0.125rem" : node.borderWidth === 1 ? "1px" : remLen(node.borderWidth));
 
 export function u(px: number): string {
   return `calc(var(--box-u, 0.625rem) * ${+(px / 10).toFixed(4)})`;
@@ -4719,9 +4735,10 @@ export function gapCSS(node: BoxNode): CSSProperties {
 // 1rem the same day ("do one rem… and let the user decide to update the gap as they want").
 export const SPACE_DEFAULT = { gutter: 32, section: 16, bar: 16, stack: 16, columns: 16, inner: 24 } as const;
 
-/** A box someone can SEE the edge of — a background, a picture, a colour scheme or a border. */
+/** A box someone can SEE the edge of — a background, a picture, a colour scheme or a border. A Divider's `borderWidth`
+ *  is its LINE's thickness, not a box edge: read as one, it padded the line 28px in from the words beside it (L3-r). */
 export function hasVisibleEdge(node: BoxNode): boolean {
-  return !!(node.background || node.bgImage || node.bgOverlay || node.borderWidth);
+  return !!(node.background || node.bgImage || node.bgOverlay || (node.borderWidth && node.type !== "divider"));
 }
 
 /** Blocks that are pictures, not words: they may bleed to the page edge, so a section gutter never pushes them in. */
@@ -4747,6 +4764,9 @@ export function spaceDefaults(node: BoxNode, section = false): { pad: [number, n
   // A self-painting block's own padding is part of its design (`componentBoxCss` draws only what is set), so its
   // default is 0 — its section space lives OUTSIDE it (`outerDefaults`), and the control never shows space not drawn (S2-a).
   if (scaffold || selfPaints(node)) return { pad: [0, 0, 0, 0], gapX, gapY };
+  // A Divider breathes ABOVE and BELOW only: its line stays level with the words beside it (L3-r), and a 1px line is
+  // still a box a hand can drop under — with no space it was 3px tall and "cannot drop under" in the headed pass (L3-s).
+  if (node.type === "divider") return { pad: [SPACE_DEFAULT.stack / 2, 0, SPACE_DEFAULT.stack / 2, 0], gapX, gapY };
   const inner = hasVisibleEdge(node) ? SPACE_DEFAULT.inner : 0;
   if (section && !BLEEDS.has(node.type) && !node.preset) { // a Card or a Quote is spaced OUTSIDE its box (`outerSpaceCSS`)
     // The page's header and footer are BARS, not bands: 1rem above and below keeps a logo and a menu breathing

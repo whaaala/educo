@@ -170,6 +170,11 @@ const canvasGeo = (page) => page.evaluate(() => {
       page.__step = `canvas audit ${p}`;
       await page.getByRole('button', { name: p }).first().click(); await page.waitForTimeout(700);
       for (const m of await canvasAudit(page)) find('err', `canvas ${p}`, m);
+      // L3-f (MEASURED 2026-10-03): typing into a pager's hidden slide leaves the canvas ON that slide — its slides at left
+      // -200% where the Preview, which opens on slide 1, has 0%. Which slide shows is VIEW state, not layout, so every pager
+      // goes back to its first slide before the canvas is measured, as the Preview opens (the product keeps the user's slide).
+      const scrolledX = await page.evaluate(() => [...document.querySelectorAll('*')].filter((e) => e.scrollLeft > 0 && e.closest('[data-box-id]')).map((e) => { const s = Math.round(e.scrollLeft); e.scrollLeft = 0; return `${(e.closest('[data-box-id]').dataset.boxId || '').slice(-4)} was at ${s}px`; }));
+      if (scrolledX.length) { (R.log = R.log || []).push(`  canvas ${p}: pager back to slide 1 — ${scrolledX.slice(0, 6).join(', ')}`); await page.waitForTimeout(300); }
       canvas[p] = await canvasGeo(page);
       await page.evaluate(() => window.scrollTo(0, 0)); await shot(page, `canvas-${p.replace(/\W+/g, '')}`);
     }
@@ -208,7 +213,7 @@ const canvasGeo = (page) => page.evaluate(() => {
         // canvas == Preview at this rung, within the accepted 0.6% (#41) and 4px of text rounding
         const cg = canvas[d.rung.preset]; const drift = [];
         for (const [id, g] of Object.entries(a.geo)) { const c = cg[id]; if (!c) continue;
-          if (Math.abs(c.l - g.l) > H.PREVIEW_SHARE_TOL || Math.abs(c.w - g.w) > H.PREVIEW_SHARE_TOL || (!c.empty && !c.vh && !g.vh && Math.abs(c.h - g.h) > Math.max(H.PREVIEW_HEIGHT_TOL, c.h * H.PREVIEW_SHARE_TOL / 100))) drift.push( /* a 3,000px column may differ by the accepted 0.6% (#41), as widths may */`${id.slice(-4)} ${c.w.toFixed(1)}%×${Math.round(c.h)} vs ${g.w.toFixed(1)}%×${Math.round(g.h)}`); }
+          if (Math.abs(c.l - g.l) > H.PREVIEW_SHARE_TOL || Math.abs(c.w - g.w) > H.PREVIEW_SHARE_TOL || (!c.empty && !c.vh && !g.vh && Math.abs(c.h - g.h) > Math.max(H.PREVIEW_HEIGHT_TOL, c.h * H.PREVIEW_SHARE_TOL / 100))) drift.push( /* a 3,000px column may differ by the accepted 0.6% (#41), as widths may */`${id.slice(-4)} ${c.w.toFixed(1)}%×${Math.round(c.h)} vs ${g.w.toFixed(1)}%×${Math.round(g.h)}${Math.abs(c.l - g.l) > H.PREVIEW_SHARE_TOL ? ` left ${c.l.toFixed(1)} vs ${g.l.toFixed(1)}` : ''}`); }
         if (drift.length) find('err', `Preview ${d.name}`, `R11 canvas≠Preview on ${drift.length} blocks (${drift.slice(0, 12).join('; ')})`);
         // a full-page picture of what a visitor sees
         await page.setViewportSize({ width: d.w + 20, height: Math.min(6000, Math.max(900, a.height)) }); await page.waitForTimeout(400);

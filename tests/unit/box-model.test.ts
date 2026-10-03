@@ -1867,4 +1867,14 @@ describe("rows of four or more (#78): one row on a desktop and a laptop · at mo
     expect(tabletPlaces(row, "tabletPortrait")).toBeNull();
     expect(onManyColumnLine(row, "c0")).toBe(false);
   });
+
+  it("a cell holding only an icon does not count towards the four — a table of ticks is not rearranged (c-11c, decided B)", () => {
+    // the shape the UI builds: the icon sits in a band inside its cell
+    const ico = () => [makeRowBand([createElement("icon")], 0)];
+    const ticks = cols(["70%", "10%", "10%", "10%"], [{}, { children: ico() }, { children: ico() }, { children: ico() }] as Partial<BoxNode>[]);
+    expect(tabletPlaces(ticks, "tabletPortrait")).toBeNull();
+    // two cells of words + two icon cells: two hold words, so the line is rearranged
+    const two = cols(["40%", "40%", "10%", "10%"], [{}, {}, { children: ico() }, { children: ico() }] as Partial<BoxNode>[]);
+    expect(tabletPlaces(two, "tabletPortrait")?.size).toBe(4);
+  });
 });

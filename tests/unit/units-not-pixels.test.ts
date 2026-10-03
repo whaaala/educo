@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import type { BoxNode } from "@/lib/box-model";
+import { dividerThickness } from "@/lib/box-model";
 import { blockForKind } from "@/lib/box-presets";
 import { COMPONENT_CATALOGUE } from "@/lib/component-catalogue";
 import { siteFromRoot } from "@/lib/box-site";
@@ -84,6 +85,20 @@ describe("the unit system reaches the page, and stored pixels do not", () => {
     }
     if (Object.keys(report).length) console.log("stored pixels in BLOCK rules:\n" + JSON.stringify(report, null, 2));
     expect(Object.keys(report), `blocks emitting stored pixels: ${Object.keys(report).join(", ")}`).toEqual([]);
+  });
+
+  it("a Divider at EVERY thickness its control offers publishes no stored pixel — a 1px line is a hairline (L3-l)", () => {
+    // The default (0.125rem) was the only thickness this guard ever saw; a thickness the user set reached the page as px.
+    const bad: string[] = [];
+    for (let t = 1; t <= 20; t++) {
+      const block = { ...blockForKind("divider", { id: "probe" } as Partial<BoxNode>), borderWidth: t };
+      const site = siteFromRoot({ id: "root", type: "container", direction: "column", children: [block] } as unknown as BoxNode);
+      const px = storedPixels(blockRules(renderSitePage(site, DEFAULT_THEME, site.homeId, { inlineShared: true })));
+      if (px.length) bad.push(`${t}: ${px.join(" ")}`);
+    }
+    expect(bad).toEqual([]);
+    // …and the thickness chosen, in plain rem — NOT the fluid unit, which drew 12px as 8px on a phone and 16.8px on Wide
+    expect(dividerThickness({ ...blockForKind("divider", {} as Partial<BoxNode>), borderWidth: 12 })).toBe("0.75rem");
   });
 
   it("…and the SHARED framework stylesheet holds to the same rule", () => {

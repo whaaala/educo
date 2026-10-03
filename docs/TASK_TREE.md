@@ -766,7 +766,7 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
       after the fixes, after reload, canvas = Preview
     - `[x]` regression: probe-spacing (S-1), probe-s2 (S-2), L-2's probes — 0 findings; a page saved before F-1 keeps
       every size it CHOSE (hand widths, set gaps); space nobody chose fills there too (decided in the session, reversible)
-- `[>]` **BATCH L-3 · Tier-99: React error #185 and the tablet line** ← YOU ARE HERE (area: engine rules · 5 changes, opened 2026-10-02; PAUSED the same day by the user's order, RESUMED 2026-10-02 ~20:00 when R-1 closed; L3-h · L3-g · L3-b · #185 (change 1) · c-12b CLOSED 2026-10-03 — next leaf L3-f, then the page-141 re-run (L3-c), c-11a / c-11b / c-11c, then the batch's HEADED pass (incl. change 5, R-23 the Divider). Was — next leaf L3-h: c-11a / c-11b / c-11c and L3-b · L3-c (page 141 re-run) · L3-f · L3-g · L3-h are open)
+- `[>]` **BATCH L-3 · Tier-99: React error #185 and the tablet line** ← YOU ARE HERE (area: engine rules · 5 changes, opened 2026-10-02; PAUSED the same day by the user's order, RESUMED 2026-10-02 ~20:00 when R-1 closed; L3-h · L3-g · #185 (change 1) · c-12b CLOSED 2026-10-03; session 07c6c075 CLOSED L3-f (harness) · L3-c · change 4 c-11c · change 5 R-23 (HEADED 6/6) · L3-j/k/l/m/q/r/s — next leaf L3-p (the live-canvas cell that a reload fixes; with L3-b and L3-o, one bug most likely), then L3-t, c-11b, c-11a, the checklist's regression line, and the batch close. Was — next leaf L3-h: c-11a / c-11b / c-11c and L3-b · L3-c (page 141 re-run) · L3-f · L3-g · L3-h are open)
   - e-5 · React #185 (maximum update depth) — 9 pages
   - e-6 · four columns on one line at Tablet — 8 pages, 142 findings (= c-11)
   - c-11c (decided B) · an icon cell does not count for the tablet rule
@@ -852,7 +852,26 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
     - `[x]` L3-e · HARNESS: `uat-pages.js --stress` did nothing — the parent hands its pages only `--sizes=`, so the first
       stress run (`l3-185-stress.out`) ran no stress phase (`stressed` empty on all 6). FIXED: `--stress` is forwarded;
       re-run as `l3-185-stress2.out`
-    - `[ ]` L3-f · page 141 after the stress typing: canvas ≠ Preview at all 5 rungs on 12 blocks whose SIZES match
+    - `[x]` L3-c re-run · HEADED (`logs/l3f-stress.out`, 6 windows, --stress, .next-c FRESH, 19 min): 0 page errors on all
+      6 pages (#185 stays fixed); page 141 has no W7a left → L3-c CLOSED
+    - `[ ]` L3-b REOPENED 2026-10-03: the same run shows page 332's 241px HOLE at canvas Tablet with 0 page errors — the
+      close rested on `probe-l3b.js`, not on the page run. Diagnostic re-run `logs/l3f-diag.out`
+    - `[x]` L3-f · CLOSED 2026-10-03 — HARNESS, measured (`logs/l3f-diag.out`, R11 now prints left): on the LIVE canvas the
+      rotating hero's slides sat at left -200% vs 0% in the Preview — the typing into slide 3 left the canvas ON slide 3
+      (right for an editor), the Preview opens on slide 1 (right for a visitor). Which slide shows is view state, not
+      layout: `uat-pages.js` now puts every canvas pager back to slide 1 before measuring (and logs it). Re-run to confirm
+      with the next page run
+    - `[ ]` L3-p · page 223 (live canvas): the wrapped 4th cell drawn at its 224px floor (29.2% at 768) vs filling its
+      line in the Preview (54.1%) at Tablet → Wide. The final tree RELOADED gives canvas == Preview (416px both at 768) —
+      live state, like L3-b and probably L3-o (359). Not a cache (the canvas recomputes `childStyle` each render) and not
+      a stray inline style (the row drag writes none). `probe-c11b.js --live` did not reproduce it on a fresh full-width
+      row — its first "DIFFERENT" was my measurement (screen px, the canvas zoom changed on reload: every ratio 1.75)
+    - `[ ]` L3-t · page 333 after the stress: canvas ≠ Preview in HEIGHT (≈35–110px) at Mobile · Laptop · Desktop · Wide
+    - `[>]` L3-f MEASURED 2026-10-03: the reloaded final tree has NOTHING scrolled on either side (no scrollLeft / scrollTop
+      > 0) and the flagged blocks are the rotating hero's slides at the same places — so either the LIVE canvas was
+      scrolled after the typing, or it is the audit. R11 compares LEFT too and never printed it: the harness now prints
+      `left c vs p` and logs every box scrolled sideways on the live canvas (`uat-pages.js`); re-run `logs/l3f-diag.out`.
+      Was: page 141 after the stress typing: canvas ≠ Preview at all 5 rungs on 12 blocks whose SIZES match
       (100%×3708 vs 100%×3708…). INFERRED: typing into the rotating hero's hidden slides scrolls the pager on the canvas,
       while the Preview opens on slide 1 — so the comparison reads positions inside a scrolled pager. To be MEASURED
       (the blocks' left positions, the pager's scrollLeft on both sides) before calling it harness or product
@@ -864,6 +883,51 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
       `page-audit.js`: the run is clipped by every box that cuts its overflow, and skipped when nothing is left. Guard
       `page-audit-whitespace.spec.ts` "a pager's slides…" at 375/768/1280/1920 — red on the old audit (3 runs flagged),
       red with the skip disabled, 55/55 audit specs green. Waiting: page 141 re-run through the UI on the fixed audit
+    - `[x]` L3-j · CLOSED 2026-10-03 on the user's "stop it": chain + measurer stopped, nothing research left running,
+      free memory 0.5 → 3.9 GB (aw-coll-menu resumes when the Navigation component's research starts). Was: research still RUNNING after R-1 closed — `educo-research/r1-aw.sh 1 2`
+      (PID 40232) moved on to `aw-measure.js aw-coll-menu` at 04:21, beside L-3's testing (RULE RS forbids it). The
+      session was NOT permitted to stop it → the user's call: stop it (it resumes) before the six-window runs
+    - `[x]` L3-k · MY OWN: ran one vitest file (4 s) while `c11-measure` (Playwright) ran — rule 15. Its timings are checked
+      for contention before anything is trusted from it; no vitest again until a browser run ends
+    - `[?]` c-11a · **THE USER DECIDES:** the handed-over step said "a line that rounds to 100.4% must be one line, as its own
+      comment says"; the measurement says a browser WRAPS it (#69), so making the model call it one line would make the
+      model disagree with every page it draws. Recommended: fix the stale COMMENT only (no behaviour change) and stop rows
+      being stored over 100% (c-11b). MEASURED FIRST, 2026-10-03: the premise contradicts #69 (`box-model.test.ts` "a line breaks exactly where
+      a BROWSER breaks it" — 50.3 + 50.1 is two lines) and the gutter arithmetic (each slot = its stored share of the widened
+      band, so 100.19% overflows → 3 + 1, which `packRowLines` already says). The top comment ("a hair over 100 is still one
+      line") is the stale part. Being measured on pages 223 / 359 / 382 rebuilt through the UI (`logs/c11-measure.out`)
+    - `[>]` c-11b · `probe-c11b.js` (new): a row of words + 3 icon cells built through the UI, dragged by the harness's own
+      `sizeColumns` to 6 share sets → all store ≤ 100% (99.91–99.98). A plain drag is not the writer; next: the rebuilt trees
+    - `[x]` c-11c · BUILT (decided B) + HEADED in `uat-l3-headed.js` 6/6 (the 8 e-6 pages: checklist line (4), with the batch close): `holdsWords` in `tabletPlaces` + the audit's L6 check (a cell of icons only does not
+      count; ≥ 2 cells with words or a card). Guard in `box-model.test.ts` RED before, GREEN after (221/221).
+      Scenario Outline in `box-builder-layout.feature`. Typecheck 0. HEADED check → `uat-l3-headed.js` (the ticks row)
+    - `[x]` L3-l · the Divider's THICKNESS reached the page as px (2–20px) on the canvas AND the export — rule 16; the units
+      guard only ever saw the default. FIXED: `dividerThickness()` in `box-model.ts`, called by both — PLAIN rem (`remLen`),
+      1px stays a hairline. My first fix used the fluid `u()`: the headed pass measured 12px drawn as 8px on a phone and
+      16.8px on Wide → plain rem. Guard `units-not-pixels.test.ts` RED (19 values) → GREEN, + "12 → 0.75rem"
+    - `[x]` L3-q · MY OWN (the headed script): the Thickness slider is on the Content tab (the script never chose it), and a
+      row dropped "under" a cell lands INSIDE that cell — both fixed; a failed window now saves a screenshot
+    - `[x]` L3-r · a Divider with a thickness set was PADDED 27.36px each side (`hasVisibleEdge` read its `borderWidth` as a
+      box border), so its line started 28px in from the words — seen only in the SCREENSHOT, every number passed. FIXED
+      in `hasVisibleEdge`. Guard `space-by-default.test.ts` RED (24 each side) → GREEN; the headed check "line level with
+      the heading" RED on the old build (10 findings in each of 6 windows, 17–34px) → GREEN
+    - `[x]` L3-s · exposed by L3-r: a 1–2px Divider is a 3–6px box — "cannot drop under" in 2 of 6 windows (a fresh Divider
+      was always so). FIXED: a Divider breathes ABOVE and BELOW only (half a stack gap, 0.5rem; sides 0 — new blocks only,
+      saved pages keep theirs, the user can set 0). Guard in `space-by-default.test.ts`
+    - `[x]` **R-23 / change 5 HEADED UAT — CLOSED 2026-10-03** (`uat-l3-headed.js`, 6 windows, .next-c on 3400, FRESH):
+      Light 1 · Purple Dream 2 · Dark 4 · Midnight 8 · Light 12 · Dark 20px — 6/6 CLEAN at 375 · 768 · 1024 · 1280 · 1920,
+      canvas AND Preview: `<hr>` with role separator (accessibility tree on both), margin 0, side borders none, the
+      thickness asked, the theme's colour, canvas == Preview, the line level with the words, 0 page errors; the ticks row
+      one line at Tablet (c-11c) and four cells of words 2 + 2 (#78). Screenshots read (`logs/uat-l3/`)
+    - `[x]` L3-n · HARNESS (FIXED + re-run `l3n-223.out`: the rows are now dragged; they still wrap at Desktop by #102, recorded as a GAP): `c11-measure` (pages 223/359/382, 0 errors on 223) did NOT size page 223's four ticks rows — "on
+      one line at no screen size". MEASURED (`probe-l3-row.js --band=murv1fmb-2k`): at Desktop 24.99·24.99·25·25.02 wraps
+      3 + 1 on canvas AND Preview, because the words cell's longest word is 157px against a 137px share (#102, by design);
+      at Wide the row was 70.93·10.01·5.69·13.36 — the dresser had sized it at WIDE, which branches off (rule 18), so the
+      desktop never got the widths. FIX `build-page.js sizeColumns`: widen to Desktop only; a still-wrapped row is dragged
+      anyway (as a person would), a gap only if it wraps after. So c-11b/c-11a's "0 over 100%" on 223 proved nothing yet —
+      re-run `logs/l3n-223.out` on the fresh `.next-b` build
+    - `[ ]` L3-o · page 359 (`c11-measure`): HOLE 96px at canvas Tablet (row 0-59, a 54.44% column 243px) and R11 canvas ≠
+      Preview at Tablet / Laptop on 40 blocks (heights 5478 vs 5251). Re-run with 223; then measured like L3-b
     - `[x]` L3-d · HARNESS (c-12c): a page error kept only its first line, with no step — `h.js` now keeps the stack and
       `page.__step`, `uat-pages.js` writes them as `pageErrors` and names its phases (pictures, words, canvas audit per
       preset, Preview)
@@ -883,6 +947,112 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
       that the engine does not act on)
     - `[ ]` regression: F-1's guards, probe-spacing, probe-s2 and L-2's probes show 0 findings; a page saved before L-3
       keeps its widths
+- `[>]` **AREA V · THE PAGE COMES ALIVE — blending, effects, motion, colour, for EVERY block** (the user, 2026-10-03, after
+  L-3 is nearly done: "how a layout blending into each other… transition… animation… scrolling… moving between sections…
+  each section being a straight line horizontal, we can have it in any shape… background colour, gradient, switches,
+  effect, transition, animation… the user being able to select anything… a user can create their own colour… not only for
+  the layout… components… elements like text field"). STEP 1 (now): INVESTIGATE what we have — research AND code — and
+  report back what I understand; nothing built until the user confirms. Folds in: S-2 (section transitions, queued), the
+  motion Batches A / B, R-2 (the CSS property side: backgrounds, gradients, colour). Applies to sections, components and
+  elements alike (RULE A capability parity)
+  - `[x]` STEP 1 investigation 2026-10-03: two read-only readers (research + code), reported to the user
+  - `[ ]` **RULE UI (the user, 2026-10-03 — now in CLAUDE.md):** everything built is in the builder, easy to select AND
+    make your own. Part of AREA V: (a) every V family ships with its control, presets + "make your own"; (b) an AUDIT of
+    what is ALREADY built for capabilities with no control or a control the export ignores — known so far: per-device
+    backgrounds (banner says "size & layout only", V-5) · Advanced CSS offered only on components · the legacy
+    `gradient:` only from the bulk inspector · motion tokens internal only · image / overlay controls on a Button the
+    export drops (V-1)
+  - `[?]` the user's three answers: understanding right? · the order? · named effects only, or free sliders too?
+    (RULE UI answers the third in part: ready-made AND make-your-own)
+  - LEDGER of V (found by the code reader, NOT yet verified — each measured before it is called a bug):
+    - `[ ]` V-1 · a Button's export reads only `background` — a gradient / image set on it (`bgImage`) is dropped (`box-export.ts:144`), while the Inspector offers it
+    - `[ ]` V-2 · components drop `bgOverlay` (`componentBoxCss` has none)
+    - `[ ]` V-3 · a legacy `gradient:#a:#b` value is written raw by `componentBoxCss` — invalid CSS on a component
+    - `[ ]` V-4 · "Tint over background" uses a 6-digit-hex-only field — no alpha, so the tint is opaque; its `mode="both"` is ignored
+    - `[ ]` V-5 · the per-device banner says "size & layout only change here", but `patchAt` stores EVERY non-content key per device (backgrounds too)
+    - `[ ]` V-6 · `REVEAL_DUR` falls back to .55s (`interactions.ts:212`) against the 320ms "slow" token
+- `[ ]` **BATCH U-1 · Surface what is ALREADY built (RULE UI, the user 2026-10-03: "this rule must also follow existing
+  stuff that we've done… something a user has to create")** (QUEUED; area: builder controls). Step 1: an AUDIT —
+  every field the engine reads (`BoxNode` in `lib/box-model.ts`, presets, components, interactions) set against the
+  Inspector / palette control that reaches it, for every block kind: no control · a control hidden or misleading · a
+  control the export ignores · presets only with no "make your own". Step 2: the user sees the list and orders it; then
+  batches of ≤ 6 by area, each HEADED-tested through the UI. Known so far: V-1 · V-5 · Advanced CSS on components only ·
+  legacy `gradient:` only from the bulk inspector · motion tokens internal only
+- `[ ]` **BATCH R-2 · Everything an element can be styled and do — the full property set** (QUEUED 2026-10-03, the user:
+  "typography, types, utilities, background colour… transition… all of the exhaustive stuff an HTML element on a page
+  might need"). Motion / events / elements are covered and signed (R-1, `html-semantics.md`, `dom-element-api.md`); the
+  CSS PROPERTY side has no signed "enough" checklist: the CSS coverage map (memory `project_css_coverage`, MDN's 68
+  modules) is from 2026-09-02, lists several Missing, and was never re-checked against today's builder. RULE RS: the
+  user's sources + my own, every property family checked against what the builder emits, then an "enough" checklist
+  signed by the user. Starts AFTER L-3 closes (one job at a time)
+  - `[?]` **WAITING FOR THE USER'S LINKS** — the user, 2026-10-03: "I'm going to give you my own list of websites to look
+    at… this afternoon". Their list + my own sources (MDN backgrounds / gradients / blend modes / filters / shadows,
+    colour-picker patterns) run side by side (RULE RS), every link read completely (RULE R), in parallel windows —
+    never beside an L-3 test run. Scope: gradients · overlays · shadows (incl. gradient / glow) · box effects · colour
+    picker and the user's own colours · section shapes and blending
+    - THE USER'S LINKS (completeness list, RULE R — each read completely before it is marked done):
+      - `[ ]` https://webgradients.com/ (2026-10-03) — every gradient on it, each opened and its CSS read (stops, angles,
+        type), how each is made, which the builder can already draw (GradientEditor: linear / radial / conic, stops,
+        angle) and which it cannot; plus the site's own UI for picking and copying a gradient (a reference for RULE UI)
+      - `[ ]` https://uigradients.com/ (2026-10-03) — every gradient in its collection (all of them, not a first page),
+        each one's colours and direction, how its picker / browse / copy UI works, compared with webgradients
+      - `[ ]` https://grabient.com/ (2026-10-03) — its gradient generator: every control it offers (how a user makes
+        their own), every preset, the CSS it emits
+      - `[ ]` https://cssgradient.io/ (2026-10-03) — the generator (types, stops, angle, positions, colour input) AND
+        every page it links to on the topic (its gradient guides / swatches / tools), each read completely
+      - `[ ]` https://webflow.com/made-in-webflow/overlay (2026-10-03) — EVERY project in the listing (all pages / all
+        "load more"), each opened and run live (hover, scroll, click), its overlay technique read and written down item
+        by item: what sits on top (colour / gradient / image / blur / blend), when it appears, how it animates
+      - `[ ]` https://www.convertflow.com/campaigns/popup-overlay-examples (2026-10-03) — every popup / overlay example on
+        the page and every example page it links to: its trigger (on load, on scroll, exit intent, a click), how it
+        enters and leaves, the backdrop (dim, blur, colour), how it is closed (button, Escape, outside click), focus and
+        accessibility, and how it behaves on a phone. NOTE: a popup is a COMPONENT (a modal / dialog) — it feeds the
+        component rebuild and needs the user's approval before it is built (rule 13)
+      - `[ ]` https://mobbin.com/explore/web/ui-elements/full-screen-overlay (2026-10-03) — every full-screen overlay
+        screen in the collection (all of it, scrolled to the end): what it covers, what it holds (menu, search, video,
+        form), how it opens / closes, its backdrop. CHECK FIRST: Mobbin usually needs a signed-in account to show more
+        than a preview — if it does, the user is asked for access (never a workaround) and the line stays open
+      - `[ ]` https://webflow.com/made-in-webflow/shadow (2026-10-03) — EVERY project in the listing (all pages / all
+        "load more"), each opened and run live, its shadows read from the code item by item: box / drop / text / inset,
+        layered, coloured or gradient (glow), soft vs hard, how a shadow changes on hover or scroll — compared with the
+        builder's elevation scale and `library/10-surface.md` (HAVE / PARTIAL / GAP)
+      - `[ ]` https://codepen.io/Syed-Faraz-Ahmad/pen/PoXbeqq (2026-10-03) — run live, its HTML / CSS / JS read in FULL
+        (never cut), how the effect is made written down step by step, what a builder control for it would need
+      - `[ ]` https://codepen.io/tag/shadow (2026-10-03) — NOT collected before (checked: no shadow tag in
+        `docs/web-anatomy/codepen/`; only getcssscan's 95 box-shadows in `research-runs/`). EVERY listing page to the end
+        with `cp-tag.js` (it resumes, R-21 fixed), every pen opened and its code read in full, how-it-is-done per pen via
+        `cp-how.js`, saturation measured; in parallel collectors, never beside a UAT
+      - `[ ]` https://codepen.io/tag/overlay (2026-10-03) — NOT collected before (checked: nothing named overlay in
+        `docs/web-anatomy/codepen/`). Same method as the shadow tag: every page, every pen run and read in full, how each
+        overlay is made (colour / gradient / image / blur / blend, on hover, on scroll, full screen)
+      - `[ ]` https://dribbble.com/tags/colorpicker (2026-10-03) — EVERY shot in the tag (scrolled to the end), each opened
+        (its full images, and video where it has one): the colour picker's layout and controls — spectrum / wheel /
+        sliders, hex / RGB / HSL / OKLCH entry, transparency, eyedropper, saved and brand swatches, gradient stops,
+        contrast hints — written down per shot, then the patterns that repeat. Designs, not code: it decides what the
+        builder's picker should LOOK and FEEL like (RULE UI), compared with today's `EducoColorField`
+      - `[ ]` https://dribbble.com/search/color-picker (2026-10-03) — every result to the end, the same per-shot notes;
+        shots already read from the tag above are recognised and not read twice (only new ones added)
+      - `[ ]` https://codepen.io/tag/colorpicker (2026-10-03) — every page, every pen run and its code read in full: how a
+        working picker is BUILT (canvas / gradients for the spectrum, pointer + keyboard on the thumb, colour maths
+        HSV ↔ RGB ↔ OKLCH, alpha, the native EyeDropper API, accessibility of sliders) — the code side of Dribbble's designs
+      - `[ ]` https://www.magnific.com/free-photos-vectors/website-divider-shapes (2026-10-03) — every divider shape in the
+        listing (all pages): the shape family (wave, curve, tilt, zigzag, layered, torn, blob), single vs stacked layers,
+        how it would be drawn (SVG path / clip-path / mask), which the builder's 4 `BandEdge` shapes already cover. Check
+        the licence before anything is reused: the shapes are STUDIED, our own are drawn (RULE R, never copied)
+      - `[ ]` https://codepen.io/tag/divider (2026-10-03) — PARTLY collected in R-1 (step 4: 75 pens, stopped at the
+        user's "enough"; `cp-tag.js` RESUMES): finish every page, read every new pen in full, then `cp-how.js`
+      - `[ ]` https://codepen.io/tag/frosted-glass (2026-10-03) — every page, every pen run and read in full: how the glass is
+        made (`backdrop-filter: blur()` + saturation, a translucent fill, a light border / highlight, noise), its fallback
+        where `backdrop-filter` is missing, its contrast over a busy photo, and its cost on a low-cost Android (RULE AF)
+      - `[ ]` https://webflow.com/made-in-webflow/glassmorphism (2026-10-03) — EVERY project in the listing, each opened and
+        run live: where the glass sits (header, cards, modal, hero panel), what is behind it, blur strength, border /
+        highlight, how it moves on scroll or hover — the real-site side of the frosted-glass pens
+    - My own sources for the same scope (RULE RS), run beside the user's: MDN (background, gradients, mix-blend-mode,
+      filter / backdrop-filter, box-shadow / drop-shadow / text-shadow, color functions, color-mix, relative colours,
+      `@property` for animating gradients, clip-path / mask) · web.dev / Chrome developers · getwaves.io · shapedivider.app
+      · haikei.app · css.glass · coolors.co / Adobe Color (palettes) · grain / noise and mesh gradients · gradient text and
+      borders. GAPS the user was told about 2026-10-03: no link of theirs yet for section shapes / blending on real sites,
+      glass / blur, textures, blend modes, palettes
 - `[x]` **BATCH R-1 · Research at full width** — CLOSED 2026-10-02 ~20:00 by the user's "enough" (area: research runs · 4 changes, OPEN 2026-10-02 — the user: "once the
   testing is done… multiple browsers so we can do it faster… we start this in a NEW session"; the rule is in CLAUDE.md
   under RULE RS, "research runs as wide as the machine allows")
@@ -1890,6 +2060,40 @@ sent), and my research. Nothing on the layout is done until every line here is c
 
 One entry per session, newest first. Written the moment the user says "new session" (or the context is about to run
 out) — where the session STARTED FROM, where it GOT TO, and where the next one CONTINUES FROM.
+
+### 2026-10-03 · session 07c6c075 · branch `builder/layout-uat` — HANDOVER (the user asked; recommended: the context is genuinely long — the Divider pass with three fixes and four six-window runs, c-11c, L3-f, two page runs, the AREA V investigation, two new rules, 17 links; clean boundary — the gate green and everything committed, a heavy live-canvas hunt next)
+- **Started from:** session f86b7fdf's handover — BATCH L-3 → L3-f.
+- **Got to:** research chain STOPPED on the user's "stop it" (L3-j; 0.5 → 3.9 GB free). **c-11c BUILT** (decided B,
+  `holdsWords` in `tabletPlaces` + audit L6). **R-23 / change 5 HEADED 6/6 CLEAN** — on the way: L3-l the thickness
+  reached the page as px (now plain rem; my first fix used the fluid `u()` and the pass caught it), L3-r a thickness padded
+  the Divider 28px in from the words (seen only in the screenshot), L3-s a 1px Divider could not be dropped under (now
+  0.5rem above / below). **L3-c CLOSED**; **L3-f CLOSED as harness** (the canvas stayed on the slide that was typed into;
+  pagers now go back to slide 1 before measuring). L3-n harness: the dresser sized rows at Wide, which never reaches
+  Desktop. **L3-b REOPENED** (332's hole is back with 0 page errors). OPEN: L3-p / L3-b / L3-o (one live-canvas bug most
+  likely: a wrapped cell at its 224px floor that a reload fixes) · L3-t (333 heights) · c-11b (359 stores 100.15%) ·
+  c-11a (the USER decides). **AREA V** investigated (research + code) and reported; **RULE UI** written into CLAUDE.md
+  (everything built is in the builder, easy to pick and to make your own — including what was built before: BATCH U-1);
+  **R-2** has the user's 17 links. Gate: typecheck 0 · eslint 0 errors (105 warnings) · vitest 3,985 · test:fast 793.
+- **Continue from:** BATCH L-3 (YOU ARE HERE) → L3-p.
+- **Next prompt (paste to start):** "Branch `builder/layout-uat`. Read CLAUDE.md (note the new RULE UI), then
+  `docs/TASK_TREE.md` — YOU ARE HERE is BATCH L-3; read its ledger (L3-a … L3-t, c-11a/b/c) and AREA V, U-1, R-2 at the
+  top. Do, in order: (1) **L3-p** — page 223 (and 332's L3-b, 359's L3-o, most likely the same bug): on the LIVE canvas a
+  wrapped cell is drawn at its 224px floor (29.2% at 768) while the Preview — and the same tree RELOADED — fill its line.
+  Not a cache, not a stray inline style (both checked). Reproduce it THROUGH THE UI in a main column beside a sidebar (the
+  223 shape: words + 3 icon cells sized 70·10·10·10 at Desktop with `Builder.sizeColumns`), measuring in CANVAS px (÷ the
+  canvas zoom — `probe-c11b.js --live` forgot it once), live vs reload; then the root fix with a guard RED first, then the
+  three pages re-run. (2) **L3-t** — page 333: canvas ≠ Preview in HEIGHT (35–110px) after the stress. (3) **c-11b** — page
+  359 stores 42.71 + 41.62 + 8.51 + 7.31 = 100.15%: find the drag that writes it (DEBUG=1 prints stored widths per drag).
+  (4) **c-11a** — ASK THE USER (recommended: fix the stale comment only). (5) the checklist's regression line, then close
+  L-3. THEN R-2's research with the user's 17 links + my own (RULE RS), never beside a test run. Standing: c-11c is B ·
+  ST-7 = both Queue and Stack · motion tokens approved · RULE UI · AREA V order: L-3 → R-2 research → colour & backgrounds →
+  section shapes & blending → shadows / overlays / effects → motion → U-1 in the user's order. Traps: a 'killed' notice is
+  not the process dying (check the port) · vitest and Playwright never together, and the unit tests READ the tree — don't
+  edit it during a gate · never edit engine source during a page run (the harness stops starting pages: L3-m) · building into a second folder makes `next build` REWRITE tsconfig.json (adds `.next-b/types`…) — `git checkout -- tsconfig.json` before a commit · build into
+  a second folder (`NEXT_DIST_DIR=.next-b|.next-c`) and check it with `check-fresh-build.js <port>`; `BASE=` points the
+  harness at it · measure the canvas in canvas px · read the screenshots (L3-r was invisible in every number) · use the
+  Edit tool for backslashes / CRLF · a new spec goes in package.json AND scripts/test-fast.js · background runs get the
+  2-hour limit · the YOU ARE HERE marker is plain text after the arrow."
 
 ### 2026-10-03 · session f86b7fdf · branch `builder/layout-uat` — HANDOVER (recommended and agreed: the context is genuinely long — R-1, L3-h, the whole #185 hunt and c-12b; clean boundary — everything committed, the gate green, c-11 engine work next)
 - **Started from:** session 1fc987ff's handover — BATCH R-1 (research at full width), then L-3 (paused).

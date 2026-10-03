@@ -63,7 +63,9 @@ function auditDoc(opts) {
     for (const ks of Object.values(lines)) {
       const containers = ks.filter((k) => k.querySelector('[class*="bx-"]'));
       if (MW < 600 && containers.length > 1 && Math.min(...containers.map((k) => k.getBoundingClientRect().width)) < 150) err.push(`L5 phone: ${containers.length} columns squeezed side by side in ${idOf(row).slice(-4)} (${containers.map((k) => Math.round(k.getBoundingClientRect().width)).join('/')}px)`);
-      if (MW >= 600 && MW < 900 && opts.rowBands && row.children.length >= 4 && ks.length > 3 && containers.length === ks.length) err.push(`L6 tablet: ${ks.length} columns on one line in ${idOf(row).slice(-4)} (at most 3, #78)`);
+      // c-11c (decided B): a cell of one icon (an aria-hidden svg, no words) does not count — a table of ticks is not four columns
+      const words = containers.filter((k) => k.innerText.trim() || k.querySelector('img,video,iframe,picture,canvas,input,button,textarea,select'));
+      if (MW >= 600 && MW < 900 && opts.rowBands && row.children.length >= 4 && ks.length > 3 && containers.length === ks.length && words.length >= 2) err.push(`L6 tablet: ${ks.length} columns on one line in ${idOf(row).slice(-4)} (at most 3, #78)`);
     }
   }
   // collapsed: a block with content that has no size

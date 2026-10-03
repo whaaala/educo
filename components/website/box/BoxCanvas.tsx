@@ -9,7 +9,7 @@
  */
 
 import { measureCss } from "@/lib/educo-ui/base";
-import { columnFloorRem, gridLeftoverAt, HAND_FLOOR_REM, LIST_ITEM_GAP, restForDrag, tabletPlaces } from "@/lib/box-model";
+import { columnFloorRem, dividerThickness, gridLeftoverAt,HAND_FLOOR_REM, LIST_ITEM_GAP, restForDrag, tabletPlaces } from "@/lib/box-model";
 import { resolvePage } from "@/lib/semantics";
 import { Fragment, useEffect, useLayoutEffect, useMemo, useReducer, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { createPortal } from "react-dom";
@@ -4326,7 +4326,7 @@ function ElementView({ node, headingLevel, theme, editable, selected, onText, on
     }
     case "divider":
       // R-23: MDN's <hr> (a separator), the export's twin; longhands only, because React warns on shorthand + longhand
-      return <hr style={{ borderRightStyle: "none", borderBottomStyle: "none", borderLeftStyle: "none", margin: 0, height: 0, width: "100%", borderTopWidth: node.borderWidth || "0.125rem", borderTopStyle: node.borderStyle ?? "solid", borderTopColor: node.color ? colorToCSS(node.color) : node.borderColor ? colorToCSS(node.borderColor) : typoRole.color("muted") }} />;
+      return <hr style={{ borderRightStyle: "none", borderBottomStyle: "none", borderLeftStyle: "none", margin: 0, height: 0, width: "100%", borderTopWidth: dividerThickness(node),borderTopStyle: node.borderStyle ?? "solid", borderTopColor: node.color ? colorToCSS(node.color) : node.borderColor ? colorToCSS(node.borderColor) : typoRole.color("muted") }} />;
     case "spacer":
       return <div aria-hidden="true" style={{ width: "100%", height: sizeToCSS(node.height) ?? "3rem" }} />;
     case "list": {

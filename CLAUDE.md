@@ -546,6 +546,21 @@ Run through this checklist BEFORE telling the user it's done:
   site once it exists — set up as the first thing after the layout work closes, before templates, components or the
   LLM builder. The Markdown is the single source; the site never becomes a second copy. This is the format every time,
   going forward, so everyone knows what the documentation is and where it lives.
+- **RULE UI — EVERYTHING BUILT IS IN THE BUILDER FOR THE USER TO PLAY WITH (MANDATORY — the user, 2026-10-03: "anything
+  you're implementing… should also be visible on the UI that a user can play around with, select and create their own…
+  everything we've done so far and everything we're doing").** Every capability the engine has — a background, a
+  gradient, a colour, an overlay, a shadow, an edge shape, an effect, a transition, an animation, a layout behaviour — is
+  surfaced in the website builder, for every block it applies to:
+  - **Easy to understand and select:** ready-made choices shown as live previews (RULE S), in plain words, one click to apply.
+  - **Easy to make your own:** each choice can then be adjusted and saved as the user's own, never only a fixed list.
+  - **Nothing hidden:** a capability reachable only through stored data, raw CSS or a code path is a GAP in the ledger,
+    fixed like any bug; a control that offers what the published page ignores is a bug too.
+  - **It applies to EVERYTHING ALREADY BUILT, not only to new work** (the user, 2026-10-03: "this rule must also follow
+    existing stuff that we've done… remember this is something a user has to create"): the builder is a tool a person
+    creates with, so a capability with no easy control is unfinished however long ago it was built. BATCH U-1 in
+    `docs/TASK_TREE.md` audits the whole engine against the builder's controls and surfaces each one it finds.
+  - **Checked through the UI** (RULE Y): a feature is done only when a person has selected it, changed it and made their
+    own in the builder, and seen the same thing in the Preview.
 - **STATUS, ALWAYS (the user, 2026-09-28).** Every reply ends with where the work is and what comes next — one line, a
   pointer the user can act on — so the user never has to ask "where are you?".
 - **RULE P — WEBSITE PERSONALITY AND TONE ARE FOLLOWED (MANDATORY — from 2026-09-27).** The Website Personalities
