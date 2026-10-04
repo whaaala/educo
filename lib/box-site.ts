@@ -4,8 +4,8 @@
  * immutable like box-model, so it's testable and undo-safe. Persistence + editing live in the box-demo page.
  */
 
-import type { PageGridSettings } from "@/lib/page-grid";
-import { type BoxNode, newBoxId, createContainer, makeRowBand, normalizeRowBands, markPageGrid } from "@/lib/box-model";
+import { type PageGridSettings, resolvePageGrid, gridSpaceOf } from "@/lib/page-grid";
+import { type BoxNode, newBoxId, createContainer, makeRowBand, normalizeRowBands, markPageGrid, withGridSpace } from "@/lib/box-model";
 
 export interface BoxPage {
   id: string;
@@ -90,7 +90,42 @@ export function deletePage(site: BoxSite, id: string): BoxSite {
   if (site.pages.length <= 1) return site;
   const pages = site.pages.filter((p) => p.id !== id);
   const homeId = site.homeId === id ? pages[0].id : site.homeId;
-  return { pages, homeId };
+  return { ...site, pages, homeId }; // the site's theme and page grid stay (G2-1)
+}
+
+/**
+ * Sets the site's page grid (`undefined` = the default) or, with `pageId`, that page's own ("This page uses its own grid";
+ * `undefined` = back to the site's) — then every page-grid page takes the side space and gap now in force on it, so the
+ * canvas and the export read the same numbers (`markPageGrid`). One new site: one undo step.
+ */
+export function setPageGrid(site: BoxSite, settings: PageGridSettings | undefined, pageId?: string): BoxSite {
+  // a page's own grid is kept even when it is all defaults: that is still "this page uses its own grid"
+  const grid = pageId && settings ? tidyGrid(settings) ?? {} : tidyGrid(settings);
+  const next: BoxSite = pageId
+    ? { ...site, pages: site.pages.map((p) => (p.id === pageId ? { ...p, grid } : p)) }
+    : { ...site, pageGrid: grid };
+  return applyPageGrid(next);
+}
+
+/** A grid as stored: unset fields dropped (also inside `perRung`), and nothing at all when nothing is set. */
+function tidyGrid(g: PageGridSettings | undefined): PageGridSettings | undefined {
+  if (!g) return undefined;
+  const perRung = Object.fromEntries(Object.entries(g.perRung ?? {}).filter(([, v]) => v !== undefined));
+  const out = Object.fromEntries(Object.entries({ ...g, perRung: Object.keys(perRung).length ? perRung : undefined }).filter(([, v]) => v !== undefined));
+  return Object.keys(out).length ? (out as PageGridSettings) : undefined;
+}
+
+/** Every page-grid page carries the side space and gap of the grid in force on it. Pages already right come back as-is. */
+export function applyPageGrid(site: BoxSite): BoxSite {
+  let changed = false;
+  const pages = site.pages.map((p) => {
+    if (!p.root.pageGrid) return p;
+    const root = withGridSpace(p.root, gridSpaceOf(resolvePageGrid(site.pageGrid, p.grid)));
+    if (root === p.root) return p;
+    changed = true;
+    return { ...p, root };
+  });
+  return changed ? { ...site, pages } : site;
 }
 
 export function setHomePage(site: BoxSite, id: string): BoxSite {

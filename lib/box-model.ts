@@ -362,6 +362,7 @@ export interface BoxNode {
   spaced?: boolean;         // made under SPACE BY DEFAULT (2026-09-30): unset spacing reads `spaceDefaults`; saved pages lack it and keep theirs
   pageGrid?: boolean;       // page root only: laid out on the PAGE GRID (AC-37b, 2026-10-04) — every page made from now; saved pages lack it
   onPageGrid?: boolean;     // a block of a page-grid page (`markPageGrid`): its unset spacing reads `SPACE_GRID`
+  gridSpace?: GridSpace;    // the site's / page's own side space and gap (G-2), on the page root and every block `markPageGrid` marks
   rowBand?: boolean;        // structural ROW band: a direct child of the page root that lays its sections out side-by-side (the page is a vertical stack of these)
   // Does this band run edge to edge, or sit its content on the page's measure? "band" (the default) is what
   // every band did before this existed. "contained" keeps the background full-bleed and insets only the
@@ -4931,8 +4932,30 @@ export const SPACE_DEFAULT = { gutter: 32, section: 16, bar: 16, stack: 16, colu
  */
 export const SPACE_GRID = { ...SPACE_DEFAULT, gutter: 23, columns: 17 } as const;
 
-/** The defaults a block reads: the page grid's on a page-grid page, else the ones it was made with. */
-const spaceFor = (node: BoxNode) => (node.onPageGrid ? SPACE_GRID : SPACE_DEFAULT);
+/** A page grid's own side space (`gutter`) and gap between blocks (`gap`), set in its panel (G-2) — stored fluid units. */
+export interface GridSpace { gutter?: number; gap?: number }
+
+/** The defaults a block reads: the page grid's on a page-grid page (with the site's own side space and gap), else the
+ *  ones it was made with. The ONE place both the canvas and the export read them. */
+const spaceFor = (node: BoxNode) => {
+  if (!node.onPageGrid) return SPACE_DEFAULT;
+  const g = node.gridSpace;
+  return g ? { ...SPACE_GRID, ...(g.gutter !== undefined ? { gutter: g.gutter } : {}), ...(g.gap !== undefined ? { columns: g.gap, stack: g.gap } : {}) } : SPACE_GRID;
+};
+
+/** The side space a page's sections keep by default — what the layout guides draw as padding (G-2). Stored fluid units. */
+export const pageSideSpace = (root: BoxNode): number => spaceFor({ onPageGrid: !!root.pageGrid, gridSpace: root.gridSpace } as BoxNode).gutter;
+
+const sameSpace = (a?: GridSpace, b?: GridSpace) => a?.gutter === b?.gutter && a?.gap === b?.gap;
+
+/** A page-grid page with the side space and gap `space` (`undefined` = the defaults) — the root keeps it for the blocks
+ *  dropped later, and every block takes it now. Returns the SAME tree when nothing changes. */
+export function withGridSpace(root: BoxNode, space: GridSpace | undefined): BoxNode {
+  if (!root.pageGrid || sameSpace(root.gridSpace, space)) return markPageGrid(root);
+  const next: BoxNode = { ...root };
+  if (space) next.gridSpace = space; else delete next.gridSpace;
+  return markPageGrid(next);
+}
 
 /**
  * Marks every spaced block of a page-grid page as belonging to it (AC-37b) — run where the editor commits a page, so a
@@ -4943,9 +4966,11 @@ export function markPageGrid(root: BoxNode): BoxNode {
   const mark = (n: BoxNode): BoxNode => {
     const kids = n.children?.map(mark);
     const changedKids = !!kids && kids.some((k, i) => k !== n.children![i]);
-    const needs = n !== root && n.spaced && !n.onPageGrid;
+    const needs = n !== root && n.spaced && (!n.onPageGrid || !sameSpace(n.gridSpace, root.gridSpace));
     if (!needs && !changedKids) return n;
-    return { ...n, ...(needs ? { onPageGrid: true } : {}), ...(changedKids ? { children: kids } : {}) };
+    const out: BoxNode = { ...n, ...(needs ? { onPageGrid: true } : {}), ...(changedKids ? { children: kids } : {}) };
+    if (needs) { if (root.gridSpace) out.gridSpace = root.gridSpace; else delete out.gridSpace; }
+    return out;
   };
   return mark(root);
 }

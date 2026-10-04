@@ -9,7 +9,7 @@
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Plus, Smartphone, Tablet, Laptop, Monitor, Tv, Maximize2, RotateCw, Undo2, Redo2, Eye, ShieldCheck, X, Home, Trash2, Files, Download, Settings2, Palette, SlidersHorizontal, PanelRightClose, PanelRightOpen, AlertTriangle, ChevronUp, ChevronDown } from "lucide-react";
+import { LayoutGrid, Plus, Smartphone, Tablet, Laptop, Monitor, Tv, Maximize2, RotateCw, Undo2, Redo2, Eye, ShieldCheck, X, Home, Trash2, Files, Download, Settings2, Palette, SlidersHorizontal, PanelRightClose, PanelRightOpen, AlertTriangle, ChevronUp, ChevronDown } from "lucide-react";
 import { DEFAULT_THEME, resolveSiteTheme } from "@/lib/site-storage";
 import { THEMES, type ThemeId } from "@/lib/theme-config";
 import { RUNG_LABEL, RUNG_ORDER, RUNG_PX } from "@/lib/educo-ui/layout";
@@ -22,8 +22,11 @@ import {
 } from "@/lib/box-model";
 import { blockForKind } from "@/lib/box-presets";
 import {
-  type BoxSite, siteFromRoot, coerceSite, normalizeSite, setPageRoot, addPage, deletePage, renamePage, setHomePage, duplicatePage, emptyPageRoot, setSiteTheme,
+  type BoxSite, siteFromRoot, coerceSite, normalizeSite, setPageRoot, addPage, deletePage, renamePage, setHomePage, duplicatePage, emptyPageRoot, setSiteTheme, setPageGrid,
 } from "@/lib/box-site";
+import { columnsAt, resolvePageGrid, type PageGridSettings } from "@/lib/page-grid";
+import PageGridPanel from "@/components/website/box/PageGridPanel";
+import { CHROME_Z } from "@/lib/educo-ui/stacking";
 import { renderSitePage, renderSiteFiles, siteFileMap, downloadSite, fontFamiliesInSite } from "@/lib/box-export";
 import { embedFontCss } from "@/lib/educo-ui/font-embed";
 import { warmIcons, hasIcon } from "@/lib/educo-ui/icon-svg";
@@ -32,7 +35,7 @@ import BoxInspector from "@/components/website/box/BoxInspector";
 import BulkInspector from "@/components/website/box/BulkInspector";
 import BlocksPanel, { LAUNCHER_GUTTER_REM, PANEL_GUTTER_REM } from "@/components/website/box/BlocksPanel";
 import ThemeSwitcher from "@/components/shared/ThemeSwitcher";
-import { ToolBtn, ToolDivider, Segmented } from "@/components/website/box/ui";
+import { ToolBtn, ToolDivider, Segmented, PortalMenu, MenuItem } from "@/components/website/box/ui";
 import PageLoader from "@/components/shared/PageLoader";
 import CompactSelect from "@/components/shared/CompactSelect";
 import DeleteConfirmationModal from "@/components/shared/DeleteConfirmationModal";
@@ -109,6 +112,11 @@ const HIST_CAP = 100;
 
 /** Input types with no text in them, so the page's own undo keeps Ctrl+Z instead of the browser's. */
 const NON_TEXT_INPUTS = new Set(["range", "checkbox", "radio", "color", "button", "submit", "file"]);
+/** Is a person typing here? Then a plain letter is a letter, never a shortcut. */
+const typingIn = (el: Element | null) => { const ae = el as HTMLElement | null;
+  return ae?.tagName === "TEXTAREA" || !!ae?.isContentEditable || (ae?.tagName === "INPUT" && !NON_TEXT_INPUTS.has((ae as HTMLInputElement).type)); };
+/** The layout guides are a per-person viewing choice (G-2): remembered in this browser, off until switched on. */
+const GUIDES_KEY = "educo_box_guides_v1";
 
 export default function BoxDemoPage() {
   const [hist, setHist] = useState<Hist | null>(null);
@@ -132,6 +140,30 @@ export default function BoxDemoPage() {
   const [device, setDevice] = useState<Device>("full");
   const [showHidden, setShowHidden] = useState(false); // blocks hidden at this device: gone from the canvas unless asked for (#132)
   const [preview, setPreview] = useState(false);
+  // THE LAYOUT GUIDES (AC-37b, G-2): off by default, remembered per person; Shift G, the toolbar switch and the canvas
+  // right-click menu all flip the same state. `guideRows` is the guides' row lines, a viewing choice too.
+  // Rows are drawn with the columns by default (the user, 2026-10-04: "columns and rows… it takes over the whole page");
+  // their HEIGHT still follows the content — a block spanning rows comes with G-3.
+  const [guides, setGuides] = useState({ on: false, rows: true });
+  const [gridPanel, setGridPanel] = useState(false);
+  const [canvasMenu, setCanvasMenu] = useState<{ x: number; y: number } | null>(null);
+  const guidesBtnRef = useRef<HTMLButtonElement>(null);
+  useEffect(() => { try { const v = JSON.parse(localStorage.getItem(GUIDES_KEY) ?? "null"); if (v && typeof v.on === "boolean") setGuides({ on: v.on, rows: v.rows !== false }); } catch { /* no storage: the default */ } }, []);
+  const toggleGuides = useCallback((patch?: Partial<{ on: boolean; rows: boolean }>) => setGuides((g) => {
+    const next = { ...g, ...(patch ?? { on: !g.on }) };
+    try { localStorage.setItem(GUIDES_KEY, JSON.stringify(next)); } catch { /* the choice still holds for this visit */ }
+    return next;
+  }), []);
+  useEffect(() => { if (!guides.on) setGridPanel(false); }, [guides.on]); // guides off, by any of the three ways: the panel goes too
+  useEffect(() => {
+    // Shift G, as in Figma: free here (Ctrl Shift G is Ungroup, Shift 0/1/2 the zoom), and never while typing a capital G.
+    const onKey = (e: KeyboardEvent) => {
+      if (e.code !== "KeyG" || !e.shiftKey || e.ctrlKey || e.metaKey || e.altKey || e.repeat || typingIn(document.activeElement)) return;
+      e.preventDefault(); toggleGuides();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [toggleGuides]);
   const [pageMenu, setPageMenu] = useState(false); // page-settings popover open
   const [confirmDeletePage, setConfirmDeletePage] = useState(false); // delete-page confirmation modal
   const [pageCheckOpen, setPageCheckOpen] = useState(false); // the Page check (semantics C1)
@@ -308,10 +340,7 @@ export default function BoxDemoPage() {
       // browser's own text undo is what you want there — and wrong for one you DRAG. A range slider holds no
       // text to undo, so after adjusting the spacing the focus was still on the slider and Ctrl+Z did
       // absolutely nothing: measured at sixty presses without a single change reversed.
-      const ae = document.activeElement as HTMLElement | null;
-      const typedInto = ae?.tagName === "TEXTAREA" || !!ae?.isContentEditable
-        || (ae?.tagName === "INPUT" && !NON_TEXT_INPUTS.has((ae as HTMLInputElement).type));
-      if (typedInto) return;
+      if (typingIn(document.activeElement)) return;
       const mod = e.ctrlKey || e.metaKey; const k = e.key.toLowerCase();
       if (mod && k === "z" && !e.shiftKey) { e.preventDefault(); undo(); }
       else if (mod && (k === "y" || (k === "z" && e.shiftKey))) { e.preventDefault(); redo(); }
@@ -628,6 +657,23 @@ export default function BoxDemoPage() {
   const onRenamePage = (name: string) => pushSite(renamePage(site, activePage.id, name));
   const onDeletePage = () => { if (site.pages.length <= 1) return; const s = deletePage(site, activePage.id); pushSite(s); setActivePageId(s.homeId); setSelectedIds([]); setPageMenu(false); setConfirmDeletePage(false); };
   const onSetHome = () => { pushSite(setHomePage(site, activePage.id)); setPageMenu(false); };
+
+  // ── The page grid (G-2): the site's, or this page's own; a whole slider drag is ONE undo, like the Inspector's ──
+  const ownGrid = activePage.grid !== undefined;
+  const gridStored: PageGridSettings = (ownGrid ? activePage.grid : site.pageGrid) ?? {};
+  const gridHere = resolvePageGrid(site.pageGrid, activePage.grid);
+  const setGrid = (next: PageGridSettings | undefined, mergeKey?: string) => {
+    const now = Date.now();
+    const merge = !!mergeKey && mergeAt.current?.key === mergeKey && now - mergeAt.current.at < MERGE_MS;
+    mergeAt.current = mergeKey ? { key: mergeKey, at: now } : null;
+    setHist((h) => {
+      if (!h) return h;
+      const present = ownGrid ? setPageGrid(h.present, next ?? {}, activePage.id) : setPageGrid(h.present, next);
+      return merge ? { ...h, present } : { present, past: [...h.past, h.present].slice(-HIST_CAP), future: [] };
+    });
+  };
+  // "This page uses its own grid": it starts as a copy of the site's, so nothing moves until a number is changed.
+  const setOwnGrid = (own: boolean) => pushSite(setPageGrid(site, own ? { ...site.pageGrid } : undefined, activePage.id));
 
   const addSection = () => { const sec = makeSection(SECTION_TINTS[countSections(root) % SECTION_TINTS.length]); sec.width = "100%"; commit(insertBox(root, root.id, root.children?.length ?? 0, makeRow([sec]))); };
   // The merge key is the block plus the FIELDS being written, so "drag the spacing slider" coalesces while
@@ -1101,7 +1147,10 @@ export default function BoxDemoPage() {
         * overflows, and at desktop widths there is room for one row so the bar looks exactly as it did.
         * `min-h-14` keeps that single row the same height it always was.
         */}
-      <header className="min-h-14 shrink-0 flex flex-wrap items-center gap-2 gap-y-1.5 py-1.5 px-4 border-b border-line bg-surface z-30">
+      {/* THE BAR SITS ABOVE THE SELECTION CHROME (G2-6): a selected block's handles and toolbar are portalled to the page at
+          `CHROME_Z.handle` / `.toolbar`, and everything the bar opens (Page settings, the page-grid panel) lives in its stacking
+          context — at `z-30` a handle drew over the panel's "−" and took the click. */}
+      <header style={{ zIndex: CHROME_Z.panel }} className="relative min-h-14 shrink-0 flex flex-wrap items-center gap-2 gap-y-1.5 py-1.5 px-4 border-b border-line bg-surface">
         <span className="text-sm font-bold text-gray-800 dark:text-gray-100 midnight:text-cyan-50 purple:text-pink-50 mr-1 shrink-0">Box Builder</span>
         <ToolDivider />
 
@@ -1125,6 +1174,7 @@ export default function BoxDemoPage() {
                 <button onClick={onSetHome} disabled={activePage.id === site.homeId} className="flex items-center justify-center gap-1 text-xs px-2 py-1.5 rounded-lg border border-line text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100 dark:hover:bg-white/10 disabled:opacity-40"><Home className="w-3.5 h-3.5" /> Home</button>
                 <button onClick={onDuplicatePage} className="flex items-center justify-center gap-1 text-xs px-2 py-1.5 rounded-lg border border-line text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100 dark:hover:bg-white/10"><Files className="w-3.5 h-3.5" /> Duplicate</button>
               </div>
+              <button onClick={() => { setPageMenu(false); toggleGuides({ on: true }); setGridPanel(true); }} className="w-full flex items-center justify-center gap-1 text-xs px-2 py-1.5 rounded-lg border border-line text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100 dark:hover:bg-white/10"><LayoutGrid className="w-3.5 h-3.5" aria-hidden="true" /> Page grid…</button>
               <button onClick={() => { setPageMenu(false); setConfirmDeletePage(true); }} disabled={site.pages.length <= 1} title={site.pages.length <= 1 ? "A site needs at least one page" : "Delete this page"} className="w-full flex items-center justify-center gap-1 text-xs px-2 py-1.5 rounded-lg border border-red-200 dark:border-red-900/50 text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 disabled:opacity-40"><Trash2 className="w-3.5 h-3.5" /> Delete page</button>
             </div>
           )}
@@ -1155,6 +1205,17 @@ export default function BoxDemoPage() {
         <div className="ml-auto flex flex-wrap items-center justify-end gap-1.5 gap-y-1.5">
           <Segmented ariaLabel="Preview screen size" value={device} onChange={setDevice} options={DEVICES.map((d) => ({ value: d.id, Icon: d.Icon, title: `${d.label}${d.w ? ` (${d.w}px)` : ""}` }))} />
           <ZoomControls z={canvasZoom.z} user={canvasZoom.user} fit={fit} canSelect={selectedIds.length === 1} onZoom={(v) => canvasZoom.setZoom(v)} onSelection={canvasZoom.toSelection} />
+          {/* LAYOUT GUIDES (G-2), as the plan has it: switching them ON draws the page grid and opens its panel; OFF hides both.
+              Shift G toggles the guides alone. One icon button — a second one wrapped the bar to two rows at 1536px (G2-8). */}
+          <div className="relative">
+            <button ref={guidesBtnRef} type="button" aria-pressed={guides.on} aria-label="Layout guides" title="Layout guides (Shift+G) — the page grid's columns drawn over the page, and its settings; never published"
+              onClick={() => { const on = !guides.on; toggleGuides({ on }); setGridPanel(on); }}
+              className={`inline-flex items-center gap-1 rounded-lg border px-2 py-1 text-[0.6875rem] ${guides.on ? "border-indigo-400 bg-indigo-50 text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-300 midnight:bg-indigo-950/40 midnight:text-indigo-300 purple:bg-indigo-950/40 purple:text-indigo-300" : "border-gray-200 text-gray-500 dark:border-gray-700 dark:text-gray-400 midnight:border-gray-700 midnight:text-gray-400 purple:border-gray-700 purple:text-gray-400"}`}>
+              <LayoutGrid className="w-3.5 h-3.5" aria-hidden="true" /><span className="hidden min-[1700px]:inline">Guides</span>
+            </button>
+            {gridPanel && <PageGridPanel grid={gridStored} ownPage={ownGrid} breakpoint={bp} rows={guides.rows} onRows={(rows) => toggleGuides({ rows })}
+              onChange={setGrid} onOwnPage={setOwnGrid} onClose={() => { setGridPanel(false); guidesBtnRef.current?.focus(); }} />}
+          </div>
           {/* A block hidden on this device is GONE from the canvas, as it is from the published page (#132). This brings
               the hidden ones back faintly, so one can be selected and un-hidden. */}
           <button type="button" aria-pressed={showHidden} aria-label="Show hidden blocks" title={showHidden ? "Hidden blocks are shown faintly — click to draw the page as it publishes" : "Show blocks hidden on this device, faintly, so you can select them"} onClick={() => setShowHidden((v) => !v)}
@@ -1166,7 +1227,9 @@ export default function BoxDemoPage() {
             <input type="number" min={6} max={24} value={root.baseFont ?? 10} onChange={(e) => commit(updateBox(root, root.id, { baseFont: Number(e.target.value) || 10 }))} aria-label="Base size (px)" className="w-12 text-xs px-1.5 py-1 rounded-lg border border-line bg-transparent" />
           </label>
           {/* WEBSITE theme (saved with the site → canvas + content + export). Distinct from the editor-appearance switcher. */}
-          <ThemeSwitcher align="right" value={siteThemeId as ThemeId} onChange={setWebsiteTheme} ariaLabel="Website theme" triggerIcon={Palette} triggerLabel={THEMES[siteThemeId as ThemeId]?.label ?? "Theme"} />
+          <ThemeSwitcher align="right" value={siteThemeId as ThemeId} onChange={setWebsiteTheme} ariaLabel="Website theme" triggerIcon={Palette} triggerLabel={THEMES[siteThemeId as ThemeId]?.label ?? "Theme"}
+            // its name from 1700px, like every label in this group: the bar stays ONE row at 1536 with the guides switch (G2-8)
+            labelClassName="hidden min-[1700px]:inline" />
           {/* EDITOR appearance (how the builder UI looks). */}
           <ThemeSwitcher compact align="right" />
         </div>
@@ -1176,7 +1239,8 @@ export default function BoxDemoPage() {
       <div className="relative flex-1 flex min-h-0">
         {/* The Blocks panel floats over this column, so the canvas keeps its full width. */}
         <div className="relative flex-1 min-w-0 flex">
-          <div ref={scrollerRef} data-canvas-scroller className="flex-1 min-w-0 overflow-auto [touch-action:pan-x_pan-y]">
+          <div ref={scrollerRef} data-canvas-scroller className="flex-1 min-w-0 overflow-auto [touch-action:pan-x_pan-y]"
+            onContextMenu={(e) => { if (typingIn(e.target as Element)) return; e.preventDefault(); setCanvasMenu({ x: e.clientX, y: e.clientY }); }}>
             {/* The Blocks launcher floats in the left gutter, so the gutter RESERVES its exact footprint. Without
                 this the centred page slid under the button and the first word of the first block could not be
                 clicked. Reserved whether the panel is open or shut, so opening it never reflows the page under
@@ -1187,11 +1251,18 @@ export default function BoxDemoPage() {
             <div ref={canvasRoomRef} className="relative p-2 sm:p-8 flex min-h-full transition-[padding] duration-200 motion-reduce:transition-none" style={{ paddingLeft: `${panelDocked ? PANEL_GUTTER_REM : LAUNCHER_GUTTER_REM}rem` }}>
               <div data-canvas-sizer className={`mx-auto shrink-0 h-fit ${frameW == null ? "w-full max-w-5xl" : ""}`} style={scaled ? { width: frameW * canvasZoom.z, height: frameH * canvasZoom.z } : { width: frameW ?? undefined }}>
                 <div ref={frameRef} data-canvas-scale={scaled ? canvasZoom.z : 1} className="shadow-sm rounded-xl ring-1 ring-black/10 dark:ring-white/10 midnight:ring-white/10 purple:ring-white/10 h-fit transition-[width] duration-300 motion-reduce:transition-none" style={{ width: frameW ?? "100%", transform: scaled ? `scale(${canvasZoom.z})` : undefined, transformOrigin: "0 0", background: renderTheme.background, color: renderTheme.text, fontFamily: renderTheme.bodyFont, containerType: "inline-size" }}>
-                  <BoxCanvas root={root} theme={renderTheme} minHeight={PAGE_MIN_H} selectedIds={selectedIds} onSelectIds={selectByUser} onChange={commit} breakpoint={bp} showHidden={showHidden} marqueeRoom={roomEl} />
+                  <BoxCanvas root={root} theme={renderTheme} minHeight={PAGE_MIN_H} selectedIds={selectedIds} onSelectIds={selectByUser} onChange={commit} breakpoint={bp} showHidden={showHidden} marqueeRoom={roomEl}
+                    guides={guides.on ? { cols: columnsAt(gridHere, bp), rowStepRem: gridHere.rowStepRem ?? 1.5, rows: guides.rows } : null} />
                 </div>
               </div>
             </div>
           </div>
+          {canvasMenu && (
+            <PortalMenu anchor={{ top: canvasMenu.y, left: canvasMenu.x, bottom: canvasMenu.y, right: canvasMenu.x }} onClose={() => setCanvasMenu(null)} ariaLabel="Canvas" width={220}>
+              <MenuItem Icon={LayoutGrid} label={guides.on ? "Hide layout guides" : "Show layout guides"} hint="Shift+G" onClick={() => { toggleGuides(); setCanvasMenu(null); }} />
+              <MenuItem Icon={Settings2} label="Page grid…" onClick={() => { toggleGuides({ on: true }); setGridPanel(true); setCanvasMenu(null); }} />
+            </PortalMenu>
+          )}
           <BlocksPanel theme={renderTheme} onPick={insertBlock} docked={wideScreen} onOpenChange={setBlocksOpen} />
         </div>
 

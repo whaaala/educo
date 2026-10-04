@@ -79,3 +79,73 @@ Feature: The page grid (AC-37b)
     Given my site's page grid has 12 columns
     And one page uses its own grid of 16 columns
     Then that page has 16 columns and every other page has 12
+
+  # ── G-2 · layout guides + the page-grid panel ─────────────────────────────────────────────────────
+
+  Scenario Outline: The layout guides show the page grid's columns on every screen
+    Given a new page open in the builder
+    When I switch on "Layout guides" with <entry point>
+    Then the canvas shows the page grid's column lines and middle lines
+    And the side space is drawn as padding, edge to edge
+    And the published page has no guides
+
+    Examples:
+      | entry point                     |
+      | the toolbar switch              |
+      | Shift G                         |
+      | the canvas right-click menu     |
+
+  Scenario Outline: The guides follow the screen being edited
+    Given the layout guides are on
+    When I edit the page at <screen>
+    Then the guides show <columns> columns
+
+    Examples:
+      | screen  | columns |
+      | Mobile  | 6       |
+      | Tablet  | 12      |
+      | Laptop  | 12      |
+      | Desktop | 12      |
+      | Wide    | 12      |
+
+  Scenario: Rows are drawn with the columns
+    Given the layout guides are on
+    Then the canvas shows row lines across the whole page as well as the columns
+    And each section is still as tall as its words and pictures need
+    When I untick "Row lines in the guides"
+    Then only the columns are drawn, and that choice is remembered
+
+  Scenario: The guides are off by default and remembered
+    Given a builder I have never switched the guides on in
+    Then the canvas looks as it did before the page grid
+    When I switch the guides on and reload the page
+    Then the guides are still on
+    And Shift G while typing in a text field types a capital G instead
+
+  Scenario: The selected block says how many columns it takes
+    Given the layout guides are on and a block half the width of its row is selected
+    Then a label on it reads "6 of 12" on a desktop
+    And it reads "3 of 6" on Mobile
+
+  Scenario: Changing the page grid moves every block with it, in one undo
+    Given the page-grid panel is open
+    When I set the columns to 10
+    Then the guides show 10 columns and the half-width block reads "5 of 10"
+    When I press Undo once
+    Then the grid is back to 12 columns
+
+  Scenario: Side space and the gap between blocks are the site's to change
+    Given the page-grid panel is open
+    When I set the side space to 0
+    Then words in a section start at the page edge in the canvas and in the Preview
+    And Reset to default puts the side space back to the page grid's default
+
+  Scenario: A page may use its own grid
+    Given my site's page grid has 12 columns
+    When I switch on "This page uses its own grid" and set it to 16 columns
+    Then this page's guides show 16 columns and every other page's show 12
+
+  Scenario: The panel is reachable by keyboard and screen reader
+    Given the page-grid panel is open
+    Then every field has a visible label and can be changed with the keyboard
+    And Escape closes the panel and returns focus to the "Layout guides" switch

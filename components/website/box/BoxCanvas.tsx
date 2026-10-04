@@ -16,7 +16,7 @@ import { createPortal } from "react-dom";
 import { Link2, Plus, ChevronUp, ChevronDown, Copy, Scissors, ClipboardPaste, Trash2, Upload, GripVertical, MoreVertical, Rows3, Columns3, Grid3x3, Type, Heading as HeadingIcon, MousePointerClick, Image as ImageIcon, Layers, BringToFront, SendToBack, Video as VideoIcon, Sparkles, Minus as MinusIcon, List as ListIcon, Code2, Star, Lock, LockOpen, Ungroup } from "lucide-react";
 import type { SiteTheme } from "@/lib/site-storage";
 import {
-  type BoxNode, type BoxType,
+  type BoxNode, type BoxType, pageSideSpace,
   containerStyle, childStyle, marginCSS, leafPaddingCSS, outerSpaceCSS, pageBandInset, pagePinCover, sectionContent, sizeToCSS, u, baseUnit, floatingReserve, floatStacksOnMobile, createContainer, createElement, createComponent,
   updateBox, deleteBox, insertBox, moveBoxStep, duplicateBox, moveBox, cloneBox, findParent, isAncestor, isContainer, containerLabel, widthPct, stackWithBlock, fitBand, PILL, blockTypography,
   isFloating, floatBox, unfloatBox, groupBoxes, ungroupBoxes, bringToFront, sendToBack, bringForward, sendBackward, packRowLines, allocateLine, type LineFollower,
@@ -39,6 +39,7 @@ import { isRegistryComponent, renderComponent } from "@/lib/educo-ui/registry";
 import { EditableText, ImageBox } from "@/components/website/sections/SectionKit";
 import ItemCrudLayer, { type SelectedItem } from "@/components/website/box/ItemCrudLayer";
 import { zoomOf } from "@/lib/canvas-zoom";
+import { gridTemplate, guideColor, guideInk, spanOfWidth } from "@/lib/page-grid";
 
 /** Layered background CSS: base fill (colour/gradient) → image → overlay; content renders above. */
 function backgroundStyle(node: BoxNode): React.CSSProperties {
@@ -407,6 +408,59 @@ const ADD_ITEMS: { type: BoxType | "row" | "grid" | "accordion"; label: string; 
  */
 const mirrorMemory = new Map<string, { box: MirrorBox | null; chase: MirrorChase }>();
 
+/** What the layout guides draw (G-2): the page grid's columns on this screen, and its row lines if asked for. */
+export interface LayoutGuidesView { cols: number; rowStepRem: number; rows: boolean }
+
+/**
+ * THE LAYOUT GUIDES (AC-37b, G-2) — the page grid drawn over the canvas, never published. The columns come from the ONE
+ * template (`gridTemplate`) and the side strips from the page's own side space (`pageSideSpace`, through `u()` as the
+ * sections are), so the lines sit where the blocks do on every screen. Each column shows its middle line faintly.
+ */
+function LayoutGuides({ view, side, unit, color }: { view: LayoutGuidesView; side: string; unit: string; color: string }) {
+  const strip = `color-mix(in oklch, ${color} 14%, transparent)`;
+  const rowLines = view.rows
+    ? `, repeating-linear-gradient(to bottom, transparent 0 calc(${view.rowStepRem}rem - 1px), color-mix(in oklch, ${color} 35%, transparent) calc(${view.rowStepRem}rem - 1px) ${view.rowStepRem}rem)`
+    : "";
+  return (
+    <div aria-hidden="true" data-layout-guides={view.cols} style={{
+      // the page root's own base unit: `side` is a `u()` length, and outside the root it fell back to 23px on every screen (G2-2)
+      ["--box-u" as string]: unit,
+      position: "absolute", inset: 0, pointerEvents: "none", zIndex: CHROME_Z.guides, display: "grid",
+      gridTemplateColumns: gridTemplate(view.cols), paddingInline: side, boxSizing: "border-box",
+      backgroundImage: `linear-gradient(to right, ${strip} 0 ${side}, transparent ${side} calc(100% - ${side}), ${strip} calc(100% - ${side}))${rowLines}`,
+    }}>
+      {Array.from({ length: view.cols }, (_, i) => (
+        <div key={i} data-guide-col style={{
+          borderInlineStart: `1px dashed ${color}`, ...(i === view.cols - 1 ? { borderInlineEnd: `1px dashed ${color}` } : {}),
+          backgroundImage: `linear-gradient(to right, transparent calc(50% - 0.5px), color-mix(in oklch, ${color} 30%, transparent) calc(50% - 0.5px) calc(50% + 0.5px), transparent calc(50% + 0.5px))`,
+        }} />
+      ))}
+    </div>
+  );
+}
+
+/**
+ * "6 of 12" on the selected block while the guides are on (G-2): how many of the DRAWN columns the block covers, measured,
+ * so a half block that stacks on a phone honestly reads all of them. Re-measured when anything moves the page.
+ */
+function SpanChip({ blockId, cols, color }: { blockId: string; cols: number; color: string }) {
+  const [span, setSpan] = useState<number | null>(null);
+  useLayoutEffect(() => {
+    const measure = () => {
+      const el = document.querySelector(`[data-box-id="${CSS.escape(blockId)}"]`);
+      const col = document.querySelector("[data-layout-guides] > [data-guide-col]");
+      setSpan(el && col ? spanOfWidth(el.getBoundingClientRect().width, col.getBoundingClientRect().width, cols) : null);
+    };
+    measure();
+    window.addEventListener("resize", measure);
+    window.addEventListener("transitionend", measure, true);
+    return () => { window.removeEventListener("resize", measure); window.removeEventListener("transitionend", measure, true); };
+  });
+  if (span === null) return null;
+  // top-right, as in the plan: at the bottom-left it sat over the block's first words, beside its toolbar (G2-7)
+  return <div data-span-chip style={{ position: "absolute", right: "0.75rem", top: "0.25rem", background: color, color: guideInk(color), font: "500 0.6875rem/1 ui-monospace, monospace", padding: "0.2rem 0.35rem", borderRadius: "0.1875rem", whiteSpace: "nowrap" }}>{span} of {cols}</div>;
+}
+
 function ChromeMirror({ blockId, children }: { blockId: string; children: ReactNode }) {
   const remembered = mirrorMemory.get(blockId);
   const [box, setBox] = useState<MirrorBox | null>(remembered?.box ?? null);
@@ -592,7 +646,7 @@ function ChromeMirror({ blockId, children }: { blockId: string; children: ReactN
 }
 
 export default function BoxCanvas({
-  root, theme, editable = true, selectedId, onSelectId, selectedIds, onSelectIds, onChange, onResized, minHeight = 600, breakpoint = "base", showHidden = false, marqueeRoom,
+  root, theme, editable = true, selectedId, onSelectId, selectedIds, onSelectIds, onChange, onResized, minHeight = 600, breakpoint = "base", showHidden = false, marqueeRoom, guides = null,
 }: {
   root: BoxNode;
   theme: SiteTheme;
@@ -609,7 +663,9 @@ export default function BoxCanvas({
   minHeight?: number; // the page's minimum height (≈ a viewport); the page GROWS past this with content
   breakpoint?: Breakpoint; // active responsive breakpoint — edits at tablet/mobile write per-breakpoint overrides
   showHidden?: boolean;    // draw blocks hidden at this breakpoint faintly (off: they are gone, as on the published page)
+  guides?: LayoutGuidesView | null; // the layout guides (G-2): the page grid drawn over the canvas while on; never published
 }) {
+  const guideHue = guideColor(theme.background);
   const [menuFor, setMenuFor] = useState<string | null>(null); // which box's actions dropdown is open
   // The "add a block inside" menu an EMPTY box's own + opens. Separate from `menuFor`, which is the whole
   // actions dropdown: this one offers only the thing the empty box is asking for.
@@ -3405,7 +3461,7 @@ export default function BoxCanvas({
               </button>
             );
           })()}
-          {isSolo && <ChromeMirror blockId={node.id}><NodeToolbar node={node} isRoot={isRoot} />{resizeHandles}</ChromeMirror>}
+          {isSolo && <ChromeMirror blockId={node.id}><NodeToolbar node={node} isRoot={isRoot} />{resizeHandles}{guides && !isRoot && <SpanChip blockId={node.id} cols={guides.cols} color={guideHue} />}</ChromeMirror>}
         </Tag>
       );
     }
@@ -3439,7 +3495,7 @@ export default function BoxCanvas({
         className={`${isSel ? "outline outline-2 outline-indigo-500 outline-offset-[-2px]" : editable ? "hover:outline hover:outline-1 hover:outline-indigo-300/70 hover:outline-offset-[-1px]" : ""}`}
       >
         <ElementView node={node} headingLevel={semR?.level} theme={theme} editable={editable} selected={isSel} breakpoint={breakpoint} onText={(v) => onChange(updateBox(root, node.id, { text: v }))} onSrc={(v) => onChange(updateBox(root, node.id, { src: v }))} onPatchNode={(patch) => onChange(updateBox(root, node.id, patch))} itemSel={itemSel} setItemSel={setItemSel} />
-        {isSolo && <ChromeMirror blockId={node.id}><NodeToolbar node={node} isRoot={isRoot} />{resizeHandles}</ChromeMirror>}
+        {isSolo && <ChromeMirror blockId={node.id}><NodeToolbar node={node} isRoot={isRoot} />{resizeHandles}{guides && !isRoot && <SpanChip blockId={node.id} cols={guides.cols} color={guideHue} />}</ChromeMirror>}
       </Tag>
     );
   };
@@ -3654,6 +3710,7 @@ export default function BoxCanvas({
         return css ? <style dangerouslySetInnerHTML={{ __html: css }} /> : null;
       })()}
       {renderNode(root, null)}
+      {editable && guides && <LayoutGuides view={guides} side={u(pageSideSpace(root))} unit={baseUnit(root.baseFont ?? 10)} color={guideHue} />}
       {/* Marquee (rubber-band) selection rectangle. Portaled so it's never clipped. */}
       {marquee && createPortal(
         <div aria-hidden="true" style={{ position: "fixed", left: Math.min(marquee.x0, marquee.x), top: Math.min(marquee.y0, marquee.y), width: Math.abs(marquee.x - marquee.x0), height: Math.abs(marquee.y - marquee.y0), pointerEvents: "none", zIndex: CHROME_Z.marquee }} className="border-2 border-dashed border-indigo-500 bg-indigo-500/10 rounded" />,

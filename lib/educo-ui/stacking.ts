@@ -74,6 +74,8 @@ export const PAGE_Z_CEILING = 998;
  * clear everything, or the pointer changes back the moment it crosses a handle.
  */
 export const CHROME_Z = {
+  /** The layout guides (G-2): the page grid drawn over the page, under every piece of selection chrome. */
+  guides: 9050,
   /** The outline drawn around a component's items while its CRUD layer is open. */
   itemBox: 9100,
   /** That layer's own little toolbar, which must clear the outline. */

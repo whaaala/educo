@@ -2,10 +2,10 @@ import { describe, it, expect } from "vitest";
 import { type BoxNode, type Breakpoint, SPACE_DEFAULT, SPACE_GRID, spaceDefaults, outerDefaults, gapOf, insertBox, normalizeRowBands, markPageGrid, u, createContainer, makeRowBand, sectionContent, gridBandOwnsGutter, pageBandInset, rowNarrowsAt, rowQueryCss, childStyle, tabletPlaces } from "@/lib/box-model";
 import { blockForKind } from "@/lib/box-presets";
 import { COMPONENT_CATALOGUE } from "@/lib/component-catalogue";
-import { emptyPageRoot, siteFromRoot } from "@/lib/box-site";
+import { emptyPageRoot, siteFromRoot, setPageGrid, applyPageGrid, addPage } from "@/lib/box-site";
 import { renderSitePage, SKIP_LINK_CSS } from "@/lib/box-export";
 import { DEFAULT_THEME } from "@/lib/site-storage";
-import { PAGE_GRID_DEFAULT, columnsAt, spanOf, snapShare, spanLabel, spanText, resolvePageGrid } from "@/lib/page-grid";
+import { PAGE_GRID_DEFAULT, columnsAt, spanOf, snapShare, spanLabel, spanText, resolvePageGrid, gridSpaceOf, gridTemplate, spanOfWidth } from "@/lib/page-grid";
 
 /**
  * THE PAGE GRID IN THE ENGINE (AC-37b, BATCH G-1). Scenarios: tests/features/components/website/page-grid.feature.
@@ -253,5 +253,101 @@ describe("the steps count everything a column is held to on screen (G-1 #15 / #1
   });
   it("a row on the page is measured by the page, so it carries the page's side space twice", () => {
     expect(twoAcross(band(), true)).toBeGreaterThan(twoAcross(band(), false));
+  });
+});
+
+describe("G-2 · the site's side space and gap, set in the page-grid panel", () => {
+  const pageWith = (...kinds: string[]) => kinds.reduce((r, k) => dropOn(r, blockForKind(k)), emptyPageRoot());
+  const html = (site: ReturnType<typeof siteFromRoot>, id = site.homeId) => renderSitePage(site, DEFAULT_THEME, id, { inlineShared: true });
+  const spacedOf = (root: BoxNode) => { const out: BoxNode[] = []; walk(root, (n) => { if (n !== root && n.spaced) out.push(n); }); return out; };
+
+  it("the defaults change nothing: a site with no settings comes back as the same object", () => {
+    const site = siteFromRoot(pageWith("heading", "row", "card"));
+    expect(applyPageGrid(site)).toBe(site);
+    expect(setPageGrid(site, undefined).pages[0].root).toBe(site.pages[0].root);
+  });
+
+  it.each(ALL_KINDS)("%s: the side space and gap set for the site reach every block, and Reset puts the defaults back", (kind) => {
+    const site = siteFromRoot(pageWith(kind));
+    const set = setPageGrid(site, { sideSpace: 0, blockGap: 40 });
+    for (const n of spacedOf(set.pages[0].root)) expect(n.gridSpace, n.type).toEqual({ gutter: 0, gap: 40 });
+    const reset = setPageGrid(set, undefined);
+    for (const n of spacedOf(reset.pages[0].root)) expect(n.gridSpace, n.type).toBeUndefined();
+    expect(JSON.stringify(reset.pages[0].root)).toBe(JSON.stringify(site.pages[0].root)); // byte-identical, nothing lost
+  });
+
+  it("the published page writes the site's side space, and the canvas reads the same number", () => {
+    const site = setPageGrid(siteFromRoot(pageWith("heading")), { sideSpace: 48 });
+    expect(html(site)).toContain(u(48));
+    expect(html(site)).not.toContain(u(SPACE_GRID.gutter));
+    const heading = spacedOf(site.pages[0].root).find((n) => !n.rowBand)!;
+    expect(spaceDefaults(heading, true).pad[1]).toBe(48);
+  });
+
+  it("side space 0: words start at the page edge (a person's choice, down to zero)", () => {
+    const site = setPageGrid(siteFromRoot(pageWith("heading")), { sideSpace: 0 });
+    const heading = spacedOf(site.pages[0].root).find((n) => !n.rowBand)!;
+    expect(spaceDefaults(heading, true).pad[1]).toBe(0);
+  });
+
+  it("the gap between blocks is the site's, across and down", () => {
+    const site = setPageGrid(siteFromRoot(pageWith("row")), { blockGap: 0 });
+    const row = site.pages[0].root.children![0].children![0];
+    expect(gapOf(row)).toEqual({ x: 0, y: 0 });
+  });
+
+  it("a block dropped AFTER the setting takes it too (the root keeps it)", () => {
+    const site = setPageGrid(siteFromRoot(pageWith("heading")), { sideSpace: 8 });
+    const later = dropOn(site.pages[0].root, blockForKind("text"));
+    for (const n of spacedOf(later)) expect(n.gridSpace).toEqual({ gutter: 8 });
+  });
+
+  it("a page saved before the grid is left exactly as it was", () => {
+    const old = dropOn(savedRoot(), blockForKind("heading"));
+    const site = siteFromRoot(old);
+    expect(setPageGrid(site, { sideSpace: 0, blockGap: 0 }).pages[0].root).toBe(old);
+  });
+
+  it("a page with its own grid keeps its own space; turning it off returns it to the site's", () => {
+    let site = siteFromRoot(pageWith("heading"));
+    site = addPage(site, "About", pageWith("text")).site;
+    const about = site.pages[1].id;
+    site = setPageGrid(site, { sideSpace: 0 });
+    site = setPageGrid(site, { columns: 16, sideSpace: 64 }, about);
+    expect(site.pages[0].root.gridSpace).toEqual({ gutter: 0 });
+    expect(site.pages[1].root.gridSpace).toEqual({ gutter: 64 });
+    site = setPageGrid(site, undefined, about);
+    expect(site.pages[1].root.gridSpace).toEqual({ gutter: 0 });
+  });
+
+  it("values are held to the panel's ranges", () => {
+    expect(gridSpaceOf({ sideSpace: -5, blockGap: 999 })).toEqual({ gutter: 0, gap: 64 });
+    expect(gridSpaceOf({ columns: 10 })).toBeUndefined();
+  });
+});
+
+describe("G-2 · the one template and the measured span", () => {
+  it("the guides and the page use one template", () => {
+    expect(gridTemplate(12)).toBe("repeat(12, minmax(0, 1fr))");
+  });
+  it.each([[600, 100, 12, 6], [590, 100, 12, 6], [1300, 100, 12, 12], [10, 100, 12, 1], [330, 55, 6, 6], [160, 55, 6, 3]])(
+    "a block %ipx wide on %ipx columns of %i covers %i", (w, col, cols, span) => expect(spanOfWidth(w, col, cols)).toBe(span));
+});
+
+describe("G-2 · the grid is stored tidy", () => {
+  it("unset fields are dropped, and a grid with nothing set is no grid at all (the defaults)", () => {
+    const site = siteFromRoot(emptyPageRoot());
+    expect(setPageGrid(site, { columns: 10, phoneColumns: undefined, perRung: { wide: undefined } }).pageGrid).toEqual({ columns: 10 });
+    expect(setPageGrid(site, { columns: undefined, perRung: {} }).pageGrid).toBeUndefined();
+  });
+});
+
+describe("G-2 · a page's own grid", () => {
+  it("is kept even when it holds only the defaults, and then ignores the site's", () => {
+    let site = setPageGrid(siteFromRoot(emptyPageRoot()), { columns: 10 });
+    site = setPageGrid(site, {}, site.homeId);
+    expect(site.pages[0].grid).toEqual({});
+    expect(columnsAt(resolvePageGrid(site.pageGrid, site.pages[0].grid), "base")).toBe(12);
+    expect(setPageGrid(site, undefined, site.homeId).pages[0].grid).toBeUndefined();
   });
 });

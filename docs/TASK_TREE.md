@@ -38,6 +38,63 @@ written BEFORE the pass; one HEADED UAT on a fresh production build ticks every 
 only when every line is ticked and every bug it found is fixed and re-checked. Guarded by
 `tests/unit/task-tree-batches.test.ts`. Every item names what it IS in words, never a bare number.
 
+- `[x]` **BATCH G-2 · Layout guides + the page-grid panel** — CLOSED 2026-10-04 (HEADED UAT `scripts/uat/uat-g2-headed.js`, six
+  windows, 134 checks 0 failed, Preview at all 70 screens, four editor themes + four website themes, `logs/g2-uat6.out`; gate:
+  typecheck 0 · eslint 0 errors · vitest 4,236 · test:fast 806/806) — OPENED 2026-10-04 (session 5da86722, the handover of 9fa0fee9)
+  (area: page grid · 6 changes; plan https://claude.ai/artifact/Q5rAsZNSJJBXrnBTJf9zBN; the user: "the grid becomes something
+  a person can see and set"). MEASURED FIRST (code read): no guides, no canvas right-click menu, `site.pageGrid` / `page.grid`
+  read nowhere; the side space and block gap are constants behind ONE choke point (`spaceFor`); undo is site-wide (`pushSite`).
+  CHANGES:
+  - `[x]` (1) LAYOUT GUIDES on the canvas: the page grid's columns + middle lines from the SAME template (`gridTemplate`,
+    `lib/page-grid.ts`, which G-3 will emit), the side space drawn AS padding with the page's own side-space value, row lines
+    optional; per screen (6 on Mobile, 12 from Tablet, a count set per screen); never in the published page
+  - `[x]` (2) THREE ENTRY POINTS: a "Layout guides" toolbar switch, Shift G (not while typing; Ctrl Shift G stays Ungroup), a
+    canvas right-click menu (new — "Layout guides  Shift+G" · "Page grid…"); off by default, remembered per person
+  - `[x]` (3) SPAN LABEL on the selected block while the guides are on ("6 of 12"), measured against the drawn columns, so it
+    tells the truth on every screen (a half block that stacks on a phone reads "6 of 6")
+  - `[x]` (4) THE PAGE-GRID PANEL (site): columns per screen (Phone · Tablet · Laptop · Desktop · Wide, "set here" / follows),
+    columns on phones (half or 2–12), row step + row lines; every block follows; one Undo for a whole slider drag
+  - `[x]` (5) SIDE SPACE and GAP BETWEEN BLOCKS for the site (Default or 0–6 / 0–4 rem), through `spaceFor` on every page-grid
+    page — canvas == Preview; Reset to default. ("Space between columns" waits for G-3: it needs the page emitted as a CSS grid)
+  - `[x]` (6) "THIS PAGE USES ITS OWN GRID" (opt-out, D4 of the plan) + keyboard / screen-reader reach of the switch, the menu
+    and the panel (labels, Escape returns focus) in the editor's four themes
+  HEADED UAT CHECKLIST (written before the pass; six windows; a fresh production build; built through the UI):
+  - `[x]` U1 guides ON/OFF by each entry point (switch · Shift G · right-click) — and Shift G typed in a text field types "G"
+  - `[x]` U2 guides at every canvas device (Mobile 6 · Tablet / Laptop / Desktop / Wide 12 · Full) — lines on the block edges of
+    a half / third / quarter row, side strips equal to the measured section padding
+  - `[x]` U3 guides remembered after a reload; OFF by default in a fresh browser
+  - `[x]` U4 span label: half / third / quarter / full block at every device, matching what is seen (stacked ⇒ all columns)
+  - `[x]` U5 panel: columns 12 → 10 → 16 per screen and phones half / 4; guides and labels follow; one Undo puts it back;
+    reload keeps it
+  - `[x]` U6 side space 0 and 3 rem, gap 0 and 2 rem: canvas AND Preview at all 70 screens of `screens.js` agree; Reset returns
+    the defaults; an OLD saved page is untouched
+  - `[x]` U7 a second page with its own grid (16): its guides 16, the first page 12; switching it off returns to the site's
+  - `[x]` U8 the Preview / export at all 70 screens has NO guides and no sideways scroll
+  - `[x]` U9 the editor's four themes (light · dark · midnight · purple): switch, menu, panel, label readable (contrast ≥ 4.5:1
+    text, guides ≥ 3:1 against the page), on the website's light and dark themes
+  - `[x]` U10 keyboard only: Tab to the switch, Enter, open the panel, change a field with the arrows, Escape returns focus
+  - `[x]` DECIDED by the user 2026-10-04 (mid-batch: "columns and rows… as long as it takes over the whole page"): ROW LINES ON
+    by default in the guides, heights still follow the content (choice A of the plan stands); "span N rows" moves to G-3
+  LEDGER G-2:
+  - `[x]` G2-1 · REAL, pre-existing: deleting a page dropped the site's settings — the website theme (and now the page grid)
+    reset (`deletePage` returned `{ pages, homeId }` only) → spreads the site; guard "G2-1" red before, green after
+  - `[x]` G2-2 · REAL (mine), HEADED UAT: the guides' side strips were 23px on every screen (the overlay sat outside the page
+    root, so `u()` fell back to 0.625rem) → the overlay carries the root's `--box-u`; strips = section padding at every device;
+    guide "G2-2" mutation-proven
+  - `[x]` G2-3 · TEST: `getByLabel('Columns on Desktop')` also matched the two stepper buttons → `exact`
+  - `[x]` G2-4 · TEST: "the full block sits on guide lines" left out the page's own outer edges → added
+  - `[x]` G2-5 · REAL, the same as G2-6: slice C could not click the panel's "−" — the selected block's handle sat on it
+  - `[x]` G2-6 · REAL, pre-existing for Page settings too: what the toolbar opens sat UNDER a selected block's handles and
+    toolbar (header `z-30` vs portalled chrome at 9200 / 9300) → the header on the ladder at `CHROME_Z.panel`; measured: every
+    panel button and the Page name field topmost (`elementFromPoint`) with a block selected under them
+  - `[x]` G2-7 · REAL (mine), seen in the PICTURE (every number had passed): the span chip sat over the block's first words →
+    top-right; UAT now checks the chip covers none of the block's words, at every device
+  - `[x]` G2-8 · REAL (mine), caught by `builder-chrome-fits.spec.ts`: the bar wrapped to two rows at 1536px (needed 1,564 of
+    1,536px; it needed 1,526 before) → ONE switch, as the plan has it (on = guides + panel, off = both; Shift G the guides alone;
+    the panel also from the right-click menu and Page settings), and the Website theme shows its name from 1700px like every
+    label in that group (`labelClassName` on ThemeSwitcher; its tooltip still names it). Spec red ×3 on the old builds, green now
+  NOT DONE HERE (on purpose, written so it is not lost): "Space between columns" → G-3 (needs the page emitted as a CSS grid);
+  the plan artifact's mockup still shows rows off and a separate "Grid…" — corrected with the other artifacts before the PR (G-6)
 - `[x]` **BATCH P-0 · The five placement bugs found by reading the code (R4-1 … R4-5)** — CLOSED 2026-10-04 (session 9fa0fee9;
   HEADED UAT `scripts/uat/uat-p0-headed.js` six windows, 30 checks 0 failed, Preview at all 70 screens + `uat-p0-apptheme-headed.js`
   four editor themes, 8 contrast checks 0 failed; gate: typecheck 0 · eslint 0 errors · vitest 4,181 · test:fast 806/806) (area:
@@ -203,7 +260,15 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
     - BUILD BATCHES IT IMPLIES (≤ 6 changes each, one open at a time; each is opened in BATCHES with its full UAT checklist — P-0 is OPEN):
       - OPEN (in BATCHES) **P-0 · R-4 ledger**: measure and fix R4-1 … R4-5 (the handover: first, unless the user says otherwise)
       - QUEUED **G-2 · layout guides + grid panel** (as planned)
-      - QUEUED **G-3 · placing, extended**: (1) page-grid sections emitted as a CSS grid (Q5) · (2) A1–A5 + A15 lines per rung
+      - DECIDED by the user 2026-10-04 (after seeing G-2's guides: "the first and last column… you can't put any content to
+        it… you should be able to"): the page grid's columns run EDGE TO EDGE — the first and last are ordinary columns; the
+        side space is a DEFAULT OUTER MARGIN on whatever sits in them (left in the first, right in the last), changeable to 0;
+        a section / stack with a background still bleeds to the edge and its contents keep the margin; a row of equal cards stays
+        equal (each gives up the same width); saved pages untouched. Supersedes G-1's "side space as section padding outside the
+        columns" (`gridBandOwnsGutter` / `pageBandInset`) for page-grid pages; the guides are redrawn with it (no side strips)
+      - QUEUED **G-3 · placing, extended**: (1) page-grid sections emitted as a CSS grid (Q5), COLUMNS EDGE TO EDGE with the side space as the items' default outer margin (above) — WITH "span N rows" (the user,
+        2026-10-04: a block covers N row lines, e.g. a big gallery photo 2 rows tall; height still grows with its words) and the
+        panel's "Space between columns" (carried from G-2) · (2) A1–A5 + A15 lines per rung
         (from / to / to the last line / full / bleed / half-bleed / half-lines) · (3) Alt free → lines + margin · (4) the
         fit rule for every block (proof rule 4) · (5) keyboard + "Line up with the grid" · (6) nested-tree UAT
       - QUEUED **P-1 · alignment and spacing panel**: (1) Across / Down with Fill (C1–C5) + the 3×3 shortcut that sets both (D4) · (2) container Down incl. "Text lines
@@ -217,6 +282,14 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
       - QUEUED **P-3 · page layouts (D1)**: (1) presets gallery (live previews) setting lines per screen (A8) · (2) start from a
         blank canvas · (3) the "draw your areas" editor → lines per screen, rectangles only · (4) reading order follows the
         drawing (move in the tree, or warn) · (5) change the whole layout after picking one, nothing lost (one undo)
+      - THE USER'S PICTURE OF THE WHOLE (2026-10-04, mid G-2), which G-3 … G-5 and P-3 build to and the layout story (RULE L)
+        TELLS: "a page completely maxed out on rows and columns… they decide how many rows and columns… then how they place the
+        items" — columns: a count per screen (G-2, 4–24); rows: a ROW SIZE, the page has as many as its content needs (a fixed
+        row COUNT would cut words on a phone); a block covers columns AND rows from line to line (G-3); "blow over, bleed out to a
+        different section" (G-5 bleed / straddle); "a section into another section" (G-4 subgrid); "a float on top of a section —
+        how does it affect the grid": it leaves the flow and pushes nothing, it is PINNED to grid lines so it lands in the same
+        place on every screen (proof rule 3), it falls back into the flow on a phone when it holds words (proof rule 5) — shown
+        and explained in the builder where it is set, not only in the docs
       - QUEUED **G-5 · layering, extended**: (1) layer over in one cell + the covers-words warning (I1, I2, proof rule 8) · (2)
         floating held by any corner + "half outside the edge" for a badge / price circle (I5, D2a) · (3) Cover (I6, proof
         rules 1 + 3) · (4) the floating fallback (proof rule 5) · (5) "Overlap the items" on a row, pictures / badges only
@@ -2178,7 +2251,7 @@ sent), and my research. Nothing on the layout is done until every line here is c
     falls back into the flow unless placed at that rung; the page audit and Page check warn when it covers words;
     shown as drag on the canvas with the half-lines drawn, a Position panel (start / end, column / row, spill above /
     below) and a gallery of ready-made placements (RULE S / UI). Joins AC-10, ST-5, AC-35 — one build
-    - `[>]` AC-37b ← YOU ARE HERE (next leaf: BATCH G-2 · layout guides + grid panel — P-0 CLOSED 2026-10-04 (R4-1 … R4-5 fixed, 30 headed checks); R-4 SIGNED with D1–D5 (session 9fa0fee9); then G-3, P-1, P-2, G-4, P-3, G-5, G-6. G-1 CLOSED 2026-10-04 (see BATCHES). Plan APPROVED 2026-10-04 with the user's decisions below. Earlier: research R-3 DONE and SIGNED 2026-10-04
+    - `[>]` AC-37b ← YOU ARE HERE (next leaf: BATCH G-3 · placing on columns AND rows — G-2 CLOSED 2026-10-04 (134 headed checks); P-0 CLOSED 2026-10-04 (R4-1 … R4-5 fixed, 30 headed checks); R-4 SIGNED with D1–D5 (session 9fa0fee9); then G-3, P-1, P-2, G-4, P-3, G-5, G-6. G-1 CLOSED 2026-10-04 (see BATCHES). Plan APPROVED 2026-10-04 with the user's decisions below. Earlier: research R-3 DONE and SIGNED 2026-10-04
       (`ff5c53a`, `4418202`); build to every decision recorded under R-3 below; the mockups settle the open three (row
       snap · the phone gap 11 vs 16 px · panel per site or per page) → the user's approval → build) · **THE PAGE GRID — DECIDED by the user 2026-10-03: done RIGHT AFTER L-4 closes, BEFORE L-5, L-6 and the
       frozen list's placement items** (they are built on it). NAMES (decided): "page grid" in code and docs; the lines a

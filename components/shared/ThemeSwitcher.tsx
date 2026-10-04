@@ -23,6 +23,8 @@ export interface ThemeSwitcherProps {
   triggerIcon?: LucideIcon;
   /** Override the trigger's label when not compact (default: the current theme's label). */
   triggerLabel?: string;
+  /** When the trigger's label shows (default from `sm` up). A crowded toolbar can hold it back to wider screens. */
+  labelClassName?: string;
 }
 
 /**
@@ -31,7 +33,7 @@ export interface ThemeSwitcherProps {
  * pass `value` + `onChange` to control a different theme (e.g. the WEBSITE theme saved on the site).
  * Fully theme-aware and keyboard/aria accessible. Drop it into any header/toolbar.
  */
-export default function ThemeSwitcher({ compact = false, className = "", align = "right", value, onChange, ariaLabel, triggerIcon, triggerLabel }: ThemeSwitcherProps) {
+export default function ThemeSwitcher({ compact = false, className = "", align = "right", value, onChange, ariaLabel, triggerIcon, triggerLabel, labelClassName = "hidden sm:inline" }: ThemeSwitcherProps) {
   const ctx = useTheme();
   const controlled = value !== undefined && !!onChange;
   const theme = controlled ? (value as ThemeId) : ctx.theme;
@@ -61,7 +63,7 @@ export default function ThemeSwitcher({ compact = false, className = "", align =
         className="flex items-center gap-1.5 px-2 sm:px-2.5 py-1.5 rounded-lg text-sm font-medium text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100 dark:hover:bg-[#22262e] midnight:hover:bg-cyan-500/10 purple:hover:bg-pink-500/10 border border-line transition-colors"
       >
         <CurrentIcon className="w-4 h-4" />
-        {!compact && <span className="hidden sm:inline">{triggerLabel ?? current.label}</span>}
+        {!compact && <span className={labelClassName}>{triggerLabel ?? current.label}</span>}
         <ChevronDown className={`w-3.5 h-3.5 transition-transform ${open ? "rotate-180" : ""}`} />
       </button>
 
