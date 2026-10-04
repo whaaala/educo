@@ -3792,7 +3792,7 @@ export default function BoxCanvas({
           // A grid narrowing by ITS OWN box (#111), from the emitter the export uses. The canvas draws a rung by its
           // preset, not by a media query, so "above the phone" is decided here: the two-across rule is left out
           // entirely at the phone preset and unguarded at every other.
-          + treeGridQueryCss(root, scopeFor, (css) => (breakpoint === "phone" ? "" : css), (grid) => `${grid}>[data-gridghost]{display:none !important}`);
+          + treeGridQueryCss(root, scopeFor, (css) => (breakpoint === "phone" ? "" : css), (grid) => `${grid}>[data-gridghost]{display:none !important}`, (css, screens) => (screens.includes(breakpoint) ? css : ""));
         return css ? <style dangerouslySetInnerHTML={{ __html: css }} /> : null;
       })()}
       {renderNode(root, null)}

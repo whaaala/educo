@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import { render, screen, fireEvent, cleanup } from "@testing-library/react";
+import { render, screen, fireEvent, cleanup, within } from "@testing-library/react";
 import BoxInspector from "@/components/website/box/BoxInspector";
 import { DEFAULT_THEME } from "@/lib/site-storage";
 import { createContainer, createElement, createComponent, type BoxNode } from "@/lib/box-model";
@@ -893,5 +893,42 @@ describe("BoxInspector — When it takes hold", () => {
     cleanup();
     renderFor(navBar({ pin: "top", pinArrival: "condense" }), { canFloat: true });
     expect(screen.queryByText(/nothing to condense yet/)).toBeNull();
+  });
+});
+
+describe("G-3b (2) · placing on the page's lines in the Size section", () => {
+  const lines = { from: 1, to: 7, first: true, last: false, cols: 12 };
+  it("From line / To line call back with the edge that moved; Whole line and To the last line too", () => {
+    const onSetLines = vi.fn();
+    renderFor(createContainer("column", { id: "c" }), { pageLines: lines, onSetLines });
+    fireEvent.change(screen.getByLabelText("To line"), { target: { value: "9" } });
+    expect(onSetLines).toHaveBeenLastCalledWith({ to: 9 });
+    fireEvent.change(screen.getByLabelText("From line"), { target: { value: "3" } });
+    expect(onSetLines).toHaveBeenLastCalledWith({ from: 3 });
+    fireEvent.click(screen.getByRole("button", { name: "Whole line" }));
+    expect(onSetLines).toHaveBeenLastCalledWith("full");
+    expect(screen.queryByRole("button", { name: "Full width" }), "G3b-9: the toolbar's device button is called Full width").toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "To the last line" }));
+    expect(onSetLines).toHaveBeenLastCalledWith({ to: 13 });
+  });
+  it("To the last line is off when the block already ends there; Whole line shows as on when it is", () => {
+    renderFor(createContainer("column", { id: "c" }), { pageLines: { ...lines, to: 13, last: true }, onSetLines: vi.fn() });
+    expect(screen.getByRole("button", { name: "To the last line" })).toBeDisabled();
+    cleanup();
+    renderFor(createContainer("column", { id: "c" }), { pageLines: { from: 1, to: 13, first: true, last: true, cols: 12 }, onSetLines: vi.fn() });
+    expect(screen.getByRole("button", { name: "Whole line" })).toHaveAttribute("aria-pressed", "true");
+  });
+  it("Bleed writes the side, and Off clears it", () => {
+    const onPatch = renderFor(createContainer("column", { id: "c", bleed: "right" } as Partial<BoxNode>), { pageLines: lines, onSetLines: vi.fn() });
+    const bleed = within(screen.getByRole("group", { name: "Bleed to the page edge" }));
+    expect(bleed.getByRole("button", { name: "Right" })).toHaveAttribute("aria-pressed", "true");
+    fireEvent.click(bleed.getByRole("button", { name: "Both" }));
+    expect(onPatch).toHaveBeenLastCalledWith({ bleed: "both" });
+    fireEvent.click(bleed.getByRole("button", { name: "Off" }));
+    expect(onPatch).toHaveBeenLastCalledWith({ bleed: undefined });
+  });
+  it("not shown for a block that is not on a row of the page", () => {
+    renderFor(createContainer("column", { id: "c" }));
+    expect(screen.queryByLabelText("From line")).toBeNull();
   });
 });

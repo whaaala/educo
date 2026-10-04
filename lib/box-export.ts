@@ -151,8 +151,17 @@ function elementHTML(node: BoxNode, theme: SiteTheme, pageMap: Map<string, strin
     // byte of the photo has arrived — without them the page reflows as each picture lands and the reader's
     // line of text jumps out from under them (Cumulative Layout Shift).
     case "image": {
-      if (!node.src) return "";
       const { height, aspectRatio } = imageSizing(node);
+      /**
+       * A PICTURE NOT UPLOADED YET KEEPS ITS PLACE (G3b-12, found by the user 2026-10-04: "are you sure the item added in the canvas is
+       * actually showing?"). It published nothing, so its block was 0px tall in the Preview while the canvas drew it 368 × 159, and
+       * everything below moved up — canvas ≠ export. The user's choice: the same box, a soft placeholder (a tint of the theme's muted
+       * colour and a picture icon, no Upload button); the Page check lists every picture still missing.
+       */
+      if (!node.src) {
+        const muted = typoRole.color("muted");
+        return `<div role="img" aria-label="Picture to come" style="${styleString({ width: "100%", height, aspectRatio, display: "flex", alignItems: "center", justifyContent: "center", color: muted, background: `color-mix(in oklch, ${muted} 14%, transparent)`, fontSize: "2rem" })}">${iconSvg("Image")}</div>`;
+      }
       const dims = hasIntrinsicSize(node) ? ` width="${node.imgW}" height="${node.imgH}"` : "";
       return `<img src="${esc(node.src)}" alt="${esc(node.alt ?? "")}"${dims} loading="${node.eager ? "eager" : "lazy"}" decoding="async" style="${styleString({ width: "100%", height, aspectRatio, objectFit: "cover", display: "block" })}" />`;
     }
@@ -312,6 +321,18 @@ const RUNG_MIN_EM: Record<Exclude<Breakpoint, "phone">, number> = {
   base: BREAKPOINTS_EM.desktop, // 1200px — `base` IS the desktop rung
   wide: BREAKPOINTS_EM.wide, // 1800px
 };
+/** `css` held to the widths of `screens` (G3b-11): one media range per run of neighbouring screens, as `overridesByRung` writes them. */
+function onlyOnScreens(css: string, screens: Breakpoint[]): string {
+  if (!screens.length) return "";
+  const minEm = (i: number) => RUNG_MIN_EM[BP_ORDER[i] as Exclude<Breakpoint, "phone">];
+  const on = BP_ORDER.map((bp) => screens.includes(bp)), ranges: string[] = [];
+  for (let i = 0; i < on.length; i++) {
+    if (!on[i]) continue; let j = i; while (j + 1 < on.length && on[j + 1]) j++;
+    ranges.push([i > 0 ? `(min-width:${minEm(i)}em)` : "", j < on.length - 1 ? `(max-width:${(minEm(j + 1) - 0.001).toFixed(3)}em)` : ""].filter(Boolean).join(" and ") || "all");
+    i = j;
+  }
+  return `@media ${ranges.join(",")}{${css}}`;
+}
 /** One bucket of rules per rung. The phone rung is the unqualified base of a mobile-first sheet. */
 type Sheet = { rungs: Record<Breakpoint, string[]>; reveals: Set<string>; arrivals: Set<string>; overrides: string[]; queries: string[] };
 export const emptySheet = (): Sheet => ({
@@ -546,7 +567,7 @@ function renderNode(node: BoxNode, rawParent: BoxNode | null, theme: SiteTheme, 
   }
   // A grid narrows by ITS OWN box too (#111) — the same emitter the canvas injects; "above the phone" is the tablet
   // rung's media query here, so the two-across rule can never widen the phone's single column.
-  const gq = gridQueryCss(`.${cls}`, r, (id) => `.${classFor(id)}`, (css) => `@media (min-width:${RUNG_MIN_EM.tabletPortrait}em){${css}}`, undefined, isPageSection); // the same "on the page" as `pageBandInset`
+  const gq = gridQueryCss(`.${cls}`, r, (id) => `.${classFor(id)}`, (css) => `@media (min-width:${RUNG_MIN_EM.tabletPortrait}em){${css}}`, undefined, isPageSection, onlyOnScreens); // the same "on the page" as `pageBandInset`
   if (gq) sheet.queries.push(gq);
   // A PAGE of a pager always carries an id, because the dots link to it — `pagerSlideId` is the one
   // function that decides what it is, so the link and the target cannot disagree. It also carries the

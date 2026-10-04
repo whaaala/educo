@@ -213,7 +213,79 @@ const SLICES = {
   },
 };
 
-const WINDOWS = [['A', 'Light'], ['B', 'Light'], ['C', 'Midnight'], ['D', 'Purple Dream'], ['E', 'Dark'], ['F', 'Light'], ['G', 'Midnight']];
+SLICES.H = async (page, ok) => { // U4 · from line, to line, to the last line, full width, bleed — per screen (G-3b (2))
+  const I = require('./inspector.js');
+  await H.panel(page, true);
+  const a = await P.first(page, 'Stack'); await P.into(page, a, 'Text'); const b = await P.beside(page, a, 'Stack'); await P.into(page, b, 'Image');
+  await H.panel(page, false); await guidesOn(page); await chip(page, DEV.Desktop);
+  const size = async (id) => { await H.select(page, id); await I.tab(page, 'Design'); await I.section(page, 'Size'); };
+  const field = async (name, v) => { const f = page.getByLabel(name, { exact: true }).first(); await f.scrollIntoViewIfNeeded(); await f.fill(String(v)); await f.blur(); await page.waitForTimeout(500); };
+  const mid = async () => { const r1 = await rectOf(page, a), r2 = await rectOf(page, b); return (r1.r + r2.l) / 2; };
+  let ls = await lines(page); const a0 = await rectOf(page, a), b0 = await rectOf(page, b);
+  await size(a); await field('To line', 9); ls = await lines(page);
+  ok('U4 "To line" 9: the gap lands on line 9, the left edge stays', Math.abs((await mid()) - ls[8]) <= 0.6 && Math.abs((await rectOf(page, a)).l - a0.l) < 0.6, `${((await mid()) - ls[8]).toFixed(2)}px`);
+  await size(b); await field('From line', 10);
+  const b1 = await rectOf(page, b);
+  ok('U4 "From line" 10 on the picture: only its left edge moves, to line 10', Math.abs((await mid()) - ls[9]) <= 0.6 && Math.abs(b1.r - b0.r) < 0.6, `${((await mid()) - ls[9]).toFixed(2)} · right ${(b1.r - b0.r).toFixed(2)}`);
+  const aBefore = await rectOf(page, a);
+  await page.getByRole('group', { name: 'Bleed to the page edge' }).getByRole('button', { name: 'Right' }).click(); await page.waitForTimeout(500);
+  const b2 = await rectOf(page, b), aAfter = await rectOf(page, a);
+  ok('U4 Bleed Right: the picture reaches the page\'s right edge; the words do not move', Math.abs(b2.r - ls[ls.length - 1]) <= 0.6 && Math.abs(b2.l - b1.l) < 0.6 && Math.abs(aAfter.r - aBefore.r) < 0.6 && Math.abs(aAfter.l - aBefore.l) < 0.6, `right edge ${(ls[ls.length - 1] - b2.r).toFixed(2)}px from the page edge`);
+  await page.screenshot({ path: path.join(OUT, 'H-bleed-right.png') });
+  const bad = [];
+  await preview(page, SCREENS, async (f, w) => { const p = await pubRect(f, b); const W = await f.evaluate(() => document.documentElement.clientWidth); if (p && Math.abs(p.r - W) > 0.6) bad.push(`${w}: ${(W - p.r).toFixed(1)} short`); if (await sideways(f) > 1) bad.push(`${w}: sideways`); for (const x of await pageFaults(f)) bad.push(`${w}: ${x}`); });
+  ok(`U4 Preview at all ${SCREENS.length} screens: the bled picture reaches the right edge; no sideways scroll, overlap, broken word or staircase`, !bad.length, bad.slice(0, 6).join(' · '));
+  await size(b); await page.getByRole('button', { name: 'Whole line', exact: true }).click(); await page.waitForTimeout(400);
+  await page.getByRole('group', { name: 'Bleed to the page edge' }).getByRole('button', { name: 'Both' }).click(); await page.waitForTimeout(500);
+  const b3 = await rectOf(page, b), a3 = await rectOf(page, a);
+  ok('U4 Whole line + Bleed Both: the picture runs edge to edge on a line of its own', Math.abs(b3.l - ls[0]) <= 0.6 && Math.abs(b3.r - ls[ls.length - 1]) <= 0.6 && b3.t > a3.t + 2, `${(b3.l - ls[0]).toFixed(2)} / ${(ls[ls.length - 1] - b3.r).toFixed(2)} · below the words: ${b3.t > a3.t + 2}`);
+  await page.screenshot({ path: path.join(OUT, 'H-full-bleed.png') });
+  for (let i = 0; i < 4; i++) { await page.keyboard.press('Control+z'); await page.waitForTimeout(350); }
+  const b4 = await rectOf(page, b);
+  ok('U4 Undo four times: back to the picture beside the words, ending at the right edge it had', Math.abs(b4.r - b0.r) < 0.6 && Math.abs(b4.t - b0.t) < 2, `${(b4.r - b0.r).toFixed(2)}`);
+  const aDesk = await rectOf(page, a); // G3b-10: where it is on Desktop just before the Mobile change (four Undos leave "To line 9")
+  const aMob0 = await (async () => { await chip(page, DEV.Mobile); return rectOf(page, a); })();
+  await size(a); await field('To line', 4); const aMob = await rectOf(page, a); // G3b-14: it already ended at line 5 on a phone
+  await chip(page, DEV.Desktop); const aD = await rectOf(page, a);
+  ok('U4 per screen: "To line" 4 changes Mobile, and Desktop stays where it was', Math.abs(aMob.r - aMob0.r) > 4 && Math.abs(aD.r - aDesk.r) < 0.6 && Math.abs(aD.l - aDesk.l) < 0.6, `Mobile ${aMob0.r.toFixed(1)} → ${aMob.r.toFixed(1)} · Desktop ${aDesk.r.toFixed(1)} → ${aD.r.toFixed(1)}`);
+  await size(b); await field('To line', 11); await page.getByRole('button', { name: 'To the last line', exact: true }).click(); await page.waitForTimeout(500);
+  ls = await lines(page); const b5 = await rectOf(page, b);
+  const side = ls[ls.length - 1] - b5.r;
+  ok('U4 "To the last line": the picture ends at the page\'s last line (its side space inside it)', side > 4 && side < ls[1] - ls[0], `${side.toFixed(1)}px`);
+  const box = await page.locator('[data-canvas-scroller]').boundingBox(); await page.mouse.click(box.x + 8, box.y + box.height - 8, { button: 'right' }); await page.getByRole('menuitem', { name: 'Page grid…' }).click(); await page.waitForSelector('[role="dialog"][aria-label="Page grid"]');
+  await page.getByLabel('Columns on Desktop', { exact: true }).fill('16'); await page.keyboard.press('Tab'); await page.waitForTimeout(500); await page.keyboard.press('Escape');
+  ls = await lines(page); const b6 = await rectOf(page, b);
+  ok('U4 …and still does after the page grid goes from 12 columns to 16', ls.length === 17 && Math.abs((ls[ls.length - 1] - b6.r) - side) < 1.5, `${ls.length - 1} columns · ${(ls[ls.length - 1] - b6.r).toFixed(1)}px`);
+  await page.screenshot({ path: path.join(OUT, 'H-16.png') });
+};
+
+/** EVERY BLOCK ON THE CANVAS IS SHOWN IN THE PREVIEW (the user, 2026-10-04: "are you sure the item added in the canvas is actually
+ *  showing?" — G3b-12: an empty picture was 0px tall in the Preview, and no check of mine looked). Each block of the palette added
+ *  through the UI; at every screen each canvas block must be drawn in the Preview (not 0 × 0, not hidden), with its words. */
+SLICES.I = async (page, ok) => {
+  const TILES = ['Heading', 'Text', 'Button', 'List', 'Image', 'Video', 'Divider', 'Spacer', 'Icon', 'Embed', 'Link', 'Accordion', 'Alert', 'Card', 'Quote', 'Stat', 'Badge', 'Rating'];
+  await H.panel(page, true);
+  for (const t of TILES) { page.__step = `add ${t}`; await P.first(page, t); }
+  await H.panel(page, false); await page.keyboard.press('Escape'); await page.keyboard.press('Escape'); await chip(page, DEV.Desktop);
+  const EDITOR_ONLY = /(Upload|Replace|Empty — drag a block in, or click to add|Add a video URL[^\n]*|Paste HTML \/ embed code[^\n]*)/g; // the canvas's editing prompts, never published
+  const leaves = await page.evaluate((re) => [...document.querySelectorAll('[data-canvas-scale] [data-box-id]')].filter((e) => !e.querySelector('[data-box-id]'))
+    .map((e) => { const r = e.getBoundingClientRect(); const Z = Number(e.closest('[data-canvas-scale]')?.dataset.canvasScale) || 1; return { id: e.getAttribute('data-box-id'), drawn: r.width > 0 && r.height > 0, h: r.height / Z, text: (e.innerText || '').replace(new RegExp(re, 'g'), '').replace(/\s+/g, ' ').trim() }; }), EDITOR_ONLY.source);
+  ok(`I the canvas draws every block added (${TILES.length} tiles → ${leaves.length} blocks)`, leaves.length >= TILES.length && leaves.every((l) => l.drawn), leaves.filter((l) => !l.drawn).map((l) => l.id).join(' '));
+  const missing = new Map();
+  await preview(page, SCREENS, async (f, w) => {
+    const got = await f.evaluate((ls) => ls.map((l) => { const e = document.querySelector(`.bx-${l.id}`); if (!e) return { id: l.id, why: 'not on the page' }; const r = e.getBoundingClientRect(), cs = getComputedStyle(e);
+      if (cs.display === 'none' || cs.visibility === 'hidden' || r.width < 1 || r.height < 1) return { id: l.id, why: `not shown (${Math.round(r.width)} × ${Math.round(r.height)})` };
+      const t = (e.innerText || '').replace(/\s+/g, ' ').trim(); if (l.text && !t.includes(l.text.slice(0, 20))) return { id: l.id, why: `words "${l.text.slice(0, 20)}" missing` };
+      // the same size as on the canvas where the two are the same width (Desktop 1280)
+      if (l.w === 1280 && Math.abs(r.height - l.h) > 2) return { id: l.id, why: `${Math.round(r.height)}px tall here, ${Math.round(l.h)}px on the canvas` }; return null; }), leaves.map((l) => ({ ...l, w })));
+    for (const g of got) if (g && !missing.has(g.id)) missing.set(g.id, `${g.why} at ${w}`);
+  });
+  const kinds = await page.evaluate(([k, ids]) => { const f = (n) => [n, ...(n.children || []).flatMap(f)]; const all = f(JSON.parse(localStorage.getItem(k)).pages[0].root); return Object.fromEntries(ids.map((id) => { const n = all.find((x) => x.id === id); return [id, n ? (n.component || n.type) : '?']; })); }, ['educo_box_site_v1', [...missing.keys()]]);
+  ok(`I Preview at all ${SCREENS.length} screens: every block on the canvas is shown, with its words`, !missing.size, [...missing].map(([id, why]) => `${kinds[id]} ${why}`).join(' · '));
+  await page.screenshot({ path: path.join(OUT, 'I-canvas.png'), fullPage: true });
+};
+
+const WINDOWS = [['A', 'Light'], ['B', 'Light'], ['C', 'Midnight'], ['D', 'Purple Dream'], ['E', 'Dark'], ['F', 'Light'], ['G', 'Midnight'], ['H', 'Purple Dream'], ['I', 'Dark']];
 (async () => {
   const runs = WINDOWS.filter(([k]) => !ONLY.length || ONLY.includes(k)); const out = [];
   await Promise.all(runs.map(async ([k, th], i) => {

@@ -38,7 +38,8 @@ written BEFORE the pass; one HEADED UAT on a fresh production build ticks every 
 only when every line is ticked and every bug it found is fixed and re-checked. Guarded by
 `tests/unit/task-tree-batches.test.ts`. Every item names what it IS in words, never a bare number.
 
-- `[>]` **BATCH G-3b · The page as a real CSS grid** — OPENED 2026-10-04 (session 3da81fad, the handover of 5da86722) (area: page
+- `[~]` **BATCH G-3b · The page as a real CSS grid** — PARKED 2026-10-04 BY THE USER ("do the frame now": BATCH G-3c first, then
+  back here for (3), (6) and the final pass; (1), (2), (4), (5) DONE and committed) — OPENED 2026-10-04 (session 3da81fad, the handover of 5da86722) (area: page
   grid · 6 changes). D5 as signed under R-4: a page-grid row is EMITTED as a CSS grid on the page's own lines, so blocks sit ON the
   drawn lines (closes G3-8) and "to the last line", bleed and rows become possible. Saved pages (no `pageGrid`) byte-identical.
   CHANGES:
@@ -46,7 +47,12 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
     checks, G-3 suite 65/0 and G-2 suite 128/0 as regression; vitest 4,296; eslint 0 errors): `display: grid` with `gridTemplate(cols)` per rung, the gap as the grid's column gap,
     each block `grid-column: span k` from its share at that rung, the side space the first / last block's margin (`rowSide`)
     inside its columns — canvas == export, the fit rule's steps set spans, not flex bases; G3-8 measured ON the line
-  - `[ ]` (2) START LINE · "TO THE LAST LINE" · FULL · BLEED · HALF-BLEED per rung (map A1–A5, A15), in the Position panel
+  - `[x]` (2) START LINE · "TO THE LAST LINE" · FULL · BLEED · HALF-BLEED per rung (map A1–A5, A15) — DONE: in the Size section
+    "From line" / "To line" (one edge moves, the partner gives what it can, rule 19), "Whole line", "To the last line" (a share,
+    so it survives 12 → 16 columns), "Bleed to the page edge: Off · Left · Right · Both" (where it starts / ends a line that side
+    gives up its side space; nothing else moves), all per screen. Unit: 9 engine + 4 Inspector tests, 9 mutations red. HEADED
+    slice H 9 / 9 (To line 0.00px, From line 0.01px, bleed −0.01px from the edge, Preview at all 70 screens, Undo, per screen,
+    to the last line after 12 → 16)
   - `[ ]` (3) ALT FREE → lines + margin, never page x / y (the drop point to the nearest lines, the rest as margin inside)
   - `[x]` (4) THE FIT RULE for every block on the grid (DONE with (1): every line of a page row steps, by span; HEADED: slice D,
     an icon beside words + four cards at all 70 screens × 100 / 150 / 200 % text — 0 sideways, overlap, broken word, staircase) (proof rule 4: whole words, no sideways scroll at 150 / 200 % text)
@@ -89,6 +95,26 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
   (`pageRowSlot`). MEASURED: the 61 saved sites of the dressed sweeps publish byte
   for byte as before (old vs new engine, every page).
   LEDGER G-3b:
+  - `[x]` G3b-9 · REAL, FOUND BY THE HEADED PASS: the new "Full width" button had the same name as the toolbar's "Full width"
+    device button — two different buttons, one name for a screen reader → "Whole line"; guarded (no Inspector button is named
+    "Full width")
+  - `[x]` G3b-10 · TEST (mine): the per-screen check compared with the page's first state, which four Undos do not return to → the
+    state just before the Mobile change
+  - `[x]` G3b-11 · REAL, FOUND BY THE HEADED PASS, DECIDED BY THE USER ("your setting wins"): on a phone "To line" changed nothing you
+    could see — the fit rule's container queries (`!important`) kept the row stacked. → a row with a width or gap set for a screen
+    leaves that screen out of its fit rule (`onlyOn`: media ranges in the export, the shown screen on the canvas); Page check warns
+    "words-too-tight" when a WORD would not fit there. HEADED: Mobile 633.4 → 478.1, Desktop unchanged
+  - `[x]` G3b-12 · REAL, FOUND BY THE USER FIRST ("are you sure the item added in the canvas is actually showing?"), DECIDED BY THE
+    USER ("same box, soft placeholder"): an Image with no picture published NOTHING — 0px in the Preview, 368 × 159 on the canvas,
+    everything below moved up. → the same box, a tint of the theme's muted colour with a picture icon, `role=img` "Picture to come";
+    Page check lists "picture-missing" (not blocking). MY UAT HAD THE SAME BLIND SPOT (it measured boxes, never whether a block was
+    shown) → NEW slice I: every palette block added through the UI is shown in the Preview at all 70 screens, with its words, at
+    the canvas's height at 1280 — passed for all 18 tiles (27 blocks). NOTE: a saved page with an empty picture now publishes the
+    placeholder (the user's decision), so its HTML changes there and only there
+  - `[x]` G3b-13 · TEST (mine): "and not when they fit" never reached the comparison (no width set for phones) — and once it did, it
+    found MY check warned on two "Fees" columns: it used the fit rule's 14 rem readable floor, which breaks no word → the words
+    themselves at the size they have there; 6 mutations red
+  - `[x]` G3b-14 · TEST (mine): "To line 5" at Mobile was where the block already ended (66.67 % of 6) → line 4
   - `[x]` G3b-8 · FOUND BY THE USER FIRST (2026-10-04, mid-batch): "it doesn't seem that there's a bottom" — MEASURED through the UI
     (probe-g3b-bottom.js): the page has side space but nothing of its own at its top or bottom; the cards ended 1 rem (the last
     section's own space) above the page's edge, ~11px at the 61% fit. Not G-3b's (the flex rows were the same). DECIDED BY THE USER:
@@ -127,8 +153,23 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
   - `[x]` G3b-7b · TEST, FOUND BY THE GATE (`pinned-bar-anchors`, an in-page link in the Preview "scrolled 0"): 1 of 5 under load on the
     last commit's engine. The Preview wires its link handler on each load of its document; a click before that did nothing → wait for
     the document, then click until the page moves (a Preview whose handler is gone never moves, and still fails). In the 112 / 112 above
-- `[ ]` **BATCH G-3c · The page's frame** — QUEUED 2026-10-04 (session 3da81fad; the user's two decisions on G3b-8) (area: page grid ·
-  2 changes). Opens after G-3b closes.
+- `[>]` **BATCH G-3c · The page's frame** — OPENED 2026-10-04 BY THE USER ("do the frame now", G-3b parked; the user's decisions on
+  G3b-8; seen by the user in the Preview: "the right margin… is not there… do the same for the bottom, the right, the left… one rem")
+  (area: page grid · 2 changes).
+  DESIGN: a single number of the fluid unit cannot be 1 rem on a phone and ~1.25 rem wide (the unit doubles), so the frame is its
+  own length, from ONE emitter: `clamp(1rem, <the fluid unit × k>, 1.25rem)` by default, the site's set value as set (0 included) —
+  for the page's top and bottom, a lone section's sides and a row's outer blocks; the canvas measures a row's slots from the drawn
+  margins. A coloured first / last section still bleeds (no frame on that side).
+  HEADED UAT CHECKLIST (written before the change; six windows; fresh production build; built through the UI; Preview at all 70
+  screens at 100 / 150 / 200 % text; the editor's four themes):
+  - `[ ]` F1 every page edge — top, bottom, left, right — keeps the frame: 1 rem (±0.5px) at 360, ~1.14 rem at 1280, 1.25 rem at
+    1920, canvas == Preview, for: a lone heading, a row of cards, a picture, a component, the last block of the page
+  - `[ ]` F2 a coloured first / last section still reaches the page edge; its words keep the frame inside it
+  - `[ ]` F3 "Side space" in the page-grid panel moves all four sides together, down to 0 (words at the edge) and back to default
+  - `[ ]` F4 a block's own outer spacing / bleed still overrides the frame on its side; equal cards stay equal
+  - `[ ]` F5 150 % / 200 % text: the frame grows with the reader's text size (rem), no sideways scroll
+  - `[ ]` F6 regression: G-2, G-3 and G-3b suites; a page saved before the page grid byte-identical
+
   - `[ ]` (1) THE FRAME ALL ROUND: a page-grid page keeps its side space at its top and bottom too — the same value, one "Side space"
     control (renamed "Space around the page"?), changeable to 0; a coloured first / last section still bleeds to the edge; saved
     pages byte-identical
@@ -2419,7 +2460,7 @@ sent), and my research. Nothing on the layout is done until every line here is c
     falls back into the flow unless placed at that rung; the page audit and Page check warn when it covers words;
     shown as drag on the canvas with the half-lines drawn, a Position panel (start / end, column / row, spill above /
     below) and a gallery of ready-made placements (RULE S / UI). Joins AC-10, ST-5, AC-35 — one build
-    - `[>]` AC-37b ← YOU ARE HERE (BATCH G-3b OPEN — changes (1) the page row as a CSS grid and (4) the fit rule DONE and committed 2026-10-04, session 3da81fad, G3-8 closed at 0.00px, the user's G3b-3 "equal cards"; (5) split into columns / rows DONE (the user's decision); next leaf: (2) start line / to the last line / full / bleed / half-bleed, (3) Alt free → lines + margin, (6) rows as grid rows, then the batch's final HEADED pass, then QUEUED BATCH G-3c the page's frame (the user's G3b-8 decisions); earlier: handover of session 5da86722 in the SESSION LOG — G-3 CLOSED 2026-10-04 (63 headed checks, G3-8 carried to G-3b by the user); earlier: BATCH G-3 · placing on columns AND rows — G-2 CLOSED 2026-10-04 (134 headed checks); P-0 CLOSED 2026-10-04 (R4-1 … R4-5 fixed, 30 headed checks); R-4 SIGNED with D1–D5 (session 9fa0fee9); then G-3, P-1, P-2, G-4, P-3, G-5, G-6. G-1 CLOSED 2026-10-04 (see BATCHES). Plan APPROVED 2026-10-04 with the user's decisions below. Earlier: research R-3 DONE and SIGNED 2026-10-04
+    - `[>]` AC-37b ← YOU ARE HERE (BATCH G-3c · the page's frame OPEN 2026-10-04 on the user's word — G-3b PARKED with (1), (2), (4), (5) done and committed, (3) Alt free and (6) rows and its final pass still to do; next leaf: G-3c (1) the frame all round + (2) the smaller default, from one emitter; earlier: handover of session 5da86722 in the SESSION LOG — G-3 CLOSED 2026-10-04 (63 headed checks, G3-8 carried to G-3b by the user); earlier: BATCH G-3 · placing on columns AND rows — G-2 CLOSED 2026-10-04 (134 headed checks); P-0 CLOSED 2026-10-04 (R4-1 … R4-5 fixed, 30 headed checks); R-4 SIGNED with D1–D5 (session 9fa0fee9); then G-3, P-1, P-2, G-4, P-3, G-5, G-6. G-1 CLOSED 2026-10-04 (see BATCHES). Plan APPROVED 2026-10-04 with the user's decisions below. Earlier: research R-3 DONE and SIGNED 2026-10-04
       (`ff5c53a`, `4418202`); build to every decision recorded under R-3 below; the mockups settle the open three (row
       snap · the phone gap 11 vs 16 px · panel per site or per page) → the user's approval → build) · **THE PAGE GRID — DECIDED by the user 2026-10-03: done RIGHT AFTER L-4 closes, BEFORE L-5, L-6 and the
       frozen list's placement items** (they are built on it). NAMES (decided): "page grid" in code and docs; the lines a

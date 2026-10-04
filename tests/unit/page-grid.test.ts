@@ -1,10 +1,11 @@
 import { describe, it, expect } from "vitest";
-import { type BoxNode, type Breakpoint, SPACE_DEFAULT, SPACE_GRID, spaceDefaults, outerDefaults, gapOf, insertBox, normalizeRowBands, markPageGrid, u, createContainer, makeRowBand, sectionContent, gridBandOwnsGutter, pageBandInset, rowNarrowsAt, rowQueryCss, childStyle, tabletPlaces, rowSide, outerSpaceDefaults, spanAt, setSpan, resolveResponsive, lineUpWithGrid, isPageRow, containerStyle, pageRowCells, pageRowTracks, pageRowSlot } from "@/lib/box-model";
+import { type BoxNode, type Breakpoint, SPACE_DEFAULT, SPACE_GRID, spaceDefaults, outerDefaults, gapOf, insertBox, normalizeRowBands, markPageGrid, u, createContainer, makeRowBand, sectionContent, gridBandOwnsGutter, pageBandInset, rowNarrowsAt, rowQueryCss, childStyle, tabletPlaces, rowSide, outerSpaceDefaults, spanAt, setSpan, resolveResponsive, lineUpWithGrid, isPageRow, containerStyle, pageRowCells, pageRowTracks, pageRowSlot, linesAt, setLinesAt, fullWidthAt, updateBoxResponsive } from "@/lib/box-model";
 import { blockForKind } from "@/lib/box-presets";
 import { COMPONENT_CATALOGUE } from "@/lib/component-catalogue";
 import { emptyPageRoot, siteFromRoot, setPageGrid, applyPageGrid, addPage } from "@/lib/box-site";
 import { renderSitePage, SKIP_LINK_CSS } from "@/lib/box-export";
 import { DEFAULT_THEME } from "@/lib/site-storage";
+import { pageCheck } from "@/lib/semantics";
 import { PAGE_GRID_DEFAULT, columnsAt, spanOf, snapShare, spanLabel, spanText, resolvePageGrid, gridSpaceOf, gridTemplate, spanOfWidth, spanOfRect, snapEdgePx, rowsToMinHeight, rowsOf, rowTrackCount } from "@/lib/page-grid";
 
 /**
@@ -641,5 +642,149 @@ describe("G-3b (5) · space between columns and between rows, each its own (the 
     const site = setPageGrid(siteFromRoot(markPageGrid(normalizeRowBands({ ...emptyPageRoot(), children: [makeRowBand(cols)] } as BoxNode))), { columnGap: 40 });
     const band = site.pages[0].root.children![0]; const [a, b] = band.children!;
     expect(pageRowSlot(band, a.id, "base")!.right + pageRowSlot(band, b.id, "base")!.left).toBeCloseTo(40, 9);
+  });
+});
+
+
+describe("G-3b (2) · from line, to line, to the last line, full width, bleed — per screen (map A1–A5)", () => {
+  const pageOf = (widths: string[], edit?: (cols: BoxNode[]) => void) => {
+    const cols = widths.map((w) => createContainer("column", { width: w, children: [blockForKind("text")] } as Partial<BoxNode>));
+    edit?.(cols);
+    return markPageGrid(normalizeRowBands({ ...emptyPageRoot(), children: [makeRowBand(cols)] } as BoxNode));
+  };
+  const ids = (root: BoxNode) => root.children![0].children!.map((k) => k.id);
+  const widthOf = (root: BoxNode, id: string, bp: Breakpoint = "base") => resolveResponsive(root.children![0].children!.find((k) => k.id === id)!, bp).width;
+
+  it("reads the lines a block covers: 5 + 7 is lines 1–6 and 6–13; a gap before a block moves its start", () => {
+    const root = pageOf(["41.67%", "58.33%"]); const [a, b] = ids(root);
+    expect(linesAt(root, a, 12)).toEqual({ from: 1, to: 6, first: true, last: false });
+    expect(linesAt(root, b, 12)).toEqual({ from: 6, to: 13, first: false, last: true });
+    const gapped = pageOf(["40%", "50%"], (c) => { c[0].marginLeftPct = 10; });
+    expect(linesAt(gapped, ids(gapped)[0], 10)).toMatchObject({ from: 2, to: 6 });
+  });
+
+  it("'To line' moves only the right edge; the block after gives what this one takes, never below one column (rule 19)", () => {
+    const root = pageOf(["50%", "50%"]); const [a, b] = ids(root);
+    const r = setLinesAt(root, a, { to: 9 }, 12);
+    expect([widthOf(r, a), widthOf(r, b)]).toEqual(["66.67%", "33.33%"]);
+    expect(linesAt(r, a, 12)!.from).toBe(1);
+    const far = setLinesAt(root, a, { to: 13 }, 12);
+    expect([widthOf(far, a), widthOf(far, b)]).toEqual(["91.67%", "8.33%"]); // the partner kept its one column
+  });
+
+  it("'From line' moves only the left edge: the block before gives way, or the space before it when it starts its line", () => {
+    const root = pageOf(["50%", "50%"]); const [a, b] = ids(root);
+    const r = setLinesAt(root, b, { from: 10 }, 12);
+    expect([widthOf(r, a), widthOf(r, b)]).toEqual(["75.00%", "25.00%"]);
+    expect(linesAt(r, b, 12)!.to).toBe(13);
+    const g = setLinesAt(root, a, { from: 3 }, 12);
+    expect(g.children![0].children![0].marginLeftPct).toBeCloseTo(16.67, 2);
+    expect(linesAt(g, a, 12)).toMatchObject({ from: 3, to: 7 });
+    expect(setLinesAt(root, a, { from: 0 }, 12)).toBe(root); // no space before it to give
+  });
+
+  it("per screen: set at Mobile, Desktop is untouched", () => {
+    const root = pageOf(["50%", "50%"]); const [a] = ids(root);
+    const r = setLinesAt(root, a, { to: 5 }, 6, "phone");
+    expect(widthOf(r, a, "phone")).toBe("66.67%");
+    expect(widthOf(r, a, "base")).toBe("50%");
+  });
+
+  it("'To the last line' reaches the end, and still does after the page grid goes from 12 columns to 16", () => {
+    const root = pageOf(["25%", "50%"]); const [, b] = ids(root);
+    const r = setLinesAt(root, b, { to: 13 }, 12);
+    expect(linesAt(r, b, 12)!.to).toBe(13);
+    expect(linesAt(r, b, 16)!.to).toBe(17);
+  });
+
+  it("'Full width' takes the whole line; the block beside it goes to the next", () => {
+    const root = pageOf(["50%", "50%"]); const [a, b] = ids(root);
+    const r = fullWidthAt(root, a);
+    expect(linesAt(r, a, 12)).toEqual({ from: 1, to: 13, first: true, last: true });
+    expect(linesAt(r, b, 12)).toMatchObject({ first: true, last: true });
+  });
+
+  it("bleed: only the side where it starts / ends a line goes to the page edge; nothing else moves", () => {
+    const right = pageOf(["50%", "50%"], (c) => { c[1].bleed = "right"; }); const band = right.children![0]; const [a, b] = band.children!;
+    const plain = pageOf(["50%", "50%"]); const pb = plain.children![0];
+    expect(childStyle(b, band).marginRight).toBe(`calc(${u(0)})`);
+    expect(childStyle(b, band).marginLeft).toBe(childStyle(pb.children![1], pb).marginLeft); // its gap side is unchanged
+    expect(childStyle(a, band)).toEqual(childStyle(pb.children![0], pb)); // the words do not move
+    expect(pageRowSlot(band, b.id, "base")!.right).toBe(0);
+    const middle = pageOf(["50%", "50%"], (c) => { c[1].bleed = "left"; }); const mb = middle.children![0];
+    expect(childStyle(mb.children![1], mb).marginLeft).toBe(childStyle(pb.children![1], pb).marginLeft); // not a line start: no edge to reach
+  });
+
+  it("bleed is per screen", () => {
+    const root = pageOf(["50%", "50%"]); const [, b] = ids(root);
+    const r = updateBoxResponsive(root, b, { bleed: "right" }, "phone"); const band = r.children![0];
+    expect(childStyle(resolveResponsive(band.children![1], "phone"), band, "phone").marginRight).toBe(`calc(${u(0)})`);
+    expect(childStyle(band.children![1], band, "base").marginRight).toBe(`calc(${u(SPACE_GRID.gutter)})`);
+  });
+
+  it("the published page writes the bleed", () => {
+    const site = siteFromRoot(pageOf(["50%", "50%"], (c) => { c[1].bleed = "both"; }));
+    const html = renderSitePage(site, DEFAULT_THEME, site.homeId, { inlineShared: true });
+    expect(html).toMatch(/margin-right:calc\(calc\(var\(--box-u, 0\.625rem\) \* 0\)\)/);
+  });
+});
+
+
+describe("G3b-11 · a width set for a screen wins there (the user: \"your setting wins\")", () => {
+  const words = (w: string) => createContainer("column", { width: w, children: [{ ...blockForKind("text"), text: "Admissions and enrolment information for families" } as BoxNode] } as Partial<BoxNode>);
+  const pageOf = () => markPageGrid(normalizeRowBands({ ...emptyPageRoot(), children: [makeRowBand([words("50%"), words("50%")])] } as BoxNode));
+  it("nothing set for a screen: the fit rule holds on every screen", () => {
+    const band = pageOf().children![0]; const seen: string[][] = [];
+    const css = rowQueryCss(band, (id) => `#${id}`, (c) => c, true, (c, screens) => { seen.push(screens); return c; });
+    expect(css).toContain("@container"); expect(seen).toEqual([]);
+  });
+  it("a width set for phones: the fit rule stands aside on phones only", () => {
+    let root = pageOf(); const [a, b] = root.children![0].children!;
+    root = updateBoxResponsive(updateBoxResponsive(root, a.id, { width: "66.67%" }, "phone"), b.id, { width: "33.33%" }, "phone");
+    const band = root.children![0]; let seen: string[] = [];
+    rowQueryCss(band, (id) => `#${id}`, (c) => c, true, (c, screens) => { seen = screens; return c; });
+    expect(seen).toEqual(["tabletPortrait", "tabletLandscape", "base", "wide"]);
+    const site = siteFromRoot(root); const html = renderSitePage(site, DEFAULT_THEME, site.homeId, { inlineShared: true });
+    expect(html).toMatch(/@media \(min-width:37\.5em\)\{@container/);
+  });
+});
+
+describe("G3b-12 · a picture not uploaded yet keeps its place on the published page (the user: \"same box, soft placeholder\")", () => {
+  const pageWithImage = (patch: Partial<BoxNode> = {}) => { const r = emptyPageRoot(); return markPageGrid(normalizeRowBands(insertBox(r, r.id, 0, { ...blockForKind("image"), ...patch } as BoxNode))); };
+  it("publishes a box the canvas's size, told to a screen reader as a picture to come", () => {
+    const root = pageWithImage(); const site = siteFromRoot(root);
+    const html = renderSitePage(site, DEFAULT_THEME, site.homeId, { inlineShared: true });
+    expect(html).toMatch(/<div role="img" aria-label="Picture to come" style="[^"]*height:16\.25rem/);
+    expect(html).toContain("lucide-image");
+  });
+  it("a height set on it is kept", () => {
+    const site = siteFromRoot(pageWithImage({ height: "200px" }));
+    expect(renderSitePage(site, DEFAULT_THEME, site.homeId, { inlineShared: true })).toMatch(/aria-label="Picture to come" style="[^"]*height:/);
+  });
+  it("a picture that has its image is published as the image", () => {
+    const site = siteFromRoot(pageWithImage({ src: "data:image/png;base64,AAAA", alt: "A school" }));
+    const html = renderSitePage(site, DEFAULT_THEME, site.homeId, { inlineShared: true });
+    expect(html).toContain('alt="A school"'); expect(html).not.toContain("Picture to come");
+  });
+});
+
+describe("Page check · a missing picture, and words too tight where a person set the widths (G3b-11, G3b-12)", () => {
+  it("lists a picture with no image, never as blocking publishing", () => {
+    const r = emptyPageRoot(); const root = markPageGrid(normalizeRowBands(insertBox(r, r.id, 0, blockForKind("image"))));
+    const issues = pageCheck(root);
+    expect(issues.map((i) => [i.kind, i.blocks])).toContainEqual(["picture-missing", false]);
+  });
+  it("warns when widths set for phones leave words too little room there — and not when they fit", () => {
+    const words = (w: string) => createContainer("column", { width: w, children: [{ ...blockForKind("text"), text: "Extraordinarily comprehensive admissions information" } as BoxNode] } as Partial<BoxNode>);
+    const page = markPageGrid(normalizeRowBands({ ...emptyPageRoot(), children: [makeRowBand([words("50%"), words("50%")])] } as BoxNode));
+    expect(pageCheck(page).some((i) => i.kind === "words-too-tight")).toBe(false);
+    const [a, b] = page.children![0].children!;
+    const tight = updateBoxResponsive(updateBoxResponsive(page, a.id, { width: "83.33%" }, "phone"), b.id, { width: "16.66%" }, "phone");
+    expect(pageCheck(tight).find((i) => i.kind === "words-too-tight")?.message).toMatch(/^On phones/);
+    // G3b-13: set for phones AND fitting — short words, an even split — says nothing (the first check above never reached the comparison)
+    const short = (w: string) => createContainer("column", { width: w, children: [{ ...blockForKind("text"), text: "Fees" } as BoxNode] } as Partial<BoxNode>);
+    const sp = markPageGrid(normalizeRowBands({ ...emptyPageRoot(), children: [makeRowBand([short("50%"), short("50%")])] } as BoxNode)); const [c, d] = sp.children![0].children!;
+    const fits = updateBoxResponsive(updateBoxResponsive(sp, c.id, { width: "58.33%" }, "phone"), d.id, { width: "41.66%" }, "phone");
+    expect(pageCheck(fits).some((i) => i.kind === "words-too-tight")).toBe(false);
   });
 });

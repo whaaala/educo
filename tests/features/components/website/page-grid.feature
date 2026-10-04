@@ -237,3 +237,31 @@ Feature: The page grid (AC-37b)
     Then the blocks of the stack touch and the cards stay apart
     And "Back to default" on either puts that one back and leaves the other
     And the Preview shows the same at every screen
+
+  Scenario: From line and to line, per screen
+    Given two blocks side by side on a page-grid page at Desktop
+    When I set the first block's "To line" to 9
+    Then its right edge moves to line 9 and the block beside it gives what it takes, never below one column
+    When I set the second block's "From line" to 10
+    Then only its left edge moves, and the first block grows to meet it
+    And at Mobile nothing changed until I set it there
+
+  Scenario: To the last line survives a change of columns
+    Given a block that ends its line short of the page's end
+    When I choose "To the last line"
+    Then it reaches the last line
+    When I change the page grid from 12 columns to 16
+    Then it still reaches the last line
+
+  Scenario Outline: Full width and bleed
+    Given a picture beside a block of words on a page-grid page
+    When I choose <choice> for the picture
+    Then <result>
+    And the Preview shows the same at every screen, with nothing scrolling sideways
+
+    Examples:
+      | choice        | result                                                                           |
+      | Whole line    | the picture takes its whole line and the words go to the next                    |
+      | Bleed right   | the picture reaches the page's right edge and the words do not move              |
+      | Bleed both    | with Whole line, the picture runs from one page edge to the other                 |
+      | Bleed left    | nothing changes while the picture does not start its line                        |

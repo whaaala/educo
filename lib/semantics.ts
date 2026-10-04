@@ -15,7 +15,7 @@
  *
  * Pure: no React, no DOM (engine-stays-portable).
  */
-import type { BoxNode } from "./box-model";
+import { type BoxNode, type Breakpoint, BP_ORDER, isPageRow, resolveResponsive, baseUnitParts, pageRowCells, pageRowTracks, rowSide, bandGutter, longestWordRem } from "./box-model";
 
 /** The elements a container may be. `div` is the neutral default. */
 export type SemanticTag = "div" | "header" | "nav" | "main" | "section" | "article" | "aside" | "footer" | "ul" | "ol" | "figure" | "address";
@@ -204,7 +204,11 @@ export function resolvePage(root: BoxNode): PageSemantics {
 }
 
 /** Something only the user can fix — plain words, what to do, and whether it stops publishing. */
-export type PageIssue = { id: string; kind: "image-description" | "button-words" | "link-words" | "heading-jump"; blocks: boolean; message: string; fix?: { level?: number } };
+export type PageIssue = { id: string; kind: "image-description" | "button-words" | "link-words" | "heading-jump" | "picture-missing" | "words-too-tight"; blocks: boolean; message: string; fix?: { level?: number } };
+
+/** The narrowest screen of each kind, in rem — what a row set for that screen has to fit (G3b-11). 360px is the low-cost phone (RULE AF). */
+const NARROWEST_REM: Record<Breakpoint, number> = { phone: 22.5, tabletPortrait: 37.5, tabletLandscape: 56.25, base: 75, wide: 112.5 };
+const SCREEN_WORDS: Record<Breakpoint, string> = { phone: "phones", tabletPortrait: "tablets held upright", tabletLandscape: "tablets held sideways", base: "desktops", wide: "wide screens" };
 
 /** C1: the Page check — ONLY what needs a person. Everything else was corrected by `resolvePage`. */
 export function pageCheck(root: BoxNode, sem: PageSemantics = resolvePage(root)): PageIssue[] {
@@ -213,6 +217,9 @@ export function pageCheck(root: BoxNode, sem: PageSemantics = resolvePage(root))
   const visit = (n: BoxNode) => {
     for (const c of n.children ?? []) {
       if (c.hidden) continue;
+      // G3b-12 (the user 2026-10-04): an empty picture keeps its place as a soft box on the page — so say it is still missing
+      if (c.type === "image" && !c.src)
+        out.push({ id: c.id, kind: "picture-missing", blocks: false, message: "This picture has no image yet — visitors see an empty box. Upload one, or delete the block." });
       if (c.type === "image" && c.src && c.alt === undefined)
         out.push({ id: c.id, kind: "image-description", blocks: true, message: "Describe this picture for people who can't see it — or mark it as only decoration." });
       if (c.type === "link" && !hasText(c))
@@ -230,6 +237,20 @@ export function pageCheck(root: BoxNode, sem: PageSemantics = resolvePage(root))
     }
   };
   visit(root);
+  // G3b-11 (the user 2026-10-04: "your setting wins"): a row of the page set by hand for a screen is drawn as set there, so say when
+  // a WORD would not fit its block on the narrowest such screen — the longest word at the type size it has there, against the room
+  // its share leaves after its part of the side space and gaps (G3b-13: not the fit rule's 14 rem readable floor, which breaks no word).
+  for (const band of root.children ?? []) {
+    if (!isPageRow(band)) continue;
+    const kids = band.children ?? [];
+    for (const bp of BP_ORDER) {
+      if (bp === "base" || !kids.some((k) => { const r = resolveResponsive(k, bp); return r.width !== k.width || r.marginLeftPct !== k.marginLeftPct; })) continue;
+      const W = NARROWEST_REM[bp], { loRem, hiRem, remHalf, cqwHalf } = baseUnitParts(), unit = Math.min(hiRem, Math.max(loRem, remHalf + (cqwHalf * W) / 100));
+      const cells = pageRowCells(band, bp), give = (rowSide(band, "left") + rowSide(band, "right") + bandGutter(band)) / 10 * unit; // a block's part, at most
+      const tight = kids.some((k) => { const c = cells.get(k.id); const share = c ? c.span / pageRowTracks(band) : 1; return (longestWordRem(k) / hiRem) * unit > share * W - give; });
+      if (tight) out.push({ id: kids[0].id, kind: "words-too-tight", blocks: false, message: `On ${SCREEN_WORDS[bp]} these blocks sit side by side as you set them, but their words need more room than the narrowest of those screens has — some may break. Give them more room there, or put that screen back to its default.` });
+    }
+  }
   return out;
 }
 

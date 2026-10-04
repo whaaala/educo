@@ -26,7 +26,7 @@ import { getPresets, presetKindFor } from "@/lib/box-presets";
 import IconPicker from "@/components/shared/IconPicker";
 import BackgroundPicker from "@/components/shared/BackgroundPicker";
 import GradientEditor, { parseGradient } from "@/components/shared/GradientEditor";
-import { Tabs, Accordion, Segmented, type SegOption } from "./ui";
+import { Tabs, Accordion, Segmented, ToolBtn, type SegOption } from "./ui";
 import EducoColorField from "@/components/shared/EducoColorField";
 import Slider from "@/components/shared/Slider";
 import CompactField from "@/components/shared/CompactField";
@@ -489,7 +489,7 @@ function AccPreview({ id, size, axes = [] }: { id: string; size: ThumbSize; axes
   );
 }
 
-export default function BoxInspector({ section = false, sectionPlace, outerDefault, pageSpan, onSetSpan, rowStepRem, node, theme, onPatch, onAddChild, onFloat, onUnfloat, onLayer, onAlignInRow, rowJustify, onSectionWidth, sectionWidth, canFloat = true, inGrid = false, inMasonry = false, gridTrack, onSetFraction, onRetrack, breakpoint = "base", overridden = false, onResetOverride, pages, currentPageId, pinBlockedBy = null, fixedBlockedBy = null, pinScope = null }: {
+export default function BoxInspector({ section = false, sectionPlace, outerDefault, pageSpan, onSetSpan, pageLines, onSetLines, rowStepRem, node, theme, onPatch, onAddChild, onFloat, onUnfloat, onLayer, onAlignInRow, rowJustify, onSectionWidth, sectionWidth, canFloat = true, inGrid = false, inMasonry = false, gridTrack, onSetFraction, onRetrack, breakpoint = "base", overridden = false, onResetOverride, pages, currentPageId, pinBlockedBy = null, fixedBlockedBy = null, pinScope = null }: {
   section?: SectionFlag; // the block is the content of a page section, so its default inner spacing is the gutter and the section space
   outerDefault?: [number, number, number, number]; // the outer space it really has by default (`outerSpaceDefaults`, G-3 (1)); else `outerDefaults`
   sectionPlace?: SectionPlace; // …and where: straight on the page or a column of a band — the default space OUTSIDE a self-painted block (S-2 (5))
@@ -514,6 +514,7 @@ export default function BoxInspector({ section = false, sectionPlace, outerDefau
   gridTrack?: number;
   /** A column of a page row on the page grid (G-3 (3)): how many of the page's columns it covers on this screen, and its setter. */
   pageSpan?: { value: number; cols: number }; onSetSpan?: (span: number) => void;
+  pageLines?: { from: number; to: number; first: boolean; last: boolean; cols: number }; onSetLines?: (want: { from?: number; to?: number } | "full") => void;
   /** The page grid's row step (rem) on a page-grid page — "Rows: N" sets the block at least N rows tall (G-3 (4)). */
   rowStepRem?: number;
   /** Set this block to a named fraction of its row. Refines the row to twelve first when it has to (base only,
@@ -1128,6 +1129,24 @@ export default function BoxInspector({ section = false, sectionPlace, outerDefau
                 <CompactField label={`Columns (of ${pageSpan.cols})`} ariaLabel={`Columns of ${pageSpan.cols}`} type="number" min={0.5} max={pageSpan.cols} step={0.5} value={pageSpan.value}
                   onChange={(v) => { const n = Number(v); if (Number.isFinite(n) && n > 0) onSetSpan(n); }} />
                 <p className="text-[0.625rem] text-gray-500 dark:text-gray-400 midnight:text-slate-400 purple:text-purple-300">On this screen. Alt ← / → one column, with Shift half a column; the block beside it gives what this one takes.</p>
+              </div>
+            )}
+            {pageLines && onSetLines && (
+              <div className="space-y-1">
+                <div className="grid grid-cols-2 gap-2">
+                  <CompactField label="From line" ariaLabel="From line" type="number" min={1} max={pageLines.cols} step={0.5} value={pageLines.from}
+                    onChange={(v) => { const n = Number(v); if (Number.isFinite(n) && n >= 1) onSetLines({ from: n }); }} />
+                  <CompactField label="To line" ariaLabel="To line" type="number" min={1.5} max={pageLines.cols + 1} step={0.5} value={pageLines.to}
+                    onChange={(v) => { const n = Number(v); if (Number.isFinite(n) && n > 1) onSetLines({ to: n }); }} />
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  <ToolBtn onClick={() => onSetLines("full")} active={pageLines.from === 1 && pageLines.to === pageLines.cols + 1 && pageLines.first && pageLines.last}>Whole line</ToolBtn>
+                  <ToolBtn onClick={() => onSetLines({ to: pageLines.cols + 1 })} disabled={pageLines.to === pageLines.cols + 1}>To the last line</ToolBtn>
+                </div>
+                <span className={label}>Bleed to the page edge</span>
+                <Segmented full ariaLabel="Bleed to the page edge" value={node.bleed ?? "off"} onChange={(v) => onPatch({ bleed: v === "off" ? undefined : (v as "left" | "right" | "both") })}
+                  options={[{ value: "off", label: "Off" }, { value: "left", label: "Left" }, { value: "right", label: "Right" }, { value: "both", label: "Both" }]} />
+                <p className="text-[0.625rem] text-gray-500 dark:text-gray-400 midnight:text-slate-400 purple:text-purple-300">On this screen. Lines run from 1 (the page&apos;s left edge) to {pageLines.cols + 1}. Bleed takes away the side space where this block starts or ends a line, so it reaches the page edge; nothing else moves.</p>
               </div>
             )}
             {rowStepRem && (

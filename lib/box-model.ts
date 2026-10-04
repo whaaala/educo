@@ -364,6 +364,7 @@ export interface BoxNode {
   pageGrid?: boolean;       // page root only: laid out on the PAGE GRID (AC-37b, 2026-10-04) — every page made from now; saved pages lack it
   onPageGrid?: boolean;     // a block of a page-grid page (`markPageGrid`): its unset spacing reads `SPACE_GRID`
   pageRow?: boolean;        // a row band straight on a page-grid page (`markPageGrid`): drawn as a CSS grid on the page's lines (G-3b, `isPageRow`)
+  bleed?: "left" | "right" | "both"; // on a row of the page: where it starts / ends a line, that side reaches the page edge (G-3b (2), per screen)
   freeWidth?: boolean;      // its width was set FREE (Alt-drag, G-3 (2)): "Line up with the grid" leaves it alone
   gridSpace?: GridSpace;    // the site's / page's own side space and gap (G-2), on the page root and every block `markPageGrid` marks
   rowBand?: boolean;        // structural ROW band: a direct child of the page root that lays its sections out side-by-side (the page is a vertical stack of these)
@@ -3457,8 +3458,8 @@ export function hostsNarrowingGrid(node: BoxNode): boolean {
  * worked out from the screen's columns it appeared anyway, as a cell on a row of its own, and every real cell lost a
  * share of the height to it (116px drawn, 174px published). The export passes nothing and carries none of it.
  */
-export function gridQueryCss(scope: string, node: BoxNode, cellScope: (id: string) => string, aboveThePhone: (css: string) => string, editorOnly: (scope: string) => string = () => "", onPage = false): string {
-  if (node.rowBand) return rowQueryCss(node, cellScope, aboveThePhone, onPage);
+export function gridQueryCss(scope: string, node: BoxNode, cellScope: (id: string) => string, aboveThePhone: (css: string) => string, editorOnly: (scope: string) => string = () => "", onPage = false, onlyOn?: OnlyOn): string {
+  if (node.rowBand) return rowQueryCss(node, cellScope, aboveThePhone, onPage, onlyOn);
   const n = gridNarrowsAt(node); if (!n) return "";
   const kids = (node.children ?? []).filter((c) => !isFloating(c));
   const at = (track: number) => {
@@ -3479,10 +3480,12 @@ export function gridQueryCss(scope: string, node: BoxNode, cellScope: (id: strin
     + (n.two != null ? aboveThePhone(below(n.two, at(2))) : "") + below(n.one, at(1));
 }
 /** Every grid's query rules on a page — the canvas's per-tree stylesheet; the export walks its own render. */
-export function treeGridQueryCss(root: BoxNode, scopeFor: (id: string) => string, aboveThePhone: (css: string) => string, editorOnly?: (scope: string) => string): string {
+/** Rules that hold on some screens only (G3b-11): the export writes them as media ranges, the canvas checks the screen it shows. */
+export type OnlyOn = (css: string, screens: Breakpoint[]) => string;
+export function treeGridQueryCss(root: BoxNode, scopeFor: (id: string) => string, aboveThePhone: (css: string) => string, editorOnly?: (scope: string) => string, onlyOn?: OnlyOn): string {
   let out = "";
   // `onPage`: a row directly on the page — its query container is the page, and it keeps the page's side space (G-1 #16)
-  const walk = (n: BoxNode, onPage: boolean) => { if (n.layout === "grid" || n.rowBand) out += gridQueryCss(scopeFor(n.id), n, scopeFor, aboveThePhone, editorOnly, onPage); for (const c of n.children ?? []) walk(c, n === root); };
+  const walk = (n: BoxNode, onPage: boolean) => { if (n.layout === "grid" || n.rowBand) out += gridQueryCss(scopeFor(n.id), n, scopeFor, aboveThePhone, editorOnly, onPage, onlyOn); for (const c of n.children ?? []) walk(c, n === root); };
   walk(root, false);
   return out;
 }
@@ -3559,7 +3562,7 @@ export function rowNarrowsAt(band: BoxNode, onPage = false): { ids: string[]; st
   return out.length ? out : null;
 }
 /** The container-query rules for one row band (see `rowNarrowsAt`), widest first; the phone keeps its own stacking. */
-export function rowQueryCss(band: BoxNode, cellScope: (id: string) => string, aboveThePhone: (css: string) => string, onPage = false): string {
+export function rowQueryCss(band: BoxNode, cellScope: (id: string) => string, aboveThePhone: (css: string) => string, onPage = false, onlyOn?: OnlyOn): string {
   const lines = rowNarrowsAt(band, onPage); if (!lines) return "";
   const gut = gapOf(band).x;
   // a row of the page (G-3b): the same tracks on every screen, so a step is a span — and every block of a new line takes its
@@ -3590,7 +3593,15 @@ export function rowQueryCss(band: BoxNode, cellScope: (id: string) => string, ab
     const q = `@container (max-width:${st.below - 0.01}rem){${rules}}`;
     css += st.lines.length === ids.length || gridBandOwnsGutter(band) ? q : aboveThePhone(q); // a page-grid row: the phone too (#12)
   }
-  return css;
+  if (!T) return css;
+  /**
+   * A WIDTH A PERSON SET FOR A SCREEN WINS THERE (G3b-11, the user 2026-10-04: "your setting wins"): on a screen where any block of
+   * the row has its own width or gap, the fit rule stands aside for this row — it is drawn as set (Page check warns if its words
+   * then break). Measured: "To line 5" at Mobile changed nothing you could see, the stacked row overriding it.
+   */
+  const kids = band.children ?? [];
+  const fits = BP_ORDER.filter((bp) => bp === "base" || !kids.some((k) => { const r = resolveResponsive(k, bp); return r.width !== k.width || r.marginLeftPct !== k.marginLeftPct; }));
+  return fits.length === BP_ORDER.length || !onlyOn ? css : onlyOn(css, fits);
 }
 
 /**
@@ -5220,13 +5231,14 @@ export function isPageRow(band: BoxNode | null | undefined): boolean {
 const pageRowCols = (band: BoxNode, bp: Breakpoint) => band.gridSpace?.cols?.[bp] ?? columnsAt(PAGE_GRID_DEFAULT, bp);
 
 /** The row's blocks on `bp`, line by line as the stored shares pack them (`packRowLines`) — a gap before a block included. */
-function rowLinesAt(band: BoxNode, bp: Breakpoint): { id: string; gapPct: number; sharePct: number; shared: boolean }[][] {
+type RowLineItem = { id: string; gapPct: number; sharePct: number; shared: boolean; bleed?: BoxNode["bleed"] };
+function rowLinesAt(band: BoxNode, bp: Breakpoint): RowLineItem[][] {
   const kids = rowColumnsAt(band, bp).map((k) => resolveResponsive(k, bp));
   const shared = (k: BoxNode) => !k.width?.trim().endsWith("%");
   // a block with no share (fill / auto) takes an equal part of what the shares leave on its line, so it packs as nothing
   const lines = packRowLines(kids.map((k) => (shared(k) ? { ...k, width: "0.001%" } : k)));
-  const out: { id: string; gapPct: number; sharePct: number; shared: boolean }[][] = [];
-  kids.forEach((k, i) => (out[lines[i]] ??= []).push({ id: k.id, gapPct: k.marginLeftPct ?? 0, sharePct: shared(k) ? 0 : widthPct(k.width), shared: shared(k) }));
+  const out: RowLineItem[][] = [];
+  kids.forEach((k, i) => (out[lines[i]] ??= []).push({ id: k.id, gapPct: k.marginLeftPct ?? 0, sharePct: shared(k) ? 0 : widthPct(k.width), shared: shared(k), bleed: k.bleed }));
   for (const line of out) {
     const free = line.filter((c) => c.shared); if (!free.length) continue;
     const left = Math.max(0, 100 - line.reduce((n, c) => n + c.gapPct + c.sharePct, 0));
@@ -5250,7 +5262,7 @@ export function pageRowTracks(band: BoxNode): number {
 
 /** Where a block of a row of the page sits on `bp`: the tracks of its area (its gap before it included), that gap as a share
  *  of the area (a `%` margin on a grid item is of its area), and its place `at` on a line `of` blocks. */
-export type PageRowCell = { span: number; gapPct: number; at: number; of: number };
+export type PageRowCell = { span: number; gapPct: number; at: number; of: number; bleed?: BoxNode["bleed"] };
 export function pageRowCells(band: BoxNode, bp: Breakpoint, T = pageRowTracks(band)): Map<string, PageRowCell> {
   const out = new Map<string, PageRowCell>();
   for (const line of rowLinesAt(band, bp)) {
@@ -5260,7 +5272,7 @@ export function pageRowCells(band: BoxNode, bp: Breakpoint, T = pageRowTracks(ba
       const boxAt = Math.min(T - 1, Math.max(from, Math.round((at / 100) * T))); at += c.sharePct;
       end = Math.min(T, Math.max(boxAt + 1, Math.round((at / 100) * T)));
       const span = end - from;
-      out.set(c.id, { span, gapPct: +(((boxAt - from) / span) * 100).toFixed(4), at: i, of: line.length });
+      out.set(c.id, { span, gapPct: +(((boxAt - from) / span) * 100).toFixed(4), at: i, of: line.length, bleed: c.bleed });
     });
   }
   return out;
@@ -5280,7 +5292,9 @@ export function pageRowSides(band: BoxNode, at: number, of: number): { left: num
 
 /** A block's margin on one side in a row of the page: its share of the line's space (`pageRowSides`) plus its own margin — except
  *  the row's first / last block, whose own margin IS the row's side (`rowSide`). A gap dragged open before it rides on its left. */
-function pageRowMargin(band: BoxNode, child: BoxNode, side: "left" | "right", at: number, of: number, gapPct = 0): string {
+function pageRowMargin(band: BoxNode, child: BoxNode, side: "left" | "right", at: number, of: number, gapPct = 0, bleed = child.bleed): string {
+  // BLEED (G-3b (2)): where it starts / ends a line, that side gives up its side space and reaches the page edge — nothing else moves
+  if (bleeds(bleed, side, at, of)) return `calc(${gapPct ? `${gapPct}% + ` : ""}${u(0)})`;
   const k = band.children ?? [];
   const ownsSide = (side === "left" ? k[0] : k[k.length - 1])?.id === child.id;
   const own = ownsSide ? 0 : (side === "left" ? child.marginLeft : child.marginRight) ?? child.margin ?? 0;
@@ -5294,16 +5308,77 @@ function pageRowCSS(s: CSSProperties, child: BoxNode, band: BoxNode, bp: Breakpo
   delete s.flex;
   if (!cell) return; // floating or hidden here: not on the grid
   s.gridColumn = `span ${cell.span}`;
-  if (s.marginLeft !== "auto") s.marginLeft = pageRowMargin(band, child, "left", cell.at, cell.of, cell.gapPct);
-  if (s.marginRight !== "auto") s.marginRight = pageRowMargin(band, child, "right", cell.at, cell.of);
+  if (s.marginLeft !== "auto") s.marginLeft = pageRowMargin(band, child, "left", cell.at, cell.of, cell.gapPct, cell.bleed);
+  if (s.marginRight !== "auto") s.marginRight = pageRowMargin(band, child, "right", cell.at, cell.of, 0, cell.bleed);
 }
 
 /** The canvas's slot of a block of a row of the page: the space on each side of its box that belongs to its grid area, in stored
  *  units (`pageRowSides`, without its own margin or a gap dragged open — those the resize reads on their own). */
 export function pageRowSlot(band: BoxNode, id: string, bp: Breakpoint): { left: number; right: number } | null {
   const cell = pageRowCells(band, bp).get(id);
-  return cell ? pageRowSides(band, cell.at, cell.of) : null;
+  if (!cell) return null;
+  const sides = pageRowSides(band, cell.at, cell.of);
+  return { left: bleeds(cell.bleed, "left", cell.at, cell.of) ? 0 : sides.left, right: bleeds(cell.bleed, "right", cell.at, cell.of) ? 0 : sides.right };
 }
+
+/** Does a block bleed on `side` here — it asked to, and that side starts / ends its line (only there is there a page edge to reach)? */
+const bleeds = (bleed: BoxNode["bleed"], side: "left" | "right", at: number, of: number) =>
+  !!bleed && (bleed === "both" || bleed === side) && (side === "left" ? at === 0 : at === of - 1);
+
+/**
+ * G-3b (2) — WHERE A BLOCK SITS ON THE PAGE'S LINES on `bp` (map A1–A3): line `from` to line `to` (1 = the page's left edge, `cols` + 1
+ * its right; halves on half-lines), read from its share and the gap before it — or null when it is not a column of a row of the page.
+ */
+export function linesAt(root: BoxNode, id: string, cols: number, bp: Breakpoint = "base"): { from: number; to: number; first: boolean; last: boolean } | null {
+  const p = findParent(root, id);
+  if (!root.pageGrid || !p || !isPageRow(p.parent) || !(root.children ?? []).some((c) => c.id === p.parent.id)) return null;
+  const half = (pct: number) => Math.round((pct / 100) * cols * 2) / 2;
+  for (const line of rowLinesAt(p.parent, bp)) {
+    let at = 0;
+    for (let i = 0; i < line.length; i++) {
+      const c = line[i]; at += c.gapPct;
+      if (c.id === id) return { from: 1 + half(at), to: 1 + half(at + c.sharePct), first: i === 0, last: i === line.length - 1 };
+      at += c.sharePct;
+    }
+  }
+  return null;
+}
+
+/**
+ * Moves ONE edge of a block to a line on `bp` (rule 19: only the edge you move moves). `to` — the block after it on its line gives
+ * what this one takes, never below one column; with none after it, the room left on the line. `from` — the block before it gives
+ * way, or the space before it does when it starts its line. A block never goes below half a column. Returns the same tree when
+ * nothing can change. "To the last line" is `to: cols + 1`: a share, so it still reaches the end after a column-count change.
+ */
+export function setLinesAt(root: BoxNode, id: string, want: { from?: number; to?: number }, cols: number, bp: Breakpoint = "base"): BoxNode {
+  const now = linesAt(root, id, cols, bp); const p = findParent(root, id);
+  if (!now || !p) return root;
+  const line = rowLinesAt(p.parent, bp).find((l) => l.some((c) => c.id === id))!; const i = line.findIndex((c) => c.id === id);
+  const colsOf = (pct: number) => (pct / 100) * cols, pct = (c: number) => `${((c / cols) * 100).toFixed(2)}%`, gapPct = (c: number) => (c > 0.001 ? +((c / cols) * 100).toFixed(2) : undefined);
+  const span = now.to - now.from; let next = root;
+  if (want.to !== undefined && want.to !== now.to) {
+    const after = line[i + 1];
+    const room = after ? colsOf(after.sharePct) - 1 : cols + 1 - now.to; // the partner keeps a column; alone, the line's end
+    const d = Math.max(0.5 - span, Math.min(room, want.to - now.to));
+    if (!d) return root;
+    next = updateBoxResponsive(next, id, { width: pct(span + d) }, bp);
+    if (after) next = updateBoxResponsive(next, after.id, { width: pct(colsOf(after.sharePct) - d) }, bp);
+    return next;
+  }
+  if (want.from !== undefined && want.from !== now.from) {
+    const before = i > 0 ? line[i - 1] : null, gap = colsOf(line[i].gapPct);
+    const give = before ? colsOf(before.sharePct) - 1 : gap; // how far left it can go
+    const d = Math.max(-give, Math.min(span - 0.5, want.from - now.from));
+    if (!d) return root;
+    next = updateBoxResponsive(next, id, { width: pct(span - d), ...(before ? {} : { marginLeftPct: gapPct(gap + d) }) }, bp);
+    if (before) next = updateBoxResponsive(next, before.id, { width: pct(colsOf(before.sharePct) + d) }, bp);
+    return next;
+  }
+  return root;
+}
+
+/** "Full width" (map A4): the block takes its whole line on `bp`; the blocks beside it go to lines of their own. */
+export const fullWidthAt = (root: BoxNode, id: string, bp: Breakpoint = "base"): BoxNode => updateBoxResponsive(root, id, { width: "100%", marginLeftPct: undefined }, bp);
 
 /**
  * THE SPAN OF A COLUMN OF A PAGE ROW (G-3 (3)) — how many of the page grid's `cols` columns its share covers on `bp`, or
