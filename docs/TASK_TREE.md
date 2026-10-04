@@ -2075,6 +2075,13 @@ sent), and my research. Nothing on the layout is done until every line here is c
             (3 across on 10) rounds to the nearest whole column or keeps its own equal columns inside its span; the words
             still win (a block takes more columns or the row wraps). `[ ]` PROOF: the example checker extended to RANDOM
             column counts × row steps × every width × 100 / 150 / 200 % text (RULE MAP step 3)
+          - **BEST OF BOTH WORLDS (the user, 2026-10-04: "have it do exactly what was done before… the best of both worlds")**:
+            the grid sits ON TOP of today's model — placements were already stored as SHARES, so nothing is replaced.
+            (1) SNAP by default; FREE placement as today (any width, e.g. 37%) by holding **Alt** while dragging, or a
+            per-block "Free placement" switch that keeps it free; free blocks still follow every rung (the same fit-based
+            re-split). (2) Pages saved before the grid keep their widths; an optional one-click, undoable "Line up with the
+            grid" per page. (3) The engine is EXTENDED, not replaced: named lines, snapping, the fit-based re-split and the
+            advanced panel are added to the existing shares, spacing and ladder
           - **THE PHONE DEFAULT — DECIDED AGAIN BY THE USER, 2026-10-04 (supersedes Q2 "stack, except by purpose"),
             from `06-rungs.md`** (300 crawled pages re-measured at 768 / 375, `skeleton.js --widths`, saturated: rows of 4
             and 5+ go to FEWER across on phones 47–61% of the time, more often than they stack): **FIT-BASED** — on every
