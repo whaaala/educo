@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { type BoxNode, type Breakpoint, SPACE_DEFAULT, SPACE_GRID, spaceDefaults, outerDefaults, gapOf, insertBox, normalizeRowBands, markPageGrid, u, createContainer, makeRowBand, sectionContent, gridBandOwnsGutter, pageBandInset, rowNarrowsAt, rowQueryCss, childStyle, tabletPlaces, rowSide, outerSpaceDefaults, spanAt, setSpan, resolveResponsive, lineUpWithGrid, isPageRow, containerStyle, pageRowCells, pageRowTracks, pageRowSlot, linesAt, setLinesAt, fullWidthAt, updateBoxResponsive } from "@/lib/box-model";
+import { type BoxNode, type Breakpoint, SPACE_DEFAULT, SPACE_GRID, spaceDefaults, outerDefaults, gapOf, insertBox, normalizeRowBands, markPageGrid, u, createContainer, makeRowBand, sectionContent, gridBandOwnsGutter, pageBandInset, rowNarrowsAt, rowQueryCss, childStyle, tabletPlaces, rowSide, outerSpaceDefaults, spanAt, setSpan, resolveResponsive, lineUpWithGrid, isPageRow, containerStyle, pageRowCells, pageRowTracks, pageRowSlot, linesAt, setLinesAt, fullWidthAt, updateBoxResponsive, FRAME_CSS, frameRemAt } from "@/lib/box-model";
 import { blockForKind } from "@/lib/box-presets";
 import { COMPONENT_CATALOGUE } from "@/lib/component-catalogue";
 import { emptyPageRoot, siteFromRoot, setPageGrid, applyPageGrid, addPage } from "@/lib/box-site";
@@ -54,9 +54,13 @@ describe("a new page is a page-grid page; a saved page is left alone", () => {
 
 describe("the page grid's defaults: the side space and the gap, small and never zero", () => {
   const unitRem = { lo: 0.4375, hi: 0.875 }; // the fluid unit's clamp (`baseUnitParts`) at the default base
-  it("side space ≥ 1 rem on a phone, ≈ 2 rem wide; gap ≥ 0.75 rem on a phone (the user, 2026-10-04)", () => {
-    expect((SPACE_GRID.gutter / 10) * unitRem.lo).toBeGreaterThanOrEqual(1);
-    expect((SPACE_GRID.gutter / 10) * unitRem.hi).toBeLessThanOrEqual(2.1);
+  it("G-3c: the frame is 1 rem on a 360 phone, ~1.14 rem at 1280, 1.25 rem wide (the user: \"1 rem, growing a little\"); gap ≥ 0.75 rem on a phone", () => {
+    const page = emptyPageRoot();
+    expect(frameRemAt(page, 22.5)).toBe(1);
+    expect(frameRemAt(page, 80)).toBeCloseTo(1.14, 2);
+    expect(frameRemAt(page, 120)).toBe(1.25);
+    expect(FRAME_CSS).toBe("clamp(1rem, calc(var(--box-u, 0.625rem) * 1.6), 1.25rem)"); // rem with a fluid term (rule 16), never a pixel
+    expect(frameRemAt({ ...page, gridSpace: { gutter: 0 } } as BoxNode, 80)).toBe(0); // the site's own value, down to 0
     expect((SPACE_GRID.columns / 10) * unitRem.lo).toBeGreaterThanOrEqual(0.74);
     expect(SPACE_GRID.gutter).toBeLessThan(SPACE_DEFAULT.gutter); // "not too much"
   });
@@ -81,10 +85,10 @@ describe("the page grid's defaults: the side space and the gap, small and never 
 
   it("the published page writes the new side space for a page-grid page and the old one for a saved page", () => {
     const html = (root: BoxNode) => { const site = siteFromRoot(root); return renderSitePage(site, DEFAULT_THEME, site.homeId, { inlineShared: true }); };
-    expect(html(dropOn(emptyPageRoot(), blockForKind("heading")))).toContain(u(SPACE_GRID.gutter));
+    expect(html(dropOn(emptyPageRoot(), blockForKind("heading")))).toContain(FRAME_CSS);
     const saved = html(dropOn(savedRoot(), blockForKind("heading")));
     expect(saved).toContain(u(SPACE_DEFAULT.gutter));
-    expect(saved).not.toContain(u(SPACE_GRID.gutter));
+    expect(saved).not.toContain(FRAME_CSS);
   });
 });
 
@@ -162,8 +166,8 @@ describe("columns side by side sit one gap apart; the page's edges keep the side
     const { band, cols, flag } = rowOf(true, n);
     expect(gridBandOwnsGutter(band)).toBe(true);
     expect(pageBandInset(band, true)).toEqual({}); // G-3b: the row is the page's width; the side space is the outer blocks' margin
-    expect(childStyle(cols[0], band).marginLeft).toBe(`calc(${u(SPACE_GRID.gutter)})`);
-    expect(childStyle(cols[n - 1], band).marginRight).toBe(`calc(${u(SPACE_GRID.gutter)})`);
+    expect(childStyle(cols[0], band).marginLeft).toBe(`calc(${FRAME_CSS})`);
+    expect(childStyle(cols[n - 1], band).marginRight).toBe(`calc(${FRAME_CSS})`);
     for (const c of cols) { expect(flag(c)).toBe("gridBand"); const pad = spaceDefaults(c, flag(c)).pad; expect([pad[1], pad[3]]).toEqual([0, 0]); expect(pad[0]).toBe(SPACE_GRID.section); }
   });
 
@@ -282,7 +286,7 @@ describe("G-2 · the site's side space and gap, set in the page-grid panel", () 
   it("the published page writes the site's side space, and the canvas reads the same number", () => {
     const site = setPageGrid(siteFromRoot(pageWith("heading")), { sideSpace: 48 });
     expect(html(site)).toContain(u(48));
-    expect(html(site)).not.toContain(u(SPACE_GRID.gutter));
+    expect(html(site)).not.toContain(FRAME_CSS);
     const heading = spacedOf(site.pages[0].root).find((n) => !n.rowBand)!;
     expect(spaceDefaults(heading, true).pad[1]).toBe(48);
   });
@@ -367,20 +371,20 @@ describe("G-3 (1) · edge to edge: the first and last block own the row's outer 
   it.each([2, 3, 4])("row of %i, nothing set: both sides are the site's side space (unchanged from G-1)", (n) => {
     const { band } = rowOf(n);
     expect([rowSide(band, "left"), rowSide(band, "right")]).toEqual([SPACE_GRID.gutter, SPACE_GRID.gutter]);
-    expect(childStyle(band.children![0], band).marginLeft).toBe(`calc(${u(SPACE_GRID.gutter)})`); // G-3b: on the blocks, not the row
-    expect(childStyle(band.children![n - 1], band).marginRight).toBe(`calc(${u(SPACE_GRID.gutter)})`);
+    expect(childStyle(band.children![0], band).marginLeft).toBe(`calc(${FRAME_CSS})`); // G-3b: on the blocks, not the row
+    expect(childStyle(band.children![n - 1], band).marginRight).toBe(`calc(${FRAME_CSS})`);
   });
 
   it.each([0, 8, 48])("the FIRST block's left margin %i is the row's left side; the right stays", (v) => {
     const { band } = rowOf(3, (c) => { c[0].marginLeft = v; });
     expect(childStyle(band.children![0], band).marginLeft).toBe(`calc(${u(v)})`); // its own margin IS the side: never applied twice (G3-1)
-    expect(childStyle(band.children![2], band).marginRight).toBe(`calc(${u(SPACE_GRID.gutter)})`);
+    expect(childStyle(band.children![2], band).marginRight).toBe(`calc(${FRAME_CSS})`);
   });
 
   it("the LAST block's right margin is the row's right side; a middle block's margins stay its own", () => {
     const { band } = rowOf(3, (c) => { c[2].marginRight = 0; c[1].marginLeft = 32; });
     expect(childStyle(band.children![2], band).marginRight).toBe(`calc(${u(0)})`);
-    expect(childStyle(band.children![1], band).marginLeft).toBe(`calc(${u(+(32 + SPACE_GRID.gutter + (SPACE_GRID.columns - SPACE_GRID.gutter - 0) / 3).toFixed(4))})`);
+    expect(childStyle(band.children![1], band).marginLeft).toBe(`calc(${FRAME_CSS} * 0.6667 + var(--bx-gut) * 0.3333 + ${u(32)})`); // L + (G − L − R) / 3 + its own, R = 0 (G-3c: the frame as CSS)
   });
 
   it("the Inspector's default for the first / last block names the side it really has", () => {
@@ -507,7 +511,7 @@ describe("G3-11 · a gap opened by dragging the first block's LEFT edge stays it
     const cols = [createContainer("column", { width: "40%", marginLeftPct: 10, children: [blockForKind("text")] } as Partial<BoxNode>), createContainer("column", { width: "50%", children: [blockForKind("text")] } as Partial<BoxNode>)];
     const page = markPageGrid(normalizeRowBands({ ...emptyPageRoot(), children: [makeRowBand(cols)] } as BoxNode)); const band = page.children![0];
     // G-3b: a `%` margin on a grid item is of its AREA (gap + block = 50%), so the 10% of the line is 20% of it
-    expect(childStyle(band.children![0], band).marginLeft).toBe(`calc(20% + ${u(SPACE_GRID.gutter)})`);
+    expect(childStyle(band.children![0], band).marginLeft).toBe(`calc(20% + ${FRAME_CSS})`);
     expect(rowSide(band, "left")).toBe(SPACE_GRID.gutter); // …and the row keeps the site's side space
   });
 });
@@ -563,7 +567,7 @@ describe("G-3b (1) · a row of the page is a CSS grid on the page's own lines (D
     const { band } = rowOf(["50%", "50%"]); const [a, b] = band.children!;
     for (const bp of RUNGS) {
       const sa = childStyle(a, band, bp), sb = childStyle(b, band, bp);
-      expect([sa.marginLeft, sa.marginRight, sb.marginLeft, sb.marginRight]).toEqual([`calc(${u(SPACE_GRID.gutter)})`, `calc(${u(SPACE_GRID.columns / 2)})`, `calc(${u(SPACE_GRID.columns / 2)})`, `calc(${u(SPACE_GRID.gutter)})`]);
+      expect([sa.marginLeft, sa.marginRight, sb.marginLeft, sb.marginRight]).toEqual([`calc(${FRAME_CSS})`, "calc(var(--bx-gut) * 0.5)", "calc(var(--bx-gut) * 0.5)", `calc(${FRAME_CSS})`]);
     }
   });
 
@@ -578,7 +582,7 @@ describe("G-3b (1) · a row of the page is a CSS grid on the page's own lines (D
 
   it("a block that wraps to a new line starts it with the side space", () => {
     const { band } = rowOf(["60%", "60%"]); const [, b] = band.children!;
-    expect(childStyle(b, band).marginLeft).toBe(`calc(${u(SPACE_GRID.gutter)})`);
+    expect(childStyle(b, band).marginLeft).toBe(`calc(${FRAME_CSS})`);
     expect(pageRowCells(band, "base").get(b.id)).toMatchObject({ at: 0, of: 1 });
   });
 
@@ -609,8 +613,8 @@ describe("G-3b (4) · the fit rule on the grid: every line steps, by span", () =
     const band = rowOf([words("25%"), words("25%"), words("25%"), words("25%")]);
     const css = rowQueryCss(band, (id) => `#${id}`, (c) => `@media{${c}}`, true);
     const [a, b] = band.children!;
-    expect(css).toContain(`#${a.id}{grid-column:span 6 !important;margin-left:calc(${u(SPACE_GRID.gutter)}) !important;margin-right:calc(${u(SPACE_GRID.columns / 2)}) !important`);
-    expect(css).toContain(`#${b.id}{grid-column:span 6 !important;margin-left:calc(${u(SPACE_GRID.columns / 2)}) !important;margin-right:calc(${u(SPACE_GRID.gutter)}) !important`);
+    expect(css).toContain(`#${a.id}{grid-column:span 6 !important;margin-left:calc(${FRAME_CSS}) !important;margin-right:calc(var(--bx-gut) * 0.5) !important`);
+    expect(css).toContain(`#${b.id}{grid-column:span 6 !important;margin-left:calc(var(--bx-gut) * 0.5) !important;margin-right:calc(${FRAME_CSS}) !important`);
     expect(css).toContain(`#${a.id}{grid-column:span 12 !important`);
     expect(css).not.toContain("flex:");
     expect(css).not.toContain("@media"); // the phone too
@@ -719,7 +723,7 @@ describe("G-3b (2) · from line, to line, to the last line, full width, bleed �
     const root = pageOf(["50%", "50%"]); const [, b] = ids(root);
     const r = updateBoxResponsive(root, b, { bleed: "right" }, "phone"); const band = r.children![0];
     expect(childStyle(resolveResponsive(band.children![1], "phone"), band, "phone").marginRight).toBe(`calc(${u(0)})`);
-    expect(childStyle(band.children![1], band, "base").marginRight).toBe(`calc(${u(SPACE_GRID.gutter)})`);
+    expect(childStyle(band.children![1], band, "base").marginRight).toBe(`calc(${FRAME_CSS})`);
   });
 
   it("the published page writes the bleed", () => {

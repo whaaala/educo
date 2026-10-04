@@ -3,7 +3,7 @@ import { render, screen, fireEvent } from "@testing-library/react";
 import PageGridPanel from "@/components/website/box/PageGridPanel";
 import BoxCanvas from "@/components/website/box/BoxCanvas";
 import { DEFAULT_THEME } from "@/lib/site-storage";
-import { u, pageSideSpace, SPACE_GRID, baseUnit, createContainer, markPageGrid, normalizeRowBands, makeRowBand, type BoxNode } from "@/lib/box-model";
+import { u, pageSideSpace, SPACE_GRID, FRAME_CSS, baseUnit, createContainer, markPageGrid, normalizeRowBands, makeRowBand, type BoxNode } from "@/lib/box-model";
 import { blockForKind } from "@/lib/box-presets";
 import { emptyPageRoot } from "@/lib/box-site";
 import { guideColor, guideInk } from "@/lib/page-grid";
@@ -37,7 +37,8 @@ describe("the page-grid panel", () => {
 
   it("the side space reads its default, can go to zero and back", () => {
     const p = panel();
-    expect(screen.getByText(/Default · 1.44rem/)).toBeInTheDocument();
+    expect(screen.getByText("Default · 1–1.25rem")).toBeInTheDocument(); // G-3c: the frame as it really is, phone → wide (G3c-1)
+    expect(screen.getByText(`Default · ${+(SPACE_GRID.columns / 10 * 0.4375).toFixed(2)}–${+(SPACE_GRID.columns / 10 * 0.875).toFixed(2)}rem`)).toBeInTheDocument(); // the gap across, never "value / 16"
     fireEvent.change(screen.getByLabelText("Side space (padding)"), { target: { value: "0" } });
     expect(p.onChange).toHaveBeenCalledWith({ sideSpace: 0 }, "pagegrid:side");
     expect(screen.getAllByRole("button", { name: "At the default" })).toHaveLength(1);
@@ -92,7 +93,7 @@ describe("the layout guides on the canvas", () => {
     expect(g.querySelectorAll("[data-guide-col]")).toHaveLength(cols);
     expect(g.style.gridTemplateColumns).toBe(`repeat(${cols}, minmax(0, 1fr))`);
     expect(g.style.paddingInline).toBe(""); // the columns run to the page's edges
-    expect(g.style.backgroundImage).toContain(`0 ${u(SPACE_GRID.gutter)}`); // …and the default margin is drawn inside them
+    expect(g.style.backgroundImage).toContain(`0 ${FRAME_CSS}`); // …and the default margin is drawn inside them
     expect(g.getAttribute("aria-hidden")).toBe("true");
     expect(g.style.pointerEvents).toBe("none");
   });

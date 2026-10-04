@@ -16,7 +16,7 @@ import { createPortal } from "react-dom";
 import { Link2, Plus, ChevronUp, ChevronDown, Copy, Scissors, ClipboardPaste, Trash2, Upload, GripVertical, MoreVertical, Rows3, Columns3, Grid3x3, Type, Heading as HeadingIcon, MousePointerClick, Image as ImageIcon, Layers, BringToFront, SendToBack, Video as VideoIcon, Sparkles, Minus as MinusIcon, List as ListIcon, Code2, Star, Lock, LockOpen, Ungroup } from "lucide-react";
 import type { SiteTheme } from "@/lib/site-storage";
 import {
-  type BoxNode, type BoxType, pageSideSpace, spanAt, setSpan,
+  type BoxNode, type BoxType, frameCss, spanAt, setSpan,
   containerStyle, childStyle, marginCSS, leafPaddingCSS, outerSpaceCSS, pageBandInset, pagePinCover, sectionContent, sizeToCSS, u, baseUnit, floatingReserve, floatStacksOnMobile, createContainer, createElement, createComponent,
   updateBox, deleteBox, insertBox, moveBoxStep, duplicateBox, moveBox, cloneBox, findParent, isAncestor, isContainer, containerLabel, widthPct, stackWithBlock, fitBand, PILL, blockTypography,
   isFloating, floatBox, unfloatBox, groupBoxes, ungroupBoxes, bringToFront, sendToBack, bringForward, sendBackward, packRowLines, allocateLine, type LineFollower,
@@ -414,7 +414,7 @@ export interface LayoutGuidesView { cols: number; rowStepRem: number; rows: bool
 /**
  * THE LAYOUT GUIDES (AC-37b, G-2) — the page grid drawn over the canvas, never published. The columns come from the ONE
  * template (`gridTemplate`) and run EDGE TO EDGE (G-3 (1), the user 2026-10-04): the first and last are ordinary columns, and
- * the side space (`pageSideSpace`, through `u()` as the sections are) is shaded INSIDE them as the default margin of what
+ * the side space (`frameCss`, the page's frame as the sections draw it, G-3c) is shaded INSIDE them as the default margin of what
  * sits there. Each column shows its middle line faintly.
  */
 function LayoutGuides({ view, side, unit, color }: { view: LayoutGuidesView; side: string; unit: string; color: string }) {
@@ -2234,8 +2234,10 @@ export default function BoxCanvas({
      * number for it, not half a gap.
      */
     const slotSide = (e2: HTMLElement, side: "left" | "right") => {
-      const slot = pageRowBand && e2.dataset.boxId ? pageRowSlot(pageRowBand, e2.dataset.boxId, breakpoint) : null;
-      return slot ? (slot[side] * boxU) / 10 : HG;
+      // in rem at the page's width, the frame as drawn there (G-3c); the page element is the row's own width (the row has no reach)
+      const remPx = rootFontPx() * Z, pageRem = pEl ? (pEl.clientWidth * Z) / remPx : 0;
+      const slot = pageRowBand && e2.dataset.boxId ? pageRowSlot(pageRowBand, e2.dataset.boxId, breakpoint, pageRem) : null;
+      return slot ? slot[side] * remPx : HG;
     };
     const startLeftPx = rect.left - slotSide(el, "left") - contentLeftPx, startRightPx = rect.right + slotSide(el, "right") - contentLeftPx;
     if (pageRowBand) W0 = startRightPx - startLeftPx;
@@ -3801,7 +3803,7 @@ export default function BoxCanvas({
         <div role="status" data-span-live style={{ position: "fixed", left: spanLive.x + 14, top: spanLive.y - 28, zIndex: CHROME_Z.snapGuide, pointerEvents: "none", background: guideHue, color: guideInk(guideHue), font: "500 0.75rem/1 ui-monospace, monospace", padding: "0.3rem 0.45rem", borderRadius: "0.25rem", whiteSpace: "nowrap" }}>{spanLive.text}</div>,
         document.body,
       )}
-      {editable && guides && <LayoutGuides view={guides} side={u(pageSideSpace(root))} unit={baseUnit(root.baseFont ?? 10)} color={guideHue} />}
+      {editable && guides && <LayoutGuides view={guides} side={frameCss(root)} unit={baseUnit(root.baseFont ?? 10)} color={guideHue} />}
       {editable && guides && <GuideLines color={guideHue} rows={guides.rows} />}
       {/* Marquee (rubber-band) selection rectangle. Portaled so it's never clipped. */}
       {marquee && createPortal(

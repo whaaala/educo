@@ -10,13 +10,17 @@
 import { useEffect, useRef, useState } from "react";
 import { Minus, Plus, RotateCcw } from "lucide-react";
 import type { Breakpoint } from "@/lib/box-model";
-import { SPACE_GRID } from "@/lib/box-model";
+import { SPACE_GRID, baseUnitParts } from "@/lib/box-model";
 import { type PageGridSettings, PAGE_GRID_DEFAULT, PAGE_GRID_LIMITS, columnsAt } from "@/lib/page-grid";
 import Slider from "@/components/shared/Slider";
 import { CHROME_Z } from "@/lib/educo-ui/stacking";
 import { Segmented } from "./ui";
 
-const toRem = (px: number) => +(px / 16).toFixed(2);
+/**
+ * WHAT A SPACING VALUE REALLY IS, from a phone to a wide screen (G3c-1). The values are numbers of the page's fluid unit, which
+ * doubles from a phone to a wide screen — read as pixels (value / 16) the old default 23 said "1.44rem" while it ran 1 → 2 rem.
+ */
+const remRange = (v: number) => { const { loRem, hiRem } = baseUnitParts(); const a = +((v / 10) * loRem).toFixed(2), b = +((v / 10) * hiRem).toFixed(2); return a === b ? `${a}rem` : `${a}–${b}rem`; };
 
 const SCREENS: { value: Breakpoint; label: string }[] = [
   { value: "phone", label: "Phone" }, { value: "tabletPortrait", label: "Tablet" }, { value: "tabletLandscape", label: "Laptop" },
@@ -104,13 +108,13 @@ export default function PageGridPanel({ grid, ownPage, breakpoint, rows, onRows,
 
       <div className="space-y-1">
         <Slider label="Side space (padding)" value={side} min={PAGE_GRID_LIMITS.sideSpace[0]} max={PAGE_GRID_LIMITS.sideSpace[1]}
-          onChange={(n) => onChange({ ...grid, sideSpace: n }, "pagegrid:side")} formatValue={(x) => (grid.sideSpace === undefined ? `Default · ${toRem(x)}rem` : `${toRem(x)}rem`)} />
+          onChange={(n) => onChange({ ...grid, sideSpace: n }, "pagegrid:side")} formatValue={(x) => (grid.sideSpace === undefined ? "Default · 1–1.25rem" : remRange(x))} />
         <button type="button" className={link} disabled={grid.sideSpace === undefined} onClick={() => onChange({ ...grid, sideSpace: undefined })}>{grid.sideSpace === undefined ? "At the default" : "Back to default"}</button>
       </div>
       {gaps.map((g) => (
         <div key={g.key} className="space-y-1">
           <Slider label={g.label} value={g.value} min={PAGE_GRID_LIMITS[g.key][0]} max={PAGE_GRID_LIMITS[g.key][1]}
-            onChange={(n) => setGap(g.key, n)} formatValue={(x) => (g.set ? `${toRem(x)}rem` : `Default · ${toRem(x)}rem`)} />
+            onChange={(n) => setGap(g.key, n)} formatValue={(x) => (g.set ? remRange(x) : `Default · ${remRange(x)}`)} />
           <button type="button" className={link} disabled={!g.set} aria-label={`${g.label} — ${g.set ? "back to default" : "at the default"}`} onClick={() => setGap(g.key, undefined)}>{g.set ? "Back to default" : "At the default"}</button>
         </div>
       ))}

@@ -3542,7 +3542,7 @@ export function rowNarrowsAt(band: BoxNode, onPage = false): { ids: string[]; st
       const gapAt = (w: number) => (bandGutter(band) / 10) * unitAt(w);
       // A row ON THE PAGE keeps the page's side space itself (`pageBandInset`), and its query container is the page: every
       // width below is the PAGE's, so it carries that side space twice (G-1 #16 — three cards wrapped 2 + 1 at 1440 / 200%).
-      const edgeAt = (w: number) => (onPage ? ((rowSide(band, "left") + rowSide(band, "right")) / 10) * unitAt(w) : 0);
+      const edgeAt = (w: number) => (onPage ? rowSideRemAt(band, "left", w) + rowSideRemAt(band, "right", w) : 0); // the frame as drawn (G-3c)
       const solve = (f: (w: number) => number, from: number) => { let w = from; for (let i = 0; i < 12; i++) w = f(w); return w; };
       needs = (k: number) => solve((w) => k * Math.max(...cols.map((_, i) => minAt(i, w))) + (k - 1) * gapAt(w) + edgeAt(w), k * word + (k - 1) * gap);
       atStart = solve((w) => Math.max(...cols.map((k, i) => minAt(i, w) / share(k))) + (n - 1) * gapAt(w) + edgeAt(w), atStart);
@@ -4960,7 +4960,34 @@ export const SPACE_DEFAULT = { gutter: 32, section: 16, bar: 16, stack: 16, colu
  * touching, 1 squeezed the cards) → ≈ 1.5 rem wide. Same fluid unit as everything else, so every geometry stays exact.
  * Only blocks of a page-grid page (`onPageGrid`) read these; a page saved before keeps `SPACE_DEFAULT`.
  */
-export const SPACE_GRID = { ...SPACE_DEFAULT, gutter: 23, columns: 17 } as const;
+export const SPACE_GRID = { ...SPACE_DEFAULT, gutter: 16, columns: 17 } as const; // gutter: the FRAME's value in the arithmetic (`frameCss` draws it)
+
+/**
+ * THE PAGE'S FRAME (BATCH G-3c, the user 2026-10-04: "1 rem, growing a little" — and "the same for the bottom, the right, the left").
+ * The page grid's side space by default, at all four edges of the page. A number of the fluid unit cannot be it — the unit doubles
+ * from a phone to a wide screen, so 1 rem on a phone was 2 rem wide (the 23 it replaces: 1 → 1.6 → 2 rem) — so it is its own
+ * length: 1 rem on a 360 phone (the page audit's floor), ~1.14 rem at 1280, 1.25 rem from ~1500 up; rem with a fluid term (rule 16).
+ * The site's own side space, once set (0 included), is drawn as set. `SPACE_GRID.gutter` (16) is the same frame in the arithmetic;
+ * where the arithmetic has to be exact at a width, `frameRemAt` gives it.
+ */
+export const FRAME_CSS = "clamp(1rem, calc(var(--box-u, 0.625rem) * 1.6), 1.25rem)";
+/** The frame as CSS for a block of a page-grid page — the ONE emitter of the side space there. */
+export const frameCss = (node: BoxNode): string => (node.gridSpace?.gutter !== undefined ? u(node.gridSpace.gutter) : FRAME_CSS);
+/**
+ * THE FRAME AT THE PAGE'S TOP AND BOTTOM (G-3c (1), the user: "do the same thing for the bottom"). A page-grid page keeps the frame
+ * above its first section and below its last — except where that section is coloured or a picture, which still reaches the edge
+ * (its words keep their space inside it). Saved pages (no `pageGrid`) are untouched.
+ */
+export function pageFrameEnds(root: BoxNode): CSSProperties {
+  if (!root.pageGrid) return {};
+  const bands = (root.children ?? []).filter((b) => !b.hidden && !isFloating(b));
+  const bleeds = (band?: BoxNode) => !!band && (hasVisibleEdge(band) || (band.children ?? []).filter((c) => !isFloating(c)).every((c) => hasVisibleEdge(c) || BLEEDS.has(c.type)));
+  return { ...(bleeds(bands[0]) ? {} : { paddingTop: frameCss(root) }), ...(bleeds(bands[bands.length - 1]) ? {} : { paddingBottom: frameCss(root) }) };
+}
+/** The fluid unit in rem on a page `w` rem wide (`--box-u`). */
+const unitRemAt = (w: number) => { const { loRem, hiRem, remHalf, cqwHalf } = baseUnitParts(); return Math.min(hiRem, Math.max(loRem, remHalf + (cqwHalf * w) / 100)); };
+/** The frame in rem on a page `w` rem wide — exactly what `frameCss` draws there. */
+export const frameRemAt = (node: BoxNode, w: number): number => (node.gridSpace?.gutter !== undefined ? (node.gridSpace.gutter / 10) * unitRemAt(w) : Math.min(1.25, Math.max(1, 1.6 * unitRemAt(w))));
 
 /** A page grid's own side space (`gutter`) and gap between blocks (`gap`), set in its panel (G-2) — stored fluid units. */
 export interface GridSpace { gutter?: number; gap?: number; gapX?: number; gapY?: number; cols?: Partial<Record<Breakpoint, number>> } // `gapX` / `gapY`: across / down when they differ (G-3b (5)); `cols`: columns per screen, when not the default (G-3b)
@@ -5028,7 +5055,7 @@ const BLEEDS = new Set<BoxType>(["image", "video", "embed", "spacer", "divider"]
  * `section` = this block sits directly in a band of the page (a section of the page): it keeps the side gutter
  * and the space above and below. Deeper blocks never do, so a section inside a section is not inset twice.
  */
-export function spaceDefaults(node: BoxNode, section: SectionFlag = false): { pad: [number, number, number, number]; gapX: number; gapY: number } {
+export function spaceDefaults(node: BoxNode, section: SectionFlag = false): { pad: [number, number, number, number]; gapX: number; gapY: number; framed?: boolean } {
   if (!node.spaced) return { pad: [0, 0, 0, 0], gapX: 16, gapY: 16 };
   const S = spaceFor(node);
   const scaffold = !!node.rowBand;
@@ -5053,7 +5080,8 @@ export function spaceDefaults(node: BoxNode, section: SectionFlag = false): { pa
     // In a row of the page that OWNS the side space (a page-grid row of 2+ columns, `gridBandOwnsGutter`) a column keeps
     // none at its sides: neighbours sit one gap apart, the page's edges keep the side space (G-1 #6).
     const s = Math.max(bar ? S.bar : S.section, inner), g = section === "gridBand" ? inner : Math.max(S.gutter, inner);
-    return { pad: [s, g, s, g], gapX, gapY };
+    // its sides ARE the page's frame on a page-grid page (G-3c) — drawn by `frameCss`, not as a number of the fluid unit
+    return { pad: [s, g, s, g], gapX, gapY, framed: !!node.onPageGrid && section !== "gridBand" && g === S.gutter };
   }
   return { pad: [inner, inner, inner, inner], gapX, gapY };
 }
@@ -5088,13 +5116,15 @@ export function outerSpaceCSS(node: BoxNode, place: SectionPlace | false | undef
   const d = outerDefaults(node, place);
   const out: CSSProperties = {};
   let across = 0;
+  const framed = place === "page" && !!node.onPageGrid; // its sides are the page's frame (G-3c)
+  const sides: string[] = [];
   (["Top", "Right", "Bottom", "Left"] as const).forEach((k, i) => {
     if (!d[i] || (node[`margin${k}`] ?? node.margin) !== undefined) return;
-    out[`margin${k}`] = u(d[i]);
-    if (i % 2) across += d[i];
+    out[`margin${k}`] = i % 2 && framed ? frameCss(node) : u(d[i]);
+    if (i % 2) { across += d[i]; sides.push(out[`margin${k}`] as string); }
   });
   if (across) {
-    out.maxWidth = `calc(100% - ${u(across)})`;
+    out.maxWidth = framed ? `calc(100% - ${sides.join(" - ")})` : `calc(100% - ${u(across)})`;
     if (node.width === "100%") out.width = out.maxWidth; // `childStyle` writes a stored 100% as width: 100%
   }
   return out;
@@ -5113,10 +5143,11 @@ export function pageBandInset(band: BoxNode, onPage: boolean): CSSProperties {
   // A menu line on the page is ONE section: the gutter at its ends and the section space above and below (F1-d).
   const S = spaceFor(band);
   if (gridBandOwnsGutter(band)) return { paddingLeft: u(rowSide(band, "left")), paddingRight: u(rowSide(band, "right")) };
-  if (isMenuLine(band)) return { paddingLeft: u(S.gutter), paddingRight: u(S.gutter), paddingTop: u(S.section), paddingBottom: u(S.section) };
+  const side = band.onPageGrid ? frameCss(band) : u(S.gutter); // the page's frame on a page-grid page (G-3c)
+  if (isMenuLine(band)) return { paddingLeft: side, paddingRight: side, paddingTop: u(S.section), paddingBottom: u(S.section) };
   const needs = (band.children ?? []).some((c) => c.spaced && (selfPaints(c) || c.preset)
     && c.margin === undefined && c.marginLeft === undefined && c.marginRight === undefined);
-  return needs ? { paddingLeft: u(S.gutter), paddingRight: u(S.gutter) } : {};
+  return needs ? { paddingLeft: side, paddingRight: side } : {};
 }
 
 /**
@@ -5154,13 +5185,14 @@ export function gapOf(node: BoxNode): { x: number; y: number } {
 
 /** Per-side padding CSS (responsive rem): a side override falls back to the general `padding`, then the default. */
 export function paddingCSS(node: BoxNode, section: SectionFlag = false): CSSProperties {
-  const [t, r, b, l] = spaceDefaults(node, section).pad;
+  const { pad: [t, r, b, l], framed } = spaceDefaults(node, section);
   const p = node.padding;
+  const side = (own: number | undefined, d: number) => (own ?? p) !== undefined ? u((own ?? p)!) : framed ? frameCss(node) : u(d);
   return {
     paddingTop: u(node.paddingTop ?? p ?? t),
-    paddingRight: u(node.paddingRight ?? p ?? r),
+    paddingRight: side(node.paddingRight, r),
     paddingBottom: u(node.paddingBottom ?? p ?? b),
-    paddingLeft: u(node.paddingLeft ?? p ?? l),
+    paddingLeft: side(node.paddingLeft, l),
   };
 }
 
@@ -5292,14 +5324,35 @@ export function pageRowSides(band: BoxNode, at: number, of: number): { left: num
 
 /** A block's margin on one side in a row of the page: its share of the line's space (`pageRowSides`) plus its own margin — except
  *  the row's first / last block, whose own margin IS the row's side (`rowSide`). A gap dragged open before it rides on its left. */
+/** A row's side as CSS: its first / last block's own margin when set, else the page's frame (G-3c). */
+function rowSideCss(band: BoxNode, side: "left" | "right"): string {
+  const kids = band.children ?? []; const edge = side === "left" ? kids[0] : kids[kids.length - 1];
+  const own = edge && ((side === "left" ? edge.marginLeft : edge.marginRight) ?? edge.margin);
+  return own !== undefined ? u(own) : frameCss(band);
+}
+/** …and in rem on a page `w` rem wide, for the arithmetic that must agree with it (`rowNarrowsAt`, the canvas's slots). */
+export function rowSideRemAt(band: BoxNode, side: "left" | "right", w: number): number {
+  const kids = band.children ?? []; const edge = side === "left" ? kids[0] : kids[kids.length - 1];
+  const own = edge && ((side === "left" ? edge.marginLeft : edge.marginRight) ?? edge.margin);
+  return own !== undefined ? (own / 10) * unitRemAt(w) : frameRemAt(band, w);
+}
+const coef = (n: number) => +n.toFixed(4);
 function pageRowMargin(band: BoxNode, child: BoxNode, side: "left" | "right", at: number, of: number, gapPct = 0, bleed = child.bleed): string {
   // BLEED (G-3b (2)): where it starts / ends a line, that side gives up its side space and reaches the page edge — nothing else moves
   if (bleeds(bleed, side, at, of)) return `calc(${gapPct ? `${gapPct}% + ` : ""}${u(0)})`;
   const k = band.children ?? [];
   const ownsSide = (side === "left" ? k[0] : k[k.length - 1])?.id === child.id;
   const own = ownsSide ? 0 : (side === "left" ? child.marginLeft : child.marginRight) ?? child.margin ?? 0;
-  const v = +(pageRowSides(band, at, of)[side] + own).toFixed(4);
-  return `calc(${gapPct ? `${gapPct}% + ` : ""}${u(v)})`;
+  // `pageRowSides` as CSS: left = L + at·d, right = G − L − (at + 1)·d, d = (G − L − R) / of — with L and R the frame (G-3c)
+  const L = rowSideCss(band, "left"), R = rowSideCss(band, "right"), G = "var(--bx-gut)";
+  const f = side === "left" ? at / of : (at + 1) / of; // the share of the line's side space and gaps up to this edge
+  const terms = side === "left"
+    ? [[L, 1 - f], [G, f], [R, -f]]
+    : [[G, 1 - f], [L, -(1 - f)], [R, f]];
+  const sum = new Map<string, number>(); for (const [x, c] of terms as [string, number][]) sum.set(x, (sum.get(x) ?? 0) + c); // the frame on both sides cancels
+  const parts = [...sum].filter(([x, c]) => coef(c) !== 0 && x !== u(0)).map(([x, c]) => (coef(c) === 1 ? x : `${x} * ${coef(c)}`));
+  if (own) parts.push(u(own));
+  return `calc(${gapPct ? `${gapPct}% + ` : ""}${parts.length ? parts.join(" + ") : u(0)})`;
 }
 
 /** A block of a row of the page, placed on the grid (replaces the flex basis and the gutter margins of `gutterCSS`). */
@@ -5314,10 +5367,14 @@ function pageRowCSS(s: CSSProperties, child: BoxNode, band: BoxNode, bp: Breakpo
 
 /** The canvas's slot of a block of a row of the page: the space on each side of its box that belongs to its grid area, in stored
  *  units (`pageRowSides`, without its own margin or a gap dragged open — those the resize reads on their own). */
-export function pageRowSlot(band: BoxNode, id: string, bp: Breakpoint): { left: number; right: number } | null {
+export function pageRowSlot(band: BoxNode, id: string, bp: Breakpoint, w?: number): { left: number; right: number } | null {
   const cell = pageRowCells(band, bp).get(id);
   if (!cell) return null;
-  const sides = pageRowSides(band, cell.at, cell.of);
+  // with a page width (rem): the same shares in rem, the frame as drawn there (G-3c) — the canvas's slots; without: stored units
+  const sides = w === undefined ? pageRowSides(band, cell.at, cell.of) : (() => {
+    const L = rowSideRemAt(band, "left", w), R = rowSideRemAt(band, "right", w), G = (bandGutter(band) / 10) * unitRemAt(w), d = (G - L - R) / cell.of;
+    return { left: L + cell.at * d, right: G - L - (cell.at + 1) * d };
+  })();
   return { left: bleeds(cell.bleed, "left", cell.at, cell.of) ? 0 : sides.left, right: bleeds(cell.bleed, "right", cell.at, cell.of) ? 0 : sides.right };
 }
 
@@ -5599,7 +5656,7 @@ function listLinesGap(node: BoxNode): CSSProperties | null {
 
 export function containerStyle(node: BoxNode, bp: Breakpoint = "base", section: SectionFlag = false): CSSProperties {
   const scheme = node.bgImage ? null : bandScheme(node.background);
-  const s = containerStyleOf(node, bp, section);
+  const s = { ...containerStyleOf(node, bp, section), ...pageFrameEnds(node) };
   const lines = listLinesGap(node);
   return { ...s, ...(lines ?? {}), ...((scheme?.vars ?? {}) as CSSProperties) };
 }
