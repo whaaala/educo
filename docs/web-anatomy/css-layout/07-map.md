@@ -343,6 +343,21 @@ These came out of READING (01 §6, 04 §6, 06); each is measured before it becom
    bands (a mode, never a migration — the AC-37b decision). The examples in `examples/` are written this way so the
    proof answers whether it holds at every screen.
 
+### 6.1 The user's answers — SIGNED 2026-10-04 (these override the rows above where they differ)
+
+- **D1 (question 1)** — presets AND a blank canvas AND a "draw your areas" editor. The drawing is turned into LINES per
+  screen (A1–A6), so storage never uses `grid-template-areas` and it cannot go silently invalid. The editor draws
+  rectangles only. If the drawn order differs from the page order, the blocks move in the tree, or the editor warns (T11).
+  After picking a layout, everything can still be changed. A8 is therefore CORE as both presets and the editor (batch P-3).
+- **D2 (question 2)** — no negative-margin control (G3 stays AVOID), but both overlap effects are kept:
+  - a badge or price circle half outside a card's corner: I5 plus "half outside the edge". The card never clips it.
+  - overlapping avatars in a row: a row option "Overlap the items: none · a little · more", for pictures and badges
+    only, never for blocks with words. The engine may emit a negative inline margin there; it is not a person's control.
+- **D3 (question 3)** — B5 is CORE now: a fixed-width column beside the shares on the Grid block, which stacks on a phone.
+  The page grid's own columns stay equal.
+- **D4 (question 4)** — the Across · Down rows with Fill AND the 3×3 picture as a shortcut that sets both rows.
+- **D5 (question 5)** — page-grid sections are emitted as a real CSS grid. APPROVED.
+
 ---
 
 ## 7. Checked against the A–Z property index (08)

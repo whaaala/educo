@@ -117,8 +117,25 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
     down · an absolute block on the grid writes both lines · the fit rule for every block, tested on whole words · a
     floating block with words falls back into the flow · fluid default inner space · `dir="auto"` per text block · a warning
     when a layer covers words
-  - `[>]` (3) THE "ENOUGH" CHECKLIST for the user to sign, and the build batches it implies (RULE UI: a person can place
-    any block anywhere on the grid with these, in plain words, as live previews) — WRITTEN 2026-10-04, WAITING ON THE USER:
+  - `[x]` (3) THE "ENOUGH" CHECKLIST for the user to sign, and the build batches it implies (RULE UI: a person can place
+    any block anywhere on the grid with these, in plain words, as live previews) — SIGNED 2026-10-04 by the user (session
+    9fa0fee9: "I approve this. Let's move on"), with these DECISIONS:
+    - `[x]` D1 · page layouts: PRESETS (recommended) AND a blank canvas AND a "DRAW YOUR AREAS" editor — the user: "a user can
+      start from a canvas and even when they pick one they can change the whole page layout… make sure that when they draw
+      the area editor it follows everything that's supposed to follow". Built so: the drawing is turned into column LINES per
+      screen (never stored as `grid-template-areas`, so it cannot go silently invalid); the editor only draws rectangles;
+      reading order follows (a drawn order that differs from the page moves the blocks in the tree, or warns)
+    - `[x]` D2 · no negative-margin control (recommended) BUT both overlap effects are KEPT: (a) a badge / price circle half
+      outside a card's corner = floating held to any corner + "half outside the edge", the card never clips it; (b)
+      overlapping avatars in a row = a row option "Overlap the items: none · a little · more", for pictures and badges only
+    - `[x]` D3 · the fixed-width sidebar is built NOW, not later (the user: "if it's just a few extra work, let's add it"):
+      a "fixed width (rem)" choice beside the shares on the Grid block's columns; stacks on a phone; not on the page grid
+      itself (its columns stay equal, the AC-37b decision)
+    - `[x]` D4 · "Across · Down" rows with Fill AND the 3×3 picture kept as a shortcut that sets both rows (Fill shown as a
+      stretched square) — the user: "we do both"
+    - `[x]` D5 · page-grid sections EMITTED as a real CSS grid — APPROVED; saved pages keep their bands
+    - `[ ]` the nested-trees proof (proposed: in G-3's UAT, built through the UI) — not answered; carried as proposed
+    The checklist as it was written:
     - `[x]` AXES mapped: every grid / flex / alignment / placement property and value, plus the A–Z index (07 §2, §7)
     - `[x]` EXAMPLE PER VALUE: 68 single values, each doing what it says and visibly different (RULE T), at 1280 and 360
     - `[x]` COMBINATIONS across axes: 1,260 random combinations, every screen, three text sizes, LTR and Arabic RTL — 0 failed
@@ -139,17 +156,21 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
       - `[ ]` **G-3 · placing, extended**: (1) page-grid sections emitted as a CSS grid (Q5) · (2) A1–A5 + A15 lines per rung
         (from / to / to the last line / full / bleed / half-bleed / half-lines) · (3) Alt free → lines + margin · (4) the
         fit rule for every block (proof rule 4) · (5) keyboard + "Line up with the grid" · (6) nested-tree UAT
-      - `[ ]` **P-1 · alignment and spacing panel**: (1) Across / Down with Fill (C1–C5) · (2) container Down incl. "Text lines
+      - `[ ]` **P-1 · alignment and spacing panel**: (1) Across / Down with Fill (C1–C5) + the 3×3 shortcut that sets both (D4) · (2) container Down incl. "Text lines
         up" + `safe` (C9, C10) · (3) Spread incl. even spacing + wrapped lines (D3, D5) · (4) Push to the end / bottom + the
         stored % margin shown (G2, G4) · (5) RTL: logical sides, `start` / `end`, `dir="auto"` measured (G7, L1, L4, D1) ·
         (6) `min-width: 0` on fills measured (E8)
       - `[ ]` **P-2 · size and shape**: (1) Shape with proof rule 2 (H1) · (2) readable width per block + largest width (H2, H3)
         · (3) height as a minimum only (H6) · (4) fluid default inner space checked (proof rule 6)
-      - `[ ]` **G-4 · Grid block, extended**: cards fit ≥ X + fill / fit (B3, B4) · subgrid (J1, J2) · page-layout presets
-        (A8) · the planned splits gallery and purpose picks
-      - `[ ]` **G-5 · layering, extended**: layer over in one cell + the covers-words warning (I1, I2, proof rule 8) · floating
-        held by any corner (I5) · Cover (I6, proof rules 1 + 3) · the floating fallback (proof rule 5) · scroll padding under a
-        sticky header + safe areas (L2, L3)
+      - `[ ]` **G-4 · Grid block, extended**: (1) cards fit ≥ X + fill / fit (B3, B4) · (2) subgrid (J1, J2) · (3) a fixed-width
+        column / sidebar beside the shares (B5, D3) · (4) the planned splits gallery · (5) purpose picks
+      - `[ ]` **P-3 · page layouts (D1)**: (1) presets gallery (live previews) setting lines per screen (A8) · (2) start from a
+        blank canvas · (3) the "draw your areas" editor → lines per screen, rectangles only · (4) reading order follows the
+        drawing (move in the tree, or warn) · (5) change the whole layout after picking one, nothing lost (one undo)
+      - `[ ]` **G-5 · layering, extended**: (1) layer over in one cell + the covers-words warning (I1, I2, proof rule 8) · (2)
+        floating held by any corner + "half outside the edge" for a badge / price circle (I5, D2a) · (3) Cover (I6, proof
+        rules 1 + 3) · (4) the floating fallback (proof rule 5) · (5) "Overlap the items" on a row, pictures / badges only
+        (D2b) · (6) scroll padding under a sticky header + safe areas (L2, L3)
       - `[ ]` **G-6 · close-out** (as planned)
   - `[x]` READER 6 · the builder today (`css-layout/06-builder-today.md`, read from the code at `2f56caa`): of 46 grid / flex /
     alignment properties 7 fully reachable (15%) · 26 partly (57%) · 13 not at all (28%) — areas, auto-fit tracks, subgrid,
@@ -2116,7 +2137,7 @@ sent), and my research. Nothing on the layout is done until every line here is c
     falls back into the flow unless placed at that rung; the page audit and Page check warn when it covers words;
     shown as drag on the canvas with the half-lines drawn, a Position panel (start / end, column / row, spill above /
     below) and a gallery of ready-made placements (RULE S / UI). Joins AC-10, ST-5, AC-35 — one build
-    - `[>]` AC-37b ← YOU ARE HERE (next leaf: BATCH R-4 · step (3) — THE "ENOUGH" CHECKLIST WAITS ON THE USER'S SIGNATURE and their answers to its five questions (session 9fa0fee9, 2026-10-04: reading complete, the map `css-layout/07-map.md` written, the proof 10,908 checks / 0 failed). Then the build batches it lists: P-0 (R4-1 … R4-5) first, then G-2. G-1 CLOSED 2026-10-04 (see BATCHES). Plan APPROVED 2026-10-04 with the user's decisions below. Earlier: research R-3 DONE and SIGNED 2026-10-04
+    - `[>]` AC-37b ← YOU ARE HERE (next leaf: BATCH P-0 · R4-1 … R4-5 measured and fixed — R-4 SIGNED 2026-10-04 with decisions D1–D5 (session 9fa0fee9); then G-2, G-3, P-1, P-2, G-4, P-3, G-5, G-6. G-1 CLOSED 2026-10-04 (see BATCHES). Plan APPROVED 2026-10-04 with the user's decisions below. Earlier: research R-3 DONE and SIGNED 2026-10-04
       (`ff5c53a`, `4418202`); build to every decision recorded under R-3 below; the mockups settle the open three (row
       snap · the phone gap 11 vs 16 px · panel per site or per page) → the user's approval → build) · **THE PAGE GRID — DECIDED by the user 2026-10-03: done RIGHT AFTER L-4 closes, BEFORE L-5, L-6 and the
       frozen list's placement items** (they are built on it). NAMES (decided): "page grid" in code and docs; the lines a
