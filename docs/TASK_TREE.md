@@ -38,6 +38,40 @@ written BEFORE the pass; one HEADED UAT on a fresh production build ticks every 
 only when every line is ticked and every bug it found is fixed and re-checked. Guarded by
 `tests/unit/task-tree-batches.test.ts`. Every item names what it IS in words, never a bare number.
 
+- `[>]` **BATCH P-0 · The five placement bugs found by reading the code (R4-1 … R4-5)** — OPENED 2026-10-04 by the user's "let's
+  move on" after signing R-4 (session 9fa0fee9) (area: placement controls · 5 changes). Each is MEASURED through the UI
+  first (RULE Y, V) — a line that does not reproduce closes as NOT A BUG with the measurement. CHANGES:
+  - `[ ]` (1) R4-1 · Advanced CSS set on ONE screen reaches the published page on that screen, and the canvas and the Preview
+    agree at every rung (today: the export reads only the base, box-export.ts:482 / 499–500; the canvas applies it last)
+  - `[ ]` (2) R4-2 · a grid cell's "Line up (across)" and the nine squares "Where this block sits" both write `justify-self`;
+    the squares silently win (BoxInspector 1063 / 1085, placeCSS last). One source of truth: whichever was set last shows in
+    BOTH controls and is what the page does
+  - `[ ]` (3) R4-3 · "Position in row", "Content width", re-cutting columns, "Floating" and front / back order write EVERY
+    screen while Phone is selected (box-model 2762, 2781; page.tsx 666 / 671 / 674) — they store for the selected screen,
+    as the Per-device tab promises; or, where a value cannot be per screen, the control says so
+  - `[ ]` (4) R4-4 · the container's "Line up (across)" sets `align-items`, which in a side-by-side row and a grid moves
+    blocks DOWN — the label names the axis it really moves (P-1 later replaces it with Across · Down)
+  - `[ ]` (5) R4-5 · no stored pixel reaches the page (rule 16): unticking "Show the whole picture" stores rem, not 260px; the
+    Width / Height fields turn a typed px into rem; a floating block's min-height is emitted in rem
+  HEADED UAT CHECKLIST (written first; every line built THROUGH THE UI on a fresh production build, six windows, Preview at
+  every screen of `scripts/uat/screens.js`, 4 themes):
+  - `[ ]` (1) Advanced CSS (e.g. a background or a border) typed with Phone selected → seen on the phone Preview, NOT on
+    desktop; typed on Desktop → desktop and wider, phone keeps its own; canvas = Preview at each of the 5 rungs; reload keeps it;
+    undo removes it; with it cleared, the page is byte-identical to before
+  - `[ ]` (2) on a grid cell: pick "Line up: Right" then a square → both controls show the square's choice and the page
+    follows; then "Line up: Fill" → the squares show none selected and the cell fills; per rung (phone different from
+    desktop); reload; undo each step
+  - `[ ]` (3) for EACH of the five controls: with Phone selected, change it → phone changes, tablet / desktop / wide do not
+    (canvas AND Preview at their widths); then the same on Desktop → phone keeps its own value; undo; reload; the Per-device
+    tab's sentence is true for every control it covers
+  - `[ ]` (4) the container line-up label in a top-to-bottom stack, a side-by-side row and a grid, read in all 4 themes — it
+    names the direction the blocks actually move when each option is clicked (seen)
+  - `[ ]` (5) untick "Show the whole picture", type "300px" in Height and "240px" in Width, make a block floating and give it
+    a height → the published CSS has no `px` but 1px hairlines (`units-not-pixels` guard + the export read), and the sizes
+    look the same as before at 100 % and grow at 150 % browser text
+  - `[ ]` REGRESSION: a page saved before P-0 publishes byte for byte as it did (all five changes)
+  - `[ ]` no console errors; typecheck 0 · eslint 0 · vitest · test:fast green
+  LEDGER (this batch): none yet
 - `[x]` **BATCH G-1 · The page grid in the engine** — CLOSED 2026-10-04 (session 87422eae; HEADED UAT `uat-g1-headed.js`, six
   windows, 70 screens each — every device of the Preview's menu and both sides of every breakpoint — CLEAN in all six, 0 page
   errors; gate: typecheck 0 · eslint 0 errors · vitest 4,174 · test:fast 806/806) (area: page grid · 5 changes, OPENED
@@ -91,7 +125,7 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
   OBSERVED, NOT A DEFECT (for the user): stacked cards sit ≈ 35px apart on a phone (the section space above and below)
   against 12px side by side; an Image dropped as a "logo" arrives large (no Logo block yet — L-6 / the catalogue)
 
-- `[>]` **BATCH R-4 · CSS grid, flexbox and box alignment from MDN, every property — mirrored in the builder** — OPENED 2026-10-04 by the user's "go" (session 87422eae) (area:
+- `[x]` **BATCH R-4 · CSS grid, flexbox and box alignment from MDN, every property — mirrored in the builder** — CLOSED 2026-10-04 (session 9fa0fee9: read · mapped `css-layout/07-map.md` · proven 10,908 headed checks, 0 failed · SIGNED by the user with D1–D5) — OPENED 2026-10-04 by the user's "go" (session 87422eae) (area:
   layout research · 3 changes, QUEUED 2026-10-04 by the user mid-G-1: "study everything in its entirety… so a user can
   position any component, any text, wherever they want on the grid… with the margin and padding"; runs right after G-1
   closes — one job at a time, RULE RS). The user's links, each read COMPLETELY with every on-topic link inside (RULE R):
@@ -134,44 +168,44 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
     - `[x]` D4 · "Across · Down" rows with Fill AND the 3×3 picture kept as a shortcut that sets both rows (Fill shown as a
       stretched square) — the user: "we do both"
     - `[x]` D5 · page-grid sections EMITTED as a real CSS grid — APPROVED; saved pages keep their bands
-    - `[ ]` the nested-trees proof (proposed: in G-3's UAT, built through the UI) — not answered; carried as proposed
+    - CARRIED → G-3 change (6): the nested-trees proof (proposed: in G-3's UAT, built through the UI) — not answered; carried as proposed
     The checklist as it was written:
     - `[x]` AXES mapped: every grid / flex / alignment / placement property and value, plus the A–Z index (07 §2, §7)
     - `[x]` EXAMPLE PER VALUE: 68 single values, each doing what it says and visibly different (RULE T), at 1280 and 360
     - `[x]` COMBINATIONS across axes: 1,260 random combinations, every screen, three text sizes, LTR and Arabic RTL — 0 failed
-    - `[~]` NESTED: one level proven (a card row on subgrid in a container, button pushed to the bottom). NOT proven: random
+    - CARRIED → G-3 (6) · NESTED: one level proven (a card row on subgrid in a container, button pushed to the bottom). NOT proven: random
       nested trees (section → Grid block → card → button, each with random values). Proposed: prove them in the builder
       itself during G-3's UAT, since they are trees a person builds (RULE Y). The user's call
     - `[x]` SATURATION, measured: the last two readings (21 new grid goals, 91 new properties, 15 flexbox articles) added
       0 new axes — every new goal maps to an existing row; only 6 L-rows (all AUTO / LATER)
-    - `[x]` TASTE: R-3's Awwwards / Dribbble page-grid study (signed) · `[ ]` REAL WORLD: low-cost Android + Slow 3G (G-6) ·
-      `[ ]` PEOPLE: the pilot schools (RULE RK) — both after the build, as planned
+    - `[x]` TASTE: R-3's Awwwards / Dribbble page-grid study (signed) · CARRIED → G-6: REAL WORLD: low-cost Android + Slow 3G (G-6) ·
+      CARRIED → the pilot (RULE RK): PEOPLE: the pilot schools (RULE RK) — both after the build, as planned
     - QUESTIONS FOR THE USER (07 §6): (1) page layouts as one-click presets, never "draw your areas" · (2) no negative margins;
       overlap only by layering or floating · (3) a fixed-width sidebar LATER · (4) two alignment rows "Across · Down", each
       with Fill, replace the nine squares · (5) a page-grid section is EMITTED as a real CSS grid (the only way to get "to
       the last line", bleed, layering in one cell and subgrid). Recommended: yes to all five
-    - BUILD BATCHES IT IMPLIES (≤ 6 changes each, one open at a time; each gets its full UAT checklist when it opens):
-      - `[ ]` **P-0 · R-4 ledger**: measure and fix R4-1 … R4-5 (the handover: first, unless the user says otherwise)
-      - `[ ]` **G-2 · layout guides + grid panel** (as planned)
-      - `[ ]` **G-3 · placing, extended**: (1) page-grid sections emitted as a CSS grid (Q5) · (2) A1–A5 + A15 lines per rung
+    - BUILD BATCHES IT IMPLIES (≤ 6 changes each, one open at a time; each is opened in BATCHES with its full UAT checklist — P-0 is OPEN):
+      - OPEN (in BATCHES) **P-0 · R-4 ledger**: measure and fix R4-1 … R4-5 (the handover: first, unless the user says otherwise)
+      - QUEUED **G-2 · layout guides + grid panel** (as planned)
+      - QUEUED **G-3 · placing, extended**: (1) page-grid sections emitted as a CSS grid (Q5) · (2) A1–A5 + A15 lines per rung
         (from / to / to the last line / full / bleed / half-bleed / half-lines) · (3) Alt free → lines + margin · (4) the
         fit rule for every block (proof rule 4) · (5) keyboard + "Line up with the grid" · (6) nested-tree UAT
-      - `[ ]` **P-1 · alignment and spacing panel**: (1) Across / Down with Fill (C1–C5) + the 3×3 shortcut that sets both (D4) · (2) container Down incl. "Text lines
+      - QUEUED **P-1 · alignment and spacing panel**: (1) Across / Down with Fill (C1–C5) + the 3×3 shortcut that sets both (D4) · (2) container Down incl. "Text lines
         up" + `safe` (C9, C10) · (3) Spread incl. even spacing + wrapped lines (D3, D5) · (4) Push to the end / bottom + the
         stored % margin shown (G2, G4) · (5) RTL: logical sides, `start` / `end`, `dir="auto"` measured (G7, L1, L4, D1) ·
         (6) `min-width: 0` on fills measured (E8)
-      - `[ ]` **P-2 · size and shape**: (1) Shape with proof rule 2 (H1) · (2) readable width per block + largest width (H2, H3)
+      - QUEUED **P-2 · size and shape**: (1) Shape with proof rule 2 (H1) · (2) readable width per block + largest width (H2, H3)
         · (3) height as a minimum only (H6) · (4) fluid default inner space checked (proof rule 6)
-      - `[ ]` **G-4 · Grid block, extended**: (1) cards fit ≥ X + fill / fit (B3, B4) · (2) subgrid (J1, J2) · (3) a fixed-width
+      - QUEUED **G-4 · Grid block, extended**: (1) cards fit ≥ X + fill / fit (B3, B4) · (2) subgrid (J1, J2) · (3) a fixed-width
         column / sidebar beside the shares (B5, D3) · (4) the planned splits gallery · (5) purpose picks
-      - `[ ]` **P-3 · page layouts (D1)**: (1) presets gallery (live previews) setting lines per screen (A8) · (2) start from a
+      - QUEUED **P-3 · page layouts (D1)**: (1) presets gallery (live previews) setting lines per screen (A8) · (2) start from a
         blank canvas · (3) the "draw your areas" editor → lines per screen, rectangles only · (4) reading order follows the
         drawing (move in the tree, or warn) · (5) change the whole layout after picking one, nothing lost (one undo)
-      - `[ ]` **G-5 · layering, extended**: (1) layer over in one cell + the covers-words warning (I1, I2, proof rule 8) · (2)
+      - QUEUED **G-5 · layering, extended**: (1) layer over in one cell + the covers-words warning (I1, I2, proof rule 8) · (2)
         floating held by any corner + "half outside the edge" for a badge / price circle (I5, D2a) · (3) Cover (I6, proof
         rules 1 + 3) · (4) the floating fallback (proof rule 5) · (5) "Overlap the items" on a row, pictures / badges only
         (D2b) · (6) scroll padding under a sticky header + safe areas (L2, L3)
-      - `[ ]` **G-6 · close-out** (as planned)
+      - QUEUED **G-6 · close-out** (as planned)
   - `[x]` READER 6 · the builder today (`css-layout/06-builder-today.md`, read from the code at `2f56caa`): of 46 grid / flex /
     alignment properties 7 fully reachable (15%) · 26 partly (57%) · 13 not at all (28%) — areas, auto-fit tracks, subgrid,
     dense, aspect-ratio, min / max width, align-content, translate, end / negative lines, grow ratios, reverse directions
@@ -216,17 +250,8 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
       by the fetcher (headings and guide lists read); 12 linked sub-guides listed and not read (Logical basic concepts and
       sizing, Shapes from images / generator, writing-mode systems, vertical controls, scroll-snap events, scroll anchoring,
       object-view-box, env(), media-query sub-pages, Learn overflow, coordinate systems)
-  - LEDGER R-4 (found by READING the code — each is MEASURED in a browser before it is fixed, RULE V; the fixes go in the build
-    batch that follows R-4 unless the user says otherwise):
-    - `[ ]` R4-1 · per-screen Advanced CSS stored for one screen is dropped from the published page (box-export.ts:482, 499–500)
-      while the canvas shows it (BoxCanvas.tsx:3137); on wider screens generated styles beat it on the page but not the canvas
-    - `[ ]` R4-2 · two controls write `justify-self`: the cell's "Line up (across)" (BoxInspector:1063) is silently overridden
-      by the nine-square "Where this block sits" (1085; applied last, box-model:5530)
-    - `[ ]` R4-3 · "Position in row", "Content width", re-cutting columns, "Floating" and front / back order change EVERY screen
-      while Phone is selected (box-model:2762, 2781; page.tsx 666 / 671 / 674) — the Per-device tab says the opposite
-    - `[ ]` R4-4 · the container's "Line up (across)" sets `align-items`, which in a row or a grid lines blocks up DOWN — wrong label
-    - `[ ]` R4-5 · stored pixels reach the published page (rule 16): unticking "Show the whole picture" writes 260px; the Width /
-      Height fields accept px; a floating block's min-height is emitted in px
+  - LEDGER R-4 (found by READING the code): R4-1 … R4-5 MOVED to **BATCH P-0** as its five changes (2026-10-04, as the
+    handover planned: "fixed in the first build batch"); each is measured through the UI there before it is fixed
   - LEDGER of session 9fa0fee9 (the map and its proof, 2026-10-04) — every line FIXED, re-run clean (10,908 checks, 0 failed):
     - `[x]` R4-6 · a stray `css-layout/skills.md` holding "404: Not Found" (a failed fetch) — deleted
     - `[x]` R4-7 · example: Cover ignored its own alignment and caps (box alignment applies to absolute boxes) → proof rule 1
