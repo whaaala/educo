@@ -1952,7 +1952,31 @@ sent), and my research. Nothing on the layout is done until every line here is c
       the model's word estimate (c-8's `longestWordRem`), saved pages keep their rows / stacks (a mode, never a
       migration). NEXT: research (Nexter + Webflow / Framer / Wix Studio page grids, RULE RS) → plan artifact with mockups
       → the user's approval → built WITH AC-37 (one build). Not part of L-4
-      - `[>]` R-3 · PAGE GRID RESEARCH (RULE RS + RULE MAP), session e9d19b5c, 2026-10-03. Runner:
+      - `[?]` PLAN ARTIFACT WITH MOCKUPS — PUBLISHED 2026-10-04 (session 87422eae), WAITING ON THE USER'S APPROVAL:
+        https://claude.ai/artifact/Q5rAsZNSJJBXrnBTJf9zBN (source: `docs/web-anatomy/page-grid/plan/page-grid-plan.html`;
+        republish it to the same URL). Holds: the plain-words story · the decisions it builds to · a live school page (hero with
+        half-bleed, news 4/12, stats 3/12 kept 2 across on phones, staff, bento gallery, straddling admissions card,
+        footer) at 360 / 768 / 1280 drawn with the real page-grid CSS, guides on/off (G), row lines, phone gap 11/16,
+        picture first · the toolbar switch (Shift G) + the page-grid panel with proposed ranges · snap / Shift half-lines /
+        Alt free + keyboard · "Line up with the grid" · the Grid block on page lines · purpose picks · bleed / straddle /
+        half-step · the THREE OPEN CHOICES with recommendations (row snap A = off · phone gap B = 16 px floor for page-grid
+        blocks only · panel A = per site, page may opt out) · the engine table (extended, not replaced) · six batches.
+        - LEDGER (this session): #1 `[?]` SPEC CLASH, not code — the map's Q3 put half-lines on Alt; the user's "best of
+          both worlds" put FREE placement on Alt, and today's canvas already lifts a block free on Alt+drag
+          (`BoxCanvas.tsx` `startDrag`). Proposed in the plan: Alt = free, Shift = half-lines (Shift unused during resize
+          drags). Closes on the user's answer
+        - QUEUED BATCHES (open one at a time after approval; full checklists written into BATCHES when each opens):
+          `[ ]` G-1 the page grid in the engine (PageGrid settings · one template emitter with full/content/middle lines,
+          zero gap, safe area · share↔column maths · fit-based re-split as em container queries · canvas = export ·
+          enumerating guards, saved pages byte-identical) · `[ ]` G-2 layout guides + grid panel (switch, Shift G, menu ·
+          overlay from the same template · span labels · panel per rung · everything follows in one undo · page override) ·
+          `[ ]` G-3 placing (column snap, edge-anchored · Shift half-lines · Alt / per-block free · Position panel start /
+          span per rung · keyboard · "Line up with the grid") · `[ ]` G-4 Grid block + splits + purpose picks (page-line
+          mapping · subgrid fallback · six one-click splits gallery · purpose picks · picture first · orphans keep span +
+          hidden picture not downloaded, G7) · `[ ]` G-5 bleed / straddle / sticky (reaches · overlap + layer order · no
+          clipping ancestor · sticky cell · page check covers-words warning · placement gallery) · `[ ]` G-6 close-out
+          (layout-story chapter · guide + Hub / Layout System artifacts · dressed sweep re-run · low-cost Android + Slow 3G)
+      - `[x]` R-3 · PAGE GRID RESEARCH (RULE RS + RULE MAP), session e9d19b5c, 2026-10-03 — SIGNED 2026-10-04. Runner:
         `scripts/research/grid-measure.js` (six headed windows; each item opened, its live site followed and measured at
         1440 · 1024 · 768 · 375: CSS grids, subgrid, named lines, framework column classes, gutter, full-bleed, and how
         many visible left edges sit on a 12-column half-step). Raw: `C:\Users\eyite\educo-research\grid\` (outside git)
