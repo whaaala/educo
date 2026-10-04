@@ -313,13 +313,34 @@ const RUNG_MIN_EM: Record<Exclude<Breakpoint, "phone">, number> = {
   wide: BREAKPOINTS_EM.wide, // 1800px
 };
 /** One bucket of rules per rung. The phone rung is the unqualified base of a mobile-first sheet. */
-type Sheet = { rungs: Record<Breakpoint, string[]>; reveals: Set<string>; arrivals: Set<string>; queries: string[] };
+type Sheet = { rungs: Record<Breakpoint, string[]>; reveals: Set<string>; arrivals: Set<string>; overrides: string[]; queries: string[] };
 export const emptySheet = (): Sheet => ({
   rungs: { phone: [], tabletPortrait: [], tabletLandscape: [], base: [], wide: [] },
   reveals: new Set<string>(),
   arrivals: new Set<string>(),
+  overrides: [], // a block's own Advanced CSS / token overrides, per screen — after every rung, as the canvas applies them last
   queries: [], // container queries — a grid narrowing by its own box (`gridQueryCss`), emitted after every rung
 });
+
+/**
+ * A block's Advanced CSS and token overrides AT EACH SCREEN (R4-1). Each run of rungs with the same value is ONE rule
+ * limited to that range of widths, so nothing set at one screen leaks into another and no declaration has to be undone at
+ * the next rung. Emitted after the generated rules, because the canvas applies them inline, LAST, at every rung.
+ */
+function overridesByRung(node: BoxNode, cls: string): string[] {
+  const ovs = BP_ORDER.map((bp) => overridesCss(resolveResponsive(node, bp)));
+  const minEm = (i: number) => RUNG_MIN_EM[BP_ORDER[i] as Exclude<Breakpoint, "phone">];
+  const out: string[] = [];
+  for (let i = 0; i < ovs.length; ) {
+    let j = i; while (j + 1 < ovs.length && ovs[j + 1] === ovs[i]) j++;
+    if (ovs[i]) {
+      const q = [i > 0 ? `(min-width:${minEm(i)}em)` : "", j < ovs.length - 1 ? `(max-width:${(minEm(j + 1) - 0.001).toFixed(3)}em)` : ""].filter(Boolean).join(" and ");
+      out.push(q ? `@media ${q}{.${cls}{${ovs[i]}}}` : `.${cls}{${ovs[i]}}`);
+    }
+    i = j + 1;
+  }
+  return out;
+}
 const classFor = (id: string) => "bx-" + id.replace(/[^A-Za-z0-9_-]/g, "-");
 // When a property is set at BASE but dropped at a breakpoint, we must actively neutralise it (the base rule
 // still applies at every width) — reset it to its layout initial rather than leaving the desktop value.
@@ -394,7 +415,7 @@ function styleAt(node: BoxNode, rawParent: BoxNode | null, bp: Breakpoint, theme
     opacity: !isComp ? boxOpacity(r) : undefined, // paint-only fades live in the colours (fadedPaint), not here
     overflow: stacked ? "visible" : (!selfPaint && (r.clip || radiusCSS(r))) ? "hidden" : undefined,
     ...(floating
-      ? { left: `${r.left ?? 0}%`, top: `${r.top ?? 0}%`, width: sizeToCSS(r.width), height: r.height ? sizeToCSS(r.height) : undefined, minHeight: r.minHeight, zIndex: floatZIndex(r), ...floatHoldCSS(r) } // no width ⇒ auto ⇒ hug content; a floated block may still hold on screen
+      ? { left: `${r.left ?? 0}%`, top: `${r.top ?? 0}%`, width: sizeToCSS(r.width), height: r.height ? sizeToCSS(r.height) : undefined, minHeight: r.minHeight != null ? remLen(r.minHeight) : undefined, zIndex: floatZIndex(r), ...floatHoldCSS(r) } // no width ⇒ auto ⇒ hug content; a floated block may still hold on screen
       : stacked
       ? { position: "relative", width: "100%", height: "auto", minHeight: "auto", zIndex: "auto" } // full-width flow, grows with content
       // The PAGE ROOT publishes the theme's typography as the role defaults everything below inherits — which
@@ -496,8 +517,8 @@ function renderNode(node: BoxNode, rawParent: BoxNode | null, theme: SiteTheme, 
   // rung below it. Diffing against the neighbour rather than the base is what keeps the sheet small — a rung
   // that changes nothing emits nothing at all.
   const byRung = BP_ORDER.map((bp) => styleAt(node, rawParent, bp, theme, hostSized, section, isPageSection));
-  const ov = overridesCss(r);
-  sheet.rungs.phone.push(`.${cls}{${[styleString(byRung[0], "sheet"), ov].filter(Boolean).join(";")}}`);
+  sheet.rungs.phone.push(`.${cls}{${styleString(byRung[0], "sheet")}}`);
+  sheet.overrides.push(...overridesByRung(node, cls));
   // Hover & focus (Interactions 1a) — the SAME emitter the canvas uses, so the builder shows exactly what a
   // visitor gets. Pure CSS: a page with no effects ships nothing extra.
   const hov = hoverCss(`.${cls}`, r.hoverEffect);
@@ -593,6 +614,8 @@ function sheetCss(sheet: Sheet): string {
     // a mobile-first sheet needs no specificity tricks.
     ...BP_ORDER.slice(1).map((bp) =>
       sheet.rungs[bp].length ? `@media (min-width:${RUNG_MIN_EM[bp as Exclude<Breakpoint, "phone">]}em){${sheet.rungs[bp].join("")}}` : ""),
+    // A block's own Advanced CSS, per screen, after every generated rule (R4-1: the canvas applies it last).
+    sheet.overrides.join(""),
     // LAST: a grid's own-box narrowing only ever takes columns away, so it sits after every rung it can override.
     sheet.queries.join(""),
   ].filter(Boolean).join("");

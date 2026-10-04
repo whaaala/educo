@@ -3088,7 +3088,7 @@ export default function BoxCanvas({
       // Floating: free-position on its own layer. Stacked (mobile): plain full-width flow block. Flow: fill+divide
       // per childStyle. Root: fill the canvas + define the global base unit (--box-u, rem-based).
       ...(floating
-        ? { left: `${node.left ?? 0}%`, top: `${node.top ?? 0}%`, width: sizeToCSS(node.width), height: node.height ? sizeToCSS(node.height) : undefined, minHeight: node.minHeight, zIndex: floatZIndex(node), ...floatHoldCSS(node) } // no width ⇒ auto ⇒ hug content; a floated block may still hold on screen
+        ? { left: `${node.left ?? 0}%`, top: `${node.top ?? 0}%`, width: sizeToCSS(node.width), height: node.height ? sizeToCSS(node.height) : undefined, minHeight: node.minHeight != null ? remLen(node.minHeight) : undefined, zIndex: floatZIndex(node), ...floatHoldCSS(node) } // no width ⇒ auto ⇒ hug content; a floated block may still hold on screen
         : stacked
         ? { width: "100%" } // content-height (no fixed height/minHeight) so nothing is clipped
         : parent ? childStyle(node, parent, breakpoint, hostSized) : {

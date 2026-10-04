@@ -98,6 +98,50 @@ describe("BoxInspector — styling primitives (Design tab)", () => {
     expect(onPatch).toHaveBeenCalledWith({ colSpan: 2 });
   });
 
+  // R4-2 (BATCH P-0): the cell's "Line up (across)" and the nine squares both place the cell across; the squares used to
+  // win silently, so "Left" did nothing while the control said "Left". Whichever is used last wins, and both show it.
+  it("keeps the cell's 'Line up (across)' and the nine squares in step (R4-2)", () => {
+    const onPatch = renderFor(createContainer("column", { id: "c", placeX: "center", placeY: "center", justifySelf: "end" } as Partial<BoxNode>), { inGrid: true });
+    const lineUp = screen.getByRole("button", { name: "Line up (across)" });
+    expect(lineUp).toHaveTextContent("Center");                        // shows the squares' choice, not the stale "Right"
+    fireEvent.click(lineUp); fireEvent.click(screen.getByRole("option", { name: "Left" }));
+    expect(onPatch).toHaveBeenLastCalledWith({ justifySelf: "start", placeX: undefined }); // …and choosing here clears the squares' across value
+    cleanup();
+    const onSquare = renderFor(createContainer("column", { id: "c", justifySelf: "end" } as Partial<BoxNode>), { inGrid: true });
+    fireEvent.click(screen.getByRole("button", { name: "Top left" }));
+    expect(onSquare).toHaveBeenLastCalledWith({ placeX: "start", placeY: "start", justifySelf: undefined }); // a square clears it the other way
+  });
+
+  // R4-4 (BATCH P-0): `align-items` moves blocks DOWN in a side-by-side row and in a grid — measured, "End" moved the
+  // words 236px down and 0 across while the label said "across".
+  it("names the direction the container's 'Line up' really moves (R4-4)", () => {
+    const label = (node: BoxNode) => { renderFor(node); const t = screen.getByRole("button", { name: "Line up" }).closest("label, div")?.textContent ?? ""; cleanup(); return t; };
+    expect(label(createContainer("column", { id: "s" } as Partial<BoxNode>))).toMatch(/Line up \(across\)/);
+    expect(label(createContainer("row", { id: "r" } as Partial<BoxNode>))).toMatch(/Line up \(down\)/);
+    expect(label(createContainer("column", { id: "g", layout: "grid", columns: 3 } as Partial<BoxNode>))).toMatch(/Line up \(down\)/);
+  });
+
+  // R4-5 (BATCH P-0): a typed "300px" and the picture's "don't crop" toggle stored pixels that reached the page.
+  it("stores rem, never px, from the Height field and the picture toggle (R4-5)", () => {
+    const onPatch = renderFor(createElement("text", { id: "t" } as Partial<BoxNode>));
+    fireEvent.change(screen.getByLabelText("Height"), { target: { value: "300px" } });
+    expect(onPatch).toHaveBeenLastCalledWith({ height: "18.75rem", contentScale: undefined });
+    cleanup();
+    const onImg = renderFor(createElement("image", { id: "i", height: "auto", src: "data:image/png;base64,AA==", imgW: 800, imgH: 600 } as Partial<BoxNode>)); openContent();
+    fireEvent.click(screen.getByRole("checkbox", { name: /Show the whole picture/ }));
+    expect(onImg).toHaveBeenLastCalledWith({ height: "16.25rem" });
+  });
+
+  // R4-3 (BATCH P-0): Floating (and its front / back order) changes every screen; while another screen is edited the
+  // control says so, and the Per-device promise says "except a control marked every screen".
+  it("says 'every screen' on structural controls while another screen is edited (R4-3)", () => {
+    renderFor(createElement("text", { id: "t" } as Partial<BoxNode>), { breakpoint: "phone" });
+    expect(screen.getAllByRole("note").some((n) => /Applies to every screen, not only/.test(n.textContent ?? ""))).toBe(true);
+    cleanup();
+    renderFor(createElement("text", { id: "t" } as Partial<BoxNode>), { breakpoint: "base" });
+    expect(screen.queryAllByRole("note").some((n) => /Applies to every screen/.test(n.textContent ?? ""))).toBe(false);
+  });
+
   it("hides grid span controls when NOT in a grid", () => {
     renderFor(createContainer("column", { id: "c" } as Partial<BoxNode>), { inGrid: false });
     expect(screen.queryByLabelText("Columns wide")).not.toBeInTheDocument();
@@ -452,7 +496,7 @@ describe("BoxInspector — functionality audit (every remaining control)", () =>
     fireEvent.click(screen.getByRole("button", { name: "Custom" }));
     expect(onPatch).toHaveBeenCalledWith(expect.objectContaining({ width: expect.any(String) }));
     fireEvent.change(screen.getByLabelText("Height"), { target: { value: "300px" } });
-    expect(onPatch).toHaveBeenCalledWith({ height: "300px" });
+    expect(onPatch).toHaveBeenCalledWith(expect.objectContaining({ height: "18.75rem" })); // a typed px is stored as rem (R4-5)
     fireEvent.click(screen.getByLabelText("Content middle center"));
     expect(onPatch).toHaveBeenCalledWith({ contentX: "center", contentY: "center" });
     fireEvent.click(screen.getByLabelText(/Trim to size/));
@@ -523,7 +567,7 @@ describe("Accordion — full three-tab audit (Design · Content · Per-device)",
     const onPatch = renderFor(acc(), { onAlignInRow, rowJustify: "start" });
     fireEvent.click(screen.getByRole("button", { name: "Full" }));   expect(onPatch).toHaveBeenCalledWith(expect.objectContaining({ width: "fill" }));
     fireEvent.click(screen.getByRole("button", { name: "Center" })); expect(onAlignInRow).toHaveBeenCalledWith("center");
-    fireEvent.change(screen.getByLabelText("Height"), { target: { value: "320px" } }); expect(onPatch).toHaveBeenCalledWith({ height: "320px" });
+    fireEvent.change(screen.getByLabelText("Height"), { target: { value: "320px" } }); expect(onPatch).toHaveBeenCalledWith(expect.objectContaining({ height: "20rem" })); // stored as rem (R4-5)
     fireEvent.click(screen.getByLabelText("Content middle center"));  expect(onPatch).toHaveBeenCalledWith({ contentX: "center", contentY: "center" });
     fireEvent.click(screen.getByLabelText(/Trim to size/));           expect(onPatch).toHaveBeenCalledWith({ clip: true });
   });

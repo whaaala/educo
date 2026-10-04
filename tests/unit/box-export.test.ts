@@ -320,6 +320,37 @@ describe("box-export — static HTML", () => {
     expect(html).not.toContain("@import");                        // at-rule stripped
   });
 
+  // R4-5 (BATCH P-0): read as "a floating block's min-height is emitted in px"; MEASURED NOT A BUG on the published page —
+  // the wrapper's `remLen` (box-export, after the floating style) already wins. This pins it: mutating that line fails here.
+  it("publishes a floating block's min-height in rem, never px (R4-5)", () => {
+    const f = createElement("text", { position: "absolute", left: 10, top: 10, minHeight: 120 } as Partial<BoxNode>);
+    const html = renderPageHTML(createContainer("column", { children: [f] } as Partial<BoxNode>), DEFAULT_THEME);
+    expect(html).toContain("min-height:7.5rem");
+    expect(html).not.toMatch(/min-height:120px/);
+  });
+
+  // R4-1 (BATCH P-0): Advanced CSS stored for ONE screen used to be read from the desktop value only, so a phone-only or
+  // wide-only declaration never reached the published page while the canvas showed it. Each screen's own value is now
+  // published, limited to that screen's range of widths.
+  it("publishes Advanced CSS set for one screen on that screen only (R4-1)", () => {
+    const at = (responsive: BoxNode["responsive"], advancedCss?: string) => {
+      const acc = createComponent("accordion", { advancedCss, responsive, items: [{ id: "i1", title: "T", body: "B" }] } as Partial<BoxNode>);
+      return { html: renderPageHTML(createContainer("column", { children: [makeRowBand([acc])] } as Partial<BoxNode>), DEFAULT_THEME), cls: `bx-${acc.id.replace(/[^A-Za-z0-9_-]/g, "-")}` };
+    };
+    const tp = BREAKPOINTS_EM.tabletPortrait;
+    // set at the PHONE only → one rule, limited to below the tablet rung
+    const phone = at({ phone: { advancedCss: "outline-offset: 3px" } });
+    expect(phone.html).toContain(`@media (max-width:${(tp - 0.001).toFixed(3)}em){.${phone.cls}{outline-offset: 3px;}}`);
+    // set at WIDE only → from the wide rung up, nowhere below
+    const wide = at({ wide: { advancedCss: "outline-offset: 5px" } });
+    expect(wide.html).toContain(`@media (min-width:${BREAKPOINTS_EM.wide}em){.${wide.cls}{outline-offset: 5px;}}`);
+    expect(wide.html.match(/outline-offset: 5px/g)).toHaveLength(1);
+    // set on the desktop and kept everywhere (no per-screen value) → one plain rule, as before
+    const all = at(undefined, "outline-offset: 7px");
+    expect(all.html).toContain(`.${all.cls}{outline-offset: 7px;}`);
+    expect(all.html).not.toMatch(/@media[^{]*\{\.bx-[^{]*\{outline-offset: 7px/);
+  });
+
   it("applies component typography (font family + size) to the wrapper so it cascades into items", () => {
     const acc = createComponent("accordion", {
       fontFamily: "Georgia, serif", fontSize: 20, fontWeight: 700, letterSpacing: 1,

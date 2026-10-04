@@ -38,52 +38,56 @@ written BEFORE the pass; one HEADED UAT on a fresh production build ticks every 
 only when every line is ticked and every bug it found is fixed and re-checked. Guarded by
 `tests/unit/task-tree-batches.test.ts`. Every item names what it IS in words, never a bare number.
 
-- `[>]` **BATCH P-0 · The five placement bugs found by reading the code (R4-1 … R4-5)** — OPENED 2026-10-04 by the user's "let's
-  move on" after signing R-4 (session 9fa0fee9) (area: placement controls · 5 changes). Each is MEASURED through the UI
-  first (RULE Y, V) — a line that does not reproduce closes as NOT A BUG with the measurement. CHANGES:
-  - `[ ]` (1) R4-1 · Advanced CSS set on ONE screen reaches the published page on that screen, and the canvas and the Preview
-    agree at every rung (today: the export reads only the base, box-export.ts:482 / 499–500; the canvas applies it last)
-  - `[ ]` (2) R4-2 · a grid cell's "Line up (across)" and the nine squares "Where this block sits" both write `justify-self`;
-    the squares silently win (BoxInspector 1063 / 1085, placeCSS last). One source of truth: whichever was set last shows in
-    BOTH controls and is what the page does
-  - `[ ]` (3) R4-3 · "Position in row", "Content width", re-cutting columns, "Floating" and front / back order write EVERY
-    screen while Phone is selected (box-model 2762, 2781; page.tsx 666 / 671 / 674) — they store for the selected screen,
-    as the Per-device tab promises; or, where a value cannot be per screen, the control says so
-  - `[ ]` (4) R4-4 · the container's "Line up (across)" sets `align-items`, which in a side-by-side row and a grid moves
-    blocks DOWN — the label names the axis it really moves (P-1 later replaces it with Across · Down)
-  - `[ ]` (5) R4-5 · no stored pixel reaches the page (rule 16): unticking "Show the whole picture" stores rem, not 260px; the
-    Width / Height fields turn a typed px into rem; a floating block's min-height is emitted in rem
-  HEADED UAT CHECKLIST (written first; every line built THROUGH THE UI on a fresh production build, six windows, Preview at
-  every screen of `scripts/uat/screens.js`, 4 themes):
-  - `[ ]` (1) Advanced CSS (e.g. a background or a border) typed with Phone selected → seen on the phone Preview, NOT on
-    desktop; typed on Desktop → desktop and wider, phone keeps its own; canvas = Preview at each of the 5 rungs; reload keeps it;
-    undo removes it; with it cleared, the page is byte-identical to before
-  - `[ ]` (2) on a grid cell: pick "Line up: Right" then a square → both controls show the square's choice and the page
-    follows; then "Line up: Fill" → the squares show none selected and the cell fills; per rung (phone different from
-    desktop); reload; undo each step
-  - `[ ]` (3) for EACH of the five controls: with Phone selected, change it → phone changes, tablet / desktop / wide do not
-    (canvas AND Preview at their widths); then the same on Desktop → phone keeps its own value; undo; reload; the Per-device
-    tab's sentence is true for every control it covers
-  - `[ ]` (4) the container line-up label in a top-to-bottom stack, a side-by-side row and a grid, read in all 4 themes — it
-    names the direction the blocks actually move when each option is clicked (seen)
-  - `[ ]` (5) untick "Show the whole picture", type "300px" in Height and "240px" in Width, make a block floating and give it
-    a height → the published CSS has no `px` but 1px hairlines (`units-not-pixels` guard + the export read), and the sizes
-    look the same as before at 100 % and grow at 150 % browser text
-  - `[ ]` REGRESSION: a page saved before P-0 publishes byte for byte as it did (all five changes)
-  - `[ ]` no console errors; typecheck 0 · eslint 0 · vitest · test:fast green
-  MEASURED THROUGH THE UI (HEADED, `scripts/uat/probe-p0.js`, fresh build OOQdv_uu, 2026-10-04) — ALL FIVE REPRODUCED:
-    (1) an Accordion's Advanced CSS `background-color: red` set at Phone: canvas 375 red, Preview 375 transparent; set at Wide:
-    canvas 1920 red, Preview 1920 transparent · (2) cell "Line up: Right" → `end`; square "Middle centre" → `center`; then
-    "Line up: Left" → still `center` while the control SAYS "Left" · (3) "Position in row: Right" at Phone → desktop
-    `flex-start` → `flex-end` too; "Floating" at Phone → desktop `position: absolute` too · (4) a Side-by-side stack's
-    "Line up (across)" → "End" moved the words DOWN 236px, across 0 · (5) Height "300px" → published `height:300px`
-  LEDGER (this batch):
-    - `[ ]` P0-a · probe: Advanced CSS exists only on catalogue components (Content tab), grid-cell controls only on the grid's own
-      child, and the probe's own helpers left `page.__step` stale — FIXED in the probe (Accordion, Content tab, the cell from the
-      tree, step labels); the line closes when the UAT pass runs on it
-    - `[ ]` P0-b · test helper: `P.beside` inside probe-p0 cannot select the Text it just dropped beside an Image ("could not
-      select …"), while the same steps called directly succeed and a person's click on the words selects it at once — a harness
-      defect to find and fix before the UAT pass
+- `[x]` **BATCH P-0 · The five placement bugs found by reading the code (R4-1 … R4-5)** — CLOSED 2026-10-04 (session 9fa0fee9;
+  HEADED UAT `scripts/uat/uat-p0-headed.js` six windows, 30 checks 0 failed, Preview at all 70 screens + `uat-p0-apptheme-headed.js`
+  four editor themes, 8 contrast checks 0 failed; gate: typecheck 0 · eslint 0 errors · vitest 4,181 · test:fast 806/806) (area:
+  placement controls · 5 changes, OPENED by the user's "let's move on" after signing R-4). All five REPRODUCED through the UI first
+  (`scripts/uat/probe-p0.js`, build OOQdv_uu). CHANGES:
+  - `[x]` (1) R4-1 · Advanced CSS / token overrides published PER SCREEN: each run of rungs with the same value is one rule limited
+    to that range of widths, emitted after the generated rules as the canvas applies them (`overridesByRung`, `lib/box-export.ts`).
+    Guard `box-export.test.ts` "R4-1" (mutation-proven)
+  - `[x]` (2) R4-2 · the cell's "Line up (across)" SHOWS the squares' choice and clears their across value when used; a square
+    clears `justifySelf` — whichever was used last wins (`BoxInspector.tsx`). Guard `BoxInspector.test.tsx` "R4-2" (mutation-proven)
+  - `[x]` (3) R4-3 · "Position in row" writes the screen being edited (`alignInRow` / `alignInRowOf` take the screen,
+    `updateBoxResponsive`); re-cutting columns MEASURED already per screen (structure at the desktop only, a per-screen count
+    elsewhere — by design, page.tsx); Floating, front / back order and Content width change the structure and SAY "Applies to
+    every screen, not only <screen>" while another screen is edited; the banner and the Per-device sentence now say "unless a
+    control says every screen". Guards `box-model.test.ts` + `BoxInspector.test.tsx` "R4-3" (mutation-proven)
+  - `[x]` (4) R4-4 · the container's line-up reads "Line up (down)" in a side-by-side row and a grid, "(across)" in a stack. Guard
+    "R4-4" (mutation-proven)
+  - `[x]` (5) R4-5 · a typed px (Height, Custom width) is stored as rem (`typedLength`), "Show the whole picture" unticked stores
+    `remLen(260)`; the floating min-height part MEASURED NOT A BUG on the published page (the wrapper's `remLen` already wins —
+    pinned by "R4-5", mutation-proven on the real line); both floating style lines now emit rem anyway, so the canvas agrees
+  HEADED UAT CHECKLIST — every line SEEN (`scripts/uat/logs/p0-uat-3.out`, pictures `logs/uat-p0/`):
+  - `[x]` (1) an Accordion's Advanced CSS at Phone: canvas 375 red, Preview red below 600 only; another at Wide: canvas 1920 red,
+    Preview red from 1800 only — all 70 screens; a DESKTOP value beside the phone's own: red below 600, blue from 600, all 70; undo
+    removes the desktop value; a reload keeps the phone value
+  - `[x]` (2) a grid cell: "Right" → end · square "Middle centre" → centre and "Line up" SHOWS Center · "Left" → really left, no
+    square left pressed · undo → centre · "Fill" → fills, no square · reload keeps it · "Right" at Phone → phone end, desktop fills
+  - `[x]` (3) "Position in row: Right" at Phone → phone flex-end, desktop flex-start; Preview right below 600, left from 600 (70
+    screens); reload keeps it; at Phone the Placement section says "Applies to every screen, not only Phone" and the banner "unless a
+    control says every screen", on the desktop no note; readable in the editor's four themes (4.85–12.35 : 1)
+  - `[x]` (4) labels: a stack "Line up (across)", side by side "Line up (down)", a grid "Line up (down)"; "End" side by side moved the
+    words DOWN 236px, across 0 — website themes Light / Dark / Midnight / Purple Dream across the six windows
+  - `[x]` (5) Height "300px" stored "18.75rem", Custom width "240px" stored "15rem"; the published CSS has no px but 1px hairlines;
+    300px tall at 100 % text, 450px at 150 %
+  - `[x]` REGRESSION: ONE tree through the OLD exporter (git HEAD) and the NEW one: a page with no Advanced CSS / token overrides is
+    BYTE FOR BYTE the same (8,706 = 8,706, a floating block included); with Advanced CSS only its rule moves after the generated
+    rules (+6 bytes). A plain dressed page at all 70 screens: no sideways scroll
+  - `[x]` no page errors in any window; typecheck 0 · eslint 0 errors · vitest 4,181 · test:fast 806/806
+  LEDGER (this batch) — every line closed:
+    - `[x]` P0-a · probe: Advanced CSS exists only on catalogue components (Content tab), the grid-cell controls only on the grid's own
+      child; FIXED in the probe and the UAT (Accordion, Content tab, the cell found in the stored tree)
+    - `[x]` P0-b · "P.beside cannot select…" was NOT a helper bug: the probe selected the band (scaffolding nobody can select) and
+      `H.select` never set its own step label, so the error was reported under the previous step. FIXED: `H.select` names its step
+      (seen: "select(n0-6)")
+    - `[x]` P0-c · the "Editing <screen>" banner and its reset link had `dark:` without `midnight:` / `purple:` (rule 5) — FIXED, seen
+      readable in all four editor themes
+    - `[x]` P0-d · my first UAT pass switched the WEBSITE theme only; the editor's own themes were never seen — `uat-p0-apptheme-headed.js`
+    - `[x]` P0-e · that script read OKLCH colours as rgb() (contrast ~1:1 for readable text) — colours now go through a 1-pixel canvas
+    - `[x]` P0-f · the UAT's grid-label regex lost its backslashes (shell escaping) and could never pass — fixed with the Edit tool
+    - `[x]` P0-g · my first byte-compare built two trees (new band ids each call) — re-measured on ONE tree
+    - `[x]` P0-h · two old audit tests PINNED the bug (typed "300px" / "320px" stored as px) — now expect rem
 - `[x]` **BATCH G-1 · The page grid in the engine** — CLOSED 2026-10-04 (session 87422eae; HEADED UAT `uat-g1-headed.js`, six
   windows, 70 screens each — every device of the Preview's menu and both sides of every breakpoint — CLEAN in all six, 0 page
   errors; gate: typecheck 0 · eslint 0 errors · vitest 4,174 · test:fast 806/806) (area: page grid · 5 changes, OPENED
@@ -2174,7 +2178,7 @@ sent), and my research. Nothing on the layout is done until every line here is c
     falls back into the flow unless placed at that rung; the page audit and Page check warn when it covers words;
     shown as drag on the canvas with the half-lines drawn, a Position panel (start / end, column / row, spill above /
     below) and a gallery of ready-made placements (RULE S / UI). Joins AC-10, ST-5, AC-35 — one build
-    - `[>]` AC-37b ← YOU ARE HERE (next leaf: BATCH P-0 · R4-1 … R4-5 measured and fixed — R-4 SIGNED 2026-10-04 with decisions D1–D5 (session 9fa0fee9); then G-2, G-3, P-1, P-2, G-4, P-3, G-5, G-6. G-1 CLOSED 2026-10-04 (see BATCHES). Plan APPROVED 2026-10-04 with the user's decisions below. Earlier: research R-3 DONE and SIGNED 2026-10-04
+    - `[>]` AC-37b ← YOU ARE HERE (next leaf: BATCH G-2 · layout guides + grid panel — P-0 CLOSED 2026-10-04 (R4-1 … R4-5 fixed, 30 headed checks); R-4 SIGNED with D1–D5 (session 9fa0fee9); then G-3, P-1, P-2, G-4, P-3, G-5, G-6. G-1 CLOSED 2026-10-04 (see BATCHES). Plan APPROVED 2026-10-04 with the user's decisions below. Earlier: research R-3 DONE and SIGNED 2026-10-04
       (`ff5c53a`, `4418202`); build to every decision recorded under R-3 below; the mockups settle the open three (row
       snap · the phone gap 11 vs 16 px · panel per site or per page) → the user's approval → build) · **THE PAGE GRID — DECIDED by the user 2026-10-03: done RIGHT AFTER L-4 closes, BEFORE L-5, L-6 and the
       frozen list's placement items** (they are built on it). NAMES (decided): "page grid" in code and docs; the lines a

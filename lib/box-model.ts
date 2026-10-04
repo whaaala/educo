@@ -2756,15 +2756,16 @@ export function ungroupBoxes(root: BoxNode, groupId: string): BoxNode {
 /** Position a block within its own container (its row band / flex parent): sets the PARENT's justify-content
  *  so the child sits at the start / center / end. Because blocks now HUG their content, this is how you
  *  left / centre / right a heading, button, badge, etc. Fluid (justify-content, no fixed px) → Field-Guide-safe. */
-export function alignInRow(root: BoxNode, id: string, justify: FlexJustify): BoxNode {
+export function alignInRow(root: BoxNode, id: string, justify: FlexJustify, bp: Breakpoint = "base"): BoxNode {
   const info = findParent(root, id);
   if (!info) return root;
-  return updateBox(root, info.parent.id, { justify });
+  return updateBoxResponsive(root, info.parent.id, { justify }, bp); // for the screen being edited only (R4-3)
 }
 
-/** The block's current position within its container (its parent row's justify-content). */
-export function alignInRowOf(root: BoxNode, id: string): FlexJustify {
-  return findParent(root, id)?.parent.justify ?? "start";
+/** The block's current position within its container (its parent row's justify-content) on that screen. */
+export function alignInRowOf(root: BoxNode, id: string, bp: Breakpoint = "base"): FlexJustify {
+  const p = findParent(root, id)?.parent;
+  return (p && resolveResponsive(p, bp).justify) ?? "start";
 }
 
 /**
@@ -4183,6 +4184,11 @@ export function canSetColumnFraction(track: number, den: number, bp: Breakpoint 
 }
 
 /** Convert a width/height token ("auto" | "fill" | "50%" | "200px") to a CSS length or undefined. */
+/** A length a person TYPES ("300px", "50%", "40vh"): any px becomes rem, so no stored pixel reaches the page (rule 16, R4-5). */
+export function typedLength(v: string): string {
+  return v.replace(/(-?\d*\.?\d+)px\b/g, (_, n: string) => remLen(Number(n)));
+}
+
 export function sizeToCSS(token?: string): string | undefined {
   if (!token || token === "auto") return undefined;
   if (token === "fill") return "100%";

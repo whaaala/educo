@@ -419,6 +419,18 @@ describe("box-model — mutations are immutable and correct", () => {
     expect(alignInRowOf(alignInRow(centered, "h", "end"), "h")).toBe("end");
   });
 
+  // R4-3 (BATCH P-0): "Position in row" set while the PHONE was selected moved the block on every screen (measured: desktop
+  // flex-start → flex-end). It now writes the phone's own value and leaves the desktop alone.
+  it("alignInRow on one screen leaves the other screens alone (R4-3)", () => {
+    let root = createContainer("column", { id: "root", children: [] } as Partial<BoxNode>);
+    root = normalizeRowBands(insertBox(root, "root", 0, createElement("heading", { id: "h", text: "Hi" } as Partial<BoxNode>)), 0);
+    const phone = alignInRow(root, "h", "end", "phone");
+    expect(alignInRowOf(phone, "h", "phone")).toBe("end");
+    expect(alignInRowOf(phone, "h", "base")).toBe("start");                // the desktop is untouched
+    expect(alignInRowOf(phone, "h", "tabletPortrait")).toBe("start");      // …and so is the tablet
+    expect(findParent(phone, "h")!.parent.justify).toBeUndefined();        // nothing written to the base node
+  });
+
   it("cloneBox deep-copies a GROUP with fresh ids for the container AND every descendant (independent copy)", () => {
     const group = createContainer("column", { id: "g", group: true, position: "absolute", left: 10, top: 10, children: [createElement("text", { id: "a" } as Partial<BoxNode>), createElement("icon", { id: "b" } as Partial<BoxNode>)] } as unknown as Partial<BoxNode>);
     const copy = cloneBox(group);

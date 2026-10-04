@@ -139,6 +139,9 @@ const dropBeside = async (page, tile, id, side = 'right') => {
 };
 const selected = (page) => page.evaluate(() => document.querySelector('.outline-indigo-500')?.getAttribute('data-box-id') ?? null);
 async function select(page, id) {
+  // Its OWN step label (P0-b): without it a failed select was reported under the PREVIOUS step ("beside(…)"), which sent a
+  // session hunting a bug in the wrong helper for an hour — the real cause was selecting a band, which nobody can select.
+  page.__step = `select(${id.slice(-4)})`;
   // A person scrolls to what they want before clicking it (a block below the fold took the click of the one above).
   await page.locator(`[data-box-id="${id}"]`).scrollIntoViewIfNeeded().catch(() => {});
   // EACH CLICK GOES ONE BOX DEEPER ("click selects the box, click again goes inside"), and a person keeps clicking until

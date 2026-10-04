@@ -198,12 +198,12 @@ Select any block and its settings appear on the right, in three tabs.
 
 ### Design tab
 - **Placement** — *In the layout* vs *Floating*, **Lock position & size**, and (when floating) **Front/back order**. See §7.
-- **Size** — **Width** (Fit = hug the content, Full = fill the row, Custom = a % or px), **Position in row** (Left / Centre / Right / Spread), **Content position** (a 3×3 grid — where the content sits inside the block when it's bigger than its content), **Height**, and **Trim to size**.
+- **Size** — **Width** (Fit = hug the content, Full = fill the row, Custom = a % or a size — type "240px" and it is kept as 15rem, so it grows with a reader's text size), **Position in row** (Left / Centre / Right / Spread — for the screen you are editing only), **Content position** (a 3×3 grid — where the content sits inside the block when it's bigger than its content), **Height**, and **Trim to size**.
 - **Spacing** — **Inner spacing** (padding, inside the block) and **Outer spacing** (margin, around it).
 - **Outline & effects** — rounded corners (all or per‑corner), border, shadow, tilt, **See-through** (below).
 - **Background** — a colour (with a full OKLCH picker, eyedropper, and *None* for transparent) or a background image.
 - **Typography** — font, size, weight, capitalisation, line/letter spacing (cascades into the block's text).
-- **Advanced CSS** — extra CSS declarations for power users (safely sanitised).
+- **Advanced CSS** — extra CSS declarations for power users (safely sanitised), on components. Like any style it belongs to the screen you are editing: type it with **Mobile** selected and only phones get it.
 
 #### See-through — the box fades, not what's in it
 
@@ -264,7 +264,12 @@ Overrides that apply only on the current device size (see §8).
 - **A resized block is one shape.** When you make a button, card, badge or any block bigger, the block *itself* grows to fill the new size — there's never a second empty shape left behind at the old size. Its content re‑positions inside it automatically (a resized button centres its label).
 - **Content position.** When a block is bigger than its content (e.g. you made a badge tall), use the **3×3 Content position** grid to place the content — top‑left, centre, bottom‑right, etc. Works for every block, elements and components alike.
 - **Position in row.** To left/centre/right‑align a hugging block within its row, use **Position in row**. **Spread** shares the
-  row out: the first block at the left edge, the last at the right edge, the rest evenly between.
+  row out: the first block at the left edge, the last at the right edge, the rest evenly between. It applies to the screen you are
+  editing, so a block can sit on the right on a phone and on the left on a desktop.
+- **Every screen, or just this one?** With Tablet or Mobile selected, a change applies to that screen only — except a few controls
+  that change the page's structure (**Floating**, its **front / back order**, a section's **Content width**). Those say *"Applies to
+  every screen"* while you are editing a smaller screen.
+- **Line up** on a box names the direction it moves: *across* in a top-to-bottom stack, *down* in a side-by-side row or a grid.
 - **A page header or footer spreads by itself.** Give a block the meaning **Page header** (or **Page footer**) and its
   line of two or more blocks is set to **Spread** and centred on one line — the logo at the left edge, the menu between,
   the button at the right edge — so a wide screen is never left empty on the right. It is an ordinary setting: pick
@@ -413,7 +418,7 @@ You never have to think in twelfths. Select a block and the **Grid cell** panel 
 | **Width** | How much of the row this block takes — by name, or 1–12 |
 | **Start at column** | Leave columns empty before it (an offset) |
 | **Rows tall** / **Start at row** | The same two things going down, so a block can straddle rows |
-| **Line up (across)** | Where the block sits inside its own cell |
+| **Line up (across)** | Where the block sits inside its own cell. It and the nine squares under **Position** are the same setting — whichever you used last wins, and both show it |
 
 ### Drag a cell's edge
 

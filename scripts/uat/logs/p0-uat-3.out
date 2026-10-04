@@ -1,0 +1,32 @@
+SAW  [F · Light] typed "300px" is stored as "18.75rem" — 18.75rem
+SAW  [F · Light] typed width "240px" is stored as "15rem" — 15rem
+SAW  [C · Dark] "Line up: Right" → the cell sits at the end
+SAW  [C · Dark] square "Middle centre" → centred, and "Line up" now SHOWS Center — shows "Center"
+SAW  [E · Purple Dream] a top-to-bottom stack says "Line up (across)" — Line up (across)Fill
+SAW  [D · Midnight] "Position in row: Right" at Phone → phone right, desktop unchanged — phone flex-end · desktop flex-start → flex-start
+SAW  [E · Purple Dream] side by side it says "Line up (down)" — Line up (down)Fill
+SAW  [C · Dark] "Line up: Left" after a square → the cell really moves left
+SAW  [C · Dark] …and no square stays selected — 0 pressed
+SAW  [C · Dark] undo puts it back in the centre
+SAW  [A · Light] canvas 375: the phone-only Advanced CSS shows
+SAW  [E · Purple Dream] a grid says "Line up (down)" — Line up (down)End
+SAW  [E · Purple Dream] …and "End" really moves the words DOWN, not across — down 236 · across 0
+SAW  [C · Dark] "Line up: Fill" → the cell fills and no square is selected — 0 pressed
+SAW  [C · Dark] after a reload it still fills
+SAW  [A · Light] canvas 1920: the wide-only Advanced CSS shows
+SAW  [A · Light] canvas 1280: neither shows
+SAW  [C · Dark] "Right" set at Phone → phone end, desktop still fills — phone end · desktop stretch
+SAW  [F · Light] the published CSS has no px but 1px hairlines
+SAW  [F · Light] 300px tall at 100 % text, and taller at 150 % — {"375@1":300,"1280@1":300,"375@1.5":450,"1280@1.5":450}
+SAW  [D · Midnight] Preview at all 70 screens: right below 600, left from 600
+SAW  [D · Midnight] after a reload the phone is still right, the desktop left
+SAW  [D · Midnight] at Phone, Placement (Floating, front / back) says "Applies to every screen"; the banner says "unless a control says every screen" — note 1 · banner 1
+SAW  [A · Light] Preview at all 70 screens: phone-only red below 600 only, wide-only red from 1800 only
+SAW  [D · Midnight] on the desktop the note is not shown
+SAW  [G · Dark] a plain page at all 70 screens: no sideways scroll
+SAW  [G · Dark] no page errors
+SAW  [A · Light] a DESKTOP value beside the phone's own: red below 600, blue from 600, all 70 screens
+SAW  [A · Light] undo removes the desktop value (canvas 1280 no longer blue)
+SAW  [A · Light] after a reload the phone value is still there
+
+30 checks, 0 failed

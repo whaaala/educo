@@ -12,7 +12,8 @@ import { Plus, X, Tags, Rows3, Columns3, Upload, ArrowRight, AlignLeft, AlignCen
 import type { SiteTheme } from "@/lib/site-storage";
 import type { BoxNode, FlexAlign, FlexJustify, AccPartStyle, Breakpoint, PagerNav, PinScopeWords, SectionFlag } from "@/lib/box-model";
 import { RUNG_LABEL } from "@/lib/educo-ui/layout";
-import { type ItemAction, TOAST_CORNERS, isContainer, containerLabel, isFloating, isCssBg, addItem, removeItem, moveItem, updateItem, addChildItem, updateChildItem, removeChildItem, moveChildItem , isMultiItemComponent, hasIntrinsicSize, sizeToCSS, GRID_MAX, COLUMN_FRACTIONS, columnFractionOf, canSetColumnFraction, gridColumns, bandEdgeCSS, PIN_ARRIVALS, PIN_ARRIVAL_AFTER, pinArrivalHasEffect, linkLineGap, LINK_GAP_ACROSS, LINK_GAP_ACROSS_PHONE, spaceDefaults, outerDefaults, type SectionPlace, gapOf } from "@/lib/box-model";
+import { type ItemAction, TOAST_CORNERS, isContainer, containerLabel, isFloating, isCssBg, addItem, removeItem, moveItem, updateItem, addChildItem, updateChildItem, removeChildItem, moveChildItem , isMultiItemComponent, hasIntrinsicSize, sizeToCSS, typedLength, GRID_MAX, COLUMN_FRACTIONS, columnFractionOf, canSetColumnFraction, gridColumns, bandEdgeCSS, PIN_ARRIVALS, PIN_ARRIVAL_AFTER, pinArrivalHasEffect, linkLineGap, LINK_GAP_ACROSS, LINK_GAP_ACROSS_PHONE, spaceDefaults, outerDefaults, type SectionPlace, gapOf } from "@/lib/box-model";
+import { remLen } from "@/lib/educo-ui/tokens";
 import { ACCORDION_DESIGNS, ACCORDION_DESIGN_COUNT, ACCORDION_AXES } from "@/lib/educo-ui/accordions";
 import { ALERT_DESIGNS, ALERT_DESIGN_COUNT, ALERT_AXES } from "@/lib/educo-ui/alerts";
 import { COMPONENT_REGISTRY, isRegistryComponent, defaultComponentFields, renderComponent } from "@/lib/educo-ui/registry";
@@ -201,7 +202,7 @@ function WidthControl({ node, onPatch }: { node: BoxNode; onPatch: (p: Partial<B
       <span className={label}>Width</span>
       <Segmented full ariaLabel="Width" value={mode} onChange={(m) => onPatch({ width: m === "auto" ? "auto" : m === "fill" ? "fill" : isCustom ? w : "50%" })}
         options={[{ value: "auto", label: "Fit" }, { value: "fill", label: "Full" }, { value: "custom", label: "Custom" }]} />
-      {isCustom && <CompactField ariaLabel="Custom width" value={w} onChange={(v) => onPatch({ width: v })} placeholder="50% or 240px" />}
+      {isCustom && <CompactField ariaLabel="Custom width" value={w} onChange={(v) => onPatch({ width: typedLength(v) })} placeholder="50% or 15rem" />}
     </div>
   );
 }
@@ -558,6 +559,9 @@ export default function BoxInspector({ section = false, sectionPlace, node, them
   // The `?? ""` is not decoration: an unrecognised rung used to reach `.toLowerCase()` on undefined and take
   // the ENTIRE inspector down, so a stale value anywhere upstream would cost the user every control at once.
   const bpLabel = breakpoint === "base" ? "" : RUNG_LABEL[breakpoint] ?? "";
+  // R4-3: a few controls change the STRUCTURE (a class, a move into a floating layer, an order among siblings), which is
+  // the same on every screen — they say so while another screen is being edited, so the Per-device promise stays true.
+  const everyScreen = breakpoint === "base" ? null : <p role="note" className="text-[11px] leading-snug text-amber-700 dark:text-amber-300 midnight:text-amber-300 purple:text-amber-300">Applies to every screen, not only {bpLabel}.</p>;
 
   const AlignRow = () => (
     <div className="flex items-center justify-between">
@@ -623,8 +627,8 @@ export default function BoxInspector({ section = false, sectionPlace, node, them
       {/* At tablet/mobile, changes here only affect that screen (content stays shared). */}
       {breakpoint !== "base" && (
         <div className="rounded-xl border border-amber-300 dark:border-amber-500/30 bg-amber-50 dark:bg-amber-500/10 p-2.5 space-y-1.5">
-          <div className="text-[0.6875rem] font-semibold text-amber-700 dark:text-amber-300 flex items-center gap-1.5"><MonitorSmartphone className="w-3.5 h-3.5" /> Editing {bpLabel} — size &amp; layout only change here.</div>
-          {overridden && onResetOverride && <button onClick={onResetOverride} className="text-[0.6875rem] text-amber-700 dark:text-amber-300 underline hover:no-underline">Reset {bpLabel.toLowerCase()} changes to default</button>}
+          <div className="text-[0.6875rem] font-semibold text-amber-700 dark:text-amber-300 midnight:text-amber-300 purple:text-amber-300 flex items-center gap-1.5"><MonitorSmartphone className="w-3.5 h-3.5" /> Editing {bpLabel} — size &amp; layout only change here, unless a control says “every screen”.</div>
+          {overridden && onResetOverride && <button onClick={onResetOverride} className="text-[0.6875rem] text-amber-700 dark:text-amber-300 midnight:text-amber-300 purple:text-amber-300 underline hover:no-underline">Reset {bpLabel.toLowerCase()} changes to default</button>}
         </div>
       )}
 
@@ -697,6 +701,7 @@ export default function BoxInspector({ section = false, sectionPlace, node, them
             <Accordion title="Placement" icon={Move}>
               <Segmented full ariaLabel="Placement" value={floating ? "float" : "flow"} onChange={(v) => (v === "float" ? onFloat?.() : onUnfloat?.())}
                 options={[{ value: "flow", label: "In the layout", Icon: Rows3 }, { value: "float", label: "Floating", Icon: Layers }]} />
+              {everyScreen}
               <button
                 onClick={() => onPatch({ locked: !node.locked })}
                 aria-pressed={!!node.locked}
@@ -880,6 +885,7 @@ export default function BoxInspector({ section = false, sectionPlace, node, them
                   <Segmented full ariaLabel="Content width" value={sectionWidth ?? "band"}
                     onChange={(v) => onSectionWidth(v === "contained" ? "contained" : "band")}
                     options={[{ value: "band", label: "Edge to edge" }, { value: "contained", label: "Centred column" }]} />
+                  {everyScreen}
                   <p className="text-[11px] leading-snug text-gray-500 dark:text-gray-400">
                     {sectionWidth === "contained"
                       ? "The background still spans the page; the content sits on a centred column."
@@ -1021,7 +1027,9 @@ export default function BoxInspector({ section = false, sectionPlace, node, them
                   <label className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300"><input type="checkbox" checked={!!node.wrap} onChange={(e) => onPatch({ wrap: e.target.checked })} /> Let blocks wrap to a new line</label>
                 </>
               )}
-              <CompactSelect label="Line up (across)" ariaLabel="Line up" value={node.align ?? "stretch"} onChange={(v) => onPatch({ align: v as FlexAlign })} options={ALIGN_OPTS.map(([v, l]) => ({ value: v, label: l }))} />
+              {/* `align-items` lines blocks up across a top-to-bottom stack, but DOWN in a side-by-side row and in a grid
+                  (R4-4) — the label names the direction the blocks really move. */}
+              <CompactSelect label={node.layout === "grid" || node.direction === "row" ? "Line up (down)" : "Line up (across)"} ariaLabel="Line up" value={node.align ?? "stretch"} onChange={(v) => onPatch({ align: v as FlexAlign })} options={ALIGN_OPTS.map(([v, l]) => ({ value: v, label: l }))} />
               <Range title="Space between blocks" value={node.gap} min={0} max={64} fallback={Math.max(gapOf({ ...node, gap: undefined }).x, gapOf({ ...node, gap: undefined }).y)} onChange={(n) => onPatch({ gap: n, gapX: undefined, gapY: undefined })} unit="rem" />
               {/* Across and down separately — the commonest grid there is wants air between its columns and
                   less between its rows, and one number cannot say that. Unset means "same as above".
@@ -1060,8 +1068,10 @@ export default function BoxInspector({ section = false, sectionPlace, node, them
                   <CompactField label="Start at row" ariaLabel="Start at row" type="number" min={1} placeholder="auto"
                     value={node.rowStart ?? ""} onChange={(v) => onPatch({ rowStart: v === "" ? undefined : Math.max(1, Number(v) || 1) })} />
                 )}
-                <CompactSelect label="Line up (across)" ariaLabel="Line up (across)" value={node.justifySelf ?? "stretch"}
-                  onChange={(v) => onPatch({ justifySelf: v as NonNullable<BoxNode["justifySelf"]> })}
+                {/* ONE source of truth with the nine squares below (R4-2): both place the cell across, so whichever was
+                    used last wins — this shows the squares' choice, and choosing here clears the squares' across value. */}
+                <CompactSelect label="Line up (across)" ariaLabel="Line up (across)" value={node.placeX ?? node.justifySelf ?? "stretch"}
+                  onChange={(v) => onPatch({ justifySelf: v as NonNullable<BoxNode["justifySelf"]>, placeX: undefined })}
                   options={[{ value: "stretch", label: "Fill" }, { value: "start", label: "Left" }, { value: "center", label: "Center" }, { value: "end", label: "Right" }]} />
               </div>
             </Accordion>
@@ -1088,7 +1098,7 @@ export default function BoxInspector({ section = false, sectionPlace, node, them
                     const name = `${y === "start" ? "Top" : y === "end" ? "Bottom" : "Middle"} ${x === "start" ? "left" : x === "end" ? "right" : "centre"}`;
                     return (
                       <button key={`${y}-${x}`} aria-label={name} title={name} aria-pressed={on}
-                        onClick={() => onPatch(on ? { placeX: undefined, placeY: undefined } : { placeX: x, placeY: y })}
+                        onClick={() => onPatch(on ? { placeX: undefined, placeY: undefined } : { placeX: x, placeY: y, justifySelf: undefined })}
                         className={`grid h-6 w-6 place-items-center rounded-md transition-colors ${on ? "bg-brand text-brand-fg" : "text-muted hover:bg-brand/10 hover:text-brand"}`}>
                         <span className="block h-2 w-2 rounded-sm bg-current" />
                       </button>
@@ -1117,7 +1127,7 @@ export default function BoxInspector({ section = false, sectionPlace, node, them
             {/* Typing a height (or clearing it) also clears any shrink a DRAG applied: the scale exists only to make
                 content fit a box you dragged smaller than it, so a height set by hand starts from full-size text
                 again. Without this the text stayed small with no visible reason once the height was cleared. */}
-            <CompactField label="Height" ariaLabel="Height" value={node.height ?? ""} onChange={(v) => onPatch({ height: v || undefined, contentScale: undefined })} placeholder="auto, 300px or 40vh" />
+            <CompactField label="Height" ariaLabel="Height" value={node.height ?? ""} onChange={(v) => onPatch({ height: typedLength(v) || undefined, contentScale: undefined })} placeholder="auto, 18rem or 40vh" />
             {node.contentScale != null && node.contentScale < 1 && (
               <div className="flex items-center justify-between gap-2 rounded-lg bg-surface-2 px-2 py-1.5">
                 <span className="text-[0.6875rem] text-muted">
@@ -1392,7 +1402,7 @@ export default function BoxInspector({ section = false, sectionPlace, node, them
                     {hasIntrinsicSize(node) && (
                       <>
                         <label className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300">
-                          <input type="checkbox" checked={!sizeToCSS(node.height)} onChange={(e) => onPatch({ height: e.target.checked ? "auto" : "260px" })} />
+                          <input type="checkbox" checked={!sizeToCSS(node.height)} onChange={(e) => onPatch({ height: e.target.checked ? "auto" : remLen(260) })} />
                           Show the whole picture (don&apos;t crop it)
                         </label>
                         <p className="text-[0.6875rem] text-gray-500 dark:text-gray-400">
@@ -1844,7 +1854,7 @@ export default function BoxInspector({ section = false, sectionPlace, node, them
       {/* ─────────────── PER-DEVICE ─────────────── */}
       {tab === "device" && (
         <div className="space-y-3">
-          <p className="text-[0.6875rem] text-gray-400 flex items-start gap-1.5"><MonitorSmartphone className="w-3.5 h-3.5 mt-0.5 shrink-0" /> {breakpoint === "base" ? "Switch the screen-size buttons at the top to Tablet or Mobile to fine-tune those sizes. Text and content stay the same everywhere." : `You're editing ${bpLabel}. Size, spacing and layout you change now only apply here.`}</p>
+          <p className="text-[0.6875rem] text-gray-400 flex items-start gap-1.5"><MonitorSmartphone className="w-3.5 h-3.5 mt-0.5 shrink-0" /> {breakpoint === "base" ? "Switch the screen-size buttons at the top to Tablet or Mobile to fine-tune those sizes. Text and content stay the same everywhere." : `You're editing ${bpLabel}. Size, spacing and layout you change now only apply here — except a control marked “every screen”.`}</p>
           <label className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300"><input type="checkbox" checked={!!node.hidden} onChange={(e) => onPatch({ hidden: e.target.checked || undefined })} /> Hidden {breakpoint === "base" ? "everywhere" : `on ${bpLabel.toLowerCase()}`}</label>
         </div>
       )}
