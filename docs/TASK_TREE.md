@@ -91,7 +91,7 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
   OBSERVED, NOT A DEFECT (for the user): stacked cards sit ≈ 35px apart on a phone (the section space above and below)
   against 12px side by side; an Image dropped as a "logo" arrives large (no Logo block yet — L-6 / the catalogue)
 
-- `[ ]` **BATCH R-4 · CSS grid, flexbox and box alignment from MDN, every property — mirrored in the builder** ← NEXT (area:
+- `[>]` **BATCH R-4 · CSS grid, flexbox and box alignment from MDN, every property — mirrored in the builder** — OPENED 2026-10-04 by the user's "go" (session 87422eae) (area:
   layout research · 3 changes, QUEUED 2026-10-04 by the user mid-G-1: "study everything in its entirety… so a user can
   position any component, any text, wherever they want on the grid… with the margin and padding"; runs right after G-1
   closes — one job at a time, RULE RS). The user's links, each read COMPLETELY with every on-topic link inside (RULE R):
@@ -106,6 +106,61 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
     or a GAP; working examples per value proven in a browser; combinations with the page grid, margin and padding
   - `[ ]` (3) THE "ENOUGH" CHECKLIST for the user to sign, and the build batches it implies (RULE UI: a person can place
     any block anywhere on the grid with these, in plain words, as live previews)
+  - `[x]` READER 6 · the builder today (`css-layout/06-builder-today.md`, read from the code at `2f56caa`): of 46 grid / flex /
+    alignment properties 7 fully reachable (15%) · 26 partly (57%) · 13 not at all (28%) — areas, auto-fit tracks, subgrid,
+    dense, aspect-ratio, min / max width, align-content, translate, end / negative lines, grow ratios, reverse directions
+  - `[x]` READER 4 · flexbox (`css-layout/04-flexbox.md`): 20 MDN pages read fully (both user links, the module, every guide,
+    every flex property incl. the new `flex-line-count`, `min-width: auto`); `display` read for its flex values only (grid /
+    table values are other readers'). Traps for the builder: the automatic minimum size (`min-width: 0`), the `flex`
+    shorthand's defaults, greedy wrapping, visual order ≠ reading order, `safe` alignment. Four checks against the builder
+    carried to the map (min-width:0 on fills · wrap by basis or floor · start/end vs flex-start for RTL · `wrap balance`)
+    - `[ ]` COMPLETENESS (RULE R): MDN's external on-topic links from the flexbox pages (CSS-Tricks guide, Flexbox Froggy, the
+      accessibility articles MDN cites) — listed, NOT read yet
+  - `[x]` READER 2 · grid guides (`css-layout/02-grid-guides.md`): 14 guide pages read fully from MDN's own source (mdn/content):
+    landing, basic concepts, relationship, line-based placement, template areas, named lines, auto-placement, aligning items,
+    box alignment in grid, logical values / writing modes, accessibility, common layouts, subgrid, grid lanes (MDN's new name
+    for masonry, experimental, Safari 26.4 only); plus fr / repeat() / minmax() / fit-content(), 10 glossary entries, the media
+    objects cookbook, support data. The Learn "CSS grid layout" module: prose read, examples skimmed (they repeat the guides).
+    New beyond what was stored: abspos items in a grid, `display: contents` dropping semantics, anonymous items, `order` and
+    auto-placement, auto-fill / auto-fit validity, subgrid rules, RTL, grid lanes; 45 goals → CSS; 18 traps for a generator
+    - `[ ]` COMPLETENESS (RULE R): the Learn grid module's examples (skimmed) and MDN's external links from the guides — listed, not read
+  - `[x]` READER 1 · box alignment (`css-layout/01-box-alignment.md`): 32 MDN pages (31 fully) + 7 browser-compat files: all 12
+    justify / align / place × content / items / self + gap / row-gap / column-gap, the module and its 5 guides, the flex and
+    grid alignment guides, 5 value types, 5 glossary entries, CSS Gaps and its guide. Two summaries were re-fetched as quotes
+    only after the summariser invented content; `<content-distribution>` code samples left out (looked invented). Found:
+    MDN's block-layout guide is out of date — `align-content: center` centres a plain block (all browsers since Apr 2024);
+    `justify-*` ignored in flex (auto margins); `-content` often has nothing to distribute; `safe center`; % gaps; `start` /
+    `end` for RTL. Not followed, off-topic (listed): anchor-center, gap decorations (`rule-*`), vertical-align, scroll-snap-align
+  - `[x]` READER 3 · grid properties (`css-layout/03-grid-properties.md`): 26 of 27 MDN pages fully — `grid` (the user's link),
+    grid-template(-columns / -rows / -areas), grid-auto-(columns / rows / flow), grid-area / -row / -column + the four start / end
+    longhands, repeat() / minmax() / fit-content() / fr, and the subgrid · grid lanes · named lines · auto-placement ·
+    line-based placement guides; `display` for its grid values only. Masonry_layout → 404 (renamed "grid lanes", read).
+    Two rules taken from the spec and marked so (start after end swaps; two spans ignore the end). Includes a data model a
+    builder must store + 8 validity rules. Traps: `1fr` = `minmax(auto,1fr)`; shorthands reset silently; negative lines
+    reach only the explicit grid; a bad areas template is dropped whole; visual ≠ reading order; subgrid Baseline since 2023
+  - `[x]` READER 5 · the CSS index, layout half (`css-layout/05-css-index-layout.md`): 71 MDN URLs (69 fully); all 68 modules
+    marked layout yes / no; 24 layout modules beyond grid / flex / alignment (display, positioned layout, box model, sizing,
+    logical, writing modes, overflow, containment / container queries, multi-column, floats, shapes, anchor positioning,
+    transforms, object-fit, scroll snap, sticky, viewport, gap decorations…), each with what the repo already stores. Ranks
+    every way to place a box (flow + margin / padding / gap → flex → grid placement → relative nudge → absolute → sticky →
+    fixed → anchor → transform → float) with its reflow / reading-order / large-text cost; conclusion: free x / y dragging
+    should become a grid cell + an offset, never page coordinates. 6 summariser mistakes corrected in its section 6.
+    NOT STORED before: fragmentation / paged media, env() safe areas, scroll anchoring, overscroll (memory only)
+    - `[ ]` COMPLETENESS (RULE R): the user's `/Web/CSS` page and `/Web/CSS/Reference` — their A–Z property index was cut off
+      by the fetcher (headings and guide lists read); 12 linked sub-guides listed and not read (Logical basic concepts and
+      sizing, Shapes from images / generator, writing-mode systems, vertical controls, scroll-snap events, scroll anchoring,
+      object-view-box, env(), media-query sub-pages, Learn overflow, coordinate systems)
+  - LEDGER R-4 (found by READING the code — each is MEASURED in a browser before it is fixed, RULE V; the fixes go in the build
+    batch that follows R-4 unless the user says otherwise):
+    - `[ ]` R4-1 · per-screen Advanced CSS stored for one screen is dropped from the published page (box-export.ts:482, 499–500)
+      while the canvas shows it (BoxCanvas.tsx:3137); on wider screens generated styles beat it on the page but not the canvas
+    - `[ ]` R4-2 · two controls write `justify-self`: the cell's "Line up (across)" (BoxInspector:1063) is silently overridden
+      by the nine-square "Where this block sits" (1085; applied last, box-model:5530)
+    - `[ ]` R4-3 · "Position in row", "Content width", re-cutting columns, "Floating" and front / back order change EVERY screen
+      while Phone is selected (box-model:2762, 2781; page.tsx 666 / 671 / 674) — the Per-device tab says the opposite
+    - `[ ]` R4-4 · the container's "Line up (across)" sets `align-items`, which in a row or a grid lines blocks up DOWN — wrong label
+    - `[ ]` R4-5 · stored pixels reach the published page (rule 16): unticking "Show the whole picture" writes 260px; the Width /
+      Height fields accept px; a floating block's min-height is emitted in px
 
 - `[x]` **BATCH S-1 · Spacing — the engine and the inspector** — CLOSED 2026-09-30 (final HEADED UAT on build u8hfywi0, 4 themes, 124 checks each, 0 findings; gate: vitest 3,794 · eslint 0 · test:fast 640) (area: spacing · 6 changes) — tree 1.1.1 → SPACE BY DEFAULT
   - changes: (1) section gutter + section space · (2) header/footer bar 1rem · (3) coloured/bordered box 1.5rem, plain box 0
@@ -1996,7 +2051,7 @@ sent), and my research. Nothing on the layout is done until every line here is c
     falls back into the flow unless placed at that rung; the page audit and Page check warn when it covers words;
     shown as drag on the canvas with the half-lines drawn, a Position panel (start / end, column / row, spill above /
     below) and a gallery of ready-made placements (RULE S / UI). Joins AC-10, ST-5, AC-35 — one build
-    - `[>]` AC-37b ← YOU ARE HERE (next leaf: BATCH R-4 · the user's MDN grid / flexbox / alignment research (queued by the user mid-G-1, "so then we can discuss"), then G-2. G-1 CLOSED 2026-10-04 (see BATCHES). Plan APPROVED 2026-10-04 with the user's decisions below. Earlier: research R-3 DONE and SIGNED 2026-10-04
+    - `[>]` AC-37b ← YOU ARE HERE (next leaf: BATCH R-4 · READING DONE 2026-10-04 (six readers, `docs/web-anatomy/css-layout/01`–`06`) → next: the open completeness lines, then THE MAP (every property × value → builder today / gap), examples proven in a browser, the enough checklist to sign; then G-2. G-1 CLOSED 2026-10-04 (see BATCHES). Plan APPROVED 2026-10-04 with the user's decisions below. Earlier: research R-3 DONE and SIGNED 2026-10-04
       (`ff5c53a`, `4418202`); build to every decision recorded under R-3 below; the mockups settle the open three (row
       snap · the phone gap 11 vs 16 px · panel per site or per page) → the user's approval → build) · **THE PAGE GRID — DECIDED by the user 2026-10-03: done RIGHT AFTER L-4 closes, BEFORE L-5, L-6 and the
       frozen list's placement items** (they are built on it). NAMES (decided): "page grid" in code and docs; the lines a
@@ -2809,6 +2864,44 @@ sent), and my research. Nothing on the layout is done until every line here is c
 
 One entry per session, newest first. Written the moment the user says "new session" (or the context is about to run
 out) — where the session STARTED FROM, where it GOT TO, and where the next one CONTINUES FROM.
+
+### 2026-10-04 · session 87422eae · branch `builder/layout-uat` — HANDOVER (the user asked "should we not do this in a new session?"; recommended once both held: the context is genuinely long — the plan with the user's decisions, all of G-1 with ~10 six-window headed passes and 17 ledger lines, and R-4's six readers — and the boundary is clean: G-1 committed `2f56caa`, R-4's reading stored and committed, the map is the heavy job next)
+- **Started from:** session e9d19b5c's handover — AC-37b, the plan artifact with mockups.
+- **Got to:** (1) **the PLAN** published and **APPROVED** with the user's decisions (https://claude.ai/artifact/Q5rAsZNSJJBXrnBTJf9zBN,
+  source `docs/web-anatomy/page-grid/plan/page-grid-plan.html`): edge to edge (no fixed side margins — the side space is the
+  row's padding), rows follow content, every block keeps default margin + padding, phone gap tested → 0.75rem, side ≈ 1rem,
+  one grid per site, Alt = free / Shift = half-lines, free placement must never break the page, readable width on. (2) **BATCH
+  G-1 CLOSED** (`2f56caa`): page-grid pages, new defaults, the row owns the side space, the fit rule as decided (EQUAL lines on
+  every rung incl. the phone, words at their real fluid size + padding, the page's side space counted), drops beside the last
+  column, RTL fixed, `lib/page-grid.ts`, site / page settings. HEADED six windows × 70 screens CLEAN; gate green (vitest 4,174 ·
+  test:fast 806). (3) **THE USER'S RULE** (CLAUDE.md RULE Z + memory): every UAT checks the Preview at EVERY device and
+  breakpoint from `scripts/uat/screens.js` (70 screens), guarded by `uat-screens.test.ts`. (4) **BATCH R-4 OPEN, READING DONE**:
+  six readers stored `docs/web-anatomy/css-layout/01`–`06` (box alignment · grid guides · grid properties · flexbox · the CSS
+  index layout half · the builder today: 15% fully reachable, 57% partly, 28% not at all). Ledger R4-1…R4-5 (bugs found by
+  READING the code — measure each before fixing) and four completeness lines are OPEN.
+- **Continue from:** **BATCH R-4 (YOU ARE HERE)** → close the open completeness lines → THE MAP → examples proven → the
+  "enough" checklist for the user to sign → then the build batches it implies, and G-2.
+- **Next prompt (paste to start):** "Branch `builder/layout-uat` (last commit: this handover). Read CLAUDE.md, then
+  `docs/TASK_TREE.md`: this SESSION LOG entry, then YOU ARE HERE — **AC-37b**, and **BATCH R-4** in BATCHES (its readers, its
+  completeness lines, its ledger R4-1…R4-5). Then read `docs/web-anatomy/css-layout/06-builder-today.md` first (what the builder
+  does today), then 01 · 03 · 04 · 02 · 05 (skim their completeness tables and trap lists). The user's question behind R-4: "a
+  user should be able to position any component, any text, any information, wherever they want on the grid… with the margin
+  and padding — study it so we can discuss and then mirror it". DO, IN ORDER: (1) RULE K — nothing on 3100 / 3200 / 3400;
+  (2) the OPEN COMPLETENESS LINES (RULE R): MDN's `/Web/CSS` + `/Web/CSS/Reference` A–Z property index (cut off by the fetcher —
+  fetch it in parts or from github.com/mdn/content), the 12 listed sub-guides of 05, the Learn grid module's examples, and the
+  external on-topic links the flexbox / grid pages cite (CSS-Tricks guide etc.) — read, store, tick; (3) THE MAP (RULE MAP,
+  `css-layout/07-map.md`): every grid / flex / alignment / positioning property × value → builder today (06) → GAP or HAVE, with
+  CORE / LATER / AVOID and the reason (reflow, reading order, AF phones), and how each is offered to a person in plain words
+  (RULE UI, live previews); (4) an EXAMPLE per CORE value (`css-layout/examples/`) and a COMBINATION proof in six headed windows
+  across `scripts/uat/screens.js`; (5) the "enough" checklist in the tree for the USER TO SIGN, with the build batches it implies
+  (≤ 6 changes each) — R4-1…R4-5 measured and fixed in the first of them unless the user says otherwise; (6) then G-2 (layout
+  guides + grid panel). STANDING DECISIONS: everything in AC-37b's R-3 leaf and the plan's decisions (edge to edge; fit rule =
+  equal lines on every rung; Alt free / Shift half-lines; free placement never breaks the page; one grid per site). NOT DONE: G-2
+  … G-6; the published artifacts (Builder Hub, Layout System, Parity Audit) before the PR; L-5 · L-6 · E-1 · S-3 · D-1 queued.
+  TRAPS: heredocs / sed / `node -e` eat backslashes → use the Edit tool for anything with `\`; node reads `/tmp` as `C:\tmp`
+  (use the scratchpad path); files are CRLF — normalise before multi-line replaces and CHECK the edit applied; a 'killed'
+  server notice is not proof — check the port; the WebFetch summariser invents examples — re-fetch as quotes or read mdn/content
+  source; vitest and Playwright never together; read the full-page pictures, not only the numbers."
 
 ### 2026-10-03 → 04 · session e9d19b5c · branch `builder/layout-uat` — HANDOVER (the user asked "new session or continue?"; recommended: the context is genuinely long — the whole R-3 research area, hundreds of steps and >1,000 pictures read through agents — and the boundary is clean: research signed and committed, the plan with mockups next)
 - **Started from:** session a51af34e's handover — AC-37b, a new area: ask for sources, research, sign, plan.
