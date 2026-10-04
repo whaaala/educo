@@ -60,11 +60,24 @@ test.describe("the canvas lays the page out as the Preview does", () => {
       await seedSite(page, JSON.parse(readFileSync(join(__dirname, "fixtures", "faq-accordion.site.json"), "utf8")));
       await page.waitForSelector("details", { timeout: 15000 });
       await page.locator(`button[title="${device}"]`).first().click(); await page.waitForTimeout(600);
-      const open = (doc: Page | import("@playwright/test").Frame) => doc.evaluate(() => {
-        const d = document.querySelector<HTMLElement>("details[open]")!, acc = d.closest<HTMLElement>(".eu-accordion")!;
-        const Z = Number(d.closest<HTMLElement>("[data-canvas-scale]")?.dataset.canvasScale) || 1;
-        return { h: Math.round(d.getBoundingClientRect().height / Z), w: Math.round(acc.getBoundingClientRect().width / Z) };
-      });
+      // IN ITS OWN TYPEFACE, not after a fixed wait (G3b-7a). The Preview draws in the fallback font first, then fetches the
+      // school's (`embedFontCss`) and redraws — under the gate's load that fetch was slow, the spec measured the fallback (532px
+      // against the canvas's DM Sans 546), and it failed 4 of 10 runs on the last commit's engine. Measured: with its font in,
+      // the Preview draws 546 too. So: the Accordion's own family loaded in THIS document, then the same reading for a second.
+      const open = async (doc: Page | import("@playwright/test").Frame) => {
+        const read = () => doc.evaluate(async () => {
+          await document.fonts.ready;
+          const d = document.querySelector<HTMLElement>("details[open]")!, acc = d.closest<HTMLElement>(".eu-accordion")!;
+          const Z = Number(d.closest<HTMLElement>("[data-canvas-scale]")?.dataset.canvasScale) || 1;
+          const fam = getComputedStyle(acc).fontFamily.split(",")[0].replace(/["']/g, "").trim();
+          const font = [...document.fonts].some((f) => f.family.replace(/["']/g, "") === fam && f.status === "loaded");
+          return { h: Math.round(d.getBoundingClientRect().height / Z), w: Math.round(acc.getBoundingClientRect().width / Z), font, fam };
+        });
+        let last = await read(), same = 0;
+        for (let i = 0; i < 100 && !(last.font && same >= 5); i++) { await new Promise((r) => setTimeout(r, 200)); const now = await read(); same = now.h === last.h && now.w === last.w ? same + 1 : 0; last = now; }
+        expect(last.font, `${last.fam} never loaded here — the comparison would be against the fallback font`).toBe(true);
+        return last;
+      };
       const c = await open(page);
       await page.getByRole("button", { name: "Preview", exact: true }).first().click();
       await page.waitForSelector('iframe[title="Site preview"]', { timeout: 15000 }); await page.waitForTimeout(800);

@@ -191,3 +191,40 @@ Feature: The page grid (AC-37b)
     Then every block moves to the nearest whole column and I am told how many moved
     And a block I placed free with Alt stays where it is
     And one Undo puts them all back
+
+  # ── G-3b · the page as a real CSS grid ────────────────────────────────────────────────────────────
+
+  Scenario Outline: A row of the page sits ON the page grid's lines
+    Given a row of <blocks> on a page-grid page and the layout guides on
+    When I look at it on <screen>
+    Then the space between every two blocks is centred on a drawn line
+    And the first block's side space lies inside the first column and the last block's inside the last
+    And the canvas and the Preview put every block in the same place
+
+    Examples:
+      | blocks                  | screen  |
+      | two halves              | Desktop |
+      | three thirds            | Laptop  |
+      | four quarters           | Tablet  |
+      | 5 of 12 and 7 of 12     | Mobile  |
+      | five equal cards        | Wide    |
+
+  Scenario: Five equal cards stay equal
+    Given five cards side by side on a 12-column page
+    Then all five are the same width, to the pixel
+
+  Scenario: A snapped edge lands on the line
+    Given two blocks side by side on a page-grid page at Desktop
+    When I drag the edge between them to the fifth line
+    Then the space between them is centred on the fifth drawn line
+
+  Scenario: A row that does not fit steps down to equal lines, whatever it holds
+    Given a row of a picture and a block of words, side by side
+    When the screen is too narrow for the words beside the picture
+    Then the row steps to one a line, and no word is broken and nothing scrolls sideways
+    And each block that starts a line keeps the side space at the page edge
+
+  Scenario: A page saved before the page grid is published exactly as before
+    Given a page saved before the page grid
+    When I publish it
+    Then its HTML is byte for byte what it was

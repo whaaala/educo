@@ -9,7 +9,7 @@
  */
 
 import { measureCss } from "@/lib/educo-ui/base";
-import { columnFloorRem, dividerThickness, gridLeftoverAt,HAND_FLOOR_REM, LIST_ITEM_GAP, restForDrag, tabletPlaces } from "@/lib/box-model";
+import { columnFloorRem, dividerThickness, gridLeftoverAt,HAND_FLOOR_REM, isPageRow, LIST_ITEM_GAP, pageRowSlot, restForDrag, tabletPlaces }from "@/lib/box-model";
 import { resolvePage } from "@/lib/semantics";
 import { Fragment, useEffect, useLayoutEffect, useMemo, useReducer, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { createPortal } from "react-dom";
@@ -2111,12 +2111,16 @@ export default function BoxCanvas({
      * slot here — its box plus half a gap each side — and all the line maths below works on the same widths the % means.
      * The band reaches half a gap out on each side, so half its (negative) margin is exactly that half gap.
      */
+    // A ROW OF THE PAGE (G-3b) is a grid the page's width with no reach: its half gap is read off the gutter itself.
+    const pageRowBand = (() => { const band = findParent(root, id)?.parent; return band && isPageRow(band) && (root.children ?? []).some((c) => c.id === band.id) ? band : null; })();
     const HG = (() => {
       const band = findParent(root, id)?.parent;
       if (!pEl || !band?.rowBand || (band.direction ?? "column") !== "row") return 0;
+      if (pageRowBand) return ((parseFloat(getComputedStyle(pEl).getPropertyValue("--bx-gut")) || 0) / 2) * zoomOf(el);
       return Math.max(0, -(parseFloat(getComputedStyle(pEl).marginLeft) || 0)) * zoomOf(el);
     })();
-    const startX = e.clientX, startY = e.clientY, W0 = rect.width + 2 * HG, H0 = rect.height;
+    const startX = e.clientX, startY = e.clientY, H0 = rect.height;
+    let W0 = rect.width + 2 * HG;
     const dragStamp = Date.now(); // when this drag squeezed a block — see `restAt`
     const ownMinPx = minContentPx(el) + 2 * HG; // its content's own minimum (#68), as a slot
 
@@ -2224,7 +2228,17 @@ export default function BoxCanvas({
     // Measured edges (relative to the parent content box) + the fixed FLOW origin (the section's position
     // from previous siblings, independent of its margin). Every drag is clamped to [flow origin … page
     // edge] so a section can NEVER be dragged off the page, while the opposite edge stays anchored.
-    const startLeftPx = rect.left - HG - contentLeftPx, startRightPx = rect.right + HG - contentLeftPx;
+    /**
+     * …ON A ROW OF THE PAGE (G-3b) a block's slot is its GRID AREA: every block of a line gives up the same share of the line's
+     * side space and gaps (`pageRowSlot`, the user's "equal cards"), so the space between its box and its area is the engine's
+     * number for it, not half a gap.
+     */
+    const slotSide = (e2: HTMLElement, side: "left" | "right") => {
+      const slot = pageRowBand && e2.dataset.boxId ? pageRowSlot(pageRowBand, e2.dataset.boxId, breakpoint) : null;
+      return slot ? (slot[side] * boxU) / 10 : HG;
+    };
+    const startLeftPx = rect.left - slotSide(el, "left") - contentLeftPx, startRightPx = rect.right + slotSide(el, "right") - contentLeftPx;
+    if (pageRowBand) W0 = startRightPx - startLeftPx;
     const startTopPx = rect.top - contentTopPx, startBotPx = rect.bottom - contentTopPx;
     const flowX = startLeftPx - ML0px, flowY = startTopPx - MT0px;
     // RULE G/O — a component (or button) must never be CROPPED by a resize. Down to the size its own content
@@ -2389,7 +2403,7 @@ export default function BoxCanvas({
           const min = minContentPx(m.e2) + 2 * HG, cur = Math.max(min, storedPx(m.c, m.r2));
           // Its remembered rest only if THIS block's drag made it (#77) — to anyone else's drag it is the width it holds.
           const own = restForDrag({ rest: m.c.restWidth ? Math.max(min, restPx(m.c, m.r2)) : undefined, at: m.c.restAt, restBy: m.c.restBy }, cur, id);
-          return { floorPx: places?.has(m.c.id) ? storedPx(m.c, m.r2) : floorPxOf(m.c), id: m.c.id, w: own.rest, cur, ml: Math.max(0, (parseFloat(getComputedStyle(m.e2).marginLeft) || 0) * Z - HG), at: own.at, foreign: own.foreign, wrapBy: m.c.wrapBy, min };
+          return { floorPx: places?.has(m.c.id) ? storedPx(m.c, m.r2) : floorPxOf(m.c), id: m.c.id, w: own.rest, cur, ml: Math.max(0, (parseFloat(getComputedStyle(m.e2).marginLeft) || 0) * Z - slotSide(m.e2, "left")), at: own.at, foreign: own.foreign, wrapBy: m.c.wrapBy, min };
         });
       const nx = at >= 0 ? measure(kids[at + 1]) : null;
       if (nx && lines[at + 1] === lines[at]) {

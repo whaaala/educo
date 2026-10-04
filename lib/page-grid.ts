@@ -24,6 +24,7 @@ export const PAGE_GRID_DEFAULT = { columns: 12, rowStepRem: 1.5 } as const;
 /** What the panel allows (plan, 2026-10-04). */
 export const PAGE_GRID_LIMITS = { columns: [4, 24], phoneColumns: [2, 12], rowStepRem: [0.5, 3], sideSpace: [0, 96], blockGap: [0, 64] } as const;
 
+const RUNGS: Breakpoint[] = ["phone", "tabletPortrait", "tabletLandscape", "base", "wide"];
 const clamp = (n: number, [lo, hi]: readonly [number, number]) => Math.min(hi, Math.max(lo, Math.round(n)));
 
 /** The grid in force on a page: its own when it has one, else the site's, else the default. */
@@ -69,12 +70,32 @@ export function gridSpaceOf(grid: PageGridSettings): GridSpace | undefined {
   const out: GridSpace = {};
   if (grid.sideSpace !== undefined) out.gutter = clamp(grid.sideSpace, PAGE_GRID_LIMITS.sideSpace);
   if (grid.blockGap !== undefined) out.gap = clamp(grid.blockGap, PAGE_GRID_LIMITS.blockGap);
+  // the rows of the page are drawn on these columns (G-3b), so the page carries them — only when they are not the default
+  if (RUNGS.some((bp) => columnsAt(grid, bp) !== columnsAt(PAGE_GRID_DEFAULT, bp))) out.cols = Object.fromEntries(RUNGS.map((bp) => [bp, columnsAt(grid, bp)]));
   return Object.keys(out).length ? out : undefined;
 }
 
 /** THE page grid's column template — the one the guides draw now and G-3 emits, so the two can never disagree. */
 export function gridTemplate(cols: number): string {
   return `repeat(${cols}, minmax(0, 1fr))`;
+}
+
+const gcd = (a: number, b: number): number => (b ? gcd(b, a % b) : a);
+const lcm = (a: number, b: number) => (a / gcd(a, b)) * b;
+
+/**
+ * THE TRACKS A ROW OF THE PAGE IS DRAWN ON (G-3b (1), D5). The template has no gap (the guides draw none: the space between
+ * blocks is their own half-gap margins, centred on a line), so the page's columns can be split evenly into any number of
+ * tracks without moving a single line. The count is the SAME on every screen — the lines of every screen's column count
+ * (`cols`), times the fewest splits that put every block edge (`edges`, shares 0–1 of the line) on a track and let every
+ * line of `across` equal blocks share it: 4½ of 12 is 9 of 24, five equal cards are 12 of 60 each. One count on every screen
+ * is what lets the fit rule's container queries write a span without knowing which screen they are on.
+ */
+export function rowTrackCount(cols: number[], edges: number[], across: number[] = []): number {
+  const base = Math.min(240, [...cols, ...across].filter((n) => n > 0).reduce(lcm, 1));
+  const on = (t: number) => edges.every((e) => Math.abs(e * t - Math.round(e * t)) <= t * 0.0002);
+  for (let n = 1; n <= 12; n++) if (on(base * n)) return base * n;
+  return base * 12; // ponytail: an edge between every split (a width dragged free with Alt) is drawn on the nearest 1/12 column
 }
 
 /** How many whole columns a block MEASURED `width` wide covers, columns being `column` wide (what a person sees). */

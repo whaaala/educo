@@ -53,6 +53,17 @@ const rowOf = (page: Page, id: string) => page.evaluate((id): Row => {
   // narrower than its share, so a column is measured with half a gap either side — what its stored % describes, and
   // what the canvas resize measures. A band saved without a gutter has hg = 0 and reads exactly as before.
   const hg = Math.max(0, -(parseFloat(cs.marginLeft) || 0));
+  // A ROW OF THE PAGE IS A GRID (G-3b): no reach; a column's slot is its GRID AREA — its box plus its own margins, which
+  // are its share of the line's side space and gaps (`pageRowSides`). The gap is what lies between two boxes.
+  if (cs.display === "grid") {
+    const m = (k: HTMLElement) => { const c = getComputedStyle(k); return [parseFloat(c.marginLeft) || 0, parseFloat(c.marginRight) || 0]; };
+    return {
+      inner: Math.round(rr.width - padL - padR),
+      // a gap dragged open before a block rides in its left margin as a `%` of its area (`calc(20% + …)`): the share starts after it
+      kids: kids.map((k) => { const r = k.getBoundingClientRect(), [ml, mr] = m(k), area = r.width + ml + mr, gapPx = (parseFloat(/(-?[\d.]+)%/.exec(k.style.marginLeft)?.[1] ?? "0") / 100) * area; return { id: k.getAttribute("data-box-id")!, l: Math.round(r.left - ml + gapPx - rr.left - padL), t: Math.round(r.top - rr.top), w: Math.round(area - gapPx) }; }),
+      gap: kids.length > 1 ? m(kids[0])[1] + m(kids[1])[0] : 0,
+    };
+  }
   return {
     inner: Math.round(rr.width - padL - padR),
     kids: kids.map((k) => { const r = k.getBoundingClientRect(); return { id: k.getAttribute("data-box-id")!, l: Math.round(r.left - hg - rr.left - padL), t: Math.round(r.top - rr.top), w: Math.round(r.width + 2 * hg) }; }),

@@ -20,6 +20,7 @@ import { PAGE_Z, clampPageZ } from "@/lib/educo-ui/stacking";
 import { remLen, SHADOW_SCALE } from "@/lib/educo-ui/tokens";
 import { contrastRatio, hexToRgb, oklchToRgb, rgbToHex, rgbToOklch } from "@/lib/educo-ui/color";
 import { colorToCSS } from "@/components/shared/ColorPalettePicker";
+import { PAGE_GRID_DEFAULT, columnsAt, gridTemplate, rowTrackCount } from "@/lib/page-grid";
 
 export type BoxType = "container" | "text" | "heading" | "button" | "link" | "image" | "video" | "icon" | "divider" | "list" | "embed" | "spacer" | "component";
 
@@ -362,6 +363,7 @@ export interface BoxNode {
   spaced?: boolean;         // made under SPACE BY DEFAULT (2026-09-30): unset spacing reads `spaceDefaults`; saved pages lack it and keep theirs
   pageGrid?: boolean;       // page root only: laid out on the PAGE GRID (AC-37b, 2026-10-04) — every page made from now; saved pages lack it
   onPageGrid?: boolean;     // a block of a page-grid page (`markPageGrid`): its unset spacing reads `SPACE_GRID`
+  pageRow?: boolean;        // a row band straight on a page-grid page (`markPageGrid`): drawn as a CSS grid on the page's lines (G-3b, `isPageRow`)
   freeWidth?: boolean;      // its width was set FREE (Alt-drag, G-3 (2)): "Line up with the grid" leaves it alone
   gridSpace?: GridSpace;    // the site's / page's own side space and gap (G-2), on the page root and every block `markPageGrid` marks
   rowBand?: boolean;        // structural ROW band: a direct child of the page root that lays its sections out side-by-side (the page is a vertical stack of these)
@@ -3509,7 +3511,8 @@ export function rowNarrowsAt(band: BoxNode, onPage = false): { ids: string[]; st
   const out: { ids: string[]; steps: { lines: number[]; below: number }[] }[] = [];
   for (let line = 0; line <= (lines.at(-1) ?? -1); line++) {
     const cols = kids.filter((_, i) => lines[i] === line); const n = cols.length;
-    if (n < 2 || cols.filter(holdsWords).length < 2) continue;
+    // a row of the page is a grid, which never wraps a block that is too narrow: every line of it steps (G-3b (4))
+    if (n < 2 || (!(onPage && isPageRow(band)) && cols.filter(holdsWords).length < 2)) continue;
     const floorOf = (k: BoxNode) => { if (!gridRow || !isContainer(k) || k.clip || isEmptyBox(k)) return 0; const f = columnFloorRem(band, k, "base"); return f === HAND_FLOOR_REM ? 0 : f; };
     const words = cols.map((k) => Math.max(longestWordRem(k), floorOf(k))); const word = Math.max(...words); if (!word) continue;
     const share = (k: BoxNode) => (widthPct(k.width) || 100 / n) / 100;
@@ -3559,9 +3562,24 @@ export function rowNarrowsAt(band: BoxNode, onPage = false): { ids: string[]; st
 export function rowQueryCss(band: BoxNode, cellScope: (id: string) => string, aboveThePhone: (css: string) => string, onPage = false): string {
   const lines = rowNarrowsAt(band, onPage); if (!lines) return "";
   const gut = gapOf(band).x;
+  // a row of the page (G-3b): the same tracks on every screen, so a step is a span — and every block of a new line takes its
+  // share of that line's side space and gaps (`pageRowSides`)
+  const T = onPage && isPageRow(band) ? pageRowTracks(band) : 0;
+  const byId = new Map((band.children ?? []).map((k) => [k.id, k]));
   let css = "";
   for (const { ids, steps } of lines) for (const st of steps) {
     let i = 0; let rules = "";
+    if (T) {
+      for (const across of st.lines) {
+        ids.slice(i, i + across).forEach((id, j) => {
+          const k = byId.get(id)!;
+          rules += `${cellScope(id)}{grid-column:span ${T / across} !important;margin-left:${pageRowMargin(band, k, "left", j, across)} !important;margin-right:${pageRowMargin(band, k, "right", j, across)} !important${st.lines.length < ids.length ? ";min-width:min-content !important" : ""}}`;
+        });
+        i += across;
+      }
+      css += `@container (max-width:${st.below - 0.01}rem){${rules}}`;
+      continue;
+    }
     for (const across of st.lines) {
       // Side by side, a column is never narrower than its longest word. Stacked (one a line) it keeps its OWN minimum: the
       // phone's is `100%`, and `min-content` here overrode it — at 150% text a column grew to its word and spilled 6px out
@@ -4934,7 +4952,7 @@ export const SPACE_DEFAULT = { gutter: 32, section: 16, bar: 16, stack: 16, colu
 export const SPACE_GRID = { ...SPACE_DEFAULT, gutter: 23, columns: 17 } as const;
 
 /** A page grid's own side space (`gutter`) and gap between blocks (`gap`), set in its panel (G-2) — stored fluid units. */
-export interface GridSpace { gutter?: number; gap?: number }
+export interface GridSpace { gutter?: number; gap?: number; cols?: Partial<Record<Breakpoint, number>> } // `cols`: columns per screen, when not the default (G-3b)
 
 /** The defaults a block reads: the page grid's on a page-grid page (with the site's own side space and gap), else the
  *  ones it was made with. The ONE place both the canvas and the export read them. */
@@ -4947,7 +4965,7 @@ const spaceFor = (node: BoxNode) => {
 /** The side space a page's sections keep by default — what the layout guides draw as padding (G-2). Stored fluid units. */
 export const pageSideSpace = (root: BoxNode): number => spaceFor({ onPageGrid: !!root.pageGrid, gridSpace: root.gridSpace } as BoxNode).gutter;
 
-const sameSpace = (a?: GridSpace, b?: GridSpace) => a?.gutter === b?.gutter && a?.gap === b?.gap;
+const sameSpace = (a?: GridSpace, b?: GridSpace) => a?.gutter === b?.gutter && a?.gap === b?.gap && JSON.stringify(a?.cols) === JSON.stringify(b?.cols);
 
 /** A page-grid page with the side space and gap `space` (`undefined` = the defaults) — the root keeps it for the blocks
  *  dropped later, and every block takes it now. Returns the SAME tree when nothing changes. */
@@ -4964,16 +4982,19 @@ export function withGridSpace(root: BoxNode, space: GridSpace | undefined): BoxN
  */
 export function markPageGrid(root: BoxNode): BoxNode {
   if (!root.pageGrid) return root;
-  const mark = (n: BoxNode): BoxNode => {
-    const kids = n.children?.map(mark);
+  const mark = (n: BoxNode, onPage: boolean): BoxNode => {
+    const kids = n.children?.map((k) => mark(k, n === root));
     const changedKids = !!kids && kids.some((k, i) => k !== n.children![i]);
     const needs = n !== root && n.spaced && (!n.onPageGrid || !sameSpace(n.gridSpace, root.gridSpace));
-    if (!needs && !changedKids) return n;
+    // a row band straight on the page is drawn on the page's lines (G-3b); moved into a column, it is a flex row again
+    const row = onPage && !!n.rowBand;
+    if (!needs && !changedKids && !!n.pageRow === row) return n;
     const out: BoxNode = { ...n, ...(needs ? { onPageGrid: true } : {}), ...(changedKids ? { children: kids } : {}) };
     if (needs) { if (root.gridSpace) out.gridSpace = root.gridSpace; else delete out.gridSpace; }
+    if (row) out.pageRow = true; else delete out.pageRow;
     return out;
   };
-  return mark(root);
+  return mark(root, false);
 }
 
 /** A box someone can SEE the edge of — a background, a picture, a colour scheme or a border. A Divider's `borderWidth`
@@ -5073,7 +5094,7 @@ export function outerSpaceCSS(node: BoxNode, place: SectionPlace | false | undef
  * ponytail: a coloured section sharing a band with a component is inset with it.
  */
 export function pageBandInset(band: BoxNode, onPage: boolean): CSSProperties {
-  if (!onPage || !band.rowBand) return {};
+  if (!onPage || !band.rowBand || isPageRow(band)) return {}; // a row of the page: the side space is its blocks' (G-3b)
   // A menu line on the page is ONE section: the gutter at its ends and the section space above and below (F1-d).
   const S = spaceFor(band);
   if (gridBandOwnsGutter(band)) return { paddingLeft: u(rowSide(band, "left")), paddingRight: u(rowSide(band, "right")) };
@@ -5177,6 +5198,107 @@ export function rowSide(band: BoxNode, side: "left" | "right"): number {
   const edge = side === "left" ? kids[0] : kids[kids.length - 1];
   const own = edge && (side === "left" ? edge.marginLeft : edge.marginRight) ;
   return own ?? edge?.margin ?? spaceFor(band).gutter;
+}
+
+/**
+ * G-3b (1), D5 — A ROW OF THE PAGE IS A CSS GRID ON THE PAGE'S OWN LINES. The layout guides draw the page's columns edge to
+ * edge with no gap (the space between two blocks is centred on a line), so the row is `repeat(T, minmax(0, 1fr))` with no
+ * column gap over the page's whole width: each block spans the tracks of its share, and its margins are its part of the line's
+ * side space and gaps (`pageRowSides`). G3-8: the flex band's shares were of the row inset by its side space, 1.7–2.6px off the
+ * lines at 1280. A grid never wraps a block that is too narrow, so every narrowing is the fit rule's (`rowNarrowsAt`, every line
+ * on the page). Saved pages and rows inside a block (`pageRow` unset) keep the flex band.
+ */
+export function isPageRow(band: BoxNode | null | undefined): boolean {
+  return !!band?.pageRow && gridBandOwnsGutter(band) && (band.direction ?? "column") === "row" && !isMenuLine(band);
+}
+
+/** The page grid's columns on `bp` for a row of the page — the page's own count when the site set one (`gridSpace.cols`). */
+const pageRowCols = (band: BoxNode, bp: Breakpoint) => band.gridSpace?.cols?.[bp] ?? columnsAt(PAGE_GRID_DEFAULT, bp);
+
+/** The row's blocks on `bp`, line by line as the stored shares pack them (`packRowLines`) — a gap before a block included. */
+function rowLinesAt(band: BoxNode, bp: Breakpoint): { id: string; gapPct: number; sharePct: number; shared: boolean }[][] {
+  const kids = rowColumnsAt(band, bp).map((k) => resolveResponsive(k, bp));
+  const shared = (k: BoxNode) => !k.width?.trim().endsWith("%");
+  // a block with no share (fill / auto) takes an equal part of what the shares leave on its line, so it packs as nothing
+  const lines = packRowLines(kids.map((k) => (shared(k) ? { ...k, width: "0.001%" } : k)));
+  const out: { id: string; gapPct: number; sharePct: number; shared: boolean }[][] = [];
+  kids.forEach((k, i) => (out[lines[i]] ??= []).push({ id: k.id, gapPct: k.marginLeftPct ?? 0, sharePct: shared(k) ? 0 : widthPct(k.width), shared: shared(k) }));
+  for (const line of out) {
+    const free = line.filter((c) => c.shared); if (!free.length) continue;
+    const left = Math.max(0, 100 - line.reduce((n, c) => n + c.gapPct + c.sharePct, 0));
+    for (const c of free) c.sharePct = left / free.length;
+  }
+  return out;
+}
+
+/** How many tracks a row of the page is drawn on — the same on every screen (`rowTrackCount`). */
+export function pageRowTracks(band: BoxNode): number {
+  const cols: number[] = [], edges: number[] = [], across: number[] = [];
+  for (const bp of BP_ORDER) {
+    cols.push(pageRowCols(band, bp));
+    for (const line of rowLinesAt(band, bp)) {
+      across.push(line.length); let at = 0;
+      for (const c of line) { at += c.gapPct; edges.push(at / 100); at += c.sharePct; edges.push(Math.min(1, at / 100)); }
+    }
+  }
+  return rowTrackCount(cols, edges, across);
+}
+
+/** Where a block of a row of the page sits on `bp`: the tracks of its area (its gap before it included), that gap as a share
+ *  of the area (a `%` margin on a grid item is of its area), and its place `at` on a line `of` blocks. */
+export type PageRowCell = { span: number; gapPct: number; at: number; of: number };
+export function pageRowCells(band: BoxNode, bp: Breakpoint, T = pageRowTracks(band)): Map<string, PageRowCell> {
+  const out = new Map<string, PageRowCell>();
+  for (const line of rowLinesAt(band, bp)) {
+    let at = 0, end = 0;
+    line.forEach((c, i) => {
+      const from = end; at += c.gapPct;
+      const boxAt = Math.min(T - 1, Math.max(from, Math.round((at / 100) * T))); at += c.sharePct;
+      end = Math.min(T, Math.max(boxAt + 1, Math.round((at / 100) * T)));
+      const span = end - from;
+      out.set(c.id, { span, gapPct: +(((boxAt - from) / span) * 100).toFixed(4), at: i, of: line.length });
+    });
+  }
+  return out;
+}
+
+/**
+ * THE SPACE AROUND A BLOCK OF A ROW OF THE PAGE, in stored units, before its own margin (G3b-3, the user 2026-10-04: "equal
+ * cards" — over "exactly on the lines"). A line of `of` blocks has the side space at its two ends and one gap between every two
+ * blocks, and EVERY block on it gives up the same width of that: (left + right + (of − 1) gaps) / of. So blocks of the same share
+ * are the same width whatever the side space; two blocks' gap is always centred on their line, and in a line of three or more the
+ * gaps sit (side − ½ gap) × |1 − 2(i+1)/of| from theirs. The space between two neighbours is always exactly one gap.
+ */
+export function pageRowSides(band: BoxNode, at: number, of: number): { left: number; right: number } {
+  const L = rowSide(band, "left"), R = rowSide(band, "right"), G = bandGutter(band), d = (G - L - R) / of;
+  return { left: L + at * d, right: G - L - (at + 1) * d };
+}
+
+/** A block's margin on one side in a row of the page: its share of the line's space (`pageRowSides`) plus its own margin — except
+ *  the row's first / last block, whose own margin IS the row's side (`rowSide`). A gap dragged open before it rides on its left. */
+function pageRowMargin(band: BoxNode, child: BoxNode, side: "left" | "right", at: number, of: number, gapPct = 0): string {
+  const k = band.children ?? [];
+  const ownsSide = (side === "left" ? k[0] : k[k.length - 1])?.id === child.id;
+  const own = ownsSide ? 0 : (side === "left" ? child.marginLeft : child.marginRight) ?? child.margin ?? 0;
+  const v = +(pageRowSides(band, at, of)[side] + own).toFixed(4);
+  return `calc(${gapPct ? `${gapPct}% + ` : ""}${u(v)})`;
+}
+
+/** A block of a row of the page, placed on the grid (replaces the flex basis and the gutter margins of `gutterCSS`). */
+function pageRowCSS(s: CSSProperties, child: BoxNode, band: BoxNode, bp: Breakpoint): void {
+  const cell = pageRowCells(band, bp).get(child.id);
+  delete s.flex;
+  if (!cell) return; // floating or hidden here: not on the grid
+  s.gridColumn = `span ${cell.span}`;
+  if (s.marginLeft !== "auto") s.marginLeft = pageRowMargin(band, child, "left", cell.at, cell.of, cell.gapPct);
+  if (s.marginRight !== "auto") s.marginRight = pageRowMargin(band, child, "right", cell.at, cell.of);
+}
+
+/** The canvas's slot of a block of a row of the page: the space on each side of its box that belongs to its grid area, in stored
+ *  units (`pageRowSides`, without its own margin or a gap dragged open — those the resize reads on their own). */
+export function pageRowSlot(band: BoxNode, id: string, bp: Breakpoint): { left: number; right: number } | null {
+  const cell = pageRowCells(band, bp).get(id);
+  return cell ? pageRowSides(band, cell.at, cell.of) : null;
 }
 
 /**
@@ -5472,6 +5594,11 @@ function containerStyleOf(node: BoxNode, bp: Breakpoint = "base", section: Secti
       ...paddingCSS(node, section),
       minHeight: minH,
     };
+  }
+  // a row of the page: a grid on the page's lines (G-3b, `isPageRow`) — no column gap: the blocks' margins are it
+  if (isPageRow(node)) {
+    return { display: "grid", gridTemplateColumns: gridTemplate(pageRowTracks(node)), ...gapCSS(node), alignItems: ALIGN_CSS[node.align ?? "stretch"],
+      ...(hostsNarrowingGrid(node) ? { containerType: "inline-size" as const } : {}), ...paddingCSS(node, section), minHeight: minH };
   }
   return {
     display: "flex",
@@ -5920,7 +6047,7 @@ export function childStyle(child: BoxNode, parent: BoxNode, bp: Breakpoint = "ba
   Object.assign(s, pinCSS(child, parent, bp));
   // A line of menu items is spaced by the block it sits in (`linkLineGap`) — the only one of the two you can select.
   const lg = linkLineGap(child, parent, bp); if (lg) Object.assign(s, lg);
-  gutterCSS(s, child, parent);
+  gutterCSS(s, child, parent, bp);
   return s;
 }
 
@@ -5946,8 +6073,10 @@ export function bandGutter(band: BoxNode): number {
  * and a stored % still means "this share of the line": the canvas resize measures each column's SLOT (the column plus
  * its half gaps), which is exactly what the % describes.
  */
-function gutterCSS(s: CSSProperties, child: BoxNode, parent: BoxNode): void {
-  const bandG = child.rowBand && (parent.direction ?? "column") !== "row" ? bandGutter(child) : 0;
+function gutterCSS(s: CSSProperties, child: BoxNode, parent: BoxNode, bp: Breakpoint): void {
+  if (isPageRow(parent)) { pageRowCSS(s, child, parent, bp); return; }
+  // a row of the page is exactly the page's width: its lines are the guides' (G-3b)
+  const bandG = child.rowBand && (parent.direction ?? "column") !== "row" && !isPageRow(child) ? bandGutter(child) : 0;
   // THE BAND'S OWN `--bx-gut` (`gapCSS`), for the reach AND the columns: one length, resolved on the band (E0-e).
   const GUT = "var(--bx-gut)";
   if (bandG > 0) {

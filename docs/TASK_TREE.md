@@ -38,6 +38,84 @@ written BEFORE the pass; one HEADED UAT on a fresh production build ticks every 
 only when every line is ticked and every bug it found is fixed and re-checked. Guarded by
 `tests/unit/task-tree-batches.test.ts`. Every item names what it IS in words, never a bare number.
 
+- `[>]` **BATCH G-3b · The page as a real CSS grid** — OPENED 2026-10-04 (session 3da81fad, the handover of 5da86722) (area: page
+  grid · 6 changes). D5 as signed under R-4: a page-grid row is EMITTED as a CSS grid on the page's own lines, so blocks sit ON the
+  drawn lines (closes G3-8) and "to the last line", bleed and rows become possible. Saved pages (no `pageGrid`) byte-identical.
+  CHANGES:
+  - `[x]` (1) A PAGE-GRID ROW IS A CSS GRID (DONE 2026-10-04, session 3da81fad — see DESIGN below; HEADED pass 1: G-3b A–F 55 + 22
+    checks, G-3 suite 65/0 and G-2 suite 128/0 as regression; vitest 4,296; eslint 0 errors): `display: grid` with `gridTemplate(cols)` per rung, the gap as the grid's column gap,
+    each block `grid-column: span k` from its share at that rung, the side space the first / last block's margin (`rowSide`)
+    inside its columns — canvas == export, the fit rule's steps set spans, not flex bases; G3-8 measured ON the line
+  - `[ ]` (2) START LINE · "TO THE LAST LINE" · FULL · BLEED · HALF-BLEED per rung (map A1–A5, A15), in the Position panel
+  - `[ ]` (3) ALT FREE → lines + margin, never page x / y (the drop point to the nearest lines, the rest as margin inside)
+  - `[x]` (4) THE FIT RULE for every block on the grid (DONE with (1): every line of a page row steps, by span; HEADED: slice D,
+    an icon beside words + four cards at all 70 screens × 100 / 150 / 200 % text — 0 sideways, overlap, broken word, staircase) (proof rule 4: whole words, no sideways scroll at 150 / 200 % text)
+  - `[ ]` (5) "SPACE BETWEEN COLUMNS" in the page-grid panel (carried from G-2): the grid's column gap, Default or 0–4 rem
+  - `[ ]` (6) ROWS AS GRID ROWS: "span N rows" (the user's: a gallery photo 2 rows tall, height still grows with its words) —
+    plus the nested-tree check G-3's slice F started
+  HEADED UAT CHECKLIST (written before the pass; six windows; fresh production build; built through the UI; Preview at all 70
+  screens of `screens.js` at 100 / 150 / 200 % text; the editor's four themes; each state on / off; every entry point):
+  - `[ ]` U1 (pass 1 SEEN after (1)+(4): slices A, C, F; re-run in the final pass) a half / third / quarter / 5 + 7 row on a page-grid page: every block edge ON a drawn line (≤ 0.5px) at every device,
+    the first block's left side space inside column 1, the last's inside column 12; set to 0 → the page edge; canvas == Preview
+  - `[ ]` U2 (pass 1 SEEN: slice B, G3-8 0.00px; re-run in the final pass) snap (G-3's U3 again, on the grid): the far edge fixed, the snapped edge ON the line at 1280 and 1536 (G3-8), Shift
+    half-lines, Alt free; rule 19 at the width where the partner runs out; every rung after it
+  - `[ ]` U3 (pass 1 SEEN: slice D; re-run in the final pass) the fit rule: 3 / 4 / 6 cards and long words step 4 → 2 → 1 (never a staircase) at every screen and 150 / 200 % text;
+    no sideways scroll, no overlap, no word broken
+  - `[ ]` U4 start line / to the last line / full / bleed / half-bleed: each per screen, each visibly different (RULE T), each
+    survives a column-count change in the panel; Undo; reload
+  - `[ ]` U5 Alt-drop a block: it lands on lines + a margin; at every other screen it stays on its lines (no overlap, no scroll)
+  - `[ ]` U6 "Space between columns" 0 / default / 4 rem: guides and blocks move together, canvas == Preview; Reset
+  - `[ ]` U7 "span 2 rows" on a gallery photo beside two short blocks: covers two rows, still grows with words; phone falls back
+  - `[ ]` U8 a page saved before the page grid: Preview HTML byte-identical to before the batch; nested trees (section → Grid
+    block → card → button, random values, built through the UI) at all 70 screens
+  - `[ ]` U9 the four editor themes: every new control labelled, ≥ 4.5:1, keyboard reachable, announced
+  DESIGN OF (1), from the code map (2026-10-04): the guides draw the page's columns GAPLESS, edge to edge — the space between two
+  blocks is centred on a line. So a page row (`isPageRow`: a row band straight on a page-grid page, marked `pageRow` by
+  `markPageGrid`) is `repeat(T, minmax(0, 1fr))` with no column gap over the page's whole width (no reach, no side padding); each
+  block `span t` of its share, half a gap of margin each side, the side space on the block that starts / ends a line. T = the lcm
+  of every screen's column count × the fewest splits that put every edge on a track (`rowTrackCount`): 4½ of 12 is 9 of 24,
+  five equal cards 12 of 60 each — equal cards stay equal, and the SAME T on every screen lets the fit rule's container queries
+  write `span T/across`. A gap dragged open (`marginLeftPct`) is a `%` margin of the block's AREA (gap + block). A grid never wraps a
+  block that is too narrow, so (4) lands with (1): every line of a page row steps. Width-less blocks share their line equally. The
+  site's own column counts reach the rows through `gridSpace.cols`. Canvas resize: the half gap is read off `--bx-gut`, a line's
+  first / last block's slot reaches the side space (`slotSide`). AMENDED by the user's G3b-3 decision ("equal cards"): every
+  block of a line gives up the same width of the line's side space and gaps (`pageRowSides`); the canvas's slot is that number
+  (`pageRowSlot`). MEASURED: the 61 saved sites of the dressed sweeps publish byte
+  for byte as before (old vs new engine, every page).
+  LEDGER G-3b:
+  - `[x]` G3-8 · REAL, carried from G-3 by the user: a snapped edge lands 1.7–2.6px from the drawn line at 1280 (shares are of the
+    row inset by its side space; the guides run edge to edge) → change (1). HEADED (slice B): the snapped gap of two blocks lands
+    0.00px from line 5 at Desktop and Full width and line 2 at Mobile; Shift 0.00px from the half-line; Alt kept free (23–27px)
+  - `[x]` G3b-1 · TEST (mine): the "an icon / picture beside words steps" guard used a picture, which `holdsWords` already counts as
+    words — green with the change undone → an icon beside words; red under mutation
+  - `[x]` G3b-2 · TEST (mine): the "the row is the page's width, no reach" guard passed the band as its own parent, so the reach code
+    never ran — green with the change undone → the page as the parent; red under mutation
+  - `[x]` G3b-3 · REAL, FOUND IN THE HEADED PASS (slice C), DECIDED BY THE USER 2026-10-04 — "Equal cards" (over "exactly on the
+    lines" and "columns inside the side space"): with every gap centred on its line, the outer cards of a row gave up the side space
+    and the inner only half a gap — five cards 134.3 / 144.3 / … at Desktop, 220 / 237 in the Preview at 1280. On edge-to-edge
+    lines both cannot hold unless side = half a gap. → every block of a line gives up the same width (`pageRowSides`). MEASURED:
+    cards equal to 0.0px at every device and all 70 Preview screens; two blocks still 0.00px on their line; in a row of three the
+    gaps sit exactly where the decided geometry puts them, (side − ½ gap) × |1 − 2(i+1)/n| — 3.4–4.3px at 768–1920 (I told the
+    user "~2px" when asking: that was G-3's two-block figure, corrected in the reply). Guard: "%i equal blocks give up the same
+    width" (2–6), red when the old rule is put back
+  - `[x]` G3b-4 · TEST (mine): slice A at Mobile reported "no pairs side by side" as a failure — the fit rule had stacked the row,
+    which is right → a stacked line is checked to span side space to side space
+  - `[x]` G3b-5 · NOT A BUG, MEASURED (probe-g3b-five.js): the Preview's five cards looked side by side only at 810–900 — they are
+    side by side at every width from 850 to 1536 and one a line below; the report listed only its first six widths
+  - `[x]` G3b-6 · TEST, CAUGHT BY THE GATE (`width-round-trip.spec.ts`, 7 of 806): its `rowOf` measured a column's slot with the
+    flex band's reach (`hg`), which a grid row does not have — boxes read as slots, the gap as 0. MEASURED first (probe-g3b-wrap.js,
+    built through the UI): the stored widths and the drawn rows after every widen / narrow are the flex row's (91.66 / 8.33, wrap,
+    back) — the engine was right. → a grid row's slot is its GRID AREA (box + its margins, minus a gap dragged open, read from its
+    `calc(N% + …)`). 28 / 28 on all four device projects; RED against a build with the first block's dragged gap dropped
+  - `[x]` G3b-7a · TEST, FOUND BY THE GATE (`canvas-scale-parity`, an FAQ's Accordion 546 drawn / 532 published): flaky on the LAST
+    COMMIT's engine too (4 of 10 under load), so not G-3b's — still a bug (rule 8). MEASURED (a probe, 12 runs × 6 workers): the
+    Preview draws in the fallback font until it has fetched the school's (`embedFontCss`), and under load that fetch was slow, so the
+    spec compared a fallback-font Preview with a DM Sans canvas; with its font in, the Preview draws 546 too. (First guessed "read
+    too early" and "the measuring pass" — both measured, both wrong.) → measured once the Accordion's own family is loaded in that
+    document and a second of equal readings. 112 / 112 at 8 repeats × 6 workers; the assertions themselves unchanged
+  - `[x]` G3b-7b · TEST, FOUND BY THE GATE (`pinned-bar-anchors`, an in-page link in the Preview "scrolled 0"): 1 of 5 under load on the
+    last commit's engine. The Preview wires its link handler on each load of its document; a click before that did nothing → wait for
+    the document, then click until the page moves (a Preview whose handler is gone never moves, and still fails). In the 112 / 112 above
 - `[x]` **BATCH G-3 · Placing on columns and rows** — CLOSED 2026-10-04 (HEADED UAT `scripts/uat/uat-g3-headed.js`, six windows,
   65 checks 0 failed on the final build (`logs/g3-uat6.out`), Preview at all 70 screens at 100 / 150 / 200 % text; G-2's suite
   re-run as regression 128/0 (`g2-regress-g3c.out`); gate: see the commit) — OPENED 2026-10-04 (session 5da86722, the user's "go") (area: page grid
@@ -334,7 +412,7 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
         a section / stack with a background still bleeds to the edge and its contents keep the margin; a row of equal cards stays
         equal (each gives up the same width); saved pages untouched. Supersedes G-1's "side space as section padding outside the
         columns" (`gridBandOwnsGutter` / `pageBandInset`) for page-grid pages; the guides are redrawn with it (no side strips)
-      - QUEUED **G-3b · the page as a real CSS grid** (split from G-3 2026-10-04; G-3 itself is OPEN in BATCHES as placing):
+      - OPEN (in BATCHES, 2026-10-04) **G-3b · the page as a real CSS grid** (split from G-3 2026-10-04; G-3 CLOSED):
         (1) page-grid sections emitted as a CSS grid (D5) · (2) start line, "to the last line", full / bleed / half-bleed per rung
         (A1–A5, A15) · (3) Alt free → lines + margin · (4) the fit rule for every block · (5) "Space between columns" ·
         (6) rows as real grid rows ("span N rows" across sections). THE ORIGINAL G-3 LINE, KEPT:
@@ -2323,7 +2401,7 @@ sent), and my research. Nothing on the layout is done until every line here is c
     falls back into the flow unless placed at that rung; the page audit and Page check warn when it covers words;
     shown as drag on the canvas with the half-lines drawn, a Position panel (start / end, column / row, spill above /
     below) and a gallery of ready-made placements (RULE S / UI). Joins AC-10, ST-5, AC-35 — one build
-    - `[>]` AC-37b ← YOU ARE HERE (next leaf: BATCH G-3b · the page as a real CSS grid; handover of session 5da86722 in the SESSION LOG — G-3 CLOSED 2026-10-04 (63 headed checks, G3-8 carried to G-3b by the user); earlier: BATCH G-3 · placing on columns AND rows — G-2 CLOSED 2026-10-04 (134 headed checks); P-0 CLOSED 2026-10-04 (R4-1 … R4-5 fixed, 30 headed checks); R-4 SIGNED with D1–D5 (session 9fa0fee9); then G-3, P-1, P-2, G-4, P-3, G-5, G-6. G-1 CLOSED 2026-10-04 (see BATCHES). Plan APPROVED 2026-10-04 with the user's decisions below. Earlier: research R-3 DONE and SIGNED 2026-10-04
+    - `[>]` AC-37b ← YOU ARE HERE (BATCH G-3b OPEN — changes (1) the page row as a CSS grid and (4) the fit rule DONE and committed 2026-10-04, session 3da81fad, G3-8 closed at 0.00px, the user's G3b-3 "equal cards"; next leaf: change (5) "Space between columns" — waiting on the user's decision (keep, redefine or drop: the gap between blocks already does it), then (2) start line / to the last line / full / bleed / half-bleed, (3) Alt free → lines + margin, (6) rows as grid rows, then the batch's final HEADED pass; earlier: handover of session 5da86722 in the SESSION LOG — G-3 CLOSED 2026-10-04 (63 headed checks, G3-8 carried to G-3b by the user); earlier: BATCH G-3 · placing on columns AND rows — G-2 CLOSED 2026-10-04 (134 headed checks); P-0 CLOSED 2026-10-04 (R4-1 … R4-5 fixed, 30 headed checks); R-4 SIGNED with D1–D5 (session 9fa0fee9); then G-3, P-1, P-2, G-4, P-3, G-5, G-6. G-1 CLOSED 2026-10-04 (see BATCHES). Plan APPROVED 2026-10-04 with the user's decisions below. Earlier: research R-3 DONE and SIGNED 2026-10-04
       (`ff5c53a`, `4418202`); build to every decision recorded under R-3 below; the mockups settle the open three (row
       snap · the phone gap 11 vs 16 px · panel per site or per page) → the user's approval → build) · **THE PAGE GRID — DECIDED by the user 2026-10-03: done RIGHT AFTER L-4 closes, BEFORE L-5, L-6 and the
       frozen list's placement items** (they are built on it). NAMES (decided): "page grid" in code and docs; the lines a

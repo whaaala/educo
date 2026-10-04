@@ -1,11 +1,11 @@
 import { describe, it, expect } from "vitest";
-import { type BoxNode, type Breakpoint, SPACE_DEFAULT, SPACE_GRID, spaceDefaults, outerDefaults, gapOf, insertBox, normalizeRowBands, markPageGrid, u, createContainer, makeRowBand, sectionContent, gridBandOwnsGutter, pageBandInset, rowNarrowsAt, rowQueryCss, childStyle, tabletPlaces, rowSide, outerSpaceDefaults, spanAt, setSpan, resolveResponsive, lineUpWithGrid } from "@/lib/box-model";
+import { type BoxNode, type Breakpoint, SPACE_DEFAULT, SPACE_GRID, spaceDefaults, outerDefaults, gapOf, insertBox, normalizeRowBands, markPageGrid, u, createContainer, makeRowBand, sectionContent, gridBandOwnsGutter, pageBandInset, rowNarrowsAt, rowQueryCss, childStyle, tabletPlaces, rowSide, outerSpaceDefaults, spanAt, setSpan, resolveResponsive, lineUpWithGrid, isPageRow, containerStyle, pageRowCells, pageRowTracks, pageRowSlot } from "@/lib/box-model";
 import { blockForKind } from "@/lib/box-presets";
 import { COMPONENT_CATALOGUE } from "@/lib/component-catalogue";
 import { emptyPageRoot, siteFromRoot, setPageGrid, applyPageGrid, addPage } from "@/lib/box-site";
 import { renderSitePage, SKIP_LINK_CSS } from "@/lib/box-export";
 import { DEFAULT_THEME } from "@/lib/site-storage";
-import { PAGE_GRID_DEFAULT, columnsAt, spanOf, snapShare, spanLabel, spanText, resolvePageGrid, gridSpaceOf, gridTemplate, spanOfWidth, spanOfRect, snapEdgePx, rowsToMinHeight, rowsOf } from "@/lib/page-grid";
+import { PAGE_GRID_DEFAULT, columnsAt, spanOf, snapShare, spanLabel, spanText, resolvePageGrid, gridSpaceOf, gridTemplate, spanOfWidth, spanOfRect, snapEdgePx, rowsToMinHeight, rowsOf, rowTrackCount } from "@/lib/page-grid";
 
 /**
  * THE PAGE GRID IN THE ENGINE (AC-37b, BATCH G-1). Scenarios: tests/features/components/website/page-grid.feature.
@@ -157,10 +157,12 @@ describe("columns side by side sit one gap apart; the page's edges keep the side
     return { band, cols: band.children!, flag: (c: BoxNode) => sectionContent(c, false, true, band) };
   };
 
-  it.each([2, 3, 4])("a page-grid row of %i: the row keeps the side space, its columns none at their sides", (n) => {
+  it.each([2, 3, 4])("a page-grid row of %i: the page's edges keep the side space (on the outer blocks, G-3b), its columns none inside", (n) => {
     const { band, cols, flag } = rowOf(true, n);
     expect(gridBandOwnsGutter(band)).toBe(true);
-    expect(pageBandInset(band, true)).toEqual({ paddingLeft: u(SPACE_GRID.gutter), paddingRight: u(SPACE_GRID.gutter) });
+    expect(pageBandInset(band, true)).toEqual({}); // G-3b: the row is the page's width; the side space is the outer blocks' margin
+    expect(childStyle(cols[0], band).marginLeft).toBe(`calc(${u(SPACE_GRID.gutter)})`);
+    expect(childStyle(cols[n - 1], band).marginRight).toBe(`calc(${u(SPACE_GRID.gutter)})`);
     for (const c of cols) { expect(flag(c)).toBe("gridBand"); const pad = spaceDefaults(c, flag(c)).pad; expect([pad[1], pad[3]]).toEqual([0, 0]); expect(pad[0]).toBe(SPACE_GRID.section); }
   });
 
@@ -315,14 +317,15 @@ describe("G-2 · the site's side space and gap, set in the page-grid panel", () 
     site = setPageGrid(site, { sideSpace: 0 });
     site = setPageGrid(site, { columns: 16, sideSpace: 64 }, about);
     expect(site.pages[0].root.gridSpace).toEqual({ gutter: 0 });
-    expect(site.pages[1].root.gridSpace).toEqual({ gutter: 64 });
+    expect(site.pages[1].root.gridSpace).toEqual({ gutter: 64, cols: { phone: 8, tabletPortrait: 16, tabletLandscape: 16, base: 16, wide: 16 } }); // G-3b: its rows are drawn on its own columns
     site = setPageGrid(site, undefined, about);
     expect(site.pages[1].root.gridSpace).toEqual({ gutter: 0 });
   });
 
   it("values are held to the panel's ranges", () => {
     expect(gridSpaceOf({ sideSpace: -5, blockGap: 999 })).toEqual({ gutter: 0, gap: 64 });
-    expect(gridSpaceOf({ columns: 10 })).toBeUndefined();
+    expect(gridSpaceOf({ columns: 12 })).toBeUndefined(); // the default columns are not carried
+    expect(gridSpaceOf({ columns: 99 })?.cols?.base).toBe(24);
   });
 });
 
@@ -363,19 +366,20 @@ describe("G-3 (1) · edge to edge: the first and last block own the row's outer 
   it.each([2, 3, 4])("row of %i, nothing set: both sides are the site's side space (unchanged from G-1)", (n) => {
     const { band } = rowOf(n);
     expect([rowSide(band, "left"), rowSide(band, "right")]).toEqual([SPACE_GRID.gutter, SPACE_GRID.gutter]);
-    expect(pageBandInset(band, true)).toEqual({ paddingLeft: u(SPACE_GRID.gutter), paddingRight: u(SPACE_GRID.gutter) });
+    expect(childStyle(band.children![0], band).marginLeft).toBe(`calc(${u(SPACE_GRID.gutter)})`); // G-3b: on the blocks, not the row
+    expect(childStyle(band.children![n - 1], band).marginRight).toBe(`calc(${u(SPACE_GRID.gutter)})`);
   });
 
   it.each([0, 8, 48])("the FIRST block's left margin %i is the row's left side; the right stays", (v) => {
     const { band } = rowOf(3, (c) => { c[0].marginLeft = v; });
-    expect(pageBandInset(band, true)).toEqual({ paddingLeft: u(v), paddingRight: u(SPACE_GRID.gutter) });
-    expect(childStyle(band.children![0], band).marginLeft).toBe("calc(0px + calc(var(--bx-gut) / 2))"); // only the half gap: never applied twice (G3-1)
+    expect(childStyle(band.children![0], band).marginLeft).toBe(`calc(${u(v)})`); // its own margin IS the side: never applied twice (G3-1)
+    expect(childStyle(band.children![2], band).marginRight).toBe(`calc(${u(SPACE_GRID.gutter)})`);
   });
 
   it("the LAST block's right margin is the row's right side; a middle block's margins stay its own", () => {
     const { band } = rowOf(3, (c) => { c[2].marginRight = 0; c[1].marginLeft = 32; });
-    expect(pageBandInset(band, true)).toEqual({ paddingLeft: u(SPACE_GRID.gutter), paddingRight: u(0) });
-    expect(String(childStyle(band.children![1], band).marginLeft)).toContain(u(32));
+    expect(childStyle(band.children![2], band).marginRight).toBe(`calc(${u(0)})`);
+    expect(childStyle(band.children![1], band).marginLeft).toBe(`calc(${u(+(32 + SPACE_GRID.gutter + (SPACE_GRID.columns - SPACE_GRID.gutter - 0) / 3).toFixed(4))})`);
   });
 
   it("the Inspector's default for the first / last block names the side it really has", () => {
@@ -388,7 +392,7 @@ describe("G-3 (1) · edge to edge: the first and last block own the row's outer 
   it("the published page writes the row's left side from the first block", () => {
     const { page } = rowOf(2, (c) => { c[0].marginLeft = 0; });
     const site = siteFromRoot(page); const html = renderSitePage(site, DEFAULT_THEME, site.homeId, { inlineShared: true });
-    expect(html).toMatch(/padding-left:\s*calc\(var\(--box-u, 0\.625rem\) \* 0\)/);
+    expect(html).toMatch(/margin-left:\s*calc\(calc\(var\(--box-u, 0\.625rem\) \* 0\)\)/);
   });
 
   it("the span counts the columns whose middle is inside the block", () => {
@@ -501,7 +505,113 @@ describe("G3-11 · a gap opened by dragging the first block's LEFT edge stays it
   it("the first block's share-of-the-line gap is still written (only a LENGTH margin is the row's side)", () => {
     const cols = [createContainer("column", { width: "40%", marginLeftPct: 10, children: [blockForKind("text")] } as Partial<BoxNode>), createContainer("column", { width: "50%", children: [blockForKind("text")] } as Partial<BoxNode>)];
     const page = markPageGrid(normalizeRowBands({ ...emptyPageRoot(), children: [makeRowBand(cols)] } as BoxNode)); const band = page.children![0];
-    expect(String(childStyle(band.children![0], band).marginLeft)).toContain("10%");
+    // G-3b: a `%` margin on a grid item is of its AREA (gap + block = 50%), so the 10% of the line is 20% of it
+    expect(childStyle(band.children![0], band).marginLeft).toBe(`calc(20% + ${u(SPACE_GRID.gutter)})`);
     expect(rowSide(band, "left")).toBe(SPACE_GRID.gutter); // …and the row keeps the site's side space
+  });
+});
+
+describe("G-3b (1) · a row of the page is a CSS grid on the page's own lines (D5; closes G3-8)", () => {
+  const rowOf = (widths: (string | undefined)[], marked = true, edit?: (cols: BoxNode[]) => void) => {
+    const cols = widths.map((w) => createContainer("column", { ...(w ? { width: w } : {}), children: [blockForKind("text")] } as Partial<BoxNode>));
+    edit?.(cols);
+    const root = { ...emptyPageRoot(), children: [makeRowBand(cols)] } as BoxNode; if (!marked) delete root.pageGrid;
+    const page = markPageGrid(normalizeRowBands(root));
+    return { page, band: page.children![0] };
+  };
+  const spanOfCss = (s: { gridColumn?: unknown }) => Number(/^span (\d+)$/.exec(String(s.gridColumn))?.[1]);
+
+  it("the track count: the page's lines on every screen, split only as far as the edges need", () => {
+    expect(rowTrackCount([6, 12, 12, 12, 12], [0, 0.5, 0.5, 1])).toBe(12);          // halves
+    expect(rowTrackCount([6, 12, 12, 12, 12], [0, 0.375, 0.375, 1])).toBe(24);      // 4½ of 12
+    expect(rowTrackCount([6, 12, 12, 12, 12], [0, 0.2, 0.4, 0.6, 0.8, 1])).toBe(60); // five equal cards
+    expect(rowTrackCount([12], [0, 0.3333, 0.6666, 1])).toBe(12);                    // thirds as stored, to a hundredth of a %
+    expect(rowTrackCount([12], [0, 1], [5])).toBe(60);                               // a line of five shares the tracks
+    expect(rowTrackCount([8, 16, 16, 16, 16], [0, 0.5, 1])).toBe(16);                // a site's own columns
+  });
+
+  it("a page row is a grid with no column gap; a SAVED page's row and a row inside a block stay flex", () => {
+    const { band } = rowOf(["50%", "50%"]);
+    expect(isPageRow(band)).toBe(true);
+    const cs = containerStyle(band);
+    expect([cs.display, cs.gridTemplateColumns, cs.columnGap]).toEqual(["grid", "repeat(12, minmax(0, 1fr))", u(0)]);
+    const { page: pg, band: b2 } = rowOf(["50%", "50%"]); expect(childStyle(b2, pg).width).not.toBe("calc(100% + var(--bx-gut))"); // the page's width exactly: no reach past it
+    const saved = rowOf(["50%", "50%"], false).band;
+    expect(isPageRow(saved)).toBe(false); expect(containerStyle(saved).display).toBe("flex");
+    const { page } = rowOf(["50%", "50%"]);
+    const inner = markPageGrid(normalizeRowBands({ ...page, children: [makeRowBand([createContainer("column", { children: [makeRowBand([createContainer("column", { width: "50%" } as Partial<BoxNode>), createContainer("column", { width: "50%" } as Partial<BoxNode>)])] })])] } as BoxNode));
+    const nested = inner.children![0].children![0].children![0];
+    expect(nested.rowBand && !nested.pageRow && containerStyle(nested).display).toBe("flex");
+  });
+
+  it.each([
+    [["50%", "50%"], [6, 6]], [["33.33%", "33.33%", "33.34%"], [4, 4, 4]], [["41.67%", "58.33%"], [5, 7]],
+    [["25%", "25%", "25%", "25%"], [3, 3, 3, 3]], [["20%", "20%", "20%", "20%", "20%"], [12, 12, 12, 12, 12]], [["37.5%", "62.5%"], [9, 15]],
+  ] as [string[], number[]][])("%j → spans %j: every edge ON a line, the line filled exactly", (widths, spans) => {
+    const { band } = rowOf(widths);
+    expect(band.children!.map((k) => spanOfCss(childStyle(k, band)))).toEqual(spans);
+    expect(spans.reduce((a, b) => a + b, 0)).toBe(Number(/repeat\((\d+)/.exec(String(containerStyle(band).gridTemplateColumns))![1]));
+  });
+
+  it("width-less blocks share the line equally", () => {
+    const { band } = rowOf([undefined, undefined, undefined]);
+    expect(band.children!.map((k) => spanOfCss(childStyle(k, band)))).toEqual([4, 4, 4]);
+  });
+
+  it("margins: two blocks — half a gap between them, the side space at the line's ends; every screen the same", () => {
+    const { band } = rowOf(["50%", "50%"]); const [a, b] = band.children!;
+    for (const bp of RUNGS) {
+      const sa = childStyle(a, band, bp), sb = childStyle(b, band, bp);
+      expect([sa.marginLeft, sa.marginRight, sb.marginLeft, sb.marginRight]).toEqual([`calc(${u(SPACE_GRID.gutter)})`, `calc(${u(SPACE_GRID.columns / 2)})`, `calc(${u(SPACE_GRID.columns / 2)})`, `calc(${u(SPACE_GRID.gutter)})`]);
+    }
+  });
+
+  it.each([2, 3, 4, 5, 6])("G3b-3 (the user: \"equal cards\"): %i equal blocks give up the same width, and neighbours stay one gap apart", (n) => {
+    const { band } = rowOf(Array.from({ length: n }, () => `${Math.floor((100 / n) * 100) / 100}%`));
+    const m = band.children!.map((k) => pageRowSlot(band, k.id, "base")!);
+    const give = m.map((x) => x.left + x.right);
+    expect(Math.max(...give) - Math.min(...give)).toBeLessThan(1e-9);
+    for (let i = 0; i + 1 < n; i++) expect(m[i].right + m[i + 1].left).toBeCloseTo(SPACE_GRID.columns, 9);
+    expect([m[0].left, m[n - 1].right]).toEqual([SPACE_GRID.gutter, SPACE_GRID.gutter]);
+  });
+
+  it("a block that wraps to a new line starts it with the side space", () => {
+    const { band } = rowOf(["60%", "60%"]); const [, b] = band.children!;
+    expect(childStyle(b, band).marginLeft).toBe(`calc(${u(SPACE_GRID.gutter)})`);
+    expect(pageRowCells(band, "base").get(b.id)).toMatchObject({ at: 0, of: 1 });
+  });
+
+  it("the site's own columns reach the row's tracks", () => {
+    const site = setPageGrid(siteFromRoot(rowOf(["50%", "50%"]).page), { columns: 16 });
+    const band = site.pages[0].root.children![0];
+    expect(pageRowTracks(band)).toBe(16);
+  });
+
+  it("the published page draws the row as the grid (canvas == export: one emitter)", () => {
+    const { page } = rowOf(["41.67%", "58.33%"]);
+    const site = siteFromRoot(page); const out = renderSitePage(site, DEFAULT_THEME, site.homeId, { inlineShared: true });
+    expect(out).toContain("display:grid;grid-template-columns:repeat(12, minmax(0, 1fr));column-gap:" + u(0));
+    expect(out).toMatch(/grid-column:\s*span 5/); expect(out).toMatch(/grid-column:\s*span 7/);
+  });
+});
+
+describe("G-3b (4) · the fit rule on the grid: every line steps, by span", () => {
+  const rowOf = (cols: BoxNode[]) => { const page = markPageGrid(normalizeRowBands({ ...emptyPageRoot(), children: [makeRowBand(cols)] } as BoxNode)); return page.children![0]; };
+  const words = (w: string) => createContainer("column", { width: w, children: [{ ...blockForKind("text"), text: "Admissions and enrolment information" } as BoxNode] } as Partial<BoxNode>);
+
+  it("an icon beside words steps to one a line (a grid never wraps it by itself; the flex row left it to wrap)", () => {
+    const band = rowOf([{ ...blockForKind("icon"), width: "50%" } as BoxNode, words("50%")]);
+    expect(rowNarrowsAt(band, true)?.[0].steps.map((s) => s.lines)).toEqual([[1, 1]]);
+  });
+
+  it("a step writes spans and moves the side space to the blocks that start and end its lines", () => {
+    const band = rowOf([words("25%"), words("25%"), words("25%"), words("25%")]);
+    const css = rowQueryCss(band, (id) => `#${id}`, (c) => `@media{${c}}`, true);
+    const [a, b] = band.children!;
+    expect(css).toContain(`#${a.id}{grid-column:span 6 !important;margin-left:calc(${u(SPACE_GRID.gutter)}) !important;margin-right:calc(${u(SPACE_GRID.columns / 2)}) !important`);
+    expect(css).toContain(`#${b.id}{grid-column:span 6 !important;margin-left:calc(${u(SPACE_GRID.columns / 2)}) !important;margin-right:calc(${u(SPACE_GRID.gutter)}) !important`);
+    expect(css).toContain(`#${a.id}{grid-column:span 12 !important`);
+    expect(css).not.toContain("flex:");
+    expect(css).not.toContain("@media"); // the phone too
   });
 });

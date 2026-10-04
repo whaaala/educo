@@ -179,8 +179,15 @@ test.describe("an in-page link works in the Preview, not just on the published p
     const before = await frame!.evaluate(() => Math.round(document.documentElement.scrollTop));
     expect(before, "the preview opens at the top").toBe(0);
 
-    await frame!.locator('a[href="#term-dates"]').first().click();
-    await page.waitForTimeout(800);
+    // THE PREVIEW WIRES ITS LINK HANDLER ON EACH LOAD of its document, and it writes that document twice (the measuring pass):
+    // a click landing between the two did nothing — "scrolled 0", 1 of 5 runs under load on the last commit's engine (G3b-7b).
+    // So the click is repeated until the page moves; a preview whose handler is gone never moves, and this still fails.
+    await frame!.waitForFunction(() => document.readyState === "complete" && !!document.querySelector('a[href="#term-dates"]'));
+    await expect.poll(async () => {
+      await frame!.locator('a[href="#term-dates"]').first().click();
+      await page.waitForTimeout(400);
+      return frame!.evaluate(() => Math.round(document.documentElement.scrollTop));
+    }, { timeout: 15000, intervals: [200, 400, 800] }).toBeGreaterThan(200);
 
     const r = await frame!.evaluate(() => {
       const t = document.getElementById("term-dates")!;
