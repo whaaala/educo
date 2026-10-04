@@ -18,7 +18,7 @@ import {
   floatBox, unfloatBox, bringToFront, bringForward, sendBackward, sendToBack,
   resolveResponsive, updateBoxResponsive, clearOverride, hasOverride,
   gridColumns, retrackGrid, setColumnFraction, pinBlockedBy, fixedBlockedBy, blockedByLabel, pinScopeWords, isFloating,
-  isSectionContentIn, sectionPlaceIn, paletteClickSlot,
+  isSectionContentIn, sectionPlaceIn, paletteClickSlot, outerSpaceDefaults, spanAt, setSpan, lineUpWithGrid,
 } from "@/lib/box-model";
 import { blockForKind } from "@/lib/box-presets";
 import {
@@ -146,6 +146,7 @@ export default function BoxDemoPage() {
   // their HEIGHT still follows the content — a block spanning rows comes with G-3.
   const [guides, setGuides] = useState({ on: false, rows: true });
   const [gridPanel, setGridPanel] = useState(false);
+  const [lineUpSaid, setLineUpSaid] = useState(""); // "3 blocks moved to the grid on Desktop" — G-3 (5)
   const [canvasMenu, setCanvasMenu] = useState<{ x: number; y: number } | null>(null);
   const guidesBtnRef = useRef<HTMLButtonElement>(null);
   useEffect(() => { try { const v = JSON.parse(localStorage.getItem(GUIDES_KEY) ?? "null"); if (v && typeof v.on === "boolean") setGuides({ on: v.on, rows: v.rows !== false }); } catch { /* no storage: the default */ } }, []);
@@ -1174,6 +1175,12 @@ export default function BoxDemoPage() {
                 <button onClick={onSetHome} disabled={activePage.id === site.homeId} className="flex items-center justify-center gap-1 text-xs px-2 py-1.5 rounded-lg border border-line text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100 dark:hover:bg-white/10 disabled:opacity-40"><Home className="w-3.5 h-3.5" /> Home</button>
                 <button onClick={onDuplicatePage} className="flex items-center justify-center gap-1 text-xs px-2 py-1.5 rounded-lg border border-line text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100 dark:hover:bg-white/10"><Files className="w-3.5 h-3.5" /> Duplicate</button>
               </div>
+              <button onClick={() => { const r = lineUpWithGrid(root, columnsAt(gridHere, bp), bp); if (r.moved) commit(r.root);
+                const screen = DEVICES.find((d) => d.id === device)?.label ?? "this screen";
+                setLineUpSaid(r.moved ? `${r.moved} block${r.moved === 1 ? "" : "s"} moved to the grid on ${screen}. Undo puts them back.` : `Everything on ${screen} is already on the grid.`); }}
+                title="Move every block of this page to the nearest whole column, on the screen you are editing. Blocks placed free (Alt-drag) stay where they are."
+                className="w-full flex items-center justify-center gap-1 text-xs px-2 py-1.5 rounded-lg border border-line text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100 dark:hover:bg-white/10"><LayoutGrid className="w-3.5 h-3.5" aria-hidden="true" /> Line up with the grid</button>
+              <p role="status" className="text-[0.625rem] text-gray-500 dark:text-gray-400 midnight:text-cyan-300 purple:text-pink-300 min-h-0">{lineUpSaid}</p>
               <button onClick={() => { setPageMenu(false); toggleGuides({ on: true }); setGridPanel(true); }} className="w-full flex items-center justify-center gap-1 text-xs px-2 py-1.5 rounded-lg border border-line text-gray-600 dark:text-gray-300 midnight:text-cyan-200 purple:text-pink-200 hover:bg-gray-100 dark:hover:bg-white/10"><LayoutGrid className="w-3.5 h-3.5" aria-hidden="true" /> Page grid…</button>
               <button onClick={() => { setPageMenu(false); setConfirmDeletePage(true); }} disabled={site.pages.length <= 1} title={site.pages.length <= 1 ? "A site needs at least one page" : "Delete this page"} className="w-full flex items-center justify-center gap-1 text-xs px-2 py-1.5 rounded-lg border border-red-200 dark:border-red-900/50 text-red-600 dark:text-red-400 midnight:text-red-400 purple:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 disabled:opacity-40"><Trash2 className="w-3.5 h-3.5" /> Delete page</button>
             </div>
@@ -1252,7 +1259,7 @@ export default function BoxDemoPage() {
               <div data-canvas-sizer className={`mx-auto shrink-0 h-fit ${frameW == null ? "w-full max-w-5xl" : ""}`} style={scaled ? { width: frameW * canvasZoom.z, height: frameH * canvasZoom.z } : { width: frameW ?? undefined }}>
                 <div ref={frameRef} data-canvas-scale={scaled ? canvasZoom.z : 1} className="shadow-sm rounded-xl ring-1 ring-black/10 dark:ring-white/10 midnight:ring-white/10 purple:ring-white/10 h-fit transition-[width] duration-300 motion-reduce:transition-none" style={{ width: frameW ?? "100%", transform: scaled ? `scale(${canvasZoom.z})` : undefined, transformOrigin: "0 0", background: renderTheme.background, color: renderTheme.text, fontFamily: renderTheme.bodyFont, containerType: "inline-size" }}>
                   <BoxCanvas root={root} theme={renderTheme} minHeight={PAGE_MIN_H} selectedIds={selectedIds} onSelectIds={selectByUser} onChange={commit} breakpoint={bp} showHidden={showHidden} marqueeRoom={roomEl}
-                    guides={guides.on ? { cols: columnsAt(gridHere, bp), rowStepRem: gridHere.rowStepRem ?? 1.5, rows: guides.rows } : null} />
+                    pageGrid={gridHere} guides={guides.on ? { cols: columnsAt(gridHere, bp), rowStepRem: gridHere.rowStepRem ?? 1.5, rows: guides.rows } : null} />
                 </div>
               </div>
             </div>
@@ -1277,7 +1284,10 @@ export default function BoxDemoPage() {
               {bulk ? (
                 <BulkInspector sampleSection={isSectionContentIn(root, selectedIds[0])} count={selectedIds.length} theme={renderTheme} sample={(() => { const f = findBox(root, selectedIds[0]); return f ? resolveResponsive(f, bp) : null; })()} onStepWidth={bulkStepWidth} onStepHeight={bulkStepHeight} onPatch={bulkPatch} onDuplicate={bulkDuplicate} onDelete={bulkDelete} onFloatAll={bulkFloat} onGroup={bulkGroup} />
               ) : selected ? (
-                <BoxInspector section={isSectionContentIn(root, selected.id)} sectionPlace={sectionPlaceIn(root, selected.id)} pinBlockedBy={blockedByLabel(pinBlockedBy(root, selected.id, bp))} fixedBlockedBy={blockedByLabel(fixedBlockedBy(root, selected.id, bp))} pinScope={pinScopeWords(root, selected.id, bp)} node={bp === "base" ? selected : resolveResponsive(selected, bp)} theme={renderTheme} onPatch={onPatch} onAddChild={addChildSection} onFloat={floatSelected} onUnfloat={unfloatSelected} onLayer={layerSelected} onAlignInRow={(j) => commit(alignInRow(root, selected.id, j, bp))} rowJustify={alignInRowOf(root, selected.id, bp)} onSectionWidth={pageBandOf(root, selected.id) ? (v) => commit(setSectionWidth(root, selected.id, v)) : undefined} sectionWidth={sectionWidthOf(root, selected.id)} canFloat={selected.id !== root.id} inGrid={gridTrack !== undefined} inMasonry={parentGrid?.rowFlow === "masonry"} gridTrack={gridTrack} onSetFraction={setFraction} onRetrack={retrackSelected} breakpoint={bp} overridden={hasOverride(selected, bp)} onResetOverride={resetOverride} pages={pageList} currentPageId={activePage.id} />
+                <BoxInspector section={isSectionContentIn(root, selected.id)} sectionPlace={sectionPlaceIn(root, selected.id)} outerDefault={outerSpaceDefaults(root, selected.id)}
+                  pageSpan={(() => { const c = columnsAt(gridHere, bp), v = spanAt(root, selected.id, c, bp); return v === null ? undefined : { value: v, cols: c }; })()}
+                  rowStepRem={root.pageGrid ? gridHere.rowStepRem ?? 1.5 : undefined}
+                  onSetSpan={(n) => commit(setSpan(root, selected.id, n, columnsAt(gridHere, bp), bp), `span:${selected.id}`)} pinBlockedBy={blockedByLabel(pinBlockedBy(root, selected.id, bp))} fixedBlockedBy={blockedByLabel(fixedBlockedBy(root, selected.id, bp))} pinScope={pinScopeWords(root, selected.id, bp)} node={bp === "base" ? selected : resolveResponsive(selected, bp)} theme={renderTheme} onPatch={onPatch} onAddChild={addChildSection} onFloat={floatSelected} onUnfloat={unfloatSelected} onLayer={layerSelected} onAlignInRow={(j) => commit(alignInRow(root, selected.id, j, bp))} rowJustify={alignInRowOf(root, selected.id, bp)} onSectionWidth={pageBandOf(root, selected.id) ? (v) => commit(setSectionWidth(root, selected.id, v)) : undefined} sectionWidth={sectionWidthOf(root, selected.id)} canFloat={selected.id !== root.id} inGrid={gridTrack !== undefined} inMasonry={parentGrid?.rowFlow === "masonry"} gridTrack={gridTrack} onSetFraction={setFraction} onRetrack={retrackSelected} breakpoint={bp} overridden={hasOverride(selected, bp)} onResetOverride={resetOverride} pages={pageList} currentPageId={activePage.id} />
               ) : (
                 <div className="p-6 text-xs text-gray-400 text-center mt-6">Click a block to edit it — or drag a box on empty canvas to select several at once.</div>
               )}

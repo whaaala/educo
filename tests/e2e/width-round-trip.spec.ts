@@ -197,12 +197,15 @@ test.describe("width round trips come back, and nothing leaves a hole", () => {
     const id = await buildRow(page, 2);
     await select(page, id);
     const start = await rowOf(page, id);
+    // ALT = FREE (G-3 (2)): on the page grid an edge snaps to the page's lines; this round trip is about a FREE space, so it
+    // holds Alt as a person does for one (G3-12 — the snap turned 120px into one 83px column and the check said "no space")
     const dragLeft = async (dx: number) => {
       const h = (await page.locator('[aria-label="Resize left edge"]').first().boundingBox())!;
       const cx = h.x + h.width / 2, cy = h.y + h.height / 2;
+      await page.keyboard.down("Alt");
       await page.mouse.move(cx, cy); await page.mouse.down();
       for (let i = 1; i <= 12; i++) { await page.mouse.move(cx + (dx * i) / 12, cy); await page.waitForTimeout(12); }
-      await page.mouse.up(); await page.waitForTimeout(500);
+      await page.mouse.up(); await page.keyboard.up("Alt"); await page.waitForTimeout(500);
     };
     await dragLeft(120);
     const opened = await rowOf(page, id);

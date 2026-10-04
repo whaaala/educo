@@ -30,6 +30,7 @@ import { Tabs, Accordion, Segmented, type SegOption } from "./ui";
 import EducoColorField from "@/components/shared/EducoColorField";
 import Slider from "@/components/shared/Slider";
 import CompactField from "@/components/shared/CompactField";
+import { rowsOf, rowsToMinHeight } from "@/lib/page-grid";
 import CompactSelect from "@/components/shared/CompactSelect";
 import { CONTAINER_TAGS, type SemanticTag } from "@/lib/semantics";
 import CompactTextarea from "@/components/shared/CompactTextarea";
@@ -488,8 +489,9 @@ function AccPreview({ id, size, axes = [] }: { id: string; size: ThumbSize; axes
   );
 }
 
-export default function BoxInspector({ section = false, sectionPlace, node, theme, onPatch, onAddChild, onFloat, onUnfloat, onLayer, onAlignInRow, rowJustify, onSectionWidth, sectionWidth, canFloat = true, inGrid = false, inMasonry = false, gridTrack, onSetFraction, onRetrack, breakpoint = "base", overridden = false, onResetOverride, pages, currentPageId, pinBlockedBy = null, fixedBlockedBy = null, pinScope = null }: {
+export default function BoxInspector({ section = false, sectionPlace, outerDefault, pageSpan, onSetSpan, rowStepRem, node, theme, onPatch, onAddChild, onFloat, onUnfloat, onLayer, onAlignInRow, rowJustify, onSectionWidth, sectionWidth, canFloat = true, inGrid = false, inMasonry = false, gridTrack, onSetFraction, onRetrack, breakpoint = "base", overridden = false, onResetOverride, pages, currentPageId, pinBlockedBy = null, fixedBlockedBy = null, pinScope = null }: {
   section?: SectionFlag; // the block is the content of a page section, so its default inner spacing is the gutter and the section space
+  outerDefault?: [number, number, number, number]; // the outer space it really has by default (`outerSpaceDefaults`, G-3 (1)); else `outerDefaults`
   sectionPlace?: SectionPlace; // …and where: straight on the page or a column of a band — the default space OUTSIDE a self-painted block (S-2 (5))
   node: BoxNode;
   theme: SiteTheme;
@@ -510,6 +512,10 @@ export default function BoxInspector({ section = false, sectionPlace, node, them
   inMasonry?: boolean;
   /** How many columns the PARENT row is cut into — the denominator every named fraction is measured against. */
   gridTrack?: number;
+  /** A column of a page row on the page grid (G-3 (3)): how many of the page's columns it covers on this screen, and its setter. */
+  pageSpan?: { value: number; cols: number }; onSetSpan?: (span: number) => void;
+  /** The page grid's row step (rem) on a page-grid page — "Rows: N" sets the block at least N rows tall (G-3 (4)). */
+  rowStepRem?: number;
   /** Set this block to a named fraction of its row. Refines the row to twelve first when it has to (base only,
    *  since that changes the row's children) — which is why it writes upward instead of through `onPatch`. */
   onSetFraction?: (num: number, den: number) => void;
@@ -1117,6 +1123,20 @@ export default function BoxInspector({ section = false, sectionPlace, node, them
 
           <Accordion title="Size" icon={Maximize2}>
             <WidthControl node={node} onPatch={onPatch} />
+            {pageSpan && onSetSpan && (
+              <div className="space-y-0.5">
+                <CompactField label={`Columns (of ${pageSpan.cols})`} ariaLabel={`Columns of ${pageSpan.cols}`} type="number" min={0.5} max={pageSpan.cols} step={0.5} value={pageSpan.value}
+                  onChange={(v) => { const n = Number(v); if (Number.isFinite(n) && n > 0) onSetSpan(n); }} />
+                <p className="text-[0.625rem] text-gray-500 dark:text-gray-400 midnight:text-slate-400 purple:text-purple-300">On this screen. Alt ← / → one column, with Shift half a column; the block beside it gives what this one takes.</p>
+              </div>
+            )}
+            {rowStepRem && (
+              <div className="space-y-0.5">
+                <CompactField label="Rows" ariaLabel="Rows tall" type="number" min={0} max={40} step={1} value={rowsOf(node.minHeight, rowStepRem) || ""} placeholder="auto"
+                  onChange={(v) => onPatch({ minHeight: rowsToMinHeight(Number(v) || 0, rowStepRem) })} />
+                <p className="text-[0.625rem] text-gray-500 dark:text-gray-400 midnight:text-slate-400 purple:text-purple-300">At least this many row lines tall; it still grows with its words. Empty: as tall as its content.</p>
+              </div>
+            )}
             {!container && onAlignInRow && (
               <div className="space-y-1">
                 <span className={label}>Position in row</span>
@@ -1168,7 +1188,7 @@ export default function BoxInspector({ section = false, sectionPlace, node, them
           <Accordion title="Spacing" icon={Ruler}>
             {/* EVERY block has inner spacing (c-23; rule 3) — a Heading, Link or Image as much as a Stack. */}
             {node.type !== "button" && <SideSpacing title="Inner spacing" node={node} base="padding" sides={["paddingTop", "paddingRight", "paddingBottom", "paddingLeft"]} onPatch={onPatch} defaults={spaceDefaults(node, section).pad} />}
-            <SideSpacing title="Outer spacing" node={node} base="margin" sides={["marginTop", "marginRight", "marginBottom", "marginLeft"]} onPatch={onPatch} defaults={outerDefaults(node, sectionPlace)} />
+            <SideSpacing title="Outer spacing" node={node} base="margin" sides={["marginTop", "marginRight", "marginBottom", "marginLeft"]} onPatch={onPatch} defaults={outerDefault ?? outerDefaults(node, sectionPlace)} />
           </Accordion>
 
           <Accordion title="Outline & effects" icon={Sparkles}>

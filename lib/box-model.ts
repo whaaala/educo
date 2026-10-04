@@ -362,6 +362,7 @@ export interface BoxNode {
   spaced?: boolean;         // made under SPACE BY DEFAULT (2026-09-30): unset spacing reads `spaceDefaults`; saved pages lack it and keep theirs
   pageGrid?: boolean;       // page root only: laid out on the PAGE GRID (AC-37b, 2026-10-04) — every page made from now; saved pages lack it
   onPageGrid?: boolean;     // a block of a page-grid page (`markPageGrid`): its unset spacing reads `SPACE_GRID`
+  freeWidth?: boolean;      // its width was set FREE (Alt-drag, G-3 (2)): "Line up with the grid" leaves it alone
   gridSpace?: GridSpace;    // the site's / page's own side space and gap (G-2), on the page root and every block `markPageGrid` marks
   rowBand?: boolean;        // structural ROW band: a direct child of the page root that lays its sections out side-by-side (the page is a vertical stack of these)
   // Does this band run edge to edge, or sit its content on the page's measure? "band" (the default) is what
@@ -3535,7 +3536,7 @@ export function rowNarrowsAt(band: BoxNode, onPage = false): { ids: string[]; st
       const gapAt = (w: number) => (bandGutter(band) / 10) * unitAt(w);
       // A row ON THE PAGE keeps the page's side space itself (`pageBandInset`), and its query container is the page: every
       // width below is the PAGE's, so it carries that side space twice (G-1 #16 — three cards wrapped 2 + 1 at 1440 / 200%).
-      const edgeAt = (w: number) => (onPage ? 2 * (spaceFor(band).gutter / 10) * unitAt(w) : 0);
+      const edgeAt = (w: number) => (onPage ? ((rowSide(band, "left") + rowSide(band, "right")) / 10) * unitAt(w) : 0);
       const solve = (f: (w: number) => number, from: number) => { let w = from; for (let i = 0; i < 12; i++) w = f(w); return w; };
       needs = (k: number) => solve((w) => k * Math.max(...cols.map((_, i) => minAt(i, w))) + (k - 1) * gapAt(w) + edgeAt(w), k * word + (k - 1) * gap);
       atStart = solve((w) => Math.max(...cols.map((k, i) => minAt(i, w) / share(k))) + (n - 1) * gapAt(w) + edgeAt(w), atStart);
@@ -5075,7 +5076,7 @@ export function pageBandInset(band: BoxNode, onPage: boolean): CSSProperties {
   if (!onPage || !band.rowBand) return {};
   // A menu line on the page is ONE section: the gutter at its ends and the section space above and below (F1-d).
   const S = spaceFor(band);
-  if (gridBandOwnsGutter(band)) return { paddingLeft: u(S.gutter), paddingRight: u(S.gutter) };
+  if (gridBandOwnsGutter(band)) return { paddingLeft: u(rowSide(band, "left")), paddingRight: u(rowSide(band, "right")) };
   if (isMenuLine(band)) return { paddingLeft: u(S.gutter), paddingRight: u(S.gutter), paddingTop: u(S.section), paddingBottom: u(S.section) };
   const needs = (band.children ?? []).some((c) => c.spaced && (selfPaints(c) || c.preset)
     && c.margin === undefined && c.marginLeft === undefined && c.marginRight === undefined);
@@ -5163,6 +5164,86 @@ export type SectionFlag = boolean | "gridBand";
  *  in the HEADED UAT. It stays when the columns stack, because it is the row's, not the columns'. */
 export function gridBandOwnsGutter(band: BoxNode): boolean {
   return !!band.onPageGrid && !!band.rowBand && bandGutter(band) > 0;
+}
+
+/**
+ * EDGE TO EDGE (the user, 2026-10-04, G-3 (1)): the page grid's first and last columns are ordinary columns, and the side
+ * space is the default OUTER margin of what sits in them. In a row that owns the side space, the row's left side is its FIRST
+ * block's left margin and its right side its LAST block's right margin — the site's side space until that block sets its own
+ * (0 reaches the page edge). Kept on the row, not moved onto the blocks, so cards stay equal and a stack on a phone shares it.
+ */
+export function rowSide(band: BoxNode, side: "left" | "right"): number {
+  const kids = band.children ?? [];
+  const edge = side === "left" ? kids[0] : kids[kids.length - 1];
+  const own = edge && (side === "left" ? edge.marginLeft : edge.marginRight) ;
+  return own ?? edge?.margin ?? spaceFor(band).gutter;
+}
+
+/**
+ * THE SPAN OF A COLUMN OF A PAGE ROW (G-3 (3)) — how many of the page grid's `cols` columns its share covers on `bp`, or
+ * null when the block is not a column of a row of the page (its share is not of the page's width).
+ */
+export function spanAt(root: BoxNode, id: string, cols: number, bp: Breakpoint = "base"): number | null {
+  const p = findParent(root, id);
+  if (!root.pageGrid || !p || !p.parent.rowBand || !(root.children ?? []).some((c) => c.id === p.parent.id) || (p.parent.children?.length ?? 0) < 2) return null;
+  const w = resolveResponsive(p.parent.children![p.index], bp).width;
+  return w?.trim().endsWith("%") ? Math.min(cols, Math.max(0.5, Math.round((widthPct(w) / 100) * cols * 2) / 2)) : null;
+}
+
+/**
+ * Sets that span on `bp` (base or the screen's own slot): the block takes `span` of `cols`, and the block AFTER it on the
+ * row (the one before, for the last) gives exactly what it takes — never below one column (rule 19: the partner gives what
+ * it can, the edge stops there). Returns the same tree when nothing can change.
+ */
+export function setSpan(root: BoxNode, id: string, span: number, cols: number, bp: Breakpoint = "base"): BoxNode {
+  const p = findParent(root, id); const now = spanAt(root, id, cols, bp);
+  if (!p || now === null) return root;
+  const kids = p.parent.children!; const partner = kids[p.index + 1] ?? kids[p.index - 1];
+  const pw = resolveResponsive(partner, bp).width; const pSpan = pw?.trim().endsWith("%") ? (widthPct(pw) / 100) * cols : 1;
+  const want = Math.min(Math.max(0.5, span), now + Math.max(0, pSpan - 1));
+  if (want === now) return root;
+  const pct = (k: number) => `${((k / cols) * 100).toFixed(2)}%`;
+  let next = updateBoxResponsive(root, id, { width: pct(want) }, bp);
+  next = updateBoxResponsive(next, partner.id, { width: pct(pSpan - (want - now)) }, bp);
+  return next;
+}
+
+/**
+ * "LINE UP WITH THE GRID" (G-3 (5)): every column of every row of the page to the nearest whole column of `cols`, on `bp`.
+ * The row's EDGES are snapped (a gap before a block included), never each width alone, so a row still adds up to its line;
+ * every block keeps at least one column. A row holding a block placed free on purpose (`freeWidth`) is left alone.
+ */
+export function lineUpWithGrid(root: BoxNode, cols: number, bp: Breakpoint = "base"): { root: BoxNode; moved: number } {
+  let next = root, moved = 0;
+  for (const band of root.children ?? []) {
+    const kids = band.children ?? [];
+    if (!band.rowBand || kids.length < 2 || kids.some((k) => resolveResponsive(k, bp).freeWidth)) continue;
+    const rk = kids.map((k) => resolveResponsive(k, bp));
+    if (rk.some((k) => !k.width?.trim().endsWith("%"))) continue;
+    let at = 0, line = 0; const out: { id: string; gap: number; width: number; was: BoxNode }[] = [];
+    for (const k of rk) {
+      const gap = k.marginLeftPct ?? 0, w = widthPct(k.width);
+      const start = Math.max(line, Math.round(((at + gap) / 100) * cols)); at += gap + w;
+      const end = Math.max(start + 1, Math.round((at / 100) * cols));
+      out.push({ id: k.id, gap: start - line, width: end - start, was: k }); line = end;
+    }
+    for (const o of out) {
+      const width = `${((o.width / cols) * 100).toFixed(2)}%`, gapPct = o.gap ? +((o.gap / cols) * 100).toFixed(2) : undefined;
+      if (Math.abs(parseFloat(width) - widthPct(o.was.width)) < 0.006 && Math.abs((gapPct ?? 0) - (o.was.marginLeftPct ?? 0)) < 0.006) continue; // already on its lines (as numbers: "50%" is "50.00%")
+      next = updateBoxResponsive(next, o.id, { width, marginLeftPct: gapPct, restWidth: undefined, restAt: undefined, restBy: undefined }, bp); moved++;
+    }
+  }
+  return { root: next, moved };
+}
+
+/** The outer-spacing defaults the Inspector shows for a block: `outerDefaults`, plus the row's side on the first / last block
+ *  of a row that owns the side space (`rowSide`) — so "Default" there is the space it really has. */
+export function outerSpaceDefaults(root: BoxNode, id: string): [number, number, number, number] {
+  const node = findBox(root, id); const p = findParent(root, id);
+  const d = node ? outerDefaults(node, sectionPlaceIn(root, id)) : ([0, 0, 0, 0] as [number, number, number, number]);
+  if (!p || !gridBandOwnsGutter(p.parent)) return d;
+  const kids = p.parent.children ?? []; const g = spaceFor(p.parent).gutter;
+  return [d[0], kids[kids.length - 1]?.id === id ? g : d[1], d[2], kids[0]?.id === id ? g : d[3]];
 }
 
 export function sectionContent(child: BoxNode, parentIsPage: boolean, parentIsPageBand: boolean, band?: BoxNode): SectionFlag {
@@ -5884,6 +5965,13 @@ function gutterCSS(s: CSSProperties, child: BoxNode, parent: BoxNode): void {
   if (s.minWidth === "100%") s.minWidth = `calc(100% - ${G})`;
   else if (typeof s.minWidth === "string" && s.minWidth.startsWith("min(100%,")) s.minWidth = s.minWidth.replace("min(100%,", `min(100% - ${G},`);
   const m = marginCSS(child);
+  if (gridBandOwnsGutter(parent)) {
+    const k = parent.children ?? [];
+    // only a LENGTH margin is the row's side (`rowSide`); a gap opened by dragging the left edge is a share of the line
+    // (`marginLeftPct`) and stays the block's own (G3-11 — the width round trip could no longer open a space)
+    if (k[0]?.id === child.id && child.marginLeftPct === undefined) { m.marginLeft = undefined; if (s.marginLeft !== "auto") s.marginLeft = undefined; }
+    if (k[k.length - 1]?.id === child.id) { m.marginRight = undefined; if (s.marginRight !== "auto") s.marginRight = undefined; }
+  }
   const side = (v: unknown) => (v === "auto" ? "auto" : `calc(${v ?? "0px"} + ${half})`);
   s.marginLeft = side(s.marginLeft ?? m.marginLeft);
   s.marginRight = side(s.marginRight ?? m.marginRight);

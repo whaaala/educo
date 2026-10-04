@@ -149,3 +149,45 @@ Feature: The page grid (AC-37b)
     Given the page-grid panel is open
     Then every field has a visible label and can be changed with the keyboard
     And Escape closes the panel and returns focus to the "Layout guides" switch
+
+  # ── G-3 · placing on columns and rows ─────────────────────────────────────────────────────────────
+
+  Scenario: The columns run edge to edge, and the side space is the outer blocks' own
+    Given a row of three cards on a page-grid page and the layout guides on
+    Then the guides draw 12 columns from one page edge to the other
+    And the default margin is drawn inside the first and last columns
+    When I set the first card's left outer spacing to 0
+    Then it reaches the page edge and the right side keeps its space
+    And "Back to default" puts the space back
+
+  Scenario Outline: A dragged edge snaps to the page grid
+    Given two blocks side by side on a page-grid page at Desktop
+    When I drag the edge between them to about 41 % <holding>
+    Then the left block takes <result> and the far edge does not move
+    And a label beside the edge says how many columns it takes, here and on a phone
+
+    Examples:
+      | holding       | result          |
+      | nothing       | 5 of 12         |
+      | Shift         | 4½ of 12        |
+      | Alt           | 41 %, free      |
+
+  Scenario: Columns by number and by keyboard, per screen
+    Given a block half the width of its row is selected
+    When I set "Columns" to 7 at Desktop
+    Then it takes 7 of 12 and the block beside it gives one column
+    When I press Alt and the left arrow at Mobile
+    Then it takes one column fewer on the phone only, and a screen reader hears how many
+
+  Scenario: A block a number of rows tall
+    Given a short block on a page-grid page
+    When I set "Rows" to 3
+    Then it is at least three row lines tall
+    And it still grows when its words need more room
+
+  Scenario: Line up with the grid
+    Given a page whose blocks were dragged to widths between the lines
+    When I choose "Line up with the grid" in Page settings
+    Then every block moves to the nearest whole column and I am told how many moved
+    And a block I placed free with Alt stays where it is
+    And one Undo puts them all back

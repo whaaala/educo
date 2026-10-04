@@ -38,6 +38,74 @@ written BEFORE the pass; one HEADED UAT on a fresh production build ticks every 
 only when every line is ticked and every bug it found is fixed and re-checked. Guarded by
 `tests/unit/task-tree-batches.test.ts`. Every item names what it IS in words, never a bare number.
 
+- `[x]` **BATCH G-3 · Placing on columns and rows** — CLOSED 2026-10-04 (HEADED UAT `scripts/uat/uat-g3-headed.js`, six windows,
+  65 checks 0 failed on the final build (`logs/g3-uat6.out`), Preview at all 70 screens at 100 / 150 / 200 % text; G-2's suite
+  re-run as regression 128/0 (`g2-regress-g3c.out`); gate: see the commit) — OPENED 2026-10-04 (session 5da86722, the user's "go") (area: page grid
+  · 6 changes). G-3 as signed under R-4 was split so each batch keeps ≤ 6 changes: THIS batch is placing; **G-3b** (queued, below)
+  is the page emitted as a real CSS grid (D5) with start lines, "to the last line", full / bleed / half-bleed and "Space between
+  columns". MEASURED FIRST (code): in a page-grid row the side space is padding on the ROW (`pageBandInset`), which is unselectable
+  scaffolding — a person cannot change it for one block, only for the whole site; the guides drew it as strips OUTSIDE the columns.
+  CHANGES:
+  - `[x]` (1) EDGE TO EDGE (the user, 2026-10-04): the guides' columns span the whole page, the default side space drawn as a
+    margin INSIDE the first and last columns; the first / last block of a row OWNS its outer side — its Spacing shows "Default",
+    a value of its own (0 included) takes over from the row on that side; equal cards and gaps unchanged; the span chip counts
+    the columns whose middle lies inside the block
+  - `[x]` (2) COLUMN SNAP on resize: a page-grid block's dragged edge moves line to line (`snapShare`), edge-anchored (rule 19),
+    Shift = half-lines, Alt = free (kept as dragged); a live label "5 of 12 · phone 3 of 6" beside the edge
+  - `[x]` (3) "COLUMNS" in the Position panel: the span per screen as a number field ("set here" / follows), Alt ← / → one column,
+    Alt Shift ← / → half, announced to screen readers ("5 of 12 columns")
+  - `[x]` (4) ROWS TALL: "Rows: N" per block → at least N row steps tall, still growing with its words (choice A); the row lines
+    of the guides line up with it
+  - `[x]` (5) "LINE UP WITH THE GRID" in Page settings: every block of the page to the nearest whole column, says how many moved,
+    one Undo; a block marked "Free placement" is left alone
+  - `[x]` (6) NESTED TREES (carried from R-4): section → Grid block → card → button, built through the UI with random values, in
+    the UAT below
+  HEADED UAT CHECKLIST (written before the pass; six windows; fresh production build; built through the UI; Preview at all 70
+  screens of `screens.js`; the editor's four themes):
+  - `[x]` U1 guides: 12 columns across the whole page at every device (6 on Mobile), the default margin drawn inside columns 1 and
+    12; a half / third / full block's chip right at every device
+  - `[x]` U2 the first card of a three-card row: Spacing shows "Default" left; set to 0 → it reaches the page edge, the other two
+    and the right side unchanged; back to default → equal again; canvas == Preview at all 70 screens
+  - `[x]` U3 snap: drag the edge between two halves at Desktop to ≈ 41 % → 5 of 12 / 7 of 12, the far edge fixed; Shift → 4½;
+    Alt → kept as dragged; at the width where the partner runs out the edge stops (rule 19); every rung after it
+  - `[x]` U4 "Columns" field and Alt ← / → at Desktop and Phone: each screen its own, the others untouched; Undo; reload
+  - `[x]` U5 Rows: 3 on a short block → ≥ 3 row lines tall; long words → it grows; 150 % and 200 % text still lays out
+  - `[x]` U6 "Line up with the grid" on a page dragged with Alt: blocks move to whole columns, the count is said, one Undo
+  - `[x]` U7 nested trees (random, seeded only to CHOOSE the values, built through the UI) at all 70 screens: no sideways scroll,
+    no overlaps, no word broken
+  - `[x]` U8 the four editor themes: every new control labelled, readable (≥ 4.5:1), keyboard reachable
+  DECIDED by the user mid-batch (2026-10-04): the HALF-LINES show only while Shift is held ("some lines are faint" — with them
+  always on, a faint line sat beside every column line); every line otherwise is a column or a row line of the same strength.
+  LEDGER G-3:
+  - `[x]` G3-1 · TEST (mine): "the first block's own margin is never applied twice" checked for `u(1)` when the value was 0 —
+    proved nothing → asserts the exact half gap; red under mutation for every value
+  - `[x]` G3-2 · TEST (mine): slice B aimed the drag as a share of the row's OUTER box (its side space included) → aims at the
+    DRAWN guide lines, as a person does
+  - `[x]` G3-3 · REAL (mine): Alt ← / → did nothing after clicking a block — the canvas keeps the focus on the last-clicked
+    toolbar button and the Z1-j rule gave that button the arrows → Alt + an arrow passes (no control uses it). Guard red without the fix
+  - `[x]` G3-4 · consequence of G3-3 (the Undo meant for the phone change undid the Columns change) — gone with it
+  - `[x]` G3-5 · REAL, FOUND BY THE USER FIRST ("the cells are not evenly spaced"): the guides' 1px lines inside a page drawn at
+    61 % were 0.61 of a screen pixel and vanished between pixels — rows measured 29 / 15 / 29px, half the middle lines missing →
+    lines drawn on whole screen pixels (G3-7); MEASURED by decoding the picture: rows 14 / 15 (14.6 true), columns 65, at 100 % 24
+  - `[x]` G3-6 · TEST (mine): the evenness check photographed the selected block's toolbar and chip, and its ±1.5px was tighter
+    than pixel rounding of a 32.6px spacing → nothing selected, every gap within 25 % of the median (fails the old 29 / 15 and
+    63 / 31, passes 31–34)
+  - `[x]` G3-7 · REAL, FOUND BY THE USER FIRST ("one is more prominent than others"): at a zoomed-out view a line landed between
+    pixels and was smeared lighter (shades 133–247) → `GuideLines` draws every line in screen space on a whole pixel; the in-page
+    guides keep the geometry and the side space. MEASURED: every column line 402, both zooms; G-2's line-contrast check reads it
+  - `[x]` G3-8 · REAL, CARRIED TO G-3b BY THE USER'S DECISION (2026-10-04, "Fix in G-3b"): a snapped edge lands 1.7–2.6px from
+    the drawn line at 1280 — shares are of the row inset by its side space, the guides run edge to edge; G-3b's real CSS grid puts
+    blocks ON the lines (rem / fr, nothing stored in px — the user asked, answered)
+  - `[x]` G3-9 · TEST: G-2's script asserted G-2's drawing (strips outside the columns, the chip by width, rows as a gradient),
+    which the user's edge-to-edge decision replaced → reads the new drawing; the geometry is checked in uat-g3 slice A
+  - `[x]` G3-10 · TEST (mine): the line-shade check read the first two pixels of a run, which on Mobile began on the frame's
+    faint ring before the line → the darkest pixel of the run (first guessed a half-pixel photo edge — MEASURED, not it)
+  - `[x]` G3-11 · REAL (mine), CAUGHT BY THE GATE (`width-round-trip.spec.ts`): change (1) cleared the first block's own left
+    margin as "the row's side" — including a gap opened by dragging its left edge (`marginLeftPct`, a share of the line), so the
+    space could not open at all ("-0") → only a LENGTH margin is the row's side. Unit guard red before / green after; the gesture
+    added to the headed slice B: opens 126.8px (two columns, snapped), closes back to 0.0 / 0.0
+  - `[x]` G3-12 · TEST: the same spec dragged FREELY and expected > 100px; on the page grid the edge now snaps (one 83px column)
+    → it holds Alt (free), the drag it was written for; with the G3-11 bug back it still fails
 - `[x]` **BATCH G-2 · Layout guides + the page-grid panel** — CLOSED 2026-10-04 (HEADED UAT `scripts/uat/uat-g2-headed.js`, six
   windows, 134 checks 0 failed, Preview at all 70 screens, four editor themes + four website themes, `logs/g2-uat6.out`; gate:
   typecheck 0 · eslint 0 errors · vitest 4,236 · test:fast 806/806) — OPENED 2026-10-04 (session 5da86722, the handover of 9fa0fee9)
@@ -266,7 +334,11 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
         a section / stack with a background still bleeds to the edge and its contents keep the margin; a row of equal cards stays
         equal (each gives up the same width); saved pages untouched. Supersedes G-1's "side space as section padding outside the
         columns" (`gridBandOwnsGutter` / `pageBandInset`) for page-grid pages; the guides are redrawn with it (no side strips)
-      - QUEUED **G-3 · placing, extended**: (1) page-grid sections emitted as a CSS grid (Q5), COLUMNS EDGE TO EDGE with the side space as the items' default outer margin (above) — WITH "span N rows" (the user,
+      - QUEUED **G-3b · the page as a real CSS grid** (split from G-3 2026-10-04; G-3 itself is OPEN in BATCHES as placing):
+        (1) page-grid sections emitted as a CSS grid (D5) · (2) start line, "to the last line", full / bleed / half-bleed per rung
+        (A1–A5, A15) · (3) Alt free → lines + margin · (4) the fit rule for every block · (5) "Space between columns" ·
+        (6) rows as real grid rows ("span N rows" across sections). THE ORIGINAL G-3 LINE, KEPT:
+      - (split) **G-3 · placing, extended**: (1) page-grid sections emitted as a CSS grid (Q5), COLUMNS EDGE TO EDGE with the side space as the items' default outer margin (above) — WITH "span N rows" (the user,
         2026-10-04: a block covers N row lines, e.g. a big gallery photo 2 rows tall; height still grows with its words) and the
         panel's "Space between columns" (carried from G-2) · (2) A1–A5 + A15 lines per rung
         (from / to / to the last line / full / bleed / half-bleed / half-lines) · (3) Alt free → lines + margin · (4) the
@@ -2251,7 +2323,7 @@ sent), and my research. Nothing on the layout is done until every line here is c
     falls back into the flow unless placed at that rung; the page audit and Page check warn when it covers words;
     shown as drag on the canvas with the half-lines drawn, a Position panel (start / end, column / row, spill above /
     below) and a gallery of ready-made placements (RULE S / UI). Joins AC-10, ST-5, AC-35 — one build
-    - `[>]` AC-37b ← YOU ARE HERE (next leaf: BATCH G-3 · placing on columns AND rows — G-2 CLOSED 2026-10-04 (134 headed checks); P-0 CLOSED 2026-10-04 (R4-1 … R4-5 fixed, 30 headed checks); R-4 SIGNED with D1–D5 (session 9fa0fee9); then G-3, P-1, P-2, G-4, P-3, G-5, G-6. G-1 CLOSED 2026-10-04 (see BATCHES). Plan APPROVED 2026-10-04 with the user's decisions below. Earlier: research R-3 DONE and SIGNED 2026-10-04
+    - `[>]` AC-37b ← YOU ARE HERE (next leaf: BATCH G-3b · the page as a real CSS grid — G-3 CLOSED 2026-10-04 (63 headed checks, G3-8 carried to G-3b by the user); earlier: BATCH G-3 · placing on columns AND rows — G-2 CLOSED 2026-10-04 (134 headed checks); P-0 CLOSED 2026-10-04 (R4-1 … R4-5 fixed, 30 headed checks); R-4 SIGNED with D1–D5 (session 9fa0fee9); then G-3, P-1, P-2, G-4, P-3, G-5, G-6. G-1 CLOSED 2026-10-04 (see BATCHES). Plan APPROVED 2026-10-04 with the user's decisions below. Earlier: research R-3 DONE and SIGNED 2026-10-04
       (`ff5c53a`, `4418202`); build to every decision recorded under R-3 below; the mockups settle the open three (row
       snap · the phone gap 11 vs 16 px · panel per site or per page) → the user's approval → build) · **THE PAGE GRID — DECIDED by the user 2026-10-03: done RIGHT AFTER L-4 closes, BEFORE L-5, L-6 and the
       frozen list's placement items** (they are built on it). NAMES (decided): "page grid" in code and docs; the lines a

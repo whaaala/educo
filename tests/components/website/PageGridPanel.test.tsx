@@ -3,7 +3,8 @@ import { render, screen, fireEvent } from "@testing-library/react";
 import PageGridPanel from "@/components/website/box/PageGridPanel";
 import BoxCanvas from "@/components/website/box/BoxCanvas";
 import { DEFAULT_THEME } from "@/lib/site-storage";
-import { u, pageSideSpace, SPACE_GRID, baseUnit } from "@/lib/box-model";
+import { u, pageSideSpace, SPACE_GRID, baseUnit, createContainer, markPageGrid, normalizeRowBands, makeRowBand, type BoxNode } from "@/lib/box-model";
+import { blockForKind } from "@/lib/box-presets";
 import { emptyPageRoot } from "@/lib/box-site";
 import { guideColor, guideInk } from "@/lib/page-grid";
 import { contrastRatio } from "@/lib/educo-ui/color";
@@ -64,11 +65,12 @@ describe("the layout guides on the canvas", () => {
   const canvas = (guides: Parameters<typeof BoxCanvas>[0]["guides"], root = emptyPageRoot()) =>
     render(<BoxCanvas root={root} theme={DEFAULT_THEME} onChange={() => {}} guides={guides} />).container;
 
-  it.each([6, 12, 16])("draws %i columns from the one template, the side space as padding", (cols) => {
+  it.each([6, 12, 16])("draws %i columns from the one template, EDGE TO EDGE, the side space shaded inside the first and last (G-3 (1))", (cols) => {
     const g = canvas({ cols, rowStepRem: 1.5, rows: false }).querySelector<HTMLElement>("[data-layout-guides]")!;
     expect(g.querySelectorAll("[data-guide-col]")).toHaveLength(cols);
     expect(g.style.gridTemplateColumns).toBe(`repeat(${cols}, minmax(0, 1fr))`);
-    expect(g.style.paddingInline).toBe(u(SPACE_GRID.gutter));
+    expect(g.style.paddingInline).toBe(""); // the columns run to the page's edges
+    expect(g.style.backgroundImage).toContain(`0 ${u(SPACE_GRID.gutter)}`); // …and the default margin is drawn inside them
     expect(g.getAttribute("aria-hidden")).toBe("true");
     expect(g.style.pointerEvents).toBe("none");
   });
@@ -76,14 +78,21 @@ describe("the layout guides on the canvas", () => {
   it("the side strips follow the site's own side space", () => {
     const root = { ...emptyPageRoot(), gridSpace: { gutter: 0 } };
     const g = canvas({ cols: 12, rowStepRem: 1.5, rows: true }, root).querySelector<HTMLElement>("[data-layout-guides]")!;
-    expect(g.style.paddingInline).toBe(u(pageSideSpace(root)));
-    expect(g.style.backgroundImage).toContain("repeating-linear-gradient"); // the row lines
+    expect(g.style.backgroundImage).toContain(`0 ${u(pageSideSpace(root))}`);
+    expect(g.dataset.rowStep).toBe("1.5"); // the row lines: drawn on screen pixels from this step (G3-7)
   });
 
   it("G2-2 · the strips are measured in the page's own unit, not a fallback (23px on every screen in the HEADED UAT)", () => {
     const root = { ...emptyPageRoot(), baseFont: 12 };
     const g = canvas({ cols: 12, rowStepRem: 1.5, rows: false }, root).querySelector<HTMLElement>("[data-layout-guides]")!;
     expect(g.style.getPropertyValue("--box-u")).toBe(baseUnit(12));
+  });
+
+  it("G3-5 / G3-7 · the in-page guides draw no lines of their own (they are drawn on whole screen pixels by GuideLines)", () => {
+    const g = canvas({ cols: 12, rowStepRem: 1.5, rows: true }).querySelector<HTMLElement>("[data-layout-guides]")!;
+    expect(g.querySelector<HTMLElement>("[data-guide-col]")!.getAttribute("style")).toBeNull();
+    expect(g.style.backgroundImage).not.toContain("repeating-linear-gradient");
+    expect(g.dataset.rowStep).toBe("1.5");
   });
 
   it("off: nothing drawn", () => {
@@ -95,5 +104,34 @@ describe("the layout guides on the canvas", () => {
     const c = guideColor(bg);
     expect(contrastRatio(c, bg)).toBeGreaterThanOrEqual(3);
     expect(contrastRatio(guideInk(c), c)).toBeGreaterThanOrEqual(4.5);
+  });
+});
+
+describe("G-3 (3) · Alt ← / → on a column of a page row", () => {
+  const page = () => {
+    const cols = ["50%", "50%"].map((w) => createContainer("column", { width: w, children: [blockForKind("text")] } as Partial<BoxNode>));
+    return markPageGrid(normalizeRowBands({ ...emptyPageRoot(), children: [makeRowBand(cols)] } as BoxNode));
+  };
+  it.each([[{ key: "ArrowRight" }, "58.33%", "7 of 12 columns"], [{ key: "ArrowLeft" }, "41.67%", "5 of 12 columns"], [{ key: "ArrowRight", shiftKey: true }, "54.17%", "6½ of 12 columns"]])(
+    "%o → %s, and a screen reader hears \"%s\"", (keys, width, said) => {
+      const root = page(); const a = root.children![0].children![0]; const onChange = vi.fn();
+      const { container } = render(<BoxCanvas root={root} theme={DEFAULT_THEME} selectedIds={[a.id]} onSelectIds={() => {}} onChange={onChange} pageGrid={{ columns: 12 }} />);
+      fireEvent.keyDown(document, { ...keys, altKey: true });
+      const next = onChange.mock.calls[0][0] as BoxNode;
+      expect(next.children![0].children![0].width).toBe(width);
+      expect(container.querySelector('[role="status"][aria-live="polite"]')!.textContent).toBe(said);
+    });
+  it("G3-3 · it works while a toolbar button still holds the focus (the click on the block kept it there)", () => {
+    const root = page(); const a = root.children![0].children![0]; const onChange = vi.fn();
+    render(<><button>Mobile</button><BoxCanvas root={root} theme={DEFAULT_THEME} selectedIds={[a.id]} onSelectIds={() => {}} onChange={onChange} pageGrid={{ columns: 12 }} /></>);
+    screen.getByRole("button", { name: "Mobile" }).focus();
+    fireEvent.keyDown(document, { key: "ArrowRight", altKey: true });
+    expect((onChange.mock.calls[0]?.[0] as BoxNode | undefined)?.children![0].children![0].width).toBe("58.33%");
+  });
+  it("without the page grid nothing happens", () => {
+    const root = page(); const a = root.children![0].children![0]; const onChange = vi.fn();
+    render(<BoxCanvas root={root} theme={DEFAULT_THEME} selectedIds={[a.id]} onSelectIds={() => {}} onChange={onChange} />);
+    fireEvent.keyDown(document, { key: "ArrowRight", altKey: true });
+    expect(onChange).not.toHaveBeenCalled();
   });
 });

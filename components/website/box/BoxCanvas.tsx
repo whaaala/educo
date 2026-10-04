@@ -16,7 +16,7 @@ import { createPortal } from "react-dom";
 import { Link2, Plus, ChevronUp, ChevronDown, Copy, Scissors, ClipboardPaste, Trash2, Upload, GripVertical, MoreVertical, Rows3, Columns3, Grid3x3, Type, Heading as HeadingIcon, MousePointerClick, Image as ImageIcon, Layers, BringToFront, SendToBack, Video as VideoIcon, Sparkles, Minus as MinusIcon, List as ListIcon, Code2, Star, Lock, LockOpen, Ungroup } from "lucide-react";
 import type { SiteTheme } from "@/lib/site-storage";
 import {
-  type BoxNode, type BoxType, pageSideSpace,
+  type BoxNode, type BoxType, pageSideSpace, spanAt, setSpan,
   containerStyle, childStyle, marginCSS, leafPaddingCSS, outerSpaceCSS, pageBandInset, pagePinCover, sectionContent, sizeToCSS, u, baseUnit, floatingReserve, floatStacksOnMobile, createContainer, createElement, createComponent,
   updateBox, deleteBox, insertBox, moveBoxStep, duplicateBox, moveBox, cloneBox, findParent, isAncestor, isContainer, containerLabel, widthPct, stackWithBlock, fitBand, PILL, blockTypography,
   isFloating, floatBox, unfloatBox, groupBoxes, ungroupBoxes, bringToFront, sendToBack, bringForward, sendBackward, packRowLines, allocateLine, type LineFollower,
@@ -39,7 +39,7 @@ import { isRegistryComponent, renderComponent } from "@/lib/educo-ui/registry";
 import { EditableText, ImageBox } from "@/components/website/sections/SectionKit";
 import ItemCrudLayer, { type SelectedItem } from "@/components/website/box/ItemCrudLayer";
 import { zoomOf } from "@/lib/canvas-zoom";
-import { gridTemplate, guideColor, guideInk, spanOfWidth } from "@/lib/page-grid";
+import { gridTemplate, guideColor, guideInk, spanOfRect, columnsAt, spanLabel, snapEdgePx, spanText, type PageGridSettings } from "@/lib/page-grid";
 
 /** Layered background CSS: base fill (colour/gradient) → image → overlay; content renders above. */
 function backgroundStyle(node: BoxNode): React.CSSProperties {
@@ -413,29 +413,74 @@ export interface LayoutGuidesView { cols: number; rowStepRem: number; rows: bool
 
 /**
  * THE LAYOUT GUIDES (AC-37b, G-2) — the page grid drawn over the canvas, never published. The columns come from the ONE
- * template (`gridTemplate`) and the side strips from the page's own side space (`pageSideSpace`, through `u()` as the
- * sections are), so the lines sit where the blocks do on every screen. Each column shows its middle line faintly.
+ * template (`gridTemplate`) and run EDGE TO EDGE (G-3 (1), the user 2026-10-04): the first and last are ordinary columns, and
+ * the side space (`pageSideSpace`, through `u()` as the sections are) is shaded INSIDE them as the default margin of what
+ * sits there. Each column shows its middle line faintly.
  */
 function LayoutGuides({ view, side, unit, color }: { view: LayoutGuidesView; side: string; unit: string; color: string }) {
   const strip = `color-mix(in oklch, ${color} 14%, transparent)`;
-  const rowLines = view.rows
-    ? `, repeating-linear-gradient(to bottom, transparent 0 calc(${view.rowStepRem}rem - 1px), color-mix(in oklch, ${color} 35%, transparent) calc(${view.rowStepRem}rem - 1px) ${view.rowStepRem}rem)`
-    : "";
   return (
-    <div aria-hidden="true" data-layout-guides={view.cols} style={{
+    <div aria-hidden="true" data-layout-guides={view.cols} data-row-step={view.rows ? view.rowStepRem : undefined} style={{
       // the page root's own base unit: `side` is a `u()` length, and outside the root it fell back to 23px on every screen (G2-2)
       ["--box-u" as string]: unit,
       position: "absolute", inset: 0, pointerEvents: "none", zIndex: CHROME_Z.guides, display: "grid",
-      gridTemplateColumns: gridTemplate(view.cols), paddingInline: side, boxSizing: "border-box",
-      backgroundImage: `linear-gradient(to right, ${strip} 0 ${side}, transparent ${side} calc(100% - ${side}), ${strip} calc(100% - ${side}))${rowLines}`,
+      gridTemplateColumns: gridTemplate(view.cols), boxSizing: "border-box",
+      backgroundImage: `linear-gradient(to right, ${strip} 0 ${side}, transparent ${side} calc(100% - ${side}), ${strip} calc(100% - ${side}))`,
     }}>
-      {Array.from({ length: view.cols }, (_, i) => (
-        <div key={i} data-guide-col style={{
-          borderInlineStart: `1px dashed ${color}`, ...(i === view.cols - 1 ? { borderInlineEnd: `1px dashed ${color}` } : {}),
-          backgroundImage: `linear-gradient(to right, transparent calc(50% - 0.5px), color-mix(in oklch, ${color} 30%, transparent) calc(50% - 0.5px) calc(50% + 0.5px), transparent calc(50% + 0.5px))`,
-        }} />
-      ))}
+      {Array.from({ length: view.cols }, (_, i) => <div key={i} data-guide-col />)}
     </div>
+  );
+}
+
+/**
+ * THE GUIDES' LINES, IN SCREEN SPACE (G3-7). Drawn inside the zoomed page, a line one screen pixel wide falls BETWEEN pixels
+ * wherever the zoom puts it there, and the browser smears it lighter across two — at a 61 % fit some lines looked darker than
+ * others (and at 1px, before G3-5, whole rows vanished). So the in-page guides keep the geometry (`gridTemplate`, the side
+ * space), and the lines are drawn here, each on a WHOLE screen pixel, measured from those columns: identical at any zoom.
+ * Re-measured on scroll, resize and the device-change transition; clipped to the canvas like the selection chrome.
+ */
+function GuideLines({ color, rows }: { color: string; rows: boolean }) {
+  // THE HALF-LINES SHOW ONLY WHILE SHIFT IS HELD (the user, 2026-10-04): they are what Shift snaps to, and drawn all the time
+  // beside the column lines they read as "some lines are faint". Without Shift every line on screen is a column or a row line.
+  const [shift, setShift] = useState(false);
+  useEffect(() => {
+    const on = (e: KeyboardEvent) => setShift(e.shiftKey); const off = () => setShift(false);
+    window.addEventListener("keydown", on); window.addEventListener("keyup", on); window.addEventListener("blur", off);
+    return () => { window.removeEventListener("keydown", on); window.removeEventListener("keyup", on); window.removeEventListener("blur", off); };
+  }, []);
+  const [m, setM] = useState<{ xs: number[]; mids: number[]; top: number; bottom: number; step: number; clip: DOMRect } | null>(null);
+  useLayoutEffect(() => {
+    let raf = 0;
+    const measure = () => {
+      const g = document.querySelector<HTMLElement>("[data-layout-guides]"); const sc = g?.closest("[data-canvas-scroller]");
+      if (!g || !sc) { setM(null); return; }
+      const cols = [...g.querySelectorAll("[data-guide-col]")].map((c) => c.getBoundingClientRect()); const r = g.getBoundingClientRect();
+      const zoom = r.width / (g.offsetWidth || 1), stepRem = Number(g.dataset.rowStep || 0);
+      setM({ xs: [...cols.map((c) => Math.round(c.left)), Math.round(r.right) - 1], mids: cols.map((c) => Math.round((c.left + c.right) / 2)),
+        top: r.top, bottom: r.bottom, step: stepRem * parseFloat(getComputedStyle(document.documentElement).fontSize) * zoom, clip: sc.getBoundingClientRect() });
+    };
+    const soon = () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(measure); };
+    measure();
+    const ro = new ResizeObserver(soon); const g = document.querySelector("[data-layout-guides]"); if (g) ro.observe(g);
+    window.addEventListener("scroll", soon, true); window.addEventListener("resize", soon); window.addEventListener("transitionend", soon, true);
+    return () => { cancelAnimationFrame(raf); ro.disconnect(); window.removeEventListener("scroll", soon, true); window.removeEventListener("resize", soon); window.removeEventListener("transitionend", soon, true); };
+  }, []); // once: a ResizeObserver, scroll, resize and the transition re-measure it (measuring every render would loop on its own state)
+  if (!m) return null;
+  const { clip } = m, from = Math.max(m.top, clip.top), to = Math.min(m.bottom, clip.bottom);
+  if (to <= from) return null;
+  const line = (x: number, a: number, key: string) => <div key={key} style={{ position: "absolute", left: x - clip.left, top: from - clip.top, width: 1, height: to - from, background: `color-mix(in oklch, ${color} ${a}%, transparent)` }} />;
+  const rowLines: ReactNode[] = [];
+  if (rows && m.step >= 3) for (let k = Math.ceil((from - m.top) / m.step); m.top + k * m.step <= to; k++) {
+    const y = Math.round(m.top + k * m.step) - 1;
+    if (k > 0) rowLines.push(<div key={`r${k}`} style={{ position: "absolute", left: Math.round(m.xs[0]) - clip.left, top: y - clip.top, width: m.xs[m.xs.length - 1] - m.xs[0] + 1, height: 1, background: `color-mix(in oklch, ${color} 35%, transparent)` }} />);
+  }
+  return createPortal(
+    <div aria-hidden="true" data-guide-lines style={{ position: "fixed", left: clip.left, top: clip.top, width: clip.width, height: clip.height, overflow: "hidden", pointerEvents: "none", zIndex: CHROME_Z.guides }}>
+      {rowLines}
+      {shift && m.mids.map((x, i) => line(x, 45, `m${i}`))}
+      {m.xs.map((x, i) => line(x, 100, `c${i}`))}
+    </div>,
+    document.body,
   );
 }
 
@@ -448,8 +493,9 @@ function SpanChip({ blockId, cols, color }: { blockId: string; cols: number; col
   useLayoutEffect(() => {
     const measure = () => {
       const el = document.querySelector(`[data-box-id="${CSS.escape(blockId)}"]`);
-      const col = document.querySelector("[data-layout-guides] > [data-guide-col]");
-      setSpan(el && col ? spanOfWidth(el.getBoundingClientRect().width, col.getBoundingClientRect().width, cols) : null);
+      const middles = [...document.querySelectorAll("[data-layout-guides] > [data-guide-col]")].map((c) => { const r = c.getBoundingClientRect(); return (r.left + r.right) / 2; });
+      const r = el?.getBoundingClientRect();
+      setSpan(r && middles.length ? spanOfRect(r.left, r.right, middles) : null);
     };
     measure();
     window.addEventListener("resize", measure);
@@ -646,7 +692,7 @@ function ChromeMirror({ blockId, children }: { blockId: string; children: ReactN
 }
 
 export default function BoxCanvas({
-  root, theme, editable = true, selectedId, onSelectId, selectedIds, onSelectIds, onChange, onResized, minHeight = 600, breakpoint = "base", showHidden = false, marqueeRoom, guides = null,
+  root, theme, editable = true, selectedId, onSelectId, selectedIds, onSelectIds, onChange, onResized, minHeight = 600, breakpoint = "base", showHidden = false, marqueeRoom, guides = null, pageGrid,
 }: {
   root: BoxNode;
   theme: SiteTheme;
@@ -664,6 +710,7 @@ export default function BoxCanvas({
   breakpoint?: Breakpoint; // active responsive breakpoint — edits at tablet/mobile write per-breakpoint overrides
   showHidden?: boolean;    // draw blocks hidden at this breakpoint faintly (off: they are gone, as on the published page)
   guides?: LayoutGuidesView | null; // the layout guides (G-2): the page grid drawn over the canvas while on; never published
+  pageGrid?: PageGridSettings;      // the page grid in force (resolved) — a page row's resized edge snaps to its lines (G-3 (2))
 }) {
   const guideHue = guideColor(theme.background);
   const [menuFor, setMenuFor] = useState<string | null>(null); // which box's actions dropdown is open
@@ -673,6 +720,8 @@ export default function BoxCanvas({
   const [menuAnchor, setMenuAnchor] = useState<{ top: number; left: number; bottom: number; right: number } | null>(null); // the ⋯ button's rect (PortalMenu positions off this)
   const closeMenu = () => { setMenuFor(null); setMenuAnchor(null); };
   const [resizing, setResizing] = useState(false);
+  const [spoken, setSpoken] = useState(""); // what a screen reader hears after a keyboard span change ("5 of 12 columns")
+  const [spanLive, setSpanLive] = useState<{ x: number; y: number; text: string } | null>(null); // "5 of 12 · phone 3 of 6" beside a snapping edge
   const [resizeCursor, setResizeCursor] = useState<string | null>(null); // cursor shown by the full-screen overlay while resizing (so it never disappears)
   const [dragId, setDragId] = useState<string | null>(null); // box being dragged (after the move threshold)
   const [dragGhost, setDragGhost] = useState<{ x: number; y: number; w: number; label: string } | null>(null); // floating preview that follows the cursor
@@ -1118,7 +1167,8 @@ export default function BoxCanvas({
       // keyboard), and Delete on a focused button DELETED the selected block. A focused control owns the keys it USES —
       // Escape and the Ctrl shortcuts mean nothing to a button, so they still reach the page (Escape steps out a level
       // even after an Inspector button was clicked; taking it too broke selecting on tier-99 page 153).
-      if (["Enter", " ", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "Delete", "Backspace", "Home", "End"].includes(e.key)
+      // Alt + an arrow is no control's key (G3-3): it reaches the page even when the last-clicked toolbar button kept the focus.
+      if (["Enter", " ", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "Delete", "Backspace", "Home", "End"].includes(e.key) && !(e.altKey && e.key.startsWith("Arrow"))
         && ae && ae !== document.body && !canvasRef.current?.contains(ae)
         && ae.closest("button, a[href], select, [role=button], [role=option], [role=menuitem], [role=menuitemradio], [role=listbox], [role=tab], [role=radio], [role=checkbox], [role=switch], [role=slider]")) return;
       const ids = selectedIds ?? (selectedId != null ? [selectedId] : []);
@@ -1146,6 +1196,16 @@ export default function BoxCanvas({
       else if (mod && k === "g" && !e.shiftKey) { if (ids.length >= 2) { groupSelected(); e.preventDefault(); } }      // group selected
       else if (mod && k === "g" && e.shiftKey) { const g = id ? findByIdLocal(root, id) : null; if (g?.group) { ungroupSelected(); e.preventDefault(); } } // ungroup
       else if (e.altKey && k === "f" && id && !rn.locked) { toggleFloat(id); e.preventDefault(); }           // float ⇄ flow (blocked while locked)
+      // Alt ← / → (Shift: half): a column of a page row takes one column more / fewer of the page grid (G-3 (3)), said aloud
+      else if (e.altKey && !mod && (e.key === "ArrowLeft" || e.key === "ArrowRight") && id && !floating && !rn.locked && pageGrid) {
+        const cols = columnsAt(pageGrid, breakpoint), now = spanAt(root, id, cols, breakpoint);
+        if (now !== null) {
+          const next = setSpan(root, id, now + (e.key === "ArrowRight" ? 1 : -1) * (e.shiftKey ? 0.5 : 1), cols, breakpoint);
+          if (next !== root) onChange(next, `span:${id}`);
+          setSpoken(`${spanText(spanAt(next, id, cols, breakpoint) ?? now)} of ${cols} columns`);
+          e.preventDefault(); // also keeps Alt ← from taking the browser Back
+        }
+      }
       else if ((e.key === "Delete" || e.key === "Backspace") && ids.length) { let next = root; for (const d of ids) if (d !== root.id) next = deleteBox(next, d); onChange(next); select(null); e.preventDefault(); } // delete ALL selected
       else if (e.key === "ArrowUp" && id && !rn.locked) { if (floating) onChange(writeBox(root, id, { top: round1((rn.top ?? 0) - stepPct("y")) })); else onChange(moveBoxStep(root, id, -1)); e.preventDefault(); }
       else if (e.key === "ArrowDown" && id && !rn.locked) { if (floating) onChange(writeBox(root, id, { top: round1((rn.top ?? 0) + stepPct("y")) })); else onChange(moveBoxStep(root, id, 1)); e.preventDefault(); }
@@ -1172,7 +1232,7 @@ export default function BoxCanvas({
     };
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
-  }, [editable, selectedId, selectedIds, root, clip, onChange, breakpoint]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [editable, selectedId, selectedIds, root, clip, onChange, breakpoint, pageGrid]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // (The ⋯ actions menu's outside-click / Escape / scroll / flip-and-fit behaviour lives in <PortalMenu>.)
 
@@ -2061,6 +2121,10 @@ export default function BoxCanvas({
     const ownMinPx = minContentPx(el) + 2 * HG; // its content's own minimum (#68), as a slot
 
     const info = findParent(root, id);
+    // COLUMN SNAP (G-3 (2)): a column of a ROW OF THE PAGE on a page-grid page snaps its dragged edge to the page grid's
+    // lines — whole columns, half-lines with Shift, free with Alt. The POINTER is snapped, not the result: every rule below
+    // (the partner gives what it can, rule 19; wraps; rest widths) runs unchanged on a snapped pointer.
+    const snapCols = pageGrid && root.pageGrid && info?.parent.rowBand && (root.children ?? []).some((c) => c.id === info.parent.id) ? columnsAt(pageGrid, breakpoint) : 0;
     const parentGrid = info?.parent.layout === "grid";
     const parentRow = !parentGrid && !!info && (info.parent.direction ?? "column") === "row";
 
@@ -2538,8 +2602,16 @@ export default function BoxCanvas({
     let raf = 0; let pending: BoxNode | null = null;
     const flush = () => { raf = 0; if (pending) { onChange(pending, gk); pending = null; } };
     const onMove = (ev: MouseEvent) => {
-      const dx = ev.clientX - startX, dy = ev.clientY - startY;
+      let dx = ev.clientX - startX; const dy = ev.clientY - startY;
+      if (snapCols && (hasE || hasW)) {
+        const from = hasE ? startRightPx : startLeftPx;
+        if (!ev.altKey) dx = snapEdgePx(from + dx, maxW, snapCols, ev.shiftKey) - from;
+        const share = ((hasE ? startRightPx + dx : startRightPx) - (hasW ? startLeftPx + dx : startLeftPx)) / maxW;
+        setSpanLive({ x: ev.clientX, y: ev.clientY, text: ev.altKey ? `${(share * 100).toFixed(1)}% · free` : spanLabel(share, pageGrid!, breakpoint, ev.shiftKey) });
+      }
       let tree = base;
+      // an Alt-drag places it FREE on purpose ("Line up with the grid" leaves it alone); a snapped drag puts it back on the grid
+      if (snapCols && (hasE || hasW) && !!ev.altKey !== !!findByIdLocal(tree, id)?.freeWidth) tree = writeBox(tree, id, { freeWidth: ev.altKey || undefined });
       // ── WIDTH (EDGE-ANCHORED) ── the grabbed edge moves; the OPPOSITE edge of THIS section stays put.
       // RIGHT edge: grows/shrinks up to the next section's left; the NEXT section stays exactly where it is
       // (its margin-left absorbs the gap) — so you fill the gap and the neighbour never moves. LEFT edge:
@@ -2948,7 +3020,7 @@ export default function BoxCanvas({
     };
     const onUp = () => {
       if (raf) { cancelAnimationFrame(raf); flush(); }
-      setResizing(false); setResizeCursor(null);
+      setResizing(false); setResizeCursor(null); setSpanLive(null);
       document.removeEventListener("mousemove", onMove); document.removeEventListener("mouseup", onUp);
       /**
        * OUTWARD GROWS THE BAND; INWARD SHRINKS THE BLOCK — decided here, because only here is the outcome known.
@@ -3710,7 +3782,13 @@ export default function BoxCanvas({
         return css ? <style dangerouslySetInnerHTML={{ __html: css }} /> : null;
       })()}
       {renderNode(root, null)}
+      {editable && <div role="status" aria-live="polite" className="sr-only">{spoken}</div>}
+      {spanLive && createPortal(
+        <div role="status" data-span-live style={{ position: "fixed", left: spanLive.x + 14, top: spanLive.y - 28, zIndex: CHROME_Z.snapGuide, pointerEvents: "none", background: guideHue, color: guideInk(guideHue), font: "500 0.75rem/1 ui-monospace, monospace", padding: "0.3rem 0.45rem", borderRadius: "0.25rem", whiteSpace: "nowrap" }}>{spanLive.text}</div>,
+        document.body,
+      )}
       {editable && guides && <LayoutGuides view={guides} side={u(pageSideSpace(root))} unit={baseUnit(root.baseFont ?? 10)} color={guideHue} />}
+      {editable && guides && <GuideLines color={guideHue} rows={guides.rows} />}
       {/* Marquee (rubber-band) selection rectangle. Portaled so it's never clipped. */}
       {marquee && createPortal(
         <div aria-hidden="true" style={{ position: "fixed", left: Math.min(marquee.x0, marquee.x), top: Math.min(marquee.y0, marquee.y), width: Math.abs(marquee.x - marquee.x0), height: Math.abs(marquee.y - marquee.y0), pointerEvents: "none", zIndex: CHROME_Z.marquee }} className="border-2 border-dashed border-indigo-500 bg-indigo-500/10 rounded" />,

@@ -92,3 +92,20 @@ export function guideColor(background: string): string {
 export function guideInk(guide: string): string {
   return contrastRatio("#ffffff", guide) >= 4.5 ? "#ffffff" : "#000000";
 }
+
+/** How many of the drawn columns a block covers: the columns whose MIDDLE lies inside it (G-3 (1)). With the columns edge to
+ *  edge and the side space a margin inside the first and last, a block's box never starts exactly on a line — its middles do. */
+export function spanOfRect(left: number, right: number, middles: number[]): number {
+  return Math.max(1, middles.filter((m) => m > left && m < right).length);
+}
+
+/** Where a dragged edge lands (G-3 (2)): `at` px into a line `width` px wide, on the nearest of `cols` lines (half-lines too). */
+export function snapEdgePx(at: number, width: number, cols: number, half = false): number {
+  const step = width / (half ? cols * 2 : cols);
+  return Math.min(width, Math.max(0, Math.round(at / step) * step));
+}
+
+/** "Rows: N" (G-3 (4)) as the block's stored minimum height (px, emitted as rem): N row steps — it still grows with its words. */
+export const rowsToMinHeight = (rows: number, rowStepRem: number): number | undefined => (rows > 0 ? Math.round(rows * rowStepRem * 16 * 1000) / 1000 : undefined);
+/** …and back: how many whole row steps a stored minimum height covers (0 = follows its content). */
+export const rowsOf = (minHeight: number | undefined, rowStepRem: number): number => (minHeight ? Math.round(minHeight / (rowStepRem * 16)) : 0);

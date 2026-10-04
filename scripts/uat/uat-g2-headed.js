@@ -68,7 +68,8 @@ const SLICES = {
     ok('U3 a fresh browser: guides OFF, nothing drawn', !(await pressed(page)) && (await guideCols(page)) === 0);
     await build(page);
     await guidesBtn(page).click(); await page.waitForTimeout(400);
-    const rowLines = () => page.evaluate(() => /repeating-linear-gradient/.test(document.querySelector('[data-layout-guides]')?.style.backgroundImage || ''));
+    // the row lines are drawn in screen space since G3-7: a 1px-tall line across the page in [data-guide-lines]
+    const rowLines = () => page.evaluate(() => [...document.querySelectorAll('[data-guide-lines] > div')].some((d) => d.offsetHeight === 1 && d.offsetWidth > 20));
     ok('U2 rows are drawn with the columns by default (the user, 2026-10-04)', await rowLines());
     await dlg(page).getByLabel('Row lines in the guides').uncheck(); await page.waitForTimeout(300); ok('U5 "Row lines" unticked → columns only', !(await rowLines()));
     await dlg(page).getByLabel('Row lines in the guides').check(); await page.waitForTimeout(300);
@@ -99,14 +100,14 @@ const SLICES = {
     for (const [dev, cols] of [['Mobile', 6], ['Tablet', 12], ['Laptop', 12], ['Desktop', 12], ['Wide', 12], ['Full', 12]]) {
       await chip(page, DEV[dev]); const L = await lines(page);
       ok(`U2 ${dev}: ${cols} columns drawn`, L && L.xs.length === cols + 3, `${L && L.xs.length - 3}`);
-      const pad = await canvasPadLeft(page, id.s) * L.scale;
-      ok(`U2 ${dev}: the side strip = the heading section's own padding`, Math.abs(L.left - pad) < 1, `strip ${L.left.toFixed(1)} · padding ${pad.toFixed(1)}`);
+      // (the side strip is drawn INSIDE the first and last columns since G-3 (1), the user 2026-10-04 — checked by uat-g3 slice A)
       for (const [nm, bid] of [['half', id.a], ['third', id.c1], ['full', id.s]]) {
         const r = await rectOf(page, bid); const near = (x) => Math.min(...L.xs.map((g) => Math.abs(g - x)));
         const tol = 0.5 * L.col; // a block sits on its lines up to half a gap; anything off by half a column is wrong
         ok(`U2 ${dev}: the ${nm} block's edges sit on guide lines`, near(r.l) < tol && near(r.r) < tol, `off ${near(r.l).toFixed(1)} / ${near(r.r).toFixed(1)} · column ${L.col.toFixed(1)}`);
         await H.select(page, bid); await page.waitForTimeout(250); const t = await chipText(page);
-        const span = Math.round(r.w / L.col); const want = `${Math.min(cols, Math.max(1, span))} of ${cols}`;
+        // the columns whose middle lies inside the block (G-3 (1): edge to edge, the side space a margin inside the outer ones)
+        const want = await page.evaluate(([bid, n]) => { const b = document.querySelector(`[data-box-id="${bid}"]`).getBoundingClientRect(); const m = [...document.querySelectorAll('[data-guide-col]')].map((c) => { const q = c.getBoundingClientRect(); return (q.left + q.right) / 2; }); return `${Math.max(1, m.filter((x) => x > b.left && x < b.right).length)} of ${n}`; }, [bid, cols]);
         ok(`U4 ${dev}: the ${nm} block's chip reads what is seen (${want})`, t === want, `chip "${t}"`);
         const cover = await page.evaluate((bid) => { const c = document.querySelector('[data-span-chip]')?.getBoundingClientRect(); if (!c) return 'no chip';
           const w = document.createTreeWalker(document.querySelector(`[data-box-id="${bid}"]`), NodeFilter.SHOW_TEXT); const hits = [];
@@ -202,12 +203,12 @@ const SLICES = {
     const id = await build(page); await guidesBtn(page).click(); await page.keyboard.press('Escape'); await H.select(page, id.a);
     for (const th of ['Light', 'Dark', 'Midnight', 'Purple Dream']) {
       if (th !== 'Light') await siteTheme(page, th);
-      const c = await page.evaluate(() => { const col = document.querySelector('[data-guide-col]'); const frame = document.querySelector('[data-canvas-scale]');
+      const c = await page.evaluate(() => { const col = [...document.querySelectorAll('[data-guide-lines] > div')].pop(); /* a column line, drawn in screen space (G3-7) */ const frame = document.querySelector('[data-canvas-scale]');
         const cv = document.createElement('canvas'); cv.width = cv.height = 1; const cx = cv.getContext('2d', { willReadFrequently: true });
         const rgb = (s) => { cx.clearRect(0, 0, 1, 1); cx.fillStyle = '#000'; cx.fillStyle = s; cx.fillRect(0, 0, 1, 1); return [...cx.getImageData(0, 0, 1, 1).data].slice(0, 3); };
         const lum = ([r, g, b]) => { const f = (x) => { x /= 255; return x <= 0.03928 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4; }; return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b); };
         const ratio = (a, b) => { const [x, y] = [lum(a), lum(b)].sort((p, q) => q - p); return (x + 0.05) / (y + 0.05); };
-        const line = rgb(getComputedStyle(col).borderInlineStartColor), bg = rgb(getComputedStyle(frame).backgroundColor);
+        const line = rgb(getComputedStyle(col).backgroundColor), bg = rgb(getComputedStyle(frame).backgroundColor);
         const chipEl = document.querySelector('[data-span-chip]'); const cs = chipEl && getComputedStyle(chipEl);
         return { line: Math.round(ratio(line, bg) * 100) / 100, chip: cs ? Math.round(ratio(rgb(cs.color), rgb(cs.backgroundColor)) * 100) / 100 : null }; });
       ok(`U9 website theme ${th}: guide lines ≥ 3:1 against the page, chip words ≥ 4.5:1`, c.line >= 3 && c.chip >= 4.5, JSON.stringify(c));
