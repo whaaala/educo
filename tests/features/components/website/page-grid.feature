@@ -228,3 +228,12 @@ Feature: The page grid (AC-37b)
     Given a page saved before the page grid
     When I publish it
     Then its HTML is byte for byte what it was
+
+  Scenario: Space between columns and space between rows, each its own
+    Given a page-grid page with a row of three cards and a stack of blocks
+    When I set "Space between columns" to 2.5 rem in the page-grid panel
+    Then the cards move apart and the blocks of the stack do not
+    When I set "Space between rows" to 0
+    Then the blocks of the stack touch and the cards stay apart
+    And "Back to default" on either puts that one back and leaves the other
+    And the Preview shows the same at every screen

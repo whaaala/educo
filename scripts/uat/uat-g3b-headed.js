@@ -178,9 +178,42 @@ const SLICES = {
     await preview(page, SCREENS, async (f, w) => { const pls = await pubLines(f, w); const pr = await Promise.all([id.c1, id.c3, c4].map((x) => pubRect(f, x))); for (const d of equalLineError(pr, pls)) if (d > 0.6) bad.push(`${w}: ${d.toFixed(2)}`); for (const x of await pageFaults(f)) bad.push(`${w}: ${x}`); });
     ok(`F Preview at all ${SCREENS.length} screens: on the lines, no overlap, broken word or staircase`, !bad.length, bad.slice(0, 6).join(' · '));
   },
+  async G(page, ok) { // U6 · "Space between columns" and "Space between rows", each its own (G-3b (5), the user's split)
+    await H.panel(page, true);
+    const c1 = await P.first(page, 'Stack'); await P.into(page, c1, 'Card'); const c2 = await P.beside(page, c1, 'Stack'); await P.into(page, c2, 'Card'); const c3 = await P.beside(page, c2, 'Stack'); await P.into(page, c3, 'Card');
+    const st = await P.under(page, c1, 'Stack'); const t1 = await P.into(page, st, 'Text'); const t2 = await P.under(page, t1, 'Text');
+    await H.panel(page, false); await chip(page, DEV.Desktop);
+    const across = async () => { const a = await rectOf(page, c1), b = await rectOf(page, c2); return b.l - a.r; };
+    const down = async () => { const a = await rectOf(page, t1), b = await page.evaluate((id) => document.querySelector(`[data-box-id="${id}"]`).getBoundingClientRect().top, t2); return b - (a.t + (await page.evaluate((id) => document.querySelector(`[data-box-id="${id}"]`).getBoundingClientRect().height, t1))); };
+    const x0 = await across(), y0 = await down();
+    const openGrid = async () => { const box = await page.locator('[data-canvas-scroller]').boundingBox(); await page.mouse.click(box.x + 8, box.y + box.height - 8, { button: 'right' }); await page.getByRole('menuitem', { name: 'Page grid…' }).click(); await page.waitForSelector('[role="dialog"][aria-label="Page grid"]'); };
+    const dlg = () => page.getByRole('dialog', { name: 'Page grid' });
+    await openGrid(); await dlg().getByLabel('Space between columns', { exact: true }).fill('40'); await page.waitForTimeout(500);
+    const x1 = await across(), y1 = await down();
+    ok('U6 "Space between columns" 2.5 rem: the cards move apart, the stack\'s space down does not', x1 > x0 + 8 && Math.abs(y1 - y0) < 0.6, `across ${x0.toFixed(1)} → ${x1.toFixed(1)} · down ${y0.toFixed(1)} → ${y1.toFixed(1)}`);
+    await dlg().getByLabel('Space between rows', { exact: true }).fill('0'); await page.waitForTimeout(500);
+    const x2 = await across(), y2 = await down();
+    ok('U6 "Space between rows" 0: the stack\'s blocks touch, the cards stay apart', Math.abs(y2) < 0.6 && Math.abs(x2 - x1) < 0.6, `across ${x2.toFixed(1)} · down ${y2.toFixed(1)}`);
+    await page.screenshot({ path: path.join(OUT, 'G-set.png') });
+    const bad = [];
+    await page.keyboard.press('Escape');
+    await preview(page, SCREENS, async (f, w) => {
+      const a = await pubRect(f, c1), b = await pubRect(f, c2), p1 = await pubRect(f, t1);
+      const p2top = await f.evaluate((id) => document.querySelector(`.bx-${id}`).getBoundingClientRect().top, t2), p1h = await f.evaluate((id) => document.querySelector(`.bx-${id}`).getBoundingClientRect().height, t1);
+      if (Math.abs(p2top - (p1.t + p1h)) > 0.6) bad.push(`${w}: rows ${(p2top - p1.t - p1h).toFixed(1)}`);
+      if (a && b && Math.abs(a.t - b.t) < 2 && b.l - a.r < 8) bad.push(`${w}: columns ${(b.l - a.r).toFixed(1)}`);
+      if (await sideways(f) > 1) bad.push(`${w}: sideways`); for (const x of await pageFaults(f)) bad.push(`${w}: ${x}`);
+    });
+    ok(`U6 Preview at all ${SCREENS.length} screens: rows touch, columns apart; no sideways scroll, overlap, broken word or staircase`, !bad.length, bad.slice(0, 6).join(' · '));
+    await openGrid(); await page.getByRole('button', { name: 'Space between rows — back to default' }).click(); await page.waitForTimeout(500);
+    const x3 = await across(), y3 = await down();
+    ok('U6 "Back to default" on rows puts the space down back and leaves the columns', Math.abs(y3 - y0) < 0.6 && Math.abs(x3 - x1) < 0.6, `across ${x3.toFixed(1)} · down ${y3.toFixed(1)}`);
+    await page.keyboard.press('Control+z'); await page.waitForTimeout(500);
+    ok('U6 Undo puts rows back to 0', Math.abs(await down()) < 0.6, `${(await down()).toFixed(1)}`);
+  },
 };
 
-const WINDOWS = [['A', 'Light'], ['B', 'Light'], ['C', 'Midnight'], ['D', 'Purple Dream'], ['E', 'Dark'], ['F', 'Light']];
+const WINDOWS = [['A', 'Light'], ['B', 'Light'], ['C', 'Midnight'], ['D', 'Purple Dream'], ['E', 'Dark'], ['F', 'Light'], ['G', 'Midnight']];
 (async () => {
   const runs = WINDOWS.filter(([k]) => !ONLY.length || ONLY.includes(k)); const out = [];
   await Promise.all(runs.map(async ([k, th], i) => {

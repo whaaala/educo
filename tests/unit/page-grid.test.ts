@@ -615,3 +615,31 @@ describe("G-3b (4) · the fit rule on the grid: every line steps, by span", () =
     expect(css).not.toContain("@media"); // the phone too
   });
 });
+
+describe("G-3b (5) · space between columns and between rows, each its own (the user, 2026-10-04)", () => {
+  const pageWith = (...kinds: string[]) => kinds.reduce((r, k) => markPageGrid(normalizeRowBands(insertBox(r, r.id, (r.children ?? []).length, blockForKind(k)))), emptyPageRoot());
+  it("stored as G-2 stored it when the two agree; each its own when they differ", () => {
+    expect(gridSpaceOf({ blockGap: 20 })).toEqual({ gap: 20 });
+    expect(gridSpaceOf({ columnGap: 20, rowGap: 20 })).toEqual({ gap: 20 });
+    expect(gridSpaceOf({ columnGap: 40 })).toEqual({ gapX: 40 });
+    expect(gridSpaceOf({ rowGap: 0, blockGap: 30 })).toEqual({ gapX: 30, gapY: 0 });
+    expect(gridSpaceOf({ columnGap: 999, rowGap: -4 })).toEqual({ gapX: 64, gapY: 0 });
+  });
+  it("across reaches a row's columns and leaves the space down alone; down reaches stacks and wrapped lines", () => {
+    let site = siteFromRoot(pageWith("row", "container"));
+    site = setPageGrid(site, { columnGap: 40 });
+    const row = site.pages[0].root.children![0].children![0], stack = site.pages[0].root.children![1].children![0];
+    expect(gapOf(row)).toEqual({ x: 40, y: SPACE_GRID.stack });
+    expect(gapOf(stack).y).toBe(SPACE_GRID.stack);
+    site = setPageGrid(site, { columnGap: 40, rowGap: 0 });
+    const row2 = site.pages[0].root.children![0].children![0], stack2 = site.pages[0].root.children![1].children![0];
+    expect(gapOf(row2)).toEqual({ x: 40, y: 0 });
+    expect(gapOf(stack2).y).toBe(0);
+  });
+  it("a page row's blocks keep exactly the space between columns between them", () => {
+    const cols = [createContainer("column", { width: "50%", children: [blockForKind("text")] } as Partial<BoxNode>), createContainer("column", { width: "50%", children: [blockForKind("text")] } as Partial<BoxNode>)];
+    const site = setPageGrid(siteFromRoot(markPageGrid(normalizeRowBands({ ...emptyPageRoot(), children: [makeRowBand(cols)] } as BoxNode))), { columnGap: 40 });
+    const band = site.pages[0].root.children![0]; const [a, b] = band.children!;
+    expect(pageRowSlot(band, a.id, "base")!.right + pageRowSlot(band, b.id, "base")!.left).toBeCloseTo(40, 9);
+  });
+});

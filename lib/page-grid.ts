@@ -18,11 +18,13 @@ export interface PageGridSettings {
   rowStepRem?: number;                               // the row lines the guides draw (default 1.5); rows follow content
   sideSpace?: number;                                // the sections' side space, in the stored fluid unit (default: SPACE_GRID's)
   blockGap?: number;                                 // the space between blocks, across and down, the same unit (default: SPACE_GRID's)
+  columnGap?: number;                                // "Space between columns" — across only (G-3b (5), the user 2026-10-04); over blockGap
+  rowGap?: number;                                   // "Space between rows" — down only; over blockGap
 }
 
 export const PAGE_GRID_DEFAULT = { columns: 12, rowStepRem: 1.5 } as const;
 /** What the panel allows (plan, 2026-10-04). */
-export const PAGE_GRID_LIMITS = { columns: [4, 24], phoneColumns: [2, 12], rowStepRem: [0.5, 3], sideSpace: [0, 96], blockGap: [0, 64] } as const;
+export const PAGE_GRID_LIMITS = { columns: [4, 24], phoneColumns: [2, 12], rowStepRem: [0.5, 3], sideSpace: [0, 96], blockGap: [0, 64], columnGap: [0, 64], rowGap: [0, 64] } as const;
 
 const RUNGS: Breakpoint[] = ["phone", "tabletPortrait", "tabletLandscape", "base", "wide"];
 const clamp = (n: number, [lo, hi]: readonly [number, number]) => Math.min(hi, Math.max(lo, Math.round(n)));
@@ -69,7 +71,10 @@ export function spanLabel(share: number, grid: PageGridSettings, bp: Breakpoint 
 export function gridSpaceOf(grid: PageGridSettings): GridSpace | undefined {
   const out: GridSpace = {};
   if (grid.sideSpace !== undefined) out.gutter = clamp(grid.sideSpace, PAGE_GRID_LIMITS.sideSpace);
-  if (grid.blockGap !== undefined) out.gap = clamp(grid.blockGap, PAGE_GRID_LIMITS.blockGap);
+  // across and down (G-3b (5)): one number when they agree — exactly as G-2 stored it — else each its own
+  const x = grid.columnGap ?? grid.blockGap, y = grid.rowGap ?? grid.blockGap;
+  if (x !== undefined && x === y) out.gap = clamp(x, PAGE_GRID_LIMITS.blockGap);
+  else { if (x !== undefined) out.gapX = clamp(x, PAGE_GRID_LIMITS.columnGap); if (y !== undefined) out.gapY = clamp(y, PAGE_GRID_LIMITS.rowGap); }
   // the rows of the page are drawn on these columns (G-3b), so the page carries them — only when they are not the default
   if (RUNGS.some((bp) => columnsAt(grid, bp) !== columnsAt(PAGE_GRID_DEFAULT, bp))) out.cols = Object.fromEntries(RUNGS.map((bp) => [bp, columnsAt(grid, bp)]));
   return Object.keys(out).length ? out : undefined;

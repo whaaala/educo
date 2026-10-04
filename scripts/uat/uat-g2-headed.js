@@ -161,7 +161,7 @@ const SLICES = {
     let bad = [];
     await preview(page, SCREENS, async (f, w) => { const l = await pubLeft(f, id.h1); if (Math.abs(l) > 1) bad.push(`${w}: heading at ${l.toFixed(1)}`); if (await sideways(f) > 1) bad.push(`${w}: sideways`); });
     ok(`U6 side space 0 in the Preview at all ${SCREENS.length} screens: words at the page edge, no sideways scroll`, !bad.length, bad.slice(0, 6).join(' · '));
-    await openGrid(page); await dlg(page).getByLabel('Side space (padding)').fill('48'); await dlg(page).getByLabel('Gap between blocks').fill('0'); await page.waitForTimeout(400); await page.keyboard.press('Escape');
+    await openGrid(page); await dlg(page).getByLabel('Side space (padding)').fill('48'); await dlg(page).getByLabel('Space between columns', { exact: true }).fill('0'); await dlg(page).getByLabel('Space between rows', { exact: true }).fill('0'); await page.waitForTimeout(400); await page.keyboard.press('Escape');
     const canvasAt = {}; for (const dev of ['Mobile', 'Desktop']) { await chip(page, DEV[dev]); canvasAt[dev] = await canvasPadLeft(page, id.s); }
     const a = await rectOf(page, id.a), b = await rectOf(page, id.b);
     ok('U6 gap 0 on the canvas: the two halves touch', Math.abs(b.l - a.r) < 1, `${(b.l - a.r).toFixed(1)}`);

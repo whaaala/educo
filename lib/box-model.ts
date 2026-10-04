@@ -4952,20 +4952,22 @@ export const SPACE_DEFAULT = { gutter: 32, section: 16, bar: 16, stack: 16, colu
 export const SPACE_GRID = { ...SPACE_DEFAULT, gutter: 23, columns: 17 } as const;
 
 /** A page grid's own side space (`gutter`) and gap between blocks (`gap`), set in its panel (G-2) — stored fluid units. */
-export interface GridSpace { gutter?: number; gap?: number; cols?: Partial<Record<Breakpoint, number>> } // `cols`: columns per screen, when not the default (G-3b)
+export interface GridSpace { gutter?: number; gap?: number; gapX?: number; gapY?: number; cols?: Partial<Record<Breakpoint, number>> } // `gapX` / `gapY`: across / down when they differ (G-3b (5)); `cols`: columns per screen, when not the default (G-3b)
 
 /** The defaults a block reads: the page grid's on a page-grid page (with the site's own side space and gap), else the
  *  ones it was made with. The ONE place both the canvas and the export read them. */
 const spaceFor = (node: BoxNode) => {
   if (!node.onPageGrid) return SPACE_DEFAULT;
   const g = node.gridSpace;
-  return g ? { ...SPACE_GRID, ...(g.gutter !== undefined ? { gutter: g.gutter } : {}), ...(g.gap !== undefined ? { columns: g.gap, stack: g.gap } : {}) } : SPACE_GRID;
+  if (!g) return SPACE_GRID;
+  const x = g.gapX ?? g.gap, y = g.gapY ?? g.gap; // "Space between columns" / "…rows" (G-3b (5))
+  return { ...SPACE_GRID, ...(g.gutter !== undefined ? { gutter: g.gutter } : {}), ...(x !== undefined ? { columns: x } : {}), ...(y !== undefined ? { stack: y } : {}) };
 };
 
 /** The side space a page's sections keep by default — what the layout guides draw as padding (G-2). Stored fluid units. */
 export const pageSideSpace = (root: BoxNode): number => spaceFor({ onPageGrid: !!root.pageGrid, gridSpace: root.gridSpace } as BoxNode).gutter;
 
-const sameSpace = (a?: GridSpace, b?: GridSpace) => a?.gutter === b?.gutter && a?.gap === b?.gap && JSON.stringify(a?.cols) === JSON.stringify(b?.cols);
+const sameSpace = (a?: GridSpace, b?: GridSpace) => a?.gutter === b?.gutter && a?.gap === b?.gap && a?.gapX === b?.gapX && a?.gapY === b?.gapY && JSON.stringify(a?.cols) === JSON.stringify(b?.cols);
 
 /** A page-grid page with the side space and gap `space` (`undefined` = the defaults) — the root keeps it for the blocks
  *  dropped later, and every block takes it now. Returns the SAME tree when nothing changes. */
@@ -5023,7 +5025,9 @@ export function spaceDefaults(node: BoxNode, section: SectionFlag = false): { pa
   // A band's gap across is its columns' gutter (`gutterCSS`), and down is the space between lines once they wrap or
   // stack (the user, 2026-09-30: "1rem down too").
   const gapX = across ? S.columns : S.stack;
-  const gapY = scaffold || node.layout === "grid" ? S.stack : gapX;
+  // DOWN IS ALWAYS "SPACE BETWEEN ROWS" (G-3b (5), the user's split, 2026-10-04): a Row's wrapped lines too, not its gap across.
+  // On a saved page the two defaults are both 16, so nothing it publishes changes.
+  const gapY = S.stack;
   // A self-painting block's own padding is part of its design (`componentBoxCss` draws only what is set), so its
   // default is 0 — its section space lives OUTSIDE it (`outerDefaults`), and the control never shows space not drawn (S2-a).
   if (scaffold || selfPaints(node)) return { pad: [0, 0, 0, 0], gapX, gapY };

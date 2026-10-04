@@ -67,7 +67,15 @@ export default function PageGridPanel({ grid, ownPage, breakpoint, rows, onRows,
     onChange({ ...grid, perRung }, `pagegrid:${screen}`);
   };
   const lim = isPhone ? PAGE_GRID_LIMITS.phoneColumns : PAGE_GRID_LIMITS.columns;
-  const side = grid.sideSpace ?? SPACE_GRID.gutter, gap = grid.blockGap ?? SPACE_GRID.columns;
+  const side = grid.sideSpace ?? SPACE_GRID.gutter;
+  // ACROSS AND DOWN, each its own (G-3b (5), the user 2026-10-04). A site that set G-2's one "Gap between blocks" keeps it as
+  // both; moving either slider writes the two explicitly, so the other direction does not move.
+  const gaps = [
+    { key: "columnGap", label: "Space between columns", value: grid.columnGap ?? grid.blockGap ?? SPACE_GRID.columns, set: grid.columnGap !== undefined || grid.blockGap !== undefined },
+    { key: "rowGap", label: "Space between rows", value: grid.rowGap ?? grid.blockGap ?? SPACE_GRID.stack, set: grid.rowGap !== undefined || grid.blockGap !== undefined },
+  ] as const;
+  const setGap = (key: "columnGap" | "rowGap", n: number | undefined) =>
+    onChange({ ...grid, blockGap: undefined, columnGap: grid.columnGap ?? grid.blockGap, rowGap: grid.rowGap ?? grid.blockGap, [key]: n }, `pagegrid:${key}`);
   const link = "self-start text-[0.625rem] text-muted hover:text-ink underline-offset-2 hover:underline disabled:no-underline disabled:cursor-default";
 
   return (
@@ -99,11 +107,13 @@ export default function PageGridPanel({ grid, ownPage, breakpoint, rows, onRows,
           onChange={(n) => onChange({ ...grid, sideSpace: n }, "pagegrid:side")} formatValue={(x) => (grid.sideSpace === undefined ? `Default · ${toRem(x)}rem` : `${toRem(x)}rem`)} />
         <button type="button" className={link} disabled={grid.sideSpace === undefined} onClick={() => onChange({ ...grid, sideSpace: undefined })}>{grid.sideSpace === undefined ? "At the default" : "Back to default"}</button>
       </div>
-      <div className="space-y-1">
-        <Slider label="Gap between blocks" value={gap} min={PAGE_GRID_LIMITS.blockGap[0]} max={PAGE_GRID_LIMITS.blockGap[1]}
-          onChange={(n) => onChange({ ...grid, blockGap: n }, "pagegrid:gap")} formatValue={(x) => (grid.blockGap === undefined ? `Default · ${toRem(x)}rem` : `${toRem(x)}rem`)} />
-        <button type="button" className={link} disabled={grid.blockGap === undefined} onClick={() => onChange({ ...grid, blockGap: undefined })}>{grid.blockGap === undefined ? "At the default" : "Back to default"}</button>
-      </div>
+      {gaps.map((g) => (
+        <div key={g.key} className="space-y-1">
+          <Slider label={g.label} value={g.value} min={PAGE_GRID_LIMITS[g.key][0]} max={PAGE_GRID_LIMITS[g.key][1]}
+            onChange={(n) => setGap(g.key, n)} formatValue={(x) => (g.set ? `${toRem(x)}rem` : `Default · ${toRem(x)}rem`)} />
+          <button type="button" className={link} disabled={!g.set} aria-label={`${g.label} — ${g.set ? "back to default" : "at the default"}`} onClick={() => setGap(g.key, undefined)}>{g.set ? "Back to default" : "At the default"}</button>
+        </div>
+      ))}
       <p className="text-[0.625rem] text-muted">Changing a number moves every block with it. Half stays half; nothing is lost, and Undo puts it back. Each block&apos;s own spacing stays in the Inspector.</p>
 
       <label className="flex items-center justify-between gap-2 text-xs border-t border-line pt-2.5">
