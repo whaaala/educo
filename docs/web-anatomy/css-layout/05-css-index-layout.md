@@ -88,15 +88,10 @@ reference pages read in the same pass, or with the spec, the correct statement i
 | 70 | `Web/CSS/Guides/Media_queries` | fully | |
 | 71 | `Web/CSS/Guides/Paged_media` | fully | |
 
-**Linked but NOT read (open lines, RULE R "nothing left out"):** `Logical_properties_and_values/Basic_concepts` and
-`/Sizing` (their content is covered by the module page and #27–28, but the pages themselves were not opened) ·
-`Shapes/From_images` · `Shapes/Shape_generator` · `Writing_modes/Writing_mode_systems` · `Writing_modes/Vertical_controls` ·
-`Scroll_snap/Using_scroll_snap_events` · `Scroll_anchoring/Overview` · `Images/Using_object-view-box` ·
-`Environment_variables/Using` · `Media_queries/Using` (and its Testing / Accessibility / Printing pages) ·
-`Learn…/Styling_basics/Overflow` · `CSSOM_view_API/Coordinate_systems`. None is expected to change §4's ranking.
+**Linked sub-guides:** all 16 pages that were listed here as open lines (Logical properties Basic concepts + Sizing · Shapes From_images + Shape_generator · Writing modes systems + vertical controls · scroll-snap events · scroll anchoring · object-view-box · environment variables · Media queries Using / Testing / Using_for_accessibility / Printing · Learn Overflow · CSSOM View coordinate systems) are now read fully in §7 (#72-#87). None failed; none changes §4's ranking.
 **Out of scope here on purpose:** the Flexbox, Grid and Box-alignment module pages (sibling researchers).
 
-**Totals: 71 URLs fetched — 69 read fully, 2 partly (#1, #2), 0 left failed** (#1 failed once and was re-fetched).
+**Totals: 87 URLs fetched (71 first pass + 16 sub-guides in §7) — 85 read fully, 2 partly (#1, #2), 0 left failed** (#1 failed once and was re-fetched).
 
 ---
 
@@ -715,10 +710,10 @@ raw `absolute` page coordinates, or the page breaks at the first other screen wi
 | Motion path | PARTLY (as motion only) | codepen/motion notes |
 | Table layout | PARTLY | `display: table` trick only · `table-layout` missing |
 | Viewport units / layout vs visual viewport | PARTLY | `svh` in `scroll-and-position` · fixed-under-zoom, `zoom` missing |
-| Environment variables (safe-area) | **NOT STORED** | memory map lists it as Missing |
+| Environment variables (safe-area) | COVERED | §3.20 + §7.10 (`env()` rules, fallbacks, every defined variable, sticky-footer pattern) |
 | Media queries | COVERED | `advanced-css/05`, `design-foundation/04` |
 | Gaps + gap decorations | PARTLY | `page-grid/04` A20 (G2) · new `rule-*` family missing |
-| Scroll anchoring (`overflow-anchor`) | **NOT STORED** | |
+| Scroll anchoring (`overflow-anchor`) | COVERED | §7.8 (default on, `auto`/`none`, no opt-back-in, suppression triggers) |
 | Overscroll behaviour | **NOT STORED** in repo (memory map only) | |
 | Round display | **NOT STORED** | no browser support — nothing to build |
 
@@ -739,3 +734,251 @@ raw `absolute` page coordinates, or the page breaks at the first other screen wi
 6. The Transforms landing said transform lists apply "left-to-right"; the Using page says "right-to-left". Both describe
    the same maths (the rightmost function acts on the element first, i.e. read left to right as coordinate-space
    changes); the builder should use the individual `translate`/`rotate`/`scale` properties and avoid the question.
+
+---
+
+## 7. The linked sub-guides (read 2026-10-04)
+
+Closes the "Linked but NOT read" line of §1. Each page was read **from MDN's own source** — the raw Markdown at
+`raw.githubusercontent.com/mdn/content/main/files/en-us/<lowercased path>/index.md` (HTTP 200 on all 16) — not from a
+summariser. Examples below are given in `rem` (16px base); MDN's own demos use px and are quoted as such only where the
+number is the point. Every entry: URL · read · key facts · traps for a tool that GENERATES CSS · what it means for the builder
+(a pointer, not a decision). Statements marked "not on the page" are mine, not MDN's.
+
+| # | Page (under `developer.mozilla.org/en-US/docs/…`) | Read |
+|---|---|---|
+| 72 | `Web/CSS/Guides/Logical_properties_and_values/Basic_concepts` | fully |
+| 73 | `Web/CSS/Guides/Logical_properties_and_values/Sizing` | fully |
+| 74 | `Web/CSS/Guides/Shapes/From_images` | fully |
+| 75 | `Web/CSS/Guides/Shapes/Shape_generator` | fully (the page is only a description of an interactive tool; the tool's own JS was not run) |
+| 76 | `Web/CSS/Guides/Writing_modes/Writing_mode_systems` | fully |
+| 77 | `Web/CSS/Guides/Writing_modes/Vertical_controls` | fully (prose read; the ~10 live-demo code blocks only set `writing-mode` / `direction` and were skimmed, not transcribed) |
+| 78 | `Web/CSS/Guides/Scroll_snap/Using_scroll_snap_events` | fully |
+| 79 | `Web/CSS/Guides/Scroll_anchoring/Overview` | fully |
+| 80 | `Web/CSS/Guides/Images/Using_object-view-box` | fully (the pan demo's code is hidden live-sample source; the prose says it varies only the `x` of `xywh()`) |
+| 81 | `Web/CSS/Guides/Environment_variables/Using` | fully |
+| 82 | `Web/CSS/Guides/Media_queries/Using` | fully |
+| 83 | `Web/CSS/Guides/Media_queries/Testing` | fully |
+| 84 | `Web/CSS/Guides/Media_queries/Using_for_accessibility` (MDN's page is named *Using_for_accessibility*, not "a11y") | fully |
+| 85 | `Web/CSS/Guides/Media_queries/Printing` | fully |
+| 86 | `Learn_web_development/Core/Styling_basics/Overflow` | fully |
+| 87 | `Web/API/CSSOM_view_API/Coordinate_systems` | fully |
+
+### 7.1 Logical properties — Basic concepts (#72)
+- **Facts.** The module maps physical properties (width/height, top/left/right/bottom) to flow-relative ones
+  (start/end, inline/block). **Inline dimension** = the way a line of text runs (horizontal in English *and* Arabic, vertical in
+  a vertical writing mode); **block dimension** = the way paragraphs stack (vertical in English/Arabic, horizontal in vertical
+  modes). Flexbox and grid already align in these terms: `justify-self: start` is inline-start, `align-self: start` is
+  block-start, so alignment survives a change of writing mode. MDN's demo: a grid with a *physical* `width` and
+  `writing-mode: vertical-rl` looks different, because the width is a horizontal measure; with `inline-size` it behaves the
+  same in every mode.
+- **Traps.** Mixing physical sizes (`width`) with flow-relative alignment in one component gives a layout that is right in
+  English and broken in a translated or vertical page. Arabic is horizontal RTL: the inline *direction* flips, the inline
+  *dimension* stays horizontal.
+- **Builder.** Emit sizes, spacing and alignment as logical properties by default so one stored layout serves LTR, RTL (RULE AF)
+  and any vertical mode; keep a physical value only where the thing must not follow the text.
+
+### 7.2 Logical properties — Sizing (#73)
+- **Facts.** In `horizontal-tb`: `inline-size`=`width`, `block-size`=`height`, `min-inline-size`/`min-block-size`=`min-width`/
+  `min-height`, `max-inline-size`/`max-block-size`=`max-width`/`max-height`. In a vertical mode `inline-size` maps to `height`.
+  MDN: a design may use both kinds — some features should stay physical whatever the mode. `resize` also has logical keywords
+  `inline` and `block` (`both` is neutral).
+- **Traps.** `width: 12.5rem; height: 6.25rem` does not rotate in a vertical page, while `inline-size`/`block-size` rotate with
+  the text; pick deliberately per property, never mix by accident.
+- **Builder.** The size a person drags on the grid is an inline/block size; the exporter chooses the logical form (feeds §4's
+  ranking and RULE Q's RTL combinations).
+
+### 7.3 Shapes from images (#74)
+- **Facts.** `shape-outside: url(image-with-alpha)` makes text wrap along the image's non-transparent pixels;
+  `shape-image-threshold` (0.0 default = the area must be fully transparent to be excluded, 1.0 = fully opaque) sets which alpha
+  counts; `shape-margin` pushes text away from the shape. The element must be **floated** (`float: left`) — MDN floats a
+  `::before` with `content: ""` and a size to shape text without showing any image (the shape is independent of the displayed
+  image). A CSS **gradient is also an image**, so `shape-outside: linear-gradient(to bottom right, rebeccapurple, transparent)`
+  with a threshold works, and the same value can be shown as `background-image` or left undisplayed.
+- **Traps.** The image **must be CORS-compatible** (CDN images need the right headers; opening the file from disk without a
+  server fails) — otherwise the shape is ignored and only DevTools tells you. Wrap shaping only exists on floats, and a
+  fixed-size shaped float on a 320px phone leaves no room for words: not on the page, but the narrow rung must drop the float.
+  MDN's sizes (e.g. 400×300) are px — a generator must emit `rem`/`%`.
+- **Builder.** A "text flows around the cut-out photo" option needs: float, same-origin or CORS-headed image, a threshold control,
+  and a narrow-screen fallback to a normal stacked image (RULE AF: a second PNG just for the shape is bytes).
+
+### 7.4 Shape generator (#75)
+- **Facts.** A tool page that outputs coordinates for: the `coords` attribute of `<area>`, CSS `inset()`, `xywh()`, `rect()`,
+  `circle()`, `polygon()`, and SVG `<rect>`/`<circle>`/`<polygon>`. You upload an image, choose a shape type, click points; it
+  prints the three syntaxes. The page states no browser rules.
+- **Traps.** None beyond the list of `<basic-shape>` functions.
+- **Builder.** Confirms the set of basic shapes a "shape" control must cover (`inset`, `xywh`, `rect`, `circle`, `polygon`);
+  `xywh()` takes a position + size like a grid placement (also used in §7.9).
+
+### 7.5 Writing mode systems (#76)
+- **Facts.** *Inline base direction* (set by `direction`, plus `unicode-bidi` and the text's own directionality) orders content
+  on a line; *block flow direction* (set by `writing-mode`) is how blocks and lines stack. Latin/Slavic: LTR inline, top-to-bottom
+  block. Arabic-based scripts (Arabic, Persian, Urdu, Hebrew, Kurdish, Syriac…): RTL inline, top-to-bottom block. Han scripts:
+  often horizontal LTR online; traditionally vertical, top-to-bottom inline, **right-to-left** block (`vertical-rl`). Mongolian:
+  vertical with **left-to-right** block (`vertical-lr`). Rules MDN gives: use the HTML **`dir` attribute** (and `<bdo>`) for
+  direction rather than the CSS `direction` property, "because browsers can turn off CSS styling"; use `writing-mode` +
+  `text-orientation` for vertical (`:lang(ja){writing-mode:vertical-rl;text-orientation:mixed}`,
+  `:lang(mn-Mong){writing-mode:vertical-lr;…}`). `dir="auto"` lets the text decide. Mixed modes on one page are normal (Latin digits
+  inside Arabic text; magazines).
+- **Traps.** A generator that sets direction only in CSS loses it with styles off; `lang` + `dir` per page and per block (RULE AF
+  "languages are content"). Not on the page, but follows from logical placement: in a `dir="rtl"` page grid column 1 sits on the right.
+- **Builder.** Store language and direction per page/block and emit `lang`/`dir` attributes; test every grid placement with
+  `dir="rtl"` (RULE Q matrix); vertical text is a rare option, not a default.
+
+### 7.6 Vertical form controls (#77)
+- **Facts.** `writing-mode: vertical-lr|vertical-rl` makes `<input type="range">`, `<progress>`, `<meter>`, `<select>`,
+  `<button>`, `<textarea>` and text inputs vertical; Latin text inside is rotated 90 degrees, natively vertical scripts are not.
+  `vertical-lr`: later lines appear to the right; `vertical-rl`: to the left. `direction: ltr` draws top→bottom, `rtl` bottom→top
+  (a vertical slider with `ltr` has its lowest value at the top). **A `transform` rotation is the wrong tool:** it puts the control
+  in its own layer and other content gets overlapped; `writing-mode` is the reliable one. Support: the property is old but
+  *vertical form controls only gained full browser support in 2024*; older engines used non-standard `appearance: slider-vertical`
+  (Chrome/Safari) or `orient="vertical"` (Firefox), and those only work on range inputs. `sideways-lr/rl` are experimental. MDN's own
+  note: add a `<label>` to every control (its demos omit it).
+- **Traps.** Low-cost Android WebViews lag: a vertical slider may render horizontal, so keep the control usable horizontally.
+  Rotating with `transform` breaks layout.
+- **Builder.** Not needed for the first grid release; if a vertical slider/progress is ever offered, use `writing-mode`, label it,
+  and provide a horizontal fallback.
+
+### 7.7 Scroll snap events (#78)
+- **Facts.** Two events on a scroll container (and on `Document` / `Window` if `scroll-snap-type` is set on `<html>`):
+  `scrollsnapchanging` fires *during* a gesture for the **pending** target (it can fire several times, and only for the target
+  snapping will probably rest on — not for every target passed over); `scrollsnapchange` fires **when the gesture ends and a new
+  target is selected**, just before `scrollend`. Both carry a `SnapEvent` with `snapTargetBlock` and `snapTargetInline` (element or
+  `null`): a block-only snap axis leaves `snapTargetInline` `null`, an inline-only one the reverse, `both` gives both; which one
+  changes also depends on the writing mode. Demos use `scroll-snap-type: block mandatory` and `both mandatory`,
+  `scroll-snap-align: center`, a 7-column `repeat(7, 1fr)` grid as a two-axis scroller, and classes (`pending`, `select-section`)
+  to restyle targets; animation by transition or `@keyframes`.
+- **Traps.** MDN's own 2D snippet dereferences `event.snapTargetInline.id` and `snapTargetBlock.id` unguarded — that throws if one
+  is `null` (and its second log message names the block target); guard for `null`. The events are new (MDN's see-also article is
+  from 2024; support not listed on the page): treat as progressive enhancement — the snapping itself needs no JS. Restyling on
+  events must respect `prefers-reduced-motion` (§7.13).
+- **Builder.** A carousel/pager that highlights the current slide (dots, "2 of 5") can use `scrollsnapchange` with a
+  scroll-position fallback; do not depend on it in older WebViews.
+
+### 7.8 Scroll anchoring (#79)
+- **Facts.** On by default: when content above the viewport changes size (late-loading images), the browser adjusts the scroll
+  position so what you are reading stays put. Opt out with `overflow-anchor: none` (only values `auto`/`none`) on `body` or any
+  container; **a descendant of an opted-out area cannot opt back in.** *Suppression triggers* — a change to the computed value of
+  `top/left/right/bottom`, `margin`/`padding`, any width/height-related property, `transform`/`translate`/`scale`/`rotate` on the
+  anchor node or an ancestor, or a `position` change anywhere inside the scroll container, suppresses anchoring. Debug: Firefox
+  `layout.css.scroll-anchoring.enabled` and `.highlight` in `about:config`; a `scroll` listener that does not compensate is the
+  usual culprit. Feature-detect with `@supports (overflow-anchor: auto)`.
+- **Traps.** Animating size/margin/transform of something above the reader (an accordion, a sliding banner) turns anchoring
+  off for that case, so the page can jump. Media with no intrinsic `width`/`height` causes the very jump anchoring then has to
+  hide (not on the page; follows from its description).
+- **Builder.** Always write `width`/`height` (or `aspect-ratio`) on media (already RULE AF); never turn anchoring off globally;
+  only a deliberate "pin this block" needs `overflow-anchor: none`. Updates §5.
+
+### 7.9 `object-view-box` (#80)
+- **Facts.** Defines a rectangle inside a replaced element (`<img>`, video, svg) to display — crop, zoom and pan **without
+  distorting**, because the viewbox is scaled to the element's size (its *extrinsic* size; the file's size is *intrinsic*). More
+  flexible than `object-fit`, which only fits the whole content inside the box. Written with a `<basic-shape>`; MDN uses
+  `xywh(500px 30px 150px 150px)` (x y width height). Smaller viewbox = zoom in, larger = zoom out; changing only `x`/`y` pans. Keep
+  the viewbox aspect ratio equal to the element's, or the image stretches (MDN: same ratio ⇒ "neither scaled nor distorted").
+- **Traps.** The lengths inside `xywh()` are measured in the **file's own pixels** (intrinsic area), not page units — the one
+  place a px-like number is correct, and a generator must say so rather than convert it to `rem`. Browser support is not on the
+  page: check before relying on it; `object-fit` + `object-position` cover the common crop.
+- **Builder.** A "focal point / crop" control for photos on a grid cell: `object-fit: cover` + `object-position` (percent) is the
+  safe default; `object-view-box` only as an enhancement.
+
+### 7.10 Environment variables — Using (#81)
+- **Facts.** `env()` reads **read-only, globally-scoped, user-agent-defined, case-sensitive** variables (custom properties are
+  element-scoped and mutable). `env(<name>, <fallback>)`; a fallback is "generally recommended" and may contain commas; an unknown
+  name uses the fallback; **no fallback and an unknown name makes the declaration invalid at computed-value time**. Usable anywhere
+  a value is, including media-query rules and inside custom-property values. Defined: `preferred-text-scale` (e.g. 2 when
+  `text-size-adjust: auto` would double the text), `safe-area-inset-top|right|bottom|left` (0 on rectangular unobstructed
+  viewports), `safe-area-max-inset-*` (static maximum, when dynamic UI is retracted), `viewport-segment-*` (only on foldables with
+  2+ segments), and from the Window Controls Overlay API `titlebar-area-x|y|width|height`, and `keyboard-inset-*` (VirtualKeyboard
+  API). Names are physical (no logical equivalents). MDN's pattern: a sticky footer with
+  `padding-bottom: calc(1em + env(safe-area-inset-bottom, 1em))`. Developer-defined env variables: not defined yet.
+- **Traps.** Edge-pinned blocks (header, bottom bar, floating button) at offset `0` collide with notches and rounded corners;
+  omitting the fallback can invalidate the whole declaration; `safe-area-inset-*` changes with dynamic bars, `-max-` does not. Not on
+  the page: a browser may need the viewport meta `viewport-fit=cover` before insets are non-zero — verify before relying on it.
+- **Builder.** For any block pinned to a viewport edge, add the inset to its offset/padding with a fallback; complements the
+  `100svh` guidance in §3.20. Updates §5.
+
+### 7.11 Media queries — Using (#82)
+- **Facts.** A query = optional media type (`all` default, `print`, `screen`; other types deprecated) + media features in
+  parentheses + logical operators `and`, `not`, `or` (limited), `only` (no effect in modern browsers); comma = OR. Queries are
+  case-insensitive. Range features can be written `min-/max-` or in range syntax: `(width >= 30em)`, `(30em <= width <= 50em)`,
+  `<` / `>` for exclusive. A feature written with no value is true unless its value is `0`/`none`. Features that don't apply to the
+  device are false. Features include `hover`, `any-hover`, `pointer`, `any-pointer`, `orientation`, `prefers-reduced-motion`,
+  `prefers-contrast`, `prefers-color-scheme`, `forced-colors`, `display-mode`, `device-posture`, `overflow-inline|block`, `scripting`,
+  `update`, `resolution`; `device-width/height/aspect-ratio` are deprecated. `or` cannot sit at the same level as `and`/`not`
+  (use parentheses). `not` negates only its own query (up to the comma); a query starting with a media type cannot be parenthesised,
+  one made only of features must be. A `<link media>` stylesheet **still downloads** when the query is false (at lower priority).
+- **Traps.** Write breakpoints in `em` (MDN's examples use `30em`/`50em`): a px query ignores the reader's text size (not on the
+  page; the project's em rungs, CLAUDE.md rule 18, already follow this). Hover-only reveals belong inside `@media (hover: hover)`;
+  touch phones answer `hover: none`. Per-breakpoint `<link media>` sheets cost requests on 3G (RULE AF) — inline one stylesheet.
+- **Builder.** The generator uses range syntax with `em`; interactions gated by `hover`/`pointer`/`prefers-reduced-motion`;
+  breakpoints are per rung (rule 18), not per device.
+
+### 7.12 Media queries — Testing programmatically (#83)
+- **Facts.** `window.matchMedia(query)` returns a `MediaQueryList`; `.matches` is the current result; instead of polling,
+  `addEventListener("change", handler)` (the handler receives a `MediaQueryListEvent` with `.matches` and `.media`);
+  `removeEventListener("change", …)` stops it. MDN: call the handler once at start, otherwise the code may assume the wrong state
+  (e.g. portrait when it is landscape).
+- **Traps.** Re-subscribing the listener on every render misses events (see the listener-churn note in memory); register once,
+  with a ref.
+- **Builder.** The editor's rung switch and any JS that must know the rung read the same queries as the CSS, so canvas == export.
+
+### 7.13 Media queries — Using for accessibility (#84)
+- **Facts.** `prefers-reduced-motion` has two values: `no-preference` and `reduce`. MDN: it does **not** mean "remove all
+  animation" (`* { animation: none !important }` is the wrong reading); users expect *motion* animations — including
+  interaction-triggered ones — to stop unless essential to function or to the information (WCAG "Animation from Interactions").
+  Example: `@media (prefers-reduced-motion: reduce) { .animation { animation: none; } }`. See-also: `prefers-contrast`,
+  `prefers-reduced-transparency`, `prefers-color-scheme`, `inverted-colors`. Reasons given: vestibular disorders, epilepsy,
+  migraine, scotopic sensitivity, ADHD, and also low battery / low-end devices.
+- **Traps.** A sticky/parallax/scroll-driven placement effect is exactly the motion affected; the replacement must still convey
+  the content (a static position).
+- **Builder.** Every animated or scroll-linked block ships a `reduce` branch; this is the RULE MAP "reduced-motion honoured" test.
+
+### 7.14 Media queries — Printing (#85)
+- **Facts.** Use `<link rel="stylesheet" media="print" href="print.css">` or `@media print { … }` (MDN's example hides
+  `#header, #footer, #nav` with `display: none !important`); `@page` sets page size, orientation and margins for all or some pages;
+  `beforeprint` / `afterprint` window events let the UI adapt; `window.print()` and a hidden iframe can print an external page.
+- **Traps.** Not on the page: a grid placement built for 1280px will print across page breaks and fixed/sticky bars can repeat or
+  overlap. A separate print `<link>` is a request on 3G (RULE AF) — prefer an inline `@media print` block.
+- **Builder.** Low priority: one small `@media print` that drops navigation, shows blocks in source order as a single column, and
+  avoids breaking inside a block (fragmentation is **NOT STORED**, §5).
+
+### 7.15 Overflow (Learn) (#86)
+- **Facts.** Overflow = too much content for a box. CSS does not hide it by default ("data loss" would go unnoticed — a
+  disappeared Submit button); with a fixed `width`/`height` "CSS trusts you". Restricting the **block** dimension is the problematic
+  one for text (more text than designed for, or the user enlarged the font). Values: `visible` (default), `clip` (cuts at the border
+  edge, not a scroll container; `overflow-clip-margin` moves the edge outward), `auto` (scrollbar only when needed), `scroll` (bar
+  always shown on systems with visible bars; MDN says `auto` + `scrollbar-gutter: stable` is usually a better fit to avoid layout
+  shift), `hidden` (cuts like `clip` **but is still a scroll container** — content can be scrolled by JS or by tabbing to a
+  focusable item). Per axis: `overflow-x` / `overflow-y`, or two values (`overflow: clip auto`). **Coercion:** `clip` is the only
+  value that may be combined with `visible` on the other axis; if one axis is a scrolling value (`auto`, `scroll`, `hidden`) and the
+  other `visible`, the `visible` computes to `auto` (`overflow: hidden visible` behaves as `hidden auto`). For long words use
+  `word-break` / `overflow-wrap`, not `overflow-x`. MDN: "Test designs with large and small amounts of content. Increase and
+  decrease font sizes by at least two increments." Use `clip` most of the time; `hidden` only when scrollability is needed.
+- **Traps.** Never emit a fixed block-size on a text block; use `min-block-size` (200% text, 320px reflow). `overflow: hidden` on a
+  wrapper silently makes it a scroll container — content tabbed to off-screen scrolls into view unseen; `clip` does not (the
+  sticky-containing-block consequence is in §3 / `scroll-and-position/04`). Old fixed-height-container layouts are the classic
+  source of overlap.
+- **Builder.** Default `visible`; offer `clip` for "crop to the shape" (media, rounded corners) and `auto` for "scrolling box";
+  never `hidden` by default. A block whose content outgrows its cell must grow, not clip.
+
+### 7.16 CSSOM View — Coordinate systems (#87)
+- **Facts.** Origin is top-left, x grows right, y grows **down**; the z-axis (`z-index`) points toward the viewer. Four systems that
+  differ only in origin: **offset** (`offsetX/Y`, the target's *padding edge*), **viewport / client** (`clientX/Y`, top-left of the
+  viewport; scrolling changes a point's client coordinates), **page** (`pageX/Y`, top-left of the whole document; stable under
+  scroll unless layout changes), **screen** (`screenX/Y`, the user's screen; changes if the window moves or the display changes).
+  `Touch` has client/page/screen coordinates (no offset). `transform` can change the definition of these systems.
+- **Traps.** A drag-to-place tool that mixes `clientX` with a page offset drifts by the scroll amount. Coordinates are CSS px —
+  convert to `%`/`rem`/track lines before storing (rules 16, AF). A transformed ancestor makes `offset*` and
+  `getBoundingClientRect()` disagree about what is "inside" (MDN notes transforms can redefine the systems).
+- **Builder.** Pointer-driven placement: read `clientX/Y` against the grid container's `getBoundingClientRect()` (viewport
+  system), never page or screen; snap to grid lines and store tracks/lines, not pixels.
+
+### 7.17 What §7 changes for positioning blocks on a grid
+1. **Think in inline/block, not left/right** (7.1, 7.2, 7.5): store placement as grid lines/areas and sizes as `inline-size` /
+   `block-size`; `dir="rtl"` (an HTML attribute, 7.5) then mirrors the grid for Arabic with no second layout.
+2. **Never fix a block's height** (7.15): fixed block size clips or overlaps text at 200% text and 320px; use `min-block-size` /
+   `auto` rows, and `clip` only where cropping is the point.
+3. **Pointer placement uses the viewport coordinate system and stores tracks, not pixels** (7.16).
+4. **Edge-pinned blocks add `env(safe-area-inset-*, fallback)`** (7.10), and **size/margin/transform animation above the reader
+   suppresses scroll anchoring** (7.8) — two things a generated page can get wrong without any test failing.
+5. **Breakpoints in `em`, hover/motion gated by media features, a `reduce` branch for every effect** (7.11–7.13).

@@ -47,10 +47,12 @@ conformance rule, grid lanes (masonry)), then a goal → CSS list and the traps 
 | 16 | …/Reference/Values/minmax | yes (to "Formal syntax") | `max < min` rule, `fr` only as max, `auto` as min / max |
 | 17 | …/Reference/Values/fit-content_function | yes (to "Formal syntax") | |
 | 18 | /en-US/docs/Glossary/Grid, Grid_Areas, Grid_Axis, Grid_Cell, Grid_Column, Grid_Container, Grid_Lines, Grid_Row, Grid_Tracks, Gutters | yes | 10 glossary entries; one statement on implicit lines discussed in Traps §T3 |
-| 19 | /en-US/docs/Learn_web_development/Core/CSS_layout/Grids (the Learn module, linked from the guides) | partly | prose and notes read; its examples repeat the guides' (header / sidebar / footer, 12 columns) and were skimmed, not transcribed. New: "`fr` shares AVAILABLE space"; "gaps cannot be `fr`"; the five rules of `grid-template-areas`. |
+| 19 | /en-US/docs/Learn_web_development/Core/CSS_layout/Grids (the Learn module, linked from the guides) | yes (follow-up 2026-10-04) | raw source `learn_web_development/core/css_layout/grids/index.md` read in full, every live example transcribed in §6.1. New: "`fr` shares AVAILABLE space"; "gaps cannot be `fr`"; the five rules of `grid-template-areas`; goals 46–48 in §3. |
+| 19b | /en-US/docs/Learn_web_development/Core/CSS_layout/Test_your_skills/Grid | yes | raw source `test_your_skills/grid/index.md`: 4 tasks, every published solution recorded in §6.1. Goals 49, 50. |
 | 20 | /en-US/docs/Web/CSS/How_to/Layout_cookbook/Media_objects (linked from Grid template areas) | yes | `fit-content(200px)` image track |
 | 21 | browser-compat-data: `display.grid-lanes`, `display.contents`, `grid-template-columns.subgrid`, `grid-template-rows` | yes | support numbers below |
-| — | Not followed (off-topic or covered elsewhere): property reference pages (`grid-template-columns`, `grid-column-start`, `align-items` … — another researcher), Flexbox / Multicol / Writing-modes / Logical-properties / Media-queries guides, Box alignment overview, the Containing-block guide, external links (Grid by Example, CSS-Tricks, Codrops, Firefox DevTools, CSS Grid Garden, Léonie Watson, Adrian Roselli, YouTube videos), the CSSWG spec itself (quoted only where MDN quotes it). | — | Listed so nothing is silently skipped. |
+| — | Not followed (off-topic or covered elsewhere): property reference pages (`grid-template-columns`, `grid-column-start`, `align-items` … — another researcher), Flexbox / Multicol / Writing-modes / Logical-properties / Media-queries guides, Box alignment overview, the Containing-block guide, the CSSWG spec itself (quoted only where MDN quotes it; §6.2 adds the two sections MDN links). The external links the guides cite WERE followed — see §6.2. | — | Listed so nothing is silently skipped. |
+| 22 | External links of the grid guides + CSS-Tricks complete guide + Grid Garden (28 levels) | see §6.2 | follow-up 2026-10-04: 22 links listed; 12 read fully, 3 partly, 6 not readable (videos / interactive embed), 1 not followed. Per-link table in §6.2. |
 
 ---
 
@@ -770,6 +772,27 @@ All assume `.g { display: grid; }`. Units are shown in `rem` where the builder w
 | 43 | Card wider for long content, holes filled | `.wide { grid-column-end: span 2; }` + `grid-auto-flow: dense` |
 | 44 | A grid that adapts to ITS OWN box, not the window | redefine tracks in `@container (width >= 40rem) { … }` with `container-type: inline-size` on a wrapper |
 | 45 | Inline-level grid (a grid that sits in a line of text) | `display: inline-grid;` |
+| 46 | A page frame on a 12-column grid by line numbers (header full, sidebar 3 columns, main 9) | `repeat(12, 1fr); gap: …;` + `header { grid-column: 1 / 13; grid-row: 1 } main { grid-column: 4 / 13; grid-row: 2 } aside { grid-column: 1 / 4; grid-row: 2 } footer { grid-column: 1 / 13; grid-row: 3 }` (Learn "Grid frameworks") |
+| 47 | A nested grid that keeps the parent's gap, with rows in a ratio (one big article, two small) | `main { grid-area: content; display: grid; grid-template-rows: 4fr 3fr 3fr; gap: inherit; }` (Learn "Nesting grids") |
+| 48 | A nested block that takes the parent's COLUMNS but has its OWN row ratio | `.sub { grid-column: 1 / 4; grid-row: 2 / 4; display: grid; gap: inherit; grid-template-columns: subgrid; grid-template-rows: 2fr 1fr; }` (Learn "subgrid"; the parent has 4 columns) |
+| 49 | Make the FIRST item sit on top of an overlapping later one without moving it in the source | `.first { z-index: 1; }` or `.first { order: 1; }` — Learn's skills-test solution offers both (`order` also changes auto-placement order: T10) |
+| 50 | A photo card: picture fills the top, chips wrap and centre underneath | `.card { display: grid; grid-template-rows: 200px min-content; } .card > img { width: 100%; height: 100%; object-fit: cover; } .tags { display: flex; flex-wrap: wrap; justify-content: center; }` (Learn skills test 4: the card is a grid because it aligns in two directions, the chip list is flex because it only runs in a row) |
+| 51 | Everything BUT the last column / start counting from the right | `.i { grid-column: 1 / -2; }` (end line −2 = one line before the last) · `.i { grid-column-start: -3; }` (Grid Garden levels 5, 6; `-1` = last line of the EXPLICIT grid, T3) |
+| 52 | Rows and columns in ONE declaration (rows first, then `/`, then columns) | `.g { grid-template: 60% 1fr / 200px 1fr; }` · `grid-template: 1fr 50px / 20% 1fr;` (Grid Garden levels 27, 28; a `%` row needs a definite height, T17) |
+| 53 | Move an item earlier / later in auto-placement order | `.i { order: -1; }` (earlier than the 0 default) · `.i { order: 2; }` (later) — visual only, T11 (Grid Garden levels 18, 19) |
+| 54 | Fixed edge strips with a flexible middle, or mixed units | `grid-template-columns: 50px 1fr 1fr 1fr 50px;` · `75px 3fr 2fr` · `100px 3em 40%` (Grid Garden levels 22–25; fixed tracks are served first, `fr` shares what is LEFT) |
+| 55 | Equal-height three columns, main content FIRST in the source, nav shown on the left | `.c { display: grid; grid-template-columns: 8em auto 8em; grid-template-rows: 3em auto auto auto 3em; } header { grid-column: 1 / 4 } nav { grid-row: 2 / 5; grid-column: 1 } article { grid-row: 2 / 5; grid-column: 2 } aside { grid-row: 2 / 5; grid-column: 3 } footer { grid-column: 1 / 4; grid-row: 5 }` (Codrops "Holy Grail"; the spec's own version: `grid: "h h h" "a b c" "f f f"; grid-template-columns: auto 1fr 20%;` + `min-width: 12em` on main and aside) |
+| 56 | Navigation BETWEEN header and content, while the source has main first | `body { display: grid; grid: "header header" "nav nav" "content sidebar" "footer footer"; grid-template-columns: 1fr 25%; }` — every name must be given to an item with `grid-area` (T22) |
+| 57 | Collapse the whole page frame to one column on a phone, main before nav | desktop `grid-template-areas: "header header header" "nav article ads" "footer footer footer"; grid-template-columns: 20% 1fr 15%;` → `@media (max-width: 575px) { grid-template-areas: "header" "article" "ads" "nav" "footer"; grid-template-columns: 1fr; }` (Quackit layouts 1–10; the phone order puts `article` before `nav`, which matches reading order only if the source has `article` first) |
+| 58 | A tall hero row, then equal rows (a mosaic with a few spans) | `grid-template-rows: 50vh repeat(4, 1fr); grid-template-columns: repeat(4, 1fr); gap: …;` + `grid-column: span 4` on the hero, `grid-row: span 4 / 2 / 3` on tall tiles (Quackit layouts 11–12, written with `nth-child`; a builder stores the span on the block instead; `vh`/`px` become `%`/`rem` per rule 16) |
+| 59 | Several items stacked in ONE multi-cell area, each at a different corner of it | `.a, .b, .c { grid-row: 1 / span 2; grid-column: 1 / span 2; max-width: 150px; }` + `.a { align-self: start } .b { justify-self: center; align-self: center } .c { justify-self: end; align-self: end }` (Codrops: with a self-alignment the item shrinks to its content instead of stretching; later items paint on top without `z-index`) |
+| 60 | A deliberately "uneven" grid (items sitting at different heights in their cells) | equal columns, auto rows, then a different `align-self` (`start`/`center`/`end`) on chosen items (Codrops, "Cicada principle": a prime-number `nth-child` pattern looks random) — a taste option, stored per block |
+| 61 | A short sidebar beside a long main with free space under the sidebar | `main { grid-row: 2 / 5; }` while the sidebar takes only row 2 (Grid by Example pattern: "By stretching the main content area over multiple rows we can have space available in the sidebar") |
+| 62 | Percentage tracks AND percentage gaps | `.g { width: 90%; grid-template-columns: repeat(6, 10%); gap: 2%; }` — six 10% tracks + five 2% gutters = 100%; the ROW gap is `0` unless the grid has a height (GBE example 36, T19) |
+| 63 | A subgrid with its own padding or margin that still lines up with the parent | `.sub { grid-template-columns: subgrid; padding: …; }` — the padding/margin eats into the FIRST and LAST spanned tracks, which become narrower; everything still lines up with the parent's tracks (GBE subgrid examples 8, 9) |
+| 64 | Spread fixed-size tracks across the container | `justify-content: space-between` / `space-around` / `space-evenly` (and `align-content`) — the extra space is added on top of the gap, and spanning items grow with it (T14) |
+| 65 | Animate a gap or the track sizes | `.g { transition: gap .3s; }` — `gap`/`row-gap`/`column-gap` animate in every browser CSS-Tricks tested; `grid-template-columns`/`-rows` only in Firefox 66+ there (and only between lists of the same length, see 03) |
+| 66 | Align to the end without pushing content off an edge you cannot scroll to | `align-items: safe end;` (`safe` = "try to align like this, but not if it means aligning an item such that it moves into inaccessible overflow area"; `unsafe` allows it) |
 
 ---
 
@@ -877,3 +900,186 @@ are meant to be the same.
    single invalid token drops the whole declaration silently.
 5. **Nest on purpose**: subgrid where a nested block must sit on the parent's lines (with its no-implicit-tracks rule and
    a fallback), an independent grid everywhere else; grid lanes only as an `@supports` enhancement.
+
+---
+
+## 6. Completeness follow-up (2026-10-04)
+
+Two lines were open: (a) the Learn "CSS grid layout" module's examples were skimmed, (b) the external links the guides
+cite were listed, not read. Both are closed here. Method: MDN pages as **raw Markdown** from `mdn/content`
+(`files/en-us/learn_web_development/core/css_layout/grids/index.md`, `…/test_your_skills/grid/index.md`, and every file
+under `files/en-us/web/css/guides/grid_layout/` plus `…/guides/box_alignment/in_grid_layout/`); external pages by
+`curl` where it reaches the host, otherwise the Wayback Machine or a fetch-and-extract tool (said per link). New goals
+are rows **46–66** of the §3 table above; new traps are **T19–T28** below.
+
+### 6.1 The Learn examples (module page + "Test your skills")
+
+The module page has 14 live samples (the `hidden` blocks are only the demo styling). Seven items, one `div` each, in
+`.container`; `.container > div` is a bordered box. **"In 02 §3?"** names the row that already holds the CSS.
+
+| # | Goal (the page's words, shortened) | Exact CSS | In 02 §3? |
+|---|---|---|---|
+| L1 | `display: grid` alone: "a one column grid, so your items will continue to display one below the other" | `.container { display: grid; }` | yes (basic concept, 2.1) |
+| L2 | Three fixed columns: "any length unit or percentage" | `.container { display: grid; grid-template-columns: 200px 200px 200px; }` | yes (#3) |
+| L3 | Three flexible, equal columns | `grid-template-columns: 1fr 1fr 1fr;` | yes (#1) |
+| L4 | Proportional columns: first gets 2 shares. "You can mix `fr` units with fixed-length units … the space needed for the fixed tracks is used up first". NOTE: "The `fr` unit distributes _available_ space, not _all_ space … if one of your tracks has something large inside it, there will be less free space to share." | `grid-template-columns: 2fr 1fr 1fr;` | yes (#2, T1) |
+| L5 | Gaps: `column-gap`, `row-gap`, `gap`. "These gaps can be any length unit or percentage, but not an `fr` unit." | `grid-template-columns: 2fr 1fr 1fr; gap: 20px;` | yes (#33, T6) |
+| L6 | Repeat a track list: "The first value … specifies the number of times … the second value is a track listing, which may be one or more tracks" | `grid-template-columns: repeat(3, 1fr); gap: 20px;` | yes (#1) |
+| L7 | Implicit rows get a size. "**Explicit grid** is created using `grid-template-columns` or `grid-template-rows`. **Implicit grid** extends the defined explicit grid when content is placed outside of that grid … By default, tracks created in the implicit grid are `auto`-sized" | `grid-template-columns: repeat(3, 1fr); grid-auto-rows: 100px; gap: 20px;` | yes (#24/#25 family, T2) |
+| L8 | Rows at least 50px, growing with content ("you never really know how tall something is going to be"). "the expansion happens right along the row" | `grid-auto-rows: minmax(50px, auto);` | yes (#24) |
+| L9 | As many columns as fit: "`auto-fit` … `minmax()` with a minimum … and a maximum of `1fr`" | `grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));` | yes (#18, which adds `min(100%, …)`; Learn's form overflows below 230px, T9) |
+| L10 | Place by lines. Start: auto-placement puts header, main, aside, footer in four cells of `1fr 3fr`, "the header is taking up `1fr` (one quarter)". Then: header and footer `1 / 3` | `.container { display: grid; grid-template-columns: 1fr 3fr; gap: 20px; } header { grid-column: 1 / 3; grid-row: 1; } main { grid-column: 2; grid-row: 2; } aside { grid-column: 1; grid-row: 2; } footer { grid-column: 1 / 3; grid-row: 3; }`. NOTE: "You can also use the value `-1` to target the end column or row line … lines count always from the edges of the explicit grid, not the implicit grid." | yes (#2, #6, #9, T3) |
+| L11 | Same layout by name | `grid-template-areas: "header header" "sidebar content" "footer footer"; grid-template-columns: 1fr 3fr; gap: 20px;` + `header { grid-area: header } main { grid-area: content } aside { grid-area: sidebar } footer { grid-area: footer }`. Five rules: "every cell … filled · to span two cells, repeat the name · empty cell = `.` · areas must be rectangular (no L) · areas can't be repeated in different locations". | yes (#15, T7) |
+| L12 | Nested grid inside the content area: one large article on top, two small. "While we're using only one column in the nested grid, we can define the rows to be split in a 4:3:3 ratio" | `main { grid-area: content; display: grid; grid-template-rows: 4fr 3fr 3fr; gap: inherit; } article { padding: 10px; border: 2px solid rebeccapurple; border-radius: 5px; }` | **NEW → #47** (`gap: inherit` was not stored) |
+| L13 | Subgrid that spans several parent columns/rows, with its own rows: "We've added `subgrid` to inherit the parent grid's column tracks while adding a different layout for the rows" | `.container { display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(1, 1fr); gap: 10px; } .subgrid { grid-column: 1 / 4; grid-row: 2 / 4; display: grid; gap: inherit; grid-template-columns: subgrid; grid-template-rows: 2fr 1fr; }` | **NEW → #48** (#34 / 2.11 cover subgrid columns, not the mixed form) |
+| L14 | "Grid frameworks": the frame placed on a 12-column grid | `.container { display: grid; grid-template-columns: repeat(12, 1fr); gap: 20px; } header { grid-column: 1 / 13; grid-row: 1; } main { grid-column: 4 / 13; grid-row: 2; } aside { grid-column: 1 / 4; grid-row: 2; } footer { grid-column: 1 / 13; grid-row: 3; }` | **NEW → #46** (#20 has the system, not the whole frame) |
+
+The page also embeds a YouTube video (`KOvGeFUHAC0`) and a Scrimba interactive lesson "Your first grid"; neither is text
+(see 6.2). Its "See also" lists CSS-Tricks and Grid Garden (both read, 6.2).
+
+**"Test your skills: CSS grids" — four tasks, all solutions published:**
+
+| Task | Goal | Published solution | In 02 §3? |
+|---|---|---|---|
+| 1 | Four children auto-placed in three equal columns with a `20px` gap between column and row tracks; then add more children and watch the default | `.grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }` | yes (#1, #33) |
+| 2 | Two items, each spanning several tracks, the second overlays the first. Grid: `1fr ×4` columns, `100px ×3` rows, `gap: 10px`. **Bonus:** show the first on top "without changing the order of items in the source" | `.item1 { grid-column: 1 / 4; grid-row: 1 / 3; } .item2 { grid-column: 2 / 5; grid-row: 2 / 4; }`. Bonus: "`order` … `.item1 { order: 1; }`" and "Another valid solution is to use `z-index`: `.item1 { z-index: 1; }`" | overlap yes (#13); bonus **NEW → #49** |
+| 3 | Four items by name, grid `1fr 2fr`, `gap: 20px`, one empty cell. "Possible areas of confusion would be not realizing you should place a `.` to leave a cell empty, or that you should repeat the name to cause an element to span more than one track" | `grid-template-areas: "aa aa" "bb cc" ". dd";` with `.one { grid-area: aa } .two { grid-area: bb } .three { grid-area: cc } .four { grid-area: dd }` | yes (#14, #15) |
+| 4 | Grid **and** flexbox: four cards in three columns (`10px` gap), each card = image (`200px`, `object-fit: cover`) over a chip list. "The `<ul>` needs to be a flex container as tags … are not lined up in columns, only in rows"; "You may try to use flexbox on the container and restrict the cards with percentage values" (the page says that is the wrong tool) | `.container { display: grid; gap: 10px; grid-template-columns: 1fr 1fr 1fr; } .tags { display: flex; flex-wrap: wrap; justify-content: center; }` on a start of `.card { display: grid; grid-template-rows: 200px min-content; } .card > img { width: 100%; height: 100%; object-fit: cover; }` | **NEW → #50** |
+
+### 6.2 External links the grid guides cite, plus CSS-Tricks and Grid Garden
+
+How the list was made: every `http(s)` link that is not on `developer.mozilla.org` (and not the MDN demo images) in the
+raw Markdown of the 13 guides + `In_grid_layout` — 18 link lines, 17 distinct URLs (index 5, Accessibility 5, Common_grid_layouts 3,
+Subgrid 3, Auto-placement 2; Grid by Example and CSS-Tricks repeat). Added: the Learn page's video and Scrimba embed, the
+Firefox page's Jen Simmons link, CSS-Tricks' old snippet URL (same guide) — 20 URLs, 22 table rows below because Grid by
+Example is split into home / patterns / examples. Pages `Basic_concepts`, `Line-based_placement`,
+`Named_grid_lines`, `Grid_template_areas`, `Box_alignment`, `Logical_values`, `Relationship_with_other_layout_methods`,
+`Grid_lanes` and `In_grid_layout` have **no** external link.
+
+| # | URL | Read | Anything NOT already in 02 / 03 |
+|---|-----|------|----------------------------------|
+| A | https://css-tricks.com/complete-guide-css-grid-layout/ (old `/snippets/css/complete-guide-grid/` is the same guide) | fully — fetch-and-extract (host refuses `curl`); every property section | `grid-template` "doesn't reset the implicit grid properties (`grid-auto-columns`, `grid-auto-rows`, and `grid-auto-flow`) … it's recommended to use the `grid` property" (T25). `grid`: "You can only specify the explicit or the implicit grid properties in a single `grid` declaration"; forms `grid: auto-flow dense 100px / 1fr 2fr` ≡ `grid-auto-flow: row dense; grid-auto-rows: 100px; grid-template-columns: 1fr 2fr` and `grid: 100px 300px / auto-flow 200px` ≡ rows `100px 300px; grid-auto-flow: column; grid-auto-columns: 200px`. `safe`/`unsafe` alignment keywords (goal #66). `auto` "lose[s] the fight in sizing against `fr` units when allocating the remaining space". `fr` vs `%`: "if you added padding to those percentage-based columns, now you've broken 100% width". `gap` "could be thought of as a minimum gutter" (a larger `space-between` space wins). `dense` "only changes the visual order … bad for accessibility" (= T11). Animation table (goal #65). Browser versions. The page writes `place-items`/`place-content` values as `<align> / <value>` but its own example is `place-self: center stretch` — **space-separated is the form to emit** (T26). Masonry: "in the process of defining an official approach" (= 2.12). |
+| B | https://cssgridgarden.com/ | fully — the game's own `js/levels.js` (all 28 levels, instructions + solutions) read with `curl`; the page itself is an interactive app | See the 28-level table below. Goals #51–#54. |
+| C | https://gridbyexample.com/ (home) | fully | Index only: nav (Start Here, Examples, Patterns, Video, Resources), "GridBugs!" repo `rachelandrew/gridbugs`, Grid AMA repo `rachelandrew/cssgrid-ama`, newsletter csslayout.news. No technique. |
+| D | https://gridbyexample.com/patterns/ and its 6 pattern pages | partly — page texts read through the Wayback Machine; the CodePen code each embeds was not opened | Six patterns: header · 2 col · footer; the same responsive; the same with "negative space" (goal #61); "as many as will fit" in a centre panel; the same with some items spanning two rows; media objects (areas, nested, flippable). Quotes: columns "a minimum of 200 pixels and a maximum of 1fr", rows "a minimum of 100 pixels tall but expand … so the rows have a max of auto" (= #18 + #24). Fallbacks: "uses floats and Feature Queries" / "uses Flexbox, we need to constrain the items … We don't get the tall items in flex layout" (T27). |
+| E | https://gridbyexample.com/examples/ (37 examples + 9 subgrid examples) | partly — all 46 titles read; bodies of examples 36, 37 and subgrid 1–9 read (Wayback) | #62, #63, T19, T21 below. Subgrid 2-2: "the parent grid row containing the subgrid will grow to be large enough to contain the content (assuming it has an `auto` or other content-based size)"; 2-5: extra items "are forced into the last row"; 2-4: subgrid inherits the gap, `row-gap: 0` overrides. Titles with no new fact beyond MDN: defining a grid, line-based shorthands, named lines, `repeat`, explicit/implicit, areas, "No clearing required", media-query redefinition, source independence, layering, "a grid item as a new positioning context", auto-placement, `grid-auto-flow: column`, mixed placed/auto items, `auto-fill`, nested grid, implicit named lines, `order`, the four `*-items/*-self`, `minmax` in `auto-fill`, `minmax` + spans, `auto-fill` + named lines, aligning the grid, `space-around`/`space-between`, multiple tracks in `auto-fill`. |
+| F | https://www.quackit.com/css/grid/examples/css_grid_website_layout_examples.cfm | fully — the index lists 12 layouts; each layout's code read from its scratchpad URL | Goals #57, #58. Layouts 1–10 are one `body` grid of five named areas (`header`, `nav`, `article`, `ads`, `footer`), 80px / 1fr / 70px rows, `20% 1fr 15%` or `20% 1fr`, `10px` row/column gap, `height: 100vh`, and ONE phone rule at `max-width: 575px` with the same stack for all ten. Layouts 11–12: a `#grid` of `repeat(5, 1fr)` rows × `repeat(4, 1fr)` columns (12: `50vh repeat(4, 1fr)` rows) with `span` on `:nth-child` items. Area arrangements seen: `"header header header" "nav article ads" "nav footer footer"` · `"…" "article nav ads" "footer footer footer"` · `"header header ads" "nav article article" "nav footer footer"` · `"header header" "nav article" "ads article" "ads footer"`. |
+| G | https://tympanus.net/codrops/css_reference/grid/ | fully — through the Wayback Machine (live host returns 403) | Goals #55, #56, #59, #60; T22, T23, T27. Also stored nowhere before: **the invalid-line rules** ("If a grid item's end line comes before its start line, then the start and end lines will be swapped. If the start line and end line are the same, the end line will be ignored"; `start: span 3; end: span 2` → "the one applied on the end line will be ignored"; `span [foo]` alone → `span 1`) — 03 has the swap, not the other two. `grid-auto-columns: 50px 75px` is a **repeating list** for implicit tracks, and once implicit tracks exist, un-placed items "fill up accordingly". Implicit empty rows "will have a height of 0". Gutters "do not appear on the edges". `grid` "also resets any gutter properties set earlier in the cascade" (it lists 8 sub-properties, including `grid-column-gap`/`grid-row-gap` — Codrops' 2017 wording; T8 stays right for the auto-* ones). Skip-link remark: with grid the main content can come first in the source and the navigation be placed visually above. Notes "grid placement only affects visual presentation". |
+| H | https://firefox-source-docs.mozilla.org/devtools-user/page_inspector/how_to/examine_grid_layouts/index.html | fully (`curl`) | Not CSS — the **overlay** every builder should copy for its own grid editing: a toggle per grid ("Overlay grid"), "Display line numbers" (on by default), "Display area names" (on by default), "Extend lines infinitely" (lines run to the viewport edge), a per-grid colour, a "mini grid view" whose hover highlights the same area on the overlay with its size/row/column, a subgrid indented under its parent (and the parent's lines shown when the subgrid is ticked). Preferences "persisted across page loads for each separate page". |
+| I | https://mozilladevelopers.github.io/playground/css-grid | fully — intro + 9 lessons (`curl`): terminology, first grid, DevTools, `fr`, mixing units, position, basic layout, template areas, named lines, learn more | No new CSS. Quotes worth keeping: "`grid-template-columns: 10px repeat(2, 1fr)`" — `repeat()` "for just part of the track listing"; mixed `100px 30% 1fr` (and the `2fr` variant: "a 3rd column that is `2fr` and occupies 2/3 of the remaining space"); named lines `[main-start sidebar-start] 200px [sidebar-end content-start] 1fr …` and `grid-column: main-start / main-end`. Lesson 3 describes the Layout panel above (H). |
+| J | https://tink.uk/flexbox-the-keyboard-navigation-disconnect/ (2016) | fully — fetch-and-extract | The only fixes available to authors are bad: `tabindex` "is scoped to the document" (solving the local problem hijacks the whole page's tab order); `aria-flowto` "complicates rather than simplifies" and has "extremely poor accessibility support". Conclusion: "the only viable way … is in the browser … and the accessibility tree". For a builder: do not try to repair a visual/DOM mismatch with `tabindex` or ARIA — keep them equal (T11). |
+| K | https://css-tricks.com/grid-content-re-ordering-and-accessibility/ (2019) | fully — fetch-and-extract | Quoted: "If the visual order and the DOM order don't match, it can irritate and confuse users up to a point where the experience is so bad that the site is unusable" (Matuzovic); Rachel Andrew: "We need to provide a way to allow the tab and reading order to follow the visual order." Culprits listed: `order`, column flows, `row-reverse`, absolute positioning. Same message as T11; no new rule. |
+| L | https://adrianroselli.com/2018/05/display-contents-is-not-a-css-reset.html | fully — fetch-and-extract; the CodePen demo was not run | T20 below (what breaks, per browser, with dates; last advice July 2025). |
+| M | https://github.com/w3c/csswg-drafts/issues/796 (Auto-placement guide's "an issue raised about this") | partly — GitHub returns 403 to the direct fetch; the extract says: title "[css-grid] Auto-placement aligning to a named line", **Closed — Accepted by CSSWG Resolution**, labels "Needs Edits" and `css-grid-3` (the Masonry/lanes level); the comment thread itself was not read | The guide says CSS cannot yet "auto-place items against the next line named n"; this request was accepted for Level 3 (the same level as grid lanes, 2.12). Nothing to build now. |
+| N | https://drafts.csswg.org/css-grid/#order-accessibility | fully (`curl`, spec text) | Confirms 2.9 word for word. Not stored before: the **authoring-tool paragraph** — tools "must reorder the underlying document source and not use `order` or grid-placement properties to perform reordering unless the author has explicitly indicated that the underlying document order … should be out-of-sync"; the conforming design it describes is "drag-and-drop arrangement … by simultaneously reordering the DOM layer", and, if different visual arrangements per screen size are wanted, "tie the smallest screen size's arrangement to the underlying DOM order" and rearrange only in the other ranges; "a tool that only ever used the grid-placement properties to handle drag-and-drop grid rearrangement … would be non-conformant". Its own page-frame example: `grid: "h h h" "a b c" "f f f"; grid-template-columns: auto 1fr 20%;` (goal #55). |
+| O | https://drafts.csswg.org/css-grid/#auto-placement-algo (§8.5) | fully (`curl`, spec text, through the sparse and dense branches) | T23 and T24 below. |
+| P | https://www.youtube.com/watch?v=KOvGeFUHAC0 (Learn page video) | **failed** — video, no transcript fetched | — |
+| Q | Scrimba "Your first grid" (`scrimba.com/learn-css-grid-c02k/~01`, Learn page) | **failed** — interactive embed | — |
+| R | https://www.youtube.com/watch?v=spxT2CmHoPk (Léonie Watson, Accessibility remix) | **failed** — video | The same argument as J is in her article, which was read. |
+| S | https://www.youtube.com/watch?v=gmQlK3kRft4 (forms with subgrid, 2019) | **failed** — video | The subject (forms on subgrid) is goal #35 / #28. |
+| T | https://www.youtube.com/watch?v=lLnFtK1LNu4 (card layouts with subgrid, 2019) | **failed** — video | Goal #35. |
+| U | https://www.youtube.com/watch?v=vxOj7CaWiPU (Hello subgrid!, CSSConf.eu 2019) | **failed** — video | — |
+| V | https://labs.jensimmons.com/ (cited by the Firefox page, H, not by MDN) | not followed — a gallery of Jen Simmons' layout experiments, not a reference page; open line if a taste pass wants it | — |
+
+(Not in the list because MDN's guides do not cite them: the Codrops page links Manuel Rego's articles and Igalia's
+examples; not followed.)
+
+**Grid Garden — all 28 levels** (instructions in English, the game's own solution). The game teaches only item placement
+and track sizing; the first 19 never define the grid (the garden is a fixed `5 × 20%` grid).
+
+| Lvl | Name | Goal (the game's words, shortened) | Solution CSS |
+|---|---|---|---|
+| 1 | grid-column-start 1 | "water only the areas that have carrots": start at the 3rd vertical line | `grid-column-start: 3;` |
+| 2 | grid-column-start 2 | weeds start at the 5th vertical line | `grid-column-start: 5;` |
+| 3 | grid-column-end 1 | "When `grid-column-start` is used alone … the grid item by default will span exactly one column"; carrots from line 1 to 4 (start is 1) | `grid-column-end: 4;` |
+| 4 | grid-column-end 2 | "you might assume that the end value has to be greater than the start value. But this turns out not the case!" (start 5) | `grid-column-end: 2;` (any value below 5) |
+| 5 | grid-column-end 3 | negative values "to count grid lines from the right"; `-1` "the first grid line from the right" (start 1) | `grid-column-end: -2;` |
+| 6 | grid-column-start 3 | start set to a negative value | `grid-column-start: -3;` |
+| 7 | grid-column-end 4 | "define it based on your desired column width using the `span` keyword. Keep in mind that `span` only works with positive values" (start 2) | `grid-column-end: span 2;` |
+| 8 | grid-column-end 5 | `span` again (start 1) | `grid-column-end: span 5;` |
+| 9 | grid-column-start 4 | `span` with the START: width "relative to the end position" (end is 6) | `grid-column-start: span 3;` |
+| 10 | grid-column 1 | "`grid-column` is a shorthand … separated by a slash" | `grid-column: 4 / 6;` |
+| 11 | grid-column 2 | the shorthand, "the `span` keyword also works" | `grid-column: 2 / 5;` |
+| 12 | grid-row-start 1 | "you can easily position items in two dimensions" | `grid-row-start: 3;` |
+| 13 | grid-row-start 2 | `grid-row` shorthand | `grid-row: 3 / 6;` |
+| 14 | grid-column-row 1 | both at once | `grid-column: 2; grid-row: 5;` |
+| 15 | grid-column-row 2 | both, spanning larger areas | `grid-column: 2 / 6; grid-row: 1 / 6;` |
+| 16 | grid-area 1 | "`grid-area` accepts four values separated by slashes: `grid-row-start`, `grid-column-start`, `grid-row-end`, followed by `grid-column-end`" (= T4) | `grid-area: 1 / 2 / 4 / 6;` |
+| 17 | grid-area 2 | "How about multiple items? You can overlap them without any trouble." A second area covering the unwatered carrots (first is `1 / 4 / 6 / 5`) | `grid-area: 2 / 3 / 5 / 6;` |
+| 18 | order 1 | "grid items aren't explicitly placed … automatically placed according to their order in the source code. We can override this using the `order` property … By default, all grid items have an order of 0, but this can be set to any positive or negative value, similar to `z-index`" | `order: 2;` |
+| 19 | order 2 | water and poison alternate; "Set the order of the poisons to remedy this" | `order: -1;` |
+| 20 | grid-template-columns 1 | "you can set the grid up in other ways": two columns | `grid-template-columns: 50% 50%;` |
+| 21 | grid-template-columns 2 | the `repeat` function: eight columns of 12.5% | `grid-template-columns: repeat(8, 12.5%);` |
+| 22 | grid-template-columns 4 | "length units like pixels and ems. You can even mix different units together" | `grid-template-columns: 100px 3em 40%;` |
+| 23 | grid-template-columns 5 | "Each `fr` unit allocates one share of the available space": 1/6 weeds, 5/6 carrots | `grid-template-columns: 1fr 5fr;` |
+| 24 | grid-template-columns 3 | "any other columns set with `fr` will divvy up the space that's left over": 50px / three `fr` / 50px | `grid-template-columns: 50px 1fr 1fr 1fr 50px;` |
+| 25 | grid-template-columns 6 | 75px column, then 3/5 and 2/5 of the rest | `grid-template-columns: 75px 3fr 2fr;` |
+| 26 | grid-template-rows 1 | "works much the same as `grid-template-columns`": "water all but the top 50 pixels of your garden … the water is set to fill only your 5th row, so you'll need to create 5 rows in total" | `grid-template-rows: 1fr 100px;` — the text and the stored answer do not obviously agree (two explicit rows, the item in row 5): **not verified, do not copy** |
+| 27 | grid-template 1 | "`grid-template` is a shorthand … `grid-template: 50% 50% / 200px;` will create … two rows that are 50% each, and one column that is 200 pixels wide" | `grid-template: 60% 1fr / 200px 1fr;` |
+| 28 | grid-template 2 | a 50px path at the bottom, the left 20% weeds | `grid-template: 1fr 50px / 20% 1fr;` |
+
+Every Grid Garden goal is already a row of §3 (#6–#11, #25–#26) except those added as #51–#54. The game never teaches
+`gap`, `minmax`, `auto-fit`, areas, alignment or subgrid.
+
+**New traps found (continuing T1–T18):**
+
+**T19 — A percentage row gap needs a height.** `gap: 2%` on a grid with no height: "the row gap resolves to 0. If we
+give the grid a height, there is something for 2% to be a percentage of" (GBE example 36). Codrops (2017) says gap
+percentages are "of the parent's container width" — the example shows the row gap does not work that way; measure before
+emitting `%` for a ROW gap. Column gaps in `%` are safe.
+
+**T20 — `display: contents` and the accessibility tree** (Roselli, last advice July 2025): browsers "take an element with
+`display: contents` and drop it from the accessibility tree" — affected: buttons, links, form controls, lists
+(`ul`/`ol`), tables, headings, `nav`, `header`, `details`, web components. Chrome fixed it (issue closed March 2021);
+Firefox fixed it in 62 "with limitations; initially only worked for lists"; Safari "repeatedly promised fixes (15.4, 16)
+but remained broken as of July 2022; still problematic in web components as of November 2024". "Browsers have fixed and
+regressed `display: contents` repeatedly." His rules: avoid it on interactive or focusable elements, avoid it in web
+components, skip it for tables, lists and headings, and test regularly. It is "not a CSS reset". (T15 said never on a
+landmark, list, button or heading — this is the evidence.)
+
+**T21 — Subgrid padding and margin are subtracted from the first and last tracks** (GBE subgrid 8, 9): the tracks get
+narrower, the items still line up with the parent. A card that gets inner padding while on subgrid rows loses height in
+its first and last row, not extra height around it.
+
+**T22 — Every name in `grid-template-areas` must be given to an item.** Codrops' own example defines `"content sidebar"`
+but only styles `header`, `nav`, `footer` with `grid-area`; `main` and `aside` land in the two cells by auto-placement,
+by accident. A generator that emits a name without an item using it, or an item without its name, is relying on that.
+
+**T23 — Implicit tracks are added at the START as well as the end, and an unplaced item's span can add columns** (spec
+§8.5): "add columns to the beginning and end of the implicit grid as necessary to accommodate" items with a definite column;
+"If the largest column span among all the items without a definite column position is larger than the width of the
+implicit grid, add columns to the end". The spec's example: `repeat(5, 100px)` with `grid-column: 4 / span 3` needs
+**6 columns** ("ends on line 7"). A lone `span 3` on a 2-column grid creates a third column (T2 extended).
+
+**T24 — Sparse placement has a cursor that only goes forward; dense restarts it** (spec §8.5). Items with a definite
+column position: the cursor's column is set to that column; "If this is less than the previous column position of the
+cursor, increment the row position by 1" — so a column-locked item can jump to the next row even when an earlier row has
+room. Auto items: the cursor advances until the item does not overlap an occupied cell or it would overflow the implicit
+columns, then wraps to the next row. With `dense`, **every** item restarts from the start-most row and column. The
+algorithm "works with the grid items in **order-modified** document order, not their original document order"; text
+runs become anonymous items first. Takeaway for a builder: a hole is always explained by this cursor; `dense` is the only
+backfill, and it reorders reading.
+
+**T25 — `grid-template` and `grid` differ in what they reset.** CSS-Tricks: `grid-template` leaves the implicit
+properties alone; `grid` sets all six and "you can only specify the explicit or the implicit grid properties in a single
+`grid` declaration". Codrops (2017) adds that `grid` resets gutters too. Emit longhands (T8) and the question disappears.
+
+**T26 — `place-*` shorthands take space-separated values** (`place-self: center stretch`, `place-items: center`). The
+CSS-Tricks summary prints them with a slash; the example below it does not. A generator that copies the slash form emits
+an invalid declaration.
+
+**T27 — Fallbacks: the old layout comes first, `@supports (display: grid)` overrides it** (GBE patterns: floats and
+"Feature Queries"; flex fallback needs items constrained "to get the appearance of two-dimensional alignment" and "We
+don't get the tall items in flex layout"). Codrops: grid in Chrome 57+/Firefox 52+/Safari 10.1+/Edge 16+; IE 10/11 have
+only the old `-ms-` syntax ("functionality that is not supported"). For Android WebViews below Chrome 57 (RULE AF) a
+single-column block fallback is the realistic one — the content stacks and stays readable.
+
+**T28 — A Learn example is not production CSS.** Learn's `repeat(auto-fit, minmax(230px, 1fr))` overflows a container
+narrower than 230px (T9); its pixel values (`200px`, `20px`, `100px`) are teaching values. Keep the *goal*, convert the CSS
+per rule 16.
+
+**What the follow-up closes.** Learn module examples: 14 + 4 tasks, all recorded, 5 new goals (#46–#50). External links:
+22 listed, 12 read fully, 3 partly (GBE patterns bodies, GBE examples bodies, issue 796 thread), 6 not readable (5
+videos + the Scrimba embed), 1 not followed (Jen Simmons labs). Grid Garden: 28/28 levels, from the game's own source.
+Totals: goals #46–#66 (21 new rows), traps T19–T28 (10), and the Firefox grid-overlay feature list for the builder's own
+grid editor (RULE UI).

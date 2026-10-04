@@ -1,0 +1,492 @@
+[w5] #4 place=span:4.5:5 @1280 — 0 failed
+[w0] #2 place=span:3:4 @1280 — 0 failed
+[w5] #6 place=se:2:9 @1280 — 0 failed
+[w3] #1 place=span:0:6 @360 — 0 failed
+[w4] #3 place=span:3:4 @360 — 0 failed
+[w2] #5 place=span:4.5:5 @360 — 0 failed
+[w1] #0 place=span:0:6 @1280 — 0 failed
+[w5] #8 place=last:5 @1280 — 0 failed
+[w0] #7 place=se:2:9 @360 — 0 failed
+[w2] #11 place=bleed @360 — 0 failed
+[w3] #9 place=last:5 @360 — 0 failed
+[w1] #12 place=bleedL @1280 — 0 failed
+[w4] #10 place=bleed @1280 — 0 failed
+[w5] #13 place=bleedL @360 — 0 failed
+[w0] #14 place=bleedR @1280 — 0 failed
+[w2] #15 place=bleedR @360 — 0 failed
+[w4] #18 x=center @1280 — 0 failed
+[w3] #16 x=start @1280 — 0 failed
+[w1] #17 x=start @360 — 0 failed
+[w5] #19 x=center @360 — 0 failed
+[w0] #20 x=end @1280 — 0 failed
+[w2] #21 x=end @360 — 0 failed
+[w4] #22 y=top @1280 — 0 failed
+[w3] #23 y=top @360 — 0 failed
+[w1] #24 y=center @1280 — 0 failed
+[w5] #25 y=center @360 — 0 failed
+[w0] #26 y=bottom @1280 — 0 failed
+[w2] #27 y=bottom @360 — 0 failed
+[w4] #28 out=0 @1280 — 0 failed
+[w3] #29 out=0 @360 — 0 failed
+[w1] #30 out=2s @1280 — 0 failed
+[w5] #31 out=2s @360 — 0 failed
+[w0] #32 out=pushEnd @1280 — 0 failed
+[w2] #33 out=pushEnd @360 — 0 failed
+[w4] #34 out=pushBottom @1280 — 0 failed
+[w3] #35 out=pushBottom @360 — 0 failed
+[w1] #36 in=0 @1280 — 0 failed
+[w5] #37 in=0 @360 — 0 failed
+[w0] #38 in=2 @1280 — 0 failed
+[w2] #39 in=2 @360 — 0 failed
+[w4] #40 size=square @1280 — 0 failed
+[w3] #41 size=square @360 — 0 failed
+[w1] #42 size=16x9 @1280 — 0 failed
+[w5] #43 size=16x9 @360 — 0 failed
+[w0] #44 size=read @1280 — 0 failed
+[w2] #45 size=read @360 — 0 failed
+[w4] #46 size=max20 @1280 — 0 failed
+[w3] #47 size=max20 @360 — 0 failed
+[w1] #48 layer=over @1280 — 0 failed
+[w5] #49 layer=over @360 — 0 failed
+[w0] #50 layer=floatTR @1280 — 0 failed
+[w2] #51 layer=floatTR @360 — 0 failed
+[w4] #52 layer=cover @1280 — 0 failed
+[w3] #53 layer=cover @360 — 0 failed
+[w1] #54 cont=spread @1280 — 0 failed
+[w5] #55 cont=spread @360 — 0 failed
+[w0] #56 cont=even @1280 — 0 failed
+[w2] #57 cont=even @360 — 0 failed
+[w4] #58 cont=wrapmid @1280 — 0 failed
+[w3] #59 cont=wrapmid @360 — 0 failed
+[w1] #60 cont=cardsfit @1280 — 0 failed
+[w5] #61 cont=cardsfit @360 — 0 failed
+[w0] #62 cont=cardsfill @1280 — 0 failed
+[w2] #63 cont=cardsfill @360 — 0 failed
+[w4] #64 cont=subgrid @1280 — 0 failed
+[w3] #65 cont=subgrid @360 — 0 failed
+[w1] #66 dir=rtl @1280 — 0 failed
+[w5] #67 dir=rtl @360 — 0 failed
+[w0] #68 full x:center y:top out:pushBottom in:def read over wrapmid ltr · 1536×864 Windows laptop at 125% — 1536 × 864 · 100% — 0 failed
+[w2] #69 full x:start y:center out:0 in:0 read flow wrapmid rtl · 1024×1366 iPad Air 13″ · Pro 12.9″ — 1024 × 1366 · 200% — 0 failed
+[w4] #70 span:4.5:5 x:end y:top out:2s in:0 free floatTR spread ltr · 1200×900 desktop starts — 1200 · 100% — 0 failed
+[w1] #72 bleedR x:fill y:bottom out:def in:def max20 floatTR even ltr · 1366×768 Windows laptop — 1366 × 768 · 100% — 0 failed
+[w5] #73 se:2:9 x:fill y:bottom out:0 in:def free flow even ltr · 375×812 Mobile — 375 × 812 · 100% — 0 failed
+[w3] #71 span:3:4 x:start y:bottom out:2s in:2 square cover spread rtl · 3440×1440 Ultrawide 21:9 — 3440 × 1440 · 200% — 0 failed
+[w0] #74 bleedR x:fill y:top out:2s in:def square over cardsfill rtl · 800×1333 Galaxy Tab S6 Lite · Lenovo Tab P11 — 800 × 1333 · 150% — 0 failed
+[w2] #75 bleedR x:end y:top out:def in:def max20 cover stack rtl · 390×844 iPhone 14 · 15 · 16 · 16e — 390 × 844 · 100% — 0 failed
+[w4] #76 se:2:9 x:fill y:center out:pushBottom in:def read cover wrapmid ltr · 834×1210 iPad Pro 11″ (M4) — 834 × 1210 · 150% — 0 failed
+[w5] #78 bleedR x:center y:top out:2s in:2 read cover spread rtl · 393×851 Redmi · Tecno Camon — 393 × 851 · 100% — 0 failed
+[w1] #77 full x:fill y:center out:0 in:def 16x9 floatTR wrapmid ltr · 1032×1376 iPad Pro 13″ (M4) — 1032 × 1376 · 100% — 0 failed
+[w3] #79 se:2:9 x:start y:center out:2s in:def 16x9 flow cardsfit rtl · 412×891 Galaxy S24 · S25 Ultra — 412 × 891 · 150% — 0 failed
+[w0] #80 bleed x:end y:top out:2s in:def free floatTR stack rtl · 414×896 iPhone XR · 11 — 414 × 896 · 100% — 0 failed
+[w2] #81 span:0:6 x:fill y:bottom out:0 in:2 max20 flow cardsfit rtl · 800×1280 Galaxy Tab S9 · A9+ · Pixel Tablet · Fire HD 10 — 800 × 1280 · 100% — 0 failed
+[w4] #82 last:5 x:end y:top out:pushBottom in:def free floatTR even ltr · 384×854 Galaxy S21 · S23+ — 384 × 854 · 100% — 0 failed
+[w5] #83 last:5 x:end y:center out:def in:def square cover stack rtl · 1920×1200 16:10 — 1920 × 1200 · 100% — 0 failed
+[w1] #84 bleedL x:start y:bottom out:def in:2 max20 cover cardsfill ltr · 1920×1080 Wide — 1920 × 1080 · 100% — 0 failed
+[w3] #85 span:3:4 x:end y:bottom out:0 in:2 16x9 flow cardsfill ltr · 900×1440 Xiaomi Pad 6 — 900 × 1440 · 100% — 0 failed
+[w0] #86 span:4.5:5 x:fill y:fill out:def in:2 square over subgrid ltr · 744×1133 iPad mini (A17 Pro) — 744 × 1133 · 200% — 0 failed
+[w2] #87 span:3:4 x:center y:center out:2s in:0 16x9 cover even rtl · 360×780 Galaxy S23 · S24 · S25 — 360 × 780 · 150% — 0 failed
+[w4] #88 bleedL x:fill y:top out:2s in:def free flow even rtl · 1600×900 HD+ — 1600 × 900 · 200% — 0 failed
+[w5] #89 span:3:4 x:center y:fill out:0 in:def 16x9 flow wrapmid ltr · 692×717 Pixel 10 Pro Fold — open, 692 × 717 · 150% — 0 failed
+[w1] #90 last:5 x:center y:top out:pushBottom in:0 16x9 over even ltr · 1800×900 wide starts — 1800 · 100% — 0 failed
+[w3] #91 full x:center y:fill out:0 in:0 16x9 floatTR cardsfill ltr · 876×1400 Galaxy Tab S9+ · S10+ — 876 × 1400 · 200% — 0 failed
+[w0] #92 span:3:4 x:center y:fill out:2s in:0 16x9 flow cardsfit rtl · 1280×832 MacBook Air 13" — 1280 × 832 · 150% — 0 failed
+[w2] #93 bleedR x:end y:bottom out:0 in:def square cover spread rtl · 375×667 iPhone SE (3rd gen) — 375 × 667 · 200% — 0 failed
+[w5] #95 bleedL x:center y:center out:def in:0 read floatTR wrapmid ltr · 899×900 just below tabletLandscape — 899 · 150% — 0 failed
+[w4] #94 span:4.5:5 x:start y:fill out:pushEnd in:2 max20 cover subgrid ltr · 820×1180 iPad Air 11″ · iPad (A16) — 820 × 1180 · 200% — 0 failed
+[w1] #96 bleedR x:end y:fill out:def in:def read cover cardsfill rtl · 394×875 vivo X200 Pro — 394 × 875 · 200% — 0 failed
+[w3] #97 span:3:4 x:end y:fill out:pushBottom in:2 16x9 flow cardsfill rtl · 414×921 Pixel 9 · 10 Pro XL — 414 × 921 · 150% — 0 failed
+[w0] #98 bleedL x:fill y:bottom out:0 in:def square cover even ltr · 810×1080 iPad (9th gen) — 810 × 1080 · 200% — 0 failed
+[w2] #99 span:4.5:5 x:fill y:bottom out:def in:0 read flow subgrid ltr · 2560×1600 16:10 QHD+ — 2560 × 1600 · 200% — 0 failed
+[w4] #101 se:2:9 x:end y:center out:2s in:def max20 floatTR wrapmid ltr · 1799×900 just below wide — 1799 · 100% — 0 failed
+[w5] #100 span:0:6 x:fill y:fill out:2s in:def free over subgrid ltr · 1512×982 MacBook Pro 14" — 1512 × 982 · 100% — 0 failed
+[w1] #102 se:2:9 x:start y:bottom out:2s in:0 free floatTR spread ltr · 1280×720 Small laptop — 1280 × 720 · 200% — 0 failed
+[w3] #103 se:2:9 x:start y:top out:def in:2 read floatTR cardsfit ltr · 5120×1440 Super ultrawide 32:9 — 5120 × 1440 · 100% — 0 failed
+[w0] #104 span:3:4 x:center y:center out:pushEnd in:def free cover spread ltr · 320×568 iPhone 5 · SE (1st gen) — 320 × 568 · 150% — 0 failed
+[w2] #105 span:0:6 x:end y:top out:pushBottom in:0 16x9 cover spread ltr · 1680×1050 16:10 — 1680 × 1050 · 200% — 0 failed
+[w5] #107 span:3:4 x:fill y:fill out:pushBottom in:2 read flow stack ltr · 1440×900 MacBook Air (M1) · mid monitor — 1440 × 900 · 150% — 0 failed
+[w4] #106 span:0:6 x:fill y:center out:0 in:0 read cover subgrid ltr · 1500×1000 Surface Laptop — 1500 × 1000 · 100% — 0 failed
+[w3] #109 span:4.5:5 x:fill y:bottom out:2s in:2 max20 cover cardsfit ltr · 1199×900 just below desktop — 1199 · 150% — 0 failed
+[w1] #108 span:3:4 x:center y:bottom out:def in:2 max20 cover cardsfill rtl · 1280×800 Desktop — 1280 × 800 · 100% — 0 failed
+[w2] #111 se:2:9 x:center y:top out:0 in:def max20 cover spread rtl · 411×885 Huawei Mate 70 Pro — 411 × 885 · 100% — 0 failed
+[w0] #110 span:0:6 x:center y:bottom out:def in:def square cover subgrid rtl · 1024×768 Laptop — 1024 × 768 · 100% — 0 failed
+[w5] #112 bleedR x:center y:fill out:pushBottom in:def 16x9 flow cardsfit ltr · 924×1480 Galaxy Tab S9 · S10 Ultra — 924 × 1480 · 150% — 0 failed
+[w4] #113 span:4.5:5 x:center y:bottom out:0 in:def free flow wrapmid ltr · 600×900 tabletPortrait starts — 600 · 150% — 0 failed
+[w1] #115 bleedR x:center y:bottom out:pushEnd in:def 16x9 floatTR subgrid rtl · 768×1024 Tablet — 768 × 1024 · 100% — 0 failed
+[w3] #114 span:3:4 x:center y:center out:2s in:2 square flow subgrid rtl · 323×792 Galaxy Z Fold 6 — folded, 323 × 792 · 100% — 0 failed
+[w2] #116 full x:fill y:top out:pushBottom in:def max20 cover cardsfill rtl · 3840×2160 4K — 3840 × 2160 · 200% — 0 failed
+[w0] #117 span:3:4 x:center y:bottom out:2s in:def free floatTR cardsfill rtl · 400×875 Honor Magic7 Pro — 400 × 875 · 100% — 0 failed
+[w5] #118 full x:fill y:fill out:def in:def max20 cover even rtl · 412×915 Pixel 6 · 7 · 8 — 412 × 915 · 200% — 0 failed
+[w4] #119 span:4.5:5 x:fill y:bottom out:0 in:def 16x9 cover subgrid rtl · 393×852 iPhone 16 Pro — 393 × 852 · 100% — 0 failed
+[w3] #121 span:3:4 x:end y:center out:0 in:def 16x9 cover cardsfit ltr · 440×956 iPhone 17 Pro Max — 440 × 956 · 100% — 0 failed
+[w1] #120 se:2:9 x:center y:bottom out:pushEnd in:2 max20 over wrapmid ltr · 2560×1440 1440p — 2560 × 1440 · 100% — 0 failed
+[w0] #123 last:5 x:end y:top out:0 in:def max20 flow cardsfit rtl · 619×720 Galaxy Z Fold 6 — open, 619 × 720 · 150% — 0 failed
+[w2] #122 span:0:6 x:end y:fill out:pushEnd in:2 16x9 over stack ltr · 402×874 iPhone 17 · 17 Pro — 402 × 874 · 100% — 0 failed
+[w5] #124 bleedL x:center y:bottom out:2s in:0 read flow even rtl · 1728×1117 MacBook Pro 16" — 1728 × 1117 · 100% — 0 failed
+[w4] #125 bleedL x:end y:bottom out:pushEnd in:2 square cover subgrid ltr · 900×900 tabletLandscape starts — 900 · 100% — 0 failed
+[w3] #126 span:0:6 x:center y:center out:pushBottom in:0 square over cardsfit rtl · 1440×960 Surface Pro 11 — 1440 × 960 · 150% — 0 failed
+[w1] #127 span:3:4 x:fill y:fill out:0 in:0 16x9 floatTR cardsfit rtl · 360×640 itel A · budget Android — 360 × 640 · 150% — 0 failed
+[w2] #129 span:4.5:5 x:end y:top out:pushBottom in:def 16x9 over wrapmid rtl · 428×926 iPhone 15 · 16 Plus — 428 × 926 · 100% — 0 failed
+[w0] #128 last:5 x:fill y:center out:def in:0 square over stack ltr · 430×932 iPhone 15 · 16 Pro Max — 430 × 932 · 100% — 0 failed
+[w5] #130 span:4.5:5 x:fill y:bottom out:0 in:2 16x9 floatTR spread rtl · 360×800 Galaxy A55 — 360 × 800 · 100% — 0 failed
+[w4] #131 span:0:6 x:end y:bottom out:pushBottom in:2 free over subgrid ltr · 412×914 Xiaomi 15 Pro — 412 × 914 · 200% — 0 failed
+[w3] #132 bleedR x:fill y:center out:0 in:0 16x9 over wrapmid rtl · 420×912 iPhone 17 Air — 420 × 912 · 100% — 0 failed
+[w1] #133 bleed x:start y:center out:pushEnd in:0 max20 cover wrapmid ltr · 393×960 Galaxy Z Flip 6 — 393 × 960 · 100% — 0 failed
+[w2] #134 bleedL x:start y:center out:pushBottom in:2 16x9 flow spread ltr · 395×869 OPPO Find X8 Pro — 395 × 869 · 150% — 0 failed
+[w0] #135 bleedL x:center y:top out:pushBottom in:2 square over spread rtl · 410×914 Pixel 9 · 10 Pro — 410 × 914 · 100% — 0 failed
+[w5] #136 se:2:9 x:fill y:top out:pushBottom in:2 read cover cardsfill ltr · 599×900 just below tabletPortrait — 599 · 100% — 0 failed
+[w4] #137 bleedR x:fill y:top out:pushEnd in:2 16x9 flow wrapmid ltr · 412×923 Pixel 9 · 10 — 412 × 923 · 100% — 0 failed
+[w3] #138 span:4.5:5 x:center y:center out:2s in:2 read floatTR even rtl · 1536×864 Windows laptop at 125% — 1536 × 864 · 150% — 0 failed
+[w1] #139 bleedR x:start y:bottom out:2s in:def read cover subgrid ltr · 1024×1366 iPad Air 13″ · Pro 12.9″ — 1024 × 1366 · 100% — 0 failed
+[w2] #140 span:0:6 x:start y:bottom out:0 in:def square over stack ltr · 1200×900 desktop starts — 1200 · 100% — 0 failed
+[w0] #141 se:2:9 x:start y:bottom out:pushEnd in:2 free flow even ltr · 3440×1440 Ultrawide 21:9 — 3440 × 1440 · 200% — 0 failed
+[w5] #142 full x:end y:top out:pushBottom in:0 read cover stack rtl · 1366×768 Windows laptop — 1366 × 768 · 100% — 0 failed
+[w4] #143 bleedL x:center y:fill out:pushEnd in:0 read cover even rtl · 375×812 Mobile — 375 × 812 · 200% — 0 failed
+[w3] #144 se:2:9 x:end y:fill out:0 in:2 free floatTR subgrid rtl · 800×1333 Galaxy Tab S6 Lite · Lenovo Tab P11 — 800 × 1333 · 100% — 0 failed
+[w1] #145 se:2:9 x:center y:top out:0 in:0 square flow cardsfit rtl · 390×844 iPhone 14 · 15 · 16 · 16e — 390 × 844 · 100% — 0 failed
+[w2] #146 full x:start y:top out:2s in:def max20 over even ltr · 834×1210 iPad Pro 11″ (M4) — 834 × 1210 · 150% — 0 failed
+[w0] #147 bleedR x:center y:center out:pushEnd in:0 16x9 over cardsfit ltr · 1032×1376 iPad Pro 13″ (M4) — 1032 × 1376 · 200% — 0 failed
+[w5] #148 last:5 x:fill y:fill out:0 in:0 max20 over even ltr · 393×851 Redmi · Tecno Camon — 393 × 851 · 200% — 0 failed
+[w4] #149 span:0:6 x:center y:bottom out:pushEnd in:def free flow stack ltr · 412×891 Galaxy S24 · S25 Ultra — 412 × 891 · 150% — 0 failed
+[w3] #150 last:5 x:start y:top out:0 in:def read flow stack ltr · 414×896 iPhone XR · 11 — 414 × 896 · 100% — 0 failed
+[w1] #151 span:3:4 x:start y:center out:2s in:0 max20 floatTR wrapmid ltr · 800×1280 Galaxy Tab S9 · A9+ · Pixel Tablet · Fire HD 10 — 800 × 1280 · 100% — 0 failed
+[w2] #152 span:3:4 x:fill y:center out:pushBottom in:0 16x9 cover cardsfit rtl · 384×854 Galaxy S21 · S23+ — 384 × 854 · 100% — 0 failed
+[w0] #153 bleed x:center y:center out:pushBottom in:2 free floatTR even rtl · 1920×1200 16:10 — 1920 × 1200 · 100% — 0 failed
+[w5] #154 bleed x:fill y:bottom out:2s in:2 square floatTR stack rtl · 1920×1080 Wide — 1920 × 1080 · 150% — 0 failed
+[w4] #155 last:5 x:fill y:center out:pushEnd in:0 square floatTR spread ltr · 900×1440 Xiaomi Pad 6 — 900 × 1440 · 100% — 0 failed
+[w3] #156 bleed x:center y:top out:pushBottom in:0 free flow even ltr · 744×1133 iPad mini (A17 Pro) — 744 × 1133 · 100% — 0 failed
+[w1] #157 last:5 x:end y:top out:def in:def read floatTR spread ltr · 360×780 Galaxy S23 · S24 · S25 — 360 × 780 · 100% — 0 failed
+[w2] #158 full x:fill y:center out:pushBottom in:def free flow spread ltr · 1600×900 HD+ — 1600 × 900 · 100% — 0 failed
+[w0] #159 bleedR x:center y:top out:pushEnd in:2 free over cardsfit rtl · 692×717 Pixel 10 Pro Fold — open, 692 × 717 · 150% — 0 failed
+[w5] #160 bleed x:end y:fill out:0 in:0 max20 flow cardsfill ltr · 1800×900 wide starts — 1800 · 100% — 0 failed
+[w4] #161 span:4.5:5 x:fill y:top out:def in:def read flow spread rtl · 876×1400 Galaxy Tab S9+ · S10+ — 876 × 1400 · 150% — 0 failed
+[w3] #162 se:2:9 x:start y:bottom out:pushEnd in:2 max20 flow wrapmid rtl · 1280×832 MacBook Air 13" — 1280 × 832 · 100% — 0 failed
+[w1] #163 span:3:4 x:center y:fill out:2s in:0 read floatTR stack ltr · 375×667 iPhone SE (3rd gen) — 375 × 667 · 100% — 0 failed
+[w2] #164 span:0:6 x:start y:top out:def in:0 free over wrapmid ltr · 820×1180 iPad Air 11″ · iPad (A16) — 820 × 1180 · 150% — 0 failed
+[w0] #165 span:4.5:5 x:fill y:center out:2s in:def read over stack rtl · 899×900 just below tabletLandscape — 899 · 100% — 0 failed
+[w5] #166 full x:fill y:bottom out:pushEnd in:def read cover cardsfill rtl · 394×875 vivo X200 Pro — 394 × 875 · 200% — 0 failed
+[w4] #167 se:2:9 x:fill y:top out:0 in:def square cover even rtl · 414×921 Pixel 9 · 10 Pro XL — 414 × 921 · 150% — 0 failed
+[w3] #168 bleedL x:start y:top out:pushEnd in:0 free flow cardsfill ltr · 810×1080 iPad (9th gen) — 810 × 1080 · 150% — 0 failed
+[w1] #169 span:4.5:5 x:fill y:top out:pushEnd in:2 read cover subgrid ltr · 2560×1600 16:10 QHD+ — 2560 × 1600 · 100% — 0 failed
+[w2] #170 last:5 x:end y:fill out:pushBottom in:def max20 flow stack rtl · 1512×982 MacBook Pro 14" — 1512 × 982 · 100% — 0 failed
+[w0] #171 bleed x:start y:top out:0 in:2 square floatTR stack rtl · 1799×900 just below wide — 1799 · 150% — 0 failed
+[w5] #172 bleed x:fill y:fill out:2s in:2 read cover cardsfit ltr · 1280×720 Small laptop — 1280 × 720 · 100% — 0 failed
+[w4] #173 last:5 x:fill y:fill out:2s in:2 free over cardsfit ltr · 5120×1440 Super ultrawide 32:9 — 5120 × 1440 · 100% — 0 failed
+[w3] #174 se:2:9 x:start y:center out:pushBottom in:0 16x9 over even ltr · 320×568 iPhone 5 · SE (1st gen) — 320 × 568 · 100% — 0 failed
+[w1] #175 bleedR x:fill y:center out:2s in:def 16x9 over cardsfill ltr · 1680×1050 16:10 — 1680 × 1050 · 100% — 0 failed
+[w2] #176 full x:center y:center out:2s in:def square cover spread rtl · 1500×1000 Surface Laptop — 1500 × 1000 · 150% — 0 failed
+[w0] #177 span:4.5:5 x:start y:top out:2s in:2 free flow cardsfit ltr · 1440×900 MacBook Air (M1) · mid monitor — 1440 × 900 · 100% — 0 failed
+[w5] #178 se:2:9 x:end y:top out:def in:2 free flow wrapmid rtl · 1280×800 Desktop — 1280 × 800 · 100% — 0 failed
+[w4] #179 full x:start y:center out:pushEnd in:def max20 floatTR stack rtl · 1199×900 just below desktop — 1199 · 200% — 0 failed
+[w3] #180 bleedL x:start y:fill out:pushEnd in:def max20 flow cardsfill rtl · 1024×768 Laptop — 1024 × 768 · 100% — 0 failed
+[w1] #181 se:2:9 x:end y:fill out:pushBottom in:def square cover stack ltr · 411×885 Huawei Mate 70 Pro — 411 × 885 · 100% — 0 failed
+[w2] #182 span:3:4 x:start y:bottom out:def in:2 free flow stack rtl · 924×1480 Galaxy Tab S9 · S10 Ultra — 924 × 1480 · 150% — 0 failed
+[w5] #184 se:2:9 x:center y:top out:0 in:def read cover spread rtl · 323×792 Galaxy Z Fold 6 — folded, 323 × 792 · 100% — 0 failed
+[w0] #183 span:3:4 x:end y:bottom out:pushEnd in:0 read over stack rtl · 600×900 tabletPortrait starts — 600 · 150% — 0 failed
+[w4] #185 bleedR x:end y:top out:0 in:def square floatTR spread rtl · 768×1024 Tablet — 768 × 1024 · 150% — 0 failed
+[w3] #186 bleedL x:center y:center out:pushEnd in:def max20 floatTR stack rtl · 3840×2160 4K — 3840 × 2160 · 100% — 0 failed
+[w1] #187 full x:fill y:fill out:0 in:def free over cardsfill ltr · 400×875 Honor Magic7 Pro — 400 × 875 · 100% — 0 failed
+[w2] #188 span:0:6 x:center y:fill out:def in:0 free over cardsfit rtl · 412×915 Pixel 6 · 7 · 8 — 412 × 915 · 200% — 0 failed
+[w5] #189 full x:end y:top out:0 in:def free floatTR stack rtl · 393×852 iPhone 16 Pro — 393 × 852 · 100% — 0 failed
+[w0] #190 se:2:9 x:fill y:bottom out:pushEnd in:2 square over even rtl · 2560×1440 1440p — 2560 × 1440 · 150% — 0 failed
+[w4] #191 se:2:9 x:center y:fill out:pushEnd in:def free flow spread ltr · 440×956 iPhone 17 Pro Max — 440 × 956 · 150% — 0 failed
+[w3] #192 last:5 x:end y:center out:0 in:2 square over spread rtl · 402×874 iPhone 17 · 17 Pro — 402 × 874 · 100% — 0 failed
+[w1] #193 span:3:4 x:center y:fill out:pushBottom in:2 max20 cover cardsfill ltr · 619×720 Galaxy Z Fold 6 — open, 619 × 720 · 200% — 0 failed
+[w2] #194 se:2:9 x:start y:fill out:0 in:0 free cover subgrid ltr · 1728×1117 MacBook Pro 16" — 1728 × 1117 · 200% — 0 failed
+[w5] #195 bleedR x:center y:top out:2s in:2 16x9 floatTR cardsfit rtl · 900×900 tabletLandscape starts — 900 · 150% — 0 failed
+[w0] #196 bleed x:start y:center out:pushEnd in:0 free cover cardsfill rtl · 1440×960 Surface Pro 11 — 1440 × 960 · 150% — 0 failed
+[w4] #197 bleedR x:center y:bottom out:2s in:def read over cardsfill ltr · 360×640 itel A · budget Android — 360 × 640 · 200% — 0 failed
+[w3] #198 se:2:9 x:center y:fill out:0 in:2 16x9 flow cardsfit ltr · 430×932 iPhone 15 · 16 Pro Max — 430 × 932 · 100% — 0 failed
+[w1] #199 bleed x:start y:top out:2s in:0 16x9 cover cardsfill ltr · 428×926 iPhone 15 · 16 Plus — 428 × 926 · 200% — 0 failed
+[w2] #200 bleed x:center y:center out:2s in:2 max20 flow stack ltr · 360×800 Galaxy A55 — 360 × 800 · 100% — 0 failed
+[w5] #201 span:3:4 x:center y:fill out:2s in:0 max20 cover subgrid ltr · 412×914 Xiaomi 15 Pro — 412 × 914 · 150% — 0 failed
+[w0] #202 bleedL x:start y:top out:pushEnd in:def 16x9 flow spread ltr · 420×912 iPhone 17 Air — 420 × 912 · 200% — 0 failed
+[w4] #203 se:2:9 x:end y:center out:def in:0 read flow spread ltr · 393×960 Galaxy Z Flip 6 — 393 × 960 · 150% — 0 failed
+[w3] #204 bleedL x:start y:center out:pushBottom in:2 free over cardsfit ltr · 395×869 OPPO Find X8 Pro — 395 × 869 · 200% — 0 failed
+[w1] #205 span:3:4 x:fill y:bottom out:def in:def 16x9 cover subgrid ltr · 410×914 Pixel 9 · 10 Pro — 410 × 914 · 100% — 0 failed
+[w5] #207 bleed x:center y:top out:0 in:2 free floatTR spread ltr · 412×923 Pixel 9 · 10 — 412 × 923 · 100% — 0 failed
+[w2] #206 full x:end y:bottom out:def in:2 max20 flow spread ltr · 599×900 just below tabletPortrait — 599 · 150% — 0 failed
+[w0] #208 se:2:9 x:center y:bottom out:pushBottom in:def 16x9 flow spread rtl · 1536×864 Windows laptop at 125% — 1536 × 864 · 100% — 0 failed
+[w4] #209 bleedL x:fill y:bottom out:def in:0 read floatTR stack ltr · 1024×1366 iPad Air 13″ · Pro 12.9″ — 1024 × 1366 · 150% — 0 failed
+[w3] #210 bleedL x:fill y:bottom out:0 in:0 square floatTR stack ltr · 1200×900 desktop starts — 1200 · 100% — 0 failed
+[w1] #211 span:4.5:5 x:end y:top out:2s in:0 max20 floatTR even ltr · 3440×1440 Ultrawide 21:9 — 3440 × 1440 · 200% — 0 failed
+[w5] #212 span:4.5:5 x:center y:bottom out:0 in:2 square over even rtl · 1366×768 Windows laptop — 1366 × 768 · 150% — 0 failed
+[w2] #213 full x:start y:center out:def in:2 square flow cardsfit rtl · 375×812 Mobile — 375 × 812 · 100% — 0 failed
+[w0] #214 span:4.5:5 x:end y:fill out:def in:2 16x9 over cardsfill ltr · 800×1333 Galaxy Tab S6 Lite · Lenovo Tab P11 — 800 × 1333 · 200% — 0 failed
+[w4] #215 span:4.5:5 x:center y:center out:pushBottom in:def free floatTR subgrid ltr · 390×844 iPhone 14 · 15 · 16 · 16e — 390 × 844 · 200% — 0 failed
+[w3] #216 span:3:4 x:fill y:center out:0 in:0 read over even rtl · 834×1210 iPad Pro 11″ (M4) — 834 × 1210 · 150% — 0 failed
+[w1] #217 full x:start y:fill out:0 in:def read over cardsfit ltr · 1032×1376 iPad Pro 13″ (M4) — 1032 × 1376 · 150% — 0 failed
+[w5] #218 bleedR x:fill y:top out:def in:0 max20 over spread rtl · 393×851 Redmi · Tecno Camon — 393 × 851 · 200% — 0 failed
+[w2] #219 bleed x:center y:bottom out:pushEnd in:0 read over stack ltr · 412×891 Galaxy S24 · S25 Ultra — 412 × 891 · 100% — 0 failed
+[w0] #220 bleedR x:fill y:fill out:def in:0 max20 cover stack ltr · 414×896 iPhone XR · 11 — 414 × 896 · 100% — 0 failed
+[w4] #221 span:3:4 x:start y:fill out:0 in:0 max20 flow spread rtl · 800×1280 Galaxy Tab S9 · A9+ · Pixel Tablet · Fire HD 10 — 800 × 1280 · 100% — 0 failed
+[w3] #222 bleedL x:fill y:fill out:pushBottom in:0 free over subgrid rtl · 384×854 Galaxy S21 · S23+ — 384 × 854 · 100% — 0 failed
+[w1] #223 last:5 x:start y:bottom out:2s in:def max20 floatTR subgrid rtl · 1920×1200 16:10 — 1920 × 1200 · 100% — 0 failed
+[w5] #224 se:2:9 x:center y:bottom out:2s in:def read flow even rtl · 1920×1080 Wide — 1920 × 1080 · 150% — 0 failed
+[w2] #225 span:3:4 x:start y:fill out:2s in:def 16x9 flow spread ltr · 900×1440 Xiaomi Pad 6 — 900 × 1440 · 100% — 0 failed
+[w0] #226 se:2:9 x:center y:bottom out:def in:def free over even ltr · 744×1133 iPad mini (A17 Pro) — 744 × 1133 · 100% — 0 failed
+[w4] #227 span:0:6 x:end y:center out:pushEnd in:0 max20 over subgrid ltr · 360×780 Galaxy S23 · S24 · S25 — 360 × 780 · 100% — 0 failed
+[w3] #228 bleed x:start y:fill out:0 in:def max20 cover cardsfill rtl · 1600×900 HD+ — 1600 × 900 · 100% — 0 failed
+[w1] #229 full x:center y:center out:2s in:def max20 flow cardsfill ltr · 692×717 Pixel 10 Pro Fold — open, 692 × 717 · 150% — 0 failed
+[w5] #230 span:4.5:5 x:fill y:bottom out:pushEnd in:2 free floatTR cardsfill rtl · 1800×900 wide starts — 1800 · 100% — 0 failed
+[w2] #231 last:5 x:center y:bottom out:def in:def 16x9 cover cardsfit rtl · 876×1400 Galaxy Tab S9+ · S10+ — 876 × 1400 · 150% — 0 failed
+[w0] #232 span:3:4 x:center y:top out:0 in:2 max20 flow cardsfit rtl · 1280×832 MacBook Air 13" — 1280 × 832 · 200% — 0 failed
+[w4] #233 se:2:9 x:center y:fill out:pushEnd in:0 free over subgrid rtl · 375×667 iPhone SE (3rd gen) — 375 × 667 · 100% — 0 failed
+[w3] #234 se:2:9 x:center y:bottom out:pushEnd in:0 16x9 over cardsfit rtl · 820×1180 iPad Air 11″ · iPad (A16) — 820 × 1180 · 200% — 0 failed
+[w5] #236 span:0:6 x:center y:center out:2s in:2 16x9 floatTR stack ltr · 394×875 vivo X200 Pro — 394 × 875 · 150% — 0 failed
+[w1] #235 bleedL x:fill y:center out:2s in:2 16x9 flow cardsfill rtl · 899×900 just below tabletLandscape — 899 · 100% — 0 failed
+[w2] #237 bleedL x:center y:fill out:0 in:2 read over wrapmid ltr · 414×921 Pixel 9 · 10 Pro XL — 414 × 921 · 150% — 0 failed
+[w0] #238 span:3:4 x:end y:fill out:0 in:0 16x9 flow stack ltr · 810×1080 iPad (9th gen) — 810 × 1080 · 150% — 0 failed
+[w4] #239 se:2:9 x:end y:fill out:pushBottom in:def square cover wrapmid rtl · 2560×1600 16:10 QHD+ — 2560 × 1600 · 150% — 0 failed
+[w3] #240 last:5 x:fill y:fill out:pushBottom in:2 square floatTR cardsfill ltr · 1512×982 MacBook Pro 14" — 1512 × 982 · 100% — 0 failed
+[w5] #241 bleedL x:start y:fill out:pushBottom in:def read flow wrapmid ltr · 1799×900 just below wide — 1799 · 200% — 0 failed
+[w1] #242 bleedL x:end y:top out:2s in:2 16x9 floatTR cardsfit rtl · 1280×720 Small laptop — 1280 × 720 · 150% — 0 failed
+[w2] #243 bleed x:start y:bottom out:2s in:def max20 over spread rtl · 5120×1440 Super ultrawide 32:9 — 5120 × 1440 · 150% — 0 failed
+[w0] #244 last:5 x:center y:top out:2s in:def square cover spread rtl · 320×568 iPhone 5 · SE (1st gen) — 320 × 568 · 150% — 0 failed
+[w4] #245 bleed x:start y:center out:pushBottom in:0 max20 over wrapmid rtl · 1680×1050 16:10 — 1680 × 1050 · 100% — 0 failed
+[w3] #246 last:5 x:center y:fill out:2s in:def 16x9 flow spread ltr · 1500×1000 Surface Laptop — 1500 × 1000 · 100% — 0 failed
+[w5] #247 full x:fill y:top out:0 in:2 free cover subgrid rtl · 1440×900 MacBook Air (M1) · mid monitor — 1440 × 900 · 100% — 0 failed
+[w1] #248 full x:fill y:fill out:pushEnd in:0 16x9 over wrapmid rtl · 1280×800 Desktop — 1280 × 800 · 100% — 0 failed
+[w2] #249 bleedR x:center y:bottom out:0 in:2 free over wrapmid ltr · 1199×900 just below desktop — 1199 · 150% — 0 failed
+[w0] #250 span:3:4 x:end y:fill out:2s in:def max20 over wrapmid rtl · 1024×768 Laptop — 1024 × 768 · 100% — 0 failed
+[w4] #251 span:3:4 x:end y:bottom out:0 in:def max20 floatTR cardsfill rtl · 411×885 Huawei Mate 70 Pro — 411 × 885 · 150% — 0 failed
+[w3] #252 bleedR x:center y:bottom out:pushBottom in:0 read cover cardsfill rtl · 924×1480 Galaxy Tab S9 · S10 Ultra — 924 × 1480 · 150% — 0 failed
+[w5] #253 full x:end y:fill out:2s in:2 max20 over stack rtl · 600×900 tabletPortrait starts — 600 · 150% — 0 failed
+[w1] #254 bleedR x:fill y:top out:pushBottom in:0 16x9 floatTR wrapmid ltr · 323×792 Galaxy Z Fold 6 — folded, 323 × 792 · 100% — 0 failed
+[w2] #255 last:5 x:end y:fill out:2s in:2 free cover cardsfit rtl · 768×1024 Tablet — 768 × 1024 · 200% — 0 failed
+[w0] #256 bleedR x:end y:center out:pushBottom in:2 free flow cardsfit rtl · 3840×2160 4K — 3840 × 2160 · 150% — 0 failed
+[w4] #257 span:3:4 x:end y:top out:pushEnd in:2 16x9 over subgrid ltr · 400×875 Honor Magic7 Pro — 400 × 875 · 100% — 0 failed
+[w3] #258 last:5 x:center y:fill out:0 in:2 16x9 flow subgrid ltr · 412×915 Pixel 6 · 7 · 8 — 412 × 915 · 150% — 0 failed
+[w5] #259 bleedL x:fill y:top out:def in:def max20 over even ltr · 393×852 iPhone 16 Pro — 393 × 852 · 100% — 0 failed
+[w1] #260 span:4.5:5 x:fill y:top out:pushEnd in:0 read floatTR even ltr · 2560×1440 1440p — 2560 × 1440 · 200% — 0 failed
+[w2] #261 bleed x:start y:top out:0 in:0 16x9 flow even rtl · 440×956 iPhone 17 Pro Max — 440 × 956 · 200% — 0 failed
+[w0] #262 bleedR x:center y:fill out:2s in:0 read over wrapmid rtl · 402×874 iPhone 17 · 17 Pro — 402 × 874 · 150% — 0 failed
+[w4] #263 bleedL x:center y:fill out:def in:2 16x9 cover even ltr · 619×720 Galaxy Z Fold 6 — open, 619 × 720 · 100% — 0 failed
+[w5] #265 span:4.5:5 x:end y:center out:pushEnd in:0 16x9 cover stack rtl · 900×900 tabletLandscape starts — 900 · 100% — 0 failed
+[w3] #264 bleed x:fill y:center out:pushBottom in:2 16x9 cover cardsfill rtl · 1728×1117 MacBook Pro 16" — 1728 × 1117 · 100% — 0 failed
+[w1] #266 span:4.5:5 x:start y:center out:2s in:def 16x9 floatTR stack rtl · 1440×960 Surface Pro 11 — 1440 × 960 · 100% — 0 failed
+[w2] #267 bleedR x:center y:fill out:2s in:0 16x9 over cardsfit ltr · 360×640 itel A · budget Android — 360 × 640 · 200% — 0 failed
+[w0] #268 full x:start y:fill out:pushEnd in:0 square cover subgrid rtl · 430×932 iPhone 15 · 16 Pro Max — 430 × 932 · 100% — 0 failed
+[w4] #269 span:3:4 x:center y:top out:0 in:def square flow even ltr · 428×926 iPhone 15 · 16 Plus — 428 × 926 · 100% — 0 failed
+[w5] #270 full x:start y:center out:2s in:0 read over spread rtl · 360×800 Galaxy A55 — 360 × 800 · 100% — 0 failed
+[w3] #271 bleedR x:fill y:center out:pushEnd in:2 free cover cardsfit rtl · 412×914 Xiaomi 15 Pro — 412 × 914 · 100% — 0 failed
+[w1] #272 full x:fill y:fill out:0 in:0 free cover cardsfit rtl · 420×912 iPhone 17 Air — 420 × 912 · 200% — 0 failed
+[w2] #273 full x:fill y:center out:0 in:2 16x9 cover cardsfill ltr · 393×960 Galaxy Z Flip 6 — 393 × 960 · 150% — 0 failed
+[w0] #274 span:4.5:5 x:center y:fill out:def in:def free over cardsfit ltr · 395×869 OPPO Find X8 Pro — 395 × 869 · 100% — 0 failed
+[w4] #275 bleed x:center y:bottom out:2s in:def read flow subgrid ltr · 410×914 Pixel 9 · 10 Pro — 410 × 914 · 100% — 0 failed
+[w5] #276 span:4.5:5 x:end y:top out:pushEnd in:def free over cardsfill rtl · 599×900 just below tabletPortrait — 599 · 200% — 0 failed
+[w3] #277 span:0:6 x:end y:center out:2s in:0 max20 over wrapmid ltr · 412×923 Pixel 9 · 10 — 412 × 923 · 200% — 0 failed
+[w1] #278 bleed x:start y:top out:def in:def square floatTR cardsfill ltr · 1536×864 Windows laptop at 125% — 1536 × 864 · 150% — 0 failed
+[w2] #279 bleedR x:end y:fill out:pushBottom in:0 square cover cardsfit rtl · 1024×1366 iPad Air 13″ · Pro 12.9″ — 1024 × 1366 · 200% — 0 failed
+[w0] #280 span:3:4 x:start y:bottom out:pushBottom in:0 free cover subgrid ltr · 1200×900 desktop starts — 1200 · 100% — 0 failed
+[w4] #281 span:0:6 x:start y:bottom out:def in:2 max20 flow stack rtl · 3440×1440 Ultrawide 21:9 — 3440 × 1440 · 100% — 0 failed
+[w3] #283 span:3:4 x:center y:bottom out:0 in:def read over subgrid ltr · 375×812 Mobile — 375 × 812 · 200% — 0 failed
+[w5] #282 span:4.5:5 x:end y:center out:0 in:2 max20 cover spread ltr · 1366×768 Windows laptop — 1366 × 768 · 150% — 0 failed
+[w1] #284 span:3:4 x:fill y:bottom out:pushEnd in:def square floatTR stack rtl · 800×1333 Galaxy Tab S6 Lite · Lenovo Tab P11 — 800 × 1333 · 100% — 0 failed
+[w2] #285 bleedR x:fill y:top out:pushBottom in:0 max20 over spread ltr · 390×844 iPhone 14 · 15 · 16 · 16e — 390 × 844 · 100% — 0 failed
+[w0] #286 bleedR x:end y:fill out:pushBottom in:def free over subgrid ltr · 834×1210 iPad Pro 11″ (M4) — 834 × 1210 · 100% — 0 failed
+[w4] #287 span:3:4 x:end y:bottom out:pushEnd in:def read over stack rtl · 1032×1376 iPad Pro 13″ (M4) — 1032 × 1376 · 100% — 0 failed
+[w3] #288 span:0:6 x:start y:fill out:def in:2 16x9 flow even ltr · 393×851 Redmi · Tecno Camon — 393 × 851 · 100% — 0 failed
+[w5] #289 bleed x:end y:top out:2s in:2 square flow cardsfit ltr · 412×891 Galaxy S24 · S25 Ultra — 412 × 891 · 150% — 0 failed
+[w1] #290 bleedL x:center y:top out:0 in:def square flow cardsfit ltr · 414×896 iPhone XR · 11 — 414 × 896 · 200% — 0 failed
+[w2] #291 span:4.5:5 x:end y:center out:pushEnd in:0 free flow spread rtl · 800×1280 Galaxy Tab S9 · A9+ · Pixel Tablet · Fire HD 10 — 800 × 1280 · 200% — 0 failed
+[w0] #292 last:5 x:fill y:fill out:pushBottom in:2 read flow cardsfill rtl · 384×854 Galaxy S21 · S23+ — 384 × 854 · 100% — 0 failed
+[w4] #293 bleedL x:fill y:fill out:2s in:def max20 floatTR spread rtl · 1920×1200 16:10 — 1920 × 1200 · 100% — 0 failed
+[w5] #295 span:4.5:5 x:end y:center out:0 in:def 16x9 over wrapmid rtl · 900×1440 Xiaomi Pad 6 — 900 × 1440 · 200% — 0 failed
+[w3] #294 bleed x:start y:center out:pushBottom in:0 free over cardsfill rtl · 1920×1080 Wide — 1920 × 1080 · 200% — 0 failed
+[w1] #296 span:0:6 x:fill y:center out:def in:0 square flow cardsfill rtl · 744×1133 iPad mini (A17 Pro) — 744 × 1133 · 150% — 0 failed
+[w2] #297 full x:center y:center out:pushBottom in:2 free cover cardsfill rtl · 360×780 Galaxy S23 · S24 · S25 — 360 × 780 · 200% — 0 failed
+[w0] #298 span:4.5:5 x:start y:center out:def in:0 read cover cardsfit rtl · 1600×900 HD+ — 1600 × 900 · 150% — 0 failed
+[w4] #299 span:3:4 x:start y:top out:0 in:0 16x9 floatTR wrapmid ltr · 692×717 Pixel 10 Pro Fold — open, 692 × 717 · 100% — 0 failed
+[w5] #300 se:2:9 x:fill y:fill out:0 in:def 16x9 floatTR wrapmid rtl · 1800×900 wide starts — 1800 · 100% — 0 failed
+[w3] #301 span:4.5:5 x:start y:top out:0 in:def 16x9 cover wrapmid ltr · 876×1400 Galaxy Tab S9+ · S10+ — 876 × 1400 · 100% — 0 failed
+[w1] #302 bleedR x:fill y:top out:pushEnd in:def max20 floatTR cardsfill ltr · 1280×832 MacBook Air 13" — 1280 × 832 · 200% — 0 failed
+[w2] #303 span:0:6 x:fill y:top out:def in:2 read over even ltr · 375×667 iPhone SE (3rd gen) — 375 × 667 · 150% — 0 failed
+[w0] #304 bleedL x:fill y:center out:0 in:def free cover subgrid rtl · 820×1180 iPad Air 11″ · iPad (A16) — 820 × 1180 · 100% — 0 failed
+[w4] #305 span:4.5:5 x:center y:fill out:def in:0 max20 floatTR subgrid rtl · 899×900 just below tabletLandscape — 899 · 100% — 0 failed
+[w5] #306 span:4.5:5 x:start y:top out:pushBottom in:2 16x9 over wrapmid ltr · 394×875 vivo X200 Pro — 394 × 875 · 200% — 0 failed
+[w3] #307 bleed x:fill y:top out:def in:0 free floatTR stack rtl · 414×921 Pixel 9 · 10 Pro XL — 414 × 921 · 150% — 0 failed
+[w1] #308 span:4.5:5 x:end y:bottom out:2s in:def free floatTR wrapmid rtl · 810×1080 iPad (9th gen) — 810 × 1080 · 100% — 0 failed
+[w2] #309 span:4.5:5 x:center y:bottom out:0 in:0 max20 flow spread rtl · 2560×1600 16:10 QHD+ — 2560 × 1600 · 100% — 0 failed
+[w0] #310 last:5 x:end y:bottom out:pushEnd in:0 max20 flow cardsfill rtl · 1512×982 MacBook Pro 14" — 1512 × 982 · 150% — 0 failed
+[w4] #311 bleedR x:fill y:center out:2s in:2 free over subgrid ltr · 1799×900 just below wide — 1799 · 150% — 0 failed
+[w5] #312 se:2:9 x:center y:bottom out:pushEnd in:def read over subgrid ltr · 1280×720 Small laptop — 1280 × 720 · 150% — 0 failed
+[w3] #313 full x:fill y:bottom out:pushBottom in:def max20 flow even ltr · 5120×1440 Super ultrawide 32:9 — 5120 × 1440 · 100% — 0 failed
+[w2] #315 bleedL x:center y:top out:0 in:def read floatTR cardsfit rtl · 1680×1050 16:10 — 1680 × 1050 · 200% — 0 failed
+[w1] #314 span:4.5:5 x:end y:fill out:pushEnd in:def square flow subgrid ltr · 320×568 iPhone 5 · SE (1st gen) — 320 × 568 · 100% — 0 failed
+[w0] #316 span:0:6 x:fill y:center out:def in:0 free over subgrid rtl · 1500×1000 Surface Laptop — 1500 × 1000 · 200% — 0 failed
+[w4] #317 full x:center y:fill out:pushBottom in:2 square cover subgrid ltr · 1440×900 MacBook Air (M1) · mid monitor — 1440 × 900 · 150% — 0 failed
+[w5] #318 bleedL x:start y:top out:0 in:def max20 floatTR cardsfill ltr · 1280×800 Desktop — 1280 × 800 · 100% — 0 failed
+[w3] #319 span:3:4 x:end y:bottom out:0 in:0 free cover subgrid rtl · 1199×900 just below desktop — 1199 · 100% — 0 failed
+[w2] #320 last:5 x:start y:center out:2s in:2 16x9 over wrapmid ltr · 1024×768 Laptop — 1024 × 768 · 100% — 0 failed
+[w1] #321 span:4.5:5 x:start y:top out:2s in:2 square over stack rtl · 411×885 Huawei Mate 70 Pro — 411 × 885 · 100% — 0 failed
+[w0] #322 bleed x:start y:bottom out:pushEnd in:def read flow stack rtl · 924×1480 Galaxy Tab S9 · S10 Ultra — 924 × 1480 · 100% — 0 failed
+[w5] #324 se:2:9 x:start y:fill out:def in:def max20 over even rtl · 323×792 Galaxy Z Fold 6 — folded, 323 × 792 · 100% — 0 failed
+[w4] #323 se:2:9 x:end y:fill out:pushBottom in:def square over subgrid rtl · 600×900 tabletPortrait starts — 600 · 150% — 0 failed
+[w3] #325 bleed x:start y:bottom out:0 in:2 16x9 floatTR subgrid rtl · 768×1024 Tablet — 768 × 1024 · 200% — 0 failed
+[w1] #327 full x:center y:fill out:0 in:def max20 cover spread rtl · 400×875 Honor Magic7 Pro — 400 × 875 · 100% — 0 failed
+[w2] #326 last:5 x:center y:bottom out:pushBottom in:def read floatTR cardsfill rtl · 3840×2160 4K — 3840 × 2160 · 150% — 0 failed
+[w0] #328 bleedR x:fill y:fill out:pushBottom in:def read over cardsfit ltr · 412×915 Pixel 6 · 7 · 8 — 412 × 915 · 200% — 0 failed
+[w5] #329 span:0:6 x:start y:fill out:2s in:def max20 flow subgrid ltr · 393×852 iPhone 16 Pro — 393 × 852 · 200% — 0 failed
+[w4] #330 se:2:9 x:start y:fill out:pushEnd in:def read cover cardsfill rtl · 2560×1440 1440p — 2560 × 1440 · 150% — 0 failed
+[w3] #331 bleedL x:end y:top out:2s in:0 free floatTR stack rtl · 440×956 iPhone 17 Pro Max — 440 × 956 · 150% — 0 failed
+[w1] #332 span:4.5:5 x:fill y:top out:0 in:0 free over even ltr · 402×874 iPhone 17 · 17 Pro — 402 × 874 · 150% — 0 failed
+[w2] #333 bleedR x:end y:fill out:pushEnd in:0 free floatTR subgrid ltr · 619×720 Galaxy Z Fold 6 — open, 619 × 720 · 150% — 0 failed
+[w0] #334 full x:start y:fill out:2s in:2 free over even ltr · 1728×1117 MacBook Pro 16" — 1728 × 1117 · 150% — 0 failed
+[w5] #335 bleed x:end y:fill out:pushEnd in:0 free over even ltr · 900×900 tabletLandscape starts — 900 · 100% — 0 failed
+[w4] #336 se:2:9 x:end y:center out:pushBottom in:def square floatTR wrapmid rtl · 1440×960 Surface Pro 11 — 1440 × 960 · 100% — 0 failed
+[w3] #337 bleedL x:center y:fill out:0 in:def read flow even rtl · 360×640 itel A · budget Android — 360 × 640 · 150% — 0 failed
+[w1] #338 se:2:9 x:start y:bottom out:2s in:0 square over subgrid rtl · 430×932 iPhone 15 · 16 Pro Max — 430 × 932 · 150% — 0 failed
+[w2] #339 full x:start y:center out:0 in:0 16x9 flow cardsfill rtl · 428×926 iPhone 15 · 16 Plus — 428 × 926 · 100% — 0 failed
+[w0] #340 span:0:6 x:end y:fill out:0 in:2 free floatTR cardsfill ltr · 360×800 Galaxy A55 — 360 × 800 · 200% — 0 failed
+[w5] #341 full x:center y:bottom out:pushEnd in:2 16x9 cover cardsfit ltr · 412×914 Xiaomi 15 Pro — 412 × 914 · 150% — 0 failed
+[w4] #342 full x:fill y:top out:def in:0 16x9 over stack rtl · 420×912 iPhone 17 Air — 420 × 912 · 100% — 0 failed
+[w3] #343 bleedL x:end y:top out:def in:def read cover even rtl · 393×960 Galaxy Z Flip 6 — 393 × 960 · 200% — 0 failed
+[w1] #344 span:0:6 x:fill y:top out:pushEnd in:def max20 cover cardsfit ltr · 395×869 OPPO Find X8 Pro — 395 × 869 · 150% — 0 failed
+[w2] #345 span:3:4 x:fill y:center out:def in:2 free flow stack ltr · 410×914 Pixel 9 · 10 Pro — 410 × 914 · 200% — 0 failed
+[w0] #346 bleed x:center y:fill out:def in:0 read floatTR cardsfill ltr · 599×900 just below tabletPortrait — 599 · 200% — 0 failed
+[w5] #347 last:5 x:fill y:top out:2s in:def 16x9 over even rtl · 412×923 Pixel 9 · 10 — 412 × 923 · 100% — 0 failed
+[w4] #348 bleedR x:center y:bottom out:pushEnd in:def square cover stack ltr · 1536×864 Windows laptop at 125% — 1536 × 864 · 100% — 0 failed
+[w3] #349 last:5 x:start y:center out:0 in:def 16x9 cover cardsfit ltr · 1024×1366 iPad Air 13″ · Pro 12.9″ — 1024 × 1366 · 100% — 0 failed
+[w1] #350 se:2:9 x:start y:top out:2s in:def square cover wrapmid rtl · 1200×900 desktop starts — 1200 · 150% — 0 failed
+[w2] #351 full x:fill y:bottom out:pushEnd in:def 16x9 floatTR spread rtl · 3440×1440 Ultrawide 21:9 — 3440 × 1440 · 200% — 0 failed
+[w5] #353 last:5 x:fill y:top out:0 in:def 16x9 over cardsfill rtl · 375×812 Mobile — 375 × 812 · 200% — 0 failed
+[w0] #352 bleed x:fill y:fill out:2s in:def square flow spread ltr · 1366×768 Windows laptop — 1366 × 768 · 100% — 0 failed
+[w3] #355 span:0:6 x:center y:fill out:pushBottom in:2 square floatTR cardsfit rtl · 390×844 iPhone 14 · 15 · 16 · 16e — 390 × 844 · 200% — 0 failed
+[w4] #354 span:0:6 x:fill y:center out:pushEnd in:2 read flow spread rtl · 800×1333 Galaxy Tab S6 Lite · Lenovo Tab P11 — 800 × 1333 · 100% — 0 failed
+[w1] #356 span:4.5:5 x:fill y:bottom out:2s in:2 free over stack ltr · 834×1210 iPad Pro 11″ (M4) — 834 × 1210 · 200% — 0 failed
+[w2] #357 span:3:4 x:center y:fill out:def in:0 max20 flow subgrid rtl · 1032×1376 iPad Pro 13″ (M4) — 1032 × 1376 · 150% — 0 failed
+[w5] #358 span:3:4 x:end y:top out:0 in:0 max20 cover stack rtl · 393×851 Redmi · Tecno Camon — 393 × 851 · 100% — 0 failed
+[w0] #359 span:3:4 x:end y:center out:2s in:0 read floatTR subgrid rtl · 412×891 Galaxy S24 · S25 Ultra — 412 × 891 · 100% — 0 failed
+[w3] #360 span:4.5:5 x:start y:bottom out:pushEnd in:0 free floatTR cardsfill ltr · 414×896 iPhone XR · 11 — 414 × 896 · 200% — 0 failed
+[w4] #361 full x:start y:fill out:pushBottom in:0 square floatTR stack rtl · 800×1280 Galaxy Tab S9 · A9+ · Pixel Tablet · Fire HD 10 — 800 × 1280 · 100% — 0 failed
+[w1] #362 full x:start y:bottom out:0 in:def read floatTR subgrid rtl · 384×854 Galaxy S21 · S23+ — 384 × 854 · 100% — 0 failed
+[w2] #363 span:0:6 x:start y:top out:pushBottom in:def max20 floatTR stack rtl · 1920×1200 16:10 — 1920 × 1200 · 150% — 0 failed
+[w5] #364 bleedR x:center y:fill out:0 in:0 read floatTR cardsfit ltr · 1920×1080 Wide — 1920 × 1080 · 100% — 0 failed
+[w0] #365 last:5 x:fill y:fill out:pushBottom in:0 square cover cardsfit rtl · 900×1440 Xiaomi Pad 6 — 900 × 1440 · 100% — 0 failed
+[w4] #367 se:2:9 x:end y:top out:pushEnd in:2 max20 cover cardsfill ltr · 360×780 Galaxy S23 · S24 · S25 — 360 × 780 · 200% — 0 failed
+[w3] #366 se:2:9 x:center y:fill out:pushEnd in:0 square flow cardsfit rtl · 744×1133 iPad mini (A17 Pro) — 744 × 1133 · 150% — 0 failed
+[w1] #368 bleed x:fill y:fill out:pushEnd in:def read flow subgrid ltr · 1600×900 HD+ — 1600 × 900 · 100% — 0 failed
+[w5] #370 span:3:4 x:start y:top out:def in:0 square over cardsfit rtl · 1800×900 wide starts — 1800 · 100% — 0 failed
+[w2] #369 span:0:6 x:start y:top out:pushEnd in:2 square flow stack rtl · 692×717 Pixel 10 Pro Fold — open, 692 × 717 · 150% — 0 failed
+[w0] #371 last:5 x:fill y:top out:0 in:0 square over spread rtl · 876×1400 Galaxy Tab S9+ · S10+ — 876 × 1400 · 100% — 0 failed
+[w3] #373 bleed x:center y:bottom out:pushBottom in:2 free flow stack rtl · 375×667 iPhone SE (3rd gen) — 375 × 667 · 100% — 0 failed
+[w4] #372 bleedR x:center y:bottom out:pushBottom in:def read over cardsfill ltr · 1280×832 MacBook Air 13" — 1280 × 832 · 100% — 0 failed
+[w1] #374 se:2:9 x:start y:top out:0 in:2 free cover spread rtl · 820×1180 iPad Air 11″ · iPad (A16) — 820 × 1180 · 100% — 0 failed
+[w5] #375 se:2:9 x:fill y:fill out:pushBottom in:0 square over subgrid rtl · 899×900 just below tabletLandscape — 899 · 200% — 0 failed
+[w2] #376 bleedL x:start y:top out:pushEnd in:2 16x9 over wrapmid rtl · 394×875 vivo X200 Pro — 394 × 875 · 100% — 0 failed
+[w0] #377 bleedL x:start y:fill out:0 in:2 read cover stack rtl · 414×921 Pixel 9 · 10 Pro XL — 414 × 921 · 100% — 0 failed
+[w3] #378 span:4.5:5 x:center y:bottom out:2s in:2 free over spread rtl · 810×1080 iPad (9th gen) — 810 × 1080 · 150% — 0 failed
+[w4] #379 full x:center y:center out:pushBottom in:2 read flow even ltr · 2560×1600 16:10 QHD+ — 2560 × 1600 · 200% — 0 failed
+[w1] #380 bleedR x:end y:fill out:0 in:0 free over cardsfill rtl · 1512×982 MacBook Pro 14" — 1512 × 982 · 100% — 0 failed
+[w5] #381 bleed x:fill y:center out:2s in:def read over even ltr · 1799×900 just below wide — 1799 · 100% — 0 failed
+[w2] #382 bleed x:fill y:fill out:0 in:2 read flow wrapmid rtl · 1280×720 Small laptop — 1280 × 720 · 100% — 0 failed
+[w0] #383 span:4.5:5 x:end y:center out:2s in:0 16x9 over even rtl · 5120×1440 Super ultrawide 32:9 — 5120 × 1440 · 100% — 0 failed
+[w4] #385 span:0:6 x:fill y:fill out:0 in:2 max20 over stack ltr · 1680×1050 16:10 — 1680 × 1050 · 100% — 0 failed
+[w3] #384 bleedR x:start y:bottom out:def in:2 max20 flow spread rtl · 320×568 iPhone 5 · SE (1st gen) — 320 × 568 · 100% — 0 failed
+[w1] #386 last:5 x:end y:bottom out:2s in:def 16x9 over cardsfit ltr · 1500×1000 Surface Laptop — 1500 × 1000 · 200% — 0 failed
+[w5] #387 span:3:4 x:fill y:center out:pushBottom in:0 free over even rtl · 1440×900 MacBook Air (M1) · mid monitor — 1440 × 900 · 100% — 0 failed
+[w2] #388 span:0:6 x:fill y:center out:def in:0 16x9 flow wrapmid rtl · 1280×800 Desktop — 1280 × 800 · 150% — 0 failed
+[w0] #389 span:0:6 x:fill y:center out:pushBottom in:def 16x9 flow subgrid rtl · 1199×900 just below desktop — 1199 · 150% — 0 failed
+[w3] #391 se:2:9 x:fill y:center out:0 in:0 square flow cardsfill ltr · 411×885 Huawei Mate 70 Pro — 411 × 885 · 100% — 0 failed
+[w4] #390 span:4.5:5 x:fill y:center out:pushEnd in:0 square flow spread rtl · 1024×768 Laptop — 1024 × 768 · 100% — 0 failed
+[w1] #392 bleedL x:fill y:top out:def in:2 free flow spread ltr · 924×1480 Galaxy Tab S9 · S10 Ultra — 924 × 1480 · 100% — 0 failed
+[w5] #393 se:2:9 x:center y:bottom out:pushBottom in:0 max20 flow spread ltr · 600×900 tabletPortrait starts — 600 · 150% — 0 failed
+[w2] #394 span:0:6 x:fill y:bottom out:0 in:def free floatTR wrapmid ltr · 323×792 Galaxy Z Fold 6 — folded, 323 × 792 · 150% — 0 failed
+[w0] #395 bleedR x:start y:fill out:pushEnd in:0 16x9 flow wrapmid ltr · 768×1024 Tablet — 768 × 1024 · 100% — 0 failed
+[w3] #396 span:3:4 x:end y:top out:def in:def read flow stack rtl · 3840×2160 4K — 3840 × 2160 · 200% — 0 failed
+[w4] #397 se:2:9 x:fill y:top out:def in:2 16x9 cover wrapmid ltr · 400×875 Honor Magic7 Pro — 400 × 875 · 100% — 0 failed
+[w1] #398 se:2:9 x:fill y:center out:pushBottom in:def read over even rtl · 412×915 Pixel 6 · 7 · 8 — 412 × 915 · 100% — 0 failed
+[w5] #399 span:3:4 x:end y:center out:pushBottom in:0 max20 cover spread ltr · 393×852 iPhone 16 Pro — 393 × 852 · 150% — 0 failed
+[w2] #400 span:0:6 x:start y:fill out:pushBottom in:0 read floatTR spread rtl · 2560×1440 1440p — 2560 × 1440 · 150% — 0 failed
+[w0] #401 bleedL x:start y:center out:0 in:2 16x9 flow even rtl · 440×956 iPhone 17 Pro Max — 440 × 956 · 200% — 0 failed
+[w3] #402 last:5 x:center y:bottom out:2s in:0 read over cardsfit rtl · 402×874 iPhone 17 · 17 Pro — 402 × 874 · 100% — 0 failed
+[w4] #403 bleedR x:start y:top out:pushEnd in:0 read floatTR cardsfit ltr · 619×720 Galaxy Z Fold 6 — open, 619 × 720 · 100% — 0 failed
+[w5] #405 bleedL x:fill y:center out:0 in:0 16x9 cover wrapmid rtl · 900×900 tabletLandscape starts — 900 · 100% — 0 failed
+[w1] #404 span:3:4 x:end y:bottom out:pushEnd in:0 max20 flow spread ltr · 1728×1117 MacBook Pro 16" — 1728 × 1117 · 100% — 0 failed
+[w2] #406 bleedR x:center y:top out:0 in:def 16x9 floatTR stack ltr · 1440×960 Surface Pro 11 — 1440 × 960 · 200% — 0 failed
+[w0] #407 bleedL x:end y:center out:def in:def 16x9 flow even ltr · 360×640 itel A · budget Android — 360 × 640 · 150% — 0 failed
+[w3] #408 se:2:9 x:start y:top out:pushEnd in:0 square cover stack rtl · 430×932 iPhone 15 · 16 Pro Max — 430 × 932 · 100% — 0 failed
+[w4] #409 bleedL x:start y:top out:2s in:def max20 floatTR even rtl · 428×926 iPhone 15 · 16 Plus — 428 × 926 · 100% — 0 failed
+[w5] #410 last:5 x:end y:center out:2s in:def max20 cover cardsfit rtl · 360×800 Galaxy A55 — 360 × 800 · 100% — 0 failed
+[w1] #411 bleedL x:end y:center out:2s in:def max20 cover stack ltr · 412×914 Xiaomi 15 Pro — 412 × 914 · 150% — 0 failed
+[w2] #412 bleedL x:fill y:fill out:pushBottom in:0 16x9 over spread ltr · 420×912 iPhone 17 Air — 420 × 912 · 100% — 0 failed
+[w0] #413 span:3:4 x:center y:center out:pushBottom in:2 square floatTR cardsfill ltr · 393×960 Galaxy Z Flip 6 — 393 × 960 · 200% — 0 failed
+[w3] #414 bleedL x:center y:fill out:pushBottom in:def 16x9 cover wrapmid ltr · 395×869 OPPO Find X8 Pro — 395 × 869 · 200% — 0 failed
+[w4] #415 span:0:6 x:fill y:top out:2s in:2 max20 floatTR spread ltr · 410×914 Pixel 9 · 10 Pro — 410 × 914 · 150% — 0 failed
+[w5] #416 span:3:4 x:start y:fill out:0 in:def max20 cover subgrid rtl · 599×900 just below tabletPortrait — 599 · 100% — 0 failed
+[w1] #417 bleedR x:end y:center out:0 in:0 free over cardsfit rtl · 412×923 Pixel 9 · 10 — 412 × 923 · 150% — 0 failed
+[w2] #418 se:2:9 x:end y:top out:2s in:2 read cover even rtl · 1536×864 Windows laptop at 125% — 1536 × 864 · 150% — 0 failed
+[w0] #419 span:0:6 x:start y:center out:pushBottom in:def 16x9 cover cardsfill ltr · 1024×1366 iPad Air 13″ · Pro 12.9″ — 1024 × 1366 · 100% — 0 failed
+[w3] #420 bleedR x:end y:top out:pushEnd in:0 16x9 flow cardsfit rtl · 1200×900 desktop starts — 1200 · 150% — 0 failed
+[w4] #421 span:4.5:5 x:start y:fill out:pushEnd in:2 square floatTR wrapmid rtl · 3440×1440 Ultrawide 21:9 — 3440 × 1440 · 100% — 0 failed
+[w5] #422 se:2:9 x:fill y:bottom out:2s in:0 read cover subgrid ltr · 1366×768 Windows laptop — 1366 × 768 · 100% — 0 failed
+[w1] #423 span:4.5:5 x:start y:bottom out:pushEnd in:2 16x9 floatTR even rtl · 375×812 Mobile — 375 × 812 · 100% — 0 failed
+[w2] #424 bleedR x:fill y:fill out:pushBottom in:def 16x9 cover even ltr · 800×1333 Galaxy Tab S6 Lite · Lenovo Tab P11 — 800 × 1333 · 200% — 0 failed
+[w0] #425 bleedL x:fill y:center out:0 in:0 free over cardsfill ltr · 390×844 iPhone 14 · 15 · 16 · 16e — 390 × 844 · 100% — 0 failed
+[w3] #426 last:5 x:fill y:bottom out:2s in:def square over even rtl · 834×1210 iPad Pro 11″ (M4) — 834 × 1210 · 150% — 0 failed
+[w4] #427 last:5 x:center y:center out:pushBottom in:def max20 cover even ltr · 1032×1376 iPad Pro 13″ (M4) — 1032 × 1376 · 100% — 0 failed
+[w5] #428 bleed x:center y:center out:def in:2 free cover even ltr · 393×851 Redmi · Tecno Camon — 393 × 851 · 150% — 0 failed
+[w1] #429 bleedR x:end y:top out:pushEnd in:2 read floatTR cardsfill rtl · 412×891 Galaxy S24 · S25 Ultra — 412 × 891 · 150% — 0 failed
+[w2] #430 span:0:6 x:end y:fill out:def in:2 free over cardsfit rtl · 414×896 iPhone XR · 11 — 414 × 896 · 100% — 0 failed
+[w0] #431 span:0:6 x:fill y:fill out:2s in:2 16x9 flow even ltr · 800×1280 Galaxy Tab S9 · A9+ · Pixel Tablet · Fire HD 10 — 800 × 1280 · 150% — 0 failed
+[w3] #432 span:4.5:5 x:center y:top out:def in:def 16x9 over cardsfill rtl · 384×854 Galaxy S21 · S23+ — 384 × 854 · 100% — 0 failed
+[w4] #433 span:3:4 x:fill y:bottom out:0 in:def square flow spread rtl · 1920×1200 16:10 — 1920 × 1200 · 150% — 0 failed
+[w5] #434 bleed x:start y:center out:pushBottom in:def max20 over cardsfit rtl · 1920×1080 Wide — 1920 × 1080 · 150% — 0 failed
+[w1] #435 bleedR x:start y:fill out:0 in:def read cover subgrid rtl · 900×1440 Xiaomi Pad 6 — 900 × 1440 · 100% — 0 failed
+[w2] #436 bleedL x:fill y:top out:pushBottom in:def free floatTR subgrid rtl · 744×1133 iPad mini (A17 Pro) — 744 × 1133 · 100% — 0 failed
+[w0] #437 full x:start y:top out:0 in:def free flow stack ltr · 360×780 Galaxy S23 · S24 · S25 — 360 × 780 · 200% — 0 failed
+[w3] #438 bleed x:start y:fill out:pushBottom in:def free flow spread rtl · 1600×900 HD+ — 1600 × 900 · 200% — 0 failed
+[w4] #439 span:0:6 x:end y:fill out:0 in:def square flow even rtl · 692×717 Pixel 10 Pro Fold — open, 692 × 717 · 200% — 0 failed
+[w5] #440 span:3:4 x:fill y:fill out:def in:2 16x9 flow spread ltr · 1800×900 wide starts — 1800 · 100% — 0 failed
+[w1] #441 full x:start y:top out:0 in:def max20 flow cardsfill ltr · 876×1400 Galaxy Tab S9+ · S10+ — 876 × 1400 · 200% — 0 failed
+[w2] #442 full x:start y:bottom out:pushBottom in:2 read cover stack rtl · 1280×832 MacBook Air 13" — 1280 × 832 · 200% — 0 failed
+[w0] #443 bleedR x:end y:fill out:0 in:0 square over spread rtl · 375×667 iPhone SE (3rd gen) — 375 × 667 · 100% — 0 failed
+[w3] #444 full x:start y:center out:0 in:def square cover subgrid ltr · 820×1180 iPad Air 11″ · iPad (A16) — 820 × 1180 · 100% — 0 failed
+[w4] #445 span:3:4 x:fill y:bottom out:2s in:def max20 over stack rtl · 899×900 just below tabletLandscape — 899 · 100% — 0 failed
+[w5] #446 full x:fill y:bottom out:def in:def square floatTR stack rtl · 394×875 vivo X200 Pro — 394 × 875 · 100% — 0 failed
+[w1] #447 full x:fill y:top out:def in:2 read flow spread rtl · 414×921 Pixel 9 · 10 Pro XL — 414 × 921 · 150% — 0 failed
+[w2] #448 bleed x:center y:top out:pushBottom in:def square flow wrapmid rtl · 810×1080 iPad (9th gen) — 810 × 1080 · 200% — 0 failed
+[w0] #449 full x:start y:fill out:def in:def 16x9 flow wrapmid rtl · 2560×1600 16:10 QHD+ — 2560 × 1600 · 100% — 0 failed
+[w3] #450 span:3:4 x:end y:center out:pushBottom in:2 16x9 flow subgrid ltr · 1512×982 MacBook Pro 14" — 1512 × 982 · 100% — 0 failed
+[w5] #452 span:4.5:5 x:center y:center out:pushEnd in:def read over subgrid rtl · 1280×720 Small laptop — 1280 × 720 · 200% — 0 failed
+[w4] #451 span:4.5:5 x:end y:top out:pushBottom in:def free over subgrid ltr · 1799×900 just below wide — 1799 · 100% — 0 failed
+[w1] #453 span:4.5:5 x:fill y:bottom out:pushBottom in:2 max20 flow stack rtl · 5120×1440 Super ultrawide 32:9 — 5120 × 1440 · 100% — 0 failed
+[w2] #454 se:2:9 x:fill y:top out:pushBottom in:2 max20 cover spread ltr · 320×568 iPhone 5 · SE (1st gen) — 320 × 568 · 100% — 0 failed
+[w0] #455 bleedL x:end y:center out:def in:0 read cover subgrid ltr · 1680×1050 16:10 — 1680 × 1050 · 200% — 0 failed
+[w3] #456 full x:end y:fill out:pushEnd in:2 read cover stack rtl · 1500×1000 Surface Laptop — 1500 × 1000 · 100% — 0 failed
+[w5] #457 bleedL x:end y:center out:def in:0 max20 floatTR stack rtl · 1440×900 MacBook Air (M1) · mid monitor — 1440 × 900 · 100% — 0 failed
+[w4] #458 bleed x:fill y:top out:2s in:0 16x9 flow subgrid rtl · 1280×800 Desktop — 1280 × 800 · 100% — 0 failed
+[w1] #459 bleed x:center y:center out:def in:0 free cover cardsfit ltr · 1199×900 just below desktop — 1199 · 150% — 0 failed
+[w2] #460 full x:start y:top out:pushEnd in:0 read over cardsfill rtl · 1024×768 Laptop — 1024 × 768 · 200% — 0 failed
+[w0] #461 span:3:4 x:fill y:center out:pushBottom in:0 max20 over subgrid rtl · 411×885 Huawei Mate 70 Pro — 411 × 885 · 100% — 0 failed
+[w3] #462 span:3:4 x:center y:center out:2s in:2 16x9 flow wrapmid rtl · 924×1480 Galaxy Tab S9 · S10 Ultra — 924 × 1480 · 150% — 0 failed
+[w5] #463 span:3:4 x:fill y:top out:pushBottom in:0 square flow cardsfit ltr · 600×900 tabletPortrait starts — 600 · 100% — 0 failed
+[w4] #464 bleed x:center y:bottom out:0 in:def max20 over stack rtl · 323×792 Galaxy Z Fold 6 — folded, 323 × 792 · 100% — 0 failed
+[w1] #465 bleedR x:start y:bottom out:def in:def max20 floatTR even ltr · 768×1024 Tablet — 768 × 1024 · 200% — 0 failed
+[w0] #467 span:4.5:5 x:fill y:fill out:0 in:2 free flow even ltr · 400×875 Honor Magic7 Pro — 400 × 875 · 200% — 0 failed
+[w2] #466 span:0:6 x:start y:top out:2s in:2 free floatTR even rtl · 3840×2160 4K — 3840 × 2160 · 200% — 0 failed
+[w3] #468 bleedL x:start y:center out:def in:def free flow even ltr · 412×915 Pixel 6 · 7 · 8 — 412 × 915 · 150% — 0 failed
+[w5] #469 bleed x:center y:fill out:def in:2 square floatTR stack ltr · 393×852 iPhone 16 Pro — 393 × 852 · 100% — 0 failed
+[w4] #470 span:4.5:5 x:fill y:center out:def in:0 square over spread rtl · 2560×1440 1440p — 2560 × 1440 · 150% — 0 failed
+[w1] #471 last:5 x:fill y:center out:pushEnd in:2 free flow cardsfit rtl · 440×956 iPhone 17 Pro Max — 440 × 956 · 150% — 0 failed
+[w0] #472 se:2:9 x:end y:bottom out:2s in:0 square cover wrapmid ltr · 402×874 iPhone 17 · 17 Pro — 402 × 874 · 100% — 0 failed
+[w2] #473 bleedL x:fill y:fill out:2s in:0 square over subgrid ltr · 619×720 Galaxy Z Fold 6 — open, 619 × 720 · 150% — 0 failed
+[w3] #474 span:4.5:5 x:center y:center out:pushEnd in:2 square cover stack rtl · 1728×1117 MacBook Pro 16" — 1728 × 1117 · 200% — 0 failed
+[w5] #475 span:0:6 x:fill y:bottom out:0 in:2 free cover stack rtl · 900×900 tabletLandscape starts — 900 · 100% — 0 failed
+[w4] #476 bleed x:fill y:center out:pushEnd in:0 max20 floatTR even ltr · 1440×960 Surface Pro 11 — 1440 × 960 · 100% — 0 failed
+[w1] #477 bleedL x:center y:top out:def in:0 max20 flow stack ltr · 360×640 itel A · budget Android — 360 × 640 · 200% — 0 failed
+[w0] #478 span:0:6 x:fill y:bottom out:pushBottom in:2 read cover subgrid rtl · 430×932 iPhone 15 · 16 Pro Max — 430 × 932 · 200% — 0 failed
+[w2] #479 full x:end y:center out:0 in:0 read over even ltr · 428×926 iPhone 15 · 16 Plus — 428 × 926 · 150% — 0 failed
+[w3] #480 se:2:9 x:center y:bottom out:pushBottom in:def read cover subgrid rtl · 360×800 Galaxy A55 — 360 × 800 · 150% — 0 failed
+[w5] #481 span:3:4 x:center y:top out:0 in:0 max20 cover stack rtl · 412×914 Xiaomi 15 Pro — 412 × 914 · 100% — 0 failed
+[w4] #482 span:0:6 x:start y:center out:0 in:2 16x9 floatTR cardsfill ltr · 420×912 iPhone 17 Air — 420 × 912 · 200% — 0 failed
+[w1] #483 full x:end y:bottom out:0 in:2 16x9 flow cardsfill rtl · 393×960 Galaxy Z Flip 6 — 393 × 960 · 200% — 0 failed
+[w0] #484 se:2:9 x:fill y:top out:pushEnd in:def read floatTR cardsfit ltr · 395×869 OPPO Find X8 Pro — 395 × 869 · 150% — 0 failed
+[w2] #485 bleedL x:start y:fill out:pushEnd in:2 square cover cardsfill ltr · 410×914 Pixel 9 · 10 Pro — 410 × 914 · 150% — 0 failed
+[w3] #486 span:0:6 x:start y:top out:0 in:def 16x9 flow wrapmid rtl · 599×900 just below tabletPortrait — 599 · 150% — 0 failed
+[w5] #487 se:2:9 x:center y:fill out:0 in:2 free cover cardsfill rtl · 412×923 Pixel 9 · 10 — 412 × 923 · 150% — 0 failed
+
+3459 checks · 68 single values + 420 combinations over 70 screens; 0 failed
+  CANNOT HERE size=read @360: the screen is narrower than the cap (measured: box < its max width)
+  CANNOT HERE size=max20 @360: the screen is narrower than the cap (measured: box < its max width)

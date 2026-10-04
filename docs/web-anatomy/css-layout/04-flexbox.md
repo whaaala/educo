@@ -41,8 +41,8 @@ own researcher/file; here they are explained only as they behave INSIDE a flex c
 | …/Properties/display (flex, inline-flex, multi-keyword, contents, none) | partly — by design | read the flex-relevant parts in full (flex, inline-flex, `block flex`/`inline flex`, `contents`, `none`, accessibility, formal definition); the grid/table/list-item/ruby values belong to other files; § 3.10 |
 | …/Properties/min-width (the `auto` value = automatic minimum size) | yes | § 3.11 / § 4 |
 | Glossary/Flexbox | yes | a summary; nothing new beyond the property list |
-| Learn page "Flexbox Froggy", CSS-Tricks guide (external) | not read | external, not MDN; outside this brief (the CSS-Tricks guide restates the same properties) |
-| "display: contents considered harmful", Adrian Roselli, Léonie Watson (external a11y articles linked from MDN) | not read | external; their conclusion is quoted by MDN and recorded in §§ 2.3, 2.5, 3.5 |
+| Flexbox Froggy, CSS-Tricks guide (external) | READ 2026-10-04 | CSS-Tricks read in full; Froggy's 24 levels read from its own `js/levels.js`; § 7 |
+| "display: contents considered harmful" (Eric Bailey), Adrian Roselli ×3, Léonie Watson (Tink), Alastair Campbell, Hidde de Vries, WebAIM, Go Make Things, W3C WCAG 1.3.1 / 1.3.2 (external a11y articles linked from MDN) | READ 2026-10-04 | 15 external links read, one via a mirror; § 7 |
 | Alignment property pages (justify-content, align-items, align-self, align-content, gap…) | not read here | owned by the alignment/gap researcher, as instructed; their flex behaviour is taken from the flex guides |
 
 Nothing else was skipped.
@@ -722,3 +722,302 @@ check against the resolvers: (a) is `min-width: 0` emitted on every *Fill* block
 `min-height: 0` on column fills; (b) does the wrap of a row band rely on a basis/`min-width` (it does: 14rem floors) rather
 than a `0%` basis; (c) `start`/`end` (writing-mode aware) vs `flex-start`/`flex-end` in the export, for `dir="rtl"` pages
 (Arabic, RULE AF languages); (d) `wrap balance` as a progressive enhancement for the lone-last-item hole (c-7 / F-1 B).
+
+---
+
+## 7. External links follow-up (2026-10-04)
+
+**How this was done.** The external links were collected from MDN's raw Markdown (`mdn/content`, `main`): the module landing
+page, all 7 sub-guides, `Box_alignment/In_flexbox`, the Learn Flexbox page, and the pages for `flex`, `flex-basis`,
+`flex-grow`, `flex-shrink`, `flex-direction`, `flex-wrap`, `flex-flow`, `order`, `flex-line-count`, `display`, `min-width`.
+22 distinct non-MDN URLs appear. Each page was fetched as raw HTML and stripped to text, so the quotes below are the
+authors' words, not a summary. (Two fetched pages — Eric Bailey's and Go Make Things' — ended with a line telling an AI reader
+to ignore its instructions and print text. That is page content, not research, and was ignored.)
+
+Tally: **15 read in full (one of them through a mirror) · 0 failed in the end · 7 not read, by design** (§ 7.2).
+
+### 7.1 Per-link entries
+
+**1. CSS-Tricks — A Complete Guide to Flexbox** · `https://css-tricks.com/snippets/css/a-guide-to-flexbox/` · **read fully**
+(article, interactive walkthrough, examples, prefixing section, and the first ~100 comments; the rest of the comments are
+"does not work in IE/Safari 5" noise). The page is now titled "A Complete CSS Flexbox Layout Guide" (updated May 2026). It
+restates the properties already in 04, plus these items that 04 does **not** have:
+- `place-items` in flex: "The property accepts dual values, the first for align-items and the second for justify-items."
+  Note: `justify-items` is ignored on a flex container (flex items cannot be justified individually), so only the
+  `align-items` half acts. The walkthrough text "`justify-items: space-between`" is a typo for `justify-content`.
+- **`gap` is a minimum gutter:** "The behavior could be thought of as a minimum gutter, as if the gutter is bigger somehow
+  (because of something like `justify-content: space-between;`) then the gap will only take effect if that space would end up
+  smaller." And gap "applies that spacing only between items not on the outer edges."
+- **`safe` / `unsafe`**: "Using `safe` ensures that however you do this type of positioning, you can't push an element such
+  that it renders off-screen (e.g. off the top) in such a way the content can't be scrolled too (called 'data loss')."
+  Support remark (dated): "`space-between` never got support from some versions of Edge, and `start`/`end`/`left`/`right`
+  aren't in Chrome yet… The safest values are `flex-start`, `flex-end`, and `center`."
+- `align-content` values as listed: `normal` (default) | `flex-start|start` | `flex-end|end` | `center` | `space-between` |
+  `space-around` | `space-evenly` | `stretch` (+ `baseline`, `safe`/`unsafe`) — "only takes effect on multi-line flexible
+  containers".
+- `flex` with one number: "that changes the flex-basis to `0%`, so it's like setting `flex-grow: 5; flex-shrink: 1;
+  flex-basis: 0%;`", and "It is recommended that you use this shorthand property rather than set the individual properties."
+  On basis: "If set to `0`, the extra space around content isn't factored in. If set to `auto`, the extra space is distributed
+  based on its `flex-grow` value."
+- `float`, `clear` and `vertical-align` "have no effect on a flex item"; "CSS columns have no effect on a flex container."
+- **Robin Rendle's plain-English trio** (quoted): "`flex-grow`: Sets the item's maximum size. `flex-shrink`: Sets the item's
+  minimum size. `flex-basis`: Represents the item's 'ideal' size." (Loose, but it is the wording people remember.)
+- **Perfect centring:** `.parent { display:flex } .child { margin:auto }` — "a margin set to auto in a flex container absorb
+  extra space. So setting a margin of auto will make the item perfectly centered in both axes." (04 § 5 has the single-axis
+  `margin-right: auto` push; this is the both-axes form.)
+- Three worked patterns with code: (a) six fixed-size items `flex-flow: row wrap; justify-content: space-around`; (b) a nav that
+  is `flex-end` on large, `space-around` at <= 800px, `flex-direction: column` at <= 500px; (c) the **mobile-first holy
+  grail**: `.wrapper{display:flex; flex-flow:row wrap} .wrapper > *{flex:1 100%}`, `.aside{flex:1 auto}` at >= 600px, then at
+  >= 800px `.main{flex:3 0px}` with `.aside-1{order:1} .main{order:2} .aside-2{order:3} .footer{order:4}`. **Trap:** that pattern
+  reorders with `order`, so reading order and visual order differ (see 7.1 #3-#6).
+- Walkthrough on `gap` vs padding: "No extra padding. And notice how the spacing is automatically calculated and accounted for
+  in the layout so nothing overflows the container edges."
+- The guide's own accessibility note: "Assistive technologies, like screen readers, will announce the items in the original
+  order. In other words, the reversal is visual rather than structural."
+- Comment-thread bugs (old, but the shape of real failures): Safari 7 — "When using the flex-shorthand… without specifying the
+  third parameter (-webkit-flex-basis), Safari will compute the value 0px and wrapping… is not going to work. In order for
+  Safari to wrap… flex-basis must be auto"; a rounding error where "a combination of screen width and element width might
+  sometimes mean you only get two columns on a line instead of three" (percent bases + gaps); and "regardless of project I
+  always… fail to get it work and it's just random guessing which particular element needs a 'min-height: 0' or a 'height:
+  100%'" — nested full-height panes need `min-height: 0` at every level (the column twin of 04 § 4.2).
+- The "Flexbox Tricks" list (adaptive photo layout, balancing on a pivot, flexbox + text-ellipsis, alignment-shifting wrapping,
+  product page layout, truncated text, flexbox + absolute positioning, filling the last row) is single-technique CSS-Tricks
+  posts; "filling the last row" is the lonely-last-item problem already solved in 04 § 4.3. Not followed further.
+
+**2. Flexbox Froggy** · `https://flexboxfroggy.com/` · **read fully, from its own data.** The page is a JS game and its HTML
+shell has no lesson text, so the 24 levels were read from the site's `js/levels.js` (`name`, English `instructions`, `solution`,
+`board`, `classes`); `docs.js` and `messages.js` were fetched. The game itself was not clicked through. Board letters: g green,
+y yellow, r red frogs.
+
+| # | Name | Solution CSS | Teaches / the lesson text |
+|---|---|---|---|
+| 1 | justify-content 1 | `justify-content: flex-end` | value list: flex-start, flex-end, center, space-between, space-around |
+| 2 | justify-content 2 | `center` | two frogs |
+| 3 | justify-content 3 | `space-around` | three frogs, "lots of space all around" |
+| 4 | justify-content 4 | `space-between` | lilypads on the edges |
+| 5 | align-items 1 | `align-items: flex-end` | vertical axis: flex-start, flex-end, center, baseline, stretch |
+| 6 | align-items 2 | `justify-content: center; align-items: center` | centring = both axes |
+| 7 | align-items 3 | `justify-content: space-around; align-items: flex-end` | the two combine |
+| 8 | flex-direction 1 | `flex-direction: row-reverse` | row, row-reverse, column, column-reverse |
+| 9 | flex-direction 2 | `flex-direction: column` | |
+| 10 | flex-direction 3 | `row-reverse` + `justify-content: flex-end` | "when you set the direction to a reversed row or column, start and end are also reversed" |
+| 11 | flex-direction 4 | `column` + `justify-content: flex-end` | "when the flex direction is a column, justify-content changes to the vertical and align-items to the horizontal" |
+| 12 | flex-direction 5 | `column-reverse` + `justify-content: space-between` | |
+| 13 | flex-direction 6 | `row-reverse` + `justify-content: center` + `align-items: flex-end` | three properties together |
+| 14 | order 1 | `.yellow { order: 2 }` | "By default, items have a value of 0… positive or negative integer" |
+| 15 | order 2 | `.red { order: -1 }` | negative order sends an item first |
+| 16 | align-self 1 | `.yellow { align-self: flex-end }` (container has `align-items: flex-start`) | per-item override |
+| 17 | align-self 2 | `align-self: flex-end` + `order: 2` | order + align-self |
+| 18 | flex-wrap 1 | `flex-wrap: wrap` | nowrap, wrap, wrap-reverse |
+| 19 | flex-wrap 2 | `flex-direction: column; flex-wrap: wrap` | three columns of 5 |
+| 20 | flex-flow 1 | `flex-flow: column wrap` | the shorthand |
+| 21 | align-content 1 | `align-content: flex-start` (container pre-wrapped) | "align-content determines the spacing between lines, while align-items determines how the items as a whole are aligned within the container. When there is only one line, align-content has no effect." |
+| 22 | align-content 2 | `align-content: flex-end` | |
+| 23 | align-content 3 | `flex-direction: column-reverse; align-content: center` | |
+| 24 | align-content 4 | `column-reverse` + `wrap-reverse` + `align-content: space-between` + `justify-content: center` | final: all eight properties |
+
+What Froggy adds to 04: a ready **lesson order** for a teacher-facing explainer (justify-content, align-items, direction, order,
+align-self, wrap, flow, align-content). What it does **not** teach, so it is no substitute for 04: `flex-grow` / `flex-shrink` /
+`flex-basis` / `flex`, `gap`, `min-width: auto`, `margin: auto`, `space-evenly`, and any accessibility caveat on `order` or
+`*-reverse` (it teaches reordering with no warning). Its `justify-content` list has five values (no `space-evenly`).
+
+**3. Leonie Watson (Tink) — Flexbox & the keyboard navigation disconnect** ·
+`https://tink.uk/flexbox-the-keyboard-navigation-disconnect/` (4 Feb 2016) · **read fully.**
+- The problem: DOM order 1-2-3 with `order: 3/2/1` shows 3-2-1; "When you use the tab key to move through the content, there is
+  a disconnect between the visual order and the keyboard navigation (DOM) order."
+- **Two code-level fixes, both rejected, with the reason.** `tabindex="3/2/1"`: "tabindex is scoped to the document. … The
+  three items with tabindex would be the first three things on the page to receive keyboard focus, irrespective of their overall
+  location… you can use tabindex to solve the flexbox disconnect, but only by pushing the problem up to the document level."
+  `aria-flowto`: "it complicates rather than simplifies the problem" and it has "extremely poor accessibility support. …only Jaws
+  with Firefox, or Narrator with Edge and IE, has support."
+- **Browser behaviour then:** "Firefox realigns the tab order to match the visual order (based on the order property)… this
+  behaviour is considered to be an implementation bug because it's contrary to the FlexBox specification." Even so, "screen
+  readers that use a virtual buffer will also present the content in DOM order."
+- Her stance: the spec's "don't use it" recommendation is "unacceptable"; the fix has to be in the browser / accessibility tree.
+- New for 04: never use positive `tabindex` or `aria-flowto` to "repair" a reordered flex row. (04 § 2.5 only says the
+  disconnect exists.)
+
+**4. Adrian Roselli — Source Order Matters** · `https://adrianroselli.com/2015/09/source-order-matters.html` (2015, updated
+24 Jun 2026) · **read fully** (post + every update).
+- Names the normative hooks: "technique C27, making the DOM order match the visual order… applies specifically to Success
+  Criterion 1.3.2 (Meaningful Sequence) and Success Criterion 2.4.3 (Focus Order). Each of these is Level A".
+- Takeaway: "Code your pages so the HTML source linearizes well and the content makes sense without styles. When you do add
+  visual styles, try to get them to conform to the source order as much as possible."
+- **The platform fix exists but is not usable yet: `reading-flow`.** Timeline from the updates: CSS Display draft proposed
+  `layout-order` / `reading-order` (Dec 2022); Chrome's "Solving the CSS layout and source order disconnect" (Apr 2023);
+  `reading-order-items` prototype (Feb 2024); "As of 13 June 2024, `reading-order-items` is now `reading-flow`"; "These two
+  properties only work in the context of flex and grid. They do nothing for floats or absolute positioning." June 2026: "With no
+  support, nor seemingly interest, from Mozilla and WebKit for `reading-flow`…" so it cannot be relied on.
+- Test tools: his "Reading Order Bookmarklet" (2019) and the Edge 86 / Chromium "Source order viewer" devtools experiment.
+- Related: WebAIM "Flexbox and the Screen Reader Experience" (2022); Matuzovic "The Dark Side of the Grid"; Rachel Andrew "Grid,
+  content re-ordering and accessibility" and "Masonry and reading order"; Matuzovic (June 2026) "Your Grid Lanes will likely fail
+  WCAG 2.4.3" — masonry / grid-lanes carries the same risk.
+
+**5. Adrian Roselli — HTML Source Order vs CSS Display Order** ·
+`https://adrianroselli.com/2015/10/html-source-order-vs-css-display-order.html` · **read fully.**
+- The same disconnect exists for **flex, grid, float and absolute position**, each with a CodePen: "the source order versus
+  display order discussion is not unique to CSS Flexbox."
+- His two rules, quoted: "If you are using CSS Flexbox, don't use order, as that can be a can of worms. Whether or not you have
+  access to a screen reader, you can at least test your page with the keyboard by tabbing through."
+- **Firefox history (dated browser bug):** Firefox 41 followed flex `order` for Tab; the bug "to apply Flexbox order to the
+  accessibility tree was just closed in favor of the bug stating order should not affect tabbing order"; Bugzilla 812687
+  (Apr 2017): "you won't see any changes to current behavior in Firefox 54". Per Jules Ernst, Firefox followed the declaration
+  but NVDA did not, even paired with Firefox. A 2014 proposal to make `order` affect "the default traversal order of sequential
+  navigation modes" was never adopted.
+- **`display: flex` on a `<table>` destroys its semantics** (Feb 2018): "using CSS flex on an HTML table will override its
+  native semantics and render it essentially useless to a screen reader. Do not do it." (NVDA no longer announced a table,
+  headers were not announced.) Follow-up post: "Tables, CSS Display Properties, and ARIA".
+
+**6. Alastair Campbell — The responsive order conflict for keyboard focus** ·
+`https://alastairc.uk/blog/2017/06/the-responsive-order-conflict/` · **read fully.** This is the one that matters for a
+**responsive** builder: even a developer who tries to keep focus order logical cannot, because layout order is chosen per
+breakpoint but focus order is fixed in the DOM.
+- Example 1: header, content, live-block, footer. Desktop wants content left / live-block right (keyboard order content then
+  live block); a phone wants the live block first, so "It pings up and down the page, making it very difficult to anticipate
+  the next focus point or understand your place in the page." Example 2: a "meta" nav (your-account) top-right on desktop but
+  under the hamburger on a phone.
+- Affected: "VoiceOver on iOS (with some vision), or switch access, and probably other keyboard-equivalent inputs" — not only
+  desktop keyboard users, so it applies to the phone-first audience.
+- Filament Group quote: of "A) dynamically adapting our HTML source order for every breakpoint, B) sending different HTML
+  sources to each client, or C) renumbering the tabindex attributes… we emphatically choose option D) 'Nope'"; they could only
+  mitigate with navigational cues and skip links.
+- Conclusion: "It has to be solved by the browsers." Counter-point: Bootstrap's docs want the table of contents before the
+  content in source — "the exception that proves the rule".
+
+**7. CSS-Tricks — `flex-grow` is weird. Or is it?** (Manuel Matuzovic, 26 Dec 2015) · `https://css-tricks.com/flex-grow-is-weird/`
+· **read fully** (article + the first ~25 comments). The worked arithmetic with content present, which 04 § 4.1 states abstractly:
+- The mistake: a 2:1 `flex-grow` on two **empty** items gives 600/300 of 900px and looks like a ratio of widths. With content,
+  "the element with `flex-grow` set to 1 is actually bigger than the element with `flex-grow` set to 2."
+- The rule, quoted: "`flex-grow` will take the remaining space and divide it by the total amount of flex grow values. The
+  resulting quotient is multiplied by the respective flex-grow value and the result is added to each child elements initial
+  width." Numbers: 900 - 99 - 623 = 178; 178 / 3 = 59.33; 99 + 2 x 59.33 = 218px, 623 + 59.33 = 682px.
+- With `flex-basis` 400 and 200: 900 - 600 = 300; 300 / 3 = 100, so 600 and 300. "If box-sizing was set to border-box, you
+  would only work with the flex-basis and margin values… because the padding is already included"; margins are subtracted from
+  the free space.
+- "If an element has flex-grow set to 3 it does not mean that it's 3 times bigger… but it means that it gets 3 times more pixels
+  added to its initial width than the other element."
+- Shorthand trap: the spec encourages `flex` over `flex-grow`, "But be careful! If you just use `flex: 1;` some of the above
+  examples won't work anymore" — keep the content-based start with `flex: 2 1 auto`. (Confirms 04 § 3.1 on basis `0` vs `auto`.)
+- Comments: the "holy grail" 150px sidebars squash ("You will find that your 150px aside columns do not remain at 150px but
+  squash when the middle column has more content. You need to set flex-shrink to zero."); `flex-basis` acts along the main axis
+  whatever the direction while `width` is horizontal only (Igor Karavaev); `flex: 2` / `flex: 1` (basis 0) gives true
+  proportional widths whatever the content.
+
+**8. Eric Bailey — `display: contents` considered harmful** (25 May 2023) ·
+`https://ericwbailey.design/published/display-contents-considered-harmful/` · **read fully, via a mirror.** That domain did not
+resolve (DNS failure) from this machine; the same post was read at
+`https://ericwbailey.website/published/display-contents-considered-harmful/`.
+- Position: "I don't think we as an industry can use `display: contents` with confidence… I now view the declaration as
+  predictably unpredictable." It prevents "buttons from being announced as buttons, tables as being announced and navigated as
+  tables, lists as being announced and navigated as lists". Browsers fixed it, then regressed ("I counted sixteen updates about
+  how `display: contents`' behavior had regressed in a way that was inaccessible"); "there's no console error or visual
+  indication that things are amiss." Update: Safari 17 (18 Sep 2023) claimed it had fixed "our remaining accessibility issues
+  with `display: contents`". Buttons and headings, however, are still broken.
+
+**9. Adrian Roselli — Display: Contents Is Not a CSS Reset** ·
+`https://adrianroselli.com/2018/05/display-contents-is-not-a-css-reset.html` (2018, updated 31 Jul 2025) · **read fully**
+(body, special-case list, bug log, tweets, and the dated updates up to 2022; the 2024-2025 updates were skimmed). MDN cites
+it from the flex/`display` pages.
+- Do not use `display: contents` to strip list/heading margins. "Today browsers will take an element with `display: contents`
+  and drop it from the accessibility tree", and ARIA added back does not help (Chrome 66 showed "Accessibility node not exposed"
+  for `h2`, `table`, `ul`, `button`). A `tabindex="0"` button with a key handler "is dead to keyboard users".
+- **Spec special cases, quoted from CSS Display 3:** `display: contents` "behaves as `display: none`" for `br, wbr, meter,
+  progress, canvas, embed, object, audio, iframe, img, video, frame, frameset, input, textarea, select`; `legend` reacts
+  normally; `button`, `details`, `fieldset` "don't have any special behavior; `display: contents` simply removes their principal
+  box". "It removes it from the CSS box tree too" (Tab Atkins): a `display: contents` child is **not** a flex item; its own
+  `order`, `flex`, background, border stop applying and its children become the container's items.
+- The only use he accepts (Amelia Bellamy-Royds): "to remove extra divs that you added for your fallback layout but don't need
+  for your grid layout. Do not use—yet—on semantic elements: `<ul>`, `<nav>`, `<button>`, `<header>`, etc". A better reset:
+  "`all: initial`" (James Steinbach).
+- Bug log (dated): Firefox 1455357 fixed in 62 for lists only; Firefox 1500958 (buttons) fixed June 2019; Chromium 835455 closed
+  fixed March 2021; Safari reported fixed in 16 but "it is not fixed" (Roselli, 5 Jul 2022). CSSWG #2632 (can a `display:
+  contents` element be focused?) closed "out of scope".
+
+**10. Hidde de Vries — More accessible markup with `display: contents`** ·
+`https://hidde.blog/more-accessible-markup-with-display-contents/` (2018, updated 2022) · **read fully.**
+- The legitimate use: in grid (and flex) "only direct children of that element become grid items", so grand-children such as the
+  `<li>`s of a `<ul>` cannot be placed. Instead of flattening the markup (losing "list, 3 items", Reader mode, print), put
+  `display: contents` on the `<ul>` so its `<li>`s join the parent's layout.
+- The spec sentence that makes the accessibility behaviour a bug: "The `display` property has no effect on an element's
+  semantics… its purpose is to allow designers freedom to change the layout behavior of an element without affecting the
+  underlying document semantics."
+- Results: Firefox 61 "text leaf" (fixed 62, Aug 2018); Chrome 66 "accessibility node not exposed" (fixed Chrome 89, Mar 2021);
+  Safari "no accessibility information" (WebKit 185679 / 237834; fixed in 16, disputed by Roselli Jul 2022).
+
+**11. Go Make Things — Hidden content for better a11y** (Apr 2016) ·
+`https://gomakethings.com/articles/hidden-content-for-better-a11y/` · **read fully.** MDN cites it from `display: none`. The
+recipe for **visually-hidden** text: the `.screen-reader` class (`border:0; clip:rect(0 0 0 0); height:1px; margin:-1px;
+overflow:hidden; padding:0; position:absolute; white-space:nowrap; width:1px`), a focusable variant on `:active/:focus`
+restoring `clip:auto; height:auto; margin:0; overflow:visible; position:static; white-space:normal; width:auto`, **skip links**
+(`<a href="#main">`), the Chrome workaround `tabindex="-1"` on `<main>` (plus `.tabindex:focus{outline:none}`) so focus really
+moves, hidden `<label>`s, and `tabindex="-1"` to drop decorative heading-anchor links from the tab order. Also: "One of the
+biggest accessibility issues I see on websites is the removal of :focus styling from links."
+
+**12. WebAIM — Invisible Content Just for Screen Reader Users** ·
+`https://webaim.org/techniques/css/invisiblecontent/` (updated Sep 2020) · **read fully.** MDN cites it from `display: none`.
+- Hiding techniques compared: `display:none` / `visibility:hidden` hide from everyone; the `hidden` attribute = `display:none`;
+  `width:0`, `height:0`, `font-size:0` "may result in search engine penalties"; `text-indent:-10000px` is readable but a
+  focusable element inside "would be focusable, but not visible"; the **recommended** `.sr-only` (absolute, `left:-10000px`,
+  1x1px, `overflow:hidden`) and the modern `clip: rect(1px,1px,1px,1px); clip-path: inset(50%); height:1px; width:1px;
+  margin:-1px; overflow:hidden; padding:0; position:absolute`.
+- "Navigable elements, such as links and form controls, should not be hidden off-screen" unless shown on focus. Use judiciously:
+  "what they see and what they hear should typically be in harmony."
+- Skip link: hidden until `:focus`; WebAIM animates it in with a CSS transition because "the sudden appearance of a link that
+  was previously invisible will be unexpected and could potentially confuse the sighted keyboard user."
+
+**13. W3C — Understanding SC 1.3.2 Meaningful Sequence (WCAG 2.2)** ·
+`https://www.w3.org/WAI/WCAG22/Understanding/meaningful-sequence` · **read fully.** The normative rule behind every `order` /
+`*-reverse` warning: "When the sequence in which content is presented affects its meaning, a correct reading sequence can be
+programmatically determined." Two nuances 04 lacked: (a) "A sequence is meaningful if the order of content in the sequence
+cannot be changed without affecting its meaning… Tables and ordered lists are meaningful sequences, but unordered lists are
+not"; (b) "Providing a particular linear order is only required where it affects meaning. There may be more than one order that
+is 'correct'… Only one correct order needs to be provided." So moving a nav beside `main` is allowed; reordering recipe steps,
+numbered content or a table is not. Techniques: C6, **C27 (making the DOM order match the visual order)**, G57; failures F32 /
+F33 / F34 (white-space layout), F49 (layout table that does not make sense linearized), **F1 (changing the meaning of content
+by positioning it with CSS)**.
+
+**14. W3C — Understanding SC 1.3.2 (WCAG 2.0 version)** ·
+`https://www.w3.org/TR/UNDERSTANDING-WCAG20/content-structure-separation-sequence.html` · **read fully.** Same text; its
+examples are worth keeping: "CSS is used to position a navigation bar, the main story on a page, and a side story. The visual
+presentation of the sections does not match the programmatically determined order, but the meaning of the page does not depend
+on the order of the sections" (an allowed reorder).
+
+**15. W3C — Understanding SC 1.3.1 Info and Relationships (WCAG 2.0)** ·
+`https://www.w3.org/TR/UNDERSTANDING-WCAG20/content-structure-separation-programmatic.html` · **read fully.** Cited from
+`display`. The rule: "Information, structure, and relationships conveyed through presentation can be programmatically
+determined or are available in text." For flex: a restyle must not remove the structure a list, heading or table carries
+(techniques G115 semantic elements, G140 separating structure from presentation, H51 table markup, ARIA11 landmarks).
+
+### 7.2 Links in the MDN pages that were NOT read, and why
+
+| URL | Why not |
+|---|---|
+| `drafts.csswg.org/css-flexbox/`, `/css-flexbox-2/`, `/css-flexbox-1/#visibility-collapse` | spec index pages for what MDN documents (MDN is the stored reference); `visibility: collapse` is already in § 2.7 |
+| `drafts.csswg.org/css-display/#unbox`, `#valdef-display-contents` | spec text for `display: contents`; its content is quoted through Roselli (#9) and MDN |
+| `drafts.csswg.org/css-speech/` | speech media; off-topic for layout |
+| `scrimba.com/learn-html-and-css-c0p/~017?via=mdn` | sponsored video-course link in MDN's Learn page; not documentation |
+| `mdn.github.io/shared-assets/images/examples/balloon.jpg` | an image asset used in MDN's live examples |
+
+### 7.3 New for the builder (what 04-flexbox.md did NOT have)
+
+1. **Reorder only what is not focusable, or restructure the source.** `order`, `*-reverse` and any per-breakpoint reorder keep Tab
+   and reading order in the DOM (Watson, Roselli, Campbell, WCAG 1.3.2 + 2.4.3). The fixes people try — positive `tabindex`,
+   `aria-flowto` — are rejected by the evidence; `reading-flow` (the CSS answer) is not in Firefox or Safari. The page audit
+   should compare visual vs DOM order for any block holding a link, button or input and flag it. Moving a nav against `main` is
+   allowed (WCAG: "the meaning of the page does not depend on the order of the sections"); reordering steps, numbered lists or
+   tables is not.
+2. **A per-breakpoint reorder is the exact conflict Campbell describes** (live-block first on phone, last on desktop). The
+   builder's "order on a phone" control (Trillo note) needs this warning in its UI.
+3. **Never put `display: flex` / `grid` on a table**; a Table component stays `display: table` (NVDA stops announcing it).
+4. **`display: contents` only on a pure, non-semantic wrapper `div`**; never on `ul`, `nav`, `button`, `table`, headings or
+   `header`. A `display: contents` child is not a flex item (its `order`/`flex`/background stop applying; its children become the items).
+5. **`gap` is a minimum gutter, between items only**, and `place-items` / `justify-items` do nothing on a flex container.
+6. **`flex-grow` is a share of the leftover, not a ratio of widths** (worked numbers, #7). `flex: N` (basis 0) gives true
+   proportions; `flex: N 1 auto` keeps content size. A column-ratio control must say which it means.
+7. **Fixed-width sidebars need `flex-shrink: 0`** (or a `min-width`), and nested full-height panes need `min-height: 0` at every level.
+8. **`margin: auto` on an item centres it on both axes.**
+9. **Visually-hidden text recipe** (clip + clip-path + 1px box, a focusable variant, a skip link with `tabindex="-1"` on `main`)
+   for hidden labels and skip-to-content; never hide a focusable element off-screen without a `:focus` reveal.
+10. **Froggy's order is a ready lesson sequence** for the guide (RULE L); it omits grow / shrink / basis / gap, which the guide
+    must cover from 04.
+11. **Masonry / grid-lanes inherit the same reading-order risk** (Matuzovic 2026) — relevant to the builder's masonry block.
