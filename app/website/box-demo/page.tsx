@@ -14,7 +14,7 @@ import { DEFAULT_THEME, resolveSiteTheme } from "@/lib/site-storage";
 import { THEMES, type ThemeId } from "@/lib/theme-config";
 import { RUNG_LABEL, RUNG_ORDER, RUNG_PX } from "@/lib/educo-ui/layout";
 import {
-  type BoxNode, type Breakpoint, createContainer, findBox, findParent, updateBox, insertBox, deleteBox, duplicateBox, widthPct, makeRowBand, normalizeRowBands, groupBoxes, alignInRow, alignInRowOf, setSectionWidth, sectionWidthOf, pageBandOf,
+  type BoxNode, type Breakpoint, createContainer, findBox, findParent, updateBox, insertBox, deleteBox, duplicateBox, widthPct, makeRowBand, normalizeRowBands, markPageGrid, groupBoxes, alignInRow, alignInRowOf, setSectionWidth, sectionWidthOf, pageBandOf,
   floatBox, unfloatBox, bringToFront, bringForward, sendBackward, sendToBack,
   resolveResponsive, updateBoxResponsive, clearOverride, hasOverride,
   gridColumns, retrackGrid, setColumnFraction, pinBlockedBy, fixedBlockedBy, blockedByLabel, pinScopeWords, isFloating,
@@ -82,7 +82,7 @@ const ZOOMS = [
 ];
 
 function pageRoot(rows: BoxNode[] = []): BoxNode {
-  const r = createContainer("column", { layout: "flex", direction: "column", wrap: false, padding: 0, gap: 0, width: "fill", align: "stretch", justify: "start", baseFont: 10 });
+  const r = createContainer("column", { layout: "flex", direction: "column", wrap: false, padding: 0, gap: 0, width: "fill", align: "stretch", justify: "start", baseFont: 10, pageGrid: true }); // AC-37b: every new page is on the page grid
   r.children = rows;
   return r;
 }
@@ -279,7 +279,7 @@ export default function BoxDemoPage() {
     mergeAt.current = mergeKey ? { key: mergeKey, at: now } : null;
     setHist((h) => {
       if (!h || !activePage) return h;
-      const present = setPageRoot(h.present, activePage.id, normalizeRowBands(nextRoot));
+      const present = setPageRoot(h.present, activePage.id, markPageGrid(normalizeRowBands(nextRoot)));
       // Merging REPLACES what the gesture has produced so far and leaves `past` alone, so the entry already
       // sitting there is still the state from before the gesture began — which is what one Ctrl+Z returns to.
       return merge ? { ...h, present } : { present, past: [...h.past, h.present].slice(-HIST_CAP), future: [] };
@@ -292,7 +292,7 @@ export default function BoxDemoPage() {
     if (!h || !activePage) return h;
     const cur = h.present.pages.find((p) => p.id === activePage.id)?.root;
     if (!cur) return h;
-    const next = normalizeRowBands(fn(cur));
+    const next = markPageGrid(normalizeRowBands(fn(cur)));
     return { present: setPageRoot(h.present, activePage.id, next), past: [...h.past, h.present].slice(-HIST_CAP), future: [] };
   });
 

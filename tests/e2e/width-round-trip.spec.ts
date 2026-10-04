@@ -141,7 +141,10 @@ test.describe("width round trips come back, and nothing leaves a hole", () => {
     const id = await buildRow(page, 2);
     await select(page, id);
     const start = await rowOf(page, id);
-    expect(start.kids.map((k) => k.w), "two stacks should share the line").toEqual([start.inner / 2, start.inner / 2].map(Math.round));
+    // Within a pixel: each width and the line are ROUNDED separately, and a page-grid row's side space is fractional
+    // (26.2px) — exact equality failed 497 against 498 on rounding alone (G-1 #17), as line 222's ≤ 2 already allows.
+    expect(start.kids.length, "two stacks should share the line").toBe(2);
+    for (const k of start.kids) expect(Math.abs(k.w - start.inner / 2), "two stacks should share the line equally").toBeLessThanOrEqual(1);
     const startX = await handleX(page);
 
     for (let round = 1; round <= 3; round++) {

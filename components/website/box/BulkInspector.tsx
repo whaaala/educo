@@ -9,7 +9,7 @@
 
 import { Minus, Plus, Copy, Trash2, Layers, Group as GroupIcon } from "lucide-react";
 import type { SiteTheme } from "@/lib/site-storage";
-import type { BoxNode, FlexAlign } from "@/lib/box-model";
+import type { BoxNode, FlexAlign, SectionFlag } from "@/lib/box-model";
 import { padSide } from "@/lib/box-model";
 import { ColorPickerPopover, colorToCSS } from "@/components/shared/ColorPalettePicker";
 import BackgroundPicker from "@/components/shared/BackgroundPicker";
@@ -37,7 +37,7 @@ function Stepper({ title, onStep }: { title: string; onStep: (dir: -1 | 1) => vo
 export default function BulkInspector({ count, theme, sample, sampleSection = false, onStepWidth, onStepHeight, onPatch, onDuplicate, onDelete, onFloatAll, onGroup }: {
   count: number;
   theme: SiteTheme;
-  sampleSection?: boolean;                      // that box is the content of a page section (its default is the gutter)
+  sampleSection?: SectionFlag;                      // that box is the content of a page section (its default is the gutter)
   sample?: BoxNode | null;                      // a representative selected box (first) — seeds the sliders' shown values
   onStepWidth: (dir: -1 | 1) => void;
   onStepHeight: (dir: -1 | 1) => void;

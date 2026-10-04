@@ -33,6 +33,7 @@ const RULES: [name: string, mustSay: RegExp][] = [
   ["Playwright everything, user POV (RULE U)", /RULE U/],
   ["UAT every change in the UI (RULE X)", /RULE X/],
   ["…one UAT pass per BATCH of related changes (the user, 2026-09-30)", /ONE UAT PASS PER BATCH/],
+  ["…every UAT checks the Preview at EVERY device and EVERY breakpoint, from one shared list (the user, 2026-10-04)", /EVERY UAT CHECKS THE PREVIEW AT EVERY DEVICE AND EVERY BREAKPOINT[\s\S]*scripts\/uat\/screens\.js/],
   ["…the tree is the Bible: every request answered with where we are, where it goes, what I will do", /THE TREE IS THE BIBLE FOR EVERY REQUEST/],
   ["…every handover ends with the next session's prompt, unasked", /EVERY HANDOVER ENDS WITH THE NEXT SESSION'S PROMPT/],
   ["…say when it is time for a new session, before the heavy work", /SAY WHEN IT IS TIME FOR A NEW SESSION/],

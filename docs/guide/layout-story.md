@@ -51,8 +51,9 @@ Now the screens:
 
 - **Desktop and laptop:** 60 / 40, as she set it.
 - **Tablet:** still 60 / 40 — two columns fit comfortably.
-- **Phone:** the photo drops under the words, each full width. Every row does this on a phone, because two columns
-  on a 375px screen are two unreadable slivers.
+- **Phone:** the photo drops under the words, each full width, because two columns on a 375px screen are two unreadable
+  slivers. (On a page made since the page grid, a row of short things — four stats — may stay two across where their
+  words fit; see 6¾.)
 
 She did not set anything for the phone. She could: switch the device chip to Mobile and change the photo there, and
 that choice would apply from the phone size down and nowhere else.
@@ -139,6 +140,22 @@ there is no edge to keep away from.
 Every one of these is mine to change, down to zero: select the block, open **Spacing**, and each control says
 "Default · 2rem" (real rem) until I move it, with **Back to default** to undo my change. A page I saved before these
 defaults existed opens exactly as it was; only what I add from now on arrives with the space.
+
+### 6¾. "The whole page is mine" — the page grid (new pages from 4 October 2026)
+
+Every page I add now sits on an invisible grid: twelve columns across from a tablet up, six on a phone, running from
+one edge of the page to the other. I never see it. What I notice is that things line up: the photo in my hero, the three
+cards under it and the stats under those all start and end on the same two lines, about 1rem in from the edges of a
+phone and 2rem on a wide screen. That side space belongs to the row, not to each block in it, so three cards side by
+side sit **one small gap apart** (0.75rem on a phone, 1.5rem on a wide screen) instead of each keeping its own margin.
+I can drag a block right to the far edge, and every space is still mine to change in **Spacing**, down to zero.
+
+When the screen gets narrower, a row gives up columns **evenly**, and only when the words no longer fit: four stats go
+four, then two and two, then one under another; three cards go three, then one under another — never two with one left
+alone underneath. The phone follows the same rule: four short stats sit two across on a 360px phone because their words
+fit. Large text in the browser (150%, 200%) moves those points in, so nothing breaks.
+
+Pages I saved before the grid open exactly as they were.
 
 **Cards, buttons and notices breathe too.** I drop a Card, then a Button, a Quote and an Alert under it. None of them
 touches the next: there is 1rem above and below each, *outside* its coloured box, so the box itself stays exactly as
@@ -244,8 +261,8 @@ tests behind it, not an aspiration, and every sweep of real pages re-measures it
 
 | Rung | From | What changes |
 |---|---|---|
-| Phone | 0 | every row stacks; grids go to one column; hand-sized columns take the full line |
-| Tablet portrait | 600px (37.5em) | rows of four or more go to at most three a line; a grid whose cells would be under 12rem goes to two |
+| Phone | 0 | pages saved before 4 Oct 2026: every row stacks. New pages (the page grid, 6¾): a row keeps as many EQUAL columns as its words fit (4 → 2 → 1), never one left alone; grids go to one column |
+| Tablet portrait | 600px (37.5em) | saved pages: rows of four or more go to at most three a line. New pages: the same equal-columns rule as every rung; a grid whose cells would be under 12rem goes to two |
 | Tablet landscape | 900px (56.25em) | rows and grids as designed |
 | Desktop | 1200px (75em) | the design as built — this is the base |
 | Big desktop | 1800px (112.5em) | wider measure; nothing rearranges |

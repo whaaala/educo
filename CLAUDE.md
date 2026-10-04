@@ -282,6 +282,14 @@ Run through this checklist BEFORE telling the user it's done:
     Once a failure is proven alone, every diagnostic and probe after it runs side by side. A rebuild never empties the
     windows: build the fix into a second folder (`NEXT_DIST_DIR=.next-b`) and serve it on 3200 while 3100 keeps serving.
     Measured, 2026-09-30 (L-1): after four pages had each failed alone, their diagnostic runs went one window at a time.
+  - **EVERY UAT CHECKS THE PREVIEW AT EVERY DEVICE AND EVERY BREAKPOINT — NEVER ONE (the user, 2026-10-04: "always check
+    all of the devices… all of the breakpoints… all of the view widths… that must be a rule… for all of our UAT
+    testing").** Every UAT's Preview pass runs through ALL of `scripts/uat/screens.js`: every device of the Preview's own
+    menu (`lib/preview-devices.ts`, at real width × height — phones incl. Tecno / Infinix / itel, tablets, laptops,
+    monitors, the user's 1536 × 864) and both sides of every breakpoint (599 | 600, 899 | 900, 1199 | 1200, 1799 | 1800).
+    A device or size we need that is missing is ADDED to `lib/preview-devices.ts` (then every UAT checks it). Guarded by
+    `tests/unit/uat-screens.test.ts`: the list must hold every preset and every breakpoint, and every new headed UAT
+    script must use it. A pass that checked one size is not a pass.
   - **EVERY COMBINATION, AT EVERY TEST LEVEL, FOR EVERYTHING — now and every future feature.** Unit · component ·
     functional · integration · regression · UAT all enumerate the combinations, not one case. For page layout
     the combinations ARE the research: every page structure in `docs/LAYOUT_BENCHMARK.md` and the crawl, built

@@ -10,7 +10,7 @@
 import { useState, useRef } from "react";
 import { Plus, X, Tags, Rows3, Columns3, Upload, ArrowRight, AlignLeft, AlignCenter, AlignRight, AlignHorizontalSpaceBetween, Layers, Move, BringToFront, SendToBack, ChevronUp, ChevronDown, Italic, Underline, LayoutGrid, Maximize2, Sparkles, Paintbrush, Ruler, Type as TypeIcon, MonitorSmartphone, Bookmark, Lock, LockOpen } from "lucide-react";
 import type { SiteTheme } from "@/lib/site-storage";
-import type { BoxNode, FlexAlign, FlexJustify, AccPartStyle, Breakpoint, PagerNav, PinScopeWords } from "@/lib/box-model";
+import type { BoxNode, FlexAlign, FlexJustify, AccPartStyle, Breakpoint, PagerNav, PinScopeWords, SectionFlag } from "@/lib/box-model";
 import { RUNG_LABEL } from "@/lib/educo-ui/layout";
 import { type ItemAction, TOAST_CORNERS, isContainer, containerLabel, isFloating, isCssBg, addItem, removeItem, moveItem, updateItem, addChildItem, updateChildItem, removeChildItem, moveChildItem , isMultiItemComponent, hasIntrinsicSize, sizeToCSS, GRID_MAX, COLUMN_FRACTIONS, columnFractionOf, canSetColumnFraction, gridColumns, bandEdgeCSS, PIN_ARRIVALS, PIN_ARRIVAL_AFTER, pinArrivalHasEffect, linkLineGap, LINK_GAP_ACROSS, LINK_GAP_ACROSS_PHONE, spaceDefaults, outerDefaults, type SectionPlace, gapOf } from "@/lib/box-model";
 import { ACCORDION_DESIGNS, ACCORDION_DESIGN_COUNT, ACCORDION_AXES } from "@/lib/educo-ui/accordions";
@@ -488,7 +488,7 @@ function AccPreview({ id, size, axes = [] }: { id: string; size: ThumbSize; axes
 }
 
 export default function BoxInspector({ section = false, sectionPlace, node, theme, onPatch, onAddChild, onFloat, onUnfloat, onLayer, onAlignInRow, rowJustify, onSectionWidth, sectionWidth, canFloat = true, inGrid = false, inMasonry = false, gridTrack, onSetFraction, onRetrack, breakpoint = "base", overridden = false, onResetOverride, pages, currentPageId, pinBlockedBy = null, fixedBlockedBy = null, pinScope = null }: {
-  section?: boolean; // the block is the content of a page section, so its default inner spacing is the gutter and the section space
+  section?: SectionFlag; // the block is the content of a page section, so its default inner spacing is the gutter and the section space
   sectionPlace?: SectionPlace; // …and where: straight on the page or a column of a band — the default space OUTSIDE a self-painted block (S-2 (5))
   node: BoxNode;
   theme: SiteTheme;

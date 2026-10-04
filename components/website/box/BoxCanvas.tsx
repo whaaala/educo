@@ -1321,7 +1321,10 @@ export default function BoxCanvas({
     // drop there fell through to "inside this container" and the block ended up nested. The strips are the
     // same on both axes because the rule is the same on both: edges place around, the middle places inside.
     const bx = Math.min(r.width * 0.22, 22), by = Math.min(r.height * 0.22, 22);
-    const nearEdge = (x < r.left + bx || x > r.right - bx) || (y < r.top + by || y > r.bottom - by);
+    // …except a ROW's SIDES, which belong to its columns: on the page grid a row keeps the page's side space itself, and a
+    // drop there — just past its last column — made a NEW ROW under it instead of a column beside (G-1 #10, measured by
+    // probe-g1-drop.js). Only a row's top and bottom place around it.
+    const nearEdge = (!node.rowBand && (x < r.left + bx || x > r.right - bx)) || (y < r.top + by || y > r.bottom - by);
     const dropBeside = !isContainer(node) || (nearEdge && !!info);
     if (dropBeside && info) {
       const pEl = document.querySelector<HTMLElement>(`[data-box-id="${info.parent.id}"]`);

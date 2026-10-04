@@ -125,7 +125,9 @@ test.describe("dropping a Stack into the empty space beside another", () => {
     const sec = (await page.locator('[data-box-id="sec"]').boundingBox())!;
     const band = (await page.locator('[data-box-id="band"]').boundingBox())!;
     const gap = band.x + band.width - (sec.x + sec.width);
-    expect(gap, "the seed really does leave a wide opening to aim at").toBeGreaterThan(200);
+    // Wide enough that its middle is far from BOTH 22px edge strips. It was "> 200", which a phone's canvas never gives
+    // (136.5px measured on mobile-chrome, G-1 #11), so on that project this guard could only ever fail on its premise.
+    expect(gap, "the seed really does leave a wide opening to aim at").toBeGreaterThan(100);
 
     // Dead centre of the empty space — as far from either 22px edge strip as the opening allows.
     const x = sec.x + sec.width + gap / 2;
@@ -235,5 +237,32 @@ test.describe("dropping a Stack into the empty space beside another", () => {
     const second = (await page.locator(`[data-box-id="${bands[1]}"]`).boundingBox())!;
     expect(second.y, "the new band sits below the one above it").toBeGreaterThanOrEqual(first.y + first.height - 2);
     expect(first.y < second.y + second.height && second.y < first.y + first.height, "they do NOT share a row").toBe(false);
+  });
+});
+
+/**
+ * G-1 #10 — ON THE PAGE GRID A ROW KEEPS THE PAGE'S SIDE SPACE ITSELF (its columns have none at their sides), so the
+ * space just past its last column is the ROW's. A drop there made a NEW ROW underneath: the row's left / right 22px
+ * counted as its "edges", and beside a row in the page means above / below it. Found in the HEADED UAT (the third card
+ * landed at the bottom of the page) and reproduced through the UI by scripts/uat/probe-g1-drop.js; seeded here only to
+ * pin the geometry (RULE Y).
+ */
+test.describe("a page-grid row's own side space", () => {
+  const col = (id: string) => ({ id, type: "container", direction: "column", spaced: true, onPageGrid: true, width: "50%", minHeight: 160, children: [] });
+  test("a drop just past the last column lands BESIDE it, in the same row — never a new row below", async ({ page }) => {
+    await seedSite(page, { pages: [{ id: "p1", name: "Home", path: "/", root: {
+      id: "root", type: "container", direction: "column", padding: 0, gap: 0, pageGrid: true,
+      children: [{ id: "band", type: "container", direction: "row", rowBand: true, spaced: true, onPageGrid: true, width: "fill", padding: 0, children: [col("a"), col("b")] }],
+    } }], homeId: "p1" });
+    await page.waitForSelector('[data-box-id="b"]', { timeout: 15000 }); await page.waitForTimeout(300);
+    const b = (await page.locator('[data-box-id="b"]').boundingBox())!;
+    const band = (await page.locator('[data-box-id="band"]').boundingBox())!;
+    expect(band.x + band.width - (b.x + b.width), "the row keeps side space past its last column").toBeGreaterThan(8);
+    const x = b.x + b.width + 4, y = b.y + b.height / 2;
+    await dragOverPoint(page, "container", x, y);
+    await dropAtPoint(page, x, y);
+    const kids = await bandChildren(page);
+    expect(kids.map((k) => k.id).slice(0, 2), "the two columns stay first").toEqual(["a", "b"]);
+    expect(kids.length, "the row now holds three columns").toBe(3);
   });
 });

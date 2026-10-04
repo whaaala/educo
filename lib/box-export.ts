@@ -10,7 +10,7 @@
 
 import type { CSSProperties } from "react";
 import { PILL, dividerThickness, blockTypography,pinArrivalCss, pinArrivalKeyframes, floatHoldCSS,
-  type BoxNode, type Breakpoint, BP_ORDER, containerStyle, childStyle, hostSizedFor, marginCSS, leafPaddingCSS, outerSpaceCSS, pageBandInset, pagePinCover, sectionContent, sizeToCSS, radiusCSS, SHADOW_CSS, u, LIST_ITEM_GAP, textLen, baseUnit, fadedPaint, boxOpacity, backgroundCss, paintLayerCss,
+  type BoxNode, type Breakpoint, type SectionFlag, BP_ORDER, containerStyle, childStyle, hostSizedFor, marginCSS, leafPaddingCSS, outerSpaceCSS, pageBandInset, pagePinCover, sectionContent, sizeToCSS, radiusCSS, SHADOW_CSS, u, LIST_ITEM_GAP, textLen, baseUnit, fadedPaint, boxOpacity, backgroundCss, paintLayerCss,
   resolveResponsive, floatStacksOnMobile, floatingReserve, alertToastCss, accordionClasses, bandClasses, videoEmbedSrc, isContainer, sanitizeCssDeclarations, expandScopedCss, COMPONENT_PARTS, itemFloatContextCss, itemOverrideCss, itemNumberVars, richBody, plainBody, componentTextCss, componentBoxCss, renderAlertHTML, alertDismissScript, masonryMeasureAttr, masonryMeasureScript, pinStackMarker, pinStackGroupMarker, pinStackNeeded, pinStackScript, isPager, pagerNavHTML, pagerScript, pagerStripCss, pagerSlideId, bgShowThroughCss, blockContainmentCss, COMPONENT_ITEM_SEL, remLen, imageSizing, hasIntrinsicSize, itemNeedsClass, itemScope, floatZIndex, typoRole, typoRootVars, typoCascadeCss, bandEdgeCSS, LINK_COLOR_CSS, gridQueryCss, TYPE_UNIT_PROPERTY_CSS,
 } from "@/lib/box-model";
 import { isRegistryComponent, renderComponent, componentScripts } from "@/lib/educo-ui/registry";
@@ -118,9 +118,11 @@ const hrefFor = (node: BoxNode, pageMap: Map<string, string>): string => {
  */
 let SEM: PageSemantics | null = null;
 
-/** The first thing on every page: keyboard users jump straight past the header (WCAG 2.4.1). System colours — no hex. */
+/** The first thing on every page: keyboard users jump straight past the header (WCAG 2.4.1). System colours — no hex.
+ *  Parked off the START side by a LOGICAL inset (G-1 #4): parked by `left`, a right-to-left page — whose start is the
+ *  right and whose left is the side that scrolls — scrolled 16,000px sideways (measured, HEADED UAT G-1, dir=rtl). */
 export const SKIP_LINK_HTML = `<a class="eu-skip" href="#main">Skip to content</a>`;
-export const SKIP_LINK_CSS = ".eu-skip{position:absolute;left:-999rem;top:0}.eu-skip:focus{left:1rem;top:1rem;z-index:" + PAGE_Z_CEILING + ";padding:0.5rem 1rem;background:Canvas;color:CanvasText;outline:0.125rem solid CanvasText;font:inherit}"
+export const SKIP_LINK_CSS = ".eu-skip{position:absolute;inset-inline-start:-999rem;top:0}.eu-skip:focus{inset-inline-start:1rem;top:1rem;z-index:" + PAGE_Z_CEILING + ";padding:0.5rem 1rem;background:Canvas;color:CanvasText;outline:0.125rem solid CanvasText;font:inherit}"
   // The AUTOMATIC main wraps whole bands without changing the layout; a list the user chose loses the browser's bullets
   // and indent, so choosing "List" changes the meaning and never the look.
   + ".eu-main{display:contents}.eu-list{list-style:none;margin:0;padding-left:0}.eu-li{display:contents}"
@@ -371,7 +373,7 @@ function belowFloor(current: CSSProperties["minHeight"]): boolean {
 }
 
 /** The full style object for a node at a breakpoint — mirrors BoxCanvas's wrapStyle so editor == export. */
-function styleAt(node: BoxNode, rawParent: BoxNode | null, bp: Breakpoint, theme: SiteTheme, hostSized = false, section = false, onPage = false): CSSProperties {
+function styleAt(node: BoxNode, rawParent: BoxNode | null, bp: Breakpoint, theme: SiteTheme, hostSized = false, section: SectionFlag = false, onPage = false): CSSProperties {
   const r = resolveResponsive(node, bp);
   const parent = rawParent ? resolveResponsive(rawParent, bp) : null;
   const isRoot = rawParent === null;
@@ -478,7 +480,7 @@ function diffStyle(base: CSSProperties, bp: CSSProperties): string {
 }
 
 /** Render a node (and subtree) to HTML, pushing its base + per-breakpoint rules into `sheet`. */
-function renderNode(node: BoxNode, rawParent: BoxNode | null, theme: SiteTheme, pageMap: Map<string, string>, sheet: Sheet, isPageSection = false, hostSized = false, section = false): string {
+function renderNode(node: BoxNode, rawParent: BoxNode | null, theme: SiteTheme, pageMap: Map<string, string>, sheet: Sheet, isPageSection = false, hostSized = false, section: SectionFlag = false): string {
   const r = resolveResponsive(node, "base");
   if (r.hidden && !node.responsive) return ""; // hidden at base with no per-device un-hide → skip entirely
   const sem = SEM?.byId.get(node.id);
@@ -523,7 +525,7 @@ function renderNode(node: BoxNode, rawParent: BoxNode | null, theme: SiteTheme, 
   }
   // A grid narrows by ITS OWN box too (#111) — the same emitter the canvas injects; "above the phone" is the tablet
   // rung's media query here, so the two-across rule can never widen the phone's single column.
-  const gq = gridQueryCss(`.${cls}`, r, (id) => `.${classFor(id)}`, (css) => `@media (min-width:${RUNG_MIN_EM.tabletPortrait}em){${css}}`);
+  const gq = gridQueryCss(`.${cls}`, r, (id) => `.${classFor(id)}`, (css) => `@media (min-width:${RUNG_MIN_EM.tabletPortrait}em){${css}}`, undefined, isPageSection); // the same "on the page" as `pageBandInset`
   if (gq) sheet.queries.push(gq);
   // A PAGE of a pager always carries an id, because the dots link to it — `pagerSlideId` is the one
   // function that decides what it is, so the link and the target cannot disagree. It also carries the

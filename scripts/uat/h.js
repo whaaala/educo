@@ -127,7 +127,14 @@ const dropBeside = async (page, tile, id, side = 'right') => {
   const r = side === 'right' ? await reach(page, id) : await visibleRect(page, id);
   if (side === 'left' && r.hidden) throw new Error(`the left edge of ${id.slice(-4)} is under the blocks panel`);
   if (r.hidden) throw new Error(`cannot drop beside ${id.slice(-4)}: only ${Math.round(r.w)}×${Math.round(r.h)}px of it is visible`);
-  await dropTile(page, tile, Math.round(side === 'right' ? r.r - 8 : r.l + 8), Math.round(r.t + r.h / 2));
+  // 8px inside the edge is the block's own side space — unless something inside it fills that edge (a page-grid column
+  // keeps no side space of its own, G-1 #8): then the point lands ON the child and the drop goes beside the CHILD. A
+  // person aiming beside the block then drops just outside it, in the gap or the row's edge space.
+  const y = Math.round(r.t + r.h / 2);
+  let x = Math.round(side === 'right' ? r.r - 8 : r.l + 8);
+  const owner = await page.evaluate(([x, y]) => document.elementFromPoint(x, y)?.closest('[data-box-id]')?.getAttribute('data-box-id') ?? null, [x, y]);
+  if (owner !== id) x = Math.round(side === 'right' ? r.r + 4 : r.l - 4);
+  await dropTile(page, tile, x, y);
   await backToFit(page);
 };
 const selected = (page) => page.evaluate(() => document.querySelector('.outline-indigo-500')?.getAttribute('data-box-id') ?? null);

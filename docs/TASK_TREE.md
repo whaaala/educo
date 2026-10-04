@@ -38,6 +38,75 @@ written BEFORE the pass; one HEADED UAT on a fresh production build ticks every 
 only when every line is ticked and every bug it found is fixed and re-checked. Guarded by
 `tests/unit/task-tree-batches.test.ts`. Every item names what it IS in words, never a bare number.
 
+- `[x]` **BATCH G-1 · The page grid in the engine** — CLOSED 2026-10-04 (session 87422eae; HEADED UAT `uat-g1-headed.js`, six
+  windows, 70 screens each — every device of the Preview's menu and both sides of every breakpoint — CLEAN in all six, 0 page
+  errors; gate: typecheck 0 · eslint 0 errors · vitest 4,174 · test:fast 806/806) (area: page grid · 5 changes, OPENED
+  2026-10-04 by the user's "go" — tree AC-37b; plan https://claude.ai/artifact/Q5rAsZNSJJBXrnBTJf9zBN). MEASURED FIRST: the
+  engine already ran sections edge to edge with the side space as section padding, and paragraphs already stop at a
+  readable width (`min(56ch, 32em)`, #86). The fit rule was NOT already done as decided — ledger #12–#16. CHANGES:
+  - `[x]` (1) PAGE-GRID PAGES: `pageGrid` on a new page root (both factories), `onPageGrid` on every spaced block of it
+    (`markPageGrid` at the editor's two commit points); saved pages keep neither
+  - `[x]` (2) THE NEW DEFAULTS (`SPACE_GRID`, same fluid unit): side space 23 (16.1px at 360 → 32.2px wide; was 32) · gap 17
+    (11.9px → 23.8px; was 16) — measured, words 1rem from the edge on a phone. PLUS (#6) a page-grid row of 2+ columns OWNS
+    the side space (`gridBandOwnsGutter`, `pageBandInset`), its columns none at their sides (`SectionFlag` "gridBand")
+  - `[x]` (3) `lib/page-grid.ts`: settings, columns per rung (6 / 12, half on the phone), share ↔ span, whole / half snap,
+    counts that do not divide, the span label
+  - `[x]` (4) `BoxSite.pageGrid` + `BoxPage.grid` + `resolvePageGrid` (one grid per site, a page may opt out)
+  - `[x]` (5) BDD `tests/features/components/website/page-grid.feature`; `tests/unit/page-grid.test.ts` (78, palette
+    enumerated, every guard mutation-proven); `tests/unit/uat-screens.test.ts`; e2e `side-by-side-drop.spec.ts` (#10)
+  HEADED UAT CHECKLIST — every line SEEN (`scripts/uat/logs/g1-uat10.out`, pictures `logs/uat-g1/`):
+  - `[x]` a NEW page built through the palette (header: logo beside the name, three menu links · hero words + photo · three
+    cards · four stats · footer), Preview at all 70 screens: words ≥ 1rem from the edge (16.1px at 360 · 32.2px at 1920+),
+    two blocks side by side one gap apart (15 · 17.2 · 21.5 · 23.8px at 768 · 1024 · 1536 · 1920), no sideways scroll,
+    every line of a row EVEN (cards 3 → 1+1+1; stats 4 → 2+2 → 1+1+1+1; 2+2 on a 360 phone), canvas Mobile 16.1px =
+    Preview 375 16.1px; pictures read at 360 · 412 · 768 · 1024 · 1366 · 1536 · 1920 · 3840: edges on one line, even rows
+  - `[x]` an OLD saved page: side space 22.4px at Mobile (unchanged); its Inspector reads "Default 2rem"
+  - `[x]` a section copied from the saved page and pasted onto a new one: 16.1px; moved within the new page (arrow key): 16.1px
+  - `[x]` the Inspector on a page-grid block reads "Default 1.44rem"; set to 0 → 0px; back to default → 26.22px exactly
+  - `[x]` 150 % and 200 % browser text: every row even at every screen, words ≥ 24 / 32px from the edge, no sideways scroll
+  - `[x]` light · dark · midnight · purple (one window each); RTL: the Preview flipped to dir=rtl at all 70 screens, words
+    ≥ 16px from both edges, no sideways scroll (after #4). The builder has no page-direction setting yet — that is the
+    languages work (RULE AF), not this batch
+  LEDGER G-1 (every line closed):
+  - `[x]` #1 spec clash, Alt for free AND for half-lines — the user agreed Alt = free, Shift = half-lines
+  - `[x]` #2 MY OWN: an edit to `emptyPageRoot` silently did nothing (CRLF) — caught by reading the file back, redone
+  - `[x]` #3 TEST: the UAT measure counted the parked skip link — skipped as the page audit does
+  - `[x]` #4 REAL, pre-existing: a right-to-left page scrolled 16,000px sideways (the skip link parked by `left`) →
+    `inset-inline-start`; guard mutation-proven; RTL clean at all 70 screens
+  - `[x]` #5 TEST: `screens.js` skipped three MacBooks (labels in single quotes) — found by its own guard
+  - `[x]` #6 REAL: sections side by side kept the page's side space on BOTH sides (80px apart at 1536 vs 30px to the edge)
+    → the row owns it; seen fixed in the pictures and measured (one gap)
+  - `[x]` #7 TEST: `uat-screens.test.ts` read a file without normalising line endings (found by `source-reading-tests`)
+  - `[x]` #8 TEST: `dropBeside` aimed 8px inside a column, now ON its child → aims just outside when the point lands inside
+  - `[x]` #9 TEST: the G-1 script dropped the hero's text INTO its stack (beside the heading) → under the heading
+  - `[x]` #10 REAL (caused by #6): a drop in a row's own side space made a NEW ROW below → a row's sides belong to its
+    columns (`computeDrop`); reproduced through the UI (`probe-g1-drop.js`), e2e guard failed on the old build ×3
+  - `[x]` #11 TEST, pre-existing: "the MIDDLE of the opening" demanded > 200px, which a phone canvas never gives → > 100px
+  - `[x]` #12 REAL (decided, not built — I wrongly noted it as done): the phone always stacked → the fit rule on the phone too
+  - `[x]` #13 REAL (decided, not built): 3 cards went 2 + 1 → only EQUAL lines on a page-grid row; tablet's 3-across rule steps aside
+  - `[x]` #14 REAL: words sized at their CEILING (1.6× too wide on a phone) → at the fluid size they have there (fixed point)
+  - `[x]` #15 REAL: a Stat's own padding not counted (3 + 1 at 600px, measured by `probe-g1-stats.js`) → padding and borders down the tree
+  - `[x]` #16 REAL (caused by #6): the query measures the PAGE, the row is two side spaces narrower (2 + 1 at 1440 / 200%) → added
+  - `[x]` #17 TEST: width-round-trip compared rounded widths exactly (497 vs 498 with a fractional side space) → within 1px
+  OBSERVED, NOT A DEFECT (for the user): stacked cards sit ≈ 35px apart on a phone (the section space above and below)
+  against 12px side by side; an Image dropped as a "logo" arrives large (no Logo block yet — L-6 / the catalogue)
+
+- `[ ]` **BATCH R-4 · CSS grid, flexbox and box alignment from MDN, every property — mirrored in the builder** ← NEXT (area:
+  layout research · 3 changes, QUEUED 2026-10-04 by the user mid-G-1: "study everything in its entirety… so a user can
+  position any component, any text, wherever they want on the grid… with the margin and padding"; runs right after G-1
+  closes — one job at a time, RULE RS). The user's links, each read COMPLETELY with every on-topic link inside (RULE R):
+  MDN justify-content · justify-items · CSS grid layout guide (all its guide pages) · the `grid` shorthand · Learn:
+  Flexbox · Flexible box layout: basic concepts (and its guide pages) · the CSS reference index (for the alignment,
+  grid and flexbox modules and their properties). EXTENDS, never redoes: `advanced-css/06` (flexbox) · `07` (grid) ·
+  `08` (Nexter) · `page-grid/01` · R-2's property set. Changes:
+  - `[ ]` (1) READ + STORE: `docs/web-anatomy/css-layout/` — every grid, flexbox and box-alignment property (justify-* /
+    align-* / place-* content · items · self, gap, grid-template-*, grid-auto-*, grid-area / -row / -column, order,
+    flex-*), each with its values, what it does in grid vs flex, an MDN-sourced example, and the traps
+  - `[ ]` (2) THE MAP (RULE MAP): every property × value → does the builder do it today (canvas AND export), which control,
+    or a GAP; working examples per value proven in a browser; combinations with the page grid, margin and padding
+  - `[ ]` (3) THE "ENOUGH" CHECKLIST for the user to sign, and the build batches it implies (RULE UI: a person can place
+    any block anywhere on the grid with these, in plain words, as live previews)
+
 - `[x]` **BATCH S-1 · Spacing — the engine and the inspector** — CLOSED 2026-09-30 (final HEADED UAT on build u8hfywi0, 4 themes, 124 checks each, 0 findings; gate: vitest 3,794 · eslint 0 · test:fast 640) (area: spacing · 6 changes) — tree 1.1.1 → SPACE BY DEFAULT
   - changes: (1) section gutter + section space · (2) header/footer bar 1rem · (3) coloured/bordered box 1.5rem, plain box 0
     · (4) gaps: stack 1rem, columns 1rem (a gutter, S1-a), grid both · (5) inspector shows "Default · size", Back to default, inner
@@ -1927,7 +1996,7 @@ sent), and my research. Nothing on the layout is done until every line here is c
     falls back into the flow unless placed at that rung; the page audit and Page check warn when it covers words;
     shown as drag on the canvas with the half-lines drawn, a Position panel (start / end, column / row, spill above /
     below) and a gallery of ready-made placements (RULE S / UI). Joins AC-10, ST-5, AC-35 — one build
-    - `[>]` AC-37b ← YOU ARE HERE (next leaf: BATCH G-1 · the page grid in the engine — plan APPROVED 2026-10-04 with the user's decisions below; write G-1's full UAT checklist into BATCHES, then its .feature file, then build. Earlier: research R-3 DONE and SIGNED 2026-10-04
+    - `[>]` AC-37b ← YOU ARE HERE (next leaf: BATCH R-4 · the user's MDN grid / flexbox / alignment research (queued by the user mid-G-1, "so then we can discuss"), then G-2. G-1 CLOSED 2026-10-04 (see BATCHES). Plan APPROVED 2026-10-04 with the user's decisions below. Earlier: research R-3 DONE and SIGNED 2026-10-04
       (`ff5c53a`, `4418202`); build to every decision recorded under R-3 below; the mockups settle the open three (row
       snap · the phone gap 11 vs 16 px · panel per site or per page) → the user's approval → build) · **THE PAGE GRID — DECIDED by the user 2026-10-03: done RIGHT AFTER L-4 closes, BEFORE L-5, L-6 and the
       frozen list's placement items** (they are built on it). NAMES (decided): "page grid" in code and docs; the lines a
@@ -1986,7 +2055,7 @@ sent), and my research. Nothing on the layout is done until every line here is c
           (`BoxCanvas.tsx` `startDrag`). Proposed in the plan: Alt = free, Shift = half-lines (Shift unused during resize
           drags). CLOSED 2026-10-04: the user agreed (Alt = free, Shift = half-lines)
         - QUEUED BATCHES (open one at a time after approval; full checklists written into BATCHES when each opens):
-          `[>]` G-1 the page grid in the engine (PageGrid settings · one template emitter, columns EDGE TO EDGE with middle
+          `[x]` G-1 (CLOSED 2026-10-04, see BATCHES) the page grid in the engine (PageGrid settings · one template emitter, columns EDGE TO EDGE with middle
           lines, zero grid gap, side space as section padding ≥ 0.8 rem, block gap ≥ 0.75 rem, readable width, safe area · share↔column maths · fit-based re-split as em container queries · canvas = export ·
           enumerating guards, saved pages byte-identical) · `[ ]` G-2 layout guides + grid panel (switch, Shift G, menu ·
           overlay from the same template · span labels · panel per rung · everything follows in one undo · page override) ·

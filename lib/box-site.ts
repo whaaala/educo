@@ -4,19 +4,22 @@
  * immutable like box-model, so it's testable and undo-safe. Persistence + editing live in the box-demo page.
  */
 
-import { type BoxNode, newBoxId, createContainer, makeRowBand, normalizeRowBands } from "@/lib/box-model";
+import type { PageGridSettings } from "@/lib/page-grid";
+import { type BoxNode, newBoxId, createContainer, makeRowBand, normalizeRowBands, markPageGrid } from "@/lib/box-model";
 
 export interface BoxPage {
   id: string;
   name: string;
   path: string;   // URL slug (unique within the site), e.g. "about" — "" / "home" for the landing page
   root: BoxNode;  // the page's box tree
+  grid?: PageGridSettings; // "This page uses its own grid" (AC-37b) — absent: the site's
 }
 
 export interface BoxSite {
   pages: BoxPage[];
   homeId: string; // which page is the landing page
   themeId?: string; // the WEBSITE's theme (light | dark | midnight | purple) — drives the canvas + content + export
+  pageGrid?: PageGridSettings; // the site's page grid (AC-37b) — read through `resolvePageGrid(site.pageGrid, page.grid)`
 }
 
 /** Slugify a page name into a URL-safe path ("About Us" → "about-us"). */
@@ -32,11 +35,11 @@ export function uniquePath(site: BoxSite, base: string, ignoreId?: string): stri
   for (let i = 2; ; i++) { const s = `${slug}-${i}`; if (!taken.has(s)) return s; }
 }
 
-/** A fresh empty page tree (a page root with one starter section). */
+/** A fresh empty page tree (a page root with one starter section), laid out on the page grid (AC-37b). */
 export function emptyPageRoot(section?: BoxNode): BoxNode {
-  const r = createContainer("column", { layout: "flex", direction: "column", wrap: false, padding: 0, gap: 0, width: "fill", align: "stretch", justify: "start", baseFont: 10 });
+  const r = createContainer("column", { layout: "flex", direction: "column", wrap: false, padding: 0, gap: 0, width: "fill", align: "stretch", justify: "start", baseFont: 10, pageGrid: true });
   r.children = section ? [makeRowBand([section])] : [];
-  return normalizeRowBands(r);
+  return markPageGrid(normalizeRowBands(r));
 }
 
 export function makeBoxPage(name: string, root: BoxNode, path?: string): BoxPage {

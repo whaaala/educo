@@ -360,6 +360,8 @@ export interface BoxNode {
   clip?: boolean;           // allow sizing SMALLER than content (min:0) and hide overflow; default off = hug content
   baseFont?: number;        // page root only: the global base unit in px (default 10); rendered as rem so it scales with the browser font size (WCAG)
   spaced?: boolean;         // made under SPACE BY DEFAULT (2026-09-30): unset spacing reads `spaceDefaults`; saved pages lack it and keep theirs
+  pageGrid?: boolean;       // page root only: laid out on the PAGE GRID (AC-37b, 2026-10-04) — every page made from now; saved pages lack it
+  onPageGrid?: boolean;     // a block of a page-grid page (`markPageGrid`): its unset spacing reads `SPACE_GRID`
   rowBand?: boolean;        // structural ROW band: a direct child of the page root that lays its sections out side-by-side (the page is a vertical stack of these)
   // Does this band run edge to edge, or sit its content on the page's measure? "band" (the default) is what
   // every band did before this existed. "contained" keeps the background full-bleed and insets only the
@@ -3450,8 +3452,8 @@ export function hostsNarrowingGrid(node: BoxNode): boolean {
  * worked out from the screen's columns it appeared anyway, as a cell on a row of its own, and every real cell lost a
  * share of the height to it (116px drawn, 174px published). The export passes nothing and carries none of it.
  */
-export function gridQueryCss(scope: string, node: BoxNode, cellScope: (id: string) => string, aboveThePhone: (css: string) => string, editorOnly: (scope: string) => string = () => ""): string {
-  if (node.rowBand) return rowQueryCss(node, cellScope, aboveThePhone);
+export function gridQueryCss(scope: string, node: BoxNode, cellScope: (id: string) => string, aboveThePhone: (css: string) => string, editorOnly: (scope: string) => string = () => "", onPage = false): string {
+  if (node.rowBand) return rowQueryCss(node, cellScope, aboveThePhone, onPage);
   const n = gridNarrowsAt(node); if (!n) return "";
   const kids = (node.children ?? []).filter((c) => !isFloating(c));
   const at = (track: number) => {
@@ -3474,8 +3476,9 @@ export function gridQueryCss(scope: string, node: BoxNode, cellScope: (id: strin
 /** Every grid's query rules on a page — the canvas's per-tree stylesheet; the export walks its own render. */
 export function treeGridQueryCss(root: BoxNode, scopeFor: (id: string) => string, aboveThePhone: (css: string) => string, editorOnly?: (scope: string) => string): string {
   let out = "";
-  const walk = (n: BoxNode) => { if (n.layout === "grid" || n.rowBand) out += gridQueryCss(scopeFor(n.id), n, scopeFor, aboveThePhone, editorOnly); for (const c of n.children ?? []) walk(c); };
-  walk(root);
+  // `onPage`: a row directly on the page — its query container is the page, and it keeps the page's side space (G-1 #16)
+  const walk = (n: BoxNode, onPage: boolean) => { if (n.layout === "grid" || n.rowBand) out += gridQueryCss(scopeFor(n.id), n, scopeFor, aboveThePhone, editorOnly, onPage); for (const c of n.children ?? []) walk(c, n === root); };
+  walk(root, false);
   return out;
 }
 
@@ -3488,32 +3491,70 @@ export function treeGridQueryCss(root: BoxNode, scopeFor: (id: string) => string
  * stored share, plus the gutters), each stored line is regrouped into `balancedLines` — the tablet's own rule (#78) —
  * one count at a time (4 → 2 + 2, 5 → 3 + 2 → 2 + 2 + 1… as even as they can be). A line that is not words (a table of
  * ticks, c-11c) or a menu line is left alone; on the phone every column stacks as before.
+ *
+ * ON THE PAGE GRID (G-1 #12 / #13, the user's decision 2026-10-04: "the most EQUAL columns whose words still fit — 4 → 2
+ * → 1, never a staircase", on EVERY rung): a page-grid row steps only through counts that divide it evenly (3 → 1, never
+ * 2 + 1), each column's minimum is what it is really held to on screen (its words, or a section's readable floor — so
+ * the step fires BEFORE the browser would wrap the line greedily), and the phone follows the same steps instead of
+ * always stacking: four Stats whose words fit stay two across on a 360 phone.
  */
-export function rowNarrowsAt(band: BoxNode): { ids: string[]; steps: { lines: number[]; below: number }[] }[] | null {
+export function rowNarrowsAt(band: BoxNode, onPage = false): { ids: string[]; steps: { lines: number[]; below: number }[] }[] | null {
   if (!band.rowBand || (band.direction ?? "column") !== "row" || isMenuLine(band)) return null;
+  const gridRow = gridBandOwnsGutter(band);
   const kids = rowColumnsAt(band, "base"); const lines = packRowLines(kids);
   const gap = (bandGutter(band) / 10) * baseUnitParts().hiRem;
   const out: { ids: string[]; steps: { lines: number[]; below: number }[] }[] = [];
   for (let line = 0; line <= (lines.at(-1) ?? -1); line++) {
     const cols = kids.filter((_, i) => lines[i] === line); const n = cols.length;
     if (n < 2 || cols.filter(holdsWords).length < 2) continue;
-    const words = cols.map(longestWordRem); const word = Math.max(...words); if (!word) continue;
+    const floorOf = (k: BoxNode) => { if (!gridRow || !isContainer(k) || k.clip || isEmptyBox(k)) return 0; const f = columnFloorRem(band, k, "base"); return f === HAND_FLOOR_REM ? 0 : f; };
+    const words = cols.map((k) => Math.max(longestWordRem(k), floorOf(k))); const word = Math.max(...words); if (!word) continue;
     const share = (k: BoxNode) => (widthPct(k.width) || 100 / n) / 100;
-    const needs = (k: number) => k * word + (k - 1) * gap;
-    const atStart = Math.max(...cols.map((k, i) => words[i] / share(k))) + (n - 1) * gap;
+    let needs = (k: number) => k * word + (k - 1) * gap;
+    let atStart = Math.max(...cols.map((k, i) => words[i] / share(k))) + (n - 1) * gap;
+    if (gridRow) {
+      /**
+       * G-1 #14 — AT THE SIZE THE WORDS REALLY HAVE THERE. The type is fluid: the unit is `clamp(lo, remHalf + cqwHalf·cqw,
+       * hi)`, so at a line w rem wide it is known exactly, in rem (it follows the reader's text size too). Sized at its
+       * CEILING, "1,000+" read 1.6× wider on a 360 phone than it is drawn, and four Stats that fit two across stacked. The
+       * width where k columns stop fitting is then a fixed point (the words shrink as the line does): solved by iterating
+       * from the ceiling estimate, which only ever comes down. Saved pages keep L-4's ceiling estimate.
+       */
+      const { loRem, hiRem, remHalf, cqwHalf } = baseUnitParts();
+      const unitAt = (w: number) => Math.min(hiRem, Math.max(loRem, remHalf + (cqwHalf * w) / 100));
+      // …PLUS the space around the words (G-1 #15): a Stat's own 16-unit padding each side made its column 26px wider than
+      // "1,000+" at 600px, and four wrapped 3 + 1 before the step fired. Every horizontal padding and border on the way down.
+      const chrome = (n: BoxNode): { u: number; px: number } => {
+        const kids = (n.children ?? []).map(chrome); const deepest = kids.reduce((a, c) => (c.u + c.px / 10 > a.u + a.px / 10 ? c : a), { u: 0, px: 0 });
+        return { u: padSide(n, "Left") + padSide(n, "Right") + deepest.u, px: (n.borderWidth && n.type !== "divider" ? 2 * n.borderWidth : 0) + deepest.px };
+      };
+      const around = cols.map(chrome);
+      const minAt = (i: number, w: number) => Math.max((longestWordRem(cols[i]) / hiRem) * unitAt(w) + (around[i].u / 10) * unitAt(w) + around[i].px / 16, floorOf(cols[i]));
+      const gapAt = (w: number) => (bandGutter(band) / 10) * unitAt(w);
+      // A row ON THE PAGE keeps the page's side space itself (`pageBandInset`), and its query container is the page: every
+      // width below is the PAGE's, so it carries that side space twice (G-1 #16 — three cards wrapped 2 + 1 at 1440 / 200%).
+      const edgeAt = (w: number) => (onPage ? 2 * (spaceFor(band).gutter / 10) * unitAt(w) : 0);
+      const solve = (f: (w: number) => number, from: number) => { let w = from; for (let i = 0; i < 12; i++) w = f(w); return w; };
+      needs = (k: number) => solve((w) => k * Math.max(...cols.map((_, i) => minAt(i, w))) + (k - 1) * gapAt(w) + edgeAt(w), k * word + (k - 1) * gap);
+      atStart = solve((w) => Math.max(...cols.map((k, i) => minAt(i, w) / share(k))) + (n - 1) * gapAt(w) + edgeAt(w), atStart);
+    }
     const steps: { lines: number[]; below: number }[] = [];
+    let wider = n; // the count across the line had before this step
     for (let k = n - 1; k >= 1; k--) {
+      if (gridRow && n % k) continue; // only EQUAL lines on the page grid: 3 → 1, 4 → 2 → 1, 6 → 3 → 2 → 1
       const ls = balancedLines(n, k);
       if (steps.length && steps[steps.length - 1].lines.join() === ls.join()) continue;
-      steps.push({ lines: ls, below: +(k === n - 1 ? atStart : needs(k + 1)).toFixed(4) });
+      // saved pages: exactly as before (`needs(k + 1)`); a page-grid row: from the count it had before this step
+      steps.push({ lines: ls, below: +(k === n - 1 || (gridRow && wider === n) ? atStart : needs(gridRow ? wider : k + 1)).toFixed(4) });
+      wider = k;
     }
     out.push({ ids: cols.map((k) => k.id), steps });
   }
   return out.length ? out : null;
 }
 /** The container-query rules for one row band (see `rowNarrowsAt`), widest first; the phone keeps its own stacking. */
-export function rowQueryCss(band: BoxNode, cellScope: (id: string) => string, aboveThePhone: (css: string) => string): string {
-  const lines = rowNarrowsAt(band); if (!lines) return "";
+export function rowQueryCss(band: BoxNode, cellScope: (id: string) => string, aboveThePhone: (css: string) => string, onPage = false): string {
+  const lines = rowNarrowsAt(band, onPage); if (!lines) return "";
   const gut = gapOf(band).x;
   let css = "";
   for (const { ids, steps } of lines) for (const st of steps) {
@@ -3526,7 +3567,7 @@ export function rowQueryCss(band: BoxNode, cellScope: (id: string) => string, ab
       i += across;
     }
     const q = `@container (max-width:${st.below - 0.01}rem){${rules}}`;
-    css += st.lines.length === ids.length ? q : aboveThePhone(q);
+    css += st.lines.length === ids.length || gridBandOwnsGutter(band) ? q : aboveThePhone(q); // a page-grid row: the phone too (#12)
   }
   return css;
 }
@@ -4602,7 +4643,9 @@ export type TabletPlace = { share: number; across: number; marginsPct: number };
  * that rung, not a row band, a line of three or fewer, or a column whose tablet width the user set themselves).
  */
 export function tabletPlaces(parent: BoxNode, bp: Breakpoint): Map<string, TabletPlace> | null {
-  if (bp !== "tabletPortrait" || !parent.rowBand || (parent.direction ?? "column") !== "row") return null;
+  // A page-grid row is held to the fit rule on every rung instead (`rowNarrowsAt`, G-1 #13): three across at most,
+  // balanced, gave 5 → 3 + 2 here — a staircase the user ruled out.
+  if (bp !== "tabletPortrait" || !parent.rowBand || (parent.direction ?? "column") !== "row" || gridBandOwnsGutter(parent)) return null;
   const kids = rowColumnsAt(parent, bp);
   const lines = packRowLines(kids);
   const out = new Map<string, TabletPlace>();
@@ -4872,6 +4915,35 @@ export function gapCSS(node: BoxNode): CSSProperties {
 // 1rem the same day ("do one rem… and let the user decide to update the gap as they want").
 export const SPACE_DEFAULT = { gutter: 32, section: 16, bar: 16, stack: 16, columns: 16, inner: 24 } as const;
 
+/**
+ * THE PAGE GRID'S DEFAULTS (AC-37b, the user 2026-10-04: "the whole page to design… a default margin… very minimum, not
+ * too much"). The grid runs edge to edge, so the side space is only the sections' own padding: 23 is ≥ 1 rem on a 360
+ * phone (the page audit's floor — words never touch the edge) rising to ≈ 2 rem wide, against 32's 1.4 → 2.8 rem. The
+ * gap between blocks, 17, is ≥ 0.75 rem on a phone (chosen in a headed test of 0.6 / 0.75 / 1 rem: 0.6 left tiles nearly
+ * touching, 1 squeezed the cards) → ≈ 1.5 rem wide. Same fluid unit as everything else, so every geometry stays exact.
+ * Only blocks of a page-grid page (`onPageGrid`) read these; a page saved before keeps `SPACE_DEFAULT`.
+ */
+export const SPACE_GRID = { ...SPACE_DEFAULT, gutter: 23, columns: 17 } as const;
+
+/** The defaults a block reads: the page grid's on a page-grid page, else the ones it was made with. */
+const spaceFor = (node: BoxNode) => (node.onPageGrid ? SPACE_GRID : SPACE_DEFAULT);
+
+/**
+ * Marks every spaced block of a page-grid page as belonging to it (AC-37b) — run where the editor commits a page, so a
+ * block dropped, pasted or moved onto the page takes the page grid's spacing. Returns the SAME tree when nothing changes.
+ */
+export function markPageGrid(root: BoxNode): BoxNode {
+  if (!root.pageGrid) return root;
+  const mark = (n: BoxNode): BoxNode => {
+    const kids = n.children?.map(mark);
+    const changedKids = !!kids && kids.some((k, i) => k !== n.children![i]);
+    const needs = n !== root && n.spaced && !n.onPageGrid;
+    if (!needs && !changedKids) return n;
+    return { ...n, ...(needs ? { onPageGrid: true } : {}), ...(changedKids ? { children: kids } : {}) };
+  };
+  return mark(root);
+}
+
 /** A box someone can SEE the edge of — a background, a picture, a colour scheme or a border. A Divider's `borderWidth`
  *  is its LINE's thickness, not a box edge: read as one, it padded the line 28px in from the words beside it (L3-r). */
 export function hasVisibleEdge(node: BoxNode): boolean {
@@ -4890,26 +4962,29 @@ const BLEEDS = new Set<BoxType>(["image", "video", "embed", "spacer", "divider"]
  * `section` = this block sits directly in a band of the page (a section of the page): it keeps the side gutter
  * and the space above and below. Deeper blocks never do, so a section inside a section is not inset twice.
  */
-export function spaceDefaults(node: BoxNode, section = false): { pad: [number, number, number, number]; gapX: number; gapY: number } {
+export function spaceDefaults(node: BoxNode, section: SectionFlag = false): { pad: [number, number, number, number]; gapX: number; gapY: number } {
   if (!node.spaced) return { pad: [0, 0, 0, 0], gapX: 16, gapY: 16 };
+  const S = spaceFor(node);
   const scaffold = !!node.rowBand;
   const across = node.layout === "grid" || (node.direction ?? "column") === "row";
   // A band's gap across is its columns' gutter (`gutterCSS`), and down is the space between lines once they wrap or
   // stack (the user, 2026-09-30: "1rem down too").
-  const gapX = across ? SPACE_DEFAULT.columns : SPACE_DEFAULT.stack;
-  const gapY = scaffold || node.layout === "grid" ? SPACE_DEFAULT.stack : gapX;
+  const gapX = across ? S.columns : S.stack;
+  const gapY = scaffold || node.layout === "grid" ? S.stack : gapX;
   // A self-painting block's own padding is part of its design (`componentBoxCss` draws only what is set), so its
   // default is 0 — its section space lives OUTSIDE it (`outerDefaults`), and the control never shows space not drawn (S2-a).
   if (scaffold || selfPaints(node)) return { pad: [0, 0, 0, 0], gapX, gapY };
   // A Divider breathes ABOVE and BELOW only: its line stays level with the words beside it (L3-r), and a 1px line is
   // still a box a hand can drop under — with no space it was 3px tall and "cannot drop under" in the headed pass (L3-s).
-  if (node.type === "divider") return { pad: [SPACE_DEFAULT.stack / 2, 0, SPACE_DEFAULT.stack / 2, 0], gapX, gapY };
-  const inner = hasVisibleEdge(node) ? SPACE_DEFAULT.inner : 0;
+  if (node.type === "divider") return { pad: [S.stack / 2, 0, S.stack / 2, 0], gapX, gapY };
+  const inner = hasVisibleEdge(node) ? S.inner : 0;
   if (section && !BLEEDS.has(node.type) && !node.preset) { // a Card or a Quote is spaced OUTSIDE its box (`outerSpaceCSS`)
     // The page's header and footer are BARS, not bands: 1rem above and below keeps a logo and a menu breathing
     // without a tall strip (the user, 2026-09-30). The side gutter is the page's, like any section.
     const bar = node.tag === "header" || node.tag === "footer";
-    const s = Math.max(bar ? SPACE_DEFAULT.bar : SPACE_DEFAULT.section, inner), g = Math.max(SPACE_DEFAULT.gutter, inner);
+    // In a row of the page that OWNS the side space (a page-grid row of 2+ columns, `gridBandOwnsGutter`) a column keeps
+    // none at its sides: neighbours sit one gap apart, the page's edges keep the side space (G-1 #6).
+    const s = Math.max(bar ? S.bar : S.section, inner), g = section === "gridBand" ? inner : Math.max(S.gutter, inner);
     return { pad: [s, g, s, g], gapX, gapY };
   }
   return { pad: [inner, inner, inner, inner], gapX, gapY };
@@ -4932,7 +5007,7 @@ export type SectionPlace = "page" | "band";
  */
 export function outerDefaults(node: BoxNode, place?: SectionPlace | false): [number, number, number, number] {
   if (!place || !node.spaced || !(selfPaints(node) || node.preset)) return [0, 0, 0, 0];
-  const s = SPACE_DEFAULT.section, g = place === "page" ? SPACE_DEFAULT.gutter : 0;
+  const S = spaceFor(node), s = S.section, g = place === "page" ? S.gutter : 0;
   return [s, g, s, g];
 }
 
@@ -4968,10 +5043,12 @@ export function outerSpaceCSS(node: BoxNode, place: SectionPlace | false | undef
 export function pageBandInset(band: BoxNode, onPage: boolean): CSSProperties {
   if (!onPage || !band.rowBand) return {};
   // A menu line on the page is ONE section: the gutter at its ends and the section space above and below (F1-d).
-  if (isMenuLine(band)) return { paddingLeft: u(SPACE_DEFAULT.gutter), paddingRight: u(SPACE_DEFAULT.gutter), paddingTop: u(SPACE_DEFAULT.section), paddingBottom: u(SPACE_DEFAULT.section) };
+  const S = spaceFor(band);
+  if (gridBandOwnsGutter(band)) return { paddingLeft: u(S.gutter), paddingRight: u(S.gutter) };
+  if (isMenuLine(band)) return { paddingLeft: u(S.gutter), paddingRight: u(S.gutter), paddingTop: u(S.section), paddingBottom: u(S.section) };
   const needs = (band.children ?? []).some((c) => c.spaced && (selfPaints(c) || c.preset)
     && c.margin === undefined && c.marginLeft === undefined && c.marginRight === undefined);
-  return needs ? { paddingLeft: u(SPACE_DEFAULT.gutter), paddingRight: u(SPACE_DEFAULT.gutter) } : {};
+  return needs ? { paddingLeft: u(S.gutter), paddingRight: u(S.gutter) } : {};
 }
 
 /**
@@ -4996,7 +5073,7 @@ export function sectionPlaceIn(root: BoxNode, id: string): SectionPlace | undefi
 }
 
 /** One side's inner spacing in stored px, default included — for the geometry that has to agree with `paddingCSS`. */
-export function padSide(node: BoxNode, side: "Top" | "Right" | "Bottom" | "Left", section = false): number {
+export function padSide(node: BoxNode, side: "Top" | "Right" | "Bottom" | "Left", section: SectionFlag = false): number {
   const i = { Top: 0, Right: 1, Bottom: 2, Left: 3 }[side];
   return node[`padding${side}`] ?? node.padding ?? spaceDefaults(node, section).pad[i];
 }
@@ -5008,7 +5085,7 @@ export function gapOf(node: BoxNode): { x: number; y: number } {
 }
 
 /** Per-side padding CSS (responsive rem): a side override falls back to the general `padding`, then the default. */
-export function paddingCSS(node: BoxNode, section = false): CSSProperties {
+export function paddingCSS(node: BoxNode, section: SectionFlag = false): CSSProperties {
   const [t, r, b, l] = spaceDefaults(node, section).pad;
   const p = node.padding;
   return {
@@ -5025,7 +5102,7 @@ export function paddingCSS(node: BoxNode, section = false): CSSProperties {
  * A self-painting block (button, component) keeps its padding on its own element: its padding is part of its
  * design. Its section space is OUTSIDE the painted box — see `outerSpaceCSS`.
  */
-export function leafPaddingCSS(node: BoxNode, section = false): CSSProperties {
+export function leafPaddingCSS(node: BoxNode, section: SectionFlag = false): CSSProperties {
   if (isContainer(node)) return {};
   if (selfPaints(node)) return {};
   const s = paddingCSS(node, section);
@@ -5037,17 +5114,31 @@ export function leafPaddingCSS(node: BoxNode, section = false): CSSProperties {
  * A block in a band of the page, or a block sitting straight on the page. Never the band itself (scaffolding),
  * and never anything deeper, so a section inside a section is not inset twice.
  */
-export function isSectionContentIn(root: BoxNode, id: string): boolean {
+export function isSectionContentIn(root: BoxNode, id: string): SectionFlag {
   const p = findParent(root, id);
   if (!p) return false;
   const node = p.parent.children![p.index];
   return sectionContent(node, p.parent.id === root.id, !!p.parent.rowBand && (root.children ?? []).some((c) => c.id === p.parent.id), p.parent);
 }
 
-export function sectionContent(child: BoxNode, parentIsPage: boolean, parentIsPageBand: boolean, band?: BoxNode): boolean {
+/**
+ * Is a block a SECTION of the page — and, on the page grid, a column of a row that owns the side space (G-1 #6)?
+ * Truthy either way, so every "is it a section" check is unchanged; only the side space reads the difference.
+ */
+export type SectionFlag = boolean | "gridBand";
+
+/** A row of a page-grid page with 2+ columns keeps the page's side space at its OUTER edges (`pageBandInset`), so its
+ *  columns sit one gap apart instead of two side spaces and a gap — 80px apart against 30px to the edge, seen at 1536
+ *  in the HEADED UAT. It stays when the columns stack, because it is the row's, not the columns'. */
+export function gridBandOwnsGutter(band: BoxNode): boolean {
+  return !!band.onPageGrid && !!band.rowBand && bandGutter(band) > 0;
+}
+
+export function sectionContent(child: BoxNode, parentIsPage: boolean, parentIsPageBand: boolean, band?: BoxNode): SectionFlag {
   // A link of a MENU LINE is an item of that line, not a section of its own (F1-d): each one took the 2rem gutter as its own
   // padding, so four links on the page could not share a phone's line. The line carries the section space once (`pageBandInset`).
   if (parentIsPageBand && band && isMenuLine(band)) return false;
+  if (parentIsPageBand && band && gridBandOwnsGutter(band)) return "gridBand";
   return parentIsPageBand || (parentIsPage && !child.rowBand);
 }
 
@@ -5193,13 +5284,13 @@ function listLinesGap(node: BoxNode): CSSProperties | null {
   return items.length > 1 && items.every(isMenuItem) ? { rowGap: LINK_GAP_DOWN } : null;
 }
 
-export function containerStyle(node: BoxNode, bp: Breakpoint = "base", section = false): CSSProperties {
+export function containerStyle(node: BoxNode, bp: Breakpoint = "base", section: SectionFlag = false): CSSProperties {
   const scheme = node.bgImage ? null : bandScheme(node.background);
   const s = containerStyleOf(node, bp, section);
   const lines = listLinesGap(node);
   return { ...s, ...(lines ?? {}), ...((scheme?.vars ?? {}) as CSSProperties) };
 }
-function containerStyleOf(node: BoxNode, bp: Breakpoint = "base", section = false): CSSProperties {
+function containerStyleOf(node: BoxNode, bp: Breakpoint = "base", section: SectionFlag = false): CSSProperties {
   // Computed in px (measurements are px) but EMITTED in rem, per the field guide: a stored size must never
   // reach the page as a pixel value, or a reader who has raised their base font gets a box that ignores them.
   const minHpx = Math.max(node.minHeight ?? 0, floatingReserve(node, bp)) || undefined;
@@ -5682,7 +5773,8 @@ export function childStyle(child: BoxNode, parent: BoxNode, bp: Breakpoint = "ba
   // Badge a 14rem pill round "New", and on a phone a pill across the whole line with a Rating's stars spread over it.
   if (parent.rowBand && isRow && !child.clip && !isEmptyBox(child) && isContainer(child) && !(child.preset && HUGS_BY_NATURE.has(child.preset))) {
     const floor = columnFloorRem(parent, child, bp);
-    s.minWidth = bp === "phone" ? "100%" : floor === HAND_FLOOR_REM ? "min-content" : `min(100%, ${floor}rem)`;
+    // On a phone every column takes the line — except on the page grid, where the fit rule decides there too (G-1 #12)
+    s.minWidth = bp === "phone" && !gridBandOwnsGutter(parent) ? "100%" : floor === HAND_FLOOR_REM ? "min-content" : `min(100%, ${floor}rem)`;
   }
   // On a tablet held upright that line is rearranged, at most three across and balanced (#78, `tabletPlaces`).
   const place = isRow ? tabletPlaces(parent, bp)?.get(child.id) : undefined;
