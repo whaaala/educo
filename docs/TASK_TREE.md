@@ -1927,10 +1927,9 @@ sent), and my research. Nothing on the layout is done until every line here is c
     falls back into the flow unless placed at that rung; the page audit and Page check warn when it covers words;
     shown as drag on the canvas with the half-lines drawn, a Position panel (start / end, column / row, spill above /
     below) and a gallery of ready-made placements (RULE S / UI). Joins AC-10, ST-5, AC-35 — one build
-    - `[>]` AC-37b ← YOU ARE HERE (next leaf: RESEARCH (RULE RS — the user's sources + mine: Nexter `08-nexter.md`, Webflow /
-      Framer / Wix Studio page grids, Figma layout grids, subgrid AC-36) → the "enough" checklist signed → a plan artifact
-      with mockups (page grid · layout guides · purpose-based Line up / Grid AC-37c · placement + bleed AC-37 / AC-37a) →
-      the user's approval → build) · **THE PAGE GRID — DECIDED by the user 2026-10-03: done RIGHT AFTER L-4 closes, BEFORE L-5, L-6 and the
+    - `[>]` AC-37b ← YOU ARE HERE (next leaf: THE PLAN ARTIFACT WITH MOCKUPS — research R-3 DONE and SIGNED 2026-10-04
+      (`ff5c53a`, `4418202`); build to every decision recorded under R-3 below; the mockups settle the open three (row
+      snap · the phone gap 11 vs 16 px · panel per site or per page) → the user's approval → build) · **THE PAGE GRID — DECIDED by the user 2026-10-03: done RIGHT AFTER L-4 closes, BEFORE L-5, L-6 and the
       frozen list's placement items** (they are built on it). NAMES (decided): "page grid" in code and docs; the lines a
       user sees while placing are "layout guides" (shown while placing / dragging, a toggle keeps them on); the block
       stays "Grid" and is MAPPED onto the page grid by the builder (3 across = each cell spans 4 of 12; a count twelve
@@ -2020,7 +2019,8 @@ sent), and my research. Nothing on the layout is done until every line here is c
             the Position panel; no quarters · (Q5) phone order = PAGE ORDER, one switch per split "On phones: picture first";
             zig-zags by placement, not reordering · (Q4, mine — technical) every band re-declares the page template from
             the one emitter; only a nested container on page lines uses `subgrid`, its own equal columns as the fallback
-          - `[ ]` **THE "ENOUGH" CHECKLIST — FOR THE USER TO SIGN** (RULE RS / RULE MAP; detail in `page-grid/01`–`06`):
+          - `[x]` **THE "ENOUGH" CHECKLIST — SIGNED BY THE USER 2026-10-04 ("I'm happy with the plan. Let's proceed.")**
+            (RULE RS / RULE MAP; detail in `page-grid/01`–`06`). NEXT: the plan artifact with mockups → approval → build:
             - `[x]` MAP: 24 axes, every value with its CSS, who uses it, CORE / LATER / AVOID (`04-map.md`)
             - `[x]` THE USER'S SOURCES read completely: the Awwwards link (35 records, its siblings, related items one level
               down, every live site at 4 widths, 260 + 232 pictures) and the Dribbble search (all 42 shots, 228 images +
@@ -2696,6 +2696,46 @@ sent), and my research. Nothing on the layout is done until every line here is c
 
 One entry per session, newest first. Written the moment the user says "new session" (or the context is about to run
 out) — where the session STARTED FROM, where it GOT TO, and where the next one CONTINUES FROM.
+
+### 2026-10-03 → 04 · session e9d19b5c · branch `builder/layout-uat` — HANDOVER (the user asked "new session or continue?"; recommended: the context is genuinely long — the whole R-3 research area, hundreds of steps and >1,000 pictures read through agents — and the boundary is clean: research signed and committed, the plan with mockups next)
+- **Started from:** session a51af34e's handover — AC-37b, a new area: ask for sources, research, sign, plan.
+- **Got to:** **R-3 PAGE-GRID RESEARCH DONE AND SIGNED** by the user 2026-10-04 (`ff5c53a`, `4418202`). Sources:
+  the user's Awwwards 12-column item + Dribbble search (all 35 / 42 items, every live site at 4 widths) · mine (builders,
+  design systems, MDN) · the crawl (23,728 desktop rows; 300 pages re-measured at 768 / 375). `docs/web-anatomy/page-grid/`
+  01–06 + the map `04-map.md` (24 axes). Examples proven in six headed windows: `examples/index.html` 972 / 972 ·
+  `examples/combos.html` 261 / 261 (random counts × rows × widths × text). Runners: `scripts/research/grid-measure.js`,
+  `grid-splits.js`, `grid-rungs.js`, `skeleton.js --widths`, `page-grid-examples.js`, `page-grid-combos.js`. LEDGER #1–#35 all
+  closed (capture script, examples, checkers — none in the builder). **THE USER'S DECISIONS (all under R-3 in AC-37b):**
+  6 columns on the phone · 12 from 600 px · FIT-BASED re-split on every rung (fewest equal columns whose words fit; never a
+  staircase) · half-steps in the model, whole-column snap by default · page order + "picture first" switch · ZERO grid gap
+  (blocks keep half the builder's spacing each side — `SPACE_DEFAULT` in `u()`) · the grid covers the whole width (margin |
+  columns | margin, columns stop at ≈ 1280) and the whole page height · INVISIBLE in the editor, a "Layout guides" switch OFF
+  by default, guides drawn FAINT (Chrome-overlay style) · an ADVANCED PANEL (columns, row step, gutter, margin) that every
+  block follows automatically per rung (placements stored as SHARES) · BEST OF BOTH WORLDS: snap by default, FREE placement
+  as today with Alt or a per-block switch, old pages untouched (+ optional "Line up with the grid"), the engine EXTENDED not
+  replaced. The content minimum survives enlarged text via build-time `em` container queries (#24).
+- **Continue from:** **AC-37b (YOU ARE HERE) → the plan artifact with mockups** (rule 13: plan → approval → build).
+- **Next prompt (paste to start):** "Branch `builder/layout-uat` (last commit: this handover). Read CLAUDE.md, then
+  `docs/TASK_TREE.md`: this SESSION LOG entry, then YOU ARE HERE — **AC-37b · the page grid**, and every line under its
+  **R-3** leaf (the user's decisions are there — build to them, do not re-ask). Research is DONE and SIGNED: read
+  `docs/web-anatomy/page-grid/04-map.md` (the map, CORE / LATER / AVOID) and skim 05 / 06; open
+  `docs/web-anatomy/page-grid/examples/index.html` and `combos.html` (press G for the guides) — they are the working reference.
+  DO, IN ORDER: (1) RULE K — nothing running on 3100 / 3200 / 3400; (2) the PLAN ARTIFACT (load the artifact-design guidance via
+  the Artifact quickstart, intent "other"): what the page grid is in plain words; how it sits on today's engine (`lib/box-model.ts`
+  shares, `gutterCSS`, `SPACE_DEFAULT`, `u()`, the ladder, L-4's `gridNarrowsAt` / `rowQueryCss`) — extended, not replaced;
+  MOCKUPS of a school page (hero · news cards · staff · stats · gallery · footer) at phone / tablet / desktop with the guides
+  OFF and ON; the "Layout guides" switch; the advanced panel; free placement (Alt / switch); "Line up with the grid"; the Grid
+  block mapped onto the page grid (3 across = 4 of 12; 5 across own columns); purpose picks (AC-37c); bleed / straddle /
+  half-step (AC-37, AC-37a — the canvas interaction WITHOUT visible lines unless the switch is on); the THREE OPEN CHOICES shown
+  side by side for the user to pick (row snap on / off · phone gap 11 vs 16 px · panel per site vs per page); the build in
+  batches (≤ 6 changes each, RULE X) with their UAT checklists; RULE UI (every control in the builder), RULE L (story), RULE AF
+  (360 px, weight); (3) publish it, get the user's APPROVAL; (4) only then build, batch by batch. NOT DONE: the published
+  artifacts (Builder Hub, Layout System, Parity Audit) — before the PR. QUEUED after the page grid: L-5 · L-6 · E-1 · S-3 ·
+  D-1 · the rest of 1.1.5 → PR → builder/layout-2 → Tasks 2–4 → re-sweep + story. TRAPS: a 'killed' notice is not proof —
+  check the port · two CSS line-name groups may never touch (`[ce] [content-end]` silently drops the whole template — ledger
+  #21) · heredocs / `node -e` eat backslashes → the Edit tool · vitest and Playwright never together · read the pictures, not
+  only the numbers (#28's staircase was seen only in a picture) · a research run must never click a bare 'x' (Dribbble's X
+  link — #19)."
 
 ### 2026-10-03 · session a51af34e · branch `builder/layout-uat` — HANDOVER (the user asked "new session or continue?"; recommended: the context is genuinely long — all of L-4 with four headed passes, two sweep re-runs, the gate and a dozen design decisions — and the boundary is clean: L-4 committed and closed, a heavy research job next)
 - **Started from:** session 35640e85's handover — BATCH L-4 (c-8 · c-21 · grid picker).
