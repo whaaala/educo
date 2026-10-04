@@ -1927,7 +1927,7 @@ sent), and my research. Nothing on the layout is done until every line here is c
     falls back into the flow unless placed at that rung; the page audit and Page check warn when it covers words;
     shown as drag on the canvas with the half-lines drawn, a Position panel (start / end, column / row, spill above /
     below) and a gallery of ready-made placements (RULE S / UI). Joins AC-10, ST-5, AC-35 — one build
-    - `[>]` AC-37b ← YOU ARE HERE (next leaf: THE PLAN ARTIFACT WITH MOCKUPS — research R-3 DONE and SIGNED 2026-10-04
+    - `[>]` AC-37b ← YOU ARE HERE (next leaf: BATCH G-1 · the page grid in the engine — plan APPROVED 2026-10-04 with the user's decisions below; write G-1's full UAT checklist into BATCHES, then its .feature file, then build. Earlier: research R-3 DONE and SIGNED 2026-10-04
       (`ff5c53a`, `4418202`); build to every decision recorded under R-3 below; the mockups settle the open three (row
       snap · the phone gap 11 vs 16 px · panel per site or per page) → the user's approval → build) · **THE PAGE GRID — DECIDED by the user 2026-10-03: done RIGHT AFTER L-4 closes, BEFORE L-5, L-6 and the
       frozen list's placement items** (they are built on it). NAMES (decided): "page grid" in code and docs; the lines a
@@ -1952,7 +1952,27 @@ sent), and my research. Nothing on the layout is done until every line here is c
       the model's word estimate (c-8's `longestWordRem`), saved pages keep their rows / stacks (a mode, never a
       migration). NEXT: research (Nexter + Webflow / Framer / Wix Studio page grids, RULE RS) → plan artifact with mockups
       → the user's approval → built WITH AC-37 (one build). Not part of L-4
-      - `[?]` PLAN ARTIFACT WITH MOCKUPS — PUBLISHED 2026-10-04 (session 87422eae), WAITING ON THE USER'S APPROVAL:
+      - `[x]` **THE USER'S DECISIONS ON THE PLAN, 2026-10-04 (session 87422eae) — APPROVED ("1, yes please")**:
+        (1) plan approved, and the page grid runs **EDGE TO EDGE** (the user: "a user should be able to use the whole page…
+        the margin at the right and the left should not be there unless the user wants it… use margin or padding to make
+        space") — SUPERSEDES "margin | columns | margin, columns stop at ≈ 1280": the template is just the columns; the side
+        space is SECTION PADDING (default ≥ 0.8 rem, fluid, overridable to 0, each side alone); a block can be dragged to
+        the far left / right; bleed = start on the first line / end on the last line over the padding; guides draw the
+        padding AS padding, not as a no-go margin · (2) row snap OFF, rows follow the content; and **EVERY block, component
+        and item keeps a DEFAULT MARGIN AND PADDING** so nothing sits flush against a neighbour ("we did talk about that…
+        the very minimum, just remember that" — CLAUDE.md rule 3, space by default) · (3) the phone gap floor, the user
+        asked me to TEST 1 rem vs smaller and decide: MEASURED on a 360 px phone, 3 gaps × 3 side spaces, at 100% and
+        150% text (headed, screenshots read): 0.6 rem = stat tiles nearly touch, 1 rem = cards squeezed, **0.75 rem
+        chosen**; side 0.6 + gap 0.75 put words 0.97 rem from the edge (under the audit's 1 rem floor), **side 0.8 rem
+        chosen** → words 1.18 rem from the edge; for page-grid blocks only, saved pages keep their spacing · (4) ONE grid
+        per SITE, a page may opt out · (5) Alt = free placement, Shift = half-lines, and a **MUST: free placement never
+        breaks the page** — a free block keeps its default margin and padding, never overlaps or pushes the page sideways
+        (the partner gives what it takes, rule 19; the row wraps, never squeezes), follows every rung by the same fit
+        rule, and switching back to snap keeps everything else the person set (Undo returns the free width); the page
+        check warns on what still looks wrong · (6) readable width ON by default for text (≈ 75 characters), with the
+        small default side space above · (7) **EVERYTHING above at every breakpoint, every screen size and device preset,
+        in every module, under every rule** (rules 16 / 18, RULE AF, Z, Q, WCAG). Plan v2 republished with all of it
+      - `[x]` PLAN ARTIFACT WITH MOCKUPS — v1 PUBLISHED 2026-10-04 (session 87422eae), v2 APPROVED the same day:
         https://claude.ai/artifact/Q5rAsZNSJJBXrnBTJf9zBN (source: `docs/web-anatomy/page-grid/plan/page-grid-plan.html`;
         republish it to the same URL). Holds: the plain-words story · the decisions it builds to · a live school page (hero with
         half-bleed, news 4/12, stats 3/12 kept 2 across on phones, staff, bento gallery, straddling admissions card,
@@ -1961,13 +1981,13 @@ sent), and my research. Nothing on the layout is done until every line here is c
         Alt free + keyboard · "Line up with the grid" · the Grid block on page lines · purpose picks · bleed / straddle /
         half-step · the THREE OPEN CHOICES with recommendations (row snap A = off · phone gap B = 16 px floor for page-grid
         blocks only · panel A = per site, page may opt out) · the engine table (extended, not replaced) · six batches.
-        - LEDGER (this session): #1 `[?]` SPEC CLASH, not code — the map's Q3 put half-lines on Alt; the user's "best of
+        - LEDGER (this session): #1 `[x]` SPEC CLASH, not code — the map's Q3 put half-lines on Alt; the user's "best of
           both worlds" put FREE placement on Alt, and today's canvas already lifts a block free on Alt+drag
           (`BoxCanvas.tsx` `startDrag`). Proposed in the plan: Alt = free, Shift = half-lines (Shift unused during resize
-          drags). Closes on the user's answer
+          drags). CLOSED 2026-10-04: the user agreed (Alt = free, Shift = half-lines)
         - QUEUED BATCHES (open one at a time after approval; full checklists written into BATCHES when each opens):
-          `[ ]` G-1 the page grid in the engine (PageGrid settings · one template emitter with full/content/middle lines,
-          zero gap, safe area · share↔column maths · fit-based re-split as em container queries · canvas = export ·
+          `[>]` G-1 the page grid in the engine (PageGrid settings · one template emitter, columns EDGE TO EDGE with middle
+          lines, zero grid gap, side space as section padding ≥ 0.8 rem, block gap ≥ 0.75 rem, readable width, safe area · share↔column maths · fit-based re-split as em container queries · canvas = export ·
           enumerating guards, saved pages byte-identical) · `[ ]` G-2 layout guides + grid panel (switch, Shift G, menu ·
           overlay from the same template · span labels · panel per rung · everything follows in one undo · page override) ·
           `[ ]` G-3 placing (column snap, edge-anchored · Shift half-lines · Alt / per-block free · Position panel start /
