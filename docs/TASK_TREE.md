@@ -1953,6 +1953,175 @@ sent), and my research. Nothing on the layout is done until every line here is c
       the model's word estimate (c-8's `longestWordRem`), saved pages keep their rows / stacks (a mode, never a
       migration). NEXT: research (Nexter + Webflow / Framer / Wix Studio page grids, RULE RS) → plan artifact with mockups
       → the user's approval → built WITH AC-37 (one build). Not part of L-4
+      - `[>]` R-3 · PAGE GRID RESEARCH (RULE RS + RULE MAP), session e9d19b5c, 2026-10-03. Runner:
+        `scripts/research/grid-measure.js` (six headed windows; each item opened, its live site followed and measured at
+        1440 · 1024 · 768 · 375: CSS grids, subgrid, named lines, framework column classes, gutter, full-bleed, and how
+        many visible left edges sit on a 12-column half-step). Raw: `C:\Users\eyite\educo-research\grid\` (outside git)
+        - `[>]` THE USER'S SOURCES — completeness list (RULE R: nothing in a link is left out)
+          - `[>]` (1) awwwards.com/inspiration/grow-section-12-column-layout-thirdweb-studio-1 — the item (a11.studio,
+            thirdweb.studio; tags grow · benefits · bootstrap · layout · 12column), its 3 sibling items (projects layout,
+            navbar menu, about us) and 7 related items (punchline bento grid, Street Art News magazine, Arthur Simonini
+            typography, dobrynow layout, timbrack one-page scroll, PP Fragment characters, saintlouvent portfolio) — all
+            11 queued, each followed to its live site; their own on-topic related items followed one level (--follow).
+            Read by hand first: the grow section is Bootstrap 5 + flex, NOT a CSS grid — three equal columns (4 of 12
+            each: tabs · photo · words, 393 px of a 1194 px content box inside an 8vw gutter); the heading does NOT sit on
+            the same left edge (67 px vs 115 px); on a phone (375) it stacks, the PHOTO IS HIDDEN, gutter 8vw = 30 px;
+            a decorative SVG of square modules sits above it
+          - `[>]` (2) dribbble.com/search/12-column-grid — 42 shots load signed-out (the listing stops there); all 42
+            queued, each opened: description, tags, images, any link in the description followed
+          - PASS 2 (`r3-v2.json`, 454 pictures): 80 items — the user's 53 + 27 on-topic related items one level down.
+            Dribbble showed "Human Verification" after ~20 shots → stepped back (never bypassed), the other 21 re-run in
+            ONE window paced 20 s. Not measurable, MEASURED: `frame-opti` (Awwwards' own link is `https://frame-opti`),
+            `carltonvilla.com` (domain gone — Google DNS cannot find it). Reading: `02-awwwards-items.md`,
+            `03-dribbble-shots.md` (agents read every picture). Mine: `01-builders-and-systems.md` (15 axes) done
+          - LEDGER R-3 (all in `grid-measure.js`, the research runner — none in the builder):
+            #1 `[x]` no live site when an Awwwards item has no "Visit" label → web-address link + its /sites/ page ·
+            #2 `[x]` an item measured twice by two windows → marked seen when taken · #3 `[x]` Dribbble designs cut off /
+            not loaded → every image captured whole · #4 `[x]` cookie banner over the captures → answered (button, link
+            or text; re-opened once) · #5 `[x]` own-scroller sites measured on one screen → wheel, 8 screens each ·
+            #6 `[x]` --follow chained without end → one level · #7 `[x]` a shot's own `colors.aco` download followed as a
+            related shot → only OTHER items · #8 `[x]` a site that navigates itself → one retry · #9 `[x]` a related
+            item's video filmed as the item → the top carousel `.gallery-element__media` only · #10 `[x]` media lost when
+            the live link is on the /sites/ page → captured first · #11 `[x]` Dribbble "Human Verification" → detected,
+            host stepped back; the 21 re-run in one window paced 20 s: 41 of 42 captured, 0 challenges ·
+            #12 `[x]` live captures missed scroll-revealed sections (Thirdweb projects black), a loader (Grégory Lallé — a
+            clear fixed layer over a white panel fading at ≈12 s; re-opened twice), pop-ups (Street Art News "Consent")
+            and stopped at 7000 px → screen-by-screen shots as a visitor scrolls, a loader wait over every fixed layer,
+            consent / close buttons; each fix seen in the picture · #13 `[x]` 404 pages measured as the site (Saint
+            Louvent ×2, Igor Sokoltsov) → status + title checked, recorded `deadPage` · #14 `[>]` Dribbble images caught
+            mid-transition (5 blank / faded) → the image FILE downloaded · #15 `[x]` the first download fix stopped every
+            shot at 1 image (228 → 43) — part one: a srcset holds commas inside its URLs, the parser built a 404 → the
+            image's own address + `?resize=1600x1200` · #16 `[x]` ECC's newsletter pop-up in a HubSpot iframe → every frame
+            searched, Escape last; seen gone in the picture · #17 `[x]` long pages cut at 12 screens (Aqua Dev footer, Street
+            Art News lower grids) → 45 (30 still cut Street Art News' phone at 38) · #18 `[x]` a parked / redirected domain
+            measured as the site (Ceram → parking host, AliExpress at 375) → host checked at every width + parking text ·
+            #19 `[x]` THE REAL CAUSE OF #15: the pop-up closer's bare "x" clicked Dribbble's X (Twitter) link and LEFT the
+            shot after its first image → no bare "x", close controls only inside an open dialog, a click that leaves the
+            page is undone; Norway shot 6 of 6 images. #14 closes when the final paced pass matches pass 2's counts
+          - The "Across all 35 records" summary in 02 corrected after the v3 re-read (Punchline's bento a real 12, Street Art
+            News' rail drops under rather than hides, Thirdweb no Bootstrap columns, Klimov a % frame, Ceram parked)
+          - Reading (agents, every picture opened): `02-awwwards-items.md` — all 35 Awwwards records, groups 0–4, 232 images;
+            `03-dribbble-shots.md` — 21 shots, 102 images. Final capture pass v3 (`r3-v3-aw.json`, `r3-v3-dr.json`) running:
+            then the 21 later Dribbble shots + the Awwwards records whose live captures were blind (#12) are read again
+        - `[ ]` MY SOURCES — Nexter (`08-nexter.md`, extend only) · `07-grid.md` · MDN grid / subgrid / named lines ·
+          Webflow · Framer · Wix Studio page grids · Figma layout grids · Material 4/8/12 · Bootstrap · GOV.UK · the
+          design deck's responsive part · the real-site crawl (`docs/layout-benchmark/`): how many real pages align
+          to one page-wide column grid
+        - `[x]` MINE (part): `01-builders-and-systems.md` (Webflow · Framer · Wix Studio · Figma · Material · Bootstrap ·
+          GOV.UK · MDN, 15 axes) · `05-crawl-splits.md` + `scripts/research/grid-splits.js` (23,728 rows of the 4,250-page
+          crawl: 66% land on whole 12ths, 38% on 8, 36% on 4; 32 splits = 80%; 6+6 · 4+4+4 · 5+7 · 4+8 · 3+3+3+3 · 3+9 ≈ 57%)
+        - `[>]` THE MAP — `04-map.md`: 24 axes (A1–A15 + A16 stagger · A17 empty cells · A18 layers · A19 sticky cells ·
+          A20 published grid lines · A21 outer-margin content · A22 phone strategy · A23 sideways strips · A24 interaction,
+          out of scope), every value with its CSS, who uses it, CORE / LATER / AVOID; gaps G1–G11; the enough-checklist draft
+          - **THE USER'S DECISIONS, 2026-10-03 (from the evidence):** (Q1) columns **6 on the phone · 12 from 600 px** — NOT
+            4 / 8 / 12 (no site or design uses 4 / 8; on 8 only 3 of the 6 core splits stay exact) · (Q2) the phone STACKS,
+            except by PURPOSE — Stats, Logos, Gallery, Table keep 2–3 across, an option on any grid, the 360 px word minimum
+            always wins · (Q3) half-steps IN THE MODEL, snapping to WHOLE columns by default; half-lines with a modifier key or
+            the Position panel; no quarters · (Q5) phone order = PAGE ORDER, one switch per split "On phones: picture first";
+            zig-zags by placement, not reordering · (Q4, mine — technical) every band re-declares the page template from
+            the one emitter; only a nested container on page lines uses `subgrid`, its own equal columns as the fallback
+          - `[ ]` **THE "ENOUGH" CHECKLIST — FOR THE USER TO SIGN** (RULE RS / RULE MAP; detail in `page-grid/01`–`06`):
+            - `[x]` MAP: 24 axes, every value with its CSS, who uses it, CORE / LATER / AVOID (`04-map.md`)
+            - `[x]` THE USER'S SOURCES read completely: the Awwwards link (35 records, its siblings, related items one level
+              down, every live site at 4 widths, 260 + 232 pictures) and the Dribbble search (all 42 shots, 228 images +
+              1 video; the listing serves 42 signed-out) — `02`, `03`
+            - `[x]` MINE: Webflow · Framer · Wix Studio · Figma · Material · Bootstrap · GOV.UK · MDN (`01`); the crawl's
+              23,728 desktop rows (`05`) and 300 pages at tablet + phone (`06`)
+            - `[x]` SATURATION, measured: 0 new axes in the last ≈ 55 items; 0 new values in the last 15; the tablet / phone
+              shares moved ≤ 5 points from 200 to 300 pages
+            - `[x]` AN EXAMPLE PER CORE VALUE, proven in a browser: `examples/index.html` 972 / 972 (10 widths × 100 / 150 /
+              200 % text), twice clean
+            - `[x]` THE COMBINATIONS: `examples/combos.html` — random column counts 6–24 × phone counts × row steps × widths ×
+              text: 261 / 261; the cross-axis cases (bleed + split + content minimum + re-split + subgrid + RTL) in one page
+            - `[x]` THE USER'S DECISIONS: 6 / 12 columns · fit-based re-split on every rung · half-steps in the model, whole
+              by default · page order + "picture first" · zero grid gap (blocks space themselves, builder spacing) · margins
+              + columns cover the whole width, rows the whole height · invisible in the editor, a "Layout guides" switch
+              OFF by default · an advanced panel (columns, row step, gutter, margin), everything following automatically
+            - `[ ]` NOT COVERED — open for the plan mockups, not research: the ROW STEP (snap or not; 1.5rem proposed) · the
+              phone gap (11 px builder vs 16 px norm) · per SITE or per PAGE for the panel, and its ranges
+            - `[ ]` NOT COVERED — real-world, left for the build's UAT (RULE AF): a low-cost Android WebView (subgrid needs
+              Chrome 117+; the fallback is the block's own equal columns — proven in the examples), a screen reader on the
+              re-ordered phone ("picture first"), 360 px at Slow 3G
+            - `[ ]` NOT COVERED — people: pilot-school feedback (RULE RK), none yet; the crawl's school pages are inside 05 / 06
+              but not studied apart
+          - `[x]` the stop rule (proposed: the 21 unread Dribbble shots + G9 / G10, ≥ 30 items in a row adding no new axis
+            and no new CORE value) — MET: the 21 shots added 0 axes and 0 CORE values (≈ 55 items in a row); G10 answered
+            by `06-rungs.md`; G9 (alignment across sections) answered by the live sites in `02` (9 of 26 run one grid
+            through the page) — the 21 shots being read (full-resolution capture v3, 228 / 228 images) ·
+            `[x]` step 2 an example per CORE value: `page-grid/examples/index.html` (6 / 12 columns with a middle line in each,
+            margins as named tracks, the 6 one-click splits, offset + empty column, inset 8, a half-step, the words-decide
+            span, 5 across, logos, full / block / half bleed, straddle, inset hero, subgrid, sticky cell, stats keep 3,
+            hide on phone, page order / picture first, bento, orphans keep span, RTL, layout guides with ROW LINES every
+            1.5rem). Proven by `scripts/research/page-grid-examples.js`: **972 / 972 checks, 10 widths × 100 / 150 / 200 %
+            text, six headed windows**, pictures read (12 even columns at 1280, 6 at 375, half-bleed to column 6)
+          - FINDING (#24): the content minimum must survive the reader's text size, so the EXPORT writes, per row, an
+            `em` container query measured from the words at build time ("below N em → 2 across → stacked") — no script on
+            the published page; proven at 200 % text. A word longer than the whole screen wraps as the last resort (#23)
+          - **THE USER'S DECISION, 2026-10-03 — THE PAGE GRID IS INVISIBLE IN THE EDITOR TOO** (supersedes "layout guides shown
+            while placing / dragging" above and AC-37a's lines on the canvas): the editor looks as it does today; the page
+            grid works only in the background (blocks still land on it, snap to it and wrap by it). One switch, "Show layout
+            guides", OFF by default, in a menu — for checking alignment and for testing. Never on the published page.
+            **…AND AN ADVANCED PAGE-GRID PANEL (the user, 2026-10-03: "turn it on to see what it is… which one you're using…
+            reduce the column or increase the column and increase the row, reduce the row… for advanced")**: with the guides on,
+            the builder shows the grid in use and lets the user change the COLUMN COUNT (default 6 phone / 12 from 600 px),
+            the ROW STEP (default 1.5rem), the gutter and the margin. Placements are stored as a SHARE of the page (half
+            stays half when 12 becomes 10 or 16), so a count change never moves or loses a block; the content minimum still
+            applies. Open for the plan mockups: per SITE or per PAGE, and the allowed ranges. Joins RULE UI (everything
+            built is in the builder to play with). **EVERYTHING FOLLOWS, AUTOMATICALLY, PER BREAKPOINT (the user,
+            2026-10-03):** every block's start / span (columns) and row start / span re-derived from its stored share when
+            a count or the row step changes — canvas and export alike, nothing for the user to do; each rung has its own
+            count (default: the phone gets half the desktop count, 12 → 6, 16 → 8; or set per rung); the em breakpoints of
+            the content minimum (#24) re-measured on every change. Limits told to the user: a split a count does not divide
+            (3 across on 10) rounds to the nearest whole column or keeps its own equal columns inside its span; the words
+            still win (a block takes more columns or the row wraps). `[ ]` PROOF: the example checker extended to RANDOM
+            column counts × row steps × every width × 100 / 150 / 200 % text (RULE MAP step 3)
+          - **THE PHONE DEFAULT — DECIDED AGAIN BY THE USER, 2026-10-04 (supersedes Q2 "stack, except by purpose"),
+            from `06-rungs.md`** (300 crawled pages re-measured at 768 / 375, `skeleton.js --widths`, saturated: rows of 4
+            and 5+ go to FEWER across on phones 47–61% of the time, more often than they stack): **FIT-BASED** — on every
+            rung a row that cannot keep its shares becomes the most EQUAL columns whose words still fit (4 → 2 → 1; the
+            engine's re-split, ledger #28), never a staircase; always overridable per view
+          - **THE GAP — DECIDED AGAIN BY THE USER, 2026-10-03 (supersedes the line below): the page grid has ZERO gap by
+            default** — it is a pure divider of the page (exact fractions: 6 of 12 is exactly half; half-steps and count
+            changes exact). The even space between neighbours comes from the BLOCKS: each placed block keeps half the
+            default spacing (`SPACE_DEFAULT.columns`, 16 in `u()`) on each side — which is what the engine already does
+            today (`gutterCSS`: a column's slot is its share and gives up one gap). The advanced panel can still add a grid
+            gap. Superseded: "the page grid HAS a gap between its columns, settable down to 0 in the
+            advanced panel (a mosaic)." `[x]` PROVEN on the examples: grid gap 0, every block's SLOT (box + its half
+            spacing) on the lines, bleeds with no spacing on their window side — 972 / 972 twice in a row, 261 / 261
+            random; picture read (no gap strips; even space between blocks, centred on the shared line). LEDGER #31 `[x]`
+            the subgrid check compared a slot with a bare box · #32 `[x]` a phone half-bleed kept half a space on its right
+            · #33 `[x]` FLAKY: the row-line height came from a ResizeObserver Chrome holds back in a hidden window → set
+            at once on resize too, the checker waits two frames · #34 `[x]` a Dribbble VIDEO shot (Pickle) captured as 0
+            frames — the video sat outside `<main>` → any big video, three frames · #35 `[x]` two dead variables in the
+            checkers (eslint) — removed, both proofs re-run clean Its default is the builder's EXISTING spacing — `SPACE_DEFAULT.columns` (16) and the
+            side gutter `SPACE_DEFAULT.gutter` (32) in the fluid unit `u()` / `--box-u` (`lib/box-model.ts`): column gap
+            ≈ 11 · 18 · 22 px and side margin ≈ 22 · 36 · 45 px at 360 · 1280 · 1920 — ONE set of numbers, never a second
+            (`[x]` the examples now use them: `--box-u` × 1.6 / × 3.2 — 972 / 972 and 261 / 261 checks still pass).
+            `[x]` STEP 3 (part): `examples/combos.html` + `scripts/research/page-grid-combos.js` — RANDOM column counts
+            (6–24) × phone counts × row steps (1–3rem) × 10 widths × 100–200 % text, every block placed from its stored
+            SHARE by the engine: 261 / 261 checks; the guides restyled FAINT the Chrome-overlay way (the user: dashed
+            column edges, hatched gaps, dotted rows, no fill). LEDGER #28 `[x]` the engine wrapped block by block →
+            staircases and a lone shifted block (seen only in the picture) → a row that cannot keep its shares re-splits
+            as a whole into k EQUAL columns; a bento stacks · #29 `[x]` the checker checked the first row only → every
+            row: shares kept, an even re-split, or stacked · #30 `[x]` the checker looked for the row pattern where the
+            restyle had moved it OPEN for the mockups: the phone column gap
+            11 px vs the 16 px research norm (Material, most sites) — both shown side by side
+          - **WHAT THE GRID COVERS (the user, 2026-10-03, confirmed):** the WHOLE width as one grid — margin | 12 columns
+            (6 on the phone) | margin; words stay inside the columns, pictures may bleed into the margins to the edge; above
+            ≈ 1280 px the columns stop growing and the margins grow (readable lines, Rule #1 ~75 characters). The rows run
+            the WHOLE height of the page (the full document, not one screen)
+          - THE USER, 2026-10-03: "rows too, not just columns?" — columns fixed per page (6 / 12); rows are content-sized
+            bands, placed by row start / span; the ROW STEP (proposed 1.5rem, every 4th stronger) is drawn in the guides
+            and is an OPEN DECISION for the mockups (blocks do not snap to it yet — seen in the pictures). The guides are
+            NEVER published and show only while placing, or with the switch / G (confirmed to the user)
+          - LEDGER (examples, all `[x]`): #20 `span calc()` invalid + `100vw` counts the scrollbar · #21 two line-name groups
+            touching made the WHOLE template invalid (dropped silently) → merged groups · #22 the label counted as child 1 +
+            an inline style beat the phone rule · #23 a word wider than a 360 px phone at 200 % → last-resort wrap · #24 the
+            content minimum at 200 % → em container queries · #25 the 2-across rule beat the phone stack → from 600 px only ·
+            #26 the row lines stopped short (scrollHeight counted the guides) → followed from `main` · #27 the checker
+            measured hidden guides · `[ ]` step 3 the
+            combinations proven in a browser · `[ ]` taste / real-world (low-cost Android, 150–200% text, RTL, a screen
+            reader) / school + regional sites · `[ ]` the "enough" checklist signed by the user
     - `[ ]` AC-37c · **CHOOSE BY PURPOSE, THE BUILDER PICKS FLEX OR GRID — proposed by the user 2026-10-03** ("a user can
       select a section as a grid or as a flexbox… a menu would use a flexbox… it won't be called grid or flexbox in
       front of the user"). Already there: Stack = flex column, Side by side = flex row, Grid = CSS grid, and the

@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Page grid examples</title>
+<!--
+  PAGE GRID · RULE MAP step 2: one small WORKING example per CORE value of docs/web-anatomy/page-grid/04-map.md, built to
+  the user's decisions of 2026-10-03 (Q1 6 columns on the phone · 12 from 600 px; Q2 stack except by purpose; Q3 half-lines
+  in the model, whole-column snapping by default; Q5 page order + "picture first" switch; Q4 each band re-declares the page
+  template, nested containers use subgrid). Units: rem / % / em only (rule 16); rungs in em (rule 18, base IS desktop).
+  Proven in a browser by scripts/research/page-grid-examples.js. Every example carries data-ex="<axis>:<value>".
+-->
+<style>
+  :root {
+    --box-u: clamp(0.4375rem, calc(0.3125rem + 0.5cqw), 0.875rem); /* the builder's fluid unit, baseUnit(10) in lib/box-model.ts */
+    --gut: calc(var(--box-u) * 3.2);                /* A3 side margin = SPACE_DEFAULT.gutter (32) in u() */
+    --gap: 0px;                                     /* A4 the PAGE GRID has no gap (the user, 2026-10-03); the panel may add one */
+    --space: calc(var(--box-u) * 1.6);              /* the blocks' own spacing = SPACE_DEFAULT.columns (16) in u(), half each side */
+    --gap-card: 1rem;
+    --content: 80rem;                               /* A3 content max */
+    --lap: 3rem;                                    /* A10 straddle amount */
+    --ink: oklch(0.25 0.02 260); --paper: oklch(0.985 0.005 260); --band: oklch(0.93 0.03 250);
+    --accent: oklch(0.55 0.15 250); --guide: oklch(0.6 0.2 25);
+    /* A1 / A5 / A7: 12 columns; each column has a start (c), a MIDDLE (m — the half-line, Q3) and an end (ce); the gutter is
+       its own track so m sits on the true centre. Margins are named tracks (full / content) so bleed is a placement. */
+    /* two line-name groups may never touch ("[ce] [content-end]") — the whole template is then INVALID and silently
+       dropped (ledger #21); names that meet are merged into one group: [content-start c] … [ce content-end] */
+    --page-cols: [full-start] minmax(calc(var(--gut) - var(--space) / 2), 1fr) [content-start c] minmax(0, 1fr) [m] minmax(0, 1fr) [ce]
+      repeat(10, var(--gap) [c] minmax(0, 1fr) [m] minmax(0, 1fr) [ce])
+      var(--gap) [c] minmax(0, 1fr) [m] minmax(0, 1fr) [ce content-end] minmax(calc(var(--gut) - var(--space) / 2), 1fr) [full-end];
+    --cols: 12;
+  }
+  /* Q1: 6 columns below 600 px (37.5em) — the cascade runs to NARROWER screens (rule 18) */
+  @media (max-width: 37.49em) {
+    :root {
+      --page-cols: [full-start] minmax(calc(var(--gut) - var(--space) / 2), 1fr) [content-start c] minmax(0, 1fr) [m] minmax(0, 1fr) [ce]
+        repeat(4, var(--gap) [c] minmax(0, 1fr) [m] minmax(0, 1fr) [ce])
+        var(--gap) [c] minmax(0, 1fr) [m] minmax(0, 1fr) [ce content-end] minmax(calc(var(--gut) - var(--space) / 2), 1fr) [full-end];
+      --cols: 6;
+    }
+  }
+  /* A3 content max: the side tracks grow once the content reaches --content */
+  /* 100cqi, not 100vw: vw counts the scrollbar and would push the page sideways by its width (ledger #20) */
+  :root { --gut: max(calc(var(--box-u) * 3.2), (100cqi - var(--content)) / 2, env(safe-area-inset-left, 0px)); }
+  * { box-sizing: border-box; }
+  body { position: relative; container-type: inline-size; margin: 0; font: 1rem/1.6 system-ui, sans-serif; color: var(--ink); background: var(--paper); overflow-wrap: normal; }
+  h2 { font-size: 1.5rem; margin: 0 0 .5rem; } h3 { font-size: 1.1rem; margin: 0; }
+  p { margin: 0; }
+  /* Q4: every band re-declares the page template from ONE variable */
+  .band { display: grid; grid-template-columns: var(--page-cols); row-gap: var(--space); padding-block: 3rem; position: relative; container-type: inline-size; }
+  .band > * { grid-column: c 1 / ce var(--cols); margin-inline: calc(var(--space) / 2); } /* each block keeps half the space each side */
+  .band > .bleed-full { margin-inline: 0; } .band > .bleed-half { margin-inline-start: 0; } .band > .bleed-half-r { margin-inline-end: 0; }
+  .band > .nest { margin-inline: 0; } .nest > * { margin-inline: calc(var(--space) / 2); }
+  .band.tint { background: var(--band); }
+  .cell { overflow-wrap: break-word; hyphens: auto; background: oklch(1 0 0); border: 1px solid oklch(0.85 0.01 260); padding: 1rem; min-inline-size: 0; }
+  .label { font: 600 .75rem/1.2 system-ui; text-transform: uppercase; letter-spacing: .05em; color: oklch(0.45 0.05 260); grid-column: c 1 / ce var(--cols); }
+  img, .pic { display: block; max-inline-size: 100%; aspect-ratio: 4 / 3; background: linear-gradient(135deg, oklch(0.7 0.1 200), oklch(0.5 0.12 260)); }
+
+  /* A12 LAYOUT GUIDES: drawn from the SAME template, never published (toggle with g / the button) */
+  /* the guides cover the WHOLE page (not the window), so the row lines run all the way down. ROWS: a fixed step of
+     --row (one line of body text), every 4th line stronger — the row size is the user's open decision (R-3) */
+  :root { --row: 1.5rem; }
+  /* FAINT, the way Chrome's grid overlay draws it (the user, 2026-10-03): dashed column edges, no fill, the gaps hatched
+     with faint diagonal strokes, the half-line dotted and fainter, the rows dotted */
+  .guides { --line: color-mix(in oklch, var(--guide) 45%, transparent); --faint: color-mix(in oklch, var(--guide) 22%, transparent);
+    position: absolute; inset: 0 0 auto 0; block-size: var(--doc-h, 100%); display: grid; grid-template-columns: var(--page-cols); pointer-events: none; z-index: 50; }
+  .guides::before { content: ""; position: absolute; inset: 0; /* the rows: a dotted line every --row */
+    background: repeating-linear-gradient(to right, var(--faint) 0 2px, transparent 2px 6px);
+    -webkit-mask: repeating-linear-gradient(to bottom, #000 0 1px, transparent 1px var(--row)); mask: repeating-linear-gradient(to bottom, #000 0 1px, transparent 1px var(--row)); }
+  .guides span { grid-row: 1; border-inline: 1px dashed var(--line); }
+  .guides i { grid-row: 1; border-inline-start: 1px dotted var(--faint); }
+  .guides b { grid-row: 1; background: repeating-linear-gradient(-45deg, var(--faint) 0 1px, transparent 1px 6px); } /* the gaps, hatched */
+  html:not(.show-guides) .guides { display: none; }
+  .toggle { position: fixed; inset-block-end: 1rem; inset-inline-end: 1rem; z-index: 60; font: inherit; padding: .5rem .75rem; }
+
+  /* A13 one-click splits, per rung (desktop 12 → phone 6 → stacks by default, Q2) */
+  .s6-6 > :nth-child(1 of :not(.label)) { grid-column: c 1 / ce 6; } .s6-6 > :nth-child(2 of :not(.label)) { grid-column: c 7 / ce 12; }
+  .s4-4-4 > :nth-child(1 of :not(.label)) { grid-column: c 1 / ce 4; } .s4-4-4 > :nth-child(2 of :not(.label)) { grid-column: c 5 / ce 8; } .s4-4-4 > :nth-child(3 of :not(.label)) { grid-column: c 9 / ce 12; }
+  .s3x4 > :nth-child(1 of :not(.label)) { grid-column: c 1 / ce 3; } .s3x4 > :nth-child(2 of :not(.label)) { grid-column: c 4 / ce 6; } .s3x4 > :nth-child(3 of :not(.label)) { grid-column: c 7 / ce 9; } .s3x4 > :nth-child(4 of :not(.label)) { grid-column: c 10 / ce 12; }
+  .s4-8 > :nth-child(1 of :not(.label)) { grid-column: c 1 / ce 4; } .s4-8 > :nth-child(2 of :not(.label)) { grid-column: c 5 / ce 12; }
+  .s5-7 > :nth-child(1 of :not(.label)) { grid-column: c 1 / ce 5; } .s5-7 > :nth-child(2 of :not(.label)) { grid-column: c 6 / ce 12; }
+  .s3-9 > :nth-child(1 of :not(.label)) { grid-column: c 1 / ce 3; } .s3-9 > :nth-child(2 of :not(.label)) { grid-column: c 4 / ce 12; }
+  .split > :not(.label) { grid-row: 2; }
+  /* tablet portrait (600–899): 3+3+3+3 becomes 2 across (exact on 12: 6+6) — derived by ratio, then the content minimum */
+  @media (max-width: 56.24em) and (min-width: 37.5em) {
+    .s3x4 > :nth-child(1 of :not(.label)), .s3x4 > :nth-child(3 of :not(.label)) { grid-column: c 1 / ce 6; } .s3x4 > :nth-child(2 of :not(.label)), .s3x4 > :nth-child(4 of :not(.label)) { grid-column: c 7 / ce 12; }
+    .s3x4 > :nth-child(-n+2 of :not(.label)) { grid-row: 2; } .s3x4 > :nth-child(n+3 of :not(.label)) { grid-row: 3; }
+  }
+  /* phone: every split stacks in page order (Q2 default, Q5) */
+  @media (max-width: 37.49em) { .split > :not(.label) { grid-column: c 1 / ce 6 !important; grid-row: auto !important; } }
+
+  /* A7 offset start + an empty column used as space (TOC 4 · empty · body 7) and an inset span (centred 8 of 12) */
+  .toc { grid-column: c 1 / ce 4; } .body7 { grid-column: c 6 / ce 12; }
+  .inset8 { grid-column: c 3 / ce 10; }
+  @media (max-width: 37.49em) { .toc, .body7 { grid-column: c 1 / ce 6; } .inset8 { grid-column: c 1 / ce 6; } }
+
+  /* Q3 a half-step placement, on the m (middle) lines — in the model, reached by a modifier key */
+  .half { grid-column: m 4 / m 8; }                         /* from the middle of column 4 to the middle of column 8 */
+  @media (max-width: 37.49em) { .half { grid-column: m 2 / m 5; } }
+
+  /* A8 the content minimum decides the span — set by the engine from longestWordRem (here by the script below) */
+  .minspan { grid-column: c 1 / ce 1; } /* the engine writes `c 1 / ce <span>` — `span calc()` is not valid CSS (ledger #20) */
+
+  /* A8 a count twelve does not divide: its own equal columns inside its span; logos as a wrapping flex line (AC-37c) */
+  .five { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: var(--gap-card); }
+  @media (max-width: 37.49em) { .five { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  .logos { display: flex; flex-wrap: wrap; gap: var(--gap-card); justify-content: center; }
+  .logos > * { inline-size: 7rem; aspect-ratio: 3 / 1; background: oklch(0.85 0.02 260); }
+
+  /* A10 bleed */
+  .bleed-full { grid-column: full-start / full-end; }
+  .bleed-half { grid-column: full-start / ce 6; }           /* half-bleed: the outer edge to the window, the inner on a line */
+  .bleed-half-r { grid-column: c 7 / full-end; }
+  @media (max-width: 37.49em) { .bleed-half, .bleed-half-r { grid-column: full-start / full-end; } .band > .bleed-half, .band > .bleed-half-r { margin-inline: 0; } } /* full width on the phone: no space either side (ledger #32) */
+  .bleed-half { grid-row: 2; } .beside-half { grid-column: c 7 / ce 12; grid-row: 2; }
+  @media (max-width: 37.49em) { .bleed-half, .beside-half { grid-row: auto; } .beside-half { grid-column: c 1 / ce 6; } }
+  .straddle { margin-block-start: calc(-1 * var(--lap) - 3rem); position: relative; z-index: 1; grid-column: c 3 / ce 10; }
+  @media (max-width: 37.49em) { .straddle { grid-column: c 1 / ce 6; } }
+  .inset-hero { grid-column: content-start / content-end; border-radius: 1.5rem; min-block-size: 12rem; }
+
+  /* A11 a nested split on the SAME lines — subgrid, with its own equal columns as the fallback (Q4) */
+  .nest { grid-column: c 1 / ce 8; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--gap); }
+  @supports (grid-template-columns: subgrid) { .nest { grid-template-columns: subgrid; gap: 0; } }
+  .nest > .a { grid-column: c 1 / ce 2; } .ruler { grid-column: c 1 / ce 2; grid-row: 3; } .nest > .b { grid-column: c 3 / ce 8; }
+  @supports not (grid-template-columns: subgrid) { .nest > .a { grid-column: 1 / 2; } .nest > .b { grid-column: 2 / -1; } }
+  @media (max-width: 37.49em) { .nest { grid-column: c 1 / ce 6; } .nest > .b { grid-column: c 1 / ce 6; } .nest > .a { grid-column: c 1 / ce 3; } .ruler { grid-column: c 1 / ce 3; } }
+
+  /* A19 a sticky cell: label left, content right (off on the phone) */
+  .stick { grid-column: c 1 / ce 4; align-self: start; position: sticky; inset-block-start: 1rem; }
+  .scroll { grid-column: c 5 / ce 12; display: grid; gap: var(--gap); }
+  @media (max-width: 37.49em) { .stick { position: static; grid-column: c 1 / ce 6; } .scroll { grid-column: c 1 / ce 6; } }
+
+  /* A22 phone strategy by PURPOSE (Q2): stats keep 3 across (2 of 6 each); a picture hidden on the phone; picture first (Q5) */
+  .stats > :nth-child(1 of :not(.label)) { grid-column: c 1 / ce 4; } .stats > :nth-child(2 of :not(.label)) { grid-column: c 5 / ce 8; } .stats > :nth-child(3 of :not(.label)) { grid-column: c 9 / ce 12; }
+  @media (max-width: 37.49em) { .stats > :nth-child(1 of :not(.label)) { grid-column: c 1 / ce 2; } .stats > :nth-child(2 of :not(.label)) { grid-column: c 3 / ce 4; } .stats > :nth-child(3 of :not(.label)) { grid-column: c 5 / ce 6; } }
+  .stats > :not(.label) { grid-row: 2; text-align: center; font-weight: 700; }
+  @media (max-width: 37.49em) { .hide-phone { display: none; } }
+  .pf > .words { grid-column: c 1 / ce 6; grid-row: 2; } .pf > .pic { grid-column: c 7 / ce 12; grid-row: 2; }
+  @media (max-width: 37.49em) { .pf > .words, .pf > .pic { grid-column: c 1 / ce 6; grid-row: auto; } .pf.picture-first > .pic { order: -1; } }
+
+  /* A9 bento with a row span; mixed aspects with tops aligned */
+  .bento { align-items: start; }
+  .bento > .big { grid-column: c 1 / ce 6; grid-row: 2 / span 2; } .bento > .b2 { grid-column: c 7 / ce 12; grid-row: 2; } .bento > .b3 { grid-column: c 7 / ce 9; grid-row: 3; } .bento > .b4 { grid-column: c 10 / ce 12; grid-row: 3; }
+  @media (max-width: 37.49em) { .bento > :not(.label) { grid-column: c 1 / ce 6 !important; grid-row: auto !important; } }
+
+  /* A8 orphans keep their span (the last row's item stays 4 of 12) */
+  .orph > :nth-child(3n+1 of :not(.label)) { grid-column: c 1 / ce 4; } .orph > :nth-child(3n+2 of :not(.label)) { grid-column: c 5 / ce 8; } .orph > :nth-child(3n of :not(.label)) { grid-column: c 9 / ce 12; }
+  @media (max-width: 37.49em) { .orph > :not(.label) { grid-column: c 1 / ce 6 !important; } }
+</style>
+</head>
+<body>
+<div class="guides" aria-hidden="true" id="guides"></div>
+<button class="toggle" type="button" aria-pressed="false" id="toggle">Layout guides (G)</button>
+
+<main>
+  <section class="band split s6-6" data-ex="A13:6+6"><p class="label">6 + 6 · stacks on the phone</p><div class="cell">Words beside a picture</div><div class="pic"></div></section>
+  <section class="band split s4-4-4 tint" data-ex="A13:4+4+4"><p class="label">4 + 4 + 4</p><div class="cell">Admissions</div><div class="cell">Curriculum</div><div class="cell">Sports</div></section>
+  <section class="band split s3x4" data-ex="A13:3+3+3+3"><p class="label">3 + 3 + 3 + 3 · 2 across at 600–899</p><div class="cell">Term dates</div><div class="cell">Fees</div><div class="cell">Uniform</div><div class="cell">Clubs</div></section>
+  <section class="band split s4-8 tint" data-ex="A13:4+8"><p class="label">4 + 8</p><div class="cell">News</div><div class="cell">The latest from the school this week, with the sports results and the reading list.</div></section>
+  <section class="band split s5-7" data-ex="A13:5+7"><p class="label">5 + 7</p><div class="pic"></div><div class="cell">A picture beside words, the words taking seven.</div></section>
+  <section class="band split s3-9 tint" data-ex="A13:3+9"><p class="label">3 + 9</p><div class="cell">Label</div><div class="cell">Label left, content right.</div></section>
+
+  <section class="band" data-ex="A7:offset+empty"><p class="label">Contents 4 · an empty column · body 7</p><nav class="cell toc">Contents</nav><article class="cell body7">The body starts at column 6; column 5 stays empty on purpose.</article></section>
+  <section class="band tint" data-ex="A8:inset-8"><p class="label">Centred 8 of 12</p><div class="cell inset8">An inset span from column 3 to column 10.</div></section>
+  <section class="band" data-ex="A7:half-step"><p class="label">Half-step (modifier key): middle of 4 → middle of 8</p><div class="cell half">From the middle of column 4 to the middle of column 8.</div></section>
+  <section class="band tint" data-ex="A8:content-minimum"><p class="label">The words decide the span</p><div class="cell minspan" id="minspan" lang="de">Schulanmeldungsformular</div></section>
+  <section class="band" data-ex="A8:five-across"><p class="label">5 across — its own equal columns inside 12</p><div class="five"><div class="cell">1</div><div class="cell">2</div><div class="cell">3</div><div class="cell">4</div><div class="cell">5</div></div></section>
+  <section class="band tint" data-ex="AC-37c:logos"><p class="label">Logos — a wrapping flex line</p><div class="logos"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></section>
+
+  <section class="band tint" data-ex="A10:full-bleed-band"><p class="label">A full-bleed band (the background), words in the content</p><div class="cell">The band's colour runs edge to edge; the words keep the margin.</div></section>
+  <section class="band" data-ex="A10:block-full-bleed"><p class="label">One block full-bleed inside a contained section</p><div class="pic bleed-full" style="aspect-ratio: 5 / 1"></div></section>
+  <section class="band" data-ex="A10:half-bleed"><p class="label">Half-bleed: left edge to the window, inner edge on column 6</p><div class="pic bleed-half"></div><div class="cell beside-half">Words on the right.</div></section>
+  <section class="band tint" data-ex="A10:straddle-before" style="padding-block-end: 6rem"><p class="label">The section above</p><div class="cell">The next card straddles this section's bottom edge.</div></section>
+  <section class="band" data-ex="A10:straddle"><div class="cell straddle" id="straddle">A card that straddles the section edge by 3rem.</div><div class="cell">Then the section's own content.</div></section>
+  <section class="band" data-ex="A10:inset-hero"><div class="pic inset-hero"></div></section>
+
+  <section class="band tint" data-ex="A11:subgrid"><p class="label">A nested split on the page's lines (subgrid)</p><div class="nest" id="nest"><div class="cell a">Thumb</div><div class="cell b">Text on the same lines as the page.</div></div><div class="cell ruler">ruler</div></section>
+  <section class="band" data-ex="A19:sticky-cell"><p class="label">Label left (sticky), content right</p><h2 class="cell stick">Our values</h2><div class="scroll"><div class="cell" style="block-size: 12rem">Respect</div><div class="cell" style="block-size: 12rem">Curiosity</div><div class="cell" style="block-size: 12rem">Courage</div></div></section>
+
+  <section class="band tint stats" data-ex="A22:stats-keep-3"><p class="label">Stats keep 3 across on the phone (by purpose)</p><div class="cell">98%</div><div class="cell">1,200</div><div class="cell">35</div></section>
+  <section class="band" data-ex="A22:hide-on-phone"><p class="label">A picture hidden on the phone</p><div class="pic hide-phone" style="aspect-ratio: 5 / 1"></div><div class="cell">Words stay.</div></section>
+  <section class="band pf" data-ex="Q5:page-order"><p class="label">Page order on the phone (default)</p><div class="cell words">Words first in the page</div><div class="pic"></div></section>
+  <section class="band pf picture-first tint" data-ex="Q5:picture-first"><p class="label">"On phones: picture first"</p><div class="cell words">Words first in the page</div><div class="pic"></div></section>
+
+  <section class="band bento" data-ex="A9:bento"><p class="label">Bento with a row span; tops aligned</p><div class="pic big" style="aspect-ratio: 1"></div><div class="cell b2">Wide</div><div class="pic b3"></div><div class="cell b4" style="block-size: 6rem">Taller</div></section>
+  <section class="band orph tint" data-ex="A8:orphans"><p class="label">The last row's item keeps its span</p><div class="cell">1</div><div class="cell">2</div><div class="cell">3</div><div class="cell">4</div></section>
+  <section class="band split s4-8" dir="rtl" data-ex="A15:rtl"><p class="label">Right to left: the same lines mirror</p><div class="cell">٤</div><div class="cell">ثمانية</div></section>
+</main>
+
+<script>
+  // The guides: one span per column, drawn on the same template (c … ce), the half-line dashed on m.
+  const g = document.getElementById('guides');
+  const draw = () => {
+    const n = +getComputedStyle(document.documentElement).getPropertyValue('--cols');
+    g.innerHTML = '';
+    for (let i = 1; i <= n; i++) {
+      const s = document.createElement('span'); s.style.gridColumn = `c ${i} / ce ${i}`; g.append(s);
+      const h = document.createElement('i'); h.style.gridColumn = `m ${i} / ce ${i}`; g.append(h);
+      if (i < n) { const gp = document.createElement('b'); gp.style.gridColumn = `ce ${i} / c ${i + 1}`; g.append(gp); }
+    }
+  };
+  // the page's height from its CONTENT (main), followed as it changes — the document's scrollHeight counted the guides'
+  // own old height and stuck when the text grew (ledger #26)
+  const main = document.querySelector('main');
+  const height = () => document.documentElement.style.setProperty('--doc-h', (main.offsetTop + main.offsetHeight) + 'px');
+  // …and at once on every resize too: a ResizeObserver callback waits for a frame, which Chrome holds back in a window
+  // hidden behind others — the height was stale under six windows (ledger #33)
+  draw(); height(); addEventListener('resize', () => { draw(); height(); }); new ResizeObserver(height).observe(main);
+  const t = document.getElementById('toggle');
+  const flip = () => { const on = document.documentElement.classList.toggle('show-guides'); t.setAttribute('aria-pressed', on); };
+  t.addEventListener('click', flip);
+  addEventListener('keydown', (e) => { if (e.key.toLowerCase() === 'g' && !e.ctrlKey && !e.metaKey && !/input|textarea/i.test(e.target.tagName)) flip(); });
+
+  // The content minimum (A8): the engine's job — here measured: the longest word's width decides how many columns it needs.
+  const ms = document.getElementById('minspan');
+  const fit = () => {
+    const n = +getComputedStyle(document.documentElement).getPropertyValue('--cols');
+    const band = ms.parentElement.getBoundingClientRect(); const cs = getComputedStyle(ms.parentElement);
+    const tracks = cs.gridTemplateColumns.replace(/\[[^\]]*\]/g, ' ').trim().split(/\s+/).map(parseFloat); // full, (c, m, gap)×(n-1), c, m, full — [names] skipped
+    const col = tracks[1] + tracks[2], gap = tracks[3];
+    const probe = document.createElement('span'); probe.textContent = ms.textContent; probe.style.cssText = 'position:absolute;visibility:hidden;white-space:nowrap;font:inherit';
+    ms.append(probe); const need = probe.getBoundingClientRect().width + 2 * parseFloat(getComputedStyle(ms).paddingInlineStart) + 2 * parseFloat(getComputedStyle(ms).marginInlineStart) + 2; probe.remove();
+    const span = Math.min(n, Math.max(1, Math.ceil((need + gap) / (col + gap))));
+    ms.style.gridColumn = `c 1 / ce ${span}`; ms.dataset.span = span;
+  };
+  fit(); addEventListener('resize', fit);
+
+  // THE CONTENT MINIMUM THAT SURVIVES THE READER'S TEXT SIZE (ledger #24) — what the EXPORT does at build time, simulated
+  // here once at load: measure each row's longest word at 100% text, find the narrowest band width at which each layout
+  // still fits (asked split → 2 across → stacked), and write it as an em container query. An em grows with the reader's
+  // text size, so the row wraps exactly when its words stop fitting — at 200% too — with no script on the published page.
+  (() => {
+    const ASK = { 's6-6': [6, 6], 's4-4-4': [4, 4, 4], 's3x4': [3, 3, 3, 3], 's4-8': [4, 8], 's5-7': [5, 7], 's3-9': [3, 9] };
+    const rem = 16, PAD = 2 * rem + 2;
+    const bu = (B) => Math.min(Math.max(0.4375 * rem, 0.3125 * rem + 0.005 * B), 0.875 * rem); // --box-u
+    const sp = (B) => bu(B) * 1.6, gut = (B) => Math.max(bu(B) * 3.2, (B - 80 * rem) / 2) - sp(B) / 2, gap = () => 0;
+    const word = (el) => { // the longest word, measured unbroken
+      let w = 0; for (const t of (el.textContent.match(/\S+/g) || [])) { const s = document.createElement('span'); s.textContent = t; s.style.cssText = 'position:absolute;visibility:hidden;white-space:nowrap'; el.append(s); w = Math.max(w, s.getBoundingClientRect().width); s.remove(); }
+      return el.classList.contains('pic') ? 8 * rem : w + PAD;
+    };
+    const fits = (B, spans, needs) => { const g = gap(B), wc = B - 2 * gut(B), col = (wc - 11 * g) / 12; return spans.every((s, i) => s * col + (s - 1) * g - sp(B) >= needs[i]); };
+    const narrowest = (spans, needs) => { for (let B = 400; B <= 3000; B += 2) if (fits(B, spans, needs)) return B; return Infinity; };
+    let css = '';
+    for (const [cls, asked] of Object.entries(ASK)) {
+      const band = document.querySelector('.split.' + cls); if (!band) continue;
+      const kids = [...band.children].filter(e => !e.classList.contains('label')); const needs = kids.map(word);
+      const sel = `[data-ex="${band.dataset.ex}"]`;
+      const layouts = [{ spans: asked }];
+      if (asked.length >= 3) layouts.push({ spans: asked.map(() => 6), two: true });
+      const T = layouts.map(l => narrowest(l.spans, needs));
+      // below the asked layout's width → 2 across (when there is one); below that → stacked
+      if (asked.length >= 3 && isFinite(T[0])) {
+        // from 600 px only: on the phone the row STACKS (Q2) — without this the 2-across rule beat the phone's (ledger #25)
+        css += `@media (min-width: 37.5em) { @container (inline-size < ${(T[0] / rem * 1.02).toFixed(2)}em) { ${kids.map((_, i) => `${sel} > :nth-child(${i + 1} of :not(.label)) { grid-column: c ${i % 2 ? 7 : 1} / ce ${i % 2 ? 12 : 6} !important; grid-row: ${2 + Math.floor(i / 2)} !important; }`).join(' ')} } }\n`;
+      }
+      const stackAt = asked.length >= 3 ? T[1] : T[0];
+      if (isFinite(stackAt)) css += `@container (inline-size < ${(stackAt / rem * 1.02).toFixed(2)}em) { ${sel} > :not(.label) { grid-column: c 1 / ce var(--cols) !important; grid-row: auto !important; } }\n`;
+      band.dataset.wrapEm = T.map(t => (t / rem).toFixed(1)).join(',');
+    }
+    const st = document.createElement('style'); st.id = 'content-minimum'; st.textContent = css; document.head.append(st);
+  })();
+</script>
+</body>
+</html>

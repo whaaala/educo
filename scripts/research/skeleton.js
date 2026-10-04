@@ -7,6 +7,9 @@ const { chromium } = require('playwright');
 const STORE = 'C:/Users/eyite/educo-uat-harness/sites';
 const arg = (k, d) => { const a = process.argv.find((x) => x.startsWith(`--${k}=`)); return a ? a.split('=').slice(1).join('=') : d; };
 const JOBS = +arg('jobs', 4), ONLY = arg('only', ''), LIMIT = +arg('limit', 1e9), REDO = process.argv.includes('--redo');
+// R-3 (page grid, G10): --widths=768,375 re-measures each page at those widths too, one file per width
+// (<page>.skeleton-768.json), so a row's behaviour on tablet and phone can be compared with its desktop split.
+const WIDTHS = arg('widths', '').split(',').filter(Boolean).map(Number), HEADED = process.argv.includes('--headed');
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36';
 
 /** Runs IN the page: each top-level section of the page as a small layout description. */
@@ -76,15 +79,16 @@ async function run() {
   const todo = [];
   for (const h of hosts) for (const f of fs.readdirSync(path.join(STORE, h)).filter((x) => x.endsWith('.anatomy.json'))) {
     const out = path.join(STORE, h, f.replace('.anatomy.json', '.skeleton.json'));
-    if (!REDO && fs.existsSync(out)) continue;
+    const outs = WIDTHS.map(w => out.replace('.skeleton.json', `.skeleton-${w}.json`));
+    if (!REDO && (WIDTHS.length ? outs.every(o => fs.existsSync(o)) || !fs.existsSync(out) : fs.existsSync(out))) continue;
     let url; try { url = JSON.parse(fs.readFileSync(path.join(STORE, h, f), 'utf8')).url; } catch { continue; }
-    if (url) todo.push({ h, url, out });
+    if (url) todo.push({ h, url, out, outs });
   }
   // Mix the order across sites, so parallel workers never all visit the same site at once (polite).
   for (let i = todo.length - 1; i > 0; i--) { const j = (i * 7919 + 13) % (i + 1); [todo[i], todo[j]] = [todo[j], todo[i]]; }
   const list = todo.slice(0, LIMIT);
   console.log(`${list.length} pages to skeleton (${todo.length - list.length} held back by --limit), ${JOBS} at a time`);
-  const browser = await chromium.launch({ headless: true });
+  const browser = await chromium.launch({ headless: !HEADED });
   let done = 0, failed = 0; const t0 = Date.now();
   const worker = async () => {
     const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 }, userAgent: UA });
@@ -97,8 +101,16 @@ async function run() {
         // Let lazy sections lay out: one slow scroll to the bottom and back, as a reader would.
         await page.evaluate(async () => { for (let y = 0; y < document.body.scrollHeight; y += 700) { window.scrollTo(0, y); await new Promise((r) => setTimeout(r, 60)); } window.scrollTo(0, 0); });
         await page.waitForTimeout(800);
-        const sk = await page.evaluate(skeletonOf);
-        fs.writeFileSync(job.out, JSON.stringify({ url: job.url, width: 1440, sections: sk }));
+        if (WIDTHS.length) {
+          for (const [i, w] of WIDTHS.entries()) {
+            await page.setViewportSize({ width: w, height: 900 }); await page.waitForTimeout(1200);
+            await page.evaluate(async () => { for (let y = 0; y < document.body.scrollHeight; y += 700) { window.scrollTo(0, y); await new Promise((r) => setTimeout(r, 60)); } window.scrollTo(0, 0); });
+            fs.writeFileSync(job.outs[i], JSON.stringify({ url: job.url, width: w, sections: await page.evaluate(skeletonOf) }));
+          }
+        } else {
+          const sk = await page.evaluate(skeletonOf);
+          fs.writeFileSync(job.out, JSON.stringify({ url: job.url, width: 1440, sections: sk }));
+        }
         done++;
       } catch (e) { failed++; if (failed < 20) console.log(`  ${job.h}: ${e.message.split('\n')[0].slice(0, 90)}`); }
       await page.close().catch(() => {});
