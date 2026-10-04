@@ -1,0 +1,9 @@
+[E] PROBE ERROR — step beside(3m-5,mage): could not select 3m-6 (got none)
+[A] PROBE ERROR — step advanced css: locator.scrollIntoViewIfNeeded: Timeout 30000ms exceeded.
+[C] PROBE ERROR — step pick Line up (across) → Right: locator.scrollIntoViewIfNeeded: Timeout 30000ms exceeded.
+[B] PROBE ERROR — step advanced css: locator.scrollIntoViewIfNeeded: Timeout 30000ms exceeded.
+
+A: PROBE ERROR — step advanced css: locator.scrollIntoViewIfNeeded: Timeout 30000ms exceeded.
+B: PROBE ERROR — step advanced css: locator.scrollIntoViewIfNeeded: Timeout 30000ms exceeded.
+C: PROBE ERROR — step pick Line up (across) → Right: locator.scrollIntoViewIfNeeded: Timeout 30000ms exceeded.
+E: PROBE ERROR — step beside(3m-5,mage): could not select 3m-6 (got none)

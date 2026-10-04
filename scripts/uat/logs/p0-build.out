@@ -1,0 +1,351 @@
+   ▲ Next.js 15.1.3
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully
+   Linting and checking validity of types ...
+
+./app/admin/parents/add/page.tsx
+97:6  Warning: React Hook useEffect has a missing dependency: 'formData.relationship'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./app/admin/parents/fees/page.tsx
+1297:5  Warning: React Hook useMemo has missing dependencies: 'handleDeleteRecord', 'handleDownloadStatement', 'handleEditRecord', 'handlePrintStatement', and 'handleSendMessage'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps
+1332:6  Warning: React Hook useMemo has missing dependencies: 'handleDeleteRecord', 'handleDownloadStatement', 'handleEditRecord', 'handlePrintStatement', and 'handleSendMessage'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps
+
+./app/admin/parents/[id]/page.tsx
+271:6  Warning: React Hook useMemo has an unnecessary dependency: 'contextMeetings'. Either exclude it or remove the dependency array.  react-hooks/exhaustive-deps
+5979:6  Warning: React Hook useCallback has a missing dependency: 'formatCurrency'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./app/admin/settings/communication/page.tsx
+469:6  Warning: React Hook useEffect has missing dependencies: 'getTenantSettings' and 'loadTenantSettings'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps
+
+./app/drive/page.tsx
+347:6  Warning: React Hook useMemo has an unnecessary dependency: 'items'. Either exclude it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./app/parents/children/[id]/page.tsx
+283:9  Warning: The 'paymentHistoryRaw' logical expression could make the dependencies of useMemo Hook (at line 293) change on every render. To fix this, wrap the initialization of 'paymentHistoryRaw' in its own useMemo() Hook.  react-hooks/exhaustive-deps
+283:9  Warning: The 'paymentHistoryRaw' logical expression could make the dependencies of useMemo Hook (at line 299) change on every render. To fix this, wrap the initialization of 'paymentHistoryRaw' in its own useMemo() Hook.  react-hooks/exhaustive-deps
+
+./app/parents/meetings/page.tsx
+255:6  Warning: React Hook useMemo has an unnecessary dependency: 'contextMeetings'. Either exclude it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./app/staff/leave-requests/page.tsx
+125:6  Warning: React Hook useEffect has a missing dependency: 'selectedRequest'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./app/students/attendance/page.tsx
+264:9  Warning: The 'userAssignedClasses' logical expression could make the dependencies of useEffect Hook (at line 416) change on every render. To fix this, wrap the initialization of 'userAssignedClasses' in its own useMemo() Hook.  react-hooks/exhaustive-deps
+
+./app/students/transfers/page.tsx
+155:6  Warning: React Hook useEffect has a missing dependency: 'selectedRequest'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./app/teachers/portal/dashboard/page.tsx
+116:6  Warning: React Hook useMemo has an unnecessary dependency: 'contextMeetings'. Either exclude it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./app/teachers/portal/meetings/page.tsx
+280:6  Warning: React Hook useMemo has an unnecessary dependency: 'contextMeetings'. Either exclude it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./app/website/box-demo/page.tsx
+356:9  Warning: The 'switchPage' function makes the dependencies of useCallback Hook (at line 429) change on every render. To fix this, wrap the definition of 'switchPage' in its own useCallback() Hook.  react-hooks/exhaustive-deps
+
+./components/admin/parents/form-sections/LinkStudentsSection.tsx
+131:9  Warning: The 'linkedStudentIds' logical expression could make the dependencies of useMemo Hook (at line 170) change on every render. To fix this, wrap the initialization of 'linkedStudentIds' in its own useMemo() Hook.  react-hooks/exhaustive-deps
+
+./components/communication/call-ui/EmojiReactionBar.tsx
+300:6  Warning: React Hook useEffect has missing dependencies: 'fetchTrendingGifs' and 'trendingGifs.length'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps
+
+./components/communication/CallSettings.tsx
+300:6  Warning: React Hook useEffect has missing dependencies: 'selectedCamera', 'selectedMicrophone', and 'selectedSpeaker'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps
+
+./components/communication/ChatRoom.tsx
+104:6  Warning: React Hook useEffect has a missing dependency: 'manager'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+137:6  Warning: React Hook useCallback has a missing dependency: 'manager'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./components/communication/VideoCallRoom.tsx
+267:6  Warning: React Hook useEffect has a missing dependency: 'manager'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+347:6  Warning: React Hook useCallback has a missing dependency: 'manager'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+355:6  Warning: React Hook useCallback has a missing dependency: 'manager'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+420:6  Warning: React Hook useCallback has a missing dependency: 'manager'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+472:5  Warning: React Hook useCallback has a missing dependency: 'manager'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./components/communication/VoiceCallRoom.tsx
+139:69  Warning: The ref value 'animationRef.current' will likely have changed by the time this effect cleanup function runs. If this ref points to a node rendered by React, copy 'animationRef.current' to a variable inside the effect, and use that variable in the cleanup function.  react-hooks/exhaustive-deps
+238:6  Warning: React Hook useEffect has a missing dependency: 'manager'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+247:6  Warning: React Hook useCallback has a missing dependency: 'manager'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+269:6  Warning: React Hook useCallback has a missing dependency: 'manager'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+287:6  Warning: React Hook useCallback has a missing dependency: 'manager'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./components/discipline/DisciplineRecordsTable.tsx
+41:6  Warning: React Hook useEffect has a missing dependency: 'prevFilterKey'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./components/layout/Header.tsx
+90:6  Warning: React Hook useEffect has a missing dependency: 'languageIcons'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./components/layout/Sidebar.tsx
+422:6  Warning: React Hook useEffect has a missing dependency: 'setIsMobileSidebarOpen'. Either include it or remove the dependency array. If 'setIsMobileSidebarOpen' changes too often, find the parent component that defines it and wrap that definition in useCallback.  react-hooks/exhaustive-deps
+
+./components/leave/LeaveRequestsTable.tsx
+38:6  Warning: React Hook useEffect has a missing dependency: 'prevFilterKey'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./components/library/RenewLoanModal.tsx
+54:6  Warning: React Hook React.useEffect has missing dependencies: 'getDefaultNewDueDate' and 'loan'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps
+
+./components/parents/dashboard/use-dashboard-layout.ts
+69:58  Warning: React Hook useMemo has a missing dependency: 'availableIds'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+69:59  Warning: React Hook useMemo has a complex expression in the dependency array. Extract it to a separate variable so it can be statically checked.  react-hooks/exhaustive-deps
+70:58  Warning: React Hook useMemo has a missing dependency: 'defaultOrder'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+70:59  Warning: React Hook useMemo has a complex expression in the dependency array. Extract it to a separate variable so it can be statically checked.  react-hooks/exhaustive-deps
+
+./components/parents/MessageTeacherModal.tsx
+149:6  Warning: React Hook useEffect has a missing dependency: 'handleClose'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./components/performance/CompletePerformanceReviewModal.tsx
+59:6  Warning: React Hook useEffect has a missing dependency: 'formData'. Either include it or remove the dependency array. You can also do a functional update 'setFormData(f => ...)' if you only need 'formData' in the 'setFormData' call.  react-hooks/exhaustive-deps
+
+./components/shared/AutoReminderScheduleModal.tsx
+212:6  Warning: React Hook useEffect has a missing dependency: 'reminders'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./components/shared/BulkDeleteModal.tsx
+121:6  Warning: React Hook useEffect has a missing dependency: 'items.length'. Either include it or remove the dependency array. If 'setInitialItemCount' needs the current value of 'items.length', you can also switch to useReducer instead of useState and read 'items.length' in the reducer.  react-hooks/exhaustive-deps
+
+./components/shared/DateRangePicker.tsx
+94:6  Warning: React Hook useEffect has missing dependencies: 'quickOptions' and 'value'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps
+109:6  Warning: React Hook useEffect has a missing dependency: 'quickOptions'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./components/shared/DocEditor/DocEditor.tsx
+1505:6  Warning: React Hook useCallback has a missing dependency: 'activeTabId'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+2943:6  Warning: React Hook useCallback has a missing dependency: 'showToast'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+2975:6  Warning: React Hook useCallback has a missing dependency: 'showToast'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+2989:6  Warning: React Hook useCallback has a missing dependency: 'showToast'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+3002:6  Warning: React Hook useCallback has a missing dependency: 'focusEditor'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+3019:6  Warning: React Hook useCallback has a missing dependency: 'showToast'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+3075:6  Warning: React Hook useCallback has a missing dependency: 'focusEditor'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+3922:5  Warning: React Hook useCallback has a missing dependency: 'tenantId'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+4222:6  Warning: React Hook useEffect has missing dependencies: 'clearFindHighlights' and 'findNextAndHighlight'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps
+4670:9  Warning: The 'handleInsertImageFromFile' function makes the dependencies of useCallback Hook (at line 4981) change on every render. To fix this, wrap the definition of 'handleInsertImageFromFile' in its own useCallback() Hook.  react-hooks/exhaustive-deps
+10551:53  Warning: The ref value 'panelRef.current' will likely have changed by the time this effect cleanup function runs. If this ref points to a node rendered by React, copy 'panelRef.current' to a variable inside the effect, and use that variable in the cleanup function.  react-hooks/exhaustive-deps
+
+./components/shared/EditorMenus.tsx
+91:53  Warning: The ref value 'panelRef.current' will likely have changed by the time this effect cleanup function runs. If this ref points to a node rendered by React, copy 'panelRef.current' to a variable inside the effect, and use that variable in the cleanup function.  react-hooks/exhaustive-deps
+
+./components/shared/EditorViewMenus.tsx
+68:53  Warning: The ref value 'panelRef.current' will likely have changed by the time this effect cleanup function runs. If this ref points to a node rendered by React, copy 'panelRef.current' to a variable inside the effect, and use that variable in the cleanup function.  react-hooks/exhaustive-deps
+
+./components/shared/FilterButton.tsx
+48:6  Warning: React Hook useEffect has a missing dependency: 'fields'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./components/shared/FormModal.tsx
+195:9  Warning: The 'allFields' conditional could make the dependencies of useCallback Hook (at line 218) change on every render. Move it inside the useCallback callback. Alternatively, wrap the initialization of 'allFields' in its own useMemo() Hook.  react-hooks/exhaustive-deps
+
+./components/shared/PresenterView.tsx
+40:79  Warning: React Hook React.useCallback has a missing dependency: 'clamp'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+41:79  Warning: React Hook React.useCallback has a missing dependency: 'clamp'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./components/shared/SiteBuilder/SiteBuilder.tsx
+307:9  Warning: The 'headerLayout' logical expression could make the dependencies of useCallback Hook (at line 314) change on every render. To fix this, wrap the initialization of 'headerLayout' in its own useMemo() Hook.  react-hooks/exhaustive-deps
+307:9  Warning: The 'headerLayout' logical expression could make the dependencies of useCallback Hook (at line 319) change on every render. To fix this, wrap the initialization of 'headerLayout' in its own useMemo() Hook.  react-hooks/exhaustive-deps
+
+./components/shared/SlideEditor/SlideCanvas.tsx
+512:6  Warning: React Hook useCallback has a missing dependency: 'getTopGroupId'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+544:6  Warning: React Hook useEffect has missing dependencies: 'applyCrop', 'croppingId', and 'getTopGroupId'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps
+617:6  Warning: React Hook useCallback has a missing dependency: 'getTopGroupId'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+2055:6  Warning: React Hook useCallback has missing dependencies: 'obj.cols' and 'obj.rows'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps
+
+./components/shared/SlideEditor/SlideEditor.tsx
+1025:9  Warning: The 'currentObjects' logical expression could make the dependencies of useCallback Hook (at line 1070) change on every render. To fix this, wrap the initialization of 'currentObjects' in its own useMemo() Hook.  react-hooks/exhaustive-deps
+1025:9  Warning: The 'currentObjects' logical expression could make the dependencies of useCallback Hook (at line 1085) change on every render. To fix this, wrap the initialization of 'currentObjects' in its own useMemo() Hook.  react-hooks/exhaustive-deps
+1025:9  Warning: The 'currentObjects' logical expression could make the dependencies of useCallback Hook (at line 1098) change on every render. To fix this, wrap the initialization of 'currentObjects' in its own useMemo() Hook.  react-hooks/exhaustive-deps
+1025:9  Warning: The 'currentObjects' logical expression could make the dependencies of useCallback Hook (at line 1170) change on every render. To fix this, wrap the initialization of 'currentObjects' in its own useMemo() Hook.  react-hooks/exhaustive-deps
+1025:9  Warning: The 'currentObjects' logical expression could make the dependencies of useCallback Hook (at line 1216) change on every render. To fix this, wrap the initialization of 'currentObjects' in its own useMemo() Hook.  react-hooks/exhaustive-deps
+1025:9  Warning: The 'currentObjects' logical expression could make the dependencies of useCallback Hook (at line 1238) change on every render. To fix this, wrap the initialization of 'currentObjects' in its own useMemo() Hook.  react-hooks/exhaustive-deps
+1025:9  Warning: The 'currentObjects' logical expression could make the dependencies of useCallback Hook (at line 1253) change on every render. To fix this, wrap the initialization of 'currentObjects' in its own useMemo() Hook.  react-hooks/exhaustive-deps
+1153:6  Warning: React Hook useCallback has unnecessary dependencies: 'activeSlideIdx', 'slides', and 'updateSlides'. Either exclude them or remove the dependency array.  react-hooks/exhaustive-deps
+1451:6  Warning: React Hook useCallback has an unnecessary dependency: 'theme'. Either exclude it or remove the dependency array.  react-hooks/exhaustive-deps
+1473:6  Warning: React Hook useCallback has a missing dependency: 'activeSlideIdx'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./components/shared/SortButton.tsx
+36:6  Warning: React Hook useEffect has a missing dependency: 'defaultOption'. Either include it or remove the dependency array. If 'setSelectedOption' needs the current value of 'defaultOption', you can also switch to useReducer instead of useState and read 'defaultOption' in the reducer.  react-hooks/exhaustive-deps
+
+./components/shared/Whiteboard/WhiteboardCanvas.tsx
+510:5  Warning: React Hook useCallback has a missing dependency: 'drawActivePreview'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+951:5  Warning: React Hook useCallback has missing dependencies: 'clearActive' and 'onAddElement'. Either include them or remove the dependency array. If 'onAddElement' changes too often, find the parent component that defines it and wrap that definition in useCallback.  react-hooks/exhaustive-deps
+
+./components/shared/Whiteboard/WhiteboardContextMenu.tsx
+78:6  Warning: React Hook useEffect has missing dependencies: 'adjustedPos.x' and 'adjustedPos.y'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps
+
+./components/shared/Whiteboard/WhiteboardToolbar.tsx
+339:65  Warning: The ref value 'hoverTimeoutRef.current' will likely have changed by the time this effect cleanup function runs. If this ref points to a node rendered by React, copy 'hoverTimeoutRef.current' to a variable inside the effect, and use that variable in the cleanup function.  react-hooks/exhaustive-deps
+340:77  Warning: The ref value 'colorPickerTimeoutRef.current' will likely have changed by the time this effect cleanup function runs. If this ref points to a node rendered by React, copy 'colorPickerTimeoutRef.current' to a variable inside the effect, and use that variable in the cleanup function.  react-hooks/exhaustive-deps
+
+./components/staff/transfers/EditableTerminationLetterModal.tsx
+125:6  Warning: React Hook useEffect has missing dependencies: 'letterData.letterDate' and 'letterData.schoolName'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps
+
+./components/staff/transfers/StaffTransferTable.tsx
+46:6  Warning: React Hook useEffect has a missing dependency: 'prevFilterKey'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./components/student/TransferRequestModal.tsx
+74:6  Warning: React Hook useEffect has a missing dependency: 'effectiveDate'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./components/students/AttendanceByClass.tsx
+404:6  Warning: React Hook useMemo has a missing dependency: 'isBlockedDay'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./components/students/form-sections/PersonalInformationSection.tsx
+51:6  Warning: React Hook useEffect has missing dependencies: 'formData.institutionType' and 'onChange'. Either include them or remove the dependency array. If 'onChange' changes too often, find the parent component that defines it and wrap that definition in useCallback.  react-hooks/exhaustive-deps
+72:6  Warning: React Hook useEffect has missing dependencies: 'formData.educationLevel' and 'onChange'. Either include them or remove the dependency array. If 'onChange' changes too often, find the parent component that defines it and wrap that definition in useCallback.  react-hooks/exhaustive-deps
+
+./components/students/form-sections/SiblingsSection.tsx
+56:9  Warning: The 'excludeIds' array makes the dependencies of useCallback Hook (at line 114) change on every render. To fix this, wrap the initialization of 'excludeIds' in its own useMemo() Hook.  react-hooks/exhaustive-deps
+
+./components/teachers/form-sections/PersonalInformationSection.tsx
+47:6  Warning: React Hook useEffect has missing dependencies: 'formData.institutionType' and 'onChange'. Either include them or remove the dependency array. If 'onChange' changes too often, find the parent component that defines it and wrap that definition in useCallback.  react-hooks/exhaustive-deps
+54:6  Warning: React Hook useEffect has missing dependencies: 'formData.educationLevel' and 'onChange'. Either include them or remove the dependency array. If 'onChange' changes too often, find the parent component that defines it and wrap that definition in useCallback.  react-hooks/exhaustive-deps
+
+./components/transfers/TransferRequestsTable.tsx
+41:6  Warning: React Hook useEffect has a missing dependency: 'prevFilterKey'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./components/website/box/BlocksPanel.tsx
+130:46  Warning: React Hook useEffect has a missing dependency: 'onOpenChange'. Either include it or remove the dependency array. If 'onOpenChange' changes too often, find the parent component that defines it and wrap that definition in useCallback.  react-hooks/exhaustive-deps
+
+./components/website/box/BoxCanvas.tsx
+796:6  Warning: React Hook useEffect has a missing dependency: 'onChange'. Either include it or remove the dependency array. If 'onChange' changes too often, find the parent component that defines it and wrap that definition in useCallback.  react-hooks/exhaustive-deps
+840:6  Warning: React Hook useEffect has missing dependencies: 'editable' and 'marqueeRoom'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps
+3931:6  Warning: React Hook useEffect has a missing dependency: 'setSelected'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./components/website/box/ItemCrudLayer.tsx
+88:3  Warning: React Hook useEffect contains a call to 'setPlace'. Without a list of dependencies, this can lead to an infinite chain of updates. To fix this, pass [containerRef, selected] as a second argument to the useEffect Hook.  react-hooks/exhaustive-deps
+
+info  - Need to disable some ESLint rules? Learn more here: https://nextjs.org/docs/app/api-reference/config/eslint#disabling-rules
+   Collecting page data ...
+   Generating static pages (0/94) ...
+   Generating static pages (23/94) 
+   Generating static pages (46/94) 
+   Generating static pages (70/94) 
+ ✓ Generating static pages (94/94)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                               Size     First Load JS
+┌ ○ /                                     3.81 kB         181 kB
+├ ○ /_not-found                           990 B           108 kB
+├ ○ /admin/feature-flags                  4.73 kB         191 kB
+├ ○ /admin/parents                        25.9 kB         535 kB
+├ ƒ /admin/parents/[id]                   49.1 kB         403 kB
+├ ○ /admin/parents/add                    10.5 kB         205 kB
+├ ○ /admin/parents/calls                  10.6 kB         208 kB
+├ ○ /admin/parents/chat                   8.68 kB         202 kB
+├ ƒ /admin/parents/chat/[id]              5.64 kB         181 kB
+├ ○ /admin/parents/chat/compose           5.72 kB         177 kB
+├ ○ /admin/parents/dashboard              8.33 kB         196 kB
+├ ○ /admin/parents/events                 7.43 kB         208 kB
+├ ○ /admin/parents/fees                   41.3 kB         528 kB
+├ ƒ /admin/parents/fees/[id]/edit         3.74 kB         210 kB
+├ ○ /admin/parents/fees/add               3.39 kB         209 kB
+├ ○ /admin/parents/messages               11 kB           212 kB
+├ ○ /admin/parents/messages/compose       6.33 kB         178 kB
+├ ○ /admin/settings/communication         11.9 kB         204 kB
+├ ○ /admin/tenants                        3.73 kB         193 kB
+├ ƒ /admin/tenants/[id]                   6.62 kB         196 kB
+├ ○ /admin/tenants/create                 7.83 kB         199 kB
+├ ƒ /api/agora/token                      166 B           107 kB
+├ ƒ /api/storage/callback                 166 B           107 kB
+├ ƒ /api/storage/supabase/setup           166 B           107 kB
+├ ƒ /api/storage/token                    166 B           107 kB
+├ ƒ /api/students/search                  166 B           107 kB
+├ ƒ /api/tenants/[id]/storage             166 B           107 kB
+├ ƒ /api/tenants/[id]/translation         166 B           107 kB
+├ ƒ /api/translate                        166 B           107 kB
+├ ƒ /api/webhooks/whatsapp                166 B           107 kB
+├ ○ /chart-gallery                        17.9 kB         132 kB
+├ ○ /classes                              13.8 kB         210 kB
+├ ƒ /classes/[id]                         5.57 kB         192 kB
+├ ƒ /classes/[id]/subjects                5.21 kB         191 kB
+├ ○ /classes/add                          10.6 kB         202 kB
+├ ○ /demo-grading                         3.02 kB         202 kB
+├ ○ /doc-editor-test                      3.15 kB         163 kB
+├ ○ /docs                                 6.55 kB         193 kB
+├ ○ /documents                            4.4 kB          178 kB
+├ ○ /documents/print-preview              1.06 kB         167 kB
+├ ○ /documents/shared                     3.88 kB         190 kB
+├ ○ /documents/templates                  2.41 kB         176 kB
+├ ○ /drive                                41.6 kB         211 kB
+├ ○ /finance/fee-structure                11 kB           356 kB
+├ ○ /finance/installments                 22.3 kB         498 kB
+├ ○ /finance/receipts                     23.3 kB         500 kB
+├ ○ /lecturers/portal/dashboard           2.79 kB         167 kB
+├ ○ /library                              19.2 kB         364 kB
+├ ○ /library/borrowing                    25.2 kB         370 kB
+├ ○ /library/fines                        13.2 kB         358 kB
+├ ○ /library/members                      15.8 kB         361 kB
+├ ○ /notifications                        5.35 kB         195 kB
+├ ○ /parents                              19.2 kB         204 kB
+├ ○ /parents/chat                         9.19 kB         173 kB
+├ ○ /parents/chat/compose                 6.53 kB         170 kB
+├ ○ /parents/children                     8.71 kB         173 kB
+├ ƒ /parents/children/[id]                29.4 kB         345 kB
+├ ƒ /parents/children/[id]/report-card    7.64 kB         339 kB
+├ ƒ /parents/children/[id]/term-progress  5.19 kB         191 kB
+├ ○ /parents/events                       6.79 kB         193 kB
+├ ƒ /parents/events/[id]                  16.4 kB         208 kB
+├ ○ /parents/fees                         21.7 kB         344 kB
+├ ○ /parents/homework                     5.18 kB         191 kB
+├ ƒ /parents/homework/[id]                11.8 kB         198 kB
+├ ○ /parents/leaves                       10 kB           206 kB
+├ ○ /parents/meetings                     10.5 kB         203 kB
+├ ƒ /parents/meetings/[id]                14.8 kB         204 kB
+├ ○ /parents/messages                     13.1 kB         177 kB
+├ ○ /parents/messages/compose             9.4 kB          173 kB
+├ ○ /parents/results                      6.97 kB         324 kB
+├ ○ /parents/support                      11.4 kB         203 kB
+├ ○ /presentations                        8.71 kB         172 kB
+├ ○ /presentations/editor                 1.96 kB         165 kB
+├ ○ /presentations/print-preview          638 B           170 kB
+├ ○ /settings                             17.4 kB         268 kB
+├ ○ /settings/communication               7.87 kB         194 kB
+├ ○ /settings/general                     3.99 kB         190 kB
+├ ○ /settings/grading                     7 kB            193 kB
+├ ○ /staff                                13.4 kB         508 kB
+├ ƒ /staff/[id]                           27.4 kB         239 kB
+├ ƒ /staff/[id]/edit                      4.43 kB         213 kB
+├ ○ /staff/add                            2.48 kB         220 kB
+├ ○ /staff/attendance                     6.95 kB         188 kB
+├ ○ /staff/discipline                     22.5 kB         213 kB
+├ ƒ /staff/edit/[id]                      2.86 kB         221 kB
+├ ○ /staff/leave-requests                 11.2 kB         340 kB
+├ ○ /staff/payroll                        7.95 kB         189 kB
+├ ○ /staff/performance-reviews            19.4 kB         210 kB
+├ ○ /staff/transfers                      24.5 kB         492 kB
+├ ○ /students                             24.2 kB         520 kB
+├ ƒ /students/[id]                        63.7 kB         594 kB
+├ ○ /students/add                         2.51 kB         224 kB
+├ ○ /students/attendance                  20.1 kB         215 kB
+├ ○ /students/bulk-import                 6.47 kB         332 kB
+├ ○ /students/cumulative-report           12.8 kB         212 kB
+├ ○ /students/discipline                  8.51 kB         504 kB
+├ ƒ /students/edit/[id]                   2.67 kB         230 kB
+├ ○ /students/grading                     8.63 kB         207 kB
+├ ○ /students/promotion                   5.67 kB         198 kB
+├ ○ /students/report-cards                6.69 kB         393 kB
+├ ○ /students/transcripts                 29.8 kB         543 kB
+├ ○ /students/transfers                   12.9 kB         342 kB
+├ ○ /teachers                             1.65 kB         188 kB
+├ ƒ /teachers/[id]                        6.5 kB          199 kB
+├ ƒ /teachers/[id]/edit                   4.49 kB         216 kB
+├ ○ /teachers/add                         5.39 kB         223 kB
+├ ○ /teachers/portal/dashboard            5.26 kB         169 kB
+├ ○ /teachers/portal/mark-attendance      4.17 kB         190 kB
+├ ○ /teachers/portal/meetings             9.11 kB         223 kB
+├ ○ /teachers/portal/my-classes           3.47 kB         190 kB
+├ ○ /test-call                            4.62 kB         191 kB
+├ ○ /test/communication                   107 kB          301 kB
+├ ○ /website                              15.8 kB         149 kB
+├ ○ /website/box-demo                     493 kB          653 kB
+├ ○ /website/builder                      1.84 kB         113 kB
+├ ○ /website/educo-blocks                 4.3 kB          135 kB
+└ ○ /website/educo-tokens                 13.4 kB         136 kB
++ First Load JS shared by all             107 kB
+  ├ chunks/1517-5110b07e417f7908.js       50.7 kB
+  ├ chunks/4bd1b696-a0f6cf3aa7b3d51a.js   53 kB
+  └ other shared chunks (total)           3.11 kB
+
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+

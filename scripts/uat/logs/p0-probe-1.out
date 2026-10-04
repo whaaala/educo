@@ -1,0 +1,17 @@
+[D] REPRODUCED: the desktop changed too — Position in row offered: true · desktop before flex-start · set Right at Phone → phone flex-end, desktop flex-end
+[D] REPRODUCED: floating on desktop too — Floating set at Phone → desktop position absolute
+[F] REPRODUCED: stored px reach the page — published CSS lines with px (not 1px hairlines): 2; from the two controls: height:300px
+[F] INFO — other px lines (first 6): initial-value:0px | height:300px
+[C] PROBE ERROR — step into(64-s,Text): locator.scrollIntoViewIfNeeded: Timeout 30000ms exceeded.
+[A] PROBE ERROR — step into(r7-3,Text): locator.scrollIntoViewIfNeeded: Timeout 30000ms exceeded.
+[B] PROBE ERROR — step beside(69-5,Text): locator.scrollIntoViewIfNeeded: Timeout 30000ms exceeded.
+[E] PROBE ERROR — step beside(6l-5,ding): could not select 6m-6 (got r8-3)
+
+A: PROBE ERROR — step into(r7-3,Text): locator.scrollIntoViewIfNeeded: Timeout 30000ms exceeded.
+B: PROBE ERROR — step beside(69-5,Text): locator.scrollIntoViewIfNeeded: Timeout 30000ms exceeded.
+C: PROBE ERROR — step into(64-s,Text): locator.scrollIntoViewIfNeeded: Timeout 30000ms exceeded.
+D: REPRODUCED: floating on desktop too — Floating set at Phone → desktop position absolute
+D: REPRODUCED: the desktop changed too — Position in row offered: true · desktop before flex-start · set Right at Phone → phone flex-end, desktop flex-end
+E: PROBE ERROR — step beside(6l-5,ding): could not select 6m-6 (got r8-3)
+F: INFO — other px lines (first 6): initial-value:0px | height:300px
+F: REPRODUCED: stored px reach the page — published CSS lines with px (not 1px hairlines): 2; from the two controls: height:300px

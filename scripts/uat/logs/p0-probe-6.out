@@ -1,0 +1,9 @@
+[C] REPRODUCED: "Left" ignored after a square was picked — Right → end · square centre → center · then Left → center (control shows "Left")
+[A] REPRODUCED: the phone Preview drops it — canvas@375 rgb(255, 0, 0) · Preview 375 rgba(0, 0, 0, 0) · Preview 1280 rgba(0, 0, 0, 0)
+[B] REPRODUCED: the wide Preview drops it — canvas@1920 rgb(255, 0, 0) · Preview 1920 rgba(0, 0, 0, 0) · Preview 375 rgba(0, 0, 0, 0)
+[E] PROBE ERROR — step beside(8d-5,Text): could not select 8e-6 (got x4-3)
+
+A: REPRODUCED: the phone Preview drops it — canvas@375 rgb(255, 0, 0) · Preview 375 rgba(0, 0, 0, 0) · Preview 1280 rgba(0, 0, 0, 0)
+B: REPRODUCED: the wide Preview drops it — canvas@1920 rgb(255, 0, 0) · Preview 1920 rgba(0, 0, 0, 0) · Preview 375 rgba(0, 0, 0, 0)
+C: REPRODUCED: "Left" ignored after a square was picked — Right → end · square centre → center · then Left → center (control shows "Left")
+E: PROBE ERROR — step beside(8d-5,Text): could not select 8e-6 (got x4-3)

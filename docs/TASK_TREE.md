@@ -71,7 +71,19 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
     look the same as before at 100 % and grow at 150 % browser text
   - `[ ]` REGRESSION: a page saved before P-0 publishes byte for byte as it did (all five changes)
   - `[ ]` no console errors; typecheck 0 · eslint 0 · vitest · test:fast green
-  LEDGER (this batch): none yet
+  MEASURED THROUGH THE UI (HEADED, `scripts/uat/probe-p0.js`, fresh build OOQdv_uu, 2026-10-04) — ALL FIVE REPRODUCED:
+    (1) an Accordion's Advanced CSS `background-color: red` set at Phone: canvas 375 red, Preview 375 transparent; set at Wide:
+    canvas 1920 red, Preview 1920 transparent · (2) cell "Line up: Right" → `end`; square "Middle centre" → `center`; then
+    "Line up: Left" → still `center` while the control SAYS "Left" · (3) "Position in row: Right" at Phone → desktop
+    `flex-start` → `flex-end` too; "Floating" at Phone → desktop `position: absolute` too · (4) a Side-by-side stack's
+    "Line up (across)" → "End" moved the words DOWN 236px, across 0 · (5) Height "300px" → published `height:300px`
+  LEDGER (this batch):
+    - `[ ]` P0-a · probe: Advanced CSS exists only on catalogue components (Content tab), grid-cell controls only on the grid's own
+      child, and the probe's own helpers left `page.__step` stale — FIXED in the probe (Accordion, Content tab, the cell from the
+      tree, step labels); the line closes when the UAT pass runs on it
+    - `[ ]` P0-b · test helper: `P.beside` inside probe-p0 cannot select the Text it just dropped beside an Image ("could not
+      select …"), while the same steps called directly succeed and a person's click on the words selects it at once — a harness
+      defect to find and fix before the UAT pass
 - `[x]` **BATCH G-1 · The page grid in the engine** — CLOSED 2026-10-04 (session 87422eae; HEADED UAT `uat-g1-headed.js`, six
   windows, 70 screens each — every device of the Preview's menu and both sides of every breakpoint — CLEAN in all six, 0 page
   errors; gate: typecheck 0 · eslint 0 errors · vitest 4,174 · test:fast 806/806) (area: page grid · 5 changes, OPENED
