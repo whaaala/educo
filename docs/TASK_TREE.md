@@ -2992,6 +2992,39 @@ sent), and my research. Nothing on the layout is done until every line here is c
 One entry per session, newest first. Written the moment the user says "new session" (or the context is about to run
 out) — where the session STARTED FROM, where it GOT TO, and where the next one CONTINUES FROM.
 
+### 2026-10-04 · session 9fa0fee9 · branch `builder/layout-uat` — HANDOVER (recommended once both held: the context is genuinely long — R-4's completeness reading, the map and a 10,908-check proof, the user's signing with D1–D5, and all of P-0 with its probes and two UAT passes — and the boundary is clean: everything committed at `9018368`, the machine clean; the user agreed: "then we'll move on to the new session")
+- **Started from:** session 87422eae's handover — BATCH R-4 with its reading done, the map next.
+- **Got to:** (1) **BATCH R-4 CLOSED and SIGNED**: completeness closed (575 MDN properties in `css-layout/08`, the 16 sub-guides
+  in 05 §7, Learn grid + 22 grid links in 02 §6, 15 flexbox links in 04 §7); THE MAP `css-layout/07-map.md` (six questions a
+  person answers, ~110 rows, verdicts, plain words); the PROOF `scripts/research/css-layout-combos.js` (10,908 headed checks,
+  0 failed, 8 rules it forced, 07 §4.1); the user's decisions **D1–D5** (07 §6.1 and the R-4 entry). (2) **BATCH P-0 CLOSED**
+  (`9018368`): R4-1 … R4-5 fixed, 30/30 headed UAT at 70 screens + 8/8 editor-theme contrast, gate green.
+- **Continue from:** **BATCH G-2 · layout guides + grid panel** (YOU ARE HERE) — open it in BATCHES, checklist first.
+- **Next prompt (paste to start):** "Branch `builder/layout-uat` (last commit: this handover). Read CLAUDE.md, then
+  `docs/TASK_TREE.md`: this SESSION LOG entry, then YOU ARE HERE (AC-37b → next leaf BATCH G-2), then the R-4 entry in BATCHES
+  (its signed checklist, decisions D1–D5 and the QUEUED build batches). Then read, in this order: the approved plan
+  `docs/web-anatomy/page-grid/plan/page-grid-plan.html` (published https://claude.ai/artifact/Q5rAsZNSJJBXrnBTJf9zBN — its
+  toolbar switch, Shift G, the page-grid panel and its ranges), the AC-37b decisions in section 1.1.5 of the tree, `lib/page-grid.ts`
+  (columns per rung, span labels — G-1 built the maths, nothing draws it yet), and `docs/web-anatomy/css-layout/07-map.md` §1 and
+  §6.1. WHAT G-2 IS (the user, in plain words: 'the grid becomes something a person can see and set'): (1) LAYOUT GUIDES — the
+  page grid's column lines drawn over the canvas from the SAME template the page uses (never a second copy), shown while placing
+  / dragging, a toolbar toggle + Shift G + a menu item keep them on, the side space drawn AS padding (edge to edge, decision 1),
+  per screen (4 / 8 / 12 columns); (2) SPAN LABELS ('6 of 12') on the selected block; (3) THE GRID PANEL — columns, gap and side
+  space PER SCREEN, one grid per SITE with a page opt-out (D4 of the plan), every block follows in ONE undo; keyboard and screen-
+  reader reachable, all four editor themes. DO, IN ORDER: (1) RULE K — nothing on 3100 / 3200 / 3400 (a 'stopped' next start
+  keeps serving: kill the port's PID); (2) open BATCH G-2 in BATCHES with ≤ 6 changes and its HEADED UAT CHECKLIST written first
+  (every change × the editor's four themes × every screen of `scripts/uat/screens.js` × each state on / off × entry points:
+  toolbar, Shift G, menu); (3) build through the UI, BDD first, guards mutation-proven; (4) six-window headed UAT on a fresh
+  production build, the Preview at all 70 screens, the guides NEVER in the published page; (5) close G-2, then G-3 (page-grid
+  sections EMITTED as a real CSS grid — D5 — lines per rung, Alt free, the fit rule for every block, nested-trees UAT). STANDING
+  DECISIONS: the AC-37b plan decisions (edge to edge; equal lines on every rung; Alt free / Shift half-lines; free placement never
+  breaks the page; one grid per site; readable width on) and R-4's D1–D5. NOT DONE: G-2 … G-6, P-1 … P-3; the published artifacts
+  (Builder Hub, Layout System, Parity Audit, Website Builder Guide page) before the PR. TRAPS: Advanced CSS exists only on
+  catalogue components (Content tab); bands are unselectable scaffolding — select the stack; H.select now names its own step;
+  `makeRowBand` makes new ids each call (byte-compare ONE tree); theme colours are OKLCH (measure through a canvas); the 'Website
+  theme' menu is the PAGE's theme — the editor's own is 'Change theme'; use the Edit tool, never shell sed, for anything with a
+  backslash."
+
 ### 2026-10-04 · session 87422eae · branch `builder/layout-uat` — HANDOVER (the user asked "should we not do this in a new session?"; recommended once both held: the context is genuinely long — the plan with the user's decisions, all of G-1 with ~10 six-window headed passes and 17 ledger lines, and R-4's six readers — and the boundary is clean: G-1 committed `2f56caa`, R-4's reading stored and committed, the map is the heavy job next)
 - **Started from:** session e9d19b5c's handover — AC-37b, the plan artifact with mockups.
 - **Got to:** (1) **the PLAN** published and **APPROVED** with the user's decisions (https://claude.ai/artifact/Q5rAsZNSJJBXrnBTJf9zBN,
