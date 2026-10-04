@@ -2323,7 +2323,7 @@ sent), and my research. Nothing on the layout is done until every line here is c
     falls back into the flow unless placed at that rung; the page audit and Page check warn when it covers words;
     shown as drag on the canvas with the half-lines drawn, a Position panel (start / end, column / row, spill above /
     below) and a gallery of ready-made placements (RULE S / UI). Joins AC-10, ST-5, AC-35 — one build
-    - `[>]` AC-37b ← YOU ARE HERE (next leaf: BATCH G-3b · the page as a real CSS grid — G-3 CLOSED 2026-10-04 (63 headed checks, G3-8 carried to G-3b by the user); earlier: BATCH G-3 · placing on columns AND rows — G-2 CLOSED 2026-10-04 (134 headed checks); P-0 CLOSED 2026-10-04 (R4-1 … R4-5 fixed, 30 headed checks); R-4 SIGNED with D1–D5 (session 9fa0fee9); then G-3, P-1, P-2, G-4, P-3, G-5, G-6. G-1 CLOSED 2026-10-04 (see BATCHES). Plan APPROVED 2026-10-04 with the user's decisions below. Earlier: research R-3 DONE and SIGNED 2026-10-04
+    - `[>]` AC-37b ← YOU ARE HERE (next leaf: BATCH G-3b · the page as a real CSS grid; handover of session 5da86722 in the SESSION LOG — G-3 CLOSED 2026-10-04 (63 headed checks, G3-8 carried to G-3b by the user); earlier: BATCH G-3 · placing on columns AND rows — G-2 CLOSED 2026-10-04 (134 headed checks); P-0 CLOSED 2026-10-04 (R4-1 … R4-5 fixed, 30 headed checks); R-4 SIGNED with D1–D5 (session 9fa0fee9); then G-3, P-1, P-2, G-4, P-3, G-5, G-6. G-1 CLOSED 2026-10-04 (see BATCHES). Plan APPROVED 2026-10-04 with the user's decisions below. Earlier: research R-3 DONE and SIGNED 2026-10-04
       (`ff5c53a`, `4418202`); build to every decision recorded under R-3 below; the mockups settle the open three (row
       snap · the phone gap 11 vs 16 px · panel per site or per page) → the user's approval → build) · **THE PAGE GRID — DECIDED by the user 2026-10-03: done RIGHT AFTER L-4 closes, BEFORE L-5, L-6 and the
       frozen list's placement items** (they are built on it). NAMES (decided): "page grid" in code and docs; the lines a
@@ -3136,6 +3136,48 @@ sent), and my research. Nothing on the layout is done until every line here is c
 
 One entry per session, newest first. Written the moment the user says "new session" (or the context is about to run
 out) — where the session STARTED FROM, where it GOT TO, and where the next one CONTINUES FROM.
+
+### 2026-10-04 · session 5da86722 · branch `builder/layout-uat` — HANDOVER (recommended once both held: the context is genuinely long — two batches (G-2, G-3), about a dozen six-window headed passes, three full gates and six decisions of the user — and the boundary is clean: everything committed at `d83939f`, nothing running; the user agreed: "yes")
+- **Started from:** session 9fa0fee9's handover — BATCH G-2 next (layout guides + the page-grid panel).
+- **Got to:** (1) **BATCH G-2 CLOSED** (`ca5eefe`): layout guides (switch · Shift G · right-click · Page settings), span chips, the
+  page-grid panel (columns per screen, phones, row step, side space and gap for the site, a page's own grid, Reset), ledger
+  G2-1 … G2-8; 134 headed checks. (2) **BATCH G-3 CLOSED** (`d83939f`): edge-to-edge columns (`rowSide`), column snap on resize
+  (`snapEdgePx`, Shift half, Alt free), "Columns (of 12)" + Alt ← / →, "Rows: N", "Line up with the grid", guide lines drawn on
+  whole screen pixels (`GuideLines`), half-lines only with Shift; ledger G3-1 … G3-12; 65 headed checks, G-2 as regression 128/0;
+  gate typecheck 0 · eslint 0 errors · vitest 4,276 · test:fast 806/806. (3) THE USER'S DECISIONS this session (all in the tree):
+  rows drawn with the columns, heights follow content, "span N rows" in G-3b · columns EDGE TO EDGE, the side space the outer
+  blocks' default margin · the user's picture of the whole (choose columns and a row size, place by both, bleed, nest, float —
+  a float pushes nothing, is pinned to lines, falls back on a phone) · G3-7 fixed now · G3-8 (a ~2px snap offset) carried to
+  G-3b · half-lines only while Shift is held · nothing in the page is stored in px (rem / fr).
+- **Continue from:** **BATCH G-3b · the page as a real CSS grid** (YOU ARE HERE) — open it in BATCHES, checklist first.
+- **Next prompt (paste to start):** "Branch `builder/layout-uat` (last commit: this handover). Read CLAUDE.md, then
+  `docs/TASK_TREE.md`: this SESSION LOG entry, then YOU ARE HERE (AC-37b → next leaf BATCH G-3b), then in BATCHES the closed
+  G-3 and G-2 entries (their ledgers say what the code does now), then the R-4 entry's BUILD BATCHES list: the QUEUED G-3b line,
+  the user's decision 'columns EDGE TO EDGE' and THE USER'S PICTURE OF THE WHOLE just above it. Then read: the plan
+  `docs/web-anatomy/page-grid/plan/page-grid-plan.html` (published https://claude.ai/artifact/Q5rAsZNSJJBXrnBTJf9zBN — it still
+  shows rows off, a separate 'Grid…' button, dashed lines and strips outside the columns: correct it with the other artifacts before
+  the PR), `docs/web-anatomy/css-layout/07-map.md` §2.A and §6.1 (D5), `lib/page-grid.ts`, and in `lib/box-model.ts`: `rowSide`,
+  `spanAt` / `setSpan`, `lineUpWithGrid`, `gutterCSS`, `pageBandInset`, `gridBandOwnsGutter`, the fit rule (`rowNarrowsAt` /
+  `rowQueryCss`). WHAT G-3b IS (≤ 6 changes): (1) a page-grid row EMITTED as a real CSS grid (D5) — `gridTemplate(cols)` per rung,
+  columns edge to edge, each block `grid-column: span k` from its share, the side space the outer blocks' margin (rowSide), the gap
+  as the grid's — canvas == export, saved pages byte-identical; this also closes G3-8 (a snapped edge exactly ON the drawn line);
+  (2) start line / 'to the last line' / full / bleed / half-bleed per rung (map A1–A5, A15); (3) Alt free → lines + margin, never
+  page x / y; (4) the fit rule for every block on the grid (proof rule 4, whole words); (5) the panel's 'Space between columns'
+  (carried from G-2); (6) rows as real grid rows ('span N rows', the user's) — plus the nested-tree check G-3's slice F started.
+  DO, IN ORDER: (1) RULE K — nothing on 3100 / 3200 / 3400; (2) open G-3b in BATCHES, ≤ 6 changes, the HEADED UAT CHECKLIST first
+  (every change × the four editor themes × all 70 screens of `screens.js` × each state on / off × every entry point); (3) BDD first,
+  every guard mutation-proven; (4) six-window headed UAT on a fresh production build (copy `scripts/uat/uat-g3-headed.js`: its
+  `lineGaps` decodes the picture to measure lines), Preview at all 70 screens at 100 / 150 / 200 %; (5) full gate (~13 min:
+  typecheck · eslint · vitest · test:fast); commit. STANDING DECISIONS: the AC-37b plan decisions, R-4's D1–D5, and this
+  session's six above. NOT DONE: G-3b, P-1, P-2, G-4, P-3, G-5, G-6; the artifacts (plan, Builder Hub, Layout System, Parity
+  Audit, Website Builder Guide) and the layout story (RULE L) for the page grid — before the PR. TRAPS: `lib/box-model.ts`,
+  `lib/box-site.ts`, `BoxCanvas.tsx`, `page.tsx` are CRLF — edit with a script that normalises to LF and writes CRLF back, or the
+  Edit tool; NEVER shell or heredoc text holding a backslash or an escaped quote (eaten four times this session — use the Write /
+  Edit tool); bash `/tmp` is not node's `/tmp` (use the scratchpad); a `NEXT_DIST_DIR=.next-b` build rewrites `tsconfig.json`
+  (restore it); a background `next start` reported 'failed 127' is the one I stopped; the snap works on the POINTER in
+  `startResize` (`snapEdgePx`), never on the result; `GuideLines` measures `[data-layout-guides]` and draws in screen space; the
+  header sits on `CHROME_Z.panel` (G2-6); Alt + arrows pass the Z1-j focus rule (G3-3); `rowSide` takes only LENGTH margins
+  (G3-11)."
 
 ### 2026-10-04 · session 9fa0fee9 · branch `builder/layout-uat` — HANDOVER (recommended once both held: the context is genuinely long — R-4's completeness reading, the map and a 10,908-check proof, the user's signing with D1–D5, and all of P-0 with its probes and two UAT passes — and the boundary is clean: everything committed at `9018368`, the machine clean; the user agreed: "then we'll move on to the new session")
 - **Started from:** session 87422eae's handover — BATCH R-4 with its reading done, the map next.
