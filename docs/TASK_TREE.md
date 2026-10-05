@@ -135,7 +135,7 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
   - `[x]` G3b-29 · TEST (mine): slice B aimed each screen's drags with half the VISIBLE gap, which after the previous screen's Alt
     step held the free margin too (65px / 62.5px "off the line" at Full width and Mobile — the product snapped to the line nearest
     the hand, as it should). → B undoes its Alt step before the next screen; a drag from a free margin is J's (1b)
-  - `[?]` QUESTIONS FOR THE USER (not defects — decisions): (a) on a phone a block set to half the page that is alone on its line stays
+  - `[x]` DECIDED BY THE USER 2026-10-05 ("yes to both your recommendations") → BATCH G-3d below. THE QUESTIONS WERE: (a) on a phone a block set to half the page that is alone on its line stays
     half the page (the behaviour before G-3b too) — should the fit rule widen a lone block there? (b) a picture inside a block that
     spans two rows keeps its own height (16.25rem), so the block covers the two rows but the picture does not fill it — should a
     picture fill the height of a block that spans rows?
@@ -337,6 +337,13 @@ only when every line is ticked and every bug it found is fixed and re-checked. G
   - `[x]` E1-6 · REAL, MINE, FOUND WHILE EDITING THE TREE: adding E-1's checklist dropped BATCH G-3's header line (my edit's text ended
     on it and did not put it back), so G-3's closed record ran on after E1-5 — committed in e69d4e3 and missed by the tree's guard. →
     the header restored; the guard now also fails when a batch the tree names has no header of its own (red on e69d4e3's tree)
+- `[ ]` **BATCH G-3d · Two decisions from G-3b** — QUEUED 2026-10-05 by the user ("yes to both") (area: page grid · 2 changes):
+  - `[ ]` (1) ON A PHONE A LONE HALF-WIDTH BLOCK TAKES THE WHOLE LINE: where the fit rule stacks a row, a block alone on its line
+    whose width came from a WIDER screen takes the line (~165px of words beside a hole on a 360px phone otherwise); a width set on the
+    phone itself still wins (G3b-11)
+  - `[ ]` (2) A PICTURE FILLS A BLOCK THAT SPANS ROWS: when the picture is the only thing in a block that spans 2+ rows, it fills the
+    block's height, cropped (cover, its focal point), never stretched — on by default, a "Fill the block's height" switch in the
+    picture's settings to turn it off (RULE UI); a block with words beside the picture keeps the picture's own height
 - `[ ]` **BATCH E-2 · Resizing and dropping on tablets and phones** — QUEUED 2026-10-05 by the user ("split by area", E1-5) (area: the
   editor's gestures at small viewports · the failing specs, each measured: a spec that assumes the desktop, or a real bug — fixed
   either way): grid-cell-resize 13 · vertical-edges-anchored 7 · side-by-side-resize 6 · stack-under-column 4 · float-round-trip 3 ·
@@ -2630,7 +2637,7 @@ sent), and my research. Nothing on the layout is done until every line here is c
     falls back into the flow unless placed at that rung; the page audit and Page check warn when it covers words;
     shown as drag on the canvas with the half-lines drawn, a Position panel (start / end, column / row, spill above /
     below) and a gallery of ready-made placements (RULE S / UI). Joins AC-10, ST-5, AC-35 — one build
-    - `[>]` AC-37b ← YOU ARE HERE (BATCH G-3b and BATCH E-1 CLOSED 2026-10-05; next: the user's two questions in G-3b's ledger, then BATCH E-2 (resizing and dropping on tablets and phones); before the PR: the artifacts and the layout story for the page grid; then its final pass, then BATCH E-1; handover of session 3da81fad in the SESSION LOG; earlier: handover of session 5da86722 in the SESSION LOG — G-3 CLOSED 2026-10-04 (63 headed checks, G3-8 carried to G-3b by the user); earlier: BATCH G-3 · placing on columns AND rows — G-2 CLOSED 2026-10-04 (134 headed checks); P-0 CLOSED 2026-10-04 (R4-1 … R4-5 fixed, 30 headed checks); R-4 SIGNED with D1–D5 (session 9fa0fee9); then G-3, P-1, P-2, G-4, P-3, G-5, G-6. G-1 CLOSED 2026-10-04 (see BATCHES). Plan APPROVED 2026-10-04 with the user's decisions below. Earlier: research R-3 DONE and SIGNED 2026-10-04
+    - `[>]` AC-37b ← YOU ARE HERE (handover of session 22981e0a in the SESSION LOG; BATCH G-3b and BATCH E-1 CLOSED 2026-10-05; next: BATCH G-3d (the user's two decisions), then BATCH E-2 (resizing and dropping on tablets and phones); before the PR: the artifacts and the layout story for the page grid; then its final pass, then BATCH E-1; handover of session 3da81fad in the SESSION LOG; earlier: handover of session 5da86722 in the SESSION LOG — G-3 CLOSED 2026-10-04 (63 headed checks, G3-8 carried to G-3b by the user); earlier: BATCH G-3 · placing on columns AND rows — G-2 CLOSED 2026-10-04 (134 headed checks); P-0 CLOSED 2026-10-04 (R4-1 … R4-5 fixed, 30 headed checks); R-4 SIGNED with D1–D5 (session 9fa0fee9); then G-3, P-1, P-2, G-4, P-3, G-5, G-6. G-1 CLOSED 2026-10-04 (see BATCHES). Plan APPROVED 2026-10-04 with the user's decisions below. Earlier: research R-3 DONE and SIGNED 2026-10-04
       (`ff5c53a`, `4418202`); build to every decision recorded under R-3 below; the mockups settle the open three (row
       snap · the phone gap 11 vs 16 px · panel per site or per page) → the user's approval → build) · **THE PAGE GRID — DECIDED by the user 2026-10-03: done RIGHT AFTER L-4 closes, BEFORE L-5, L-6 and the
       frozen list's placement items** (they are built on it). NAMES (decided): "page grid" in code and docs; the lines a
@@ -3443,6 +3450,46 @@ sent), and my research. Nothing on the layout is done until every line here is c
 
 One entry per session, newest first. Written the moment the user says "new session" (or the context is about to run
 out) — where the session STARTED FROM, where it GOT TO, and where the next one CONTINUES FROM.
+
+### 2026-10-05 · session 22981e0a · branch `builder/layout-uat` — HANDOVER (recommended once both held: the context is genuinely long — G-3b's (3) and (6), its whole final pass, all of E-1, about twenty six-window headed runs and five full gates — and the boundary is clean: everything committed, nothing running; the user agreed: "let's start a new session")
+- **Started from:** session 3da81fad's handover — BATCH G-3b (3) Alt free, then (6) rows, then its final pass, then E-1.
+- **Got to:** (1) **BATCH G-3b CLOSED** (`30eee12` (3) · `b97f839` (6) · `2515755` close): Alt free = the nearest lines + a free
+  margin inside them (`freeInset`, % of the block's own columns, per screen); an Alt drag of a page-row block SLIDES it along its line
+  (`slideFreeAt`), never floats it; "Rows tall" 1–6 per screen (the Grid block's `rowSpan` reused), placed as grid auto-placement
+  places it (`rowLinesAt` with `x` / `cont`); the fit rule drops spans and free margins where it steps. Final pass ~300 headed checks
+  0 failed; regression G-3c / G-3 / G-2 clean; 59 saved pages byte for byte (but the chosen empty-picture placeholder). Ledger
+  G3b-15 … G3b-29 all closed (real: 16 · 18 · 19 · 23 · 24 · 27 · 28; 17 = 18's cause; the rest my tests). (2) **BATCH E-1 CLOSED**
+  (`e69d4e3` · `aa1d91f` · `0dbf69a`): add-without-asking's 7 were the spec assuming the desktop; the headed pass found and fixed
+  E1-7 (the Inspector tab's word 2.6:1), E1-8 (the canvas chrome drawn over the narrow-screen Inspector → `CHROME_Z.drawer` 9450),
+  E1-9 (that z-index covered the header's menus when docked → class + CSS variable, `lg:z-auto`), E1-6 (my edit dropped G-3's header
+  from this tree → the tree guard now fails on a named batch with no header). (3) THE USER'S DECISIONS: E-1 split by area — the
+  gate's 76 browser specs on tablet / phone fail 70 in 14 specs → QUEUED E-2 (resizing and dropping, 37) · E-3 (the Inspector's
+  controls on a narrow screen, 26) · E-4 (Preview and components, 7; E-1's (2) — the gate runs tablet + phone — switches on when E-4
+  closes); "yes to both" → QUEUED BATCH G-3d (a lone half-width block takes the phone's whole line unless its width was set on the
+  phone · a picture fills a block that spans rows, cover, with a switch).
+- **Continue from:** **BATCH G-3d (YOU ARE HERE)**, then E-2 → E-3 → E-4, then the rest of the page-grid plan P-1 · P-2 · G-4 · P-3 ·
+  G-5 · G-6 (see AC-37b), then L-5 · L-6 · S-3 · D-1, the frozen list 1.1.5, Tasks 2–4 (L-7 · L-8 · L-9), the re-sweep + the layout
+  story → pull request.
+- **Next prompt (paste to start):** "Branch `builder/layout-uat` (last commit: this handover). Read CLAUDE.md, then `docs/TASK_TREE.md`:
+  this SESSION LOG entry, then YOU ARE HERE (AC-37b → BATCH G-3d), then in BATCHES: G-3d (two changes, the user's decisions), G-3b
+  (closed — its DESIGN paragraph and ledger G3b-15 … G3b-29), E-1 (closed — E1-5's measured 70 small-screen failures and E1-8/E1-9),
+  and the queued E-2 / E-3 / E-4. Then read, in `lib/box-model.ts`: `rowLinesAt` (x / rows / cont), `pageRowCells`, `pageRowCSS`,
+  `rowQueryCss` (the fit rule's steps, `floorWith`, `withoutRowSpans`), `fitScreens` / `fitStepAt`, `slideFreeAt`, `setFreeInset`;
+  and the Image block's sizing (`imageSizing`). DO, IN ORDER: (1) RULE K — nothing on 3100 / 3200; (2) BATCH G-3d — write its HEADED
+  checklist first; (1) a lone half-width block on a stepped phone line takes the whole line unless its width was set on the phone;
+  (2) a picture alone in a block that spans 2+ rows fills its height (cover, focal point) with a "Fill the block's height" switch
+  (RULE UI) — BDD first, unit guards mutation-proven, then a six-window headed pass (`scripts/uat/uat-g3b-headed.js` slices K and
+  L are the starting point) with the Preview at all 70 screens at 100 / 150 / 200 %, full gate, close; (3) BATCH E-2: run its specs on
+  tablet-landscape / tablet-portrait / mobile-chrome against `next start` (BASE_URL=http://localhost:3100), measure EACH failure
+  (headed probe, screenshots read) — a spec assuming the desktop (the Inspector starts as its tab under 64em; the page is shown
+  scaled when the blocks panel docks at 1024) or a real bug — fix either way, headed pass, gate. STANDING DECISIONS: the AC-37b plan,
+  R-4's D1–D5, every decision in G-3b / G-3c / E-1's ledgers. NOT DONE: G-3d, E-2 … E-4, P-1 … G-6, the artifacts (plan
+  https://claude.ai/artifact/Q5rAsZNSJJBXrnBTJf9zBN out of date · Builder Hub · Layout System · Parity Audit · Website Builder Guide)
+  and the layout story for the page grid (RULE L) — before the PR; the branch is 131 commits ahead of master (rule 9: keep it short —
+  ask the user about merging what is closed). TRAPS: NEVER `git checkout <file>` to undo — write the saved string back; write edit
+  scripts with the Write tool or a quoted heredoc with no backslashes (sed and node -e mangle them; JS `replace` eats `### 2026-10-05 · session 3da81fad · branch `builder/layout-uat` — HANDOVER`); a JSX
+  comment beside a single child breaks the parse; a "killed" serve notice is not the server dying — check the port; never vitest and
+  Playwright at once; a headed UAT's test aim can be wrong (G3b-26 / 29 / 22) — read the screenshot before blaming the product."
 
 ### 2026-10-05 · session 3da81fad · branch `builder/layout-uat` — HANDOVER (recommended once both held: the context is genuinely long — G-3b's four changes and all of G-3c, about fifteen six-window headed passes, five full gates and twelve decisions of the user — and the boundary is clean: everything committed at `5274e18`, nothing running; the user agreed: "Yes. Let's move on to a new session")
 - **Started from:** session 5da86722's handover — BATCH G-3b (the page as a real CSS grid) next.
