@@ -10,7 +10,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Minus, Plus, RotateCcw } from "lucide-react";
 import type { Breakpoint } from "@/lib/box-model";
-import { SPACE_GRID, baseUnitParts } from "@/lib/box-model";
+import { SPACE_GRID, fluidRemRange } from "@/lib/box-model";
 import { type PageGridSettings, PAGE_GRID_DEFAULT, PAGE_GRID_LIMITS, columnsAt } from "@/lib/page-grid";
 import Slider from "@/components/shared/Slider";
 import { CHROME_Z } from "@/lib/educo-ui/stacking";
@@ -20,7 +20,7 @@ import { Segmented } from "./ui";
  * WHAT A SPACING VALUE REALLY IS, from a phone to a wide screen (G3c-1). The values are numbers of the page's fluid unit, which
  * doubles from a phone to a wide screen — read as pixels (value / 16) the old default 23 said "1.44rem" while it ran 1 → 2 rem.
  */
-const remRange = (v: number) => { const { loRem, hiRem } = baseUnitParts(); const a = +((v / 10) * loRem).toFixed(2), b = +((v / 10) * hiRem).toFixed(2); return a === b ? `${a}rem` : `${a}–${b}rem`; };
+const remRange = fluidRemRange; // the engine's one way a label says a fluid value (G3c-10)
 
 const SCREENS: { value: Breakpoint; label: string }[] = [
   { value: "phone", label: "Phone" }, { value: "tabletPortrait", label: "Tablet" }, { value: "tabletLandscape", label: "Laptop" },
@@ -56,6 +56,18 @@ export default function PageGridPanel({ grid, ownPage, breakpoint, rows, onRows,
   const [screen, setScreen] = useState<Breakpoint>(breakpoint);
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => { ref.current?.querySelector<HTMLElement>("button, input")?.focus(); }, []);
+  /**
+   * ESCAPE STILL CLOSES IT WHEN FOCUS HAS FALLEN OUT (G3c-11, seen in the headed pass): "Back to default" disables itself when clicked,
+   * the browser drops focus to the page body, and the panel's own Escape (on its element) never heard the key — it stayed open over
+   * the canvas, for a keyboard user too (WCAG 2.1.1). Only when focus is on the body, so every other Escape keeps its meaning; one
+   * listener for the panel's life, the close held in a ref (rule 2 — a listener re-made each render misses its first event).
+   */
+  const closeRef = useRef(onClose); closeRef.current = onClose;
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape" && (!document.activeElement || document.activeElement === document.body)) closeRef.current(); };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, []);
 
   const cols = columnsAt(grid, screen);
   const isPhone = screen === "phone", isDesktop = screen === "base";

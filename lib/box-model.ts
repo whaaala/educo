@@ -4981,8 +4981,17 @@ export const frameCss = (node: BoxNode): string => (node.gridSpace?.gutter !== u
 export function pageFrameEnds(root: BoxNode): CSSProperties {
   if (!root.pageGrid) return {};
   const bands = (root.children ?? []).filter((b) => !b.hidden && !isFloating(b));
-  const bleeds = (band?: BoxNode) => !!band && (hasVisibleEdge(band) || (band.children ?? []).filter((c) => !isFloating(c)).every((c) => hasVisibleEdge(c) || BLEEDS.has(c.type)));
+  const bleeds = (band?: BoxNode) => !!band && (hasVisibleEdge(band) || (band.children ?? []).filter((c) => !isFloating(c)).every((c) => (!selfPaints(c) && !c.preset && hasVisibleEdge(c)) || BLEEDS.has(c.type))); // a Card or a Button keeps its frame outside its box (G3c-2)
   return { ...(bleeds(bands[0]) ? {} : { paddingTop: frameCss(root) }), ...(bleeds(bands[bands.length - 1]) ? {} : { paddingBottom: frameCss(root) }) };
+}
+/**
+ * WHAT A VALUE OF THE FLUID UNIT REALLY IS, phone → wide (G3c-1, G3c-10; the user 2026-10-05: "phone → wide range"). Spacing and sizes
+ * are numbers of `--box-u` / `--box-t`, which run from 0.4375 to 0.875 rem per 10 — read as "value ÷ 16 rem" every slider claimed a
+ * size it has on no screen ("Text size 1rem" is 0.7 rem on a phone, 1.4 rem wide). The ONE way a label says it.
+ */
+export function fluidRemRange(v: number): string {
+  const { loRem, hiRem } = baseUnitParts(); const a = +((v / 10) * loRem).toFixed(2), b = +((v / 10) * hiRem).toFixed(2);
+  return a === b ? `${a}rem` : `${a}–${b}rem`;
 }
 /** The fluid unit in rem on a page `w` rem wide (`--box-u`). */
 const unitRemAt = (w: number) => { const { loRem, hiRem, remHalf, cqwHalf } = baseUnitParts(); return Math.min(hiRem, Math.max(loRem, remHalf + (cqwHalf * w) / 100)); };

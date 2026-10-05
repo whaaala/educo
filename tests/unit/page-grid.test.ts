@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { type BoxNode, type Breakpoint, SPACE_DEFAULT, SPACE_GRID, spaceDefaults, outerDefaults, gapOf, insertBox, normalizeRowBands, markPageGrid, u, createContainer, makeRowBand, sectionContent, gridBandOwnsGutter, pageBandInset, rowNarrowsAt, rowQueryCss, childStyle, tabletPlaces, rowSide, outerSpaceDefaults, spanAt, setSpan, resolveResponsive, lineUpWithGrid, isPageRow, containerStyle, pageRowCells, pageRowTracks, pageRowSlot, linesAt, setLinesAt, fullWidthAt, updateBoxResponsive, FRAME_CSS, frameRemAt } from "@/lib/box-model";
+import { type BoxNode, type Breakpoint, SPACE_DEFAULT, SPACE_GRID, spaceDefaults, outerDefaults, gapOf, insertBox, normalizeRowBands, markPageGrid, u, createContainer, makeRowBand, sectionContent, gridBandOwnsGutter, pageBandInset, rowNarrowsAt, rowQueryCss, childStyle, tabletPlaces, rowSide, outerSpaceDefaults, spanAt, setSpan, resolveResponsive, lineUpWithGrid, isPageRow, containerStyle, pageRowCells, pageRowTracks, pageRowSlot, linesAt, setLinesAt, fullWidthAt, updateBoxResponsive, FRAME_CSS, frameRemAt, frameCss, pageFrameEnds, outerSpaceCSS, paddingCSS, rowSideRemAt } from "@/lib/box-model";
 import { blockForKind } from "@/lib/box-presets";
 import { COMPONENT_CATALOGUE } from "@/lib/component-catalogue";
 import { emptyPageRoot, siteFromRoot, setPageGrid, applyPageGrid, addPage } from "@/lib/box-site";
@@ -790,5 +790,58 @@ describe("Page check · a missing picture, and words too tight where a person se
     const sp = markPageGrid(normalizeRowBands({ ...emptyPageRoot(), children: [makeRowBand([short("50%"), short("50%")])] } as BoxNode)); const [c, d] = sp.children![0].children!;
     const fits = updateBoxResponsive(updateBoxResponsive(sp, c.id, { width: "58.33%" }, "phone"), d.id, { width: "41.66%" }, "phone");
     expect(pageCheck(fits).some((i) => i.kind === "words-too-tight")).toBe(false);
+  });
+});
+
+
+describe("G-3c · the page's frame on all four sides, from one emitter (the user: \"the same for the bottom, the right, the left — one rem\")", () => {
+  const page = (...kinds: string[]) => kinds.reduce((r, k) => dropOn(r, blockForKind(k)), emptyPageRoot());
+  const html = (root: BoxNode) => { const site = siteFromRoot(root); return renderSitePage(site, DEFAULT_THEME, site.homeId, { inlineShared: true }); };
+
+  it("the page keeps the frame above its first section and below its last", () => {
+    expect(pageFrameEnds(page("heading", "text"))).toEqual({ paddingTop: FRAME_CSS, paddingBottom: FRAME_CSS });
+    expect(containerStyle(page("heading"))).toMatchObject({ paddingTop: FRAME_CSS, paddingBottom: FRAME_CSS });
+    expect(html(page("heading"))).toMatch(/padding-top:clamp\(1rem, calc\(var\(--box-u, 0\.625rem\) \* 1\.6\), 1\.25rem\)/);
+  });
+
+  it("a coloured or picture first / last section still reaches the edge on that side", () => {
+    const r = page("heading", "text");
+    const coloured = { ...r, children: [{ ...r.children![0], background: "var(--eu-color-primary)" }, r.children![1]] } as BoxNode;
+    expect(pageFrameEnds(coloured)).toEqual({ paddingBottom: FRAME_CSS });
+    expect(pageFrameEnds(page("text", "image"))).toEqual({ paddingTop: FRAME_CSS });
+  });
+
+  it("a page saved before the page grid gets no frame", () => {
+    const saved = page("heading"); delete saved.pageGrid;
+    expect(pageFrameEnds(saved)).toEqual({});
+  });
+
+  it("the site's own side space is the frame, all four sides, down to 0", () => {
+    const site = setPageGrid(siteFromRoot(page("heading", "card")), { sideSpace: 0 });
+    const root = site.pages[0].root;
+    expect(pageFrameEnds(root)).toEqual({ paddingTop: u(0), paddingBottom: u(0) });
+    expect(frameCss(root)).toBe(u(0));
+  });
+
+  it("a component on the page keeps the frame OUTSIDE its box, and fills its line less both sides", () => {
+    const card = { ...blockForKind("card"), onPageGrid: true, width: "100%" } as BoxNode;
+    const css = outerSpaceCSS(card, "page");
+    expect([css.marginLeft, css.marginRight]).toEqual([FRAME_CSS, FRAME_CSS]);
+    expect(css.maxWidth).toBe(`calc(100% - ${FRAME_CSS} - ${FRAME_CSS})`);
+  });
+
+  it("a lone section's words keep the frame at its sides; a menu line too", () => {
+    const heading = { ...blockForKind("heading"), onPageGrid: true } as BoxNode;
+    expect([paddingCSS(heading, true).paddingLeft, paddingCSS(heading, true).paddingRight]).toEqual([FRAME_CSS, FRAME_CSS]);
+    expect(paddingCSS({ ...heading, paddingLeft: 0 } as BoxNode, true).paddingLeft).toBe(u(0)); // its own value wins
+  });
+
+  it("the arithmetic reads the frame as drawn: a row's sides in rem at a page width", () => {
+    const cols = [createContainer("column", { width: "50%", children: [blockForKind("text")] } as Partial<BoxNode>), createContainer("column", { width: "50%", children: [blockForKind("text")] } as Partial<BoxNode>)];
+    const band = markPageGrid(normalizeRowBands({ ...emptyPageRoot(), children: [makeRowBand(cols)] } as BoxNode)).children![0];
+    expect(rowSideRemAt(band, "left", 22.5)).toBe(1);
+    expect(rowSideRemAt(band, "right", 120)).toBe(1.25);
+    const slot = pageRowSlot(band, band.children![0].id, "base", 80)!;
+    expect(slot.left).toBeCloseTo(frameRemAt(band, 80), 9);
   });
 });

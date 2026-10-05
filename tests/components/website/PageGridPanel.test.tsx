@@ -158,3 +158,21 @@ describe("G-3 (3) · Alt ← / → on a column of a page row", () => {
     expect(onChange).not.toHaveBeenCalled();
   });
 });
+
+describe("G3c-11 · Escape closes the panel even when focus has fallen out of it", () => {
+  it("after 'Back to default' disables itself, Escape on the page closes the panel", () => {
+    const p = panel({ grid: { sideSpace: 40 } });
+    const back = screen.getAllByRole("button", { name: "Back to default" })[0];
+    back.focus(); fireEvent.click(back); back.blur(); // the button it was on is now disabled: focus is on the body
+    expect(document.activeElement).toBe(document.body);
+    fireEvent.keyDown(document, { key: "Escape" });
+    expect(p.onClose).toHaveBeenCalled();
+  });
+  it("an Escape while something else on the page has focus is not the panel's", () => {
+    const p = panel();
+    const other = document.createElement("input"); document.body.appendChild(other); other.focus();
+    fireEvent.keyDown(other, { key: "Escape" });
+    expect(p.onClose).not.toHaveBeenCalled();
+    other.remove();
+  });
+});

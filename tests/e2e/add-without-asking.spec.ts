@@ -253,7 +253,11 @@ test.describe("the page is exactly as tall as what is on it", () => {
     const root = await pageRootBox(page);
     // The deepest block on the page — the Stack itself, not the band around it.
     const last = await page.locator("[data-box-id]").last().evaluate((el) => Math.round(el.getBoundingClientRect().bottom));
-    expect(root.bottom - last, "the page must end where its content ends, not 32px later").toBeLessThanOrEqual(2);
+    // G-3c (the user, 2026-10-04: "do the same thing for the bottom"): a page-grid page keeps its FRAME below its last block — a
+    // space somebody chose, and "Side space" takes it to 0. Nothing MORE than that: no floor nobody can remove (the 32px this guards).
+    const frame = await page.locator("[data-box-id]").first().evaluate((el) => (parseFloat(getComputedStyle(el).paddingBottom) || 0) * (Number(el.closest<HTMLElement>("[data-canvas-scale]")?.dataset.canvasScale) || 1));
+    expect(frame, "the page's bottom frame is there, 1 – 1.25 rem").toBeGreaterThan(8);
+    expect(Math.abs(root.bottom - last - frame), "the page must end its frame below its content, not 32px later").toBeLessThanOrEqual(2);
   });
 
   test("an EMPTY page still has a floor, so there is somewhere to drop the first block", async ({ page }) => {

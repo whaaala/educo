@@ -12,7 +12,7 @@ import { Plus, X, Tags, Rows3, Columns3, Upload, ArrowRight, AlignLeft, AlignCen
 import type { SiteTheme } from "@/lib/site-storage";
 import type { BoxNode, FlexAlign, FlexJustify, AccPartStyle, Breakpoint, PagerNav, PinScopeWords, SectionFlag } from "@/lib/box-model";
 import { RUNG_LABEL } from "@/lib/educo-ui/layout";
-import { type ItemAction, TOAST_CORNERS, isContainer, containerLabel, isFloating, isCssBg, addItem, removeItem, moveItem, updateItem, addChildItem, updateChildItem, removeChildItem, moveChildItem , isMultiItemComponent, hasIntrinsicSize, sizeToCSS, typedLength, GRID_MAX, COLUMN_FRACTIONS, columnFractionOf, canSetColumnFraction, gridColumns, bandEdgeCSS, PIN_ARRIVALS, PIN_ARRIVAL_AFTER, pinArrivalHasEffect, linkLineGap, LINK_GAP_ACROSS, LINK_GAP_ACROSS_PHONE, spaceDefaults, outerDefaults, type SectionPlace, gapOf } from "@/lib/box-model";
+import { type ItemAction, TOAST_CORNERS, fluidRemRange, isContainer, containerLabel, isFloating, isCssBg, addItem, removeItem, moveItem, updateItem, addChildItem, updateChildItem, removeChildItem, moveChildItem , isMultiItemComponent, hasIntrinsicSize, sizeToCSS, typedLength, GRID_MAX, COLUMN_FRACTIONS, columnFractionOf, canSetColumnFraction, gridColumns, bandEdgeCSS, PIN_ARRIVALS, PIN_ARRIVAL_AFTER, pinArrivalHasEffect, linkLineGap, LINK_GAP_ACROSS, LINK_GAP_ACROSS_PHONE, spaceDefaults, outerDefaults, type SectionPlace, gapOf } from "@/lib/box-model";
 import { remLen } from "@/lib/educo-ui/tokens";
 import { ACCORDION_DESIGNS, ACCORDION_DESIGN_COUNT, ACCORDION_AXES } from "@/lib/educo-ui/accordions";
 import { ALERT_DESIGNS, ALERT_DESIGN_COUNT, ALERT_AXES } from "@/lib/educo-ui/alerts";
@@ -96,7 +96,7 @@ function ColumnFractions({ track, span, breakpoint, onSet }: { track: number; sp
 // Reuses the shared <Slider> (labelled range control) instead of a raw <input type="range">.
 function Range({ title, value, min, max, fallback, onChange, unit = "px" }: { title: string; value?: number; min: number; max: number; fallback: number; onChange: (n: number) => void; unit?: string }) {
   const v = value ?? fallback;
-  return <Slider label={title} value={v} min={min} max={max} onChange={onChange} formatValue={unit === "rem" ? (x) => `${toRem(x)}rem` : (x) => `${x}${unit}`} />;
+  return <Slider label={title} value={v} min={min} max={max} onChange={onChange} formatValue={unit === "rem" ? fluidRemRange : (x) => `${x}${unit}`} />; // phone → wide (G3c-10)
 }
 
 /**
@@ -114,7 +114,7 @@ function GapRange({ label, value, fallback, onChange, onMatch }: {
   const own = value != null;
   return (
     <div className="flex flex-col gap-0.5">
-      <Slider label={label} value={value ?? fallback} min={0} max={128} onChange={onChange} formatValue={(x) => `${toRem(x)}rem`} />
+      <Slider label={label} value={value ?? fallback} min={0} max={128} onChange={onChange} formatValue={fluidRemRange} /> {/* phone → wide (G3c-10) */}
       <button
         type="button" onClick={onMatch} disabled={!own}
         aria-label={`${label} — use the same spacing as "Space between blocks"`}
@@ -227,7 +227,7 @@ function SideSpacing({ title, node, base, sides, onPatch, max = 96, defaults = [
   const hasDefault = defaults.some((d) => d > 0);
   return (
     <div className="space-y-1.5">
-      <Slider label={title} value={g} min={0} max={max} onChange={(n) => setPx(base, n)} formatValue={(x) => (set ? `${toRem(x)}rem` : `Default · ${toRem(x)}rem`)} />
+      <Slider label={title} value={g} min={0} max={max} onChange={(n) => setPx(base, n)} formatValue={(x) => (set ? fluidRemRange(x) : `Default · ${fluidRemRange(x)}`)} />
       {hasDefault && (
         <button type="button" disabled={!set} onClick={() => onPatch({ [base]: undefined, [t]: undefined, [r]: undefined, [b]: undefined, [l]: undefined } as Partial<BoxNode>)}
           aria-label={`${title} — back to default`}

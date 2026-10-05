@@ -221,6 +221,9 @@ SLICES.H = async (page, ok) => { // U4 · from line, to line, to the last line, 
   const size = async (id) => { await H.select(page, id); await I.tab(page, 'Design'); await I.section(page, 'Size'); };
   const field = async (name, v) => { const f = page.getByLabel(name, { exact: true }).first(); await f.scrollIntoViewIfNeeded(); await f.fill(String(v)); await f.blur(); await page.waitForTimeout(500); };
   const mid = async () => { const r1 = await rectOf(page, a), r2 = await rectOf(page, b); return (r1.r + r2.l) / 2; };
+  // SETTLED before any reference is taken (G3c-8): under nine windows' load the first layout was still arriving — a 303px "jump" that was not one
+  const steady = async () => { let last = ""; for (let i = 0; i < 40; i++) { const now = JSON.stringify(await Promise.all([a, b].map((x) => rectOf(page, x)))); if (now === last) return; last = now; await page.waitForTimeout(250); } };
+  await steady();
   let ls = await lines(page); const a0 = await rectOf(page, a), b0 = await rectOf(page, b);
   await size(a); await field('To line', 9); ls = await lines(page);
   ok('U4 "To line" 9: the gap lands on line 9, the left edge stays', Math.abs((await mid()) - ls[8]) <= 0.6 && Math.abs((await rectOf(page, a)).l - a0.l) < 0.6, `${((await mid()) - ls[8]).toFixed(2)}px`);

@@ -114,7 +114,7 @@ const SLICES = {
     const before = await Promise.all([id.c1, id.c2, id.c3].map((x) => rectOf(page, x)));
     await H.select(page, id.c1); await I.tab(page, 'Design'); await I.section(page, 'Arrange');
     const left = page.getByLabel('Outer spacing left', { exact: true }).first(); await left.scrollIntoViewIfNeeded();
-    ok('U2 the first block\'s left outer spacing reads its default (the row\'s side space)', /1\.44/.test(await left.getAttribute('placeholder')), await left.getAttribute('placeholder'));
+    ok('U2 the first block\'s left outer spacing reads its default (the row\'s side space)', /^1$/.test(await left.getAttribute('placeholder')) /* G3c-9: the default is now the page frame, 1–1.25 rem, shown in the typing unit as 1 */, await left.getAttribute('placeholder'));
     await left.fill('0'); await left.blur(); await page.waitForTimeout(500);
     const after = await Promise.all([id.c1, id.c2, id.c3].map((x) => rectOf(page, x)));
     ok('U2 left outer spacing 0 → the first card reaches the page edge', Math.abs(after[0].l - p.l) < 1.5, `${(after[0].l - p.l).toFixed(1)}px from the edge`);

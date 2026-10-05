@@ -932,3 +932,11 @@ describe("G-3b (2) · placing on the page's lines in the Size section", () => {
     expect(screen.queryByLabelText("From line")).toBeNull();
   });
 });
+
+describe("G3c-10 · a size or a space says what it really is, phone → wide (the user: \"phone → wide range\")", () => {
+  it("the gaps of a stack read 0.7–1.4rem, never \"1rem\" (a box's Band height stays real rem: it is stored as px)", () => {
+    renderFor(createContainer("column", { id: "c" }));
+    expect(screen.getAllByText("0.7–1.4rem").length).toBeGreaterThanOrEqual(3); // Space between blocks, across, down
+    expect(screen.queryByText("1rem")).toBeNull();
+  });
+});
